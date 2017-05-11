@@ -29,12 +29,11 @@
 
 #include <QtTest/QtTest>
 #include <QtWidgets>
+#include <private/qstylehelper_p.h>
 
 const int N = 1;
 
-enum Size { Normal, Small, Mini };
-
-Q_DECLARE_METATYPE(Size);
+Q_DECLARE_METATYPE(QStyleHelper::WidgetSizePolicy);
 
 #define CT(E) \
     static const ControlType E = QSizePolicy::E;
@@ -63,7 +62,7 @@ class tst_QMacStyle : public QObject
     Q_OBJECT
 
 public:
-    tst_QMacStyle() { qRegisterMetaType<Size>("Size"); }
+    tst_QMacStyle() { qRegisterMetaType<QStyleHelper::WidgetSizePolicy>("WidgetSizePolicy"); }
 
 private slots:
     void sizeHints_data();
@@ -85,27 +84,27 @@ private:
     static QSize gap(QWidget *widget1, QWidget *widget2);
     static int hgap(QWidget *widget1, QWidget *widget2) { return gap(widget1, widget2).width(); }
     static int vgap(QWidget *widget1, QWidget *widget2) { return gap(widget1, widget2).height(); }
-    static void setSize(QWidget *widget, Size size);
+    static void setSize(QWidget *widget, QStyleHelper::WidgetSizePolicy size);
     static int spacing(ControlType control1, ControlType control2, Qt::Orientation orientation,
                        QStyleOption *option = 0, QWidget *widget = 0);
-    static int hspacing(ControlType control1, ControlType control2, Size size = Normal);
-    static int vspacing(ControlType control1, ControlType control2, Size size = Normal);
+    static int hspacing(ControlType control1, ControlType control2, QStyleHelper::WidgetSizePolicy size = QStyleHelper::SizeLarge);
+    static int vspacing(ControlType control1, ControlType control2, QStyleHelper::WidgetSizePolicy size = QStyleHelper::SizeLarge);
 };
 
 #define SIZE(x, y, z) \
-    ((size == Normal) ? (x) : (size == Small) ? (y) : (z))
+    ((size == QStyleHelper::SizeLarge) ? (x) : (size == QStyleHelper::SizeSmall) ? (y) : (z))
 
 void tst_QMacStyle::sizeHints_data()
 {
-    QTest::addColumn<Size>("size");
-    QTest::newRow("normal") << Normal;
-//    QTest::newRow("small") << Small;
-//    QTest::newRow("mini") << Mini;
+    QTest::addColumn<QStyleHelper::WidgetSizePolicy>("size");
+    QTest::newRow("normal") << QStyleHelper::SizeLarge;
+//    QTest::newRow("small") << QStyleHelper::SizeSmall;
+//    QTest::newRow("mini") << QStyleHelper::SizeMini;
 }
 
 void tst_QMacStyle::sizeHints()
 {
-    QFETCH(Size, size);
+    QFETCH(QStyleHelper::WidgetSizePolicy, size);
     QDialog w;
     setSize(&w, size);
 
@@ -160,7 +159,7 @@ void tst_QMacStyle::sizeHints()
     QPushButton cancel1("Cancel", &w);
 
     QSize s1 = sh(&ok1);
-    if (size == Normal) {
+    if (size == QStyleHelper::SizeLarge) {
         // AHIG says 68, Builder does 70, and Qt seems to do 69
         QVERIFY(s1.width() >= 68 && s1.width() <= 70);
     }
@@ -222,7 +221,7 @@ void tst_QMacStyle::layoutMargins_data()
 
 void tst_QMacStyle::layoutMargins()
 {
-    QFETCH(Size, size);
+    QFETCH(QStyleHelper::WidgetSizePolicy, size);
     QWidget w;
     setSize(&w, size);
 
@@ -235,7 +234,7 @@ void tst_QMacStyle::layoutSpacings_data()
 
 void tst_QMacStyle::layoutSpacings()
 {
-    QFETCH(Size, size);
+    QFETCH(QStyleHelper::WidgetSizePolicy, size);
 
     /*
         Constraints specified by AHIG.
@@ -304,16 +303,16 @@ QSize tst_QMacStyle::gap(QWidget *widget1, QWidget *widget2)
     return s + QSize(d.x(), d.y());
 }
 
-void tst_QMacStyle::setSize(QWidget *widget, Size size)
+void tst_QMacStyle::setSize(QWidget *widget, QStyleHelper::WidgetSizePolicy size)
 {
     switch (size) {
-    case Normal:
+    case QStyleHelper::SizeLarge:
         widget->setAttribute(Qt::WA_MacNormalSize, true);
         break;
-    case Small:
+    case QStyleHelper::SizeSmall:
         widget->setAttribute(Qt::WA_MacSmallSize, true);
         break;
-    case Mini:
+    case QStyleHelper::SizeMini:
         widget->setAttribute(Qt::WA_MacMiniSize, true);
     }
 }
@@ -324,7 +323,7 @@ int tst_QMacStyle::spacing(ControlType control1, ControlType control2, Qt::Orien
     return QApplication::style()->layoutSpacing(control1, control2, orientation, option, widget);
 }
 
-int tst_QMacStyle::hspacing(ControlType control1, ControlType control2, Size size)
+int tst_QMacStyle::hspacing(ControlType control1, ControlType control2, QStyleHelper::WidgetSizePolicy size)
 {
     QWidget w;
     setSize(&w, size);
@@ -335,7 +334,7 @@ int tst_QMacStyle::hspacing(ControlType control1, ControlType control2, Size siz
     return spacing(control1, control2, Qt::Horizontal, &opt);
 }
 
-int tst_QMacStyle::vspacing(ControlType control1, ControlType control2, Size size)
+int tst_QMacStyle::vspacing(ControlType control1, ControlType control2, QStyleHelper::WidgetSizePolicy size)
 {
     QWidget w;
     setSize(&w, size);

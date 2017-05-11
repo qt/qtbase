@@ -133,9 +133,6 @@ QT_BEGIN_NAMESPACE
 #define CT1(c) CT2(c, c)
 #define CT2(c1, c2) ((uint(c1) << 16) | uint(c2))
 
-enum QAquaWidgetSize { QAquaSizeLarge = 0, QAquaSizeSmall = 1, QAquaSizeMini = 2,
-                       QAquaSizeUnknown = -1 };
-
 enum QCocoaWidgetKind {
     QCocoaArrowButton,  // Disclosure triangle, like in QTreeView
     QCocoaCheckBox,
@@ -148,12 +145,12 @@ enum QCocoaWidgetKind {
     QCocoaVerticalSlider
 };
 
-typedef QPair<QCocoaWidgetKind, QAquaWidgetSize> QCocoaWidget;
+typedef QPair<QCocoaWidgetKind, QStyleHelper::WidgetSizePolicy> QCocoaWidget;
 
 typedef void (^QCocoaDrawRectBlock)(NSRect, CGContextRef);
 
 #define SIZE(large, small, mini) \
-    (controlSize == QAquaSizeLarge ? (large) : controlSize == QAquaSizeSmall ? (small) : (mini))
+    (controlSize == QStyleHelper::SizeLarge ? (large) : controlSize == QStyleHelper::SizeSmall ? (small) : (mini))
 
 // same as return SIZE(...) but optimized
 #define return_SIZE(large, small, mini) \
@@ -186,10 +183,10 @@ public:
 
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
     static ThemeDrawState getDrawState(QStyle::State flags);
-    QAquaWidgetSize aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
+    QStyleHelper::WidgetSizePolicy aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
                              QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
-    QAquaWidgetSize effectiveAquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
+    QStyleHelper::WidgetSizePolicy effectiveAquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
                              QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
     void getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,

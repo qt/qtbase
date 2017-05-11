@@ -389,19 +389,14 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBase *tbb, const QWidget *
 }
 #endif
 
-static int getControlSize(const QStyleOption *option, const QWidget *widget)
+static QStyleHelper::WidgetSizePolicy getControlSize(const QStyleOption *option, const QWidget *widget)
 {
-    switch (QStyleHelper::widgetSizePolicy(widget, option)) {
-    case QStyleHelper::SizeSmall:
-        return QAquaSizeSmall;
-    case QStyleHelper::SizeMini:
-        return QAquaSizeMini;
-    default:
-        break;
-    }
-    return QAquaSizeLarge;
-}
+    const auto wsp = QStyleHelper::widgetSizePolicy(widget, option);
+    if (wsp == QStyleHelper::SizeDefault)
+        return QStyleHelper::SizeLarge;
 
+    return wsp;
+}
 
 #ifndef QT_NO_TREEVIEW
 static inline bool isTreeView(const QWidget *widget)
@@ -671,10 +666,10 @@ static inline int qt_mac_aqua_get_metric(QAquaMetric m)
 }
 
 static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg, QSize szHint,
-                                    QAquaWidgetSize sz)
+                                    QStyleHelper::WidgetSizePolicy sz)
 {
     QSize ret(-1, -1);
-    if (sz != QAquaSizeSmall && sz != QAquaSizeLarge && sz != QAquaSizeMini) {
+    if (sz != QStyleHelper::SizeSmall && sz != QStyleHelper::SizeLarge && sz != QStyleHelper::SizeMini) {
         qDebug("Not sure how to return this...");
         return ret;
     }
@@ -740,11 +735,11 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             QString buttonText = qt_mac_removeMnemonics(psh->text());
             if (buttonText.contains(QLatin1Char('\n')))
                 ret = QSize(-1, -1);
-            else if (sz == QAquaSizeLarge)
+            else if (sz == QStyleHelper::SizeLarge)
                 ret = QSize(-1, qt_mac_aqua_get_metric(PushButtonHeight));
-            else if (sz == QAquaSizeSmall)
+            else if (sz == QStyleHelper::SizeSmall)
                 ret = QSize(-1, qt_mac_aqua_get_metric(SmallPushButtonHeight));
-            else if (sz == QAquaSizeMini)
+            else if (sz == QStyleHelper::SizeMini)
                 ret = QSize(-1, qt_mac_aqua_get_metric(MiniPushButtonHeight));
 
             if (!psh->icon().isNull()){
@@ -763,11 +758,11 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             }
         } else {
             // The only sensible thing to do is to return whatever the style suggests...
-            if (sz == QAquaSizeLarge)
+            if (sz == QStyleHelper::SizeLarge)
                 ret = QSize(-1, qt_mac_aqua_get_metric(PushButtonHeight));
-            else if (sz == QAquaSizeSmall)
+            else if (sz == QStyleHelper::SizeSmall)
                 ret = QSize(-1, qt_mac_aqua_get_metric(SmallPushButtonHeight));
-            else if (sz == QAquaSizeMini)
+            else if (sz == QStyleHelper::SizeMini)
                 ret = QSize(-1, qt_mac_aqua_get_metric(MiniPushButtonHeight));
             else
                 // Since there's no default size we return the large size...
@@ -780,24 +775,24 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         // Exception for case where multiline radio button text requires no size constrainment
         if (rdo->text().find('\n') != -1)
             return ret;
-        if (sz == QAquaSizeLarge)
+        if (sz == QStyleHelper::SizeLarge)
             ret = QSize(-1, qt_mac_aqua_get_metric(RadioButtonHeight));
-        else if (sz == QAquaSizeSmall)
+        else if (sz == QStyleHelper::SizeSmall)
             ret = QSize(-1, qt_mac_aqua_get_metric(SmallRadioButtonHeight));
-        else if (sz == QAquaSizeMini)
+        else if (sz == QStyleHelper::SizeMini)
             ret = QSize(-1, qt_mac_aqua_get_metric(MiniRadioButtonHeight));
     } else if (ct == QStyle::CT_CheckBox) {
-        if (sz == QAquaSizeLarge)
+        if (sz == QStyleHelper::SizeLarge)
             ret = QSize(-1, qt_mac_aqua_get_metric(CheckBoxHeight));
-        else if (sz == QAquaSizeSmall)
+        else if (sz == QStyleHelper::SizeSmall)
             ret = QSize(-1, qt_mac_aqua_get_metric(SmallCheckBoxHeight));
-        else if (sz == QAquaSizeMini)
+        else if (sz == QStyleHelper::SizeMini)
             ret = QSize(-1, qt_mac_aqua_get_metric(MiniCheckBoxHeight));
 #endif
         break;
     }
     case QStyle::CT_SizeGrip:
-        if (sz == QAquaSizeLarge || sz == QAquaSizeSmall) {
+        if (sz == QStyleHelper::SizeLarge || sz == QStyleHelper::SizeSmall) {
             CGRect r;
             CGPoint p = { 0, 0 };
             HIThemeGrowBoxDrawInfo gbi;
@@ -806,7 +801,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             gbi.kind = kHIThemeGrowBoxKindNormal;
             gbi.direction = QApplication::isRightToLeft() ? kThemeGrowLeft | kThemeGrowDown
                                                           : kThemeGrowRight | kThemeGrowDown;
-            gbi.size = sz == QAquaSizeSmall ? kHIThemeGrowBoxSizeSmall : kHIThemeGrowBoxSizeNormal;
+            gbi.size = sz == QStyleHelper::SizeSmall ? kHIThemeGrowBoxSizeSmall : kHIThemeGrowBoxSizeNormal;
             if (HIThemeGetGrowBoxBounds(&p, &gbi, &r) == noErr) {
                 int width = 0;
 #ifndef QT_NO_MDIAREA
@@ -819,13 +814,13 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         break;
     case QStyle::CT_ComboBox:
         switch (sz) {
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeLarge:
             ret = QSize(-1, qt_mac_aqua_get_metric(PopupButtonHeight));
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             ret = QSize(-1, qt_mac_aqua_get_metric(SmallPopupButtonHeight));
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             ret = QSize(-1, qt_mac_aqua_get_metric(MiniPopupButtonHeight));
             break;
         default:
@@ -833,7 +828,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         }
         break;
     case QStyle::CT_ToolButton:
-        if (sz == QAquaSizeSmall) {
+        if (sz == QStyleHelper::SizeSmall) {
             int width = 0, height = 0;
             if (szHint == QSize(-1, -1)) { //just 'guess'..
 #ifndef QT_NO_TOOLBUTTON
@@ -878,7 +873,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         const QSlider *sld = qobject_cast<const QSlider *>(widg);
         // If this conversion fails then the widget was not what it claimed to be.
         if(sld) {
-            if (sz == QAquaSizeLarge) {
+            if (sz == QStyleHelper::SizeLarge) {
                 if (sld->orientation() == Qt::Horizontal) {
                     w = qt_mac_aqua_get_metric(HSliderHeight);
                     if (sld->tickPosition() != QSlider::NoTicks)
@@ -888,7 +883,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
                     if (sld->tickPosition() != QSlider::NoTicks)
                         w += qt_mac_aqua_get_metric(VSliderTickWidth);
                 }
-            } else if (sz == QAquaSizeSmall) {
+            } else if (sz == QStyleHelper::SizeSmall) {
                 if (sld->orientation() == Qt::Horizontal) {
                     w = qt_mac_aqua_get_metric(SmallHSliderHeight);
                     if (sld->tickPosition() != QSlider::NoTicks)
@@ -898,7 +893,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
                     if (sld->tickPosition() != QSlider::NoTicks)
                         w += qt_mac_aqua_get_metric(SmallVSliderTickWidth);
                 }
-            } else if (sz == QAquaSizeMini) {
+            } else if (sz == QStyleHelper::SizeMini) {
                 if (sld->orientation() == Qt::Horizontal) {
                     w = qt_mac_aqua_get_metric(MiniHSliderHeight);
                     if (sld->tickPosition() != QSlider::NoTicks)
@@ -930,7 +925,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         if (const QProgressBar *pb = qobject_cast<const QProgressBar *>(widg))
             orient = pb->orientation();
 
-        if (sz == QAquaSizeLarge)
+        if (sz == QStyleHelper::SizeLarge)
             finalValue = qt_mac_aqua_get_metric(LargeProgressBarThickness)
                             + qt_mac_aqua_get_metric(ProgressBarShadowOutset);
         else
@@ -947,7 +942,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
     case QStyle::CT_LineEdit:
         if (!widg || !qobject_cast<QComboBox *>(widg->parentWidget())) {
             //should I take into account the font dimentions of the lineedit? -Sam
-            if (sz == QAquaSizeLarge)
+            if (sz == QStyleHelper::SizeLarge)
                 ret = QSize(-1, 21);
             else
                 ret = QSize(-1, 19);
@@ -961,7 +956,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
 #endif
         break;
     case QStyle::CT_MenuBar:
-        if (sz == QAquaSizeLarge) {
+        if (sz == QStyleHelper::SizeLarge) {
             ret = QSize(-1, [[NSApp mainMenu] menuBarHeight]);
             // In the qt_mac_set_native_menubar(false) case,
             // we come it here with a zero-height main menu,
@@ -979,30 +974,30 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
 
 
 #if defined(QMAC_QAQUASTYLE_SIZE_CONSTRAIN) || defined(DEBUG_SIZE_CONSTRAINT)
-static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSize small, QSize mini)
+static QStyleHelper::WidgetSizePolicy qt_aqua_guess_size(const QWidget *widg, QSize large, QSize small, QSize mini)
 {
     Q_UNUSED(widg);
 
     if (large == QSize(-1, -1)) {
         if (small != QSize(-1, -1))
-            return QAquaSizeSmall;
+            return QStyleHelper::SizeSmall;
         if (mini != QSize(-1, -1))
-            return QAquaSizeMini;
-        return QAquaSizeUnknown;
+            return QStyleHelper::SizeMini;
+        return QStyleHelper::SizeDefault;
     } else if (small == QSize(-1, -1)) {
         if (mini != QSize(-1, -1))
-            return QAquaSizeMini;
-        return QAquaSizeLarge;
+            return QStyleHelper::SizeMini;
+        return QStyleHelper::SizeLarge;
     } else if (mini == QSize(-1, -1)) {
-        return QAquaSizeLarge;
+        return QStyleHelper::SizeLarge;
     }
 
 #ifndef QT_NO_MAINWINDOW
     if (qEnvironmentVariableIsSet("QWIDGET_ALL_SMALL")) {
         //if (small.width() != -1 || small.height() != -1)
-        return QAquaSizeSmall;
+        return QStyleHelper::SizeSmall;
     } else if (qEnvironmentVariableIsSet("QWIDGET_ALL_MINI")) {
-        return QAquaSizeMini;
+        return QStyleHelper::SizeMini;
     }
 #endif
 
@@ -1038,11 +1033,11 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
         mini_delta += delta * delta;
     }
     if (mini_delta < small_delta && mini_delta < large_delta)
-        return QAquaSizeMini;
+        return QStyleHelper::SizeMini;
     else if (small_delta < large_delta)
-        return QAquaSizeSmall;
+        return QStyleHelper::SizeSmall;
 #endif
-    return QAquaSizeLarge;
+    return QStyleHelper::SizeLarge;
 }
 #endif
 
@@ -1171,61 +1166,61 @@ void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widg
 }
 #endif //QT_NO_TABBAR
 
-QAquaWidgetSize QMacStylePrivate::effectiveAquaSizeConstrain(const QStyleOption *option,
+QStyleHelper::WidgetSizePolicy QMacStylePrivate::effectiveAquaSizeConstrain(const QStyleOption *option,
                                                             const QWidget *widg,
                                                             QStyle::ContentsType ct,
                                                             QSize szHint, QSize *insz) const
 {
-    QAquaWidgetSize sz = aquaSizeConstrain(option, widg, ct, szHint, insz);
-    if (sz == QAquaSizeUnknown)
-        return QAquaSizeLarge;
+    QStyleHelper::WidgetSizePolicy sz = aquaSizeConstrain(option, widg, ct, szHint, insz);
+    if (sz == QStyleHelper::SizeDefault)
+        return QStyleHelper::SizeLarge;
     return sz;
 }
 
-QAquaWidgetSize QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
+QStyleHelper::WidgetSizePolicy QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                                        QStyle::ContentsType ct, QSize szHint, QSize *insz) const
 {
 #if defined(QMAC_QAQUASTYLE_SIZE_CONSTRAIN) || defined(DEBUG_SIZE_CONSTRAINT)
     if (option) {
         if (option->state & QStyle::State_Small)
-            return QAquaSizeSmall;
+            return QStyleHelper::SizeSmall;
         if (option->state & QStyle::State_Mini)
-            return QAquaSizeMini;
+            return QStyleHelper::SizeMini;
     }
 
     if (!widg) {
         if (insz)
             *insz = QSize();
         if (qEnvironmentVariableIsSet("QWIDGET_ALL_SMALL"))
-            return QAquaSizeSmall;
+            return QStyleHelper::SizeSmall;
         if (qEnvironmentVariableIsSet("QWIDGET_ALL_MINI"))
-            return QAquaSizeMini;
-        return QAquaSizeUnknown;
+            return QStyleHelper::SizeMini;
+        return QStyleHelper::SizeDefault;
     }
 
-    QSize large = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeLarge),
-          small = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeSmall),
-          mini  = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeMini);
+    QSize large = qt_aqua_get_known_size(ct, widg, szHint, QStyleHelper::SizeLarge),
+          small = qt_aqua_get_known_size(ct, widg, szHint, QStyleHelper::SizeSmall),
+          mini  = qt_aqua_get_known_size(ct, widg, szHint, QStyleHelper::SizeMini);
     bool guess_size = false;
-    QAquaWidgetSize ret = QAquaSizeUnknown;
+    QStyleHelper::WidgetSizePolicy ret = QStyleHelper::SizeDefault;
     QStyleHelper::WidgetSizePolicy wsp = QStyleHelper::widgetSizePolicy(widg);
     if (wsp == QStyleHelper::SizeDefault)
         guess_size = true;
     else if (wsp == QStyleHelper::SizeMini)
-        ret = QAquaSizeMini;
+        ret = QStyleHelper::SizeMini;
     else if (wsp == QStyleHelper::SizeSmall)
-        ret = QAquaSizeSmall;
+        ret = QStyleHelper::SizeSmall;
     else if (wsp == QStyleHelper::SizeLarge)
-        ret = QAquaSizeLarge;
+        ret = QStyleHelper::SizeLarge;
     if (guess_size)
         ret = qt_aqua_guess_size(widg, large, small, mini);
 
     QSize *sz = 0;
-    if (ret == QAquaSizeSmall)
+    if (ret == QStyleHelper::SizeSmall)
         sz = &small;
-    else if (ret == QAquaSizeLarge)
+    else if (ret == QStyleHelper::SizeLarge)
         sz = &large;
-    else if (ret == QAquaSizeMini)
+    else if (ret == QStyleHelper::SizeMini)
         sz = &mini;
     if (insz)
         *insz = sz ? *sz : QSize(-1, -1);
@@ -1251,7 +1246,7 @@ QAquaWidgetSize QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, 
     Q_UNUSED(widg);
     Q_UNUSED(ct);
     Q_UNUSED(szHint);
-    return QAquaSizeUnknown;
+    return QStyleHelper::SizeDefault;
 #endif
 }
 
@@ -1344,19 +1339,19 @@ void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
         bdi->kind = kThemeBevelButton;
     } else {
         switch (aquaSizeConstrain(btn, widget)) {
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             bdi->kind = kThemePushButtonSmall;
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             bdi->kind = kThemePushButtonMini;
             break;
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeLarge:
             // ... We should honor if the user is explicit about using the
             // large button. But right now Qt will specify the large button
-            // as default rather than QAquaSizeUnknown.
-            // So we treat it like QAquaSizeUnknown
+            // as default rather than QStyleHelper::SizeDefault.
+            // So we treat it like QStyleHelper::SizeDefault
             // to get the dynamic choosing of button kind.
-        case QAquaSizeUnknown:
+        case QStyleHelper::SizeDefault:
             // Choose the button kind that closest match the button rect, but at the
             // same time displays the button contents without clipping.
             bdi->kind = kThemeBevelButton;
@@ -1410,18 +1405,18 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
     else
         bdi->state = tds;
 
-    QAquaWidgetSize aSize = aquaSizeConstrain(combo, widget);
+    QStyleHelper::WidgetSizePolicy aSize = aquaSizeConstrain(combo, widget);
     switch (aSize) {
-    case QAquaSizeMini:
+    case QStyleHelper::SizeMini:
         bdi->kind = combo->editable ? ThemeButtonKind(kThemeComboBoxMini)
             : ThemeButtonKind(kThemePopupButtonMini);
         break;
-    case QAquaSizeSmall:
+    case QStyleHelper::SizeSmall:
         bdi->kind = combo->editable ? ThemeButtonKind(kThemeComboBoxSmall)
             : ThemeButtonKind(kThemePopupButtonSmall);
         break;
-    case QAquaSizeUnknown:
-    case QAquaSizeLarge:
+    case QStyleHelper::SizeLarge:
+    case QStyleHelper::SizeDefault:
         // Unless the user explicitly specified large buttons, determine the
         // kind by looking at the combox size.
         // ... specifying small and mini-buttons it not a current feature of
@@ -1701,20 +1696,20 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
     tdi->filler1 = 0;
     bool isScrollbar = (cc == QStyle::CC_ScrollBar);
     switch (aquaSizeConstrain(slider, needToRemoveMe)) {
-    case QAquaSizeUnknown:
-    case QAquaSizeLarge:
+    case QStyleHelper::SizeDefault:
+    case QStyleHelper::SizeLarge:
         if (isScrollbar)
             tdi->kind = kThemeMediumScrollBar;
         else
             tdi->kind = kThemeMediumSlider;
         break;
-    case QAquaSizeMini:
+    case QStyleHelper::SizeMini:
         if (isScrollbar)
             tdi->kind = kThemeSmallScrollBar; // should be kThemeMiniScrollBar, but not implemented
         else
             tdi->kind = kThemeMiniSlider;
         break;
-    case QAquaSizeSmall:
+    case QStyleHelper::SizeSmall:
         if (isScrollbar)
             tdi->kind = kThemeSmallScrollBar;
         else
@@ -1869,16 +1864,16 @@ static QCocoaWidget cocoaWidgetFromHIThemeButtonKind(ThemeButtonKind kind)
     case kThemePopupButtonSmall:
     case kThemeCheckBoxSmall:
     case kThemeRadioButtonSmall:
-        w.second = QAquaSizeSmall;
+        w.second = QStyleHelper::SizeSmall;
         break;
     case kThemePushButtonMini:
     case kThemePopupButtonMini:
     case kThemeCheckBoxMini:
     case kThemeRadioButtonMini:
-        w.second = QAquaSizeMini;
+        w.second = QStyleHelper::SizeMini;
         break;
     default:
-        w.second = QAquaSizeLarge;
+        w.second = QStyleHelper::SizeLarge;
         break;
     }
 
@@ -1944,10 +1939,10 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
         if ([bv isKindOfClass:[NSControl class]]) {
             NSCell *bcell = [(NSControl *)bv cell];
             switch (widget.second) {
-            case QAquaSizeSmall:
+            case QStyleHelper::SizeSmall:
                 bcell.controlSize = NSSmallControlSize;
                 break;
-            case QAquaSizeMini:
+            case QStyleHelper::SizeMini:
                 bcell.controlSize = NSMiniControlSize;
                 break;
             default:
@@ -1964,28 +1959,28 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
 void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, QCocoaDrawRectBlock drawRectBlock) const
 {
     QPoint offset;
-    if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeLarge))
+    if (widget == QCocoaWidget(QCocoaRadioButton, QStyleHelper::SizeLarge))
         offset.setY(2);
-    else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeSmall))
+    else if (widget == QCocoaWidget(QCocoaRadioButton, QStyleHelper::SizeSmall))
         offset = QPoint(-1, 2);
-    else if (widget == QCocoaWidget(QCocoaRadioButton, QAquaSizeMini))
+    else if (widget == QCocoaWidget(QCocoaRadioButton, QStyleHelper::SizeMini))
         offset.setY(2);
-    else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeSmall)
-             || widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeLarge))
+    else if (widget == QCocoaWidget(QCocoaPopupButton, QStyleHelper::SizeSmall)
+             || widget == QCocoaWidget(QCocoaCheckBox, QStyleHelper::SizeLarge))
         offset.setY(1);
-    else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeSmall))
+    else if (widget == QCocoaWidget(QCocoaCheckBox, QStyleHelper::SizeSmall))
         offset.setX(-1);
-    else if (widget == QCocoaWidget(QCocoaCheckBox, QAquaSizeMini))
+    else if (widget == QCocoaWidget(QCocoaCheckBox, QStyleHelper::SizeMini))
         offset = QPoint(7, 5);
-    else if (widget == QCocoaWidget(QCocoaPopupButton, QAquaSizeMini))
+    else if (widget == QCocoaWidget(QCocoaPopupButton, QStyleHelper::SizeMini))
         offset = QPoint(2, -1);
-    else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeLarge))
+    else if (widget == QCocoaWidget(QCocoaPullDownButton, QStyleHelper::SizeLarge))
         offset = isQWidget ? QPoint(3, -1) : QPoint(-1, -3);
-    else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeSmall))
+    else if (widget == QCocoaWidget(QCocoaPullDownButton, QStyleHelper::SizeSmall))
         offset = QPoint(2, 1);
-    else if (widget == QCocoaWidget(QCocoaPullDownButton, QAquaSizeMini))
+    else if (widget == QCocoaWidget(QCocoaPullDownButton, QStyleHelper::SizeMini))
         offset = QPoint(5, 0);
-    else if (widget == QCocoaWidget(QCocoaComboBox, QAquaSizeLarge))
+    else if (widget == QCocoaWidget(QCocoaComboBox, QStyleHelper::SizeLarge))
         offset = QPoint(3, 0);
 
     QMacCGContext ctx(p);
@@ -2384,7 +2379,7 @@ void QMacStyle::unpolish(QWidget* w)
 int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QWidget *widget) const
 {
     Q_D(const QMacStyle);
-    int controlSize = getControlSize(opt, widget);
+    const int controlSize = getControlSize(opt, widget);
     SInt32 ret = 0;
 
     switch (metric) {
@@ -2466,11 +2461,11 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_SpinBoxFrameWidth:
         ret = qt_mac_aqua_get_metric(EditTextFrameOutset);
         switch (d->aquaSizeConstrain(opt, widget)) {
+        case QStyleHelper::SizeMini:
+            ret += 1;
+            break;
         default:
             ret += 2;
-            break;
-        case QAquaSizeMini:
-            ret += 1;
             break;
         }
         break;
@@ -2534,16 +2529,16 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break; }
     case QStyle::PM_TabBarTabHSpace:
         switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeLarge:
             ret = QCommonStyle::pixelMetric(metric, opt, widget);
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             ret = 20;
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             ret = 16;
             break;
-        case QAquaSizeUnknown:
+        case QStyleHelper::SizeDefault:
             const QStyleOptionTab *tb = qstyleoption_cast<const QStyleOptionTab *>(opt);
             if (tb && tb->documentMode)
                 ret = 30;
@@ -2567,48 +2562,48 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_TabBarBaseOverlap:
         switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeUnknown:
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeDefault:
+        case QStyleHelper::SizeLarge:
             ret = 11;
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             ret = 8;
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             ret = 7;
             break;
         }
         break;
     case PM_ScrollBarExtent: {
-        const QAquaWidgetSize size = d->effectiveAquaSizeConstrain(opt, widget);
+        const QStyleHelper::WidgetSizePolicy size = d->effectiveAquaSizeConstrain(opt, widget);
         ret = static_cast<SInt32>([NSScroller
             scrollerWidthForControlSize:static_cast<NSControlSize>(size)
                           scrollerStyle:[NSScroller preferredScrollerStyle]]);
         break; }
     case PM_IndicatorHeight: {
         switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeUnknown:
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeDefault:
+        case QStyleHelper::SizeLarge:
             ret = qt_mac_aqua_get_metric(CheckBoxHeight);
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             ret = qt_mac_aqua_get_metric(MiniCheckBoxHeight);
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             ret = qt_mac_aqua_get_metric(SmallCheckBoxHeight);
             break;
         }
         break; }
     case PM_IndicatorWidth: {
         switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeUnknown:
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeDefault:
+        case QStyleHelper::SizeLarge:
             ret = qt_mac_aqua_get_metric(CheckBoxWidth);
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             ret = qt_mac_aqua_get_metric(MiniCheckBoxWidth);
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             ret = qt_mac_aqua_get_metric(SmallCheckBoxWidth);
             break;
         }
@@ -2616,28 +2611,28 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break; }
     case PM_ExclusiveIndicatorHeight: {
         switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeUnknown:
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeDefault:
+        case QStyleHelper::SizeLarge:
             ret = qt_mac_aqua_get_metric(RadioButtonHeight);
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             ret = qt_mac_aqua_get_metric(MiniRadioButtonHeight);
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             ret = qt_mac_aqua_get_metric(SmallRadioButtonHeight);
             break;
         }
         break; }
     case PM_ExclusiveIndicatorWidth: {
         switch (d->aquaSizeConstrain(opt, widget)) {
-        case QAquaSizeUnknown:
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeDefault:
+        case QStyleHelper::SizeLarge:
             ret = qt_mac_aqua_get_metric(RadioButtonWidth);
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             ret = qt_mac_aqua_get_metric(MiniRadioButtonWidth);
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             ret = qt_mac_aqua_get_metric(SmallRadioButtonWidth);
             break;
         }
@@ -2653,11 +2648,11 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = 0;
         break;
     case PM_SizeGripSize: {
-        QAquaWidgetSize aSize;
+        QStyleHelper::WidgetSizePolicy aSize;
         if (widget && widget->window()->windowType() == Qt::Tool)
-            aSize = QAquaSizeSmall;
+            aSize = QStyleHelper::SizeSmall;
         else
-            aSize = QAquaSizeLarge;
+            aSize = QStyleHelper::SizeLarge;
         const QSize size = qt_aqua_get_known_size(CT_SizeGrip, widget, QSize(), aSize);
         ret = size.width();
         break; }
@@ -3411,20 +3406,20 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             bdi.adornment |= kThemeAdornmentFocus;
         bool isRadioButton = (pe == PE_IndicatorRadioButton);
         switch (d->aquaSizeConstrain(opt, w)) {
-        case QAquaSizeUnknown:
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeDefault:
+        case QStyleHelper::SizeLarge:
             if (isRadioButton)
                 bdi.kind = kThemeRadioButton;
             else
                 bdi.kind = kThemeCheckBox;
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             if (isRadioButton)
                 bdi.kind = kThemeMiniRadioButton;
             else
                 bdi.kind = kThemeMiniCheckBox;
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             if (isRadioButton)
                 bdi.kind = kThemeSmallRadioButton;
             else
@@ -3925,7 +3920,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 [pdb highlight:(bdi.state == kThemeStatePressed)];
                 pdb.enabled = bdi.state != kThemeStateUnavailable && bdi.state != kThemeStateUnavailableInactive;
                 QRect rect = opt->rect;
-                rect.adjust(0, 0, cw.second == QAquaSizeSmall ? -4 : cw.second == QAquaSizeMini ? -9 : -6, 0);
+                rect.adjust(0, 0, cw.second == QStyleHelper::SizeSmall ? -4 : cw.second == QStyleHelper::SizeMini ? -9 : -6, 0);
                 d->drawNSViewInRect(cw, pdb, rect, p, w != 0);
             } else if (hasMenu && bdi.state == kThemeStatePressed)
                 d->drawColorlessButton(newRect, &bdi, p, opt);
@@ -4019,13 +4014,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 ThemeFontID themeId = kThemePushButtonFont;
                 if (oldFont == newFont) {  // Yes, use HITheme to draw the text for small sizes.
                     switch (d->aquaSizeConstrain(opt, w)) {
-                    default:
-                        break;
-                    case QAquaSizeSmall:
+                    case QStyleHelper::SizeSmall:
                         themeId = kThemeSmallSystemFont;
                         break;
-                    case QAquaSizeMini:
+                    case QStyleHelper::SizeMini:
                         themeId = kThemeMiniSystemFont;
+                        break;
+                    default:
                         break;
                     }
                 }
@@ -4134,15 +4129,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             tdi.style = kThemeTabNonFront;
             tdi.direction = getTabDirection(tabOpt->shape);
             switch (d->aquaSizeConstrain(opt, w)) {
-            default:
-            case QAquaSizeUnknown:
-            case QAquaSizeLarge:
+            case QStyleHelper::SizeDefault:
+            case QStyleHelper::SizeLarge:
                 tdi.size = kHIThemeTabSizeNormal;
                 break;
-            case QAquaSizeSmall:
+            case QStyleHelper::SizeSmall:
                 tdi.size = kHIThemeTabSizeSmall;
                 break;
-            case QAquaSizeMini:
+            case QStyleHelper::SizeMini:
                 tdi.size = kHIThemeTabSizeMini;
                 break;
             }
@@ -4264,15 +4258,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
                 switch (d->aquaSizeConstrain(opt, w)) {
-                default:
-                case QAquaSizeUnknown:
-                case QAquaSizeLarge:
+                case QStyleHelper::SizeDefault:
+                case QStyleHelper::SizeLarge:
                     tti.fontID = kThemeSystemFont;
                     break;
-                case QAquaSizeSmall:
+                case QStyleHelper::SizeSmall:
                     tti.fontID = kThemeSmallSystemFont;
                     break;
-                case QAquaSizeMini:
+                case QStyleHelper::SizeMini:
                     tti.fontID = kThemeMiniSystemFont;
                     break;
                 }
@@ -4383,7 +4376,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const QBrush bg = active ? mi->palette.highlight() : mi->palette.background();
             p->fillRect(mi->rect, bg);
 
-            const QAquaWidgetSize widgetSize = d->aquaSizeConstrain(opt, w);
+            const QStyleHelper::WidgetSizePolicy widgetSize = d->aquaSizeConstrain(opt, w);
 
             if (ce == CE_MenuTearoff) {
                 p->setPen(QPen(mi->palette.dark().color(), 1, Qt::DashLine));
@@ -4452,9 +4445,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 checkmarkOpt.state |= State_On; // Always on. Never rendered when off.
                 checkmarkOpt.state.setFlag(State_Selected, active);
                 checkmarkOpt.state.setFlag(State_Enabled, enabled);
-                if (widgetSize == QAquaSizeMini)
+                if (widgetSize == QStyleHelper::SizeMini)
                     checkmarkOpt.state |= State_Mini;
-                else if (widgetSize == QAquaSizeSmall)
+                else if (widgetSize == QStyleHelper::SizeSmall)
                     checkmarkOpt.state |= State_Small;
 
                 // We let drawPrimitive(PE_IndicatorMenuCheckMark) pick the right color
@@ -4490,7 +4483,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 int text_flags = Qt::AlignRight | Qt::AlignVCenter | Qt::TextHideMnemonic
                                  | Qt::TextSingleLine | Qt::AlignAbsolute;
                 int yPos = mi->rect.y();
-                if (widgetSize == QAquaSizeMini)
+                if (widgetSize == QStyleHelper::SizeMini)
                     yPos += 1;
                 p->save();
                 if (t >= 0) {
@@ -4553,13 +4546,13 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (inverted)
                 reverse = !reverse;
             switch (d->aquaSizeConstrain(opt, w)) {
-            case QAquaSizeUnknown:
-            case QAquaSizeLarge:
+            case QStyleHelper::SizeDefault:
+            case QStyleHelper::SizeLarge:
                 tdi.kind = !isIndeterminate ? kThemeLargeProgressBar
                                             : kThemeLargeIndeterminateBar;
                 break;
-            case QAquaSizeMini:
-            case QAquaSizeSmall:
+            case QStyleHelper::SizeMini:
+            case QStyleHelper::SizeSmall:
                 tdi.kind = !isIndeterminate ? kThemeProgressBar : kThemeIndeterminateBar;
                 break;
             }
@@ -4781,7 +4774,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 {
     Q_D(const QMacStyle);
     QRect rect;
-    int controlSize = getControlSize(opt, widget);
+    const int controlSize = getControlSize(opt, widget);
 
     switch (sr) {
     case SE_ItemViewItemText:
@@ -4993,9 +4986,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     case SE_CheckBoxLayoutItem:
         rect = opt->rect;
-        if (controlSize == QAquaSizeLarge) {
+        if (controlSize == QStyleHelper::SizeLarge) {
             setLayoutItemMargins(+2, +3, -9, -4, &rect, opt->direction);
-        } else if (controlSize == QAquaSizeSmall) {
+        } else if (controlSize == QStyleHelper::SizeSmall) {
             setLayoutItemMargins(+1, +5, 0 /* fix */, -6, &rect, opt->direction);
         } else {
             setLayoutItemMargins(0, +7, 0 /* fix */, -6, &rect, opt->direction);
@@ -5012,9 +5005,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 #endif
         {
             rect = opt->rect;
-            if (controlSize == QAquaSizeLarge) {
+            if (controlSize == QStyleHelper::SizeLarge) {
                 rect.adjust(+3, +2, -3, -4);
-            } else if (controlSize == QAquaSizeSmall) {
+            } else if (controlSize == QStyleHelper::SizeSmall) {
                 setLayoutItemMargins(+2, +1, -3, -4, &rect, opt->direction);
             } else {
                 setLayoutItemMargins(+1, 0, -2, 0, &rect, opt->direction);
@@ -5042,9 +5035,9 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 break;  // leave rect alone
         }
         rect = opt->rect;
-        if (controlSize == QAquaSizeLarge) {
+        if (controlSize == QStyleHelper::SizeLarge) {
             rect.adjust(+6, +4, -6, -8);
-        } else if (controlSize == QAquaSizeSmall) {
+        } else if (controlSize == QStyleHelper::SizeSmall) {
             rect.adjust(+5, +4, -5, -6);
         } else {
             rect.adjust(+1, 0, -1, -2);
@@ -5052,10 +5045,10 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     case SE_RadioButtonLayoutItem:
         rect = opt->rect;
-        if (controlSize == QAquaSizeLarge) {
+        if (controlSize == QStyleHelper::SizeLarge) {
             setLayoutItemMargins(+2, +2 /* SHOULD BE +3, done for alignment */,
                                  0, -4 /* SHOULD BE -3, done for alignment */, &rect, opt->direction);
-        } else if (controlSize == QAquaSizeSmall) {
+        } else if (controlSize == QStyleHelper::SizeSmall) {
             rect.adjust(0, +6, 0 /* fix */, -5);
         } else {
             rect.adjust(0, +6, 0 /* fix */, -7);
@@ -5540,7 +5533,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     // Yosemite demands its blue progress track when no tickmarks are present
                     if (!(slider->subControls & SC_SliderTickmarks)) {
                         QCocoaWidgetKind sliderKind = slider->orientation == Qt::Horizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider;
-                        QCocoaWidget cw = QCocoaWidget(sliderKind, QAquaSizeLarge);
+                        QCocoaWidget cw = QCocoaWidget(sliderKind, QStyleHelper::SizeLarge);
                         NSSlider *sl = (NSSlider *)d->cocoaControl(cw);
                         sl.minValue = slider->minimum;
                         sl.maxValue = slider->maximum;
@@ -5667,16 +5660,16 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             if (sb->subControls & (SC_SpinBoxUp | SC_SpinBoxDown)) {
                 HIThemeButtonDrawInfo bdi;
                 bdi.version = qt_mac_hitheme_version;
-                QAquaWidgetSize aquaSize = d->aquaSizeConstrain(opt, widget);
+                QStyleHelper::WidgetSizePolicy aquaSize = d->aquaSizeConstrain(opt, widget);
                 switch (aquaSize) {
-                    case QAquaSizeUnknown:
-                    case QAquaSizeLarge:
+                    case QStyleHelper::SizeDefault:
+                    case QStyleHelper::SizeLarge:
                         bdi.kind = kThemeIncDecButton;
                         break;
-                    case QAquaSizeMini:
+                    case QStyleHelper::SizeMini:
                         bdi.kind = kThemeIncDecButtonMini;
                         break;
-                    case QAquaSizeSmall:
+                    case QStyleHelper::SizeSmall:
                         bdi.kind = kThemeIncDecButtonSmall;
                         break;
                 }
@@ -5929,12 +5922,12 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             } else {
                 ThemeButtonKind bkind = kThemeBevelButton;
                 switch (d->aquaSizeConstrain(opt, widget)) {
-                case QAquaSizeUnknown:
-                case QAquaSizeLarge:
+                case QStyleHelper::SizeDefault:
+                case QStyleHelper::SizeLarge:
                     bkind = kThemeBevelButton;
                     break;
-                case QAquaSizeMini:
-                case QAquaSizeSmall:
+                case QStyleHelper::SizeMini:
+                case QStyleHelper::SizeSmall:
                     bkind = kThemeSmallBevelButton;
                     break;
                 }
@@ -6398,22 +6391,21 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            QAquaWidgetSize aquaSize = d->aquaSizeConstrain(spin, widget);
+            QStyleHelper::WidgetSizePolicy aquaSize = d->aquaSizeConstrain(spin, widget);
             int spinner_w;
             int spinBoxSep;
             int fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
             switch (aquaSize) {
-            default:
-            case QAquaSizeUnknown:
-            case QAquaSizeLarge:
+            case QStyleHelper::SizeDefault:
+            case QStyleHelper::SizeLarge:
                 spinner_w = 14;
                 spinBoxSep = 2;
                 break;
-            case QAquaSizeSmall:
+            case QStyleHelper::SizeSmall:
                 spinner_w = 12;
                 spinBoxSep = 2;
                 break;
-            case QAquaSizeMini:
+            case QStyleHelper::SizeMini:
                 spinner_w = 10;
                 spinBoxSep = 1;
                 break;
@@ -6433,17 +6425,16 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 bdi.kind = kThemeIncDecButton;
                 int hackTranslateX;
                 switch (aquaSize) {
-                default:
-                case QAquaSizeUnknown:
-                case QAquaSizeLarge:
+                case QStyleHelper::SizeDefault:
+                case QStyleHelper::SizeLarge:
                     bdi.kind = kThemeIncDecButton;
                     hackTranslateX = 0;
                     break;
-                case QAquaSizeSmall:
+                case QStyleHelper::SizeSmall:
                     bdi.kind = kThemeIncDecButtonSmall;
                     hackTranslateX = -2;
                     break;
-                case QAquaSizeMini:
+                case QStyleHelper::SizeMini:
                     bdi.kind = kThemeIncDecButtonMini;
                     hackTranslateX = -1;
                     break;
@@ -6579,7 +6570,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #ifndef QT_NO_TABBAR
     case QStyle::CT_TabBarTab:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            const QAquaWidgetSize AquaSize = d->aquaSizeConstrain(opt, widget);
+            const QStyleHelper::WidgetSizePolicy AquaSize = d->aquaSizeConstrain(opt, widget);
             const bool differentFont = (widget && widget->testAttribute(Qt::WA_SetFont))
                                        || !QApplication::desktopSettingsAware();
             ThemeTabDirection ttd = getTabDirection(tab->shape);
@@ -6590,17 +6581,17 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             int extraHSpace = proxy()->pixelMetric(PM_TabBarTabHSpace, tab, widget);
             QFontMetrics fm = opt->fontMetrics;
             switch (AquaSize) {
-            case QAquaSizeUnknown:
-            case QAquaSizeLarge:
+            case QStyleHelper::SizeDefault:
+            case QStyleHelper::SizeLarge:
                 if (tab->documentMode)
                     defaultTabHeight = 24;
                 else
                     defaultTabHeight = 21;
                 break;
-            case QAquaSizeSmall:
+            case QStyleHelper::SizeSmall:
                 defaultTabHeight = 18;
                 break;
-            case QAquaSizeMini:
+            case QStyleHelper::SizeMini:
                 defaultTabHeight = 16;
                 break;
             }
@@ -6764,7 +6755,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 
     if (useAquaGuideline){
         QSize macsz;
-        if (d->aquaSizeConstrain(opt, widget, ct, sz, &macsz) != QAquaSizeUnknown) {
+        if (d->aquaSizeConstrain(opt, widget, ct, sz, &macsz) != QStyleHelper::SizeDefault) {
             if (macsz.width() != -1)
                 sz.setWidth(macsz.width());
             if (macsz.height() != -1)
@@ -6775,17 +6766,17 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     // The sizes that Carbon and the guidelines gives us excludes the focus frame.
     // We compensate for this by adding some extra space here to make room for the frame when drawing:
     if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
-        QAquaWidgetSize widgetSize = d->aquaSizeConstrain(opt, widget);
+        const auto widgetSize = d->aquaSizeConstrain(opt, widget);
         int bkind = 0;
         switch (widgetSize) {
         default:
-        case QAquaSizeLarge:
+        case QStyleHelper::SizeLarge:
             bkind = combo->editable ? kThemeComboBox : kThemePopupButton;
             break;
-        case QAquaSizeSmall:
+        case QStyleHelper::SizeSmall:
             bkind = combo->editable ? int(kThemeComboBoxSmall) : int(kThemePopupButtonSmall);
             break;
-        case QAquaSizeMini:
+        case QStyleHelper::SizeMini:
             bkind = combo->editable ? kThemeComboBoxMini : kThemePopupButtonMini;
             break;
         }
@@ -6794,7 +6785,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         sz.rheight() -= qRound(diffRect.size.height);
     } else if (ct == CT_PushButton || ct == CT_ToolButton){
         ThemeButtonKind bkind;
-        QAquaWidgetSize widgetSize = d->aquaSizeConstrain(opt, widget);
+        QStyleHelper::WidgetSizePolicy widgetSize = d->aquaSizeConstrain(opt, widget);
         switch (ct) {
         default:
         case CT_PushButton:
@@ -6805,26 +6796,26 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             }
 
             switch (widgetSize) {
-            default:
-            case QAquaSizeLarge:
+            case QStyleHelper::SizeDefault:
+            case QStyleHelper::SizeLarge:
                 bkind = kThemePushButton;
                 break;
-            case QAquaSizeSmall:
+            case QStyleHelper::SizeSmall:
                 bkind = kThemePushButtonSmall;
                 break;
-            case QAquaSizeMini:
+            case QStyleHelper::SizeMini:
                 bkind = kThemePushButtonMini;
                 break;
             }
             break;
         case CT_ToolButton:
             switch (widgetSize) {
-            default:
-            case QAquaSizeLarge:
+            case QStyleHelper::SizeDefault:
+            case QStyleHelper::SizeLarge:
                 bkind = kThemeLargeBevelButton;
                 break;
-            case QAquaSizeMini:
-            case QAquaSizeSmall:
+            case QStyleHelper::SizeMini:
+            case QStyleHelper::SizeSmall:
                 bkind = kThemeSmallBevelButton;
             }
             break;
@@ -6939,7 +6930,7 @@ int QMacStyle::layoutSpacing(QSizePolicy::ControlType control1,
 {
     const int ButtonMask = QSizePolicy::ButtonBox | QSizePolicy::PushButton;
     bool isMetal = (widget && widget->testAttribute(Qt::WA_MacBrushedMetal));
-    int controlSize = getControlSize(option, widget);
+    const int controlSize = getControlSize(option, widget);
 
     if (control2 == QSizePolicy::ButtonBox) {
         /*

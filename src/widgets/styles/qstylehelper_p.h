@@ -88,7 +88,7 @@ namespace QStyleHelper
     Q_WIDGETS_EXPORT QColor backgroundColor(const QPalette &pal, const QWidget* widget = 0);
     Q_WIDGETS_EXPORT QWindow *styleObjectWindow(QObject *so);
 
-    enum WidgetSizePolicy { SizeSmall, SizeLarge, SizeMini, SizeDefault };
+    enum WidgetSizePolicy { SizeLarge = 0, SizeSmall = 1, SizeMini = 2, SizeDefault = -1 };
 
     void setWidgetSizePolicy(const QWidget *w, WidgetSizePolicy policy);
     Q_WIDGETS_EXPORT WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = 0);

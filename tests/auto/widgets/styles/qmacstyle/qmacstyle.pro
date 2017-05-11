@@ -1,4 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qmacstyle
-QT += widgets testlib
+QT += widgets-private testlib
 SOURCES += tst_qmacstyle.cpp
