@@ -118,6 +118,9 @@ private slots:
     void QTBUG_37933_ampersands_data();
     void QTBUG_37933_ampersands();
 #endif
+    void menuSize_Scrolling_data();
+    void menuSize_Scrolling();
+    void tearOffMenuNotDisplayed();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -1281,6 +1284,205 @@ void tst_QMenu::QTBUG_37933_ampersands()
     tst_qmenu_QTBUG_37933_ampersands();
 }
 #endif
+
+void tst_QMenu::menuSize_Scrolling_data()
+{
+    QTest::addColumn<int>("numItems");
+    QTest::addColumn<int>("topMargin");
+    QTest::addColumn<int>("bottomMargin");
+    QTest::addColumn<int>("leftMargin");
+    QTest::addColumn<int>("rightMargin");
+    QTest::addColumn<int>("topPadding");
+    QTest::addColumn<int>("bottomPadding");
+    QTest::addColumn<int>("leftPadding");
+    QTest::addColumn<int>("rightPadding");
+    QTest::addColumn<int>("border");
+    QTest::addColumn<bool>("scrollable");
+    QTest::addColumn<bool>("tearOff");
+
+    // test data
+    // a single column and non-scrollable menu with contents margins + border
+    QTest::newRow("data0") << 5 << 2 << 2 << 2 << 2 << 0 << 0 << 0 << 0 << 2 << false << false;
+    // a single column and non-scrollable menu with paddings + border
+    QTest::newRow("data1") << 5 << 0 << 0 << 0 << 0 << 2 << 2 << 2 << 2 << 2 << false << false;
+    // a single column and non-scrollable menu with contents margins + paddings + border
+    QTest::newRow("data2") << 5 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << false << false;
+    // a single column and non-scrollable menu with contents margins + paddings + border + tear-off
+    QTest::newRow("data3") << 5 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << false << true;
+    // a multi-column menu with contents margins + border
+    QTest::newRow("data4") << 80 << 2 << 2 << 2 << 2 << 0 << 0 << 0 << 0 << 2 << false << false;
+    // a multi-column menu with paddings + border
+    QTest::newRow("data5") << 80 << 0 << 0 << 0 << 0 << 2 << 2 << 2 << 2 << 2 << false << false;
+    // a multi-column menu with contents margins + paddings + border
+    QTest::newRow("data6") << 80 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << false << false;
+    // a multi-column menu with contents margins + paddings + border + tear-off
+    QTest::newRow("data7") << 80 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << false << true;
+    // a scrollable menu with contents margins + border
+    QTest::newRow("data8") << 80 << 2 << 2 << 2 << 2 << 0 << 0 << 0 << 0 << 2 << true << false;
+    // a scrollable menu with paddings + border
+    QTest::newRow("data9") << 80 << 0 << 0 << 0 << 0 << 2 << 2 << 2 << 2 << 2 << true << false;
+    // a scrollable menu with contents margins + paddings + border
+    QTest::newRow("data10") << 80 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << true << false;
+    // a scrollable menu with contents margins + paddings + border + tear-off
+    QTest::newRow("data11") << 80 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << true << true;
+}
+
+void tst_QMenu::menuSize_Scrolling()
+{
+    class TestMenu : public QMenu
+    {
+    public:
+            struct ContentsMargins
+            {
+                ContentsMargins(int l, int t, int r, int b)
+                     : left(l), top(t), right(r), bottom(b) {}
+                int left;
+                int top;
+                int right;
+                int bottom;
+            };
+
+            struct MenuPaddings
+            {
+                MenuPaddings(int l, int t, int r, int b)
+                        : left(l), top(t), right(r), bottom(b) {}
+                int left;
+                int top;
+                int right;
+                int bottom;
+            };
+
+            TestMenu(int numItems, const ContentsMargins &margins, const MenuPaddings &paddings,
+                    int border, bool scrollable, bool tearOff)
+                    : QMenu("Test Menu"),
+                    m_numItems(numItems),
+                    m_scrollable(scrollable),
+                    m_tearOff(tearOff)
+            {
+                init(numItems, margins, paddings, border, scrollable, tearOff);
+            }
+
+            ~TestMenu() {}
+
+            private:
+                void showEvent(QShowEvent *e) Q_DECL_OVERRIDE
+                {
+                    QVERIFY(actions().length() == m_numItems);
+
+                    int hmargin = style()->pixelMetric(QStyle::PM_MenuHMargin, nullptr, this);
+                    int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, nullptr, this);
+                    int leftMargin, topMargin, rightMargin, bottomMargin;
+                    getContentsMargins(&leftMargin, &topMargin, &rightMargin, &bottomMargin);
+                    QRect lastItem = actionGeometry(actions().at(actions().length() - 1));
+                    QSize s = size();
+                    QCOMPARE(s.width(), lastItem.right() + fw + hmargin + rightMargin + 1);
+                    QMenu::showEvent(e);
+                }
+
+                void init(int numItems, const ContentsMargins &margins, const MenuPaddings &paddings, int border, bool scrollable, bool tearOff)
+                {
+                    setLayoutDirection(Qt::LeftToRight);
+
+                    setTearOffEnabled(tearOff);
+                    setContentsMargins(margins.left, margins.top, margins.right, margins.bottom);
+                    QString cssStyle("QMenu {menu-scrollable: ");
+                    cssStyle += (scrollable ? QString::number(1) : QString::number(0));
+                    cssStyle += "; border: ";
+                    cssStyle += QString::number(border);
+                    cssStyle += "px solid black; padding: ";
+                    cssStyle += QString::number(paddings.top);
+                    cssStyle += "px ";
+                    cssStyle += QString::number(paddings.right);
+                    cssStyle += "px ";
+                    cssStyle += QString::number(paddings.bottom);
+                    cssStyle += "px ";
+                    cssStyle += QString::number(paddings.left);
+                    cssStyle += "px;}";
+                    setStyleSheet(cssStyle);
+                    for (int i = 1; i <= numItems; i++)
+                            addAction("MenuItem " + QString::number(i));
+                }
+
+    private:
+        int m_numItems;
+        bool m_scrollable;
+        bool m_tearOff;
+    };
+
+    QFETCH(int, numItems);
+    QFETCH(int, topMargin);
+    QFETCH(int, bottomMargin);
+    QFETCH(int, leftMargin);
+    QFETCH(int, rightMargin);
+    QFETCH(int, topPadding);
+    QFETCH(int, bottomPadding);
+    QFETCH(int, leftPadding);
+    QFETCH(int, rightPadding);
+    QFETCH(int, border);
+    QFETCH(bool, scrollable);
+    QFETCH(bool, tearOff);
+    
+    qApp->setAttribute(Qt::AA_DontUseNativeMenuBar);
+
+    TestMenu::ContentsMargins margins(leftMargin, topMargin, rightMargin, bottomMargin);
+    TestMenu::MenuPaddings paddings(leftPadding, topPadding, rightPadding, bottomPadding);
+    TestMenu menu(numItems, margins, paddings, border, scrollable, tearOff);
+    menu.popup(QPoint(0, 0));
+    centerOnScreen(&menu);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
+
+    int fw = menu.style()->pixelMetric(QStyle::PM_MenuPanelWidth, nullptr, &menu);
+    int hmargin = menu.style()->pixelMetric(QStyle::PM_MenuHMargin, nullptr, &menu);
+    int vmargin = menu.style()->pixelMetric(QStyle::PM_MenuVMargin, nullptr, &menu);
+    int tearOffHeight = tearOff ? menu.style()->pixelMetric(QStyle::PM_MenuTearoffHeight, nullptr, &menu) : 0;
+
+    if (!scrollable)
+        return;
+
+    QList<QAction *> actions = menu.actions();
+    QTest::keyClick(&menu, Qt::Key_Home);
+    QTRY_COMPARE(menu.actionGeometry(actions.at(0)).y(), fw + vmargin + topMargin + tearOffHeight);
+    QCOMPARE(menu.actionGeometry(actions.at(0)).x(), fw + hmargin + leftMargin);
+
+    QTest::keyClick(&menu, Qt::Key_End);
+    QTRY_COMPARE(menu.actionGeometry(actions.at(actions.length() - 1)).right(),
+                menu.width() - fw - hmargin - leftMargin - 1);
+    QCOMPARE(menu.actionGeometry(actions.at(actions.length() - 1)).bottom(),
+            menu.height() - fw - vmargin - bottomMargin - 1);
+}
+
+void tst_QMenu::tearOffMenuNotDisplayed()
+{
+    QWidget widget;
+    QScopedPointer<QMenu> menu(new QMenu(&widget));
+    menu->setTearOffEnabled(true);
+    QVERIFY(menu->isTearOffEnabled());
+    
+    menu->setStyleSheet("QMenu { menu-scrollable: 1 }");
+    for (int i = 0; i < 80; i++)
+         menu->addAction(QString::number(i));
+
+    widget.resize(300, 200);
+    centerOnScreen(&widget);
+    widget.show();
+    widget.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+    menu->popup(widget.geometry().topRight() + QPoint(50, 0));
+    QTest::qSleep(1000);
+    QVERIFY(QTest::qWaitForWindowActive(menu.data()));
+    QVERIFY(!menu->isTearOffMenuVisible());
+    
+    QTest::mouseClick(menu.data(), Qt::LeftButton, 0, QPoint(3, 3), 10);
+    QTRY_VERIFY(menu->isTearOffMenuVisible());
+    QPointer<QMenu> torn = getTornOffMenu();
+    QVERIFY(torn);
+    QVERIFY(torn->isVisible());
+    QVERIFY(torn->minimumWidth() >= 0 && torn->minimumWidth() < QWIDGETSIZE_MAX);
+    
+    menu->hideTearOffMenu();
+    QVERIFY(!menu->isTearOffMenuVisible());
+    QVERIFY(!torn->isVisible());
+}
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"
