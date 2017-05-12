@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #############################################################################
 ##
 ## Copyright (C) 2016 The Qt Company Ltd.
@@ -47,9 +47,10 @@ class Error:
 
 def wrap_list(lst):
     def split(lst, size):
-        for i in range(len(lst)/size+1):
-            yield lst[i*size:(i+1)*size]
-    return ",\n".join(map(lambda x: ", ".join(x), split(lst, 20)))
+        while lst:
+            head, lst = lst[:size], lst[size:]
+            yield head
+    return ",\n".join(", ".join(x) for x in split(lst, 20))
 
 def firstChildElt(parent, name):
     child = parent.firstChild
@@ -443,10 +444,10 @@ def escapedString(s):
             line += "\\x%02x" % (ord(c))
             need_escape = True
         if len(line) > 80:
-            result = result + "\n" + "\"" + line + "\""
+            result = result + "\n" + '"' + line + '"'
             line = ""
     line += "\\0"
-    result = result + "\n" + "\"" + line + "\""
+    result = result + "\n" + '"' + line + '"'
     if result[0] == "\n":
         result = result[1:]
     return result
@@ -457,7 +458,7 @@ def printEscapedString(s):
 
 def currencyIsoCodeData(s):
     if s:
-        return ",".join(map(lambda x: str(ord(x)), s))
+        return ",".join(str(ord(x)) for x in s)
     return "0,0,0"
 
 def usage():
@@ -507,17 +508,18 @@ def main():
 
     cldr_version = eltText(firstChildElt(doc.documentElement, "version"))
 
-    data_temp_file.write("\n\
-/*\n\
-    This part of the file was generated on %s from the\n\
-    Common Locale Data Repository v%s\n\
-\n\
-    http://www.unicode.org/cldr/\n\
-\n\
-    Do not change it, instead edit CLDR data and regenerate this file using\n\
-    cldr2qlocalexml.py and qlocalexml2cpp.py.\n\
-*/\n\n\n\
-" % (str(datetime.date.today()), cldr_version) )
+    data_temp_file.write("""
+/*
+    This part of the file was generated on %s from the
+    Common Locale Data Repository v%s
+
+    http://www.unicode.org/cldr/
+
+    Do not change it, instead edit CLDR data and regenerate this file using
+    cldr2qlocalexml.py and qlocalexml2cpp.py.
+*/
+
+""" % (str(datetime.date.today()), cldr_version) )
 
     # Likely subtags map
     data_temp_file.write("static const QLocaleId likely_subtags[] = {\n")
@@ -741,11 +743,11 @@ def main():
 
     # Language name list
     data_temp_file.write("static const char language_name_list[] =\n")
-    data_temp_file.write("\"Default\\0\"\n")
+    data_temp_file.write('"Default\\0"\n')
     for key in language_map.keys():
         if key == 0:
             continue
-        data_temp_file.write("\"" + language_map[key][0] + "\\0\"\n")
+        data_temp_file.write('"' + language_map[key][0] + '\\0"\n')
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
@@ -766,11 +768,11 @@ def main():
 
     # Script name list
     data_temp_file.write("static const char script_name_list[] =\n")
-    data_temp_file.write("\"Default\\0\"\n")
+    data_temp_file.write('"Default\\0"\n')
     for key in script_map.keys():
         if key == 0:
             continue
-        data_temp_file.write("\"" + script_map[key][0] + "\\0\"\n")
+        data_temp_file.write('"' + script_map[key][0] + '\\0"\n')
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
@@ -791,11 +793,11 @@ def main():
 
     # Country name list
     data_temp_file.write("static const char country_name_list[] =\n")
-    data_temp_file.write("\"Default\\0\"\n")
+    data_temp_file.write('"Default\\0"\n')
     for key in country_map.keys():
         if key == 0:
             continue
-        data_temp_file.write("\"" + country_map[key][0] + "\\0\"\n")
+        data_temp_file.write('"' + country_map[key][0] + '\\0"\n')
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
@@ -820,7 +822,7 @@ def main():
         code = language_map[key][1]
         if len(code) == 2:
             code += r"\0"
-        data_temp_file.write("\"%2s\" // %s\n" % (code, language_map[key][0]))
+        data_temp_file.write('"%2s" // %s\n' % (code, language_map[key][0]))
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
@@ -831,7 +833,7 @@ def main():
         code = script_map[key][1]
         for i in range(4 - len(code)):
             code += "\\0"
-        data_temp_file.write("\"%2s\" // %s\n" % (code, script_map[key][0]))
+        data_temp_file.write('"%2s" // %s\n' % (code, script_map[key][0]))
     data_temp_file.write(";\n")
 
     # Country code list
@@ -840,13 +842,13 @@ def main():
         code = country_map[key][1]
         if len(code) == 2:
             code += "\\0"
-        data_temp_file.write("\"%2s\" // %s\n" % (code, country_map[key][0]))
+        data_temp_file.write('"%2s" // %s\n' % (code, country_map[key][0]))
     data_temp_file.write(";\n")
 
     data_temp_file.write("\n")
     data_temp_file.write(GENERATED_BLOCK_END)
     s = qlocaledata_file.readline()
-    # skip until end of the block
+    # skip until end of the old block
     while s and s != GENERATED_BLOCK_END:
         s = qlocaledata_file.readline()
 
@@ -938,7 +940,7 @@ def main():
 
     qlocaleh_temp_file.write(GENERATED_BLOCK_END)
     s = qlocaleh_file.readline()
-    # skip until end of the block
+    # skip until end of the old block
     while s and s != GENERATED_BLOCK_END:
         s = qlocaleh_file.readline()
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #############################################################################
 ##
 ## Copyright (C) 2016 The Qt Company Ltd.
@@ -335,15 +335,17 @@ while s and s != GENERATED_BLOCK_START:
 
 # Write out generated block start tag and warning
 newTempFile.write(GENERATED_BLOCK_START)
-newTempFile.write("\n\
-/*\n\
-    This part of the file was generated on %s from the\n\
-    Common Locale Data Repository v%s supplemental/windowsZones.xml file %s\n\
-\n\
-    http://www.unicode.org/cldr/\n\
-\n\
-    Do not change this data, only generate it using cldr2qtimezone.py.\n\
-*/\n\n" % (str(datetime.date.today()), cldr_version, versionNumber) )
+newTempFile.write("""
+/*
+    This part of the file was generated on %s from the
+    Common Locale Data Repository v%s supplemental/windowsZones.xml file %s
+
+    http://www.unicode.org/cldr/
+
+    Do not change this data, only generate it using cldr2qtimezone.py.
+*/
+
+""" % (str(datetime.date.today()), cldr_version, versionNumber) )
 
 windowsIdData = ByteArrayData()
 ianaIdData = ByteArrayData()
@@ -353,7 +355,7 @@ newTempFile.write("// Windows ID Key, Country Enum, IANA ID Index\n")
 newTempFile.write("static const QZoneData zoneDataTable[] = {\n")
 for index in windowsIdDict:
     data = windowsIdDict[index]
-    newTempFile.write("    { %6d,%6d,%6d }, // %s / %s\n" \
+    newTempFile.write("    { %6d,%6d,%6d }, // %s / %s\n"
                          % (data['windowsKey'],
                             data['countryId'],
                             ianaIdData.append(data['ianaList']),
@@ -368,7 +370,7 @@ print "Done Zone Data"
 newTempFile.write("// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n")
 newTempFile.write("static const QWindowsData windowsDataTable[] = {\n")
 for windowsKey in windowsIdList:
-    newTempFile.write("    { %6d,%6d,%6d,%6d }, // %s\n" \
+    newTempFile.write("    { %6d,%6d,%6d,%6d }, // %s\n"
                          % (windowsKey,
                             windowsIdData.append(windowsIdList[windowsKey][0]),
                             ianaIdData.append(defaultDict[windowsKey]),
@@ -384,7 +386,7 @@ newTempFile.write("// IANA ID Index, UTC Offset\n")
 newTempFile.write("static const QUtcData utcDataTable[] = {\n")
 for index in utcIdList:
     data = utcIdList[index]
-    newTempFile.write("    { %6d,%6d }, // %s\n" \
+    newTempFile.write("    { %6d,%6d }, // %s\n"
                          % (ianaIdData.append(data[0]),
                             data[1],
                             data[0]))

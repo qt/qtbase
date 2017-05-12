@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #############################################################################
 ##
 ## Copyright (C) 2016 The Qt Company Ltd.
@@ -95,7 +95,7 @@ def parse_list_pattern_part_format(pattern):
 def ordStr(c):
     if len(c) == 1:
         return str(ord(c))
-    raise xpathlite.Error("Unable to handle value \"%s\"" % addEscapes(c))
+    raise xpathlite.Error('Unable to handle value "%s"' % addEscapes(c))
     return "##########"
 
 # the following functions are supposed to fix the problem with QLocale
@@ -129,7 +129,7 @@ def generateLocaleInfo(path):
     # skip legacy/compatibility ones
     alias = findAlias(path)
     if alias:
-        raise xpathlite.Error("alias to \"%s\"" % alias)
+        raise xpathlite.Error('alias to "%s"' % alias)
 
     language_code = findEntryInFile(path, "identity/language", attribute="type")[0]
     country_code = findEntryInFile(path, "identity/territory", attribute="type")[0]
@@ -150,16 +150,16 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     # ### actually there is only one locale with variant: en_US_POSIX
     #     does anybody care about it at all?
     if variant_code:
-        raise xpathlite.Error("we do not support variants (\"%s\")" % variant_code)
+        raise xpathlite.Error('we do not support variants ("%s")' % variant_code)
 
     language_id = enumdata.languageCodeToId(language_code)
     if language_id <= 0:
-        raise xpathlite.Error("unknown language code \"%s\"" % language_code)
+        raise xpathlite.Error('unknown language code "%s"' % language_code)
     language = enumdata.language_list[language_id][0]
 
     script_id = enumdata.scriptCodeToId(script_code)
     if script_id == -1:
-        raise xpathlite.Error("unknown script code \"%s\"" % script_code)
+        raise xpathlite.Error('unknown script code "%s"' % script_code)
     script = enumdata.script_list[script_id][0]
 
     # we should handle fully qualified names with the territory
@@ -167,7 +167,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
         return {}
     country_id = enumdata.countryCodeToId(country_code)
     if country_id <= 0:
-        raise xpathlite.Error("unknown country code \"%s\"" % country_code)
+        raise xpathlite.Error('unknown country code "%s"' % country_code)
     country = enumdata.country_list[country_id][0]
 
     # So we say we accept only those values that have "contributed" or
@@ -198,17 +198,17 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
         for e in currencies:
             if e[0] == 'currency':
                 tender = True
-                t = filter(lambda x: x[0] == 'tender', e[1])
+                t = [x for x in e[1] if x[0] == 'tender']
                 if t and t[0][1] == 'false':
                     tender = False;
-                if tender and not filter(lambda x: x[0] == 'to', e[1]):
-                    result['currencyIsoCode'] = filter(lambda x: x[0] == 'iso4217', e[1])[0][1]
+                if tender and not any(x[0] == 'to' for x in e[1]):
+                    result['currencyIsoCode'] = (x[1] for x in e[1] if x[0] == 'iso4217').next()
                     break
         if result['currencyIsoCode']:
             t = findTagsInFile(supplementalPath, "currencyData/fractions/info[iso4217=%s]"%result['currencyIsoCode']);
             if t and t[0][0] == 'info':
-                result['currencyDigits'] = int(filter(lambda x: x[0] == 'digits', t[0][1])[0][1])
-                result['currencyRounding'] = int(filter(lambda x: x[0] == 'rounding', t[0][1])[0][1])
+                result['currencyDigits'] = (int(x[1]) for x in t[0][1] if x[0] == 'digits').next()
+                result['currencyRounding'] = (int(x[1]) for x in t[0][1] if x[0] == 'rounding').next()
     numbering_system = None
     try:
         numbering_system = findEntry(path, "numbers/defaultNumberingSystem")
@@ -292,165 +292,40 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     result['currencyDisplayName'] = ''
     if result['currencyIsoCode']:
         result['currencySymbol'] = findEntryDef(path, "numbers/currencies/currency[%s]/symbol" % result['currencyIsoCode'])
-        display_name_path = "numbers/currencies/currency[%s]/displayName" % result['currencyIsoCode']
-        result['currencyDisplayName'] \
-            = findEntryDef(path, display_name_path) + ";" \
-            + findEntryDef(path, display_name_path + "[count=zero]")  + ";" \
-            + findEntryDef(path, display_name_path + "[count=one]")   + ";" \
-            + findEntryDef(path, display_name_path + "[count=two]")   + ";" \
-            + findEntryDef(path, display_name_path + "[count=few]")   + ";" \
-            + findEntryDef(path, display_name_path + "[count=many]")  + ";" \
-            + findEntryDef(path, display_name_path + "[count=other]") + ";"
+        result['currencyDisplayName'] = ';'.join(
+            findEntryDef(path, 'numbers/currencies/currency[' + result['currencyIsoCode']
+                         + ']/displayName' + tail)
+            for tail in ['',] + [
+                '[count=%s]' % x for x in ('zero', 'one', 'two', 'few', 'many', 'other')
+                ]) + ';'
 
-    standalone_long_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[stand-alone]/monthWidth[wide]/month"
-    result['standaloneLongMonths'] \
-        = findEntry(path, standalone_long_month_path + "[1]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[2]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[3]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[4]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[5]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[6]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[7]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[8]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[9]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[10]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[11]") + ";" \
-        + findEntry(path, standalone_long_month_path + "[12]") + ";"
+    # Used for month and day data:
+    namings = (
+        ('standaloneLong', 'stand-alone', 'wide'),
+        ('standaloneShort', 'stand-alone', 'abbreviated'),
+        ('standaloneNarrow', 'stand-alone', 'narrow'),
+        ('long', 'format', 'wide'),
+        ('short', 'format', 'abbreviated'),
+        ('narrow', 'format', 'narrow'),
+        )
 
-    standalone_short_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[stand-alone]/monthWidth[abbreviated]/month"
-    result['standaloneShortMonths'] \
-        = findEntry(path, standalone_short_month_path + "[1]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[2]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[3]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[4]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[5]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[6]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[7]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[8]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[9]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[10]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[11]") + ";" \
-        + findEntry(path, standalone_short_month_path + "[12]") + ";"
+    # Month data:
+    for cal in ('gregorian',): # We shall want to add to this
+        stem = 'dates/calendars/calendar[' + cal + ']/months/'
+        for (key, mode, size) in namings:
+            prop = 'monthContext[' + mode + ']/monthWidth[' + size + ']/'
+            result[key + 'Months'] = ';'.join(
+                findEntry(path, stem + prop + "month[%d]" % i)
+                for i in range(1, 13)) + ';'
 
-    standalone_narrow_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[stand-alone]/monthWidth[narrow]/month"
-    result['standaloneNarrowMonths'] \
-        = findEntry(path, standalone_narrow_month_path + "[1]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[2]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[3]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[4]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[5]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[6]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[7]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[8]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[9]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[10]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[11]") + ";" \
-        + findEntry(path, standalone_narrow_month_path + "[12]") + ";"
-
-    long_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[format]/monthWidth[wide]/month"
-    result['longMonths'] \
-        = findEntry(path, long_month_path + "[1]") + ";" \
-        + findEntry(path, long_month_path + "[2]") + ";" \
-        + findEntry(path, long_month_path + "[3]") + ";" \
-        + findEntry(path, long_month_path + "[4]") + ";" \
-        + findEntry(path, long_month_path + "[5]") + ";" \
-        + findEntry(path, long_month_path + "[6]") + ";" \
-        + findEntry(path, long_month_path + "[7]") + ";" \
-        + findEntry(path, long_month_path + "[8]") + ";" \
-        + findEntry(path, long_month_path + "[9]") + ";" \
-        + findEntry(path, long_month_path + "[10]") + ";" \
-        + findEntry(path, long_month_path + "[11]") + ";" \
-        + findEntry(path, long_month_path + "[12]") + ";"
-
-    short_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[format]/monthWidth[abbreviated]/month"
-    result['shortMonths'] \
-        = findEntry(path, short_month_path + "[1]") + ";" \
-        + findEntry(path, short_month_path + "[2]") + ";" \
-        + findEntry(path, short_month_path + "[3]") + ";" \
-        + findEntry(path, short_month_path + "[4]") + ";" \
-        + findEntry(path, short_month_path + "[5]") + ";" \
-        + findEntry(path, short_month_path + "[6]") + ";" \
-        + findEntry(path, short_month_path + "[7]") + ";" \
-        + findEntry(path, short_month_path + "[8]") + ";" \
-        + findEntry(path, short_month_path + "[9]") + ";" \
-        + findEntry(path, short_month_path + "[10]") + ";" \
-        + findEntry(path, short_month_path + "[11]") + ";" \
-        + findEntry(path, short_month_path + "[12]") + ";"
-
-    narrow_month_path = "dates/calendars/calendar[gregorian]/months/monthContext[format]/monthWidth[narrow]/month"
-    result['narrowMonths'] \
-        = findEntry(path, narrow_month_path + "[1]") + ";" \
-        + findEntry(path, narrow_month_path + "[2]") + ";" \
-        + findEntry(path, narrow_month_path + "[3]") + ";" \
-        + findEntry(path, narrow_month_path + "[4]") + ";" \
-        + findEntry(path, narrow_month_path + "[5]") + ";" \
-        + findEntry(path, narrow_month_path + "[6]") + ";" \
-        + findEntry(path, narrow_month_path + "[7]") + ";" \
-        + findEntry(path, narrow_month_path + "[8]") + ";" \
-        + findEntry(path, narrow_month_path + "[9]") + ";" \
-        + findEntry(path, narrow_month_path + "[10]") + ";" \
-        + findEntry(path, narrow_month_path + "[11]") + ";" \
-        + findEntry(path, narrow_month_path + "[12]") + ";"
-
-    long_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[format]/dayWidth[wide]/day"
-    result['longDays'] \
-        = findEntry(path, long_day_path + "[sun]") + ";" \
-        + findEntry(path, long_day_path + "[mon]") + ";" \
-        + findEntry(path, long_day_path + "[tue]") + ";" \
-        + findEntry(path, long_day_path + "[wed]") + ";" \
-        + findEntry(path, long_day_path + "[thu]") + ";" \
-        + findEntry(path, long_day_path + "[fri]") + ";" \
-        + findEntry(path, long_day_path + "[sat]") + ";"
-
-    short_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[format]/dayWidth[abbreviated]/day"
-    result['shortDays'] \
-        = findEntry(path, short_day_path + "[sun]") + ";" \
-        + findEntry(path, short_day_path + "[mon]") + ";" \
-        + findEntry(path, short_day_path + "[tue]") + ";" \
-        + findEntry(path, short_day_path + "[wed]") + ";" \
-        + findEntry(path, short_day_path + "[thu]") + ";" \
-        + findEntry(path, short_day_path + "[fri]") + ";" \
-        + findEntry(path, short_day_path + "[sat]") + ";"
-
-    narrow_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[format]/dayWidth[narrow]/day"
-    result['narrowDays'] \
-        = findEntry(path, narrow_day_path + "[sun]") + ";" \
-        + findEntry(path, narrow_day_path + "[mon]") + ";" \
-        + findEntry(path, narrow_day_path + "[tue]") + ";" \
-        + findEntry(path, narrow_day_path + "[wed]") + ";" \
-        + findEntry(path, narrow_day_path + "[thu]") + ";" \
-        + findEntry(path, narrow_day_path + "[fri]") + ";" \
-        + findEntry(path, narrow_day_path + "[sat]") + ";"
-
-    standalone_long_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[stand-alone]/dayWidth[wide]/day"
-    result['standaloneLongDays'] \
-        = findEntry(path, standalone_long_day_path + "[sun]") + ";" \
-        + findEntry(path, standalone_long_day_path + "[mon]") + ";" \
-        + findEntry(path, standalone_long_day_path + "[tue]") + ";" \
-        + findEntry(path, standalone_long_day_path + "[wed]") + ";" \
-        + findEntry(path, standalone_long_day_path + "[thu]") + ";" \
-        + findEntry(path, standalone_long_day_path + "[fri]") + ";" \
-        + findEntry(path, standalone_long_day_path + "[sat]") + ";"
-
-    standalone_short_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[stand-alone]/dayWidth[abbreviated]/day"
-    result['standaloneShortDays'] \
-        = findEntry(path, standalone_short_day_path + "[sun]") + ";" \
-        + findEntry(path, standalone_short_day_path + "[mon]") + ";" \
-        + findEntry(path, standalone_short_day_path + "[tue]") + ";" \
-        + findEntry(path, standalone_short_day_path + "[wed]") + ";" \
-        + findEntry(path, standalone_short_day_path + "[thu]") + ";" \
-        + findEntry(path, standalone_short_day_path + "[fri]") + ";" \
-        + findEntry(path, standalone_short_day_path + "[sat]") + ";"
-
-    standalone_narrow_day_path = "dates/calendars/calendar[gregorian]/days/dayContext[stand-alone]/dayWidth[narrow]/day"
-    result['standaloneNarrowDays'] \
-        = findEntry(path, standalone_narrow_day_path + "[sun]") + ";" \
-        + findEntry(path, standalone_narrow_day_path + "[mon]") + ";" \
-        + findEntry(path, standalone_narrow_day_path + "[tue]") + ";" \
-        + findEntry(path, standalone_narrow_day_path + "[wed]") + ";" \
-        + findEntry(path, standalone_narrow_day_path + "[thu]") + ";" \
-        + findEntry(path, standalone_narrow_day_path + "[fri]") + ";" \
-        + findEntry(path, standalone_narrow_day_path + "[sat]") + ";"
+    # Day data (for Gregorian, at least):
+    stem = 'dates/calendars/calendar[gregorian]/days/'
+    days = ('sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat')
+    for (key, mode, size) in namings:
+        prop = 'dayContext[' + mode + ']/dayWidth[' + size + ']/day'
+        result[key + 'Days'] = ';'.join(
+            findEntry(path, stem + prop + '[' + day + ']')
+            for day in days) + ';'
 
     return result
 
@@ -592,21 +467,21 @@ for file in defaultContent_locales:
         country_code = items[2]
     else:
         if len(items) != 2:
-            sys.stderr.write("skipping defaultContent locale \"" + file + "\"\n")
+            sys.stderr.write('skipping defaultContent locale "' + file + '"\n')
             continue
         language_code = items[0]
         script_code = ""
         country_code = items[1]
         if len(country_code) == 4:
-            sys.stderr.write("skipping defaultContent locale \"" + file + "\"\n")
+            sys.stderr.write('skipping defaultContent locale "' + file + '"\n')
             continue
     try:
         l = _generateLocaleInfo(cldr_dir + "/" + file + ".xml", language_code, script_code, country_code)
         if not l:
-            sys.stderr.write("skipping defaultContent locale \"" + file + "\"\n")
+            sys.stderr.write('skipping defaultContent locale "' + file + '"\n')
             continue
     except xpathlite.Error as e:
-        sys.stderr.write("skipping defaultContent locale \"%s\" (%s)\n" % (file, str(e)))
+        sys.stderr.write('skipping defaultContent locale "%s" (%s)\n' % (file, str(e)))
         continue
 
     locale_database[(l['language_id'], l['script_id'], l['country_id'], l['variant_code'])] = l
@@ -615,10 +490,10 @@ for file in cldr_files:
     try:
         l = generateLocaleInfo(cldr_dir + "/" + file)
         if not l:
-            sys.stderr.write("skipping file \"" + file + "\"\n")
+            sys.stderr.write('skipping file "' + file + '"\n')
             continue
     except xpathlite.Error as e:
-        sys.stderr.write("skipping file \"%s\" (%s)\n" % (file, str(e)))
+        sys.stderr.write('skipping file "%s" (%s)\n' % (file, str(e)))
         continue
 
     locale_database[(l['language_id'], l['script_id'], l['country_id'], l['variant_code'])] = l
@@ -678,7 +553,7 @@ def _parseLocale(l):
     if language_code != "und":
         language_id = enumdata.languageCodeToId(language_code)
         if language_id == -1:
-            raise xpathlite.Error("unknown language code \"%s\"" % language_code)
+            raise xpathlite.Error('unknown language code "%s"' % language_code)
         language = enumdata.language_list[language_id][0]
 
     if len(items) > 1:
@@ -689,14 +564,14 @@ def _parseLocale(l):
         if len(script_code) == 4:
             script_id = enumdata.scriptCodeToId(script_code)
             if script_id == -1:
-                raise xpathlite.Error("unknown script code \"%s\"" % script_code)
+                raise xpathlite.Error('unknown script code "%s"' % script_code)
             script = enumdata.script_list[script_id][0]
         else:
             country_code = script_code
         if country_code:
             country_id = enumdata.countryCodeToId(country_code)
             if country_id == -1:
-                raise xpathlite.Error("unknown country code \"%s\"" % country_code)
+                raise xpathlite.Error('unknown country code "%s"' % country_code)
             country = enumdata.country_list[country_id][0]
 
     return (language, script, country)
@@ -710,12 +585,12 @@ for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likel
     try:
         (from_language, from_script, from_country) = _parseLocale(tmp[u"from"])
     except xpathlite.Error as e:
-        sys.stderr.write("skipping likelySubtag \"%s\" -> \"%s\" (%s)\n" % (tmp[u"from"], tmp[u"to"], str(e)))
+        sys.stderr.write('skipping likelySubtag "%s" -> "%s" (%s)\n' % (tmp[u"from"], tmp[u"to"], str(e)))
         continue
     try:
         (to_language, to_script, to_country) = _parseLocale(tmp[u"to"])
     except xpathlite.Error as e:
-        sys.stderr.write("skipping likelySubtag \"%s\" -> \"%s\" (%s)\n" % (tmp[u"from"], tmp[u"to"], str(e)))
+        sys.stderr.write('skipping likelySubtag "%s" -> "%s" (%s)\n' % (tmp[u"from"], tmp[u"to"], str(e)))
         continue
     # substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
     if to_country == "AnyCountry" and from_country != to_country:
@@ -738,58 +613,58 @@ for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likel
 print "    </likelySubtags>"
 
 print "    <localeList>"
-print \
-"        <locale>\n\
-            <language>C</language>\n\
-            <languageEndonym></languageEndonym>\n\
-            <script>AnyScript</script>\n\
-            <country>AnyCountry</country>\n\
-            <countryEndonym></countryEndonym>\n\
-            <decimal>46</decimal>\n\
-            <group>44</group>\n\
-            <list>59</list>\n\
-            <percent>37</percent>\n\
-            <zero>48</zero>\n\
-            <minus>45</minus>\n\
-            <plus>43</plus>\n\
-            <exp>101</exp>\n\
-            <quotationStart>\"</quotationStart>\n\
-            <quotationEnd>\"</quotationEnd>\n\
-            <alternateQuotationStart>\'</alternateQuotationStart>\n\
-            <alternateQuotationEnd>\'</alternateQuotationEnd>\n\
-            <listPatternPartStart>%1, %2</listPatternPartStart>\n\
-            <listPatternPartMiddle>%1, %2</listPatternPartMiddle>\n\
-            <listPatternPartEnd>%1, %2</listPatternPartEnd>\n\
-            <listPatternPartTwo>%1, %2</listPatternPartTwo>\n\
-            <am>AM</am>\n\
-            <pm>PM</pm>\n\
-            <firstDayOfWeek>mon</firstDayOfWeek>\n\
-            <weekendStart>sat</weekendStart>\n\
-            <weekendEnd>sun</weekendEnd>\n\
-            <longDateFormat>EEEE, d MMMM yyyy</longDateFormat>\n\
-            <shortDateFormat>d MMM yyyy</shortDateFormat>\n\
-            <longTimeFormat>HH:mm:ss z</longTimeFormat>\n\
-            <shortTimeFormat>HH:mm:ss</shortTimeFormat>\n\
-            <standaloneLongMonths>January;February;March;April;May;June;July;August;September;October;November;December;</standaloneLongMonths>\n\
-            <standaloneShortMonths>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec;</standaloneShortMonths>\n\
-            <standaloneNarrowMonths>J;F;M;A;M;J;J;A;S;O;N;D;</standaloneNarrowMonths>\n\
-            <longMonths>January;February;March;April;May;June;July;August;September;October;November;December;</longMonths>\n\
-            <shortMonths>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec;</shortMonths>\n\
-            <narrowMonths>1;2;3;4;5;6;7;8;9;10;11;12;</narrowMonths>\n\
-            <longDays>Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;</longDays>\n\
-            <shortDays>Sun;Mon;Tue;Wed;Thu;Fri;Sat;</shortDays>\n\
-            <narrowDays>7;1;2;3;4;5;6;</narrowDays>\n\
-            <standaloneLongDays>Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;</standaloneLongDays>\n\
-            <standaloneShortDays>Sun;Mon;Tue;Wed;Thu;Fri;Sat;</standaloneShortDays>\n\
-            <standaloneNarrowDays>S;M;T;W;T;F;S;</standaloneNarrowDays>\n\
-            <currencyIsoCode></currencyIsoCode>\n\
-            <currencySymbol></currencySymbol>\n\
-            <currencyDisplayName>;;;;;;;</currencyDisplayName>\n\
-            <currencyDigits>2</currencyDigits>\n\
-            <currencyRounding>1</currencyRounding>\n\
-            <currencyFormat>%1%2</currencyFormat>\n\
-            <currencyNegativeFormat></currencyNegativeFormat>\n\
-        </locale>"
+print '''\
+        <locale>
+            <language>C</language>
+            <languageEndonym></languageEndonym>
+            <script>AnyScript</script>
+            <country>AnyCountry</country>
+            <countryEndonym></countryEndonym>
+            <decimal>46</decimal>
+            <group>44</group>
+            <list>59</list>
+            <percent>37</percent>
+            <zero>48</zero>
+            <minus>45</minus>
+            <plus>43</plus>
+            <exp>101</exp>
+            <quotationStart>"</quotationStart>
+            <quotationEnd>"</quotationEnd>
+            <alternateQuotationStart>\'</alternateQuotationStart>
+            <alternateQuotationEnd>\'</alternateQuotationEnd>
+            <listPatternPartStart>%1, %2</listPatternPartStart>
+            <listPatternPartMiddle>%1, %2</listPatternPartMiddle>
+            <listPatternPartEnd>%1, %2</listPatternPartEnd>
+            <listPatternPartTwo>%1, %2</listPatternPartTwo>
+            <am>AM</am>
+            <pm>PM</pm>
+            <firstDayOfWeek>mon</firstDayOfWeek>
+            <weekendStart>sat</weekendStart>
+            <weekendEnd>sun</weekendEnd>
+            <longDateFormat>EEEE, d MMMM yyyy</longDateFormat>
+            <shortDateFormat>d MMM yyyy</shortDateFormat>
+            <longTimeFormat>HH:mm:ss z</longTimeFormat>
+            <shortTimeFormat>HH:mm:ss</shortTimeFormat>
+            <standaloneLongMonths>January;February;March;April;May;June;July;August;September;October;November;December;</standaloneLongMonths>
+            <standaloneShortMonths>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec;</standaloneShortMonths>
+            <standaloneNarrowMonths>J;F;M;A;M;J;J;A;S;O;N;D;</standaloneNarrowMonths>
+            <longMonths>January;February;March;April;May;June;July;August;September;October;November;December;</longMonths>
+            <shortMonths>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec;</shortMonths>
+            <narrowMonths>1;2;3;4;5;6;7;8;9;10;11;12;</narrowMonths>
+            <longDays>Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;</longDays>
+            <shortDays>Sun;Mon;Tue;Wed;Thu;Fri;Sat;</shortDays>
+            <narrowDays>7;1;2;3;4;5;6;</narrowDays>
+            <standaloneLongDays>Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;</standaloneLongDays>
+            <standaloneShortDays>Sun;Mon;Tue;Wed;Thu;Fri;Sat;</standaloneShortDays>
+            <standaloneNarrowDays>S;M;T;W;T;F;S;</standaloneNarrowDays>
+            <currencyIsoCode></currencyIsoCode>
+            <currencySymbol></currencySymbol>
+            <currencyDisplayName>;;;;;;;</currencyDisplayName>
+            <currencyDigits>2</currencyDigits>
+            <currencyRounding>1</currencyRounding>
+            <currencyFormat>%1%2</currencyFormat>
+            <currencyNegativeFormat></currencyNegativeFormat>
+        </locale>'''
 
 for key in locale_keys:
     l = locale_database[key]
