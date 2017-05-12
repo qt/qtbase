@@ -291,6 +291,8 @@ static void qt_closePopups()
 
 - (void)closeAndRelease
 {
+    qCDebug(lcQpaCocoaWindow) << "closeAndRelease" << self;
+
     [self close];
 
     if (self.helper.grabbingMouse) {
@@ -361,6 +363,8 @@ static void qt_closePopups()
 
 - (void)closeAndRelease
 {
+    qCDebug(lcQpaCocoaWindow) << "closeAndRelease" << self;
+
     [self.helper detachFromPlatformWindow];
     [self close];
     [self release];
@@ -1584,7 +1588,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if (isChildNSWindow() != shouldBeChildNSWindow)
         recreateReason |= ChildNSWindowChanged;
 
-    const bool shouldBeContentView = !parentWindow || shouldBeChildNSWindow;
+    const bool shouldBeContentView = (!parentWindow && !m_viewIsEmbedded) || shouldBeChildNSWindow;
     if (isContentView() != shouldBeContentView)
         recreateReason |= ContentViewChanged;
 
@@ -1601,7 +1605,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
         return;
     }
 
-    qCDebug(lcQpaCocoaWindow) << "Recreating NSWindow due to" << recreateReason;
+    qCDebug(lcQpaCocoaWindow) << "Reconfiguring NSWindow due to" << recreateReason;
 
     QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(parentWindow);
 
@@ -1616,6 +1620,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
     // Remove current window (if any)
     if ((isContentView() && !shouldBeContentView) || (recreateReason & PanelChanged)) {
+        qCDebug(lcQpaCocoaWindow) << "Getting rid of existing window" << m_nsWindow;
         [m_nsWindow closeAndRelease];
         if (isChildNSWindow())
             [m_view.window.parentWindow removeChildWindow:m_view.window];
@@ -1642,6 +1647,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
         // Move view to new NSWindow if needed
         if (m_nsWindow.contentView != m_view) {
+            qCDebug(lcQpaCocoaWindow) << "Ensuring that view is content view for" << m_nsWindow;
             [m_view setPostsFrameChangedNotifications:NO];
             [m_view retain];
             if (m_view.superview) // m_view comes from another NSWindow
@@ -1723,6 +1729,8 @@ void QCocoaWindow::requestActivateWindow()
 
 QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBeChildNSWindow, bool shouldBePanel)
 {
+    qCDebug(lcQpaCocoaWindow) << "createNSWindow" << shouldBeChildNSWindow << shouldBePanel;
+
     QMacAutoReleasePool pool;
 
     QRect rect = geometry();
