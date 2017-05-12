@@ -45,6 +45,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 
 public class QtNativeLibrariesDir {
+    public static final String systemLibrariesDir = "/system/lib/";
     public static String nativeLibrariesDir(Context context)
     {
         String m_nativeLibraryDir = null;
