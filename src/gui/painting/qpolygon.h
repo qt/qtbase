@@ -98,6 +98,8 @@ public:
     Q_REQUIRED_RESULT QPolygon united(const QPolygon &r) const;
     Q_REQUIRED_RESULT QPolygon intersected(const QPolygon &r) const;
     Q_REQUIRED_RESULT QPolygon subtracted(const QPolygon &r) const;
+
+    bool intersects(const QPolygon &r) const;
 };
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPolygon)
 
@@ -175,6 +177,8 @@ public:
     Q_REQUIRED_RESULT QPolygonF united(const QPolygonF &r) const;
     Q_REQUIRED_RESULT QPolygonF intersected(const QPolygonF &r) const;
     Q_REQUIRED_RESULT QPolygonF subtracted(const QPolygonF &r) const;
+
+    bool intersects(const QPolygonF &r) const;
 };
 Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QPolygonF)
 

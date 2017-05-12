@@ -909,6 +909,8 @@ QPolygon QPolygon::united(const QPolygon &r) const
 
     Set operations on polygons will treat the polygons as
     areas. Non-closed polygons will be treated as implicitly closed.
+
+    \sa intersects()
 */
 
 QPolygon QPolygon::intersected(const QPolygon &r) const
@@ -938,6 +940,26 @@ QPolygon QPolygon::subtracted(const QPolygon &r) const
 }
 
 /*!
+    \since 5.10
+
+    Returns \c true if the current polygon intersects at any point the given polygon \a p.
+    Also returns \c true if the current polygon contains or is contained by any part of \a p.
+
+    Set operations on polygons will treat the polygons as
+    areas. Non-closed polygons will be treated as implicitly closed.
+
+    \sa intersected()
+*/
+
+bool QPolygon::intersects(const QPolygon &p) const
+{
+    QPainterPath subject; subject.addPolygon(*this);
+    QPainterPath clip; clip.addPolygon(p);
+
+    return subject.intersects(clip);
+}
+
+/*!
     \since 4.3
 
     Returns a polygon which is the union of this polygon and \a r.
@@ -964,6 +986,7 @@ QPolygonF QPolygonF::united(const QPolygonF &r) const
     Set operations on polygons will treat the polygons as
     areas. Non-closed polygons will be treated as implicitly closed.
 
+    \sa intersects()
 */
 
 QPolygonF QPolygonF::intersected(const QPolygonF &r) const
@@ -989,6 +1012,26 @@ QPolygonF QPolygonF::subtracted(const QPolygonF &r) const
     QPainterPath subject; subject.addPolygon(*this);
     QPainterPath clip; clip.addPolygon(r);
     return subject.subtracted(clip).toFillPolygon();
+}
+
+/*!
+    \since 5.10
+
+    Returns \c true if the current polygon intersects at any point the given polygon \a p.
+    Also returns \c true if the current polygon contains or is contained by any part of \a p.
+
+    Set operations on polygons will treat the polygons as
+    areas. Non-closed polygons will be treated as implicitly closed.
+
+    \sa intersected()
+*/
+
+bool QPolygonF::intersects(const QPolygonF &p) const
+{
+    QPainterPath subject; subject.addPolygon(*this);
+    QPainterPath clip; clip.addPolygon(p);
+
+    return subject.intersects(clip);
 }
 
 /*!

@@ -49,6 +49,8 @@ private slots:
     void boundingRectF();
     void makeEllipse();
     void swap();
+    void intersections_data();
+    void intersections();
 };
 
 tst_QPolygon::tst_QPolygon()
@@ -157,6 +159,46 @@ void tst_QPolygon::swap()
     p1.swap(p2);
     QCOMPARE(p1.count(),4);
     QCOMPARE(p2.count(),3);
+}
+
+void tst_QPolygon::intersections_data()
+{
+    QTest::addColumn<QPolygon>("poly1");
+    QTest::addColumn<QPolygon>("poly2");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("empty intersects nothing")
+            << QPolygon()
+            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10))
+            << false;
+    QTest::newRow("identical triangles")
+            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10))
+            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10))
+            << true;
+    QTest::newRow("not intersecting")
+            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(10,10) << QPoint(-10,10))
+            << QPolygon(QVector<QPoint>() << QPoint(0,20) << QPoint(10,12) << QPoint(-10,12))
+            << false;
+    QTest::newRow("clean intersection of squares")
+            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(0,10) << QPoint(10,10) << QPoint(10,0))
+            << QPolygon(QVector<QPoint>() << QPoint(5,5) << QPoint(5,15) << QPoint(15,15) << QPoint(15,5))
+            << true;
+    QTest::newRow("clean contains of squares")
+            << QPolygon(QVector<QPoint>() << QPoint(0,0) << QPoint(0,10) << QPoint(10,10) << QPoint(10,0))
+            << QPolygon(QVector<QPoint>() << QPoint(5,5) << QPoint(5,8) << QPoint(8,8) << QPoint(8,5))
+            << true;
+}
+
+void tst_QPolygon::intersections()
+{
+    QFETCH(QPolygon, poly1);
+    QFETCH(QPolygon, poly2);
+    QFETCH(bool, result);
+
+    QCOMPARE(poly2.intersects(poly1), poly1.intersects(poly2));
+    QCOMPARE(poly2.intersected(poly1).isEmpty(), poly1.intersected(poly2).isEmpty());
+    QCOMPARE(!poly1.intersected(poly2).isEmpty(), poly1.intersects(poly2));
+    QCOMPARE(poly1.intersects(poly2), result);
 }
 
 QTEST_APPLESS_MAIN(tst_QPolygon)
