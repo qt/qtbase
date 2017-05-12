@@ -458,8 +458,8 @@ def printEscapedString(s):
 
 def currencyIsoCodeData(s):
     if s:
-        return ",".join(str(ord(x)) for x in s)
-    return "0,0,0"
+        return '{' + ",".join(str(ord(x)) for x in s) + '}'
+    return "{0,0,0}"
 
 def usage():
     print "Usage: qlocalexml2cpp.py <path-to-locale.xml> <path-to-qtbase-src-tree>"
@@ -602,16 +602,93 @@ def main():
 
     # Locale data
     data_temp_file.write("static const QLocaleData locale_data[] = {\n")
-    data_temp_file.write("//      lang   script terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd lpStart lpMid lpEnd lpTwo sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len\n")
+    # Table headings: keep each label centred in its field, matching line_format:
+    data_temp_file.write('   // '
+                         # Width 6 + comma:
+                         + ' lang  ' # IDs
+                         + 'script '
+                         + '  terr '
+                         + '  dec  ' # Numeric punctuation:
+                         + ' group '
+                         + ' list  ' # List delimiter
+                         + ' prcnt ' # Arithmetic symbols:
+                         + '  zero '
+                         + ' minus '
+                         + ' plus  '
+                         + '  exp  '
+                         # Width 8 + comma - to make space for these wide labels !
+                         + ' quotOpn ' # Quotation marks
+                         + ' quotEnd '
+                         + 'altQtOpn '
+                         + 'altQtEnd '
+                         # Width 11 + comma:
+                         + '  lpStart   ' # List pattern
+                         + '   lpMid    '
+                         + '   lpEnd    '
+                         + '   lpTwo    '
+                         + '   sDtFmt   ' # Date format
+                         + '   lDtFmt   '
+                         + '   sTmFmt   ' # Time format
+                         + '   lTmFmt   '
+                         + '  ssMonth   ' # Months
+                         + '  slMonth   '
+                         + '  snMonth   '
+                         + '   sMonth   '
+                         + '   lMonth   '
+                         + '   nMonth   '
+                         + '   ssDays   ' # Days
+                         + '   slDays   '
+                         + '   snDays   '
+                         + '    sDays   '
+                         + '    lDays   '
+                         + '    nDays   '
+                         + '     am     ' # am/pm indicators
+                         + '     pm     '
+                         # Width 8+4 + comma
+                         + '   currISO   '
+                         # Width 11 + comma:
+                         + '  currSym   ' # Currency formatting:
+                         + ' currDsply  '
+                         + '  currFmt   '
+                         + ' currFmtNeg '
+                         + '  endoLang  ' # Name of language in itself, and of country:
+                         + '  endoCntry '
+                         # Width 6 + comma:
+                         + 'curDgt ' # Currency number representation:
+                         + 'curRnd '
+                         + 'dow1st ' # First day of week
+                         + ' wknd+ ' # Week-end start/end days:
+                         + ' wknd-'
+                         # No trailing space on last entry (be sure to
+                         # pad before adding anything after it).
+                         + '\n')
 
     locale_keys = locale_map.keys()
     compareLocaleKeys.default_map = default_map
     compareLocaleKeys.locale_map = locale_map
     locale_keys.sort(compareLocaleKeys)
 
+    line_format = ('    { '
+                   # Locale-identifier:
+                   + '%6d,' * 3
+                   # Numeric formats, list delimiter:
+                   + '%6d,' * 8
+                   # Quotation marks:
+                   + '%8d,' * 4
+                   # List patterns, date/time formats, month/day names, am/pm:
+                   + '%11s,' * 22
+                   # Currency ISO code:
+                   + ' %10s, '
+                   # Currency and endonyms
+                   + '%11s,' * 6
+                   # Currency formatting:
+                   + '%6d,%6d'
+                   # Day of week and week-end:
+                   + ',%6d' * 3
+                   + ' }')
     for key in locale_keys:
         l = locale_map[key]
-        data_temp_file.write("    { %6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%6d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, {%s}, %s,%s,%s,%s,%s,%s,%6d,%6d,%6d,%6d,%6d }, // %s/%s/%s\n" \
+        data_temp_file.write(line_format
                     % (key[0], key[1], key[2],
                         l.decimal,
                         l.group,
@@ -658,11 +735,13 @@ def main():
                         l.currencyRounding,
                         l.firstDayOfWeek,
                         l.weekendStart,
-                        l.weekendEnd,
-                        l.language,
-                        l.script,
-                        l.country))
-    data_temp_file.write("    {      0,      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,    0,0,    0,0,    0,0,   0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0, 0,0, 0,0 }  // trailing 0s\n")
+                        l.weekendEnd)
+                             + ", // %s/%s/%s\n" % (l.language, l.script, l.country))
+    data_temp_file.write(line_format # All zeros, matching the format:
+                         % ( (0,) * (3 + 8 + 4) + ("0,0",) * 22
+                             + (currencyIsoCodeData(0),)
+                             + ("0,0",) * 6 + (0,) * (2 + 3))
+                         + " // trailing 0s\n")
     data_temp_file.write("};\n")
 
     data_temp_file.write("\n")
