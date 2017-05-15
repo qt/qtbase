@@ -58,12 +58,14 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
 #include <QSpinBox>
 #include <QPlainTextEdit>
 #include <QTreeWidget>
 
 #include <QAction>
 #include <QClipboard>
+#include <QContextMenuEvent>
 
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -74,6 +76,94 @@
 #include <QRegularExpressionMatchIterator>
 
 Q_DECLARE_METATYPE(QRegularExpression::MatchType)
+
+static QString patternToCode(QString pattern)
+{
+    pattern.replace(QLatin1String("\\"), QLatin1String("\\\\"));
+    pattern.replace(QLatin1String("\""), QLatin1String("\\\""));
+    pattern.prepend(QLatin1Char('"'));
+    pattern.append(QLatin1Char('"'));
+    return pattern;
+}
+
+static QString codeToPattern(QString code)
+{
+    for (int i = 0; i < code.size(); ++i) {
+        if (code.at(i) == QLatin1Char('\\'))
+            code.remove(i, 1);
+    }
+    if (code.startsWith(QLatin1Char('"')) && code.endsWith(QLatin1Char('"'))) {
+        code.chop(1);
+        code.remove(0, 1);
+    }
+    return code;
+}
+
+class PatternLineEdit : public QLineEdit
+{
+    Q_OBJECT
+public:
+    explicit PatternLineEdit(QWidget *parent = nullptr);
+
+private slots:
+    void copyToCode();
+    void pasteFromCode();
+    void escapeSelection();
+
+protected:
+    void contextMenuEvent(QContextMenuEvent *event) override;
+
+private:
+    QAction *escapeSelectionAction;
+    QAction *copyToCodeAction;
+    QAction *pasteFromCodeAction;
+};
+
+PatternLineEdit::PatternLineEdit(QWidget *parent) :
+    QLineEdit(parent),
+    escapeSelectionAction(new QAction(tr("Escape Selection"), this)),
+    copyToCodeAction(new QAction(tr("Copy to Code"), this)),
+    pasteFromCodeAction(new QAction(tr("Paste from Code"), this))
+{
+    setClearButtonEnabled(true);
+    connect(escapeSelectionAction, &QAction::triggered, this, &PatternLineEdit::escapeSelection);
+    connect(copyToCodeAction, &QAction::triggered, this, &PatternLineEdit::copyToCode);
+    connect(pasteFromCodeAction, &QAction::triggered, this, &PatternLineEdit::pasteFromCode);
+}
+
+void PatternLineEdit::escapeSelection()
+{
+    const QString selection = selectedText();
+    const QString escapedSelection = QRegularExpression::escape(selection);
+    if (escapedSelection != selection) {
+        QString t = text();
+        t.replace(selectionStart(), selection.size(), escapedSelection);
+        setText(t);
+    }
+}
+
+void PatternLineEdit::copyToCode()
+{
+    QGuiApplication::clipboard()->setText(patternToCode(text()));
+}
+
+void PatternLineEdit::pasteFromCode()
+{
+    setText(codeToPattern(QGuiApplication::clipboard()->text()));
+}
+
+void PatternLineEdit::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu *menu = createStandardContextMenu();
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->addSeparator();
+    escapeSelectionAction->setEnabled(hasSelectedText());
+    menu->addAction(escapeSelectionAction);
+    menu->addSeparator();
+    menu->addAction(copyToCodeAction);
+    menu->addAction(pasteFromCodeAction);
+    menu->popup(event->globalPos());
+}
 
 RegularExpressionDialog::RegularExpressionDialog(QWidget *parent)
     : QDialog(parent)
@@ -131,12 +221,7 @@ void RegularExpressionDialog::refresh()
 
     offsetSpinBox->setMaximum(qMax(0, text.length() - 1));
 
-    QString escaped = pattern;
-    escaped.replace(QLatin1String("\\"), QLatin1String("\\\\"));
-    escaped.replace(QLatin1String("\""), QLatin1String("\\\""));
-    escaped.prepend(QLatin1Char('"'));
-    escaped.append(QLatin1Char('"'));
-    escapedPatternLineEdit->setText(escaped);
+    escapedPatternLineEdit->setText(patternToCode(pattern));
 
     setTextColor(patternLineEdit, subjectTextEdit->palette().color(QPalette::Text));
     matchDetailsTreeWidget->clear();
@@ -266,7 +351,7 @@ QWidget *RegularExpressionDialog::setupLeftUi()
     QLabel *regexpAndSubjectLabel = new QLabel(tr("<h3>Regular expression and text input</h3>"));
     layout->addRow(regexpAndSubjectLabel);
 
-    patternLineEdit = new QLineEdit;
+    patternLineEdit = new PatternLineEdit;
     patternLineEdit->setClearButtonEnabled(true);
     layout->addRow(tr("&Pattern:"), patternLineEdit);
 
@@ -373,3 +458,5 @@ QWidget *RegularExpressionDialog::setupRightUi()
 
     return container;
 }
+
+#include "regularexpressiondialog.moc"
