@@ -146,3 +146,5 @@ ctest_qt5_module_files.files += $$ctest_macros_file.output $$cmake_extras_mkspec
 ctest_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5Core
 
 INSTALLS += ctest_qt5_module_files cmake_qt5_umbrella_module_files
+
+QMAKE_DSYM_DEBUG_SCRIPT = $$PWD/debug_script.py
