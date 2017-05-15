@@ -118,7 +118,6 @@
 Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGContext);
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
-Q_FORWARD_DECLARE_OBJC_CLASS(NSScroller);
 
 QT_BEGIN_NAMESPACE
 
@@ -143,6 +142,8 @@ enum QCocoaWidgetKind {
     QCocoaPullDownButton, // QPushButton with menu
     QCocoaPushButton,
     QCocoaRadioButton,
+    QCocoaHorizontalScroller,
+    QCocoaVerticalScroller,
     QCocoaHorizontalSlider,
     QCocoaVerticalSlider
 };
@@ -251,8 +252,6 @@ public:
     CFAbsoluteTime defaultButtonStart;
     bool mouseDown;
     void* receiver;
-    NSScroller *horizontalScroller;
-    NSScroller *verticalScroller;
     void *indicatorBranchButtonCell;
     NSView *backingStoreNSView;
     QHash<QCocoaWidget, NSView *> cocoaControls;

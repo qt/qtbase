@@ -1873,6 +1873,12 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
             bv = [[NSPopUpButton alloc] init];
         else if (widget.first == QCocoaComboBox)
             bv = [[NSComboBox alloc] init];
+        else if (widget.first == QCocoaHorizontalScroller)
+            bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
+        else if (widget.first == QCocoaVerticalScroller)
+            // Cocoa sets the orientation from the view's frame
+            // at construction time, and it cannot be changed later.
+            bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
         else if (widget.first == QCocoaHorizontalSlider)
             bv = [[NSSlider alloc] init];
         else if (widget.first == QCocoaVerticalSlider)
@@ -2145,12 +2151,6 @@ QMacStyle::QMacStyle()
       name:NSPreferredScrollerStyleDidChangeNotification
       object:nil];
 
-    // Create scroller objects. Scroller internal direction setup happens
-    // on initWithFrame and cannot be changed later on. Create two scrollers
-    // initialized with fake geometry. Correct geometry is set at draw time.
-    d->horizontalScroller = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
-    d->verticalScroller = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
-
     d->indicatorBranchButtonCell = nil;
 }
 
@@ -2158,9 +2158,6 @@ QMacStyle::~QMacStyle()
 {
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
-
-    [d->horizontalScroller release];
-    [d->verticalScroller release];
 
     NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
     [[NSNotificationCenter defaultCenter] removeObserver:receiver];
@@ -5383,7 +5380,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 d->setupNSGraphicsContext(cg, NO);
 
-                NSScroller *scroller = isHorizontal ? d->horizontalScroller : d-> verticalScroller;
+                const QCocoaWidget cw(isHorizontal ? QCocoaHorizontalScroller : QCocoaVerticalScroller,
+                                      tdi.kind == kThemeSmallScrollBar ? QStyleHelper::SizeMini : QStyleHelper::SizeLarge);
+                NSScroller *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
                 // mac os behaviour: as soon as one color channel is >= 128,
                 // the bg is considered bright, scroller is dark
                 const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
@@ -5394,8 +5393,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 else
                     [scroller setKnobStyle:NSScrollerKnobStyleDefault];
 
-                [scroller setControlSize:(tdi.kind == kThemeSmallScrollBar ? NSMiniControlSize
-                                                                           : NSRegularControlSize)];
                 [scroller setBounds:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
                 [scroller setScrollerStyle:NSScrollerStyleOverlay];
 
