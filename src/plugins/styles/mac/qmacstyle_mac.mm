@@ -1822,7 +1822,7 @@ static QCocoaWidget cocoaWidgetFromHIThemeButtonKind(ThemeButtonKind kind)
         w.first = QCocoaComboBox;
         break;
     case kThemeArrowButton:
-        w.first = QCocoaArrowButton;
+        w.first = QCocoaDisclosureButton;
         break;
     case kThemeCheckBox:
     case kThemeCheckBoxSmall:
@@ -1890,7 +1890,7 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
             bv = [[NSButton alloc] init];
 
         switch (widget.first) {
-        case QCocoaArrowButton: {
+        case QCocoaDisclosureButton: {
             NSButton *bc = (NSButton *)bv;
             bc.buttonType = NSOnOffButton;
             bc.bezelStyle = NSDisclosureBezelStyle;
@@ -1954,6 +1954,13 @@ NSCell *QMacStylePrivate::cocoaCell(QCocoaWidget widget) const
         case QCocoaStepper:
             cell = [[NSStepperCell alloc] init];
             break;
+        case QCocoaDisclosureButton: {
+            NSButtonCell *bc = [[NSButtonCell alloc] init];
+            bc.buttonType = NSOnOffButton;
+            bc.bezelStyle = NSDisclosureBezelStyle;
+            cell = bc;
+            break;
+        }
         default:
             break;
         }
@@ -2178,8 +2185,6 @@ QMacStyle::QMacStyle()
                                              selector:@selector(scrollBarStyleDidChange:)
                                                  name:NSPreferredScrollerStyleDidChangeNotification
                                                object:nil];
-
-    d->indicatorBranchButtonCell = nil;
 }
 
 QMacStyle::~QMacStyle()
@@ -3425,12 +3430,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorBranch: {
         if (!(opt->state & State_Children))
             break;
-        if (!d->indicatorBranchButtonCell)
-            const_cast<QMacStylePrivate *>(d)->indicatorBranchButtonCell = [[NSButtonCell alloc] init];
-        NSButtonCell *triangleCell = d->indicatorBranchButtonCell;
-        [triangleCell setButtonType:NSOnOffButton];
+        NSButtonCell *triangleCell = static_cast<NSButtonCell *>(d->cocoaCell(QCocoaWidget(QCocoaDisclosureButton, QStyleHelper::SizeLarge)));
         [triangleCell setState:(opt->state & State_Open) ? NSOnState : NSOffState];
-        [triangleCell setBezelStyle:NSDisclosureBezelStyle];
         bool viewHasFocus = (w && w->hasFocus()) || (opt->state & State_HasFocus);
         [triangleCell setBackgroundStyle:((opt->state & State_Selected) && viewHasFocus) ? NSBackgroundStyleDark : NSBackgroundStyleLight];
 

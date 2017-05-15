@@ -138,9 +138,9 @@ QT_BEGIN_NAMESPACE
 #define CT2(c1, c2) ((uint(c1) << 16) | uint(c2))
 
 enum QCocoaWidgetKind {
-    QCocoaArrowButton,  // Disclosure triangle, like in QTreeView
     QCocoaCheckBox,
     QCocoaComboBox,     // Editable QComboBox
+    QCocoaDisclosureButton,  // Disclosure triangle, like in QTreeView
     QCocoaPopupButton,  // Non-editable QComboBox
     QCocoaPullDownButton, // QPushButton with menu
     QCocoaPushButton,
@@ -252,7 +252,6 @@ public:
     mutable QPointer<QFocusFrame> focusWidget;
     CFAbsoluteTime defaultButtonStart;
     QT_MANGLE_NAMESPACE(NotificationReceiver) *receiver;
-    NSButtonCell *indicatorBranchButtonCell;
     NSView *backingStoreNSView;
     QHash<QCocoaWidget, NSView *> cocoaControls;
     QHash<QCocoaWidget, NSCell *> cocoaCells;
