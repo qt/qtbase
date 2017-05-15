@@ -1777,10 +1777,9 @@ void QMacStylePrivate::setAutoDefaultButton(QObject *button) const
 }
 
 QMacStylePrivate::QMacStylePrivate()
-    : mouseDown(false), backingStoreNSView(nil)
+    : backingStoreNSView(nil)
 {
     defaultButtonStart = CFAbsoluteTimeGetCurrent();
-    memset(&buttonState, 0, sizeof(ButtonState));
 }
 
 QMacStylePrivate::~QMacStylePrivate()
@@ -2144,12 +2143,10 @@ QMacStyle::QMacStyle()
     QMacAutoReleasePool pool;
 
     d->receiver = [[NotificationReceiver alloc] initWithPrivate:d];
-    NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
-
-    [[NSNotificationCenter defaultCenter] addObserver:receiver
-                                                      selector:@selector(scrollBarStyleDidChange:)
-      name:NSPreferredScrollerStyleDidChangeNotification
-      object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:d->receiver
+                                             selector:@selector(scrollBarStyleDidChange:)
+                                                 name:NSPreferredScrollerStyleDidChangeNotification
+                                               object:nil];
 
     d->indicatorBranchButtonCell = nil;
 }
@@ -2159,9 +2156,8 @@ QMacStyle::~QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
-    [[NSNotificationCenter defaultCenter] removeObserver:receiver];
-    [receiver release];
+    [[NSNotificationCenter defaultCenter] removeObserver:d->receiver];
+    [d->receiver release];
 
     delete qt_mac_backgroundPattern;
     qt_mac_backgroundPattern = 0;
@@ -3399,8 +3395,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         if (!(opt->state & State_Children))
             break;
         if (!d->indicatorBranchButtonCell)
-            const_cast<QMacStylePrivate *>(d)->indicatorBranchButtonCell = (void *)[[NSButtonCell alloc] init];
-        NSButtonCell *triangleCell = (NSButtonCell *)d->indicatorBranchButtonCell;
+            const_cast<QMacStylePrivate *>(d)->indicatorBranchButtonCell = [[NSButtonCell alloc] init];
+        NSButtonCell *triangleCell = d->indicatorBranchButtonCell;
         [triangleCell setButtonType:NSOnOffButton];
         [triangleCell setState:(opt->state & State_Open) ? NSOnState : NSOffState];
         [triangleCell setBezelStyle:NSDisclosureBezelStyle];

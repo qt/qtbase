@@ -118,6 +118,8 @@
 Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGContext);
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSButtonCell);
+Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(NotificationReceiver));
 
 QT_BEGIN_NAMESPACE
 
@@ -244,15 +246,10 @@ public:
     mutable QPointer<QObject> autoDefaultButton;
     static  QVector<QPointer<QObject> > scrollBars;
 
-    struct ButtonState {
-        int frame;
-        enum { ButtonDark, ButtonLight } dir;
-    } buttonState;
     mutable QPointer<QFocusFrame> focusWidget;
     CFAbsoluteTime defaultButtonStart;
-    bool mouseDown;
-    void* receiver;
-    void *indicatorBranchButtonCell;
+    QT_MANGLE_NAMESPACE(NotificationReceiver) *receiver;
+    NSButtonCell *indicatorBranchButtonCell;
     NSView *backingStoreNSView;
     QHash<QCocoaWidget, NSView *> cocoaControls;
 };
