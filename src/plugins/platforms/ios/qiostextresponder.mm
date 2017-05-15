@@ -242,11 +242,12 @@
         if (platformData.value(kImePlatformDataHideShortcutsBar).toBool()) {
             // According to the docs, leadingBarButtonGroups/trailingBarButtonGroups should be set to nil to hide the shortcuts bar.
             // However, starting with iOS 10, the API has been surrounded with NS_ASSUME_NONNULL, which contradicts this and causes
-            // compiler warnings. And assigning just an empty array causes layout asserts. Hence, we assign empty button groups instead.
-            UIBarButtonItemGroup *leading = [[[UIBarButtonItemGroup alloc] initWithBarButtonItems:@[] representativeItem:nil] autorelease];
-            UIBarButtonItemGroup *trailing = [[[UIBarButtonItemGroup alloc] initWithBarButtonItems:@[] representativeItem:nil] autorelease];
-            self.inputAssistantItem.leadingBarButtonGroups = @[leading];
-            self.inputAssistantItem.trailingBarButtonGroups = @[trailing];
+            // compiler warnings. Still it is the way to go to really hide the space reserved for that.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+            self.inputAssistantItem.leadingBarButtonGroups = nil;
+            self.inputAssistantItem.trailingBarButtonGroups = nil;
+#pragma clang diagnostic pop
         }
     }
 #endif
