@@ -1041,12 +1041,11 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
             const CGFloat focusRingWidth = radius > 0 ? 3.5 : 6;
             QMacAutoReleasePool pool;
             QMacCGContext ctx(&focusRingPixmap);
+            setupNSGraphicsContext(ctx, NO);
+
             CGContextBeginTransparencyLayer(ctx, NULL);
             CGContextSetAlpha(ctx, 0.5); // As applied to the stroke color below
 
-            [NSGraphicsContext saveGraphicsState];
-            [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithCGContext:ctx
-                                                                                         flipped:NO]];
             CGRect focusRingRect = CGRectMake(hMargin, vMargin, size, size);
             NSBezierPath *focusRingPath;
             if (radius > 0) {
@@ -1070,7 +1069,7 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
             [focusRingPath stroke];
 
             CGContextEndTransparencyLayer(ctx);
-            [NSGraphicsContext restoreGraphicsState];
+            restoreNSGraphicsContext(ctx);
         }
         QPixmapCache::insert(key, focusRingPixmap);
     }
@@ -1968,12 +1967,9 @@ void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const
         offset = QPoint(3, 0);
 
     QMacCGContext ctx(p);
-    CGContextSaveGState(ctx);
-    CGContextTranslateCTM(ctx, offset.x(), offset.y());
+    setupNSGraphicsContext(ctx, YES);
 
-    [NSGraphicsContext saveGraphicsState];
-    [NSGraphicsContext setCurrentContext:[NSGraphicsContext
-                                          graphicsContextWithGraphicsPort:ctx flipped:YES]];
+    CGContextTranslateCTM(ctx, offset.x(), offset.y());
 
     NSRect rect = NSMakeRect(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
 
@@ -1985,8 +1981,7 @@ void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const
         [view drawRect:rect];
     [view removeFromSuperviewWithoutNeedingDisplay];
 
-    [NSGraphicsContext restoreGraphicsState];
-    CGContextRestoreGState(ctx);
+    restoreNSGraphicsContext(ctx);
 }
 
 void QMacStylePrivate::resolveCurrentNSView(QWindow *window)
@@ -3415,11 +3410,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         bool viewHasFocus = (w && w->hasFocus()) || (opt->state & State_HasFocus);
         [triangleCell setBackgroundStyle:((opt->state & State_Selected) && viewHasFocus) ? NSBackgroundStyleDark : NSBackgroundStyleLight];
 
-        CGContextSaveGState(cg);
-        [NSGraphicsContext saveGraphicsState];
-
-        [NSGraphicsContext setCurrentContext:[NSGraphicsContext
-                                              graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
+        d->setupNSGraphicsContext(cg, NO);
 
         QRect qtRect = opt->rect.adjusted(DisclosureOffset, 0, -DisclosureOffset, 0);
         CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
@@ -3429,8 +3420,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
 
         [triangleCell drawBezelWithFrame:NSRectFromCGRect(rect) inView:[triangleCell controlView]];
 
-        [NSGraphicsContext restoreGraphicsState];
-        CGContextRestoreGState(cg);
+        d->restoreNSGraphicsContext(cg);
         break; }
 
     case PE_Frame: {
@@ -5205,6 +5195,21 @@ static inline void drawToolbarButtonArrow(const QRect &toolButtonRect, ThemeDraw
     HIThemeDrawPopupArrow(&cgRect, &padi, cg, kHIThemeOrientationNormal);
 }
 
+void QMacStylePrivate::setupNSGraphicsContext(CGContextRef cg, bool flipped) const
+{
+    CGContextSaveGState(cg);
+    [NSGraphicsContext saveGraphicsState];
+
+    [NSGraphicsContext setCurrentContext:
+        [NSGraphicsContext graphicsContextWithCGContext:cg flipped:flipped]];
+}
+
+void QMacStylePrivate::restoreNSGraphicsContext(CGContextRef cg) const
+{
+    [NSGraphicsContext restoreGraphicsState];
+    CGContextRestoreGState(cg);
+}
+
 void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                    const QWidget *widget) const
 {
@@ -5376,11 +5381,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     }
                 }
 
-                CGContextSaveGState(cg);
-                [NSGraphicsContext saveGraphicsState];
+                d->setupNSGraphicsContext(cg, NO);
 
-                [NSGraphicsContext setCurrentContext:[NSGraphicsContext
-                     graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
                 NSScroller *scroller = isHorizontal ? d->horizontalScroller : d-> verticalScroller;
                 // mac os behaviour: as soon as one color channel is >= 128,
                 // the bg is considered bright, scroller is dark
@@ -5452,8 +5454,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 CGContextEndTransparencyLayer(cg);
 
-                [NSGraphicsContext restoreGraphicsState];
-                CGContextRestoreGState(cg);
+                d->restoreNSGraphicsContext(cg);
             } else {
                 d->stopAnimation(opt->styleObject);
 

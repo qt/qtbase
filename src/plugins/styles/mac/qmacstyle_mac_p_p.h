@@ -115,6 +115,8 @@
 // We mean it.
 //
 
+Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGContext);
+
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSScroller);
 
@@ -222,6 +224,9 @@ public:
     void setAutoDefaultButton(QObject *button) const;
 
     NSView *cocoaControl(QCocoaWidget widget) const;
+
+    void setupNSGraphicsContext(CGContextRef cg, bool flipped) const;
+    void restoreNSGraphicsContext(CGContextRef cg) const;
 
     void drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, QCocoaDrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window);
