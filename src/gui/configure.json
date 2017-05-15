@@ -363,6 +363,11 @@
             "type": "compile",
             "test": "unix/evdev"
         },
+        "integrityfb": {
+            "label": "INTEGRITY framebuffer",
+            "type": "compile",
+            "test": "qpa/integrityfb"
+        },
         "libinput_axis_api": {
             "label": "axis API in libinput",
             "type": "compile",
@@ -510,7 +515,7 @@
         "integrityfb": {
             "label": "INTEGRITY framebuffer",
             "section": "Platform plugins",
-            "condition": "config.integrity",
+            "condition": "config.integrity && tests.integrityfb",
             "output": [ "privateFeature" ]
         },
         "kms": {
