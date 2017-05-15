@@ -118,6 +118,7 @@
 Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGContext);
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
+Q_FORWARD_DECLARE_OBJC_CLASS(NSCell);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSButtonCell);
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(NotificationReceiver));
 
@@ -147,7 +148,8 @@ enum QCocoaWidgetKind {
     QCocoaHorizontalScroller,
     QCocoaVerticalScroller,
     QCocoaHorizontalSlider,
-    QCocoaVerticalSlider
+    QCocoaVerticalSlider,
+    QCocoaStepper       // QSpinBox buttons
 };
 
 typedef QPair<QCocoaWidgetKind, QStyleHelper::WidgetSizePolicy> QCocoaWidget;
@@ -227,6 +229,7 @@ public:
     void setAutoDefaultButton(QObject *button) const;
 
     NSView *cocoaControl(QCocoaWidget widget) const;
+    NSCell *cocoaCell(QCocoaWidget widget) const;
 
     void setupNSGraphicsContext(CGContextRef cg, bool flipped) const;
     void restoreNSGraphicsContext(CGContextRef cg) const;
@@ -252,6 +255,7 @@ public:
     NSButtonCell *indicatorBranchButtonCell;
     NSView *backingStoreNSView;
     QHash<QCocoaWidget, NSView *> cocoaControls;
+    QHash<QCocoaWidget, NSCell *> cocoaCells;
 };
 
 QT_END_NAMESPACE

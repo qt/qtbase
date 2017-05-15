@@ -1785,8 +1785,10 @@ QMacStylePrivate::QMacStylePrivate()
 QMacStylePrivate::~QMacStylePrivate()
 {
     QMacAutoReleasePool pool;
-    Q_FOREACH (NSView *b, cocoaControls)
+    for (NSView *b : cocoaControls)
         [b release];
+    for (NSCell *cell : cocoaCells)
+        [cell release];
 }
 
 ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
@@ -1942,6 +1944,35 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
     }
 
     return bv;
+}
+
+NSCell *QMacStylePrivate::cocoaCell(QCocoaWidget widget) const
+{
+    NSCell *cell = cocoaCells[widget];
+    if (!cell) {
+        switch (widget.first) {
+        case QCocoaStepper:
+            cell = [[NSStepperCell alloc] init];
+            break;
+        default:
+            break;
+        }
+
+        switch (widget.second) {
+        case QStyleHelper::SizeSmall:
+            cell.controlSize = NSSmallControlSize;
+            break;
+        case QStyleHelper::SizeMini:
+            cell.controlSize = NSMiniControlSize;
+            break;
+        default:
+            break;
+        }
+
+        const_cast<QMacStylePrivate *>(this)->cocoaCells.insert(widget, cell);
+    }
+
+    return cell;
 }
 
 void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, QCocoaDrawRectBlock drawRectBlock) const
@@ -5584,7 +5615,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            QStyleOptionSpinBox newSB = *sb;
             if (sb->frame && (sb->subControls & SC_SpinBoxFrame)) {
                 SInt32 frame_size;
                 frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
@@ -5601,53 +5631,32 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 HIThemeDrawFrame(&cgRect, &fdi, cg, kHIThemeOrientationNormal);
             }
             if (sb->subControls & (SC_SpinBoxUp | SC_SpinBoxDown)) {
-                HIThemeButtonDrawInfo bdi;
-                bdi.version = qt_mac_hitheme_version;
-                QStyleHelper::WidgetSizePolicy aquaSize = d->aquaSizeConstrain(opt, widget);
-                switch (aquaSize) {
-                    case QStyleHelper::SizeDefault:
-                    case QStyleHelper::SizeLarge:
-                        bdi.kind = kThemeIncDecButton;
-                        break;
-                    case QStyleHelper::SizeMini:
-                        bdi.kind = kThemeIncDecButtonMini;
-                        break;
-                    case QStyleHelper::SizeSmall:
-                        bdi.kind = kThemeIncDecButtonSmall;
-                        break;
-                }
-                if (!(sb->stepEnabled & (QAbstractSpinBox::StepUpEnabled
-                                        | QAbstractSpinBox::StepDownEnabled)))
-                    tds = kThemeStateUnavailable;
-                if (sb->activeSubControls == SC_SpinBoxDown
-                    && (sb->state & State_Sunken))
-                    tds = kThemeStatePressedDown;
-                else if (sb->activeSubControls == SC_SpinBoxUp
-                         && (sb->state & State_Sunken))
-                    tds = kThemeStatePressedUp;
-                if (tds == kThemeStateInactive)
-                    bdi.state = kThemeStateActive;
-                else
-                    bdi.state = tds;
-                bdi.value = kThemeButtonOff;
-                bdi.adornment = kThemeAdornmentNone;
+                const QRect updown = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxUp, widget)
+                                   | proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxDown, widget);
 
-                QRect updown = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxUp, widget);
+                d->setupNSGraphicsContext(cg, NO);
 
-                updown |= proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxDown, widget);
-                CGRect newRect = updown.toCGRect();
-                CGRect outRect;
-                HIThemeGetButtonBackgroundBounds(&newRect, &bdi, &outRect);
+                const auto aquaSize = d->effectiveAquaSizeConstrain(opt, widget);
+                NSStepperCell *cell = static_cast<NSStepperCell *>(d->cocoaCell(QCocoaWidget(QCocoaStepper, aquaSize)));
+                cell.enabled = (sb->state & State_Enabled);
 
-                const auto offMargins = QMargins(int(newRect.origin.x - outRect.origin.x),
-                                                 int(newRect.origin.y - outRect.origin.y),
-                                                 int(outRect.size.width - newRect.size.width),
-                                                 int(outRect.size.height - newRect.size.height));
-                newRect = updown.marginsRemoved(offMargins).toCGRect();
-                if (tds == kThemeStateInactive)
-                    d->drawColorlessButton(newRect, &bdi, p, sb);
-                else
-                    HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
+                const CGRect newRect = [cell drawingRectForBounds:updown.toCGRect()];
+
+                const bool upPressed = sb->activeSubControls == SC_SpinBoxUp && (sb->state & State_Sunken);
+                const bool downPressed = sb->activeSubControls == SC_SpinBoxDown && (sb->state & State_Sunken);
+                const CGFloat x = CGRectGetMidX(newRect);
+                const CGFloat y = upPressed ? -3 : 3; // FIXME Weird coordinate shift going on
+                // Pretend we're pressing the mouse on the right button. Unfortunately, NSStepperCell has no
+                // API to highlight a specific button. The highlighted property works only on the down button.
+                if (upPressed || downPressed)
+                    [cell startTrackingAt:CGPointMake(x, y) inView:d->backingStoreNSView];
+
+                [cell drawWithFrame:newRect inView:d->backingStoreNSView];
+
+                if (upPressed || downPressed)
+                    [cell stopTracking:CGPointMake(x, y) at:CGPointMake(x, y) inView:d->backingStoreNSView mouseIsUp:NO];
+
+                d->restoreNSGraphicsContext(cg);
             }
         }
         break;
@@ -6334,12 +6343,11 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            QStyleHelper::WidgetSizePolicy aquaSize = d->aquaSizeConstrain(spin, widget);
+            QStyleHelper::WidgetSizePolicy aquaSize = d->effectiveAquaSizeConstrain(spin, widget);
             int spinner_w;
             int spinBoxSep;
             int fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
             switch (aquaSize) {
-            case QStyleHelper::SizeDefault:
             case QStyleHelper::SizeLarge:
                 spinner_w = 14;
                 spinBoxSep = 2;
@@ -6352,6 +6360,8 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 spinner_w = 10;
                 spinBoxSep = 1;
                 break;
+            default:
+                Q_UNREACHABLE();
             }
 
             switch (sc) {
@@ -6363,33 +6373,25 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 const int y = fw;
                 const int x = spin->rect.width() - spinner_w;
                 ret.setRect(x + spin->rect.x(), y + spin->rect.y(), spinner_w, spin->rect.height() - y * 2);
-                HIThemeButtonDrawInfo bdi;
-                bdi.version = qt_mac_hitheme_version;
-                bdi.kind = kThemeIncDecButton;
                 int hackTranslateX;
                 switch (aquaSize) {
-                case QStyleHelper::SizeDefault:
                 case QStyleHelper::SizeLarge:
-                    bdi.kind = kThemeIncDecButton;
                     hackTranslateX = 0;
                     break;
                 case QStyleHelper::SizeSmall:
-                    bdi.kind = kThemeIncDecButtonSmall;
                     hackTranslateX = -2;
                     break;
                 case QStyleHelper::SizeMini:
-                    bdi.kind = kThemeIncDecButtonMini;
                     hackTranslateX = -1;
                     break;
+                default:
+                    Q_UNREACHABLE();
                 }
-                bdi.state = kThemeStateActive;
-                bdi.value = kThemeButtonOff;
-                bdi.adornment = kThemeAdornmentNone;
-                CGRect cgRect = ret.toCGRect();
 
-                CGRect outRect;
-                HIThemeGetButtonBackgroundBounds(&cgRect, &bdi, &outRect);
+                NSStepperCell *cell = static_cast<NSStepperCell *>(d->cocoaCell(QCocoaWidget(QCocoaStepper, aquaSize)));
+                const CGRect outRect = [cell drawingRectForBounds:ret.toCGRect()];
                 ret = QRectF::fromCGRect(outRect).toRect();
+
                 switch (sc) {
                 case SC_SpinBoxUp:
                     ret.setHeight(ret.height() / 2);
