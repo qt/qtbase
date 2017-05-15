@@ -160,7 +160,8 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
         case QEvent::MouseMove:
         {
             QPoint nativePosition = getNativeMousePos(e, m_drag_icon_window);
-            move(nativePosition);
+            auto mouseMove = static_cast<QMouseEvent *>(e);
+            move(nativePosition, mouseMove->buttons(), mouseMove->modifiers());
             return true; // Eat all mouse move events
         }
         case QEvent::MouseButtonRelease:
@@ -168,7 +169,8 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
             disableEventFilter();
             if (canDrop()) {
                 QPoint nativePosition = getNativeMousePos(e, m_drag_icon_window);
-                drop(nativePosition);
+                auto mouseRelease = static_cast<QMouseEvent *>(e);
+                drop(nativePosition, mouseRelease->buttons(), mouseRelease->modifiers());
             } else {
                 cancel();
             }
@@ -289,7 +291,7 @@ void QBasicDrag::moveShapedPixmapWindow(const QPoint &globalPos)
         m_drag_icon_window->updateGeometry(globalPos);
 }
 
-void QBasicDrag::drop(const QPoint &)
+void QBasicDrag::drop(const QPoint &, Qt::MouseButtons, Qt::KeyboardModifiers)
 {
     disableEventFilter();
     restoreCursor();
@@ -377,9 +379,18 @@ QSimpleDrag::QSimpleDrag()
 void QSimpleDrag::startDrag()
 {
     QBasicDrag::startDrag();
+    // Here we can be fairly sure that QGuiApplication::mouseButtons/keyboardModifiers() will
+    // contain sensible values as startDrag() normally is called from mouse event handlers
+    // by QDrag::exec(). A better API would be if we could pass something like "input device
+    // pointer" to QDrag::exec(). My guess is that something like that might be required for
+    // QTBUG-52430.
     m_current_window = topLevelAt(QCursor::pos());
     if (m_current_window) {
-        QPlatformDragQtResponse response = QWindowSystemInterface::handleDrag(m_current_window, drag()->mimeData(), QHighDpi::toNativePixels(QCursor::pos(), m_current_window), drag()->supportedActions());
+        auto nativePixelPos = QHighDpi::toNativePixels(QCursor::pos(), m_current_window);
+        QPlatformDragQtResponse response = QWindowSystemInterface::handleDrag(
+                    m_current_window, drag()->mimeData(), nativePixelPos,
+                    drag()->supportedActions(), QGuiApplication::mouseButtons(),
+                    QGuiApplication::keyboardModifiers());
         setCanDrop(response.isAccepted());
         updateCursor(response.acceptedAction());
     } else {
@@ -394,12 +405,13 @@ void QSimpleDrag::cancel()
 {
     QBasicDrag::cancel();
     if (drag() && m_current_window) {
-        QWindowSystemInterface::handleDrag(m_current_window, 0, QPoint(), Qt::IgnoreAction);
-        m_current_window = 0;
+        QWindowSystemInterface::handleDrag(m_current_window, nullptr, QPoint(), Qt::IgnoreAction, 0, 0);
+        m_current_window = nullptr;
     }
 }
 
-void QSimpleDrag::move(const QPoint &nativeGlobalPos)
+void QSimpleDrag::move(const QPoint &nativeGlobalPos, Qt::MouseButtons buttons,
+                       Qt::KeyboardModifiers modifiers)
 {
     QPoint globalPos = fromNativeGlobalPixels(nativeGlobalPos);
     moveShapedPixmapWindow(globalPos);
@@ -408,25 +420,28 @@ void QSimpleDrag::move(const QPoint &nativeGlobalPos)
         return;
 
     const QPoint pos = nativeGlobalPos - window->handle()->geometry().topLeft();
-    const QPlatformDragQtResponse qt_response =
-        QWindowSystemInterface::handleDrag(window, drag()->mimeData(), pos, drag()->supportedActions());
+    const QPlatformDragQtResponse qt_response = QWindowSystemInterface::handleDrag(
+                window, drag()->mimeData(), pos, drag()->supportedActions(),
+                buttons, modifiers);
 
     updateCursor(qt_response.acceptedAction());
     setCanDrop(qt_response.isAccepted());
 }
 
-void QSimpleDrag::drop(const QPoint &nativeGlobalPos)
+void QSimpleDrag::drop(const QPoint &nativeGlobalPos, Qt::MouseButtons buttons,
+                       Qt::KeyboardModifiers modifiers)
 {
     QPoint globalPos = fromNativeGlobalPixels(nativeGlobalPos);
 
-    QBasicDrag::drop(nativeGlobalPos);
+    QBasicDrag::drop(nativeGlobalPos, buttons, modifiers);
     QWindow *window = topLevelAt(globalPos);
     if (!window)
         return;
 
     const QPoint pos = nativeGlobalPos - window->handle()->geometry().topLeft();
-    const QPlatformDropQtResponse response =
-            QWindowSystemInterface::handleDrop(window, drag()->mimeData(),pos, drag()->supportedActions());
+    const QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(
+                window, drag()->mimeData(), pos, drag()->supportedActions(),
+                buttons, modifiers);
     if (response.isAccepted()) {
         setExecutedDropAction(response.acceptedAction());
     } else {

@@ -791,14 +791,44 @@ void QWindowSystemInterface::handleThemeChange(QWindow *window)
 }
 
 #ifndef QT_NO_DRAGANDDROP
-QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
+#if QT_DEPRECATED_SINCE(5, 11)
+QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *window, const QMimeData *dropData,
+                                                           const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrag(window, dropData, QHighDpi::fromNativeLocalPosition(p, window) ,supportedActions);
+    return QGuiApplicationPrivate::processDrag(window, dropData, p, supportedActions,
+                                               QGuiApplication::mouseButtons(),
+                                               QGuiApplication::keyboardModifiers());
 }
 
-QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions)
+QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *window, const QMimeData *dropData,
+                                                           const QPoint &p, Qt::DropActions supportedActions)
 {
-    return QGuiApplicationPrivate::processDrop(window, dropData, QHighDpi::fromNativeLocalPosition(p, window),supportedActions);
+    return QGuiApplicationPrivate::processDrop(window, dropData, p, supportedActions,
+                                               QGuiApplication::mouseButtons(),
+                                               QGuiApplication::keyboardModifiers());
+}
+#endif // QT_DEPRECATED_SINCE(5, 11)
+/*!
+    Drag and drop events are sent immediately.
+
+    ### FIXME? Perhaps DnD API should add some convenience APIs that are more
+    intuitive for the possible DND operations. Here passing nullptr as drop data is used to
+    indicate that drop was canceled and QDragLeaveEvent should be sent as a result.
+*/
+QPlatformDragQtResponse QWindowSystemInterface::handleDrag(QWindow *window, const QMimeData *dropData,
+                                                           const QPoint &p, Qt::DropActions supportedActions,
+                                                           Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
+{
+    auto pos = QHighDpi::fromNativeLocalPosition(p, window);
+    return QGuiApplicationPrivate::processDrag(window, dropData, pos, supportedActions, buttons, modifiers);
+}
+
+QPlatformDropQtResponse QWindowSystemInterface::handleDrop(QWindow *window, const QMimeData *dropData,
+                                                           const QPoint &p, Qt::DropActions supportedActions,
+                                                           Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
+{
+    auto pos = QHighDpi::fromNativeLocalPosition(p, window);
+    return QGuiApplicationPrivate::processDrop(window, dropData, pos, supportedActions, buttons, modifiers);
 }
 #endif // QT_NO_DRAGANDDROP
 

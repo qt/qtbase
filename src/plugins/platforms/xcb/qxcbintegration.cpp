@@ -410,10 +410,7 @@ QPlatformServices *QXcbIntegration::services() const
 
 Qt::KeyboardModifiers QXcbIntegration::queryKeyboardModifiers() const
 {
-    int keybMask = 0;
-    QXcbConnection *conn = m_connections.at(0);
-    QXcbCursor::queryPointer(conn, 0, 0, &keybMask);
-    return conn->keyboard()->translateModifiers(keybMask);
+    return m_connections.at(0)->queryKeyboardModifiers();
 }
 
 QList<int> QXcbIntegration::possibleKeys(const QKeyEvent *e) const

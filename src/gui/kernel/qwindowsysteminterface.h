@@ -215,10 +215,19 @@ public:
     static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);
 
 #ifndef QT_NO_DRAGANDDROP
-    // Drag and drop. These events are sent immediately.
-    static QPlatformDragQtResponse handleDrag(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
-    static QPlatformDropQtResponse handleDrop(QWindow *window, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
-#endif
+#if QT_DEPRECATED_SINCE(5, 11)
+    QT_DEPRECATED static QPlatformDragQtResponse handleDrag(QWindow *window, const QMimeData *dropData,
+                                              const QPoint &p, Qt::DropActions supportedActions);
+    QT_DEPRECATED static QPlatformDropQtResponse handleDrop(QWindow *window, const QMimeData *dropData,
+                                              const QPoint &p, Qt::DropActions supportedActions);
+#endif // #if QT_DEPRECATED_SINCE(5, 11)
+    static QPlatformDragQtResponse handleDrag(QWindow *window, const QMimeData *dropData,
+                                              const QPoint &p, Qt::DropActions supportedActions,
+                                              Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
+    static QPlatformDropQtResponse handleDrop(QWindow *window, const QMimeData *dropData,
+                                              const QPoint &p, Qt::DropActions supportedActions,
+                                              Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
+#endif // QT_NO_DRAGANDDROP
 
     static bool handleNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);
 

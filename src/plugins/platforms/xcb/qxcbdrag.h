@@ -78,14 +78,15 @@ public:
 
     void startDrag() override;
     void cancel() override;
-    void move(const QPoint &globalPos) override;
-    void drop(const QPoint &globalPos) override;
+    void move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) override;
+    void drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) override;
     void endDrag() override;
 
     void handleEnter(QPlatformWindow *window, const xcb_client_message_event_t *event, xcb_window_t proxy = 0);
     void handlePosition(QPlatformWindow *w, const xcb_client_message_event_t *event);
     void handleLeave(QPlatformWindow *w, const xcb_client_message_event_t *event);
-    void handleDrop(QPlatformWindow *, const xcb_client_message_event_t *event);
+    void handleDrop(QPlatformWindow *, const xcb_client_message_event_t *event,
+                    Qt::MouseButtons b = 0, Qt::KeyboardModifiers mods = 0);
 
     void handleStatus(const xcb_client_message_event_t *event);
     void handleSelectionRequest(const xcb_selection_request_event_t *event);
@@ -105,7 +106,8 @@ private:
 
     void init();
 
-    void handle_xdnd_position(QPlatformWindow *w, const xcb_client_message_event_t *event);
+    void handle_xdnd_position(QPlatformWindow *w, const xcb_client_message_event_t *event,
+                              Qt::MouseButtons b = 0, Qt::KeyboardModifiers mods = 0);
     void handle_xdnd_status(const xcb_client_message_event_t *event);
     void send_leave();
 

@@ -626,6 +626,12 @@ xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
 }
 #endif
 
+/*! \internal
+
+    Note that the logical state of a device (as seen by means of the protocol) may
+    lag the physical state if device event processing is frozen. See QueryPointer
+    in X11 protocol specification.
+*/
 void QXcbCursor::queryPointer(QXcbConnection *c, QXcbVirtualDesktop **virtualDesktop, QPoint *pos, int *keybMask)
 {
     if (pos)

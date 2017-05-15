@@ -163,8 +163,12 @@ public:
 #endif
 
 #ifndef QT_NO_DRAGANDDROP
-    static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
-    static QPlatformDropQtResponse processDrop(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);
+    static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData,
+                                               const QPoint &p, Qt::DropActions supportedActions,
+                                               Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
+    static QPlatformDropQtResponse processDrop(QWindow *w, const QMimeData *dropData,
+                                               const QPoint &p, Qt::DropActions supportedActions,
+                                               Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
 #endif
 
     static bool processNativeEvent(QWindow *window, const QByteArray &eventType, void *message, long *result);

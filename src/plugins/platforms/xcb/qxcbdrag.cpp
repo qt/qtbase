@@ -309,7 +309,7 @@ xcb_window_t QXcbDrag::findRealWindow(const QPoint & pos, xcb_window_t w, int md
     return 0;
 }
 
-void QXcbDrag::move(const QPoint &globalPos)
+void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
 {
 
     if (source_sameanswer.contains(globalPos) && source_sameanswer.isValid())
@@ -470,15 +470,15 @@ void QXcbDrag::move(const QPoint &globalPos)
         source_time = connection()->time();
 
         if (w)
-            handle_xdnd_position(w, &move);
+            handle_xdnd_position(w, &move, b, mods);
         else
             xcb_send_event(xcb_connection(), false, proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&move);
     }
 }
 
-void QXcbDrag::drop(const QPoint &globalPos)
+void QXcbDrag::drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
 {
-    QBasicDrag::drop(globalPos);
+    QBasicDrag::drop(globalPos, b, mods);
 
     if (!current_target)
         return;
@@ -522,7 +522,7 @@ void QXcbDrag::drop(const QPoint &globalPos)
     }
 
     if (w) {
-        handleDrop(w, &drop);
+        handleDrop(w, &drop, b, mods);
     } else {
         xcb_send_event(xcb_connection(), false, current_proxy_target, XCB_EVENT_MASK_NO_EVENT, (const char *)&drop);
     }
@@ -710,7 +710,8 @@ void QXcbDrag::handleEnter(QPlatformWindow *window, const xcb_client_message_eve
         DEBUG() << "    " << connection()->atomName(xdnd_types.at(i));
 }
 
-void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message_event_t *e)
+void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message_event_t *e,
+                                    Qt::MouseButtons b, Qt::KeyboardModifiers mods)
 {
     QPoint p((e->data.data32[2] & 0xffff0000) >> 16, e->data.data32[2] & 0x0000ffff);
     Q_ASSERT(w);
@@ -743,7 +744,12 @@ void QXcbDrag::handle_xdnd_position(QPlatformWindow *w, const xcb_client_message
         supported_actions = Qt::DropActions(toDropAction(e->data.data32[4]));
     }
 
-    QPlatformDragQtResponse qt_response = QWindowSystemInterface::handleDrag(w->window(),dropData,p,supported_actions);
+    auto buttons = currentDrag() ? b : connection()->queryMouseButtons();
+    auto modifiers = currentDrag() ? mods : connection()->queryKeyboardModifiers();
+
+    QPlatformDragQtResponse qt_response = QWindowSystemInterface::handleDrag(
+                w->window(), dropData, p, supported_actions, buttons, modifiers);
+
     QRect answerRect(p + geometry.topLeft(), QSize(1,1));
     answerRect = qt_response.answerRect().translated(geometry.topLeft()).intersected(geometry);
 
@@ -887,7 +893,7 @@ void QXcbDrag::handleLeave(QPlatformWindow *w, const xcb_client_message_event_t 
         DEBUG("xdnd drag leave from unexpected source (%x not %x", event->data.data32[0], xdnd_dragsource);
     }
 
-    QWindowSystemInterface::handleDrag(w->window(),0,QPoint(),Qt::IgnoreAction);
+    QWindowSystemInterface::handleDrag(w->window(), nullptr, QPoint(), Qt::IgnoreAction, 0, 0);
 
     xdnd_dragsource = 0;
     xdnd_types.clear();
@@ -898,7 +904,6 @@ void QXcbDrag::send_leave()
 {
     if (!current_target)
         return;
-
 
     xcb_client_message_event_t leave;
     leave.response_type = XCB_CLIENT_MESSAGE;
@@ -933,7 +938,8 @@ void QXcbDrag::send_leave()
     waiting_for_status = false;
 }
 
-void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *event)
+void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *event,
+                          Qt::MouseButtons b, Qt::KeyboardModifiers mods)
 {
     DEBUG("xdndHandleDrop");
     if (!currentWindow) {
@@ -962,9 +968,6 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     } else {
         dropData = m_dropData;
         supported_drop_actions = accepted_drop_action;
-
-        // Drop coming from another app? Update keyboard modifiers.
-        QGuiApplicationPrivate::modifier_buttons = QGuiApplication::queryKeyboardModifiers();
     }
 
     if (!dropData)
@@ -975,7 +978,13 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
     //            dropData = QDragManager::dragPrivate(X11->dndDropTransactions.at(at).object)->data;
     // if we can't find it, then use the data in the drag manager
 
-    QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(currentWindow.data(),dropData,currentPosition,supported_drop_actions);
+    auto buttons = currentDrag() ? b : connection()->queryMouseButtons();
+    auto modifiers = currentDrag() ? mods : connection()->queryKeyboardModifiers();
+
+    QPlatformDropQtResponse response = QWindowSystemInterface::handleDrop(
+                currentWindow.data(), dropData, currentPosition, supported_drop_actions,
+                buttons, modifiers);
+
     setExecutedDropAction(response.acceptedAction());
 
     xcb_client_message_event_t finished;

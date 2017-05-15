@@ -82,8 +82,8 @@ protected:
 
     virtual void startDrag();
     virtual void cancel();
-    virtual void move(const QPoint &globalPos) = 0;
-    virtual void drop(const QPoint &globalPos) = 0;
+    virtual void move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) = 0;
+    virtual void drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) = 0;
     virtual void endDrag();
 
 
@@ -132,8 +132,8 @@ public:
 protected:
     virtual void startDrag() override;
     virtual void cancel() override;
-    virtual void move(const QPoint &globalPos) override;
-    virtual void drop(const QPoint &globalPos) override;
+    virtual void move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) override;
+    virtual void drop(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods) override;
 };
 
 #endif // QT_NO_DRAGANDDROP

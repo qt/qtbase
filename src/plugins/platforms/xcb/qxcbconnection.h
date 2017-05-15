@@ -506,6 +506,9 @@ public:
     static bool xEmbedSystemTrayAvailable();
     static bool xEmbedSystemTrayVisualHasAlphaChannel();
 
+    Qt::MouseButtons queryMouseButtons() const;
+    Qt::KeyboardModifiers queryKeyboardModifiers() const;
+
 #if QT_CONFIG(xcb_xinput)
     void xi2SelectStateEvents();
     void xi2SelectDeviceEvents(xcb_window_t window);

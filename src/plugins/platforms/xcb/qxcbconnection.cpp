@@ -53,6 +53,7 @@
 #include "qxcbsystemtraytracker.h"
 #include "qxcbglintegrationfactory.h"
 #include "qxcbglintegration.h"
+#include "qxcbcursor.h"
 
 #include <QSocketNotifier>
 #include <QAbstractEventDispatcher>
@@ -2273,6 +2274,20 @@ bool QXcbConnection::xEmbedSystemTrayVisualHasAlphaChannel()
         return false;
     QXcbConnection *connection = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration())->defaultConnection();
     return connection->systemTrayTracker() && connection->systemTrayTracker()->visualHasAlphaChannel();
+}
+
+Qt::MouseButtons QXcbConnection::queryMouseButtons() const
+{
+    int stateMask = 0;
+    QXcbCursor::queryPointer(connection(), 0, 0, &stateMask);
+    return translateMouseButtons(stateMask);
+}
+
+Qt::KeyboardModifiers QXcbConnection::queryKeyboardModifiers() const
+{
+    int stateMask = 0;
+    QXcbCursor::queryPointer(connection(), 0, 0, &stateMask);
+    return keyboard()->translateModifiers(stateMask);
 }
 
 bool QXcbConnection::event(QEvent *e)
