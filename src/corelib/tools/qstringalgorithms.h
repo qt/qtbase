@@ -53,10 +53,10 @@ class QLatin1String;
 class QStringView;
 template <typename T> class QVector;
 
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
-Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW Q_REQUIRED_RESULT;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
 
 
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qStartsWith(QStringView   haystack, QStringView   needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
@@ -70,10 +70,10 @@ Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QLatin1Strin
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool qEndsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
 
 
-Q_CORE_EXPORT QByteArray qConvertToLatin1(QStringView str) Q_REQUIRED_RESULT;
-Q_CORE_EXPORT QByteArray qConvertToUtf8(QStringView str) Q_REQUIRED_RESULT;
-Q_CORE_EXPORT QByteArray qConvertToLocal8Bit(QStringView str) Q_REQUIRED_RESULT;
-Q_CORE_EXPORT QVector<uint> qConvertToUcs4(QStringView str) Q_REQUIRED_RESULT;
+Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray qConvertToLatin1(QStringView str);
+Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray qConvertToUtf8(QStringView str);
+Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray qConvertToLocal8Bit(QStringView str);
+Q_REQUIRED_RESULT Q_CORE_EXPORT QVector<uint> qConvertToUcs4(QStringView str);
 
 QT_END_NAMESPACE
 
