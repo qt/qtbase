@@ -119,7 +119,6 @@ Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGContext);
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSCell);
-Q_FORWARD_DECLARE_OBJC_CLASS(NSButtonCell);
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(NotificationReceiver));
 
 QT_BEGIN_NAMESPACE
@@ -244,13 +243,10 @@ public:
 #endif
 
 public:
-    mutable QPointer<QObject> pressedButton;
-    mutable QPointer<QObject> defaultButton;
     mutable QPointer<QObject> autoDefaultButton;
     static  QVector<QPointer<QObject> > scrollBars;
 
     mutable QPointer<QFocusFrame> focusWidget;
-    CFAbsoluteTime defaultButtonStart;
     QT_MANGLE_NAMESPACE(NotificationReceiver) *receiver;
     NSView *backingStoreNSView;
     QHash<QCocoaWidget, NSView *> cocoaControls;

@@ -1763,24 +1763,9 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
     }
 }
 
-void QMacStylePrivate::setAutoDefaultButton(QObject *button) const
-{
-    if (autoDefaultButton != button) {
-        if (QStyleAnimation *anim = animation(autoDefaultButton)) {
-            anim->updateTarget();
-            stopAnimation(autoDefaultButton);
-        }
-        autoDefaultButton = button;
-    }
-    if (autoDefaultButton && !animation(autoDefaultButton))
-        startAnimation(new QStyleAnimation(autoDefaultButton));
-}
-
 QMacStylePrivate::QMacStylePrivate()
     : backingStoreNSView(nil)
-{
-    defaultButtonStart = CFAbsoluteTimeGetCurrent();
-}
+{ }
 
 QMacStylePrivate::~QMacStylePrivate()
 {
@@ -3826,36 +3811,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 break;
             }
 
-            // No default button pulsating animation on Yosemite,
-            // so we have to do few things differently.
-
             // a focused auto-default button within an active window
             // takes precedence over a normal default button
-            if (btn->features & QStyleOptionButton::AutoDefaultButton
-                    && opt->state & State_Active && opt->state & State_HasFocus) {
+            if ((btn->features & QStyleOptionButton::AutoDefaultButton)
+                && (opt->state & State_Active)
+                && (opt->state & State_HasFocus))
                 d->autoDefaultButton = opt->styleObject;
-            } else if (d->autoDefaultButton == opt->styleObject) {
-                d->setAutoDefaultButton(0);
-            }
-
-            if (!d->autoDefaultButton) {
-                if (btn->features & QStyleOptionButton::DefaultButton && opt->state & State_Active) {
-                    d->defaultButton = opt->styleObject;
-                } else if (d->defaultButton == opt->styleObject) {
-                    if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
-                        animation->updateTarget();
-                        d->stopAnimation(opt->styleObject);
-                    }
-                    d->defaultButton = 0;
-                }
-            }
-
-            // TODO: find out the pressed button in a qwidget independent way
-            extern QWidget *qt_button_down; // qwidgetwindow.cpp
-            if (opt->styleObject == qt_button_down)
-                d->pressedButton = opt->styleObject;
-            else if (d->pressedButton == opt->styleObject)
-                d->pressedButton = 0;
+            else if (d->autoDefaultButton == opt->styleObject)
+                d->autoDefaultButton = nullptr;
 
             bool hasMenu = btn->features & QStyleOptionButton::HasMenu;
             HIThemeButtonDrawInfo bdi;
