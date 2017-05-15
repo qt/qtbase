@@ -326,7 +326,7 @@ defineTest(qtConfParseCommandLine) {
 }
 
 defineReplace(qtConfToolchainSupportsFlag) {
-    test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR)
+    test_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)
     test_cmd_base = "$$QMAKE_CD $$system_quote($$system_path($$test_out_dir)) &&"
 
     conftest = "int main() { return 0; }"
@@ -849,7 +849,7 @@ defineTest(qtConfTest_compile) {
     isEmpty(host): host = false
 
     test_dir = $$QMAKE_CONFIG_TESTS_DIR/$$test
-    test_base_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR)
+    test_base_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)
     test_out_dir = $$test_base_out_dir/$$test
     !isEmpty($${1}.pro): \
         test_dir = $$test_dir/$$eval($${1}.pro)

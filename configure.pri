@@ -252,7 +252,7 @@ defineTest(qtConfTest_architecture) {
         error("Could not determine $$eval($${1}.label). See config.log for details.")
 
     test = $$eval($${1}.test)
-    test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR/$$test)
+    test_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)/$$test
     unix:exists($$test_out_dir/arch): \
         content = $$cat($$test_out_dir/arch, blob)
     else: win32:exists($$test_out_dir/arch.exe): \
