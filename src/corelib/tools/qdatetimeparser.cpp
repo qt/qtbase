@@ -179,11 +179,14 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
             day = max;
         }
     }
-    if (QDate::isValid(year, month, day) && QTime::isValid(hour, minute, second, msec)) {
-        v = QDateTime(QDate(year, month, day), QTime(hour, minute, second, msec), spec);
-        return true;
-    }
-    return false;
+
+    const QDate newDate(year, month, day);
+    const QTime newTime(hour, minute, second, msec);
+    if (!newDate.isValid() || !newTime.isValid())
+        return false;
+
+    v = QDateTime(newDate, newTime, spec);
+    return true;
 }
 
 
@@ -1765,16 +1768,13 @@ bool QDateTimeParser::skipToNextSection(int index, const QDateTime &current, con
 
     QDateTime tmp = current;
     int min = absoluteMin(index);
-    setDigit(tmp, index, min);
-    if (tmp < minimum) {
+    if (!setDigit(tmp, index, min) || tmp < minimum)
         min = getDigit(minimum, index);
-    }
 
     int max = absoluteMax(index, current);
-    setDigit(tmp, index, max);
-    if (tmp > maximum) {
+    if (!setDigit(tmp, index, max) || tmp > maximum)
         max = getDigit(maximum, index);
-    }
+
     int pos = cursorPosition() - node.pos;
     if (pos < 0 || pos >= text.size())
         pos = -1;
