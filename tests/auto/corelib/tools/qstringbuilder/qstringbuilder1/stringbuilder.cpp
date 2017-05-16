@@ -56,6 +56,22 @@
 #define Q P
 #endif
 
+template <typename T> QString toQString(const T &t);
+
+template <> QString toQString(const QString &s) { return s; }
+template <> QString toQString(const QStringRef &r) { return r.toString(); }
+template <> QString toQString(const QLatin1String &l) { return l; }
+template <> QString toQString(const QLatin1Char &l) { return QChar(l); }
+template <> QString toQString(const QChar &c) { return c; }
+template <> QString toQString(const QChar::SpecialCharacter &c) { return QChar(c); }
+
+template <typename T> QByteArray toQByteArray(const T &t);
+
+template <> QByteArray toQByteArray(const QByteArray &b) { return b; }
+template <> QByteArray toQByteArray(char * const &p) { return p; }
+template <size_t N> QByteArray toQByteArray(const char (&a)[N]) { return a; }
+template <> QByteArray toQByteArray(const char &c) { return QByteArray(&c, 1); }
+
 void runScenario()
 {
     // this code is latin1. TODO: replace it with the utf8 block below, once
@@ -63,49 +79,99 @@ void runScenario()
     QLatin1String l1string(LITERAL);
     QString string(l1string);
     QStringRef stringref(&string, 2, 10);
-    QLatin1Char achar('c');
+    QLatin1Char lchar('c');
+    QChar qchar(lchar);
     QChar::SpecialCharacter special(QChar::Nbsp);
+
+#define CHECK(QorP, a1, a2) \
+    do { \
+        DO(QorP, a1, a2); \
+        DO(QorP, a2, a1); \
+    } while (0)
+
+#define DO(QorP, a1, a2) \
+    QCOMPARE(QString(a1 QorP a2), \
+             toQString(a1).append(toQString(a2))) \
+    /* end */
+
+    CHECK(P, l1string, l1string);
+    CHECK(P, l1string, string);
+    CHECK(P, l1string, stringref);
+    CHECK(P, l1string, lchar);
+    CHECK(P, l1string, qchar);
+    CHECK(P, l1string, special);
+    CHECK(P, l1string, QStringLiteral(LITERAL));
+
+    CHECK(P, string, string);
+    CHECK(P, string, stringref);
+    CHECK(P, string, lchar);
+    CHECK(P, string, qchar);
+    CHECK(P, string, special);
+    CHECK(P, string, QStringLiteral(LITERAL));
+
+    CHECK(P, stringref, stringref);
+    CHECK(P, stringref, lchar);
+    CHECK(P, stringref, qchar);
+    CHECK(P, stringref, special);
+    CHECK(P, stringref, QStringLiteral(LITERAL));
+
+    CHECK(P, lchar, lchar);
+    CHECK(P, lchar, qchar);
+    CHECK(P, lchar, special);
+    CHECK(P, lchar, QStringLiteral(LITERAL));
+
+    CHECK(P, qchar, qchar);
+    CHECK(P, qchar, special);
+    CHECK(P, qchar, QStringLiteral(LITERAL));
+
+    CHECK(P, special, special);
+    CHECK(P, special, QStringLiteral(LITERAL));
+
+    CHECK(P, QStringLiteral(LITERAL), QStringLiteral(LITERAL));
+
+#undef DO
+
+#define DO(QorP, a1, a2) \
+    QCOMPARE(QByteArray(a1 QorP a2), \
+             toQByteArray(a1).append(toQByteArray(a2))) \
+    /* end */
+
+    QByteArray bytearray = stringref.toUtf8();
+    char *charstar = bytearray.data();
+    char chararray[3] = { 'H', 'i', '\0' };
+    const char constchararray[3] = { 'H', 'i', '\0' };
+    char achar = 'a';
+
+    CHECK(P, bytearray, bytearray);
+    CHECK(P, bytearray, charstar);
+#ifndef Q_CC_MSVC // see QTBUG-65359
+    CHECK(P, bytearray, chararray);
+#else
+    Q_UNUSED(chararray);
+#endif
+    CHECK(P, bytearray, constchararray);
+    CHECK(P, bytearray, achar);
+
+    //CHECK(Q, charstar, charstar);     // BUILTIN <-> BUILTIN cat't be overloaded
+    //CHECK(Q, charstar, chararray);
+    //CHECK(Q, charstar, achar);
+
+    //CHECK(Q, chararray, chararray);   // BUILTIN <-> BUILTIN cat't be overloaded
+    //CHECK(Q, chararray, achar);
+
+    //CHECK(Q, achar, achar);           // BUILTIN <-> BUILTIN cat't be overloaded
+
+#undef DO
+#undef CHECK
+
     QString r2(QLatin1String(LITERAL LITERAL));
     QString r3 = QString::fromUtf8(UTF8_LITERAL UTF8_LITERAL);
     QString r;
 
-    r = string P string;
-    QCOMPARE(r, r2);
-    r = stringref Q stringref;
-    QCOMPARE(r, QString(stringref.toString() + stringref.toString()));
-    r = stringref P stringref;
-    QCOMPARE(r, QString(stringref.toString() + stringref.toString()));
-    r = string P l1string;
-    QCOMPARE(r, r2);
-    r = l1string P stringref;
-    QCOMPARE(r, QString(l1string + stringref.toString()));
-    r = stringref P l1string;
-    QCOMPARE(r, QString(stringref.toString() + l1string));
-    r = stringref P string;
-    QCOMPARE(r, QString(stringref.toString() + string));
-    r = string P stringref;
-    QCOMPARE(r, QString(string + stringref.toString()));
-    r = stringref P achar;
-    QCOMPARE(r, QString(stringref.toString() + achar));
-    r = achar P stringref;
-    QCOMPARE(r, QString(achar + stringref.toString()));
-    r = string Q QStringLiteral(LITERAL);
-    QCOMPARE(r, r2);
-    r = QStringLiteral(LITERAL) Q string;
-    QCOMPARE(r, r2);
-    r = l1string Q QStringLiteral(LITERAL);
-    QCOMPARE(r, r2);
-    r = string + achar;
-    QCOMPARE(r, QString(string P achar));
-    r = achar + string;
-    QCOMPARE(r, QString(achar P string));
-    r = special + string;
-    QCOMPARE(r, QString(special P string));
-
     // self-assignment:
     r = stringref.toString();
-    r = achar + r;
-    QCOMPARE(r, QString(achar P stringref));
+    r = lchar + r;
+    QCOMPARE(r, QString(lchar P stringref));
 
 #ifdef Q_COMPILER_UNICODE_STRINGS
     r = QStringLiteral(UNICODE_LITERAL);
