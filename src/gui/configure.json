@@ -430,7 +430,6 @@
         "combined-angle-lib": {
             "label": "Combined ANGLE Library",
             "autoDetect": false,
-            "enable": "features.angle",
             "condition": "features.angle",
             "output": [ "publicFeature" ]
         },
