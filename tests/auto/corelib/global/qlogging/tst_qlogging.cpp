@@ -100,11 +100,11 @@ tst_qmessagehandler::tst_qmessagehandler()
 
 void tst_qmessagehandler::initTestCase()
 {
+#if QT_CONFIG(process)
     m_appDir = QFINDTESTDATA("app");
     QVERIFY2(!m_appDir.isEmpty(), qPrintable(
         QString::fromLatin1("Couldn't find helper app dir starting from %1.").arg(QDir::currentPath())));
 
-#if QT_CONFIG(process)
     m_baseEnvironment = QProcess::systemEnvironment();
     for (int i = 0; i < m_baseEnvironment.count(); ++i) {
         if (m_baseEnvironment.at(i).startsWith("QT_MESSAGE_PATTERN=")) {
