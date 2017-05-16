@@ -206,6 +206,7 @@ private:
     QT_DEPRECATED bool notifyInternal(QObject *receiver, QEvent *event); // ### Qt6 BIC: remove me
 #  endif
     static bool notifyInternal2(QObject *receiver, QEvent *);
+    static bool forwardEvent(QObject *receiver, QEvent *event, QEvent *originatingEvent = nullptr);
 #endif
 
     static QCoreApplication *self;

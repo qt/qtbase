@@ -1019,6 +1019,21 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
 }
 
 /*!
+    \internal
+    \since 5.10
+
+    Forwards the \a event to the \a receiver, using the spontaneous
+    state of the \a originatingEvent if specified.
+*/
+bool QCoreApplication::forwardEvent(QObject *receiver, QEvent *event, QEvent *originatingEvent)
+{
+    if (event && originatingEvent)
+        event->spont = originatingEvent->spont;
+
+    return notifyInternal2(receiver, event);
+}
+
+/*!
   Sends \a event to \a receiver: \a {receiver}->event(\a event).
   Returns the value that is returned from the receiver's event
   handler. Note that this function is called for all events sent to
