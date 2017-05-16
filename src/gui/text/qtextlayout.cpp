@@ -630,6 +630,9 @@ Qt::CursorMoveStyle QTextLayout::cursorMoveStyle() const
 /*!
     Begins the layout process.
 
+    \warning This will invalidate the layout, so all existing QTextLine objects
+    that refer to the previous contents should now be discarded.
+
     \sa endLayout()
 */
 void QTextLayout::beginLayout()
@@ -673,6 +676,9 @@ void QTextLayout::endLayout()
 
     Clears the line information in the layout. After having called
     this function, lineCount() returns 0.
+
+    \warning This will invalidate the layout, so all existing QTextLine objects
+    that refer to the previous contents should now be discarded.
 */
 void QTextLayout::clearLayout()
 {
