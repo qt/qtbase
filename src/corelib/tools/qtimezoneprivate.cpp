@@ -258,6 +258,8 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
       brackets the correct time and at most one DST transition.
     */
     const qint64 sixteenHoursInMSecs(16 * 3600 * 1000);
+    Q_STATIC_ASSERT(-sixteenHoursInMSecs / 1000 < QTimeZone::MinUtcOffsetSecs
+                  && sixteenHoursInMSecs / 1000 > QTimeZone::MaxUtcOffsetSecs);
     /*
       Offsets are Local - UTC, positive to the east of Greenwich, negative to
       the west; DST offset always exceeds standard offset, when DST applies.

@@ -59,6 +59,14 @@ class QTimeZonePrivate;
 class Q_CORE_EXPORT QTimeZone
 {
 public:
+    // Sane UTC offsets range from -14 to +14 hours:
+    enum {
+        // No known zone > 12 hrs West of Greenwich (Baker Island, USA)
+        MinUtcOffsetSecs = -14 * 3600,
+        // No known zone > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati)
+        MaxUtcOffsetSecs = +14 * 3600
+    };
+
     enum TimeType {
         StandardTime = 0,
         DaylightTime = 1,
