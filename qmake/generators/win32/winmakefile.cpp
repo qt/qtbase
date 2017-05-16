@@ -174,6 +174,9 @@ void Win32MakefileGenerator::processVars()
     else if (project->first("TEMPLATE").startsWith("vc"))
         project->values("MAKEFILE") = project->values("QMAKE_PROJECT_NAME");
 
+    project->values("QMAKE_INCDIR") += project->values("QMAKE_INCDIR_POST");
+    project->values("QMAKE_LIBDIR") += project->values("QMAKE_LIBDIR_POST");
+
     if (!project->values("QMAKE_INCDIR").isEmpty())
         project->values("INCLUDEPATH") += project->values("QMAKE_INCDIR");
 

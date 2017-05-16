@@ -139,6 +139,3 @@ utf8_source {
 }
 
 !precompile_header: SOURCES += $$NO_PCH_SOURCES
-
-QMAKE_INCDIR += $$QMAKE_INCDIR_POST
-QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST

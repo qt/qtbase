@@ -94,6 +94,8 @@ UnixMakefileGenerator::init()
             !project->values("QMAKE_LIB_FLAG").isEmpty() &&
             project->isActiveConfig("dll"))
         project->values("QMAKE_LFLAGS") += project->values("QMAKE_LFLAGS_PREBIND");
+    project->values("QMAKE_INCDIR") += project->values("QMAKE_INCDIR_POST");
+    project->values("QMAKE_LIBDIR") += project->values("QMAKE_LIBDIR_POST");
     if(!project->isEmpty("QMAKE_INCDIR"))
         project->values("INCLUDEPATH") += project->values("QMAKE_INCDIR");
     ProStringList ldadd;
