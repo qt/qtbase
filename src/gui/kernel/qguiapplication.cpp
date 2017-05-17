@@ -634,6 +634,18 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::m_inputDeviceManager = 0;
     delete QGuiApplicationPrivate::desktopFileName;
     QGuiApplicationPrivate::desktopFileName = 0;
+    QGuiApplicationPrivate::mouse_buttons = Qt::NoButton;
+    QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
+    QGuiApplicationPrivate::lastCursorPosition = {qInf(), qInf()};
+    QGuiApplicationPrivate::currentMousePressWindow = QGuiApplicationPrivate::currentMouseWindow = nullptr;
+    QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
+    QGuiApplicationPrivate::highDpiScalingUpdated = false;
+    QGuiApplicationPrivate::tabletDevicePoints.clear();
+#ifndef QT_NO_SESSIONMANAGER
+    QGuiApplicationPrivate::is_fallback_session_management_enabled = true;
+#endif
+    QGuiApplicationPrivate::mousePressTime = 0;
+    QGuiApplicationPrivate::mousePressX = QGuiApplicationPrivate::mousePressY = 0;
 }
 
 QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags)
@@ -1531,6 +1543,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     delete m_a32ColorProfile.load();
 
     window_list.clear();
+    screen_list.clear();
 }
 
 #if 0
