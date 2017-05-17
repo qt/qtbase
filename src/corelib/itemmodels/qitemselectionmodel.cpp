@@ -1267,6 +1267,21 @@ void QItemSelectionModel::select(const QModelIndex &index, QItemSelectionModel::
                           convenience.
 */
 
+namespace {
+namespace QtFunctionObjects {
+struct IsNotValid {
+    typedef bool result_type;
+    struct is_transparent : std::true_type {};
+    template <typename T>
+    Q_DECL_CONSTEXPR bool operator()(T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(t.isValid()))
+    { return !t.isValid(); }
+    template <typename T>
+    Q_DECL_CONSTEXPR bool operator()(T *t) const Q_DECL_NOEXCEPT_EXPR(noexcept(t->isValid()))
+    { return !t->isValid(); }
+};
+}
+} // unnamed namespace
+
 /*!
     Selects the item \a selection using the specified \a command, and emits
     selectionChanged().
@@ -1290,13 +1305,9 @@ void QItemSelectionModel::select(const QItemSelection &selection, QItemSelection
     // be too late if another model observer is connected to the same modelReset slot and is invoked first
     // it might call select() on this selection model before any such QItemSelectionModelPrivate::_q_modelReset() slot
     // is invoked, so it would not be cleared yet. We clear it invalid ranges in it here.
-    QItemSelection::iterator it = d->ranges.begin();
-    while (it != d->ranges.end()) {
-      if (!it->isValid())
-        it = d->ranges.erase(it);
-      else
-        ++it;
-    }
+    using namespace QtFunctionObjects;
+    d->ranges.erase(std::remove_if(d->ranges.begin(), d->ranges.end(), IsNotValid()),
+                    d->ranges.end());
 
     QItemSelection old = d->ranges;
     old.merge(d->currentSelection, d->currentCommand);
@@ -1748,12 +1759,9 @@ const QItemSelection QItemSelectionModel::selection() const
     selected.merge(d->currentSelection, d->currentCommand);
     // make sure we have no invalid ranges
     // ###  should probably be handled more generic somewhere else
-    auto isNotValid = [](const QItemSelectionRange& range) {
-        return !range.isValid();
-    };
-
+    using namespace QtFunctionObjects;
     selected.erase(std::remove_if(selected.begin(), selected.end(),
-                                  isNotValid),
+                                  IsNotValid()),
                    selected.end());
     return selected;
 }
