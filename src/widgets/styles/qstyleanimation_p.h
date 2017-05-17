@@ -83,7 +83,8 @@ public:
         DefaultFps,
         SixtyFps,
         ThirtyFps,
-        TwentyFps
+        TwentyFps,
+        FifteenFps
     };
 
     FrameRate frameRate() const;

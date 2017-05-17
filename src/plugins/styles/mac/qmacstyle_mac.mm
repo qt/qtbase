@@ -4599,8 +4599,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // implementation for details.
                 if (!animation && opt->styleObject) {
                     auto *animation = new QProgressStyleAnimation(d->animateSpeed(QMacStylePrivate::AquaProgressBar), opt->styleObject);
-                    // NSProgressIndicator is heavier to draw than the HITheme API, so we reduce the frame rate a notch.
-                    animation->setFrameRate(QStyleAnimation::TwentyFps);
+                    // NSProgressIndicator is heavier to draw than the HITheme API, so we reduce the frame rate a couple notches.
+                    animation->setFrameRate(QStyleAnimation::FifteenFps);
                     d->startAnimation(animation);
                     [ipi startAnimation];
                 }
