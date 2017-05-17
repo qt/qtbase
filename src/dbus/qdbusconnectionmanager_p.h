@@ -55,14 +55,13 @@
 
 #include <QtDBus/private/qtdbusglobal_p.h>
 #include "qdbusconnection_p.h"
-#include "qdbusmetatype_p.h"
 #include "private/qthread_p.h"
 
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
 
-class QDBusConnectionManager : public QDaemonThread, public QDBusMetaTypeId
+class QDBusConnectionManager : public QDaemonThread
 {
     Q_OBJECT
     struct ConnectionRequestData;

@@ -1,7 +1,6 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -40,15 +39,19 @@
 
 #include "qdbusmetatype.h"
 #include "qdbusmetatype_p.h"
-#include "qdbus_symbols_p.h"
 
 #include <string.h>
+#include "qdbus_symbols_p.h"
+
+#include <qbytearray.h>
+#include <qglobal.h>
+#include <qreadwritelock.h>
+#include <qvector.h>
 
 #include "qdbusargument_p.h"
 #include "qdbusutil_p.h"
 #include "qdbusunixfiledescriptor.h"
 #ifndef QT_BOOTSTRAPPED
-#include "qdbusconnectionmanager_p.h"
 #include "qdbusmessage.h"
 #endif
 
@@ -61,71 +64,81 @@
 
 QT_BEGIN_NAMESPACE
 
-static void registerMarshallOperatorsNoLock(QVector<QDBusCustomTypeInfo> &ct, int id,
-                                            QDBusMetaType::MarshallFunction mf,
-                                            QDBusMetaType::DemarshallFunction df);
+class QDBusCustomTypeInfo
+{
+public:
+    QDBusCustomTypeInfo() : signature(), marshall(0), demarshall(0)
+    { }
+
+    // Suggestion:
+    // change 'signature' to char* and make QDBusCustomTypeInfo a Movable type
+    QByteArray signature;
+    QDBusMetaType::MarshallFunction marshall;
+    QDBusMetaType::DemarshallFunction demarshall;
+};
 
 template<typename T>
-inline static void registerHelper(QVector<QDBusCustomTypeInfo> &ct)
+inline static void registerHelper(T * = 0)
 {
     void (*mf)(QDBusArgument &, const T *) = qDBusMarshallHelper<T>;
     void (*df)(const QDBusArgument &, T *) = qDBusDemarshallHelper<T>;
-    registerMarshallOperatorsNoLock(ct, qMetaTypeId<T>(),
+    QDBusMetaType::registerMarshallOperators(qMetaTypeId<T>(),
         reinterpret_cast<QDBusMetaType::MarshallFunction>(mf),
         reinterpret_cast<QDBusMetaType::DemarshallFunction>(df));
 }
 
-QDBusMetaTypeId *QDBusMetaTypeId::instance()
+void QDBusMetaTypeId::init()
 {
-#ifdef QT_BOOTSTRAPPED
-    static QDBusMetaTypeId self;
-    return &self;
-#else
-    return QDBusConnectionManager::instance();
-#endif
-}
+    static QBasicAtomicInt initialized = Q_BASIC_ATOMIC_INITIALIZER(false);
 
-QDBusMetaTypeId::QDBusMetaTypeId()
-{
-    // register our types with Qt Core (calling qMetaTypeId<T>() does this implicitly)
-    (void)message();
-    (void)argument();
-    (void)variant();
-    (void)objectpath();
-    (void)signature();
-    (void)error();
-    (void)unixfd();
+    // reentrancy is not a problem since everything else is locked on their own
+    // set the guard variable at the end
+    if (!initialized.load()) {
+        // register our types with Qt Core (calling qMetaTypeId<T>() does this implicitly)
+        (void)message();
+        (void)argument();
+        (void)variant();
+        (void)objectpath();
+        (void)signature();
+        (void)error();
+        (void)unixfd();
 
 #ifndef QDBUS_NO_SPECIALTYPES
-    // and register Qt Core's with us
-    registerHelper<QDate>(customTypes);
-    registerHelper<QTime>(customTypes);
-    registerHelper<QDateTime>(customTypes);
-    registerHelper<QRect>(customTypes);
-    registerHelper<QRectF>(customTypes);
-    registerHelper<QSize>(customTypes);
-    registerHelper<QSizeF>(customTypes);
-    registerHelper<QPoint>(customTypes);
-    registerHelper<QPointF>(customTypes);
-    registerHelper<QLine>(customTypes);
-    registerHelper<QLineF>(customTypes);
-    registerHelper<QVariantList>(customTypes);
-    registerHelper<QVariantMap>(customTypes);
-    registerHelper<QVariantHash>(customTypes);
+        // and register Qt Core's with us
+        registerHelper<QDate>();
+        registerHelper<QTime>();
+        registerHelper<QDateTime>();
+        registerHelper<QRect>();
+        registerHelper<QRectF>();
+        registerHelper<QSize>();
+        registerHelper<QSizeF>();
+        registerHelper<QPoint>();
+        registerHelper<QPointF>();
+        registerHelper<QLine>();
+        registerHelper<QLineF>();
+        registerHelper<QVariantList>();
+        registerHelper<QVariantMap>();
+        registerHelper<QVariantHash>();
 
-    registerHelper<QList<bool> >(customTypes);
-    registerHelper<QList<short> >(customTypes);
-    registerHelper<QList<ushort> >(customTypes);
-    registerHelper<QList<int> >(customTypes);
-    registerHelper<QList<uint> >(customTypes);
-    registerHelper<QList<qlonglong> >(customTypes);
-    registerHelper<QList<qulonglong> >(customTypes);
-    registerHelper<QList<double> >(customTypes);
-    registerHelper<QList<QDBusObjectPath> >(customTypes);
-    registerHelper<QList<QDBusSignature> >(customTypes);
-    registerHelper<QList<QDBusUnixFileDescriptor> >(customTypes);
+        qDBusRegisterMetaType<QList<bool> >();
+        qDBusRegisterMetaType<QList<short> >();
+        qDBusRegisterMetaType<QList<ushort> >();
+        qDBusRegisterMetaType<QList<int> >();
+        qDBusRegisterMetaType<QList<uint> >();
+        qDBusRegisterMetaType<QList<qlonglong> >();
+        qDBusRegisterMetaType<QList<qulonglong> >();
+        qDBusRegisterMetaType<QList<double> >();
+        qDBusRegisterMetaType<QList<QDBusObjectPath> >();
+        qDBusRegisterMetaType<QList<QDBusSignature> >();
+        qDBusRegisterMetaType<QList<QDBusUnixFileDescriptor> >();
 #endif
+
+        initialized.store(true);
+    }
 }
+
+Q_GLOBAL_STATIC(QVector<QDBusCustomTypeInfo>, customTypes)
+Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 
 /*!
     \class QDBusMetaType
@@ -204,22 +217,14 @@ void QDBusMetaType::registerMarshallOperators(int id, MarshallFunction mf,
                                               DemarshallFunction df)
 {
     QByteArray var;
-    QDBusMetaTypeId *mgr = QDBusMetaTypeId::instance();
-    if (id < 0 || !mf || !df || !mgr)
+    QVector<QDBusCustomTypeInfo> *ct = customTypes();
+    if (id < 0 || !mf || !df || !ct)
         return;                 // error!
 
-    QWriteLocker locker(&mgr->customTypesLock);
-    QVector<QDBusCustomTypeInfo> &ct = mgr->customTypes;
-    registerMarshallOperatorsNoLock(ct, id, mf, df);
-}
-
-static void registerMarshallOperatorsNoLock(QVector<QDBusCustomTypeInfo> &ct, int id,
-                                            QDBusMetaType::MarshallFunction mf,
-                                            QDBusMetaType::DemarshallFunction df)
-{
-    if (id >= ct.size())
-        ct.resize(id + 1);
-    QDBusCustomTypeInfo &info = ct[id];
+    QWriteLocker locker(customTypesLock());
+    if (id >= ct->size())
+        ct->resize(id + 1);
+    QDBusCustomTypeInfo &info = (*ct)[id];
     info.marshall = mf;
     info.demarshall = df;
 }
@@ -236,16 +241,12 @@ bool QDBusMetaType::marshall(QDBusArgument &arg, int id, const void *data)
 
     MarshallFunction mf;
     {
-        const QDBusMetaTypeId *mgr = QDBusMetaTypeId::instance();
-        if (!mgr)
-            return false;       // shutting down
-
-        QReadLocker locker(&mgr->customTypesLock);
-        const QVector<QDBusCustomTypeInfo> &ct = mgr->customTypes;
-        if (id >= ct.size())
+        QReadLocker locker(customTypesLock());
+        QVector<QDBusCustomTypeInfo> *ct = customTypes();
+        if (id >= ct->size())
             return false;       // non-existent
 
-        const QDBusCustomTypeInfo &info = ct.at(id);
+        const QDBusCustomTypeInfo &info = (*ct).at(id);
         if (!info.marshall) {
             mf = 0;             // make gcc happy
             return false;
@@ -269,16 +270,12 @@ bool QDBusMetaType::demarshall(const QDBusArgument &arg, int id, void *data)
 
     DemarshallFunction df;
     {
-        const QDBusMetaTypeId *mgr = QDBusMetaTypeId::instance();
-        if (!mgr)
-            return false;       // shutting down
-
-        QReadLocker locker(&mgr->customTypesLock);
-        const QVector<QDBusCustomTypeInfo> &ct = mgr->customTypes;
-        if (id >= ct.size())
+        QReadLocker locker(customTypesLock());
+        QVector<QDBusCustomTypeInfo> *ct = customTypes();
+        if (id >= ct->size())
             return false;       // non-existent
 
-        const QDBusCustomTypeInfo &info = ct.at(id);
+        const QDBusCustomTypeInfo &info = (*ct).at(id);
         if (!info.demarshall) {
             df = 0;             // make gcc happy
             return false;
@@ -437,11 +434,7 @@ const char *QDBusMetaType::typeToSignature(int type)
             DBUS_TYPE_BYTE_AS_STRING; // ay
     }
 
-    // try the database
-    QDBusMetaTypeId *mgr = QDBusMetaTypeId::instance();
-    if (!mgr)
-        return Q_NULLPTR;       // shutting down
-
+    QDBusMetaTypeId::init();
     if (type == QDBusMetaTypeId::variant())
         return DBUS_TYPE_VARIANT_AS_STRING;
     else if (type == QDBusMetaTypeId::objectpath())
@@ -451,13 +444,14 @@ const char *QDBusMetaType::typeToSignature(int type)
     else if (type == QDBusMetaTypeId::unixfd())
         return DBUS_TYPE_UNIX_FD_AS_STRING;
 
+    // try the database
+    QVector<QDBusCustomTypeInfo> *ct = customTypes();
     {
-        QReadLocker locker(&mgr->customTypesLock);
-        const QVector<QDBusCustomTypeInfo> &ct = mgr->customTypes;
-        if (type >= ct.size())
+        QReadLocker locker(customTypesLock());
+        if (type >= ct->size())
             return 0;           // type not registered with us
 
-        const QDBusCustomTypeInfo &info = ct.at(type);
+        const QDBusCustomTypeInfo &info = (*ct).at(type);
 
         if (!info.signature.isNull())
             return info.signature;
@@ -474,9 +468,8 @@ const char *QDBusMetaType::typeToSignature(int type)
         QByteArray signature = QDBusArgumentPrivate::createSignature(type);
 
         // re-acquire lock
-        QWriteLocker locker(&mgr->customTypesLock);
-        QVector<QDBusCustomTypeInfo> &ct = mgr->customTypes;
-        info = &ct[type];
+        QWriteLocker locker(customTypesLock());
+        info = &(*ct)[type];
         info->signature = signature;
     }
     return info->signature;

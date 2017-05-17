@@ -1,7 +1,6 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -61,26 +60,9 @@
 #include <qdbuserror.h>
 #include <qdbusunixfiledescriptor.h>
 
-#include <qbytearray.h>
-#include <qreadwritelock.h>
-#include <qvector.h>
-
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
-
-class QDBusCustomTypeInfo
-{
-public:
-    QDBusCustomTypeInfo() : signature(), marshall(0), demarshall(0)
-    { }
-
-    // Suggestion:
-    // change 'signature' to char* and make QDBusCustomTypeInfo a Movable type
-    QByteArray signature;
-    QDBusMetaType::MarshallFunction marshall;
-    QDBusMetaType::DemarshallFunction demarshall;
-};
 
 struct QDBusMetaTypeId
 {
@@ -92,14 +74,7 @@ struct QDBusMetaTypeId
     static int error();           // QDBusError
     static int unixfd();          // QDBusUnixFileDescriptor
 
-    static void init() { instance(); }
-    static QDBusMetaTypeId *instance();
-
-    mutable QReadWriteLock customTypesLock;
-    QVector<QDBusCustomTypeInfo> customTypes;
-
-protected:
-    QDBusMetaTypeId();
+    static void init();
 };
 
 inline int QDBusMetaTypeId::message()
