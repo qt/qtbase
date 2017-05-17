@@ -32,6 +32,10 @@ information about a particular change.
  - [QTBUG-59849] QSysInfo::productType() and QFileSelector behavior on
    macOS was restored to match what Qt used to return in version 5.7.0 and
    earlier. The behavior found in Qt 5.6.2, 5.7.1 and 5.8.0 is removed.
+ - [QTBUG-60771] Reverted a change that caused Qt 5.6 through 5.8 not to
+   connect to QSystemSemaphore and QSharedMemory created by running
+   applications using Qt earlier than 5.6. Unfortunately, this means that Qt
+   5.9 will not connect to 5.6-5.8.
 
  - QTouchEvent
    * Touch point ids are now unique even between different devices. As a
