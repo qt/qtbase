@@ -215,7 +215,8 @@ bool QWindowSystemEventHandler::sendEvent(QWindowSystemInterfacePrivate::WindowS
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleEnterEvent, QWindow *window, const QPointF &local, const QPointF &global)
 {
     if (window) {
-        QWindowSystemInterfacePrivate::EnterEvent *e = new QWindowSystemInterfacePrivate::EnterEvent(window, local, global);
+        QWindowSystemInterfacePrivate::EnterEvent *e
+                = new QWindowSystemInterfacePrivate::EnterEvent(window, QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window));
         QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
     }
 }
