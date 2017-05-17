@@ -77,7 +77,8 @@ extern QPointer<QWindow> qt_last_mouse_receiver;
 void QWindowSystemInterface::handleEnterEvent(QWindow *tlw, const QPointF &local, const QPointF &global)
 {
     if (tlw) {
-        QWindowSystemInterfacePrivate::EnterEvent *e = new QWindowSystemInterfacePrivate::EnterEvent(tlw, local, global);
+        QWindowSystemInterfacePrivate::EnterEvent *e
+                = new QWindowSystemInterfacePrivate::EnterEvent(tlw, QHighDpi::fromNativeLocalPosition(local, tlw), QHighDpi::fromNativePixels(global, tlw));
         QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
     }
 }
