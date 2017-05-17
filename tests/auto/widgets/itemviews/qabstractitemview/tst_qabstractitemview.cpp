@@ -153,6 +153,7 @@ private slots:
     void testClickToSelect();
     void testDialogAsEditor();
     void QTBUG46785_mouseout_hover_state();
+    void testClearModelInClickedSignal();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2264,6 +2265,30 @@ void tst_QAbstractItemView::QTBUG46785_mouseout_hover_state()
     QTest::mouseMove(table.viewport(), QPoint(-50, 0));
 
     QTRY_VERIFY(delegate.m_paintedWithoutHover);
+}
+
+void tst_QAbstractItemView::testClearModelInClickedSignal()
+{
+    QStringList list{"A", "B"};
+    QStringListModel model(list);
+
+    QListView view;
+    view.setModel(&model);
+    view.show();
+
+    QWidget::connect(&view, &QListView::clicked, [&view](const QModelIndex &index)
+    {
+        view.setModel(nullptr);
+        QCOMPARE(index.data().toString(), QStringLiteral("B"));
+    });
+
+    QModelIndex index = view.model()->index(1, 0);
+    QVERIFY(index.isValid());
+    QPoint p = view.visualRect(index).center();
+
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
+
+    QCOMPARE(view.model(), nullptr);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

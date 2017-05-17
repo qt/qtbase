@@ -1925,7 +1925,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
         QStyleOptionViewItem option = d->viewOptionsV1();
         if (d->pressedAlreadySelected)
             option.state |= QStyle::State_Selected;
-        if ((model()->flags(index) & Qt::ItemIsEnabled)
+        if ((d->model->flags(index) & Qt::ItemIsEnabled)
             && style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, &option, this))
             emit activated(index);
     }
