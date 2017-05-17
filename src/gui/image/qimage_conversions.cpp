@@ -126,8 +126,8 @@ static const uint *QT_FASTCALL convertRGB32FromARGB32PM(uint *buffer, const uint
     return buffer;
 }
 
-static const uint *QT_FASTCALL convertRGB32ToARGB32PM(uint *buffer, const uint *src, int count,
-                                                      const QVector<QRgb> *, QDitherInfo *)
+static const uint *QT_FASTCALL maskRGB32(uint *buffer, const uint *src, int count,
+                                         const QVector<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
         buffer[i] = 0xff000000 |src[i];
@@ -160,8 +160,9 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
         // If the source doesn't have an alpha channel, we can use the faster convertFromRGB32 method.
         convertFromARGB32PM = destLayout->convertFromRGB32;
     } else {
+        // The drawhelpers do not mask the alpha value in RGB32, we want to here.
         if (src->format == QImage::Format_RGB32)
-            convertToARGB32PM = convertRGB32ToARGB32PM;
+            convertToARGB32PM = maskRGB32;
         if (dest->format == QImage::Format_RGB32) {
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
             if (qCpuHasFeature(SSE4_1))
@@ -170,6 +171,15 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
 #endif
                 convertFromARGB32PM = convertRGB32FromARGB32PM;
         }
+    }
+    if ((src->format == QImage::Format_ARGB32 || src->format == QImage::Format_RGBA8888) &&
+            destLayout->alphaWidth == 0 && destLayout->convertFromRGB32) {
+        // Avoid unnecessary premultiply and unpremultiply when converting from unpremultiplied src format.
+        convertToARGB32PM = qPixelLayouts[src->format + 1].convertToARGB32PM;
+        if (dest->format == QImage::Format_RGB32)
+            convertFromARGB32PM = maskRGB32;
+        else
+            convertFromARGB32PM = destLayout->convertFromRGB32;
     }
     QDitherInfo dither;
     QDitherInfo *ditherPtr = 0;
@@ -221,7 +231,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         convertFromARGB32PM = destLayout->convertFromRGB32;
     } else {
         if (data->format == QImage::Format_RGB32)
-            convertToARGB32PM = convertRGB32ToARGB32PM;
+            convertToARGB32PM = maskRGB32;
         if (dst_format == QImage::Format_RGB32) {
 #ifdef QT_COMPILER_SUPPORTS_SSE4_1
             if (qCpuHasFeature(SSE4_1))
@@ -230,6 +240,15 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
 #endif
                 convertFromARGB32PM = convertRGB32FromARGB32PM;
         }
+    }
+    if ((data->format == QImage::Format_ARGB32 || data->format == QImage::Format_RGBA8888) &&
+            destLayout->alphaWidth == 0 && destLayout->convertFromRGB32) {
+        // Avoid unnecessary premultiply and unpremultiply when converting from unpremultiplied src format.
+        convertToARGB32PM = qPixelLayouts[data->format + 1].convertToARGB32PM;
+        if (dst_format == QImage::Format_RGB32)
+            convertFromARGB32PM = maskRGB32;
+        else
+            convertFromARGB32PM = destLayout->convertFromRGB32;
     }
     QDitherInfo dither;
     QDitherInfo *ditherPtr = 0;
