@@ -141,6 +141,8 @@ enum QCocoaWidgetKind {
     QCocoaComboBox,     // Editable QComboBox
     QCocoaDisclosureButton,  // Disclosure triangle, like in QTreeView
     QCocoaPopupButton,  // Non-editable QComboBox
+    QCocoaProgressIndicator,
+    QCocoaIndeterminateProgressIndicator,
     QCocoaPullDownButton, // QPushButton with menu
     QCocoaPushButton,
     QCocoaRadioButton,
@@ -153,7 +155,7 @@ enum QCocoaWidgetKind {
 
 typedef QPair<QCocoaWidgetKind, QStyleHelper::WidgetSizePolicy> QCocoaWidget;
 
-typedef void (^QCocoaDrawRectBlock)(NSRect, CGContextRef);
+typedef void (^QCocoaDrawRectBlock)(CGContextRef, const CGRect &);
 
 #define SIZE(large, small, mini) \
     (controlSize == QStyleHelper::SizeLarge ? (large) : controlSize == QStyleHelper::SizeSmall ? (small) : (mini))
@@ -232,6 +234,8 @@ public:
 
     void setupNSGraphicsContext(CGContextRef cg, bool flipped) const;
     void restoreNSGraphicsContext(CGContextRef cg) const;
+
+    void setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const;
 
     void drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, QCocoaDrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window);

@@ -141,6 +141,68 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 }
 @end
 
+@interface QT_MANGLE_NAMESPACE(QIndeterminateProgressIndicator) : NSProgressIndicator
+
+@property (readonly, nonatomic) NSInteger animators;
+
+- (instancetype)init;
+
+- (void)startAnimation;
+- (void)stopAnimation;
+
+- (void)drawWithFrame:(CGRect)rect inView:(NSView *)view;
+
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QIndeterminateProgressIndicator);
+
+@implementation QIndeterminateProgressIndicator
+
+- (instancetype)init
+{
+    if ((self = [super init])) {
+        _animators = 0;
+        self.indeterminate = YES;
+        self.usesThreadedAnimation = NO;
+        self.alphaValue = 0.0;
+    }
+
+    return self;
+}
+
+- (void)startAnimation
+{
+    if (_animators == 0) {
+        self.hidden = NO;
+        [super startAnimation:self];
+    }
+    ++_animators;
+}
+
+- (void)stopAnimation
+{
+    --_animators;
+    if (_animators == 0) {
+        [super stopAnimation:self];
+        self.hidden = YES;
+        [self removeFromSuperviewWithoutNeedingDisplay];
+    }
+}
+
+- (void)drawWithFrame:(CGRect)rect inView:(NSView *)view
+{
+    // The alphaValue change is not strictly necessary, but feels safer.
+    self.alphaValue = 1.0;
+    if (self.superview != view)
+        [view addSubview:self];
+    if (!CGRectEqualToRect(self.frame, rect))
+        self.frame = rect;
+    [self drawRect:rect];
+    self.alphaValue = 0.0;
+}
+
+@end
+
 QT_BEGIN_NAMESPACE
 
 // The following constants are used for adjusting the size
@@ -1859,6 +1921,10 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
             bv = [[NSPopUpButton alloc] init];
         else if (widget.first == QCocoaComboBox)
             bv = [[NSComboBox alloc] init];
+        else if (widget.first == QCocoaProgressIndicator)
+            bv = [[NSProgressIndicator alloc] init];
+        else if (widget.first == QCocoaIndeterminateProgressIndicator)
+            bv = [[QIndeterminateProgressIndicator alloc] init];
         else if (widget.first == QCocoaHorizontalScroller)
             bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
         else if (widget.first == QCocoaVerticalScroller)
@@ -1919,6 +1985,19 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
                 break;
             case QStyleHelper::SizeMini:
                 bcell.controlSize = NSMiniControlSize;
+                break;
+            default:
+                break;
+            }
+        } else if ([bv isKindOfClass:[NSProgressIndicator class]]) {
+            auto *pi = static_cast<NSProgressIndicator *>(bv);
+            pi.indeterminate = (widget.first == QCocoaIndeterminateProgressIndicator);
+            switch (widget.second) {
+            case QStyleHelper::SizeSmall:
+                pi.controlSize = NSSmallControlSize;
+                break;
+            case QStyleHelper::SizeMini:
+                pi.controlSize = NSMiniControlSize;
                 break;
             default:
                 break;
@@ -1999,12 +2078,12 @@ void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const
 
     CGContextTranslateCTM(ctx, offset.x(), offset.y());
 
-    NSRect rect = NSMakeRect(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
+    const CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
 
     [backingStoreNSView addSubview:view];
     view.frame = rect;
     if (drawRectBlock)
-        drawRectBlock(rect, (CGContextRef)ctx);
+        drawRectBlock(ctx, rect);
     else
         [view drawRect:rect];
     [view removeFromSuperviewWithoutNeedingDisplay];
@@ -3589,6 +3668,18 @@ static inline QPixmap darkenPixmap(const QPixmap &pixmap)
 
 
 
+void QMacStylePrivate::setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const
+{
+    if (vertical) {
+        CGContextTranslateCTM(cg, rect.size.height, 0);
+        CGContextRotateCTM(cg, M_PI_2);
+    }
+    if (vertical != reverse) {
+        CGContextTranslateCTM(cg, rect.size.width, 0);
+        CGContextScaleCTM(cg, -1, 1);
+    }
+}
+
 void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter *p,
                             const QWidget *w) const
 {
@@ -4474,65 +4565,67 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             }
         }
         break;
+    case CE_ProgressBarLabel:
+    case CE_ProgressBarGroove:
+        // Do nothing. All done in CE_ProgressBarContents. Only keep these for proxy style overrides.
+        break;
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
-            HIThemeTrackDrawInfo tdi;
-            tdi.version = qt_mac_hitheme_version;
-            tdi.reserved = 0;
-            bool isIndeterminate = (pb->minimum == 0 && pb->maximum == 0);
+            QMacAutoReleasePool pool;
+            const bool isIndeterminate = (pb->minimum == 0 && pb->maximum == 0);
             const bool vertical = pb->orientation == Qt::Vertical;
             const bool inverted = pb->invertedAppearance;
             bool reverse = (!vertical && (pb->direction == Qt::RightToLeft));
             if (inverted)
                 reverse = !reverse;
-            switch (d->aquaSizeConstrain(opt, w)) {
-            case QStyleHelper::SizeDefault:
-            case QStyleHelper::SizeLarge:
-                tdi.kind = !isIndeterminate ? kThemeLargeProgressBar
-                                            : kThemeLargeIndeterminateBar;
-                break;
-            case QStyleHelper::SizeMini:
-            case QStyleHelper::SizeSmall:
-                tdi.kind = !isIndeterminate ? kThemeProgressBar : kThemeIndeterminateBar;
-                break;
-            }
-            tdi.bounds = pb->rect.toCGRect();
-            tdi.max = pb->maximum;
-            tdi.min = pb->minimum;
-            tdi.value = pb->progress;
-            tdi.attributes = vertical ? 0 : kThemeTrackHorizontal;
 
+            QRect rect = pb->rect;
+            if (vertical)
+                rect = rect.transposed();
+            const CGRect cgRect = rect.toCGRect();
+
+            const auto aquaSize = d->effectiveAquaSizeConstrain(opt, w);
+            const QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject));
+            QIndeterminateProgressIndicator *ipi = nil;
+            if (isIndeterminate || animation)
+                ipi = static_cast<QIndeterminateProgressIndicator *>(d->cocoaControl({ QCocoaIndeterminateProgressIndicator, aquaSize }));
             if (isIndeterminate) {
-                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
-                    tdi.trackInfo.progress.phase = animation->animationStep();
-                else if (opt->styleObject)
-                    d->startAnimation(new QProgressStyleAnimation(d->animateSpeed(QMacStylePrivate::AquaProgressBar), opt->styleObject));
-            } else {
-                d->stopAnimation(opt->styleObject);
-            }
-            if (!(pb->state & State_Active))
-                tdi.enableState = kThemeTrackInactive;
-            else if (!(pb->state & State_Enabled))
-                tdi.enableState = kThemeTrackDisabled;
-            else
-                tdi.enableState = kThemeTrackActive;
-            HIThemeOrientation drawOrientation = kHIThemeOrientationNormal;
-            if (reverse) {
-                if (vertical) {
-                    drawOrientation = kHIThemeOrientationInverted;
-                } else {
-                    CGContextSaveGState(cg);
-                    CGContextTranslateCTM(cg, pb->rect.width(), 0);
-                    CGContextScaleCTM(cg, -1, 1);
+                // QIndeterminateProgressIndicator derives from NSProgressIndicator. We use a single
+                // instance that we start animating as soon as one of the progress bars is indeterminate.
+                // Since they will be in sync (as it's the case in Cocoa), we just need to draw it with
+                // the right geometry when the animation triggers an update. However, we can't hide it
+                // entirely between frames since that would stop the animation, so we just set its alpha
+                // value to 0. Same if we remove it from its superview. See QIndeterminateProgressIndicator
+                // implementation for details.
+                if (!animation && opt->styleObject) {
+                    auto *animation = new QProgressStyleAnimation(d->animateSpeed(QMacStylePrivate::AquaProgressBar), opt->styleObject);
+                    // NSProgressIndicator is heavier to draw than the HITheme API, so we reduce the frame rate a notch.
+                    animation->setFrameRate(QStyleAnimation::TwentyFps);
+                    d->startAnimation(animation);
+                    [ipi startAnimation];
                 }
+
+                d->setupNSGraphicsContext(cg, NO);
+                d->setupVerticalInvertedXform(cg, reverse, vertical, cgRect);
+                [ipi drawWithFrame:cgRect inView:d->backingStoreNSView];
+                d->restoreNSGraphicsContext(cg);
+            } else {
+                if (animation) {
+                    d->stopAnimation(opt->styleObject);
+                    [ipi stopAnimation];
+                }
+
+                const QCocoaWidget cw = { QCocoaProgressIndicator, aquaSize };
+                auto *pi = static_cast<NSProgressIndicator *>(d->cocoaControl(cw));
+                d->drawNSViewInRect(cw, pi, rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+                    d->setupVerticalInvertedXform(ctx, reverse, vertical, rect);
+                    pi.minValue = pb->minimum;
+                    pi.maxValue = pb->maximum;
+                    pi.doubleValue = pb->progress;
+                    [pi drawRect:rect];
+                });
             }
-            HIThemeDrawTrack(&tdi, 0, cg, drawOrientation);
-            if (reverse && !vertical)
-                CGContextRestoreGState(cg);
         }
-        break;
-    case CE_ProgressBarLabel:
-    case CE_ProgressBarGroove:
         break;
     case CE_SizeGrip: {
         if (w && w->testAttribute(Qt::WA_MacOpaqueSizeGrip)) {
@@ -5481,7 +5574,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         sl.maxValue = slider->maximum;
                         sl.intValue = slider->sliderValue;
                         sl.enabled = slider->state & QStyle::State_Enabled;
-                        d->drawNSViewInRect(cw, sl, opt->rect, p, widget != 0, ^(NSRect rect, CGContextRef ctx) {
+                        d->drawNSViewInRect(cw, sl, opt->rect, p, widget != 0, ^(CGContextRef ctx, const CGRect &rect) {
                                                 const bool isSierraOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra;
                                                 if (slider->upsideDown) {
                                                     if (isHorizontal) {
