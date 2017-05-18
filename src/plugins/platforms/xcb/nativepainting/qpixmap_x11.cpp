@@ -529,8 +529,11 @@ void QX11PlatformPixmap::fromImage(const QImage &img, Qt::ImageConversionFlags f
         }
     }
 
-    if (d == 1 || d == 16 || d == 24 || image.format() == QImage::Format_Grayscale8) {
-        image = image.convertToFormat(QImage::Format_RGB32, flags);
+    if (d == 1 || image.format() > QImage::Format_ARGB32_Premultiplied) {
+        QImage::Format fmt = QImage::Format_RGB32;
+        if (alphaCheck.hasXRenderAndAlpha() && d > 1)
+            fmt = QImage::Format_ARGB32_Premultiplied;
+        image = image.convertToFormat(fmt, flags);
         fromImage(image, Qt::AutoColor);
         return;
     }
