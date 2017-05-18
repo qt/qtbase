@@ -1028,9 +1028,18 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(d2i_PKCS12_bio)
     RESOLVEFUNC(PKCS12_free)
 
-    symbolsResolved = true;
     delete libs.first;
     delete libs.second;
+    if (!_q_SSLeay || q_SSLeay() >= 0x10100000L) {
+        // OpenSSL 1.1 deprecated and removed SSLeay. We consider a failure to
+        // resolve this symbol as a failure to resolve symbols.
+        // The right operand of '||' above ... a bit of paranoia.
+        qCWarning(lcSsl, "Incompatible version of OpenSSL");
+        return false;
+    }
+
+    symbolsResolved = true;
+
     return true;
 }
 #endif // QT_CONFIG(library)
