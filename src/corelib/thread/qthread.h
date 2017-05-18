@@ -43,11 +43,15 @@
 #include <QtCore/qobject.h>
 
 // The implementation of QThread::create uses various C++14/C++17 facilities;
-// we must check for their presence. For std::async (used in all codepaths)
+// we must check for their presence. Specifically for glibcxx bundled in MinGW
+// with win32 threads, we check the condition found in its <future> header
+// since _GLIBCXX_HAS_GTHREADS might then not be defined.
+// For std::async (used in all codepaths)
 // there is no SG10 feature macro; just test for the header presence.
 // For the C++17 codepath do some more throughout checks for std::invoke and
 // C++14 lambdas availability.
-#if QT_HAS_INCLUDE(<future>)
+#if QT_HAS_INCLUDE(<future>) \
+    && (!defined(__GLIBCXX__) || (defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)))
 #  define QTHREAD_HAS_CREATE
 #  include <future> // for std::async
 #  include <functional> // for std::invoke; no guard needed as it's a C++98 header
