@@ -593,11 +593,8 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
     for (auto &node : haystack.children)
         huntAndDestroy(needle, node);
 
-    auto isInactive = [](QDBusConnectionPrivate::ObjectTreeNode &node) { return !node.isActive(); };
-
-    haystack.children.erase(std::remove_if(haystack.children.begin(), haystack.children.end(),
-                                           isInactive),
-                            haystack.children.end());
+    auto isInactive = [](const QDBusConnectionPrivate::ObjectTreeNode &node) { return !node.isActive(); };
+    haystack.children.removeIf(isInactive);
 
     if (needle == haystack.obj) {
         haystack.obj = nullptr;

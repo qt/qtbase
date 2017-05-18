@@ -113,6 +113,7 @@ qt_internal_add_tool(${target_name}
         ../src/corelib/time/qgregoriancalendar.cpp ../src/corelib/time/qgregoriancalendar_p.h # special case
         ../src/corelib/time/qromancalendar.cpp ../src/corelib/time/qromancalendar_p.h # special case
         ../src/corelib/time/qdatetime.cpp ../src/corelib/time/qdatetime.h ../src/corelib/time/qdatetime_p.h # special case
+        ../src/corelib/tools/qduplicatetracker_p.h
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
         ../src/corelib/tools/qlist.h
         ../src/corelib/tools/qmap.h

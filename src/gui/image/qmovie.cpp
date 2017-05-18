@@ -1022,7 +1022,7 @@ QList<QByteArray> QMovie::supportedFormats()
                 return !QImageReader(&buffer, format).supportsOption(QImageIOHandler::Animation);
             };
 
-    list.erase(std::remove_if(list.begin(), list.end(), doesntSupportAnimation), list.end());
+    list.removeIf(doesntSupportAnimation);
     return list;
 }
 

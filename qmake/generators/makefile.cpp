@@ -940,9 +940,7 @@ MakefileGenerator::filterIncludedFiles(const char *var)
     auto isIncluded = [this](const ProString &input) {
         return QMakeSourceFileInfo::included(input.toQString()) > 0;
     };
-    inputs.erase(std::remove_if(inputs.begin(), inputs.end(),
-                                isIncluded),
-                 inputs.end());
+    inputs.removeIf(isIncluded);
 }
 
 static QString

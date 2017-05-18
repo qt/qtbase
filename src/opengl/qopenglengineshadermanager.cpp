@@ -493,9 +493,7 @@ void QOpenGLEngineSharedShaders::cleanupCustomStage(QOpenGLCustomShaderStage* st
         }
         return false;
     };
-    cachedPrograms.erase(std::remove_if(cachedPrograms.begin(), cachedPrograms.end(),
-                                        hasStageAsCustomShaderSouce),
-                         cachedPrograms.end());
+    cachedPrograms.removeIf(hasStageAsCustomShaderSouce);
 }
 
 

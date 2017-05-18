@@ -764,8 +764,7 @@ void QUrlQuery::removeAllQueryItems(const QString &key)
         auto firstEqualsEncodedKey = [&encodedKey](const QPair<QString, QString> &item) {
             return item.first == encodedKey;
         };
-        const auto end = p->itemList.end();
-        p->itemList.erase(std::remove_if(p->itemList.begin(), end, firstEqualsEncodedKey), end);
+        p->itemList.removeIf(firstEqualsEncodedKey);
     }
 }
 

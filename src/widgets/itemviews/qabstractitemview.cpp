@@ -2642,8 +2642,7 @@ QModelIndexList QAbstractItemView::selectedIndexes() const
         auto isHidden = [this](const QModelIndex &idx) {
             return isIndexHidden(idx);
         };
-        const auto end = indexes.end();
-        indexes.erase(std::remove_if(indexes.begin(), end, isHidden), end);
+        indexes.removeIf(isHidden);
     }
     return indexes;
 }
@@ -4489,9 +4488,7 @@ QModelIndexList QAbstractItemViewPrivate::selectedDraggableIndexes() const
     auto isNotDragEnabled = [this](const QModelIndex &index) {
         return !isIndexDragEnabled(index);
     };
-    indexes.erase(std::remove_if(indexes.begin(), indexes.end(),
-                                 isNotDragEnabled),
-                  indexes.end());
+    indexes.removeIf(isNotDragEnabled);
     return indexes;
 }
 

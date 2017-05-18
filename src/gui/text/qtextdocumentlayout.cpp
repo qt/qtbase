@@ -3756,11 +3756,7 @@ static void markFrames(QTextFrame *current, int from, int oldLength, int length)
 
     QTextFrameData *fd = data(current);
     // float got removed in editing operation
-    QTextFrame *null = nullptr; // work-around for (at least) MSVC 2012 emitting
-                                // warning C4100 for its own header <algorithm>
-                                // when passing nullptr directly to std::remove
-    fd->floats.erase(std::remove(fd->floats.begin(), fd->floats.end(), null),
-                     fd->floats.end());
+    fd->floats.removeAll(nullptr);
 
     fd->layoutDirty = true;
     fd->sizeDirty = true;

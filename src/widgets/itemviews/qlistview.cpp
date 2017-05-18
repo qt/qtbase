@@ -1522,8 +1522,7 @@ QModelIndexList QListView::selectedIndexes() const
     auto ignorable = [this, d](const QModelIndex &index) {
         return index.column() != d->column || index.parent() != d->root || isIndexHidden(index);
     };
-    viewSelected.erase(std::remove_if(viewSelected.begin(), viewSelected.end(), ignorable),
-                       viewSelected.end());
+    viewSelected.removeIf(ignorable);
     return viewSelected;
 }
 
@@ -1960,9 +1959,7 @@ void QListViewPrivate::removeCurrentAndDisabled(QList<QModelIndex> *indexes,
     auto isCurrentOrDisabled = [this, current](const QModelIndex &index) {
         return !isIndexEnabled(index) || index == current;
     };
-    indexes->erase(std::remove_if(indexes->begin(), indexes->end(),
-                                  isCurrentOrDisabled),
-                   indexes->end());
+    indexes->removeIf(isCurrentOrDisabled);
 }
 
 /*

@@ -1324,9 +1324,7 @@ void QNetworkHeadersPrivate::setRawHeaderInternal(const QByteArray &key, const Q
     auto firstEqualsKey = [&key](const RawHeaderPair &header) {
         return header.first.compare(key, Qt::CaseInsensitive) == 0;
     };
-    rawHeaders.erase(std::remove_if(rawHeaders.begin(), rawHeaders.end(),
-                                    firstEqualsKey),
-                     rawHeaders.end());
+    rawHeaders.removeIf(firstEqualsKey);
 
     if (value.isNull())
         return;                 // only wanted to erase key

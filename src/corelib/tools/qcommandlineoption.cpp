@@ -286,8 +286,7 @@ QStringList QCommandLineOptionPrivate::removeInvalidNames(QStringList nameList)
     if (Q_UNLIKELY(nameList.isEmpty()))
         qWarning("QCommandLineOption: Options must have at least one name");
     else
-        nameList.erase(std::remove_if(nameList.begin(), nameList.end(), IsInvalidName()),
-                       nameList.end());
+        nameList.removeIf(IsInvalidName());
     return nameList;
 }
 

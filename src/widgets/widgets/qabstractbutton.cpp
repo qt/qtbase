@@ -199,9 +199,7 @@ QList<QAbstractButton *>QAbstractButtonPrivate::queryButtonList() const
 #endif
                 ;
         };
-        candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
-                                        isNoMemberOfMyAutoExclusiveGroup),
-                         candidates.end());
+        candidates.removeIf(isNoMemberOfMyAutoExclusiveGroup);
     }
     return candidates;
 }

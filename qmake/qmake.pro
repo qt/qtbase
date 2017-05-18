@@ -187,6 +187,7 @@ HEADERS += \
     qcryptographichash.h \
     qdatetime.h \
     qdatetime_p.h \
+    qduplicatetracker_p.h \
     qdir.h \
     qdir_p.h \
     qdiriterator.h \

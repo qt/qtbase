@@ -173,7 +173,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
                 return w->isWindow() || !w->isVisible()
                         || w->style()->styleHint(SH_UnderlineShortcut, nullptr, w);
             };
-            l.erase(std::remove_if(l.begin(), l.end(), ignorable), l.end());
+            l.removeIf(ignorable);
             // Update states before repainting
             d->seenAlt.append(widget);
             d->alt_down = true;

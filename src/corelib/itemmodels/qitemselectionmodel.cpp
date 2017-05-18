@@ -1252,9 +1252,7 @@ void QItemSelectionModel::select(const QItemSelection &selection, QItemSelection
     // be too late if another model observer is connected to the same modelReset slot and is invoked first
     // it might call select() on this selection model before any such QItemSelectionModelPrivate::_q_modelReset() slot
     // is invoked, so it would not be cleared yet. We clear it invalid ranges in it here.
-    using namespace QtFunctionObjects;
-    d->ranges.erase(std::remove_if(d->ranges.begin(), d->ranges.end(), IsNotValid()),
-                    d->ranges.end());
+    d->ranges.removeIf(QtFunctionObjects::IsNotValid());
 
     QItemSelection old = d->ranges;
     old.merge(d->currentSelection, d->currentCommand);
@@ -1755,10 +1753,7 @@ const QItemSelection QItemSelectionModel::selection() const
     selected.merge(d->currentSelection, d->currentCommand);
     // make sure we have no invalid ranges
     // ###  should probably be handled more generic somewhere else
-    using namespace QtFunctionObjects;
-    selected.erase(std::remove_if(selected.begin(), selected.end(),
-                                  IsNotValid()),
-                   selected.end());
+    selected.removeIf(QtFunctionObjects::IsNotValid());
     return selected;
 }
 

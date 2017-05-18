@@ -32,6 +32,7 @@
 #include <qset.h>
 #include <qstringlist.h>
 #include <qtextstream.h>
+#include <private/qduplicatetracker_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -403,21 +404,9 @@ void ProStringList::removeEmpty()
 
 void ProStringList::removeDuplicates()
 {
-    int n = size();
-    int j = 0;
-    QSet<ProString> seen;
-    seen.reserve(n);
-    for (int i = 0; i < n; ++i) {
-        const ProString &s = at(i);
-        if (seen.contains(s))
-            continue;
-        seen.insert(s);
-        if (j != i)
-            (*this)[j] = s;
-        ++j;
-    }
-    if (n != j)
-        erase(begin() + j, end());
+    QDuplicateTracker<ProString> seen;
+    seen.reserve(size());
+    removeIf([&](const ProString &s) { return seen.hasSeen(s); });
 }
 
 void ProStringList::insertUnique(const ProStringList &value)

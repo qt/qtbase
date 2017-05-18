@@ -648,22 +648,9 @@ qsizetype QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QReg
 */
 qsizetype QtPrivate::QStringList_removeDuplicates(QStringList *that)
 {
-    qsizetype n = that->size();
-    qsizetype j = 0;
-
     QDuplicateTracker<QString> seen;
-    seen.reserve(n);
-    for (qsizetype i = 0; i < n; ++i) {
-        const QString &s = that->at(i);
-        if (seen.hasSeen(s))
-            continue;
-        if (j != i)
-            that->swapItemsAt(i, j);
-        ++j;
-    }
-    if (n != j)
-        that->erase(that->begin() + j, that->end());
-    return n - j;
+    seen.reserve(that->size());
+    return that->removeIf([&](const QString &s) { return seen.hasSeen(s); });
 }
 
 QT_END_NAMESPACE
