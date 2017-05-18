@@ -3996,9 +3996,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // windows style if it has an icon and text, then it should be more like a
             // tab. So, cheat a little here. However, if it *is* only an icon
             // the windows style works great, so just use that implementation.
-            bool hasMenu = btn.features & QStyleOptionButton::HasMenu;
-            bool hasIcon = !btn.icon.isNull();
-            bool hasText = !btn.text.isEmpty();
+            const bool hasMenu = btn.features & QStyleOptionButton::HasMenu;
+            const bool hasIcon = !btn.icon.isNull();
+            const bool hasText = !btn.text.isEmpty();
 
             if (!hasMenu) {
                 if (tds == kThemeStatePressed
@@ -4008,94 +4008,45 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 btn.palette.setColor(QPalette::ButtonText, Qt::white);
             }
 
-            if (!hasIcon && !hasMenu) {
-                // ### this is really overly difficult, simplify.
-                // It basically tries to get the right font for "small" and "mini" icons.
-                QFont oldFont = p->font();
-                QFont newFont = qt_app_fonts_hash()->value("QPushButton", QFont());
-                ThemeFontID themeId = kThemePushButtonFont;
-                if (oldFont == newFont) {  // Yes, use HITheme to draw the text for small sizes.
-                    switch (d->aquaSizeConstrain(opt, w)) {
-                    case QStyleHelper::SizeSmall:
-                        themeId = kThemeSmallSystemFont;
-                        break;
-                    case QStyleHelper::SizeMini:
-                        themeId = kThemeMiniSystemFont;
-                        break;
-                    default:
-                        break;
-                    }
-                }
-
-                if (themeId == kThemePushButtonFont) {
-                    QCommonStyle::drawControl(ce, &btn, p, w);
-                } else {
-                    p->save();
-                    CGContextSetShouldAntialias(cg, true);
-                    CGContextSetShouldSmoothFonts(cg, true);
-                    HIThemeTextInfo tti;
-                    tti.version = qt_mac_hitheme_version;
-                    tti.state = tds;
-                    QColor textColor;
-                    textColor = btn.palette.buttonText().color();
-                    CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
-                                          static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
-                    CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
-                    CGContextSetFillColor(cg, colorComp);
-                    tti.fontID = themeId;
-                    tti.horizontalFlushness = kHIThemeTextHorizontalFlushCenter;
-                    tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
-                    tti.options = kHIThemeTextBoxOptionNone;
-                    tti.truncationPosition = kHIThemeTextTruncationNone;
-                    tti.truncationMaxLines = 1 + btn.text.count(QLatin1Char('\n'));
-                    QCFString buttonText = qt_mac_removeMnemonics(btn.text);
-                    QRect r = btn.rect;
-                    CGRect bounds = r.toCGRect();
-                    HIThemeDrawTextBox(buttonText, &bounds, &tti,
-                                       cg, kHIThemeOrientationNormal);
-                    p->restore();
-                }
+            if ((!hasIcon && !hasMenu) || (hasIcon && !hasText)) {
+                QCommonStyle::drawControl(ce, &btn, p, w);
             } else {
-                if (hasIcon && !hasText) {
-                    QCommonStyle::drawControl(ce, &btn, p, w);
-                } else {
-                    QRect freeContentRect = btn.rect;
-                    QRect textRect = itemTextRect(
-                        btn.fontMetrics, freeContentRect, Qt::AlignCenter, btn.state & State_Enabled, btn.text);
-                    if (hasMenu) {
-                        textRect.moveTo(w ? 15 : 11, textRect.top()); // Supports Qt Quick Controls
-                    }
-                    // Draw the icon:
-                    if (hasIcon) {
-                        int contentW = textRect.width();
-                        if (hasMenu)
-                            contentW += proxy()->pixelMetric(PM_MenuButtonIndicator) + 4;
-                        QIcon::Mode mode = btn.state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                        if (mode == QIcon::Normal && btn.state & State_HasFocus)
-                            mode = QIcon::Active;
-                        // Decide if the icon is should be on or off:
-                        QIcon::State state = QIcon::Off;
-                        if (btn.state & State_On)
-                            state = QIcon::On;
-                        QPixmap pixmap = btn.icon.pixmap(window, btn.iconSize, mode, state);
-                        int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
-                        int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
-                        contentW += pixmapWidth + QMacStylePrivate::PushButtonContentPadding;
-                        int iconLeftOffset = freeContentRect.x() + (freeContentRect.width() - contentW) / 2;
-                        int iconTopOffset = freeContentRect.y() + (freeContentRect.height() - pixmapHeight) / 2;
-                        QRect iconDestRect(iconLeftOffset, iconTopOffset, pixmapWidth, pixmapHeight);
-                        QRect visualIconDestRect = visualRect(btn.direction, freeContentRect, iconDestRect);
-                        proxy()->drawItemPixmap(p, visualIconDestRect, Qt::AlignLeft | Qt::AlignVCenter, pixmap);
-                        int newOffset = iconDestRect.x() + iconDestRect.width()
-                                        + QMacStylePrivate::PushButtonContentPadding - textRect.x();
-                        textRect.adjust(newOffset, 0, newOffset, 0);
-                    }
-                    // Draw the text:
-                    if (hasText) {
-                        textRect = visualRect(btn.direction, freeContentRect, textRect);
-                        proxy()->drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn.palette,
-                                                   (btn.state & State_Enabled), btn.text, QPalette::ButtonText);
-                    }
+                QRect freeContentRect = btn.rect;
+                QRect textRect = itemTextRect(
+                            btn.fontMetrics, freeContentRect, Qt::AlignCenter, btn.state & State_Enabled, btn.text);
+                if (hasMenu) {
+                    textRect.moveTo(w ? 15 : 11, textRect.top()); // Supports Qt Quick Controls
+                }
+                // Draw the icon:
+                if (hasIcon) {
+                    int contentW = textRect.width();
+                    if (hasMenu)
+                        contentW += proxy()->pixelMetric(PM_MenuButtonIndicator) + 4;
+                    QIcon::Mode mode = btn.state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                    if (mode == QIcon::Normal && btn.state & State_HasFocus)
+                        mode = QIcon::Active;
+                    // Decide if the icon is should be on or off:
+                    QIcon::State state = QIcon::Off;
+                    if (btn.state & State_On)
+                        state = QIcon::On;
+                    QPixmap pixmap = btn.icon.pixmap(window, btn.iconSize, mode, state);
+                    int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
+                    int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
+                    contentW += pixmapWidth + QMacStylePrivate::PushButtonContentPadding;
+                    int iconLeftOffset = freeContentRect.x() + (freeContentRect.width() - contentW) / 2;
+                    int iconTopOffset = freeContentRect.y() + (freeContentRect.height() - pixmapHeight) / 2;
+                    QRect iconDestRect(iconLeftOffset, iconTopOffset, pixmapWidth, pixmapHeight);
+                    QRect visualIconDestRect = visualRect(btn.direction, freeContentRect, iconDestRect);
+                    proxy()->drawItemPixmap(p, visualIconDestRect, Qt::AlignLeft | Qt::AlignVCenter, pixmap);
+                    int newOffset = iconDestRect.x() + iconDestRect.width()
+                            + QMacStylePrivate::PushButtonContentPadding - textRect.x();
+                    textRect.adjust(newOffset, 0, newOffset, 0);
+                }
+                // Draw the text:
+                if (hasText) {
+                    textRect = visualRect(btn.direction, freeContentRect, textRect);
+                    proxy()->drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn.palette,
+                                          (btn.state & State_Enabled), btn.text, QPalette::ButtonText);
                 }
             }
         }
@@ -4227,67 +4178,32 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_TabBarTabLabel:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             QStyleOptionTab myTab = *tab;
-            ThemeTabDirection ttd = getTabDirection(myTab.shape);
-            bool verticalTabs = ttd == kThemeTabWest || ttd == kThemeTabEast;
+            const bool verticalTabs = tab->shape == QTabBar::RoundedWest
+                                   || tab->shape == QTabBar::RoundedEast
+                                   || tab->shape == QTabBar::TriangularWest
+                                   || tab->shape == QTabBar::TriangularEast;
 
             // Check to see if we use have the same as the system font
             // (QComboMenuItem is internal and should never be seen by the
             // outside world, unless they read the source, in which case, it's
             // their own fault).
-            bool nonDefaultFont = p->font() != qt_app_fonts_hash()->value("QComboMenuItem");
+            const bool nonDefaultFont = p->font() != qt_app_fonts_hash()->value("QComboMenuItem");
 
             if (!myTab.documentMode && (myTab.state & State_Selected) && (myTab.state & State_Active))
                 if (const auto *tabBar = qobject_cast<const QTabBar *>(w))
                     if (!tabBar->tabTextColor(tabBar->currentIndex()).isValid())
                         myTab.palette.setColor(QPalette::WindowText, Qt::white);
 
-            if (verticalTabs || nonDefaultFont || !tab->icon.isNull()
-                || !myTab.leftButtonSize.isEmpty() || !myTab.rightButtonSize.isEmpty()) {
-                int heightOffset = 0;
-                if (verticalTabs) {
-                    heightOffset = -1;
-                } else if (nonDefaultFont) {
-                    if (p->fontMetrics().height() == myTab.rect.height())
-                        heightOffset = 2;
-                }
-                myTab.rect.setHeight(myTab.rect.height() + heightOffset);
-
-                QCommonStyle::drawControl(ce, &myTab, p, w);
-            } else {
-                p->save();
-                CGContextSetShouldAntialias(cg, true);
-                CGContextSetShouldSmoothFonts(cg, true);
-                HIThemeTextInfo tti;
-                tti.version = qt_mac_hitheme_version;
-                tti.state = tds;
-                QColor textColor = myTab.palette.windowText().color();
-                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
-                                        static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
-                CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
-                CGContextSetFillColor(cg, colorComp);
-                switch (d->aquaSizeConstrain(opt, w)) {
-                case QStyleHelper::SizeDefault:
-                case QStyleHelper::SizeLarge:
-                    tti.fontID = kThemeSystemFont;
-                    break;
-                case QStyleHelper::SizeSmall:
-                    tti.fontID = kThemeSmallSystemFont;
-                    break;
-                case QStyleHelper::SizeMini:
-                    tti.fontID = kThemeMiniSystemFont;
-                    break;
-                }
-                tti.horizontalFlushness = kHIThemeTextHorizontalFlushCenter;
-                tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
-                tti.options = verticalTabs ? kHIThemeTextBoxOptionStronglyVertical : kHIThemeTextBoxOptionNone;
-                tti.truncationPosition = kHIThemeTextTruncationNone;
-                tti.truncationMaxLines = 1 + myTab.text.count(QLatin1Char('\n'));
-                QCFString tabText = qt_mac_removeMnemonics(myTab.text);
-                QRect r = myTab.rect.adjusted(0, 0, 0, -1);
-                CGRect bounds = r.toCGRect();
-                HIThemeDrawTextBox(tabText, &bounds, &tti, cg, kHIThemeOrientationNormal);
-                p->restore();
+            int heightOffset = 0;
+            if (verticalTabs) {
+                heightOffset = -1;
+            } else if (nonDefaultFont) {
+                if (p->fontMetrics().height() == myTab.rect.height())
+                    heightOffset = 2;
             }
+            myTab.rect.setHeight(myTab.rect.height() + heightOffset);
+
+            QCommonStyle::drawControl(ce, &myTab, p, w);
         }
         break;
 #endif

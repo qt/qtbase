@@ -111,7 +111,7 @@ static QMacPaletteMap mac_widget_colors[] = {
     MAC_PALETTE_ENTRY(QPlatformTheme::ComboBoxPalette, controlTextColor, disabledControlTextColor),
     MAC_PALETTE_ENTRY(QPlatformTheme::ItemViewPalette, textColor, disabledControlTextColor),
     MAC_PALETTE_ENTRY(QPlatformTheme::MessageBoxLabelPalette, textColor, disabledControlTextColor),
-    MAC_PALETTE_ENTRY(QPlatformTheme::TabBarPalette, headerTextColor, disabledControlTextColor),
+    MAC_PALETTE_ENTRY(QPlatformTheme::TabBarPalette, controlTextColor, disabledControlTextColor),
     MAC_PALETTE_ENTRY(QPlatformTheme::LabelPalette, textColor, disabledControlTextColor),
     MAC_PALETTE_ENTRY(QPlatformTheme::GroupBoxPalette, textColor, disabledControlTextColor),
     MAC_PALETTE_ENTRY(QPlatformTheme::MenuPalette, controlTextColor, disabledControlTextColor),
@@ -154,7 +154,8 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             qc = qt_mac_toQColor([NSColor disabledControlTextColor]);
             pal.setBrush(QPalette::Disabled, QPalette::Text, qc);
         } else if ((mac_widget_colors[i].paletteRole == QPlatformTheme::ButtonPalette)
-                || (mac_widget_colors[i].paletteRole == QPlatformTheme::HeaderPalette)) {
+                || (mac_widget_colors[i].paletteRole == QPlatformTheme::HeaderPalette)
+                || (mac_widget_colors[i].paletteRole == QPlatformTheme::TabBarPalette)) {
             pal.setColor(QPalette::Disabled, QPalette::ButtonText,
                          pal.color(QPalette::Disabled, QPalette::Text));
             pal.setColor(QPalette::Inactive, QPalette::ButtonText,
