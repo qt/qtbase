@@ -86,6 +86,8 @@ public:
     void fetchMore(const QModelIndex &parent = QModelIndex()) Q_DECL_OVERRIDE;
     bool canFetchMore(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
 
+    QHash<int, QByteArray> roleNames() const override;
+
 protected:
     void beginInsertRows(const QModelIndex &parent, int first, int last);
     void endInsertRows();

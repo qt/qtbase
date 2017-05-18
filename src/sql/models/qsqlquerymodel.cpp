@@ -212,6 +212,30 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
     return (!parent.isValid() && !d->atEnd);
 }
 
+/*!
+    \since 5.10
+    \override
+
+    Returns the model's role names.
+
+    Qt defines only one role for the QSqlQueryModel:
+
+    \table
+    \header
+    \li Qt Role
+    \li QML Role Name
+    \row
+    \li Qt::DisplayRole
+    \li display
+    \endtable
+*/
+QHash<int, QByteArray> QSqlQueryModel::roleNames() const
+{
+    return QHash<int, QByteArray> {
+        { Qt::DisplayRole, QByteArrayLiteral("display") }
+    };
+}
+
 /*! \internal
  */
 void QSqlQueryModel::beginInsertRows(const QModelIndex &parent, int first, int last)
