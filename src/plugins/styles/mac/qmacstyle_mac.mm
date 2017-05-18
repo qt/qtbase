@@ -5701,36 +5701,21 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             else
                 groupBox.subControls = groupBox.subControls & ~SC_GroupBoxFrame; // We don't like frames and ugly lines
 
-            bool didModifySubControls = false;
-            if ((!widget || !widget->testAttribute(Qt::WA_SetFont))
-                    && QApplication::desktopSettingsAware()) {
+            const bool didSetFont = widget && widget->testAttribute(Qt::WA_SetFont);
+            const bool didModifySubControls = !didSetFont && QApplication::desktopSettingsAware();
+            if (didModifySubControls)
                 groupBox.subControls = groupBox.subControls & ~SC_GroupBoxLabel;
-                didModifySubControls = true;
-            }
             QCommonStyle::drawComplexControl(cc, &groupBox, p, widget);
             if (didModifySubControls) {
-                p->save();
-                CGContextSetShouldAntialias(cg, true);
-                CGContextSetShouldSmoothFonts(cg, true);
-                HIThemeTextInfo tti;
-                tti.version = qt_mac_hitheme_version;
-                tti.state = tds;
-                QColor textColor = groupBox.palette.windowText().color();
-                CGFloat colorComp[] = { static_cast<CGFloat>(textColor.redF()), static_cast<CGFloat>(textColor.greenF()),
-                                      static_cast<CGFloat>(textColor.blueF()), static_cast<CGFloat>(textColor.alphaF()) };
-                CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
-                CGContextSetFillColor(cg, colorComp);
-                tti.fontID = flat ? kThemeSystemFont : kThemeSmallSystemFont;
-                tti.horizontalFlushness = kHIThemeTextHorizontalFlushCenter;
-                tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
-                tti.options = kHIThemeTextBoxOptionNone;
-                tti.truncationPosition = kHIThemeTextTruncationNone;
-                tti.truncationMaxLines = 1 + groupBox.text.count(QLatin1Char('\n'));
-                QCFString groupText = qt_mac_removeMnemonics(groupBox.text);
-                QRect r = proxy()->subControlRect(CC_GroupBox, &groupBox, SC_GroupBoxLabel, widget);
-                CGRect bounds = r.toCGRect();
-                HIThemeDrawTextBox(groupText, &bounds, &tti, cg, kHIThemeOrientationNormal);
-                p->restore();
+                const QRect rect = proxy()->subControlRect(CC_GroupBox, &groupBox, SC_GroupBoxLabel, widget);
+                const bool rtl = groupBox.direction == Qt::RightToLeft;
+                const int alignment = Qt::TextHideMnemonic | (rtl ? Qt::AlignRight : Qt::AlignLeft);
+                const QFont savedFont = p->font();
+                if (!flat)
+                    p->setFont(*QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::SmallFont));
+                proxy()->drawItemText(p, rect, alignment, groupBox.palette, groupBox.state & State_Enabled, groupBox.text, QPalette::WindowText);
+                if (!flat)
+                    p->setFont(savedFont);
             }
         }
         break;
