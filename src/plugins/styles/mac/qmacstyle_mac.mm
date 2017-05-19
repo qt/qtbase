@@ -1798,7 +1798,12 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
 
 QMacStylePrivate::QMacStylePrivate()
     : backingStoreNSView(nil)
-{ }
+{
+    if (auto *ssf = QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::SmallFont))
+        smallSystemFont = *ssf;
+    if (auto *msf = QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::MiniFont))
+        miniSystemFont = *msf;
+}
 
 QMacStylePrivate::~QMacStylePrivate()
 {
@@ -5712,7 +5717,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 const int alignment = Qt::TextHideMnemonic | (rtl ? Qt::AlignRight : Qt::AlignLeft);
                 const QFont savedFont = p->font();
                 if (!flat)
-                    p->setFont(*QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::SmallFont));
+                    p->setFont(d->smallSystemFont);
                 proxy()->drawItemText(p, rect, alignment, groupBox.palette, groupBox.state & State_Enabled, groupBox.text, QPalette::WindowText);
                 if (!flat)
                     p->setFont(savedFont);
@@ -6125,35 +6130,16 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             case SC_GroupBoxLabel:
             case SC_GroupBoxCheckBox: {
                 // Cheat and use the smaller font if we need to
-                bool checkable = groupBox->subControls & SC_GroupBoxCheckBox;
-                bool fontIsSet = (widget && widget->testAttribute(Qt::WA_SetFont))
-                                  || !QApplication::desktopSettingsAware();
-                int tw;
-                int h;
-                int margin =  flat || hasNoText ? 0 : 9;
+                const bool checkable = groupBox->subControls & SC_GroupBoxCheckBox;
+                const bool fontIsSet = (widget && widget->testAttribute(Qt::WA_SetFont))
+                                       || !QApplication::desktopSettingsAware();
+                const int margin =  flat || hasNoText ? 0 : 9;
                 ret = groupBox->rect.adjusted(margin, 0, -margin, 0);
 
-                if (!fontIsSet) {
-                    HIThemeTextInfo tti;
-                    tti.version = qt_mac_hitheme_version;
-                    tti.state = kThemeStateActive;
-                    tti.fontID = flat ? kThemeSystemFont : kThemeSmallSystemFont;
-                    tti.horizontalFlushness = kHIThemeTextHorizontalFlushCenter;
-                    tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
-                    tti.options = kHIThemeTextBoxOptionNone;
-                    tti.truncationPosition = kHIThemeTextTruncationNone;
-                    tti.truncationMaxLines = 1 + groupBox->text.count(QLatin1Char('\n'));
-                    CGFloat width;
-                    CGFloat height;
-                    QCFString groupText = qt_mac_removeMnemonics(groupBox->text);
-                    HIThemeGetTextDimensions(groupText, 0, &tti, &width, &height, 0);
-                    tw = qRound(width);
-                    h = qCeil(height);
-                } else {
-                    QFontMetricsF fm = QFontMetricsF(groupBox->fontMetrics);
-                    h = qCeil(fm.height());
-                    tw = qCeil(fm.size(Qt::TextShowMnemonic, groupBox->text).width());
-                }
+                const QFontMetricsF fm = flat || fontIsSet ? QFontMetricsF(groupBox->fontMetrics) : QFontMetricsF(d->smallSystemFont);
+                const QSizeF s = fm.size(Qt::AlignHCenter | Qt::AlignVCenter, qt_mac_removeMnemonics(groupBox->text), 0, nullptr);
+                const int tw = qCeil(s.width());
+                const int h = qCeil(fm.height());
                 ret.setHeight(h);
 
                 QRect labelRect = alignedRect(groupBox->direction, groupBox->textAlignment,

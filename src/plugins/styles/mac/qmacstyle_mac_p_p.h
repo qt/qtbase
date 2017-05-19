@@ -254,6 +254,9 @@ public:
     NSView *backingStoreNSView;
     QHash<QCocoaWidget, NSView *> cocoaControls;
     QHash<QCocoaWidget, NSCell *> cocoaCells;
+
+    QFont smallSystemFont;
+    QFont miniSystemFont;
 };
 
 QT_END_NAMESPACE
