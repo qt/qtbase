@@ -42,6 +42,7 @@
 #include <qdebug.h>
 
 #include <algorithm>
+#include <functional>
 
 #ifndef QT_NO_ITEMVIEWS
 
@@ -307,7 +308,9 @@ bool QItemSelectionRange::operator<(const QItemSelectionRange &other) const
         }
         return topLeftParent < otherTopLeftParent;
     }
-    return tl.model() < other.tl.model();
+
+    std::less<const QAbstractItemModel *> less;
+    return less(tl.model(), other.tl.model());
 }
 
 /*!

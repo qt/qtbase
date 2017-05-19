@@ -1,0 +1,586 @@
+Qt 5.9 introduces many new features and improvements as well as bugfixes
+over the 5.8.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.9 series is binary compatible with the 5.8.x series.
+Applications compiled for 5.8 will continue to run with 5.9.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - [QTBUG-48658][QTBUG-56306] The linuxfb and bsdfb platform plugins now
+   follow the behavior of eglfs by making the first window fullscreen. This
+   provides consistency and avoids applications having to make their
+   windows match the screen size manually. The new behavior can be disabled
+   by setting the environment variable QT_QPA_FB_FORCE_FULLSCREEN=0.
+ - [QTBUG-59391] A QVariant containing a std::nullptr_t is now streamable
+   to/from QDataStream.
+ - Whitespace inside identifiers in logging rule files is not ignored
+   anymore. That is, "[my category]" and "[mycategory]" are now two different
+   categories.
+ - [QTBUG-59849] QSysInfo::productType() and QFileSelector behavior on
+   macOS was restored to match what Qt used to return in version 5.7.0 and
+   earlier. The behavior found in Qt 5.6.2, 5.7.1 and 5.8.0 is removed.
+ - [QTBUG-60771] Reverted a change that caused Qt 5.6 through 5.8 not to
+   connect to QSystemSemaphore and QSharedMemory created by running
+   applications using Qt earlier than 5.6. Unfortunately, this means that Qt
+   5.9 will not connect to 5.6-5.8.
+
+ - QTouchEvent
+   * Touch point ids are now unique even between different devices. As a
+     consequence of that, you cannot anymore assume that
+     QTouchEvent::TouchPoint::id has the same value as given by the native
+     platform nor the same value as given by synthesized touch points.
+
+****************************************************************************
+*                               General Notes                              *
+****************************************************************************
+
+Deprecation Notice
+------------------
+
+ - QSysInfo::windowsVersion() and QSysInfo::macVersion() are deprecated and
+   are replaced by the newly introduced class QOperatingSystemVersion.
+ - [QTBUG-57288] Removed support for WinRT/Windows Phone 8.1.
+ - Support for CMake < 3.1 is deprecated and will be removed in Qt 5.10.
+
+Future Compatibility Notice
+---------------------------
+
+ - [QTBUG-59849] The identifiers that QSysInfo::productType() and
+   QFileSelector will use to identify macOS systems will change in Qt 6.0
+   to match the Apple naming guidelines which will be current then.
+
+Potentially Source-Incompatible Changes
+---------------------------------------
+
+ - The internal Q_COMPILER_UNICODE_STRINGS macro is now defined if the
+   compiler supports charNN_t, even if the standard library does not. To
+   check for availability of std::uNNstring, use the new
+   Q_STDLIB_UNICODE_STRINGS macro.
+
+Third-Party Code
+----------------
+
+ - Sqlite was updated to version 3.16.1.
+ - libpng was updated to version 1.6.28.
+ - Bundled HarfBuzz-NG copy updated to 1.4.1
+ - Gradle wrapper 3.4.1 was added as a third-party component (see
+   src/3rdparty/gradle). The code is licensed under Apache License 2.0, and is
+   used to create Android packages.
+ - PCRE 8.39 (src/3rdparty/pcre) was removed as a third-party component.
+ - PCRE 2 10.22 was added in src/3rdparty/pcre2 as a third-party
+   component. The code is licensed under the BSD 3-clause "New" or "Revised"
+   License, and is required by QRegularExpression (at least version 10.20).
+
+****************************************************************************
+*                               Library                                    *
+****************************************************************************
+
+QtCore
+------
+
+ - QProcessEnvironment is now available on iOS, tvOS, watchOS, and VxWorks.
+ - [QTBUG-57715] QCoreApplication::applicationVersion now defaults to an
+   appropriate platform-specific value. On Windows, it defaults to the
+   PRODUCTVERSION parameter of the VERSIONINFO resource for classic desktop
+   apps, and the version attribute of the application package manifest for
+   Univeral Windows Platform apps. On Apple Platforms (macOS, iOS, tvOS,
+   watchOS), it defaults to the CFBundleVersion property of the information
+   property list (Info.plist) file. On Android, it defaults to the
+   android:versionName attribute of the AndroidManifest.xml manifest
+   element. On other platforms, the default remains an empty string.
+ - Added QStaticByteArrayMatcher.
+ - Added new qfloat16 class.
+ - QStringLiteral is now guaranteed to be evaluated at compile-time. The
+   last platform (QNX) to use the QString::fromUtf8() fallback has been
+   ported to allocate the string data statically, too.
+
+ - Event loop:
+   * [QTBUG-33489][QTBUG-48717] QCoreApplication::flush() is now
+     deprecated. Use QCoreApplication::processEvents() and
+     QCoreApplication::sendPostedEvents() instead.
+
+ - QByteArray:
+   * Added toHex() overload to insert a separator character between the hex
+     bytes.
+
+ - QChar:
+   * Disambiguated comparisons with nullptr constants such as '\0', which
+     5.8.0 broke. As a consequence, QChar<->int comparisons are no longer
+     deprecated, as this was a failed attempt at fixing the ambiguity.
+
+ - QCryptographicHash:
+   * [QTBUG-59770] QCryptographicHash now properly calculates SHA3 message
+     digests. Before, when asked to calculate a SHA3 digest, it calculated
+     a Keccak digest instead.
+
+ - QDataStream:
+   * Added operator<< and operator>> overloads that take std::nullptr_t, to
+     facilitate generic code.
+   * Added operator<< and operator>> for streaming QFlags into and out of
+     QDataStreams.
+
+ - QDateTime:
+   * [QTBUG-52284][QTBUG-56397][QTBUG-56460][QTBUG-56345] Fixed a number of
+     bugs related to handling of timezone offsets close to or during daylight
+     savings changeovers, as well as timezones changing their standard
+     offset.
+   * [QTBUG-57298][QTBUG-57320] Fixed the handling of time zones in the
+     toString() overload taking Qt::TextDate.
+
+ - QDir:
+   * Fixed a bug that caused QDir::mkpath() to create the wrong directory
+     if the requested path contained a symbolic link and "../".
+   * Added isEmpty(), that can help determining if a directory listing would
+     be empty.
+
+ - QFileInfo:
+   * [QTBUG-48306] Made sure that all file lifecycle times are in local
+     time. This was probably true before, but is now explicit.
+
+ - QFileSelector:
+   * [QTBUG-51230] Removed the requirement for an unused default base file
+     in case you want to load only a variant.
+
+ - QFlags:
+   * Added operator<< and operator>> for streaming QFlags into and out of
+     QDataStreams.
+
+ - QHash / QMultiHash:
+   * [QTBUG-60395] Fixed a bug that caused operator== to fail in the presence
+     of duplicated keys.
+
+ - QLocale:
+   * Additional flags in QLocale::NumberOption allow generating strings
+     from doubles in accordance to EcmaScript's Number.toPrecision(n).
+   * Qt functions now always use the system time zone on Apple platforms,
+     the same that low-level C APIs like localtime() does. Previously,
+     converting dates and times to strings would use the "default" time
+     zone (which is almost always the same as the "system" time zone but
+     could be changed with the Apple API).
+
+ - QLockFile:
+   * [QTBUG-49640] Fixed a bug that caused QLockFile not to recognize a
+     stale lock file if the machine's hostname contained non-US-ASCII
+     characters, on Unix. A Windows fix is still pending.
+   * Fixed a deadlock occurring if a corrupted lock file's modification
+     time is in the future.
+
+ - QMetaObject:
+   * [QTBUG-60185] Fixed crash in QMetaObject::invokeMethod() and
+     QMetaMethod::invoke() with QueuedConnection and types whose metatype gets
+     automatically registered.
+
+ - QObject:
+   * QObject::dumpObjectInfo and QObject::dumpObjectTree are now fully
+     functional even in a non-debug build of Qt.
+   * QObject::dumpObjectInfo and QObject::dumpObjectTree now have const
+     overloads.
+   * Added a startTimer() overload taking std::chrono values.
+   * [QTBUG-58054] Fixed an incompatibility with using noexcept functions as
+     connect() targets in C++17 mode.
+
+ - QSettings:
+   * [QTBUG-34919] Added proper support for system-wide configuration file
+     lookup based on XDG spec (XDG_CONFIG_DIRS) on Unix based systems.
+   * [QTBUG-58531] Fixed data corruption when reading byte arrays on macOS.
+
+ - QSharedPointer:
+   * [QTBUG-49824] Fixed undefined behavior when creating an object with
+     QSharedPointer::create() and its constructor throws an exception.
+
+ - QStorageInfo:
+   * Added QStorageInfo::subvolume(), which returns the name of the
+     subvolume of a volume that was mounted, if one was detected. This is
+     currently implemented only for btrfs on Linux.
+
+ - QString:
+   * toLocal8Bit() now preserves nullness of the input QString (outputs
+     null QByteArray).
+   * QString::null is now deprecated. When used to construct a QString, use
+     QString() instead. When used to compare to a QString, replace with
+     QString::isNull().
+
+ - QStringRef:
+   * toLocal8Bit() and toLatin1() now preserve nullness of the input
+     QStringRef (output null QByteArrays).
+
+ - QThreadPool:
+   * The cancel() function suffers from several subtle issues and has been
+     replaced with a new tryTake() function.
+
+ - QUrl:
+   * The temporary compatibility in QUrl::resolved() that treated the base
+     URL as relative if its scheme matched the current URL's scheme has
+     been removed.
+   * [QTBUG-60364] Fixed a bug that caused certain domain names that look
+     like Internationalized Domain Names to become corrupt in decoded forms
+     of QUrl, notably toString() and toDisplayString().
+
+ - QVarLengthArray:
+   * Fixed a bug involving appending an item already in the container to
+     the container again.
+   * Added rvalue overloads of append() and push_back().
+
+ - QVariant:
+   * [QTBUG-56073] Fixed a bug that caused wrong results for comparisons of
+     QVariants containing either NaN or infinite numbers.
+   * Can now convert QUuid to and from QByteArray, not just QString.
+   * [QTBUG-58296] isNull() now returns true if the QVariant contains nullptr.
+
+QtGui
+-----
+
+ - OpenGL:
+   * [QTBUG-55496] QOpenGLShaderProgram now offers a built-in program binary
+     disk cache for systems with OpenGL ES 3.x or GL_ARB_get_program_binary.
+     This can lead to significant increases in performance when it comes to
+     application startup times for example.  Usage is opt-in for direct C++
+     users of the class, however Qt's own main users of shaders, including Qt
+     Quick and QPainter's OpenGL engine, are migrated to use the new,
+     cache-enabled APIs. Opting out on application level is always possible
+     via Qt::AA_DisableShaderDiskCache.
+
+ - QIcon:
+   * [QTBUG-49820] Implemented support for Scale directory key according to
+     Icon Theme Spec. Icons created via QIcon::fromTheme() now have high
+     DPI support by specifying the Scale in the appropriate entry of the
+     relevant index.theme file.
+
+ - QImage:
+   * A new method reinterpretAsFormat() is has been added to change the
+     format of a QImage without converting the data.
+
+ - QMatrix4x4:
+   * operator*=() now calculates the correct result even if the RHS and LHS
+     are the same object.
+
+ - QPA:
+   * QPlatformScreen: Added an API to list available modes for a screen,
+     that is resolution and refresh rate.
+   * [QTBUG-58383] The function createForeignWindow() has been added to
+     QPlatormIntegration and is now responsible for creating foreign
+     windows. The function isForeignWindow() in QPlatformWindow has been
+     added, and platforms should implement this to return true for windows
+     created by createForeignWindow().
+
+ - QPainter:
+   * [QTBUG-28851] Fixed fills of negatively sized QRects.
+
+ - QRgba64:
+   * The default constructor on Clang and GCC builds now no longer
+     initializes with 0s, but leaves the value uninitialized. This is
+     consistent with MSVC behavior and pre-C++11 behavior of GCC and Clang.
+
+ - QScreen:
+   * Added manufacturer, model and serialNumber properties.
+
+ - QTextLine:
+   * Fixed a possible undefined behavior in the calculation of glyph right
+     bearing when a QTextLine layout is performed.
+
+ - QTouchEvent:
+   * TouchPoint::rect(), sceneRect() and screenRect() are deprecated; a
+     touchpoint is now modeled as an ellipse centered on a point, so please
+     use pos(), scenePos(), screenPos(), and ellipseDiameters() instead.
+   * QTouchEvent::TouchPoint::id values are now unique even between
+     different devices.
+
+ - QWindow:
+   * [QTBUG-58383] The "_q_foreignWinId" dynamic property is no longer set
+     nor read.
+
+ - Text:
+   * [QTBUG-56538] Added QTextDocument::toRawText() function.
+   * [QTBUG-48005] Fixed clipping errors and too small bounding rects for
+     some right-to-left text.
+   * [QTBUG-57241] Fixed crash for very tall glyphs
+
+QtNetwork
+---------
+
+ - The connect timeout from QAbstractSocket is now configurable through
+   QNetworkConfiguration.
+ - Added redirects policy to QNAM.
+ - Added HTTP Strict Transport Security to QNAM.
+
+ - Bearer management:
+   * [QTBUG-56228][QTBUG-52988] Fixed a bug that could cause a crash on
+     application exit, depending on the order of destruction of the
+     QCoreApplication object and the QtDBus manager thread.
+
+ - QHostAddress:
+   * QHostAddress is now implicitly shared.
+   * Added operator!=(SpecialAddress, QHostAddress).
+
+ - QSslSocket:
+   * Fixed connection to international domains (IDN) by normalizing to
+     ASCII equivalent before comparing the host name in the certificate.
+   * [QTBUG-56102] Allow QSslSocket (Secure Transport back-end) to use a temporary
+     keychain on macOS instead of a default one; this can be enabled via a special
+     environment variable QT_SSL_USE_TEMPORARY_KEYCHAIN (this feature is disabled
+     by default).
+   * [QTBUG-60233] QSslSocket (Secure Transport back-end) now respects CA
+     certificates set in QSslConfiguration (before was always implicitly using
+     the built-in anchor certificates in addition to a user provided configuration).
+   * [QTBUG-59480] Added a missing cipher (Secure Transport).
+   * [QTBUG-59930] Fixed spurious socket notifications in QCFSocketNotifer.
+   * [QTBUG-58214] Fixed spurious socket notifications on Windows.
+
+QtTest
+------
+
+ - QUuids are now printed on failure.
+ - Added QTest::addRow(), which is like newRow(), but can take printf-style
+   formatted strings.
+
+QtWidgets
+---------
+
+ - [QTBUG-26116] QWidget now has a tabletTracking property, analogous to
+   mouseTracking, which will enable TabletMove events while the stylus is
+   hovering, even if no button is pressed. This allows applications to show
+   feedback based on the other tablet event properties such as rotation and
+   tilt.
+
+ - Input:
+   * [QTBUG-42074][QTBUG-57003] Characters in the Unicode Private Use Area, as
+     well as zero-width joiners and zero-width non-joiners, are now accepted
+     as input in QLineEdit and QTextEdit.
+
+ - Qt::WA_WindowPropagation:
+   * [QTBUG-59106] Locale is now propagated consistently, along with font and
+     palette, within the widget hierarchy. Previously, setLocale() propagated
+     the new locale from parents to children (recursively) but new children
+     didn't inherit from their parents.
+
+ - QColorDialog:
+   * [QTBUG-58424] Fixed long standing bug that prevented custom colors in
+     QColorDialog to be stored in the settings.
+
+ - QDialog:
+   * [QTBUG-6018][QTBUG-12156][QTBUG-14430] Fixed a bug where accessing the
+     result of QDialog's result could yield an incorrect value in some
+     situation like using it as a delegate for item views.
+
+ - QErrorMessage:
+   * Critical (QtCriticalMsg) and informational (QtInfoMsg) messages are now
+     displayed properly. Previously, they appeared as if they were debug
+     (QtDebugMsg) ones.
+
+ - QFormLayout:
+   * [QTBUG-58693][QTBUG-15990] The functions takeRow() and removeRow(),
+     new in 5.8.0, now take and remove the correct row.
+
+ - QMacStyle:
+   * [QTBUG-57470] PE_IndicatorMenuCheckMark now looks for State_On instead of
+     the State_Selected to set its highlighted state. Its color is picked from
+     the style option palette.
+
+ - QPixmapStyle:
+   * Now handles progress bars with minimum != 0 correctly.
+
+ - QSizePolicy:
+   * Added transposed() method.
+
+ - QSystemTrayIcon:
+   * [QTBUG-49283] Support for custom icons in showMessage() was added.
+
+ - QTextEdit:
+   * [QTBUG-59196] Fixed initial char format of input method text as it is
+     in pre-edit mode.
+
+****************************************************************************
+*                         Platform-specific Changes                        *
+****************************************************************************
+
+Android
+-------
+
+ - [QTBUG-44697] Removed old work-around which was causing OpenGL shader
+   compilation to fail on updated Android emulators.
+ - QTouchEvent::TouchPoints have correct ellipseDiameters() and rotation().
+
+XCB/X11
+-------
+ - [QTBUG-60389] Every QTouchEvent includes up-to-date keyboard modifiers.
+ - [QTBUG-59415] Every QTabletEvent includes up-to-date keyboard modifiers.
+
+Linux
+-----
+
+ - Added an option to switch from mailbox to FIFO mode in eglfs' EGLStream
+   backend. This is done by setting the environment variable
+   QT_QPA_EGLFS_STREAM_FIFO_LENGTH to a >= 1 value, the desired length of the
+   FIFO queue.
+ - [QTBUG-57411] Added support for cross-compilation for the MIPS CI20.
+ - Added support for cross-compilation targeting 64-bit Jetson TX1 systems.
+ - Added support for cross-compilation targeting Renesas R-Car H2 (Lager)
+   systems.
+ - The Raspberry Pi 3 device specs have been renamed from linux-rpi3-* to
+   linux-rasp-pi3-* in order to follow the pattern of the RPi 1 and 2 specs.
+ - [QTBUG-57980] Added support for specifying the primary screen in the
+   JSON config file in QT_QPA_EGLFS_KMS_CONFIG when running on DRM/KMS with
+   eglfs.
+ - The evdevtouch plugin now has the option to apply filtering and
+   prediction. Enabled by passing "filtered" as an argument. Prediction can
+   be specified by passing "prediction=X" as an argument, where X is in
+   milliseconds.
+
+ - linuxfb:
+   * [QTBUG-56306] Added experimental support for DRM dumb buffers. Enable
+     by setting the environment variable QT_QPA_FB_DRM to 1.
+
+macOS
+-----
+
+ - Extra mouse buttons are now correctly be mapped to correct Qt::MouseButton
+   values.
+
+ - Accessibility:
+   * [QTBUG-39008][QTBUG-54776][QTBUG-56043][QTBUG-57146] A common crash in
+     accessibility on macOS was fixed.
+
+Solaris
+-------
+
+ - [QTBUG-56293] Support for the Illumos distribution OpenIndiana (release
+   "Hipster") has been added. This is a community-supported partial port.
+
+Windows
+-------
+
+ - Support for Visual Studio 2017 has been added.
+ - Fixed frameMargins for WM_NCCALCSIZE when handled inside with
+   QAbstractNativeEventFilter.
+ - [QTBUG-55510][QTBUG-48242] Windows are now automatically resized when they
+   are moved on a screen to adapt to the new pixel ratio.
+ - [QTBUG-58446] Fixed a bug that caused applications to crash with
+   "Illegal instruction" faults when compiled with Visual Studio and run on
+   some older processors.
+ - [QTBUG-57023] Fixed a bug that caused QFile to create files with
+   truncated names if the file name was invalid. Now, QFile::open correctly
+   fails to create such files.
+
+ - PDF:
+   * [QTBUG-58954] Fixed a bug in PDF output when using high-dpi scaling
+     which was causing the display of warnings when opening the file in
+     Adobe Reader.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+moc
+---
+
+ - [QTBUG-59351] Fixed parsing errors in presence of C++14 digit separators.
+ - Added Support for C++17 nested namespaces
+ - Move-only types are now supported as return types of signals and slots.
+
+configure & build system
+------------------------
+
+ - [QTBUG-30083] Generalized command line overrides of installation
+   paths of external dependencies; see configure -help. Use configure
+   -list-libraries to find about known libraries.
+ - [QTBUG-42937][iOS] Added support for the configure -shared flag.
+ - [QTBUG-56225] Re-introduced creation of config.summary.
+ - [QTBUG-57908][QTBUG-59062] Fixed parsing of configure --xxx options.
+ - [QTBUG-57656][macOS] Fixed installation of header-only modules like
+   QtUiPlugin in framework builds of Qt.
+ - [QTBUG-58321] Switching to a different qmakespec for user projects will
+   now properly enable C++11 support if necessary.
+ - [QTBUG-58411] Added configure -list-features option. This is useful
+   for finding unnecessary features to disable with -no-feature-XXX.
+ - [QTBUG-58511] Fixed QMAKE_CXXFLAGS, etc. assignments on the configure
+   command line being ignored when building bootstrapped Qt tools while
+   not cross-building (in cross-builds, they are intentionally ignored).
+ - [QTBUG-60016] configure will now refuse to run if it finds variables
+   in its environment which are known to cause trouble.
+ - [QTBUG-60382] Fixed query of library paths from pkg-config.
+ - Added possibility to merge ANGLE's libEGL and libGLESv2 into QtANGLE;
+   configure option -combined-angle-lib.
+ - [Windows] The -no-rtti configure option was removed, as Qt fails
+   to build under that condition. To disable RTTI in user code, add
+   CONFIG+=rtti_off to your project file.
+ - [GCC] Debug builds of Qt are now optimized with -Og if available;
+   use -no-optimize-debug to disable. This is also applicable to user
+   projects; add CONFIG+=optimize_debug to your project file.
+ - Added possibility to optimize release builds for size instea of speed;
+   configure option -optimize-size.
+
+qmake
+-----
+
+ - [QTBUG-51598] Libs.private is now written to .pc files only when building
+   static libraries.
+ - [QTBUG-55279] Static plugins are now imported also into dynamic libraries,
+   not only executables. Various other improvements to static linking.
+ - [QTBUG-56965][Darwin] Fixed overriding QMAKE_*_DEPLOYMENT_TARGET from
+   within project files.
+ - [QTBUG-57343] Fixed execution of extra compilers' depend_commands in build
+   directories containing shell meta characters in their names,.
+ - [QTBUG-57276] Fixed QMAKE_PRE_LINK (always) and QMAKE_POST_LINK (in one
+   case) being ignored when building static libraries for Unix.
+ - [QTBUG-57435][VS] Fixed capitalization of <PlatformToolset> tags in the
+   generated vcxproj files.
+ - [QTBUG-57694][VS] Fixed bogus ToolsVersion attributes in the generated
+   vcxproj files.
+ - [QTBUG-57914][VS] Fixed handling of RC_FILE when generating single-
+   configuration vcxproj files.
+ - [QTBUG-59630][VS] Fixed uninitialized value of GenerateDebugInformation,
+   which was particularly bad if DebugFastLink was emitted for VS < 2015.
+ - [QTBUG-58710][MSVC/nmake] Fixed overlong lines in response files generated
+   for link.exe and lib.exe.
+ - [QTBUG-57502][Darwin] Added support for launch images in asset catalogs.
+ - [QTBUG-58126] Fixed the target compiler's default include and library paths
+   interfering with the build of host tools when cross-building.
+ - [QTBUG-58764] Fixed building of moc'able files with a Qt installation
+   in a path containing spaces.
+ - [QTBUG-58857] Added the ability to use CONFIG+=no_moc_predefs to suppress
+   the collection of the compiler's predefined macros for moc's use.
+ - [QTBUG-59004][Windows] '(n)make install' will now copy the timestamps of
+   the installed files, like it was already done on Unix.
+ - [QTBUG-59319] Fixed $$shadowed() function for the case where the source
+   tree lives in a symlinked or substituted path.
+ - [QTBUG-59779][Android][MinGW] Fixed CONFIG+=separate_debug_info.
+ - [QTBUG-38782][iOS] Added support for setting the Xcode development team
+   and provisioning profile.
+ - [QTBUG-58754][iOS] Fixed handling of bitcode.
+ - [Darwin] Binaries now automatically get @executable_path/Frameworks
+   added to RPATH, and libraries additionally @loader_path/Frameworks.
+   Suppress with CONFIG+=no_default_rpath.
+ - [Darwin][Xcode] QMAKE_BUNDLE_DATA now supports embedding Frameworks
+   and PlugIns.
+ - [macOS] Support for universal binaries has been re-introduced.
+ - Added the command line options -early and -late, plus -before (which is
+   the default) for symmetry with -after.
+ - The $$prompt() function will now exit qmake upon EOF on stdin.
+ - The touch() function now uses nanosecond precision if available.
+ - [MSVC] Qt now has a common mkspec for all Visual Studio versions, called
+   "win32-msvc". The old names which contained the version number are now
+   gone (but qmake scopes based on the old names continue to work).
+   In qmake project files, the version of the compiler can be obtained from
+   the MSC_VER and MSVC_VER variables (for example, for Visual Studio 2015,
+   those contain the values 1900 and 14.0, respectively). Those variables
+   are also available with the Intel compiler (win32-icc) and with Clang
+   (win32-clang-msvc).
+ - [Windows] The win32-clang-msvc qmakespec will now adjust the emulated
+   MSVC version to match that of the cl.exe found in PATH.
+ - [Windows] Fixed make 'install' targets to be idempotent.
+ - [Windows] '(n)make install' will not fail on file names containing the
+   plus sign any more.
+ - Numerous obsolete qmakespecs have been pruned.

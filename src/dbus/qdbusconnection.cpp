@@ -425,7 +425,7 @@ void QDBusConnectionManager::createServer(const QString &address, void *server)
 */
 QDBusConnection::QDBusConnection(const QString &name)
 {
-    if (name.isEmpty()) {
+    if (name.isEmpty() || _q_manager.isDestroyed()) {
         d = 0;
     } else {
         QMutexLocker locker(&_q_manager()->mutex);
@@ -490,7 +490,7 @@ QDBusConnection &QDBusConnection::operator=(const QDBusConnection &other)
 */
 QDBusConnection QDBusConnection::connectToBus(BusType type, const QString &name)
 {
-    if (!qdbus_loadLibDBus()) {
+    if (_q_manager.isDestroyed() || !qdbus_loadLibDBus()) {
         QDBusConnectionPrivate *d = 0;
         return QDBusConnection(d);
     }
@@ -504,7 +504,7 @@ QDBusConnection QDBusConnection::connectToBus(BusType type, const QString &name)
 QDBusConnection QDBusConnection::connectToBus(const QString &address,
                                               const QString &name)
 {
-    if (!qdbus_loadLibDBus()) {
+    if (_q_manager.isDestroyed() || !qdbus_loadLibDBus()) {
         QDBusConnectionPrivate *d = 0;
         return QDBusConnection(d);
     }
@@ -519,7 +519,7 @@ QDBusConnection QDBusConnection::connectToBus(const QString &address,
 QDBusConnection QDBusConnection::connectToPeer(const QString &address,
                                                const QString &name)
 {
-    if (!qdbus_loadLibDBus()) {
+    if (_q_manager.isDestroyed() || !qdbus_loadLibDBus()) {
         QDBusConnectionPrivate *d = 0;
         return QDBusConnection(d);
     }
@@ -1174,6 +1174,8 @@ bool QDBusConnection::unregisterService(const QString &serviceName)
 */
 QDBusConnection QDBusConnection::sessionBus()
 {
+    if (_q_manager.isDestroyed())
+        return QDBusConnection(Q_NULLPTR);
     return QDBusConnection(_q_manager()->busConnection(SessionBus));
 }
 
@@ -1186,6 +1188,8 @@ QDBusConnection QDBusConnection::sessionBus()
 */
 QDBusConnection QDBusConnection::systemBus()
 {
+    if (_q_manager.isDestroyed())
+        return QDBusConnection(Q_NULLPTR);
     return QDBusConnection(_q_manager()->busConnection(SystemBus));
 }
 

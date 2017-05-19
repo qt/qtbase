@@ -5710,17 +5710,11 @@ static inline void rgbBlendPixel(quint32 *dst, int coverage, QRgba64 slinear, co
 static inline void grayBlendPixel(quint32 *dst, int coverage, QRgba64 srcLinear, const QColorProfile *colorProfile)
 {
     // Do a gammacorrected gray alphablend...
-    QRgba64 dstLinear = QRgba64::fromArgb32(*dst);
+    const QRgba64 dstLinear = colorProfile ? colorProfile->toLinear64(*dst) : QRgba64::fromArgb32(*dst);
 
-    if (colorProfile && !dstLinear.isTransparent())
-        dstLinear = colorProfile->fromLinear(dstLinear.unpremultiplied()).premultiplied();
+    QRgba64 blend = interpolate255(srcLinear, coverage, dstLinear, 255 - coverage);
 
-    dstLinear = interpolate255(srcLinear, coverage, dstLinear, 255 - coverage);
-
-    if (colorProfile && !dstLinear.isTransparent())
-        dstLinear = colorProfile->fromLinear(dstLinear.unpremultiplied()).premultiplied();
-
-    *dst = toArgb32(dstLinear);
+    *dst = colorProfile ? colorProfile->fromLinear64(blend) : toArgb32(blend);
 }
 
 static inline void alphamapblend_argb32(quint32 *dst, int coverage, QRgba64 srcLinear, quint32 src, const QColorProfile *colorProfile)
@@ -5730,7 +5724,12 @@ static inline void alphamapblend_argb32(quint32 *dst, int coverage, QRgba64 srcL
     } else if (coverage == 255) {
         *dst = src;
     } else {
-        grayBlendPixel(dst, coverage, srcLinear, colorProfile);
+        if (*dst >= 0xff000000) {
+            grayBlendPixel(dst, coverage, srcLinear, colorProfile);
+        } else {
+            // Give up and do a naive gray alphablend. Needed to deal with ARGB32 and invalid ARGB32_premultiplied, see QTBUG-60571
+            *dst = INTERPOLATE_PIXEL_255(src, coverage, *dst, 255 - coverage);
+        }
     }
 }
 
@@ -5818,14 +5817,25 @@ static inline void alphargbblend_generic(uint coverage, QRgba64 *dest, int x, co
                 dstColor = colorProfile->fromLinear(dstColor);
             dest[x] = dstColor;
         } else {
-            // Give up and do a gray alphablend.
-            if (colorProfile && !dstColor.isTransparent())
-                dstColor = colorProfile->toLinear(dstColor.unpremultiplied()).premultiplied();
+            // Do a gray alphablend.
+            alphamapblend_generic(qRgbAvg(coverage), dest, x, srcLinear, src, colorProfile);
+        }
+    }
+}
+
+static inline void alphargbblend_argb32(quint32 *dst, uint coverage, QRgba64 srcLinear, quint32 src, const QColorProfile *colorProfile)
+{
+    if (coverage == 0xff000000) {
+        // nothing
+    } else if (coverage == 0xffffffff) {
+        *dst = src;
+    } else {
+        if (*dst >= 0xff000000) {
+            rgbBlendPixel(dst, coverage, srcLinear, colorProfile);
+        } else {
+            // Give up and do a naive gray alphablend. Needed to deal with ARGB32 and invalid ARGB32_premultiplied, see QTBUG-60571
             const int a = qRgbAvg(coverage);
-            dstColor = interpolate255(srcLinear, coverage, dstColor, 255 - a);
-            if (colorProfile && !dstColor.isTransparent())
-                dstColor = colorProfile->fromLinear(dstColor.unpremultiplied()).premultiplied();
-            dest[x] = dstColor;
+            *dst = INTERPOLATE_PIXEL_255(src, a, *dst, 255 - a);
         }
     }
 }
@@ -5930,16 +5940,7 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
         while (mapHeight--) {
             for (int i = 0; i < mapWidth; ++i) {
                 const uint coverage = src[i];
-                if (coverage == 0xffffffff) {
-                    dst[i] = c;
-                } else if (coverage != 0xff000000) {
-                    if (dst[i] >= 0xff000000) {
-                        rgbBlendPixel(dst + i, coverage, srcColor, colorProfile);
-                    } else {
-                        // Give up and do a gray blend.
-                        grayBlendPixel(dst + i, qRgbAvg(coverage), srcColor, colorProfile);
-                    }
-                }
+                alphargbblend_argb32(dst + i, coverage, srcColor, c, colorProfile);
             }
 
             dst += destStride;
@@ -5965,16 +5966,7 @@ static void qt_alphargbblit_argb32(QRasterBuffer *rasterBuffer,
 
                 for (int xp=start; xp<end; ++xp) {
                     const uint coverage = src[xp - x];
-                    if (coverage == 0xffffffff) {
-                        dst[xp] = c;
-                    } else if (coverage != 0xff000000) {
-                        if (dst[xp] >= 0xff000000) {
-                            rgbBlendPixel(dst + xp, coverage, srcColor, colorProfile);
-                        } else {
-                            // Give up and do a gray blend.
-                            grayBlendPixel(dst + xp, qRgbAvg(coverage), srcColor, colorProfile);
-                        }
-                    }
+                    alphargbblend_argb32(dst + xp, coverage, srcColor, c, colorProfile);
                 }
             } // for (i -> line.count)
             src += srcStride;
