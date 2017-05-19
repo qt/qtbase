@@ -366,6 +366,14 @@ void QKdeThemePrivate::refresh()
         resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
     }
 
+    if (QFont *menuFont = kdeFont(readKdeSetting(QStringLiteral("menuFont"), kdeDirs, kdeVersion, kdeSettings))) {
+        resources.fonts[QPlatformTheme::MenuFont] = menuFont;
+        resources.fonts[QPlatformTheme::MenuBarFont] = new QFont(*menuFont);
+    }
+
+    if (QFont *toolBarFont = kdeFont(readKdeSetting(QStringLiteral("toolBarFont"), kdeDirs, kdeVersion, kdeSettings)))
+        resources.fonts[QPlatformTheme::ToolButtonFont] = toolBarFont;
+
     qDeleteAll(kdeSettings);
 }
 
