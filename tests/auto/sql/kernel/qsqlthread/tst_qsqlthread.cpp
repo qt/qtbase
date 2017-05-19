@@ -398,7 +398,7 @@ void tst_QSqlThread::readWriteThreading()
     producer.start();
     consumer.start();
 
-    QTRY_VERIFY(threadFinishedCount >= 2);
+    QTRY_VERIFY_WITH_TIMEOUT(threadFinishedCount >= 2, 10000);
 }
 
 // run with n threads in parallel. Change this constant to hammer the poor DB server even more

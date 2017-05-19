@@ -1,6 +1,8 @@
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
 LIBS += -lole32 -luser32 -lwinspool -limm32 -lwinmm -loleaut32
 
+QT_FOR_CONFIG += gui
+
 qtConfig(opengl):!qtConfig(opengles2):!qtConfig(dynamicgl): LIBS *= -lopengl32
 
 mingw: LIBS *= -luuid
@@ -99,5 +101,10 @@ RESOURCES += $$PWD/openglblacklists.qrc
 
 qtConfig(accessibility): include($$PWD/accessible/accessible.pri)
 
-DEFINES *= LIBEGL_NAME=$${LIBQTANGLE_NAME}
-DEFINES *= LIBGLESV2_NAME=$${LIBQTANGLE_NAME}
+qtConfig(combined-angle-lib) {
+    DEFINES *= LIBEGL_NAME=$${LIBQTANGLE_NAME}
+    DEFINES *= LIBGLESV2_NAME=$${LIBQTANGLE_NAME}
+} else {
+    DEFINES *= LIBEGL_NAME=$${LIBEGL_NAME}
+    DEFINES *= LIBGLESV2_NAME=$${LIBGLESV2_NAME}
+}
