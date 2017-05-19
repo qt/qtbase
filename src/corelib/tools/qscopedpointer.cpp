@@ -115,7 +115,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet code/src_corelib_tools_qscopedpointer.cpp 4
 
-    Otherwise, the compiler output a warning about not being able to destruct
+    Otherwise, the compiler outputs a warning about not being able to destruct
     \c MyPrivateClass.
 
     \sa QSharedPointer
