@@ -420,10 +420,14 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
     const uint *s1 = (const uint *)image.scanLine(y1);
     const uint *s2 = (const uint *)image.scanLine(y2);
 
-    int disty = (fy & 0x0000ffff) >> 8;
-    int idisty = 256 - disty;
-    int x = fx >> 16;
-    int length = end - b;
+    const int disty = (fy & 0x0000ffff) >> 8;
+    const int idisty = 256 - disty;
+    const int length = end - b;
+
+    // The intermediate buffer is generated in the positive direction
+    const int adjust = (fdx < 0) ? fdx * length : 0;
+    const int offset = (fx + adjust) >> 16;
+    int x = offset;
 
     // The idea is first to do the interpolation between the row s1 and the row s2
     // into an intermediate buffer, then we interpolate between two pixel of this buffer.
@@ -433,7 +437,7 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
     // +1 for the last pixel to interpolate with, and +1 for rounding errors.
     quint32 intermediate_buffer[2][BufferSize + 2];
     // count is the size used in the intermediate_buffer.
-    int count = (qint64(length) * fdx + FixedScale - 1) / FixedScale + 2;
+    int count = (qint64(length) * qAbs(fdx) + FixedScale - 1) / FixedScale + 2;
     Q_ASSERT(count <= BufferSize + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
     int f = 0;
     int lim = qMin(count, image.x2 - x);
@@ -492,8 +496,7 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
         x++;
     }
     // Now interpolate the values from the intermediate_buffer to get the final result.
-    fx &= FixedScale - 1;
-    Q_ASSERT((fx >> 16) == 0);
+    fx -= offset * FixedScale;
 
     const __m128i v_fdx = _mm_set1_epi32(fdx * 4);
     const __m128i v_blend = _mm_set1_epi32(0x00800080);

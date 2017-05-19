@@ -1945,10 +1945,14 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper(u
     const uint *s1 = (const uint *)image.scanLine(y1);
     const uint *s2 = (const uint *)image.scanLine(y2);
 
-    int disty = (fy & 0x0000ffff) >> 8;
-    int idisty = 256 - disty;
-    int x = fx >> 16;
-    int length = end - b;
+    const int disty = (fy & 0x0000ffff) >> 8;
+    const int idisty = 256 - disty;
+    const int length = end - b;
+
+    // The intermediate buffer is generated in the positive direction
+    const int adjust = (fdx < 0) ? fdx * length : 0;
+    const int offset = (fx + adjust) >> 16;
+    int x = offset;
 
     // The idea is first to do the interpolation between the row s1 and the row s2
     // into an intermediate buffer, then we interpolate between two pixel of this buffer.
@@ -1958,7 +1962,7 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper(u
     // +1 for the last pixel to interpolate with, and +1 for rounding errors.
     quint32 intermediate_buffer[2][buffer_size + 2];
     // count is the size used in the intermediate_buffer.
-    int count = (qint64(length) * fdx + fixed_scale - 1) / fixed_scale + 2;
+    int count = (qint64(length) * qAbs(fdx) + fixed_scale - 1) / fixed_scale + 2;
     Q_ASSERT(count <= buffer_size + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
     int f = 0;
     int lim = count;
@@ -2059,9 +2063,10 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper(u
         intermediate_buffer[1][f] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
         x++;
     }
+
     // Now interpolate the values from the intermediate_buffer to get the final result.
-    fx &= fixed_scale - 1;
-    Q_ASSERT((fx >> 16) == 0);
+    fx -= offset * fixed_scale; // Switch to intermediate buffer coordinates
+
     while (b < end) {
         int x1 = (fx >> 16);
         int x2 = x1 + 1;
@@ -2591,14 +2596,14 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
         fy -= half_point;
 
         if (fdy == 0) { // simple scale, no rotation or shear
-            if (fdx <= fixed_scale && fdx > 0) {
-                // simple scale up on X without mirroring
+            if (qAbs(fdx) <= fixed_scale) {
+                // simple scale up on X
                 bilinearFastTransformHelperARGB32PM[tiled][SimpleUpscaleTransform](b, end, data->texture, fx, fy, fdx, fdy);
-            } else if ((fdx < 0 && fdx > -(fixed_scale / 8)) || qAbs(data->m22) < qreal(1./8.)) {
-                // scale up more than 8x (on either Y or on X mirrored)
+            } else if (qAbs(data->m22) < qreal(1./8.)) {
+                // scale up more than 8x (on Y)
                 bilinearFastTransformHelperARGB32PM[tiled][UpscaleTransform](b, end, data->texture, fx, fy, fdx, fdy);
             } else {
-                // scale down on X (or up on X mirrored less than 8x)
+                // scale down on X
                 bilinearFastTransformHelperARGB32PM[tiled][DownscaleTransform](b, end, data->texture, fx, fy, fdx, fdy);
             }
         } else { // rotation or shear
@@ -2678,10 +2683,14 @@ static void QT_FASTCALL fetchTransformedBilinear_simple_upscale_helper(uint *b, 
     const uchar *s1 = image.scanLine(y1);
     const uchar *s2 = image.scanLine(y2);
 
-    int disty = (fy & 0x0000ffff) >> 8;
-    int idisty = 256 - disty;
-    int x = fx >> 16;
-    int length = end - b;
+    const int disty = (fy & 0x0000ffff) >> 8;
+    const int idisty = 256 - disty;
+    const int length = end - b;
+
+    // The intermediate buffer is generated in the positive direction
+    const int adjust = (fdx < 0) ? fdx * length : 0;
+    const int offset = (fx + adjust) >> 16;
+    int x = offset;
 
     // The idea is first to do the interpolation between the row s1 and the row s2
     // into an intermediate buffer, then we interpolate between two pixel of this buffer.
@@ -2691,7 +2700,7 @@ static void QT_FASTCALL fetchTransformedBilinear_simple_upscale_helper(uint *b, 
     const uint *ptr1;
     const uint *ptr2;
 
-    int count = (qint64(length) * fdx + fixed_scale - 1) / fixed_scale + 2;
+    int count = (qint64(length) * qAbs(fdx) + fixed_scale - 1) / fixed_scale + 2;
     Q_ASSERT(count <= buffer_size + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
 
     if (blendType == BlendTransformedBilinearTiled) {
@@ -2757,8 +2766,8 @@ static void QT_FASTCALL fetchTransformedBilinear_simple_upscale_helper(uint *b, 
     }
 
     // Now interpolate the values from the intermediate_buffer to get the final result.
-    fx &= fixed_scale - 1;
-    Q_ASSERT((fx >> 16) == 0);
+    fx -= offset * fixed_scale; // Switch to intermediate buffer coordinates
+
     while (b < end) {
         int x1 = (fx >> 16);
         int x2 = x1 + 1;
@@ -2920,7 +2929,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
         fy -= half_point;
 
         if (fdy == 0) { // simple scale, no rotation or shear
-            if (fdx <= fixed_scale && fdx > 0) { // scale up on X
+            if (qAbs(fdx) <= fixed_scale) { // scale up on X
                 fetchTransformedBilinear_simple_upscale_helper<blendType, bpp>(buffer, buffer + length, data->texture, fx, fy, fdx, fdy);
             } else {
                 const BilinearFastTransformFetcher fetcher = fetchTransformedBilinear_fetcher<blendType,bpp>;
@@ -2934,7 +2943,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
                     layout->convertToARGB32PM(buf1, buf1, len * 2, clut, 0);
                     layout->convertToARGB32PM(buf2, buf2, len * 2, clut, 0);
 
-                    if ((fdx < 0 && fdx > -(fixed_scale / 8)) || qAbs(data->m22) < qreal(1./8.)) { // scale up more than 8x
+                    if (qAbs(data->m22) < qreal(1./8.)) { // scale up more than 8x (on Y)
                         int disty = (fy & 0x0000ffff) >> 8;
                         for (int i = 0; i < len; ++i) {
                             int distx = (fx & 0x0000ffff) >> 8;
