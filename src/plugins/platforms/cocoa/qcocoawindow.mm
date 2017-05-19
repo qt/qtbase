@@ -1655,11 +1655,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
         // Move view to new NSWindow if needed
         if (newWindow) {
             [m_view setPostsFrameChangedNotifications:NO];
-            [m_view retain];
-            if (m_view.superview) // m_view comes from another NSWindow
-                [m_view removeFromSuperview];
             [newWindow setContentView:m_view];
-            [m_view release];
             [m_view setPostsFrameChangedNotifications:YES];
 
             m_nsWindow = newWindow;
