@@ -64,6 +64,7 @@ QT_BEGIN_NAMESPACE
 #define ODBC_CHECK_DRIVER
 
 static const int COLNAMESIZE = 256;
+static const SQLSMALLINT TABLENAMESIZE = 128;
 //Map Qt parameter types to ODBC types
 static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
 
@@ -730,6 +731,12 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
         f.setRequired(false);
     // else we don't know
     f.setAutoValue(isAutoValue(hStmt, i));
+    QVarLengthArray<SQLTCHAR> tableName(TABLENAMESIZE);
+    SQLSMALLINT tableNameLen;
+    r = SQLColAttribute(hStmt, i + 1, SQL_DESC_BASE_TABLE_NAME, tableName.data(),
+                        TABLENAMESIZE, &tableNameLen, 0);
+    if (r == SQL_SUCCESS)
+        f.setTableName(fromSQLTCHAR(tableName, tableNameLen));
     return f;
 }
 

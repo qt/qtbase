@@ -66,6 +66,10 @@
 QT_BEGIN_NAMESPACE
 
 static const int COLNAMESIZE = 255;
+// Based on what is mentioned in the documentation here:
+// https://www.ibm.com/support/knowledgecenter/en/SSEPEK_10.0.0/sqlref/src/tpc/db2z_limits.html
+// The limit is 128 bytes for table names
+static const SQLSMALLINT TABLENAMESIZE = 128;
 static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
 
 class QDB2DriverPrivate : public QSqlDriverPrivate
@@ -297,6 +301,12 @@ static QSqlField qMakeFieldInfo(const QDB2ResultPrivate* d, int i)
     f.setLength(colSize == 0 ? -1 : int(colSize));
     f.setPrecision(colScale == 0 ? -1 : int(colScale));
     f.setSqlType(int(colType));
+    SQLTCHAR tableName[TABLENAMESIZE];
+    SQLSMALLINT tableNameLen;
+    r = SQLColAttribute(d->hStmt, i + 1, SQL_DESC_BASE_TABLE_NAME, tableName,
+                        TABLENAMESIZE, &tableNameLen, 0);
+    if (r == SQL_SUCCESS)
+        f.setTableName(qFromTChar(tableName));
     return f;
 }
 
@@ -1394,7 +1404,9 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
                         SQL_FETCH_NEXT,
                         0);
     while (r == SQL_SUCCESS) {
-        fil.append(qMakeFieldInfo(hStmt));
+        QSqlField fld = qMakeFieldInfo(hStmt);
+        fld.setTableName(tableName);
+        fil.append(fld);
         r = SQLFetchScroll(hStmt,
                             SQL_FETCH_NEXT,
                             0);

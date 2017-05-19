@@ -331,7 +331,8 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
 static QSqlField qToField(MYSQL_FIELD *field, QTextCodec *tc)
 {
     QSqlField f(toUnicode(tc, field->name),
-                qDecodeMYSQLType(int(field->type), field->flags));
+                qDecodeMYSQLType(int(field->type), field->flags),
+                toUnicode(tc, field->table));
     f.setRequired(IS_NOT_NULL(field->flags));
     f.setLength(field->length);
     f.setPrecision(field->decimals);

@@ -232,10 +232,23 @@ QString QSqlRecord::fieldName(int index) const
 
 int QSqlRecord::indexOf(const QString& name) const
 {
-    QString nm = name.toUpper();
+    QString tableName;
+    QString fieldName = name;
+    const int idx = name.indexOf(QLatin1Char('.'));
+    if (idx != -1) {
+        tableName = name.left(idx);
+        fieldName = name.mid(idx + 1);
+    }
     for (int i = 0; i < count(); ++i) {
-        if (d->fields.at(i).name().toUpper() == nm) // TODO: case-insensitive comparison
+        // Check the passed in name first in case it is an alias using a dot.
+        // Then check if both the table and field match when there is a table name specified.
+        const auto currentField = d->fields.at(i);
+        const auto currentFieldName = currentField.name();
+        if (currentFieldName.compare(name, Qt::CaseInsensitive) == 0
+            || (idx != -1 && currentFieldName.compare(fieldName, Qt::CaseInsensitive) == 0
+                && currentField.tableName().compare(tableName, Qt::CaseInsensitive) == 0)) {
             return i;
+        }
     }
     return -1;
 }

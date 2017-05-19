@@ -47,9 +47,9 @@ class QSqlFieldPrivate
 {
 public:
     QSqlFieldPrivate(const QString &name,
-              QVariant::Type type) :
+                     QVariant::Type type, const QString &tableName) :
         ref(1), nm(name), ro(false), type(type), req(QSqlField::Unknown),
-        len(-1), prec(-1), tp(-1), gen(true), autoval(false)
+        len(-1), prec(-1), tp(-1), gen(true), autoval(false), table(tableName)
     {
     }
 
@@ -64,7 +64,8 @@ public:
           def(other.def),
           tp(other.tp),
           gen(other.gen),
-          autoval(other.autoval)
+          autoval(other.autoval),
+          table(other.table)
     {}
 
     bool operator==(const QSqlFieldPrivate& other) const
@@ -77,7 +78,8 @@ public:
                 && prec == other.prec
                 && def == other.def
                 && gen == other.gen
-                && autoval == other.autoval);
+                && autoval == other.autoval
+                && table == other.table);
     }
 
     QAtomicInt ref;
@@ -91,6 +93,7 @@ public:
     int tp;
     uint gen: 1;
     uint autoval: 1;
+    QString table;
 };
 
 
@@ -153,14 +156,15 @@ public:
 
 /*!
     Constructs an empty field called \a fieldName of variant type \a
-    type.
+    type in \a table.
 
     \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
         setGenerated(), setReadOnly()
 */
-QSqlField::QSqlField(const QString& fieldName, QVariant::Type type)
+QSqlField::QSqlField(const QString &fieldName, QVariant::Type type,
+                     const QString &table)
 {
-    d = new QSqlFieldPrivate(fieldName, type);
+    d = new QSqlFieldPrivate(fieldName, type, table);
     val = QVariant(type);
 }
 
@@ -518,6 +522,7 @@ QDebug operator<<(QDebug dbg, const QSqlField &f)
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     dbg << "QSqlField(" << f.name() << ", " << QMetaType::typeName(f.type());
+    dbg << ", tableName: " << (f.tableName().isEmpty() ? QStringLiteral("(not specified)") : f.tableName());
     if (f.length() >= 0)
         dbg << ", length: " << f.length();
     if (f.precision() >= 0)
@@ -563,6 +568,29 @@ void QSqlField::setAutoValue(bool autoVal)
 {
     detach();
     d->autoval = autoVal;
+}
+
+/*!
+    Sets the tableName of the field to \a table.
+
+    \sa tableName()
+*/
+
+void QSqlField::setTableName(const QString &table)
+{
+    detach();
+    d->table = table;
+}
+
+/*!
+    Returns the tableName of the field.
+
+    \sa setTableName()
+*/
+
+QString QSqlField::tableName() const
+{
+    return d->table;
 }
 
 QT_END_NAMESPACE

@@ -62,6 +62,8 @@ private slots:
     void isNull();
     void clear_data();
     void clear();
+    void setTableName_data();
+    void setTableName();
 };
 
 // Testing get/set functions
@@ -212,6 +214,9 @@ void tst_QSqlField::operator_Assign()
     field3.clear();
     field1 = field3;
     QVERIFY( field1 == field3 );
+    QSqlField field4("test", QVariant::String, "ATable");
+    field1 = field4;
+    QVERIFY(field1 == field4);
 }
 
 void tst_QSqlField::operator_Equal()
@@ -219,8 +224,18 @@ void tst_QSqlField::operator_Equal()
     QSqlField field1( "test", QVariant::String );
     QSqlField field2( "test2", QVariant::String );
     QSqlField field3( "test", QVariant::Int );
+    QSqlField field4("test", QVariant::String, QString("ATable"));
+    QSqlField field5("test2", QVariant::String, QString("ATable"));
+    QSqlField field6("test", QVariant::String, QString("BTable"));
+
     QVERIFY( !(field1 == field2) );
     QVERIFY( !(field1 == field3) );
+    QVERIFY(field1 != field4);
+    QVERIFY(field1 != field5);
+    QVERIFY(field1 != field6);
+    QVERIFY(field4 != field5);
+    QVERIFY(field4 != field6);
+
     field2.setName( "test" );
     QVERIFY( field1 == field2 );
     QVERIFY( field1 == field2 );
@@ -232,6 +247,10 @@ void tst_QSqlField::operator_Equal()
     QVERIFY( !(field1 == field2) );
     field2.setReadOnly( true );
     QVERIFY( field1 == field2 );
+    field4.setTableName("BTable");
+    QCOMPARE(field4, field6);
+    field6.setName("test3");
+    QVERIFY(field4 != field6);
 }
 
 void tst_QSqlField::setName_data()
@@ -331,6 +350,23 @@ void tst_QSqlField::type()
     QVERIFY( field1.type() == QVariant::String );
     QVERIFY( field2.type() == QVariant::Bool );
     QVERIFY( field3.type() == QVariant::Double );
+}
+
+void tst_QSqlField::setTableName_data()
+{
+    QTest::addColumn<QString>("tableName");
+
+    QTest::newRow("data0") << QString("");
+    QTest::newRow("data1") << QString("tbl");
+}
+
+void tst_QSqlField::setTableName()
+{
+    QSqlField field("test", QVariant::String, "test");
+    QFETCH(QString, tableName);
+    QCOMPARE(field.tableName(), QLatin1String("test"));
+    field.setTableName(tableName);
+    QCOMPARE(field.tableName(), tableName);
 }
 
 QTEST_MAIN(tst_QSqlField)

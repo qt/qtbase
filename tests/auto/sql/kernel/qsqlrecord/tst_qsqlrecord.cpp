@@ -111,10 +111,10 @@ void tst_QSqlRecord::createTestRecord()
 {
     delete rec;
     rec = new QSqlRecord();
-    fields[ 0 ] = new QSqlField( "string", QVariant::String );
-    fields[ 1 ] = new QSqlField( "int", QVariant::Int );
-    fields[ 2 ] = new QSqlField( "double", QVariant::Double );
-    fields[ 3 ] = new QSqlField( "bool", QVariant::Bool );
+    fields[0] = new QSqlField(QStringLiteral("string"), QVariant::String, QStringLiteral("stringtable"));
+    fields[1] = new QSqlField(QStringLiteral("int"), QVariant::Int, QStringLiteral("inttable"));
+    fields[2] = new QSqlField(QStringLiteral("double"), QVariant::Double, QStringLiteral("doubletable"));
+    fields[3] = new QSqlField(QStringLiteral("bool"), QVariant::Bool);
     for ( int i = 0; i < NUM_FIELDS; ++i )
         rec->append( *(fields[ i ] ) );
 }
@@ -124,12 +124,14 @@ void tst_QSqlRecord::append()
 {
     delete rec;
     rec = new QSqlRecord();
-    rec->append( QSqlField( "string", QVariant::String ) );
+    rec->append(QSqlField("string", QVariant::String, QStringLiteral("stringtable")));
     QCOMPARE( rec->field( 0 ).name(), (QString) "string" );
+    QCOMPARE(rec->field(0).tableName(), QStringLiteral("stringtable"));
     QVERIFY( !rec->isEmpty() );
     QCOMPARE( (int)rec->count(), 1 );
-    rec->append( QSqlField( "int", QVariant::Int ) );
+    rec->append(QSqlField("int", QVariant::Int, QStringLiteral("inttable")));
     QCOMPARE( rec->field( 1 ).name(), (QString) "int" );
+    QCOMPARE(rec->field(1).tableName(), QStringLiteral("inttable"));
     QCOMPARE( (int)rec->count(), 2 );
     rec->append( QSqlField( "double", QVariant::Double ) );
     QCOMPARE( rec->field( 2 ).name(), (QString) "double" );
@@ -381,7 +383,7 @@ void tst_QSqlRecord::operator_Assign()
     buf3.remove( NUM_FIELDS - 1 );
     QSqlRecord buf5 = buf3;
     for ( i = 0; i < NUM_FIELDS - 1; ++i ) {
-        QSqlField fi ( fields[ i ]->name(), fields[ i ]->type() );
+        QSqlField fi(fields[i]->name(), fields[i]->type(), fields[i]->tableName());
         fi.clear();
         QVERIFY( buf5.field( i ) == fi );
         QVERIFY( buf5.isGenerated( i ) );
@@ -394,6 +396,8 @@ void tst_QSqlRecord::position()
     int i;
     for ( i = 0; i < NUM_FIELDS; ++i ) {
         QCOMPARE( rec->indexOf( fields[ i ]->name() ), i );
+        if (!fields[i]->tableName().isEmpty())
+            QCOMPARE(rec->indexOf(fields[i]->tableName() + QChar('.') + fields[i]->name()), i);
     }
 }
 

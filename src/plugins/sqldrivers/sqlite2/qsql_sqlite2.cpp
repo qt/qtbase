@@ -576,7 +576,7 @@ QSqlIndex QSQLite2Driver::primaryIndex(const QString &tblname) const
         QVariant::Type type = QVariant::Invalid;
         if (rec.contains(name))
             type = rec.field(name).type();
-        index.append(QSqlField(name, type));
+        index.append(QSqlField(name, type, tblname));
     }
     return index;
 }

@@ -767,7 +767,7 @@ QSqlRecord QTDSDriver::record(const QString& tablename) const
                    "where id = (select id from sysobjects where name = '%1')"));
     t.exec(stmt.arg(table));
     while (t.next()) {
-        QSqlField f(t.value(0).toString().simplified(), qDecodeTDSType(t.value(1).toInt()));
+        QSqlField f(t.value(0).toString().simplified(), qDecodeTDSType(t.value(1).toInt()), tablename);
         f.setLength(t.value(2).toInt());
         f.setPrecision(t.value(3).toInt());
         f.setSqlType(t.value(1).toInt());
@@ -853,7 +853,7 @@ QSqlIndex QTDSDriver::primaryIndex(const QString& tablename) const
         QRegExp regx(QLatin1String("\\s*(\\S+)(?:\\s+(DESC|desc))?\\s*"));
         for(QStringList::Iterator it = fNames.begin(); it != fNames.end(); ++it) {
             regx.indexIn(*it);
-            QSqlField f(regx.cap(1), rec.field(regx.cap(1)).type());
+            QSqlField f(regx.cap(1), rec.field(regx.cap(1)).type(), tablename);
             if (regx.cap(2).toLower() == QLatin1String("desc")) {
                 idx.append(f, true);
             } else {
