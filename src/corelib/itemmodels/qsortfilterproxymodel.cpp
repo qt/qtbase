@@ -1012,12 +1012,7 @@ void QSortFilterProxyModelPrivate::updateChildrenMapping(const QModelIndex &sour
     // reinsert moved, mapped indexes
     QVector<QPair<QModelIndex, Mapping*> >::iterator it = moved_source_index_mappings.begin();
     for (; it != moved_source_index_mappings.end(); ++it) {
-#ifdef QT_STRICT_ITERATORS
-        source_index_mapping.insert((*it).first, (*it).second);
-        (*it).second->map_iter = source_index_mapping.constFind((*it).first);
-#else
-        (*it).second->map_iter = source_index_mapping.insert((*it).first, (*it).second);
-#endif
+        (*it).second->map_iter = QHash<QModelIndex, Mapping *>::const_iterator(source_index_mapping.insert((*it).first, (*it).second));
     }
 }
 
