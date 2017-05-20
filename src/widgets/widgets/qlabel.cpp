@@ -72,7 +72,7 @@ QLabelPrivate::QLabelPrivate()
 #ifndef QT_NO_PICTURE
       picture(Q_NULLPTR),
 #endif
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
       movie(),
 #endif
       control(Q_NULLPTR),
@@ -582,7 +582,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
     } else if (picture && !picture->isNull()) {
         br = picture->boundingRect();
 #endif
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
     } else if (movie && !movie->currentPixmap().isNull()) {
         br = movie->currentPixmap().rect();
         br.setSize(br.size() / movie->currentPixmap().devicePixelRatio());
@@ -1015,7 +1015,7 @@ void QLabel::paintEvent(QPaintEvent *)
     int align = QStyle::visualAlignment(d->isTextLabel ? d->textDirection()
                                                        : layoutDirection(), QFlag(d->align));
 
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
     if (d->movie) {
         if (d->scaledcontents)
             style->drawItemPixmap(&painter, cr, align, d->movie->currentPixmap().scaled(cr.size()));
@@ -1216,7 +1216,7 @@ void QLabelPrivate::updateShortcut()
 
 #endif // QT_NO_SHORTCUT
 
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
 void QLabelPrivate::_q_movieUpdated(const QRect& rect)
 {
     Q_Q(QLabel);
@@ -1276,7 +1276,7 @@ void QLabel::setMovie(QMovie *movie)
         d->updateLabel();
 }
 
-#endif // QT_NO_MOVIE
+#endif // QT_CONFIG(movie)
 
 /*!
   \internal
@@ -1309,7 +1309,7 @@ void QLabelPrivate::clearContents()
         q->releaseShortcut(shortcutId);
     shortcutId = 0;
 #endif
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
     if (movie) {
         QObject::disconnect(movie, SIGNAL(resized(QSize)), q, SLOT(_q_movieResized(QSize)));
         QObject::disconnect(movie, SIGNAL(updated(QRect)), q, SLOT(_q_movieUpdated(QRect)));
@@ -1329,7 +1329,7 @@ void QLabelPrivate::clearContents()
 }
 
 
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
 
 /*!
     Returns a pointer to the label's movie, or 0 if no movie has been
@@ -1344,7 +1344,7 @@ QMovie *QLabel::movie() const
     return d->movie;
 }
 
-#endif  // QT_NO_MOVIE
+#endif  // QT_CONFIG(movie)
 
 /*!
     \property QLabel::textFormat

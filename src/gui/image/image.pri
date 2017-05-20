@@ -10,7 +10,6 @@ HEADERS += \
         image/qimageiohandler.h \
         image/qimagereader.h \
         image/qimagewriter.h \
-        image/qmovie.h \
         image/qpaintengine_pic_p.h \
         image/qpicture.h \
         image/qpicture_p.h \
@@ -41,7 +40,6 @@ SOURCES += \
         image/qpixmap.cpp \
         image/qpixmapcache.cpp \
         image/qplatformpixmap.cpp \
-        image/qmovie.cpp \
         image/qpixmap_raster.cpp \
         image/qpixmap_blitter.cpp \
         image/qimagepixmapcleanuphooks.cpp \
@@ -50,6 +48,10 @@ SOURCES += \
         image/qiconengine.cpp \
         image/qiconengineplugin.cpp \
 
+qtConfig(movie) {
+    HEADERS += image/qmovie.h
+    SOURCES += image/qmovie.cpp
+}
 
 win32:!winrt: SOURCES += image/qpixmap_win.cpp
 

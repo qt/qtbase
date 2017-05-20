@@ -422,7 +422,7 @@ QAccessible::Role QAccessibleDisplay::role() const
         if (l->picture())
             return QAccessible::Graphic;
 #endif
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
         if (l->movie())
             return QAccessible::Animation;
 #endif
