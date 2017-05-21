@@ -142,7 +142,7 @@ QSplashScreen::QSplashScreen(const QPixmap &pixmap, Qt::WindowFlags f)
     one. In that case pass the proper desktop() as the \a parent.
 */
 QSplashScreen::QSplashScreen(QWidget *parent, const QPixmap &pixmap, Qt::WindowFlags f)
-    : QWidget(*new QSplashScreenPrivate, parent, Qt::SplashScreen | f)
+    : QWidget(*new QSplashScreenPrivate, parent, Qt::SplashScreen | Qt::FramelessWindowHint | f)
 {
     d_func()->pixmap = pixmap;
     setPixmap(d_func()->pixmap);  // Does an implicit repaint
