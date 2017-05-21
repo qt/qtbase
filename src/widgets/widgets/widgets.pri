@@ -40,7 +40,6 @@ HEADERS += \
         widgets/qsizegrip.h \
         widgets/qslider.h \
         widgets/qspinbox.h \
-        widgets/qsplashscreen.h \
         widgets/qsplitter.h \
         widgets/qsplitter_p.h \
         widgets/qstackedwidget.h \
@@ -97,7 +96,6 @@ SOURCES += \
         widgets/qsizegrip.cpp \
         widgets/qslider.cpp \
         widgets/qspinbox.cpp \
-        widgets/qsplashscreen.cpp \
         widgets/qsplitter.cpp \
         widgets/qstackedwidget.cpp \
         widgets/qstatusbar.cpp \
@@ -194,6 +192,14 @@ qtConfig(dialogbuttonbox) {
 
     SOURCES += \
         widgets/qdialogbuttonbox.cpp
+}
+
+qtConfig(splashscreen) {
+    HEADERS += \
+        widgets/qsplashscreen.h
+
+    SOURCES += \
+        widgets/qsplashscreen.cpp
 }
 
 qtConfig(widgettextcontrol) {
