@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qlcdnumber.h"
-#ifndef QT_NO_LCDNUMBER
+
 #include "qbitarray.h"
 #include "qpainter.h"
 #include "private/qframe_p.h"
@@ -1220,5 +1220,3 @@ bool QLCDNumber::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qlcdnumber.cpp"
-
-#endif // QT_NO_LCDNUMBER
