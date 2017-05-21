@@ -555,14 +555,14 @@ inline void QList<T>::removeAt(int i)
 template <typename T>
 inline T QList<T>::takeAt(int i)
 { Q_ASSERT_X(i >= 0 && i < p.size(), "QList<T>::take", "index out of range");
- detach(); Node *n = reinterpret_cast<Node *>(p.at(i)); T t = n->t(); node_destruct(n);
+ detach(); Node *n = reinterpret_cast<Node *>(p.at(i)); T t = std::move(n->t()); node_destruct(n);
  p.remove(i); return t; }
 template <typename T>
 inline T QList<T>::takeFirst()
-{ T t = first(); removeFirst(); return t; }
+{ T t = std::move(first()); removeFirst(); return t; }
 template <typename T>
 inline T QList<T>::takeLast()
-{ T t = last(); removeLast(); return t; }
+{ T t = std::move(last()); removeLast(); return t; }
 
 template <typename T>
 Q_OUTOFLINE_TEMPLATE void QList<T>::reserve(int alloc)

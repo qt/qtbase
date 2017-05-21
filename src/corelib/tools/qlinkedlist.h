@@ -448,7 +448,7 @@ bool QLinkedList<T>::removeOne(const T &_t)
 template <typename T>
 inline T QLinkedList<T>::takeFirst()
 {
-    T t = first();
+    T t = std::move(first());
     removeFirst();
     return t;
 }
@@ -456,7 +456,7 @@ inline T QLinkedList<T>::takeFirst()
 template <typename T>
 inline T QLinkedList<T>::takeLast()
 {
-    T t = last();
+    T t = std::move(last());
     removeLast();
     return t;
 }

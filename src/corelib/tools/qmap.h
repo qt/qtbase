@@ -956,7 +956,7 @@ Q_OUTOFLINE_TEMPLATE T QMap<Key, T>::take(const Key &akey)
 
     Node *node = d->findNode(akey);
     if (node) {
-        T t = node->value;
+        T t = std::move(node->value);
         d->deleteNode(node);
         return t;
     }

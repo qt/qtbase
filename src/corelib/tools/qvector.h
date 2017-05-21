@@ -147,8 +147,8 @@ public:
     void remove(int i, int n);
     inline void removeFirst() { Q_ASSERT(!isEmpty()); erase(d->begin()); }
     inline void removeLast();
-    inline T takeFirst() { Q_ASSERT(!isEmpty()); T r = first(); removeFirst(); return r; }
-    inline T takeLast()  { Q_ASSERT(!isEmpty()); T r = last(); removeLast(); return r; }
+    T takeFirst() { Q_ASSERT(!isEmpty()); T r = std::move(first()); removeFirst(); return r; }
+    T takeLast()  { Q_ASSERT(!isEmpty()); T r = std::move(last()); removeLast(); return r; }
 
     QVector<T> &fill(const T &t, int size = -1);
 
@@ -180,7 +180,7 @@ public:
         return true;
     }
     int length() const { return size(); }
-    T takeAt(int i) { T t = at(i); remove(i); return t; }
+    T takeAt(int i) { T t = std::move((*this)[i]); remove(i); return t; }
     void move(int from, int to)
     {
         Q_ASSERT_X(from >= 0 && from < size(), "QVector::move(int,int)", "'from' is out-of-range");

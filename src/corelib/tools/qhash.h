@@ -825,7 +825,7 @@ Q_OUTOFLINE_TEMPLATE T QHash<Key, T>::take(const Key &akey)
 
     Node **node = findNode(akey);
     if (*node != e) {
-        T t = (*node)->value;
+        T t = std::move((*node)->value);
         Node *next = (*node)->next;
         deleteNode(*node);
         *node = next;
