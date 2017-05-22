@@ -511,7 +511,7 @@ void Renderer::createFloorPipeline()
 
 void Renderer::initSwapChainResources()
 {
-    m_proj = *m_window->clipCorrectionMatrix();
+    m_proj = m_window->clipCorrectionMatrix();
     const QSize sz = m_window->swapChainImageSize();
     m_proj.perspective(45.0f, sz.width() / (float) sz.height(), 0.01f, 1000.0f);
     markViewProjDirty();

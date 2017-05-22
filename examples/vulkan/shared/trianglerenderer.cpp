@@ -393,7 +393,7 @@ void TriangleRenderer::initSwapChainResources()
     qDebug("initSwapChainResources");
 
     // Projection matrix
-    m_proj = *m_window->clipCorrectionMatrix(); // adjust for Vulkan-OpenGL clip space differences
+    m_proj = m_window->clipCorrectionMatrix(); // adjust for Vulkan-OpenGL clip space differences
     const QSize sz = m_window->swapChainImageSize();
     m_proj.perspective(45.0f, sz.width() / (float) sz.height(), 0.01f, 100.0f);
     m_proj.translate(0, 0, -4);

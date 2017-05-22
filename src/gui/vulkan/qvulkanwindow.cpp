@@ -2690,7 +2690,7 @@ QImage QVulkanWindow::grab()
 }
 
 /*!
-   Returns a pointer to a QMatrix4x4 that can be used to correct for coordinate
+   Returns a QMatrix4x4 that can be used to correct for coordinate
    system differences between OpenGL and Vulkan.
 
    By pre-multiplying the projection matrix with this matrix, applications can
@@ -2704,7 +2704,7 @@ QImage QVulkanWindow::grab()
    front face being CCW), the correct winding order in the rasterization state
    after applying this matrix is clockwise (\c{VK_FRONT_FACE_CLOCKWISE}).
  */
-const QMatrix4x4 *QVulkanWindow::clipCorrectionMatrix()
+QMatrix4x4 QVulkanWindow::clipCorrectionMatrix()
 {
     Q_D(QVulkanWindow);
     if (d->m_clipCorrect.isIdentity()) {
@@ -2714,7 +2714,7 @@ const QMatrix4x4 *QVulkanWindow::clipCorrectionMatrix()
                                       0.0f, 0.0f, 0.5f, 0.5f,
                                       0.0f, 0.0f, 0.0f, 1.0f);
     }
-    return &d->m_clipCorrect;
+    return d->m_clipCorrect;
 }
 
 QT_END_NAMESPACE

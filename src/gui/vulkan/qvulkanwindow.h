@@ -138,7 +138,7 @@ public:
     bool supportsGrab() const;
     QImage grab();
 
-    const QMatrix4x4 *clipCorrectionMatrix();
+    QMatrix4x4 clipCorrectionMatrix();
 
 Q_SIGNALS:
     void frameGrabbed(const QImage &image);
