@@ -303,10 +303,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QScopedArrayPointer::QScopedArrayPointer(D * p, QtPrivate::QScopedArrayEnsureSameType<T, D>::Type = 0)
-    \internal
+    \fn QScopedArrayPointer::QScopedArrayPointer(D * p)
 
-    Constructs a QScopedArrayPointer and stores the array of objects.
+    Constructs a QScopedArrayPointer and stores the array of objects
+    pointed to by \a p.
 */
 
 /*!

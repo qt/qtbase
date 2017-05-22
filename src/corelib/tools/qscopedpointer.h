@@ -215,21 +215,16 @@ template <class T, class Cleanup>
 inline void swap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2) Q_DECL_NOTHROW
 { p1.swap(p2); }
 
-
-namespace QtPrivate {
-    template <typename X, typename Y> struct QScopedArrayEnsureSameType;
-    template <typename X> struct QScopedArrayEnsureSameType<X,X> { typedef X* Type; };
-    template <typename X> struct QScopedArrayEnsureSameType<const X, X> { typedef X* Type; };
-}
-
 template <typename T, typename Cleanup = QScopedPointerArrayDeleter<T> >
 class QScopedArrayPointer : public QScopedPointer<T, Cleanup>
 {
+    template <typename Ptr>
+    using if_same_type = typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, Ptr>::value, bool>::type;
 public:
     inline QScopedArrayPointer() : QScopedPointer<T, Cleanup>(Q_NULLPTR) {}
 
-    template <typename D>
-    explicit inline QScopedArrayPointer(D *p, typename QtPrivate::QScopedArrayEnsureSameType<T,D>::Type = Q_NULLPTR)
+    template <typename D, if_same_type<D> = true>
+    explicit QScopedArrayPointer(D *p)
         : QScopedPointer<T, Cleanup>(p)
     {
     }
