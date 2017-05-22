@@ -1151,7 +1151,7 @@ bool VCCLCompilerTool::parseOption(const char* option)
     case 'u':
         if (!second)
             UndefineAllPreprocessorDefinitions = _True;
-        else if (second == 't' && third == 'f' && fourth == '8')
+        else if (strcmp(option + 2, "tf-8") == 0)
             AdditionalOptions += option;
         else
             found = false;
