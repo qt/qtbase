@@ -1081,8 +1081,6 @@ void QCocoaWindow::recreateWindowIfNeeded()
     QMacAutoReleasePool pool;
 
     QPlatformWindow *parentWindow = QPlatformWindow::parent();
-    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::recreateWindowIfNeeded" << window()
-                              << "parent" << (parentWindow ? parentWindow->window() : 0);
 
     RecreationReasons recreateReason = RecreationNotNeeded;
 
@@ -1112,12 +1110,10 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if (isPanel != shouldBePanel)
          recreateReason |= PanelChanged;
 
-    if (recreateReason == RecreationNotNeeded) {
-        qCDebug(lcQpaCocoaWindow) << "No need to recreate NSWindow";
-        return;
-    }
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::recreateWindowIfNeeded" << window() << recreateReason;
 
-    qCDebug(lcQpaCocoaWindow) << "Reconfiguring NSWindow due to" << recreateReason;
+    if (recreateReason == RecreationNotNeeded)
+        return;
 
     QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(parentWindow);
 
