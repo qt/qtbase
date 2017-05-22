@@ -170,8 +170,7 @@ void VulkanRenderer::initResources()
                               m_window->colorFormat(), m_window->depthStencilFormat());
 
     info += QStringLiteral("Supported sample counts:");
-    QList<int> sampleCounts = m_window->supportedSampleCounts().toList();
-    std::sort(sampleCounts.begin(), sampleCounts.end());
+    const QVector<int> sampleCounts = m_window->supportedSampleCounts();
     for (int count : sampleCounts)
         info += QLatin1Char(' ') + QString::number(count);
     info += QLatin1Char('\n');

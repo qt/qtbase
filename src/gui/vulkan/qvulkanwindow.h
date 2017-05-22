@@ -96,7 +96,7 @@ public:
 
     void setPreferredColorFormats(const QVector<VkFormat> &formats);
 
-    QSet<int> supportedSampleCounts();
+    QVector<int> supportedSampleCounts();
     void setSampleCount(int sampleCount);
 
     bool isValid() const;

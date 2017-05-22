@@ -512,6 +512,7 @@ static struct {
     VkSampleCountFlagBits mask;
     int count;
 } qvk_sampleCounts[] = {
+    // keep this sorted by 'count'
     { VK_SAMPLE_COUNT_1_BIT, 1 },
     { VK_SAMPLE_COUNT_2_BIT, 2 },
     { VK_SAMPLE_COUNT_4_BIT, 4 },
@@ -523,7 +524,7 @@ static struct {
 
 /*!
     Returns the set of supported sample counts when using the physical device
-    selected by setPhysicalDeviceIndex().
+    selected by setPhysicalDeviceIndex(), as a sorted vector.
 
     By default QVulkanWindow uses a sample count of 1. By calling setSampleCount()
     with a different value (2, 4, 8, ...) from the set returned by this
@@ -533,10 +534,10 @@ static struct {
 
     \sa setSampleCount()
  */
-QSet<int> QVulkanWindow::supportedSampleCounts()
+QVector<int> QVulkanWindow::supportedSampleCounts()
 {
     Q_D(const QVulkanWindow);
-    QSet<int> result;
+    QVector<int> result;
 
     availablePhysicalDevices();
 
@@ -555,7 +556,7 @@ QSet<int> QVulkanWindow::supportedSampleCounts()
                 && (depth & qvk_sampleCounts[i].mask)
                 && (stencil & qvk_sampleCounts[i].mask))
         {
-            result.insert(qvk_sampleCounts[i].count);
+            result.append(qvk_sampleCounts[i].count);
         }
     }
 
