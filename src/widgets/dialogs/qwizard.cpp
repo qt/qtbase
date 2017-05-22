@@ -498,6 +498,7 @@ public:
     mutable TriState completeState;
     bool explicitlyFinal;
     bool commit;
+    bool initialized = false;
     QMap<int, QString> buttonCustomTexts;
 };
 
@@ -633,7 +634,6 @@ public:
     QMap<QString, int> fieldIndexMap;
     QVector<QWizardDefaultProperty> defaultPropertyTable;
     QList<int> history;
-    QSet<int> initialized; // ### remove and move bit to QWizardPage?
     int start;
     bool startSetByUser;
     int current;
@@ -772,7 +772,8 @@ void QWizardPrivate::reset()
         for (int i = history.count() - 1; i >= 0; --i)
             q->cleanupPage(history.at(i));
         history.clear();
-        initialized.clear();
+        for (QWizardPage *page : pageMap)
+            page->d_func()->initialized = false;
 
         current = -1;
         emit q->currentIdChanged(-1);
@@ -783,14 +784,12 @@ void QWizardPrivate::cleanupPagesNotInHistory()
 {
     Q_Q(QWizard);
 
-    const QSet<int> original = initialized;
-    QSet<int>::const_iterator i = original.constBegin();
-    QSet<int>::const_iterator end = original.constEnd();
-
-    for (; i != end; ++i) {
-        if (!history.contains(*i)) {
-            q->cleanupPage(*i);
-            initialized.remove(*i);
+    for (auto it = pageMap.begin(), end = pageMap.end(); it != end; ++it) {
+        const auto idx = it.key();
+        const auto page = it.value()->d_func();
+        if (page->initialized && !history.contains(idx)) {
+            q->cleanupPage(idx);
+            page->initialized = false;
         }
     }
 }
@@ -845,7 +844,7 @@ void QWizardPrivate::switchToPage(int newId, Direction direction)
         if (direction == Backward) {
             if (!(opts & QWizard::IndependentPages)) {
                 q->cleanupPage(oldId);
-                initialized.remove(oldId);
+                oldPage->d_func()->initialized = false;
             }
             Q_ASSERT(history.constLast() == oldId);
             history.removeLast();
@@ -858,8 +857,8 @@ void QWizardPrivate::switchToPage(int newId, Direction direction)
     QWizardPage *newPage = q->currentPage();
     if (newPage) {
         if (direction == Forward) {
-            if (!initialized.contains(current)) {
-                initialized.insert(current);
+            if (!newPage->d_func()->initialized) {
+                newPage->d_func()->initialized = true;
                 q->initializePage(current);
             }
             history.append(current);
@@ -2359,9 +2358,9 @@ void QWizard::removePage(int id)
     }
 
     if (removedPage) {
-        if (d->initialized.contains(id)) {
+        if (removedPage->d_func()->initialized) {
             cleanupPage(id);
-            d->initialized.remove(id);
+            removedPage->d_func()->initialized = false;
         }
 
         d->pageVBoxLayout->removeWidget(removedPage);
