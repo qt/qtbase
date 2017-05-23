@@ -26,25 +26,32 @@
 ## $QT_END_LICENSE$
 ##
 #############################################################################
+"""Parse CLDR data for QTimeZone use with MS-Windows
 
+Script to parse the CLDR supplemental/windowsZones.xml file and encode
+for use in QTimeZone.  See ``./cldr2qlocalexml.py`` for where to get
+the CLDR data.  Pass its common/ directory as first parameter to this
+script and the qtbase root directory as second parameter.  It shall
+update qtbase's src/corelib/tools/qtimezoneprivate_data_p.h ready for
+use.
 
-# Script to parse the CLDR supplemental/windowsZones.xml file and encode for use in QTimeZone
-# XML structure is as follows:
-#
-# <supplementalData>
-#     <version number="$Revision: 7825 $"/>
-#     <generation date="$Date: 2012-10-10 14:45:31 -0700 (Wed, 10 Oct 2012) $"/>
-#     <windowsZones>
-#         <mapTimezones otherVersion="7dc0101" typeVersion="2012f">
-#             <!-- (UTC-08:00) Pacific Time (US & Canada) -->
-#             <mapZone other="Pacific Standard Time" territory="001" type="America/Los_Angeles"/>
-#             <mapZone other="Pacific Standard Time" territory="CA"  type="America/Vancouver America/Dawson America/Whitehorse"/>
-#             <mapZone other="Pacific Standard Time" territory="MX"  type="America/Tijuana"/>
-#             <mapZone other="Pacific Standard Time" territory="US"  type="America/Los_Angeles"/>
-#             <mapZone other="Pacific Standard Time" territory="ZZ"  type="PST8PDT"/>
-#       </mapTimezones>
-#     </windowsZones>
-# </supplementalData>
+The XML structure is as follows:
+
+ <supplementalData>
+     <version number="$Revision: 7825 $"/>
+     <generation date="$Date: 2012-10-10 14:45:31 -0700 (Wed, 10 Oct 2012) $"/>
+     <windowsZones>
+         <mapTimezones otherVersion="7dc0101" typeVersion="2012f">
+             <!-- (UTC-08:00) Pacific Time (US & Canada) -->
+             <mapZone other="Pacific Standard Time" territory="001" type="America/Los_Angeles"/>
+             <mapZone other="Pacific Standard Time" territory="CA"  type="America/Vancouver America/Dawson America/Whitehorse"/>
+             <mapZone other="Pacific Standard Time" territory="MX"  type="America/Tijuana"/>
+             <mapZone other="Pacific Standard Time" territory="US"  type="America/Los_Angeles"/>
+             <mapZone other="Pacific Standard Time" territory="ZZ"  type="PST8PDT"/>
+       </mapTimezones>
+     </windowsZones>
+ </supplementalData>
+"""
 
 import os
 import sys

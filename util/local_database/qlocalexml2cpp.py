@@ -26,6 +26,12 @@
 ## $QT_END_LICENSE$
 ##
 #############################################################################
+"""Script to generate C++ code from CLDR data in qLocaleXML form
+
+See ``cldr2qlocalexml.py`` for how to generate the qLocaleXML data itself.
+Pass the output file from that as first parameter to this script; pass
+the root of the qtbase check-out as second parameter.
+"""
 
 import os
 import sys
@@ -454,7 +460,7 @@ def currencyIsoCodeData(s):
     return "0,0,0"
 
 def usage():
-    print "Usage: qlocalexml2cpp.py <path-to-locale.xml> <path-to-qt-src-tree>"
+    print "Usage: qlocalexml2cpp.py <path-to-locale.xml> <path-to-qtbase-src-tree>"
     sys.exit(1)
 
 GENERATED_BLOCK_START = "// GENERATED PART STARTS HERE\n"

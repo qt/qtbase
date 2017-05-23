@@ -26,6 +26,19 @@
 ## $QT_END_LICENSE$
 ##
 #############################################################################
+"""Convert CLDR data to qLocaleXML
+
+The CLDR data can be downloaded from CLDR_, which has a sub-directory
+for each version; you need the ``core.zip`` file for your version of
+choice (typically the latest).  This script has had updates to cope up
+to v29; for later versions, we may need adaptations.  Unpack the
+downloaded ``core.zip`` and check it has a common/main/ sub-directory:
+pass the path of that sub-directory to this script as its single
+command-line argument.  Save its standard output (but not error) to a
+file for later processing by ``./qlocalexml2cpp.py``
+
+.. _CLDR: ftp://unicode.org/Public/cldr/
+"""
 
 import os
 import sys
