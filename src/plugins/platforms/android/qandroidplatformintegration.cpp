@@ -405,6 +405,14 @@ void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation cur
     m_nativeOrientation = nativeOrientation;
 }
 
+void QAndroidPlatformIntegration::flushPendingUpdates()
+{
+    m_primaryScreen->setPhysicalSize(QSize(m_defaultPhysicalSizeWidth,
+                                           m_defaultPhysicalSizeHeight));
+    m_primaryScreen->setSize(QSize(m_defaultScreenWidth, m_defaultScreenHeight));
+    m_primaryScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
+}
+
 #ifndef QT_NO_ACCESSIBILITY
 QPlatformAccessibility *QAndroidPlatformIntegration::accessibility() const
 {

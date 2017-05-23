@@ -142,6 +142,7 @@ namespace QtAndroid
         // flush the pending state if necessary.
         if (m_androidPlatformIntegration) {
             flushPendingApplicationState();
+            m_androidPlatformIntegration->flushPendingUpdates();
         } else {
             QMutexLocker locker(&m_pendingAppStateMtx);
             m_pendingApplicationState = -1;
@@ -627,6 +628,7 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     m_scaledDensity = scaledDensity;
     m_density = density;
 
+    QMutexLocker lock(&m_surfacesMutex);
     if (!m_androidPlatformIntegration) {
         QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
                                                               desktopHeightPixels,

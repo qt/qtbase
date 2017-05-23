@@ -126,6 +126,8 @@ public:
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
 
+    void flushPendingUpdates();
+
 private:
     EGLDisplay m_eglDisplay;
     QTouchDevice *m_touchDevice;
