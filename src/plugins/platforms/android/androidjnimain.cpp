@@ -104,7 +104,7 @@ static sem_t m_exitSemaphore, m_terminateSemaphore;
 
 QHash<int, AndroidSurfaceClient *> m_surfaces;
 
-static QMutex m_surfacesMutex;
+static QBasicMutex m_surfacesMutex;
 static int m_surfaceId = 1;
 
 
