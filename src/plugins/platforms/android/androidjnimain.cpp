@@ -102,13 +102,6 @@ static QList<QByteArray> m_applicationParams;
 pthread_t m_qtAppThread = 0;
 static sem_t m_exitSemaphore, m_terminateSemaphore;
 
-struct SurfaceData
-{
-    ~SurfaceData() { delete surface; }
-    QJNIObjectPrivate *surface = nullptr;
-    AndroidSurfaceClient *client = nullptr;
-};
-
 QHash<int, AndroidSurfaceClient *> m_surfaces;
 
 static QMutex m_surfacesMutex;
