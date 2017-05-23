@@ -467,18 +467,18 @@ for file in defaultContent_locales:
         country_code = items[2]
     else:
         if len(items) != 2:
-            sys.stderr.write('skipping defaultContent locale "' + file + '"\n')
+            sys.stderr.write('skipping defaultContent locale "' + file + '" [neither lang_script_country nor lang_country]\n')
             continue
         language_code = items[0]
         script_code = ""
         country_code = items[1]
         if len(country_code) == 4:
-            sys.stderr.write('skipping defaultContent locale "' + file + '"\n')
+            sys.stderr.write('skipping defaultContent locale "' + file + '" [long country code]\n')
             continue
     try:
         l = _generateLocaleInfo(cldr_dir + "/" + file + ".xml", language_code, script_code, country_code)
         if not l:
-            sys.stderr.write('skipping defaultContent locale "' + file + '"\n')
+            sys.stderr.write('skipping defaultContent locale "' + file + '" [no locale info generated]\n')
             continue
     except xpathlite.Error as e:
         sys.stderr.write('skipping defaultContent locale "%s" (%s)\n' % (file, str(e)))
@@ -490,7 +490,7 @@ for file in cldr_files:
     try:
         l = generateLocaleInfo(cldr_dir + "/" + file)
         if not l:
-            sys.stderr.write('skipping file "' + file + '"\n')
+            sys.stderr.write('skipping file "' + file + '" [no locale info generated]\n')
             continue
     except xpathlite.Error as e:
         sys.stderr.write('skipping file "%s" (%s)\n' % (file, str(e)))
