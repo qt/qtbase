@@ -689,7 +689,8 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if ([self hasMarkedText]) {
         [[NSTextInputContext currentInputContext] handleEvent:theEvent];
     } else {
-        if (!m_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
+        auto ctrlOrMetaModifier = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ? Qt::ControlModifier : Qt::MetaModifier;
+        if (!m_dontOverrideCtrlLMB && [QNSView convertKeyModifiers:[theEvent modifierFlags]] & ctrlOrMetaModifier) {
             m_buttons |= Qt::RightButton;
             m_sendUpAsRightButton = true;
         } else {
@@ -1314,15 +1315,16 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
 + (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags
 {
+    const bool dontSwapCtrlAndMeta = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
     Qt::KeyboardModifiers qtMods =Qt::NoModifier;
     if (modifierFlags &  NSShiftKeyMask)
         qtMods |= Qt::ShiftModifier;
     if (modifierFlags & NSControlKeyMask)
-        qtMods |= Qt::MetaModifier;
+        qtMods |= dontSwapCtrlAndMeta ? Qt::ControlModifier : Qt::MetaModifier;
     if (modifierFlags & NSAlternateKeyMask)
         qtMods |= Qt::AltModifier;
     if (modifierFlags & NSCommandKeyMask)
-        qtMods |= Qt::ControlModifier;
+        qtMods |= dontSwapCtrlAndMeta ? Qt::MetaModifier : Qt::ControlModifier;
     if (modifierFlags & NSNumericPadKeyMask)
         qtMods |= Qt::KeypadModifier;
     return qtMods;
@@ -1355,7 +1357,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     // ALT+E to be used as a shortcut with an English keyboard even though
     // pressing ALT+E will give a dead key while doing normal text input.
     if ([characters length] != 0 || [charactersIgnoringModifiers length] != 0) {
-        if (((modifiers & Qt::MetaModifier) || (modifiers & Qt::AltModifier)) && ([charactersIgnoringModifiers length] != 0))
+        auto ctrlOrMetaModifier = qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta) ? Qt::ControlModifier : Qt::MetaModifier;
+        if (((modifiers & ctrlOrMetaModifier) || (modifiers & Qt::AltModifier)) && ([charactersIgnoringModifiers length] != 0))
             ch = QChar([charactersIgnoringModifiers characterAtIndex:0]);
         else if ([characters length] != 0)
             ch = QChar([characters characterAtIndex:0]);
@@ -1504,10 +1507,17 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         if ((delta & mac_mask) == 0u)
             continue;
 
+        Qt::Key qtCode = modifier_key_symbols[i].qt_code;
+        if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+            if (qtCode == Qt::Key_Meta)
+                qtCode = Qt::Key_Control;
+            else if (qtCode == Qt::Key_Control)
+                qtCode = Qt::Key_Meta;
+        }
         QWindowSystemInterface::handleKeyEvent(m_platformWindow->window(),
                                                timestamp,
                                                (lastKnownModifiers & mac_mask) ? QEvent::KeyRelease : QEvent::KeyPress,
-                                               modifier_key_symbols[i].qt_code,
+                                               qtCode,
                                                qmodifiers ^ [QNSView convertKeyModifiers:mac_mask]);
     }
 }
