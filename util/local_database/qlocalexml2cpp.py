@@ -148,7 +148,8 @@ def loadLikelySubtagsMap(doc):
     return result
 
 def fixedScriptName(name, dupes):
-    name = name.replace(" ", "")
+    # Don't .capitalize() as some names are already camel-case (see enumdata.py):
+    name = ''.join(word[0].upper() + word[1:] for word in name.split())
     if name[-6:] != "Script":
         name = name + "Script";
     if name in dupes:

@@ -798,7 +798,7 @@ script_list = {
     137 : [ "Newa",                   "Newa" ],
     138 : [ "Osage",                  "Osge" ],
     139 : [ "Tangut",                 "Tang" ],
-    140 : [ "Han With Bopomofo",      "Hanb" ],
+    140 : [ "Han with Bopomofo",      "Hanb" ],
     141 : [ "Jamo",                   "Jamo" ]
 }
 
