@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_lancelot
-QT += testlib
+QT += testlib gui-private
 
 SOURCES += tst_lancelot.cpp \
            paintcommands.cpp

@@ -54,7 +54,7 @@ private:
 
     void setupTestSuite(const QStringList& blacklist = QStringList());
     void runTestSuite(GraphicsEngine engine, QImage::Format format, const QSurfaceFormat &contextFormat = QSurfaceFormat());
-    void paint(QPaintDevice *device, GraphicsEngine engine, const QStringList &script, const QString &filePath);
+    void paint(QPaintDevice *device, GraphicsEngine engine, QImage::Format format, const QStringList &script, const QString &filePath);
 
     QStringList qpsFiles;
     QHash<QString, QStringList> scripts;
@@ -318,7 +318,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
 
     if (engine == Raster) {
         QImage img(800, 800, format);
-        paint(&img, engine, script, QFileInfo(filePath).absoluteFilePath());
+        paint(&img, engine, format, script, QFileInfo(filePath).absoluteFilePath());
         rendered = img;
 #ifndef QT_NO_OPENGL
     } else if (engine == OpenGL) {
@@ -336,7 +336,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
         QOpenGLFramebufferObject fbo(800, 800, fmt);
         fbo.bind();
         QOpenGLPaintDevice pdv(800, 800);
-        paint(&pdv, engine, script, QFileInfo(filePath).absoluteFilePath());
+        paint(&pdv, engine, format, script, QFileInfo(filePath).absoluteFilePath());
         rendered = fbo.toImage().convertToFormat(format);
 #endif
     }
@@ -344,10 +344,10 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
     QBASELINE_TEST(rendered);
 }
 
-void tst_Lancelot::paint(QPaintDevice *device, GraphicsEngine engine, const QStringList &script, const QString &filePath)
+void tst_Lancelot::paint(QPaintDevice *device, GraphicsEngine engine, QImage::Format format, const QStringList &script, const QString &filePath)
 {
     QPainter p(device);
-    PaintCommands pcmd(script, 800, 800);
+    PaintCommands pcmd(script, 800, 800, format);
     //pcmd.setShouldDrawText(false);
     switch (engine) {
     case OpenGL:
