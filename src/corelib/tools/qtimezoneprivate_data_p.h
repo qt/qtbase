@@ -119,7 +119,8 @@ struct QUtcData {
 
     http://www.unicode.org/cldr/
 
-    Do not change this data, only generate it using cldr2qtimezone.py.
+    Do not edit this code: run cldr2qtimezone.py on updated (or
+    edited) CLDR data; see qtbase/util/local_database/.
 */
 
 // Windows ID Key, Country Enum, IANA ID Index

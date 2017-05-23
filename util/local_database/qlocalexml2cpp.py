@@ -515,8 +515,9 @@ def main():
 
     http://www.unicode.org/cldr/
 
-    Do not change it, instead edit CLDR data and regenerate this file using
-    cldr2qlocalexml.py and qlocalexml2cpp.py.
+    Do not edit this section: instead regenerate it using
+    cldr2qlocalexml.py and qlocalexml2cpp.py on updated (or
+    edited) CLDR data; see qtbase/util/local_database/.
 */
 
 """ % (str(datetime.date.today()), cldr_version) )
