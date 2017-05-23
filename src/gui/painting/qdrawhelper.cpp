@@ -55,9 +55,12 @@
 #endif
 #include <private/qguiapplication_p.h>
 #include <private/qrgba64_p.h>
+#include <qloggingcategory.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQtGuiDrawHelper, "qt.gui.drawhelper")
 
 #define MASK(src, a) src = BYTE_MUL(src, a)
 
@@ -3772,7 +3775,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     Operator op = getOperator(data, spans, count);
     if (!op.funcSolid64) {
-        qDebug("unsupported 64bit blend attempted");
+        qCDebug(lcQtGuiDrawHelper, "blend_color_generic_rgb64: unsupported 64bit blend attempted, falling back to 32-bit");
         return blend_color_generic(count, spans, userData);
     }
 
@@ -4010,7 +4013,7 @@ static void blend_src_generic_rgb64(int count, const QSpan *spans, void *userDat
     if (blend64.isSupported())
         handleSpans(count, spans, data, blend64);
     else {
-        qDebug("blend_src_generic_rgb64: unsupported 64-bit blend attempted");
+        qCDebug(lcQtGuiDrawHelper, "blend_src_generic_rgb64: unsupported 64-bit blend attempted, falling back to 32-bit");
         BlendSrcGeneric blend32(data, op);
         handleSpans(count, spans, data, blend32);
     }
@@ -4067,7 +4070,7 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
 
     Operator op = getOperator(data, spans, count);
     if (!op.func64) {
-        qWarning("Unsupported blend");
+        qCDebug(lcQtGuiDrawHelper, "blend_untransformed_generic_rgb64: unsupported 64-bit blend attempted, falling back to 32-bit");
         return blend_untransformed_generic(count, spans, userData);
     }
     quint64 buffer[buffer_size];
@@ -4308,7 +4311,7 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
 
     Operator op = getOperator(data, spans, count);
     if (!op.func64) {
-        qDebug("unsupported rgb64 blend");
+        qCDebug(lcQtGuiDrawHelper, "blend_tiled_generic_rgb64: unsupported 64-bit blend attempted, falling back to 32-bit");
         return blend_tiled_generic(count, spans, userData);
     }
     quint64 buffer[buffer_size];
