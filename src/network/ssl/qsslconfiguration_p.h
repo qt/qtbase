@@ -67,6 +67,7 @@
 // We mean it.
 //
 
+#include <QtCore/qmap.h>
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "qsslconfiguration.h"
 #include "qlist.h"
@@ -122,6 +123,8 @@ public:
     QVector<QSslEllipticCurve> ellipticCurves;
 
     QSslDiffieHellmanParameters dhParams;
+
+    QMap<QByteArray, QVariant> backendConfig;
 
     QByteArray sslSession;
     int sslSessionTicketLifeTimeHint;

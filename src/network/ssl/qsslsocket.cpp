@@ -922,6 +922,7 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.peerVerifyDepth = configuration.peerVerifyDepth();
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();
     d->configuration.protocol = configuration.protocol();
+    d->configuration.backendConfig = configuration.backendConfig();
     d->configuration.sslOptions = configuration.d->sslOptions;
     d->configuration.sslSession = configuration.sessionTicket();
     d->configuration.sslSessionTicketLifeTimeHint = configuration.sessionTicketLifeTimeHint();
@@ -2256,6 +2257,7 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     ptr->peerVerifyDepth = global->peerVerifyDepth;
     ptr->sslOptions = global->sslOptions;
     ptr->ellipticCurves = global->ellipticCurves;
+    ptr->backendConfig = global->backendConfig;
 }
 
 /*!

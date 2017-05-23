@@ -260,6 +260,7 @@ init_context:
 #ifdef OPENSSL_NO_EC
         sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocket::tr("OpenSSL version with disabled elliptic curves"));
         sslContext->errorCode = QSslError::UnspecifiedError;
+        return;
 #else
         // Set the curves to be used.
         std::vector<int> curves;
@@ -269,9 +270,12 @@ init_context:
         if (!q_SSL_CTX_ctrl(sslContext->ctx, SSL_CTRL_SET_CURVES, long(curves.size()), &curves[0])) {
             sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
             sslContext->errorCode = QSslError::UnspecifiedError;
+            return;
         }
 #endif
     }
+
+    applyBackendConfig(sslContext);
 }
 
 QT_END_NAMESPACE
