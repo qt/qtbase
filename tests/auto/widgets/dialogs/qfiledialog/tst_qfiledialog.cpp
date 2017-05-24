@@ -1463,10 +1463,7 @@ class DialogRejecter : public QObject
 public:
     DialogRejecter()
     {
-        QTimer *timer = new QTimer(this);
-        timer->setInterval(1000);
-        connect(timer, &QTimer::timeout, this, &DialogRejecter::rejectFileDialog);
-        timer->start();
+        connect(qApp, &QApplication::focusChanged, this, &DialogRejecter::rejectFileDialog);
     }
 
 public slots:
@@ -1474,7 +1471,7 @@ public slots:
     {
         if (QWidget *w = QApplication::activeModalWidget())
             if (QDialog *d = qobject_cast<QDialog *>(w))
-                d->reject();
+                QTest::keyClick(d, Qt::Key_Escape);
     }
 };
 
