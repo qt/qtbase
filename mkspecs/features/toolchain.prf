@@ -77,6 +77,9 @@ isEmpty($${target_prefix}.INCDIRS) {
                     QMAKE_DEFAULT_INCDIRS += $$clean_path($$line)
             }
         }
+        isEmpty(QMAKE_DEFAULT_LIBDIRS)|isEmpty(QMAKE_DEFAULT_INCDIRS): \
+            !if(qnx|integrity): \
+                error("failed to parse default search paths from compiler output")
         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
     } else: msvc {
         # This doesn't differentiate between host and target,
