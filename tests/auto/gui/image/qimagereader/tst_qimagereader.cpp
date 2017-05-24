@@ -193,7 +193,7 @@ void tst_QImageReader::getSetCheck()
 }
 
 tst_QImageReader::tst_QImageReader() :
-    m_temporaryDir(QStringLiteral("tst_qimagereaderXXXXXX"))
+    m_temporaryDir(QDir::tempPath() + QStringLiteral("/tst_qimagereaderXXXXXX"))
 {
     m_temporaryDir.setAutoRemove(true);
 }
