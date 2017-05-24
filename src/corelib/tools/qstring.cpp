@@ -10774,52 +10774,47 @@ QString QString::toHtmlEscaped() const
   \macro QStringLiteral(str)
   \relates QString
 
-  The macro generates the data for a QString out of \a str at compile time if the compiler supports it.
-  Creating a QString from it is free in this case, and the generated string data is stored in
-  the read-only segment of the compiled object file.
+  The macro generates the data for a QString out of the string literal \a str
+  at compile time. Creating a QString from it is free in this case, and the
+  generated string data is stored in the read-only segment of the compiled
+  object file.
 
-  For compilers not supporting the creation of compile time strings, QStringLiteral will fall back to
-  QString::fromUtf8().
+  If you have code that looks like this:
 
-  If you have code looking like:
   \code
+  // hasAttribute takes a QString argument
   if (node.hasAttribute("http-contents-length")) //...
   \endcode
-  One temporary QString will be created to be passed as the hasAttribute function parameter.
-  This can be quite expensive, as it involves a memory allocation and the copy and the conversion
-  of the data into QString's internal encoding.
 
-  This can be avoided by doing
+  then a temporary QString will be created to be passed as the \c{hasAttribute}
+  function parameter. This can be quite expensive, as it involves a memory
+  allocation and the copy/conversion of the data into QString's internal
+  encoding.
+
+  This cost can be avoided by using QStringLiteral instead:
+
   \code
   if (node.hasAttribute(QStringLiteral("http-contents-length"))) //...
   \endcode
-  Then the QString's internal data will be generated at compile time and no conversion or allocation
-  will occur at runtime
 
-  Using QStringLiteral instead of a double quoted ascii literal can significantly speed up creation
-  of QString's from data known at compile time.
+  In this case, QString's internal data will be generated at compile time; no
+  conversion or allocation will occur at runtime.
 
-  If the compiler is C++11 enabled the string \a str can actually contain unicode data.
+  Using QStringLiteral instead of a double quoted plain C++ string literal can
+  significantly speed up creation of QString instances from data known at
+  compile time.
 
-  \note There are still a few cases in which QLatin1String is more efficient than QStringLiteral:
-  If it is passed to a function that has an overload that takes the QLatin1String directly, without
-  conversion to QString. For instance, this is the case of QString::operator==
+  \note QLatin1String can still be more efficient than QStringLiteral
+  when the string is passed to a function that has an overload taking
+  QLatin1String and this overload avoids conversion to QString.  For
+  instance, QString::operator==() can compare to a QLatin1String
+  directly:
+
   \code
   if (attribute.name() == QLatin1String("http-contents-length")) //...
   \endcode
 
-  \note There are some restrictions when using the MSVC 2010 or 2012 compilers. The example snippets
-  provided here fail to compile with them.
-  \list
-  \li Concatenated string literals cannot be used with QStringLiteral.
-  \code
-  QString s = QStringLiteral("a" "b");
-  \endcode
-  \li QStringLiteral cannot be used to initialize lists or arrays of QString.
-  \code
-  QString a[] = { QStringLiteral("a"), QStringLiteral("b") };
-  \endcode
-  \endlist
+  \sa QByteArrayLiteral
 */
 
 /*!
