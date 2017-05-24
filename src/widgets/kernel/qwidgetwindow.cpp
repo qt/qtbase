@@ -152,6 +152,10 @@ QObject *QWidgetWindow::focusObject() const
     if (!windowWidget)
         return Q_NULLPTR;
 
+    // A window can't have a focus object if it's being destroyed.
+    if (QWidgetPrivate::get(windowWidget)->data.in_destructor)
+        return nullptr;
+
     QWidget *widget = windowWidget->focusWidget();
 
     if (!widget)
