@@ -2439,6 +2439,22 @@
         \li Whether tool tips are shown on window title bar buttons.
 
     \row
+        \li \b{\c widget-animation-duration*} \target widget-animation-duration
+        \li \l{#Number}{Number}
+        \li How much an animation should last (in milliseconds).
+            A value equal to zero means that the animations will be disabled.
+
+           If this property is not specified, it defaults to the
+           value specified by the current style for the
+           \l{QStyle::}{SH_Widget_Animation_Duration} style hint.
+
+           \b{This property was added in Qt 5.10.}
+
+           Example:
+
+           \snippet code/doc_src_stylesheet.qdoc 162
+
+    \row
         \li \b{\c text-align} \target text-align-prop
         \li \l{#Alignment}{Alignment}
         \li The alignment of text and icon within the contents of the widget.

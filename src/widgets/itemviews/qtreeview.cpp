@@ -3051,7 +3051,7 @@ void QTreeViewPrivate::initialize()
     header->setDefaultAlignment(Qt::AlignLeft|Qt::AlignVCenter);
     q->setHeader(header);
 #ifndef QT_NO_ANIMATION
-    animationsEnabled = q->style()->styleHint(QStyle::SH_Widget_Animate, 0, q);
+    animationsEnabled = q->style()->styleHint(QStyle::SH_Widget_Animation_Duration, 0, q) > 0;
     QObject::connect(&animatedOperation, SIGNAL(finished()), q, SLOT(_q_endAnimatedOperation()));
 #endif //QT_NO_ANIMATION
 }

@@ -91,13 +91,13 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
 
 #ifndef QT_NO_ANIMATION
     //If the QStyle has animations, animate
-    if (widget->style()->styleHint(QStyle::SH_Widget_Animate, 0, widget)) {
+    if (const int animationDuration = widget->style()->styleHint(QStyle::SH_Widget_Animation_Duration, 0, widget)) {
         AnimationMap::const_iterator it = m_animation_map.constFind(widget);
         if (it != m_animation_map.constEnd() && (*it)->endValue().toRect() == final_geometry)
             return;
 
         QPropertyAnimation *anim = new QPropertyAnimation(widget, "geometry", widget);
-        anim->setDuration(animate ? 200 : 0);
+        anim->setDuration(animate ? animationDuration : 0);
         anim->setEasingCurve(QEasingCurve::InOutQuad);
         anim->setEndValue(final_geometry);
         m_animation_map[widget] = anim;

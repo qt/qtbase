@@ -1889,3 +1889,7 @@ QTableView::indicator:unchecked {
 }
 //! [161]
 
+//! [162]
+* { widget-animation-duration: 100 }
+//! [162]
+

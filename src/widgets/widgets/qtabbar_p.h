@@ -180,7 +180,7 @@ public:
 
     int indexAtPos(const QPoint &p) const;
 
-    inline bool isAnimated() const { Q_Q(const QTabBar); return q->style()->styleHint(QStyle::SH_Widget_Animate, 0, q); }
+    inline bool isAnimated() const { Q_Q(const QTabBar); return q->style()->styleHint(QStyle::SH_Widget_Animation_Duration, 0, q) > 0; }
     inline bool validIndex(int index) const { return index >= 0 && index < tabList.count(); }
     void setCurrentNextEnabledIndex(int offset);
 

@@ -691,7 +691,8 @@ static const char knownStyleHints[][45] = {
     "titlebar-unshade-icon",
     "toolbutton-popup-delay",
     "trash-icon",
-    "uparrow-icon"
+    "uparrow-icon",
+    "widget-animation-duration"
 };
 
 static const int numKnownStyleHints = sizeof(knownStyleHints)/sizeof(knownStyleHints[0]);
@@ -5325,6 +5326,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
         case SH_ItemView_ArrowKeysNavigateIntoChildren: s = QLatin1String("arrow-keys-navigate-into-children"); break;
         case SH_ItemView_PaintAlternatingRowColorsForEmptyArea: s = QLatin1String("paint-alternating-row-colors-for-empty-area"); break;
         case SH_TitleBar_ShowToolTipsOnButtons: s = QLatin1String("titlebar-show-tooltips-on-buttons"); break;
+        case SH_Widget_Animation_Duration: s = QLatin1String("widget-animation-duration"); break;
         default: break;
     }
     if (!s.isEmpty() && rule.hasStyleHint(s)) {

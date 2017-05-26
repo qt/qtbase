@@ -1972,9 +1972,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            a tooltip is shown (notice: shown, not hidden). When a new wake isn't needed, a user-requested tooltip
            will be shown nearly instantly.
 
-    \value SH_Widget_Animate Determines if the widget should show animations or not, for example
-           a transition between checked and unchecked statuses in a checkbox.
-           This enum value has been introduced in Qt 5.2.
+    \value SH_Widget_Animate Deprecated. Use \l{SH_Widget_Animation_Duration} instead.
 
     \value SH_Splitter_OpaqueResize Determines if resizing is opaque
            This enum value has been introduced in Qt 5.2
@@ -1990,6 +1988,11 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_TitleBar_ShowToolTipsOnButtons
            Determines if tool tips are shown on window title bar buttons.
            The Mac style, for example, sets this to false.
+           This enum value has been introduced in Qt 5.10.
+
+    \value SH_Widget_Animation_Duration
+           Determines how much an animation should last (in ms).
+           A value equal to zero means that the animations will be disabled.
            This enum value has been introduced in Qt 5.10.
 
     \sa styleHint()
