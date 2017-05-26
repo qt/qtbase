@@ -137,7 +137,7 @@ defineReplace(qtConfFunc_licenseCheck) {
             export(config.input.qt_edition)
         } else {
             equals(QMAKE_HOST.os, Linux) {
-                equals(QMAKE_HOST.arch, x86): \
+                !equals(QMAKE_HOST.arch, x86_64): \
                     Licheck = licheck32
                 else: \
                     Licheck = licheck64
