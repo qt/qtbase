@@ -153,7 +153,7 @@ defineReplace(qtConfFunc_licenseCheck) {
                                     $$system_quote($$eval(config.input.confirm-license)) \
                                     $$system_quote($$QT_SOURCE_TREE) $$system_quote($$QT_BUILD_TREE) \
                                     $$[QMAKE_SPEC] $$[QMAKE_XSPEC]", \
-                                LicheckOutput): \
+                                LicheckOutput, false): \
                 return(false)
             logn()
             for (o, LicheckOutput) {
