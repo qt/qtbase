@@ -2162,6 +2162,13 @@ void tst_QSslSocket::waitForMinusOne()
 
     // fifth verification: it should wait for 200 ms more
     QVERIFY(socket.waitForDisconnected(-1));
+
+    // sixth verification: reading from a disconnected socket returns -1
+    //                     once we deplete the read buffer
+    QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
+    socket.readAll();
+    char aux;
+    QCOMPARE(socket.read(&aux, 1), -1);
 }
 
 class VerifyServer : public QTcpServer
