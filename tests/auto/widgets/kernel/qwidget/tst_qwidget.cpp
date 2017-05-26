@@ -8526,8 +8526,8 @@ void tst_QWidget::translucentWidget()
     else
 #endif
         widgetSnapshot = label.grab(QRect(QPoint(0, 0), label.size()));
-    QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
-    QImage expected = pm.toImage().convertToFormat(QImage::Format_RGB32);
+    const QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
+    const QImage expected = pm.toImage().scaled(label.devicePixelRatioF() * pm.size());
     QCOMPARE(actual.size(),expected.size());
     QCOMPARE(actual,expected);
 }
