@@ -105,11 +105,21 @@ void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin staticPlugin);
         }; \
        static Static##PLUGIN##PluginInstance static##PLUGIN##Instance;
 
+#if defined(QT_PLUGIN_RESOURCE_INIT_FUNCTION)
+#  define QT_PLUGIN_RESOURCE_INIT \
+          extern void QT_PLUGIN_RESOURCE_INIT_FUNCTION(); \
+          QT_PLUGIN_RESOURCE_INIT_FUNCTION();
+#else
+#  define QT_PLUGIN_RESOURCE_INIT
+#endif
+
 #define Q_PLUGIN_INSTANCE(IMPLEMENTATION) \
         { \
             static QT_PREPEND_NAMESPACE(QPointer)<QT_PREPEND_NAMESPACE(QObject)> _instance; \
-            if (!_instance)      \
+            if (!_instance) {    \
+                QT_PLUGIN_RESOURCE_INIT \
                 _instance = new IMPLEMENTATION; \
+            } \
             return _instance; \
         }
 

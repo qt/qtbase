@@ -56,6 +56,7 @@ private slots:
     void doubleSlashInRoot();
     void setLocale();
     void lastModified();
+    void resourcesInStaticPlugins();
 
 private:
     const QString m_runtimeResourceRcc;
@@ -118,6 +119,7 @@ void tst_QResourceEngine::checkStructure_data()
                  << QLatin1String("searchpath1")
                  << QLatin1String("searchpath2")
                  << QLatin1String("secondary_root")
+                 << QLatin1String("staticplugin")
                  << QLatin1String("test")
                  << QLatin1String("withoutslashes");
 
@@ -502,6 +504,16 @@ void tst_QResourceEngine::lastModified()
         QVERIFY(fi.exists());
         QVERIFY(fi.lastModified().isValid());
     }
+}
+
+Q_IMPORT_PLUGIN(PluginClass)
+void tst_QResourceEngine::resourcesInStaticPlugins()
+{
+    // We built a separate static plugin and attempted linking against
+    // it. That should successfully register the resources linked into
+    // the plugin via moc generated Q_INIT_RESOURCE calls in a
+    // Q_CONSTRUCTOR_FUNCTION.
+    QVERIFY(QFile::exists(":/staticplugin/main.cpp"));
 }
 
 QTEST_MAIN(tst_QResourceEngine)
