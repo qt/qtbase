@@ -686,7 +686,6 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
 
         // Don't send timers and sockets events anymore if we are going to hide all windows
         QAndroidEventDispatcherStopper::instance()->goingToStop(true);
-        QCoreApplication::processEvents();
         QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
         if (state == Qt::ApplicationSuspended)
             QAndroidEventDispatcherStopper::instance()->stopAll();
