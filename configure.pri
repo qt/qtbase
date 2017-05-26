@@ -150,7 +150,7 @@ defineReplace(qtConfFunc_licenseCheck) {
             }
 
             !qtRunLoggedCommand("$$system_quote($$QT_SOURCE_TREE/bin/$$Licheck) \
-                                    $$eval(config.input.confirm-license) \
+                                    $$system_quote($$eval(config.input.confirm-license)) \
                                     $$system_quote($$QT_SOURCE_TREE) $$system_quote($$QT_BUILD_TREE) \
                                     $$[QMAKE_SPEC] $$[QMAKE_XSPEC]", \
                                 LicheckOutput): \
