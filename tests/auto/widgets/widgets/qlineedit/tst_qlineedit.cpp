@@ -313,6 +313,8 @@ private slots:
     void shortcutOverrideOnReadonlyLineEdit();
     void QTBUG59957_clearButtonLeftmostAction();
 
+    void QTBUG_60319_setInputMaskCheckImSurroundingText();
+
 protected slots:
     void editingFinished();
 
@@ -4694,6 +4696,17 @@ bool tst_QLineEdit::unselectingWithLeftOrRightChangesCursorPosition()
     // X11 used to behave like window prior to 4.2. Changes caused by QKeySequence
     // resulted in an inadvertant change in behavior
     return false;
+}
+
+void tst_QLineEdit::QTBUG_60319_setInputMaskCheckImSurroundingText()
+{
+    QLineEdit *testWidget = ensureTestWidget();
+    QString mask("+000(000)-000-00-00");
+    testWidget->setInputMask(mask);
+    testWidget->setCursorPosition(mask.length());
+    QString surroundingText = testWidget->inputMethodQuery(Qt::ImSurroundingText).toString();
+    int cursorPosition = testWidget->inputMethodQuery(Qt::ImCursorPosition).toInt();
+    QCOMPARE(surroundingText.length(), cursorPosition);
 }
 
 QTEST_MAIN(tst_QLineEdit)

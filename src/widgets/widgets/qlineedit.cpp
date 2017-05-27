@@ -1773,7 +1773,7 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant arg
             return QVariant(d->xToPos(pt.x(), QTextLine::CursorBetweenCharacters));
         return QVariant(d->control->cursor()); }
     case Qt::ImSurroundingText:
-        return QVariant(d->control->text());
+        return QVariant(d->control->surroundingText());
     case Qt::ImCurrentSelection:
         return QVariant(selectedText());
     case Qt::ImMaximumTextLength:
