@@ -80,6 +80,8 @@ private slots:
 
     void setData_emits_both_roles_data();
     void setData_emits_both_roles();
+
+    void supportedDragDropActions();
 };
 
 void tst_QStringListModel::rowsAboutToBeRemoved_rowsRemoved_data()
@@ -248,6 +250,13 @@ void tst_QStringListModel::setData_emits_both_roles()
     QCOMPARE(spy.size(), 1);
     QCOMPARE(sorted(spy.at(0).at(2).value<QVector<int> >()),
              expected);
+}
+
+void tst_QStringListModel::supportedDragDropActions()
+{
+    QStringListModel model;
+    QCOMPARE(model.supportedDragActions(), Qt::CopyAction | Qt::MoveAction);
+    QCOMPARE(model.supportedDropActions(), Qt::CopyAction | Qt::MoveAction);
 }
 
 QTEST_MAIN(tst_QStringListModel)
