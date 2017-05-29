@@ -44,7 +44,7 @@
 #include <QtWidgets/qwidget.h>
 #include <QtPrintSupport/qprinter.h>
 
-#ifndef QT_NO_PRINTPREVIEWWIDGET
+QT_REQUIRE_CONFIG(printpreviewwidget);
 
 QT_BEGIN_NAMESPACE
 
@@ -114,5 +114,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_PRINTPREVIEWWIDGET
 #endif // QPRINTPREVIEWWIDGET_H

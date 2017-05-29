@@ -46,7 +46,6 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qpicture.h>
 
-#ifndef QT_NO_PRINTPREVIEWWIDGET
 QT_BEGIN_NAMESPACE
 
 class QPreviewPaintEnginePrivate : public QPaintEnginePrivate
@@ -218,5 +217,3 @@ QPrinter::PrinterState QPreviewPaintEngine::printerState() const
 }
 
 QT_END_NAMESPACE
-
-#endif

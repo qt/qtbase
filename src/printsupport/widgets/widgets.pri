@@ -1,5 +1,7 @@
-HEADERS += widgets/qprintpreviewwidget.h
-SOURCES += widgets/qprintpreviewwidget.cpp
+qtConfig(printpreviewwidget) {
+    HEADERS += widgets/qprintpreviewwidget.h
+    SOURCES += widgets/qprintpreviewwidget.cpp
+}
 
 unix:!darwin:qtConfig(cupsjobwidget) {
     HEADERS += widgets/qcupsjobwidget_p.h

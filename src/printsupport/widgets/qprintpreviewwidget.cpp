@@ -48,8 +48,6 @@
 #include <QtWidgets/qscrollbar.h>
 #include <QtWidgets/qstyleoption.h>
 
-#ifndef QT_NO_PRINTPREVIEWWIDGET
-
 QT_BEGIN_NAMESPACE
 
 namespace {
@@ -831,5 +829,3 @@ QT_END_NAMESPACE
 
 #include "moc_qprintpreviewwidget.cpp"
 #include "qprintpreviewwidget.moc"
-
-#endif // QT_NO_PRINTPREVIEWWIDGET
