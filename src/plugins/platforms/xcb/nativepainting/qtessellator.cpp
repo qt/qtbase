@@ -755,6 +755,8 @@ void QTessellatorPrivate::cancelCoincidingEdges()
 
         std::sort(tl, tl + testListSize);
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wfor-loop-analysis")
         for (int j = 0; j < testListSize; ++j) {
             if (tl[j].used)
                 continue;
@@ -773,6 +775,7 @@ void QTessellatorPrivate::cancelCoincidingEdges()
             }
             ++j;
         }
+QT_WARNING_POP
     }
     free(tl);
 }
