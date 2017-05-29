@@ -469,7 +469,6 @@ public:
     bool hasXKB() const { return has_xkb; }
     bool hasXRender() const { return has_render_extension; }
 
-    bool supportsThreadedRendering() const { return m_reader->isRunning(); }
     bool threadedEventHandling() const { return m_reader->isRunning(); }
 
     xcb_timestamp_t getTimestamp();
