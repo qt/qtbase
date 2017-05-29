@@ -79,7 +79,6 @@
 #define XCB_USE_XINPUT22    // XI 2.2 adds multi-point touch support
 #endif
 #endif
-struct XInput2TouchDeviceData;
 #endif // QT_CONFIG(xinput2)
 
 struct xcb_randr_get_output_info_reply_t;
@@ -518,7 +517,7 @@ public:
 
 #ifdef XCB_USE_XINPUT22
     bool xi2MouseEvents() const;
-    bool isTouchScreen(int id) const;
+    bool isTouchScreen(int id);
 #endif
 
 protected:
@@ -556,9 +555,27 @@ private:
     bool m_xi2Enabled = false;
     int m_xi2Minor = 2;
     void initializeXInput2();
-    void finalizeXInput2();
     void xi2SetupDevices();
-    XInput2TouchDeviceData *touchDeviceForId(int id);
+    struct TouchDeviceData {
+        QTouchDevice *qtTouchDevice = nullptr;
+        QHash<int, QWindowSystemInterface::TouchPoint> touchPoints;
+        QHash<int, QPointF> pointPressedPosition; // in screen coordinates where each point was pressed
+        struct ValuatorClassInfo {
+            double min = 0;
+            double max = 0;
+            int number = -1;
+            QXcbAtom::Atom label;
+        };
+        QVector<ValuatorClassInfo> valuatorInfo;
+
+        // Stuff that is relevant only for touchpads
+        QPointF firstPressedPosition;        // in screen coordinates where the first point was pressed
+        QPointF firstPressedNormalPosition;  // device coordinates (0 to 1, 0 to 1) where the first point was pressed
+        QSizeF size;                         // device size in mm
+        bool providesTouchOrientation = false;
+    };
+    TouchDeviceData *populateTouchDevices(void *info);
+    TouchDeviceData *touchDeviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
     void xi2HandleHierachyEvent(void *event);
     void xi2HandleDeviceChangedEvent(void *event);
@@ -637,8 +654,9 @@ private:
     void *m_xlib_display = nullptr;
 #endif
     QXcbEventReader *m_reader = nullptr;
+
 #if QT_CONFIG(xinput2)
-    QHash<int, XInput2TouchDeviceData*> m_touchDevices;
+    QHash<int, TouchDeviceData> m_touchDevices;
 #ifdef XCB_USE_XINPUT22
     struct StartSystemResizeInfo {
         xcb_window_t window;

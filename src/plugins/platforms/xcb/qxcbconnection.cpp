@@ -646,11 +646,6 @@ QXcbConnection::~QXcbConnection()
 #ifndef QT_NO_DRAGANDDROP
     delete m_drag;
 #endif
-
-#if QT_CONFIG(xinput2)
-    finalizeXInput2();
-#endif
-
     if (m_reader->isRunning()) {
         sendConnectionEvent(QXcbAtom::_QT_CLOSE_CONNECTION);
         m_reader->wait();
