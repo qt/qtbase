@@ -83,7 +83,7 @@ private:
 
     QList<QPointer<QCocoaMenu> > m_menus;
     NSMenu *m_nativeMenu;
-    QCocoaWindow *m_window;
+    QPointer<QCocoaWindow> m_window;
 };
 
 QT_END_NAMESPACE

@@ -47,6 +47,8 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
+#include <dlfcn.h>
+
 #if defined(QQNXGLCONTEXT_DEBUG)
 #define qGLContextDebug qDebug
 #else
@@ -262,7 +264,10 @@ QFunctionPointer QQnxGLContext::getProcAddress(const char *procName)
         qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
 
     // Lookup EGL extension function pointer
-    return static_cast<QFunctionPointer>(eglGetProcAddress(procName));
+    QFunctionPointer result = static_cast<QFunctionPointer>(eglGetProcAddress(procName));
+    if (!result)
+        result = reinterpret_cast<QFunctionPointer>(dlsym(RTLD_DEFAULT, procName));
+    return result;
 }
 
 bool QQnxGLContext::isSharing() const

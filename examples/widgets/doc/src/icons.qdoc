@@ -98,8 +98,8 @@
 
     The application allows you to manipulate the icon size with some
     predefined sizes and a spin box. The predefined sizes are style
-    dependent, but most of the styles have the same values: Only the
-    Macintosh style differ by using 32 pixels, instead of 16 pixels,
+    dependent, but most of the styles have the same values. Only the
+    \macos style differs by using 32 pixels instead of 16 pixels
     for toolbar buttons. You can navigate between the available styles
     using the \uicontrol View menu.
 

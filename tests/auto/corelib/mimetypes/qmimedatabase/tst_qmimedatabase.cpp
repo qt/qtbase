@@ -72,12 +72,12 @@ static inline QString testSuiteWarning()
     str << "\nCannot find the shared-mime-info test suite\nstarting from: "
         << QDir::toNativeSeparators(QDir::currentPath()) << "\n"
            "cd " << QDir::toNativeSeparators(QStringLiteral("tests/auto/corelib/mimetypes/qmimedatabase")) << "\n"
-           "wget http://cgit.freedesktop.org/xdg/shared-mime-info/snapshot/Release-1-0.zip\n"
-           "unzip Release-1-0.zip\n";
+           "wget http://cgit.freedesktop.org/xdg/shared-mime-info/snapshot/Release-1-8.zip\n"
+           "unzip Release-1-8.zip\n";
 #ifdef Q_OS_WIN
-    str << "mkdir testfiles\nxcopy /s Release-1-0\\tests testfiles\n";
+    str << "mkdir testfiles\nxcopy /s Release-1-8 s-m-i\n";
 #else
-    str << "ln -s Release-1-0/tests testfiles\n";
+    str << "ln -s Release-1-8 s-m-i\n";
 #endif
     return result;
 }
@@ -154,7 +154,7 @@ void tst_QMimeDatabase::initTestCase()
     QVERIFY2(copyResourceFile(xmlFileName, xmlTargetFileName, &errorMessage), qPrintable(errorMessage));
 #endif
 
-    m_testSuite = QFINDTESTDATA("testfiles");
+    m_testSuite = QFINDTESTDATA("s-m-i/tests");
     if (m_testSuite.isEmpty())
         qWarning("%s", qPrintable(testSuiteWarning()));
 
@@ -438,7 +438,7 @@ void tst_QMimeDatabase::icons()
     QMimeType directory = db.mimeTypeForFile(QString::fromLatin1("/"));
     QCOMPARE(directory.name(), QString::fromLatin1("inode/directory"));
     QCOMPARE(directory.iconName(), QString::fromLatin1("inode-directory"));
-    QCOMPARE(directory.genericIconName(), QString::fromLatin1("inode-x-generic"));
+    QCOMPARE(directory.genericIconName(), QString::fromLatin1("folder"));
 
     QMimeType pub = db.mimeTypeForFile(QString::fromLatin1("foo.epub"), QMimeDatabase::MatchExtension);
     QCOMPARE(pub.name(), QString::fromLatin1("application/epub+zip"));
@@ -510,7 +510,7 @@ void tst_QMimeDatabase::mimeTypeForFileWithContent()
         mime = db.mimeTypeForFile(txtTempFileName);
         QCOMPARE(mime.name(), QString::fromLatin1("text/plain"));
         mime = db.mimeTypeForFile(txtTempFileName, QMimeDatabase::MatchContent);
-        QCOMPARE(mime.name(), QString::fromLatin1("application/smil"));
+        QCOMPARE(mime.name(), QString::fromLatin1("application/smil+xml"));
     }
 
     // Test what happens with an incorrect path
@@ -607,7 +607,7 @@ void tst_QMimeDatabase::allMimeTypes()
     QVERIFY(!lst.isEmpty());
 
     // Hardcoding this is the only way to check both providers find the same number of mimetypes.
-    QCOMPARE(lst.count(), 661);
+    QCOMPARE(lst.count(), 749);
 
     foreach (const QMimeType &mime, lst) {
         const QString name = mime.name();
@@ -802,7 +802,7 @@ void tst_QMimeDatabase::findByData()
         // Expected to fail
         QVERIFY2(resultMimeTypeName != mimeTypeName, qPrintable(resultMimeTypeName));
     } else {
-        QCOMPARE(resultMimeTypeName, mimeTypeName);
+        QCOMPARE(resultMimeTypeName.toLower(), mimeTypeName.toLower());
     }
 
     QFileInfo info(filePath);
@@ -833,7 +833,7 @@ void tst_QMimeDatabase::findByFile()
         // Expected to fail
         QVERIFY2(resultMimeTypeName != mimeTypeName, qPrintable(resultMimeTypeName));
     } else {
-        QCOMPARE(resultMimeTypeName, mimeTypeName);
+        QCOMPARE(resultMimeTypeName.toLower(), mimeTypeName.toLower());
     }
 
     // Test QFileInfo overload

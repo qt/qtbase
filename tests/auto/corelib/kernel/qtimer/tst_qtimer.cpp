@@ -144,12 +144,10 @@ void tst_QTimer::timeout()
 
     QCOMPARE(helper.count, 0);
 
-    QTest::qWait(TIMEOUT_TIMEOUT);
-    QVERIFY(helper.count > 0);
+    QTRY_VERIFY_WITH_TIMEOUT(helper.count > 0, TIMEOUT_TIMEOUT);
     int oldCount = helper.count;
 
-    QTest::qWait(TIMEOUT_TIMEOUT);
-    QVERIFY(helper.count > oldCount);
+    QTRY_VERIFY_WITH_TIMEOUT(helper.count > oldCount, TIMEOUT_TIMEOUT);
 }
 
 void tst_QTimer::remainingTime()

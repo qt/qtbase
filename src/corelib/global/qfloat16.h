@@ -62,8 +62,6 @@ public:
     Q_DECL_CONSTEXPR inline qfloat16() Q_DECL_NOTHROW : b16(0) { }
     inline qfloat16(float f) Q_DECL_NOTHROW;
     inline operator float() const Q_DECL_NOTHROW;
-    inline operator double() const Q_DECL_NOTHROW;
-    inline operator long double() const Q_DECL_NOTHROW;
 #endif
 
 private:
@@ -151,16 +149,6 @@ inline qfloat16::operator float() const Q_DECL_NOTHROW
     memcpy(&f, &u, sizeof(quint32));
     return f;
 #endif
-}
-
-inline qfloat16::operator double() const Q_DECL_NOTHROW
-{
-    return static_cast<double>(float(*this));
-}
-
-inline qfloat16::operator long double() const Q_DECL_NOTHROW
-{
-    return static_cast<long double>(float(*this));
 }
 
 inline qfloat16 operator-(qfloat16 a) Q_DECL_NOTHROW

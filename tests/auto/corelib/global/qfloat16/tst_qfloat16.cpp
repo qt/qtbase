@@ -44,6 +44,8 @@ private slots:
     void float_cast();
     void float_cast_data();
     void promotionTests();
+    void arithOps_data();
+    void arithOps();
 };
 
 void tst_qfloat16::fuzzyCompare_data()
@@ -198,8 +200,12 @@ void tst_qfloat16::float_cast()
 {
     QFETCH(float, val);
 
-    QVERIFY(qFuzzyCompare(float(qfloat16(val)),val));
-    QVERIFY(qFuzzyCompare(float(qfloat16(-val)),-val));
+    QVERIFY(qFuzzyCompare((float)(qfloat16(val)),val));
+    QVERIFY(qFuzzyCompare((float)(qfloat16(-val)),-val));
+    QVERIFY(qFuzzyCompare((double)(qfloat16(val)),(double)(val)));
+    QVERIFY(qFuzzyCompare((double)(qfloat16(-val)),(double)(-val)));
+    //QVERIFY(qFuzzyCompare((long double)(qfloat16(val)),(long double)(val)));
+    //QVERIFY(qFuzzyCompare((long double)(qfloat16(-val)),(long double)(-val)));
 }
 
 void tst_qfloat16::promotionTests()
@@ -248,6 +254,55 @@ void tst_qfloat16::promotionTests()
     QCOMPARE(sizeof(double),sizeof(qfloat16(1.f)-1));
     QCOMPARE(sizeof(double),sizeof(qfloat16(1.f)*1));
     QCOMPARE(sizeof(double),sizeof(qfloat16(1.f)/1));
+
+    QCOMPARE(QString::number(1.f),QString::number(qfloat16(1.f)));
+}
+
+void tst_qfloat16::arithOps_data()
+{
+    QTest::addColumn<float>("val1");
+    QTest::addColumn<float>("val2");
+
+    QTest::newRow("zero")  << 0.0f << 2.0f;
+    QTest::newRow("one")   << 1.0f << 4.0f;
+    QTest::newRow("ten")   << 10.0f << 20.0f;
+}
+
+void tst_qfloat16::arithOps()
+{
+    QFETCH(float, val1);
+    QFETCH(float, val2);
+
+    QVERIFY(qFuzzyCompare(float(qfloat16(val1) + qfloat16(val2)), val1 + val2));
+    QVERIFY(qFuzzyCompare(float(qfloat16(val1) - qfloat16(val2)), val1 - val2));
+    QVERIFY(qFuzzyCompare(float(qfloat16(val1) * qfloat16(val2)), val1 * val2));
+    QVERIFY(qFuzzyCompare(float(qfloat16(val1) / qfloat16(val2)), val1 / val2));
+
+    QVERIFY(qFuzzyCompare(qfloat16(val1) + val2, val1 + val2));
+    QVERIFY(qFuzzyCompare(qfloat16(val1) - val2, val1 - val2));
+    QVERIFY(qFuzzyCompare(qfloat16(val1) * val2, val1 * val2));
+    QVERIFY(qFuzzyCompare(qfloat16(val1) / val2, val1 / val2));
+
+    QVERIFY(qFuzzyCompare(val1 + qfloat16(val2), val1 + val2));
+    QVERIFY(qFuzzyCompare(val1 - qfloat16(val2), val1 - val2));
+    QVERIFY(qFuzzyCompare(val1 * qfloat16(val2), val1 * val2));
+    QVERIFY(qFuzzyCompare(val1 / qfloat16(val2), val1 / val2));
+
+    float r1 = 0.f;
+    r1 += qfloat16(val2);
+    QVERIFY(qFuzzyCompare(r1,val2));
+
+    float r2 = 0.f;
+    r2 -= qfloat16(val2);
+    QVERIFY(qFuzzyCompare(r2,-val2));
+
+    float r3 = 1.f;
+    r3 *= qfloat16(val2);
+    QVERIFY(qFuzzyCompare(r3,val2));
+
+    float r4 = 1.f;
+    r4 /= qfloat16(val2);
+    QVERIFY(qFuzzyCompare(r4,1.f/val2));
 }
 
 QTEST_APPLESS_MAIN(tst_qfloat16)

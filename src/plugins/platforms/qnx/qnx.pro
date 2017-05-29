@@ -78,7 +78,7 @@ qtConfig(opengles2) {
     HEADERS += qqnxglcontext.h \
                qqnxeglwindow.h
 
-    QMAKE_USE += egl
+    QMAKE_USE += opengl_es2 egl
 }
 
 CONFIG(qqnx_pps) {

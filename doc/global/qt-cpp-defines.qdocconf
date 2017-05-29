@@ -14,6 +14,7 @@ defines                 += Q_QDOC \
                           QT_DEPRECATED_* \
                           Q_NO_USING_KEYWORD \
                           __cplusplus \
+                          Q_OS_.* \
                           Q_STDLIB_UNICODE_STRINGS \
                           Q_COMPILER_INITIALIZER_LISTS \
                           Q_COMPILER_UNICODE_STRINGS \

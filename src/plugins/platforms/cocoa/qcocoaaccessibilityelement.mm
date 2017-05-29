@@ -509,7 +509,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 // actions
 
 - (NSArray *)accessibilityActionNames {
-    NSMutableArray * nsActions = [NSMutableArray new];
+    NSMutableArray *nsActions = [[NSMutableArray new] autorelease];
     QAccessibleInterface *iface = QAccessible::accessibleInterface(axid);
     if (!iface || !iface->isValid())
         return nsActions;

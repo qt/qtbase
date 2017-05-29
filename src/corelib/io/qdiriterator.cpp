@@ -56,6 +56,10 @@
 
     \snippet code/src_corelib_io_qdiriterator.cpp 0
 
+    Here's how to find and read all files filtered by name, recursively:
+
+    \snippet code/src_corelib_io_qdiriterator.cpp 1
+
     The next() function returns the path to the next directory entry and
     advances the iterator. You can also call filePath() to get the current
     file path without advancing the iterator.  The fileName() function returns

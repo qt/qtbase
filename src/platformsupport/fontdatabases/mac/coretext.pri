@@ -7,11 +7,15 @@ qtConfig(freetype) {
     SOURCES += freetype/qfontengine_ft.cpp
 }
 
-uikit: \
-    # On iOS/tvOS/watchOS CoreText and CoreGraphics are stand-alone frameworks
-    LIBS_PRIVATE += -framework CoreText -framework CoreGraphics -framework UIKit
-else: \
-    # On macOS they are re-exported by the AppKit framework
+LIBS_PRIVATE += \
+    -framework CoreFoundation \
+    -framework CoreGraphics \
+    -framework CoreText \
+    -framework Foundation
+
+macos: \
     LIBS_PRIVATE += -framework AppKit
+else: \
+    LIBS_PRIVATE += -framework UIKit
 
 CONFIG += watchos_coretext

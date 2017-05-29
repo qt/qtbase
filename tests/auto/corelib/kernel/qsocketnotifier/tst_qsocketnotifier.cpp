@@ -350,6 +350,9 @@ void tst_QSocketNotifier::async_writeDatagramSlot()
 
 void tst_QSocketNotifier::asyncMultipleDatagram()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("WinRT does not allow connection to localhost", SkipAll);
+#else
     m_asyncSender = new QUdpSocket;
     m_asyncReceiver = new QUdpSocket;
 
@@ -379,6 +382,7 @@ void tst_QSocketNotifier::asyncMultipleDatagram()
 
     delete m_asyncSender;
     delete m_asyncReceiver;
+    #endif // !Q_OS_WINRT
 }
 
 QTEST_MAIN(tst_QSocketNotifier)

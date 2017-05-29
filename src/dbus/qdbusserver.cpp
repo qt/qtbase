@@ -68,7 +68,11 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
     if (!qdbus_loadLibDBus())
         return;
 
-    emit QDBusConnectionManager::instance()->serverRequested(address, this);
+    QDBusConnectionManager *instance = QDBusConnectionManager::instance();
+    if (!instance)
+        return;
+
+    emit instance->serverRequested(address, this);
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
                      this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
 }
@@ -93,7 +97,11 @@ QDBusServer::QDBusServer(QObject *parent)
         return;
     }
 
-    emit QDBusConnectionManager::instance()->serverRequested(address, this);
+    QDBusConnectionManager *instance = QDBusConnectionManager::instance();
+    if (!instance)
+        return;
+
+    emit instance->serverRequested(address, this);
     QObject::connect(d, SIGNAL(newServerConnection(QDBusConnectionPrivate*)),
                      this, SLOT(_q_newConnection(QDBusConnectionPrivate*)), Qt::QueuedConnection);
 }

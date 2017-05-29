@@ -58,7 +58,7 @@
     alphabetical dictionary of widgets and other user interface elements,
     with comprehensive coverage of each. Each chapter covers one widget
     or other element, contains the most important recommendation from the
-    Macintosh, Windows and Motif style guides, notes about common
+    \macos, Windows and Motif style guides, notes about common
     problems, comparison with other widgets that can serve some of the
     same roles as this one, etc.
 
@@ -72,7 +72,7 @@
     \b{\l{http://www.amazon.com/exec/obidos/ASIN/0201622165/trolltech/t}{Macintosh
     Human Interface Guidelines}}, Second Edition, ISBN
     0-201-62216-5, is worth buying for the \e {don't}s alone. Even
-    if you're not writing Macintosh software, avoiding most of what it
+    if you are not writing software for \macos, avoiding most of what it
     advises against will produce more easily comprehensible software.
     Doing what it tells you to do may also help.
 

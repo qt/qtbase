@@ -201,7 +201,6 @@ namespace QtPrivate {
         typedef List<Args...>  Arguments;
         typedef Ret ReturnType;
         typedef Ret (Obj::*Function) (Args...) noexcept;
-        template <class Base> struct ChangeClass { typedef Ret (Base:: *Type)(Args...) noexcept; };
         enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
         template <typename SignalArgs, typename R>
         static void call(Function f, Obj *o, void **arg) {
@@ -214,7 +213,6 @@ namespace QtPrivate {
         typedef List<Args...>  Arguments;
         typedef Ret ReturnType;
         typedef Ret (Obj::*Function) (Args...) const noexcept;
-        template <class Base> struct ChangeClass { typedef Ret (Base:: *Type)(Args...) const noexcept; };
         enum {ArgumentCount = sizeof...(Args), IsPointerToMemberFunction = true};
         template <typename SignalArgs, typename R>
         static void call(Function f, Obj *o, void **arg) {

@@ -235,33 +235,6 @@ QNetworkSession is the central class for managing roaming related issues.
 
 Some API features are not available on all platforms. The
 \l QNetworkConfigurationManager::Capability should be used to detect
-platform features at runtime. The following table lists the various
-platform APIs being used by this API. This may assist in the process of
-determining the feature support:
-
-\table
-    \header
-    \li Platform
-    \li Backend capabilities
-    \row
-        \li Linux\unicode{0xAE}
-        \li Linux uses the \l {http://projects.gnome.org/NetworkManager}{NetworkManager}
-           and \l {http://connman.net/}{ConnMan} / \l {http://ofono.org/}{oFono} APIs
-           which support interface notifications and starting and stopping of network
-           interfaces. Network Manager version 0.9 and above is supported.
-    \row
-        \li Windows\unicode{0xAE} XP
-        \li This platform supports interface notifications without active polling.
-    \row
-        \li Windows XP SP2+Hotfixes, Windows XP SP3, Windows Vista, Windows 7
-        \li In addition to standard Windows XP wifi access point monitoring has been improved which includes the ability to start and stop wifi interfaces. This requires Windows to manage the wifi interfaces.
-    \row
-        \li Mac OS\unicode{0xAE}
-        \li This platform has full support by way of CoreWLAN offered in Mac OS 10.6. Previous
-           versions of Mac OS - 10.5 and 10.4 have limited support.
-    \row
-        \li All other platforms (*nix, Windows Mobile)
-        \li This backend is the fallback for all platforms supports network interface notifications via active polling only.
-\endtable
+platform features at runtime.
 
 */

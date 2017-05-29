@@ -117,11 +117,13 @@ bool GSuggestCompletion::eventFilter(QObject *obj, QEvent *ev)
         case Qt::Key_Return:
             doneCompletion();
             consumed = true;
+            break;
 
         case Qt::Key_Escape:
             editor->setFocus();
             popup->hide();
             consumed = true;
+            break;
 
         case Qt::Key_Up:
         case Qt::Key_Down:
