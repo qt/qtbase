@@ -2258,7 +2258,7 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
 
 /*!
     This function is called with the given \a event when the widget
-    looses the focus. By default, the event is ignored.
+    loses the focus. By default, the event is ignored.
 
     \sa clearFocus(), focusInEvent()
 */

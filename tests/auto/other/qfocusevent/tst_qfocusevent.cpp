@@ -286,7 +286,7 @@ void tst_QFocusEvent::checkReason_Shortcut()
 void tst_QFocusEvent::checkReason_focusWidget()
 {
     // This test checks that a widget doesn't loose
-    // its focuswidget just because the focuswidget looses focus.
+    // its focuswidget just because the focuswidget loses focus.
     QWidget window1;
     QWidget frame1;
     QWidget frame2;

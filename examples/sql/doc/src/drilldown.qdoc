@@ -163,7 +163,7 @@
     submitted to the database until the user expliclity requests a
     submit (the alternative is QDataWidgetMapper::AutoSubmit,
     automatically submitting changes when the corresponding widget
-    looses focus). Finally, we specify the item delegate the mapper
+    loses focus). Finally, we specify the item delegate the mapper
     view should use for its items. The QSqlRelationalDelegate class
     represents a delegate that unlike the default delegate, enables
     combobox functionality for fields that are foreign keys into other

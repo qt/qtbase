@@ -111,7 +111,7 @@ QT_BEGIN_NAMESPACE
 
     Depending on the type of configuration some states are transient in nature. A GPRS/UMTS
     connection may almost always be \l Discovered if the GSM/UMTS network is available.
-    However if the GSM/UMTS network looses the connection the associated configuration may change its state
+    However if the GSM/UMTS network loses the connection the associated configuration may change its state
     from \l Discovered to \l Defined as well. A similar use case might be triggered by
     WLAN availability. QNetworkConfigurationManager::updateConfigurations() can be used to
     manually trigger updates of states. Note that some platforms do not require such updates
