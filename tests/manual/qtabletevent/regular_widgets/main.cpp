@@ -79,6 +79,8 @@ protected:
 
     void tabletEvent(QTabletEvent *);
 
+    bool event(QEvent *event);
+
     void paintEvent(QPaintEvent *);
     void timerEvent(QTimerEvent *);
 
@@ -89,6 +91,7 @@ private:
     bool m_lastIsTabletMove;
     Qt::MouseButton m_lastButton;
     QVector<TabletPoint> m_points;
+    QVector<QPointF> m_touchPoints;
     int m_tabletMoveCount;
     int m_paintEventCount;
 };
@@ -100,6 +103,7 @@ EventReportWidget::EventReportWidget()
     , m_tabletMoveCount(0)
     , m_paintEventCount(0)
 {
+    setAttribute(Qt::WA_AcceptTouchEvents);
     startTimer(1000);
 }
 
@@ -151,6 +155,11 @@ void EventReportWidget::paintEvent(QPaintEvent *)
               }
           }
     }
+    p.setPen(Qt::blue);
+    for (QPointF t : m_touchPoints) {
+        p.drawLine(t.x() - 40, t.y(), t.x() + 40, t.y());
+        p.drawLine(t.x(), t.y() - 40, t.x(), t.y() + 40);
+    }
     ++m_paintEventCount;
 }
 
@@ -191,6 +200,27 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
             d << " changed button " << event->button();
     }
     m_lastIsTabletMove = isMove;
+}
+
+bool EventReportWidget::event(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+        event->accept();
+        m_touchPoints.clear();
+        for (const QTouchEvent::TouchPoint &p : static_cast<const QTouchEvent *>(event)->touchPoints())
+            m_touchPoints.append(p.pos());
+        update();
+        break;
+    case QEvent::TouchEnd:
+        m_touchPoints.clear();
+        update();
+        break;
+    default:
+        return QWidget::event(event);
+    }
+    return true;
 }
 
 void EventReportWidget::outputMouseEvent(QMouseEvent *event)
