@@ -1516,7 +1516,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         q->setAttribute(Qt::WA_OutsideWSRange, true);
     } else if (q->isVisible()) {
         // If widget is already shown, set window visible, too
-        win->setVisible(true);
+        QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(win);
+        widgetWindow->setNativeWindowVisibility(true);
     }
 }
 
