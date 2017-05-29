@@ -94,6 +94,9 @@ protected:
 
     void readXKBConfig();
     void clearXKBConfig();
+#if QT_CONFIG(xcb_xlib)
+    struct xkb_keymap *keymapFromCore();
+#endif
     // when XKEYBOARD not present on the X server
     void updateModifiers();
     typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
@@ -109,6 +112,7 @@ private:
     void updateXKBStateFromState(struct xkb_state *kb_state, quint16 state);
 
     bool m_config = false;
+    bool m_keymap_is_core = false;
     xcb_keycode_t m_autorepeat_code = 0;
 
     struct xkb_context *xkb_context = nullptr;

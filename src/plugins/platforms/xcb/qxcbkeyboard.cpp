@@ -59,6 +59,10 @@
 #undef KeyRelease
 #endif
 
+#if QT_CONFIG(xcb_xlib)
+#include <X11/Xutil.h>
+#endif
+
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20
 #endif
@@ -678,9 +682,303 @@ void QXcbKeyboard::printKeymapError(const char *error) const
              "directory contains recent enough contents, to update please see http://cgit.freedesktop.org/xkeyboard-config/ .");
 }
 
+#if QT_CONFIG(xcb_xlib)
+/* Look at a pair of unshifted and shifted key symbols.
+ * If the 'unshifted' symbol is uppercase and there is no shifted symbol,
+ * return the matching lowercase symbol; otherwise return 0.
+ * The caller can then use the previously 'unshifted' symbol as the new
+ * 'shifted' (uppercase) symbol and the symbol returned by the function
+ * as the new 'unshifted' (lowercase) symbol.) */
+static xcb_keysym_t getUnshiftedXKey(xcb_keysym_t unshifted, xcb_keysym_t shifted)
+{
+    if (shifted != XKB_KEY_NoSymbol) // Has a shifted symbol
+        return 0;
+
+    KeySym xlower;
+    KeySym xupper;
+    /* libxkbcommon >= 0.8.0 will have public API functions providing
+     * functionality equivalent to XConvertCase(), use these once the
+     * minimal libxkbcommon version is high enough. After that the
+     * xcb-xlib dependency can be removed */
+    XConvertCase(static_cast<KeySym>(unshifted), &xlower, &xupper);
+
+    if (xlower != xupper                                     // Check if symbol is cased
+        && unshifted == static_cast<xcb_keysym_t>(xupper)) { // Unshifted must be upper case
+        return static_cast<xcb_keysym_t>(xlower);
+    }
+    return 0;
+}
+
+static QByteArray symbolsGroupString(const xcb_keysym_t *symbols, int count)
+{
+    // Don't output trailing NoSymbols
+    while (count > 0 && symbols[count - 1] == XKB_KEY_NoSymbol)
+        count--;
+
+    QByteArray groupString;
+    for (int symIndex = 0; symIndex < count; symIndex++) {
+        xcb_keysym_t sym = symbols[symIndex];
+        char symString[64];
+        if (sym == XKB_KEY_NoSymbol)
+            strcpy(symString, "NoSymbol");
+        else
+            xkb_keysym_get_name(sym, symString, sizeof(symString));
+
+        if (!groupString.isEmpty())
+            groupString += ", ";
+        groupString += symString;
+    }
+    return groupString;
+}
+
+struct xkb_keymap *QXcbKeyboard::keymapFromCore()
+{
+    /* Construct an XKB keymap string from information queried from
+     * the X server */
+    QByteArray keymap;
+    keymap += "xkb_keymap {\n";
+
+    const xcb_keycode_t minKeycode = connection()->setup()->min_keycode;
+    const xcb_keycode_t maxKeycode = connection()->setup()->max_keycode;
+
+    // Generate symbolic names from keycodes
+    {
+        keymap +=
+            "xkb_keycodes \"core\" {\n"
+            "\tminimum = " + QByteArray::number(minKeycode) + ";\n"
+            "\tmaximum = " + QByteArray::number(maxKeycode) + ";\n";
+        for (int code = minKeycode; code <= maxKeycode; code++) {
+            auto codeStr = QByteArray::number(code);
+            keymap += "<K" + codeStr + "> = " + codeStr + ";\n";
+        }
+        /* TODO: indicators?
+         */
+        keymap += "};\n"; // xkb_keycodes
+    }
+
+    /* Set up default types (xkbcommon automatically assigns these to
+     * symbols, but doesn't have shift info) */
+    keymap +=
+        "xkb_types \"core\" {\n"
+        "virtual_modifiers NumLock,Alt,LevelThree;\n"
+        "type \"ONE_LEVEL\" {\n"
+            "modifiers= none;\n"
+            "level_name[Level1] = \"Any\";\n"
+        "};\n"
+        "type \"TWO_LEVEL\" {\n"
+            "modifiers= Shift;\n"
+            "map[Shift]= Level2;\n"
+            "level_name[Level1] = \"Base\";\n"
+            "level_name[Level2] = \"Shift\";\n"
+        "};\n"
+        "type \"ALPHABETIC\" {\n"
+            "modifiers= Shift+Lock;\n"
+            "map[Shift]= Level2;\n"
+            "map[Lock]= Level2;\n"
+            "level_name[Level1] = \"Base\";\n"
+            "level_name[Level2] = \"Caps\";\n"
+        "};\n"
+        "type \"KEYPAD\" {\n"
+            "modifiers= Shift+NumLock;\n"
+            "map[Shift]= Level2;\n"
+            "map[NumLock]= Level2;\n"
+            "level_name[Level1] = \"Base\";\n"
+            "level_name[Level2] = \"Number\";\n"
+        "};\n"
+        "type \"FOUR_LEVEL\" {\n"
+            "modifiers= Shift+LevelThree;\n"
+            "map[Shift]= Level2;\n"
+            "map[LevelThree]= Level3;\n"
+            "map[Shift+LevelThree]= Level4;\n"
+            "level_name[Level1] = \"Base\";\n"
+            "level_name[Level2] = \"Shift\";\n"
+            "level_name[Level3] = \"Alt Base\";\n"
+            "level_name[Level4] = \"Shift Alt\";\n"
+        "};\n"
+        "type \"FOUR_LEVEL_ALPHABETIC\" {\n"
+            "modifiers= Shift+Lock+LevelThree;\n"
+            "map[Shift]= Level2;\n"
+            "map[Lock]= Level2;\n"
+            "map[LevelThree]= Level3;\n"
+            "map[Shift+LevelThree]= Level4;\n"
+            "map[Lock+LevelThree]= Level4;\n"
+            "map[Shift+Lock+LevelThree]= Level3;\n"
+            "level_name[Level1] = \"Base\";\n"
+            "level_name[Level2] = \"Shift\";\n"
+            "level_name[Level3] = \"Alt Base\";\n"
+            "level_name[Level4] = \"Shift Alt\";\n"
+        "};\n"
+        "type \"FOUR_LEVEL_SEMIALPHABETIC\" {\n"
+            "modifiers= Shift+Lock+LevelThree;\n"
+            "map[Shift]= Level2;\n"
+            "map[Lock]= Level2;\n"
+            "map[LevelThree]= Level3;\n"
+            "map[Shift+LevelThree]= Level4;\n"
+            "map[Lock+LevelThree]= Level3;\n"
+            "preserve[Lock+LevelThree]= Lock;\n"
+            "map[Shift+Lock+LevelThree]= Level4;\n"
+            "preserve[Shift+Lock+LevelThree]= Lock;\n"
+            "level_name[Level1] = \"Base\";\n"
+            "level_name[Level2] = \"Shift\";\n"
+            "level_name[Level3] = \"Alt Base\";\n"
+            "level_name[Level4] = \"Shift Alt\";\n"
+        "};\n"
+        "type \"FOUR_LEVEL_KEYPAD\" {\n"
+            "modifiers= Shift+NumLock+LevelThree;\n"
+            "map[Shift]= Level2;\n"
+            "map[NumLock]= Level2;\n"
+            "map[LevelThree]= Level3;\n"
+            "map[Shift+LevelThree]= Level4;\n"
+            "map[NumLock+LevelThree]= Level4;\n"
+            "map[Shift+NumLock+LevelThree]= Level3;\n"
+            "level_name[Level1] = \"Base\";\n"
+            "level_name[Level2] = \"Number\";\n"
+            "level_name[Level3] = \"Alt Base\";\n"
+            "level_name[Level4] = \"Alt Number\";\n"
+        "};\n"
+        "};\n"; // xkb_types
+
+    // Generate mapping between symbolic names and keysyms
+    {
+        QVector<xcb_keysym_t> xkeymap;
+        int keysymsPerKeycode = 0;
+        {
+            int keycodeCount = maxKeycode - minKeycode + 1;
+            if (auto keymapReply = Q_XCB_REPLY(xcb_get_keyboard_mapping, xcb_connection(),
+                                               minKeycode, keycodeCount)) {
+                keysymsPerKeycode = keymapReply->keysyms_per_keycode;
+                int numSyms = keycodeCount * keysymsPerKeycode;
+                auto keymapPtr = xcb_get_keyboard_mapping_keysyms(keymapReply.get());
+                xkeymap.resize(numSyms);
+                for (int i = 0; i < numSyms; i++)
+                    xkeymap[i] = keymapPtr[i];
+            }
+        }
+        if (xkeymap.isEmpty())
+            return nullptr;
+
+        KeysymModifierMap keysymMods(keysymsToModifiers());
+        static const char *const builtinModifiers[] =
+        { "Shift", "Lock", "Control", "Mod1", "Mod2", "Mod3", "Mod4", "Mod5" };
+
+        /* Level 3 symbols (e.g. AltGr+something) seem to come in two flavors:
+         * - as a proper level 3 in group 1, at least on recent X.org versions
+         * - 'disguised' as group 2, on 'legacy' X servers
+         * In the 2nd case, remap group 2 to level 3, that seems to work better
+         * in practice */
+        bool mapGroup2ToLevel3 = keysymsPerKeycode < 5;
+
+        keymap += "xkb_symbols \"core\" {\n";
+        for (int code = minKeycode; code <= maxKeycode; code++) {
+            auto codeMap = xkeymap.constData() + (code - minKeycode) * keysymsPerKeycode;
+
+            const int maxGroup1 = 4; // We only support 4 shift states anyway
+            const int maxGroup2 = 2; // Only 3rd and 4th keysym are group 2
+            xcb_keysym_t symbolsGroup1[maxGroup1];
+            xcb_keysym_t symbolsGroup2[maxGroup2];
+            for (int i = 0; i < maxGroup1 + maxGroup2; i++) {
+                xcb_keysym_t sym = i < keysymsPerKeycode ? codeMap[i] : XKB_KEY_NoSymbol;
+                if (mapGroup2ToLevel3) {
+                    // Merge into single group
+                    if (i < maxGroup1)
+                        symbolsGroup1[i] = sym;
+                } else {
+                    // Preserve groups
+                    if (i < 2)
+                        symbolsGroup1[i] = sym;
+                    else if (i < 4)
+                        symbolsGroup2[i - 2] = sym;
+                    else
+                        symbolsGroup1[i - 2] = sym;
+                }
+            }
+
+            /* Fix symbols so the unshifted and shifted symbols have
+             * lower resp. upper case */
+            if (auto lowered = getUnshiftedXKey(symbolsGroup1[0], symbolsGroup1[1])) {
+                symbolsGroup1[1] = symbolsGroup1[0];
+                symbolsGroup1[0] = lowered;
+            }
+            if (auto lowered = getUnshiftedXKey(symbolsGroup2[0], symbolsGroup2[1])) {
+                symbolsGroup2[1] = symbolsGroup2[0];
+                symbolsGroup2[0] = lowered;
+            }
+
+            QByteArray groupStr1 = symbolsGroupString(symbolsGroup1, maxGroup1);
+            if (groupStr1.isEmpty())
+                continue;
+
+            keymap += "key <K" + QByteArray::number(code) + "> { ";
+            keymap += "symbols[Group1] = [ " + groupStr1 + " ]";
+            QByteArray groupStr2 = symbolsGroupString(symbolsGroup2, maxGroup2);
+            if (!groupStr2.isEmpty())
+                keymap += ", symbols[Group2] = [ " + groupStr2 + " ]";
+
+            // See if this key code is for a modifier
+            xcb_keysym_t modifierSym = XKB_KEY_NoSymbol;
+            for (int symIndex = 0; symIndex < keysymsPerKeycode; symIndex++) {
+                xcb_keysym_t sym = codeMap[symIndex];
+
+                if (sym == XKB_KEY_Alt_L
+                    || sym == XKB_KEY_Meta_L
+                    || sym == XKB_KEY_Mode_switch
+                    || sym == XKB_KEY_Super_L
+                    || sym == XKB_KEY_Super_R
+                    || sym == XKB_KEY_Hyper_L
+                    || sym == XKB_KEY_Hyper_R) {
+                    modifierSym = sym;
+                    break;
+                }
+            }
+
+            // AltGr
+            if (modifierSym == XKB_KEY_Mode_switch)
+                keymap += ", virtualMods=LevelThree";
+            keymap += " };\n"; // key
+
+            // Generate modifier mappings
+            int modNum = keysymMods.value(modifierSym, -1);
+            if (modNum != -1) {
+                // Here modNum is always < 8 (see keysymsToModifiers())
+                keymap += QByteArray("modifier_map ") + builtinModifiers[modNum]
+                    + " { <K" + QByteArray::number(code) + "> };\n";
+            }
+        }
+        // TODO: indicators?
+        keymap += "};\n"; // xkb_symbols
+    }
+
+    // We need an "Alt" modifier, provide via the xkb_compatibility section
+    keymap +=
+        "xkb_compatibility \"core\" {\n"
+        "virtual_modifiers NumLock,Alt,LevelThree;\n"
+        "interpret Alt_L+AnyOf(all) {\n"
+            "virtualModifier= Alt;\n"
+            "action= SetMods(modifiers=modMapMods,clearLocks);\n"
+        "};\n"
+        "interpret Alt_R+AnyOf(all) {\n"
+            "virtualModifier= Alt;\n"
+            "action= SetMods(modifiers=modMapMods,clearLocks);\n"
+        "};\n"
+        "};\n";
+
+    /* TODO: There is an issue with modifier state not being handled
+     * correctly if using Xming with XKEYBOARD disabled. */
+
+    keymap += "};\n"; // xkb_keymap
+
+    return xkb_keymap_new_from_buffer(xkb_context,
+                                      keymap.constData(),
+                                      keymap.size(),
+                                      XKB_KEYMAP_FORMAT_TEXT_V1,
+                                      static_cast<xkb_keymap_compile_flags>(0));
+}
+#endif
+
 void QXcbKeyboard::updateKeymap()
 {
     m_config = true;
+    m_keymap_is_core = false;
     // set xkb context object
     if (!xkb_context) {
         if (qEnvironmentVariableIsSet("QT_XKB_CONFIG_ROOT")) {
@@ -714,9 +1012,23 @@ void QXcbKeyboard::updateKeymap()
     }
 #endif
     if (!xkb_keymap) {
-        // Compile a keymap from RMLVO (rules, models, layouts, variants and options) names
+        // Read xkb RMLVO (rules, models, layouts, variants and options) names
         readXKBConfig();
-        xkb_keymap = xkb_keymap_new_from_names(xkb_context, &xkb_names, (xkb_keymap_compile_flags)0);
+#if QT_CONFIG(xcb_xlib)
+        bool rmlvo_is_incomplete = !xkb_names.rules || !(*xkb_names.rules)
+            || !xkb_names.model || !(*xkb_names.model)
+            || !xkb_names.layout || !(*xkb_names.layout);
+        if (rmlvo_is_incomplete) {
+            // Try to build xkb map from core mapping information
+            xkb_keymap = keymapFromCore();
+            m_keymap_is_core = xkb_keymap != 0;
+        }
+#endif
+        if (!xkb_keymap) {
+            // Compile a keymap from RMLVO
+            xkb_keymap = xkb_keymap_new_from_names(xkb_context, &xkb_names,
+                static_cast<xkb_keymap_compile_flags> (0));
+        }
         if (!xkb_keymap) {
             // last fallback is to used hard-coded keymap name, see DEFAULT_XKB_* in xkbcommon.pri
             qWarning() << "Qt: Could not determine keyboard configuration data"
@@ -908,9 +1220,11 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
     // If user layouts don't contain any layout that results in a latin key, we query a
     // key from "US" layout, this allows for latin-key-based shorcuts to work even when
     // users have only one (non-latin) layout set.
+    // But don't do this if using keymap obtained through the core protocol, as the key
+    // codes may not match up with those expected by the XKB keymap.
     xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
     xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
-    if (sym == XKB_KEY_NoSymbol && !m_hasLatinLayout) {
+    if (sym == XKB_KEY_NoSymbol && !m_hasLatinLayout && !m_keymap_is_core) {
         if (!latin_keymap) {
             const struct xkb_rule_names names = { xkb_names.rules, xkb_names.model, "us", 0, 0 };
             latin_keymap = xkb_keymap_new_from_names(xkb_context, &names, (xkb_keymap_compile_flags)0);
