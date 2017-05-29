@@ -122,7 +122,7 @@ QGestureManager::~QGestureManager()
 
 Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *recognizer)
 {
-    QGesture *dummy = recognizer->create(0);
+    const QScopedPointer<QGesture> dummy(recognizer->create(nullptr));
     if (Q_UNLIKELY(!dummy)) {
         qWarning("QGestureManager::registerGestureRecognizer: "
                  "the recognizer fails to create a gesture object, skipping registration.");
@@ -135,7 +135,6 @@ Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *r
         type = Qt::GestureType(m_lastCustomGestureId);
     }
     m_recognizers.insertMulti(type, recognizer);
-    delete dummy;
     return type;
 }
 
