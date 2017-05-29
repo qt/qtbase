@@ -149,6 +149,13 @@
                 { "type": "pkgConfig", "args": "libinput" }
             ]
         },
+        "integrityhid": {
+            "label": "integrityhid",
+            "test": "qpa/integrityhid",
+            "sources": [
+                { "libs": "-lhiddev -lusbhid -lusb" }
+            ]
+        },
         "libjpeg": {
             "label": "libjpeg",
             "test": "unix/libjpeg",
@@ -526,6 +533,11 @@
         "libinput": {
             "label": "libinput",
             "condition": "features.libudev && libs.libinput",
+            "output": [ "privateFeature" ]
+        },
+        "integrityhid": {
+            "label": "INTEGRITY HID",
+            "condition": "config.integrity && libs.integrityhid",
             "output": [ "privateFeature" ]
         },
         "libinput-axis-api": {
@@ -1115,6 +1127,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
             "entries": [
                 "evdev",
                 "libinput",
+                "integrityhid",
                 "mtdev",
                 "tslib",
                 "xkbcommon-evdev"
