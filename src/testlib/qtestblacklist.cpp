@@ -58,9 +58,10 @@ QT_BEGIN_NAMESPACE
   referring to this documentation is kind to readers.  Comments can also be used
   to indicate the reasons for ignoring particular cases.
 
-  A key names a platform, O/S, distribution, tool-chain or architecture; a !
-  prefix reverses what it checks.  A version, joined to a key (at present, only
-  for distributions and for msvc) with a hyphen, limits the key to the specific
+  The key "ci" applies only when run by COIN.  Other keys name platforms,
+  operating systems, distributions, tool-chains or architectures; a !  prefix
+  reverses what it checks.  A version, joined to a key (at present, only for
+  distributions and for msvc) with a hyphen, limits the key to the specific
   version.  A keyword line matches if every key on it applies to the present
   run.  Successive lines are alternate conditions for ignoring a test.
 
@@ -70,12 +71,17 @@ QT_BEGIN_NAMESPACE
   Subsequent lines give conditions for ignoring this test.
 
         # See qtbase/src/testlib/qtestblacklist.cpp for format
-        osx
+        # Test doesn't work on QNX at all
+        qnx
 
         # QTBUG-12345
         [testFunction]
         linux
         windows 64bit
+
+        # Flaky in COIN on macOS, not reproducible by developers
+        [testSlowly]
+        ci osx
 
         # Needs basic C++11 support
         [testfunction2:testData]
