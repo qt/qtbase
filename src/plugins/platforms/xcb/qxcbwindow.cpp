@@ -2190,14 +2190,18 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
 
     if (isWheel) {
         if (!connection()->isAtLeastXI21()) {
-            // Logic borrowed from qapplication_x11.cpp
-            int delta = 120 * ((detail == 4 || detail == 6) ? 1 : -1);
-            bool hor = (((detail == 4 || detail == 5)
-                         && (modifiers & Qt::AltModifier))
-                        || (detail == 6 || detail == 7));
-
-            QWindowSystemInterface::handleWheelEvent(window(), timestamp,
-                                                     local, global, delta, hor ? Qt::Horizontal : Qt::Vertical, modifiers);
+            QPoint angleDelta;
+            if (detail == 4)
+                angleDelta.setY(120);
+            else if (detail == 5)
+                angleDelta.setY(-120);
+            else if (detail == 6)
+                angleDelta.setX(120);
+            else if (detail == 7)
+                angleDelta.setX(-120);
+            if (modifiers & Qt::AltModifier)
+                std::swap(angleDelta.rx(), angleDelta.ry());
+            QWindowSystemInterface::handleWheelEvent(window(), timestamp, local, global, QPoint(), angleDelta, modifiers);
         }
         return;
     }

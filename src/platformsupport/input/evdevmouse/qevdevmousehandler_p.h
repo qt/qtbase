@@ -53,6 +53,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QPoint>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +68,7 @@ public:
 
 signals:
     void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons);
-    void handleWheelEvent(int delta, Qt::Orientation orientation);
+    void handleWheelEvent(QPoint delta);
 
 private slots:
     void readMouseData();
