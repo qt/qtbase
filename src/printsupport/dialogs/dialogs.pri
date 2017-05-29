@@ -5,8 +5,7 @@ HEADERS += \
         dialogs/qabstractprintdialog_p.h \
         dialogs/qpagesetupdialog_p.h \
         dialogs/qpagesetupdialog.h \
-        dialogs/qprintdialog.h \
-        dialogs/qprintpreviewdialog.h
+        dialogs/qprintdialog.h
 
 osx {
     OBJECTIVE_SOURCES += dialogs/qpagesetupdialog_mac.mm \
@@ -33,8 +32,12 @@ INCLUDEPATH += $$PWD
 
 SOURCES += \
         dialogs/qabstractprintdialog.cpp \
-        dialogs/qpagesetupdialog.cpp \
-        dialogs/qprintpreviewdialog.cpp
+        dialogs/qpagesetupdialog.cpp
+
+qtConfig(printpreviewdialog) {
+    HEADERS += dialogs/qprintpreviewdialog.h
+    SOURCES += dialogs/qprintpreviewdialog.cpp
+}
 
 FORMS += dialogs/qpagesetupwidget.ui
 RESOURCES += dialogs/qprintdialog.qrc
