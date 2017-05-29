@@ -40,8 +40,6 @@
 #include "qplatformdefs.h"
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
-#ifndef QT_NO_PRINTDIALOG
-
 #include "private/qabstractprintdialog_p.h"
 #include <QtWidgets/qmessagebox.h>
 #include "qprintdialog.h"
@@ -983,6 +981,3 @@ QT_END_NAMESPACE
 
 #include "moc_qprintdialog.cpp"
 #include "qprintdialog_unix.moc"
-
-#endif // QT_NO_PRINTDIALOG
-

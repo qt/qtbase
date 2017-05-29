@@ -31,14 +31,17 @@
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <qabstractprintdialog.h>
 #include <qprinter.h>
+#endif
 
 class tst_QAbstractPrintDialog : public QObject
 {
 Q_OBJECT
 
-#if defined(QT_NO_PRINTER) || defined(QT_NO_PRINTDIALOG)
+#if !QT_CONFIG(printdialog)
 public slots:
     void initTestCase();
 #else
@@ -49,7 +52,7 @@ private slots:
 #endif
 };
 
-#if defined(QT_NO_PRINTER) || defined(QT_NO_PRINTDIALOG)
+#if !QT_CONFIG(printdialog)
 void tst_QAbstractPrintDialog::initTestCase()
 {
     QSKIP("This test requires printing and print dialog support");

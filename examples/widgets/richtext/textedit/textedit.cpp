@@ -71,10 +71,17 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
-#ifndef QT_NO_PRINTER
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printer)
+#if QT_CONFIG(printdialog)
 #include <QPrintDialog>
+#endif
 #include <QPrinter>
+#if QT_CONFIG(printpreviewdialog)
 #include <QPrintPreviewDialog>
+#endif
+#endif
 #endif
 
 #include "textedit.h"
@@ -474,7 +481,7 @@ bool TextEdit::fileSaveAs()
 
 void TextEdit::filePrint()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printdialog)
     QPrinter printer(QPrinter::HighResolution);
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
     if (textEdit->textCursor().hasSelection())
@@ -488,7 +495,7 @@ void TextEdit::filePrint()
 
 void TextEdit::filePrintPreview()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printpreviewdialog)
     QPrinter printer(QPrinter::HighResolution);
     QPrintPreviewDialog preview(&printer, this);
     connect(&preview, &QPrintPreviewDialog::paintRequested, this, &TextEdit::printPreview);

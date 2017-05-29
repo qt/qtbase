@@ -42,7 +42,6 @@
 
 #include "qpagesetupdialog.h"
 
-#ifndef QT_NO_PRINTDIALOG
 #include "qpagesetupdialog_p.h"
 
 #include <qpa/qplatformnativeinterface.h>
@@ -222,5 +221,3 @@ int QPageSetupDialog::exec()
 }
 
 QT_END_NAMESPACE
-
-#endif /* QT_NO_PRINTDIALOG */

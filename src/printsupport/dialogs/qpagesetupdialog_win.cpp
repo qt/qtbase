@@ -39,7 +39,6 @@
 
 #include "qpagesetupdialog.h"
 
-#ifndef QT_NO_PRINTDIALOG
 #include <qapplication.h>
 
 #include "../kernel/qprintengine_win_p.h"
@@ -168,4 +167,3 @@ void QPageSetupDialog::setVisible(bool visible)
 }
 
 QT_END_NAMESPACE
-#endif

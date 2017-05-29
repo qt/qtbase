@@ -49,8 +49,13 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QPrinter>
 #include <QPrintDialog>
+#endif
+#endif
 
 #include "licensewizard.h"
 
@@ -364,7 +369,7 @@ void ConclusionPage::setVisible(bool visible)
 
 void ConclusionPage::printButtonClicked()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printdialog)
     QPrinter printer;
     QPrintDialog dialog(&printer, this);
     if (dialog.exec())

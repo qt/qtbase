@@ -50,8 +50,13 @@
 
 #include "view.h"
 
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QPrinter>
 #include <QPrintDialog>
+#endif
+#endif
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
 #else
@@ -259,7 +264,7 @@ void View::toggleAntialiasing()
 
 void View::print()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printdialog)
     QPrinter printer;
     QPrintDialog dialog(&printer, this);
     if (dialog.exec() == QDialog::Accepted) {

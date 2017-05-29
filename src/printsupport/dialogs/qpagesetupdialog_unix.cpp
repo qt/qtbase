@@ -39,7 +39,6 @@
 
 #include "qpagesetupdialog.h"
 
-#ifndef QT_NO_PRINTDIALOG
 #include "qpagesetupdialog_unix_p.h"
 
 #include <private/qpagesetupdialog_p.h>
@@ -644,5 +643,3 @@ int QPageSetupDialog::exec()
 QT_END_NAMESPACE
 
 #include "moc_qpagesetupdialog.cpp"
-
-#endif // QT_NO_PRINTDIALOG
