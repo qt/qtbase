@@ -44,7 +44,9 @@
 
 #include <private/qpagesetupdialog_p.h>
 #include <private/qprintdevice_p.h>
+#if QT_CONFIG(cups)
 #include <private/qcups_p.h>
+#endif
 
 #include "qpainter.h"
 #include "qprintdialog.h"
@@ -294,7 +296,7 @@ void QPageSetupWidget::initUnits()
 // Init the Pages Per Sheet (n-up) combo boxes if using CUPS
 void QPageSetupWidget::initPagesPerSheet()
 {
-#if !defined(QT_NO_CUPS)
+#if QT_CONFIG(cups)
     m_ui.pagesPerSheetLayoutCombo->addItem(QPrintDialog::tr("Left to Right, Top to Bottom"),
                                            QVariant::fromValue(QCUPSSupport::LeftToRightTopToBottom));
     m_ui.pagesPerSheetLayoutCombo->addItem(QPrintDialog::tr("Left to Right, Bottom to Top"),
@@ -498,7 +500,7 @@ void QPageSetupWidget::updateWidget()
 void QPageSetupWidget::setupPrinter() const
 {
     m_printer->setPageLayout(m_pageLayout);
-#if !defined(QT_NO_CUPS)
+#if QT_CONFIG(cups)
     QCUPSSupport::PagesPerSheet pagesPerSheet = m_ui.pagesPerSheetCombo->currentData()
                                                     .value<QCUPSSupport::PagesPerSheet>();
     QCUPSSupport::PagesPerSheetLayout pagesPerSheetLayout = m_ui.pagesPerSheetLayoutCombo->currentData()
@@ -545,7 +547,7 @@ void QPageSetupWidget::pageOrientationChanged()
 
 void QPageSetupWidget::pagesPerSheetChanged()
 {
-#if !defined(QT_NO_CUPS)
+#if QT_CONFIG(cups)
     switch (m_ui.pagesPerSheetCombo->currentData().toInt()) {
     case QCUPSSupport::OnePagePerSheet:
         m_pagePreview->setPagePreviewLayout(1, 1);

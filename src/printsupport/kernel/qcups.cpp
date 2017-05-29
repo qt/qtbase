@@ -41,8 +41,6 @@
 
 #include "qprintengine.h"
 
-#ifndef QT_NO_CUPS
-
 QT_BEGIN_NAMESPACE
 
 QStringList QCUPSSupport::cupsOptionsList(QPrinter *printer)
@@ -205,5 +203,3 @@ void QCUPSSupport::setPageRange(QPrinter *printer, int pageFrom, int pageTo)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_CUPS
