@@ -6,6 +6,7 @@ SUBDIRS=\
    qboxlayout \
    qdesktopwidget \
    qformlayout \
+   qgesturerecognizer \
    qgridlayout \
    qlayout \
    qstackedlayout \
@@ -18,5 +19,8 @@ SUBDIRS=\
    qwindowcontainer \
    qshortcut \
    qsizepolicy
+
+darwin:SUBDIRS -= \ # Uses native recognizers
+   qgesturerecognizer \
 
 SUBDIRS -= qsound
