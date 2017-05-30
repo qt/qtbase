@@ -126,6 +126,7 @@ private slots:
     void systemEnvironment();
     void lockupsInStartDetached();
     void waitForReadyReadForNonexistantProcess();
+    void detachedProcessParameters_data();
     void detachedProcessParameters();
     void startFinishStartFinish();
     void invalidProgramString_data();
@@ -2030,13 +2031,25 @@ void tst_QProcess::fileWriterProcess()
     } while (stopWatch.elapsed() < 3000);
 }
 
+void tst_QProcess::detachedProcessParameters_data()
+{
+    QTest::addColumn<QString>("outChannel");
+    QTest::newRow("none") << QString();
+    QTest::newRow("stdout") << QString("stdout");
+    QTest::newRow("stderr") << QString("stderr");
+}
+
 void tst_QProcess::detachedProcessParameters()
 {
+    QFETCH(QString, outChannel);
     qint64 pid;
 
     QFile infoFile(m_temporaryDir.path() + QLatin1String("/detachedinfo.txt"));
     if (infoFile.exists())
         QVERIFY(infoFile.remove());
+    QFile channelFile(m_temporaryDir.path() + QLatin1String("detachedinfo2.txt"));
+    if (channelFile.exists())
+        QVERIFY(channelFile.remove());
 
     QString workingDir = QDir::currentPath() + "/testDetached";
 
@@ -2054,7 +2067,15 @@ void tst_QProcess::detachedProcessParameters()
     process.setCreateProcessArgumentsModifier(
         [&modifierCalls] (QProcess::CreateProcessArguments *) { modifierCalls++; });
 #endif
-    process.setArguments(QStringList(infoFile.fileName()));
+    QStringList args(infoFile.fileName());
+    if (!outChannel.isEmpty()) {
+        args << QStringLiteral("--out-channel=") + outChannel;
+        if (outChannel == "stdout")
+            process.setStandardOutputFile(channelFile.fileName());
+        else if (outChannel == "stderr")
+            process.setStandardErrorFile(channelFile.fileName());
+    }
+    process.setArguments(args);
     process.setWorkingDirectory(workingDir);
     process.setProcessEnvironment(environment);
     QVERIFY(process.startDetached(&pid));
@@ -2071,8 +2092,21 @@ void tst_QProcess::detachedProcessParameters()
     QString actualWorkingDir = QString::fromUtf8(infoFile.readLine()).trimmed();
     QByteArray processIdString = infoFile.readLine().trimmed();
     QByteArray actualEnvVarValue = infoFile.readLine().trimmed();
+    QByteArray infoFileContent;
+    if (!outChannel.isEmpty()) {
+        infoFile.seek(0);
+        infoFileContent = infoFile.readAll();
+    }
     infoFile.close();
     infoFile.remove();
+
+    if (!outChannel.isEmpty()) {
+        QVERIFY(channelFile.open(QIODevice::ReadOnly | QIODevice::Text));
+        QByteArray channelContent = channelFile.readAll();
+        channelFile.close();
+        channelFile.remove();
+        QCOMPARE(channelContent, infoFileContent);
+    }
 
     bool ok = false;
     qint64 actualPid = processIdString.toLongLong(&ok);

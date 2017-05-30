@@ -915,6 +915,17 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         return false;
     }
 
+    if ((stdinChannel.type == Channel::Redirect && !openChannel(stdinChannel))
+            || (stdoutChannel.type == Channel::Redirect && !openChannel(stdoutChannel))
+            || (stderrChannel.type == Channel::Redirect && !openChannel(stderrChannel))) {
+        closeChannel(&stdinChannel);
+        closeChannel(&stdoutChannel);
+        closeChannel(&stderrChannel);
+        qt_safe_close(startedPipe[0]);
+        qt_safe_close(startedPipe[1]);
+        return false;
+    }
+
     pid_t childPid = fork();
     if (childPid == 0) {
         struct sigaction noaction;
@@ -930,6 +941,18 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         pid_t doubleForkPid = fork();
         if (doubleForkPid == 0) {
             qt_safe_close(pidPipe[1]);
+
+            // copy the stdin socket if asked to (without closing on exec)
+            if (inputChannelMode != QProcess::ForwardedInputChannel)
+                qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
+
+            // copy the stdout and stderr if asked to
+            if (processChannelMode != QProcess::ForwardedChannels) {
+                if (processChannelMode != QProcess::ForwardedOutputChannel)
+                    qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
+                if (processChannelMode != QProcess::ForwardedErrorChannel)
+                    qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
+            }
 
             if (!encodedWorkingDirectory.isEmpty()) {
                 if (QT_CHDIR(encodedWorkingDirectory.constData()) == -1)
@@ -992,6 +1015,9 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         ::_exit(1);
     }
 
+    closeChannel(&stdinChannel);
+    closeChannel(&stdoutChannel);
+    closeChannel(&stderrChannel);
     qt_safe_close(startedPipe[1]);
     qt_safe_close(pidPipe[1]);
 

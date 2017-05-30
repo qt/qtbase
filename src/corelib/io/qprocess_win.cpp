@@ -462,10 +462,24 @@ bool QProcessPrivate::callCreateProcess(QProcess::CreateProcessArguments *cpargs
 {
     if (modifyCreateProcessArgs)
         modifyCreateProcessArgs(cpargs);
-    return CreateProcess(cpargs->applicationName, cpargs->arguments, cpargs->processAttributes,
-                         cpargs->threadAttributes, cpargs->inheritHandles, cpargs->flags,
-                         cpargs->environment, cpargs->currentDirectory, cpargs->startupInfo,
-                         cpargs->processInformation);
+    bool success = CreateProcess(cpargs->applicationName, cpargs->arguments,
+                                 cpargs->processAttributes, cpargs->threadAttributes,
+                                 cpargs->inheritHandles, cpargs->flags, cpargs->environment,
+                                 cpargs->currentDirectory, cpargs->startupInfo,
+                                 cpargs->processInformation);
+    if (stdinChannel.pipe[0] != INVALID_Q_PIPE) {
+        CloseHandle(stdinChannel.pipe[0]);
+        stdinChannel.pipe[0] = INVALID_Q_PIPE;
+    }
+    if (stdoutChannel.pipe[1] != INVALID_Q_PIPE) {
+        CloseHandle(stdoutChannel.pipe[1]);
+        stdoutChannel.pipe[1] = INVALID_Q_PIPE;
+    }
+    if (stderrChannel.pipe[1] != INVALID_Q_PIPE) {
+        CloseHandle(stderrChannel.pipe[1]);
+        stderrChannel.pipe[1] = INVALID_Q_PIPE;
+    }
+    return success;
 }
 
 void QProcessPrivate::startProcess()
@@ -533,19 +547,6 @@ void QProcessPrivate::startProcess()
     if (!success) {
         // Capture the error string before we do CloseHandle below
         errorString = QProcess::tr("Process failed to start: %1").arg(qt_error_string());
-    }
-
-    if (stdinChannel.pipe[0] != INVALID_Q_PIPE) {
-        CloseHandle(stdinChannel.pipe[0]);
-        stdinChannel.pipe[0] = INVALID_Q_PIPE;
-    }
-    if (stdoutChannel.pipe[1] != INVALID_Q_PIPE) {
-        CloseHandle(stdoutChannel.pipe[1]);
-        stdoutChannel.pipe[1] = INVALID_Q_PIPE;
-    }
-    if (stderrChannel.pipe[1] != INVALID_Q_PIPE) {
-        CloseHandle(stderrChannel.pipe[1]);
-        stderrChannel.pipe[1] = INVALID_Q_PIPE;
     }
 
     if (!success) {
@@ -874,6 +875,15 @@ bool QProcessPrivate::startDetached(qint64 *pid)
 {
     static const DWORD errorElevationRequired = 740;
 
+    if ((stdinChannel.type == Channel::Redirect && !openChannel(stdinChannel))
+            || (stdoutChannel.type == Channel::Redirect && !openChannel(stdoutChannel))
+            || (stderrChannel.type == Channel::Redirect && !openChannel(stderrChannel))) {
+        closeChannel(&stdinChannel);
+        closeChannel(&stdoutChannel);
+        closeChannel(&stderrChannel);
+        return false;
+    }
+
     QString args = qt_create_commandline(program, arguments, nativeArguments);
     bool success = false;
     PROCESS_INFORMATION pinfo;
@@ -890,11 +900,18 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
                                  (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
                                  (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                                 0, 0, 0,
+                                 STARTF_USESTDHANDLES,
+                                 0, 0, 0,
+                                 stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
                                };
+
+    const bool inheritHandles = stdinChannel.type == Channel::Redirect
+            || stdoutChannel.type == Channel::Redirect
+            || stderrChannel.type == Channel::Redirect;
     QProcess::CreateProcessArguments cpargs = {
         nullptr, reinterpret_cast<wchar_t *>(const_cast<ushort *>(args.utf16())),
-        nullptr, nullptr, false, dwCreationFlags, envPtr,
+        nullptr, nullptr, inheritHandles, dwCreationFlags, envPtr,
         workingDirectory.isEmpty()
             ? nullptr : reinterpret_cast<const wchar_t *>(workingDirectory.utf16()),
         &startupInfo, &pinfo
@@ -909,10 +926,17 @@ bool QProcessPrivate::startDetached(qint64 *pid)
     } else if (GetLastError() == errorElevationRequired) {
         if (envPtr)
             qWarning("QProcess: custom environment will be ignored for detached elevated process.");
+        if (!stdinChannel.file.isEmpty() || !stdoutChannel.file.isEmpty()
+                || !stderrChannel.file.isEmpty()) {
+            qWarning("QProcess: file redirection is unsupported for detached elevated processes.");
+        }
         success = startDetachedUacPrompt(program, arguments, nativeArguments,
                                          workingDirectory, pid);
     }
 
+    closeChannel(&stdinChannel);
+    closeChannel(&stdoutChannel);
+    closeChannel(&stderrChannel);
     return success;
 }
 
