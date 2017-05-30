@@ -1250,20 +1250,22 @@ void QNativeSocketEngine::handleConnectOpFinished(bool success, QAbstractSocket:
 void QNativeSocketEngine::handleNewDatagrams(const QList<WinRtDatagram> &datagrams)
 {
     Q_D(QNativeSocketEngine);
-    // Defer putting the datagrams into the list until the next event loop iteration
-    // (where the readyRead signal is emitted as well)
-    QMetaObject::invokeMethod(this, "putIntoPendingDatagramsList", Qt::QueuedConnection,
-                              Q_ARG(QList<WinRtDatagram>, datagrams));
+    QMutexLocker locker(&d->readMutex);
+    d->pendingDatagrams.append(datagrams);
     if (d->notifyOnRead)
         emit readReady();
 }
 
 void QNativeSocketEngine::handleNewData(const QVector<QByteArray> &data)
 {
-    // Defer putting the data into the list until the next event loop iteration
-    // (where the readyRead signal is emitted as well)
-    QMetaObject::invokeMethod(this, "putIntoPendingData", Qt::QueuedConnection,
-                              Q_ARG(QVector<QByteArray>, data));
+    Q_D(QNativeSocketEngine);
+    QMutexLocker locker(&d->readMutex);
+    d->pendingData.append(data);
+    for (const QByteArray &newData : data)
+        d->bytesAvailable += newData.length();
+    locker.unlock();
+    if (d->notifyOnRead)
+        readNotification();
 }
 
 void QNativeSocketEngine::handleTcpError(QAbstractSocket::SocketError error)
@@ -1282,25 +1284,6 @@ void QNativeSocketEngine::handleTcpError(QAbstractSocket::SocketError error)
     d->socketState = QAbstractSocket::UnconnectedState;
     if (d->notifyOnRead)
         emit readReady();
-}
-
-void QNativeSocketEngine::putIntoPendingDatagramsList(const QList<WinRtDatagram> &datagrams)
-{
-    Q_D(QNativeSocketEngine);
-    QMutexLocker locker(&d->readMutex);
-    d->pendingDatagrams.append(datagrams);
-}
-
-void QNativeSocketEngine::putIntoPendingData(const QVector<QByteArray> &data)
-{
-    Q_D(QNativeSocketEngine);
-    QMutexLocker locker(&d->readMutex);
-    d->pendingData.append(data);
-    for (const QByteArray &newData : data)
-        d->bytesAvailable += newData.length();
-    locker.unlock();
-    if (d->notifyOnRead)
-        readNotification();
 }
 
 bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType socketType, QAbstractSocket::NetworkLayerProtocol &socketProtocol)
