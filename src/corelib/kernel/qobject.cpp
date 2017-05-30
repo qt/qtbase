@@ -5032,6 +5032,9 @@ QMetaObject::Connection::Connection(const QMetaObject::Connection &other) : d_pt
         static_cast<QObjectPrivate::Connection *>(d_ptr)->ref();
 }
 
+/*!
+    Assigns \a other to this connection and returns a reference to this connection.
+*/
 QMetaObject::Connection& QMetaObject::Connection::operator=(const QMetaObject::Connection& other)
 {
     if (other.d_ptr != d_ptr) {

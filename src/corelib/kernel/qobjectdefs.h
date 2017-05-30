@@ -466,11 +466,7 @@ struct Q_CORE_EXPORT QMetaObject
                 val1, val2, val3, val4, val5, val6, val7, val8, val9);
     }
 
-#ifdef Q_QDOC
-    template<typename PointerToMemberFunction, typename MemberFunctionReturnType>
-    static bool invokeMethod(QObject *receiver, PointerToMemberFunction function, Qt::ConnectionType type = Qt::AutoConnection, MemberFunctionReturnType *ret = nullptr);
-    template<typename PointerToMemberFunction, typename MemberFunctionReturnType>
-    static bool invokeMethod(QObject *receiver, PointerToMemberFunction function, MemberFunctionReturnType *ret);
+#ifdef Q_CLANG_QDOC
     template<typename Functor, typename FunctorReturnType>
     static bool invokeMethod(QObject *context, Functor function, Qt::ConnectionType type = Qt::AutoConnection, FunctorReturnType *ret = nullptr);
     template<typename Functor, typename FunctorReturnType>

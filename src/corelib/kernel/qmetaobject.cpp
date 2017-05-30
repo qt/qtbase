@@ -1589,53 +1589,29 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 */
 
 /*!
-    \fn bool QMetaObject::invokeMethod(QObject *receiver, PointerToMemberFunction function, Qt::ConnectionType type = Qt::AutoConnection, MemberFunctionReturnType *ret = nullptr)
-
-    \since 5.10
-
-    \overload
-*/
-
-/*!
-    \fn bool QMetaObject::invokeMethod(QObject *receiver, PointerToMemberFunction function, MemberFunctionReturnType *ret)
+    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, Qt::ConnectionType type, FunctorReturnType *ret)
 
     \since 5.10
 
     \overload
 
-    This overload invokes the member function using the connection type Qt::AutoConnection.
+    Invokes the \a function in the event loop of \a context. \a function can be a functor
+    or a pointer to a member function. Returns \c true if the function could be invoked.
+    Returns \c false if there is no such function or the parameters did not match.
+    The return value of the function call is placed in \a ret.
 */
 
 /*!
-    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, Qt::ConnectionType type = Qt::AutoConnection, FunctorReturnType *ret = nullptr)
+    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, FunctorReturnType *ret)
 
     \since 5.10
 
     \overload
 
-    Call the functor in the event loop of \a context.
-*/
-
-/*!
-    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, FunctorReturnType *ret = nullptr)
-
-    \since 5.10
-
-    \overload
-
-    Call the functor in the event loop of \a context using the connection type Qt::AutoConnection.
-*/
-
-/*!
-    \fn QMetaObject::Connection::Connection(const Connection &other)
-
-    Constructs a copy of \a other.
-*/
-
-/*!
-    \fn QMetaObject::Connection::Connection &operator=(const Connection &other)
-
-    Assigns \a other to this connection and returns a reference to this connection.
+    Invokes the \a function in the event loop of \a context using the connection type Qt::AutoConnection.
+    \a function can be a functor or a pointer to a member function. Returns \c true if the function could
+    be invoked. Returns \c false if there is no such member or the parameters did not match.
+    The return value of the function call is placed in \a ret.
 */
 
 /*!
