@@ -1,0 +1,3 @@
+[removeItem]
+# QTBUG-60754, QTest::mouseMove is not always respected, or the CI moves the cursor
+osx-10.11 ci

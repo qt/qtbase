@@ -500,7 +500,7 @@
         },
         "use_gold_linker": {
             "label": "Using gold linker",
-            "condition": "!config.msvc && !config.integrity && tests.use_gold_linker",
+            "condition": "!config.win32 && !config.integrity && tests.use_gold_linker",
             "output": [ "privateConfig", "useGoldLinker" ]
         },
         "optimize_debug": {

@@ -376,7 +376,7 @@
     \omitvalue KeyboardModifierMask
 
     \note On \macos, the \c ControlModifier value corresponds to
-    the Command keys on the Macintosh keyboard, and the \c MetaModifier value
+    the Command keys on the keyboard, and the \c MetaModifier value
     corresponds to the Control keys. The \c KeypadModifier value will also be set
     when an arrow key is pressed as the arrow keys are considered part of the
     keypad.
@@ -394,7 +394,7 @@
     supported by Qt.
 
     \note On \macos, the \c CTRL value corresponds to
-    the Command keys on the Macintosh keyboard, and the \c META value
+    the Command keys on the keyboard, and the \c META value
     corresponds to the Control keys.
 
     \value SHIFT The Shift keys provided on all standard keyboards.
@@ -2096,12 +2096,12 @@
                    We refer to a top-level window that has a parent
                    as a \e secondary window.
 
-    \value Sheet   Indicates that the window is a Macintosh sheet. Since
+    \value Sheet   Indicates that the window is a sheet on \macos. Since
                    using a sheet implies window modality, the recommended
                    way is to use QWidget::setWindowModality(), or
                    QDialog::open(), instead.
 
-    \value Drawer  Indicates that the widget is a Macintosh drawer.
+    \value Drawer  Indicates that the widget is a drawer on \macos.
 
     \value Popup   Indicates that the widget is a pop-up top-level
                    window, i.e. that it is modal, but has a window

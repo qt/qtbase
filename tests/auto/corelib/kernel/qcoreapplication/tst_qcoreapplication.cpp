@@ -155,7 +155,9 @@ void tst_QCoreApplication::qAppName()
 
 void tst_QCoreApplication::qAppVersion()
 {
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WINRT)
+    const char appVersion[] = "1.0.0.0";
+#elif defined(Q_OS_WIN)
     const char appVersion[] = "1.2.3.4";
 #elif defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID)
     const char appVersion[] = "1.2.3";
@@ -946,9 +948,12 @@ void tst_QCoreApplication::addRemoveLibPaths()
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     TestApplication app(argc, argv);
 
-    // Check that modifications stay alive across the creation of an application.
-    QVERIFY(QCoreApplication::libraryPaths().contains(currentDir));
-    QVERIFY(!QCoreApplication::libraryPaths().contains(paths[0]));
+    // If libraryPaths only contains currentDir, neither will be in libraryPaths now.
+    if (paths.length() != 1 && currentDir != paths[0]) {
+        // Check that modifications stay alive across the creation of an application.
+        QVERIFY(QCoreApplication::libraryPaths().contains(currentDir));
+        QVERIFY(!QCoreApplication::libraryPaths().contains(paths[0]));
+    }
 
     QStringList replace;
     replace << currentDir << paths[0];

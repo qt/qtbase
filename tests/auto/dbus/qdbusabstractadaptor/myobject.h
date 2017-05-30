@@ -242,10 +242,13 @@ public:
         {
         case 4:
             if4 = new Interface4(this);
+            Q_FALLTHROUGH();
         case 3:
             if3 = new Interface3(this);
+            Q_FALLTHROUGH();
         case 2:
             if2 = new Interface2(this);
+            Q_FALLTHROUGH();
         case 1:
             if1 = new Interface1(this);
         }

@@ -55,7 +55,6 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qplatformdefs.h"
 #include "qatomic.h"
-#include "qhash.h"
 
 #ifndef Q_OS_UNIX
 # error "qcore_unix_p.h included on a non-Unix system"
@@ -370,19 +369,6 @@ union qt_semun {
     struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
     unsigned short *array;      /* array for GETALL, SETALL */
 };
-
-#ifndef QT_POSIX_IPC
-#if QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
-#ifndef Q_OS_ANDROID
-static inline key_t qt_safe_ftok(const QByteArray &filename, int proj_id)
-{
-    // Unfortunately ftok can return colliding keys even for different files.
-    // Try to add some more entropy via qHash.
-    return ::ftok(filename.constData(), qHash(filename, proj_id));
-}
-#endif // !Q_OS_ANDROID
-#endif // QT_CONFIG(sharedmemory) || QT_CONFIG(systemsemaphore)
-#endif // !QT_POSIX_IPC
 
 QT_END_NAMESPACE
 

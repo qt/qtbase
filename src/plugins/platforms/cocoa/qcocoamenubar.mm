@@ -52,8 +52,7 @@ QT_BEGIN_NAMESPACE
 
 static QList<QCocoaMenuBar*> static_menubars;
 
-QCocoaMenuBar::QCocoaMenuBar() :
-    m_window(0)
+QCocoaMenuBar::QCocoaMenuBar()
 {
     static_menubars.append(this);
 
@@ -79,7 +78,7 @@ QCocoaMenuBar::~QCocoaMenuBar()
     [m_nativeMenu release];
     static_menubars.removeOne(this);
 
-    if (m_window && m_window->menubar() == this) {
+    if (!m_window.isNull() && m_window->menubar() == this) {
         m_window->setMenubar(0);
 
         // Delete the children first so they do not cause
@@ -92,9 +91,10 @@ QCocoaMenuBar::~QCocoaMenuBar()
 
 bool QCocoaMenuBar::needsImmediateUpdate()
 {
-    if (m_window && m_window->window()->isActive()) {
-        return true;
-    } else if (!m_window) {
+    if (!m_window.isNull()) {
+        if (m_window->window()->isActive())
+            return true;
+    } else {
         // Only update if the focus/active window has no
         // menubar, which means it'll be using this menubar.
         // This is to avoid a modification in a parentless
@@ -221,11 +221,11 @@ void QCocoaMenuBar::handleReparent(QWindow *newParentWindow)
     qDebug() << "QCocoaMenuBar" << this << "handleReparent" << newParentWindow;
 #endif
 
-    if (m_window)
-        m_window->setMenubar(NULL);
+    if (!m_window.isNull())
+        m_window->setMenubar(nullptr);
 
-    if (newParentWindow == NULL) {
-        m_window = NULL;
+    if (newParentWindow == nullptr) {
+        m_window.clear();
     } else {
         newParentWindow->create();
         m_window = static_cast<QCocoaWindow*>(newParentWindow->handle());
@@ -246,7 +246,7 @@ QCocoaWindow *QCocoaMenuBar::findWindowForMenubar()
 QCocoaMenuBar *QCocoaMenuBar::findGlobalMenubar()
 {
     foreach (QCocoaMenuBar *mb, static_menubars) {
-        if (mb->m_window == NULL)
+        if (mb->m_window.isNull())
             return mb;
     }
 

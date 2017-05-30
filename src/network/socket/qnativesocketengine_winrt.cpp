@@ -194,9 +194,22 @@ public:
                 Q_ASSERT_SUCCEEDED(hr);
             }
         }
+
+        if (connectOp) {
+            ComPtr<IAsyncInfo> info;
+            HRESULT hr = connectOp.As(&info);
+            Q_ASSERT_SUCCEEDED(hr);
+            if (info) {
+                hr = info->Cancel();
+                Q_ASSERT_SUCCEEDED(hr);
+                hr = info->Close();
+                Q_ASSERT_SUCCEEDED(hr);
+            }
+        }
     }
 
 signals:
+    void connectOpFinished(bool success, QAbstractSocket::SocketError error, WinRTSocketEngine::ErrorString errorString);
     void newDatagramsReceived(const QList<WinRtDatagram> &datagram);
     void newDataReceived(const QVector<QByteArray> &data);
     void socketErrorOccured(QAbstractSocket::SocketError error);
@@ -232,6 +245,45 @@ public:
         enginePrivate->socketState = QAbstractSocket::ConnectedState;
         hr = initialReadOp->put_Completed(Callback<SocketReadCompletedHandler>(this, &SocketEngineWorker::onReadyRead).Get());
         Q_ASSERT_SUCCEEDED(hr);
+    }
+
+    HRESULT onConnectOpFinished(IAsyncAction *action, AsyncStatus)
+    {
+        HRESULT hr = action->GetResults();
+        if (FAILED(hr)) {
+            switch (hr) {
+            case HRESULT_FROM_WIN32(WSAETIMEDOUT):
+                emit connectOpFinished(false, QAbstractSocket::NetworkError, WinRTSocketEngine::ConnectionTimeOutErrorString);
+                return S_OK;
+            case HRESULT_FROM_WIN32(WSAEHOSTUNREACH):
+                emit connectOpFinished(false, QAbstractSocket::HostNotFoundError, WinRTSocketEngine::HostUnreachableErrorString);
+                return S_OK;
+            case HRESULT_FROM_WIN32(WSAECONNREFUSED):
+                emit connectOpFinished(false, QAbstractSocket::ConnectionRefusedError, WinRTSocketEngine::ConnectionRefusedErrorString);
+                return S_OK;
+            default:
+                emit connectOpFinished(false, QAbstractSocket::UnknownSocketError, WinRTSocketEngine::UnknownSocketErrorString);
+                return S_OK;
+            }
+        }
+
+        // The callback might be triggered several times if we do not cancel/reset it here
+        if (connectOp) {
+            ComPtr<IAsyncInfo> info;
+            hr = connectOp.As(&info);
+            Q_ASSERT_SUCCEEDED(hr);
+            if (info) {
+                hr = info->Cancel();
+                Q_ASSERT_SUCCEEDED(hr);
+                hr = info->Close();
+                Q_ASSERT_SUCCEEDED(hr);
+            }
+            hr = connectOp.Reset();
+            Q_ASSERT_SUCCEEDED(hr);
+        }
+
+        emit connectOpFinished(true, QAbstractSocket::UnknownSocketError, WinRTSocketEngine::UnknownSocketErrorString);
+        return S_OK;
     }
 
     HRESULT OnNewDatagramReceived(IDatagramSocket *, IDatagramSocketMessageReceivedEventArgs *args)
@@ -378,6 +430,7 @@ public:
     void setTcpSocket(ComPtr<IStreamSocket> socket) { tcpSocket = socket; }
 
 private:
+    friend class QNativeSocketEngine;
     ComPtr<IStreamSocket> tcpSocket;
 
     QList<WinRtDatagram> pendingDatagrams;
@@ -386,6 +439,7 @@ private:
     // Protects pendingData/pendingDatagrams which are accessed from native callbacks
     QMutex mutex;
 
+    ComPtr<IAsyncAction> connectOp;
     ComPtr<IAsyncOperationWithProgress<IBuffer *, UINT32>> initialReadOp;
     ComPtr<IAsyncOperationWithProgress<IBuffer *, UINT32>> readOp;
 
@@ -481,6 +535,7 @@ QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
     : QAbstractSocketEngine(*new QNativeSocketEnginePrivate(), parent)
 {
     qRegisterMetaType<WinRtDatagram>();
+    qRegisterMetaType<WinRTSocketEngine::ErrorString>();
 #ifndef QT_NO_SSL
     Q_D(QNativeSocketEngine);
     if (parent)
@@ -490,6 +545,8 @@ QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
     connect(this, SIGNAL(connectionReady()), SLOT(connectionNotification()), Qt::QueuedConnection);
     connect(this, SIGNAL(readReady()), SLOT(readNotification()), Qt::QueuedConnection);
     connect(this, SIGNAL(writeReady()), SLOT(writeNotification()), Qt::QueuedConnection);
+    connect(d->worker, &SocketEngineWorker::connectOpFinished,
+            this, &QNativeSocketEngine::handleConnectOpFinished, Qt::QueuedConnection);
     connect(d->worker, &SocketEngineWorker::newDatagramsReceived, this, &QNativeSocketEngine::handleNewDatagrams, Qt::QueuedConnection);
     connect(d->worker, &SocketEngineWorker::newDataReceived,
             this, &QNativeSocketEngine::handleNewData, Qt::QueuedConnection);
@@ -531,7 +588,7 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
 
     if (!d->socketDescriptor || !d->fetchConnectionParameters()) {
         d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-            d->InvalidSocketErrorString);
+            WinRTSocketEngine::InvalidSocketErrorString);
         d->socketDescriptor = -1;
         return false;
     }
@@ -599,9 +656,9 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
     const QString portString = QString::number(port);
     HStringReference portReference(reinterpret_cast<LPCWSTR>(portString.utf16()));
     if (d->socketType == QAbstractSocket::TcpSocket)
-        hr = d->tcpSocket()->ConnectAsync(remoteHost.Get(), portReference.Get(), &d->connectOp);
+        hr = d->tcpSocket()->ConnectAsync(remoteHost.Get(), portReference.Get(), &d->worker->connectOp);
     else if (d->socketType == QAbstractSocket::UdpSocket)
-        hr = d->udpSocket()->ConnectAsync(remoteHost.Get(), portReference.Get(), &d->connectOp);
+        hr = d->udpSocket()->ConnectAsync(remoteHost.Get(), portReference.Get(), &d->worker->connectOp);
     if (hr == E_ACCESSDENIED) {
         qErrnoWarning(hr, "QNativeSocketEngine::connectToHostByName: Unable to connect to host (%s:%hu/%s). "
                           "Please check your manifest capabilities.",
@@ -622,8 +679,8 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
 
     d->socketState = QAbstractSocket::ConnectingState;
     QEventDispatcherWinRT::runOnXamlThread([d, &hr]() {
-        hr = d->connectOp->put_Completed(Callback<IAsyncActionCompletedHandler>(
-                                         d, &QNativeSocketEnginePrivate::handleConnectOpFinished).Get());
+        hr = d->worker->connectOp->put_Completed(Callback<IAsyncActionCompletedHandler>(
+                                         d->worker, &SocketEngineWorker::onConnectOpFinished).Get());
         RETURN_OK_IF_FAILED("connectToHostByName: Could not register \"connectOp\" callback");
         return S_OK;
     });
@@ -677,7 +734,7 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
             qErrnoWarning(hr, "Unable to bind socket (%s:%hu/%s). Please check your manifest capabilities.",
                           qPrintable(address.toString()), port, socketDescription(this).constData());
             d->setError(QAbstractSocket::SocketAccessError,
-                     QNativeSocketEnginePrivate::AccessErrorString);
+                     WinRTSocketEngine::AccessErrorString);
             d->socketState = QAbstractSocket::UnconnectedState;
             specificErrorSet = true;
             return S_OK;
@@ -687,14 +744,14 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
         hr = QWinRTFunctions::await(op);
         if (hr == 0x80072741) { // The requested address is not valid in its context
             d->setError(QAbstractSocket::SocketAddressNotAvailableError,
-                     QNativeSocketEnginePrivate::AddressNotAvailableErrorString);
+                     WinRTSocketEngine::AddressNotAvailableErrorString);
             d->socketState = QAbstractSocket::UnconnectedState;
             specificErrorSet = true;
             return S_OK;
         // Only one usage of each socket address (protocol/network address/port) is normally permitted
         } else if (hr == 0x80072740) {
             d->setError(QAbstractSocket::AddressInUseError,
-                QNativeSocketEnginePrivate::AddressInuseErrorString);
+                WinRTSocketEngine::AddressInuseErrorString);
             d->socketState = QAbstractSocket::UnconnectedState;
             specificErrorSet = true;
             return S_OK;
@@ -705,7 +762,7 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
     if (FAILED(hr)) {
         if (!specificErrorSet) {
             d->setError(QAbstractSocket::UnknownSocketError,
-                     QNativeSocketEnginePrivate::UnknownSocketErrorString);
+                     WinRTSocketEngine::UnknownSocketErrorString);
             d->socketState = QAbstractSocket::UnconnectedState;
         }
         return false;
@@ -737,7 +794,7 @@ int QNativeSocketEngine::accept()
     Q_CHECK_TYPE(QNativeSocketEngine::accept(), QAbstractSocket::TcpSocket, -1);
 
     if (d->socketDescriptor == -1 || d->pendingConnections.isEmpty()) {
-        d->setError(QAbstractSocket::TemporaryError, QNativeSocketEnginePrivate::TemporaryErrorString);
+        d->setError(QAbstractSocket::TemporaryError, WinRTSocketEngine::TemporaryErrorString);
         return -1;
     }
 
@@ -767,18 +824,6 @@ void QNativeSocketEngine::close()
     d->notifyOnException = false;
 
     HRESULT hr;
-    if (d->connectOp) {
-        ComPtr<IAsyncInfo> info;
-        hr = d->connectOp.As(&info);
-        Q_ASSERT_SUCCEEDED(hr);
-        if (info) {
-            hr = info->Cancel();
-            Q_ASSERT_SUCCEEDED(hr);
-            hr = info->Close();
-            Q_ASSERT_SUCCEEDED(hr);
-        }
-    }
-
     if (d->socketType == QAbstractSocket::TcpSocket) {
         hr = QEventDispatcherWinRT::runOnXamlThread([d]() {
             HRESULT hr;
@@ -924,7 +969,7 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
 
     qint64 bytesWritten = writeIOStream(stream, data, len);
     if (bytesWritten < 0)
-        d->setError(QAbstractSocket::SocketAccessError, QNativeSocketEnginePrivate::AccessErrorString);
+        d->setError(QAbstractSocket::SocketAccessError, WinRTSocketEngine::AccessErrorString);
     else if (bytesWritten > 0 && d->notifyOnWrite)
         emit writeReady();
 
@@ -1089,7 +1134,7 @@ bool QNativeSocketEngine::waitForRead(int msecs, bool *timedOut)
     }
 
     d->setError(QAbstractSocket::SocketTimeoutError,
-                QNativeSocketEnginePrivate::TimeOutErrorString);
+                WinRTSocketEngine::TimeOutErrorString);
 
     if (timedOut)
         *timedOut = true;
@@ -1102,9 +1147,9 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
     Q_UNUSED(timedOut);
     Q_D(QNativeSocketEngine);
     if (d->socketState == QAbstractSocket::ConnectingState) {
-        HRESULT hr = QWinRTFunctions::await(d->connectOp, QWinRTFunctions::ProcessMainThreadEvents);
+        HRESULT hr = QWinRTFunctions::await(d->worker->connectOp, QWinRTFunctions::ProcessMainThreadEvents);
         if (SUCCEEDED(hr)) {
-            d->handleConnectOpFinished(d->connectOp.Get(), Completed);
+            handleConnectOpFinished(true, QAbstractSocket::UnknownSocketError, WinRTSocketEngine::UnknownSocketErrorString);
             return true;
         }
     }
@@ -1176,6 +1221,32 @@ void QNativeSocketEngine::establishRead()
     Q_ASSERT_SUCCEEDED(hr);
 }
 
+void QNativeSocketEngine::handleConnectOpFinished(bool success, QAbstractSocket::SocketError error, WinRTSocketEngine::ErrorString errorString)
+{
+    Q_D(QNativeSocketEngine);
+    disconnect(d->worker, &SocketEngineWorker::connectOpFinished,
+            this, &QNativeSocketEngine::handleConnectOpFinished);
+    if (!success) {
+        d->setError(error, errorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        return;
+    }
+
+    d->socketState = QAbstractSocket::ConnectedState;
+    emit connectionReady();
+
+    if (d->socketType != QAbstractSocket::TcpSocket)
+        return;
+
+#ifndef QT_NO_SSL
+    // Delay the reader so that the SSL socket can upgrade
+    if (d->sslSocket)
+        QObject::connect(qobject_cast<QSslSocket *>(d->sslSocket), &QSslSocket::encrypted, this, &QNativeSocketEngine::establishRead);
+    else
+#endif
+        establishRead();
+}
+
 void QNativeSocketEngine::handleNewDatagrams(const QList<WinRtDatagram> &datagrams)
 {
     Q_D(QNativeSocketEngine);
@@ -1198,13 +1269,13 @@ void QNativeSocketEngine::handleNewData(const QVector<QByteArray> &data)
 void QNativeSocketEngine::handleTcpError(QAbstractSocket::SocketError error)
 {
     Q_D(QNativeSocketEngine);
-    QNativeSocketEnginePrivate::ErrorString errorString;
+    WinRTSocketEngine::ErrorString errorString;
     switch (error) {
     case QAbstractSocket::RemoteHostClosedError:
-        errorString = QNativeSocketEnginePrivate::RemoteHostClosedErrorString;
+        errorString = WinRTSocketEngine::RemoteHostClosedErrorString;
         break;
     default:
-        errorString = QNativeSocketEnginePrivate::UnknownSocketErrorString;
+        errorString = WinRTSocketEngine::UnknownSocketErrorString;
     }
 
     d->setError(error, errorString);
@@ -1271,7 +1342,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
 
     // Make the socket nonblocking.
     if (!setOption(QAbstractSocketEngine::NonBlockingSocketOption, 1)) {
-        setError(QAbstractSocket::UnsupportedSocketOperationError, NonBlockingInitFailedErrorString);
+        setError(QAbstractSocket::UnsupportedSocketOperationError, WinRTSocketEngine::NonBlockingInitFailedErrorString);
         q_func()->close();
         return false;
     }
@@ -1307,7 +1378,7 @@ QNativeSocketEnginePrivate::~QNativeSocketEnginePrivate()
     worker->deleteLater();
 }
 
-void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, ErrorString errorString) const
+void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, WinRTSocketEngine::ErrorString errorString) const
 {
     if (hasSetSocketError) {
         // Only set socket errors once for one engine; expect the
@@ -1325,86 +1396,86 @@ void QNativeSocketEnginePrivate::setError(QAbstractSocket::SocketError error, Er
     socketError = error;
 
     switch (errorString) {
-    case NonBlockingInitFailedErrorString:
+    case WinRTSocketEngine::NonBlockingInitFailedErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unable to initialize non-blocking socket");
         break;
-    case BroadcastingInitFailedErrorString:
+    case WinRTSocketEngine::BroadcastingInitFailedErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unable to initialize broadcast socket");
         break;
     // should not happen anymore
-    case NoIpV6ErrorString:
+    case WinRTSocketEngine::NoIpV6ErrorString:
         socketErrorString = QNativeSocketEngine::tr("Attempt to use IPv6 socket on a platform with no IPv6 support");
         break;
-    case RemoteHostClosedErrorString:
+    case WinRTSocketEngine::RemoteHostClosedErrorString:
         socketErrorString = QNativeSocketEngine::tr("The remote host closed the connection");
         break;
-    case TimeOutErrorString:
+    case WinRTSocketEngine::TimeOutErrorString:
         socketErrorString = QNativeSocketEngine::tr("Network operation timed out");
         break;
-    case ResourceErrorString:
+    case WinRTSocketEngine::ResourceErrorString:
         socketErrorString = QNativeSocketEngine::tr("Out of resources");
         break;
-    case OperationUnsupportedErrorString:
+    case WinRTSocketEngine::OperationUnsupportedErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unsupported socket operation");
         break;
-    case ProtocolUnsupportedErrorString:
+    case WinRTSocketEngine::ProtocolUnsupportedErrorString:
         socketErrorString = QNativeSocketEngine::tr("Protocol type not supported");
         break;
-    case InvalidSocketErrorString:
+    case WinRTSocketEngine::InvalidSocketErrorString:
         socketErrorString = QNativeSocketEngine::tr("Invalid socket descriptor");
         break;
-    case HostUnreachableErrorString:
+    case WinRTSocketEngine::HostUnreachableErrorString:
         socketErrorString = QNativeSocketEngine::tr("Host unreachable");
         break;
-    case NetworkUnreachableErrorString:
+    case WinRTSocketEngine::NetworkUnreachableErrorString:
         socketErrorString = QNativeSocketEngine::tr("Network unreachable");
         break;
-    case AccessErrorString:
+    case WinRTSocketEngine::AccessErrorString:
         socketErrorString = QNativeSocketEngine::tr("Permission denied");
         break;
-    case ConnectionTimeOutErrorString:
+    case WinRTSocketEngine::ConnectionTimeOutErrorString:
         socketErrorString = QNativeSocketEngine::tr("Connection timed out");
         break;
-    case ConnectionRefusedErrorString:
+    case WinRTSocketEngine::ConnectionRefusedErrorString:
         socketErrorString = QNativeSocketEngine::tr("Connection refused");
         break;
-    case AddressInuseErrorString:
+    case WinRTSocketEngine::AddressInuseErrorString:
         socketErrorString = QNativeSocketEngine::tr("The bound address is already in use");
         break;
-    case AddressNotAvailableErrorString:
+    case WinRTSocketEngine::AddressNotAvailableErrorString:
         socketErrorString = QNativeSocketEngine::tr("The address is not available");
         break;
-    case AddressProtectedErrorString:
+    case WinRTSocketEngine::AddressProtectedErrorString:
         socketErrorString = QNativeSocketEngine::tr("The address is protected");
         break;
-    case DatagramTooLargeErrorString:
+    case WinRTSocketEngine::DatagramTooLargeErrorString:
         socketErrorString = QNativeSocketEngine::tr("Datagram was too large to send");
         break;
-    case SendDatagramErrorString:
+    case WinRTSocketEngine::SendDatagramErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unable to send a message");
         break;
-    case ReceiveDatagramErrorString:
+    case WinRTSocketEngine::ReceiveDatagramErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unable to receive a message");
         break;
-    case WriteErrorString:
+    case WinRTSocketEngine::WriteErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unable to write");
         break;
-    case ReadErrorString:
+    case WinRTSocketEngine::ReadErrorString:
         socketErrorString = QNativeSocketEngine::tr("Network error");
         break;
-    case PortInuseErrorString:
+    case WinRTSocketEngine::PortInuseErrorString:
         socketErrorString = QNativeSocketEngine::tr("Another socket is already listening on the same port");
         break;
-    case NotSocketErrorString:
+    case WinRTSocketEngine::NotSocketErrorString:
         socketErrorString = QNativeSocketEngine::tr("Operation on non-socket");
         break;
-    case InvalidProxyTypeString:
+    case WinRTSocketEngine::InvalidProxyTypeString:
         socketErrorString = QNativeSocketEngine::tr("The proxy type is invalid for this operation");
         break;
-    case TemporaryErrorString:
+    case WinRTSocketEngine::TemporaryErrorString:
         socketErrorString = QNativeSocketEngine::tr("Temporary error");
         break;
-    case UnknownSocketErrorString:
+    case WinRTSocketEngine::UnknownSocketErrorString:
         socketErrorString = QNativeSocketEngine::tr("Unknown error");
         break;
     }
@@ -1612,65 +1683,6 @@ HRESULT QNativeSocketEnginePrivate::handleClientConnection(IStreamSocketListener
     emit q->connectionReady();
     if (notifyOnRead)
         emit q->readReady();
-    return S_OK;
-}
-
-HRESULT QNativeSocketEnginePrivate::handleConnectOpFinished(IAsyncAction *action, AsyncStatus)
-{
-    Q_Q(QNativeSocketEngine);
-    if (wasDeleted || !connectOp) // Protect against a late callback
-        return S_OK;
-
-    HRESULT hr = action->GetResults();
-    switch (hr) {
-    case 0x8007274c: // A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
-        setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
-        socketState = QAbstractSocket::UnconnectedState;
-        return S_OK;
-    case 0x80072751: // A socket operation was attempted to an unreachable host.
-        setError(QAbstractSocket::HostNotFoundError, HostUnreachableErrorString);
-        socketState = QAbstractSocket::UnconnectedState;
-        return S_OK;
-    case 0x8007274d: // No connection could be made because the target machine actively refused it.
-        setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
-        socketState = QAbstractSocket::UnconnectedState;
-        return S_OK;
-    default:
-        if (FAILED(hr)) {
-            setError(QAbstractSocket::UnknownSocketError, UnknownSocketErrorString);
-            socketState = QAbstractSocket::UnconnectedState;
-            return S_OK;
-        }
-    }
-
-    // The callback might be triggered several times if we do not cancel/reset it here
-    if (connectOp) {
-        ComPtr<IAsyncInfo> info;
-        hr = connectOp.As(&info);
-        Q_ASSERT_SUCCEEDED(hr);
-        if (info) {
-            hr = info->Cancel();
-            Q_ASSERT_SUCCEEDED(hr);
-            hr = info->Close();
-            Q_ASSERT_SUCCEEDED(hr);
-        }
-        hr = connectOp.Reset();
-        Q_ASSERT_SUCCEEDED(hr);
-    }
-
-    socketState = QAbstractSocket::ConnectedState;
-    emit q->connectionReady();
-
-    if (socketType != QAbstractSocket::TcpSocket)
-        return S_OK;
-
-#ifndef QT_NO_SSL
-    // Delay the reader so that the SSL socket can upgrade
-    if (sslSocket)
-        QObject::connect(qobject_cast<QSslSocket *>(sslSocket), &QSslSocket::encrypted, q, &QNativeSocketEngine::establishRead);
-    else
-#endif
-        q->establishRead();
     return S_OK;
 }
 

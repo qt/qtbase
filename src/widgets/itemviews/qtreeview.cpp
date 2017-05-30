@@ -1818,7 +1818,7 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
     QStyle::State extraFlags = QStyle::State_None;
     if (isEnabled())
         extraFlags |= QStyle::State_Enabled;
-    if (window()->isActiveWindow())
+    if (hasFocus())
         extraFlags |= QStyle::State_Active;
     QPoint oldBO = painter->brushOrigin();
     if (verticalScrollMode() == QAbstractItemView::ScrollPerPixel)

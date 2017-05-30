@@ -302,6 +302,7 @@ public: // for QNSView
     bool isContentView() const;
     bool isChildNSWindow() const;
 
+    bool alwaysShowToolWindow() const;
     void removeMonitor();
 
     NSView *m_view;

@@ -104,7 +104,7 @@ key_t QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode mode)
 
 #if !defined(QT_NO_SHAREDMEMORY) && !defined(QT_POSIX_IPC) && !defined(Q_OS_ANDROID)
     // Get the unix key for the created file
-    unix_key = qt_safe_ftok(QFile::encodeName(fileName), 'Q');
+    unix_key = ftok(QFile::encodeName(fileName).constData(), 'Q');
 #endif
     if (-1 == unix_key) {
         errorString =
