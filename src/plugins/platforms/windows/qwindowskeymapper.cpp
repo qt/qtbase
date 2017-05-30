@@ -971,8 +971,7 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
         state = state ^ Qt::ShiftModifier;
     else if (code == Qt::Key_Alt)
         state = state ^ Qt::AltModifier;
-    else if (code == 0 && modifiersIndex != 0)
-        code = keyLayout[vk_key].qtKey[0];
+
     // If the bit 24 of lParm is set you received a enter,
     // otherwise a Return. (This is the extended key bit)
     if ((code == Qt::Key_Return) && (msg.lParam & 0x1000000))
