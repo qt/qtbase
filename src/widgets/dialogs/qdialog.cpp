@@ -39,7 +39,9 @@
 
 #include "qcolordialog.h"
 #include "qfontdialog.h"
+#if QT_CONFIG(filedialog)
 #include "qfiledialog.h"
+#endif
 
 #include "qevent.h"
 #include "qdesktopwidget.h"
@@ -64,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
 static inline int themeDialogType(const QDialog *dialog)
 {
-#ifndef QT_NO_FILEDIALOG
+#if QT_CONFIG(filedialog)
     if (qobject_cast<const QFileDialog *>(dialog))
         return QPlatformTheme::FileDialog;
 #endif

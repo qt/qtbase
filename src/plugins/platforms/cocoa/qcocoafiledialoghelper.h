@@ -41,7 +41,10 @@
 #define QCOCOAFILEDIALOGHELPER_H
 
 #include <QObject>
+#include <QtWidgets/qtwidgetsglobal.h>
 #include <qpa/qplatformdialoghelper.h>
+
+QT_REQUIRE_CONFIG(filedialog);
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate));
 

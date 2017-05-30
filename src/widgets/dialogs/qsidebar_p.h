@@ -58,7 +58,7 @@
 #include <qurl.h>
 #include <qvector.h>
 
-#ifndef QT_NO_FILEDIALOG
+QT_REQUIRE_CONFIG(filedialog);
 
 QT_BEGIN_NAMESPACE
 
@@ -158,8 +158,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_FILEDIALOG
 
 #endif // QSIDEBAR_H
 

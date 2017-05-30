@@ -43,7 +43,6 @@
 #include <private/qwidgetitemdata_p.h>
 #include "qfiledialog.h"
 
-#ifndef QT_NO_FILEDIALOG
 #include "qfiledialog_p.h"
 #include <private/qguiapplication_p.h>
 #include <qfontmetrics.h>
@@ -4134,5 +4133,3 @@ QStringList QFSCompleter::splitPath(const QString &path) const
 QT_END_NAMESPACE
 
 #include "moc_qfiledialog.cpp"
-
-#endif // QT_NO_FILEDIALOG

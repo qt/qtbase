@@ -45,7 +45,6 @@
 #include <QtCore/QVariant>
 
 #include "qcocoacolordialoghelper.h"
-#include "qcocoafiledialoghelper.h"
 #include "qcocoafontdialoghelper.h"
 #include "qcocoasystemsettings.h"
 #include "qcocoasystemtrayicon.h"
@@ -62,6 +61,13 @@
 #include <QtThemeSupport/private/qabstractfileiconengine_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+
+#ifdef QT_WIDGETS_LIB
+#include <QtWidgets/qtwidgetsglobal.h>
+#if QT_CONFIG(filedialog)
+#include "qcocoafiledialoghelper.h"
+#endif
+#endif
 
 #include <Carbon/Carbon.h>
 
@@ -138,7 +144,7 @@ bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
 QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialogType) const
 {
     switch (dialogType) {
-#ifndef QT_NO_FILEDIALOG
+#if defined(QT_WIDGETS_LIB) && QT_CONFIG(filedialog)
     case QPlatformTheme::FileDialog:
         return new QCocoaFileDialogHelper();
 #endif

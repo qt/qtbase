@@ -43,7 +43,9 @@
 #include "private/qabstractprintdialog_p.h"
 #include <QtWidgets/qmessagebox.h>
 #include "qprintdialog.h"
+#if QT_CONFIG(filedialog)
 #include "qfiledialog.h"
+#endif
 #include <QtCore/qdir.h>
 #include <QtGui/qevent.h>
 #include <QtWidgets/qfilesystemmodel.h>
@@ -780,7 +782,7 @@ void QUnixPrintWidgetPrivate::setOptionsPane(QPrintDialogPrivate *pane)
 void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
 {
     QString filename = widget.filename->text();
-#ifndef QT_NO_FILEDIALOG
+#if QT_CONFIG(filedialog)
     filename = QFileDialog::getSaveFileName(parent, QPrintDialog::tr("Print To File ..."), filename,
                                             QString(), 0, QFileDialog::DontConfirmOverwrite);
 #else
