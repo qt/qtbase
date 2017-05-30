@@ -608,7 +608,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         }
         break;
 #endif // QT_NO_LINEEDIT
-#ifndef QT_NO_COLUMNVIEW
+#if QT_CONFIG(columnview)
     case PE_IndicatorColumnViewArrow: {
     if (const QStyleOptionViewItem *viewOpt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
         bool reverse = (viewOpt->direction == Qt::RightToLeft);
@@ -660,7 +660,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->restore();
     }
     break; }
-#endif //QT_NO_COLUMNVIEW
+#endif //QT_CONFIG(columnview)
     case PE_IndicatorItemViewItemDrop: {
         QRect rect = opt->rect;
         if (opt->rect.height() == 0)
