@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #############################################################################
 ##
-## Copyright (C) 2016 The Qt Company Ltd.
+## Copyright (C) 2017 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -42,12 +42,13 @@ file for later processing by ``./qlocalexml2cpp.py``
 
 import os
 import sys
+import re
+
 import enumdata
 import xpathlite
 from  xpathlite import DraftResolution
 from dateconverter import convert_date
-from xml.sax.saxutils import escape, unescape
-import re
+from localexml import Locale
 
 findAlias = xpathlite.findAlias
 findEntry = xpathlite.findEntry
@@ -91,36 +92,6 @@ def parse_list_pattern_part_format(pattern):
     result = result.replace("{1}", "%2")
     result = result.replace("{2}", "%3")
     return result
-
-def ordStr(c):
-    if len(c) == 1:
-        return str(ord(c))
-    raise xpathlite.Error('Unable to handle value "%s"' % addEscapes(c))
-    return "##########"
-
-# the following functions are supposed to fix the problem with QLocale
-# returning a character instead of strings for QLocale::exponential()
-# and others. So we fallback to default values in these cases.
-def fixOrdStrMinus(c):
-    if len(c) == 1:
-        return str(ord(c))
-    return str(ord('-'))
-def fixOrdStrPlus(c):
-    if len(c) == 1:
-        return str(ord(c))
-    return str(ord('+'))
-def fixOrdStrExp(c):
-    if len(c) == 1:
-        return str(ord(c))
-    return str(ord('e'))
-def fixOrdStrPercent(c):
-    if len(c) == 1:
-        return str(ord(c))
-    return str(ord('%'))
-def fixOrdStrList(c):
-    if len(c) == 1:
-        return str(ord(c))
-    return str(ord(';'))
 
 def generateLocaleInfo(path):
     if not path.endswith(".xml"):
@@ -327,7 +298,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
             findEntry(path, stem + prop + '[' + day + ']')
             for day in days) + ';'
 
-    return result
+    return Locale(result)
 
 def addEscapes(s):
     result = ''
@@ -423,22 +394,22 @@ def integrateWeekData(filePath):
     for countryCode in sunWeekendEnd:
         weekendEndByCountryCode[countryCode] = "sun"
 
-    for (key,locale) in locale_database.iteritems():
-        countryCode = locale['country_code']
+    for (key, locale) in locale_database.iteritems():
+        countryCode = locale.country_code
         if countryCode in firstDayByCountryCode:
-            locale_database[key]['firstDayOfWeek'] = firstDayByCountryCode[countryCode]
+            locale.firstDayOfWeek = firstDayByCountryCode[countryCode]
         else:
-            locale_database[key]['firstDayOfWeek'] = firstDayByCountryCode["001"]
+            locale.firstDayOfWeek = firstDayByCountryCode["001"]
 
         if countryCode in weekendStartByCountryCode:
-            locale_database[key]['weekendStart'] = weekendStartByCountryCode[countryCode]
+            locale.weekendStart = weekendStartByCountryCode[countryCode]
         else:
-            locale_database[key]['weekendStart'] = weekendStartByCountryCode["001"]
+            locale.weekendStart = weekendStartByCountryCode["001"]
 
         if countryCode in weekendEndByCountryCode:
-            locale_database[key]['weekendEnd'] = weekendEndByCountryCode[countryCode]
+            locale.weekendEnd = weekendEndByCountryCode[countryCode]
         else:
-            locale_database[key]['weekendEnd'] = weekendEndByCountryCode["001"]
+            locale.weekendEnd = weekendEndByCountryCode["001"]
 
 if len(sys.argv) != 2:
     usage()
@@ -484,7 +455,7 @@ for file in defaultContent_locales:
         sys.stderr.write('skipping defaultContent locale "%s" (%s)\n' % (file, str(e)))
         continue
 
-    locale_database[(l['language_id'], l['script_id'], l['country_id'], l['variant_code'])] = l
+    locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
 
 for file in cldr_files:
     try:
@@ -496,7 +467,7 @@ for file in cldr_files:
         sys.stderr.write('skipping file "%s" (%s)\n' % (file, str(e)))
         continue
 
-    locale_database[(l['language_id'], l['script_id'], l['country_id'], l['variant_code'])] = l
+    locale_database[(l.language_id, l.script_id, l.country_id, l.variant_code)] = l
 
 integrateWeekData(cldr_dir+"/../supplemental/supplementalData.xml")
 locale_keys = locale_database.keys()
@@ -613,115 +584,10 @@ for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likel
 print "    </likelySubtags>"
 
 print "    <localeList>"
-print '''\
-        <locale>
-            <language>C</language>
-            <languageEndonym></languageEndonym>
-            <script>AnyScript</script>
-            <country>AnyCountry</country>
-            <countryEndonym></countryEndonym>
-            <decimal>46</decimal>
-            <group>44</group>
-            <list>59</list>
-            <percent>37</percent>
-            <zero>48</zero>
-            <minus>45</minus>
-            <plus>43</plus>
-            <exp>101</exp>
-            <quotationStart>"</quotationStart>
-            <quotationEnd>"</quotationEnd>
-            <alternateQuotationStart>\'</alternateQuotationStart>
-            <alternateQuotationEnd>\'</alternateQuotationEnd>
-            <listPatternPartStart>%1, %2</listPatternPartStart>
-            <listPatternPartMiddle>%1, %2</listPatternPartMiddle>
-            <listPatternPartEnd>%1, %2</listPatternPartEnd>
-            <listPatternPartTwo>%1, %2</listPatternPartTwo>
-            <am>AM</am>
-            <pm>PM</pm>
-            <firstDayOfWeek>mon</firstDayOfWeek>
-            <weekendStart>sat</weekendStart>
-            <weekendEnd>sun</weekendEnd>
-            <longDateFormat>EEEE, d MMMM yyyy</longDateFormat>
-            <shortDateFormat>d MMM yyyy</shortDateFormat>
-            <longTimeFormat>HH:mm:ss z</longTimeFormat>
-            <shortTimeFormat>HH:mm:ss</shortTimeFormat>
-            <standaloneLongMonths>January;February;March;April;May;June;July;August;September;October;November;December;</standaloneLongMonths>
-            <standaloneShortMonths>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec;</standaloneShortMonths>
-            <standaloneNarrowMonths>J;F;M;A;M;J;J;A;S;O;N;D;</standaloneNarrowMonths>
-            <longMonths>January;February;March;April;May;June;July;August;September;October;November;December;</longMonths>
-            <shortMonths>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec;</shortMonths>
-            <narrowMonths>1;2;3;4;5;6;7;8;9;10;11;12;</narrowMonths>
-            <longDays>Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;</longDays>
-            <shortDays>Sun;Mon;Tue;Wed;Thu;Fri;Sat;</shortDays>
-            <narrowDays>7;1;2;3;4;5;6;</narrowDays>
-            <standaloneLongDays>Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;</standaloneLongDays>
-            <standaloneShortDays>Sun;Mon;Tue;Wed;Thu;Fri;Sat;</standaloneShortDays>
-            <standaloneNarrowDays>S;M;T;W;T;F;S;</standaloneNarrowDays>
-            <currencyIsoCode></currencyIsoCode>
-            <currencySymbol></currencySymbol>
-            <currencyDisplayName>;;;;;;;</currencyDisplayName>
-            <currencyDigits>2</currencyDigits>
-            <currencyRounding>1</currencyRounding>
-            <currencyFormat>%1%2</currencyFormat>
-            <currencyNegativeFormat></currencyNegativeFormat>
-        </locale>'''
 
+Locale.C().toXml()
 for key in locale_keys:
-    l = locale_database[key]
+    locale_database[key].toXml()
 
-    print "        <locale>"
-    print "            <language>" + l['language']        + "</language>"
-    print "            <languageEndonym>" + escape(l['language_endonym']).encode('utf-8') + "</languageEndonym>"
-    print "            <script>" + l['script']        + "</script>"
-    print "            <country>"  + l['country']         + "</country>"
-    print "            <countryEndonym>"  + escape(l['country_endonym']).encode('utf-8') + "</countryEndonym>"
-    print "            <languagecode>" + l['language_code']        + "</languagecode>"
-    print "            <scriptcode>" + l['script_code']        + "</scriptcode>"
-    print "            <countrycode>"  + l['country_code']         + "</countrycode>"
-    print "            <decimal>"  + ordStr(l['decimal']) + "</decimal>"
-    print "            <group>"    + ordStr(l['group'])   + "</group>"
-    print "            <list>"     + fixOrdStrList(l['list'])    + "</list>"
-    print "            <percent>"  + fixOrdStrPercent(l['percent']) + "</percent>"
-    print "            <zero>"     + ordStr(l['zero'])    + "</zero>"
-    print "            <minus>"    + fixOrdStrMinus(l['minus'])   + "</minus>"
-    print "            <plus>"     + fixOrdStrPlus(l['plus'])   + "</plus>"
-    print "            <exp>"      + fixOrdStrExp(l['exp'])     + "</exp>"
-    print "            <quotationStart>" + escape(l['quotationStart']).encode('utf-8') + "</quotationStart>"
-    print "            <quotationEnd>" + escape(l['quotationEnd']).encode('utf-8')   + "</quotationEnd>"
-    print "            <alternateQuotationStart>" + escape(l['alternateQuotationStart']).encode('utf-8') + "</alternateQuotationStart>"
-    print "            <alternateQuotationEnd>" + escape(l['alternateQuotationEnd']).encode('utf-8')   + "</alternateQuotationEnd>"
-    print "            <listPatternPartStart>" + escape(l['listPatternPartStart']).encode('utf-8')   + "</listPatternPartStart>"
-    print "            <listPatternPartMiddle>" + escape(l['listPatternPartMiddle']).encode('utf-8')   + "</listPatternPartMiddle>"
-    print "            <listPatternPartEnd>" + escape(l['listPatternPartEnd']).encode('utf-8')   + "</listPatternPartEnd>"
-    print "            <listPatternPartTwo>" + escape(l['listPatternPartTwo']).encode('utf-8')   + "</listPatternPartTwo>"
-    print "            <am>"       + escape(l['am']).encode('utf-8') + "</am>"
-    print "            <pm>"       + escape(l['pm']).encode('utf-8') + "</pm>"
-    print "            <firstDayOfWeek>"  + escape(l['firstDayOfWeek']).encode('utf-8') + "</firstDayOfWeek>"
-    print "            <weekendStart>"  + escape(l['weekendStart']).encode('utf-8') + "</weekendStart>"
-    print "            <weekendEnd>"  + escape(l['weekendEnd']).encode('utf-8') + "</weekendEnd>"
-    print "            <longDateFormat>"  + escape(l['longDateFormat']).encode('utf-8')  + "</longDateFormat>"
-    print "            <shortDateFormat>" + escape(l['shortDateFormat']).encode('utf-8') + "</shortDateFormat>"
-    print "            <longTimeFormat>"  + escape(l['longTimeFormat']).encode('utf-8')  + "</longTimeFormat>"
-    print "            <shortTimeFormat>" + escape(l['shortTimeFormat']).encode('utf-8') + "</shortTimeFormat>"
-    print "            <standaloneLongMonths>" + escape(l['standaloneLongMonths']).encode('utf-8')      + "</standaloneLongMonths>"
-    print "            <standaloneShortMonths>"+ escape(l['standaloneShortMonths']).encode('utf-8')      + "</standaloneShortMonths>"
-    print "            <standaloneNarrowMonths>"+ escape(l['standaloneNarrowMonths']).encode('utf-8')      + "</standaloneNarrowMonths>"
-    print "            <longMonths>"      + escape(l['longMonths']).encode('utf-8')      + "</longMonths>"
-    print "            <shortMonths>"     + escape(l['shortMonths']).encode('utf-8')     + "</shortMonths>"
-    print "            <narrowMonths>"     + escape(l['narrowMonths']).encode('utf-8')     + "</narrowMonths>"
-    print "            <longDays>"        + escape(l['longDays']).encode('utf-8')        + "</longDays>"
-    print "            <shortDays>"       + escape(l['shortDays']).encode('utf-8')       + "</shortDays>"
-    print "            <narrowDays>"       + escape(l['narrowDays']).encode('utf-8')       + "</narrowDays>"
-    print "            <standaloneLongDays>" + escape(l['standaloneLongDays']).encode('utf-8')        + "</standaloneLongDays>"
-    print "            <standaloneShortDays>" + escape(l['standaloneShortDays']).encode('utf-8')       + "</standaloneShortDays>"
-    print "            <standaloneNarrowDays>" + escape(l['standaloneNarrowDays']).encode('utf-8')       + "</standaloneNarrowDays>"
-    print "            <currencyIsoCode>" + escape(l['currencyIsoCode']).encode('utf-8') + "</currencyIsoCode>"
-    print "            <currencySymbol>" + escape(l['currencySymbol']).encode('utf-8') + "</currencySymbol>"
-    print "            <currencyDisplayName>" + escape(l['currencyDisplayName']).encode('utf-8') + "</currencyDisplayName>"
-    print "            <currencyDigits>" + str(l['currencyDigits']) + "</currencyDigits>"
-    print "            <currencyRounding>" + str(l['currencyRounding']) + "</currencyRounding>"
-    print "            <currencyFormat>" + escape(l['currencyFormat']).encode('utf-8') + "</currencyFormat>"
-    print "            <currencyNegativeFormat>" + escape(l['currencyNegativeFormat']).encode('utf-8') + "</currencyNegativeFormat>"
-    print "        </locale>"
 print "    </localeList>"
 print "</localeDatabase>"

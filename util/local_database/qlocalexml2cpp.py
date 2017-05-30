@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #############################################################################
 ##
-## Copyright (C) 2016 The Qt Company Ltd.
+## Copyright (C) 2017 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -38,6 +38,8 @@ import sys
 import tempfile
 import datetime
 import xml.dom.minidom
+
+from localexml import Locale
 
 class Error:
     def __init__(self, msg):
@@ -191,108 +193,13 @@ def countryNameToId(name, country_map):
             return key
     return -1
 
-def convertFormat(format):
-    result = ""
-    i = 0
-    while i < len(format):
-        if format[i] == "'":
-            result += "'"
-            i += 1
-            while i < len(format) and format[i] != "'":
-                result += format[i]
-                i += 1
-            if i < len(format):
-                result += "'"
-                i += 1
-        else:
-            s = format[i:]
-            if s.startswith("EEEE"):
-                result += "dddd"
-                i += 4
-            elif s.startswith("EEE"):
-                result += "ddd"
-                i += 3
-            elif s.startswith("a"):
-                result += "AP"
-                i += 1
-            elif s.startswith("z"):
-                result += "t"
-                i += 1
-            elif s.startswith("v"):
-                i += 1
-            else:
-                result += format[i]
-                i += 1
-
-    return result
-
-def convertToQtDayOfWeek(firstDay):
-    qtDayOfWeek = {"mon":1, "tue":2, "wed":3, "thu":4, "fri":5, "sat":6, "sun":7}
-    return qtDayOfWeek[firstDay]
-
-def assertSingleChar(string):
-    assert len(string) == 1, "This string is not allowed to be longer than 1 character"
-    return string
-
-class Locale:
-    def __init__(self, elt):
-        self.language = eltText(firstChildElt(elt, "language"))
-        self.languageEndonym = eltText(firstChildElt(elt, "languageEndonym"))
-        self.script = eltText(firstChildElt(elt, "script"))
-        self.country = eltText(firstChildElt(elt, "country"))
-        self.countryEndonym = eltText(firstChildElt(elt, "countryEndonym"))
-        self.decimal = int(eltText(firstChildElt(elt, "decimal")))
-        self.group = int(eltText(firstChildElt(elt, "group")))
-        self.listDelim = int(eltText(firstChildElt(elt, "list")))
-        self.percent = int(eltText(firstChildElt(elt, "percent")))
-        self.zero = int(eltText(firstChildElt(elt, "zero")))
-        self.minus = int(eltText(firstChildElt(elt, "minus")))
-        self.plus = int(eltText(firstChildElt(elt, "plus")))
-        self.exp = int(eltText(firstChildElt(elt, "exp")))
-        self.quotationStart = ord(assertSingleChar(eltText(firstChildElt(elt, "quotationStart"))))
-        self.quotationEnd = ord(assertSingleChar(eltText(firstChildElt(elt, "quotationEnd"))))
-        self.alternateQuotationStart = ord(assertSingleChar(eltText(firstChildElt(elt, "alternateQuotationStart"))))
-        self.alternateQuotationEnd = ord(assertSingleChar(eltText(firstChildElt(elt, "alternateQuotationEnd"))))
-        self.listPatternPartStart = eltText(firstChildElt(elt, "listPatternPartStart"))
-        self.listPatternPartMiddle = eltText(firstChildElt(elt, "listPatternPartMiddle"))
-        self.listPatternPartEnd = eltText(firstChildElt(elt, "listPatternPartEnd"))
-        self.listPatternPartTwo = eltText(firstChildElt(elt, "listPatternPartTwo"))
-        self.am = eltText(firstChildElt(elt, "am"))
-        self.pm = eltText(firstChildElt(elt, "pm"))
-        self.firstDayOfWeek = convertToQtDayOfWeek(eltText(firstChildElt(elt, "firstDayOfWeek")))
-        self.weekendStart = convertToQtDayOfWeek(eltText(firstChildElt(elt, "weekendStart")))
-        self.weekendEnd = convertToQtDayOfWeek(eltText(firstChildElt(elt, "weekendEnd")))
-        self.longDateFormat = convertFormat(eltText(firstChildElt(elt, "longDateFormat")))
-        self.shortDateFormat = convertFormat(eltText(firstChildElt(elt, "shortDateFormat")))
-        self.longTimeFormat = convertFormat(eltText(firstChildElt(elt, "longTimeFormat")))
-        self.shortTimeFormat = convertFormat(eltText(firstChildElt(elt, "shortTimeFormat")))
-        self.standaloneLongMonths = eltText(firstChildElt(elt, "standaloneLongMonths"))
-        self.standaloneShortMonths = eltText(firstChildElt(elt, "standaloneShortMonths"))
-        self.standaloneNarrowMonths = eltText(firstChildElt(elt, "standaloneNarrowMonths"))
-        self.longMonths = eltText(firstChildElt(elt, "longMonths"))
-        self.shortMonths = eltText(firstChildElt(elt, "shortMonths"))
-        self.narrowMonths = eltText(firstChildElt(elt, "narrowMonths"))
-        self.standaloneLongDays = eltText(firstChildElt(elt, "standaloneLongDays"))
-        self.standaloneShortDays = eltText(firstChildElt(elt, "standaloneShortDays"))
-        self.standaloneNarrowDays = eltText(firstChildElt(elt, "standaloneNarrowDays"))
-        self.longDays = eltText(firstChildElt(elt, "longDays"))
-        self.shortDays = eltText(firstChildElt(elt, "shortDays"))
-        self.narrowDays = eltText(firstChildElt(elt, "narrowDays"))
-        self.currencyIsoCode = eltText(firstChildElt(elt, "currencyIsoCode"))
-        self.currencySymbol = eltText(firstChildElt(elt, "currencySymbol"))
-        self.currencyDisplayName = eltText(firstChildElt(elt, "currencyDisplayName"))
-        self.currencyDigits = int(eltText(firstChildElt(elt, "currencyDigits")))
-        self.currencyRounding = int(eltText(firstChildElt(elt, "currencyRounding")))
-        self.currencyFormat = eltText(firstChildElt(elt, "currencyFormat"))
-        self.currencyNegativeFormat = eltText(firstChildElt(elt, "currencyNegativeFormat"))
-
 def loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map):
     result = {}
 
     locale_list_elt = firstChildElt(doc.documentElement, "localeList")
     locale_elt = firstChildElt(locale_list_elt, "locale")
     while locale_elt:
-        locale = Locale(locale_elt)
+        locale = Locale.fromXmlData(lambda k: eltText(firstChildElt(locale_elt, k)))
         language_id = languageNameToId(locale.language, language_map)
         if language_id == -1:
             sys.stderr.write("Cannot find a language id for '%s'\n" % locale.language)
