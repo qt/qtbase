@@ -86,7 +86,7 @@
             "sources": [
                 { "type": "pkgConfig", "args": "libdrm" },
                 { "libs": "-ldrm", "condition": "!config.integrity" },
-                { "libs": "-ldrm-nvdc -lposix -livfs -lnvll -lnvdc -lnvrm -lnvrm_graphics -lnvos", "condition": "config.integrity" }
+                { "libs": "-ldrm-nvdc -lposix -livfs -lnvll -lnvdc -lnvrm -lnvrm_graphics -lnvos -lnvtegrahv", "condition": "config.integrity" }
             ]
         },
         "egl": {
