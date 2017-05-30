@@ -52,7 +52,6 @@
 #include <qgridlayout.h>
 #include <qmenu.h>
 #include <qmessagebox.h>
-#include <qinputdialog.h>
 #include <stdlib.h>
 #include <qsettings.h>
 #include <qdebug.h>

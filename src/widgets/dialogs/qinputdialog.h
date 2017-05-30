@@ -44,12 +44,11 @@
 #include <QtCore/qstring.h>
 #include <QtWidgets/qlineedit.h>
 
-#ifndef QT_NO_INPUTDIALOG
-
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(inputdialog);
 
+QT_BEGIN_NAMESPACE
 
 class QInputDialogPrivate;
 
@@ -211,7 +210,5 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QInputDialog::InputDialogOptions)
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_INPUTDIALOG
 
 #endif // QINPUTDIALOG_H

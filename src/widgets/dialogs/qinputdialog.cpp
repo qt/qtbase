@@ -39,8 +39,6 @@
 
 #include "qinputdialog.h"
 
-#ifndef QT_NO_INPUTDIALOG
-
 #include "qapplication.h"
 #include "qcombobox.h"
 #include "qdialogbuttonbox.h"
@@ -1507,5 +1505,3 @@ QT_END_NAMESPACE
 
 #include "qinputdialog.moc"
 #include "moc_qinputdialog.cpp"
-
-#endif // QT_NO_INPUTDIALOG
