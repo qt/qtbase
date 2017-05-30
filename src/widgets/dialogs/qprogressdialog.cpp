@@ -39,8 +39,6 @@
 
 #include "qprogressdialog.h"
 
-#ifndef QT_NO_PROGRESSDIALOG
-
 #include "qshortcut.h"
 #include "qpainter.h"
 #include "qdrawutil.h"
@@ -886,5 +884,3 @@ void QProgressDialog::open(QObject *receiver, const char *member)
 QT_END_NAMESPACE
 
 #include "moc_qprogressdialog.cpp"
-
-#endif // QT_NO_PROGRESSDIALOG
