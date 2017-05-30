@@ -2220,7 +2220,7 @@ bool QWindow::event(QEvent *ev)
 #endif
         break; }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         wheelEvent(static_cast<QWheelEvent*>(ev));
         break;
@@ -2418,7 +2418,7 @@ void QWindow::mouseMoveEvent(QMouseEvent *ev)
     ev->ignore();
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 /*!
     Override this to handle mouse wheel or other wheel events (\a ev).
 */
@@ -2426,7 +2426,7 @@ void QWindow::wheelEvent(QWheelEvent *ev)
 {
     ev->ignore();
 }
-#endif //QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 /*!
     Override this to handle touch events (\a ev).

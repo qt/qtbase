@@ -169,7 +169,7 @@ protected:
     QPointF p, op;
 };
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 class Q_GUI_EXPORT QWheelEvent : public QInputEvent
 {
 public:

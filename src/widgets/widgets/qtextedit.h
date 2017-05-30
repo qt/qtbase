@@ -288,7 +288,7 @@ protected:
     virtual void focusOutEvent(QFocusEvent *e) Q_DECL_OVERRIDE;
     virtual void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
     virtual void changeEvent(QEvent *e) Q_DECL_OVERRIDE;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     virtual void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
 #endif
 

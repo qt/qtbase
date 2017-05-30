@@ -767,7 +767,7 @@ QHoverEvent::~QHoverEvent()
 
     \sa pos(), pixelDelta(), angleDelta()
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          Qt::Orientation orient)
@@ -952,7 +952,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
       invertedScrolling(inverted)
 {}
 
-#endif // QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 /*!
     \fn QPoint QWheelEvent::pixelDelta() const
@@ -3956,13 +3956,13 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << ')';
     }
         break;
-#  ifndef QT_NO_WHEELEVENT
+#  if QT_CONFIG(wheelevent)
     case QEvent::Wheel: {
         const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
         dbg << "QWheelEvent(" << "pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta() << ')';
     }
         break;
-#  endif // !QT_NO_WHEELEVENT
+#  endif // QT_CONFIG(wheelevent)
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
     case QEvent::ShortcutOverride:

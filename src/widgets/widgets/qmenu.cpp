@@ -2797,7 +2797,7 @@ void QMenu::paintEvent(QPaintEvent *e)
     style()->drawControl(QStyle::CE_MenuEmptyArea, &menuOpt, &p, this);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 /*!
   \reimp
 */

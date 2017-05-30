@@ -407,7 +407,7 @@ QWidget *QApplicationPrivate::main_widget = 0;        // main application widget
 QWidget *QApplicationPrivate::focus_widget = 0;        // has keyboard input focus
 QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard input focus after show()
 QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboard focus
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 QPointer<QWidget> QApplicationPrivate::wheel_widget;
 #endif
 bool qt_in_tab_key_event = false;
@@ -2984,7 +2984,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
         case QEvent::MouseMove:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
         case QEvent::Wheel:
 #endif
         case QEvent::TouchBegin:
@@ -3227,7 +3227,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             d->hoverGlobalPos = mouse->globalPos();
         }
         break;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         {
             QWidget* w = static_cast<QWidget *>(receiver);
@@ -4041,7 +4041,7 @@ int QApplication::keyboardInputInterval()
 
     \sa QStyleHints::wheelScrollLines()
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 int QApplication::wheelScrollLines()
 {
     return styleHints()->wheelScrollLines();

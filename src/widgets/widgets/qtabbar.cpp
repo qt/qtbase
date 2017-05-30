@@ -2181,7 +2181,7 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
 
 /*!\reimp
  */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QTabBar::wheelEvent(QWheelEvent *event)
 {
 #ifndef Q_OS_MAC
@@ -2193,7 +2193,7 @@ void QTabBar::wheelEvent(QWheelEvent *event)
     Q_UNUSED(event)
 #endif
 }
-#endif //QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 void QTabBarPrivate::setCurrentNextEnabledIndex(int offset)
 {

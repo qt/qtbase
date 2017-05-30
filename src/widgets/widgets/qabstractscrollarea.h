@@ -116,7 +116,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
     void mouseDoubleClickEvent(QMouseEvent *) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
 #endif
 #ifndef QT_NO_CONTEXTMENU

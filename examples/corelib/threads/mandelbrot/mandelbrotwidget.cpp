@@ -171,7 +171,7 @@ void MandelbrotWidget::keyPressEvent(QKeyEvent *event)
 }
 //! [11]
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 //! [12]
 void MandelbrotWidget::wheelEvent(QWheelEvent *event)
 {

@@ -801,7 +801,7 @@ void QListView::mouseReleaseEvent(QMouseEvent *e)
     }
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 /*!
   \reimp
 */
@@ -828,7 +828,7 @@ void QListView::wheelEvent(QWheelEvent *e)
         QApplication::sendEvent(d->hbar, e);
     }
 }
-#endif // QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 /*!
   \reimp

@@ -74,7 +74,7 @@ private slots:
     void minimum_maximum();
     void keyPressed_data();
     void keyPressed();
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent_data();
     void wheelEvent();
     void fineGrainedWheelEvent_data();
@@ -690,7 +690,7 @@ void tst_QAbstractSlider::keyPressed()
     QCOMPARE(slider->sliderPosition(), expectedSliderPositionVerticalInverted);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void tst_QAbstractSlider::wheelEvent_data()
 {
     QTest::addColumn<int>("initialSliderPosition");
@@ -941,7 +941,7 @@ void tst_QAbstractSlider::fineGrainedWheelEvent()
     QCOMPARE(slider->sliderPosition(), 1);
 }
 
-#endif // !QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 void tst_QAbstractSlider::sliderPressedReleased_data()
 {

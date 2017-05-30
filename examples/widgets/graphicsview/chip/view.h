@@ -69,7 +69,7 @@ public:
     GraphicsView(View *v) : QGraphicsView(), view(v) { }
 
 protected:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent(QWheelEvent *) override;
 #endif
 

@@ -493,7 +493,7 @@ bool QScrollBar::event(QEvent *event)
 /*!
     \reimp
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QScrollBar::wheelEvent(QWheelEvent *event)
 {
     event->ignore();

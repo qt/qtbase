@@ -71,7 +71,7 @@ class QShowEvent;
 class QHideEvent;
 class QKeyEvent;
 class QMouseEvent;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 class QWheelEvent;
 #endif
 class QTouchEvent;
@@ -344,7 +344,7 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent *);
     virtual void mouseDoubleClickEvent(QMouseEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     virtual void wheelEvent(QWheelEvent *);
 #endif
     virtual void touchEvent(QTouchEvent *);

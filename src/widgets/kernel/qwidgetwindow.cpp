@@ -265,7 +265,7 @@ bool QWidgetWindow::event(QEvent *event)
         handleResizeEvent(static_cast<QResizeEvent *>(event));
         return true;
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         handleWheelEvent(static_cast<QWheelEvent *>(event));
         return true;
@@ -778,7 +778,7 @@ void QWidgetWindow::handleCloseEvent(QCloseEvent *event)
     event->setAccepted(is_closing);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 
 void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
 {
@@ -808,7 +808,7 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     QGuiApplication::sendSpontaneousEvent(widget, &translated);
 }
 
-#endif // QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 #ifndef QT_NO_DRAGANDDROP
 

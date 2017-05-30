@@ -64,7 +64,7 @@ protected:
     void    mousePressEvent(QMouseEvent *event) override;
     void    mouseReleaseEvent(QMouseEvent *event) override;
     void    mouseDoubleClickEvent(QMouseEvent *event) override;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void    wheelEvent(QWheelEvent * event) override;
 #endif
     int     buttonByNumber(const Qt::MouseButton button);

@@ -1831,7 +1831,7 @@ void QTextEdit::changeEvent(QEvent *e)
 
 /*! \reimp
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QTextEdit::wheelEvent(QWheelEvent *e)
 {
     Q_D(QTextEdit);

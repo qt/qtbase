@@ -184,7 +184,7 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 }
 //! [4]
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 //! [5]
 void GraphWidget::wheelEvent(QWheelEvent *event)
 {

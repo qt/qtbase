@@ -1997,7 +1997,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
 void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e)
 {
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     QWindow *window = e->window.data();
     QPointF globalPoint = e->globalPos;
     QPointF localPoint = e->localPos;
@@ -2027,7 +2027,7 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
      QGuiApplication::sendSpontaneousEvent(window, &ev);
 #else
      Q_UNUSED(e);
-#endif /* ifndef QT_NO_WHEELEVENT */
+#endif // QT_CONFIG(wheelevent)
 }
 
 // Remember, Qt convention is:  keyboard state is state *before*

@@ -100,10 +100,10 @@ static QEvent *cloneEvent(QEvent *e)
         return new QEvent(*e);
     case QEvent::HideToParent:
         return new QEvent(*e);
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         return new QWheelEvent(*static_cast<QWheelEvent*>(e));
-#endif //QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
     case QEvent::WindowTitleChange:
         return new QEvent(*e);
     case QEvent::WindowIconChange:

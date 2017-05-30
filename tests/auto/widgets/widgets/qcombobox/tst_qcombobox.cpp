@@ -120,11 +120,11 @@ private slots:
     void flaggedItems_data();
     void flaggedItems();
     void pixmapIcon();
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void mouseWheel_data();
     void mouseWheel();
     void popupWheelHandling();
-#endif // !QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
     void layoutDirection();
     void itemListPosition();
     void separatorItem_data();
@@ -2036,7 +2036,7 @@ void tst_QComboBox::pixmapIcon()
     QCOMPARE( box.itemIcon(1).isNull(), false );
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 // defined to be 120 by the wheel mouse vendors according to the docs
 #define WHEEL_DELTA 120
 
@@ -2133,7 +2133,7 @@ void tst_QComboBox::popupWheelHandling()
     QVERIFY(comboBox->view()->isVisible());
     QCOMPARE(comboBox->view()->pos(), popupPos);
 }
-#endif // !QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 void tst_QComboBox::layoutDirection()
 {

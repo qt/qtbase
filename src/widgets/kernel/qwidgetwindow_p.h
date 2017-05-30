@@ -89,7 +89,7 @@ protected:
     void handleTouchEvent(QTouchEvent *);
     void handleMoveEvent(QMoveEvent *);
     void handleResizeEvent(QResizeEvent *);
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void handleWheelEvent(QWheelEvent *);
 #endif
 #ifndef QT_NO_DRAGANDDROP

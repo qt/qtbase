@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#include <QtGui/qtguiglobal.h>
 
 #include "qnsview.h"
 #include "qcocoawindow.h"
@@ -1388,7 +1388,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 }
 #endif // QT_NO_GESTURES
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 - (void)scrollWheel:(NSEvent *)theEvent
 {
     if (!m_platformWindow)
@@ -1469,7 +1469,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     QWindowSystemInterface::handleWheelEvent(m_platformWindow->window(), qt_timestamp, qt_windowPoint, qt_screenPoint, pixelDelta, angleDelta, currentWheelModifiers, ph, source, isInverted);
 }
-#endif //QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 - (int) convertKeyCode : (QChar)keyChar
 {

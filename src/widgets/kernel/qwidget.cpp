@@ -8777,7 +8777,7 @@ bool QWidget::event(QEvent *event)
         case QEvent::ContextMenu:
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
         case QEvent::Wheel:
 #endif
             return false;
@@ -8801,7 +8801,7 @@ bool QWidget::event(QEvent *event)
     case QEvent::MouseButtonDblClick:
         mouseDoubleClickEvent((QMouseEvent*)event);
         break;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         wheelEvent((QWheelEvent*)event);
         break;
@@ -9418,7 +9418,7 @@ void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
     mousePressEvent(event);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 /*!
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive wheel events for the widget.
@@ -9437,7 +9437,7 @@ void QWidget::wheelEvent(QWheelEvent *event)
 {
     event->ignore();
 }
-#endif // QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 #ifndef QT_NO_TABLETEVENT
 /*!

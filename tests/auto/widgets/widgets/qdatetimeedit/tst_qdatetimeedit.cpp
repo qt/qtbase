@@ -205,7 +205,7 @@ private slots:
     void reverseTest();
 
     void ddMMMMyyyy();
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent();
 #endif
 
@@ -2998,7 +2998,7 @@ void tst_QDateTimeEdit::ddMMMMyyyy()
     QCOMPARE(testWidget->lineEdit()->text(), "01." + QDate::longMonthName(1) + ".200");
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void tst_QDateTimeEdit::wheelEvent()
 {
     testWidget->setDisplayFormat("dddd/MM");
@@ -3011,7 +3011,7 @@ void tst_QDateTimeEdit::wheelEvent()
     qApp->sendEvent(testWidget, &w);
     QCOMPARE(testWidget->date(), QDate(2000, 3, 22));
 }
-#endif // !QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 void tst_QDateTimeEdit::specialValueCornerCase()
 {
