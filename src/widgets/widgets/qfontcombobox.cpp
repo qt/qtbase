@@ -39,8 +39,6 @@
 
 #include "qfontcombobox.h"
 
-#ifndef QT_NO_FONTCOMBOBOX
-
 #include <qstringlistmodel.h>
 #include <qitemdelegate.h>
 #include <qlistview.h>
@@ -563,5 +561,3 @@ QT_END_NAMESPACE
 
 #include "qfontcombobox.moc"
 #include "moc_qfontcombobox.cpp"
-
-#endif // QT_NO_FONTCOMBOBOX

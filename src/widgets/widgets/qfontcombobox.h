@@ -44,10 +44,9 @@
 #include <QtWidgets/qcombobox.h>
 #include <QtGui/qfontdatabase.h>
 
-#ifndef QT_NO_FONTCOMBOBOX
+QT_REQUIRE_CONFIG(fontcombobox);
 
 QT_BEGIN_NAMESPACE
-
 
 class QFontComboBoxPrivate;
 
@@ -101,5 +100,4 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QFontComboBox::FontFilters)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_FONTCOMBOBOX
 #endif
