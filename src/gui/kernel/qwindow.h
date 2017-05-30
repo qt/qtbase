@@ -75,7 +75,7 @@ class QMouseEvent;
 class QWheelEvent;
 #endif
 class QTouchEvent;
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 class QTabletEvent;
 #endif
 
@@ -348,7 +348,7 @@ protected:
     virtual void wheelEvent(QWheelEvent *);
 #endif
     virtual void touchEvent(QTouchEvent *);
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     virtual void tabletEvent(QTabletEvent *);
 #endif
     virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);

@@ -64,7 +64,7 @@
 #undef explicit
 #endif
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 #include <QTabletEvent>
 #endif
 
@@ -565,7 +565,7 @@ private:
 #ifdef XCB_USE_XINPUT22
     void xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow);
 #endif // XCB_USE_XINPUT22
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     struct TabletData {
         int deviceId = 0;
         QTabletEvent::PointerType pointerType = QTabletEvent::UnknownPointer;
@@ -587,7 +587,7 @@ private:
     void xi2ReportTabletEvent(const void *event, TabletData *tabletData);
     QVector<TabletData> m_tabletData;
     TabletData *tabletDataForDevice(int id);
-#endif // !QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
     struct ScrollingDevice {
         int deviceId = 0;
         int verticalIndex = 0;
@@ -695,7 +695,7 @@ private:
     friend class QXcbEventReader;
 };
 #ifdef XCB_USE_XINPUT2
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
 #endif

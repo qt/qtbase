@@ -100,7 +100,7 @@ protected:
     void handleExposeEvent(QExposeEvent *);
     void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
     bool nativeEvent(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     void handleTabletEvent(QTabletEvent *);
 #endif
 #ifndef QT_NO_GESTURES

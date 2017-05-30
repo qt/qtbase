@@ -2264,7 +2264,7 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
     return QVariant();
 }
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 
 /*!
     \class QTabletEvent
@@ -2706,7 +2706,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \sa posF()
 */
 
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
 #ifndef QT_NO_GESTURES
 /*!
@@ -3856,7 +3856,7 @@ static void formatDropEvent(QDebug d, const QDropEvent *e)
 
 #  endif // !QT_NO_DRAGANDDROP
 
-#  ifndef QT_NO_TABLETEVENT
+#  if QT_CONFIG(tabletevent)
 
 static void formatTabletEvent(QDebug d, const QTabletEvent *e)
 {
@@ -3883,7 +3883,7 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
         d << ", tangentialPressure=" << e->tangentialPressure();
 }
 
-#  endif // !QT_NO_TABLETEVENT
+#  endif // QT_CONFIG(tabletevent)
 
 QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
 {
@@ -4063,7 +4063,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << "QContextMenuEvent(" << static_cast<const QContextMenuEvent *>(e)->pos() << ')';
         break;
 #  endif // !QT_NO_CONTEXTMENU
-#  ifndef QT_NO_TABLETEVENT
+#  if QT_CONFIG(tabletevent)
     case QEvent::TabletEnterProximity:
     case QEvent::TabletLeaveProximity:
     case QEvent::TabletPress:
@@ -4071,7 +4071,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     case QEvent::TabletRelease:
         formatTabletEvent(dbg, static_cast<const QTabletEvent *>(e));
         break;
-#  endif // !QT_NO_TABLETEVENT
+#  endif // QT_CONFIG(tabletevent)
     case QEvent::Enter:
         dbg << "QEnterEvent(" << static_cast<const QEnterEvent *>(e)->pos() << ')';
         break;

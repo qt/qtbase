@@ -2254,7 +2254,7 @@ bool QWindow::event(QEvent *ev)
         break;
     }
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletPress:
     case QEvent::TabletMove:
     case QEvent::TabletRelease:
@@ -2436,7 +2436,7 @@ void QWindow::touchEvent(QTouchEvent *ev)
     ev->ignore();
 }
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 /*!
     Override this to handle tablet press, move, and release events (\a ev).
 

@@ -2990,7 +2990,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         case QEvent::TouchBegin:
         case QEvent::TouchUpdate:
         case QEvent::TouchEnd:
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
         case QEvent::TabletMove:
         case QEvent::TabletPress:
         case QEvent::TabletRelease:
@@ -3349,7 +3349,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif // QT_NO_CONTEXTMENU
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletMove:
     case QEvent::TabletPress:
     case QEvent::TabletRelease:
@@ -3379,7 +3379,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             tablet->setAccepted(eventAccepted);
         }
         break;
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
 #if !defined(QT_NO_TOOLTIP) || !defined(QT_NO_WHATSTHIS)
     case QEvent::ToolTip:

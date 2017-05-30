@@ -183,12 +183,12 @@ static QEvent *cloneEvent(QEvent *e)
         return new QEvent(*e);
     case QEvent::Style:
         return new QEvent(*e);
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletMove:
     case QEvent::TabletPress:
     case QEvent::TabletRelease:
         return new QTabletEvent(*static_cast<QTabletEvent*>(e));
-#endif //QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
     case QEvent::OkRequest:
         return new QEvent(*e);
     case QEvent::HelpRequest:
@@ -372,11 +372,11 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::DynamicPropertyChange:
         return new QDynamicPropertyChangeEvent(*static_cast<QDynamicPropertyChangeEvent*>(e));
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletEnterProximity:
     case QEvent::TabletLeaveProximity:
         return new QTabletEvent(*static_cast<QTabletEvent*>(e));
-#endif //QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
     case QEvent::NonClientAreaMouseMove:
     case QEvent::NonClientAreaMouseButtonPress:

@@ -39,8 +39,6 @@
 
 #include "qwindowstabletsupport.h"
 
-#ifndef QT_NO_TABLETEVENT
-
 #include "qwindowscontext.h"
 #include "qwindowskeymapper.h"
 #include "qwindowswindow.h"
@@ -498,5 +496,3 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TABLETEVENT

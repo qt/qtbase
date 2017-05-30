@@ -299,7 +299,7 @@ bool QWidgetWindow::event(QEvent *event)
     }
         return true;
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletPress:
     case QEvent::TabletMove:
     case QEvent::TabletRelease:
@@ -974,7 +974,7 @@ bool QWidgetWindow::nativeEvent(const QByteArray &eventType, void *message, long
     return m_widget->nativeEvent(eventType, message, result);
 }
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
 {
     static QPointer<QWidget> qt_tablet_target = 0;
@@ -1004,7 +1004,7 @@ void QWidgetWindow::handleTabletEvent(QTabletEvent *event)
     if (event->type() == QEvent::TabletRelease && event->buttons() == Qt::NoButton)
         qt_tablet_target = 0;
 }
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
 #ifndef QT_NO_GESTURES
 void QWidgetWindow::handleGestureEvent(QNativeGestureEvent *e)

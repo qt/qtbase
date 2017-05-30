@@ -237,7 +237,7 @@ protected:
 };
 #endif
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 class Q_GUI_EXPORT QTabletEvent : public QInputEvent
 {
     Q_GADGET
@@ -295,7 +295,7 @@ protected:
     // ### Qt 6: QPointingEvent will have Buttons, QTabletEvent will inherit
     void *mExtra;
 };
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
 #ifndef QT_NO_GESTURES
 class Q_GUI_EXPORT QNativeGestureEvent : public QInputEvent

@@ -8806,7 +8806,7 @@ bool QWidget::event(QEvent *event)
         wheelEvent((QWheelEvent*)event);
         break;
 #endif
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletMove:
         if (static_cast<QTabletEvent *>(event)->buttons() == Qt::NoButton && !testAttribute(Qt::WA_TabletTracking))
             break;
@@ -9439,7 +9439,7 @@ void QWidget::wheelEvent(QWheelEvent *event)
 }
 #endif // QT_CONFIG(wheelevent)
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 /*!
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive tablet events for the widget.
@@ -9464,7 +9464,7 @@ void QWidget::tabletEvent(QTabletEvent *event)
 {
     event->ignore();
 }
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
 /*!
     This event handler, for event \a event, can be reimplemented in a
