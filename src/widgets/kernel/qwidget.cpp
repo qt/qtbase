@@ -1415,7 +1415,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     if (!q->testAttribute(Qt::WA_NativeWindow) && !q->isWindow())
         return; // we only care about real toplevels
 
-    QWindow *win = topData()->window;
+    QWidgetWindow *win = topData()->window;
     // topData() ensures the extra is created but does not ensure 'window' is non-null
     // in case the extra was already valid.
     if (!win) {
@@ -1516,8 +1516,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         q->setAttribute(Qt::WA_OutsideWSRange, true);
     } else if (q->isVisible()) {
         // If widget is already shown, set window visible, too
-        QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(win);
-        widgetWindow->setNativeWindowVisibility(true);
+        win->setNativeWindowVisibility(true);
     }
 }
 
@@ -2640,11 +2639,7 @@ WId QWidget::effectiveWinId() const
 QWindow *QWidget::windowHandle() const
 {
     Q_D(const QWidget);
-    QTLWExtra *extra = d->maybeTopData();
-    if (extra)
-        return extra->window;
-
-    return 0;
+    return d->windowHandle();
 }
 
 #ifndef QT_NO_STYLE_STYLESHEET
@@ -7955,7 +7950,7 @@ void QWidgetPrivate::show_sys()
 {
     Q_Q(QWidget);
 
-    QWidgetWindow *window = qobject_cast<QWidgetWindow *>(q->windowHandle());
+    QWidgetWindow *window = windowHandle();
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         invalidateBuffer(q->rect());
@@ -8094,7 +8089,7 @@ void QWidgetPrivate::hide_sys()
 {
     Q_Q(QWidget);
 
-    QWidgetWindow *window = qobject_cast<QWidgetWindow *>(q->windowHandle());
+    QWidgetWindow *window = windowHandle();
 
     if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
         q->setAttribute(Qt::WA_Mapped, false);

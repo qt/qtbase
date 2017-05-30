@@ -76,6 +76,7 @@ QT_BEGIN_NAMESPACE
 // Extra QWidget data
 //  - to minimize memory usage for members that are seldom used.
 //  - top-level widgets have extra extra data to reduce cost further
+class QWidgetWindow;
 class QPaintEngine;
 class QPixmap;
 class QWidgetBackingStore;
@@ -160,7 +161,7 @@ struct QTLWExtra {
     QWidgetBackingStoreTracker backingStoreTracker;
     QBackingStore *backingStore;
     QPainter *sharedPainter;
-    QWindow *window;
+    QWidgetWindow *window;
     QOpenGLContext *shareContext;
 
     // Implicit pointers (shared_null).
@@ -338,6 +339,7 @@ public:
     QPainter *sharedPainter() const;
     void setSharedPainter(QPainter *painter);
     QWidgetBackingStore *maybeBackingStore() const;
+    QWidgetWindow *windowHandle() const;
     void init(QWidget *desktopWidget, Qt::WindowFlags f);
     void create_sys(WId window, bool initializeWindow, bool destroyOldWindow);
     void createRecursively();
@@ -985,6 +987,13 @@ inline QWidgetBackingStore *QWidgetPrivate::maybeBackingStore() const
     Q_Q(const QWidget);
     QTLWExtra *x = q->window()->d_func()->maybeTopData();
     return x ? x->backingStoreTracker.data() : 0;
+}
+
+inline QWidgetWindow *QWidgetPrivate::windowHandle() const
+{
+    if (QTLWExtra *x = maybeTopData())
+        return x->window;
+    return nullptr;
 }
 
 QT_END_NAMESPACE
