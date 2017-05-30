@@ -98,7 +98,7 @@ QMacAutoReleasePool::~QMacAutoReleasePool()
 }
 
 #ifdef Q_OS_MACOS
-/*!
+/*
     Ensure that Objective-C objects auto-released in main(), directly or indirectly,
     after QCoreApplication construction, are released when the app goes out of scope.
     The memory will be reclaimed by the system either way when the process exits,
