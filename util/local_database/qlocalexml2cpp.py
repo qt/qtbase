@@ -445,6 +445,7 @@ def main():
     days_data = StringData('days_data')
     am_data = StringData('am_data')
     pm_data = StringData('pm_data')
+    byte_unit_data = StringData('byte_unit_data')
     currency_symbol_data = StringData('currency_symbol_data')
     currency_display_name_data = StringData('currency_display_name_data')
     currency_format_data = StringData('currency_format_data')
@@ -494,6 +495,10 @@ def main():
                          + '    nDays   '
                          + '     am     ' # am/pm indicators
                          + '     pm     '
+                         # Width 8 + comma
+                         + '  byte   '
+                         + ' siQuant '
+                         + 'iecQuant '
                          # Width 8+4 + comma
                          + '   currISO   '
                          # Width 11 + comma:
@@ -527,6 +532,8 @@ def main():
                    + '%8d,' * 4
                    # List patterns, date/time formats, month/day names, am/pm:
                    + '%11s,' * 22
+                   # SI/IEC byte-unit abbreviations:
+                   + '%8s,' * 3
                    # Currency ISO code:
                    + ' %10s, '
                    # Currency and endonyms
@@ -574,6 +581,9 @@ def main():
                         days_data.append(l.narrowDays),
                         am_data.append(l.am),
                         pm_data.append(l.pm),
+                        byte_unit_data.append(l.byte_unit),
+                        byte_unit_data.append(l.byte_si_quantified),
+                        byte_unit_data.append(l.byte_iec_quantified),
                         currencyIsoCodeData(l.currencyIsoCode),
                         currency_symbol_data.append(l.currencySymbol),
                         currency_display_name_data.append(l.currencyDisplayName),
@@ -588,7 +598,7 @@ def main():
                         l.weekendEnd)
                              + ", // %s/%s/%s\n" % (l.language, l.script, l.country))
     data_temp_file.write(line_format # All zeros, matching the format:
-                         % ( (0,) * (3 + 8 + 4) + ("0,0",) * 22
+                         % ( (0,) * (3 + 8 + 4) + ("0,0",) * (22 + 3)
                              + (currencyIsoCodeData(0),)
                              + ("0,0",) * 6 + (0,) * (2 + 3))
                          + " // trailing 0s\n")
@@ -597,7 +607,7 @@ def main():
     # StringData tables:
     for data in (list_pattern_part_data, date_format_data,
                  time_format_data, months_data, days_data,
-                 am_data, pm_data, currency_symbol_data,
+                 byte_unit_data, am_data, pm_data, currency_symbol_data,
                  currency_display_name_data, currency_format_data,
                  endonyms_data):
         data_temp_file.write("\nstatic const ushort %s[] = {\n" % data.name)

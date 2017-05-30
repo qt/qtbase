@@ -300,6 +300,9 @@ public:
     quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
     quint16 m_am_idx, m_am_size;
     quint16 m_pm_idx, m_pm_size;
+    quint16 m_byte_idx, m_byte_size;
+    quint16 m_byte_si_quantified_idx, m_byte_si_quantified_size;
+    quint16 m_byte_iec_quantified_idx, m_byte_iec_quantified_size;
     char    m_currency_iso_code[3];
     quint16 m_currency_symbol_idx, m_currency_symbol_size;
     quint16 m_currency_display_name_idx, m_currency_display_name_size;

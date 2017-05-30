@@ -111,6 +111,7 @@ class Locale:
     __astxt = ("language", "languageEndonym", "script", "country", "countryEndonym",
                "listPatternPartStart", "listPatternPartMiddle",
                "listPatternPartEnd", "listPatternPartTwo", "am", "pm",
+               'byte_unit', 'byte_si_quantified', 'byte_iec_quantified',
                "currencyIsoCode", "currencySymbol", "currencyDisplayName",
                "currencyFormat", "currencyNegativeFormat"
                ) + tuple(propsMonthDay())
@@ -169,6 +170,7 @@ class Locale:
                     'alternateQuotationStart', 'alternateQuotationEnd',
                     'listPatternPartStart', 'listPatternPartMiddle',
                     'listPatternPartEnd', 'listPatternPartTwo',
+                    'byte_unit', 'byte_si_quantified', 'byte_iec_quantified',
                     'am', 'pm', 'firstDayOfWeek',
                     'weekendStart', 'weekendEnd',
                     'longDateFormat', 'shortDateFormat',
@@ -180,7 +182,7 @@ class Locale:
                     'standaloneLongDays', 'standaloneShortDays', 'standaloneNarrowDays',
                     'currencyIsoCode', 'currencySymbol', 'currencyDisplayName',
                     'currencyFormat', 'currencyNegativeFormat'):
-            ent = camelCase(key.split('_')) if '_' in key else key
+            ent = camelCase(key.split('_')) if key.endswith('_endonym') else key
             print inner + "<%s>%s</%s>" % (ent, escape(get(key)).encode('utf-8'), ent)
 
         for key in ('currencyDigits', 'currencyRounding'):
@@ -198,7 +200,8 @@ class Locale:
           months = ('January', 'February', 'March', 'April', 'May', 'June', 'July',
                     'August', 'September', 'October', 'November', 'December', ''),
           days = ('Sunday', 'Monday', 'Tuesday', 'Wednesday',
-                  'Thursday', 'Friday', 'Saturday', '')):
+                  'Thursday', 'Friday', 'Saturday', ''),
+          quantifiers=('k', 'M', 'G', 'T', 'P', 'E')):
         """Returns an object representing the C locale."""
         return cls(language='C', language_code='0', language_endonym='',
                    script='AnyScript', script_code='0',
@@ -211,6 +214,9 @@ class Locale:
                    listPatternPartMiddle='%1, %2',
                    listPatternPartEnd='%1, %2',
                    listPatternPartTwo='%1, %2',
+                   byte_unit='bytes',
+                   byte_si_quantified=';'.join(q + 'B' for q in quantifiers),
+                   byte_iec_quantified=';'.join(q.upper() + 'iB' for q in quantifiers),
                    am='AM', pm='PM', firstDayOfWeek='mon',
                    weekendStart='sat', weekendEnd='sun',
                    longDateFormat='EEEE, d MMMM yyyy', shortDateFormat='d MMM yyyy',

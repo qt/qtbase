@@ -86,6 +86,47 @@ def parse_list_pattern_part_format(pattern):
     # This is a very limited parsing of the format for list pattern part only.
     return pattern.replace("{0}", "%1").replace("{1}", "%2").replace("{2}", "%3")
 
+def unit_quantifiers(find, path, stem, suffix, known,
+                     # Stop at exa/exbi: 16 exbi = 2^{64} < zetta =
+                     # 1000^7 < zebi = 2^{70}, the next quantifiers up:
+                     si_quantifiers = ('kilo', 'mega', 'giga', 'tera', 'peta', 'exa')):
+    """Work out the unit quantifiers.
+
+    Unfortunately, the CLDR data only go up to terabytes and we want
+    all the way to exabytes; but we can recognize the SI quantifiers
+    as prefixes, strip and identify the tail as the localized
+    translation for 'B' (e.g. French has 'octet' for 'byte' and uses
+    ko, Mo, Go, To from which we can extrapolate Po, Eo).
+
+    Should be called first for the SI quantifiers, with suffix = 'B',
+    then for the IEC ones, with suffix = 'iB'; the list known
+    (initially empty before first call) is used to let the second call
+    know what the first learned about the localized unit.
+    """
+    if suffix == 'B': # first call, known = []
+        tail = suffix
+        for q in si_quantifiers:
+            it = find(path, stem % q)
+            # kB for kilobyte, in contrast with KiB for IEC:
+            q = q[0] if q == 'kilo' else q[0].upper()
+            if not it:
+                it = q + tail
+            elif it.startswith(q):
+                rest = it[1:]
+                tail = rest if all(rest == k for k in known) else suffix
+                known.append(rest)
+            yield it
+    else: # second call, re-using first's known
+        assert suffix == 'iB'
+        if known:
+            byte = known.pop()
+            if all(byte == k for k in known):
+                suffix = 'i' + byte
+        for q in si_quantifiers:
+            yield find(path, stem % q[:2],
+                       # Those don't (yet, v31) exist in CLDR, so we always fall back to:
+                       q[0].upper() + suffix)
+
 def generateLocaleInfo(path):
     if not path.endswith(".xml"):
         return {}
@@ -260,6 +301,34 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
             for tail in ['',] + [
                 '[count=%s]' % x for x in ('zero', 'one', 'two', 'few', 'many', 'other')
                 ]) + ';'
+
+    def findUnitDef(path, stem, fallback=''):
+        # The displayName for a quantified unit in en.xml is kByte
+        # instead of kB (etc.), so prefer any unitPattern provided:
+        for count in ('many', 'few', 'two', 'other', 'zero', 'one'):
+            try:
+                ans = findEntry(path, stem + 'unitPattern[count=%s]' % count)
+            except xpathlite.Error:
+                continue
+
+            # TODO: epxloit count-handling, instead of discarding placeholders
+            if ans.startswith('{0}'):
+                ans = ans[3:].lstrip()
+            if ans:
+                return ans
+
+        return findEntryDef(path, stem + 'displayName', fallback)
+
+    # First without quantifier, then quantified each way:
+    result['byte_unit'] = findEntryDef(
+        path, 'units/unitLength[type=long]/unit[type=digital-byte]/displayName',
+        'bytes')
+    stem = 'units/unitLength[type=short]/unit[type=digital-%sbyte]/'
+    known = [] # cases where we *do* have a given version:
+    result['byte_si_quantified'] = ';'.join(unit_quantifiers(findUnitDef, path, stem, 'B', known))
+    # IEC 60027-2
+    # http://physics.nist.gov/cuu/Units/binary.html
+    result['byte_iec_quantified'] = ';'.join(unit_quantifiers(findUnitDef, path, stem % '%sbi', 'iB', known))
 
     # Used for month and day data:
     namings = (
