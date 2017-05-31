@@ -773,7 +773,7 @@ int QDataStream::readBlock(char *data, int len)
 }
 
 /*!
-    \fn QDataStream &QDataStream::operator>>(std::nullptr &ptr)
+    \fn QDataStream &QDataStream::operator>>(std::nullptr_t &ptr)
     \since 5.9
     \overload
 
@@ -1098,7 +1098,7 @@ int QDataStream::readRawData(char *s, int len)
  *****************************************************************************/
 
 /*!
-    \fn QDataStream &QDataStream::operator<<(std::nullptr ptr)
+    \fn QDataStream &QDataStream::operator<<(std::nullptr_t ptr)
     \since 5.9
     \overload
 

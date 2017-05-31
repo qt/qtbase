@@ -479,7 +479,7 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
     the processing of the event should continue.
 */
 
-/*! \fn bool QAbstractEventDispatcher::registerEventNotifier(QWinEventNotifier *notifier);
+/*! \fn bool QAbstractEventDispatcher::registerEventNotifier(QWinEventNotifier *notifier)
 
   This pure virtual method exists on windows only and has to be reimplemented by a Windows specific
   event dispatcher implementation. \a notifier is the QWinEventNotifier instance to be registered.
@@ -492,7 +492,7 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
   \sa QWinEventNotifier, unregisterEventNotifier()
 */
 
-/*! \fn bool QAbstractEventDispatcher::unregisterEventNotifier(QWinEventNotifier *notifier);
+/*! \fn bool QAbstractEventDispatcher::unregisterEventNotifier(QWinEventNotifier *notifier)
 
   This pure virtual method exists on windows only and has to be reimplemented by a Windows specific
   event dispatcher implementation. \a notifier is the QWinEventNotifier instance to be unregistered.
