@@ -56,6 +56,7 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/private/qglobal_p.h>
 
+#include <cstdlib>
 #include <memory>
 
 // This is needed to make Qt compile together with XKB. xkb.h is using a variable
