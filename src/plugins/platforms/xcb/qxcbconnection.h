@@ -686,7 +686,6 @@ Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);
 #endif
 
 #define DISPLAY_FROM_XCB(object) (reinterpret_cast<Display *>(object->connection()->xlib_display()))
-#define CREATE_VISUALINFO_FROM_DEFAULT_VISUALID(object) ((XVisualInfo *)(object->connection()->createVisualInfoForDefaultVisualId()))
 
 template<typename T>
 xcb_generic_event_t *QXcbConnection::checkEvent(T &checker)
