@@ -37,7 +37,10 @@
 **
 ****************************************************************************/
 
+#include <QtWidgets/qtwidgetsglobal.h>
+#if QT_CONFIG(colordialog)
 #include "qcolordialog.h"
+#endif
 #include "qfontdialog.h"
 #if QT_CONFIG(filedialog)
 #include "qfiledialog.h"
@@ -72,7 +75,7 @@ static inline int themeDialogType(const QDialog *dialog)
     if (qobject_cast<const QFileDialog *>(dialog))
         return QPlatformTheme::FileDialog;
 #endif
-#ifndef QT_NO_COLORDIALOG
+#if QT_CONFIG(colordialog)
     if (qobject_cast<const QColorDialog *>(dialog))
         return QPlatformTheme::ColorDialog;
 #endif

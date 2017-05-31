@@ -130,7 +130,7 @@ bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
 {
     if (dialogType == QPlatformTheme::FileDialog)
         return true;
-#ifndef QT_NO_COLORDIALOG
+#if QT_CONFIG(colordialog)
     if (dialogType == QPlatformTheme::ColorDialog)
         return true;
 #endif
@@ -148,7 +148,7 @@ QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialo
     case QPlatformTheme::FileDialog:
         return new QCocoaFileDialogHelper();
 #endif
-#ifndef QT_NO_COLORDIALOG
+#if QT_CONFIG(colordialog)
     case QPlatformTheme::ColorDialog:
         return new QCocoaColorDialogHelper();
 #endif

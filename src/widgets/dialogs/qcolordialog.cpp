@@ -39,8 +39,6 @@
 
 #include "qcolordialog.h"
 
-#ifndef QT_NO_COLORDIALOG
-
 #include "qapplication.h"
 #include "qdesktopwidget.h"
 #include "qdrawutil.h"
@@ -2289,6 +2287,3 @@ QT_END_NAMESPACE
 
 #include "qcolordialog.moc"
 #include "moc_qcolordialog.cpp"
-
-#endif // QT_NO_COLORDIALOG
-

@@ -1,7 +1,6 @@
 # Qt dialogs module
 
 HEADERS += \
-	dialogs/qcolordialog.h \
         dialogs/qfscompleter_p.h \
 	dialogs/qerrormessage.h \
 	dialogs/qfontdialog.h \
@@ -18,12 +17,16 @@ win32 {
 
 INCLUDEPATH += $$PWD
 SOURCES += \
-	dialogs/qcolordialog.cpp \
 	dialogs/qerrormessage.cpp \
 	dialogs/qfontdialog.cpp \
         dialogs/qfilesystemmodel.cpp \
         dialogs/qfileinfogatherer.cpp \
 	dialogs/qwizard.cpp \
+
+qtConfig(colordialog) {
+    HEADERS += dialogs/qcolordialog.h
+    SOURCES += dialogs/qcolordialog.cpp
+}
 
 qtConfig(dialog) {
     HEADERS += \
