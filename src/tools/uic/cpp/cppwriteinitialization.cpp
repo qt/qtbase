@@ -106,7 +106,8 @@ namespace {
         bool isVspacer = false;
         if (const DomProperty *o = properties.value(QLatin1String("orientation"))) {
             const QString orientation = o->elementEnum();
-            if (orientation == QLatin1String("Qt::Vertical") || orientation == QLatin1String("Vertical"))  isVspacer = true;
+            if (orientation == QLatin1String("Qt::Vertical") || orientation == QLatin1String("Vertical"))
+                isVspacer = true;
         }
 
         if (isVspacer)
