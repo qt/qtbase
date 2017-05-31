@@ -3876,9 +3876,11 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     const int currentCount = (orient == Qt::Horizontal ? model->columnCount(root) : model->rowCount(root));
     if (newSectionItems.count() < currentCount) {
         // we have sections not in the saved state, give them default settings
-        for (int i = newSectionItems.count(); i < currentCount; ++i) {
-            visualIndicesIn.append(i);
-            logicalIndicesIn.append(i);
+        if (!visualIndicesIn.isEmpty() && !logicalIndicesIn.isEmpty()) {
+            for (int i = newSectionItems.count(); i < currentCount; ++i) {
+                visualIndicesIn.append(i);
+                logicalIndicesIn.append(i);
+            }
         }
         const int insertCount = currentCount - newSectionItems.count();
         const int insertLength = defaultSectionSizeIn * insertCount;
