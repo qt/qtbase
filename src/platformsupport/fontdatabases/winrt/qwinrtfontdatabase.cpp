@@ -448,19 +448,41 @@ QFontEngine *QWinRTFontDatabase::fontEngine(const QFontDef &fontDef, void *handl
     return QFontEngineFT::create(fontDef, faceId, fontData);
 }
 
+QString QWinRTFontDatabase::familyForStyleHint(QFont::StyleHint styleHint)
+{
+    switch (styleHint) {
+    case QFont::Times:
+        return QStringLiteral("Times New Roman");
+    case QFont::Courier:
+        return QStringLiteral("Courier New");
+    case QFont::Monospace:
+        return QStringLiteral("Courier New");
+    case QFont::Cursive:
+        return QStringLiteral("Comic Sans MS");
+    case QFont::Fantasy:
+        return QStringLiteral("Impact");
+    case QFont::Decorative:
+        return QStringLiteral("Old English");
+    case QFont::Helvetica:
+        return QStringLiteral("Segoe UI");
+    case QFont::System:
+    default:
+        break;
+    }
+    return QStringLiteral("Segoe UI");
+}
+
 QStringList QWinRTFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style,
                                                    QFont::StyleHint styleHint,
                                                    QChar::Script script) const
 {
     Q_UNUSED(style)
-    Q_UNUSED(styleHint)
     Q_UNUSED(script)
 
     qCDebug(lcQpaFonts) << __FUNCTION__ << family;
 
     QStringList result;
-    if (family == QLatin1String("Helvetica"))
-        result.append(QStringLiteral("Arial"));
+    result.append(QWinRTFontDatabase::familyForStyleHint(styleHint));
     result.append(QFreeTypeFontDatabase::fallbacksForFamily(family, style, styleHint, script));
     return result;
 }

@@ -80,6 +80,8 @@ public:
     QStringList fallbacksForFamily(const QString &family, QFont::Style style,
                                    QFont::StyleHint styleHint, QChar::Script script) const override;
     void releaseHandle(void *handle) override;
+
+    static QString familyForStyleHint(QFont::StyleHint styleHint);
 private:
     QHash<IDWriteFontFile *, FontDescription> m_fonts;
     QHash<QString, IDWriteFontFamily *> m_fontFamilies;
