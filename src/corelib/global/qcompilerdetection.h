@@ -1155,6 +1155,16 @@
 #endif
 
 /*
+ * a useful extension from Clang
+ * http://clang.llvm.org/docs/LanguageExtensions.html#feature-checking-macros
+ */
+#ifdef __has_feature
+#  define QT_HAS_FEATURE(x)             __has_feature(x)
+#else
+#  define QT_HAS_FEATURE(x)             0
+#endif
+
+/*
  * Warning/diagnostic handling
  */
 

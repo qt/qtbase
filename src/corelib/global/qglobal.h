@@ -631,7 +631,12 @@ inline void qt_noop(void) {}
 */
 
 #if !defined(QT_NO_EXCEPTIONS)
-#  if defined(QT_BOOTSTRAPPED) || (defined(Q_CC_GNU) && !defined (__EXCEPTIONS) && !defined(Q_MOC_RUN))
+#  if !defined(Q_MOC_RUN)
+#    if (defined(Q_CC_CLANG) && !defined(Q_CC_INTEL) && !QT_HAS_FEATURE(cxx_exceptions)) || \
+        (defined(Q_CC_GNU) && !defined(__EXCEPTIONS))
+#      define QT_NO_EXCEPTIONS
+#    endif
+#  elif defined(QT_BOOTSTRAPPED)
 #    define QT_NO_EXCEPTIONS
 #  endif
 #endif
