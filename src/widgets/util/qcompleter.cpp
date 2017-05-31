@@ -148,7 +148,9 @@
 #include "QtWidgets/qscrollbar.h"
 #include "QtCore/qstringlistmodel.h"
 #include "QtWidgets/qdirmodel.h"
+#if QT_CONFIG(filesystemmodel)
 #include "QtWidgets/qfilesystemmodel.h"
+#endif
 #include "QtWidgets/qheaderview.h"
 #include "QtWidgets/qlistview.h"
 #include "QtWidgets/qapplication.h"
@@ -467,7 +469,7 @@ QMatchData QCompletionEngine::filterHistory()
     const bool isDirModel = false;
 #endif
     Q_UNUSED(isDirModel)
-#ifndef QT_NO_FILESYSTEMMODEL
+#if QT_CONFIG(filesystemmodel)
     const bool isFsModel = (qobject_cast<QFileSystemModel *>(source) != 0);
 #else
     const bool isFsModel = false;
@@ -872,7 +874,7 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
                 completion += QDir::separator();
         }
 #endif
-#ifndef QT_NO_FILESYSTEMMODEL
+#if QT_CONFIG(filesystemmodel)
         // add a trailing separator in inline
         if (mode == QCompleter::InlineCompletion) {
             if (qobject_cast<QFileSystemModel *>(proxy->sourceModel()) && QFileInfo(completion).isDir())
@@ -1044,7 +1046,7 @@ void QCompleter::setModel(QAbstractItemModel *model)
 {
     Q_D(QCompleter);
     QAbstractItemModel *oldModel = d->proxy->sourceModel();
-#ifndef QT_NO_FILESYSTEMMODEL
+#if QT_CONFIG(filesystemmodel)
     if (qobject_cast<const QFileSystemModel *>(oldModel))
         setCompletionRole(Qt::EditRole); // QTBUG-54642, clear FileNameRole set by QFileSystemModel
 #endif
@@ -1062,7 +1064,7 @@ void QCompleter::setModel(QAbstractItemModel *model)
 #endif
     }
 #endif // QT_NO_DIRMODEL
-#ifndef QT_NO_FILESYSTEMMODEL
+#if QT_CONFIG(filesystemmodel)
     QFileSystemModel *fsModel = qobject_cast<QFileSystemModel *>(model);
     if (fsModel) {
 #if defined(Q_OS_WIN)
@@ -1073,7 +1075,7 @@ void QCompleter::setModel(QAbstractItemModel *model)
         setCompletionRole(QFileSystemModel::FileNameRole);
         connect(fsModel, SIGNAL(directoryLoaded(QString)), this, SLOT(_q_fileSystemModelDirectoryLoaded(QString)));
     }
-#endif // QT_NO_FILESYSTEMMODEL
+#endif // QT_CONFIG(filesystemmodel)
 }
 
 /*!
@@ -1770,7 +1772,7 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
 #ifndef QT_NO_DIRMODEL
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
 #endif
-#ifndef QT_NO_FILESYSTEMMODEL
+#if QT_CONFIG(filesystemmodel)
     isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != 0;
 #endif
     if (!isDirModel && !isFsModel)
@@ -1782,7 +1784,7 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
         QString t;
         if (isDirModel)
             t = sourceModel->data(idx, Qt::EditRole).toString();
-#ifndef QT_NO_FILESYSTEMMODEL
+#if QT_CONFIG(filesystemmodel)
         else
             t = sourceModel->data(idx, QFileSystemModel::FileNameRole).toString();
 #endif
@@ -1820,7 +1822,7 @@ QStringList QCompleter::splitPath(const QString& path) const
     Q_D(const QCompleter);
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
 #endif
-#ifndef QT_NO_FILESYSTEMMODEL
+#if QT_CONFIG(filesystemmodel)
 #ifdef QT_NO_DIRMODEL
     Q_D(const QCompleter);
 #endif

@@ -2,16 +2,11 @@
 
 HEADERS += \
 	dialogs/qfontdialog.h \
-	dialogs/qfontdialog_p.h \
-        dialogs/qfilesystemmodel.h \
-        dialogs/qfilesystemmodel_p.h \
-        dialogs/qfileinfogatherer_p.h
+        dialogs/qfontdialog_p.h
 
 INCLUDEPATH += $$PWD
 SOURCES += \
-	dialogs/qfontdialog.cpp \
-        dialogs/qfilesystemmodel.cpp \
-        dialogs/qfileinfogatherer.cpp
+        dialogs/qfontdialog.cpp
 
 qtConfig(colordialog) {
     HEADERS += dialogs/qcolordialog.h
@@ -43,6 +38,17 @@ qtConfig(filedialog) {
         dialogs/qsidebar.cpp
 
     FORMS += dialogs/qfiledialog.ui
+}
+
+qtConfig(filesystemmodel) {
+    HEADERS += \
+        dialogs/qfilesystemmodel.h \
+        dialogs/qfilesystemmodel_p.h \
+        dialogs/qfileinfogatherer_p.h
+
+    SOURCES += \
+        dialogs/qfilesystemmodel.cpp \
+        dialogs/qfileinfogatherer.cpp
 }
 
 qtConfig(fscompleter) {

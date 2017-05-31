@@ -50,7 +50,9 @@
 #endif
 #include <QtCore/qdir.h>
 #include <QtGui/qevent.h>
+#if QT_CONFIG(filesystemmodel)
 #include <QtWidgets/qfilesystemmodel.h>
+#endif
 #include <QtWidgets/qstyleditemdelegate.h>
 #include <QtPrintSupport/qprinter.h>
 
@@ -677,7 +679,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
     }
     widget.properties->setEnabled(true);
 
-#if !defined(QT_NO_FILESYSTEMMODEL) && !defined(QT_NO_COMPLETER)
+#if QT_CONFIG(filesystemmodel) && !defined(QT_NO_COMPLETER)
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
     widget.filename->setCompleter(new QCompleter(fsm, widget.filename));

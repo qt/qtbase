@@ -58,8 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_FILESYSTEMMODEL
-
 /*!
     \enum QFileSystemModel::Roles
     \value FileIconRole
@@ -1995,5 +1993,3 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
 QT_END_NAMESPACE
 
 #include "moc_qfilesystemmodel.cpp"
-
-#endif // QT_NO_FILESYSTEMMODEL
