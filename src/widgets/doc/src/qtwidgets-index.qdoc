@@ -85,7 +85,7 @@ interfaces
     \row
     \li \image windowsxp-tabwidget.png
     \li \image fusion-tabwidget.png
-    \li \image macintosh-tabwidget.png
+    \li \image macos-tabwidget.png
     \endtable
 
     \l{Qt Style Sheets} are a powerful mechanism that allows you to customize the

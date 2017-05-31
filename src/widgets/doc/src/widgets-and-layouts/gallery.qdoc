@@ -26,37 +26,71 @@
 ****************************************************************************/
 
 /*!
-  \group gallery
+  \page gallery.html
   \title Qt Widget Gallery
   \brief Qt widgets shown in different styles on various platforms.
 
   Qt's support for widget styles and themes enables your application to fit in
-  with the native desktop environment. Below, you can find links to the various
-  widget styles that are supplied with Qt.
+  with the native desktop environment.
 
-  \table
-  \row
-  \li \image windowsxp-tabwidget.png Windows XP Style Widget Gallery
-  \caption \l{Windows XP Style Widget Gallery}
+  The widgets examples show how some of the widgets available in Qt might
+  appear when configured to use the a particular style. Each style is only
+  available on the respective platfom, and provides native look and feel by
+  integrating to the platform theme. Thus, the final appearance varies
+  depending on the active theme.
 
-  The Windows XP style is provided by QWindowsXPStyle.
-  \li \image windows-tabwidget.png Windows Style Widget Gallery
-  \caption \l{Windows Style Widget Gallery}
+    \table
+        \row
+            \li \image windows-xp-style.png Windows XP Style
+            \li The Windows XP style ("windowsxp") is provided by
+                QWindowsXPStyle.
+        \row
+            \li The Windows style ("windows") is provided by QWindowsStyle.
+            \li \image windows-style.png Windows Style
+        \row
+            \li \image windows-vista-style.png Windows Vista Style
+            \li The Windows Vista style ("windowsvista") is provided by
+                QWindowsVistaStyle.
+        \row
+            \li The \macos style ("macintosh") is provided by QMacStyle.
+            \li \image macos-style.png \macos Style
+        \row
+            \li \image fusion-style.png Fusion Style
+            \li The Fusion style ("fusion") is provided by QFusionStyle.
+    \endtable
 
-  The Windows style is provided by QWindowsStyle.
-  \li \image windowsvista-tabwidget.png Windows Vista Style Widget Gallery
-  \caption \l{Windows Vista Style Widget Gallery}
+    The Styles example displays the following widgets:
 
-  The Windows Vista style is provided by QWindowsVistaStyle.
+    \list
+        \li QCheckBox (1) provides a checkbox with a text label.
+        \li QRadioButton (2) provides a radio button with a text or pixmap
+            label.
+        \li QPushButton (3) provides a command button.
+        \li QTabWidget (4) provides a stack of tabbed widgets.
+        \li QTableWidget (5) provides a classic item-based table view.
+        \li QScrollBar (6) provides a vertical or horizontal scroll bar.
+        \li QProgressBar (7) provides a horizontal progress bar.
+        \li QDateTimeEdit (8) provides a widget for editing dates and times.
+        \li QSlider (9) provides a vertical or horizontal slider.
+        \li QDial (10) provides a rounded range control (like a speedometer
+            or potentiometer).
+    \endlist
 
-  \row
-  \li \image macintosh-tabwidget.png Macintosh Style Widget Gallery
-  \caption \l{Macintosh Style Widget Gallery}
+    The Calendar Widget example displays some additional widgets, here run on
+    Windows 10 and \macos:
 
-  The Macintosh style is provided by QMacStyle.
-  \li \image fusion-tabwidget.png Fusion Style Widget Gallery
-  \caption \l{Fusion Style Widget Gallery}
+    \image windows-style2.png
+    \caption Calendar Widget example on Windows 10
 
-  The Fusion style is provided by QFusionStyle.
-  \endtable
+    \image macos-style2.png
+    \caption Calendar Widget example on \macos
+
+    \list
+        \li QGroupBox (1) provides a group box frame with a title.
+        \li QCalendarWidget (2) provides a monthly calendar widget
+            that can be used to select dates.
+        \li QLabel (3) provides a text or image display.
+        \li QDateEdit (4) provides a widget for editing dates.
+        \li QComboBox (5) provides a combined button and pop-up list.
+    \endlist
 */

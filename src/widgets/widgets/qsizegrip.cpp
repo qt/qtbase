@@ -197,7 +197,7 @@ Qt::Corner QSizeGripPrivate::corner() const
     \table 50%
     \row \li \inlineimage fusion-statusbar-sizegrip.png Screenshot of a Fusion style size grip
     \li A size grip widget at the bottom-right corner of a main window, shown in the
-    \l{Fusion Style Widget Gallery}{Fusion widget style}.
+    \l{Qt Widget Gallery}{Fusion widget style}.
     \endtable
 
     The QSizeGrip class inherits QWidget and reimplements the \l
