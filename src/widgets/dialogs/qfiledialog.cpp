@@ -841,7 +841,7 @@ void QFileDialog::setVisible(bool visible)
             // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
             // updates the state correctly, but skips showing the non-native version:
             setAttribute(Qt::WA_DontShowOnScreen);
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
             // So the completer doesn't try to complete and therefore show a popup
             if (!d->nativeDialogInUse)
                 d->completer->setModel(0);
@@ -849,7 +849,7 @@ void QFileDialog::setVisible(bool visible)
         } else {
             d->createWidgets();
             setAttribute(Qt::WA_DontShowOnScreen, false);
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
             if (!d->nativeDialogInUse) {
                 if (d->proxyModel != 0)
                     d->completer->setModel(d->proxyModel);
@@ -922,7 +922,7 @@ void QFileDialog::setDirectory(const QString &directory)
     if (!d->nativeDialogInUse) {
         d->qFileDialogUi->newFolderButton->setEnabled(d->model->flags(root) & Qt::ItemIsDropEnabled);
         if (root != d->rootIndex()) {
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
             if (directory.endsWith(QLatin1Char('/')))
                 d->completer->setCompletionPrefix(newDirectory);
             else
@@ -2909,10 +2909,10 @@ void QFileDialogPrivate::createWidgets()
 #ifndef QT_NO_SHORTCUT
     qFileDialogUi->fileNameLabel->setBuddy(qFileDialogUi->fileNameEdit);
 #endif
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
-#endif // QT_NO_FSCOMPLETER
+#endif // QT_CONFIG(fscompleter)
 
     qFileDialogUi->fileNameEdit->setInputMethodHints(Qt::ImhNoPredictiveText);
 
@@ -3078,7 +3078,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         proxyModel->setSourceModel(d->model);
         d->qFileDialogUi->listView->setModel(d->proxyModel);
         d->qFileDialogUi->treeView->setModel(d->proxyModel);
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
         d->completer->setModel(d->proxyModel);
         d->completer->proxyModel = d->proxyModel;
 #endif
@@ -3088,7 +3088,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         d->proxyModel = 0;
         d->qFileDialogUi->listView->setModel(d->model);
         d->qFileDialogUi->treeView->setModel(d->model);
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
         d->completer->setModel(d->model);
         d->completer->sourceModel = d->model;
         d->completer->proxyModel = 0;
@@ -4028,7 +4028,7 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
         e->accept();
 }
 
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
 
 QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
 {

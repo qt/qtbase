@@ -1,7 +1,6 @@
 # Qt dialogs module
 
 HEADERS += \
-        dialogs/qfscompleter_p.h \
 	dialogs/qfontdialog.h \
 	dialogs/qfontdialog_p.h \
         dialogs/qfilesystemmodel.h \
@@ -44,6 +43,10 @@ qtConfig(filedialog) {
         dialogs/qsidebar.cpp
 
     FORMS += dialogs/qfiledialog.ui
+}
+
+qtConfig(fscompleter) {
+    HEADERS += dialogs/qfscompleter_p.h
 }
 
 qtConfig(inputdialog) {

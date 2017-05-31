@@ -73,7 +73,9 @@
 #include <qpointer.h>
 #include <qdebug.h>
 #include "qsidebar_p.h"
+#if QT_CONFIG(fscompleter)
 #include "qfscompleter_p.h"
+#endif
 
 #if defined (Q_OS_UNIX)
 #include <unistd.h>
@@ -231,9 +233,9 @@ public:
     QStringList watching;
     QFileSystemModel *model;
 
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
     QFSCompleter *completer;
-#endif //QT_NO_FSCOMPLETER
+#endif //QT_CONFIG(fscompleter)
 
     QString setWindowTitle;
 

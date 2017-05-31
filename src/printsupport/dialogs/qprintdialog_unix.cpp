@@ -61,7 +61,7 @@
 
 #include <QtWidgets/qdialogbuttonbox.h>
 
-#include "private/qfscompleter_p.h"
+#include <private/qcompleter_p.h>
 #include "ui_qprintpropertieswidget.h"
 #include "ui_qprintsettingsoutput.h"
 #include "ui_qprintwidget.h"
