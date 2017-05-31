@@ -65,7 +65,9 @@
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
+#if QT_CONFIG(messagebox)
 #include "qmessagebox.h"
+#endif
 #include "qwidgetwindow_p.h"
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
@@ -1916,9 +1918,9 @@ void QApplication::closeAllWindows()
 */
 void QApplication::aboutQt()
 {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
     QMessageBox::aboutQt(activeWindow());
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
 }
 
 /*!

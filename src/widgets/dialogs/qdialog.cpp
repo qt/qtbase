@@ -53,7 +53,9 @@
 #endif
 #include "qmenu.h"
 #include "qcursor.h"
+#if QT_CONFIG(messagebox)
 #include "qmessagebox.h"
+#endif
 #include "qerrormessage.h"
 #include <qpa/qplatformtheme.h>
 #include "private/qdialog_p.h"
@@ -78,7 +80,7 @@ static inline int themeDialogType(const QDialog *dialog)
     if (qobject_cast<const QFontDialog *>(dialog))
         return QPlatformTheme::FontDialog;
 #endif
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
     if (qobject_cast<const QMessageBox *>(dialog))
         return QPlatformTheme::MessageDialog;
 #endif

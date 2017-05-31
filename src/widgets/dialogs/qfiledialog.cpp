@@ -51,7 +51,9 @@
 #include <qshortcut.h>
 #include <qgridlayout.h>
 #include <qmenu.h>
+#if QT_CONFIG(messagebox)
 #include <qmessagebox.h>
+#endif
 #include <stdlib.h>
 #include <qsettings.h>
 #include <qdebug.h>
@@ -2627,11 +2629,11 @@ void QFileDialog::accept()
         if (!info.exists())
             info = QFileInfo(d->getEnvironmentVariable(fn));
         if (!info.exists()) {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
             QString message = tr("%1\nDirectory not found.\nPlease verify the "
                                           "correct directory name was given.");
             QMessageBox::warning(this, windowTitle(), message.arg(info.fileName()));
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
             return;
         }
         if (info.isDir()) {
@@ -2659,7 +2661,7 @@ void QFileDialog::accept()
         if (!info.exists() || !confirmOverwrite() || acceptMode() == AcceptOpen) {
             d->emitFilesSelected(QStringList(fn));
             QDialog::accept();
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
         } else {
             if (QMessageBox::warning(this, windowTitle(),
                                      tr("%1 already exists.\nDo you want to replace it?")
@@ -2681,11 +2683,11 @@ void QFileDialog::accept()
             if (!info.exists())
                 info = QFileInfo(d->getEnvironmentVariable(file));
             if (!info.exists()) {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
                 QString message = tr("%1\nFile not found.\nPlease verify the "
                                      "correct file name was given.");
                 QMessageBox::warning(this, windowTitle(), message.arg(info.fileName()));
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
                 return;
             }
             if (info.isDir()) {
@@ -3428,7 +3430,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
         bool isDir = model->isDir(index);
 
         QFile::Permissions p(index.parent().data(QFileSystemModel::FilePermissions).toInt());
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
         Q_Q(QFileDialog);
         if (!(p & QFile::WriteUser) && (QMessageBox::warning(q_func(), QFileDialog::tr("Delete"),
                                     QFileDialog::tr("'%1' is write protected.\nDo you want to delete it anyway?")
@@ -3444,12 +3446,12 @@ void QFileDialogPrivate::_q_deleteCurrent()
 #else
         if (!(p & QFile::WriteUser))
             return;
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
 
         // the event loop has run, we can NOT reuse index because the model might have removed it.
         if (isDir) {
             if (!removeDirectory(filePath)) {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
             QMessageBox::warning(q, q->windowTitle(),
                                 QFileDialog::tr("Could not delete directory."));
 #endif
@@ -3630,7 +3632,7 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
 */
 void QFileDialogPrivate::_q_goToDirectory(const QString &path)
 {
- #ifndef QT_NO_MESSAGEBOX
+ #if QT_CONFIG(messagebox)
     Q_Q(QFileDialog);
 #endif
     QModelIndex index = qFileDialogUi->lookInCombo->model()->index(qFileDialogUi->lookInCombo->currentIndex(),
@@ -3649,12 +3651,12 @@ void QFileDialogPrivate::_q_goToDirectory(const QString &path)
 
     if (dir.exists() || path2.isEmpty() || path2 == model->myComputer().toString()) {
         _q_enterDirectory(index);
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
     } else {
         QString message = QFileDialog::tr("%1\nDirectory not found.\nPlease verify the "
                                           "correct directory name was given.");
         QMessageBox::warning(q, q->windowTitle(), message.arg(path2));
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
     }
 }
 

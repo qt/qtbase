@@ -6,7 +6,6 @@ HEADERS += \
 	dialogs/qerrormessage.h \
 	dialogs/qfontdialog.h \
 	dialogs/qfontdialog_p.h \
-	dialogs/qmessagebox.h \
         dialogs/qfilesystemmodel.h \
         dialogs/qfilesystemmodel_p.h \
         dialogs/qfileinfogatherer_p.h \
@@ -22,7 +21,6 @@ SOURCES += \
 	dialogs/qcolordialog.cpp \
 	dialogs/qerrormessage.cpp \
 	dialogs/qfontdialog.cpp \
-	dialogs/qmessagebox.cpp \
         dialogs/qfilesystemmodel.cpp \
         dialogs/qfileinfogatherer.cpp \
 	dialogs/qwizard.cpp \
@@ -54,9 +52,13 @@ qtConfig(inputdialog) {
     SOURCES += dialogs/qinputdialog.cpp
 }
 
+qtConfig(messagebox) {
+    HEADERS += dialogs/qmessagebox.h
+    SOURCES += dialogs/qmessagebox.cpp
+    RESOURCES += dialogs/qmessagebox.qrc
+}
+
 qtConfig(progressdialog) {
     HEADERS += dialogs/qprogressdialog.h
     SOURCES += dialogs/qprogressdialog.cpp
 }
-
-RESOURCES += dialogs/qmessagebox.qrc

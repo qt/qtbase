@@ -41,7 +41,9 @@
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
 #include "private/qabstractprintdialog_p.h"
+#if QT_CONFIG(messagebox)
 #include <QtWidgets/qmessagebox.h>
+#endif
 #include "qprintdialog.h"
 #if QT_CONFIG(filedialog)
 #include "qfiledialog.h"
@@ -203,7 +205,7 @@ public:
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
     void _q_togglePageSetCombo(bool);
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
     void _q_checkFields();
 #endif
     void _q_collapseOrExpandDialog();
@@ -337,7 +339,7 @@ void QPrintDialogPrivate::init()
     lay->addWidget(bottom);
     lay->addWidget(buttons);
 
-#ifdef QT_NO_MESSAGEBOX
+#if !QT_CONFIG(messagebox)
     QObject::connect(buttons, SIGNAL(accepted()), q, SLOT(accept()));
 #else
     QObject::connect(buttons, SIGNAL(accepted()), q, SLOT(_q_checkFields()));
@@ -496,14 +498,14 @@ void QPrintDialogPrivate::_q_collapseOrExpandDialog()
     }
 }
 
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
 void QPrintDialogPrivate::_q_checkFields()
 {
     Q_Q(QPrintDialog);
     if (top->d->checkFields())
         q->accept();
 }
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
 
 
 void QPrintDialogPrivate::updateWidgets()
@@ -836,7 +838,7 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties()
         propertiesDialog->applyPrinterProperties(printer);
 }
 
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
 bool QUnixPrintWidgetPrivate::checkFields()
 {
     if (widget.filename->isEnabled()) {
@@ -887,7 +889,7 @@ bool QUnixPrintWidgetPrivate::checkFields()
     // Every test passed. Accept the dialog.
     return true;
 }
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
 
 void QUnixPrintWidgetPrivate::setupPrinterProperties()
 {

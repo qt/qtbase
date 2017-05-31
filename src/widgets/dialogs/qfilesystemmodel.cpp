@@ -43,7 +43,9 @@
 #include <qmimedata.h>
 #include <qurl.h>
 #include <qdebug.h>
+#if QT_CONFIG(messagebox)
 #include <qmessagebox.h>
+#endif
 #include <qapplication.h>
 #include <QtCore/qcollator.h>
 
@@ -881,12 +883,12 @@ bool QFileSystemModel::setData(const QModelIndex &idx, const QVariant &value, in
     if (newName.isEmpty()
         || QDir::toNativeSeparators(newName).contains(QDir::separator())
         || !QDir(parentPath).rename(oldName, newName)) {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
         QMessageBox::information(0, QFileSystemModel::tr("Invalid filename"),
                                 QFileSystemModel::tr("<b>The name \"%1\" can not be used.</b><p>Try using another name, with fewer characters or no punctuations marks.")
                                 .arg(newName),
                                  QMessageBox::Ok);
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
         return false;
     } else {
         /*
