@@ -306,9 +306,11 @@ void tst_QLocalSocket::listen()
         // already isListening
         QTest::ignoreMessage(QtWarningMsg, "QLocalServer::listen() called when already listening");
         QVERIFY(!server.listen(name));
+        QVERIFY(server.socketDescriptor() != -1);
     } else {
         QVERIFY(!server.errorString().isEmpty());
         QCOMPARE(server.serverError(), QAbstractSocket::HostNotFoundError);
+        QCOMPARE(server.socketDescriptor(), -1);
     }
     QCOMPARE(server.maxPendingConnections(), 30);
     bool timedOut = false;

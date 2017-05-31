@@ -93,6 +93,8 @@ public:
     void setSocketOptions(SocketOptions options);
     SocketOptions socketOptions() const;
 
+    qintptr socketDescriptor() const;
+
 protected:
     virtual void incomingConnection(quintptr socketDescriptor);
 

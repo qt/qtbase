@@ -41,6 +41,10 @@
 #include "qlocalserver_p.h"
 #include "qlocalsocket.h"
 
+#if defined(Q_OS_WIN) && !defined(QT_LOCALSOCKET_TCP)
+#include <QtCore/qt_windows.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_LOCALSERVER
@@ -180,6 +184,42 @@ QLocalServer::SocketOptions QLocalServer::socketOptions() const
 {
     Q_D(const QLocalServer);
     return d->socketOptions;
+}
+
+/*!
+    \since 5.10
+    Returns the native socket descriptor the server uses to listen
+    for incoming instructions, or -1 if the server is not listening.
+
+    The type of the descriptor depends on the platform:
+    \list
+        \li On Windows, the returned value is a
+        \l{https://msdn.microsoft.com/en-us/library/windows/desktop/ms740522(v=vs.85).aspx}
+        {Winsock 2 Socket Handle}.
+
+        \li With WinRT and on INTEGRITY, the returned value is the
+        QTcpServer socket descriptor and the type is defined by
+        \l{QTcpServer::socketDescriptor}{socketDescriptor}.
+
+        \li On all other UNIX-like operating systems, the type is
+        a file descriptor representing a listening socket.
+    \endlist
+
+    \sa listen()
+*/
+qintptr QLocalServer::socketDescriptor() const
+{
+    Q_D(const QLocalServer);
+    if (!isListening())
+        return -1;
+#if defined(QT_LOCALSOCKET_TCP)
+    return d->tcpServer.socketDescriptor();
+#elif defined(Q_OS_WIN)
+    const auto handle = d->connectionEventNotifier->handle();
+    return handle != INVALID_HANDLE_VALUE ? qintptr(handle) : -1;
+#else
+    return d->socketNotifier->socket();
+#endif
 }
 
 /*!
