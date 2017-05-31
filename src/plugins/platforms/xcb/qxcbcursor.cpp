@@ -579,7 +579,7 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
     if (cursor)
         return cursor;
     if (!cursor && cursorId) {
-        cursor = XCreateFontCursor(DISPLAY_FROM_XCB(this), cursorId);
+        cursor = XCreateFontCursor(static_cast<Display *>(connection()->xlib_display()), cursorId);
         if (cursor)
             return cursor;
     }

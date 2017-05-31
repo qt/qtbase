@@ -108,6 +108,7 @@ public:
 private:
     QXcbScreen *m_screen;
     QSurfaceFormat m_format;
+    Display *m_display;
     GLXPbuffer m_pbuffer;
 };
 

@@ -590,7 +590,7 @@ void QXcbWindow::create()
 
 #ifdef XCB_USE_XLIB
     // force sync to read outstanding requests - see QTBUG-29106
-    XSync(DISPLAY_FROM_XCB(platformScreen), false);
+    XSync(static_cast<Display*>(platformScreen->connection()->xlib_display()), false);
 #endif
 
 #ifndef QT_NO_DRAGANDDROP
@@ -1502,9 +1502,10 @@ void QXcbWindow::setWindowTitle(const QString &title)
                                    ba.constData());
 
 #ifdef XCB_USE_XLIB
-    XTextProperty *text = qstringToXTP(DISPLAY_FROM_XCB(this), title);
+    Display *dpy = static_cast<Display *>(connection()->xlib_display());
+    XTextProperty *text = qstringToXTP(dpy, title);
     if (text)
-        XSetWMName(DISPLAY_FROM_XCB(this), m_window, text);
+        XSetWMName(dpy, m_window, text);
 #endif
     xcb_flush(xcb_connection());
 }

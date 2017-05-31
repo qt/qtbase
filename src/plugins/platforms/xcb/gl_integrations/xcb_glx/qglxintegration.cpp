@@ -167,7 +167,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
 QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share,
                          const QVariant &nativeHandle)
     : QPlatformOpenGLContext()
-    , m_display(DISPLAY_FROM_XCB(screen))
+    , m_display(static_cast<Display *>(screen->connection()->xlib_display()))
     , m_config(0)
     , m_context(0)
     , m_shareContext(0)
@@ -196,7 +196,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
     if (share)
         m_shareContext = static_cast<const QGLXContext*>(share)->glxContext();
 
-    GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),m_format);
+    GLXFBConfig config = qglx_findConfig(m_display, screen->screenNumber(), m_format);
     m_config = config;
     XVisualInfo *visualInfo = 0;
     Window window = 0; // Temporary window used to query OpenGL context
@@ -304,10 +304,10 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
 
         // Get the basic surface format details
         if (m_context)
-            qglx_surfaceFormatFromGLXFBConfig(&m_format, DISPLAY_FROM_XCB(screen), config);
+            qglx_surfaceFormatFromGLXFBConfig(&m_format, m_display, config);
 
         // Create a temporary window so that we can make the new context current
-        window = createDummyWindow(DISPLAY_FROM_XCB(screen), config, screen->screenNumber(), screen->root());
+        window = createDummyWindow(m_display, config, screen->screenNumber(), screen->root());
     } else {
         // requesting an OpenGL ES context requires glXCreateContextAttribsARB, so bail out
         if (m_format.renderableType() == QSurfaceFormat::OpenGLES)
@@ -325,7 +325,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
         }
 
         // Create a temporary window so that we can make the new context current
-        window = createDummyWindow(DISPLAY_FROM_XCB(screen), visualInfo, screen->screenNumber(), screen->root());
+        window = createDummyWindow(m_display, visualInfo, screen->screenNumber(), screen->root());
         XFree(visualInfo);
     }
 
@@ -360,7 +360,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
     // Use the provided Display, if available. If not, use our own. It may still work.
     Display *dpy = handle.display();
     if (!dpy)
-        dpy = DISPLAY_FROM_XCB(screen);
+        dpy = m_display;
 
     // Legacy contexts created using glXCreateContext are created using a visual
     // and the FBConfig cannot be queried. The only way to adapt these contexts
@@ -665,8 +665,10 @@ void QGLXContext::queryDummyContext()
     Display *display = glXGetCurrentDisplay();
     if (!display) {
         // FIXME: Since Qt 5.6 we don't need to check whether primary screen is NULL
-        if (QScreen *screen = QGuiApplication::primaryScreen())
-            display = DISPLAY_FROM_XCB(static_cast<QXcbScreen *>(screen->handle()));
+        if (QScreen *screen = QGuiApplication::primaryScreen()) {
+            QXcbScreen *xcbScreen = static_cast<QXcbScreen *>(screen->handle());
+            display = static_cast<Display *>(xcbScreen->connection()->xlib_display());
+        }
     }
     const char *glxvendor = glXGetClientString(display, GLX_VENDOR);
     if (glxvendor && !strcmp(glxvendor, "ATI")) {
@@ -737,9 +739,10 @@ QGLXPbuffer::QGLXPbuffer(QOffscreenSurface *offscreenSurface)
     : QPlatformOffscreenSurface(offscreenSurface)
     , m_screen(static_cast<QXcbScreen *>(offscreenSurface->screen()->handle()))
     , m_format(m_screen->surfaceFormatFor(offscreenSurface->requestedFormat()))
+    , m_display(static_cast<Display *>(m_screen->connection()->xlib_display()))
     , m_pbuffer(0)
 {
-    GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber(), m_format);
+    GLXFBConfig config = qglx_findConfig(m_display, m_screen->screenNumber(), m_format);
 
     if (config) {
         const int attributes[] = {
@@ -750,17 +753,17 @@ QGLXPbuffer::QGLXPbuffer(QOffscreenSurface *offscreenSurface)
             None
         };
 
-        m_pbuffer = glXCreatePbuffer(DISPLAY_FROM_XCB(m_screen), config, attributes);
+        m_pbuffer = glXCreatePbuffer(m_display, config, attributes);
 
         if (m_pbuffer)
-            qglx_surfaceFormatFromGLXFBConfig(&m_format, DISPLAY_FROM_XCB(m_screen), config);
+            qglx_surfaceFormatFromGLXFBConfig(&m_format, m_display, config);
     }
 }
 
 QGLXPbuffer::~QGLXPbuffer()
 {
     if (m_pbuffer)
-        glXDestroyPbuffer(DISPLAY_FROM_XCB(m_screen), m_pbuffer);
+        glXDestroyPbuffer(m_display, m_pbuffer);
 }
 
 

@@ -1500,7 +1500,8 @@ void *QXcbConnection::createVisualInfoForDefaultVisualId() const
     info.visualid = m_defaultVisualId;
 
     int count = 0;
-    XVisualInfo *retVisual = XGetVisualInfo(DISPLAY_FROM_XCB(this), VisualIDMask, &info, &count);
+    Display *dpy = static_cast<Display *>(connection()->xlib_display());
+    XVisualInfo *retVisual = XGetVisualInfo(dpy, VisualIDMask, &info, &count);
     Q_ASSERT(count < 2);
     return retVisual;
 }

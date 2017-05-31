@@ -62,7 +62,8 @@ const xcb_visualtype_t *QXcbGlxWindow::createVisual()
 
     qDebug(lcQpaGl) << "Requested format before FBConfig/Visual selection:" << m_format;
 
-    const char *glxExts = glXQueryExtensionsString(DISPLAY_FROM_XCB(scr), scr->screenNumber());
+    Display *dpy = static_cast<Display *>(scr->connection()->xlib_display());
+    const char *glxExts = glXQueryExtensionsString(dpy, scr->screenNumber());
     int flags = 0;
     if (glxExts) {
         qCDebug(lcQpaGl, "Available GLX extensions: %s", glxExts);
@@ -70,7 +71,7 @@ const xcb_visualtype_t *QXcbGlxWindow::createVisual()
             flags |= QGLX_SUPPORTS_SRGB;
     }
 
-    XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(scr), scr->screenNumber(), &m_format, GLX_WINDOW_BIT, flags);
+    XVisualInfo *visualInfo = qglx_findVisualInfo(dpy, scr->screenNumber(), &m_format, GLX_WINDOW_BIT, flags);
     if (!visualInfo) {
         qWarning() << "No XVisualInfo for format" << m_format;
         return Q_NULLPTR;
