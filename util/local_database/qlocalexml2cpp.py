@@ -77,54 +77,40 @@ def eachEltInGroup(parent, group, key):
             yield element
         element = element.nextSibling
 
-def eltText(elt):
-    result = ""
+def eltWords(elt):
     child = elt.firstChild
     while child:
         if child.nodeType == elt.TEXT_NODE:
-            if result:
-                result += " "
-            result += child.nodeValue
+            yield child.nodeValue
         child = child.nextSibling
-    return result
+
+def firstChildText(elt, key):
+    return ' '.join(eltWords(firstChildElt(elt, key)))
 
 def loadMap(doc, category):
-    return dict((int(eltText(firstChildElt(element, 'id'))),
-                 (eltText(firstChildElt(element, 'name')),
-                  eltText(firstChildElt(element, 'code'))))
+    return dict((int(firstChildText(element, 'id')),
+                 (firstChildText(element, 'name'),
+                  firstChildText(element, 'code')))
                 for element in eachEltInGroup(doc.documentElement,
                                               category + 'List', category))
 
 def loadLikelySubtagsMap(doc):
-    result = {}
+    def triplet(element, keys=('language', 'script', 'country')):
+        return tuple(firstChildText(element, key) for key in keys)
 
-    i = 0
-    for elt in eachEltInGroup(doc.documentElement, "likelySubtags", "likelySubtag"):
-        elt_from = firstChildElt(elt, "from")
-        from_language = eltText(firstChildElt(elt_from, "language"));
-        from_script = eltText(firstChildElt(elt_from, "script"));
-        from_country = eltText(firstChildElt(elt_from, "country"));
-
-        elt_to = firstChildElt(elt, "to")
-        to_language = eltText(firstChildElt(elt_to, "language"));
-        to_script = eltText(firstChildElt(elt_to, "script"));
-        to_country = eltText(firstChildElt(elt_to, "country"));
-
-        tmp = {}
-        tmp["from"] = (from_language, from_script, from_country)
-        tmp["to"] = (to_language, to_script, to_country)
-        result[i] = tmp;
-        i += 1
-    return result
+    return dict((i, {'from': triplet(firstChildElt(elt, "from")),
+                     'to': triplet(firstChildElt(elt, "to"))})
+                for i, elt in enumerate(eachEltInGroup(doc.documentElement,
+                                                       'likelySubtags', 'likelySubtag')))
 
 def fixedScriptName(name, dupes):
     # Don't .capitalize() as some names are already camel-case (see enumdata.py):
     name = ''.join(word[0].upper() + word[1:] for word in name.split())
     if name[-6:] != "Script":
-        name = name + "Script";
+        name = name + "Script"
     if name in dupes:
         sys.stderr.write("\n\n\nERROR: The script name '%s' is messy" % name)
-        sys.exit(1);
+        sys.exit(1)
     return name
 
 def fixedCountryName(name, dupes):
@@ -138,8 +124,8 @@ def fixedLanguageName(name, dupes):
     return name.replace(" ", "")
 
 def findDupes(country_map, language_map):
-    country_set = set([ v[0] for a, v in country_map.iteritems() ])
-    language_set = set([ v[0] for a, v in language_map.iteritems() ])
+    country_set = set(v[0] for a, v in country_map.iteritems())
+    language_set = set(v[0] for a, v in language_map.iteritems())
     return country_set & language_set
 
 def languageNameToId(name, language_map):
@@ -164,7 +150,7 @@ def loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map
     result = {}
 
     for locale_elt in eachEltInGroup(doc.documentElement, "localeList", "locale"):
-        locale = Locale.fromXmlData(lambda k: eltText(firstChildElt(locale_elt, k)))
+        locale = Locale.fromXmlData(lambda k: firstChildText(locale_elt, k))
         language_id = languageNameToId(locale.language, language_map)
         if language_id == -1:
             sys.stderr.write("Cannot find a language id for '%s'\n" % locale.language)
@@ -324,8 +310,7 @@ def escapedString(s):
     return result
 
 def printEscapedString(s):
-    print escapedString(s);
-
+    print escapedString(s)
 
 def currencyIsoCodeData(s):
     if s:
@@ -346,13 +331,9 @@ def main():
     localexml = sys.argv[1]
     qtsrcdir = sys.argv[2]
 
-    if not os.path.exists(qtsrcdir) or not os.path.exists(qtsrcdir):
-        usage()
-    if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale_data_p.h"):
-        usage()
-    if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.h"):
-        usage()
-    if not os.path.isfile(qtsrcdir + "/src/corelib/tools/qlocale.qdoc"):
+    if not (os.path.isdir(qtsrcdir)
+            and all(os.path.isfile(os.path.join(qtsrcdir, 'src', 'corelib', 'tools', leaf))
+                    for leaf in ('qlocale_data_p.h', 'qlocale.h', 'qlocale.qdoc'))):
         usage()
 
     (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p", dir=qtsrcdir)
@@ -377,7 +358,7 @@ def main():
     locale_map = loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map)
     dupes = findDupes(language_map, country_map)
 
-    cldr_version = eltText(firstChildElt(doc.documentElement, "version"))
+    cldr_version = firstChildText(doc.documentElement, "version")
 
     data_temp_file.write("""
 /*
@@ -455,9 +436,7 @@ def main():
             index += count
         data_temp_file.write("%6d, // %s\n" % (i, language_map[key][0]))
     data_temp_file.write("     0 // trailing 0\n")
-    data_temp_file.write("};\n")
-
-    data_temp_file.write("\n")
+    data_temp_file.write("};\n\n")
 
     list_pattern_part_data = StringData('list_pattern_part_data')
     date_format_data = StringData('date_format_data')

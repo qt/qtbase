@@ -46,14 +46,11 @@ import re
 
 import enumdata
 import xpathlite
-from  xpathlite import DraftResolution
+from xpathlite import DraftResolution, findAlias, findEntry, findTagsInFile
 from dateconverter import convert_date
 from localexml import Locale
 
-findAlias = xpathlite.findAlias
-findEntry = xpathlite.findEntry
 findEntryInFile = xpathlite._findEntryInFile
-findTagsInFile = xpathlite.findTagsInFile
 
 def parse_number_format(patterns, data):
     # this is a very limited parsing of the number format for currency only.
@@ -86,12 +83,8 @@ def parse_number_format(patterns, data):
     return result
 
 def parse_list_pattern_part_format(pattern):
-    # this is a very limited parsing of the format for list pattern part only.
-    result = ""
-    result = pattern.replace("{0}", "%1")
-    result = result.replace("{1}", "%2")
-    result = result.replace("{2}", "%3")
-    return result
+    # This is a very limited parsing of the format for list pattern part only.
+    return pattern.replace("{0}", "%1").replace("{1}", "%2").replace("{2}", "%3")
 
 def generateLocaleInfo(path):
     if not path.endswith(".xml"):
@@ -102,12 +95,11 @@ def generateLocaleInfo(path):
     if alias:
         raise xpathlite.Error('alias to "%s"' % alias)
 
-    language_code = findEntryInFile(path, "identity/language", attribute="type")[0]
-    country_code = findEntryInFile(path, "identity/territory", attribute="type")[0]
-    script_code = findEntryInFile(path, "identity/script", attribute="type")[0]
-    variant_code = findEntryInFile(path, "identity/variant", attribute="type")[0]
+    def code(tag):
+        return findEntryInFile(path, 'identity/' + tag, attribute="type")[0]
 
-    return _generateLocaleInfo(path, language_code, script_code, country_code, variant_code)
+    return _generateLocaleInfo(path, code('language'), code('script'),
+                               code('territory'), code('variant'))
 
 def _generateLocaleInfo(path, language_code, script_code, country_code, variant_code=""):
     if not path.endswith(".xml"):
@@ -126,12 +118,10 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     language_id = enumdata.languageCodeToId(language_code)
     if language_id <= 0:
         raise xpathlite.Error('unknown language code "%s"' % language_code)
-    language = enumdata.language_list[language_id][0]
 
     script_id = enumdata.scriptCodeToId(script_code)
     if script_id == -1:
         raise xpathlite.Error('unknown script code "%s"' % script_code)
-    script = enumdata.script_list[script_id][0]
 
     # we should handle fully qualified names with the territory
     if not country_code:
@@ -139,7 +129,6 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     country_id = enumdata.countryCodeToId(country_code)
     if country_id <= 0:
         raise xpathlite.Error('unknown country code "%s"' % country_code)
-    country = enumdata.country_list[country_id][0]
 
     # So we say we accept only those values that have "contributed" or
     # "approved" resolution. see http://www.unicode.org/cldr/process.html
@@ -147,36 +136,36 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     # compatibility.
     draft = DraftResolution.contributed
 
-    result = {}
-    result['language'] = language
-    result['script'] = script
-    result['country'] = country
-    result['language_code'] = language_code
-    result['country_code'] = country_code
-    result['script_code'] = script_code
-    result['variant_code'] = variant_code
-    result['language_id'] = language_id
-    result['script_id'] = script_id
-    result['country_id'] = country_id
+    result = dict(
+        language=enumdata.language_list[language_id][0],
+        language_code=language_code, language_id=language_id,
+        script=enumdata.script_list[script_id][0],
+        script_code=script_code, script_id=script_id,
+        country=enumdata.country_list[country_id][0],
+        country_code=country_code, country_id=country_id,
+        variant_code=variant_code)
 
     (dir_name, file_name) = os.path.split(path)
-    supplementalPath = dir_name + "/../supplemental/supplementalData.xml"
-    currencies = findTagsInFile(supplementalPath, "currencyData/region[iso3166=%s]"%country_code);
+    def from_supplement(tag,
+                        path=os.path.join(dir_name, '..', 'supplemental',
+                                          'supplementalData.xml')):
+        return findTagsInFile(path, tag)
+    currencies = from_supplement('currencyData/region[iso3166=%s]' % country_code)
     result['currencyIsoCode'] = ''
     result['currencyDigits'] = 2
     result['currencyRounding'] = 1
     if currencies:
         for e in currencies:
             if e[0] == 'currency':
-                tender = True
-                t = [x for x in e[1] if x[0] == 'tender']
-                if t and t[0][1] == 'false':
-                    tender = False;
-                if tender and not any(x[0] == 'to' for x in e[1]):
+                t = [x[1] == 'false' for x in e[1] if x[0] == 'tender']
+                if t and t[0]:
+                    pass
+                elif not any(x[0] == 'to' for x in e[1]):
                     result['currencyIsoCode'] = (x[1] for x in e[1] if x[0] == 'iso4217').next()
                     break
         if result['currencyIsoCode']:
-            t = findTagsInFile(supplementalPath, "currencyData/fractions/info[iso4217=%s]"%result['currencyIsoCode']);
+            t = from_supplement("currencyData/fractions/info[iso4217=%s]"
+                                % result['currencyIsoCode'])
             if t and t[0][0] == 'info':
                 result['currencyDigits'] = (int(x[1]) for x in t[0][1] if x[0] == 'digits').next()
                 result['currencyRounding'] = (int(x[1]) for x in t[0][1] if x[0] == 'rounding').next()
@@ -210,7 +199,9 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     result['percent'] = get_number_in_system(path, "numbers/symbols/percentSign", numbering_system)
     try:
         numbering_systems = {}
-        for ns in findTagsInFile(cldr_dir + "/../supplemental/numberingSystems.xml", "numberingSystems"):
+        for ns in findTagsInFile(os.path.join(cldr_dir, '..', 'supplemental',
+                                              'numberingSystems.xml'),
+                                 'numberingSystems'):
             tmp = {}
             id = ""
             for data in ns[1:][0]: # ns looks like this: [u'numberingSystem', [(u'digits', u'0123456789'), (u'type', u'numeric'), (u'id', u'latn')]]
@@ -373,7 +364,9 @@ locale_database = {}
 
 # see http://www.unicode.org/reports/tr35/tr35-info.html#Default_Content
 defaultContent_locales = {}
-for ns in findTagsInFile(cldr_dir + "/../supplemental/supplementalMetadata.xml", "metadata/defaultContent"):
+for ns in findTagsInFile(os.path.join(cldr_dir, '..', 'supplemental',
+                                      'supplementalMetadata.xml'),
+                         'metadata/defaultContent'):
     for data in ns[1:][0]:
         if data[0] == u"locales":
             defaultContent_locales = data[1].split()
