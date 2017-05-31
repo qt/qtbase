@@ -322,77 +322,25 @@ def usage():
 def integrateWeekData(filePath):
     if not filePath.endswith(".xml"):
         return {}
-    monFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=mon]", attribute="territories")[0].split(" ")
-    tueFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=tue]", attribute="territories")[0].split(" ")
-    wedFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=wed]", attribute="territories")[0].split(" ")
-    thuFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=thu]", attribute="territories")[0].split(" ")
-    friFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=fri]", attribute="territories")[0].split(" ")
-    satFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=sat]", attribute="territories")[0].split(" ")
-    sunFirstDayIn = findEntryInFile(filePath, "weekData/firstDay[day=sun]", attribute="territories")[0].split(" ")
 
-    monWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=mon]", attribute="territories")[0].split(" ")
-    tueWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=tue]", attribute="territories")[0].split(" ")
-    wedWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=wed]", attribute="territories")[0].split(" ")
-    thuWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=thu]", attribute="territories")[0].split(" ")
-    friWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=fri]", attribute="territories")[0].split(" ")
-    satWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=sat]", attribute="territories")[0].split(" ")
-    sunWeekendStart = findEntryInFile(filePath, "weekData/weekendStart[day=sun]", attribute="territories")[0].split(" ")
-
-    monWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=mon]", attribute="territories")[0].split(" ")
-    tueWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=tue]", attribute="territories")[0].split(" ")
-    wedWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=wed]", attribute="territories")[0].split(" ")
-    thuWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=thu]", attribute="territories")[0].split(" ")
-    friWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=fri]", attribute="territories")[0].split(" ")
-    satWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=sat]", attribute="territories")[0].split(" ")
-    sunWeekendEnd = findEntryInFile(filePath, "weekData/weekendEnd[day=sun]", attribute="territories")[0].split(" ")
+    def lookup(key):
+        return findEntryInFile(filePath, key, attribute='territories')[0].split()
+    days = ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
 
     firstDayByCountryCode = {}
-    for countryCode in monFirstDayIn:
-        firstDayByCountryCode[countryCode] = "mon"
-    for countryCode in tueFirstDayIn:
-        firstDayByCountryCode[countryCode] = "tue"
-    for countryCode in wedFirstDayIn:
-        firstDayByCountryCode[countryCode] = "wed"
-    for countryCode in thuFirstDayIn:
-        firstDayByCountryCode[countryCode] = "thu"
-    for countryCode in friFirstDayIn:
-        firstDayByCountryCode[countryCode] = "fri"
-    for countryCode in satFirstDayIn:
-        firstDayByCountryCode[countryCode] = "sat"
-    for countryCode in sunFirstDayIn:
-        firstDayByCountryCode[countryCode] = "sun"
+    for day in days:
+        for countryCode in lookup('weekData/firstDay[day=%s]' % day):
+            firstDayByCountryCode[countryCode] = day
 
     weekendStartByCountryCode = {}
-    for countryCode in monWeekendStart:
-        weekendStartByCountryCode[countryCode] = "mon"
-    for countryCode in tueWeekendStart:
-        weekendStartByCountryCode[countryCode] = "tue"
-    for countryCode in wedWeekendStart:
-        weekendStartByCountryCode[countryCode] = "wed"
-    for countryCode in thuWeekendStart:
-        weekendStartByCountryCode[countryCode] = "thu"
-    for countryCode in friWeekendStart:
-        weekendStartByCountryCode[countryCode] = "fri"
-    for countryCode in satWeekendStart:
-        weekendStartByCountryCode[countryCode] = "sat"
-    for countryCode in sunWeekendStart:
-        weekendStartByCountryCode[countryCode] = "sun"
+    for day in days:
+        for countryCode in lookup('weekData/weekendStart[day=%s]' % day):
+            weekendStartByCountryCode[countryCode] = day
 
     weekendEndByCountryCode = {}
-    for countryCode in monWeekendEnd:
-        weekendEndByCountryCode[countryCode] = "mon"
-    for countryCode in tueWeekendEnd:
-        weekendEndByCountryCode[countryCode] = "tue"
-    for countryCode in wedWeekendEnd:
-        weekendEndByCountryCode[countryCode] = "wed"
-    for countryCode in thuWeekendEnd:
-        weekendEndByCountryCode[countryCode] = "thu"
-    for countryCode in friWeekendEnd:
-        weekendEndByCountryCode[countryCode] = "fri"
-    for countryCode in satWeekendEnd:
-        weekendEndByCountryCode[countryCode] = "sat"
-    for countryCode in sunWeekendEnd:
-        weekendEndByCountryCode[countryCode] = "sun"
+    for day in days:
+        for countryCode in lookup('weekData/weekendEnd[day=%s]' % day):
+            weekendEndByCountryCode[countryCode] = day
 
     for (key, locale) in locale_database.iteritems():
         countryCode = locale.country_code
