@@ -300,9 +300,10 @@ class StringDataToken:
         return " %d,%d " % (self.index, self.length)
 
 class StringData:
-    def __init__(self):
+    def __init__(self, name):
         self.data = []
         self.hash = {}
+        self.name = name
     def append(self, s):
         if s in self.hash:
             return self.hash[s]
@@ -495,17 +496,17 @@ def main():
 
     data_temp_file.write("\n")
 
-    list_pattern_part_data = StringData()
-    date_format_data = StringData()
-    time_format_data = StringData()
-    months_data = StringData()
-    days_data = StringData()
-    am_data = StringData()
-    pm_data = StringData()
-    currency_symbol_data = StringData()
-    currency_display_name_data = StringData()
-    currency_format_data = StringData()
-    endonyms_data = StringData()
+    list_pattern_part_data = StringData('list_pattern_part_data')
+    date_format_data = StringData('date_format_data')
+    time_format_data = StringData('time_format_data')
+    months_data = StringData('months_data')
+    days_data = StringData('days_data')
+    am_data = StringData('am_data')
+    pm_data = StringData('pm_data')
+    currency_symbol_data = StringData('currency_symbol_data')
+    currency_display_name_data = StringData('currency_display_name_data')
+    currency_format_data = StringData('currency_format_data')
+    endonyms_data = StringData('endonyms_data')
 
     # Locale data
     data_temp_file.write("static const QLocaleData locale_data[] = {\n")
@@ -651,80 +652,15 @@ def main():
                          + " // trailing 0s\n")
     data_temp_file.write("};\n")
 
-    data_temp_file.write("\n")
-
-    # List patterns data
-    data_temp_file.write("static const ushort list_pattern_part_data[] = {\n")
-    data_temp_file.write(wrap_list(list_pattern_part_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # Date format data
-    data_temp_file.write("static const ushort date_format_data[] = {\n")
-    data_temp_file.write(wrap_list(date_format_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # Time format data
-    data_temp_file.write("static const ushort time_format_data[] = {\n")
-    data_temp_file.write(wrap_list(time_format_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # Months data
-    data_temp_file.write("static const ushort months_data[] = {\n")
-    data_temp_file.write(wrap_list(months_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # Days data
-    data_temp_file.write("static const ushort days_data[] = {\n")
-    data_temp_file.write(wrap_list(days_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # AM data
-    data_temp_file.write("static const ushort am_data[] = {\n")
-    data_temp_file.write(wrap_list(am_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # PM data
-    data_temp_file.write("static const ushort pm_data[] = {\n")
-    data_temp_file.write(wrap_list(pm_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # Currency symbol data
-    data_temp_file.write("static const ushort currency_symbol_data[] = {\n")
-    data_temp_file.write(wrap_list(currency_symbol_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # Currency display name data
-    data_temp_file.write("static const ushort currency_display_name_data[] = {\n")
-    data_temp_file.write(wrap_list(currency_display_name_data.data))
-    data_temp_file.write("\n};\n")
-
-    data_temp_file.write("\n")
-
-    # Currency format data
-    data_temp_file.write("static const ushort currency_format_data[] = {\n")
-    data_temp_file.write(wrap_list(currency_format_data.data))
-    data_temp_file.write("\n};\n")
-
-    # Endonyms data
-    data_temp_file.write("static const ushort endonyms_data[] = {\n")
-    data_temp_file.write(wrap_list(endonyms_data.data))
-    data_temp_file.write("\n};\n")
+    # StringData tables:
+    for data in (list_pattern_part_data, date_format_data,
+                 time_format_data, months_data, days_data,
+                 am_data, pm_data, currency_symbol_data,
+                 currency_display_name_data, currency_format_data,
+                 endonyms_data):
+        data_temp_file.write("\nstatic const ushort %s[] = {\n" % data.name)
+        data_temp_file.write(wrap_list(data.data))
+        data_temp_file.write("\n};\n")
 
     data_temp_file.write("\n")
 
