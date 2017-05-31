@@ -2,7 +2,6 @@
 
 HEADERS += \
         dialogs/qfscompleter_p.h \
-	dialogs/qerrormessage.h \
 	dialogs/qfontdialog.h \
 	dialogs/qfontdialog_p.h \
         dialogs/qfilesystemmodel.h \
@@ -11,7 +10,6 @@ HEADERS += \
 
 INCLUDEPATH += $$PWD
 SOURCES += \
-	dialogs/qerrormessage.cpp \
 	dialogs/qfontdialog.cpp \
         dialogs/qfilesystemmodel.cpp \
         dialogs/qfileinfogatherer.cpp
@@ -28,6 +26,11 @@ qtConfig(dialog) {
 
     SOURCES += \
         dialogs/qdialog.cpp
+}
+
+qtConfig(errormessage) {
+    HEADERS += dialogs/qerrormessage.h
+    SOURCES += dialogs/qerrormessage.cpp
 }
 
 qtConfig(filedialog) {

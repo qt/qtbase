@@ -39,8 +39,6 @@
 
 #include "qerrormessage.h"
 
-#ifndef QT_NO_ERRORMESSAGE
-
 #include "qapplication.h"
 #include "qcheckbox.h"
 #include "qlabel.h"
@@ -392,5 +390,3 @@ void QErrorMessagePrivate::retranslateStrings()
 QT_END_NAMESPACE
 
 #include "moc_qerrormessage.cpp"
-
-#endif // QT_NO_ERRORMESSAGE
