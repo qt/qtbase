@@ -40,8 +40,6 @@
 #include "qwizard.h"
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#ifndef QT_NO_WIZARD
-
 #include "qabstractspinbox.h"
 #include "qalgorithms.h"
 #include "qapplication.h"
@@ -3987,5 +3985,3 @@ QWizard *QWizardPage::wizard() const
 QT_END_NAMESPACE
 
 #include "moc_qwizard.cpp"
-
-#endif // QT_NO_WIZARD

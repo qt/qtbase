@@ -41,13 +41,11 @@
 #define QWIZARD_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-
-#ifndef QT_NO_WIZARD
-
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(wizard);
 
+QT_BEGIN_NAMESPACE
 
 class QAbstractButton;
 class QWizardPage;
@@ -260,7 +258,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_WIZARD
 
 #endif // QWIZARD_H

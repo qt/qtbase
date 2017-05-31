@@ -93,7 +93,6 @@
 #include <qtoolbutton.h>
 #include <qtreeview.h>
 #include <qtableview.h>
-#include <qwizard.h>
 #include <qdebug.h>
 #include <qdatetimeedit.h>
 #include <qmath.h>

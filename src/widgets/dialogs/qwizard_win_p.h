@@ -53,7 +53,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#ifndef QT_NO_WIZARD
 #if QT_CONFIG(style_windowsvista)
 
 #include <qobject.h>
@@ -62,6 +61,8 @@
 #include <QtWidgets/private/qwidget_p.h>
 #include <QtWidgets/private/qstylehelper_p.h>
 #include <qt_windows.h>
+
+QT_REQUIRE_CONFIG(wizard);
 
 QT_BEGIN_NAMESPACE
 
@@ -157,5 +158,4 @@ private:
 QT_END_NAMESPACE
 
 #endif // style_windowsvista
-#endif // QT_NO_WIZARD
 #endif // QWIZARD_WIN_P_H

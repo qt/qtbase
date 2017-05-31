@@ -7,21 +7,14 @@ HEADERS += \
 	dialogs/qfontdialog_p.h \
         dialogs/qfilesystemmodel.h \
         dialogs/qfilesystemmodel_p.h \
-        dialogs/qfileinfogatherer_p.h \
-        dialogs/qwizard.h
-
-win32 {
-    HEADERS += dialogs/qwizard_win_p.h
-    SOURCES += dialogs/qwizard_win.cpp
-}
+        dialogs/qfileinfogatherer_p.h
 
 INCLUDEPATH += $$PWD
 SOURCES += \
 	dialogs/qerrormessage.cpp \
 	dialogs/qfontdialog.cpp \
         dialogs/qfilesystemmodel.cpp \
-        dialogs/qfileinfogatherer.cpp \
-	dialogs/qwizard.cpp \
+        dialogs/qfileinfogatherer.cpp
 
 qtConfig(colordialog) {
     HEADERS += dialogs/qcolordialog.h
@@ -64,4 +57,14 @@ qtConfig(messagebox) {
 qtConfig(progressdialog) {
     HEADERS += dialogs/qprogressdialog.h
     SOURCES += dialogs/qprogressdialog.cpp
+}
+
+qtConfig(wizard) {
+    HEADERS += dialogs/qwizard.h
+    SOURCES += dialogs/qwizard.cpp
+
+    win32 {
+        HEADERS += dialogs/qwizard_win_p.h
+        SOURCES += dialogs/qwizard_win.cpp
+    }
 }

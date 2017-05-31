@@ -89,7 +89,9 @@
 #include <qtreeview.h>
 #include <qtableview.h>
 #include <qoperatingsystemversion.h>
+#if QT_CONFIG(wizard)
 #include <qwizard.h>
+#endif
 #include <qdebug.h>
 #include <qlibrary.h>
 #include <qdatetimeedit.h>
@@ -2990,7 +2992,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_FocusFrame_AboveWidget:
         ret = true;
         break;
-#ifndef QT_NO_WIZARD
+#if QT_CONFIG(wizard)
     case SH_WizardStyle:
         ret = QWizard::MacStyle;
         break;
