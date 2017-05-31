@@ -43,7 +43,7 @@ QXcbX11Data *qt_x11Data = Q_NULLPTR;
 void qt_xcb_native_x11_info_init(QXcbConnection *conn)
 {
     qt_x11Data = new QXcbX11Data;
-    X11->display = (Display *) conn->xlib_display();
+    X11->display = static_cast<Display *>(conn->xlib_display());
     X11->defaultScreen = DefaultScreen(X11->display);
     X11->screenCount = ScreenCount(X11->display);
 
