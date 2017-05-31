@@ -73,6 +73,8 @@ public:
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-checkbox.png
+
     A QCheckBox is an option button that can be switched on (checked) or off
     (unchecked). Checkboxes are typically used to represent features in an
     application that can be enabled or disabled without affecting others.
@@ -116,18 +118,6 @@ public:
     isOn(), checkState(), autoRepeat(), isExclusiveToggle(), group(),
     setAutoRepeat(), toggle(), pressed(), released(), clicked(), toggled(),
     checkState(), and stateChanged().
-
-    \table 100%
-    \row
-        \li \inlineimage macintosh-checkbox.png Screenshot of a Macintosh style checkbox
-        \li A checkbox shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row
-        \li \inlineimage windowsvista-checkbox.png Screenshot of a Windows Vista style checkbox
-        \li A checkbox shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
-    \row
-        \li \inlineimage fusion-checkbox.png Screenshot of a Fusion style checkbox
-        \li A checkbox shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
-    \endtable
 
     \sa QAbstractButton, QRadioButton, {fowler}{GUI Design Handbook: Check Box}
 */

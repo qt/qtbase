@@ -116,6 +116,8 @@ QLabelPrivate::~QLabelPrivate()
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-label.png
+
     QLabel is used for displaying text or an image. No user
     interaction functionality is provided. The visual appearance of
     the label can be configured in various ways, and it can be used
@@ -180,18 +182,6 @@ QLabelPrivate::~QLabelPrivate()
     buddy (the QLineEdit) when the user presses Alt+P. If the buddy
     was a button (inheriting from QAbstractButton), triggering the
     mnemonic would emulate a button click.
-
-    \table 100%
-    \row
-    \li \inlineimage macintosh-label.png Screenshot of a Macintosh style label
-    \li A label shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row
-    \li \inlineimage fusion-label.png Screenshot of a Fusion style label
-    \li A label shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
-    \row
-    \li \inlineimage windowsvista-label.png Screenshot of a Windows Vista style label
-    \li A label shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
-    \endtable
 
     \sa QLineEdit, QTextEdit, QPixmap, QMovie,
         {fowler}{GUI Design Handbook: Label}

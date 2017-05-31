@@ -900,6 +900,8 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-combobox.png
+
     A QComboBox provides a means of presenting a list of options to the user
     in a way that takes up the minimum amount of screen space.
 
@@ -959,8 +961,6 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
     that you cannot alter the \l{QAbstractItemView::}{SelectionMode}
     of the view(), e.g., by using
     \l{QAbstractItemView::}{setSelectionMode()}.
-
-    \image qstyle-comboboxes.png Comboboxes in the different built-in styles.
 
     \sa QLineEdit, QSpinBox, QRadioButton, QButtonGroup,
         {fowler}{GUI Design Handbook: Combo Box, Drop-Down List Box}

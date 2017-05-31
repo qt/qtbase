@@ -128,6 +128,8 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-lineedit.png
+
     A line edit allows the user to enter and edit a single line of
     plain text with a useful collection of editing functions,
     including undo and redo, cut and paste, and drag and drop (see
@@ -141,7 +143,6 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     inputMask(), or both. When switching between a validator and an input mask
     on the same line edit, it is best to clear the validator or input mask to
     prevent undefined behavior.
-
 
     A related class is QTextEdit which allows multi-line, rich text
     editing.
@@ -201,15 +202,6 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
 
     Any other key sequence that represents a valid character, will
     cause the character to be inserted into the line edit.
-
-    \table 100%
-    \row \li \inlineimage macintosh-lineedit.png Screenshot of a Macintosh style line edit
-         \li A line edit shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row \li \inlineimage windowsvista-lineedit.png Screenshot of a Windows Vista style line edit
-         \li A line edit shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
-    \row \li \inlineimage fusion-lineedit.png Screenshot of a Fusion style line edit
-         \li A line edit shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
-    \endtable
 
     \sa QTextEdit, QLabel, QComboBox, {fowler}{GUI Design Handbook: Field, Entry}, {Line Edits Example}
 */

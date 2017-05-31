@@ -80,6 +80,8 @@ void QRadioButtonPrivate::init()
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-radiobutton.png
+
     A QRadioButton is an option button that can be switched on (checked) or
     off (unchecked). Radio buttons typically present the user with a "one
     of many" choice. In a group of radio buttons, only one radio button at
@@ -112,15 +114,6 @@ void QRadioButtonPrivate::init()
     Important inherited members: text(), setText(), text(),
     setDown(), isDown(), autoRepeat(), group(), setAutoRepeat(),
     toggle(), pressed(), released(), clicked(), and toggled().
-
-    \table 100%
-    \row \li \inlineimage fusion-radiobutton.png Screenshot of a Fusion radio button
-         \li A radio button shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
-    \row \li \inlineimage windowsvista-radiobutton.png Screenshot of a Windows Vista radio button
-         \li A radio button shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
-    \row \li \inlineimage macintosh-radiobutton.png Screenshot of a Macintosh radio button
-         \li A radio button shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \endtable
 
     \sa QPushButton, QToolButton, QCheckBox, {fowler}{GUI Design Handbook: Radio Button},
         {Group Box Example}

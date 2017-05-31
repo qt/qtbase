@@ -988,6 +988,8 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
     \ingroup advanced
     \inmodule QtWidgets
 
+    \image windows-tableview.png
+
     A QTableView implements a table view that displays items from a
     model. This class is used to provide standard tables that were
     previously provided by the QTable class, but using the more
@@ -1051,21 +1053,6 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
     y-coordinate with rowViewportPosition(). The columnAt() and
     columnViewportPosition() functions provide the equivalent conversion
     operations between x-coordinates and column indexes.
-
-    \section1 Styles
-
-    QTableView is styled appropriately for each platform. The following images show
-    how it looks on three different platforms. Go to the \l{Qt Widget Gallery} to see
-    its appearance in other styles.
-
-    \table 100%
-    \row \li \inlineimage windowsvista-tableview.png Screenshot of a Windows Vista style table view
-         \li \inlineimage macintosh-tableview.png Screenshot of a Macintosh style table view
-         \li \inlineimage fusion-tableview.png Screenshot of a Fusion style table view
-    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} table view.
-         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} table view.
-         \li A \l{Fusion Style Widget Gallery}{Fusion style} table view.
-    \endtable
 
     \sa QTableWidget, {View Classes}, QAbstractItemModel, QAbstractItemView,
         {Chart Example}, {Pixelator Example}, {Table Model Example}

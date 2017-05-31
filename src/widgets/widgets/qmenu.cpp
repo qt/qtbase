@@ -1534,6 +1534,8 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image fusion-menu.png
+
     A menu widget is a selection menu. It can be either a pull-down
     menu in a menu bar or a standalone context menu. Pull-down menus
     are shown by the menu bar when the user clicks on the respective
@@ -1544,16 +1546,6 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     popup() or synchronously with exec(). Menus can also be invoked in
     response to button presses; these are just like context menus
     except for how they are invoked.
-
-    \table 100%
-    \row
-    \li \inlineimage fusion-menu.png
-    \li \inlineimage windowsxp-menu.png
-    \li \inlineimage macintosh-menu.png
-    \endtable
-    \caption Fig. A menu shown in \l{Fusion Style Widget Gallery}{Fusion widget style},
-           \l{Windows XP Style Widget Gallery}{Windows XP widget style},
-           and \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
 
     \section1 Actions
 
