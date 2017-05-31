@@ -83,24 +83,29 @@ namespace {
 
         int w = 0;
         int h = 0;
-        if (properties.contains(QLatin1String("sizeHint"))) {
-            const DomSize *sizeHint = properties.value(QLatin1String("sizeHint"))->elementSize();
+        if (const DomProperty *sh = properties.value(QLatin1String("sizeHint"))) {
+            const DomSize *sizeHint = sh->elementSize();
             w = sizeHint->elementWidth();
             h = sizeHint->elementHeight();
         }
         output << w << ", " << h << ", ";
 
         // size type
-        QString sizeType = properties.contains(QLatin1String("sizeType"))  ?
-                           properties.value(QLatin1String("sizeType"))->elementEnum() :
-                           QString::fromLatin1("Expanding");
+        QString sizeType;
+        if (const DomProperty *st = properties.value(QLatin1String("sizeType"))) {
+            const QString value = st->elementEnum();
+            if (value.startsWith(QLatin1String("QSizePolicy::")))
+                sizeType = value;
+            else
+                sizeType = QLatin1String("QSizePolicy::") + value;
+        } else {
+            sizeType = QStringLiteral("QSizePolicy::Expanding");
+        }
 
-        if (!sizeType.startsWith(QLatin1String("QSizePolicy::")))
-            sizeType.prepend(QLatin1String("QSizePolicy::"));
         // orientation
         bool isVspacer = false;
-        if (properties.contains(QLatin1String("orientation"))) {
-            const QString orientation = properties.value(QLatin1String("orientation"))->elementEnum();
+        if (const DomProperty *o = properties.value(QLatin1String("orientation"))) {
+            const QString orientation = o->elementEnum();
             if (orientation == QLatin1String("Qt::Vertical") || orientation == QLatin1String("Vertical"))  isVspacer = true;
         }
 
@@ -395,10 +400,8 @@ void WriteInitialization::LayoutDefaultHandler::writeProperty(int p, const QStri
                                                               int defaultStyleValue, bool suppressDefault, QTextStream &str) const
 {
     // User value
-    const DomPropertyMap::const_iterator mit = properties.constFind(propertyName);
-    const bool found = mit != properties.constEnd();
-    if (found) {
-        const int value = mit.value()->elementNumber();
+    if (const DomProperty *prop = properties.value(propertyName)) {
+        const int value = prop->elementNumber();
         // Emulate the pre 4.3 behaviour: The value form default value was only used to determine
         // the default value, layout properties were always written
         const bool useLayoutFunctionPre43 = !suppressDefault && (m_state[p] == (HasDefaultFunction|HasDefaultValue)) && value == m_defaultValues[p];
@@ -883,7 +886,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     const QString varName = m_driver->findOrInsertLayout(node);
 
     const DomPropertyMap properties = propertyMap(node->elementProperty());
-    const bool oldLayoutProperties = properties.constFind(QLatin1String("margin")) != properties.constEnd();
+    const bool oldLayoutProperties = properties.value(QLatin1String("margin")) != nullptr;
 
     bool isGroupBox = false;
 
@@ -1148,9 +1151,7 @@ void WriteInitialization::writeProperties(const QString &varName,
 
     if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QAxWidget"))) {
         DomPropertyMap properties = propertyMap(lst);
-        if (properties.contains(QLatin1String("control"))) {
-            DomProperty *p = properties.value(QLatin1String("control"));
-            Q_ASSERT( p );
+        if (DomProperty *p = properties.value(QLatin1String("control"))) {
             m_output << m_indent << varName << "->setControl("
                    << writeString(toString(p->elementString()), m_dindent) << ");\n";
         }

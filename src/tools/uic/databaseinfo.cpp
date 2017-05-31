@@ -52,11 +52,11 @@ void DatabaseInfo::acceptWidget(DomWidget *node)
 {
     QHash<QString, DomProperty*> properties = propertyMap(node->elementProperty());
 
-    DomProperty *frameworkCode = properties.value(QLatin1String("frameworkCode"), 0);
+    DomProperty *frameworkCode = properties.value(QLatin1String("frameworkCode"));
     if (frameworkCode && toBool(frameworkCode->elementBool()) == false)
         return;
 
-    DomProperty *db = properties.value(QLatin1String("database"), 0);
+    DomProperty *db = properties.value(QLatin1String("database"));
     if (db && db->elementStringList()) {
         QStringList info = db->elementStringList()->elementString();
 
