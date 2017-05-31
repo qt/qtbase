@@ -43,7 +43,7 @@ namespace CPP {
 
 struct WriteDeclaration : public TreeWalker
 {
-    WriteDeclaration(Uic *uic, bool activateScripts);
+    WriteDeclaration(Uic *uic);
 
     void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
     void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
@@ -58,7 +58,6 @@ private:
     Driver *m_driver;
     QTextStream &m_output;
     const Option &m_option;
-    const bool m_activateScripts;
 };
 
 } // namespace CPP

@@ -91,18 +91,6 @@ QString CustomWidgetsInfo::realClassName(const QString &className) const
     return className;
 }
 
-DomScript *CustomWidgetsInfo::customWidgetScript(const QString &name) const
-{
-    if (m_customWidgets.empty())
-        return 0;
-
-    const NameCustomWidgetMap::const_iterator it = m_customWidgets.constFind(name);
-    if (it == m_customWidgets.constEnd())
-        return 0;
-
-    return it.value()->elementScript();
-}
-
 QString CustomWidgetsInfo::customWidgetAddPageMethod(const QString &name) const
 {
     if (DomCustomWidget *dcw = m_customWidgets.value(name, 0))

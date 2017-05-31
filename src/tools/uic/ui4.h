@@ -86,15 +86,9 @@ class DomAction;
 class DomActionRef;
 class DomButtonGroup;
 class DomButtonGroups;
-class DomImages;
-class DomImage;
-class DomImageData;
 class DomCustomWidgets;
 class DomHeader;
 class DomCustomWidget;
-class DomProperties;
-class DomPropertyData;
-class DomSizePolicyData;
 class DomLayoutDefault;
 class DomLayoutFunction;
 class DomTabStops;
@@ -135,8 +129,6 @@ class DomConnections;
 class DomConnection;
 class DomConnectionHints;
 class DomConnectionHint;
-class DomScript;
-class DomWidgetData;
 class DomDesignerData;
 class DomSlots;
 class DomPropertySpecifications;
@@ -150,13 +142,11 @@ class DomStringPropertySpecification;
 class QDESIGNER_UILIB_EXPORT DomUI {
     Q_DISABLE_COPY(DomUI)
 public:
-    DomUI();
+    DomUI() = default;
     ~DomUI();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeVersion() const { return m_has_attr_version; }
@@ -240,12 +230,6 @@ public:
     inline bool hasElementTabStops() const { return m_children & TabStops; }
     void clearElementTabStops();
 
-    inline DomImages *elementImages() const { return m_images; }
-    DomImages *takeElementImages();
-    void setElementImages(DomImages *a);
-    inline bool hasElementImages() const { return m_children & Images; }
-    void clearElementImages();
-
     inline DomIncludes *elementIncludes() const { return m_includes; }
     DomIncludes *takeElementIncludes();
     void setElementIncludes(DomIncludes *a);
@@ -283,43 +267,41 @@ public:
     void clearElementButtonGroups();
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_version;
-    bool m_has_attr_version;
+    bool m_has_attr_version = false;
 
     QString m_attr_language;
-    bool m_has_attr_language;
+    bool m_has_attr_language = false;
 
     QString m_attr_displayname;
-    bool m_has_attr_displayname;
+    bool m_has_attr_displayname = false;
 
-    int m_attr_stdsetdef;
-    bool m_has_attr_stdsetdef;
+    int m_attr_stdsetdef = 0;
+    bool m_has_attr_stdsetdef = false;
 
-    int m_attr_stdSetDef;
-    bool m_has_attr_stdSetDef;
+    int m_attr_stdSetDef = 0;
+    bool m_has_attr_stdSetDef = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QString m_author;
     QString m_comment;
     QString m_exportMacro;
     QString m_class;
-    DomWidget *m_widget;
-    DomLayoutDefault *m_layoutDefault;
-    DomLayoutFunction *m_layoutFunction;
+    DomWidget *m_widget = nullptr;
+    DomLayoutDefault *m_layoutDefault = nullptr;
+    DomLayoutFunction *m_layoutFunction = nullptr;
     QString m_pixmapFunction;
-    DomCustomWidgets *m_customWidgets;
-    DomTabStops *m_tabStops;
-    DomImages *m_images;
-    DomIncludes *m_includes;
-    DomResources *m_resources;
-    DomConnections *m_connections;
-    DomDesignerData *m_designerdata;
-    DomSlots *m_slots;
-    DomButtonGroups *m_buttonGroups;
+    DomCustomWidgets *m_customWidgets = nullptr;
+    DomTabStops *m_tabStops = nullptr;
+    DomIncludes *m_includes = nullptr;
+    DomResources *m_resources = nullptr;
+    DomConnections *m_connections = nullptr;
+    DomDesignerData *m_designerdata = nullptr;
+    DomSlots *m_slots = nullptr;
+    DomButtonGroups *m_buttonGroups = nullptr;
+
     enum Child {
         Author = 1,
         Comment = 2,
@@ -331,37 +313,34 @@ private:
         PixmapFunction = 128,
         CustomWidgets = 256,
         TabStops = 512,
-        Images = 1024,
-        Includes = 2048,
-        Resources = 4096,
-        Connections = 8192,
-        Designerdata = 16384,
-        Slots = 32768,
-        ButtonGroups = 65536
+        Includes = 1024,
+        Resources = 2048,
+        Connections = 4096,
+        Designerdata = 8192,
+        Slots = 16384,
+        ButtonGroups = 32768
     };
 };
 
 class QDESIGNER_UILIB_EXPORT DomIncludes {
     Q_DISABLE_COPY(DomIncludes)
 public:
-    DomIncludes();
+    DomIncludes() = default;
     ~DomIncludes();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QVector<DomInclude *> elementInclude() const { return m_include; }
     void setElementInclude(const QVector<DomInclude *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomInclude *> m_include;
+
     enum Child {
         Include = 1
     };
@@ -370,11 +349,12 @@ private:
 class QDESIGNER_UILIB_EXPORT DomInclude {
     Q_DISABLE_COPY(DomInclude)
 public:
-    DomInclude();
+    DomInclude() = default;
     ~DomInclude();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
+
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
 
@@ -394,23 +374,20 @@ private:
 
     // attribute data
     QString m_attr_location;
-    bool m_has_attr_location;
+    bool m_has_attr_location = false;
 
     QString m_attr_impldecl;
-    bool m_has_attr_impldecl;
-
+    bool m_has_attr_impldecl = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomResources {
     Q_DISABLE_COPY(DomResources)
 public:
-    DomResources();
+    DomResources() = default;
     ~DomResources();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -423,15 +400,14 @@ public:
     void setElementInclude(const QVector<DomResource *> &a);
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomResource *> m_include;
+
     enum Child {
         Include = 1
     };
@@ -440,13 +416,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomResource {
     Q_DISABLE_COPY(DomResource)
 public:
-    DomResource();
+    DomResource() = default;
     ~DomResource();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeLocation() const { return m_has_attr_location; }
@@ -455,24 +429,19 @@ public:
     inline void clearAttributeLocation() { m_has_attr_location = false; }
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_location;
-    bool m_has_attr_location;
-
+    bool m_has_attr_location = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomActionGroup {
     Q_DISABLE_COPY(DomActionGroup)
 public:
-    DomActionGroup();
+    DomActionGroup() = default;
     ~DomActionGroup();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -494,18 +463,17 @@ public:
     void setElementAttribute(const QList<DomProperty *> &a);
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomAction *> m_action;
     QVector<DomActionGroup *> m_actionGroup;
     QList<DomProperty*> m_property;
     QList<DomProperty*> m_attribute;
+
     enum Child {
         Action = 1,
         ActionGroup = 2,
@@ -517,13 +485,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomAction {
     Q_DISABLE_COPY(DomAction)
 public:
-    DomAction();
+    DomAction() = default;
     ~DomAction();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -544,19 +510,18 @@ public:
     void setElementAttribute(const QList<DomProperty *> &a);
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
     QString m_attr_menu;
-    bool m_has_attr_menu;
+    bool m_has_attr_menu = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QList<DomProperty*> m_property;
     QList<DomProperty*> m_attribute;
+
     enum Child {
         Property = 1,
         Attribute = 2
@@ -566,13 +531,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomActionRef {
     Q_DISABLE_COPY(DomActionRef)
 public:
-    DomActionRef();
+    DomActionRef() = default;
     ~DomActionRef();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -581,24 +544,19 @@ public:
     inline void clearAttributeName() { m_has_attr_name = false; }
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
-
+    bool m_has_attr_name = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomButtonGroup {
     Q_DISABLE_COPY(DomButtonGroup)
 public:
-    DomButtonGroup();
+    DomButtonGroup() = default;
     ~DomButtonGroup();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -614,16 +572,15 @@ public:
     void setElementAttribute(const QList<DomProperty *> &a);
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QList<DomProperty*> m_property;
     QList<DomProperty*> m_attribute;
+
     enum Child {
         Property = 1,
         Attribute = 2
@@ -633,149 +590,46 @@ private:
 class QDESIGNER_UILIB_EXPORT DomButtonGroups {
     Q_DISABLE_COPY(DomButtonGroups)
 public:
-    DomButtonGroups();
+    DomButtonGroups() = default;
     ~DomButtonGroups();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QVector<DomButtonGroup *> elementButtonGroup() const { return m_buttonGroup; }
     void setElementButtonGroup(const QVector<DomButtonGroup *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomButtonGroup *> m_buttonGroup;
+
     enum Child {
         ButtonGroup = 1
     };
 };
 
-class QDESIGNER_UILIB_EXPORT DomImages {
-    Q_DISABLE_COPY(DomImages)
-public:
-    DomImages();
-    ~DomImages();
-
-    void read(QXmlStreamReader &reader);
-    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
-
-    // child element accessors
-    inline QVector<DomImage *> elementImage() const { return m_image; }
-    void setElementImage(const QVector<DomImage *> &a);
-
-private:
-    QString m_text;
-
-    // child element data
-    uint m_children;
-    QVector<DomImage *> m_image;
-    enum Child {
-        Image = 1
-    };
-};
-
-class QDESIGNER_UILIB_EXPORT DomImage {
-    Q_DISABLE_COPY(DomImage)
-public:
-    DomImage();
-    ~DomImage();
-
-    void read(QXmlStreamReader &reader);
-    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
-
-    // attribute accessors
-    inline bool hasAttributeName() const { return m_has_attr_name; }
-    inline QString attributeName() const { return m_attr_name; }
-    inline void setAttributeName(const QString &a) { m_attr_name = a; m_has_attr_name = true; }
-    inline void clearAttributeName() { m_has_attr_name = false; }
-
-    // child element accessors
-    inline DomImageData *elementData() const { return m_data; }
-    DomImageData *takeElementData();
-    void setElementData(DomImageData *a);
-    inline bool hasElementData() const { return m_children & Data; }
-    void clearElementData();
-
-private:
-    QString m_text;
-
-    // attribute data
-    QString m_attr_name;
-    bool m_has_attr_name;
-
-    // child element data
-    uint m_children;
-    DomImageData *m_data;
-    enum Child {
-        Data = 1
-    };
-};
-
-class QDESIGNER_UILIB_EXPORT DomImageData {
-    Q_DISABLE_COPY(DomImageData)
-public:
-    DomImageData();
-    ~DomImageData();
-
-    void read(QXmlStreamReader &reader);
-    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
-
-    // attribute accessors
-    inline bool hasAttributeFormat() const { return m_has_attr_format; }
-    inline QString attributeFormat() const { return m_attr_format; }
-    inline void setAttributeFormat(const QString &a) { m_attr_format = a; m_has_attr_format = true; }
-    inline void clearAttributeFormat() { m_has_attr_format = false; }
-
-    inline bool hasAttributeLength() const { return m_has_attr_length; }
-    inline int attributeLength() const { return m_attr_length; }
-    inline void setAttributeLength(int a) { m_attr_length = a; m_has_attr_length = true; }
-    inline void clearAttributeLength() { m_has_attr_length = false; }
-
-private:
-    QString m_text;
-
-    // attribute data
-    QString m_attr_format;
-    bool m_has_attr_format;
-
-    int m_attr_length;
-    bool m_has_attr_length;
-
-};
-
 class QDESIGNER_UILIB_EXPORT DomCustomWidgets {
     Q_DISABLE_COPY(DomCustomWidgets)
 public:
-    DomCustomWidgets();
+    DomCustomWidgets() = default;
     ~DomCustomWidgets();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QVector<DomCustomWidget *> elementCustomWidget() const { return m_customWidget; }
     void setElementCustomWidget(const QVector<DomCustomWidget *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomCustomWidget *> m_customWidget;
+
     enum Child {
         CustomWidget = 1
     };
@@ -784,11 +638,12 @@ private:
 class QDESIGNER_UILIB_EXPORT DomHeader {
     Q_DISABLE_COPY(DomHeader)
 public:
-    DomHeader();
+    DomHeader() = default;
     ~DomHeader();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
+
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
 
@@ -803,20 +658,17 @@ private:
 
     // attribute data
     QString m_attr_location;
-    bool m_has_attr_location;
-
+    bool m_has_attr_location = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomCustomWidget {
     Q_DISABLE_COPY(DomCustomWidget)
 public:
-    DomCustomWidget();
+    DomCustomWidget() = default;
     ~DomCustomWidget();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QString elementClass() const { return m_class; }
@@ -851,28 +703,10 @@ public:
     inline bool hasElementContainer() const { return m_children & Container; }
     void clearElementContainer();
 
-    inline DomSizePolicyData *elementSizePolicy() const { return m_sizePolicy; }
-    DomSizePolicyData *takeElementSizePolicy();
-    void setElementSizePolicy(DomSizePolicyData *a);
-    inline bool hasElementSizePolicy() const { return m_children & SizePolicy; }
-    void clearElementSizePolicy();
-
     inline QString elementPixmap() const { return m_pixmap; }
     void setElementPixmap(const QString &a);
     inline bool hasElementPixmap() const { return m_children & Pixmap; }
     void clearElementPixmap();
-
-    inline DomScript *elementScript() const { return m_script; }
-    DomScript *takeElementScript();
-    void setElementScript(DomScript *a);
-    inline bool hasElementScript() const { return m_children & Script; }
-    void clearElementScript();
-
-    inline DomProperties *elementProperties() const { return m_properties; }
-    DomProperties *takeElementProperties();
-    void setElementProperties(DomProperties *a);
-    inline bool hasElementProperties() const { return m_children & Properties; }
-    void clearElementProperties();
 
     inline DomSlots *elementSlots() const { return m_slots; }
     DomSlots *takeElementSlots();
@@ -887,22 +721,19 @@ public:
     void clearElementPropertyspecifications();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QString m_class;
     QString m_extends;
-    DomHeader *m_header;
-    DomSize *m_sizeHint;
+    DomHeader *m_header = nullptr;
+    DomSize *m_sizeHint = nullptr;
     QString m_addPageMethod;
-    int m_container;
-    DomSizePolicyData *m_sizePolicy;
+    int m_container = 0;
     QString m_pixmap;
-    DomScript *m_script;
-    DomProperties *m_properties;
-    DomSlots *m_slots;
-    DomPropertySpecifications *m_propertyspecifications;
+    DomSlots *m_slots = nullptr;
+    DomPropertySpecifications *m_propertyspecifications = nullptr;
+
     enum Child {
         Class = 1,
         Extends = 2,
@@ -910,112 +741,20 @@ private:
         SizeHint = 8,
         AddPageMethod = 16,
         Container = 32,
-        SizePolicy = 64,
-        Pixmap = 128,
-        Script = 256,
-        Properties = 512,
-        Slots = 1024,
-        Propertyspecifications = 2048
-    };
-};
-
-class QDESIGNER_UILIB_EXPORT DomProperties {
-    Q_DISABLE_COPY(DomProperties)
-public:
-    DomProperties();
-    ~DomProperties();
-
-    void read(QXmlStreamReader &reader);
-    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
-
-    // child element accessors
-    inline QVector<DomPropertyData *> elementProperty() const { return m_property; }
-    void setElementProperty(const QVector<DomPropertyData *> &a);
-
-private:
-    QString m_text;
-
-    // child element data
-    uint m_children;
-    QVector<DomPropertyData *> m_property;
-    enum Child {
-        Property = 1
-    };
-};
-
-class QDESIGNER_UILIB_EXPORT DomPropertyData {
-    Q_DISABLE_COPY(DomPropertyData)
-public:
-    DomPropertyData();
-    ~DomPropertyData();
-
-    void read(QXmlStreamReader &reader);
-    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
-
-    // attribute accessors
-    inline bool hasAttributeType() const { return m_has_attr_type; }
-    inline QString attributeType() const { return m_attr_type; }
-    inline void setAttributeType(const QString &a) { m_attr_type = a; m_has_attr_type = true; }
-    inline void clearAttributeType() { m_has_attr_type = false; }
-
-private:
-    QString m_text;
-
-    // attribute data
-    QString m_attr_type;
-    bool m_has_attr_type;
-
-};
-
-class QDESIGNER_UILIB_EXPORT DomSizePolicyData {
-    Q_DISABLE_COPY(DomSizePolicyData)
-public:
-    DomSizePolicyData();
-    ~DomSizePolicyData();
-
-    void read(QXmlStreamReader &reader);
-    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
-
-    // child element accessors
-    inline int elementHorData() const { return m_horData; }
-    void setElementHorData(int a);
-    inline bool hasElementHorData() const { return m_children & HorData; }
-    void clearElementHorData();
-
-    inline int elementVerData() const { return m_verData; }
-    void setElementVerData(int a);
-    inline bool hasElementVerData() const { return m_children & VerData; }
-    void clearElementVerData();
-
-private:
-    QString m_text;
-
-    // child element data
-    uint m_children;
-    int m_horData;
-    int m_verData;
-    enum Child {
-        HorData = 1,
-        VerData = 2
+        Pixmap = 64,
+        Slots = 128,
+        Propertyspecifications = 256
     };
 };
 
 class QDESIGNER_UILIB_EXPORT DomLayoutDefault {
     Q_DISABLE_COPY(DomLayoutDefault)
 public:
-    DomLayoutDefault();
+    DomLayoutDefault() = default;
     ~DomLayoutDefault();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeSpacing() const { return m_has_attr_spacing; }
@@ -1029,27 +768,22 @@ public:
     inline void clearAttributeMargin() { m_has_attr_margin = false; }
 
 private:
-    QString m_text;
-
     // attribute data
-    int m_attr_spacing;
-    bool m_has_attr_spacing;
+    int m_attr_spacing = 0;
+    bool m_has_attr_spacing = false;
 
-    int m_attr_margin;
-    bool m_has_attr_margin;
-
+    int m_attr_margin = 0;
+    bool m_has_attr_margin = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomLayoutFunction {
     Q_DISABLE_COPY(DomLayoutFunction)
 public:
-    DomLayoutFunction();
+    DomLayoutFunction() = default;
     ~DomLayoutFunction();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeSpacing() const { return m_has_attr_spacing; }
@@ -1063,38 +797,33 @@ public:
     inline void clearAttributeMargin() { m_has_attr_margin = false; }
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_spacing;
-    bool m_has_attr_spacing;
+    bool m_has_attr_spacing = false;
 
     QString m_attr_margin;
-    bool m_has_attr_margin;
-
+    bool m_has_attr_margin = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomTabStops {
     Q_DISABLE_COPY(DomTabStops)
 public:
-    DomTabStops();
+    DomTabStops() = default;
     ~DomTabStops();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QStringList elementTabStop() const { return m_tabStop; }
     void setElementTabStop(const QStringList &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QStringList m_tabStop;
+
     enum Child {
         TabStop = 1
     };
@@ -1103,13 +832,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomLayout {
     Q_DISABLE_COPY(DomLayout)
 public:
-    DomLayout();
+    DomLayout() = default;
     ~DomLayout();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeClass() const { return m_has_attr_class; }
@@ -1158,35 +885,34 @@ public:
     void setElementItem(const QVector<DomLayoutItem *> &a);
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_class;
-    bool m_has_attr_class;
+    bool m_has_attr_class = false;
 
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
     QString m_attr_stretch;
-    bool m_has_attr_stretch;
+    bool m_has_attr_stretch = false;
 
     QString m_attr_rowStretch;
-    bool m_has_attr_rowStretch;
+    bool m_has_attr_rowStretch = false;
 
     QString m_attr_columnStretch;
-    bool m_has_attr_columnStretch;
+    bool m_has_attr_columnStretch = false;
 
     QString m_attr_rowMinimumHeight;
-    bool m_has_attr_rowMinimumHeight;
+    bool m_has_attr_rowMinimumHeight = false;
 
     QString m_attr_columnMinimumWidth;
-    bool m_has_attr_columnMinimumWidth;
+    bool m_has_attr_columnMinimumWidth = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QList<DomProperty*> m_property;
     QList<DomProperty*> m_attribute;
     QVector<DomLayoutItem *> m_item;
+
     enum Child {
         Property = 1,
         Attribute = 2,
@@ -1197,13 +923,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomLayoutItem {
     Q_DISABLE_COPY(DomLayoutItem)
 public:
-    DomLayoutItem();
+    DomLayoutItem() = default;
     ~DomLayoutItem();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeRow() const { return m_has_attr_row; }
@@ -1248,54 +972,50 @@ public:
     void setElementSpacer(DomSpacer *a);
 
 private:
-    QString m_text;
-
     void clear();
 
     // attribute data
-    int m_attr_row;
-    bool m_has_attr_row;
+    int m_attr_row = 0;
+    bool m_has_attr_row = false;
 
-    int m_attr_column;
-    bool m_has_attr_column;
+    int m_attr_column = 0;
+    bool m_has_attr_column = false;
 
-    int m_attr_rowSpan;
-    bool m_has_attr_rowSpan;
+    int m_attr_rowSpan = 0;
+    bool m_has_attr_rowSpan = false;
 
-    int m_attr_colSpan;
-    bool m_has_attr_colSpan;
+    int m_attr_colSpan = 0;
+    bool m_has_attr_colSpan = false;
 
     QString m_attr_alignment;
-    bool m_has_attr_alignment;
+    bool m_has_attr_alignment = false;
 
     // child element data
-    Kind m_kind;
-    DomWidget *m_widget;
-    DomLayout *m_layout;
-    DomSpacer *m_spacer;
+    Kind m_kind = Unknown;
+    DomWidget *m_widget = nullptr;
+    DomLayout *m_layout = nullptr;
+    DomSpacer *m_spacer = nullptr;
 };
 
 class QDESIGNER_UILIB_EXPORT DomRow {
     Q_DISABLE_COPY(DomRow)
 public:
-    DomRow();
+    DomRow() = default;
     ~DomRow();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QList<DomProperty*> elementProperty() const { return m_property; }
     void setElementProperty(const QList<DomProperty *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QList<DomProperty*> m_property;
+
     enum Child {
         Property = 1
     };
@@ -1304,24 +1024,22 @@ private:
 class QDESIGNER_UILIB_EXPORT DomColumn {
     Q_DISABLE_COPY(DomColumn)
 public:
-    DomColumn();
+    DomColumn() = default;
     ~DomColumn();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QList<DomProperty*> elementProperty() const { return m_property; }
     void setElementProperty(const QList<DomProperty *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QList<DomProperty*> m_property;
+
     enum Child {
         Property = 1
     };
@@ -1330,13 +1048,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomItem {
     Q_DISABLE_COPY(DomItem)
 public:
-    DomItem();
+    DomItem() = default;
     ~DomItem();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeRow() const { return m_has_attr_row; }
@@ -1357,19 +1073,18 @@ public:
     void setElementItem(const QVector<DomItem *> &a);
 
 private:
-    QString m_text;
-
     // attribute data
-    int m_attr_row;
-    bool m_has_attr_row;
+    int m_attr_row = 0;
+    bool m_has_attr_row = false;
 
-    int m_attr_column;
-    bool m_has_attr_column;
+    int m_attr_column = 0;
+    bool m_has_attr_column = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QList<DomProperty*> m_property;
     QVector<DomItem *> m_item;
+
     enum Child {
         Property = 1,
         Item = 2
@@ -1379,13 +1094,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomWidget {
     Q_DISABLE_COPY(DomWidget)
 public:
-    DomWidget();
+    DomWidget() = default;
     ~DomWidget();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeClass() const { return m_has_attr_class; }
@@ -1409,12 +1122,6 @@ public:
 
     inline QList<DomProperty*> elementProperty() const { return m_property; }
     void setElementProperty(const QList<DomProperty *> &a);
-
-    inline QVector<DomScript *> elementScript() const { return m_script; }
-    void setElementScript(const QVector<DomScript *> &a);
-
-    inline QVector<DomWidgetData *> elementWidgetData() const { return m_widgetData; }
-    void setElementWidgetData(const QVector<DomWidgetData *> &a);
 
     inline QList<DomProperty*> elementAttribute() const { return m_attribute; }
     void setElementAttribute(const QList<DomProperty *> &a);
@@ -1447,24 +1154,20 @@ public:
     void setElementZOrder(const QStringList &a);
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_class;
-    bool m_has_attr_class;
+    bool m_has_attr_class = false;
 
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
-    bool m_attr_native;
-    bool m_has_attr_native;
+    bool m_attr_native = false;
+    bool m_has_attr_native = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QStringList m_class;
     QList<DomProperty*> m_property;
-    QVector<DomScript *> m_script;
-    QVector<DomWidgetData *> m_widgetData;
     QList<DomProperty*> m_attribute;
     QVector<DomRow *> m_row;
     QVector<DomColumn *> m_column;
@@ -1475,34 +1178,31 @@ private:
     QVector<DomActionGroup *> m_actionGroup;
     QVector<DomActionRef *> m_addAction;
     QStringList m_zOrder;
+
     enum Child {
         Class = 1,
         Property = 2,
-        Script = 4,
-        WidgetData = 8,
-        Attribute = 16,
-        Row = 32,
-        Column = 64,
-        Item = 128,
-        Layout = 256,
-        Widget = 512,
-        Action = 1024,
-        ActionGroup = 2048,
-        AddAction = 4096,
-        ZOrder = 8192
+        Attribute = 4,
+        Row = 8,
+        Column = 16,
+        Item = 32,
+        Layout = 64,
+        Widget = 128,
+        Action = 256,
+        ActionGroup = 512,
+        AddAction = 1024,
+        ZOrder = 2048
     };
 };
 
 class QDESIGNER_UILIB_EXPORT DomSpacer {
     Q_DISABLE_COPY(DomSpacer)
 public:
-    DomSpacer();
+    DomSpacer() = default;
     ~DomSpacer();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -1515,15 +1215,14 @@ public:
     void setElementProperty(const QList<DomProperty *> &a);
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QList<DomProperty*> m_property;
+
     enum Child {
         Property = 1
     };
@@ -1532,13 +1231,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomColor {
     Q_DISABLE_COPY(DomColor)
 public:
-    DomColor();
+    DomColor() = default;
     ~DomColor();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeAlpha() const { return m_has_attr_alpha; }
@@ -1563,17 +1260,16 @@ public:
     void clearElementBlue();
 
 private:
-    QString m_text;
-
     // attribute data
-    int m_attr_alpha;
-    bool m_has_attr_alpha;
+    int m_attr_alpha = 0;
+    bool m_has_attr_alpha = false;
 
     // child element data
-    uint m_children;
-    int m_red;
-    int m_green;
-    int m_blue;
+    uint m_children = 0;
+    int m_red = 0;
+    int m_green = 0;
+    int m_blue = 0;
+
     enum Child {
         Red = 1,
         Green = 2,
@@ -1584,13 +1280,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomGradientStop {
     Q_DISABLE_COPY(DomGradientStop)
 public:
-    DomGradientStop();
+    DomGradientStop() = default;
     ~DomGradientStop();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributePosition() const { return m_has_attr_position; }
@@ -1606,15 +1300,14 @@ public:
     void clearElementColor();
 
 private:
-    QString m_text;
-
     // attribute data
-    double m_attr_position;
-    bool m_has_attr_position;
+    double m_attr_position = 0.0;
+    bool m_has_attr_position = false;
 
     // child element data
-    uint m_children;
-    DomColor *m_color;
+    uint m_children = 0;
+    DomColor *m_color = nullptr;
+
     enum Child {
         Color = 1
     };
@@ -1623,13 +1316,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomGradient {
     Q_DISABLE_COPY(DomGradient)
 public:
-    DomGradient();
+    DomGradient() = default;
     ~DomGradient();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeStartX() const { return m_has_attr_startX; }
@@ -1702,51 +1393,50 @@ public:
     void setElementGradientStop(const QVector<DomGradientStop *> &a);
 
 private:
-    QString m_text;
-
     // attribute data
-    double m_attr_startX;
-    bool m_has_attr_startX;
+    double m_attr_startX = 0.0;
+    bool m_has_attr_startX = false;
 
-    double m_attr_startY;
-    bool m_has_attr_startY;
+    double m_attr_startY = 0.0;
+    bool m_has_attr_startY = false;
 
-    double m_attr_endX;
-    bool m_has_attr_endX;
+    double m_attr_endX = 0.0;
+    bool m_has_attr_endX = false;
 
-    double m_attr_endY;
-    bool m_has_attr_endY;
+    double m_attr_endY = 0.0;
+    bool m_has_attr_endY = false;
 
-    double m_attr_centralX;
-    bool m_has_attr_centralX;
+    double m_attr_centralX = 0.0;
+    bool m_has_attr_centralX = false;
 
-    double m_attr_centralY;
-    bool m_has_attr_centralY;
+    double m_attr_centralY = 0.0;
+    bool m_has_attr_centralY = false;
 
-    double m_attr_focalX;
-    bool m_has_attr_focalX;
+    double m_attr_focalX = 0.0;
+    bool m_has_attr_focalX = false;
 
-    double m_attr_focalY;
-    bool m_has_attr_focalY;
+    double m_attr_focalY = 0.0;
+    bool m_has_attr_focalY = false;
 
-    double m_attr_radius;
-    bool m_has_attr_radius;
+    double m_attr_radius = 0.0;
+    bool m_has_attr_radius = false;
 
-    double m_attr_angle;
-    bool m_has_attr_angle;
+    double m_attr_angle = 0.0;
+    bool m_has_attr_angle = false;
 
     QString m_attr_type;
-    bool m_has_attr_type;
+    bool m_has_attr_type = false;
 
     QString m_attr_spread;
-    bool m_has_attr_spread;
+    bool m_has_attr_spread = false;
 
     QString m_attr_coordinateMode;
-    bool m_has_attr_coordinateMode;
+    bool m_has_attr_coordinateMode = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomGradientStop *> m_gradientStop;
+
     enum Child {
         GradientStop = 1
     };
@@ -1755,13 +1445,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomBrush {
     Q_DISABLE_COPY(DomBrush)
 public:
-    DomBrush();
+    DomBrush() = default;
     ~DomBrush();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeBrushStyle() const { return m_has_attr_brushStyle; }
@@ -1786,31 +1474,27 @@ public:
     void setElementGradient(DomGradient *a);
 
 private:
-    QString m_text;
-
     void clear();
 
     // attribute data
     QString m_attr_brushStyle;
-    bool m_has_attr_brushStyle;
+    bool m_has_attr_brushStyle = false;
 
     // child element data
-    Kind m_kind;
-    DomColor *m_color;
-    DomProperty *m_texture;
-    DomGradient *m_gradient;
+    Kind m_kind = Unknown;
+    DomColor *m_color = nullptr;
+    DomProperty *m_texture = nullptr;
+    DomGradient *m_gradient = nullptr;
 };
 
 class QDESIGNER_UILIB_EXPORT DomColorRole {
     Q_DISABLE_COPY(DomColorRole)
 public:
-    DomColorRole();
+    DomColorRole() = default;
     ~DomColorRole();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeRole() const { return m_has_attr_role; }
@@ -1826,15 +1510,14 @@ public:
     void clearElementBrush();
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_role;
-    bool m_has_attr_role;
+    bool m_has_attr_role = false;
 
     // child element data
-    uint m_children;
-    DomBrush *m_brush;
+    uint m_children = 0;
+    DomBrush *m_brush = nullptr;
+
     enum Child {
         Brush = 1
     };
@@ -1843,13 +1526,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomColorGroup {
     Q_DISABLE_COPY(DomColorGroup)
 public:
-    DomColorGroup();
+    DomColorGroup() = default;
     ~DomColorGroup();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QVector<DomColorRole *> elementColorRole() const { return m_colorRole; }
@@ -1859,12 +1540,12 @@ public:
     void setElementColor(const QVector<DomColor *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomColorRole *> m_colorRole;
     QVector<DomColor *> m_color;
+
     enum Child {
         ColorRole = 1,
         Color = 2
@@ -1874,13 +1555,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomPalette {
     Q_DISABLE_COPY(DomPalette)
 public:
-    DomPalette();
+    DomPalette() = default;
     ~DomPalette();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline DomColorGroup *elementActive() const { return m_active; }
@@ -1902,13 +1581,13 @@ public:
     void clearElementDisabled();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    DomColorGroup *m_active;
-    DomColorGroup *m_inactive;
-    DomColorGroup *m_disabled;
+    uint m_children = 0;
+    DomColorGroup *m_active = nullptr;
+    DomColorGroup *m_inactive = nullptr;
+    DomColorGroup *m_disabled = nullptr;
+
     enum Child {
         Active = 1,
         Inactive = 2,
@@ -1919,13 +1598,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomFont {
     Q_DISABLE_COPY(DomFont)
 public:
-    DomFont();
+    DomFont() = default;
     ~DomFont();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QString elementFamily() const { return m_family; }
@@ -1979,20 +1656,20 @@ public:
     void clearElementKerning();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QString m_family;
-    int m_pointSize;
-    int m_weight;
-    bool m_italic;
-    bool m_bold;
-    bool m_underline;
-    bool m_strikeOut;
-    bool m_antialiasing;
+    int m_pointSize = 0;
+    int m_weight = 0;
+    bool m_italic = false;
+    bool m_bold = false;
+    bool m_underline = false;
+    bool m_strikeOut = false;
+    bool m_antialiasing = false;
     QString m_styleStrategy;
-    bool m_kerning;
+    bool m_kerning = false;
+
     enum Child {
         Family = 1,
         PointSize = 2,
@@ -2010,13 +1687,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomPoint {
     Q_DISABLE_COPY(DomPoint)
 public:
-    DomPoint();
+    DomPoint() = default;
     ~DomPoint();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline int elementX() const { return m_x; }
@@ -2030,12 +1705,12 @@ public:
     void clearElementY();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    int m_x;
-    int m_y;
+    uint m_children = 0;
+    int m_x = 0;
+    int m_y = 0;
+
     enum Child {
         X = 1,
         Y = 2
@@ -2045,13 +1720,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomRect {
     Q_DISABLE_COPY(DomRect)
 public:
-    DomRect();
+    DomRect() = default;
     ~DomRect();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline int elementX() const { return m_x; }
@@ -2075,14 +1748,14 @@ public:
     void clearElementHeight();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    int m_x;
-    int m_y;
-    int m_width;
-    int m_height;
+    uint m_children = 0;
+    int m_x = 0;
+    int m_y = 0;
+    int m_width = 0;
+    int m_height = 0;
+
     enum Child {
         X = 1,
         Y = 2,
@@ -2094,13 +1767,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomLocale {
     Q_DISABLE_COPY(DomLocale)
 public:
-    DomLocale();
+    DomLocale() = default;
     ~DomLocale();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeLanguage() const { return m_has_attr_language; }
@@ -2114,27 +1785,22 @@ public:
     inline void clearAttributeCountry() { m_has_attr_country = false; }
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_language;
-    bool m_has_attr_language;
+    bool m_has_attr_language = false;
 
     QString m_attr_country;
-    bool m_has_attr_country;
-
+    bool m_has_attr_country = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomSizePolicy {
     Q_DISABLE_COPY(DomSizePolicy)
 public:
-    DomSizePolicy();
+    DomSizePolicy() = default;
     ~DomSizePolicy();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeHSizeType() const { return m_has_attr_hSizeType; }
@@ -2169,21 +1835,20 @@ public:
     void clearElementVerStretch();
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_hSizeType;
-    bool m_has_attr_hSizeType;
+    bool m_has_attr_hSizeType = false;
 
     QString m_attr_vSizeType;
-    bool m_has_attr_vSizeType;
+    bool m_has_attr_vSizeType = false;
 
     // child element data
-    uint m_children;
-    int m_hSizeType;
-    int m_vSizeType;
-    int m_horStretch;
-    int m_verStretch;
+    uint m_children = 0;
+    int m_hSizeType = 0;
+    int m_vSizeType = 0;
+    int m_horStretch = 0;
+    int m_verStretch = 0;
+
     enum Child {
         HSizeType = 1,
         VSizeType = 2,
@@ -2195,13 +1860,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomSize {
     Q_DISABLE_COPY(DomSize)
 public:
-    DomSize();
+    DomSize() = default;
     ~DomSize();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline int elementWidth() const { return m_width; }
@@ -2215,12 +1878,12 @@ public:
     void clearElementHeight();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    int m_width;
-    int m_height;
+    uint m_children = 0;
+    int m_width = 0;
+    int m_height = 0;
+
     enum Child {
         Width = 1,
         Height = 2
@@ -2230,13 +1893,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomDate {
     Q_DISABLE_COPY(DomDate)
 public:
-    DomDate();
+    DomDate() = default;
     ~DomDate();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline int elementYear() const { return m_year; }
@@ -2255,13 +1916,13 @@ public:
     void clearElementDay();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    int m_year;
-    int m_month;
-    int m_day;
+    uint m_children = 0;
+    int m_year = 0;
+    int m_month = 0;
+    int m_day = 0;
+
     enum Child {
         Year = 1,
         Month = 2,
@@ -2272,13 +1933,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomTime {
     Q_DISABLE_COPY(DomTime)
 public:
-    DomTime();
+    DomTime() = default;
     ~DomTime();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline int elementHour() const { return m_hour; }
@@ -2297,13 +1956,13 @@ public:
     void clearElementSecond();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    int m_hour;
-    int m_minute;
-    int m_second;
+    uint m_children = 0;
+    int m_hour = 0;
+    int m_minute = 0;
+    int m_second = 0;
+
     enum Child {
         Hour = 1,
         Minute = 2,
@@ -2314,13 +1973,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomDateTime {
     Q_DISABLE_COPY(DomDateTime)
 public:
-    DomDateTime();
+    DomDateTime() = default;
     ~DomDateTime();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline int elementHour() const { return m_hour; }
@@ -2354,16 +2011,16 @@ public:
     void clearElementDay();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    int m_hour;
-    int m_minute;
-    int m_second;
-    int m_year;
-    int m_month;
-    int m_day;
+    uint m_children = 0;
+    int m_hour = 0;
+    int m_minute = 0;
+    int m_second = 0;
+    int m_year = 0;
+    int m_month = 0;
+    int m_day = 0;
+
     enum Child {
         Hour = 1,
         Minute = 2,
@@ -2377,13 +2034,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomStringList {
     Q_DISABLE_COPY(DomStringList)
 public:
-    DomStringList();
+    DomStringList() = default;
     ~DomStringList();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeNotr() const { return m_has_attr_notr; }
@@ -2406,21 +2061,20 @@ public:
     void setElementString(const QStringList &a);
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_notr;
-    bool m_has_attr_notr;
+    bool m_has_attr_notr = false;
 
     QString m_attr_comment;
-    bool m_has_attr_comment;
+    bool m_has_attr_comment = false;
 
     QString m_attr_extraComment;
-    bool m_has_attr_extraComment;
+    bool m_has_attr_extraComment = false;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QStringList m_string;
+
     enum Child {
         String = 1
     };
@@ -2429,11 +2083,12 @@ private:
 class QDESIGNER_UILIB_EXPORT DomResourcePixmap {
     Q_DISABLE_COPY(DomResourcePixmap)
 public:
-    DomResourcePixmap();
+    DomResourcePixmap() = default;
     ~DomResourcePixmap();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
+
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
 
@@ -2453,21 +2108,21 @@ private:
 
     // attribute data
     QString m_attr_resource;
-    bool m_has_attr_resource;
+    bool m_has_attr_resource = false;
 
     QString m_attr_alias;
-    bool m_has_attr_alias;
-
+    bool m_has_attr_alias = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomResourceIcon {
     Q_DISABLE_COPY(DomResourceIcon)
 public:
-    DomResourceIcon();
+    DomResourceIcon() = default;
     ~DomResourceIcon();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
+
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
 
@@ -2536,21 +2191,22 @@ private:
 
     // attribute data
     QString m_attr_theme;
-    bool m_has_attr_theme;
+    bool m_has_attr_theme = false;
 
     QString m_attr_resource;
-    bool m_has_attr_resource;
+    bool m_has_attr_resource = false;
 
     // child element data
-    uint m_children;
-    DomResourcePixmap *m_normalOff;
-    DomResourcePixmap *m_normalOn;
-    DomResourcePixmap *m_disabledOff;
-    DomResourcePixmap *m_disabledOn;
-    DomResourcePixmap *m_activeOff;
-    DomResourcePixmap *m_activeOn;
-    DomResourcePixmap *m_selectedOff;
-    DomResourcePixmap *m_selectedOn;
+    uint m_children = 0;
+    DomResourcePixmap *m_normalOff = nullptr;
+    DomResourcePixmap *m_normalOn = nullptr;
+    DomResourcePixmap *m_disabledOff = nullptr;
+    DomResourcePixmap *m_disabledOn = nullptr;
+    DomResourcePixmap *m_activeOff = nullptr;
+    DomResourcePixmap *m_activeOn = nullptr;
+    DomResourcePixmap *m_selectedOff = nullptr;
+    DomResourcePixmap *m_selectedOn = nullptr;
+
     enum Child {
         NormalOff = 1,
         NormalOn = 2,
@@ -2566,11 +2222,12 @@ private:
 class QDESIGNER_UILIB_EXPORT DomString {
     Q_DISABLE_COPY(DomString)
 public:
-    DomString();
+    DomString() = default;
     ~DomString();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
+
     inline QString text() const { return m_text; }
     inline void setText(const QString &s) { m_text = s; }
 
@@ -2595,26 +2252,23 @@ private:
 
     // attribute data
     QString m_attr_notr;
-    bool m_has_attr_notr;
+    bool m_has_attr_notr = false;
 
     QString m_attr_comment;
-    bool m_has_attr_comment;
+    bool m_has_attr_comment = false;
 
     QString m_attr_extraComment;
-    bool m_has_attr_extraComment;
-
+    bool m_has_attr_extraComment = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomPointF {
     Q_DISABLE_COPY(DomPointF)
 public:
-    DomPointF();
+    DomPointF() = default;
     ~DomPointF();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline double elementX() const { return m_x; }
@@ -2628,12 +2282,12 @@ public:
     void clearElementY();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    double m_x;
-    double m_y;
+    uint m_children = 0;
+    double m_x = 0.0;
+    double m_y = 0.0;
+
     enum Child {
         X = 1,
         Y = 2
@@ -2643,13 +2297,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomRectF {
     Q_DISABLE_COPY(DomRectF)
 public:
-    DomRectF();
+    DomRectF() = default;
     ~DomRectF();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline double elementX() const { return m_x; }
@@ -2673,14 +2325,14 @@ public:
     void clearElementHeight();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    double m_x;
-    double m_y;
-    double m_width;
-    double m_height;
+    uint m_children = 0;
+    double m_x = 0.0;
+    double m_y = 0.0;
+    double m_width = 0.0;
+    double m_height = 0.0;
+
     enum Child {
         X = 1,
         Y = 2,
@@ -2692,13 +2344,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomSizeF {
     Q_DISABLE_COPY(DomSizeF)
 public:
-    DomSizeF();
+    DomSizeF() = default;
     ~DomSizeF();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline double elementWidth() const { return m_width; }
@@ -2712,12 +2362,12 @@ public:
     void clearElementHeight();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    double m_width;
-    double m_height;
+    uint m_children = 0;
+    double m_width = 0.0;
+    double m_height = 0.0;
+
     enum Child {
         Width = 1,
         Height = 2
@@ -2727,13 +2377,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomChar {
     Q_DISABLE_COPY(DomChar)
 public:
-    DomChar();
+    DomChar() = default;
     ~DomChar();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline int elementUnicode() const { return m_unicode; }
@@ -2742,11 +2390,11 @@ public:
     void clearElementUnicode();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    int m_unicode;
+    uint m_children = 0;
+    int m_unicode = 0;
+
     enum Child {
         Unicode = 1
     };
@@ -2755,13 +2403,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomUrl {
     Q_DISABLE_COPY(DomUrl)
 public:
-    DomUrl();
+    DomUrl() = default;
     ~DomUrl();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline DomString *elementString() const { return m_string; }
@@ -2771,11 +2417,11 @@ public:
     void clearElementString();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
-    DomString *m_string;
+    uint m_children = 0;
+    DomString *m_string = nullptr;
+
     enum Child {
         String = 1
     };
@@ -2784,13 +2430,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomProperty {
     Q_DISABLE_COPY(DomProperty)
 public:
-    DomProperty();
+    DomProperty() = default;
     ~DomProperty();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -2928,75 +2572,71 @@ public:
     void setElementBrush(DomBrush *a);
 
 private:
-    QString m_text;
-
     void clear();
 
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
-    int m_attr_stdset;
-    bool m_has_attr_stdset;
+    int m_attr_stdset = 0;
+    bool m_has_attr_stdset = false;
 
     // child element data
-    Kind m_kind;
+    Kind m_kind = Unknown;
     QString m_bool;
-    DomColor *m_color;
+    DomColor *m_color = nullptr;
     QString m_cstring;
-    int m_cursor;
+    int m_cursor = 0;
     QString m_cursorShape;
     QString m_enum;
-    DomFont *m_font;
-    DomResourceIcon *m_iconSet;
-    DomResourcePixmap *m_pixmap;
-    DomPalette *m_palette;
-    DomPoint *m_point;
-    DomRect *m_rect;
+    DomFont *m_font = nullptr;
+    DomResourceIcon *m_iconSet = nullptr;
+    DomResourcePixmap *m_pixmap = nullptr;
+    DomPalette *m_palette = nullptr;
+    DomPoint *m_point = nullptr;
+    DomRect *m_rect = nullptr;
     QString m_set;
-    DomLocale *m_locale;
-    DomSizePolicy *m_sizePolicy;
-    DomSize *m_size;
-    DomString *m_string;
-    DomStringList *m_stringList;
-    int m_number;
-    float m_float;
-    double m_double;
-    DomDate *m_date;
-    DomTime *m_time;
-    DomDateTime *m_dateTime;
-    DomPointF *m_pointF;
-    DomRectF *m_rectF;
-    DomSizeF *m_sizeF;
-    qlonglong m_longLong;
-    DomChar *m_char;
-    DomUrl *m_url;
-    uint m_UInt;
-    qulonglong m_uLongLong;
-    DomBrush *m_brush;
+    DomLocale *m_locale = nullptr;
+    DomSizePolicy *m_sizePolicy = nullptr;
+    DomSize *m_size = nullptr;
+    DomString *m_string = nullptr;
+    DomStringList *m_stringList = nullptr;
+    int m_number = 0;
+    float m_float = 0.0;
+    double m_double = 0.0;
+    DomDate *m_date = nullptr;
+    DomTime *m_time = nullptr;
+    DomDateTime *m_dateTime = nullptr;
+    DomPointF *m_pointF = nullptr;
+    DomRectF *m_rectF = nullptr;
+    DomSizeF *m_sizeF = nullptr;
+    qlonglong m_longLong = 0;
+    DomChar *m_char = nullptr;
+    DomUrl *m_url = nullptr;
+    uint m_UInt = 0;
+    qulonglong m_uLongLong = 0;
+    DomBrush *m_brush = nullptr;
 };
 
 class QDESIGNER_UILIB_EXPORT DomConnections {
     Q_DISABLE_COPY(DomConnections)
 public:
-    DomConnections();
+    DomConnections() = default;
     ~DomConnections();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QVector<DomConnection *> elementConnection() const { return m_connection; }
     void setElementConnection(const QVector<DomConnection *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomConnection *> m_connection;
+
     enum Child {
         Connection = 1
     };
@@ -3005,13 +2645,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomConnection {
     Q_DISABLE_COPY(DomConnection)
 public:
-    DomConnection();
+    DomConnection() = default;
     ~DomConnection();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QString elementSender() const { return m_sender; }
@@ -3041,15 +2679,15 @@ public:
     void clearElementHints();
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QString m_sender;
     QString m_signal;
     QString m_receiver;
     QString m_slot;
-    DomConnectionHints *m_hints;
+    DomConnectionHints *m_hints = nullptr;
+
     enum Child {
         Sender = 1,
         Signal = 2,
@@ -3062,24 +2700,22 @@ private:
 class QDESIGNER_UILIB_EXPORT DomConnectionHints {
     Q_DISABLE_COPY(DomConnectionHints)
 public:
-    DomConnectionHints();
+    DomConnectionHints() = default;
     ~DomConnectionHints();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QVector<DomConnectionHint *> elementHint() const { return m_hint; }
     void setElementHint(const QVector<DomConnectionHint *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomConnectionHint *> m_hint;
+
     enum Child {
         Hint = 1
     };
@@ -3088,13 +2724,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomConnectionHint {
     Q_DISABLE_COPY(DomConnectionHint)
 public:
-    DomConnectionHint();
+    DomConnectionHint() = default;
     ~DomConnectionHint();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeType() const { return m_has_attr_type; }
@@ -3114,103 +2748,40 @@ public:
     void clearElementY();
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_type;
-    bool m_has_attr_type;
+    bool m_has_attr_type = false;
 
     // child element data
-    uint m_children;
-    int m_x;
-    int m_y;
+    uint m_children = 0;
+    int m_x = 0;
+    int m_y = 0;
+
     enum Child {
         X = 1,
         Y = 2
     };
 };
 
-class QDESIGNER_UILIB_EXPORT DomScript {
-    Q_DISABLE_COPY(DomScript)
-public:
-    DomScript();
-    ~DomScript();
-
-    void read(QXmlStreamReader &reader);
-    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
-
-    // attribute accessors
-    inline bool hasAttributeSource() const { return m_has_attr_source; }
-    inline QString attributeSource() const { return m_attr_source; }
-    inline void setAttributeSource(const QString &a) { m_attr_source = a; m_has_attr_source = true; }
-    inline void clearAttributeSource() { m_has_attr_source = false; }
-
-    inline bool hasAttributeLanguage() const { return m_has_attr_language; }
-    inline QString attributeLanguage() const { return m_attr_language; }
-    inline void setAttributeLanguage(const QString &a) { m_attr_language = a; m_has_attr_language = true; }
-    inline void clearAttributeLanguage() { m_has_attr_language = false; }
-
-private:
-    QString m_text;
-
-    // attribute data
-    QString m_attr_source;
-    bool m_has_attr_source;
-
-    QString m_attr_language;
-    bool m_has_attr_language;
-
-};
-
-class QDESIGNER_UILIB_EXPORT DomWidgetData {
-    Q_DISABLE_COPY(DomWidgetData)
-public:
-    DomWidgetData();
-    ~DomWidgetData();
-
-    void read(QXmlStreamReader &reader);
-    void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
-
-    // child element accessors
-    inline QList<DomProperty*> elementProperty() const { return m_property; }
-    void setElementProperty(const QList<DomProperty *> &a);
-
-private:
-    QString m_text;
-
-    // child element data
-    uint m_children;
-    QList<DomProperty*> m_property;
-    enum Child {
-        Property = 1
-    };
-};
-
 class QDESIGNER_UILIB_EXPORT DomDesignerData {
     Q_DISABLE_COPY(DomDesignerData)
 public:
-    DomDesignerData();
+    DomDesignerData() = default;
     ~DomDesignerData();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QList<DomProperty*> elementProperty() const { return m_property; }
     void setElementProperty(const QList<DomProperty *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QList<DomProperty*> m_property;
+
     enum Child {
         Property = 1
     };
@@ -3219,13 +2790,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomSlots {
     Q_DISABLE_COPY(DomSlots)
 public:
-    DomSlots();
+    DomSlots() = default;
     ~DomSlots();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QStringList elementSignal() const { return m_signal; }
@@ -3235,12 +2804,12 @@ public:
     void setElementSlot(const QStringList &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QStringList m_signal;
     QStringList m_slot;
+
     enum Child {
         Signal = 1,
         Slot = 2
@@ -3250,13 +2819,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomPropertySpecifications {
     Q_DISABLE_COPY(DomPropertySpecifications)
 public:
-    DomPropertySpecifications();
+    DomPropertySpecifications() = default;
     ~DomPropertySpecifications();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // child element accessors
     inline QVector<DomPropertyToolTip *> elementTooltip() const { return m_tooltip; }
@@ -3266,12 +2833,12 @@ public:
     void setElementStringpropertyspecification(const QVector<DomStringPropertySpecification *> &a);
 
 private:
-    QString m_text;
 
     // child element data
-    uint m_children;
+    uint m_children = 0;
     QVector<DomPropertyToolTip *> m_tooltip;
     QVector<DomStringPropertySpecification *> m_stringpropertyspecification;
+
     enum Child {
         Tooltip = 1,
         Stringpropertyspecification = 2
@@ -3281,13 +2848,11 @@ private:
 class QDESIGNER_UILIB_EXPORT DomPropertyToolTip {
     Q_DISABLE_COPY(DomPropertyToolTip)
 public:
-    DomPropertyToolTip();
+    DomPropertyToolTip() = default;
     ~DomPropertyToolTip();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -3296,24 +2861,19 @@ public:
     inline void clearAttributeName() { m_has_attr_name = false; }
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
-
+    bool m_has_attr_name = false;
 };
 
 class QDESIGNER_UILIB_EXPORT DomStringPropertySpecification {
     Q_DISABLE_COPY(DomStringPropertySpecification)
 public:
-    DomStringPropertySpecification();
+    DomStringPropertySpecification() = default;
     ~DomStringPropertySpecification();
 
     void read(QXmlStreamReader &reader);
     void write(QXmlStreamWriter &writer, const QString &tagName = QString()) const;
-    inline QString text() const { return m_text; }
-    inline void setText(const QString &s) { m_text = s; }
 
     // attribute accessors
     inline bool hasAttributeName() const { return m_has_attr_name; }
@@ -3332,18 +2892,15 @@ public:
     inline void clearAttributeNotr() { m_has_attr_notr = false; }
 
 private:
-    QString m_text;
-
     // attribute data
     QString m_attr_name;
-    bool m_has_attr_name;
+    bool m_has_attr_name = false;
 
     QString m_attr_type;
-    bool m_has_attr_type;
+    bool m_has_attr_type = false;
 
     QString m_attr_notr;
-    bool m_has_attr_notr;
-
+    bool m_has_attr_notr = false;
 };
 
 

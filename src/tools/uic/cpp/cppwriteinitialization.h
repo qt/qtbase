@@ -88,14 +88,13 @@ struct WriteInitialization : public TreeWalker
     typedef QList<DomProperty*> DomPropertyList;
     typedef QHash<QString, DomProperty*> DomPropertyMap;
 
-    WriteInitialization(Uic *uic, bool activateScripts);
+    WriteInitialization(Uic *uic);
 
 //
 // widgets
 //
     void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
     void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
-    void acceptWidgetScripts(const DomScripts &, DomWidget *node, const  DomWidgets &childWidgets) Q_DECL_OVERRIDE;
 
     void acceptLayout(DomLayout *node) Q_DECL_OVERRIDE;
     void acceptSpacer(DomSpacer *node) Q_DECL_OVERRIDE;
@@ -129,11 +128,6 @@ struct WriteInitialization : public TreeWalker
 // signal/slot connections
 //
     void acceptConnection(DomConnection *connection) Q_DECL_OVERRIDE;
-
-//
-// images
-//
-    void acceptImage(DomImage *image) Q_DECL_OVERRIDE;
 
     enum {
         Use43UiFile = 0,
@@ -229,7 +223,6 @@ private:
 
     QString findDeclaration(const QString &name);
     DomWidget *findWidget(QLatin1String widgetClass);
-    DomImage *findImage(const QString &name) const;
 
     bool isValidObject(const QString &name) const;
 
@@ -263,7 +256,6 @@ private:
 
     QSet<QString> m_buttonGroups;
     QHash<QString, DomWidget*> m_registeredWidgets;
-    QHash<QString, DomImage*> m_registeredImages;
     QHash<QString, DomAction*> m_registeredActions;
     typedef QHash<uint, QString> ColorBrushHash;
     ColorBrushHash m_colorBrushHash;
@@ -314,7 +306,6 @@ private:
 
     QString m_delayedActionInitialization;
     QTextStream m_actionOut;
-    const bool m_activateScripts;
 
     bool m_layoutWidget;
     bool m_firstThemeIcon;

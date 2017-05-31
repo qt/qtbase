@@ -27,7 +27,6 @@
 ****************************************************************************/
 
 #include "cppwriteinitialization.h"
-#include "cppwriteiconinitialization.h"
 #include "driver.h"
 #include "ui4.h"
 #include "utils.h"
@@ -129,11 +128,6 @@ namespace {
         void writeSetter(const QString &indent, const QString &varName,const QString &setter, Value v, QTextStream &str) {
             str << indent << varName << "->" << setter << '(' << v << ");\n";
         }
-
-    void writeSetupUIScriptVariableDeclarations(const QString &indent, QTextStream &str)  {
-        str << indent << "ScriptContext scriptContext;\n"
-            << indent << "QWidgetList childWidgets;\n";
-    }
 
     static inline bool iconHasStatePixmaps(const DomResourceIcon *i) {
         return i->hasElementNormalOff()   || i->hasElementNormalOn() ||
@@ -464,7 +458,7 @@ static bool needsTranslation(const DomElement *element)
 }
 
 // ---  WriteInitialization
-WriteInitialization::WriteInitialization(Uic *uic, bool activateScripts) :
+WriteInitialization::WriteInitialization(Uic *uic) :
       m_uic(uic),
       m_driver(uic->driver()), m_output(uic->output()), m_option(uic->option()),
       m_indent(m_option.indent + m_option.indent),
@@ -475,14 +469,13 @@ WriteInitialization::WriteInitialization(Uic *uic, bool activateScripts) :
       m_delayedOut(&m_delayedInitialization, QIODevice::WriteOnly),
       m_refreshOut(&m_refreshInitialization, QIODevice::WriteOnly),
       m_actionOut(&m_delayedActionInitialization, QIODevice::WriteOnly),
-      m_activateScripts(activateScripts), m_layoutWidget(false),
+      m_layoutWidget(false),
       m_firstThemeIcon(true)
 {
 }
 
 void WriteInitialization::acceptUI(DomUI *node)
 {
-    m_registeredImages.clear();
     m_actionGroupChain.push(0);
     m_widgetChain.push(0);
     m_layoutChain.push(0);
@@ -492,9 +485,6 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     if (node->elementCustomWidgets())
         TreeWalker::acceptCustomWidgets(node->elementCustomWidgets());
-
-    if (node->elementImages())
-        TreeWalker::acceptImages(node->elementImages());
 
     if (m_option.generateImplemetation)
         m_output << "#include <" << m_driver->headerFileName() << ">\n\n";
@@ -514,9 +504,6 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     m_output << m_option.indent << "void " << "setupUi(" << widgetClassName << " *" << varName << ")\n"
            << m_option.indent << "{\n";
-
-    if (m_activateScripts)
-        writeSetupUIScriptVariableDeclarations(m_indent, m_output);
 
     const QStringList connections = m_uic->databaseInfo()->connections();
     for (int i=0; i<connections.size(); ++i) {
@@ -1895,23 +1882,6 @@ QString WriteInitialization::pixCall(const QString &t, const QString &text) cons
         type += QLatin1String("()");
         return type;
     }
-    if (const DomImage *image = findImage(text)) {
-        if (m_option.extractImages) {
-            const QString format = image->elementData()->attributeFormat();
-            const QString extension = format.left(format.indexOf(QLatin1Char('.'))).toLower();
-            return QLatin1String("QPixmap(QString::fromUtf8(\":/")
-                 + m_generatedClass
-                 + QLatin1String("/images/")
-                 + text
-                 + QLatin1Char('.')
-                 + extension
-                 + QLatin1String("\"))");
-        }
-        return WriteIconInitialization::iconFromDataFunction()
-             + QLatin1Char('(')
-             + text
-             + QLatin1String("_ID)");
-    }
 
     QString pixFunc = m_uic->pixmapFunction();
     if (pixFunc.isEmpty())
@@ -2429,11 +2399,6 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
         << ");\n";
 }
 
-DomImage *WriteInitialization::findImage(const QString &name) const
-{
-    return m_registeredImages.value(name);
-}
-
 DomWidget *WriteInitialization::findWidget(QLatin1String widgetClass)
 {
     for (int i = m_widgetChain.count() - 1; i >= 0; --i) {
@@ -2445,49 +2410,6 @@ DomWidget *WriteInitialization::findWidget(QLatin1String widgetClass)
 
     return 0;
 }
-
-void WriteInitialization::acceptImage(DomImage *image)
-{
-    if (!image->hasAttributeName())
-        return;
-
-    m_registeredImages.insert(image->attributeName(), image);
-}
-
-void WriteInitialization::acceptWidgetScripts(const DomScripts &widgetScripts, DomWidget *node, const  DomWidgets &childWidgets)
-{
-    // Add the per-class custom scripts to the per-widget ones.
-    DomScripts scripts(widgetScripts);
-
-    if (DomScript *customWidgetScript = m_uic->customWidgetsInfo()->customWidgetScript(node->attributeClass()))
-        scripts.push_front(customWidgetScript);
-
-    if (scripts.empty())
-        return;
-
-    // concatenate script snippets
-    QString script;
-    for (const DomScript *domScript : qAsConst(scripts)) {
-        const QString snippet = domScript->text();
-        if (!snippet.isEmpty())
-            script += QStringRef(&snippet).trimmed() + QLatin1Char('\n');
-    }
-    if (script.isEmpty())
-        return;
-
-    // Build the list of children and insert call
-    m_output << m_indent << "childWidgets.clear();\n";
-    if (!childWidgets.empty()) {
-        m_output << m_indent <<  "childWidgets";
-        for (DomWidget *child : childWidgets)
-            m_output << " << " << m_driver->findOrInsertWidget(child);
-        m_output << ";\n";
-    }
-    m_output << m_indent << "scriptContext.run("
-             << writeString(script, m_dindent) << ", "
-             << m_driver->findOrInsertWidget(node) << ", childWidgets);\n";
-}
-
 
 static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QString> &directives)
 {

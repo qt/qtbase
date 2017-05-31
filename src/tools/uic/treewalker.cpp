@@ -38,9 +38,6 @@ void TreeWalker::acceptUI(DomUI *ui)
         acceptButtonGroups(domButtonGroups);
 
     acceptTabStops(ui->elementTabStops());
-
-    if (ui->elementImages())
-        acceptImages(ui->elementImages());
 }
 
 void TreeWalker::acceptLayoutDefault(DomLayoutDefault *layoutDefault)
@@ -112,8 +109,6 @@ void TreeWalker::acceptWidget(DomWidget *widget)
 
     if (!widget->elementLayout().isEmpty())
         acceptLayout(widget->elementLayout().at(0));
-
-    acceptWidgetScripts(widget->elementScript(), widget, childWidgets);
 }
 
 void TreeWalker::acceptSpacer(DomSpacer *spacer)
@@ -250,17 +245,6 @@ void TreeWalker::acceptActionRef(DomActionRef *actionRef)
     Q_UNUSED(actionRef);
 }
 
-void TreeWalker::acceptImages(DomImages *images)
-{
-    for (int i=0; i<images->elementImage().size(); ++i)
-        acceptImage(images->elementImage().at(i));
-}
-
-void TreeWalker::acceptImage(DomImage *image)
-{
-    Q_UNUSED(image);
-}
-
 void TreeWalker::acceptIncludes(DomIncludes *includes)
 {
     for (int i=0; i<includes->elementInclude().size(); ++i)
@@ -292,10 +276,6 @@ void TreeWalker::acceptConnectionHints(DomConnectionHints *connectionHints)
 void TreeWalker::acceptConnectionHint(DomConnectionHint *connectionHint)
 {
     Q_UNUSED(connectionHint);
-}
-
-void TreeWalker::acceptWidgetScripts(const DomScripts &, DomWidget *, const  DomWidgets &)
-{
 }
 
 void TreeWalker::acceptButtonGroups(const DomButtonGroups *domButtonGroups)

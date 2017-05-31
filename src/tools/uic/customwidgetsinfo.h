@@ -57,8 +57,6 @@ public:
     inline DomCustomWidget *customWidget(const QString &name) const
     { return m_customWidgets.value(name); }
 
-    DomScript *customWidgetScript(const QString &name) const;
-
     QString customWidgetAddPageMethod(const QString &name) const;
 
     QString realClassName(const QString &className) const;

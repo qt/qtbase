@@ -52,8 +52,7 @@ QT_BEGIN_NAMESPACE
 Uic::Uic(Driver *d)
      : drv(d),
        out(d->output()),
-       opt(d->option()),
-       externalPix(true)
+       opt(d->option())
 {
 }
 
@@ -253,15 +252,13 @@ bool Uic::write(DomUI *ui)
     if (pixFunction == QLatin1String("QPixmap::fromMimeSource"))
         pixFunction = QLatin1String("qPixmapFromMimeSource");
 
-    externalPix = ui->elementImages() == 0;
-
     info.acceptUI(ui);
     cWidgetsInfo.acceptUI(ui);
     WriteIncludes writeIncludes(this);
     writeIncludes.acceptUI(ui);
 
     Validator(this).acceptUI(ui);
-    WriteDeclaration(this, writeIncludes.scriptsActivated()).acceptUI(ui);
+    WriteDeclaration(this).acceptUI(ui);
 
     if (opt.headerProtection)
         writeHeaderProtectionEnd();

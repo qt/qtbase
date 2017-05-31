@@ -74,12 +74,6 @@ public:
     inline void setPixmapFunction(const QString &f)
     { pixFunction = f; }
 
-    inline bool hasExternalPixmap() const
-    { return externalPix; }
-
-    inline void setExternalPixmap(bool b)
-    { externalPix = b; }
-
     inline const DatabaseInfo *databaseInfo() const
     { return &info; }
 
@@ -123,7 +117,6 @@ private:
     DatabaseInfo info;
     CustomWidgetsInfo cWidgetsInfo;
     QString pixFunction;
-    bool externalPix;
 };
 
 QT_END_NAMESPACE
