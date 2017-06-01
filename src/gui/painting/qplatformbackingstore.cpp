@@ -239,6 +239,11 @@ static inline QRect deviceRect(const QRect &rect, QWindow *window)
     return deviceRect;
 }
 
+static inline QPoint deviceOffset(const QPoint &pt, QWindow *window)
+{
+    return pt * window->devicePixelRatio();
+}
+
 static QRegion deviceRegion(const QRegion &region, QWindow *window, const QPoint &offset)
 {
     if (offset.isNull() && window->devicePixelRatio() <= 1)
@@ -326,6 +331,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     d_ptr->blitter->bind();
 
     const QRect deviceWindowRect = deviceRect(QRect(QPoint(), window->size()), window);
+    const QPoint deviceWindowOffset = deviceOffset(offset, window);
 
     // Textures for renderToTexture widgets.
     for (int i = 0; i < textures->count(); ++i) {
@@ -387,7 +393,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
             d_ptr->blitter->setSwizzleRB(true);
         // The backingstore is for the entire tlw.
         // In case of native children offset tells the position relative to the tlw.
-        const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(offset), d_ptr->textureSize.height());
+        const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(deviceWindowOffset), d_ptr->textureSize.height());
         const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(srcRect,
                                                                          d_ptr->textureSize,
                                                                          origin);
