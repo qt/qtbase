@@ -576,9 +576,13 @@ void QXcbWindow::create()
                         atom(QXcbAtom::_XEMBED_INFO),
                         32, 2, (void *)data);
 
-
 #if QT_CONFIG(xinput2)
-    connection()->xi2Select(m_window);
+    if (connection()->hasXInput2()) {
+        if (connection()->xi2MouseEventsDisabled())
+            connection()->xi2SelectDeviceEventsCompatibility(m_window);
+        else
+            connection()->xi2SelectDeviceEvents(m_window);
+    }
 #endif
 
     setWindowState(window()->windowStates());
@@ -2237,9 +2241,10 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
      * not pressed, otherwise (e.g. on Alt+Tab) it can igonre important enter/leave events.
     */
     if (conn) {
+
         const bool mouseButtonsPressed = (conn->buttonState() != Qt::NoButton);
-#ifdef XCB_USE_XINPUT22
-        return mouseButtonsPressed || (conn->isAtLeastXI22() && conn->xi2MouseEvents());
+#if QT_CONFIG(xinput2)
+        return mouseButtonsPressed || (conn->hasXInput2() && !conn->xi2MouseEventsDisabled());
 #else
         return mouseButtonsPressed;
 #endif
@@ -2342,7 +2347,6 @@ void QXcbWindow::handleMotionNotifyEvent(int event_x, int event_y, int root_x, i
     handleMouseEvent(timestamp, local, global, modifiers, source);
 }
 
-// Handlers for plain xcb events. Used only when XI 2.2 or newer is not available.
 void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 {
     Qt::KeyboardModifiers modifiers = connection()->keyboard()->translateModifiers(event->state);
@@ -2363,13 +2367,12 @@ void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
     handleMotionNotifyEvent(event->event_x, event->event_y, event->root_x, event->root_y, modifiers, event->time);
 }
 
-#ifdef XCB_USE_XINPUT22
+#if QT_CONFIG(xinput2)
 static inline int fixed1616ToInt(FP1616 val)
 {
     return int((qreal(val >> 16)) + (val & 0xFFFF) / (qreal)0xFFFF);
 }
 
-// With XI 2.2+ press/release/motion comes here instead of the above handlers.
 void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource source)
 {
     QXcbConnection *conn = connection();
@@ -2431,7 +2434,6 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
     }
 }
 
-// With XI 2.2+ enter/leave comes here and are blocked in plain xcb events
 void QXcbWindow::handleXIEnterLeave(xcb_ge_event_t *event)
 {
     xXIEnterEvent *ev = reinterpret_cast<xXIEnterEvent *>(event);
@@ -2591,8 +2593,9 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
 {
     if (!grab && connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(Q_NULLPTR);
-#ifdef XCB_USE_XINPUT22
-    if (connection()->isAtLeastXI22() && connection()->xi2MouseEvents()) {
+
+#if QT_CONFIG(xinput2)
+    if (connection()->hasXInput2() && !connection()->xi2MouseEventsDisabled()) {
         bool result = connection()->xi2SetMouseGrabEnabled(m_window, grab);
         if (grab && result)
             connection()->setMouseGrabber(this);

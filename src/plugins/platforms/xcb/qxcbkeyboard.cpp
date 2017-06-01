@@ -53,7 +53,7 @@
 #include <stdio.h>
 #include <X11/keysym.h>
 
-#ifdef XCB_USE_XINPUT22
+#if QT_CONFIG(xinput2)
 #include <X11/extensions/XI2proto.h>
 #undef KeyPress
 #undef KeyRelease
@@ -800,7 +800,7 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
     }
 }
 
-#ifdef XCB_USE_XINPUT22
+#if QT_CONFIG(xinput2)
 void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
 {
     if (m_config && !connection()->hasXKB()) {

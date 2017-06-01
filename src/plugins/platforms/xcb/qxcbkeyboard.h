@@ -74,7 +74,7 @@ public:
     void updateXKBMods();
     quint32 xkbModMask(quint16 state);
     void updateXKBStateFromCore(quint16 state);
-#ifdef XCB_USE_XINPUT22
+#if QT_CONFIG(xinput2)
     void updateXKBStateFromXI(void *modInfo, void *groupInfo);
 #endif
 #if QT_CONFIG(xkb)

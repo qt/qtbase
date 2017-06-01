@@ -1023,7 +1023,6 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
 
-        // press/release/motion is only delivered here when XI 2.2+ is _not_ in use
         case XCB_BUTTON_PRESS: {
             xcb_button_press_event_t *ev = (xcb_button_press_event_t *)event;
             m_keyboard->updateXKBStateFromCore(ev->state);
@@ -1066,14 +1065,14 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             handleClientMessageEvent((xcb_client_message_event_t *)event);
             break;
         case XCB_ENTER_NOTIFY:
-#ifdef XCB_USE_XINPUT22
-            if (isAtLeastXI22() && xi2MouseEvents())
+#if QT_CONFIG(xinput2)
+            if (hasXInput2() && !xi2MouseEventsDisabled())
                 break;
 #endif
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
         case XCB_LEAVE_NOTIFY:
-#ifdef XCB_USE_XINPUT22
-            if (isAtLeastXI22() && xi2MouseEvents())
+#if QT_CONFIG(xinput2)
+            if (hasXInput2() && !xi2MouseEventsDisabled())
                 break;
 #endif
             m_keyboard->updateXKBStateFromCore(((xcb_leave_notify_event_t *)event)->state);
@@ -1138,7 +1137,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 #if QT_CONFIG(xinput2)
         case XCB_GE_GENERIC:
             // Here the windowEventListener is invoked from xi2HandleEvent()
-            if (m_xi2Enabled && isXIEvent(event, m_xiOpCode))
+            if (hasXInput2() && isXIEvent(event, m_xiOpCode))
                 xi2HandleEvent(reinterpret_cast<xcb_ge_event_t *>(event));
             break;
 #endif
@@ -1550,7 +1549,7 @@ bool QXcbConnection::compressEvent(xcb_generic_event_t *event, int currentIndex,
 #if QT_CONFIG(xinput2)
     // compress XI_* events
     if (responseType == XCB_GE_GENERIC) {
-        if (!m_xi2Enabled)
+        if (!hasXInput2())
             return false;
 
         // compress XI_Motion, but not from tablet devices

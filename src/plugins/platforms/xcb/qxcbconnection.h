@@ -358,7 +358,7 @@ public:
     virtual void handleFocusInEvent(const xcb_focus_in_event_t *) {}
     virtual void handleFocusOutEvent(const xcb_focus_out_event_t *) {}
     virtual void handlePropertyNotifyEvent(const xcb_property_notify_event_t *) {}
-#ifdef XCB_USE_XINPUT22
+#if QT_CONFIG(xinput2)
     virtual void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource = Qt::MouseEventNotSynthesized) {}
     virtual void handleXIEnterLeave(xcb_ge_event_t *) {}
 #endif
@@ -425,14 +425,6 @@ public:
     void *xlib_display() const;
     void *createVisualInfoForDefaultVisualId() const;
 #endif
-
-#if QT_CONFIG(xinput2)
-    void xi2Select(xcb_window_t window);
-    void xi2SelectStateEvents();
-    bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
-    bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
-#endif
-
     void sync();
 
     void handleXcbError(xcb_generic_error_t *error);
@@ -461,6 +453,7 @@ public:
     bool hasInputShape() const { return has_input_shape; }
     bool hasXKB() const { return has_xkb; }
     bool hasXRender() const { return has_render_extension; }
+    bool hasXInput2() const { return m_xi2Enabled; }
 
     bool threadedEventHandling() const { return m_reader->isRunning(); }
 
@@ -492,19 +485,23 @@ public:
     static bool xEmbedSystemTrayAvailable();
     static bool xEmbedSystemTrayVisualHasAlphaChannel();
 
+#if QT_CONFIG(xinput2)
+    void xi2SelectStateEvents();
+    void xi2SelectDeviceEvents(xcb_window_t window);
+    void xi2SelectDeviceEventsCompatibility(xcb_window_t window);
+    bool xi2SetMouseGrabEnabled(xcb_window_t w, bool grab);
+    bool xi2MouseEventsDisabled() const;
+    bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
+    bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
+    Qt::MouseButton xiToQtMouseButton(uint32_t b);
 #ifdef XCB_USE_XINPUT21
     void xi2UpdateScrollingDevices();
-#endif // XCB_USE_XINPUT21
-
+#endif
 #ifdef XCB_USE_XINPUT22
     bool startSystemResizeForTouchBegin(xcb_window_t window, const QPoint &point, Qt::Corner corner);
-    bool xi2SetMouseGrabEnabled(xcb_window_t w, bool grab);
-    bool xi2MouseEvents() const;
     bool isTouchScreen(int id);
-#endif // XCB_USE_XINPUT22
-
-    Qt::MouseButton xiToQtMouseButton(uint32_t b);
-
+#endif
+#endif
     QXcbEventReader *eventReader() const { return m_reader; }
 
     bool canGrab() const { return m_canGrabServer; }
@@ -542,8 +539,9 @@ private:
     void destroyScreen(QXcbScreen *screen);
     void initializeScreens();
     bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
-#if QT_CONFIG(xinput2)
+
     bool m_xi2Enabled = false;
+#if QT_CONFIG(xinput2)
     int m_xi2Minor = -1;
     void initializeXInput2();
     void xi2SetupDevice(void *info, bool removeExisting = true);
