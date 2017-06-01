@@ -2127,6 +2127,20 @@ void QProcess::start(OpenMode mode)
     If the function is successful then *\a pid is set to the process
     identifier of the started process.
 
+    Only the following property setters are supported by startDetached():
+    \list
+    \li setArguments()
+    \li setCreateProcessArgumentsModifier()
+    \li setNativeArguments()
+    \li setProcessEnvironment()
+    \li setProgram()
+    \li setStandardErrorFile()
+    \li setStandardInputFile()
+    \li setStandardOutputFile()
+    \li setWorkingDirectory()
+    \endlist
+    All other properties of the QProcess object are ignored.
+
     \sa start()
     \sa startDetached(const QString &program, const QStringList &arguments,
                       const QString &workingDirectory, qint64 *pid)
