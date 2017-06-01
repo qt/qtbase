@@ -445,9 +445,13 @@ QWindowSystemInterfacePrivate::WheelEvent::WheelEvent(QWindow *window, ulong tim
 {
 }
 
+#if QT_DEPRECATED_SINCE(5, 10)
 void QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods) {
     unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     handleWheelEvent(window, time, local, global, d, o, mods);
+QT_WARNING_POP
 }
 
 void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods)
@@ -455,6 +459,7 @@ void QWindowSystemInterface::handleWheelEvent(QWindow *window, ulong timestamp, 
     QPoint point = (o == Qt::Vertical) ? QPoint(0, d) : QPoint(d, 0);
     handleWheelEvent(window, timestamp, local, global, QPoint(), point, mods);
 }
+#endif // QT_DEPRECATED_SINCE(5, 10)
 
 void QWindowSystemInterface::handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods, Qt::ScrollPhase phase, Qt::MouseEventSource source)
 {
@@ -768,6 +773,7 @@ void QWindowSystemInterface::handleTabletEvent(QWindow *window, const QPointF &l
                       xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
 }
 
+#if QT_DEPRECATED_SINCE(5, 10)
 void QWindowSystemInterface::handleTabletEvent(QWindow *window, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
@@ -785,6 +791,7 @@ void QWindowSystemInterface::handleTabletEvent(QWindow *window, bool down, const
     handleTabletEvent(window, local, global, device, pointerType, (down ? Qt::LeftButton : Qt::NoButton), pressure,
                       xTilt, yTilt, tangentialPressure, rotation, z, uid, modifiers);
 }
+#endif // QT_DEPRECATED_SINCE(5, 10)
 
 void QWindowSystemInterface::handleTabletEnterProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid)
 {

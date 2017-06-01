@@ -121,9 +121,10 @@ public:
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized,
                                  bool inverted = false);
 
-    // Wheel event compatibility functions. Will be removed: do not use.
-    static void handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
-    static void handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
+#if QT_DEPRECATED_SINCE(5, 10)
+    QT_DEPRECATED static void handleWheelEvent(QWindow *window, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
+    QT_DEPRECATED static void handleWheelEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, int d, Qt::Orientation o, Qt::KeyboardModifiers mods = Qt::NoModifier);
+#endif
 
     struct TouchPoint {
         TouchPoint() : id(0), uniqueId(-1), pressure(0), rotation(0), state(Qt::TouchPointStationary) { }
@@ -208,14 +209,16 @@ public:
                                   int device, int pointerType, Qt::MouseButtons buttons, qreal pressure, int xTilt, int yTilt,
                                   qreal tangentialPressure, qreal rotation, int z, qint64 uid,
                                   Qt::KeyboardModifiers modifiers = Qt::NoModifier);
-    static void handleTabletEvent(QWindow *window, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
-                                  int device, int pointerType, qreal pressure, int xTilt, int yTilt,
-                                  qreal tangentialPressure, qreal rotation, int z, qint64 uid,
-                                  Qt::KeyboardModifiers modifiers = Qt::NoModifier); // ### remove in Qt 6
-    static void handleTabletEvent(QWindow *window, bool down, const QPointF &local, const QPointF &global,
-                                  int device, int pointerType, qreal pressure, int xTilt, int yTilt,
-                                  qreal tangentialPressure, qreal rotation, int z, qint64 uid,
-                                  Qt::KeyboardModifiers modifiers = Qt::NoModifier); // ### remove in Qt 6
+#if QT_DEPRECATED_SINCE(5, 10)
+    QT_DEPRECATED static void handleTabletEvent(QWindow *window, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
+                                                int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                                Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+    QT_DEPRECATED static void handleTabletEvent(QWindow *window, bool down, const QPointF &local, const QPointF &global,
+                                                int device, int pointerType, qreal pressure, int xTilt, int yTilt,
+                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
+                                                Qt::KeyboardModifiers modifiers = Qt::NoModifier);
+#endif
     static void handleTabletEnterProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid);
     static void handleTabletEnterProximityEvent(int device, int pointerType, qint64 uid);
     static void handleTabletLeaveProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid);
