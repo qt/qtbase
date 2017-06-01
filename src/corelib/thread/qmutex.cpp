@@ -642,7 +642,7 @@ const int FreeListConstants::Sizes[FreeListConstants::BlockCount] = {
     16,
     128,
     1024,
-    FreeListConstants::MaxIndex - (16-128-1024)
+    FreeListConstants::MaxIndex - (16 + 128 + 1024)
 };
 
 typedef QFreeList<QMutexPrivate, FreeListConstants> FreeList;
