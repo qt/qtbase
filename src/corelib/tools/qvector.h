@@ -310,6 +310,7 @@ private:
 // will be default-initialized
 #   pragma warning ( push )
 #   pragma warning ( disable : 4345 )
+#   pragma warning(disable : 4127) // conditional expression is constant
 #endif
 
 template <typename T>
@@ -324,10 +325,6 @@ void QVector<T>::defaultConstruct(T *from, T *to)
     }
 }
 
-#ifdef Q_CC_MSVC
-#   pragma warning ( pop )
-#endif
-
 template <typename T>
 void QVector<T>::copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom)
 {
@@ -339,11 +336,6 @@ void QVector<T>::copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom)
     }
 }
 
-#if defined(Q_CC_MSVC)
-#pragma warning( push )
-#pragma warning( disable : 4127 ) // conditional expression is constant
-#endif
-
 template <typename T>
 void QVector<T>::destruct(T *from, T *to)
 {
@@ -353,10 +345,6 @@ void QVector<T>::destruct(T *from, T *to)
         }
     }
 }
-
-#if defined(Q_CC_MSVC)
-#pragma warning( pop )
-#endif
 
 template <typename T>
 inline QVector<T>::QVector(const QVector<T> &v)
@@ -378,6 +366,10 @@ inline QVector<T>::QVector(const QVector<T> &v)
         }
     }
 }
+
+#if defined(Q_CC_MSVC)
+#pragma warning( pop )
+#endif
 
 template <typename T>
 void QVector<T>::detach()
@@ -506,6 +498,11 @@ QVector<T>::QVector(int asize, const T &t)
 }
 
 #ifdef Q_COMPILER_INITIALIZER_LISTS
+# if defined(Q_CC_MSVC)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4127) // conditional expression is constant
+# endif // Q_CC_MSVC
+
 template <typename T>
 QVector<T>::QVector(std::initializer_list<T> args)
 {
@@ -520,7 +517,10 @@ QVector<T>::QVector(std::initializer_list<T> args)
         d = Data::sharedNull();
     }
 }
-#endif
+# if defined(Q_CC_MSVC)
+QT_WARNING_POP
+# endif // Q_CC_MSVC
+#endif // Q_COMPILER_INITALIZER_LISTS
 
 template <typename T>
 void QVector<T>::freeData(Data *x)
@@ -528,6 +528,11 @@ void QVector<T>::freeData(Data *x)
     destruct(x->begin(), x->end());
     Data::deallocate(x);
 }
+
+#if defined(Q_CC_MSVC)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_MSVC(4127) // conditional expression is constant
+#endif
 
 template <typename T>
 void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::AllocationOptions options)
@@ -619,6 +624,10 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
     Q_ASSERT(d->alloc >= uint(aalloc));
     Q_ASSERT(d->size == asize);
 }
+
+#if defined(Q_CC_MSVC)
+QT_WARNING_POP
+#endif
 
 template<typename T>
 Q_OUTOFLINE_TEMPLATE T QVector<T>::value(int i) const
