@@ -213,6 +213,7 @@ public:
 
     void openPersistentEditor(const QModelIndex &index);
     void closePersistentEditor(const QModelIndex &index);
+    bool isPersistentEditorOpen(const QModelIndex &index) const;
 
     void setIndexWidget(const QModelIndex &index, QWidget *widget);
     QWidget *indexWidget(const QModelIndex &index) const;

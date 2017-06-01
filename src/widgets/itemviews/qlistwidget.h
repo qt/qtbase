@@ -240,6 +240,8 @@ public:
     void editItem(QListWidgetItem *item);
     void openPersistentEditor(QListWidgetItem *item);
     void closePersistentEditor(QListWidgetItem *item);
+    using QAbstractItemView::isPersistentEditorOpen;
+    bool isPersistentEditorOpen(QListWidgetItem *item) const;
 
     QWidget *itemWidget(QListWidgetItem *item) const;
     void setItemWidget(QListWidgetItem *item, QWidget *widget);

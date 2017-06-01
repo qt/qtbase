@@ -300,6 +300,8 @@ public:
     void editItem(QTreeWidgetItem *item, int column = 0);
     void openPersistentEditor(QTreeWidgetItem *item, int column = 0);
     void closePersistentEditor(QTreeWidgetItem *item, int column = 0);
+    using QAbstractItemView::isPersistentEditorOpen;
+    bool isPersistentEditorOpen(QTreeWidgetItem *item, int column = 0) const;
 
     QWidget *itemWidget(QTreeWidgetItem *item, int column) const;
     void setItemWidget(QTreeWidgetItem *item, int column, QWidget *widget);

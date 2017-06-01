@@ -626,7 +626,9 @@ void tst_QAbstractItemView::rowDelegate()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QModelIndex index = model.index(3, 0);
+    QVERIFY(!view.isPersistentEditorOpen(index));
     view.openPersistentEditor(index);
+    QVERIFY(view.isPersistentEditorOpen(index));
     QWidget *w = view.indexWidget(index);
     QVERIFY(w);
     QCOMPARE(w->metaObject()->className(), "QWidget");
@@ -646,7 +648,9 @@ void tst_QAbstractItemView::columnDelegate()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QModelIndex index = model.index(0, 3);
+    QVERIFY(!view.isPersistentEditorOpen(index));
     view.openPersistentEditor(index);
+    QVERIFY(view.isPersistentEditorOpen(index));
     QWidget *w = view.indexWidget(index);
     QVERIFY(w);
     QCOMPARE(w->metaObject()->className(), "QWidget");
