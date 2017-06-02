@@ -1546,7 +1546,7 @@ static void syslog_default_message_handler(QtMsgType type, const char *message)
 }
 #endif
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 static void android_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
                                   const QString &message)
@@ -1594,7 +1594,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 #elif QT_CONFIG(syslog)
         syslog_default_message_handler(type, logMessage.toUtf8().constData());
         return;
-#elif defined(Q_OS_ANDROID)
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
         android_default_message_handler(type, context, logMessage);
         return;
 #endif

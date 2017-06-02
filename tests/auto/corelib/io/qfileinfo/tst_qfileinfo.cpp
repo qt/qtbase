@@ -1200,7 +1200,7 @@ void tst_QFileInfo::fileTimes()
     QEXPECT_FAIL("", "WinRT does not allow timestamp handling change in the filesystem due to sandboxing", Continue);
 #elif defined(Q_OS_QNX)
     QEXPECT_FAIL("", "QNX uses the noatime filesystem option", Continue);
-#elif defined(Q_OS_ANDROID)
+#elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     if (fileInfo.lastRead() <= beforeRead)
         QEXPECT_FAIL("", "Android may use relatime or noatime on mounts", Continue);
 #endif
@@ -1664,7 +1664,7 @@ void tst_QFileInfo::isWritable()
 void tst_QFileInfo::isExecutable()
 {
     QString appPath = QCoreApplication::applicationDirPath();
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     appPath += "/libtst_qfileinfo.so";
 #else
     appPath += "/tst_qfileinfo";

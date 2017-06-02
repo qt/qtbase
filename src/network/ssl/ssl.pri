@@ -70,7 +70,7 @@ qtConfig(ssl) {
 
         darwin:SOURCES += ssl/qsslsocket_mac_shared.cpp
 
-        android: SOURCES += ssl/qsslsocket_openssl_android.cpp
+        android:!android-embedded: SOURCES += ssl/qsslsocket_openssl_android.cpp
 
         # Add optional SSL libs
         # Static linking of OpenSSL with msvc:

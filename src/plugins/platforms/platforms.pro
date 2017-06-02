@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 QT_FOR_CONFIG += gui-private
 
-android: SUBDIRS += android
+android:!android-embedded: SUBDIRS += android
 
 !android: SUBDIRS += minimal
 

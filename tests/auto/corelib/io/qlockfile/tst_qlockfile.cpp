@@ -72,7 +72,7 @@ public:
 
 void tst_QLockFile::initTestCase()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QSKIP("This test requires deploying and running external console applications");
 #elif !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");

@@ -5,7 +5,7 @@ SOURCES = tst_qchar.cpp
 
 TESTDATA += data/NormalizationTest.txt
 
-android {
+android:!android-embedded {
     RESOURCES += \
         testdata.qrc
 }

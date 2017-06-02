@@ -727,12 +727,14 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     directories << ministroPath;
     nameFilters << QLatin1String("*.der");
     platformEncodingFormat = QSsl::Der;
+#  ifndef Q_OS_ANDROID_EMBEDDED
     if (ministroPath.isEmpty()) {
         QList<QByteArray> certificateData = fetchSslCertificateData();
         for (int i = 0; i < certificateData.size(); ++i) {
             systemCerts.append(QSslCertificate::fromData(certificateData.at(i), QSsl::Der));
         }
     } else
+#  endif //Q_OS_ANDROID_EMBEDDED
 # endif //Q_OS_ANDROID
     {
         currentDir.setNameFilters(nameFilters);
