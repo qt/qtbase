@@ -712,6 +712,7 @@ private:
     QXcbSystemTrayTracker *m_systemTrayTracker = nullptr;
     QXcbGlIntegration *m_glIntegration = nullptr;
     bool m_xiGrab = false;
+    QVector<int> m_xiMasterPointerIds;
 
     xcb_window_t m_qtSelectionOwner = 0;
 

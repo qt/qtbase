@@ -2560,6 +2560,9 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     if (!grab && connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(nullptr);
 
+    if (grab && !connection()->canGrab())
+        return false;
+
 #if QT_CONFIG(xinput2)
     if (connection()->hasXInput2() && !connection()->xi2MouseEventsDisabled()) {
         bool result = connection()->xi2SetMouseGrabEnabled(m_window, grab);
@@ -2568,8 +2571,6 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
         return result;
     }
 #endif
-    if (grab && !connection()->canGrab())
-        return false;
 
     if (!grab) {
         xcb_ungrab_pointer(xcb_connection(), XCB_TIME_CURRENT_TIME);
