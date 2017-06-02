@@ -1490,7 +1490,7 @@ void tst_QDate::roundtrip() const
 
 void tst_QDate::qdebug() const
 {
-    QTest::ignoreMessage(QtDebugMsg, "QDate(\"\")");
+    QTest::ignoreMessage(QtDebugMsg, "QDate(Invalid)");
     qDebug() << QDate();
     QTest::ignoreMessage(QtDebugMsg, "QDate(\"1983-08-07\")");
     qDebug() << QDate(1983, 8, 7);

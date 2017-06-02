@@ -5303,39 +5303,53 @@ QDataStream &operator>>(QDataStream &in, QDateTime &dateTime)
 QDebug operator<<(QDebug dbg, const QDate &date)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QDate(" << date.toString(Qt::ISODate) << ')';
+    dbg.nospace() << "QDate(";
+    if (date.isValid())
+        dbg.nospace() << date.toString(Qt::ISODate);
+    else
+        dbg.nospace() << "Invalid";
+    dbg.nospace() << ')';
     return dbg;
 }
 
 QDebug operator<<(QDebug dbg, const QTime &time)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QTime(" << time.toString(QStringViewLiteral("HH:mm:ss.zzz")) << ')';
+    dbg.nospace() << "QTime(";
+    if (time.isValid())
+        dbg.nospace() << time.toString(QStringViewLiteral("HH:mm:ss.zzz"));
+    else
+        dbg.nospace() << "Invalid";
+    dbg.nospace() << ')';
     return dbg;
 }
 
 QDebug operator<<(QDebug dbg, const QDateTime &date)
 {
     QDebugStateSaver saver(dbg);
-    const Qt::TimeSpec ts = date.timeSpec();
     dbg.nospace() << "QDateTime(";
-    dbg.noquote() << date.toString(QStringViewLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
-                  << ' ' << ts;
-    switch (ts) {
-    case Qt::UTC:
-        break;
-    case Qt::OffsetFromUTC:
-        dbg << ' ' << date.offsetFromUtc() << 's';
-        break;
-    case Qt::TimeZone:
+    if (date.isValid()) {
+        const Qt::TimeSpec ts = date.timeSpec();
+        dbg.noquote() << date.toString(QStringViewLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
+                      << ' ' << ts;
+        switch (ts) {
+        case Qt::UTC:
+            break;
+        case Qt::OffsetFromUTC:
+            dbg.space() << date.offsetFromUtc() << 's';
+            break;
+        case Qt::TimeZone:
 #if QT_CONFIG(timezone)
-        dbg << ' ' << date.timeZone().id();
+            dbg.space() << date.timeZone().id();
 #endif // timezone
-        break;
-    case Qt::LocalTime:
-        break;
+            break;
+        case Qt::LocalTime:
+            break;
+        }
+    } else {
+        dbg.nospace() << "Invalid";
     }
-    return dbg << ')';
+    return dbg.nospace() << ')';
 }
 #endif
 
