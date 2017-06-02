@@ -61,6 +61,7 @@
             "avx2": "boolean",
             "avx512": { "type": "boolean", "name": "avx512f" },
             "c++std": "cxxstd",
+            "ccache": { "type": "boolean", "name": "ccache" },
             "commercial": "void",
             "compile-examples": { "type": "boolean", "name": "compile_examples" },
             "confirm-license": "void",
@@ -620,6 +621,11 @@
             "label": "IncrediBuild",
             "type": "files",
             "files": [ "BuildConsole.exe", "xgConsole.exe" ]
+        },
+        "ccache": {
+            "label": "ccache",
+            "type": "files",
+            "files": [ "ccache" ]
         }
     },
 
@@ -1206,6 +1212,12 @@
             "condition": "tests.incredibuild_xge",
             "output": [ "publicConfig" ]
         },
+        "ccache": {
+            "label": "Using ccache",
+            "autoDetect": false,
+            "condition": "config.unix && tests.ccache",
+            "output": [ "privateConfig" ]
+        },
         "msvc_mp": {
             "label": "Use multiple processors when compiling with MSVC",
             "emitIf": "config.msvc",
@@ -1312,6 +1324,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "message": "Using C++ standard",
                     "type": "firstAvailableFeature",
                     "args": "c++1z c++14 c++11"
+                },
+                {
+                    "type": "feature",
+                    "args": "ccache",
+                    "condition": "config.unix"
                 },
                 "use_gold_linker",
                 {
