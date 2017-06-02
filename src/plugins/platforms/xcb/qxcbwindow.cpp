@@ -2288,7 +2288,8 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
 {
     connection()->setTime(timestamp);
 #ifdef XCB_USE_XINPUT21
-    connection()->handleEnterEvent();
+    // Updates scroll valuators, as user might have done some scrolling outside our X client.
+    connection()->xi2UpdateScrollingDevices();
 #endif
 
     const QPoint global = QPoint(root_x, root_y);

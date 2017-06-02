@@ -526,9 +526,8 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 #endif // QT_CONFIG(tabletevent)
 
 #ifdef XCB_USE_XINPUT21
-    QHash<int, ScrollingDevice>::iterator device = m_scrollingDevices.find(sourceDeviceId);
-    if (device != m_scrollingDevices.end())
-        xi2HandleScrollEvent(xiEvent, device.value());
+    if (ScrollingDevice *device = scrollingDeviceForId(sourceDeviceId))
+        xi2HandleScrollEvent(xiEvent, *device);
 #endif // XCB_USE_XINPUT21
 
 #ifdef XCB_USE_XINPUT22
@@ -828,42 +827,39 @@ void QXcbConnection::xi2HandleHierachyEvent(void *event)
 void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
 {
     xXIDeviceChangedEvent *xiEvent = reinterpret_cast<xXIDeviceChangedEvent *>(event);
-
-    // ### If a slave device changes (XIDeviceChange), we should probably run setup on it again.
-    if (xiEvent->reason != XISlaveSwitch)
-        return;
-
+    switch (xiEvent->reason) {
+    case XIDeviceChange:
+        break;
+    case XISlaveSwitch: {
 #ifdef XCB_USE_XINPUT21
-    // This code handles broken scrolling device drivers that reset absolute positions
-    // when they are made active. Whenever a new slave device is made active the
-    // primary pointer sends a DeviceChanged event with XISlaveSwitch, and the new
-    // active slave in sourceid.
-
-    QHash<int, ScrollingDevice>::iterator device = m_scrollingDevices.find(xiEvent->sourceid);
-    if (device == m_scrollingDevices.end())
-        return;
-
-    int nrDevices = 0;
-    XIDeviceInfo* xiDeviceInfo = XIQueryDevice(static_cast<Display *>(m_xlib_display), xiEvent->sourceid, &nrDevices);
-    if (nrDevices <= 0) {
-        qCDebug(lcQpaXInputDevices, "scrolling device %d no longer present", xiEvent->sourceid);
-        return;
-    }
-    updateScrollingDevice(*device, xiDeviceInfo->num_classes, xiDeviceInfo->classes);
-    XIFreeDeviceInfo(xiDeviceInfo);
+        if (ScrollingDevice *scrollingDevice = scrollingDeviceForId(xiEvent->sourceid))
+            xi2UpdateScrollingDevice(*scrollingDevice);
 #endif
+        break;
+    }
+    default:
+        qCDebug(lcQpaXInputEvents, "unknown device-changed-event (device %d)", xiEvent->sourceid);
+        break;
+    }
 }
 
-void QXcbConnection::updateScrollingDevice(ScrollingDevice &scrollingDevice, int num_classes, void *classInfo)
-{
 #ifdef XCB_USE_XINPUT21
-    XIAnyClassInfo **classes = reinterpret_cast<XIAnyClassInfo**>(classInfo);
+void QXcbConnection::xi2UpdateScrollingDevice(ScrollingDevice &scrollingDevice)
+{
+    int nrDevices = 0;
+    Display *dpy = static_cast<Display *>(m_xlib_display);
+    XIDeviceInfo* deviceInfo = XIQueryDevice(dpy, scrollingDevice.deviceId, &nrDevices);
+    if (nrDevices <= 0) {
+        qCDebug(lcQpaXInputDevices, "scrolling device %d no longer present", scrollingDevice.deviceId);
+        return;
+    }
     QPointF lastScrollPosition;
     if (lcQpaXInput().isDebugEnabled())
         lastScrollPosition = scrollingDevice.lastScrollPosition;
-    for (int c = 0; c < num_classes; ++c) {
-        if (classes[c]->type == XIValuatorClass) {
-            XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(classes[c]);
+    for (int c = 0; c < deviceInfo->num_classes; ++c) {
+        XIAnyClassInfo *classInfo = deviceInfo->classes[c];
+        if (classInfo->type == XIValuatorClass) {
+            XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(classInfo);
             const int valuatorAtom = qatom(vci->label);
             if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
                 scrollingDevice.lastScrollPosition.setX(vci->value);
@@ -876,37 +872,30 @@ void QXcbConnection::updateScrollingDevice(ScrollingDevice &scrollingDevice, int
                 lastScrollPosition.x(), lastScrollPosition.y(),
                 scrollingDevice.lastScrollPosition.x(),
                 scrollingDevice.lastScrollPosition.y());
-#else
-    Q_UNUSED(scrollingDevice);
-    Q_UNUSED(num_classes);
-    Q_UNUSED(classInfo);
-#endif
+
+    XIFreeDeviceInfo(deviceInfo);
 }
 
-#ifdef XCB_USE_XINPUT21
-void QXcbConnection::handleEnterEvent()
+void QXcbConnection::xi2UpdateScrollingDevices()
 {
     QHash<int, ScrollingDevice>::iterator it = m_scrollingDevices.begin();
     const QHash<int, ScrollingDevice>::iterator end = m_scrollingDevices.end();
     while (it != end) {
-        ScrollingDevice& scrollingDevice = it.value();
-        int nrDevices = 0;
-        XIDeviceInfo* xiDeviceInfo = XIQueryDevice(static_cast<Display *>(m_xlib_display), scrollingDevice.deviceId, &nrDevices);
-        if (nrDevices <= 0) {
-            qCDebug(lcQpaXInputDevices, "scrolling device %d no longer present", scrollingDevice.deviceId);
-            it = m_scrollingDevices.erase(it);
-            continue;
-        }
-        updateScrollingDevice(scrollingDevice, xiDeviceInfo->num_classes, xiDeviceInfo->classes);
-        XIFreeDeviceInfo(xiDeviceInfo);
+        xi2UpdateScrollingDevice(it.value());
         ++it;
     }
 }
-#endif
+
+QXcbConnection::ScrollingDevice *QXcbConnection::scrollingDeviceForId(int id)
+{
+    ScrollingDevice *dev = nullptr;
+    if (m_scrollingDevices.contains(id))
+        dev = &m_scrollingDevices[id];
+    return dev;
+}
 
 void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice)
 {
-#ifdef XCB_USE_XINPUT21
     xXIGenericDeviceEvent *xiEvent = reinterpret_cast<xXIGenericDeviceEvent *>(event);
 
     if (xiEvent->evtype == XI_Motion && scrollingDevice.orientations) {
@@ -976,11 +965,8 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
             }
         }
     }
-#else
-    Q_UNUSED(event);
-    Q_UNUSED(scrollingDevice);
-#endif // XCB_USE_XINPUT21
 }
+#endif // XCB_USE_XINPUT21
 
 static int xi2ValuatorOffset(const unsigned char *maskPtr, int maskLen, int number)
 {

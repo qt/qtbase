@@ -500,7 +500,7 @@ public:
     static bool xEmbedSystemTrayVisualHasAlphaChannel();
 
 #ifdef XCB_USE_XINPUT21
-    void handleEnterEvent();
+    void xi2UpdateScrollingDevices();
 #endif
 
 #ifdef XCB_USE_XINPUT22
@@ -616,9 +616,12 @@ private:
         Qt::Orientations legacyOrientations = 0;
         QPointF lastScrollPosition;
     };
-    void updateScrollingDevice(ScrollingDevice& scrollingDevice, int num_classes, void *classes);
-    void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
     QHash<int, ScrollingDevice> m_scrollingDevices;
+#ifdef XCB_USE_XINPUT21
+    void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
+    void xi2UpdateScrollingDevice(ScrollingDevice &scrollingDevice);
+    ScrollingDevice *scrollingDeviceForId(int id);
+#endif
 
     static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
     static void xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event);
