@@ -72,6 +72,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpa/qplatforminputcontextfactory_p.h>
+#include <QtGui/qpa/qplatformcursor.h>
 
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
@@ -242,6 +243,7 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
     }
 
     m_context.initTouch(m_options);
+    QPlatformCursor::setCapability(QPlatformCursor::OverrideCursor);
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()

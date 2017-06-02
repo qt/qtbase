@@ -95,6 +95,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QPlatformCursor::OverrideCursor
+    \since 5.10
+
+    \value OverrideCursor Indicates that the platform implements
+                          QPlatformCursor::setOverrideCursor() and
+                          QPlatformCursor::clearOverrideCursor().
+*/
+
+QPlatformCursor::Capabilities QPlatformCursor::m_capabilities = 0;
+
+/*!
     \fn QPlatformCursor::QPlatformCursor()
 
     Constructs a QPlatformCursor.
@@ -658,5 +669,35 @@ void QPlatformCursorImage::set(const uchar *data, const uchar *mask,
 
     \brief Return the cursor's hotspot
 */
+
+#ifndef QT_NO_CURSOR
+/*!
+    Reimplement this function in subclass to set an override cursor
+    on the associated screen and return true to indicate success.
+
+    This function can be implemented on platforms where the cursor is a
+    property of the application or the screen rather than a property
+    of the window. On these platforms, the OverrideCursor capability
+    should be set.
+
+    \sa QGuiApplication::setOverrideCursor(), Capabilities
+
+    \since 5.10
+*/
+void QPlatformCursor::setOverrideCursor(const QCursor &)
+{
+}
+
+/*!
+    Reimplement this function in subclass to clear the override cursor.
+
+    \sa QGuiApplication::clearOverrideCursor(), Capabilities
+
+    \since 5.10
+*/
+void QPlatformCursor::clearOverrideCursor()
+{
+}
+#endif // QT_NO_CURSOR
 
 QT_END_NAMESPACE

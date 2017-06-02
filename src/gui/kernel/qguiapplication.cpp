@@ -3541,6 +3541,22 @@ static inline void applyCursor(const QList<QWindow *> &l, const QCursor &c)
     }
 }
 
+static inline void applyOverrideCursor(const QList<QScreen *> &screens, const QCursor &c)
+{
+    for (QScreen *screen : screens) {
+        if (QPlatformCursor *cursor = screen->handle()->cursor())
+            cursor->setOverrideCursor(c);
+    }
+}
+
+static inline void clearOverrideCursor(const QList<QScreen *> &screens)
+{
+    for (QScreen *screen : screens) {
+        if (QPlatformCursor *cursor = screen->handle()->cursor())
+            cursor->clearOverrideCursor();
+    }
+}
+
 static inline void applyWindowCursor(const QList<QWindow *> &l)
 {
     for (int i = 0; i < l.size(); ++i) {
@@ -3585,7 +3601,10 @@ void QGuiApplication::setOverrideCursor(const QCursor &cursor)
 {
     CHECK_QAPP_INSTANCE()
     qGuiApp->d_func()->cursor_list.prepend(cursor);
-    applyCursor(QGuiApplicationPrivate::window_list, cursor);
+    if (QPlatformCursor::capabilities().testFlag(QPlatformCursor::OverrideCursor))
+        applyOverrideCursor(QGuiApplicationPrivate::screen_list, cursor);
+    else
+        applyCursor(QGuiApplicationPrivate::window_list, cursor);
 }
 
 /*!
@@ -3607,9 +3626,15 @@ void QGuiApplication::restoreOverrideCursor()
     qGuiApp->d_func()->cursor_list.removeFirst();
     if (qGuiApp->d_func()->cursor_list.size() > 0) {
         QCursor c(qGuiApp->d_func()->cursor_list.value(0));
-        applyCursor(QGuiApplicationPrivate::window_list, c);
+        if (QPlatformCursor::capabilities().testFlag(QPlatformCursor::OverrideCursor))
+            applyOverrideCursor(QGuiApplicationPrivate::screen_list, c);
+        else
+            applyCursor(QGuiApplicationPrivate::window_list, c);
     } else {
-        applyWindowCursor(QGuiApplicationPrivate::window_list);
+        if (QPlatformCursor::capabilities().testFlag(QPlatformCursor::OverrideCursor))
+            clearOverrideCursor(QGuiApplicationPrivate::screen_list);
+        else
+            applyWindowCursor(QGuiApplicationPrivate::window_list);
     }
 }
 #endif// QT_NO_CURSOR

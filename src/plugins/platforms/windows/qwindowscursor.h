@@ -105,6 +105,9 @@ public:
     explicit QWindowsCursor(const QPlatformScreen *screen);
 
     void changeCursor(QCursor * widgetCursor, QWindow * widget) override;
+    void setOverrideCursor(const QCursor &cursor) override;
+    void clearOverrideCursor() override;
+
     QPoint pos() const override;
     void setPos(const QPoint &pos) override;
 
@@ -127,6 +130,8 @@ private:
     typedef QHash<Qt::CursorShape, CursorHandlePtr> StandardCursorCache;
     typedef QHash<QWindowsPixmapCursorCacheKey, CursorHandlePtr> PixmapCursorCache;
 
+    CursorHandlePtr cursorHandle(const QCursor &c);
+
     const QPlatformScreen *const m_screen;
     StandardCursorCache m_standardCursorCache;
     PixmapCursorCache m_pixmapCursorCache;
@@ -135,6 +140,8 @@ private:
     mutable QPixmap m_moveDragCursor;
     mutable QPixmap m_linkDragCursor;
     mutable QPixmap m_ignoreDragCursor;
+
+    HCURSOR m_overriddenCursor = nullptr;
 };
 
 QT_END_NAMESPACE
