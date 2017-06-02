@@ -86,6 +86,12 @@
 #  include <sys/systeminfo.h>
 #endif
 
+#if defined(Q_OS_DARWIN)
+#  include <mach/machine.h>
+#  include <sys/sysctl.h>
+#  include <sys/types.h>
+#endif
+
 #ifdef Q_OS_UNIX
 #include <sys/utsname.h>
 #include <private/qcore_unix_p.h>
@@ -2436,6 +2442,20 @@ QString QSysInfo::currentCpuArchitecture()
 #  endif
     case PROCESSOR_ARCHITECTURE_IA64:
         return QStringLiteral("ia64");
+    }
+#elif defined(Q_OS_DARWIN)
+    cpu_type_t type;
+    size_t size = sizeof(type);
+    sysctlbyname("hw.cputype", &type, &size, NULL, 0);
+    switch (type) {
+    case CPU_TYPE_X86:
+        return QStringLiteral("i386");
+    case CPU_TYPE_X86_64:
+        return QStringLiteral("x86_64");
+    case CPU_TYPE_ARM:
+        return QStringLiteral("arm");
+    case CPU_TYPE_ARM64:
+        return QStringLiteral("arm64");
     }
 #elif defined(Q_OS_UNIX)
     long ret = -1;
