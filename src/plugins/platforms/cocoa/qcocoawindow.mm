@@ -1043,19 +1043,18 @@ void QCocoaWindow::handleGeometryChange()
     if (m_inSetStyleMask && !m_view.window)
         return;
 
-    QRect newGeometry;
+    const bool isEmbedded = m_viewIsToBeEmbedded || m_viewIsEmbedded;
 
-    if (isContentView()) {
-        // Top level window, get window rect and flip y
-        NSRect rect = m_view.frame;
-        NSRect windowRect = m_view.window.frame;
-        newGeometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    } else if (m_viewIsToBeEmbedded) {
-        // Embedded child window, use the frame rect ### merge with case below
-        newGeometry = QRectF::fromCGRect(NSRectToCGRect(m_view.bounds)).toRect();
+    QRect newGeometry;
+    if (isContentView() && !isEmbedded) {
+        // Content views are positioned at (0, 0) in the window, so we resolve via the window
+        CGRect contentRect = [m_view.window contentRectForFrameRect:m_view.window.frame];
+
+        // The result above is in native screen coordinates, so remap to the Qt coordinate system
+        newGeometry = QCocoaScreen::primaryScreen()->mapFromNative(QRectF::fromCGRect(contentRect)).toRect();
     } else {
-        // Child window, use the frame rect
-        newGeometry = QRectF::fromCGRect(NSRectToCGRect(m_view.frame)).toRect();
+        // QNSView has isFlipped set, so no need to remap the geometry
+        newGeometry = QRectF::fromCGRect(m_view.frame).toRect();
     }
 
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleGeometryChange" << window()

@@ -92,6 +92,8 @@ public:
     QPointF mapFromNative(const QPointF &pos) const { return flipCoordinate(pos); }
     QRectF mapFromNative(const QRectF &rect) const { return flipCoordinate(rect); }
 
+    static QCocoaScreen *primaryScreen();
+
 private:
     QPointF flipCoordinate(const QPointF &pos) const;
     QRectF flipCoordinate(const QRectF &rect) const;

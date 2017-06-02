@@ -145,7 +145,7 @@ void QCocoaScreen::updateGeometry()
     // we may be in the process of creating and registering the primary screen, we
     // must special-case that and assign it direcly.
     QCocoaScreen *primaryScreen = (nsScreen == [[NSScreen screens] firstObject]) ?
-        this : static_cast<QCocoaScreen*>(QGuiApplication::primaryScreen()->handle());
+        this : QCocoaScreen::primaryScreen();
 
     m_geometry = primaryScreen->mapFromNative(m_geometry).toRect();
     m_availableGeometry = primaryScreen->mapFromNative(m_availableGeometry).toRect();
@@ -291,6 +291,14 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
         painter.drawPixmap(0, 0, pix);
     }
     return windowPixmap;
+}
+
+/*!
+    The screen used as a reference for global window geometry
+*/
+QCocoaScreen *QCocoaScreen::primaryScreen()
+{
+    return static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
 }
 
 static QCocoaIntegration::Options parseOptions(const QStringList &paramList)
