@@ -81,9 +81,9 @@ public:
 #endif
     QAbstractEventDispatcher *createEventDispatcher() const override;
     void initialize() override;
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     QPlatformClipboard *clipboard() const override;
-#  ifndef QT_NO_DRAGANDDROP
+#  if QT_CONFIG(draganddrop)
     QPlatformDrag *drag() const override;
 #  endif
 #endif // !QT_NO_CLIPBOARD
@@ -109,7 +109,7 @@ public:
 
     void beep() const override;
 
-#if !defined(QT_NO_SESSIONMANAGER)
+#if QT_CONFIG(sessionmanager)
     QPlatformSessionManager *createPlatformSessionManager(const QString &id, const QString &key) const override;
 #endif
 

@@ -703,7 +703,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_background(IA2Color *backgr
 /**************************************************************\
  *                     IAccessibleEditableText                *
  **************************************************************/
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
 /*!
     \internal
 
@@ -746,7 +746,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::copyText(long startOffset, long
 {
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     const QString t = textForRange(startOffset, endOffset);
     QGuiApplication::clipboard()->setText(t);
     return S_OK;
@@ -782,7 +782,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::cutText(long startOffset, long 
 {
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     const QString t = textForRange(startOffset, endOffset);
     if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
         editableTextIface->deleteText(startOffset, endOffset);
@@ -799,7 +799,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::pasteText(long offset)
 {
     QAccessibleInterface *accessible = accessibleInterface();
     accessibleDebugClientCalls(accessible);
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     const QString txt = QGuiApplication::clipboard()->text();
     if (QAccessibleEditableTextInterface *editableTextIface = accessible->editableTextInterface())
         editableTextIface->insertText(offset, txt);

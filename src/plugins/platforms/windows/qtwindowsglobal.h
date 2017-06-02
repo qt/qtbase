@@ -260,12 +260,10 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         if ((wParamIn & 0xfff0) == SC_CONTEXTHELP)
             return QtWindows::WhatsThisEvent;
         break;
-#if !defined(QT_NO_SESSIONMANAGER)
     case WM_QUERYENDSESSION:
         return QtWindows::QueryEndSessionApplicationEvent;
     case WM_ENDSESSION:
         return QtWindows::EndSessionApplicationEvent;
-#endif
 #if defined(WM_APPCOMMAND)
     case WM_APPCOMMAND:
         return QtWindows::AppCommandEvent;

@@ -40,7 +40,7 @@
 #include "qwindowsdrag.h"
 #include "qwindowscontext.h"
 #include "qwindowsscreen.h"
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
 #  include "qwindowsclipboard.h"
 #endif
 #include "qwindowsintegration.h"

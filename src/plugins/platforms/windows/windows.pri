@@ -69,33 +69,28 @@ qtConfig(dynamicgl) {
     HEADERS += $$PWD/qwindowseglcontext.h
 }
 
-!contains( DEFINES, QT_NO_CLIPBOARD ) {
+qtConfig(clipboard) {
     SOURCES += $$PWD/qwindowsclipboard.cpp
     HEADERS += $$PWD/qwindowsclipboard.h
-}
-
-# drag and drop on windows only works if a clipboard is available
-!contains( DEFINES, QT_NO_DRAGANDDROP ) {
-    !win32:SOURCES += $$PWD/qwindowsdrag.cpp
-    !win32:HEADERS += $$PWD/qwindowsdrag.h
-    win32:!contains( DEFINES, QT_NO_CLIPBOARD ) {
+    # drag and drop on windows only works if a clipboard is available
+    qtConfig(draganddrop) {
         HEADERS += $$PWD/qwindowsdrag.h
         SOURCES += $$PWD/qwindowsdrag.cpp
     }
 }
 
-!contains( DEFINES, QT_NO_TABLETEVENT ) {
+qtConfig(tabletevent) {
     INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/wintab
     HEADERS += $$PWD/qwindowstabletsupport.h
     SOURCES += $$PWD/qwindowstabletsupport.cpp
 }
 
-!contains( DEFINES, QT_NO_SESSIONMANAGER ) {
+qtConfig(sessionmanager) {
     SOURCES += $$PWD/qwindowssessionmanager.cpp
     HEADERS += $$PWD/qwindowssessionmanager.h
 }
 
-!contains( DEFINES, QT_NO_IMAGEFORMAT_PNG ):RESOURCES += $$PWD/cursors.qrc
+qtConfig(imageformat_png):RESOURCES += $$PWD/cursors.qrc
 
 RESOURCES += $$PWD/openglblacklists.qrc
 

@@ -1246,7 +1246,7 @@ bool QBuiltInMimes::convertFromMime(const FORMATETC &formatetc, const QMimeData 
             r[byteLength+1] = 0;
             data = r;
         } else {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
             data = QInternalMimeData::renderDataHelper(outFormats.value(getCf(formatetc)), mimeData);
 #endif //QT_NO_DRAGANDDROP
         }
@@ -1346,7 +1346,7 @@ QLastResortMimes::QLastResortMimes()
 bool QLastResortMimes::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
     // really check
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     return formatetc.tymed & TYMED_HGLOBAL
         && (formats.contains(formatetc.cfFormat)
         && QInternalMimeData::hasFormatHelper(formats.value(formatetc.cfFormat), mimeData));
@@ -1360,7 +1360,7 @@ bool QLastResortMimes::canConvertFromMime(const FORMATETC &formatetc, const QMim
 
 bool QLastResortMimes::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM * pmedium) const
 {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
     return canConvertFromMime(formatetc, mimeData)
         && setData(QInternalMimeData::renderDataHelper(formats.value(getCf(formatetc)), mimeData), pmedium);
 #else
@@ -1461,7 +1461,7 @@ QString QLastResortMimes::mimeForFormat(const FORMATETC &formatetc) const
 
     const QString clipFormat = QWindowsMimeConverter::clipboardFormatName(getCf(formatetc));
     if (!clipFormat.isEmpty()) {
-#ifndef QT_NO_DRAGANDDROP
+#if QT_CONFIG(draganddrop)
         if (QInternalMimeData::canReadData(clipFormat))
             format = clipFormat;
         else if((formatetc.cfFormat >= 0xC000)){

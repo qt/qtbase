@@ -50,9 +50,9 @@
 #ifndef QT_NO_FREETYPE
 #  include <QtFontDatabaseSupport/private/qwindowsfontdatabase_ft_p.h>
 #endif
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
 #  include "qwindowsclipboard.h"
-#  ifndef QT_NO_DRAGANDDROP
+#  if QT_CONFIG(draganddrop)
 #    include "qwindowsdrag.h"
 #  endif
 #endif
@@ -64,7 +64,7 @@
 
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qwindowsysteminterface.h>
-#ifndef QT_NO_SESSIONMANAGER
+#if QT_CONFIG(sessionmanager)
 #  include "qwindowssessionmanager.h"
 #endif
 #include <QtGui/qtouchdevice.h>
@@ -137,9 +137,9 @@ struct QWindowsIntegrationPrivate
     unsigned m_options = 0;
     QWindowsContext m_context;
     QPlatformFontDatabase *m_fontDatabase = nullptr;
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     QWindowsClipboard m_clipboard;
-#  ifndef QT_NO_DRAGANDDROP
+#  if QT_CONFIG(draganddrop)
     QWindowsDrag m_drag;
 #  endif
 #endif
@@ -251,7 +251,7 @@ QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
     d(new QWindowsIntegrationPrivate(paramList))
 {
     m_instance = this;
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     d->m_clipboard.registerViewer();
 #endif
     d->m_context.screenManager().handleScreenChanges();
@@ -547,12 +547,12 @@ QList<int> QWindowsIntegration::possibleKeys(const QKeyEvent *e) const
     return d->m_context.possibleKeys(e);
 }
 
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
 QPlatformClipboard * QWindowsIntegration::clipboard() const
 {
     return &d->m_clipboard;
 }
-#  ifndef QT_NO_DRAGANDDROP
+#  if QT_CONFIG(draganddrop)
 QPlatformDrag *QWindowsIntegration::drag() const
 {
     return &d->m_drag;
@@ -577,7 +577,7 @@ unsigned QWindowsIntegration::options() const
     return d->m_options;
 }
 
-#if !defined(QT_NO_SESSIONMANAGER)
+#if QT_CONFIG(sessionmanager)
 QPlatformSessionManager *QWindowsIntegration::createPlatformSessionManager(const QString &id, const QString &key) const
 {
     return new QWindowsSessionManager(id, key);

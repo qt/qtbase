@@ -1154,7 +1154,7 @@ void QWindowsWindow::setDropSiteEnabled(bool dropEnabled)
     if (isDropSiteEnabled() == dropEnabled)
         return;
     qCDebug(lcQpaMime) << __FUNCTION__ << window() << dropEnabled;
-#if !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_DRAGANDDROP)
+#if QT_CONFIG(clipboard) && QT_CONFIG(draganddrop)
     if (dropEnabled) {
         Q_ASSERT(m_data.hwnd);
         m_dropTarget = new QWindowsOleDropTarget(window());
