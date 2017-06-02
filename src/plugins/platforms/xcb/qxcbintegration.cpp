@@ -214,25 +214,9 @@ QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
     return xcbWindow;
 }
 
-class QXcbForeignWindow : public QXcbWindow
-{
-public:
-    QXcbForeignWindow(QWindow *window, WId nativeHandle)
-        : QXcbWindow(window) { m_window = nativeHandle; }
-    ~QXcbForeignWindow() {}
-    bool isForeignWindow() const override { return true; }
-
-protected:
-    // No-ops
-    void create() override {}
-    void destroy() override {}
-};
-
 QPlatformWindow *QXcbIntegration::createForeignWindow(QWindow *window, WId nativeHandle) const
 {
-    QXcbWindow *xcbWindow = new QXcbForeignWindow(window, nativeHandle);
-    xcbWindow->create();
-    return xcbWindow;
+    return new QXcbForeignWindow(window, nativeHandle);
 }
 
 #ifndef QT_NO_OPENGL
