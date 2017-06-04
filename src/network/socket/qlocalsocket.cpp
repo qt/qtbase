@@ -128,6 +128,20 @@ QT_BEGIN_NAMESPACE
 
     The socket descriptor is not available when QLocalSocket
     is in UnconnectedState.
+    The type of the descriptor depends on the platform:
+
+    \list
+        \li On Windows, the returned value is a
+        \l{https://msdn.microsoft.com/en-us/library/windows/desktop/ms740522(v=vs.85).aspx}
+        {Winsock 2 Socket Handle}.
+
+        \li With WinRT and on INTEGRITY, the returned value is the
+        QTcpSocket socket descriptor and the type is defined by
+        \l{QTcpSocket::socketDescriptor}{socketDescriptor}.
+
+        \li On all other UNIX-like operating systems, the type is
+        a file descriptor representing a socket.
+    \endlist
 
     \sa setSocketDescriptor()
 */
