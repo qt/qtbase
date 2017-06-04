@@ -428,16 +428,8 @@ public:
 
 #if QT_CONFIG(xinput2)
     void xi2Select(xcb_window_t window);
-#endif
-#ifdef XCB_USE_XINPUT21
     bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
-#else
-    bool isAtLeastXI21() const { return false; }
-#endif
-#ifdef XCB_USE_XINPUT22
     bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
-#else
-    bool isAtLeastXI22() const { return false; }
 #endif
 
     void sync();

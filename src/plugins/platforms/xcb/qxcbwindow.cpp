@@ -2185,7 +2185,9 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
     QPoint global(root_x, root_y);
 
     if (isWheel) {
+#if QT_CONFIG(xinput2)
         if (!connection()->isAtLeastXI21()) {
+#endif
             QPoint angleDelta;
             if (detail == 4)
                 angleDelta.setY(120);
@@ -2198,7 +2200,9 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
             if (modifiers & Qt::AltModifier)
                 std::swap(angleDelta.rx(), angleDelta.ry());
             QWindowSystemInterface::handleWheelEvent(window(), timestamp, local, global, QPoint(), angleDelta, modifiers);
+#if QT_CONFIG(xinput2)
         }
+#endif
         return;
     }
 
