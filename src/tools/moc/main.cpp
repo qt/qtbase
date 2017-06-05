@@ -380,9 +380,6 @@ int runMoc(int argc, char **argv)
             error("Missing macro name");
             parser.showHelp(1);
         }
-        // Prevent parse errors on MSVC extensions.
-        if (name == "_MSC_EXTENSIONS")
-            continue;
         Macro macro;
         macro.symbols = Preprocessor::tokenize(value, 1, Preprocessor::TokenizeDefine);
         macro.symbols.removeLast(); // remove the EOF symbol
