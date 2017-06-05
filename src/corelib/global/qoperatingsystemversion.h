@@ -69,6 +69,7 @@ public:
     static const QOperatingSystemVersion OSXYosemite;
     static const QOperatingSystemVersion OSXElCapitan;
     static const QOperatingSystemVersion MacOSSierra;
+    static const QOperatingSystemVersion MacOSHighSierra;
 
     static const QOperatingSystemVersion AndroidJellyBean;
     static const QOperatingSystemVersion AndroidJellyBean_MR1;

@@ -2005,6 +2005,8 @@ static const char *osVer_helper(QOperatingSystemVersion version = QOperatingSyst
             return "El Capitan";
         case 12:
             return "Sierra";
+        case 13:
+            return "High Sierra";
         }
     }
     // unknown, future version
