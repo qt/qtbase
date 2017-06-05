@@ -1732,7 +1732,7 @@ void QMacStylePrivate::drawCombobox(const CGRect &outerBounds, const HIThemeButt
 void QMacStylePrivate::drawTableHeader(const CGRect &outerBounds,
     bool drawTopBorder, bool drawLeftBorder, const HIThemeButtonDrawInfo &bdi, QPainter *p)
 {
-    static SInt32 headerHeight = qt_mac_aqua_get_metric(ListHeaderHeight);
+    static int headerHeight = qt_mac_aqua_get_metric(ListHeaderHeight);
 
     QPixmap buffer;
     QString key = QString(QLatin1String("$qt_tableh%1-%2-%3")).arg(int(bdi.state)).arg(int(bdi.adornment)).arg(int(bdi.value));
@@ -2483,7 +2483,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 {
     Q_D(const QMacStyle);
     const int controlSize = getControlSize(opt, widget);
-    SInt32 ret = 0;
+    int ret = 0;
 
     switch (metric) {
     case PM_TabCloseIndicatorWidth:
@@ -2679,7 +2679,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_ScrollBarExtent: {
         const QStyleHelper::WidgetSizePolicy size = d->effectiveAquaSizeConstrain(opt, widget);
-        ret = static_cast<SInt32>([NSScroller
+        ret = static_cast<int>([NSScroller
             scrollerWidthForControlSize:static_cast<NSControlSize>(size)
                           scrollerStyle:[NSScroller preferredScrollerStyle]]);
         break; }
@@ -2861,7 +2861,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
 {
     QMacAutoReleasePool pool;
 
-    SInt32 ret = 0;
+    int ret = 0;
     switch (sh) {
     case SH_Slider_SnapToValue:
     case SH_PrintDialog_RightAlignButtons:
@@ -3570,7 +3570,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 HIThemeFrameDrawInfo fdi;
                 fdi.version = qt_mac_hitheme_version;
                 fdi.state = tds;
-                SInt32 frame_size;
+                int frame_size;
                 fdi.kind = frame->features & QStyleOptionFrame::Rounded ? kHIThemeFrameTextFieldRound :
                                                                           kHIThemeFrameTextFieldSquare;
                 frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
@@ -4700,7 +4700,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QPoint windowToolbarEnd = w->mapTo(w->window(), opt->rect.bottomLeft());
                     bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowToolbarEnd.y() + 1);
                     if (isEndOfUnifiedArea) {
-                        SInt32 margin;
+                        int margin;
                         margin = qt_mac_aqua_get_metric(SeparatorSize);
                         CGRect separatorRect = CGRectMake(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
                         HIThemeSeparatorDrawInfo separatorDrawInfo;
@@ -5588,7 +5588,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             if (sb->frame && (sb->subControls & SC_SpinBoxFrame)) {
-                SInt32 frame_size;
+                int frame_size;
                 frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
 
                 QRect lineeditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget);
