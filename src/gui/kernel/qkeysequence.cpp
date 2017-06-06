@@ -1100,7 +1100,6 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
                      << QModifKeyName(Qt::KeypadModifier, QLatin1String("num+"));
         }
     }
-    if (!gmodifs) return ret;
 
 
     QVector<QModifKeyName> modifs;
