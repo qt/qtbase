@@ -134,6 +134,7 @@ class Q_NETWORK_EXPORT QNetworkProxy
 public:
     enum ProxyType {
         DefaultProxy,
+        Socks4Proxy,
         Socks5Proxy,
         NoProxy,
         HttpProxy,
