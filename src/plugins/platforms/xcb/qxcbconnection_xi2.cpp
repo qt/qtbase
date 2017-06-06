@@ -57,29 +57,39 @@ void QXcbConnection::initializeXInput2()
         const_cast<QLoggingCategory&>(lcQpaXInput()).setEnabled(QtDebugMsg, true);
     if (qEnvironmentVariableIsSet("QT_XCB_DEBUG_XINPUT_DEVICES"))
         const_cast<QLoggingCategory&>(lcQpaXInputDevices()).setEnabled(QtDebugMsg, true);
+
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     if (XQueryExtension(xDisplay, "XInputExtension", &m_xiOpCode, &m_xiEventBase, &m_xiErrorBase)) {
         int xiMajor = 2;
-        // try 2.2 first, needed for TouchBegin/Update/End
-        if (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) == BadRequest) {
-            m_xi2Minor = 1; // for smooth scrolling 2.1 is enough
-            if (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) == BadRequest) {
-                m_xi2Minor = 0; // for tablet support 2.0 is enough
-                m_xi2Enabled = XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor) != BadRequest;
-            } else
-                m_xi2Enabled = true;
-        } else
-            m_xi2Enabled = true;
-        if (m_xi2Enabled) {
-#ifdef XCB_USE_XINPUT22
-            qCDebug(lcQpaXInputDevices, "XInput version %d.%d is available and Qt supports 2.2 or greater", xiMajor, m_xi2Minor);
-            m_startSystemResizeInfo.window = XCB_NONE;
+#if defined(XCB_USE_XINPUT22)
+        m_xi2Minor = 2; // for touch support 2.2 is enough
+#elif defined(XCB_USE_XINPUT21)
+        m_xi2Minor = 1; // for smooth scrolling 2.1 is enough
 #else
-            qCDebug(lcQpaXInputDevices, "XInput version %d.%d is available and Qt supports 2.0", xiMajor, m_xi2Minor);
+        m_xi2Minor = 0; // for tablet support 2.0 is enough
 #endif
-        }
+        qCDebug(lcQpaXInput, "Plugin build with support for XInput 2 version up "
+                             "to %d.%d", xiMajor, m_xi2Minor);
 
-        xi2SetupDevices();
+        switch (XIQueryVersion(xDisplay, &xiMajor, &m_xi2Minor)) {
+        case Success:
+            // Server's supported version can be lower than the version we have
+            // announced to support. In this case Qt client will be limited by
+            // X server's supported version.
+            qCDebug(lcQpaXInput, "Using XInput version %d.%d", xiMajor, m_xi2Minor);
+            m_xi2Enabled = true;
+#ifdef XCB_USE_XINPUT22
+            m_startSystemResizeInfo.window = XCB_NONE;
+#endif
+            xi2SetupDevices();
+            break;
+        case BadRequest: // Must be an X server with XInput 1
+            qCDebug(lcQpaXInput, "X server does not support XInput 2");
+            break;
+        default: // BadValue
+            qCDebug(lcQpaXInput, "Internal error");
+            break;
+        }
     }
 }
 
@@ -90,9 +100,6 @@ void QXcbConnection::xi2SetupDevices()
 #endif
     m_scrollingDevices.clear();
     m_touchDevices.clear();
-
-    if (!m_xi2Enabled)
-        return;
 
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     int deviceCount = 0;

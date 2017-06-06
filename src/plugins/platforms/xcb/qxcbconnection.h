@@ -553,7 +553,7 @@ private:
     bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
 #if QT_CONFIG(xinput2)
     bool m_xi2Enabled = false;
-    int m_xi2Minor = 2;
+    int m_xi2Minor = -1;
     void initializeXInput2();
     void xi2SetupDevices();
     struct TouchDeviceData {

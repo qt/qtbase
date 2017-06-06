@@ -2451,12 +2451,14 @@ void QXcbWindow::handleXIEnterLeave(xcb_ge_event_t *event)
     case XI_Enter: {
         const int event_x = fixed1616ToInt(ev->event_x);
         const int event_y = fixed1616ToInt(ev->event_y);
-        qCDebug(lcQpaXInput, "XI2 mouse enter %d,%d, mode %d, detail %d, time %d", event_x, event_y, ev->mode, ev->detail, ev->time);
+        qCDebug(lcQpaXInputEvents, "XI2 mouse enter %d,%d, mode %d, detail %d, time %d",
+                event_x, event_y, ev->mode, ev->detail, ev->time);
         handleEnterNotifyEvent(event_x, event_y, root_x, root_y, ev->mode, ev->detail, ev->time);
         break;
     }
     case XI_Leave:
-        qCDebug(lcQpaXInput, "XI2 mouse leave, mode %d, detail %d, time %d", ev->mode, ev->detail, ev->time);
+        qCDebug(lcQpaXInputEvents, "XI2 mouse leave, mode %d, detail %d, time %d",
+                ev->mode, ev->detail, ev->time);
         connection()->keyboard()->updateXKBStateFromXI(&ev->mods, &ev->group);
         handleLeaveNotifyEvent(root_x, root_y, ev->mode, ev->detail, ev->time);
         break;
