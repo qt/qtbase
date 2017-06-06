@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
     \a parent.
 */
 QDBusServer::QDBusServer(const QString &address, QObject *parent)
-    : QObject(parent), d(0)
+    : QObject(parent), d(nullptr)
 {
     if (address.isEmpty())
         return;
@@ -83,7 +83,7 @@ QDBusServer::QDBusServer(const QString &address, QObject *parent)
     localhost (elsewhere).
 */
 QDBusServer::QDBusServer(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d(nullptr)
 {
 #ifdef Q_OS_UNIX
     // Use Unix sockets on Unix systems only
@@ -92,10 +92,8 @@ QDBusServer::QDBusServer(QObject *parent)
     const QString address = QStringLiteral("tcp:");
 #endif
 
-    if (!qdbus_loadLibDBus()) {
-        d = 0;
+    if (!qdbus_loadLibDBus())
         return;
-    }
 
     QDBusConnectionManager *instance = QDBusConnectionManager::instance();
     if (!instance)
