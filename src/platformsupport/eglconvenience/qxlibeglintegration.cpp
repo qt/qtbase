@@ -47,6 +47,9 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
     VisualID    visualId = 0;
     EGLint      eglValue = 0;
 
+    EGLint major,minor;
+    eglInitialize(eglDisplay,&major,&minor);
+
     EGLint configRedSize = 0;
     eglGetConfigAttrib(eglDisplay, config, EGL_RED_SIZE, &configRedSize);
 
@@ -65,6 +68,47 @@ VisualID QXlibEglIntegration::getCompatibleVisualId(Display *display, EGLDisplay
     // See if EGL provided a valid VisualID:
     eglGetConfigAttrib(eglDisplay, config, EGL_NATIVE_VISUAL_ID, &eglValue);
     visualId = (VisualID)eglValue;
+
+    EGLint attributes[] = {EGL_RED_SIZE,configRedSize,EGL_GREEN_SIZE, configGreenSize, EGL_BLUE_SIZE, configBlueSize,
+                         EGL_SAMPLES,configSamples,EGL_NONE};
+
+    bool configFound(false);
+    int configCount(0);
+    // check if the current configuration is valid
+    configFound = eglChooseConfig(eglDisplay, attributes,&config,1,&configCount);
+    if(configFound)
+    {
+        return visualId; // Most ideal path
+    }
+
+    configFound = eglChooseConfig(eglDisplay, attributes,NULL,0,&configCount); // Else get all EGL configurations
+    // Allocate the EGLConfig structure array and fill it
+    EGLConfig * matchingConfigs(new EGLConfig[configCount]);
+    configFound = eglChooseConfig(eglDisplay, attributes,matchingConfigs,configCount,&configCount);
+
+    // Manually search the configurations while looking for a valid match
+    EGLint  idFound(0);
+    EGLBoolean noError(false);
+    EGLint red(0),green(0),blue(0);
+    for(int index(0); index < (configCount && !noError); index++)
+    {
+        noError = eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_RED_SIZE, &red);
+        noError &= eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_BLUE_SIZE, &blue);
+        noError &= eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_GREEN_SIZE, &green);
+        if((noError == EGL_TRUE) && (red == configRedSize) && (green == configGreenSize) && (blue == configBlueSize))
+        {
+            eglGetConfigAttrib(eglDisplay,matchingConfigs[index],EGL_NATIVE_VISUAL_ID, &idFound);
+        }
+        else
+            noError = false;
+    }
+    delete []matchingConfigs;
+
+    if(idFound != 0)
+    {
+        return idFound; // Return the value found
+    }
+
     if (visualId) {
         // EGL has suggested a visual id, so get the rest of the visual info for that id:
         XVisualInfo visualInfoTemplate;
