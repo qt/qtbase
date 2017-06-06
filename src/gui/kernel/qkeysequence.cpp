@@ -1153,7 +1153,7 @@ int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::Sequence
         lastI = i + 1;
     }
 
-    int p = accel.lastIndexOf(QLatin1Char('+'), str.length() - 2); // -2 so that Ctrl++ works
+    int p = accel.lastIndexOf(QLatin1Char('+'), accel.length() - 2); // -2 so that Ctrl++ works
     QStringRef accelRef(&accel);
     if(p > 0)
         accelRef = accelRef.mid(p + 1);
