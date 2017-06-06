@@ -5622,13 +5622,15 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 // punch a hole in the backingstore, so the texture will be visible.
                 if (!q->testAttribute(Qt::WA_AlwaysStackOnTop)) {
                     beginBackingStorePainting();
-                    QPainter p(q);
                     if (backingStore) {
+                        QPainter p(q);
                         p.setCompositionMode(QPainter::CompositionMode_Source);
                         p.fillRect(q->rect(), Qt::transparent);
                     } else {
+                        QImage img = grabFramebuffer();
+                        QPainter p(q);
                         // We are not drawing to a backingstore: fall back to QImage
-                        p.drawImage(q->rect(), grabFramebuffer());
+                        p.drawImage(q->rect(), img);
                         skipPaintEvent = true;
                     }
                     endBackingStorePainting();
