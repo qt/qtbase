@@ -228,6 +228,8 @@ void tst_QOpenGLWidget::painter()
     glw->m_clear = true;
     image = glw->grabFramebuffer();
     QVERIFY(image.pixel(20, 10) == qRgb(0, 255, 0));
+
+    QPixmap pix = glw->grab(); // QTBUG-61036
 }
 
 void tst_QOpenGLWidget::reparentToAlreadyCreated()
