@@ -85,7 +85,7 @@ public:
     static QString encodeString(int key, QKeySequence::SequenceFormat format);
     // used in dbusmenu
     Q_GUI_EXPORT static QString keyName(int key, QKeySequence::SequenceFormat format);
-    static int decodeString(const QString &keyStr, QKeySequence::SequenceFormat format);
+    static int decodeString(QString accel, QKeySequence::SequenceFormat format);
 };
 #endif // QT_NO_SHORTCUT
 

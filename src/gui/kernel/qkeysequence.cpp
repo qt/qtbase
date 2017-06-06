@@ -1008,7 +1008,6 @@ int QKeySequence::assign(const QString &ks)
 int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
 {
     QString keyseq = ks;
-    QString part;
     int n = 0;
     int p = 0, diff = 0;
 
@@ -1033,9 +1032,9 @@ int QKeySequence::assign(const QString &ks, QKeySequence::SequenceFormat format)
                 }
             }
         }
-        part = keyseq.left(-1 == p ? keyseq.length() : p - diff);
+        QString part = keyseq.left(-1 == p ? keyseq.length() : p - diff);
         keyseq = keyseq.right(-1 == p ? 0 : keyseq.length() - (p + 1));
-        d->key[n] = QKeySequencePrivate::decodeString(part, format);
+        d->key[n] = QKeySequencePrivate::decodeString(std::move(part), format);
         ++n;
     }
     return n;
@@ -1061,10 +1060,10 @@ int QKeySequence::decodeString(const QString &str)
     return QKeySequencePrivate::decodeString(str, NativeText);
 }
 
-int QKeySequencePrivate::decodeString(const QString &str, QKeySequence::SequenceFormat format)
+int QKeySequencePrivate::decodeString(QString accel, QKeySequence::SequenceFormat format)
 {
     int ret = 0;
-    QString accel = str.toLower();
+    accel = std::move(accel).toLower();
     bool nativeText = (format == QKeySequence::NativeText);
 
     QVector<QModifKeyName> *gmodifs;
