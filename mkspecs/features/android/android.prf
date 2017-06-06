@@ -1,3 +1,6 @@
+android_install:contains(INSTALLS, target):!isEmpty(target.path): \
+    CONFIG -= android_install
+
 contains(TEMPLATE, ".*app") {
     !android_app {
         !contains(TARGET, ".so"): TARGET = lib$${TARGET}.so
@@ -8,7 +11,7 @@ contains(TEMPLATE, ".*app") {
             INSTALLS *= target
         }
     }
-} else: contains(TEMPLATE, "lib"):!QTDIR_build:android_install {
+} else: contains(TEMPLATE, "lib"):android_install {
     target.path = /libs/$$ANDROID_TARGET_ARCH/
     INSTALLS *= target
 }
