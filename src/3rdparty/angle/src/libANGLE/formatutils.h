@@ -79,7 +79,7 @@ struct InternalFormat
                              GLint skipRows,
                              GLint skipPixels) const;
 };
-const InternalFormat &GetInternalFormatInfo(GLenum internalFormat);
+const InternalFormat GetInternalFormatInfo(GLenum internalFormat);
 
 GLenum GetSizedInternalFormat(GLenum internalFormat, GLenum type);
 

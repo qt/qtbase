@@ -775,20 +775,20 @@ static bool IsValidES3CopyTexImageCombination(GLenum textureInternalFormat, GLen
         //      with the values of the source buffer's [channel sizes]. Table 3.17 is used if the
         //      FRAMEBUFFER_ATTACHMENT_ENCODING is LINEAR and table 3.18 is used if the FRAMEBUFFER_ATTACHMENT_ENCODING
         //      is SRGB.
-        const InternalFormat *sourceEffectiveFormat = NULL;
+        InternalFormat sourceEffectiveFormat;
         if (readBufferHandle != 0)
         {
             // Not the default framebuffer, therefore the read buffer must be a user-created texture or renderbuffer
             if (framebufferInternalFormatInfo.pixelBytes > 0)
             {
-                sourceEffectiveFormat = &framebufferInternalFormatInfo;
+                sourceEffectiveFormat = framebufferInternalFormatInfo;
             }
             else
             {
                 // Renderbuffers cannot be created with an unsized internal format, so this must be an unsized-format
                 // texture. We can use the same table we use when creating textures to get its effective sized format.
                 GLenum sizedInternalFormat = GetSizedInternalFormat(framebufferInternalFormatInfo.format, framebufferInternalFormatInfo.type);
-                sourceEffectiveFormat = &GetInternalFormatInfo(sizedInternalFormat);
+                sourceEffectiveFormat = GetInternalFormatInfo(sizedInternalFormat);
             }
         }
         else
@@ -800,7 +800,7 @@ static bool IsValidES3CopyTexImageCombination(GLenum textureInternalFormat, GLen
                 GLenum effectiveFormat;
                 if (GetEffectiveInternalFormat(framebufferInternalFormatInfo, textureInternalFormatInfo, &effectiveFormat))
                 {
-                    sourceEffectiveFormat = &GetInternalFormatInfo(effectiveFormat);
+                    sourceEffectiveFormat = GetInternalFormatInfo(effectiveFormat);
                 }
                 else
                 {
@@ -816,7 +816,7 @@ static bool IsValidES3CopyTexImageCombination(GLenum textureInternalFormat, GLen
                     (framebufferInternalFormatInfo.blueBits  >= 1 && framebufferInternalFormatInfo.blueBits  <= 8) &&
                     (framebufferInternalFormatInfo.alphaBits >= 1 && framebufferInternalFormatInfo.alphaBits <= 8))
                 {
-                    sourceEffectiveFormat = &GetInternalFormatInfo(GL_SRGB8_ALPHA8);
+                    sourceEffectiveFormat = GetInternalFormatInfo(GL_SRGB8_ALPHA8);
                 }
                 else
                 {
@@ -834,10 +834,10 @@ static bool IsValidES3CopyTexImageCombination(GLenum textureInternalFormat, GLen
         {
             // Section 3.8.5 of the GLES 3.0.3 spec, pg 139, requires that, if the destination format is sized,
             // component sizes of the source and destination formats must exactly match
-            if (textureInternalFormatInfo.redBits   != sourceEffectiveFormat->redBits   ||
-                textureInternalFormatInfo.greenBits != sourceEffectiveFormat->greenBits ||
-                textureInternalFormatInfo.blueBits  != sourceEffectiveFormat->blueBits  ||
-                textureInternalFormatInfo.alphaBits != sourceEffectiveFormat->alphaBits)
+            if (textureInternalFormatInfo.redBits   != sourceEffectiveFormat.redBits   ||
+                textureInternalFormatInfo.greenBits != sourceEffectiveFormat.greenBits ||
+                textureInternalFormatInfo.blueBits  != sourceEffectiveFormat.blueBits  ||
+                textureInternalFormatInfo.alphaBits != sourceEffectiveFormat.alphaBits)
             {
                 return false;
             }
