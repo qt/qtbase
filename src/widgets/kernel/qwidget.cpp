@@ -5133,8 +5133,11 @@ void qt_qpa_set_cursor(QWidget *w, bool force)
 
     \snippet code/src_gui_kernel_qwidget.cpp 8
 
-    \note To obtain the contents of an OpenGL widget, use QGLWidget::grabFrameBuffer()
-    or QGLWidget::renderPixmap() instead.
+    \note To obtain the contents of a QOpenGLWidget, use QOpenGLWidget::grabFramebuffer()
+    instead.
+
+    \note To obtain the contents of a QGLWidget (deprecated), use
+    QGLWidget::grabFrameBuffer() or QGLWidget::renderPixmap() instead.
 */
 void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
                      const QRegion &sourceRegion, RenderFlags renderFlags)
