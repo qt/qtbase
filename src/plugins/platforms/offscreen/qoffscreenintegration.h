@@ -54,6 +54,7 @@ public:
     QOffscreenIntegration();
     ~QOffscreenIntegration();
 
+    void initialize() Q_DECL_OVERRIDE;
     bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
@@ -61,6 +62,8 @@ public:
 #ifndef QT_NO_DRAGANDDROP
     QPlatformDrag *drag() const Q_DECL_OVERRIDE;
 #endif
+
+    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
     QPlatformServices *services() const Q_DECL_OVERRIDE;
 
     QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
@@ -73,6 +76,7 @@ private:
 #ifndef QT_NO_DRAGANDDROP
     QScopedPointer<QPlatformDrag> m_drag;
 #endif
+    QScopedPointer<QPlatformInputContext> m_inputContext;
     QScopedPointer<QPlatformServices> m_services;
 };
 

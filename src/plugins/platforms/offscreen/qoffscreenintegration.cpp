@@ -59,6 +59,8 @@
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qplatforminputcontext.h>
 
 #include <qpa/qplatformservices.h>
 
@@ -116,6 +118,16 @@ QOffscreenIntegration::QOffscreenIntegration()
 
 QOffscreenIntegration::~QOffscreenIntegration()
 {
+}
+
+void QOffscreenIntegration::initialize()
+{
+    m_inputContext.reset(QPlatformInputContextFactory::create());
+}
+
+QPlatformInputContext *QOffscreenIntegration::inputContext() const
+{
+    return m_inputContext.data();
 }
 
 bool QOffscreenIntegration::hasCapability(QPlatformIntegration::Capability cap) const
