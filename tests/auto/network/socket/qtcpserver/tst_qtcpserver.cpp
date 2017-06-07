@@ -920,9 +920,16 @@ void tst_QTcpServer::linkLocal()
         //Windows preallocates link local addresses to interfaces that are down.
         //These may or may not work depending on network driver (they do not work for the Bluetooth PAN driver)
         if (iface.flags() & QNetworkInterface::IsUp) {
+#if defined(Q_OS_WIN)
             // Do not connect to the Teredo Tunneling interface on Windows Xp.
             if (iface.humanReadableName() == QString("Teredo Tunneling Pseudo-Interface"))
                 continue;
+#elif defined(Q_OS_DARWIN)
+            // Do not add "utun" interfaces on macOS: nothing ever gets received
+            // (we don't know why)
+            if (iface.name().startsWith("utun"))
+                continue;
+#endif
             foreach (QNetworkAddressEntry addressEntry, iface.addressEntries()) {
                 QHostAddress addr = addressEntry.ip();
                 if (addr.isInSubnet(localMaskv4, 16)) {
