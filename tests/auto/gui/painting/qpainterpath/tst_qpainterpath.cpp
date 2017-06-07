@@ -699,9 +699,11 @@ void tst_QPainterPath::testOperatorDatastream()
     path.addRect(0, 0, 100, 100);
     path.setFillRule(Qt::WindingFill);
 
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qpainterpath.XXXXXX");
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
     // Write out
     {
-        QFile data("data");
+        QFile data(tempDir.path() + "/data");
         bool ok = data.open(QFile::WriteOnly);
         QVERIFY(ok);
         QDataStream stream(&data);
@@ -711,7 +713,7 @@ void tst_QPainterPath::testOperatorDatastream()
     QPainterPath other;
     // Read in
     {
-        QFile data("data");
+        QFile data(tempDir.path() + "/data");
         bool ok = data.open(QFile::ReadOnly);
         QVERIFY(ok);
         QDataStream stream(&data);

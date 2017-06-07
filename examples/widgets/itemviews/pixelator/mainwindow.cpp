@@ -53,9 +53,12 @@
 #include "pixeldelegate.h"
 
 #include <QtWidgets>
-#ifndef QT_NO_PRINTER
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QPrinter>
 #include <QPrintDialog>
+#endif
 #endif
 
 //! [0]
@@ -164,7 +167,7 @@ void MainWindow::openImage(const QString &fileName)
 
 void MainWindow::printImage()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printdialog)
     if (model->rowCount(QModelIndex())*model->columnCount(QModelIndex()) > 90000) {
         QMessageBox::StandardButton answer;
         answer = QMessageBox::question(this, tr("Large Image Size"),

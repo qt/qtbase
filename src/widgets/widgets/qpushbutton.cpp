@@ -77,6 +77,8 @@ QT_BEGIN_NAMESPACE
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-pushbutton.jpg
+
     The push button, or command button, is perhaps the most commonly
     used widget in any graphical user interface. Push (click) a button
     to command the computer to perform some action, or to answer a
@@ -148,6 +150,11 @@ QT_BEGIN_NAMESPACE
     button is probably not what you want. When in doubt, use a tool
     button.
 
+    \note On \macos when a push button's width becomes smaller than 50 or
+    its height becomes smaller than 30, the button's corners are
+    changed from round to square. Use the setMinimumSize()
+    function to prevent this behavior.
+
     A variation of a command button is a menu button. These provide
     not just one command, but several, since when they are clicked
     they pop up a menu of options. Use the method setMenu() to
@@ -156,20 +163,6 @@ QT_BEGIN_NAMESPACE
     Other classes of buttons are option buttons (see QRadioButton) and
     check boxes (see QCheckBox).
 
-    \table 100%
-    \row \li \inlineimage macintosh-pushbutton.png Screenshot of a Macintosh style push button
-         \li A push button shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-
-         Note that when a button's width becomes smaller than 50 or
-         its height becomes smaller than 30, the button's corners are
-         changed from round to square. Use the setMinimumSize()
-         function to prevent this behavior.
-
-    \row \li \inlineimage windowsvista-pushbutton.png Screenshot of a Windows Vista style push button
-         \li A push button shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
-    \row \li \inlineimage fusion-pushbutton.png Screenshot of a Fusion style push button
-         \li A push button shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
-    \endtable
 
     In Qt, the QAbstractButton base class provides most of the modes
     and other API, and QPushButton provides GUI logic.

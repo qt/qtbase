@@ -49,9 +49,12 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#ifndef QT_NO_PRINTER
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QPrinter>
 #include <QPrintDialog>
+#endif
 #endif
 
 #include "detailsdialog.h"
@@ -245,7 +248,7 @@ void MainWindow::openDialog()
 //! [17]
 void MainWindow::printFile()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printdialog)
     QTextEdit *editor = static_cast<QTextEdit*>(letters->currentWidget());
 //! [18]
     QPrinter printer;

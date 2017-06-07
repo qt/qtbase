@@ -2354,6 +2354,8 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
   \ingroup model-view
   \inmodule QtWidgets
 
+  \image windows-treeview.png
+
   The QTreeWidget class is a convenience class that provides a standard
   tree widget with a classic item-based interface similar to that used by
   the QListView class in Qt 3.
@@ -2386,15 +2388,6 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
   \l{QTreeView::setSortingEnabled()}{setSortingEnabled()}. The
   \l{QTreeView::isSortingEnabled()}{isSortingEnabled()} function indicates
   whether sorting is enabled.
-
-  \table 100%
-  \row \li \inlineimage windowsvista-treeview.png Screenshot of a Windows Vista style tree widget
-       \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree widget
-       \li \inlineimage fusion-treeview.png Screenshot of a Fusion style tree widget
-  \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} tree widget.
-       \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree widget.
-       \li A \l{Fusion Style Widget Gallery}{Fusion style} tree widget.
-  \endtable
 
   \sa QTreeWidgetItem, QTreeWidgetItemIterator, QTreeView,
   {Model/View Programming}, {Settings Editor Example}

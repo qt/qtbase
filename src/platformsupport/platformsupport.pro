@@ -11,7 +11,7 @@ SUBDIRS = \
 qtConfig(freetype)|darwin|win32: \
     SUBDIRS += fontdatabases
 
-qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput) {
+qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid) {
     SUBDIRS += input
     input.depends += devicediscovery
 }

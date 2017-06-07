@@ -1504,6 +1504,8 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     \ingroup model-view
     \inmodule QtWidgets
 
+    \image windows-tableview.png
+
     Table widgets provide standard table display facilities for applications.
     The items in a QTableWidget are provided by QTableWidgetItem.
 
@@ -1544,15 +1546,6 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     The number of rows in the table can be found with rowCount(), and the
     number of columns with columnCount(). The table can be cleared with the
     clear() function.
-
-    \table 100%
-    \row \li \inlineimage windowsvista-tableview.png Screenshot of a Windows Vista style table widget
-         \li \inlineimage macintosh-tableview.png Screenshot of a Macintosh style table widget
-         \li \inlineimage fusion-tableview.png Screenshot of a Fusion style table widget
-    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} table widget.
-         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} table widget.
-         \li A \l{Fusion Style Widget Gallery}{Fusion style} table widget.
-    \endtable
 
     \sa QTableWidgetItem, QTableView, {Model/View Programming}
 */

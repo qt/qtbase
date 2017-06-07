@@ -44,10 +44,10 @@
 #include <QtGui/qpixmap.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(splashscreen);
+
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_SPLASHSCREEN
 class QSplashScreenPrivate;
 
 class Q_WIDGETS_EXPORT QSplashScreen : public QWidget
@@ -81,8 +81,6 @@ private:
     Q_DISABLE_COPY(QSplashScreen)
     Q_DECLARE_PRIVATE(QSplashScreen)
 };
-
-#endif // QT_NO_SPLASHSCREEN
 
 QT_END_NAMESPACE
 

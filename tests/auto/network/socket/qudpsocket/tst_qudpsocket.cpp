@@ -1553,9 +1553,17 @@ void tst_QUdpSocket::linkLocalIPv6()
         //Windows preallocates link local addresses to interfaces that are down.
         //These may or may not work depending on network driver
         if (iface.flags() & QNetworkInterface::IsUp) {
+#if defined(Q_OS_WIN)
             // Do not add the Teredo Tunneling Pseudo Interface on Windows.
             if (iface.humanReadableName().contains("Teredo"))
                 continue;
+#elif defined(Q_OS_DARWIN)
+            // Do not add "utun" interfaces on macOS: nothing ever gets received
+            // (we don't know why)
+            if (iface.name().startsWith("utun"))
+                continue;
+#endif
+
             foreach (QNetworkAddressEntry addressEntry, iface.addressEntries()) {
                 QHostAddress addr(addressEntry.ip());
                 if (!addr.scopeId().isEmpty() && addr.isInSubnet(localMask, 64)) {

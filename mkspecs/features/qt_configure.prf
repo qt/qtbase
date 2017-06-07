@@ -581,7 +581,8 @@ defineTest(qtConfLibrary_pkgConfig) {
     version ~= s/[^0-9.].*$//
     $${1}.version = $$first(version)
     export($${1}.version)
-    $${1}.libs = $$libpaths $$libs
+    libpaths += $$libs
+    $${1}.libs = "$$libpaths"
     export($${1}.libs)
     return(true)
 }

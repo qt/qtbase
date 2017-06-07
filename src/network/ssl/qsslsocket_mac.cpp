@@ -1226,9 +1226,32 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
         QCFType<SecCertificateRef> certRef = SecCertificateCreateWithData(NULL, certData);
         CFArrayAppendValue(certArray, certRef);
     }
+
     SecTrustSetAnchorCertificates(trust, certArray);
-    // Secure Transport should use anchors only from our QSslConfiguration:
-    SecTrustSetAnchorCertificatesOnly(trust, true);
+
+    // By default SecTrustEvaluate uses both CA certificates provided in
+    // QSslConfiguration and the ones from the system database. This behavior can
+    // be unexpected if a user's code tries to limit the trusted CAs to those
+    // explicitly set in QSslConfiguration.
+    // Since on macOS we initialize the default QSslConfiguration copying the
+    // system CA certificates (using SecTrustSettingsCopyCertificates) we can
+    // call SecTrustSetAnchorCertificatesOnly(trust, true) to force SecTrustEvaluate
+    // to use anchors only from our QSslConfiguration.
+    // Unfortunately, SecTrustSettingsCopyCertificates is not available on iOS
+    // and the default QSslConfiguration always has an empty list of system CA
+    // certificates. This leaves no way to provide client code with access to the
+    // actual system CA certificate list (which most use-cases need) other than
+    // by letting SecTrustEvaluate fall through to the system list; so, in this case
+    // (even though the client code may have provided its own certs), we retain
+    // the default behavior.
+
+#ifdef Q_OS_MACOS
+    const bool anchorsFromConfigurationOnly = true;
+#else
+    const bool anchorsFromConfigurationOnly = false;
+#endif
+
+    SecTrustSetAnchorCertificatesOnly(trust, anchorsFromConfigurationOnly);
 
     SecTrustResultType trustResult = kSecTrustResultInvalid;
     SecTrustEvaluate(trust, &trustResult);

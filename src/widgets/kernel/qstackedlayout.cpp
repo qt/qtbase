@@ -253,7 +253,7 @@ QLayoutItem *QStackedLayout::itemAt(int index) const
 // on the object then)
 static bool qt_wasDeleted(const QWidget *w)
 {
-    return QWidgetPrivate::get(w)->wasDeleted;
+    return QObjectPrivate::get(w)->wasDeleted;
 }
 
 

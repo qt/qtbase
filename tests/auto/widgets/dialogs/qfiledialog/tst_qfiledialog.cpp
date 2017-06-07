@@ -144,6 +144,7 @@ private slots:
 #endif
     void rejectModalDialogs();
     void QTBUG49600_nativeIconProviderCrash();
+    void focusObjectDuringDestruction();
 
     // NOTE: Please keep widgetlessNativeDialog() as the LAST test!
     //
@@ -1463,18 +1464,15 @@ class DialogRejecter : public QObject
 public:
     DialogRejecter()
     {
-        QTimer *timer = new QTimer(this);
-        timer->setInterval(1000);
-        connect(timer, &QTimer::timeout, this, &DialogRejecter::rejectFileDialog);
-        timer->start();
+        connect(qApp, &QApplication::focusChanged, this, &DialogRejecter::rejectFileDialog);
     }
 
 public slots:
-    void rejectFileDialog()
+    virtual void rejectFileDialog()
     {
         if (QWidget *w = QApplication::activeModalWidget())
             if (QDialog *d = qobject_cast<QDialog *>(w))
-                d->reject();
+                QTest::keyClick(d, Qt::Key_Escape);
     }
 };
 
@@ -1512,6 +1510,37 @@ void tst_QFiledialog::QTBUG49600_nativeIconProviderCrash()
         QSKIP("This platform always uses widgets to realize its QFileDialog, instead of the native file dialog.");
     QFileDialog fd;
     fd.iconProvider();
+}
+
+class qtbug57193DialogRejecter : public DialogRejecter
+{
+public:
+    void rejectFileDialog() override
+    {
+        QCOMPARE(QGuiApplication::topLevelWindows().size(), 1);
+        const QWindow *window = QGuiApplication::topLevelWindows().constFirst();
+
+        const QFileDialog *fileDialog = qobject_cast<QFileDialog*>(QApplication::activeModalWidget());
+        QVERIFY(fileDialog);
+
+        // The problem in QTBUG-57193 was from a platform input context plugin that was
+        // connected to QWindow::focusObjectChanged(), and consequently accessed the focus
+        // object (the QFileDialog) that was in the process of being destroyed. This test
+        // checks that the QFileDialog is never set as the focus object after its destruction process begins.
+        connect(window, &QWindow::focusObjectChanged, [=](QObject *focusObject) {
+            QVERIFY(focusObject != fileDialog);
+        });
+        DialogRejecter::rejectFileDialog();
+    }
+};
+
+void tst_QFiledialog::focusObjectDuringDestruction()
+{
+    QTRY_VERIFY(QGuiApplication::topLevelWindows().isEmpty());
+
+    qtbug57193DialogRejecter dialogRejecter;
+
+    QFileDialog::getOpenFileName(nullptr, QString(), QString(), QString(), nullptr);
 }
 
 QTEST_MAIN(tst_QFiledialog)

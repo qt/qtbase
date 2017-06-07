@@ -43,4 +43,6 @@
 #  error "__cplusplus must be > 201402L (the value for C++14)"
 #endif
 
+#include <map> // https://bugs.llvm.org//show_bug.cgi?id=33117
+
 int main(int, char **) { return 0; }

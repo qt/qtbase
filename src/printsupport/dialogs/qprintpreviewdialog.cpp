@@ -56,8 +56,6 @@
 #include <QtWidgets/qtoolbar.h>
 #include <QtCore/QCoreApplication>
 
-#ifndef QT_NO_PRINTPREVIEWDIALOG
-
 #include "private/qdialog_p.h"
 
 #include <QtWidgets/qformlayout.h>
@@ -787,7 +785,3 @@ QT_END_NAMESPACE
 
 #include "moc_qprintpreviewdialog.cpp"
 #include "qprintpreviewdialog.moc"
-
-#endif // QT_NO_PRINTPREVIEWDIALOG
-
-

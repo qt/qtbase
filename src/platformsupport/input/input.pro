@@ -28,4 +28,8 @@ qtConfig(evdev)|qtConfig(libinput) {
     include($$PWD/shared/shared.pri)
 }
 
+qtConfig(integrityhid) {
+    include($$PWD/integrityhid/integrityhid.pri)
+}
+
 load(qt_module)

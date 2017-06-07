@@ -64,6 +64,8 @@ QT_BEGIN_NAMESPACE
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-tabwidget.png
+
     A tab widget provides a tab bar (see QTabBar) and a "page area"
     that is used to display pages related to each tab. By default, the
     tab bar is shown above the page area, but different configurations
@@ -116,15 +118,6 @@ QT_BEGIN_NAMESPACE
     Most of the functionality in QTabWidget is provided by a QTabBar
     (at the top, providing the tabs) and a QStackedWidget (most of the
     area, organizing the individual pages).
-
-    \table 100%
-    \row \li \inlineimage windowsvista-tabwidget.png Screenshot of a Windows Vista style tab widget
-         \li \inlineimage macintosh-tabwidget.png Screenshot of a Macintosh style tab widget
-         \li \inlineimage fusion-tabwidget.png Screenshot of a Fusion style tab widget
-    \row \li A Windows Vista style tab widget.
-         \li A Macintosh style tab widget.
-         \li A Fusion style tab widget.
-    \endtable
 
     \sa QTabBar, QStackedWidget, QToolBox, {Tab Dialog Example}
 */

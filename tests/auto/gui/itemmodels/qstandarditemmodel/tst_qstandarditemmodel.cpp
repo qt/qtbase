@@ -125,6 +125,7 @@ private slots:
 
     void itemRoleNames();
     void getMimeDataWithInvalidModelIndex();
+    void supportedDragDropActions();
 
 private:
     QAbstractItemModel *m_model;
@@ -1664,6 +1665,13 @@ void tst_QStandardItemModel::getMimeDataWithInvalidModelIndex()
     QTest::ignoreMessage(QtWarningMsg, "QStandardItemModel::mimeData: No item associated with invalid index");
     QMimeData *data = model.mimeData(QModelIndexList() << QModelIndex());
     QVERIFY(!data);
+}
+
+void tst_QStandardItemModel::supportedDragDropActions()
+{
+    QStandardItemModel model;
+    QCOMPARE(model.supportedDragActions(), Qt::CopyAction | Qt::MoveAction);
+    QCOMPARE(model.supportedDropActions(), Qt::CopyAction | Qt::MoveAction);
 }
 
 QTEST_MAIN(tst_QStandardItemModel)

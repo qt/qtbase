@@ -59,7 +59,9 @@
 #include <qlabel.h>
 #endif
 #include <qgroupbox.h>
+#if QT_CONFIG(lcdnumber)
 #include <qlcdnumber.h>
+#endif
 #include <qlineedit.h>
 #include <private/qlineedit_p.h>
 #include <qstyle.h>
@@ -422,7 +424,7 @@ QAccessible::Role QAccessibleDisplay::role() const
         if (l->picture())
             return QAccessible::Graphic;
 #endif
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
         if (l->movie())
             return QAccessible::Animation;
 #endif
@@ -464,7 +466,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
                     str = qt_accStripAmp(str);
 #endif
 #endif // QT_CONFIG(label)
-#ifndef QT_NO_LCDNUMBER
+#if QT_CONFIG(lcdnumber)
             } else if (qobject_cast<QLCDNumber*>(object())) {
                 QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
                 if (l->digitCount())

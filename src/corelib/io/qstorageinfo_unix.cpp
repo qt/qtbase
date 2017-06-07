@@ -195,8 +195,12 @@ static bool shouldIncludeFs(const QStorageIterator &it)
 
 #if defined(Q_OS_BSD4)
 
+#ifndef MNT_NOWAIT
+#  define MNT_NOWAIT 0
+#endif
+
 inline QStorageIterator::QStorageIterator()
-    : entryCount(::getmntinfo(&stat_buf, 0)),
+    : entryCount(::getmntinfo(&stat_buf, MNT_NOWAIT)),
       currentIndex(-1)
 {
 }

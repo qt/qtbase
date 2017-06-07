@@ -73,6 +73,8 @@ extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
     \ingroup advanced
     \inmodule QtWidgets
 
+    \image windows-listview.png
+
     A QListView presents items stored in a model, either as a simple
     non-hierarchical list, or as a collection of icons. This class is used
     to provide lists and icon views that were previously provided by the
@@ -110,15 +112,6 @@ extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
     laid out. Items are spaced according to their spacing(), and can exist
     within a notional grid of size specified by gridSize(). The items can
     be rendered as large or small icons depending on their iconSize().
-
-    \table 100%
-    \row \li \inlineimage windowsvista-listview.png Screenshot of a Windows Vista style list view
-         \li \inlineimage macintosh-listview.png Screenshot of a Macintosh style table view
-         \li \inlineimage fusion-listview.png Screenshot of a Fusion style table view
-    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} list view.
-         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} list view.
-         \li A \l{Fusion Style Widget Gallery}{Fusion style} list view.
-    \endtable
 
     \section1 Improving Performance
 

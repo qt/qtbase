@@ -40,7 +40,9 @@
 #include "qplatformprintdevice.h"
 
 #include "qprintdevice_p.h"
+#if QT_CONFIG(printdialog)
 #include "qprintdialog.h"
+#endif
 
 #include <QtGui/qpagelayout.h>
 

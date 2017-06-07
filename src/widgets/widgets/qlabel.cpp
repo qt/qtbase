@@ -72,7 +72,7 @@ QLabelPrivate::QLabelPrivate()
 #ifndef QT_NO_PICTURE
       picture(Q_NULLPTR),
 #endif
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
       movie(),
 #endif
       control(Q_NULLPTR),
@@ -115,6 +115,8 @@ QLabelPrivate::~QLabelPrivate()
 
     \ingroup basicwidgets
     \inmodule QtWidgets
+
+    \image windows-label.png
 
     QLabel is used for displaying text or an image. No user
     interaction functionality is provided. The visual appearance of
@@ -180,18 +182,6 @@ QLabelPrivate::~QLabelPrivate()
     buddy (the QLineEdit) when the user presses Alt+P. If the buddy
     was a button (inheriting from QAbstractButton), triggering the
     mnemonic would emulate a button click.
-
-    \table 100%
-    \row
-    \li \inlineimage macintosh-label.png Screenshot of a Macintosh style label
-    \li A label shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row
-    \li \inlineimage fusion-label.png Screenshot of a Fusion style label
-    \li A label shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
-    \row
-    \li \inlineimage windowsvista-label.png Screenshot of a Windows Vista style label
-    \li A label shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
-    \endtable
 
     \sa QLineEdit, QTextEdit, QPixmap, QMovie,
         {fowler}{GUI Design Handbook: Label}
@@ -582,7 +572,7 @@ QSize QLabelPrivate::sizeForWidth(int w) const
     } else if (picture && !picture->isNull()) {
         br = picture->boundingRect();
 #endif
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
     } else if (movie && !movie->currentPixmap().isNull()) {
         br = movie->currentPixmap().rect();
         br.setSize(br.size() / movie->currentPixmap().devicePixelRatio());
@@ -1015,7 +1005,7 @@ void QLabel::paintEvent(QPaintEvent *)
     int align = QStyle::visualAlignment(d->isTextLabel ? d->textDirection()
                                                        : layoutDirection(), QFlag(d->align));
 
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
     if (d->movie) {
         if (d->scaledcontents)
             style->drawItemPixmap(&painter, cr, align, d->movie->currentPixmap().scaled(cr.size()));
@@ -1216,7 +1206,7 @@ void QLabelPrivate::updateShortcut()
 
 #endif // QT_NO_SHORTCUT
 
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
 void QLabelPrivate::_q_movieUpdated(const QRect& rect)
 {
     Q_Q(QLabel);
@@ -1276,7 +1266,7 @@ void QLabel::setMovie(QMovie *movie)
         d->updateLabel();
 }
 
-#endif // QT_NO_MOVIE
+#endif // QT_CONFIG(movie)
 
 /*!
   \internal
@@ -1309,7 +1299,7 @@ void QLabelPrivate::clearContents()
         q->releaseShortcut(shortcutId);
     shortcutId = 0;
 #endif
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
     if (movie) {
         QObject::disconnect(movie, SIGNAL(resized(QSize)), q, SLOT(_q_movieResized(QSize)));
         QObject::disconnect(movie, SIGNAL(updated(QRect)), q, SLOT(_q_movieUpdated(QRect)));
@@ -1329,7 +1319,7 @@ void QLabelPrivate::clearContents()
 }
 
 
-#ifndef QT_NO_MOVIE
+#if QT_CONFIG(movie)
 
 /*!
     Returns a pointer to the label's movie, or 0 if no movie has been
@@ -1344,7 +1334,7 @@ QMovie *QLabel::movie() const
     return d->movie;
 }
 
-#endif  // QT_NO_MOVIE
+#endif  // QT_CONFIG(movie)
 
 /*!
     \property QLabel::textFormat

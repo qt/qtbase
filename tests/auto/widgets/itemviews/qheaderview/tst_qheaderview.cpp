@@ -171,6 +171,7 @@ private slots:
     void saveRestore();
     void restoreQt4State();
     void restoreToMoreColumns();
+    void restoreToMoreColumnsNoMovedColumns();
     void restoreBeforeSetModel();
     void defaultSectionSizeTest();
     void defaultSectionSizeTestStyles();
@@ -1690,6 +1691,55 @@ void tst_QHeaderView::restoreToMoreColumns()
     QCOMPARE(h4.hiddenSectionCount(), 1);
     QCOMPARE(h4.sortIndicatorSection(), 2);
     QCOMPARE(h4.sortIndicatorOrder(), Qt::DescendingOrder);
+    QCOMPARE(h4.logicalIndex(0), 2);
+    QCOMPARE(h4.logicalIndex(1), 1);
+    QCOMPARE(h4.logicalIndex(2), 0);
+    QCOMPARE(h4.visualIndex(0), 2);
+    QCOMPARE(h4.visualIndex(1), 1);
+    QCOMPARE(h4.visualIndex(2), 0);
+
+    // Repainting shouldn't crash
+    h4.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&h4));
+}
+
+void tst_QHeaderView::restoreToMoreColumnsNoMovedColumns()
+{
+    // Given a model with 2 columns, for saving state
+    QHeaderView h1(Qt::Horizontal);
+    QStandardItemModel model1(1, 2);
+    h1.setModel(&model1);
+    QCOMPARE(h1.visualIndex(0), 0);
+    QCOMPARE(h1.visualIndex(1), 1);
+    QCOMPARE(h1.logicalIndex(0), 0);
+    QCOMPARE(h1.logicalIndex(1), 1);
+    const QByteArray savedState = h1.saveState();
+
+    // And a model with 3 columns, to apply that state upon
+    QHeaderView h2(Qt::Horizontal);
+    QStandardItemModel model2(1, 3);
+    h2.setModel(&model2);
+    QCOMPARE(h2.visualIndex(0), 0);
+    QCOMPARE(h2.visualIndex(1), 1);
+    QCOMPARE(h2.visualIndex(2), 2);
+    QCOMPARE(h2.logicalIndex(0), 0);
+    QCOMPARE(h2.logicalIndex(1), 1);
+    QCOMPARE(h2.logicalIndex(2), 2);
+
+    // When calling restoreState()
+    QVERIFY(h2.restoreState(savedState));
+
+    // Then the index mapping should still be as default
+    QCOMPARE(h2.visualIndex(0), 0);
+    QCOMPARE(h2.visualIndex(1), 1);
+    QCOMPARE(h2.visualIndex(2), 2);
+    QCOMPARE(h2.logicalIndex(0), 0);
+    QCOMPARE(h2.logicalIndex(1), 1);
+    QCOMPARE(h2.logicalIndex(2), 2);
+
+    // And repainting shouldn't crash
+    h2.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&h2));
 }
 
 void tst_QHeaderView::restoreBeforeSetModel()

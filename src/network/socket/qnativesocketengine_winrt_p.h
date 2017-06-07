@@ -183,9 +183,6 @@ private slots:
     void handleTcpError(QAbstractSocket::SocketError error);
 
 private:
-    Q_INVOKABLE void putIntoPendingDatagramsList(const QList<WinRtDatagram> &datagrams);
-    Q_INVOKABLE void putIntoPendingData(const QVector<QByteArray> &data);
-
     Q_DECLARE_PRIVATE(QNativeSocketEngine)
     Q_DISABLE_COPY(QNativeSocketEngine)
 };

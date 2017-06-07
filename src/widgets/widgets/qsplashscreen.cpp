@@ -39,8 +39,6 @@
 
 #include "qsplashscreen.h"
 
-#ifndef QT_NO_SPLASHSCREEN
-
 #include "qapplication.h"
 #include "qdesktopwidget.h"
 #include "qpainter.h"
@@ -354,5 +352,3 @@ bool QSplashScreen::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qsplashscreen.cpp"
-
-#endif //QT_NO_SPLASHSCREEN

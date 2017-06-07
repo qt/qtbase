@@ -50,7 +50,14 @@
 
 #include <QtWidgets>
 #if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
+#include <QPrinter>
+#include <QPrintDialog>
+#if QT_CONFIG(printpreviewdialog)
 #include <QPrintPreviewDialog>
+#endif
+#endif
 #endif
 
 #include "mainwindow.h"
@@ -270,7 +277,7 @@ void MainWindow::printDocument(QPrinter *printer)
 
 void MainWindow::on_printPreviewAction_triggered()
 {
-#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printdialog)
+#if defined(QT_PRINTSUPPORT_LIB) && QT_CONFIG(printpreviewdialog)
     pageMap = currentPageMap();
 
     if (pageMap.count() == 0)

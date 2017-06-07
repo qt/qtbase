@@ -42,8 +42,6 @@
 
 #include <QtPrintSupport/qprinter.h>
 
-#ifndef QT_NO_PRINTDIALOG
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -183,5 +181,3 @@ void QPageSetupDialog::done(int result)
 }
 
 QT_END_NAMESPACE
-
-#endif

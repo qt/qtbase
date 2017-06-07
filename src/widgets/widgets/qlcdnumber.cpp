@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qlcdnumber.h"
-#ifndef QT_NO_LCDNUMBER
+
 #include "qbitarray.h"
 #include "qpainter.h"
 #include "private/qframe_p.h"
@@ -74,6 +74,8 @@ public:
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-lcdnumber.png
+
     It can display a number in just about any size. It can display
     decimal, hexadecimal, octal or binary numbers. It is easy to
     connect to data sources using the display() slot, which is
@@ -102,17 +104,6 @@ public:
 
     Incidentally, QLCDNumber is the very oldest part of Qt, tracing
     its roots back to a BASIC program on the \l{Sinclair Spectrum}{Sinclair Spectrum}.
-
-    \table
-    \row \li
-    \inlineimage windows-lcdnumber.png Screenshot of a Windows style LCD number widget
-    \inlineimage windowsvista-lcdnumber.png Screenshot of a Windows Vista style LCD number widget
-    \inlineimage macintosh-lcdnumber.png Screenshot of a Macintosh style LCD number widget
-    \inlineimage fusion-lcdnumber.png Screenshot of a Fusion style LCD number widget
-    \row \li LCD number widgets shown in various widget styles (from left to right):
-    \l{Windows Style Widget Gallery}{Windows}, \l{Windows Vista Style Widget Gallery}{Windows Vista},
-    \l{Macintosh Style Widget Gallery}{Macintosh}, \l{Fusion Style Widget Gallery}{Fusion}.
-    \endtable
 
     \sa QLabel, QFrame, {Digital Clock Example}, {Tetrix Example}
 */
@@ -1220,5 +1211,3 @@ bool QLCDNumber::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qlcdnumber.cpp"
-
-#endif // QT_NO_LCDNUMBER

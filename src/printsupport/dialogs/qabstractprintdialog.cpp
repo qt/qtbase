@@ -43,8 +43,6 @@
 #include "qprinter.h"
 #include "private/qprinter_p.h"
 
-#ifndef QT_NO_PRINTDIALOG
-
 QT_BEGIN_NAMESPACE
 
 // hack
@@ -497,5 +495,3 @@ void QPrintDialog::open(QObject *receiver, const char *member)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTDIALOG

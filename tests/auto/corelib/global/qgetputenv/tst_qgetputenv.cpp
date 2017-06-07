@@ -97,17 +97,33 @@ void tst_QGetPutEnv::intValue_data()
     QTest::addColumn<int>("expected");
     QTest::addColumn<bool>("ok");
 
-    // most non-success cases already tested in getSetCheck()
+    // some repetition from what is tested in getSetCheck()
+    QTest::newRow("empty") << QByteArray() << 0 << false;
+    QTest::newRow("spaces-heading") << QByteArray(" 1") << 1 << true;
+    QTest::newRow("spaces-trailing") << QByteArray("1 ") << 0 << false;
 
 #define ROW(x, i, b) \
     QTest::newRow(#x) << QByteArray(#x) << (i) << (b)
     ROW(auto, 0, false);
+    ROW(1auto, 0, false);
     ROW(0, 0, true);
+    ROW(+0, 0, true);
     ROW(1, 1, true);
+    ROW(+1, 1, true);
+    ROW(09, 0, false);
     ROW(010, 8, true);
     ROW(0x10, 16, true);
+    ROW(0x, 0, false);
+    ROW(0xg, 0, false);
+    ROW(0x1g, 0, false);
+    ROW(000000000000000000000000000000000000000000000000001, 0, false);
+    ROW(+000000000000000000000000000000000000000000000000001, 0, false);
+    ROW(000000000000000000000000000000000000000000000000001g, 0, false);
+    ROW(-0, 0, true);
     ROW(-1, -1, true);
     ROW(-010, -8, true);
+    ROW(-000000000000000000000000000000000000000000000000001, 0, false);
+    ROW(2147483648, 0, false);
     // ROW(0xffffffff, -1, true); // could be expected, but not how QByteArray::toInt() works
     ROW(0xffffffff, 0, false);
     const int bases[] = {10, 8, 16};
@@ -125,6 +141,7 @@ void tst_QGetPutEnv::intValue_data()
 
 void tst_QGetPutEnv::intValue()
 {
+    const int maxlen = (sizeof(int) * CHAR_BIT + 2) / 3;
     const char varName[] = "should_not_exist";
 
     QFETCH(QByteArray, value);
@@ -133,6 +150,13 @@ void tst_QGetPutEnv::intValue()
 
     bool actualOk = !ok;
 
+    // Self-test: confirm that it was like the docs said it should be
+    if (value.length() < maxlen) {
+        QCOMPARE(value.toInt(&actualOk, 0), expected);
+        QCOMPARE(actualOk, ok);
+    }
+
+    actualOk = !ok;
     QVERIFY(qputenv(varName, value));
     QCOMPARE(qEnvironmentVariableIntValue(varName), expected);
     QCOMPARE(qEnvironmentVariableIntValue(varName, &actualOk), expected);

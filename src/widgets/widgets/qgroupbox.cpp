@@ -145,6 +145,8 @@ void QGroupBoxPrivate::click()
     \ingroup geomanagement
     \inmodule QtWidgets
 
+    \image windows-groupbox.png
+
     A group box provides a frame, a title on top, a keyboard shortcut, and
     displays various other widgets inside itself. The keyboard shortcut moves
     keyboard focus to one of the group box's child widgets.
@@ -165,15 +167,6 @@ void QGroupBoxPrivate::click()
     QGroupBox with a layout:
 
     \snippet widgets/groupbox/window.cpp 2
-
-    \table 100%
-    \row \li \inlineimage windowsvista-groupbox.png Screenshot of a Windows Vista style group box
-         \li \inlineimage macintosh-groupbox.png Screenshot of a Macintosh style group box
-         \li \inlineimage fusion-groupbox.png Screenshot of a Fusion style group box
-    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} group box.
-         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} group box.
-         \li A \l{Fusion Style Widget Gallery}{Fusion style} group box.
-    \endtable
 
     \sa QButtonGroup, {Group Box Example}
 */

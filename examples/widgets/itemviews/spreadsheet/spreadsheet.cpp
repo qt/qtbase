@@ -49,10 +49,15 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#ifndef QT_NO_PRINTER
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QPrinter>
 #include <QPrintDialog>
+#endif
+#if QT_CONFIG(printpreviewdialog)
 #include <QPrintPreviewDialog>
+#endif
 #endif
 
 #include "spreadsheet.h"
@@ -637,7 +642,7 @@ QString encode_pos(int row, int col)
 
 void SpreadSheet::print()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printpreviewdialog)
     QPrinter printer(QPrinter::ScreenResolution);
     QPrintPreviewDialog dlg(&printer);
     PrintView view;
