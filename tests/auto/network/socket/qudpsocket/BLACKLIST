@@ -21,4 +21,5 @@ osx
 osx
 [loop]
 osx
-
+[linkLocalIPv6]
+redhatenterpriselinuxworkstation-6.6
