@@ -791,10 +791,8 @@ void QOpenGLWidgetPrivate::initialize()
     // texture usable by the underlying window's backingstore.
     QWidget *tlw = q->window();
     QOpenGLContext *shareContext = get(tlw)->shareContext();
-    if (Q_UNLIKELY(!shareContext)) {
-        qWarning("QOpenGLWidget: Cannot be used without a context shared with the toplevel.");
-        return;
-    }
+    // If shareContext is null, showing content on-screen will not work.
+    // However, offscreen rendering and grabFramebuffer() will stay fully functional.
 
     // Do not include the sample count. Requesting a multisampled context is not necessary
     // since we render into an FBO, never to an actual surface. What's more, attempting to
@@ -804,9 +802,11 @@ void QOpenGLWidgetPrivate::initialize()
     requestedFormat.setSamples(0);
 
     QScopedPointer<QOpenGLContext> ctx(new QOpenGLContext);
-    ctx->setShareContext(shareContext);
     ctx->setFormat(requestedFormat);
-    ctx->setScreen(shareContext->screen());
+    if (shareContext) {
+        ctx->setShareContext(shareContext);
+        ctx->setScreen(shareContext->screen());
+    }
     if (Q_UNLIKELY(!ctx->create())) {
         qWarning("QOpenGLWidget: Failed to create context");
         return;
@@ -815,7 +815,9 @@ void QOpenGLWidgetPrivate::initialize()
     // Propagate settings that make sense only for the tlw. Note that this only
     // makes sense for properties that get picked up even after the native
     // window is created.
-    QSurfaceFormat tlwFormat = tlw->windowHandle()->format();
+    QSurfaceFormat tlwFormat;
+    if (tlw->windowHandle())
+        tlwFormat = tlw->windowHandle()->format();
     if (requestedFormat.swapInterval() != tlwFormat.swapInterval()) {
         // Most platforms will pick up the changed swap interval on the next
         // makeCurrent or swapBuffers.
@@ -918,8 +920,13 @@ extern Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_
 QImage QOpenGLWidgetPrivate::grabFramebuffer()
 {
     Q_Q(QOpenGLWidget);
+
+    initialize();
     if (!initialized)
         return QImage();
+
+    if (!fbo) // could be completely offscreen, without ever getting a resize event
+        recreateFbo();
 
     if (!inPaintGL)
         render();
@@ -1371,7 +1378,7 @@ int QOpenGLWidget::metric(QPaintDevice::PaintDeviceMetric metric) const
         if (window)
             return int(window->devicePixelRatio() * devicePixelRatioFScale());
         else
-            return 1.0;
+            return int(devicePixelRatioFScale());
     default:
         qWarning("QOpenGLWidget::metric(): unknown metric %d", metric);
         return 0;
@@ -1422,7 +1429,14 @@ bool QOpenGLWidget::event(QEvent *e)
             d->reset();
         // FALLTHROUGH
     case QEvent::Show: // reparenting may not lead to a resize so reinitalize on Show too
-        if (!d->initialized && !size().isEmpty() && window() && window()->windowHandle()) {
+        if (d->initialized && window()->windowHandle()
+                && d->context->shareContext() != QWidgetPrivate::get(window())->shareContext())
+        {
+            // Special case: did grabFramebuffer() for a hidden widget that then became visible.
+            // Recreate all resources since the context now needs to share with the TLW's.
+            d->reset();
+        }
+        if (!d->initialized && !size().isEmpty() && window()->windowHandle()) {
             d->initialize();
             if (d->initialized)
                 d->recreateFbo();

@@ -61,6 +61,8 @@ private slots:
     void showHide();
     void nativeWindow();
     void stackWidgetOpaqueChildIsVisible();
+    void offscreen();
+    void offscreenThenOnscreen();
 };
 
 void tst_QOpenGLWidget::initTestCase()
@@ -570,6 +572,74 @@ void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
     const QColor red(255, 0, 0, 255);
     VERIFY_COLOR(&stack, clipArea, red);
     #undef VERIFY_COLOR
+}
+
+void tst_QOpenGLWidget::offscreen()
+{
+    {
+        QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
+        w->resize(800, 600);
+
+        w->setClearColor(0, 0, 1);
+        QImage image = w->grabFramebuffer();
+
+        QVERIFY(!image.isNull());
+        QCOMPARE(image.width(), w->width());
+        QCOMPARE(image.height(), w->height());
+        QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
+    }
+
+    // QWidget::grab() should eventually end up in grabFramebuffer() as well
+    {
+        QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
+        w->resize(800, 600);
+
+        w->setClearColor(0, 0, 1);
+        QPixmap pm = w->grab();
+        QImage image = pm.toImage();
+
+        QVERIFY(!image.isNull());
+        QCOMPARE(image.width(), w->width());
+        QCOMPARE(image.height(), w->height());
+        QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
+    }
+
+    // ditto for QWidget::render()
+    {
+        QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
+        w->resize(800, 600);
+
+        w->setClearColor(0, 0, 1);
+        QImage image(800, 600, QImage::Format_ARGB32);
+        w->render(&image);
+
+        QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
+    }
+}
+
+void tst_QOpenGLWidget::offscreenThenOnscreen()
+{
+    QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
+    w->resize(800, 600);
+
+    w->setClearColor(0, 0, 1);
+    QImage image = w->grabFramebuffer();
+
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.width(), w->width());
+    QCOMPARE(image.height(), w->height());
+    QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
+
+    // now let's make things more challenging: show. Internally this needs
+    // recreating the context.
+    w->show();
+    QTest::qWaitForWindowExposed(w.data());
+
+    image = w->grabFramebuffer();
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.width(), w->width());
+    QCOMPARE(image.height(), w->height());
+    QVERIFY(image.pixel(30, 40) == qRgb(0, 0, 255));
 }
 
 QTEST_MAIN(tst_QOpenGLWidget)
