@@ -52,6 +52,10 @@
 #  include "qhashfunctions.h"
 #endif
 
+#if QT_HAS_INCLUDE(<sys/auxv.h>)
+#  include <sys/auxv.h>
+#endif
+
 #ifdef Q_OS_UNIX
 #  include <fcntl.h>
 #  include <private/qcore_unix_p.h>
@@ -247,12 +251,31 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
 {
     Q_ASSERT(left);
 
+    // ELF's auxv AT_RANDOM has 16 random bytes
+    using RandomBytes = quint32[16 / sizeof(quint32)];
+    RandomBytes scratch = {};
+    RandomBytes *auxvSeed = nullptr;
+
+#if QT_HAS_INCLUDE(<sys/auxv.h>) && defined(AT_RANDOM)
+    // works on Linux -- all modern libc have getauxval
+    // other ELF-based systems don't seem to have AT_RANDOM
+    auxvSeed = reinterpret_cast<RandomBytes *>(getauxval(AT_RANDOM));
+    if (auxvSeed)
+        memcpy(scratch, auxvSeed, sizeof(RandomBytes));
+#endif
+
     quint32 v = seed.load();
-    if (Q_UNLIKELY(v == 0))
-        emergency_seed(v);
+    if (Q_LIKELY(v)) {
+        // mix the stored seed value
+        // (using the fact that qHash(unsigned) is idempotent)
+        scratch[0] = QtPrivate::QHashCombine()(scratch[0], v);
+    } else if (Q_UNLIKELY(auxvSeed == nullptr)) {
+        emergency_seed(scratch[0]);
+    }
 
     // this is highly inefficient, we should save the generator across calls...
-    std::mt19937 generator(v);
+    std::seed_seq sseq(std::begin(scratch), std::end(scratch));
+    std::mt19937 generator(sseq);
     std::generate(ptr, ptr + left, generator);
 
     fallback_update_seed(*ptr);
