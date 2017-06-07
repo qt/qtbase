@@ -25,4 +25,5 @@ osx
 osx
 [zeroLengthDatagram]
 osx
-
+[linkLocalIPv6]
+redhatenterpriselinuxworkstation-6.6
