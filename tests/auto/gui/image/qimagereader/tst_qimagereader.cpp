@@ -728,13 +728,15 @@ void tst_QImageReader::imageFormatBeforeRead()
 
     SKIP_IF_UNSUPPORTED(format);
 
-    QImageReader reader(fileName);
+    QImageReader reader(prefix + fileName);
+    QVERIFY(reader.canRead());
     if (reader.supportsOption(QImageIOHandler::ImageFormat)) {
         QImage::Format fileFormat = reader.imageFormat();
         QCOMPARE(fileFormat, imageFormat);
         QSize size = reader.size();
         QImage image(size, fileFormat);
         QVERIFY(reader.read(&image));
+        QEXPECT_FAIL("bmp-3", "Semi-transparent BMPs not predicted", Continue);
         QCOMPARE(image.format(), fileFormat);
     }
 }
