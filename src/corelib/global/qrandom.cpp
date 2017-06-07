@@ -48,6 +48,8 @@
 
 #if QT_HAS_INCLUDE(<random>)
 #  include <random>
+#  include "qdeadlinetimer.h"
+#  include "qhashfunctions.h"
 #endif
 
 #ifdef Q_OS_UNIX
@@ -217,12 +219,40 @@ static void fallback_update_seed(unsigned value)
     seed.fetchAndXorRelaxed(value);
 }
 
+static void emergency_seed(quint32 &v) Q_DECL_NOTHROW
+{
+    // we don't have any seed at all, so let's use the some bits from the
+    // seed variable's address (hoping to get entropy from the system ASLR)
+    // and the current monotonic time in nanoseconds
+    // (wall-clock time can be predicted)
+
+    v = quint32(quintptr(&seed)) >> 12;    // PAGE_SHIFT
+    if (sizeof(quintptr) == sizeof(quint32)) {
+        // mask off highest 4 bits, since they're likely to be constant
+        v &= ~0xf00000000U;
+    }
+
+#ifndef QT_BUILD_QMAKE
+    // see QtPrivate::QHashCombine for the algorithm
+    quint32 nsecs = quint32(QDeadlineTimer::current(Qt::PreciseTimer).deadline());
+    v = QtPrivate::QHashCombine()(v, nsecs);
+#endif
+}
+
+Q_NEVER_INLINE
+#ifdef Q_CC_GNU
+__attribute__((cold))   // this function is pretty big, so optimize for size
+#endif
 static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
 {
     Q_ASSERT(left);
 
+    quint32 v = seed.load();
+    if (Q_UNLIKELY(v == 0))
+        emergency_seed(v);
+
     // this is highly inefficient, we should save the generator across calls...
-    std::mt19937 generator(seed.load());
+    std::mt19937 generator(v);
     std::generate(ptr, ptr + left, generator);
 
     fallback_update_seed(*ptr);
