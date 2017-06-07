@@ -186,13 +186,18 @@ static NSMutableSet *_q_leftButtonLimbo = nil;
 - (void)dealloc
 {
     CGImageRelease(m_maskImage);
-    [m_trackingArea release];
+    if (m_trackingArea) {
+        [self removeTrackingArea:m_trackingArea];
+        [m_trackingArea release];
+        m_trackingArea = nil;
+    }
     m_maskImage = 0;
     m_window = 0;
     m_subscribesForGlobalFrameNotifications = false;
     [m_inputSource release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [m_mouseMoveHelper release];
+    m_mouseMoveHelper = nil;
 
     delete currentCustomDragTypes;
 
