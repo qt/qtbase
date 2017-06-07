@@ -112,6 +112,8 @@ public:
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-spinbox.png
+
     QSpinBox is designed to handle integers and discrete sets of
     values (e.g., month names); use QDoubleSpinBox for floating point
     values.
@@ -150,15 +152,6 @@ public:
     It is often desirable to give the user a special (often default)
     choice in addition to the range of numeric values. See
     setSpecialValueText() for how to do this with QSpinBox.
-
-    \table 100%
-    \row \li \inlineimage windowsvista-spinbox.png Screenshot of a Windows Vista spin box
-         \li A spin box shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
-    \row \li \inlineimage fusion-spinbox.png Screenshot of a Fusion spin box
-         \li A spin box shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
-    \row \li \inlineimage macintosh-spinbox.png Screenshot of a Macintosh spin box
-         \li A spin box shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \endtable
 
     \section1 Subclassing QSpinBox
 

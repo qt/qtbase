@@ -71,6 +71,8 @@ QT_BEGIN_NAMESPACE
     \ingroup advanced
     \inmodule QtWidgets
 
+    \image windows-treeview.png
+
     A QTreeView implements a tree representation of items from a
     model. This class is used to provide standard hierarchical lists that
     were previously provided by the \c QListView class, but using the more
@@ -149,15 +151,6 @@ QT_BEGIN_NAMESPACE
     \omit
     Describe the expanding/collapsing concept if not covered elsewhere.
     \endomit
-
-    \table 100%
-    \row \li \inlineimage windowsvista-treeview.png Screenshot of a Windows Vista style tree view
-         \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree view
-         \li \inlineimage fusion-treeview.png Screenshot of a Fusion style tree view
-    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} tree view.
-         \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree view.
-         \li A \l{Fusion Style Widget Gallery}{Fusion style} tree view.
-    \endtable
 
     \section1 Improving Performance
 

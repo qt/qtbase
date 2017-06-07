@@ -68,9 +68,10 @@ class PaintCommands
 {
 public:
     // construction / initialization
-    PaintCommands(const QStringList &cmds, int w, int h)
+    PaintCommands(const QStringList &cmds, int w, int h, QImage::Format format)
         : m_painter(0)
         , m_surface_painter(0)
+        , m_format(format)
         , m_commands(cmds)
         , m_gradientSpread(QGradient::PadSpread)
         , m_gradientCoordinate(QGradient::LogicalMode)
@@ -246,8 +247,8 @@ private:
     // attributes
     QPainter *m_painter;
     QPainter *m_surface_painter;
+    QImage::Format m_format;
     QImage m_surface_image;
-    QPixmap m_surface_pixmap;
     QRectF m_surface_rect;
     QStringList m_commands;
     QString m_currentCommand;

@@ -86,6 +86,12 @@
 #  include <sys/systeminfo.h>
 #endif
 
+#if defined(Q_OS_DARWIN)
+#  include <mach/machine.h>
+#  include <sys/sysctl.h>
+#  include <sys/types.h>
+#endif
+
 #ifdef Q_OS_UNIX
 #include <sys/utsname.h>
 #include <private/qcore_unix_p.h>
@@ -2484,6 +2490,20 @@ QString QSysInfo::currentCpuArchitecture()
     case PROCESSOR_ARCHITECTURE_IA64:
         return QStringLiteral("ia64");
     }
+#elif defined(Q_OS_DARWIN)
+    cpu_type_t type;
+    size_t size = sizeof(type);
+    sysctlbyname("hw.cputype", &type, &size, NULL, 0);
+    switch (type) {
+    case CPU_TYPE_X86:
+        return QStringLiteral("i386");
+    case CPU_TYPE_X86_64:
+        return QStringLiteral("x86_64");
+    case CPU_TYPE_ARM:
+        return QStringLiteral("arm");
+    case CPU_TYPE_ARM64:
+        return QStringLiteral("arm64");
+    }
 #elif defined(Q_OS_UNIX)
     long ret = -1;
     struct utsname u;
@@ -3306,20 +3326,26 @@ bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 
     Equivalent to
     \code
-    qgetenv(varName).toInt()
+    qgetenv(varName).toInt(ok, 0)
     \endcode
     except that it's much faster, and can't throw exceptions.
+
+    \note there's a limit on the length of the value, which is sufficient for
+    all valid values of int, not counting leading zeroes or spaces. Values that
+    are too long will either be truncated or this function will set \a ok to \c
+    false.
 
     \sa qgetenv(), qEnvironmentVariableIsSet()
 */
 int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
 {
-    QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-    // we provide a buffer that can hold any int value:
     static const int NumBinaryDigitsPerOctalDigit = 3;
     static const int MaxDigitsForOctalInt =
         (std::numeric_limits<uint>::digits + NumBinaryDigitsPerOctalDigit - 1) / NumBinaryDigitsPerOctalDigit;
+
+    QMutexLocker locker(&environmentMutex);
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+    // we provide a buffer that can hold any int value:
     char buffer[MaxDigitsForOctalInt + 2]; // +1 for NUL +1 for optional '-'
     size_t dummy;
     if (getenv_s(&dummy, buffer, sizeof buffer, varName) != 0) {
@@ -3329,15 +3355,16 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
     }
 #else
     const char * const buffer = ::getenv(varName);
-    if (!buffer || !*buffer) {
+    if (!buffer || strlen(buffer) > MaxDigitsForOctalInt + 2) {
         if (ok)
             *ok = false;
         return 0;
     }
 #endif
     bool ok_ = true;
-    const qlonglong value = qstrtoll(buffer, Q_NULLPTR, 0, &ok_);
-    if (int(value) != value) { // this is the check in QByteArray::toInt(), keep it in sync
+    const char *endptr;
+    const qlonglong value = qstrtoll(buffer, &endptr, 0, &ok_);
+    if (int(value) != value || *endptr != '\0') { // this is the check in QByteArray::toInt(), keep it in sync
         if (ok)
             *ok = false;
         return 0;

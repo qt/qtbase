@@ -2363,7 +2363,7 @@ QByteArray QVariant::toByteArray() const
     \fn QPoint QVariant::toPoint() const
 
     Returns the variant as a QPoint if the variant has userType()
-    \l QMetaType::QPointF or \l QMetaType::QPointF; otherwise returns a null
+    \l QMetaType::QPoint or \l QMetaType::QPointF; otherwise returns a null
     QPoint.
 
     \sa canConvert(), convert()

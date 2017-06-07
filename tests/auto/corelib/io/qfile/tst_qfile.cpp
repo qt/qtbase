@@ -412,8 +412,10 @@ static QByteArray msgFileDoesNotExist(const QString &name)
 void tst_QFile::initTestCase()
 {
     QVERIFY2(m_temporaryDir.isValid(), qPrintable(m_temporaryDir.errorString()));
+#if QT_CONFIG(process)
     m_stdinProcessDir = QFINDTESTDATA("stdinprocess");
     QVERIFY(!m_stdinProcessDir.isEmpty());
+#endif
     m_testSourceFile = QFINDTESTDATA("tst_qfile.cpp");
     QVERIFY(!m_testSourceFile.isEmpty());
     m_testLogFile = QFINDTESTDATA("testlog.txt");

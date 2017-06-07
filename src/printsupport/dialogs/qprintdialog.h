@@ -42,12 +42,11 @@
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
 
-#ifndef QT_NO_PRINTDIALOG
-
 #include <QtPrintSupport/qabstractprintdialog.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(printdialog);
 
+QT_BEGIN_NAMESPACE
 
 class QPrintDialogPrivate;
 class QPushButton;
@@ -103,7 +102,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTDIALOG
 
 #endif // QPRINTDIALOG_H

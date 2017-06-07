@@ -1246,6 +1246,11 @@
 #else
 #  define QT_HAS_INCLUDE_NEXT(x)        0
 #endif
+#ifdef __has_feature
+#  define QT_HAS_FEATURE(x)             __has_feature(x)
+#else
+#  define QT_HAS_FEATURE(x)             0
+#endif
 
 /*
  * Warning/diagnostic handling

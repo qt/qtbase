@@ -50,8 +50,11 @@
 
 //! [0]
 #include <QtWidgets>
-#ifndef QT_NO_PRINTDIALOG
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QtPrintSupport>
+#endif
 #endif
 
 #include "mainwindow.h"
@@ -125,7 +128,7 @@ void MainWindow::newLetter()
 //! [3]
 void MainWindow::print()
 {
-#ifndef QT_NO_PRINTDIALOG
+#if QT_CONFIG(printdialog)
     QTextDocument *document = textEdit->document();
     QPrinter printer;
 

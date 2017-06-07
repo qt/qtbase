@@ -56,7 +56,7 @@
 #include <QtGui/qpaintengine.h>
 #include <QtPrintSupport/qprintengine.h>
 
-#ifndef QT_NO_PRINTPREVIEWWIDGET
+QT_REQUIRE_CONFIG(printpreviewwidget);
 
 QT_BEGIN_NAMESPACE
 
@@ -99,7 +99,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTPREVIEWWIDGET
 
 #endif

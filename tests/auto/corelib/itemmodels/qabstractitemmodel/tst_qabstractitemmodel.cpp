@@ -101,6 +101,7 @@ private slots:
 
     void testRoleNames();
     void testDragActions();
+    void dragActionsFallsBackToDropActions();
 
     void testFunctionPointerSignalConnection();
 
@@ -2155,6 +2156,27 @@ void tst_QAbstractItemModel::testDragActions()
     const Qt::DropActions actions = model->supportedDragActions();
     QVERIFY(actions & Qt::CopyAction); // Present by default
     QVERIFY(actions & Qt::MoveAction);
+}
+
+class OverrideDropActions : public QStringListModel
+{
+    Q_OBJECT
+public:
+    OverrideDropActions(QObject *parent = 0)
+      : QStringListModel(parent)
+    {
+    }
+    Qt::DropActions supportedDropActions() const override
+    {
+        return Qt::MoveAction;
+    }
+};
+
+void tst_QAbstractItemModel::dragActionsFallsBackToDropActions()
+{
+    QAbstractItemModel *model = new OverrideDropActions(this);
+    QCOMPARE(model->supportedDragActions(), Qt::MoveAction);
+    QCOMPARE(model->supportedDropActions(), Qt::MoveAction);
 }
 
 class SignalConnectionTester : public QObject

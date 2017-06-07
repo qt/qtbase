@@ -36,6 +36,7 @@
 #include <qtextlayout.h>
 #include <qdebug.h>
 #include <QStaticText>
+#include <private/qimage_p.h>
 
 #ifndef QT_NO_OPENGL
 #include <QOpenGLFramebufferObjectFormat>
@@ -2402,7 +2403,13 @@ void PaintCommands::command_surface_begin(QRegExp re)
         m_painter = new QPainter(&m_surface_pixmap);
 #endif
     } else {
-        m_surface_image = QImage(qRound(w), qRound(h), QImage::Format_ARGB32_Premultiplied);
+        QImage::Format surface_format;
+        if (QImage::toPixelFormat(m_format).alphaUsage() != QPixelFormat::UsesAlpha)
+            surface_format = qt_alphaVersion(m_format);
+        else
+            surface_format = m_format;
+
+        m_surface_image = QImage(qRound(w), qRound(h), surface_format);
         m_surface_image.fill(0);
         m_painter = new QPainter(&m_surface_image);
     }

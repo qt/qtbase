@@ -1,3 +1,5 @@
 [remainingTime]
 windows
 osx
+[basic_chrono]
+osx ci

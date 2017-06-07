@@ -42,12 +42,11 @@
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
 
-#ifndef QT_NO_PRINTPREVIEWDIALOG
-
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(printpreviewdialog);
 
+QT_BEGIN_NAMESPACE
 
 class QGraphicsView;
 class QPrintPreviewDialogPrivate;
@@ -90,7 +89,5 @@ private:
 
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTPREVIEWDIALOG
 
 #endif // QPRINTPREVIEWDIALOG_H

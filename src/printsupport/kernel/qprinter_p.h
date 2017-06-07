@@ -80,7 +80,7 @@ public:
           paintEngine(0),
           realPrintEngine(0),
           realPaintEngine(0),
-#ifndef QT_NO_PRINTPREVIEWWIDGET
+#if QT_CONFIG(printpreviewwidget)
           previewEngine(0),
 #endif
           q_ptr(printer),
@@ -99,7 +99,7 @@ public:
     QPrinterInfo findValidPrinter(const QPrinterInfo &printer = QPrinterInfo());
     void initEngines(QPrinter::OutputFormat format, const QPrinterInfo &printer);
     void changeEngines(QPrinter::OutputFormat format, const QPrinterInfo &printer);
-#ifndef QT_NO_PRINTPREVIEWWIDGET
+#if QT_CONFIG(printpreviewwidget)
     QList<const QPicture *> previewPages() const;
     void setPreviewMode(bool);
 #endif
@@ -114,7 +114,7 @@ public:
 
     QPrintEngine *realPrintEngine;
     QPaintEngine *realPaintEngine;
-#ifndef QT_NO_PRINTPREVIEWWIDGET
+#if QT_CONFIG(printpreviewwidget)
     QPreviewPaintEngine *previewEngine;
 #endif
 

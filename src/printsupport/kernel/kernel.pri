@@ -1,6 +1,5 @@
 HEADERS += \
         $$PWD/qpaintengine_alpha_p.h \
-        $$PWD/qpaintengine_preview_p.h \
         $$PWD/qprint_p.h \
         $$PWD/qprintdevice_p.h \
         $$PWD/qprintengine.h \
@@ -16,7 +15,6 @@ HEADERS += \
 
 SOURCES += \
         $$PWD/qpaintengine_alpha.cpp \
-        $$PWD/qpaintengine_preview.cpp \
         $$PWD/qprintdevice.cpp \
         $$PWD/qprintengine_pdf.cpp \
         $$PWD/qprinter.cpp \
@@ -24,6 +22,11 @@ SOURCES += \
         $$PWD/qplatformprintdevice.cpp \
         $$PWD/qplatformprintplugin.cpp \
         $$PWD/qplatformprintersupport.cpp
+
+qtConfig(printpreviewwidget) {
+    HEADERS += $$PWD/qpaintengine_preview_p.h
+    SOURCES += $$PWD/qpaintengine_preview.cpp
+}
 
 win32 {
         HEADERS += \

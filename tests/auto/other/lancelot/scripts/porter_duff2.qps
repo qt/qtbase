@@ -194,7 +194,7 @@ repeat_block postdraw
 surface_end
 
 
-# Multiply
+# ColorBurn
 surface_begin 100 300 100 100
 repeat_block predraw
 setCompositionMode ColorBurn
@@ -202,7 +202,7 @@ repeat_block postdraw
 surface_end
 
 
-# Screen
+# HardLight
 surface_begin 200 300 100 100
 repeat_block predraw
 setCompositionMode HardLight
@@ -210,7 +210,7 @@ repeat_block postdraw
 surface_end
 
 
-# Overlay
+# SoftLight
 surface_begin 300 300 100 100
 repeat_block predraw
 setCompositionMode SoftLight
@@ -218,7 +218,7 @@ repeat_block postdraw
 surface_end
 
 
-# Darken
+# Difference
 surface_begin 400 300 100 100
 repeat_block predraw
 setCompositionMode Difference
@@ -226,7 +226,7 @@ repeat_block postdraw
 surface_end
 
 
-# Lighten
+# Exclusion
 surface_begin 500 300 100 100
 repeat_block predraw
 setCompositionMode Exclusion

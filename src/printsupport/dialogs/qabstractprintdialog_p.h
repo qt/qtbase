@@ -53,14 +53,12 @@
 
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
-#ifndef QT_NO_PRINTDIALOG
-
 #include "private/qdialog_p.h"
 #include "QtPrintSupport/qabstractprintdialog.h"
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(printdialog);
 
-#ifndef QT_NO_PRINTER
+QT_BEGIN_NAMESPACE
 
 class QPrinter;
 class QPrinterPrivate;
@@ -92,10 +90,6 @@ public:
     int maxPage;
 };
 
-#endif //QT_NO_PRINTER
-
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTDIALOG
 
 #endif // QABSTRACTPRINTDIALOG_P_H

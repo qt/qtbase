@@ -20,7 +20,6 @@ HEADERS += \
         widgets/qgroupbox.h \
         widgets/qkeysequenceedit.h \
         widgets/qkeysequenceedit_p.h \
-        widgets/qlcdnumber.h \
         widgets/qlineedit.h \
         widgets/qlineedit_p.h \
         widgets/qmainwindow.h \
@@ -41,7 +40,6 @@ HEADERS += \
         widgets/qsizegrip.h \
         widgets/qslider.h \
         widgets/qspinbox.h \
-        widgets/qsplashscreen.h \
         widgets/qsplitter.h \
         widgets/qsplitter_p.h \
         widgets/qstackedwidget.h \
@@ -84,7 +82,6 @@ SOURCES += \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
         widgets/qkeysequenceedit.cpp \
-        widgets/qlcdnumber.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
         widgets/qmainwindow.cpp \
@@ -99,7 +96,6 @@ SOURCES += \
         widgets/qsizegrip.cpp \
         widgets/qslider.cpp \
         widgets/qspinbox.cpp \
-        widgets/qsplashscreen.cpp \
         widgets/qsplitter.cpp \
         widgets/qstackedwidget.cpp \
         widgets/qstatusbar.cpp \
@@ -165,6 +161,13 @@ qtConfig(label) {
         widgets/qlabel.cpp
 }
 
+qtConfig(lcdnumber) {
+    HEADERS += \
+        widgets/qlcdnumber.h
+
+    SOURCES += \
+        widgets/qlcdnumber.cpp
+}
 
 qtConfig(pushbutton) {
     HEADERS += \
@@ -189,6 +192,14 @@ qtConfig(dialogbuttonbox) {
 
     SOURCES += \
         widgets/qdialogbuttonbox.cpp
+}
+
+qtConfig(splashscreen) {
+    HEADERS += \
+        widgets/qsplashscreen.h
+
+    SOURCES += \
+        widgets/qsplashscreen.cpp
 }
 
 qtConfig(widgettextcontrol) {

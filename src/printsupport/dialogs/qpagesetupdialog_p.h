@@ -54,13 +54,13 @@
 
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
-#ifndef QT_NO_PRINTDIALOG
-
 #include "private/qdialog_p.h"
 
 #include "qbytearray.h"
 #include "qpagesetupdialog.h"
 #include "qpointer.h"
+
+QT_REQUIRE_CONFIG(printdialog);
 
 QT_BEGIN_NAMESPACE
 
@@ -82,7 +82,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTDIALOG
 
 #endif // QPAGESETUPDIALOG_P_H

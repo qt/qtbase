@@ -87,7 +87,8 @@
             "test": "qpa/kms",
             "sources": [
                 { "type": "pkgConfig", "args": "libdrm" },
-                "-ldrm"
+                { "libs": "-ldrm", "condition": "!config.integrity" },
+                { "libs": "-ldrm-nvdc -lposix -livfs -lnvll -lnvdc -lnvrm -lnvrm_graphics -lnvos -lnvtegrahv", "condition": "config.integrity" }
             ]
         },
         "egl": {
@@ -148,6 +149,13 @@
             "test": "unix/libinput",
             "sources": [
                 { "type": "pkgConfig", "args": "libinput" }
+            ]
+        },
+        "integrityhid": {
+            "label": "integrityhid",
+            "test": "qpa/integrityhid",
+            "sources": [
+                { "libs": "-lhiddev -lusbhid -lusb" }
             ]
         },
         "libjpeg": {
@@ -379,6 +387,11 @@
             "type": "compile",
             "test": "unix/evdev"
         },
+        "integrityfb": {
+            "label": "INTEGRITY framebuffer",
+            "type": "compile",
+            "test": "qpa/integrityfb"
+        },
         "libinput_axis_api": {
             "label": "axis API in libinput",
             "type": "compile",
@@ -447,7 +460,6 @@
         "combined-angle-lib": {
             "label": "Combined ANGLE Library",
             "autoDetect": false,
-            "enable": "features.angle",
             "condition": "features.angle",
             "output": [ "publicFeature" ]
         },
@@ -526,7 +538,7 @@
         "integrityfb": {
             "label": "INTEGRITY framebuffer",
             "section": "Platform plugins",
-            "condition": "config.integrity",
+            "condition": "config.integrity && tests.integrityfb",
             "output": [ "privateFeature" ]
         },
         "kms": {
@@ -537,6 +549,11 @@
         "libinput": {
             "label": "libinput",
             "condition": "features.libudev && libs.libinput",
+            "output": [ "privateFeature" ]
+        },
+        "integrityhid": {
+            "label": "INTEGRITY HID",
+            "condition": "config.integrity && libs.integrityhid",
             "output": [ "privateFeature" ]
         },
         "libinput-axis-api": {
@@ -1144,6 +1161,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
             "entries": [
                 "evdev",
                 "libinput",
+                "integrityhid",
                 "mtdev",
                 "tslib",
                 "xkbcommon-evdev"

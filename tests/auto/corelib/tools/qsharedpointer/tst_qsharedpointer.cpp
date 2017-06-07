@@ -43,6 +43,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef Q_OS_UNIX
+#include <sys/resource.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
@@ -54,6 +58,7 @@ class tst_QSharedPointer: public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void basics_data();
     void basics();
     void operators();
@@ -117,6 +122,20 @@ public:
 #endif
     }
 };
+
+void tst_QSharedPointer::initTestCase()
+{
+#if defined(Q_OS_UNIX)
+    // The tests create a lot of threads, which require file descriptors. On systems like
+    // OS X low defaults such as 256 as the limit for the number of simultaneously
+    // open files is not sufficient.
+    struct rlimit numFiles;
+    if (getrlimit(RLIMIT_NOFILE, &numFiles) == 0 && numFiles.rlim_cur < 1024) {
+        numFiles.rlim_cur = qMin(rlim_t(1024), numFiles.rlim_max);
+        setrlimit(RLIMIT_NOFILE, &numFiles);
+    }
+#endif
+}
 
 template<typename T> static inline
 QtSharedPointer::ExternalRefCountData *refCountData(const QSharedPointer<T> &b)

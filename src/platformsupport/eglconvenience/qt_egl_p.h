@@ -53,8 +53,10 @@
 
 #ifdef QT_EGL_NO_X11
 # define MESA_EGL_NO_X11_HEADERS // MESA
-# define WIN_INTERFACE_CUSTOM    // NV
-#endif // QT_EGL_NO_X11
+# if !defined(Q_OS_INTEGRITY)
+#  define WIN_INTERFACE_CUSTOM   // NV
+# endif // Q_OS_INTEGRITY
+#endif  // QT_EGL_NO_X11
 
 #ifdef QT_EGL_WAYLAND
 # define WAYLAND // NV

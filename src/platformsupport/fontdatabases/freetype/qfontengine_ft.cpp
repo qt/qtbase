@@ -967,15 +967,10 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     if (format == Format_Mono) {
         load_target = FT_LOAD_TARGET_MONO;
     } else if (format == Format_A32) {
-        if (subpixelType == Subpixel_RGB || subpixelType == Subpixel_BGR) {
-            if (default_hint_style == HintFull)
-                load_target = FT_LOAD_TARGET_LCD;
+        if (subpixelType == Subpixel_RGB || subpixelType == Subpixel_BGR)
             hsubpixel = true;
-        } else if (subpixelType == Subpixel_VRGB || subpixelType == Subpixel_VBGR) {
-            if (default_hint_style == HintFull)
-                load_target = FT_LOAD_TARGET_LCD_V;
+        else if (subpixelType == Subpixel_VRGB || subpixelType == Subpixel_VBGR)
             vfactor = 3;
-        }
     } else if (format == Format_ARGB) {
 #ifdef FT_LOAD_COLOR
         load_flags |= FT_LOAD_COLOR;

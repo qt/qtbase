@@ -42,12 +42,11 @@
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
 
-#if QT_CONFIG(printdialog)
-
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(printdialog);
 
+QT_BEGIN_NAMESPACE
 
 class QAbstractPrintDialogPrivate;
 class QPrinter;
@@ -119,7 +118,5 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractPrintDialog::PrintDialogOptions)
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PRINTDIALOG
 
 #endif // QABSTRACTPRINTDIALOG_H

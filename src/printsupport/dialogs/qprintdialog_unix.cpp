@@ -40,8 +40,6 @@
 #include "qplatformdefs.h"
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
-#ifndef QT_NO_PRINTDIALOG
-
 #include "private/qabstractprintdialog_p.h"
 #include <QtWidgets/qmessagebox.h>
 #include "qprintdialog.h"
@@ -64,7 +62,7 @@
 #include "ui_qprintsettingsoutput.h"
 #include "ui_qprintwidget.h"
 
-#ifndef QT_NO_CUPS
+#if QT_CONFIG(cups)
 #include <private/qcups_p.h>
 #if QT_CONFIG(cupsjobwidget)
 #include "qcupsjobwidget_p.h"
@@ -313,7 +311,7 @@ void QPrintDialogPrivate::init()
     options.grayscale->setIconSize(QSize(32, 32));
     options.grayscale->setIcon(QIcon(QLatin1String(":/qt-project.org/dialogs/qprintdialog/images/status-gray-scale.png")));
 
-#ifndef QT_NO_CUPS
+#if QT_CONFIG(cups)
     // Add Page Set widget if CUPS is available
     options.pageSetCombo->addItem(tr("All Pages"), QVariant::fromValue(QCUPSSupport::AllPages));
     options.pageSetCombo->addItem(tr("Odd Pages"), QVariant::fromValue(QCUPSSupport::OddPages));
@@ -435,7 +433,7 @@ void QPrintDialogPrivate::setupPrinter()
         }
     }
 
-#ifndef QT_NO_CUPS
+#if QT_CONFIG(cups)
     // page set
     if (p->printRange() == QPrinter::AllPages || p->printRange() == QPrinter::PageRange) {
         //If the application is selecting pages and the first page number is even then need to adjust the odd-even accordingly
@@ -518,7 +516,7 @@ void QPrintDialogPrivate::updateWidgets()
     options.printCurrentPage->setVisible(q->isOptionEnabled(QPrintDialog::PrintCurrentPage));
     options.collate->setVisible(q->isOptionEnabled(QPrintDialog::PrintCollateCopies));
 
-#ifndef QT_NO_CUPS
+#if QT_CONFIG(cups)
     // Don't display Page Set if only Selection or Current Page are enabled
     if (!q->isOptionEnabled(QPrintDialog::PrintPageRange)
         && (q->isOptionEnabled(QPrintDialog::PrintSelection) || q->isOptionEnabled(QPrintDialog::PrintCurrentPage))) {
@@ -867,7 +865,7 @@ bool QUnixPrintWidgetPrivate::checkFields()
         }
     }
 
-#ifndef QT_NO_CUPS
+#if QT_CONFIG(cups)
     if (propertiesDialogShown) {
         QCUPSSupport::PagesPerSheet pagesPerSheet = propertiesDialog->widget.pageSetup->m_ui.pagesPerSheetCombo
                                                                     ->currentData().value<QCUPSSupport::PagesPerSheet>();
@@ -983,6 +981,3 @@ QT_END_NAMESPACE
 
 #include "moc_qprintdialog.cpp"
 #include "qprintdialog_unix.moc"
-
-#endif // QT_NO_PRINTDIALOG
-

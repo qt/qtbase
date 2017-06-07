@@ -203,6 +203,8 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-slider.png
+
     The slider is the classic widget for controlling a bounded value.
     It lets the user move a slider handle along a horizontal or vertical
     groove and translates the handle's position into an integer value
@@ -251,15 +253,6 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
         \li Home moves to the start (mininum).
         \li End moves to the end (maximum).
     \endlist
-
-    \table 100%
-    \row \li \inlineimage macintosh-slider.png Screenshot of a Macintosh slider
-         \li A slider shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row \li \inlineimage windowsvista-slider.png Screenshot of a Windows Vista slider
-         \li A slider shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
-    \row \li \inlineimage fusion-slider.png Screenshot of a Fusion slider
-         \li A slider shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
-    \endtable
 
     \sa QScrollBar, QSpinBox, QDial, {fowler}{GUI Design Handbook: Slider}, {Sliders Example}
 */

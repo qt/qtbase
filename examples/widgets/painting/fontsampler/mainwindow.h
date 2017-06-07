@@ -52,8 +52,6 @@
 #define MAINWINDOW_H
 
 #include "ui_mainwindowbase.h"
-#include <QPrinter>
-#include <QPrintDialog>
 
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>

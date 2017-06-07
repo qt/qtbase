@@ -137,7 +137,7 @@ defineReplace(qtConfFunc_licenseCheck) {
             export(config.input.qt_edition)
         } else {
             equals(QMAKE_HOST.os, Linux) {
-                equals(QMAKE_HOST.arch, x86): \
+                !equals(QMAKE_HOST.arch, x86_64): \
                     Licheck = licheck32
                 else: \
                     Licheck = licheck64
@@ -150,10 +150,10 @@ defineReplace(qtConfFunc_licenseCheck) {
             }
 
             !qtRunLoggedCommand("$$system_quote($$QT_SOURCE_TREE/bin/$$Licheck) \
-                                    $$eval(config.input.confirm-license) \
+                                    $$system_quote($$eval(config.input.confirm-license)) \
                                     $$system_quote($$QT_SOURCE_TREE) $$system_quote($$QT_BUILD_TREE) \
                                     $$[QMAKE_SPEC] $$[QMAKE_XSPEC]", \
-                                LicheckOutput): \
+                                LicheckOutput, false): \
                 return(false)
             logn()
             for (o, LicheckOutput) {

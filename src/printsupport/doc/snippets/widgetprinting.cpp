@@ -50,7 +50,8 @@
 
 #include <QtGui>
 #include <QtWidgets>
-#ifndef QT_NO_PRINTER
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QPrinter>
 #include <QPrintDialog>
 #endif
@@ -98,7 +99,7 @@ private slots:
     }
 
     void printFile() {
-    #if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+    #if QT_CONFIG(printdialog)
 //! [1]
         QPrinter printer;
 

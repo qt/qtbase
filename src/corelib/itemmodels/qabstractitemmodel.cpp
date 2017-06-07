@@ -2044,7 +2044,7 @@ Qt::DropActions QAbstractItemModel::supportedDropActions() const
 Qt::DropActions QAbstractItemModel::supportedDragActions() const
 {
     Q_D(const QAbstractItemModel);
-    if (d->supportedDragActions != Qt::IgnoreAction)
+    if (int(d->supportedDragActions) != -1)
         return d->supportedDragActions;
     return supportedDropActions();
 }

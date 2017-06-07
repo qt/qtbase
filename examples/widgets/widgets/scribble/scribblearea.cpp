@@ -49,9 +49,12 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#ifndef QT_NO_PRINTER
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QPrinter>
 #include <QPrintDialog>
+#endif
 #endif
 
 #include "scribblearea.h"
@@ -210,7 +213,7 @@ void ScribbleArea::resizeImage(QImage *image, const QSize &newSize)
 //! [21]
 void ScribbleArea::print()
 {
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printdialog)
     QPrinter printer(QPrinter::HighResolution);
 
     QPrintDialog printDialog(&printer, this);
@@ -224,6 +227,6 @@ void ScribbleArea::print()
         painter.setWindow(image.rect());
         painter.drawImage(0, 0, image);
     }
-#endif // QT_NO_PRINTER
+#endif // QT_CONFIG(printdialog)
 }
 //! [22]

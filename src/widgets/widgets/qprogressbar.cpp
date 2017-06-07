@@ -177,6 +177,8 @@ bool QProgressBarPrivate::repaintRequired() const
     \ingroup basicwidgets
     \inmodule QtWidgets
 
+    \image windows-progressbar.png
+
     A progress bar is used to give the user an indication of the
     progress of an operation and to reassure them that the application
     is still running.
@@ -197,15 +199,6 @@ bool QProgressBarPrivate::repaintRequired() const
     indicator instead of a percentage of steps. This is useful, for
     example, when using QNetworkAccessManager to download items when
     they are unable to determine the size of the item being downloaded.
-
-    \table
-    \row \li \inlineimage macintosh-progressbar.png Screenshot of a Macintosh style progress bar
-         \li A progress bar shown in the Macintosh widget style.
-    \row \li \inlineimage windowsvista-progressbar.png Screenshot of a Windows Vista style progress bar
-         \li A progress bar shown in the Windows Vista widget style.
-    \row \li \inlineimage fusion-progressbar.png Screenshot of a Fusion style progress bar
-         \li A progress bar shown in the Fusion widget style.
-    \endtable
 
     \sa QProgressDialog, {fowler}{GUI Design Handbook: Progress Indicator}
 */

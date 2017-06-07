@@ -49,8 +49,11 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#ifndef QT_NO_PRINTER
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printdialog)
 #include <QPrintDialog>
+#endif
 #endif
 
 #include "imageviewer.h"
@@ -180,7 +183,7 @@ void ImageViewer::print()
 //! [5] //! [6]
 {
     Q_ASSERT(imageLabel->pixmap());
-#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
+#if QT_CONFIG(printdialog)
 //! [6] //! [7]
     QPrintDialog dialog(&printer, this);
 //! [7] //! [8]

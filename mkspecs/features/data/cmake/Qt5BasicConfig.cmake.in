@@ -35,7 +35,7 @@ set(_qt5$${CMAKE_MODULE_NAME}_install_prefix \"$$[QT_INSTALL_PREFIX]\")
 
 !!IF !equals(TEMPLATE, aux)
 # For backwards compatibility only. Use Qt5$${CMAKE_MODULE_NAME}_VERSION instead.
-set(Qt5$${CMAKE_MODULE_NAME}_VERSION_STRING "$$eval(QT.$${MODULE}.MAJOR_VERSION).$$eval(QT.$${MODULE}.MINOR_VERSION).$$eval(QT.$${MODULE}.PATCH_VERSION)")
+set(Qt5$${CMAKE_MODULE_NAME}_VERSION_STRING "$$eval(QT.$${MODULE}.VERSION)")
 
 set(Qt5$${CMAKE_MODULE_NAME}_LIBRARIES Qt5::$${CMAKE_MODULE_NAME})
 !!ENDIF // TEMPLATE != aux

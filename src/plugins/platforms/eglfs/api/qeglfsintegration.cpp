@@ -92,6 +92,10 @@
 #include <QtInputSupport/private/qtslib_p.h>
 #endif
 
+#if QT_CONFIG(integrityhid)
+#include <QtInputSupport/qintegrityhidmanager.h>
+#endif
+
 #include <QtPlatformHeaders/qeglfsfunctions.h>
 
 static void initResources()
@@ -465,6 +469,10 @@ void QEglFSIntegration::createInputHandlers()
     if (!useTslib)
 #endif
         new QEvdevTouchManager(QLatin1String("EvdevTouch"), QString() /* spec */, this);
+#endif
+
+#if QT_CONFIG(integrityhid)
+   new QIntegrityHIDManager("HID", "", this);
 #endif
 }
 
