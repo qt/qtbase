@@ -83,7 +83,7 @@ static jmethodID m_setSurfaceGeometryMethodID = nullptr;
 static jmethodID m_destroySurfaceMethodID = nullptr;
 
 static int m_pendingApplicationState = -1;
-static QBasicMutex m_pendingAppStateMtx;
+static QBasicMutex m_platformMutex;
 
 static jclass m_bitmapClass  = nullptr;
 static jmethodID m_createBitmapMethodID = nullptr;
@@ -123,28 +123,26 @@ static const char m_qtTag[] = "Qt";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 
-static void flushPendingApplicationState();
-
 namespace QtAndroid
 {
+    QBasicMutex *platformInterfaceMutex()
+    {
+        return &m_platformMutex;
+    }
+
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration)
     {
-        QMutexLocker lock(&m_surfacesMutex);
         m_androidPlatformIntegration = androidPlatformIntegration;
 
         // flush the pending state if necessary.
-        if (m_androidPlatformIntegration) {
-            flushPendingApplicationState();
-            m_androidPlatformIntegration->flushPendingUpdates();
-        } else {
-            QMutexLocker locker(&m_pendingAppStateMtx);
-            m_pendingApplicationState = -1;
-        }
+        if (m_androidPlatformIntegration && (m_pendingApplicationState != -1))
+            QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(m_pendingApplicationState));
+
+        m_pendingApplicationState = -1;
     }
 
     QAndroidPlatformIntegration *androidPlatformIntegration()
     {
-        QMutexLocker locker(&m_surfacesMutex);
         return m_androidPlatformIntegration;
     }
 
@@ -443,17 +441,6 @@ namespace QtAndroid
 
 } // namespace QtAndroid
 
-// Force an update of the pending application state (state set before the platform plugin was created)
-static void flushPendingApplicationState()
-{
-    QMutexLocker locker(&m_pendingAppStateMtx);
-    if (m_pendingApplicationState == -1)
-        return;
-
-    QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(m_pendingApplicationState));
-    m_pendingApplicationState = -1;
-}
-
 static jboolean startQtAndroidPlugin(JNIEnv* /*env*/, jobject /*object*//*, jobject applicationAssetManager*/)
 {
     m_androidPlatformIntegration = nullptr;
@@ -621,7 +608,7 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     m_scaledDensity = scaledDensity;
     m_density = density;
 
-    QMutexLocker lock(&m_surfacesMutex);
+    QMutexLocker lock(&m_platformMutex);
     if (!m_androidPlatformIntegration) {
         QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
                                                               desktopHeightPixels,
@@ -663,18 +650,22 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
 
 static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state)
 {
-    if (!m_main || !QtAndroid::androidPlatformIntegration()) {
-        QMutexLocker locker(&m_pendingAppStateMtx);
-        m_pendingApplicationState = Qt::ApplicationState(state);
+    QMutexLocker lock(&m_platformMutex);
+    if (!m_main || !m_androidPlatformIntegration) {
+        m_pendingApplicationState = state;
         return;
     }
 
-    flushPendingApplicationState();
-
+    // We're about to call user code from the Android thread, since we don't know
+    //the side effects we'll unlock first!
+    lock.unlock();
     if (state == Qt::ApplicationActive)
         QtAndroidPrivate::handleResume();
     else if (state == Qt::ApplicationInactive)
         QtAndroidPrivate::handlePause();
+    lock.relock();
+    if (!m_androidPlatformIntegration)
+        return;
 
     if (state <= Qt::ApplicationInactive) {
         // NOTE: sometimes we will receive two consecutive suspended notifications,
@@ -722,6 +713,7 @@ static void handleOrientationChanged(JNIEnv */*env*/, jobject /*thiz*/, jint new
     Qt::ScreenOrientation native = orientations[nativeOrientation - 1];
 
     QAndroidPlatformIntegration::setScreenOrientation(screenOrientation, native);
+    QMutexLocker lock(&m_platformMutex);
     if (m_androidPlatformIntegration) {
         QPlatformScreen *screen = m_androidPlatformIntegration->screen();
         QWindowSystemInterface::handleScreenOrientationChange(screen->screen(),

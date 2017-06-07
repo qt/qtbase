@@ -80,6 +80,7 @@ namespace QtAndroidAccessibility
 
     static void setActive(JNIEnv */*env*/, jobject /*thiz*/, jboolean active)
     {
+        QMutexLocker lock(QtAndroid::platformInterfaceMutex());
         QAndroidPlatformIntegration *platformIntegration = QtAndroid::androidPlatformIntegration();
         if (platformIntegration)
             platformIntegration->accessibility()->setActive(active);
