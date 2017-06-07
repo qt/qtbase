@@ -138,6 +138,11 @@
             "type": "compile",
             "test": "unix/cloexec"
         },
+        "cxx11_random": {
+            "label": "C++11 <random>",
+            "type": "compile",
+            "test": "unix/cxx11_random"
+        },
         "eventfd": {
             "label": "eventfd",
             "type": "compile",
@@ -208,6 +213,11 @@
             "type": "compile",
             "test": "unix/syslog"
         },
+        "sys_auxv": {
+            "label": "sys/auxv.h",
+            "type": "compile",
+            "test": "unix/sys_auxv"
+        },
         "xlocalescanprint": {
             "label": "xlocale.h (or equivalents)",
             "type": "compile",
@@ -240,6 +250,11 @@
             "enable": "input.doubleconversion == 'system'",
             "disable": "input.doubleconversion == 'qt'",
             "condition": "features.doubleconversion && libs.doubleconversion",
+            "output": [ "privateFeature" ]
+        },
+        "cxx11_random": {
+            "label": "C++11 <random>",
+            "condition": "tests.cxx11_random",
             "output": [ "privateFeature" ]
         },
         "eventfd": {
@@ -392,6 +407,11 @@
             "label": "syslog",
             "autoDetect": false,
             "condition": "tests.syslog",
+            "output": [ "privateFeature" ]
+        },
+        "sys_auxv": {
+            "label": "sys/auxv.h",
+            "condition": "config.linux && tests.sys_auxv",
             "output": [ "privateFeature" ]
         },
         "threadsafe-cloexec": {
@@ -629,6 +649,11 @@ Mozilla License) is included. The data is then also used in QNetworkCookieJar::v
 If your users intend to develop applications against this build,
 ensure that the IDEs they use either set QT_LOGGING_TO_CONSOLE to 1
 or are able to read the logged output from journald, syslog or slog2."
+        },
+        {
+            "type": "warning",
+            "condition": "!config.win32 && !config.darwin && !config.bsd && !features.cxx11_random",
+            "message": "No high-quality PRNG available for QRandomGenerator fallback.\nIf the HW or OS RNG fails, Qt will abort execution."
         },
         {
             "type": "error",

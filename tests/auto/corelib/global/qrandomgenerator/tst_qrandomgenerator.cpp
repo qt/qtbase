@@ -34,11 +34,11 @@
 #include <private/qrandom_p.h>
 
 #include <algorithm>
-#if QT_HAS_INCLUDE(<random>)
+#if QT_CONFIG(cxx11_random)
 #  include <random>
 #endif
 
-#if QT_HAS_INCLUDE(<random>) || defined(Q_OS_WIN)
+#if QT_CONFIG(cxx11_random) || defined(Q_OS_BSD4) || defined(Q_OS_WIN)
 #  define HAVE_FALLBACK_ENGINE
 #endif
 
@@ -468,7 +468,7 @@ template <typename Engine> void seedStdRandomEngine()
 
 void tst_QRandomGenerator::seedStdRandomEngines()
 {
-#if !QT_HAS_INCLUDE(<random>)
+#if !QT_CONFIG(cxx11_random)
     QSKIP("<random> not found");
 #else
     seedStdRandomEngine<std::default_random_engine>();
@@ -511,7 +511,7 @@ void tst_QRandomGenerator::stdUniformIntDistribution_data()
 
 void tst_QRandomGenerator::stdUniformIntDistribution()
 {
-#if !QT_HAS_INCLUDE(<random>)
+#if !QT_CONFIG(cxx11_random)
     QSKIP("<random> not found");
 #else
     QFETCH(uint, control);
@@ -580,8 +580,11 @@ void tst_QRandomGenerator::stdUniformIntDistribution()
 
 void tst_QRandomGenerator::stdGenerateCanonical()
 {
-#if !QT_HAS_INCLUDE(<random>)
+#if !QT_CONFIG(cxx11_random)
     QSKIP("<random> not found");
+#elif defined(Q_CC_MSVC) && Q_CC_MSVC < 1900
+    // see https://connect.microsoft.com/VisualStudio/feedback/details/811611
+    QSKIP("MSVC 2013's std::generate_canonical is broken");
 #else
     QFETCH(uint, control);
     setRNGControl(control);
@@ -631,7 +634,7 @@ void tst_QRandomGenerator::stdUniformRealDistribution_data()
 
 void tst_QRandomGenerator::stdUniformRealDistribution()
 {
-#if !QT_HAS_INCLUDE(<random>)
+#if !QT_CONFIG(cxx11_random)
     QSKIP("<random> not found");
 #else
     QFETCH(uint, control);
@@ -665,7 +668,7 @@ void tst_QRandomGenerator::stdUniformRealDistribution()
 
 void tst_QRandomGenerator::stdRandomDistributions()
 {
-#if !QT_HAS_INCLUDE(<random>)
+#if !QT_CONFIG(cxx11_random)
     QSKIP("<random> not found");
 #else
     // just a compile check for some of the distributions, besides

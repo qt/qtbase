@@ -46,13 +46,13 @@
 #include <qthreadstorage.h>
 #include <private/qsimd_p.h>
 
-#if QT_HAS_INCLUDE(<random>)
+#if QT_CONFIG(cxx11_random)
 #  include <random>
 #  include "qdeadlinetimer.h"
 #  include "qhashfunctions.h"
 #endif
 
-#if QT_HAS_INCLUDE(<sys/auxv.h>)
+#if QT_CONFIG(sys_auxv)
 #  include <sys/auxv.h>
 #endif
 
@@ -213,7 +213,7 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
     // BSDs have arc4random(4) and these work even in chroot(2)
     arc4random_buf(ptr, left * sizeof(*ptr));
 }
-#elif QT_HAS_INCLUDE(<chrono>)
+#elif QT_CONFIG(cxx11_random)
 static QBasicAtomicInteger<unsigned> seed = Q_BASIC_ATOMIC_INITIALIZER(0U);
 static void fallback_update_seed(unsigned value)
 {
