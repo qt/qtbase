@@ -200,6 +200,13 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
         return value;
     });
 }
+#elif defined(Q_OS_BSD4)
+static void fallback_update_seed(unsigned) {}
+static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
+{
+    // BSDs have arc4random(4) and these work even in chroot(2)
+    arc4random_buf(ptr, left * sizeof(*ptr));
+}
 #elif QT_HAS_INCLUDE(<chrono>)
 static QBasicAtomicInteger<unsigned> seed = Q_BASIC_ATOMIC_INITIALIZER(0U);
 static void fallback_update_seed(unsigned value)
