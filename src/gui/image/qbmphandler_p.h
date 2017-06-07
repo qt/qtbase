@@ -78,6 +78,21 @@ struct BMP_INFOHDR {                     // BMP information header
     qint32  biYPelsPerMeter;             // vertical resolution
     qint32  biClrUsed;                   // number of colors used
     qint32  biClrImportant;              // number of important colors
+    // V4:
+    quint32 biRedMask;
+    quint32 biGreenMask;
+    quint32 biBlueMask;
+    quint32 biAlphaMask;
+    qint32 biCSType;
+    qint32 biEndpoints[9];
+    qint32 biGammaRed;
+    qint32 biGammaGreen;
+    qint32 biGammaBlue;
+    // V5:
+    qint32 biIntent;
+    qint32 biProfileData;
+    qint32 biProfileSize;
+    qint32 biReserved;
 };
 
 // BMP-Handler, which is also able to read and write the DIB
