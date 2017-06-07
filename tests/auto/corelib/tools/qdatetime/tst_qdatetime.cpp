@@ -2476,17 +2476,19 @@ void tst_QDateTime::fromStringToStringLocale()
 
     QLocale def;
     QLocale::setDefault(QLocale(QLocale::French, QLocale::France));
+#define ROUNDTRIP(format) \
+    QCOMPARE(QDateTime::fromString(dateTime.toString(format), format), dateTime)
 
-    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::DefaultLocaleShortDate), Qt::DefaultLocaleShortDate), dateTime);
-    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::SystemLocaleShortDate), Qt::SystemLocaleShortDate), dateTime);
+    ROUNDTRIP(Qt::DefaultLocaleShortDate);
+    ROUNDTRIP(Qt::SystemLocaleShortDate);
 
     // obsolete
-    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::SystemLocaleDate), Qt::SystemLocaleDate), dateTime);
-    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::LocaleDate), Qt::LocaleDate), dateTime);
+    ROUNDTRIP(Qt::SystemLocaleDate);
+    ROUNDTRIP(Qt::LocaleDate);
 
-    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::DefaultLocaleLongDate), Qt::DefaultLocaleLongDate), dateTime);
-    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::SystemLocaleLongDate), Qt::SystemLocaleLongDate), dateTime);
-
+    ROUNDTRIP(Qt::DefaultLocaleLongDate);
+    ROUNDTRIP(Qt::SystemLocaleLongDate);
+#undef ROUNDTRIP
     QLocale::setDefault(def);
 }
 
