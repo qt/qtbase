@@ -183,6 +183,7 @@ macx-xcode {
 }
 
 cache(QMAKE_XCODE_DEVELOPER_PATH, stash)
-cache(QMAKE_XCODE_VERSION, stash)
+!isEmpty(QMAKE_XCODE_VERSION): \
+    cache(QMAKE_XCODE_VERSION, stash)
 
 QMAKE_XCODE_LIBRARY_SUFFIX = $$qtPlatformTargetSuffix()
