@@ -47,7 +47,9 @@ isEmpty($${target_prefix}.INCDIRS) {
             # gcc is fine with just preprocessing
             cxx_flags += -E -v
 
-        output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ - 2>&1 $$cmd_suffix", lines)
+        output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ - 2>&1 $$cmd_suffix", lines, ec)
+        !equals(ec, 0): \
+            error("Cannot run compiler '$$QMAKE_CXX'. Maybe you forgot to setup the environment?")
         add_includes = false
         add_libraries = false
         for (line, output) {
@@ -102,13 +104,19 @@ isEmpty($${target_prefix}.INCDIRS) {
 #
 
 defineReplace(qtVariablesFromMSVC) {
-    return($$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) <NUL 2>NUL", lines))
+    ret = $$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) <NUL 2>NUL", lines, ec)
+    !equals(ec, 0): \
+        error("Cannot run compiler '$$1'. Maybe you forgot to setup the environment?")
+    return($$ret)
 }
 
 defineReplace(qtVariablesFromGCC) {
     null_device = /dev/null
     equals(QMAKE_HOST.os, Windows): null_device = NUL
-    return($$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) <$$null_device 2>$$null_device", lines))
+    ret = $$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) <$$null_device 2>$$null_device", lines, ec)
+    !equals(ec, 0): \
+        error("Cannot run compiler '$$1'. Maybe you forgot to setup the environment?")
+    return($$ret)
 }
 
 isEmpty($${target_prefix}.COMPILER_MACROS) {
