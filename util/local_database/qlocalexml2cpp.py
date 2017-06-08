@@ -88,38 +88,12 @@ def eltText(elt):
         child = child.nextSibling
     return result
 
-def loadLanguageMap(doc):
-    result = {}
-
-    for language_elt in eachEltInGroup(doc.documentElement, "languageList", "language"):
-        language_id = int(eltText(firstChildElt(language_elt, "id")))
-        language_name = eltText(firstChildElt(language_elt, "name"))
-        language_code = eltText(firstChildElt(language_elt, "code"))
-        result[language_id] = (language_name, language_code)
-
-    return result
-
-def loadScriptMap(doc):
-    result = {}
-
-    for script_elt in eachEltInGroup(doc.documentElement, "scriptList", "script"):
-        script_id = int(eltText(firstChildElt(script_elt, "id")))
-        script_name = eltText(firstChildElt(script_elt, "name"))
-        script_code = eltText(firstChildElt(script_elt, "code"))
-        result[script_id] = (script_name, script_code)
-
-    return result
-
-def loadCountryMap(doc):
-    result = {}
-
-    for country_elt in eachEltInGroup(doc.documentElement, "countryList", "country"):
-        country_id = int(eltText(firstChildElt(country_elt, "id")))
-        country_name = eltText(firstChildElt(country_elt, "name"))
-        country_code = eltText(firstChildElt(country_elt, "code"))
-        result[country_id] = (country_name, country_code)
-
-    return result
+def loadMap(doc, category):
+    return dict((int(eltText(firstChildElt(element, 'id'))),
+                 (eltText(firstChildElt(element, 'name')),
+                  eltText(firstChildElt(element, 'code'))))
+                for element in eachEltInGroup(doc.documentElement,
+                                              category + 'List', category))
 
 def loadLikelySubtagsMap(doc):
     result = {}
@@ -391,9 +365,9 @@ def main():
     data_temp_file.write(GENERATED_BLOCK_START)
 
     doc = xml.dom.minidom.parse(localexml)
-    language_map = loadLanguageMap(doc)
-    script_map = loadScriptMap(doc)
-    country_map = loadCountryMap(doc)
+    language_map = loadMap(doc, 'language')
+    script_map = loadMap(doc, 'script')
+    country_map = loadMap(doc, 'country')
     likely_subtags_map = loadLikelySubtagsMap(doc)
     default_map = {}
     for key in likely_subtags_map.keys():
