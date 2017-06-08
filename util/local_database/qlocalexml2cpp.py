@@ -54,23 +54,28 @@ def wrap_list(lst):
             yield head
     return ",\n".join(", ".join(x) for x in split(lst, 20))
 
+def isNodeNamed(elt, name, TYPE=xml.dom.minidom.Node.ELEMENT_NODE):
+    return elt.nodeType == TYPE and elt.nodeName == name
+
 def firstChildElt(parent, name):
     child = parent.firstChild
     while child:
-        if child.nodeType == parent.ELEMENT_NODE \
-            and (not name or child.nodeName == name):
+        if isNodeNamed(child, name):
             return child
         child = child.nextSibling
-    return False
 
-def nextSiblingElt(sibling, name):
-    sib = sibling.nextSibling
-    while sib:
-        if sib.nodeType == sibling.ELEMENT_NODE \
-            and (not name or sib.nodeName == name):
-            return sib
-        sib = sib.nextSibling
-    return False
+    raise Error('No %s child found' % name)
+
+def eachEltInGroup(parent, group, key):
+    try:
+        element = firstChildElt(parent, group).firstChild
+    except Error:
+        element = None
+
+    while element:
+        if isNodeNamed(element, key):
+            yield element
+        element = element.nextSibling
 
 def eltText(elt):
     result = ""
@@ -86,42 +91,33 @@ def eltText(elt):
 def loadLanguageMap(doc):
     result = {}
 
-    language_list_elt = firstChildElt(doc.documentElement, "languageList")
-    language_elt = firstChildElt(language_list_elt, "language")
-    while language_elt:
+    for language_elt in eachEltInGroup(doc.documentElement, "languageList", "language"):
         language_id = int(eltText(firstChildElt(language_elt, "id")))
         language_name = eltText(firstChildElt(language_elt, "name"))
         language_code = eltText(firstChildElt(language_elt, "code"))
         result[language_id] = (language_name, language_code)
-        language_elt = nextSiblingElt(language_elt, "language")
 
     return result
 
 def loadScriptMap(doc):
     result = {}
 
-    script_list_elt = firstChildElt(doc.documentElement, "scriptList")
-    script_elt = firstChildElt(script_list_elt, "script")
-    while script_elt:
+    for script_elt in eachEltInGroup(doc.documentElement, "scriptList", "script"):
         script_id = int(eltText(firstChildElt(script_elt, "id")))
         script_name = eltText(firstChildElt(script_elt, "name"))
         script_code = eltText(firstChildElt(script_elt, "code"))
         result[script_id] = (script_name, script_code)
-        script_elt = nextSiblingElt(script_elt, "script")
 
     return result
 
 def loadCountryMap(doc):
     result = {}
 
-    country_list_elt = firstChildElt(doc.documentElement, "countryList")
-    country_elt = firstChildElt(country_list_elt, "country")
-    while country_elt:
+    for country_elt in eachEltInGroup(doc.documentElement, "countryList", "country"):
         country_id = int(eltText(firstChildElt(country_elt, "id")))
         country_name = eltText(firstChildElt(country_elt, "name"))
         country_code = eltText(firstChildElt(country_elt, "code"))
         result[country_id] = (country_name, country_code)
-        country_elt = nextSiblingElt(country_elt, "country")
 
     return result
 
@@ -129,9 +125,7 @@ def loadLikelySubtagsMap(doc):
     result = {}
 
     i = 0
-    list_elt = firstChildElt(doc.documentElement, "likelySubtags")
-    elt = firstChildElt(list_elt, "likelySubtag")
-    while elt:
+    for elt in eachEltInGroup(doc.documentElement, "likelySubtags", "likelySubtag"):
         elt_from = firstChildElt(elt, "from")
         from_language = eltText(firstChildElt(elt_from, "language"));
         from_script = eltText(firstChildElt(elt_from, "script"));
@@ -147,7 +141,6 @@ def loadLikelySubtagsMap(doc):
         tmp["to"] = (to_language, to_script, to_country)
         result[i] = tmp;
         i += 1
-        elt = nextSiblingElt(elt, "likelySubtag");
     return result
 
 def fixedScriptName(name, dupes):
@@ -196,9 +189,7 @@ def countryNameToId(name, country_map):
 def loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map):
     result = {}
 
-    locale_list_elt = firstChildElt(doc.documentElement, "localeList")
-    locale_elt = firstChildElt(locale_list_elt, "locale")
-    while locale_elt:
+    for locale_elt in eachEltInGroup(doc.documentElement, "localeList", "locale"):
         locale = Locale.fromXmlData(lambda k: eltText(firstChildElt(locale_elt, k)))
         language_id = languageNameToId(locale.language, language_map)
         if language_id == -1:
@@ -232,8 +223,6 @@ def loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map
                         break
 
         result[(language_id, script_id, country_id)] = locale
-
-        locale_elt = nextSiblingElt(locale_elt, "locale")
 
     return result
 
