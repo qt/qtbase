@@ -239,16 +239,13 @@
     if (!m_platformWindow)
         return;
 
-    if (!(m_platformWindow->m_viewIsToBeEmbedded))
+    if (!m_platformWindow->isEmbedded())
         return;
 
     if ([self superview]) {
-        m_platformWindow->m_viewIsEmbedded = true;
         QWindowSystemInterface::handleGeometryChange(m_platformWindow->window(), m_platformWindow->geometry());
         [self setNeedsDisplay:YES];
         QWindowSystemInterface::flushWindowSystemEvents();
-    } else {
-        m_platformWindow->m_viewIsEmbedded = false;
     }
 }
 

@@ -144,8 +144,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     : QPlatformWindow(win)
     , m_view(nil)
     , m_nsWindow(0)
-    , m_viewIsEmbedded(false)
-    , m_viewIsToBeEmbedded(false)
     , m_lastReportedWindowState(Qt::WindowNoState)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
@@ -275,7 +273,7 @@ QRect QCocoaWindow::geometry() const
     // QWindows that are embedded in a NSView hiearchy may be considered
     // top-level from Qt's point of view but are not from Cocoa's point
     // of view. Embedded QWindows get global (screen) geometry.
-    if (m_viewIsEmbedded) {
+    if (isEmbedded()) {
         NSPoint windowPoint = [m_view convertPoint:NSMakePoint(0, 0) toView:nil];
         NSRect screenRect = [[m_view window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
         NSPoint screenPoint = screenRect.origin;
@@ -294,7 +292,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 
     QPlatformWindow::setGeometry(rect);
 
-    if (m_viewIsEmbedded) {
+    if (isEmbedded()) {
         if (!isForeignWindow()) {
             [m_view setFrame:NSMakeRect(0, 0, rect.width(), rect.height())];
         }
@@ -706,6 +704,22 @@ bool QCocoaWindow::isExposed() const
     return !m_exposedRect.isEmpty();
 }
 
+bool QCocoaWindow::isEmbedded() const
+{
+    // Child QWindows are not embedded
+    if (window()->parent())
+        return false;
+
+    // Top-level QWindows with non-Qt NSWindows are embedded
+    if (m_view.window)
+        return !([m_view.window isKindOfClass:[QNSWindow class]] ||
+                 [m_view.window isKindOfClass:[QNSPanel class]]);
+
+    // The window has no QWindow parent but also no NSWindow,
+    // conservatively reuturn false.
+    return false;
+}
+
 bool QCocoaWindow::isOpaque() const
 {
     // OpenGL surfaces can be ordered either above(default) or below the NSWindow.
@@ -834,7 +848,7 @@ void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
     qCDebug(lcQpaWindow) << "QCocoaWindow::setParent" << window() << (parentWindow ? parentWindow->window() : 0);
 
     // recreate the window for compatibility
-    bool unhideAfterRecreate = parentWindow && !m_viewIsToBeEmbedded && ![m_view isHidden];
+    bool unhideAfterRecreate = parentWindow && !isEmbedded() && ![m_view isHidden];
     recreateWindowIfNeeded();
     if (unhideAfterRecreate)
         [m_view setHidden:NO];
@@ -851,9 +865,8 @@ NSWindow *QCocoaWindow::nativeWindow() const
     return m_view.window;
 }
 
-void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
+void QCocoaWindow::setEmbeddedInForeignView()
 {
-    m_viewIsToBeEmbedded = embedded;
     // Release any previosly created NSWindow.
     [m_nsWindow closeAndRelease];
     m_nsWindow = 0;
@@ -1092,22 +1105,14 @@ void QCocoaWindow::handleGeometryChange()
     if (!m_initialized)
         return;
 
-    // Don't send the geometry change if the QWindow is designated to be
-    // embedded in a foreign view hierarchy but has not actually been
-    // embedded yet - it's too early.
-    if (m_viewIsToBeEmbedded && !m_viewIsEmbedded)
-        return;
-
     // It can happen that the current NSWindow is nil (if we are changing styleMask
     // from/to borderless, and the content view is being re-parented), which results
     // in invalid coordinates.
     if (m_inSetStyleMask && !m_view.window)
         return;
 
-    const bool isEmbedded = m_viewIsToBeEmbedded || m_viewIsEmbedded;
-
     QRect newGeometry;
-    if (isContentView() && !isEmbedded) {
+    if (isContentView() && !isEmbedded()) {
         // Content views are positioned at (0, 0) in the window, so we resolve via the window
         CGRect contentRect = [m_view.window contentRectForFrameRect:m_view.window.frame];
 
@@ -1218,6 +1223,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
     QPlatformWindow *parentWindow = QPlatformWindow::parent();
 
+    const bool isEmbeddedView = isEmbedded();
     RecreationReasons recreateReason = RecreationNotNeeded;
 
     QCocoaWindow *oldParentCocoaWindow = nullptr;
@@ -1234,7 +1240,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if (m_windowModality != window()->modality())
         recreateReason |= WindowModalityChanged;
 
-    const bool shouldBeContentView = !parentWindow && !(m_viewIsToBeEmbedded || m_viewIsEmbedded);
+    const bool shouldBeContentView = !parentWindow && !isEmbeddedView;
     if (isContentView() != shouldBeContentView)
         recreateReason |= ContentViewChanged;
 
@@ -1263,7 +1269,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
                     << "when the observers are removed. Break in QCocoaWindow::recreateWindowIfNeeded to debug.";
             }
             [m_nsWindow closeAndRelease];
-            if (isContentView()) {
+            if (isContentView() && !isEmbeddedView) {
                 // We explicitly disassociate m_view from the window's contentView,
                 // as AppKit does not automatically do this in response to removing
                 // the view from the NSThemeFrame subview list, so we might end up
@@ -1292,7 +1298,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
         }
     }
 
-    if (m_viewIsToBeEmbedded) {
+    if (isEmbeddedView) {
         // An embedded window doesn't have its own NSWindow.
     } else if (!parentWindow) {
         // QPlatformWindow subclasses must sync up with QWindow on creation:
@@ -1322,7 +1328,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
     // top-level QWindows may have an attached NSToolBar, call
     // update function which will attach to the NSWindow.
-    if (!parentWindow)
+    if (!parentWindow && !isEmbeddedView)
         updateNSToolbar();
 }
 

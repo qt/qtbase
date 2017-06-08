@@ -285,8 +285,9 @@ QImage QCocoaNativeInterface::cgImageToQImage(CGImageRef image)
 
 void QCocoaNativeInterface::setEmbeddedInForeignView(QPlatformWindow *window, bool embedded)
 {
+    Q_UNUSED(embedded); // "embedded" state is now automatically detected
     QCocoaWindow *cocoaPlatformWindow = static_cast<QCocoaWindow *>(window);
-    cocoaPlatformWindow->setEmbeddedInForeignView(embedded);
+    cocoaPlatformWindow->setEmbeddedInForeignView();
 }
 
 void QCocoaNativeInterface::registerTouchWindow(QWindow *window,  bool enable)

@@ -112,6 +112,7 @@ public:
     void raise() override;
     void lower() override;
     bool isExposed() const override;
+    bool isEmbedded() const override;
     bool isOpaque() const;
     void propagateSizeHints() override;
     void setOpacity(qreal level) override;
@@ -132,7 +133,7 @@ public:
     NSView *view() const;
     NSWindow *nativeWindow() const;
 
-    void setEmbeddedInForeignView(bool subwindow);
+    void setEmbeddedInForeignView();
 
     Q_NOTIFICATION_HANDLER(NSViewFrameDidChangeNotification) void viewDidChangeFrame();
     Q_NOTIFICATION_HANDLER(NSViewGlobalFrameDidChangeNotification) void viewDidChangeGlobalFrame();
@@ -236,10 +237,6 @@ public: // for QNSView
 
     NSView *m_view;
     QCocoaNSWindow *m_nsWindow;
-
-    // TODO merge to one variable if possible
-    bool m_viewIsEmbedded; // true if the m_view is actually embedded in a "foreign" NSView hiearchy
-    bool m_viewIsToBeEmbedded; // true if the m_view is intended to be embedded in a "foreign" NSView hiearchy
 
     Qt::WindowStates m_lastReportedWindowState;
     Qt::WindowModality m_windowModality;
