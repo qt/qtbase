@@ -547,6 +547,7 @@ private:
     bool m_xi2Enabled = false;
     int m_xi2Minor = -1;
     void initializeXInput2();
+    void xi2SetupDevice(void *info, bool removeExisting = true);
     void xi2SetupDevices();
     struct TouchDeviceData {
         QTouchDevice *qtTouchDevice = nullptr;

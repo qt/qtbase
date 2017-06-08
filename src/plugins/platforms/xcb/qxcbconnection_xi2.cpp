@@ -93,6 +93,178 @@ void QXcbConnection::initializeXInput2()
     }
 }
 
+void QXcbConnection::xi2SetupDevice(void *info, bool removeExisting)
+{
+    XIDeviceInfo *deviceInfo = reinterpret_cast<XIDeviceInfo *>(info);
+    if (removeExisting) {
+#if QT_CONFIG(tabletevent)
+        for (int i = 0; i < m_tabletData.count(); ++i) {
+            if (m_tabletData.at(i).deviceId == deviceInfo->deviceid) {
+                m_tabletData.remove(i);
+                break;
+            }
+        }
+#endif
+        m_scrollingDevices.remove(deviceInfo->deviceid);
+        m_touchDevices.remove(deviceInfo->deviceid);
+    }
+
+    qCDebug(lcQpaXInputDevices) << "input device " << deviceInfo->name << "ID" << deviceInfo->deviceid;
+#if QT_CONFIG(tabletevent)
+    TabletData tabletData;
+#endif
+    ScrollingDevice scrollingDevice;
+    for (int c = 0; c < deviceInfo->num_classes; ++c) {
+        XIAnyClassInfo *classinfo = deviceInfo->classes[c];
+        switch (classinfo->type) {
+        case XIValuatorClass: {
+            XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(classinfo);
+            const int valuatorAtom = qatom(vci->label);
+            qCDebug(lcQpaXInputDevices) << "   has valuator" << atomName(vci->label) << "recognized?" << (valuatorAtom < QXcbAtom::NAtoms);
+#if QT_CONFIG(tabletevent)
+            if (valuatorAtom < QXcbAtom::NAtoms) {
+                TabletData::ValuatorClassInfo info;
+                info.minVal = vci->min;
+                info.maxVal = vci->max;
+                info.number = vci->number;
+                tabletData.valuatorInfo[valuatorAtom] = info;
+            }
+#endif // QT_CONFIG(tabletevent)
+            if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
+                scrollingDevice.lastScrollPosition.setX(vci->value);
+            else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
+                scrollingDevice.lastScrollPosition.setY(vci->value);
+            break;
+        }
+#ifdef XCB_USE_XINPUT21
+        case XIScrollClass: {
+            XIScrollClassInfo *sci = reinterpret_cast<XIScrollClassInfo *>(classinfo);
+            if (sci->scroll_type == XIScrollTypeVertical) {
+                scrollingDevice.orientations |= Qt::Vertical;
+                scrollingDevice.verticalIndex = sci->number;
+                scrollingDevice.verticalIncrement = sci->increment;
+            }
+            else if (sci->scroll_type == XIScrollTypeHorizontal) {
+                scrollingDevice.orientations |= Qt::Horizontal;
+                scrollingDevice.horizontalIndex = sci->number;
+                scrollingDevice.horizontalIncrement = sci->increment;
+            }
+            break;
+        }
+        case XIButtonClass: {
+            XIButtonClassInfo *bci = reinterpret_cast<XIButtonClassInfo *>(classinfo);
+            if (bci->num_buttons >= 5) {
+                Atom label4 = bci->labels[3];
+                Atom label5 = bci->labels[4];
+                // Some drivers have no labels on the wheel buttons, some have no label on just one and some have no label on
+                // button 4 and the wrong one on button 5. So we just check that they are not labelled with unrelated buttons.
+                if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp || qatom(label4) == QXcbAtom::ButtonWheelDown) &&
+                    (!label5 || qatom(label5) == QXcbAtom::ButtonWheelUp || qatom(label5) == QXcbAtom::ButtonWheelDown))
+                    scrollingDevice.legacyOrientations |= Qt::Vertical;
+            }
+            if (bci->num_buttons >= 7) {
+                Atom label6 = bci->labels[5];
+                Atom label7 = bci->labels[6];
+                if ((!label6 || qatom(label6) == QXcbAtom::ButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::ButtonHorizWheelRight))
+                    scrollingDevice.legacyOrientations |= Qt::Horizontal;
+            }
+            qCDebug(lcQpaXInputDevices, "   has %d buttons", bci->num_buttons);
+            break;
+        }
+#endif
+        case XIKeyClass:
+            qCDebug(lcQpaXInputDevices) << "   it's a keyboard";
+            break;
+#ifdef XCB_USE_XINPUT22
+        case XITouchClass:
+            // will be handled in populateTouchDevices()
+            break;
+#endif
+        default:
+            qCDebug(lcQpaXInputDevices) << "   has class" << classinfo->type;
+            break;
+        }
+    }
+    bool isTablet = false;
+#if QT_CONFIG(tabletevent)
+    // If we have found the valuators which we expect a tablet to have, it might be a tablet.
+    if (tabletData.valuatorInfo.contains(QXcbAtom::AbsX) &&
+            tabletData.valuatorInfo.contains(QXcbAtom::AbsY) &&
+            tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure))
+        isTablet = true;
+
+    // But we need to be careful not to take the touch and tablet-button devices as tablets.
+    QByteArray name = QByteArray(deviceInfo->name).toLower();
+    QString dbgType = QLatin1String("UNKNOWN");
+    if (name.contains("eraser")) {
+        isTablet = true;
+        tabletData.pointerType = QTabletEvent::Eraser;
+        dbgType = QLatin1String("eraser");
+    } else if (name.contains("cursor")) {
+        isTablet = true;
+        tabletData.pointerType = QTabletEvent::Cursor;
+        dbgType = QLatin1String("cursor");
+    } else if (name.contains("wacom") && name.contains("finger touch")) {
+        isTablet = false;
+    } else if ((name.contains("pen") || name.contains("stylus")) && isTablet) {
+        tabletData.pointerType = QTabletEvent::Pen;
+        dbgType = QLatin1String("pen");
+    } else if (name.contains("wacom") && isTablet && !name.contains("touch")) {
+        // combined device (evdev) rather than separate pen/eraser (wacom driver)
+        tabletData.pointerType = QTabletEvent::Pen;
+        dbgType = QLatin1String("pen");
+    } else if (name.contains("aiptek") /* && device == QXcbAtom::KEYBOARD */) {
+        // some "Genius" tablets
+        isTablet = true;
+        tabletData.pointerType = QTabletEvent::Pen;
+        dbgType = QLatin1String("pen");
+    } else if (name.contains("waltop") && name.contains("tablet")) {
+        // other "Genius" tablets
+        // WALTOP International Corp. Slim Tablet
+        isTablet = true;
+        tabletData.pointerType = QTabletEvent::Pen;
+        dbgType = QLatin1String("pen");
+    } else if (name.contains("uc-logic") && isTablet) {
+        tabletData.pointerType = QTabletEvent::Pen;
+        dbgType = QLatin1String("pen");
+    } else {
+        isTablet = false;
+    }
+
+    if (isTablet) {
+        tabletData.deviceId = deviceInfo->deviceid;
+        m_tabletData.append(tabletData);
+        qCDebug(lcQpaXInputDevices) << "   it's a tablet with pointer type" << dbgType;
+    }
+#endif // QT_CONFIG(tabletevent)
+
+#ifdef XCB_USE_XINPUT21
+    if (scrollingDevice.orientations || scrollingDevice.legacyOrientations) {
+        scrollingDevice.deviceId = deviceInfo->deviceid;
+        // Only use legacy wheel button events when we don't have real scroll valuators.
+        scrollingDevice.legacyOrientations &= ~scrollingDevice.orientations;
+        m_scrollingDevices.insert(scrollingDevice.deviceId, scrollingDevice);
+        qCDebug(lcQpaXInputDevices) << "   it's a scrolling device";
+    }
+#endif
+
+    if (!isTablet) {
+        TouchDeviceData *dev = populateTouchDevices(deviceInfo);
+        if (dev && lcQpaXInputDevices().isDebugEnabled()) {
+            if (dev->qtTouchDevice->type() == QTouchDevice::TouchScreen)
+                qCDebug(lcQpaXInputDevices, "   it's a touchscreen with type %d capabilities 0x%X max touch points %d",
+                        dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
+                        dev->qtTouchDevice->maximumTouchPoints());
+            else if (dev->qtTouchDevice->type() == QTouchDevice::TouchPad)
+                qCDebug(lcQpaXInputDevices, "   it's a touchpad with type %d capabilities 0x%X max touch points %d size %f x %f",
+                        dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
+                        dev->qtTouchDevice->maximumTouchPoints(),
+                        dev->size.width(), dev->size.height());
+        }
+    }
+
+}
+
 void QXcbConnection::xi2SetupDevices()
 {
 #if QT_CONFIG(tabletevent)
@@ -108,159 +280,7 @@ void QXcbConnection::xi2SetupDevices()
         // Only non-master pointing devices are relevant here.
         if (devices[i].use != XISlavePointer)
             continue;
-        qCDebug(lcQpaXInputDevices) << "input device " << devices[i].name << "ID" << devices[i].deviceid;
-#if QT_CONFIG(tabletevent)
-        TabletData tabletData;
-#endif
-        ScrollingDevice scrollingDevice;
-        for (int c = 0; c < devices[i].num_classes; ++c) {
-            XIAnyClassInfo *classinfo = devices[i].classes[c];
-            switch (classinfo->type) {
-            case XIValuatorClass: {
-                XIValuatorClassInfo *vci = reinterpret_cast<XIValuatorClassInfo *>(classinfo);
-                const int valuatorAtom = qatom(vci->label);
-                qCDebug(lcQpaXInputDevices) << "   has valuator" << atomName(vci->label) << "recognized?" << (valuatorAtom < QXcbAtom::NAtoms);
-#if QT_CONFIG(tabletevent)
-                if (valuatorAtom < QXcbAtom::NAtoms) {
-                    TabletData::ValuatorClassInfo info;
-                    info.minVal = vci->min;
-                    info.maxVal = vci->max;
-                    info.number = vci->number;
-                    tabletData.valuatorInfo[valuatorAtom] = info;
-                }
-#endif // QT_CONFIG(tabletevent)
-                if (valuatorAtom == QXcbAtom::RelHorizScroll || valuatorAtom == QXcbAtom::RelHorizWheel)
-                    scrollingDevice.lastScrollPosition.setX(vci->value);
-                else if (valuatorAtom == QXcbAtom::RelVertScroll || valuatorAtom == QXcbAtom::RelVertWheel)
-                    scrollingDevice.lastScrollPosition.setY(vci->value);
-                break;
-            }
-#ifdef XCB_USE_XINPUT21
-            case XIScrollClass: {
-                XIScrollClassInfo *sci = reinterpret_cast<XIScrollClassInfo *>(classinfo);
-                if (sci->scroll_type == XIScrollTypeVertical) {
-                    scrollingDevice.orientations |= Qt::Vertical;
-                    scrollingDevice.verticalIndex = sci->number;
-                    scrollingDevice.verticalIncrement = sci->increment;
-                }
-                else if (sci->scroll_type == XIScrollTypeHorizontal) {
-                    scrollingDevice.orientations |= Qt::Horizontal;
-                    scrollingDevice.horizontalIndex = sci->number;
-                    scrollingDevice.horizontalIncrement = sci->increment;
-                }
-                break;
-            }
-            case XIButtonClass: {
-                XIButtonClassInfo *bci = reinterpret_cast<XIButtonClassInfo *>(classinfo);
-                if (bci->num_buttons >= 5) {
-                    Atom label4 = bci->labels[3];
-                    Atom label5 = bci->labels[4];
-                    // Some drivers have no labels on the wheel buttons, some have no label on just one and some have no label on
-                    // button 4 and the wrong one on button 5. So we just check that they are not labelled with unrelated buttons.
-                    if ((!label4 || qatom(label4) == QXcbAtom::ButtonWheelUp || qatom(label4) == QXcbAtom::ButtonWheelDown) &&
-                        (!label5 || qatom(label5) == QXcbAtom::ButtonWheelUp || qatom(label5) == QXcbAtom::ButtonWheelDown))
-                        scrollingDevice.legacyOrientations |= Qt::Vertical;
-                }
-                if (bci->num_buttons >= 7) {
-                    Atom label6 = bci->labels[5];
-                    Atom label7 = bci->labels[6];
-                    if ((!label6 || qatom(label6) == QXcbAtom::ButtonHorizWheelLeft) && (!label7 || qatom(label7) == QXcbAtom::ButtonHorizWheelRight))
-                        scrollingDevice.legacyOrientations |= Qt::Horizontal;
-                }
-                qCDebug(lcQpaXInputDevices, "   has %d buttons", bci->num_buttons);
-                break;
-            }
-#endif
-            case XIKeyClass:
-                qCDebug(lcQpaXInputDevices) << "   it's a keyboard";
-                break;
-#ifdef XCB_USE_XINPUT22
-            case XITouchClass:
-                // will be handled in populateTouchDevices()
-                break;
-#endif
-            default:
-                qCDebug(lcQpaXInputDevices) << "   has class" << classinfo->type;
-                break;
-            }
-        }
-        bool isTablet = false;
-#if QT_CONFIG(tabletevent)
-        // If we have found the valuators which we expect a tablet to have, it might be a tablet.
-        if (tabletData.valuatorInfo.contains(QXcbAtom::AbsX) &&
-                tabletData.valuatorInfo.contains(QXcbAtom::AbsY) &&
-                tabletData.valuatorInfo.contains(QXcbAtom::AbsPressure))
-            isTablet = true;
-
-        // But we need to be careful not to take the touch and tablet-button devices as tablets.
-        QByteArray name = QByteArray(devices[i].name).toLower();
-        QString dbgType = QLatin1String("UNKNOWN");
-        if (name.contains("eraser")) {
-            isTablet = true;
-            tabletData.pointerType = QTabletEvent::Eraser;
-            dbgType = QLatin1String("eraser");
-        } else if (name.contains("cursor")) {
-            isTablet = true;
-            tabletData.pointerType = QTabletEvent::Cursor;
-            dbgType = QLatin1String("cursor");
-        } else if (name.contains("wacom") && name.contains("finger touch")) {
-            isTablet = false;
-        } else if ((name.contains("pen") || name.contains("stylus")) && isTablet) {
-            tabletData.pointerType = QTabletEvent::Pen;
-            dbgType = QLatin1String("pen");
-        } else if (name.contains("wacom") && isTablet && !name.contains("touch")) {
-            // combined device (evdev) rather than separate pen/eraser (wacom driver)
-            tabletData.pointerType = QTabletEvent::Pen;
-            dbgType = QLatin1String("pen");
-        } else if (name.contains("aiptek") /* && device == QXcbAtom::KEYBOARD */) {
-            // some "Genius" tablets
-            isTablet = true;
-            tabletData.pointerType = QTabletEvent::Pen;
-            dbgType = QLatin1String("pen");
-        } else if (name.contains("waltop") && name.contains("tablet")) {
-            // other "Genius" tablets
-            // WALTOP International Corp. Slim Tablet
-            isTablet = true;
-            tabletData.pointerType = QTabletEvent::Pen;
-            dbgType = QLatin1String("pen");
-        } else if (name.contains("uc-logic") && isTablet) {
-            tabletData.pointerType = QTabletEvent::Pen;
-            dbgType = QLatin1String("pen");
-        } else {
-            isTablet = false;
-        }
-
-        if (isTablet) {
-            tabletData.deviceId = devices[i].deviceid;
-            m_tabletData.append(tabletData);
-            qCDebug(lcQpaXInputDevices) << "   it's a tablet with pointer type" << dbgType;
-        }
-#endif // QT_CONFIG(tabletevent)
-
-#ifdef XCB_USE_XINPUT21
-        if (scrollingDevice.orientations || scrollingDevice.legacyOrientations) {
-            scrollingDevice.deviceId = devices[i].deviceid;
-            // Only use legacy wheel button events when we don't have real scroll valuators.
-            scrollingDevice.legacyOrientations &= ~scrollingDevice.orientations;
-            m_scrollingDevices.insert(scrollingDevice.deviceId, scrollingDevice);
-            qCDebug(lcQpaXInputDevices) << "   it's a scrolling device";
-        }
-#endif
-
-        if (!isTablet) {
-            TouchDeviceData *dev = populateTouchDevices(&devices[i]);
-            if (dev && lcQpaXInputDevices().isDebugEnabled()) {
-                if (dev->qtTouchDevice->type() == QTouchDevice::TouchScreen)
-                    qCDebug(lcQpaXInputDevices, "   it's a touchscreen with type %d capabilities 0x%X max touch points %d",
-                            dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
-                            dev->qtTouchDevice->maximumTouchPoints());
-                else if (dev->qtTouchDevice->type() == QTouchDevice::TouchPad)
-                    qCDebug(lcQpaXInputDevices, "   it's a touchpad with type %d capabilities 0x%X max touch points %d size %f x %f",
-                            dev->qtTouchDevice->type(), (unsigned int)dev->qtTouchDevice->capabilities(),
-                            dev->qtTouchDevice->maximumTouchPoints(),
-                            dev->size.width(), dev->size.height());
-            }
-        }
+        xi2SetupDevice(&devices[i], false);
     }
     XIFreeDeviceInfo(devices);
 }
@@ -835,8 +855,16 @@ void QXcbConnection::xi2HandleDeviceChangedEvent(void *event)
 {
     xXIDeviceChangedEvent *xiEvent = reinterpret_cast<xXIDeviceChangedEvent *>(event);
     switch (xiEvent->reason) {
-    case XIDeviceChange:
+    case XIDeviceChange: {
+        int nrDevices = 0;
+        Display *dpy = static_cast<Display *>(m_xlib_display);
+        XIDeviceInfo* deviceInfo = XIQueryDevice(dpy, xiEvent->sourceid, &nrDevices);
+        if (nrDevices <= 0)
+            return;
+        xi2SetupDevice(deviceInfo);
+        XIFreeDeviceInfo(deviceInfo);
         break;
+    }
     case XISlaveSwitch: {
 #ifdef XCB_USE_XINPUT21
         if (ScrollingDevice *scrollingDevice = scrollingDeviceForId(xiEvent->sourceid))
