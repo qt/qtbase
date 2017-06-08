@@ -9,11 +9,12 @@
 /config.tests/*/*/*
 !/config.tests/*/*/*[.]*
 /config.tests/.qmake.cache
+/config.tests/.qmake.stash
 /config.tests/arch/arch
 /config.tests/conftest-out
 /config.tests/conftest.cpp
 /config.opt
-/config.status
+/config.status*
 /config.summary
 /config.log
 /config.cache
