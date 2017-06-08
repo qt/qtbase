@@ -288,6 +288,22 @@ static bool isVerticalTabs(const QTabBar::Shape shape) {
 }
 #endif
 
+static bool setupScroller(NSScroller *scroller, const QStyleOptionSlider *sb)
+{
+    const qreal length = sb->maximum - sb->minimum + sb->pageStep;
+    if (qFuzzyIsNull(length))
+        return false;
+    const qreal proportion = sb->pageStep / length;
+    qreal value = qreal(sb->sliderValue - sb->minimum) / qreal(sb->maximum - sb->minimum);
+    if (sb->orientation == Qt::Horizontal && sb->direction == Qt::RightToLeft)
+        value = 1.0 - value;
+
+    scroller.frame = sb->rect.toCGRect();
+    scroller.floatValue = value;
+    scroller.knobProportion = proportion;
+    return true;
+}
+
 static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
 {
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
@@ -1717,50 +1733,24 @@ void QMacStylePrivate::drawTableHeader(const CGRect &outerBounds,
     p->translate(-outerBounds.origin.x, -outerBounds.origin.y);
 }
 
-/*
-    Returns cutoff sizes for scroll bars.
-    thumbIndicatorCutoff is the smallest size where the thumb indicator is drawn.
-    scrollButtonsCutoff is the smallest size where the up/down buttons is drawn.
-*/
-enum ScrollBarCutoffType { thumbIndicatorCutoff = 0, scrollButtonsCutoff = 1 };
-static int scrollButtonsCutoffSize(ScrollBarCutoffType cutoffType, QStyleHelper::WidgetSizePolicy widgetSize)
-{
-    // Mini scroll bars do not exist as of version 10.4.
-    if (widgetSize ==  QStyleHelper::SizeMini)
-        return 0;
-
-    const int sizeIndex = (widgetSize == QStyleHelper::SizeSmall) ? 1 : 0;
-    static const int sizeTable[2][2] = { { 61, 56 }, { 49, 44 } };
-    return sizeTable[sizeIndex][cutoffType];
-}
-
 void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,
                           HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe) const
 {
+    Q_UNUSED(cc);
     memset(tdi, 0, sizeof(HIThemeTrackDrawInfo)); // We don't get it all for some reason or another...
     tdi->version = qt_mac_hitheme_version;
     tdi->reserved = 0;
     tdi->filler1 = 0;
-    bool isScrollbar = (cc == QStyle::CC_ScrollBar);
     switch (aquaSizeConstrain(slider, needToRemoveMe)) {
     case QStyleHelper::SizeDefault:
     case QStyleHelper::SizeLarge:
-        if (isScrollbar)
-            tdi->kind = kThemeMediumScrollBar;
-        else
-            tdi->kind = kThemeMediumSlider;
+        tdi->kind = kThemeMediumSlider;
         break;
     case QStyleHelper::SizeMini:
-        if (isScrollbar)
-            tdi->kind = kThemeSmallScrollBar; // should be kThemeMiniScrollBar, but not implemented
-        else
-            tdi->kind = kThemeMiniSlider;
+        tdi->kind = kThemeMiniSlider;
         break;
     case QStyleHelper::SizeSmall:
-        if (isScrollbar)
-            tdi->kind = kThemeSmallScrollBar;
-        else
-            tdi->kind = kThemeSmallSlider;
+        tdi->kind = kThemeSmallSlider;
         break;
     }
 
@@ -1768,63 +1758,42 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
             || slider->tickPosition == QSlider::TicksBothSides;
 
     tdi->bounds = slider->rect.toCGRect();
-    if (isScrollbar) {
-        tdi->min = slider->minimum;
-        tdi->max = slider->maximum;
-        tdi->value = slider->sliderPosition;
-    } else {
-        // Fix min and max positions. HITheme seems confused when it comes to rendering
-        // a slider at those positions. We give it a hand by extending and offsetting
-        // the slider range accordingly. See also comment for CC_Slider in drawComplexControl()
-        tdi->min = 0;
-        if (slider->orientation == Qt::Horizontal)
-            tdi->max = 10 * slider->rect.width();
-        else
-            tdi->max = 10 * slider->rect.height();
+    // Fix min and max positions. HITheme seems confused when it comes to rendering
+    // a slider at those positions. We give it a hand by extending and offsetting
+    // the slider range accordingly. See also comment for CC_Slider in drawComplexControl()
+    tdi->min = 0;
+    if (slider->orientation == Qt::Horizontal)
+        tdi->max = 10 * slider->rect.width();
+    else
+        tdi->max = 10 * slider->rect.height();
 
-        int range = slider->maximum - slider->minimum;
-        if (range == 0) {
-            tdi->value = 0;
-        } else if (usePlainKnob || slider->orientation == Qt::Horizontal) {
-            int endsCorrection = usePlainKnob ? 25 : 10;
-            tdi->value = (tdi->max + 2 * endsCorrection) * (slider->sliderPosition - slider->minimum) / range - endsCorrection;
-        } else {
-            tdi->value = (tdi->max + 30) * (slider->sliderPosition - slider->minimum) / range - 20;
-        }
+    int range = slider->maximum - slider->minimum;
+    if (range == 0) {
+        tdi->value = 0;
+    } else if (usePlainKnob || slider->orientation == Qt::Horizontal) {
+        int endsCorrection = usePlainKnob ? 25 : 10;
+        tdi->value = (tdi->max + 2 * endsCorrection) * (slider->sliderPosition - slider->minimum) / range - endsCorrection;
+    } else {
+        tdi->value = (tdi->max + 30) * (slider->sliderPosition - slider->minimum) / range - 20;
     }
+
     tdi->attributes = kThemeTrackShowThumb;
     if (slider->upsideDown)
         tdi->attributes |= kThemeTrackRightToLeft;
     if (slider->orientation == Qt::Horizontal) {
         tdi->attributes |= kThemeTrackHorizontal;
-        if (isScrollbar && slider->direction == Qt::RightToLeft) {
-            if (!slider->upsideDown)
-                tdi->attributes |= kThemeTrackRightToLeft;
-            else
-                tdi->attributes &= ~kThemeTrackRightToLeft;
-        }
-    }
-
-    // Tiger broke reverse scroll bars so put them back and "fake it"
-    if (isScrollbar && (tdi->attributes & kThemeTrackRightToLeft)) {
-        tdi->attributes &= ~kThemeTrackRightToLeft;
-        tdi->value = tdi->max - tdi->value;
     }
 
     tdi->enableState = (slider->state & QStyle::State_Enabled) ? kThemeTrackActive
                                                              : kThemeTrackDisabled;
-    if (!isScrollbar) {
-        if (slider->state & QStyle::QStyle::State_HasFocus)
-            tdi->attributes |= kThemeTrackHasFocus;
-        if (usePlainKnob)
-            tdi->trackInfo.slider.thumbDir = kThemeThumbPlain;
-        else if (slider->tickPosition == QSlider::TicksAbove)
-            tdi->trackInfo.slider.thumbDir = kThemeThumbUpward;
-        else
-            tdi->trackInfo.slider.thumbDir = kThemeThumbDownward;
-    } else {
-        tdi->trackInfo.scrollbar.viewsize = slider->pageStep;
-    }
+    if (slider->state & QStyle::QStyle::State_HasFocus)
+        tdi->attributes |= kThemeTrackHasFocus;
+    if (usePlainKnob)
+        tdi->trackInfo.slider.thumbDir = kThemeThumbPlain;
+    else if (slider->tickPosition == QSlider::TicksAbove)
+        tdi->trackInfo.slider.thumbDir = kThemeThumbUpward;
+    else
+        tdi->trackInfo.slider.thumbDir = kThemeThumbDownward;
 }
 
 QMacStylePrivate::QMacStylePrivate()
@@ -5309,9 +5278,185 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                      QStyleHelper::styleObjectWindow(opt->styleObject);
     const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
     switch (cc) {
-    case CC_Slider:
     case CC_ScrollBar:
+        if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+
+            const bool isHorizontal = sb->orientation == Qt::Horizontal;
+
+            if (opt && opt->styleObject && !QMacStylePrivate::scrollBars.contains(opt->styleObject))
+                QMacStylePrivate::scrollBars.append(QPointer<QObject>(opt->styleObject));
+
+            static const CGFloat knobWidths[] = { 7.0, 5.0, 5.0 };
+            static const CGFloat expandedKnobWidths[] = { 11.0, 9.0, 9.0 };
+            const auto cocoaSize = d->effectiveAquaSizeConstrain(opt, widget);
+            const CGFloat maxExpandScale = expandedKnobWidths[cocoaSize] / knobWidths[cocoaSize];
+
+            const bool isTransient = proxy()->styleHint(SH_ScrollBar_Transient, opt, widget);
+            if (!isTransient)
+                d->stopAnimation(opt->styleObject);
+            bool wasActive = false;
+            CGFloat opacity = 0.0;
+            CGFloat expandScale = 1.0;
+            CGFloat expandOffset = 0.0;
+            bool shouldExpand = false;
+
+            if (QObject *styleObject = opt->styleObject) {
+                const int oldPos = styleObject->property("_q_stylepos").toInt();
+                const int oldMin = styleObject->property("_q_stylemin").toInt();
+                const int oldMax = styleObject->property("_q_stylemax").toInt();
+                const QRect oldRect = styleObject->property("_q_stylerect").toRect();
+                const QStyle::State oldState = static_cast<QStyle::State>(styleObject->property("_q_stylestate").value<QStyle::State::Int>());
+                const uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
+
+                // a scrollbar is transient when the scrollbar itself and
+                // its sibling are both inactive (ie. not pressed/hovered/moved)
+                const bool transient = isTransient && !opt->activeSubControls && !(sb->state & State_On);
+
+                if (!transient ||
+                        oldPos != sb->sliderPosition ||
+                        oldMin != sb->minimum ||
+                        oldMax != sb->maximum ||
+                        oldRect != sb->rect ||
+                        oldState != sb->state ||
+                        oldActiveControls != sb->activeSubControls) {
+
+                    // if the scrollbar is transient or its attributes, geometry or
+                    // state has changed, the opacity is reset back to 100% opaque
+                    opacity = 1.0;
+
+                    styleObject->setProperty("_q_stylepos", sb->sliderPosition);
+                    styleObject->setProperty("_q_stylemin", sb->minimum);
+                    styleObject->setProperty("_q_stylemax", sb->maximum);
+                    styleObject->setProperty("_q_stylerect", sb->rect);
+                    styleObject->setProperty("_q_stylestate", static_cast<QStyle::State::Int>(sb->state));
+                    styleObject->setProperty("_q_stylecontrols", static_cast<uint>(sb->activeSubControls));
+
+                    QScrollbarStyleAnimation *anim  = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
+                    if (transient) {
+                        if (!anim) {
+                            anim = new QScrollbarStyleAnimation(QScrollbarStyleAnimation::Deactivating, styleObject);
+                            d->startAnimation(anim);
+                        } else if (anim->mode() == QScrollbarStyleAnimation::Deactivating) {
+                            // the scrollbar was already fading out while the
+                            // state changed -> restart the fade out animation
+                            anim->setCurrentTime(0);
+                        }
+                    } else if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
+                        d->stopAnimation(styleObject);
+                    }
+                }
+
+                QScrollbarStyleAnimation *anim = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
+                if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
+                    // once a scrollbar was active (hovered/pressed), it retains
+                    // the active look even if it's no longer active while fading out
+                    if (oldActiveControls)
+                        anim->setActive(true);
+
+                    wasActive = anim->wasActive();
+                    opacity = anim->currentValue();
+                }
+
+                shouldExpand = isTransient && (opt->activeSubControls || wasActive);
+                if (shouldExpand) {
+                    if (!anim && !oldActiveControls) {
+                        // Start expand animation only once and when entering
+                        anim = new QScrollbarStyleAnimation(QScrollbarStyleAnimation::Activating, styleObject);
+                        d->startAnimation(anim);
+                    }
+                    if (anim && anim->mode() == QScrollbarStyleAnimation::Activating) {
+                        expandScale = 1.0 + (maxExpandScale - 1.0) * anim->currentValue();
+                        expandOffset = 5.5 * (1.0 - anim->currentValue());
+                    } else {
+                        // Keep expanded state after the animation ends, and when fading out
+                        expandScale = maxExpandScale;
+                        expandOffset = 0.0;
+                    }
+                }
+            }
+
+            d->setupNSGraphicsContext(cg, NO /* flipped */);
+
+            const QCocoaWidget cw(isHorizontal ? QCocoaHorizontalScroller : QCocoaVerticalScroller, cocoaSize);
+            NSScroller *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
+
+            if (isTransient) {
+                // macOS behavior: as soon as one color channel is >= 128,
+                // the background is considered bright, scroller is dark.
+                const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
+                const bool hasDarkBg = bgColor.red() < 128 && bgColor.green() < 128 && bgColor.blue() < 128;
+                scroller.knobStyle = hasDarkBg? NSScrollerKnobStyleLight : NSScrollerKnobStyleDark;
+            } else {
+                scroller.knobStyle = NSScrollerKnobStyleDefault;
+            }
+
+            scroller.scrollerStyle = isTransient ? NSScrollerStyleOverlay : NSScrollerStyleLegacy;
+
+            if (!setupScroller(scroller, sb))
+                break;
+
+            if (isTransient) {
+                CGContextBeginTransparencyLayer(cg, NULL);
+                CGContextSetAlpha(cg, opacity);
+            }
+
+            // Draw the track when hovering. Expand by shifting the track rect.
+            if (!isTransient || opt->activeSubControls || wasActive) {
+                CGRect trackRect = scroller.bounds;
+                if (isHorizontal)
+                    trackRect.origin.y += expandOffset;
+                else
+                    trackRect.origin.x += expandOffset;
+                [scroller drawKnobSlotInRect:trackRect highlight:NO];
+            }
+
+            if (shouldExpand) {
+                // -[NSScroller drawKnob] is not useful here because any scaling applied
+                // will only be used to draw the hi-DPI artwork. And even if did scale,
+                // the stretched knob would look wrong, actually. So we need to draw the
+                // scroller manually when it's being hovered.
+                const CGFloat scrollerWidth = [NSScroller scrollerWidthForControlSize:scroller.controlSize scrollerStyle:scroller.scrollerStyle];
+                const CGFloat knobWidth = knobWidths[cocoaSize] * expandScale;
+                // Cocoa can help get the exact knob length in the current orientation
+                const CGRect scrollerKnobRect = CGRectInset([scroller rectForPart:NSScrollerKnob], 1, 1);
+                const CGFloat knobLength = isHorizontal ? scrollerKnobRect.size.width : scrollerKnobRect.size.height;
+                const CGFloat knobPos = isHorizontal ? scrollerKnobRect.origin.x : scrollerKnobRect.origin.y;
+                const CGFloat knobOffset = qRound((scrollerWidth + expandOffset - knobWidth) / 2.0);
+                const CGFloat knobRadius = knobWidth / 2.0;
+                CGRect knobRect;
+                if (isHorizontal)
+                    knobRect = CGRectMake(knobPos, knobOffset, knobLength, knobWidth);
+                else
+                    knobRect = CGRectMake(knobOffset, knobPos, knobWidth, knobLength);
+                QCFType<CGPathRef> knobPath = CGPathCreateWithRoundedRect(knobRect, knobRadius, knobRadius, nullptr);
+                CGContextAddPath(cg, knobPath);
+                CGContextSetAlpha(cg, 0.5);
+                CGContextSetFillColorWithColor(cg, NSColor.blackColor.CGColor);
+                CGContextFillPath(cg);
+            } else {
+                [scroller drawKnob];
+
+                if (!isTransient && opt->activeSubControls) {
+                    // The knob should appear darker (going from 0.76 down to 0.49).
+                    // But no blending mode can help darken enough in a single pass,
+                    // so we resort to drawing the knob twice with a small help from
+                    // blending. This brings the gray level to a close enough 0.53.
+                    CGContextSetBlendMode(cg, kCGBlendModePlusDarker);
+                    [scroller drawKnob];
+                }
+            }
+
+            if (isTransient)
+                CGContextEndTransparencyLayer(cg);
+
+            d->restoreNSGraphicsContext(cg);
+        }
+        break;
+    case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            const bool isHorizontal = slider->orientation == Qt::Horizontal;
+
+
             HIThemeTrackDrawInfo tdi;
             d->getSliderInfo(cc, slider, &tdi, widget);
             if (slider->state & State_Sunken) {
@@ -5320,38 +5465,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         tdi.trackInfo.slider.pressState = kThemeThumbPressed;
                     else if (slider->activeSubControls == SC_SliderGroove)
                         tdi.trackInfo.slider.pressState = kThemeLeftTrackPressed;
-                } else {
-                    if (slider->activeSubControls == SC_ScrollBarSubLine
-                        || slider->activeSubControls == SC_ScrollBarAddLine) {
-                        // This test looks complex but it basically boils down
-                        // to the following: The "RTL look" on the mac also
-                        // changed the directions of the controls, that's not
-                        // what people expect (an arrow is an arrow), so we
-                        // kind of fake and say the opposite button is hit.
-                        // This works great, up until 10.4 which broke the
-                        // scroll bars, so I also have actually do something
-                        // similar when I have an upside down scroll bar
-                        // because on Tiger I only "fake" the reverse stuff.
-                        bool reverseHorizontal = (slider->direction == Qt::RightToLeft
-                                                  && slider->orientation == Qt::Horizontal);
-
-                        if ((reverseHorizontal
-                             && slider->activeSubControls == SC_ScrollBarAddLine)
-                            || (!reverseHorizontal
-                                && slider->activeSubControls == SC_ScrollBarSubLine)) {
-                            tdi.trackInfo.scrollbar.pressState = kThemeRightInsideArrowPressed
-                                                                 | kThemeLeftOutsideArrowPressed;
-                        } else {
-                            tdi.trackInfo.scrollbar.pressState = kThemeLeftInsideArrowPressed
-                                                                 | kThemeRightOutsideArrowPressed;
-                        }
-                    } else if (slider->activeSubControls == SC_ScrollBarAddPage) {
-                        tdi.trackInfo.scrollbar.pressState = kThemeRightTrackPressed;
-                    } else if (slider->activeSubControls == SC_ScrollBarSubPage) {
-                        tdi.trackInfo.scrollbar.pressState = kThemeLeftTrackPressed;
-                    } else if (slider->activeSubControls == SC_ScrollBarSlider) {
-                        tdi.trackInfo.scrollbar.pressState = kThemeThumbPressed;
-                    }
                 }
             }
             CGRect macRect;
@@ -5364,317 +5477,121 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 tdi.value = slider->sliderValue;
             }
 
-            // Remove controls from the scroll bar if it is to short to draw them correctly.
-            // This is done in two stages: first the thumb indicator is removed when it is
-            // no longer possible to move it, second the up/down buttons are removed when
-            // there is not enough space for them.
-            if (cc == CC_ScrollBar) {
-                if (opt && opt->styleObject && !QMacStylePrivate::scrollBars.contains(opt->styleObject))
-                    QMacStylePrivate::scrollBars.append(QPointer<QObject>(opt->styleObject));
-                const int scrollBarLength = (slider->orientation == Qt::Horizontal)
-                    ? slider->rect.width() : slider->rect.height();
-                const QStyleHelper::WidgetSizePolicy sizePolicy = QStyleHelper::widgetSizePolicy(widget, opt);
-                if (scrollBarLength < scrollButtonsCutoffSize(thumbIndicatorCutoff, sizePolicy))
-                    tdi.attributes &= ~kThemeTrackShowThumb;
-                if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, sizePolicy))
-                    tdi.enableState = kThemeTrackNothingToScroll;
+            if (!(slider->subControls & SC_SliderHandle))
+                tdi.attributes &= ~kThemeTrackShowThumb;
+            if (!(slider->subControls & SC_SliderGroove))
+                tdi.attributes |= kThemeTrackHideTrack;
+
+            // Fix min and max positions. (See also getSliderInfo()
+            // for the slider values adjustments.)
+            // HITheme seems to have forgotten how to render
+            // a slide at those positions, leaving a gap between
+            // the knob and the ends of the track.
+            // We fix this by rendering the track first, and then
+            // the knob on top. However, in order to not clip the
+            // knob, we reduce the the drawing rect for the track.
+            CGRect bounds = tdi.bounds;
+            if (isHorizontal) {
+                tdi.bounds.size.width -= 2;
+                tdi.bounds.origin.x += 1;
+                if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward)
+                    tdi.bounds.origin.y -= 2;
+                else if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward)
+                    tdi.bounds.origin.y += 3;
             } else {
-                if (!(slider->subControls & SC_SliderHandle))
-                    tdi.attributes &= ~kThemeTrackShowThumb;
-                if (!(slider->subControls & SC_SliderGroove))
-                    tdi.attributes |= kThemeTrackHideTrack;
+                tdi.bounds.size.height -= 2;
+                tdi.bounds.origin.y += 1;
+                if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward) // pointing right
+                    tdi.bounds.origin.x -= 4;
+                else if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward) // pointing left
+                    tdi.bounds.origin.x += 2;
             }
 
-            const bool isHorizontal = slider->orientation == Qt::Horizontal;
+            // Yosemite demands its blue progress track when no tickmarks are present
+            if (!(slider->subControls & SC_SliderTickmarks)) {
+                QCocoaWidgetKind sliderKind = slider->orientation == Qt::Horizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider;
+                QCocoaWidget cw = QCocoaWidget(sliderKind, QStyleHelper::SizeLarge);
+                NSSlider *sl = (NSSlider *)d->cocoaControl(cw);
+                sl.minValue = slider->minimum;
+                sl.maxValue = slider->maximum;
+                sl.intValue = slider->sliderValue;
+                sl.enabled = slider->state & QStyle::State_Enabled;
+                d->drawNSViewInRect(cw, sl, opt->rect, p, widget != 0, ^(CGContextRef ctx, const CGRect &rect) {
+                                        const bool isSierraOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra;
+                                        if (slider->upsideDown) {
+                                            if (isHorizontal) {
+                                                CGContextTranslateCTM(ctx, rect.size.width, 0);
+                                                CGContextScaleCTM(ctx, -1, 1);
+                                            }
+                                        } else if (!isHorizontal && !isSierraOrLater) {
+                                            CGContextTranslateCTM(ctx, 0, rect.size.height);
+                                            CGContextScaleCTM(ctx, 1, -1);
+                                        }
+                                        const bool shouldFlip = isHorizontal || (slider->upsideDown && isSierraOrLater);
+                                        [sl.cell drawBarInside:NSRectFromCGRect(tdi.bounds) flipped:shouldFlip];
+                                        // No need to restore the CTM later, the context has been saved
+                                        // and will be restored at the end of drawNSViewInRect()
+                                    });
+                tdi.attributes |= kThemeTrackHideTrack;
 
-            if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient, opt, widget)) {
-                bool wasActive = false;
-                CGFloat opacity = 0.0;
-                CGFloat expandScale = 1.0;
-                CGFloat expandOffset = -1.0;
-                bool shouldExpand = false;
-                const CGFloat maxExpandScale = tdi.kind == kThemeSmallScrollBar ? 11.0 / 7.0 : 13.0 / 9.0;
+                tdi.bounds = bounds;
+            }
 
-                if (QObject *styleObject = opt->styleObject) {
-                    int oldPos = styleObject->property("_q_stylepos").toInt();
-                    int oldMin = styleObject->property("_q_stylemin").toInt();
-                    int oldMax = styleObject->property("_q_stylemax").toInt();
-                    QRect oldRect = styleObject->property("_q_stylerect").toRect();
-                    QStyle::State oldState = static_cast<QStyle::State>(styleObject->property("_q_stylestate").value<QStyle::State::Int>());
-                    uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
+            if (slider->subControls & SC_SliderTickmarks) {
 
-                    // a scrollbar is transient when the scrollbar itself and
-                    // its sibling are both inactive (ie. not pressed/hovered/moved)
-                    bool transient = !opt->activeSubControls && !(slider->state & State_On);
-
-                    if (!transient ||
-                            oldPos != slider->sliderPosition ||
-                            oldMin != slider->minimum ||
-                            oldMax != slider->maximum ||
-                            oldRect != slider->rect ||
-                            oldState != slider->state ||
-                            oldActiveControls != slider->activeSubControls) {
-
-                        // if the scrollbar is transient or its attributes, geometry or
-                        // state has changed, the opacity is reset back to 100% opaque
-                        opacity = 1.0;
-
-                        styleObject->setProperty("_q_stylepos", slider->sliderPosition);
-                        styleObject->setProperty("_q_stylemin", slider->minimum);
-                        styleObject->setProperty("_q_stylemax", slider->maximum);
-                        styleObject->setProperty("_q_stylerect", slider->rect);
-                        styleObject->setProperty("_q_stylestate", static_cast<QStyle::State::Int>(slider->state));
-                        styleObject->setProperty("_q_stylecontrols", static_cast<uint>(slider->activeSubControls));
-
-                        QScrollbarStyleAnimation *anim  = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
-                        if (transient) {
-                            if (!anim) {
-                                anim = new QScrollbarStyleAnimation(QScrollbarStyleAnimation::Deactivating, styleObject);
-                                d->startAnimation(anim);
-                            } else if (anim->mode() == QScrollbarStyleAnimation::Deactivating) {
-                                // the scrollbar was already fading out while the
-                                // state changed -> restart the fade out animation
-                                anim->setCurrentTime(0);
-                            }
-                        } else if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
-                            d->stopAnimation(styleObject);
-                        }
-                    }
-
-                    QScrollbarStyleAnimation *anim = qobject_cast<QScrollbarStyleAnimation *>(d->animation(styleObject));
-                    if (anim && anim->mode() == QScrollbarStyleAnimation::Deactivating) {
-                        // once a scrollbar was active (hovered/pressed), it retains
-                        // the active look even if it's no longer active while fading out
-                        if (oldActiveControls)
-                            anim->setActive(true);
-
-                        wasActive = anim->wasActive();
-                        opacity = anim->currentValue();
-                    }
-
-                    shouldExpand = (opt->activeSubControls || wasActive);
-                    if (shouldExpand) {
-                        if (!anim && !oldActiveControls) {
-                            // Start expand animation only once and when entering
-                            anim = new QScrollbarStyleAnimation(QScrollbarStyleAnimation::Activating, styleObject);
-                            d->startAnimation(anim);
-                        }
-                        if (anim && anim->mode() == QScrollbarStyleAnimation::Activating) {
-                            expandScale = 1.0 + (maxExpandScale - 1.0) * anim->currentValue();
-                            expandOffset = 5.5 * anim->currentValue() - 1;
-                        } else {
-                            // Keep expanded state after the animation ends, and when fading out
-                            expandScale = maxExpandScale;
-                            expandOffset = 4.5;
-                        }
-                    }
-                }
-
-                d->setupNSGraphicsContext(cg, NO);
-
-                const QCocoaWidget cw(isHorizontal ? QCocoaHorizontalScroller : QCocoaVerticalScroller,
-                                      tdi.kind == kThemeSmallScrollBar ? QStyleHelper::SizeMini : QStyleHelper::SizeLarge);
-                NSScroller *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
-                // mac os behaviour: as soon as one color channel is >= 128,
-                // the bg is considered bright, scroller is dark
-                const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
-                const bool isDarkBg = bgColor.red() < 128 && bgColor.green() < 128 &&
-                                      bgColor.blue() < 128;
-                if (isDarkBg)
-                    [scroller setKnobStyle:NSScrollerKnobStyleLight];
-                else
-                    [scroller setKnobStyle:NSScrollerKnobStyleDefault];
-
-                [scroller setBounds:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
-                [scroller setScrollerStyle:NSScrollerStyleOverlay];
-
-                CGContextBeginTransparencyLayer(cg, NULL);
-                CGContextSetAlpha(cg, opacity);
-
-                // Draw the track when hovering
-                if (opt->activeSubControls || wasActive) {
-                    NSRect rect = [scroller bounds];
-                    if (shouldExpand) {
-                        if (isHorizontal)
-                            rect.origin.y += 4.5 - expandOffset;
-                        else
-                            rect.origin.x += 4.5 - expandOffset;
-                    }
-                    [scroller drawKnobSlotInRect:rect highlight:YES];
-                }
-
-                const qreal length = slider->maximum - slider->minimum + slider->pageStep;
-                const qreal proportion = slider->pageStep / length;
-                qreal value = (slider->sliderValue - slider->minimum) / length;
-                if (isHorizontal && slider->direction == Qt::RightToLeft)
-                    value = 1.0 - value - proportion;
-
-                [scroller setKnobProportion:1.0];
-
-                const int minKnobWidth = 26;
-
-                if (isHorizontal) {
-                    const qreal plannedWidth = proportion * slider->rect.width();
-                    const qreal width = qMax<qreal>(minKnobWidth, plannedWidth);
-                    const qreal totalWidth = slider->rect.width() + plannedWidth - width;
-                    [scroller setFrame:NSMakeRect(0, 0, width, slider->rect.height())];
-                    if (shouldExpand) {
-                        CGContextScaleCTM(cg, 1, expandScale);
-                        CGContextTranslateCTM(cg, value * totalWidth, -expandOffset);
-                    } else {
-                        CGContextTranslateCTM(cg, value * totalWidth, 1);
-                    }
+                CGRect bounds;
+                // As part of fixing the min and max positions,
+                // we need to adjust the tickmarks as well
+                bounds = tdi.bounds;
+                if (slider->orientation == Qt::Horizontal) {
+                    tdi.bounds.size.width += 2;
+                    tdi.bounds.origin.x -= 1;
+                    if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward)
+                        tdi.bounds.origin.y -= 2;
                 } else {
-                    const qreal plannedHeight = proportion * slider->rect.height();
-                    const qreal height = qMax<qreal>(minKnobWidth, plannedHeight);
-                    const qreal totalHeight = slider->rect.height() + plannedHeight - height;
-                    [scroller setFrame:NSMakeRect(0, 0, slider->rect.width(), height)];
-                    if (shouldExpand) {
-                        CGContextScaleCTM(cg, expandScale, 1);
-                        CGContextTranslateCTM(cg, -expandOffset, value * totalHeight);
-                    } else {
-                        CGContextTranslateCTM(cg, 1, value * totalHeight);
-                    }
-                }
-                if (length > 0.0) {
-                    [scroller layout];
-                    [scroller drawKnob];
+                    tdi.bounds.size.height += 3;
+                    tdi.bounds.origin.y -= 3;
+                    tdi.bounds.origin.y += 1;
+                    if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward) // pointing left
+                        tdi.bounds.origin.x -= 2;
                 }
 
-                CGContextEndTransparencyLayer(cg);
+                int interval = slider->tickInterval;
+                if (interval == 0) {
+                    interval = slider->pageStep;
+                    if (interval == 0)
+                        interval = slider->singleStep;
+                    if (interval == 0)
+                        interval = 1;
+                }
+                int numMarks = 1 + ((slider->maximum - slider->minimum) / interval);
 
-                d->restoreNSGraphicsContext(cg);
-            } else {
-                d->stopAnimation(opt->styleObject);
-
-                if (cc == CC_Slider) {
-                    // Fix min and max positions. (See also getSliderInfo()
-                    // for the slider values adjustments.)
-                    // HITheme seems to have forgotten how to render
-                    // a slide at those positions, leaving a gap between
-                    // the knob and the ends of the track.
-                    // We fix this by rendering the track first, and then
-                    // the knob on top. However, in order to not clip the
-                    // knob, we reduce the the drawing rect for the track.
-                    CGRect bounds = tdi.bounds;
-                    if (isHorizontal) {
-                        tdi.bounds.size.width -= 2;
-                        tdi.bounds.origin.x += 1;
-                        if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward)
-                            tdi.bounds.origin.y -= 2;
-                        else if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward)
-                            tdi.bounds.origin.y += 3;
-                    } else {
-                        tdi.bounds.size.height -= 2;
-                        tdi.bounds.origin.y += 1;
-                        if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward) // pointing right
-                            tdi.bounds.origin.x -= 4;
-                        else if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward) // pointing left
-                            tdi.bounds.origin.x += 2;
-                    }
-
-                    // Yosemite demands its blue progress track when no tickmarks are present
-                    if (!(slider->subControls & SC_SliderTickmarks)) {
-                        QCocoaWidgetKind sliderKind = slider->orientation == Qt::Horizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider;
-                        QCocoaWidget cw = QCocoaWidget(sliderKind, QStyleHelper::SizeLarge);
-                        NSSlider *sl = (NSSlider *)d->cocoaControl(cw);
-                        sl.minValue = slider->minimum;
-                        sl.maxValue = slider->maximum;
-                        sl.intValue = slider->sliderValue;
-                        sl.enabled = slider->state & QStyle::State_Enabled;
-                        d->drawNSViewInRect(cw, sl, opt->rect, p, widget != 0, ^(CGContextRef ctx, const CGRect &rect) {
-                                                const bool isSierraOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra;
-                                                if (slider->upsideDown) {
-                                                    if (isHorizontal) {
-                                                        CGContextTranslateCTM(ctx, rect.size.width, 0);
-                                                        CGContextScaleCTM(ctx, -1, 1);
-                                                    }
-                                                } else if (!isHorizontal && !isSierraOrLater) {
-                                                    CGContextTranslateCTM(ctx, 0, rect.size.height);
-                                                    CGContextScaleCTM(ctx, 1, -1);
-                                                }
-                                                const bool shouldFlip = isHorizontal || (slider->upsideDown && isSierraOrLater);
-                                                [sl.cell drawBarInside:NSRectFromCGRect(tdi.bounds) flipped:shouldFlip];
-                                                // No need to restore the CTM later, the context has been saved
-                                                // and will be restored at the end of drawNSViewInRect()
-                                            });
-                        tdi.attributes |= kThemeTrackHideTrack;
-                    } else {
-                        tdi.attributes &= ~(kThemeTrackShowThumb | kThemeTrackHasFocus);
-                        HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,
-                                         kHIThemeOrientationNormal);
-                        tdi.attributes |= kThemeTrackHideTrack | kThemeTrackShowThumb;
-                    }
-
-                    tdi.bounds = bounds;
+                if (tdi.trackInfo.slider.thumbDir == kThemeThumbPlain) {
+                    // They asked for both, so we'll give it to them.
+                    tdi.trackInfo.slider.thumbDir = kThemeThumbDownward;
+                    HIThemeDrawTrackTickMarks(&tdi, numMarks,
+                                              cg,
+                                              kHIThemeOrientationNormal);
+                    tdi.trackInfo.slider.thumbDir = kThemeThumbUpward;
+                    // 10.10 and above need a slight shift
+                    if (slider->orientation == Qt::Vertical)
+                        tdi.bounds.origin.x -= 2;
+                    HIThemeDrawTrackTickMarks(&tdi, numMarks,
+                                              cg,
+                                              kHIThemeOrientationNormal);
+                    // Reset to plain thumb to be drawn further down
+                    tdi.trackInfo.slider.thumbDir = kThemeThumbPlain;
+                } else {
+                    HIThemeDrawTrackTickMarks(&tdi, numMarks,
+                                              cg,
+                                              kHIThemeOrientationNormal);
                 }
 
-                if (cc == CC_Slider && slider->subControls & SC_SliderTickmarks) {
-
-                    CGRect bounds;
-                    // As part of fixing the min and max positions,
-                    // we need to adjust the tickmarks as well
-                    bounds = tdi.bounds;
-                    if (slider->orientation == Qt::Horizontal) {
-                        tdi.bounds.size.width += 2;
-                        tdi.bounds.origin.x -= 1;
-                            if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward)
-                                tdi.bounds.origin.y -= 2;
-                    } else {
-                        tdi.bounds.size.height += 3;
-                        tdi.bounds.origin.y -= 3;
-                        tdi.bounds.origin.y += 1;
-                        if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward) // pointing left
-                            tdi.bounds.origin.x -= 2;
-                    }
-
-                    int interval = slider->tickInterval;
-                    if (interval == 0) {
-                        interval = slider->pageStep;
-                        if (interval == 0)
-                            interval = slider->singleStep;
-                        if (interval == 0)
-                            interval = 1;
-                    }
-                    int numMarks = 1 + ((slider->maximum - slider->minimum) / interval);
-
-                    if (tdi.trackInfo.slider.thumbDir == kThemeThumbPlain) {
-                        // They asked for both, so we'll give it to them.
-                        tdi.trackInfo.slider.thumbDir = kThemeThumbDownward;
-                        HIThemeDrawTrackTickMarks(&tdi, numMarks,
-                                                  cg,
-                                                  kHIThemeOrientationNormal);
-                        tdi.trackInfo.slider.thumbDir = kThemeThumbUpward;
-                        // 10.10 and above need a slight shift
-                        if (slider->orientation == Qt::Vertical)
-                            tdi.bounds.origin.x -= 2;
-                        HIThemeDrawTrackTickMarks(&tdi, numMarks,
-                                                  cg,
-                                                   kHIThemeOrientationNormal);
-                        // Reset to plain thumb to be drawn further down
-                        tdi.trackInfo.slider.thumbDir = kThemeThumbPlain;
-                    } else {
-                        HIThemeDrawTrackTickMarks(&tdi, numMarks,
-                                                  cg,
-                                                  kHIThemeOrientationNormal);
-                    }
-
-                    tdi.bounds = bounds;
-                }
-
-                if (cc == CC_Slider) {
-                    // Still as part of fixing the min and max positions,
-                    // we also adjust the knob position. We can do this
-                    // because it's rendered separately from the track.
-                    if (slider->orientation == Qt::Vertical) {
-                        if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward) // pointing right
-                            tdi.bounds.origin.x -= 2;
-                    }
-                }
-
-                HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,
-                                 kHIThemeOrientationNormal);
+                tdi.bounds = bounds;
             }
+
+            HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,
+                             kHIThemeOrientationNormal);
         }
         break;
 #ifndef QT_NO_SPINBOX
@@ -6064,50 +5981,39 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
         break;
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            HIScrollBarTrackInfo sbi;
-            sbi.version = qt_mac_hitheme_version;
-            if (!(sb->state & State_Active))
-                sbi.enableState = kThemeTrackInactive;
-            else if (sb->state & State_Enabled)
-                sbi.enableState = kThemeTrackActive;
-            else
-                sbi.enableState = kThemeTrackDisabled;
+            if (!sb->rect.contains(pt)) {
+                sc = SC_None;
+                break;
+            }
 
-            // The arrow buttons are not drawn if the scroll bar is to short,
-            // exclude them from the hit test.
-            const int scrollBarLength = (sb->orientation == Qt::Horizontal)
-                ? sb->rect.width() : sb->rect.height();
-            if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, QStyleHelper::widgetSizePolicy(widget, opt)))
-                sbi.enableState = kThemeTrackNothingToScroll;
+            const auto controlSize = d->effectiveAquaSizeConstrain(opt, widget);
+            const bool isHorizontal = sb->orientation == Qt::Horizontal;
+            const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalScroller : QCocoaVerticalScroller, controlSize);
+            auto *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
+            if (!setupScroller(scroller, sb)) {
+                sc = SC_None;
+                break;
+            }
 
-            sbi.viewsize = sb->pageStep;
-            CGPoint pos = CGPointMake(pt.x(), pt.y());
-
-            CGRect macSBRect = sb->rect.toCGRect();
-            ControlPartCode part;
-            bool reverseHorizontal = (sb->direction == Qt::RightToLeft
-                                      && sb->orientation == Qt::Horizontal);
-            if (HIThemeHitTestScrollBarArrows(&macSBRect, &sbi, sb->orientation == Qt::Horizontal,
-                        &pos, 0, &part)) {
-                if (part == kControlUpButtonPart)
-                    sc = reverseHorizontal ? SC_ScrollBarAddLine : SC_ScrollBarSubLine;
-                else if (part == kControlDownButtonPart)
-                    sc = reverseHorizontal ? SC_ScrollBarSubLine : SC_ScrollBarAddLine;
+            // Since -[NSScroller testPart:] doesn't want to cooperate, we do it the
+            // straightforward way. In any case, macOS doesn't return line-sized changes
+            // with NSScroller since 10.7, according to the aforementioned method's doc.
+            const auto knobRect = QRectF::fromCGRect([scroller rectForPart:NSScrollerKnob]);
+            if (isHorizontal) {
+                const bool isReverse = sb->direction == Qt::RightToLeft;
+                if (pt.x() < knobRect.left())
+                    sc = isReverse ? SC_ScrollBarAddPage : SC_ScrollBarSubPage;
+                else if (pt.x() > knobRect.right())
+                    sc = isReverse ? SC_ScrollBarSubPage : SC_ScrollBarAddPage;
+                else
+                    sc = SC_ScrollBarSlider;
             } else {
-                HIThemeTrackDrawInfo tdi;
-                d->getSliderInfo(cc, sb, &tdi, widget);
-                if(tdi.enableState == kThemeTrackInactive)
-                    tdi.enableState = kThemeTrackActive;
-                if (HIThemeHitTestTrack(&tdi, &pos, &part)) {
-                    if (part == kControlPageUpPart)
-                        sc = reverseHorizontal ? SC_ScrollBarAddPage
-                                               : SC_ScrollBarSubPage;
-                    else if (part == kControlPageDownPart)
-                        sc = reverseHorizontal ? SC_ScrollBarSubPage
-                                               : SC_ScrollBarAddPage;
-                    else
-                        sc = SC_ScrollBarSlider;
-                }
+                if (pt.y() < knobRect.top())
+                    sc = SC_ScrollBarSubPage;
+                else if (pt.y() > knobRect.bottom())
+                    sc = SC_ScrollBarAddPage;
+                else
+                    sc = SC_ScrollBarSlider;
             }
         }
         break;
@@ -6168,40 +6074,47 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
     Q_D(const QMacStyle);
     QRect ret;
     switch (cc) {
-    case CC_Slider:
     case CC_ScrollBar:
+        if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            const bool isHorizontal = sb->orientation == Qt::Horizontal;
+            const bool isReverseHorizontal = isHorizontal && (sb->direction == Qt::RightToLeft);
+
+            NSScrollerPart part = NSScrollerNoPart;
+            if (sc == SC_ScrollBarSlider) {
+                part = NSScrollerKnob;
+            } else if (sc == SC_ScrollBarGroove) {
+                part = NSScrollerKnobSlot;
+            } else if (sc == SC_ScrollBarSubPage || sc == SC_ScrollBarAddPage) {
+                if ((!isReverseHorizontal && sc == SC_ScrollBarSubPage)
+                        || (isReverseHorizontal && sc == SC_ScrollBarAddPage))
+                    part = NSScrollerDecrementPage;
+                else
+                    part = NSScrollerIncrementPage;
+            }
+            // And nothing else since 10.7
+
+            if (part != NSScrollerNoPart) {
+                const auto controlSize = d->effectiveAquaSizeConstrain(opt, widget);
+                const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalScroller : QCocoaVerticalScroller, controlSize);
+                auto *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
+                if (setupScroller(scroller, sb))
+                    ret = QRectF::fromCGRect([scroller rectForPart:part]).toRect();
+            }
+        }
+        break;
+    case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             HIThemeTrackDrawInfo tdi;
             d->getSliderInfo(cc, slider, &tdi, widget);
             CGRect macRect;
             QCFType<HIShapeRef> shape;
-            bool scrollBar = cc == CC_ScrollBar;
-            if ((scrollBar && sc == SC_ScrollBarSlider)
-                || (!scrollBar && sc == SC_SliderHandle)) {
+            if (sc == SC_SliderHandle) {
                 HIThemeGetTrackThumbShape(&tdi, &shape);
                 HIShapeGetBounds(shape, &macRect);
-            } else if (!scrollBar && sc == SC_SliderGroove) {
+            } else if (sc == SC_SliderGroove) {
                 HIThemeGetTrackBounds(&tdi, &macRect);
-            } else if (sc == SC_ScrollBarGroove) { // Only scroll bar parts available...
-                HIThemeGetTrackDragRect(&tdi, &macRect);
-            } else {
-                ControlPartCode cpc;
-                if (sc == SC_ScrollBarSubPage || sc == SC_ScrollBarAddPage) {
-                    cpc = sc == SC_ScrollBarSubPage ? kControlPageDownPart
-                                                            : kControlPageUpPart;
-                } else {
-                    cpc = sc == SC_ScrollBarSubLine ? kControlUpButtonPart
-                                                            : kControlDownButtonPart;
-                    if (slider->direction == Qt::RightToLeft
-                        && slider->orientation == Qt::Horizontal) {
-                        if (cpc == kControlDownButtonPart)
-                            cpc = kControlUpButtonPart;
-                        else if (cpc == kControlUpButtonPart)
-                            cpc = kControlDownButtonPart;
-                    }
-                }
-                HIThemeGetTrackPartBounds(&tdi, cpc, &macRect);
             }
+            // FIXME No SC_SliderTickmarks?
             ret = QRectF::fromCGRect(macRect).toRect();
 
             // Tweak: the dark line between the sub/add line buttons belong to only one of the buttons
@@ -6745,7 +6658,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_ScrollBar :
         // Make sure that the scroll bar is large enough to display the thumb indicator.
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            const int minimumSize = scrollButtonsCutoffSize(thumbIndicatorCutoff, QStyleHelper::widgetSizePolicy(widget, opt));
+            const int minimumSize = 24; // Smallest knob size, but Cocoa doesn't seem to care
             if (slider->orientation == Qt::Horizontal)
                 sz = sz.expandedTo(QSize(minimumSize, sz.height()));
             else
