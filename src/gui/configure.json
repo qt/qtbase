@@ -51,6 +51,12 @@
     },
 
     "libraries": {
+        "atspi": {
+            "label": "atspi",
+            "sources": [
+                { "type": "pkgConfig", "args": "atspi-2" }
+            ]
+        },
         "bcm_host": {
             "export": "",
             "sources": [
@@ -428,7 +434,7 @@
     "features": {
         "accessibility-atspi-bridge": {
             "label": "ATSPI Bridge",
-            "condition": "features.accessibility && features.xcb && features.dbus",
+            "condition": "features.accessibility && features.xcb && features.dbus && config.atspi",
             "output": [ "privateFeature", "feature" ]
         },
         "angle": {
