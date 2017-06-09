@@ -832,7 +832,12 @@ class StaticDayOfWeekAssociativeArray {
     static Q_DECL_CONSTEXPR int day2idx(Qt::DayOfWeek day) Q_DECL_NOTHROW { return int(day) - 1; } // alt: day % 7
 public:
     Q_DECL_CONSTEXPR StaticDayOfWeekAssociativeArray() Q_DECL_NOEXCEPT_EXPR(noexcept(T()))
-        : contained(), data() {}
+#ifdef Q_COMPILER_CONSTEXPR
+        : contained{}, data{}   // arrays require uniform initialization
+#else
+        : contained(), data()
+#endif
+    {}
 
     Q_DECL_CONSTEXPR bool contains(Qt::DayOfWeek day) const Q_DECL_NOTHROW { return contained[day2idx(day)]; }
     Q_DECL_CONSTEXPR const T &value(Qt::DayOfWeek day) const Q_DECL_NOTHROW { return data[day2idx(day)]; }
