@@ -31,10 +31,10 @@ if(gcc|intel_icl|msvc):!rim_qcc:!uikit:!no_moc_predefs:if(!macos|count(QMAKE_APP
     moc_predefs.name = "Generate moc_predefs.h"
     moc_predefs.CONFIG = no_link
     gcc:            moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -dM -E -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
-    else:intel_icl: moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -QdM -P -Za -Fi${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+    else:intel_icl: moc_predefs.commands = $$QMAKE_CXX $$QMAKE_CXXFLAGS -QdM -P -Fi${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
     else:msvc {
         moc_predefs.commands += $$QMAKE_CXX -Bx$$shell_quote($$shell_path($$QMAKE_QMAKE)) $$QMAKE_CXXFLAGS \
-                                    -E -Za ${QMAKE_FILE_IN} 2>NUL >${QMAKE_FILE_OUT}
+                                    -E ${QMAKE_FILE_IN} 2>NUL >${QMAKE_FILE_OUT}
     } else:         error("Oops, I messed up")
     moc_predefs.output = $$MOC_DIR/moc_predefs.h
     moc_predefs.input = MOC_PREDEF_FILE
