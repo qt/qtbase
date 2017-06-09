@@ -817,22 +817,45 @@ static bool testForColors(const QImage& image, const QColor& color, bool ensureP
     return false;
 }
 
-static const QList<QWidget*> sample_widgets() // returning const to avoid detaching when passing to range-for
+class TestDialog : public QDialog {
+public:
+    explicit TestDialog(const QString &styleSheet);
+
+    QWidgetList widgets() const { return m_widgets; }
+    QLineEdit *focusDummy() const { return m_focusDummy; }
+
+private:
+    void addWidget(QWidget *w)
+    {
+        w->setStyleSheet(m_styleSheet);
+        m_layout->addWidget(w);
+        m_widgets.append(w);
+    }
+
+    const QString m_styleSheet;
+    QVBoxLayout* m_layout;
+    QLineEdit *m_focusDummy;
+    QWidgetList m_widgets;
+};
+
+TestDialog::TestDialog(const QString &styleSheet) :
+    m_styleSheet(styleSheet),
+    m_layout(new QVBoxLayout(this)),
+    m_focusDummy(new QLineEdit)
 {
-    QList<QWidget *> widgets;
-    widgets << new QPushButton("TESTING TESTING");
-    widgets << new QLineEdit("TESTING TESTING");
-    widgets << new QLabel("TESTING TESTING");
+    m_layout->addWidget(m_focusDummy); // Avoids initial focus.
+    addWidget(new QPushButton("TESTING TESTING"));
+    addWidget(new QLineEdit("TESTING TESTING"));
+    addWidget(new QLabel("TESTING TESTING"));
     QSpinBox *spinbox = new QSpinBox;
     spinbox->setMaximum(1000000000);
     spinbox->setValue(123456789);
-    widgets << spinbox;
+    addWidget(spinbox);
     QComboBox *combobox = new QComboBox;
     combobox->setEditable(true);
     combobox->addItems(QStringList() << "TESTING TESTING");
-    widgets << combobox;
-    widgets << new QLabel("<b>TESTING TESTING</b>");
-    return widgets;
+    addWidget(spinbox);
+    addWidget(new QLabel("<b>TESTING TESTING</b>"));
 }
 
 void tst_QStyleSheetStyle::focusColors()
@@ -852,28 +875,21 @@ void tst_QStyleSheetStyle::focusColors()
           "That doesn't mean that the feature doesn't work in practice.");
 #endif
 
+    TestDialog frame(QStringLiteral("*:focus { border:none; background: #e8ff66; color: #ff0084 }"));
+    frame.setWindowTitle(QTest::currentTestFunction());
 
-    for (QWidget *widget : sample_widgets()) {
-        QDialog frame;
-        QLayout* layout = new QGridLayout;
+    centerOnScreen(&frame);
+    frame.show();
 
-        QLineEdit* dummy = new QLineEdit; // Avoids initial focus.
+    QApplication::setActiveWindow(&frame);
+    QVERIFY(QTest::qWaitForWindowActive(&frame));
 
-        widget->setStyleSheet("*:focus { border:none; background: #e8ff66; color: #ff0084 }");
-
-        layout->addWidget(dummy);
-        layout->addWidget(widget);
-        frame.setLayout(layout);
-
-        centerOnScreen(&frame);
-        frame.show();
-        QApplication::setActiveWindow(&frame);
-        QVERIFY(QTest::qWaitForWindowActive(&frame));
+    for (QWidget *widget : frame.widgets()) {
         widget->setFocus();
         QApplication::processEvents();
 
-        QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
-        frame.render(&image);
+        QImage image(widget->width(), widget->height(), QImage::Format_ARGB32);
+        widget->render(&image);
         if (image.depth() < 24)
             QSKIP("Test doesn't support color depth < 24");
 
@@ -896,32 +912,35 @@ void tst_QStyleSheetStyle::hoverColors()
 #ifdef Q_OS_OSX
     QSKIP("This test is fragile on Mac, most likely due to QTBUG-33959.");
 #endif
+    TestDialog frame(QStringLiteral("*:hover { border:none; background: #e8ff66; color: #ff0084 }"));
+    frame.setWindowTitle(QTest::currentTestFunction());
 
-    for (QWidget *widget : sample_widgets()) {
-        //without Qt::X11BypassWindowManagerHint the window manager may move the window after we moved the cursor
-        QDialog frame(0, Qt::X11BypassWindowManagerHint);
-        QLayout* layout = new QGridLayout;
+    centerOnScreen(&frame);
+    // Move the mouse cursor out of the way to suppress spontaneous QEvent::Enter
+    // events interfering with QApplicationPrivate::dispatchEnterLeave().
+    // Mouse events can then be sent directly to the QWindow instead of the
+    // QWidget, triggering the enter/leave handling within the dialog window,
+    // speeding up the test.
+    QCursor::setPos(frame.geometry().topLeft() - QPoint(100, 0));
+    frame.show();
 
-        QLineEdit* dummy = new QLineEdit;
+    QApplication::setActiveWindow(&frame);
+    QVERIFY(QTest::qWaitForWindowActive(&frame));
 
-        widget->setStyleSheet("*:hover { border:none; background: #e8ff66; color: #ff0084 }");
+    QWindow *frameWindow = frame.windowHandle();
+    QVERIFY(frameWindow);
 
-        layout->addWidget(dummy);
-        layout->addWidget(widget);
-        frame.setLayout(layout);
+    const QPoint dummyPos = frame.focusDummy()->geometry().center();
+    QTest::mouseMove(frameWindow, dummyPos);
 
-        centerOnScreen(&frame);
-        frame.show();
-
-        QApplication::setActiveWindow(&frame);
-        QVERIFY(QTest::qWaitForWindowActive(&frame));
+    for (QWidget *widget : frame.widgets()) {
         //move the mouse inside the widget, it should be colored
-        QTest::mouseMove ( widget, QPoint(6,6));
+        const QRect widgetGeometry = widget->geometry();
+        QTest::mouseMove(frameWindow, widgetGeometry.center());
+        QTRY_VERIFY2(widget->testAttribute(Qt::WA_UnderMouse), widget->metaObject()->className());
 
-        QTRY_VERIFY(widget->testAttribute(Qt::WA_UnderMouse));
-
-        QImage image(frame.width(), frame.height(), QImage::Format_ARGB32);
-        frame.render(&image);
+        QImage image(widgetGeometry.size(), QImage::Format_ARGB32);
+        widget->render(&image);
 
         QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
                   (QString::fromLatin1(widget->metaObject()->className())
@@ -931,10 +950,10 @@ void tst_QStyleSheetStyle::hoverColors()
                   + " did not contain text color #ff0084").toLocal8Bit().constData());
 
         //move the mouse outside the widget, it should NOT be colored
-        QTest::mouseMove ( dummy, QPoint(5,5));
-        QTest::qWait(60);
+        QTest::mouseMove(frameWindow, dummyPos);
+        QTRY_VERIFY2(frame.focusDummy()->testAttribute(Qt::WA_UnderMouse), "FocusDummy");
 
-        frame.render(&image);
+        widget->render(&image);
 
         QVERIFY2(!testForColors(image, QColor(0xe8, 0xff, 0x66)),
                   (QString::fromLatin1(widget->metaObject()->className())
@@ -944,10 +963,10 @@ void tst_QStyleSheetStyle::hoverColors()
                   + " did contain text color #ff0084").toLocal8Bit().constData());
 
         //move the mouse again inside the widget, it should be colored
-        QTest::mouseMove (widget, QPoint(5,5));
-        QTRY_VERIFY(widget->testAttribute(Qt::WA_UnderMouse));
+        QTest::mouseMove (frameWindow, widgetGeometry.center());
+        QTRY_VERIFY2(widget->testAttribute(Qt::WA_UnderMouse), widget->metaObject()->className());
 
-        frame.render(&image);
+        widget->render(&image);
 
         QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
                  (QString::fromLatin1(widget->metaObject()->className())
