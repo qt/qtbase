@@ -118,7 +118,7 @@ public:
 #ifndef QT_NO_TOOLTIP
         QString toolTip;
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
         QString whatsThis;
 #endif
         QIcon icon;

@@ -49,7 +49,9 @@
 #include "qstylepainter.h"
 #include "qtabwidget.h"
 #include "qtooltip.h"
+#if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
+#endif
 #include "private/qtextengine_p.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -1220,7 +1222,7 @@ QString QTabBar::tabToolTip(int index) const
 }
 #endif // QT_NO_TOOLTIP
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 /*!
     \since 4.1
 
@@ -1248,7 +1250,7 @@ QString QTabBar::tabWhatsThis(int index) const
     return QString();
 }
 
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
 
 /*!
     Sets the data of the tab at position \a index to \a data.
@@ -1628,7 +1630,7 @@ bool QTabBar::event(QEvent *event)
             }
         }
 #endif // QT_NO_TOOLTIP
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     } else if (event->type() == QEvent::QueryWhatsThis) {
         const QTabBarPrivate::Tab *tab = d->at(d->indexAtPos(static_cast<QHelpEvent*>(event)->pos()));
         if (!tab || tab->whatsThis.isEmpty())
@@ -1642,7 +1644,7 @@ bool QTabBar::event(QEvent *event)
                 return true;
             }
         }
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
 #ifndef QT_NO_SHORTCUT
     } else if (event->type() == QEvent::Shortcut) {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(event);

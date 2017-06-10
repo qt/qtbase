@@ -46,7 +46,9 @@
 #include "qapplication.h"
 #include "qlayout.h"
 #include "qsizegrip.h"
+#if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
+#endif
 #include "qmenu.h"
 #include "qcursor.h"
 #include "qmessagebox.h"
@@ -607,7 +609,7 @@ bool QDialog::eventFilter(QObject *o, QEvent *e)
 /*! \reimp */
 void QDialog::contextMenuEvent(QContextMenuEvent *e)
 {
-#if defined(QT_NO_WHATSTHIS) || defined(QT_NO_MENU)
+#if !QT_CONFIG(whatsthis) || defined(QT_NO_MENU)
     Q_UNUSED(e);
 #else
     QWidget *w = childAt(e->pos());
@@ -672,7 +674,7 @@ void QDialog::keyPressEvent(QKeyEvent *e)
 /*! \reimp */
 void QDialog::closeEvent(QCloseEvent *e)
 {
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     if (isModal() && QWhatsThis::inWhatsThisMode())
         QWhatsThis::leaveWhatsThisMode();
 #endif

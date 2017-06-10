@@ -432,13 +432,6 @@
             "section": "Widgets",
             "output": [ "publicFeature", "feature" ]
         },
-        "whatsthis": {
-            "label": "QWhatsThis",
-            "purpose": "Supports displaying \"What's this\" help.",
-            "section": "Widgets",
-            "condition": "features.toolbutton",
-            "output": [ "publicFeature", "feature" ]
-        },
         "sizegrip": {
             "label": "QSizeGrip",
             "purpose": "Provides corner-grips for resizing top-level windows.",

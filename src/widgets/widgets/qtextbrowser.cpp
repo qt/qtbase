@@ -52,7 +52,9 @@
 #include <qtextcodec.h>
 #include <qpainter.h>
 #include <qdir.h>
+#if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
+#endif
 #include <qtextobject.h>
 #include <qdesktopservices.h>
 
@@ -307,7 +309,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
 #ifndef QT_NO_CURSOR
                 QApplication::restoreOverrideCursor();
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
                 QWhatsThis::showText(QCursor::pos(), txt, q);
 #endif
                 return;

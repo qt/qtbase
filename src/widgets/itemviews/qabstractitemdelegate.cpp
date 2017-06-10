@@ -43,7 +43,9 @@
 #include <qabstractitemmodel.h>
 #include <qabstractitemview.h>
 #include <qfontmetrics.h>
+#if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
+#endif
 #include <qtooltip.h>
 #include <qevent.h>
 #include <qstring.h>
@@ -393,7 +395,7 @@ bool QAbstractItemDelegate::helpEvent(QHelpEvent *event,
         }
         break;}
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     case QEvent::QueryWhatsThis: {
         if (index.data(Qt::WhatsThisRole).isValid())
             return true;

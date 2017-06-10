@@ -51,7 +51,9 @@
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qtooltip.h>
+#if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
+#endif
 #include <qtreeview.h>
 #include <private/qtabbar_p.h>
 #include <QAbstractScrollArea>

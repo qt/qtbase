@@ -922,7 +922,7 @@ void QToolButton::setDefaultAction(QAction *action)
 #ifndef QT_NO_STATUSTIP
     setStatusTip(action->statusTip());
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     setWhatsThis(action->whatsThis());
 #endif
 #ifndef QT_NO_MENU

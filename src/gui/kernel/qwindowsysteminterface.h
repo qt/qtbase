@@ -236,7 +236,7 @@ public:
                                        const QPoint &pos, const QPoint &globalPos,
                                        Qt::KeyboardModifiers modifiers);
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     static void handleEnterWhatsThisEvent();
 #endif
 

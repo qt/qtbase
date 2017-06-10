@@ -73,7 +73,7 @@
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/qtouchdevice.h>
 #include <qpa/qplatformtheme.h>
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 #include <QtWidgets/QWhatsThis>
 #endif
 
@@ -1999,7 +1999,7 @@ bool QApplication::event(QEvent *e)
         } else if (te->timerId() == d->toolTipFallAsleep.timerId()) {
             d->toolTipFallAsleep.stop();
         }
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     } else if (e->type() == QEvent::EnterWhatsThisMode) {
         QWhatsThis::enterWhatsThisMode();
         return true;
@@ -3381,7 +3381,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
 #endif // QT_CONFIG(tabletevent)
 
-#if !defined(QT_NO_TOOLTIP) || !defined(QT_NO_WHATSTHIS)
+#if !defined(QT_NO_TOOLTIP) || QT_CONFIG(whatsthis)
     case QEvent::ToolTip:
     case QEvent::WhatsThis:
     case QEvent::QueryWhatsThis:
@@ -3406,7 +3406,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
-#if !defined(QT_NO_STATUSTIP) || !defined(QT_NO_WHATSTHIS)
+#if !defined(QT_NO_STATUSTIP) || QT_CONFIG(whatsthis)
     case QEvent::StatusTip:
     case QEvent::WhatsThisClicked:
         {

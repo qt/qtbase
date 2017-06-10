@@ -95,7 +95,7 @@ public:
     inline void setStatusTip(const QString &statusTip);
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     inline QString whatsThis() const {
         return qvariant_cast<QString>(data(Qt::WhatsThisRole));
     }
@@ -272,7 +272,7 @@ inline void QStandardItem::setStatusTip(const QString &astatusTip)
 { setData(astatusTip, Qt::StatusTipRole); }
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 inline void QStandardItem::setWhatsThis(const QString &awhatsThis)
 { setData(awhatsThis, Qt::WhatsThisRole); }
 #endif

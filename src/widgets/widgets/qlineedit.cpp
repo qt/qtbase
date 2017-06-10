@@ -60,7 +60,6 @@
 #include "qvalidator.h"
 #include "qvariant.h"
 #include "qvector.h"
-#include "qwhatsthis.h"
 #include "qdebug.h"
 #include "qtextedit.h"
 #include <private/qtextedit_p.h>

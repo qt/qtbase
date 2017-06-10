@@ -48,7 +48,6 @@
 #include <qdrag.h>
 #include <qevent.h>
 #include <qscrollbar.h>
-#include <qwhatsthis.h>
 #include <qtooltip.h>
 #include <qdatetime.h>
 #include <qlineedit.h>

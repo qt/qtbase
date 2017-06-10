@@ -243,10 +243,10 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::ShortcutOverride:
         return new QKeyEvent(*static_cast<QKeyEvent*>(e));
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     case QEvent::WhatsThisClicked:
         return new QWhatsThisClickedEvent(*static_cast<QWhatsThisClickedEvent*>(e));
-#endif //QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
 
 #ifndef QT_NO_TOOLBAR
     case QEvent::ToolBarChange:

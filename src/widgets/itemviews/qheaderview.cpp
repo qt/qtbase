@@ -47,7 +47,9 @@
 #include <qpainter.h>
 #include <qscrollbar.h>
 #include <qtooltip.h>
+#if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
+#endif
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qvector.h>
@@ -2641,7 +2643,7 @@ bool QHeaderView::viewportEvent(QEvent *e)
         }
         break; }
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     case QEvent::QueryWhatsThis: {
         QHelpEvent *he = static_cast<QHelpEvent*>(e);
         int logical = logicalIndexAt(he->pos());
@@ -2661,7 +2663,7 @@ bool QHeaderView::viewportEvent(QEvent *e)
              }
         }
         break; }
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
 #ifndef QT_NO_STATUSTIP
     case QEvent::StatusTip: {
         QHelpEvent *he = static_cast<QHelpEvent*>(e);
