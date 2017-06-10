@@ -2742,6 +2742,37 @@ void tst_QLocale::formattedDataSize_data()
 #undef ROWQ
 #undef ROWB
     }
+
+    // Languages which don't use a Latin alphabet
+
+    const QLocale::DataSizeFormats iecFormat = QLocale::DataSizeIecFormat;
+    const QLocale::DataSizeFormats traditionalFormat = QLocale::DataSizeTraditionalFormat;
+    const QLocale::DataSizeFormats siFormat = QLocale::DataSizeSIFormat;
+    const QLocale::Language lang = QLocale::Russian;
+
+    QTest::newRow("Russian-IEC-0") << lang << 2 << iecFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-IEC-10") << lang << 2 << iecFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    // CLDR doesn't provide IEC prefixes (yet?) so they aren't getting translated
+    QTest::newRow("Russian-IEC-12Ki") << lang << 2 << iecFormat << 12345 << QString("12,06 KiB");
+    QTest::newRow("Russian-IEC-16Ki") << lang << 2 << iecFormat << 16384 << QString("16,00 KiB");
+    QTest::newRow("Russian-IEC-1235k") << lang << 2 << iecFormat << 1234567 << QString("1,18 MiB");
+    QTest::newRow("Russian-IEC-1374k") << lang << 2 << iecFormat << 1374744 << QString("1,31 MiB");
+    QTest::newRow("Russian-IEC-1234M") << lang << 2 << iecFormat << 1234567890 << QString("1,15 GiB");
+
+    QTest::newRow("Russian-Trad-0") << lang << 2 << traditionalFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Trad-10") << lang << 2 << traditionalFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Trad-12Ki") << lang << 2 << traditionalFormat << 12345 << QString("12,06 \u043A\u0411");
+    QTest::newRow("Russian-Trad-16Ki") << lang << 2 << traditionalFormat << 16384 << QString("16,00 \u043A\u0411");
+    QTest::newRow("Russian-Trad-1235k") << lang << 2 << traditionalFormat << 1234567 << QString("1,18 \u041C\u0411");
+    QTest::newRow("Russian-Trad-1374k") << lang << 2 << traditionalFormat << 1374744 << QString("1,31 \u041C\u0411");
+    QTest::newRow("Russian-Trad-1234M") << lang << 2 << traditionalFormat << 1234567890 << QString("1,15 \u0413\u0411");
+
+    QTest::newRow("Russian-Decimal-0") << lang << 2 << siFormat << 0 << QString("0 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Decimal-10") << lang << 2 << siFormat << 10 << QString("10 \u0431\u0430\u0439\u0442\u044B");
+    QTest::newRow("Russian-Decimal-16Ki") << lang << 2 << siFormat << 16384 << QString("16,38 \u043A\u0411");
+    QTest::newRow("Russian-Decimal-1234k") << lang << 2 << siFormat << 1234567 << QString("1,23 \u041C\u0411");
+    QTest::newRow("Russian-Decimal-1374k") << lang << 2 << siFormat << 1374744 << QString("1,37 \u041C\u0411");
+    QTest::newRow("Russian-Decimal-1234M") << lang << 2 << siFormat << 1234567890 << QString("1,23 \u0413\u0411");
 }
 
 void tst_QLocale::formattedDataSize()
