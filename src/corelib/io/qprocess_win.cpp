@@ -390,11 +390,11 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     return args;
 }
 
-static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &environment)
+static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Map &environment)
 {
     QByteArray envlist;
     if (!environment.isEmpty()) {
-        QProcessEnvironmentPrivate::Hash copy = environment;
+        QProcessEnvironmentPrivate::Map copy = environment;
 
         // add PATH if necessary (for DLL loading)
         QProcessEnvironmentPrivate::Key pathKey(QLatin1String("PATH"));
