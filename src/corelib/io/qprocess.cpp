@@ -154,8 +154,8 @@ QT_BEGIN_NAMESPACE
 QStringList QProcessEnvironmentPrivate::toList() const
 {
     QStringList result;
-    result.reserve(hash.size());
-    for (Hash::const_iterator it = hash.cbegin(), end = hash.cend(); it != end; ++it)
+    result.reserve(vars.size());
+    for (auto it = vars.cbegin(), end = vars.cend(); it != end; ++it)
         result << nameToString(it.key()) + QLatin1Char('=') + valueToString(it.value());
     return result;
 }
@@ -181,9 +181,9 @@ QProcessEnvironment QProcessEnvironmentPrivate::fromList(const QStringList &list
 QStringList QProcessEnvironmentPrivate::keys() const
 {
     QStringList result;
-    result.reserve(hash.size());
-    Hash::ConstIterator it = hash.constBegin(),
-                       end = hash.constEnd();
+    result.reserve(vars.size());
+    auto it = vars.constBegin();
+    const auto end = vars.constEnd();
     for ( ; it != end; ++it)
         result << nameToString(it.key());
     return result;
@@ -191,14 +191,14 @@ QStringList QProcessEnvironmentPrivate::keys() const
 
 void QProcessEnvironmentPrivate::insert(const QProcessEnvironmentPrivate &other)
 {
-    Hash::ConstIterator it = other.hash.constBegin(),
-                       end = other.hash.constEnd();
+    auto it = other.vars.constBegin();
+    const auto end = other.vars.constEnd();
     for ( ; it != end; ++it)
-        hash.insert(it.key(), it.value());
+        vars.insert(it.key(), it.value());
 
 #ifdef Q_OS_UNIX
-    QHash<QString, Key>::ConstIterator nit = other.nameMap.constBegin(),
-                                      nend = other.nameMap.constEnd();
+    auto nit = other.nameMap.constBegin();
+    const auto nend = other.nameMap.constEnd();
     for ( ; nit != nend; ++nit)
         nameMap.insert(nit.key(), nit.value());
 #endif
@@ -271,7 +271,7 @@ bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
     if (d) {
         if (other.d) {
             QProcessEnvironmentPrivate::OrderedMutexLocker locker(d, other.d);
-            return d->hash == other.d->hash;
+            return d->vars == other.d->vars;
         } else {
             return isEmpty();
         }
@@ -289,7 +289,7 @@ bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
 bool QProcessEnvironment::isEmpty() const
 {
     // Needs no locking, as no hash nodes are accessed
-    return d ? d->hash.isEmpty() : true;
+    return d ? d->vars.isEmpty() : true;
 }
 
 /*!
@@ -301,7 +301,7 @@ bool QProcessEnvironment::isEmpty() const
 void QProcessEnvironment::clear()
 {
     if (d)
-        d->hash.clear();
+        d->vars.clear();
     // Unix: Don't clear d->nameMap, as the environment is likely to be
     // re-populated with the same keys again.
 }
@@ -318,7 +318,7 @@ bool QProcessEnvironment::contains(const QString &name) const
     if (!d)
         return false;
     QProcessEnvironmentPrivate::MutexLocker locker(d);
-    return d->hash.contains(d->prepareName(name));
+    return d->vars.contains(d->prepareName(name));
 }
 
 /*!
@@ -337,7 +337,7 @@ void QProcessEnvironment::insert(const QString &name, const QString &value)
 {
     // our re-impl of detach() detaches from null
     d.detach(); // detach before prepareName()
-    d->hash.insert(d->prepareName(name), d->prepareValue(value));
+    d->vars.insert(d->prepareName(name), d->prepareValue(value));
 }
 
 /*!
@@ -352,7 +352,7 @@ void QProcessEnvironment::remove(const QString &name)
 {
     if (d) {
         d.detach(); // detach before prepareName()
-        d->hash.remove(d->prepareName(name));
+        d->vars.remove(d->prepareName(name));
     }
 }
 
@@ -369,8 +369,8 @@ QString QProcessEnvironment::value(const QString &name, const QString &defaultVa
         return defaultValue;
 
     QProcessEnvironmentPrivate::MutexLocker locker(d);
-    QProcessEnvironmentPrivate::Hash::ConstIterator it = d->hash.constFind(d->prepareName(name));
-    if (it == d->hash.constEnd())
+    const auto it = d->vars.constFind(d->prepareName(name));
+    if (it == d->vars.constEnd())
         return defaultValue;
 
     return d->valueToString(it.value());

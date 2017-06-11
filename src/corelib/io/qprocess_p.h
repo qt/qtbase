@@ -197,17 +197,17 @@ public:
         // do not need a lock, as they detach objects (however, we need to
         // ensure that they really detach before using prepareName()).
         MutexLocker locker(&other);
-        hash = other.hash;
+        vars = other.vars;
         nameMap = other.nameMap;
         // We need to detach our members, so that our mutex can protect them.
         // As we are being detached, they likely would be detached a moment later anyway.
-        hash.detach();
+        vars.detach();
         nameMap.detach();
     }
 #endif
 
     typedef QHash<Key, Value> Hash;
-    Hash hash;
+    Hash vars;
 
 #ifdef Q_OS_UNIX
     typedef QHash<QString, Key> NameHash;
