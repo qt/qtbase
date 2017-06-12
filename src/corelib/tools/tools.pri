@@ -138,7 +138,7 @@ qtConfig(system-zlib) {
 }
 
 qtConfig(icu) {
-    include($$PWD/../../3rdparty/icu_dependency.pri)
+    QMAKE_USE_PRIVATE += icu
 
     SOURCES += tools/qlocale_icu.cpp \
                tools/qcollator_icu.cpp
