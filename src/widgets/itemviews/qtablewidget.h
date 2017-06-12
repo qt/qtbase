@@ -44,12 +44,10 @@
 #include <QtWidgets/qtableview.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
-//#include <QtWidgets/qitemselectionmodel.h>
+
+QT_REQUIRE_CONFIG(tablewidget);
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TABLEWIDGET
 
 class Q_WIDGETS_EXPORT QTableWidgetSelectionRange
 {
@@ -368,8 +366,6 @@ inline void QTableWidgetItem::setSelected(bool aselect)
 
 inline bool QTableWidgetItem::isSelected() const
 { return (view ? view->isItemSelected(this) : false); }
-
-#endif // QT_NO_TABLEWIDGET
 
 QT_END_NAMESPACE
 

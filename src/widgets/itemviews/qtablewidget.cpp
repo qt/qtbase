@@ -39,7 +39,6 @@
 
 #include "qtablewidget.h"
 
-#ifndef QT_NO_TABLEWIDGET
 #include <qitemdelegate.h>
 #include <qpainter.h>
 #include <private/qtablewidget_p.h>
@@ -2715,5 +2714,3 @@ QT_END_NAMESPACE
 
 #include "moc_qtablewidget.cpp"
 #include "moc_qtablewidget_p.cpp"
-
-#endif // QT_NO_TABLEWIDGET
