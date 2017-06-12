@@ -79,7 +79,8 @@ win32 {
                 kernel/qsharedmemory_win.cpp \
                 kernel/qsystemsemaphore_win.cpp
         HEADERS += \
-                kernel/qwineventnotifier.h
+                kernel/qwineventnotifier.h \
+                kernel/qwineventnotifier_p.h
 
         winrt {
             SOURCES += kernel/qeventdispatcher_winrt.cpp
