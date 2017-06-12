@@ -84,9 +84,3 @@ q.exec("execute procedure my_procedure");
 q.next();
 qDebug() << q.value(0); // outputs the first RETURN/OUT value
 //! [26]
-
-
-//! [31]
-QSqlDatabase: QMYSQL driver not loaded
-QSqlDatabase: available drivers: QMYSQL
-//! [31]
