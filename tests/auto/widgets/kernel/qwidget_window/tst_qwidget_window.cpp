@@ -99,6 +99,8 @@ private slots:
     void tst_eventfilter_on_toplevel();
 
     void QTBUG_50561_QCocoaBackingStore_paintDevice_crash();
+
+    void QTBUG_56277_resize_on_showEvent();
 };
 
 void tst_QWidget_window::initTestCase()
@@ -859,6 +861,35 @@ void tst_QWidget_window::QTBUG_50561_QCocoaBackingStore_paintDevice_crash()
     // No crash, all good.
     // Wrap up and leave
     w.close();
+}
+
+class ResizedOnShowEventWidget : public QWidget
+{
+public:
+    void showEvent(QShowEvent *) override
+    {
+        const auto *primaryScreen = QApplication::primaryScreen();
+        auto newSize = primaryScreen->availableGeometry().size() / 4;
+        if (newSize == geometry().size())
+            newSize -= QSize(10, 10);
+        resize(newSize);
+    }
+};
+
+void tst_QWidget_window::QTBUG_56277_resize_on_showEvent()
+{
+    const auto platformName = QGuiApplication::platformName().toLower();
+    if (platformName != "cocoa" && platformName != "windows")
+        QSKIP("This can only be consistently tested on desktop platforms with well-known behavior.");
+
+    ResizedOnShowEventWidget w;
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+    const auto *screen = w.windowHandle()->screen();
+    const auto geometry = w.geometry();
+    const int frameHeight = geometry.top() - w.frameGeometry().top();
+    const int topmostY = screen->availableGeometry().top() + frameHeight;
+    QVERIFY(geometry.top() > topmostY || geometry.left() > screen->availableGeometry().left());
 }
 
 QTEST_MAIN(tst_QWidget_window)

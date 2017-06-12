@@ -1759,6 +1759,7 @@ void QWindow::resize(int w, int h)
 void QWindow::resize(const QSize &newSize)
 {
     Q_D(QWindow);
+    d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(position(), newSize), this));
     } else {

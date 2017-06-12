@@ -7255,7 +7255,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     QRect r(x, y, w, h);
 
     bool isResize = olds != r.size();
-    isMove = oldp != r.topLeft(); //### why do we have isMove as a parameter?
+    if (!isMove)
+        isMove = oldp != r.topLeft();
 
 
     // We only care about stuff that changes the geometry, or may
@@ -7289,12 +7290,17 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     if (q->isVisible()) {
         if (!q->testAttribute(Qt::WA_DontShowOnScreen) && !q->testAttribute(Qt::WA_OutsideWSRange)) {
-            if (q->windowHandle()) {
+            if (QWindow *win = q->windowHandle()) {
                 if (q->isWindow()) {
-                    q->windowHandle()->setGeometry(q->geometry());
+                    if (isResize && !isMove)
+                        win->resize(w, h);
+                    else if (isMove && !isResize)
+                        win->setPosition(x, y);
+                    else
+                        win->setGeometry(q->geometry());
                 } else {
                     QPoint posInNativeParent =  q->mapTo(q->nativeParentWidget(),QPoint());
-                    q->windowHandle()->setGeometry(QRect(posInNativeParent,r.size()));
+                    win->setGeometry(QRect(posInNativeParent,r.size()));
                 }
 
                 if (needsShow)
