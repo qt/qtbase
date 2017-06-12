@@ -289,12 +289,15 @@ QAbstractEventDispatcher *QXcbIntegration::createEventDispatcher() const
 
 void QXcbIntegration::initialize()
 {
+    const QLatin1String defaultInputContext("compose");
     // Perform everything that may potentially need the event dispatcher (timers, socket
     // notifiers) here instead of the constructor.
     QString icStr = QPlatformInputContextFactory::requested();
     if (icStr.isNull())
-        icStr = QLatin1String("compose");
+        icStr = defaultInputContext;
     m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
+    if (!m_inputContext && icStr != defaultInputContext && icStr != QLatin1String("none"))
+        m_inputContext.reset(QPlatformInputContextFactory::create(defaultInputContext));
 }
 
 void QXcbIntegration::moveToScreen(QWindow *window, int screen)
