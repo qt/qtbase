@@ -223,10 +223,10 @@ static QEvent *cloneEvent(QEvent *e)
         return new QHelpEvent(*static_cast<QHelpEvent*>(e));
     case QEvent::WhatsThis:
         return new QHelpEvent(*static_cast<QHelpEvent*>(e));
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
     case QEvent::StatusTip:
         return new QStatusTipEvent(*static_cast<QStatusTipEvent*>(e));
-#endif //QT_NO_STATUSTIP
+#endif // QT_CONFIG(statustip)
 #ifndef QT_NO_ACTION
     case QEvent::ActionChanged:
     case QEvent::ActionAdded:

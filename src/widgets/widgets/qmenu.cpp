@@ -657,7 +657,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
                 }
             }
         }
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
     }  else if (previousAction) {
         previousAction->d_func()->showStatusText(topCausedWidget(), QString());
 #endif

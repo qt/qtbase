@@ -694,7 +694,7 @@ public:
     QString toolTip;
     int toolTipDuration;
 #endif
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
     QString statusTip;
 #endif
 #if QT_CONFIG(whatsthis)

@@ -224,7 +224,7 @@ inline void QTreeWidgetItem::setText(int column, const QString &atext)
 inline void QTreeWidgetItem::setIcon(int column, const QIcon &aicon)
 { setData(column, Qt::DecorationRole, aicon); }
 
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
 inline void QTreeWidgetItem::setStatusTip(int column, const QString &astatusTip)
 { setData(column, Qt::StatusTipRole, astatusTip); }
 #endif

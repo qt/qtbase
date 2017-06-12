@@ -8923,7 +8923,7 @@ bool QWidget::event(QEvent *event)
         break;
 
     case QEvent::Enter:
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
         if (d->statusTip.size()) {
             QStatusTipEvent tip(d->statusTip);
             QApplication::sendEvent(const_cast<QWidget *>(this), &tip);
@@ -8933,7 +8933,7 @@ bool QWidget::event(QEvent *event)
         break;
 
     case QEvent::Leave:
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
         if (d->statusTip.size()) {
             QString empty;
             QStatusTipEvent tip(empty);
@@ -11559,7 +11559,7 @@ int QWidget::toolTipDuration() const
 #endif // QT_NO_TOOLTIP
 
 
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
 /*!
   \property QWidget::statusTip
   \brief the widget's status tip
@@ -11579,7 +11579,7 @@ QString QWidget::statusTip() const
     Q_D(const QWidget);
     return d->statusTip;
 }
-#endif // QT_NO_STATUSTIP
+#endif // QT_CONFIG(statustip)
 
 #if QT_CONFIG(whatsthis)
 /*!

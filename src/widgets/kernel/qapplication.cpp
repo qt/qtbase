@@ -3408,7 +3408,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
-#if !defined(QT_NO_STATUSTIP) || QT_CONFIG(whatsthis)
+#if QT_CONFIG(statustip) || QT_CONFIG(whatsthis)
     case QEvent::StatusTip:
     case QEvent::WhatsThisClicked:
         {

@@ -183,7 +183,7 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QString toolTip READ toolTip WRITE setToolTip)
     Q_PROPERTY(int toolTipDuration READ toolTipDuration WRITE setToolTipDuration)
 #endif
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
     Q_PROPERTY(QString statusTip READ statusTip WRITE setStatusTip)
 #endif
 #if QT_CONFIG(whatsthis)
@@ -386,7 +386,7 @@ public:
     void setToolTipDuration(int msec);
     int toolTipDuration() const;
 #endif
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
     void setStatusTip(const QString &);
     QString statusTip() const;
 #endif
