@@ -2486,6 +2486,7 @@ void tst_QSslSocket::writeBigChunk()
     QByteArray data;
     data.resize(1024*1024*10); // 10 MB
     // init with garbage. needed so ssl cannot compress it in an efficient way.
+    // ### Qt 6: update to a random engine
     for (size_t i = 0; i < data.size() / sizeof(int); i++) {
         int r = qrand();
         data.data()[i*sizeof(int)] = r;

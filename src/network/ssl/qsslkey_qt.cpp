@@ -43,6 +43,7 @@
 
 #include <QtCore/qdatastream.h>
 #include <QtCore/qcryptographichash.h>
+#include <QtCore/qrandom.h>
 
 QT_USE_NAMESPACE
 
@@ -286,10 +287,8 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
 
     if (type == QSsl::PrivateKey && !passPhrase.isEmpty()) {
         // ### use a cryptographically secure random number generator
-        QByteArray iv;
-        iv.resize(8);
-        for (int i = 0; i < iv.size(); ++i)
-            iv[i] = (qrand() & 0xff);
+        quint64 random = QRandomGenerator::generate64();
+        QByteArray iv = QByteArray::fromRawData(reinterpret_cast<const char *>(&random), sizeof(random));
 
         Cipher cipher = DesEde3Cbc;
         const QByteArray key = deriveKey(cipher, passPhrase, iv);
