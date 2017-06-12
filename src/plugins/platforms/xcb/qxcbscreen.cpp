@@ -861,17 +861,14 @@ QByteArray QXcbScreen::getOutputProperty(xcb_atom_t atom) const
 {
     QByteArray result;
 
-    auto cookie =
-        xcb_randr_get_output_property(xcb_connection(), m_output,
-                                      atom, XCB_ATOM_ANY, 0, 100, false, false);
-    auto reply = xcb_randr_get_output_property_reply(xcb_connection(), cookie, nullptr);
+    auto reply = Q_XCB_REPLY(xcb_randr_get_output_property, xcb_connection(),
+                             m_output, atom, XCB_ATOM_ANY, 0, 100, false, false);
     if (reply && reply->type == XCB_ATOM_INTEGER && reply->format == 8) {
         quint8 *data = new quint8[reply->num_items];
-        memcpy(data, xcb_randr_get_output_property_data(reply), reply->num_items);
+        memcpy(data, xcb_randr_get_output_property_data(reply.get()), reply->num_items);
         result = QByteArray(reinterpret_cast<const char *>(data), reply->num_items);
         delete[] data;
     }
-    free(reply);
 
     return result;
 }
