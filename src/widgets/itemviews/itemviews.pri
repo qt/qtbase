@@ -17,12 +17,9 @@ HEADERS += \
         itemviews/qabstractitemdelegate_p.h \
         itemviews/qitemdelegate.h \
 	itemviews/qdirmodel.h \
-	itemviews/qtreewidget.h \
-	itemviews/qtreewidget_p.h \
 	itemviews/qwidgetitemdata_p.h \
 	itemviews/qitemeditorfactory.h \
 	itemviews/qitemeditorfactory_p.h \
-	itemviews/qtreewidgetitemiterator.h \
     itemviews/qdatawidgetmapper.h \
     itemviews/qstyleditemdelegate.h
 
@@ -36,9 +33,7 @@ SOURCES += \
 	itemviews/qabstractitemdelegate.cpp \
         itemviews/qitemdelegate.cpp \
 	itemviews/qdirmodel.cpp \
-	itemviews/qtreewidget.cpp \
 	itemviews/qitemeditorfactory.cpp \
-	itemviews/qtreewidgetitemiterator.cpp \
     itemviews/qdatawidgetmapper.cpp \
     itemviews/qstyleditemdelegate.cpp
 }
@@ -68,6 +63,17 @@ qtConfig(tablewidget) {
         itemviews/qtablewidget_p.h
 
     SOURCES += itemviews/qtablewidget.cpp
+}
+
+qtConfig(treewidget) {
+    HEADERS += \
+        itemviews/qtreewidget.h \
+        itemviews/qtreewidget_p.h \
+        itemviews/qtreewidgetitemiterator.h
+
+    SOURCES += \
+        itemviews/qtreewidget.cpp \
+        itemviews/qtreewidgetitemiterator.cpp
 }
 
 HEADERS += \

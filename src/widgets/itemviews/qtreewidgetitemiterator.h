@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qscopedpointer.h>
 
+QT_REQUIRE_CONFIG(treewidget);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TREEWIDGET
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -146,7 +145,5 @@ inline QTreeWidgetItem *QTreeWidgetItemIterator::operator*() const
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTreeWidgetItemIterator::IteratorFlags)
 
-
 QT_END_NAMESPACE
-#endif // QT_NO_TREEWIDGET
 #endif // QTREEWIDGETITEMITERATOR_H

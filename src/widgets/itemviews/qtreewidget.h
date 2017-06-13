@@ -46,10 +46,9 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 
+QT_REQUIRE_CONFIG(treewidget);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TREEWIDGET
 
 class QTreeWidget;
 class QTreeModel;
@@ -421,8 +420,6 @@ inline void QTreeWidgetItem::setDisabled(bool disabled)
 
 inline bool QTreeWidgetItem::isDisabled() const
 { return !(flags() & Qt::ItemIsEnabled); }
-
-#endif // QT_NO_TREEWIDGET
 
 QT_END_NAMESPACE
 
