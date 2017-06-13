@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
+
 class QStorageInfoPrivate;
 class Q_CORE_EXPORT QStorageInfo
 {
@@ -94,6 +96,7 @@ public:
 private:
     friend class QStorageInfoPrivate;
     friend bool operator==(const QStorageInfo &first, const QStorageInfo &second);
+    friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QStorageInfo &);
     QExplicitlySharedDataPointer<QStorageInfoPrivate> d;
 };
 
@@ -113,6 +116,10 @@ inline bool QStorageInfo::isRoot() const
 { return *this == QStorageInfo::root(); }
 
 Q_DECLARE_SHARED(QStorageInfo)
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QStorageInfo &);
+#endif
 
 QT_END_NAMESPACE
 
