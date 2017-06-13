@@ -46,7 +46,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QList>
-
+#include <QSysInfo>
 #include <QThread>
 
 class tst_QNetworkProxyFactory : public QObject {
@@ -421,6 +421,9 @@ public:
 //regression test for QTBUG-18799
 void tst_QNetworkProxyFactory::systemProxyForQueryCalledFromThread()
 {
+    if (QSysInfo::productType() == QLatin1String("windows") && QSysInfo::productVersion() == QLatin1String("7")) {
+        QSKIP("This test fails by the systemProxyForQuery() call hanging - QTQAINFRA-1200");
+    }
     QUrl url(QLatin1String("http://qt-project.org"));
     QNetworkProxyQuery query(url);
     QSPFQThread thread;
