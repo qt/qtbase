@@ -40,8 +40,6 @@
 #include "qundostack.h"
 #include "qundoview.h"
 
-#ifndef QT_NO_UNDOVIEW
-
 #include "qundogroup.h"
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qpointer.h>
@@ -473,5 +471,3 @@ QT_END_NAMESPACE
 
 #include "qundoview.moc"
 #include "moc_qundoview.cpp"
-
-#endif // QT_NO_UNDOVIEW
