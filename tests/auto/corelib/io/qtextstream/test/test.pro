@@ -18,7 +18,8 @@ TESTDATA += \
     ../task113817.txt \
     ../qtextstream.qrc \
     ../tst_qtextstream.cpp \
-    ../resources
+    ../resources \
+    ../BLACKLIST
 
 builtin_testdata {
     DEFINES += BUILTIN_TESTDATA
