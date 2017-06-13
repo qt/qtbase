@@ -3078,11 +3078,7 @@ void tst_QUrl::fromUserInputWithCwd_data()
 
     // "."
     {
-        const QUrl url = QUrl::fromLocalFile(base
-#ifdef Q_OS_WINRT
-                                      + QLatin1Char('/')
-#endif
-                                      ); // fromUserInput cleans the path
+        const QUrl url = QUrl::fromLocalFile(base); // fromUserInput cleans the path
         QTest::newRow("dot-in-path") << "." << base << url << url;
         QTest::newRow("dot-in-dot") << "." << QStringLiteral(".") << url << url;
     }
