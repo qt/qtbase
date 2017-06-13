@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 #    endif
 #    define QT_VERSION_TAG(sym) \
     asm (   \
-    ".section .qtversion, \"aG\", @progbits, qt_version_tag, comdat\n" \
+    ".section .qtversion, \"aG\", @progbits, " QT_STRINGIFY(QT_MANGLE_NAMESPACE(sym)) ", comdat\n" \
     ".align 8\n" \
     QT_VERSION_TAG_RELOC(sym) \
     ".long " QT_STRINGIFY(QT_VERSION) "\n" \
