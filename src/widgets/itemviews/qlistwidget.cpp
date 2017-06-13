@@ -39,7 +39,6 @@
 
 #include "qlistwidget.h"
 
-#ifndef QT_NO_LISTWIDGET
 #include <qitemdelegate.h>
 #include <private/qlistview_p.h>
 #include <private/qwidgetitemdata_p.h>
@@ -1969,5 +1968,3 @@ QT_END_NAMESPACE
 
 #include "moc_qlistwidget.cpp"
 #include "moc_qlistwidget_p.cpp"
-
-#endif // QT_NO_LISTWIDGET

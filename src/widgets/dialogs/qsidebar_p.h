@@ -52,7 +52,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <qlistwidget.h>
+#include <qlistview.h>
 #include <qstandarditemmodel.h>
 #include <qstyleditemdelegate.h>
 #include <qurl.h>

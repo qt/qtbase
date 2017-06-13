@@ -48,7 +48,7 @@
 #include "qlayout.h"
 #include "qlineedit.h"
 #include "qplaintextedit.h"
-#include "qlistwidget.h"
+#include "qlistview.h"
 #include "qpushbutton.h"
 #include "qspinbox.h"
 #include "qstackedlayout.h"

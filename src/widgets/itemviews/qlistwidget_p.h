@@ -58,7 +58,7 @@
 #include <private/qlistview_p.h>
 #include <private/qwidgetitemdata_p.h>
 
-#ifndef QT_NO_LISTWIDGET
+QT_REQUIRE_CONFIG(listwidget);
 
 QT_BEGIN_NAMESPACE
 
@@ -170,7 +170,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LISTWIDGET
 
 #endif // QLISTWIDGET_P_H

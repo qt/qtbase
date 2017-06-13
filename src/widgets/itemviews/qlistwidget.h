@@ -46,10 +46,9 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qitemselectionmodel.h>
 
+QT_REQUIRE_CONFIG(listwidget);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_LISTWIDGET
 
 class QListWidget;
 class QListModel;
@@ -328,8 +327,6 @@ inline void QListWidgetItem::setHidden(bool ahide)
 
 inline bool QListWidgetItem::isHidden() const
 { return (view ? view->isItemHidden(this) : false); }
-
-#endif // QT_NO_LISTWIDGET
 
 QT_END_NAMESPACE
 
