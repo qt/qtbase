@@ -10511,7 +10511,7 @@ static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget)
 
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
-        if (w && !w->isWindow() && !w->isHidden() && QWidgetPrivate::get(w)->textureChildSeen)
+        if (w && !w->isWindow() && QWidgetPrivate::get(w)->textureChildSeen)
             sendWindowChangeToTextureChildrenRecursively(w);
     }
 }

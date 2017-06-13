@@ -55,6 +55,7 @@ private slots:
     void painter();
     void reparentToAlreadyCreated();
     void reparentToNotYetCreated();
+    void reparentHidden();
     void asViewport();
     void requestUpdate();
     void fboRedirect();
@@ -277,6 +278,36 @@ void tst_QOpenGLWidget::reparentToNotYetCreated()
     QCOMPARE(image.width(), 320);
     QCOMPARE(image.height(), 200);
     QVERIFY(image.pixel(20, 10) == qRgb(0, 0, 255));
+}
+
+void tst_QOpenGLWidget::reparentHidden()
+{
+    // Tests QTBUG-60896
+    QWidget topLevel1;
+
+    QWidget *container = new QWidget(&topLevel1);
+    PainterWidget *glw = new PainterWidget(container);
+    topLevel1.resize(640, 480);
+    glw->resize(320, 200);
+    topLevel1.show();
+
+    glw->hide(); // Explicitly hidden
+
+    QTest::qWaitForWindowExposed(&topLevel1);
+
+    QWidget topLevel2;
+    topLevel2.resize(640, 480);
+    topLevel2.show();
+    QTest::qWaitForWindowExposed(&topLevel2);
+
+    QOpenGLContext *originalContext = glw->context();
+    QVERIFY(originalContext);
+
+    container->setParent(&topLevel2);
+    glw->show(); // Should get a new context now
+
+    QOpenGLContext *newContext = glw->context();
+    QVERIFY(originalContext != newContext);
 }
 
 class CountingGraphicsView : public QGraphicsView
