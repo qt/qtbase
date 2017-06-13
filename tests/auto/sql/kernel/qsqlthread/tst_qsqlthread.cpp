@@ -177,7 +177,7 @@ public:
         for (int i = 0; i < ProdConIterations; ++i) {
             QVERIFY_SQL(q1, exec("select max(id) from " + qtest));
             q1.first();
-            q2.bindValue("id", q1.value(0));
+            q2.bindValue(":id", q1.value(0));
             q1.clear();
             QVERIFY_SQL(q2, exec());
             QThread::yieldCurrentThread();
