@@ -116,9 +116,8 @@
 
         INDENT = "$$escape_expand(\\r\\n)  "
 
-        # All Windows 10 applications need to have internetClient. It is also not marked as additional
-        # capability anymore and is assumed to be standard.
-        *-msvc2015|*-msvc2017: WINRT_MANIFEST.capabilities += internetClient
+        # All Windows 10 applications need to have internetClient.
+        WINRT_MANIFEST.capabilities += internetClient
 
         contains(WINRT_MANIFEST.capabilities, defaults) {
             WINRT_MANIFEST.capabilities -= defaults
