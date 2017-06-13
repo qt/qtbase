@@ -645,13 +645,11 @@ int QDate::weekNumber(int *yearNumber) const
 
 QString QDate::shortMonthName(int month, QDate::MonthNameType type)
 {
-    if (month >= 1 || month <= 12) {
-        switch (type) {
-        case QDate::DateFormat:
-            return QLocale::system().monthName(month, QLocale::ShortFormat);
-        case QDate::StandaloneFormat:
-            return QLocale::system().standaloneMonthName(month, QLocale::ShortFormat);
-        }
+    switch (type) {
+    case QDate::DateFormat:
+        return QLocale::system().monthName(month, QLocale::ShortFormat);
+    case QDate::StandaloneFormat:
+        return QLocale::system().standaloneMonthName(month, QLocale::ShortFormat);
     }
     return QString();
 }
@@ -689,13 +687,11 @@ QString QDate::shortMonthName(int month, QDate::MonthNameType type)
 
 QString QDate::longMonthName(int month, MonthNameType type)
 {
-    if (month >= 1 && month <= 12) {
-        switch (type) {
-        case QDate::DateFormat:
-            return QLocale::system().monthName(month, QLocale::LongFormat);
-        case QDate::StandaloneFormat:
-            return QLocale::system().standaloneMonthName(month, QLocale::LongFormat);
-        }
+    switch (type) {
+    case QDate::DateFormat:
+        return QLocale::system().monthName(month, QLocale::LongFormat);
+    case QDate::StandaloneFormat:
+        return QLocale::system().standaloneMonthName(month, QLocale::LongFormat);
     }
     return QString();
 }
@@ -728,13 +724,11 @@ QString QDate::longMonthName(int month, MonthNameType type)
 
 QString QDate::shortDayName(int weekday, MonthNameType type)
 {
-    if (weekday >= 1 && weekday <= 7) {
-        switch (type) {
-        case QDate::DateFormat:
-            return QLocale::system().dayName(weekday, QLocale::ShortFormat);
-        case QDate::StandaloneFormat:
-            return QLocale::system().standaloneDayName(weekday, QLocale::ShortFormat);
-        }
+    switch (type) {
+    case QDate::DateFormat:
+        return QLocale::system().dayName(weekday, QLocale::ShortFormat);
+    case QDate::StandaloneFormat:
+        return QLocale::system().standaloneDayName(weekday, QLocale::ShortFormat);
     }
     return QString();
 }
@@ -767,13 +761,11 @@ QString QDate::shortDayName(int weekday, MonthNameType type)
 
 QString QDate::longDayName(int weekday, MonthNameType type)
 {
-    if (weekday >= 1 && weekday <= 7) {
-        switch (type) {
-        case QDate::DateFormat:
-            return QLocale::system().dayName(weekday, QLocale::LongFormat);
-        case QDate::StandaloneFormat:
-            return QLocale::system().standaloneDayName(weekday, QLocale::LongFormat);
-        }
+    switch (type) {
+    case QDate::DateFormat:
+        return QLocale::system().dayName(weekday, QLocale::LongFormat);
+    case QDate::StandaloneFormat:
+        return QLocale::system().standaloneDayName(weekday, QLocale::LongFormat);
     }
     return QString();
 }
