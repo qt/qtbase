@@ -3,3 +3,5 @@ osx
 [tileSubWindows]
 osx
 xcb
+[resizeTimer]
+osx
