@@ -39,7 +39,9 @@
 
 #include <QtCore/qdebug.h>
 #include "qundostack.h"
+#if QT_CONFIG(undogroup)
 #include "qundogroup.h"
+#endif
 #include "qundostack_p.h"
 
 #ifndef QT_NO_UNDOCOMMAND
@@ -544,7 +546,7 @@ bool QUndoStackPrivate::checkUndoLimit()
 QUndoStack::QUndoStack(QObject *parent)
     : QObject(*(new QUndoStackPrivate), parent)
 {
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     if (QUndoGroup *group = qobject_cast<QUndoGroup*>(parent))
         group->addStack(this);
 #endif
@@ -559,7 +561,7 @@ QUndoStack::QUndoStack(QObject *parent)
 
 QUndoStack::~QUndoStack()
 {
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     Q_D(QUndoStack);
     if (d->group != 0)
         d->group->removeStack(this);
@@ -1247,7 +1249,7 @@ int QUndoStack::undoLimit() const
 
 void QUndoStack::setActive(bool active)
 {
-#ifdef QT_NO_UNDOGROUP
+#if !QT_CONFIG(undogroup)
     Q_UNUSED(active);
 #else
     Q_D(QUndoStack);
@@ -1263,7 +1265,7 @@ void QUndoStack::setActive(bool active)
 
 bool QUndoStack::isActive() const
 {
-#ifdef QT_NO_UNDOGROUP
+#if !QT_CONFIG(undogroup)
     return true;
 #else
     Q_D(const QUndoStack);

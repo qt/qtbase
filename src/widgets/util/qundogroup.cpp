@@ -41,8 +41,6 @@
 #include "qundostack.h"
 #include "qundostack_p.h"
 
-#ifndef QT_NO_UNDOGROUP
-
 QT_BEGIN_NAMESPACE
 
 class QUndoGroupPrivate : public QObjectPrivate
@@ -502,5 +500,3 @@ QAction *QUndoGroup::createRedoAction(QObject *parent, const QString &prefix) co
 QT_END_NAMESPACE
 
 #include "moc_qundogroup.cpp"
-
-#endif // QT_NO_UNDOGROUP
