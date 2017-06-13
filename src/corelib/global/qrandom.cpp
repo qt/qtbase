@@ -802,6 +802,15 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 /*!
     Generates one 32-bit random value and returns it.
 
+    Note about casting to a signed integer: all bits returned by this function
+    are random, so there's a 50% chance that the most significant bit will be
+    set. If you wish to cast the returned value to int and keep it positive,
+    you should mask the sign bit off:
+
+    \code
+        int value = QRandomGenerator::get32() & std::numeric_limits<int>::max();
+    \endcode
+
     \sa get64(), getReal()
  */
 quint32 QRandomGenerator::get32()
@@ -813,6 +822,15 @@ quint32 QRandomGenerator::get32()
 
 /*!
     Generates one 64-bit random value and returns it.
+
+    Note about casting to a signed integer: all bits returned by this function
+    are random, so there's a 50% chance that the most significant bit will be
+    set. If you wish to cast the returned value to qint64 and keep it positive,
+    you should mask the sign bit off:
+
+    \code
+        qint64 value = QRandomGenerator::get64() & std::numeric_limits<qint64>::max();
+    \endcode
 
     \sa get32(), getReal(), QRandomGenerator64
  */
