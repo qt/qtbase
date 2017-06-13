@@ -264,10 +264,6 @@ public:
     QKdeThemePrivate(const QStringList &kdeDirs, int kdeVersion)
         : kdeDirs(kdeDirs)
         , kdeVersion(kdeVersion)
-        , toolButtonStyle(Qt::ToolButtonTextBesideIcon)
-        , toolBarIconSize(0)
-        , singleClick(true)
-        , wheelScrollLines(3)
     { }
 
     static QString kdeGlobals(const QString &kdeDir, int kdeVersion)
@@ -290,10 +286,15 @@ public:
     QString iconThemeName;
     QString iconFallbackThemeName;
     QStringList styleNames;
-    int toolButtonStyle;
-    int toolBarIconSize;
-    bool singleClick;
-    int wheelScrollLines;
+    int toolButtonStyle = Qt::ToolButtonTextBesideIcon;
+    int toolBarIconSize = 0;
+    bool singleClick = true;
+    bool showIconsOnPushButtons = true;
+    int wheelScrollLines = 3;
+    int doubleClickInterval = 400;
+    int startDragDist = 10;
+    int startDragTime = 500;
+    int cursorBlinkRate = 1000;
 };
 
 void QKdeThemePrivate::refresh()
@@ -329,6 +330,10 @@ void QKdeThemePrivate::refresh()
     if (singleClickValue.isValid())
         singleClick = singleClickValue.toBool();
 
+    const QVariant showIconsOnPushButtonsValue = readKdeSetting(QStringLiteral("KDE/ShowIconsOnPushButtons"), kdeDirs, kdeVersion, kdeSettings);
+    if (showIconsOnPushButtonsValue.isValid())
+        showIconsOnPushButtons = showIconsOnPushButtonsValue.toBool();
+
     const QVariant themeValue = readKdeSetting(QStringLiteral("Icons/Theme"), kdeDirs, kdeVersion, kdeSettings);
     if (themeValue.isValid())
         iconThemeName = themeValue.toString();
@@ -351,6 +356,24 @@ void QKdeThemePrivate::refresh()
     const QVariant wheelScrollLinesValue = readKdeSetting(QStringLiteral("KDE/WheelScrollLines"), kdeDirs, kdeVersion, kdeSettings);
     if (wheelScrollLinesValue.isValid())
         wheelScrollLines = wheelScrollLinesValue.toInt();
+
+    const QVariant doubleClickIntervalValue = readKdeSetting(QStringLiteral("KDE/DoubleClickInterval"), kdeDirs, kdeVersion, kdeSettings);
+    if (doubleClickIntervalValue.isValid())
+        doubleClickInterval = doubleClickIntervalValue.toInt();
+
+    const QVariant startDragDistValue = readKdeSetting(QStringLiteral("KDE/StartDragDist"), kdeDirs, kdeVersion, kdeSettings);
+    if (startDragDistValue.isValid())
+        startDragDist = startDragDistValue.toInt();
+
+    const QVariant startDragTimeValue = readKdeSetting(QStringLiteral("KDE/StartDragTime"), kdeDirs, kdeVersion, kdeSettings);
+    if (startDragTimeValue.isValid())
+        startDragTime = startDragTimeValue.toInt();
+
+    const QVariant cursorBlinkRateValue = readKdeSetting(QStringLiteral("KDE/CursorBlinkRate"), kdeDirs, kdeVersion, kdeSettings);
+    if (cursorBlinkRateValue.isValid()) {
+        cursorBlinkRate = cursorBlinkRateValue.toInt();
+        cursorBlinkRate = cursorBlinkRate > 0 ? qBound(200, cursorBlinkRate, 2000) : 0;
+    }
 
     // Read system font, ignore 'smallestReadableFont'
     if (QFont *systemFont = kdeFont(readKdeSetting(QStringLiteral("font"), kdeDirs, kdeVersion, kdeSettings)))
@@ -527,7 +550,7 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     case QPlatformTheme::UseFullScreenForPopupMenu:
         return QVariant(true);
     case QPlatformTheme::DialogButtonBoxButtonsHaveIcons:
-        return QVariant(true);
+        return QVariant(d->showIconsOnPushButtons);
     case QPlatformTheme::DialogButtonBoxLayout:
         return QVariant(QPlatformDialogHelper::KdeLayout);
     case QPlatformTheme::ToolButtonStyle:
@@ -550,6 +573,14 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(d->singleClick);
     case QPlatformTheme::WheelScrollLines:
         return QVariant(d->wheelScrollLines);
+    case QPlatformTheme::MouseDoubleClickInterval:
+        return QVariant(d->doubleClickInterval);
+    case QPlatformTheme::StartDragTime:
+        return QVariant(d->startDragTime);
+    case QPlatformTheme::StartDragDistance:
+        return QVariant(d->startDragDist);
+    case QPlatformTheme::CursorFlashTime:
+        return QVariant(d->cursorBlinkRate);
     case QPlatformTheme::UiEffects:
         return QVariant(int(HoverEffect));
     default:
