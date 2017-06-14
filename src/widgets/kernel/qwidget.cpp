@@ -5860,7 +5860,7 @@ QRectF QWidgetEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) con
 
 void QWidgetEffectSourcePrivate::draw(QPainter *painter)
 {
-    if (!context || context->painter != painter || !context->sharedPainter) {
+    if (!context || context->painter != painter) {
         m_widget->render(painter);
         return;
     }
