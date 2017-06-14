@@ -3016,13 +3016,20 @@ QString QSysInfo::machineHostName()
     If this macro is used outside a function, the behavior is undefined.
  */
 
-/*
-  The Q_CHECK_PTR macro calls this function if an allocation check
-  fails.
+/*!
+    \internal
+    The Q_CHECK_PTR macro calls this function if an allocation check
+    fails.
 */
-void qt_check_pointer(const char *n, int l)
+void qt_check_pointer(const char *n, int l) Q_DECL_NOTHROW
 {
-    QMessageLogger(n, l, nullptr).fatal("Out of memory");
+    // make separate printing calls so that the first one may flush;
+    // the second one could want to allocate memory (fputs prints a
+    // newline and stderr auto-flushes).
+    fputs("Out of memory", stderr);
+    fprintf(stderr, "  in %s, line %d\n", n, l);
+
+    std::terminate();
 }
 
 /*
