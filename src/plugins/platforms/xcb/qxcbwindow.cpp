@@ -600,6 +600,9 @@ void QXcbWindow::create()
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+
+    setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
+
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
 

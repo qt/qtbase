@@ -1786,16 +1786,27 @@ void tst_QWindow::mask()
 {
     QRegion mask = QRect(10, 10, 800 - 20, 600 - 20);
 
-    QWindow window;
-    window.resize(800, 600);
-    window.setMask(mask);
+    {
+        QWindow window;
+        window.resize(800, 600);
+        QCOMPARE(window.mask(), QRegion());
 
-    QCOMPARE(window.mask(), QRegion());
+        window.create();
+        window.setMask(mask);
+        QCOMPARE(window.mask(), mask);
+    }
 
-    window.create();
-    window.setMask(mask);
+    {
+        QWindow window;
+        window.resize(800, 600);
+        QCOMPARE(window.mask(), QRegion());
 
-    QCOMPARE(window.mask(), mask);
+        window.setMask(mask);
+        QCOMPARE(window.mask(), mask);
+        window.create();
+        QCOMPARE(window.mask(), mask);
+    }
+
 }
 
 void tst_QWindow::initialSize()

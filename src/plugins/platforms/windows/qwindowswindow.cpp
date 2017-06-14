@@ -1093,6 +1093,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+
+    setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
+
     if (aWindow->isTopLevel())
         setWindowIcon(aWindow->icon());
     clearFlag(WithinCreate);

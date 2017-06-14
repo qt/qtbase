@@ -54,6 +54,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
 #include <QtGui/private/qcoregraphics_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <AppKit/AppKit.h>
 
@@ -764,7 +765,7 @@ void QCocoaWindow::setMask(const QRegion &region)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setMask" << window() << region;
     if (isContentView())
-        m_view.window.backgroundColor = [NSColor clearColor];
+        m_view.window.backgroundColor = !region.isEmpty() ? [NSColor clearColor] : nil;
 
     [qnsview_cast(m_view) setMaskRegion:&region];
     m_view.window.opaque = isOpaque();
@@ -1166,6 +1167,8 @@ void QCocoaWindow::recreateWindowIfNeeded()
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
         setOpacity(opacity);
+
+    setMask(QHighDpi::toNativeLocalRegion(window()->mask(), window()));
 
     // top-level QWindows may have an attached NSToolBar, call
     // update function which will attach to the NSWindow.

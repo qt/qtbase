@@ -1062,15 +1062,12 @@ qreal QWindow::opacity() const
     The window manager may or may not choose to display any areas of the window
     not included in the mask, thus it is the application's responsibility to
     clear to transparent the areas that are not part of the mask.
-
-    Setting the mask before the window has been created has no effect.
 */
 void QWindow::setMask(const QRegion &region)
 {
     Q_D(QWindow);
-    if (!d->platformWindow)
-        return;
-    d->platformWindow->setMask(QHighDpi::toNativeLocalRegion(region, this));
+    if (d->platformWindow)
+        d->platformWindow->setMask(QHighDpi::toNativeLocalRegion(region, this));
     d->mask = region;
 }
 
