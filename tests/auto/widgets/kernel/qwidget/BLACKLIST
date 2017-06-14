@@ -42,6 +42,7 @@ osx
 osx
 [showMinimizedKeepsFocus]
 osx-10.10
+osx-10.11 ci
 [moveWindowInShowEvent:1]
 osx
 [moveWindowInShowEvent:2]
