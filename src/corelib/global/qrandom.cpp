@@ -467,8 +467,11 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 
     Additionally, it provides a floating-point function getReal() that returns
     a number in the range [0, 1) (that is, inclusive of zero and exclusive of
-    1). There's also a set of convenience functions that facilitate obtaininga
+    1). There's also a set of convenience functions that facilitate obtaining a
     random number in a bounded, integral range.
+
+    \warning This class is not suitable for bulk data creation. See below for the
+    technical reasons.
 
     \section1 Frequency and entropy exhaustion
 
