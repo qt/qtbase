@@ -339,7 +339,7 @@ void tst_QDialog::showFullScreen()
     QVERIFY(dialog.isFullScreen());
     QVERIFY(!dialog.isVisible());
 
-    dialog.show();
+    dialog.setVisible(true);
     QVERIFY(dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
 
