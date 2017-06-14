@@ -74,4 +74,8 @@ namespace FooNamespace {
     }
 }
 
+#ifdef Q_MOC_RUN
+namespace __identifier("<AtlImplementationDetails>") {} // QTBUG-56634
+#endif
+
 #endif // NAMESPACE_H
