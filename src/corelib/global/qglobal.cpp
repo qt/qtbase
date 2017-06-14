@@ -97,6 +97,12 @@
 
 #include "archdetect.cpp"
 
+#ifdef qFatal
+// the qFatal in this file are just redirections from elsewhere, so
+// don't capture any context again
+#  undef qFatal
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if !QT_DEPRECATED_SINCE(5, 0)
@@ -3016,7 +3022,7 @@ QString QSysInfo::machineHostName()
 */
 void qt_check_pointer(const char *n, int l)
 {
-    qFatal("In file %s, line %d: Out of memory", n, l);
+    QMessageLogger(n, l, nullptr).fatal("Out of memory");
 }
 
 /*
@@ -3046,7 +3052,7 @@ Q_NORETURN void qTerminate() Q_DECL_NOTHROW
 */
 void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW
 {
-    qFatal("ASSERT: \"%s\" in file %s, line %d", assertion, file, line);
+    QMessageLogger(file, line, nullptr).fatal("ASSERT: \"%s\" in file %s, line %d", assertion, file, line);
 }
 
 /*
@@ -3054,7 +3060,7 @@ void qt_assert(const char *assertion, const char *file, int line) Q_DECL_NOTHROW
 */
 void qt_assert_x(const char *where, const char *what, const char *file, int line) Q_DECL_NOTHROW
 {
-    qFatal("ASSERT failure in %s: \"%s\", file %s, line %d", where, what, file, line);
+    QMessageLogger(file, line, nullptr).fatal("ASSERT failure in %s: \"%s\", file %s, line %d", where, what, file, line);
 }
 
 
