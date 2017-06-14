@@ -39,6 +39,7 @@ private slots:
     void initTestCase();
     void fromTheme_data();
     void fromTheme();
+    void ninePatch();
 };
 
 tst_QIconHighDpi::tst_QIconHighDpi()
@@ -180,6 +181,24 @@ void tst_QIconHighDpi::fromTheme()
     // Note that we didn't pass the QWindow to QIcon::pixmap(),
     // because QGuiApplication::devicePixelRatio() will be used if no window was given.
     QCOMPARE(pixmap.devicePixelRatio(), expectedDpr);
+}
+
+void tst_QIconHighDpi::ninePatch()
+{
+    const QIcon icon(":/icons/misc/button.9.png");
+    const int dpr = qCeil(qApp->devicePixelRatio());
+
+    switch (dpr) {
+    case 1:
+        QCOMPARE(icon.availableSizes().size(), 1);
+        QCOMPARE(icon.availableSizes().at(0), QSize(42, 42));
+        break;
+    case 2:
+        QCOMPARE(icon.availableSizes().size(), 2);
+        QCOMPARE(icon.availableSizes().at(0), QSize(42, 42));
+        QCOMPARE(icon.availableSizes().at(1), QSize(82, 82));
+        break;
+    }
 }
 
 int main(int argc, char *argv[])

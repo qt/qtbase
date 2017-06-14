@@ -1469,8 +1469,13 @@ QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRati
         return baseFileName;
 
     int dotIndex = baseFileName.lastIndexOf(QLatin1Char('.'));
-    if (dotIndex == -1) /* no dot */
+    if (dotIndex == -1) { /* no dot */
         dotIndex = baseFileName.size(); /* append */
+    } else if (dotIndex >= 2 && baseFileName[dotIndex - 1] == QLatin1Char('9')
+        && baseFileName[dotIndex - 2] == QLatin1Char('.')) {
+        // If the file has a .9.* (9-patch image) extension, we must ensure that the @nx goes before it.
+        dotIndex -= 2;
+    }
 
     QString atNxfileName = baseFileName;
     atNxfileName.insert(dotIndex, QLatin1String("@2x"));

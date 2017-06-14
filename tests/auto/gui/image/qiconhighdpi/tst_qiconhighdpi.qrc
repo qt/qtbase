@@ -4,5 +4,7 @@
         <file>icons/testtheme/22x22/actions/appointment-new.png</file>
         <file>icons/testtheme/index.theme</file>
         <file>icons/testtheme/22x22@2/actions/appointment-new.png</file>
+        <file>icons/misc/button.9.png</file>
+        <file>icons/misc/button@2x.9.png</file>
     </qresource>
 </RCC>
