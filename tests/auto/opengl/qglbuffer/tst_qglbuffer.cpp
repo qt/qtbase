@@ -34,6 +34,7 @@
 #include <QtTest/QtTest>
 #include <QtOpenGL/qgl.h>
 #include <QtOpenGL/qglbuffer.h>
+#include <QOpenGLContext>
 
 class tst_QGLBuffer : public QObject
 {
@@ -83,6 +84,12 @@ void tst_QGLBuffer::testBuffer(QGLBuffer::Type type)
 
     QGLWidget w;
     w.makeCurrent();
+
+#if defined(Q_OS_WINDOWS)
+    if (w.context()->contextHandle()->isOpenGLES()) {
+        QSKIP("Unfortunately Angle in Qt 5.6 does not support this test -- QTQAINFRA-1199");
+    }
+#endif
 
     // Create the local object, but not the buffer in the server.
     QGLBuffer buffer(type);
