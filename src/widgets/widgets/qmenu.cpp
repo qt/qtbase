@@ -297,6 +297,11 @@ QVector<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
     return ret;
 }
 
+bool QMenuPrivate::isContextMenu() const
+{
+    return qobject_cast<const QMenuBar *>(topCausedWidget()) == nullptr;
+}
+
 void QMenuPrivate::updateActionRects() const
 {
     Q_Q(const QMenu);
@@ -352,6 +357,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
     //calculate size
     QFontMetrics qfm = q->fontMetrics();
     bool previousWasSeparator = true; // this is true to allow removing the leading separators
+    const bool contextMenu = isContextMenu();
     for(int i = 0; i <= lastVisibleAction; i++) {
         QAction *action = actions.at(i);
         const bool isSection = action->isSeparator() && (!action->text().isEmpty() || !action->icon().isNull());
@@ -383,7 +389,7 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
                     tabWidth = qMax(int(tabWidth), qfm.width(s.mid(t+1)));
                     s = s.left(t);
     #ifndef QT_NO_SHORTCUT
-                } else if (action->isShortcutVisibleInContextMenu()) {
+                } else if (action->isShortcutVisibleInContextMenu() || !contextMenu) {
                     QKeySequence seq = action->shortcut();
                     if (!seq.isEmpty())
                         tabWidth = qMax(int(tabWidth), qfm.width(seq.toString(QKeySequence::NativeText)));
@@ -1513,7 +1519,7 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
         option->icon = action->icon();
     QString textAndAccel = action->text();
 #ifndef QT_NO_SHORTCUT
-    if (action->isShortcutVisibleInContextMenu()
+    if ((action->isShortcutVisibleInContextMenu() || !d->isContextMenu())
             && textAndAccel.indexOf(QLatin1Char('\t')) == -1) {
         QKeySequence seq = action->shortcut();
         if (!seq.isEmpty())

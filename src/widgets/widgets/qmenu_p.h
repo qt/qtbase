@@ -307,6 +307,8 @@ public:
     static QMenuPrivate *get(QMenu *m) { return m->d_func(); }
     int scrollerHeight() const;
 
+    bool isContextMenu() const;
+
     //item calculations
     mutable uint itemsDirty : 1;
     mutable uint maxIconWidth, tabWidth;
