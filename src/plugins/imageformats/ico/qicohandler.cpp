@@ -48,6 +48,7 @@
 
 #include "qicohandler.h"
 #include <QtCore/qendian.h>
+#include <private/qendian_p.h>
 #include <QtGui/QImage>
 #include <QtCore/QFile>
 #include <QtCore/QBuffer>
@@ -63,34 +64,34 @@ typedef struct
     quint8  bHeight;              // Height of the image (actual height, not times 2)
     quint8  bColorCount;          // Number of colors in image (0 if >=8bpp) [ not ture ]
     quint8  bReserved;            // Reserved
-    quint16 wPlanes;              // Color Planes
-    quint16 wBitCount;            // Bits per pixel
-    quint32 dwBytesInRes;         // how many bytes in this resource?
-    quint32 dwImageOffset;        // where in the file is this image
+    quint16_le wPlanes;              // Color Planes
+    quint16_le wBitCount;            // Bits per pixel
+    quint32_le dwBytesInRes;         // how many bytes in this resource?
+    quint32_le dwImageOffset;        // where in the file is this image
 } ICONDIRENTRY, *LPICONDIRENTRY;
 #define ICONDIRENTRY_SIZE 16
 
 typedef struct
 {
-    quint16 idReserved;   // Reserved
-    quint16 idType;       // resource type (1 for icons, 2 for cursors)
-    quint16 idCount;      // how many images?
+    quint16_le idReserved;   // Reserved
+    quint16_le idType;       // resource type (1 for icons, 2 for cursors)
+    quint16_le idCount;      // how many images?
     ICONDIRENTRY    idEntries[1]; // the entries for each image
 } ICONDIR, *LPICONDIR;
 #define ICONDIR_SIZE    6       // Exclude the idEntries field
 
 typedef struct {                    // BMP information header
-    quint32 biSize;                // size of this struct
-    quint32 biWidth;               // pixmap width
-    quint32 biHeight;              // pixmap height     (specifies the combined height of the XOR and AND masks)
-    quint16 biPlanes;              // should be 1
-    quint16 biBitCount;            // number of bits per pixel
-    quint32 biCompression;         // compression method
-    quint32 biSizeImage;           // size of image
-    quint32 biXPelsPerMeter;       // horizontal resolution
-    quint32 biYPelsPerMeter;       // vertical resolution
-    quint32 biClrUsed;             // number of colors used
-    quint32 biClrImportant;        // number of important colors
+    quint32_le biSize;                // size of this struct
+    quint32_le biWidth;               // pixmap width
+    quint32_le biHeight;              // pixmap height     (specifies the combined height of the XOR and AND masks)
+    quint16_le biPlanes;              // should be 1
+    quint16_le biBitCount;            // number of bits per pixel
+    quint32_le biCompression;         // compression method
+    quint32_le biSizeImage;           // size of image
+    quint32_le biXPelsPerMeter;       // horizontal resolution
+    quint32_le biYPelsPerMeter;       // vertical resolution
+    quint32_le biClrUsed;             // number of colors used
+    quint32_le biClrImportant;        // number of important colors
 } BMP_INFOHDR ,*LPBMP_INFOHDR;
 #define BMP_INFOHDR_SIZE 40
 
@@ -140,108 +141,43 @@ private:
 // Data readers and writers that takes care of alignment and endian stuff.
 static bool readIconDirEntry(QIODevice *iodev, ICONDIRENTRY *iconDirEntry)
 {
-    if (iodev) {
-        uchar tmp[ICONDIRENTRY_SIZE];
-        if (iodev->read((char*)tmp, ICONDIRENTRY_SIZE) == ICONDIRENTRY_SIZE) {
-            iconDirEntry->bWidth = tmp[0];
-            iconDirEntry->bHeight = tmp[1];
-            iconDirEntry->bColorCount = tmp[2];
-            iconDirEntry->bReserved = tmp[3];
-
-            iconDirEntry->wPlanes = qFromLittleEndian<quint16>(&tmp[4]);
-            iconDirEntry->wBitCount = qFromLittleEndian<quint16>(&tmp[6]);
-            iconDirEntry->dwBytesInRes = qFromLittleEndian<quint32>(&tmp[8]);
-            iconDirEntry->dwImageOffset = qFromLittleEndian<quint32>(&tmp[12]);
-            return true;
-        }
-    }
+    if (iodev)
+        return (iodev->read((char*)iconDirEntry, ICONDIRENTRY_SIZE) == ICONDIRENTRY_SIZE);
     return false;
 }
 
 static bool writeIconDirEntry(QIODevice *iodev, const ICONDIRENTRY &iconEntry)
 {
-    if (iodev) {
-        uchar tmp[ICONDIRENTRY_SIZE];
-        tmp[0] = iconEntry.bWidth;
-        tmp[1] = iconEntry.bHeight;
-        tmp[2] = iconEntry.bColorCount;
-        tmp[3] = iconEntry.bReserved;
-        qToLittleEndian<quint16>(iconEntry.wPlanes, &tmp[4]);
-        qToLittleEndian<quint16>(iconEntry.wBitCount, &tmp[6]);
-        qToLittleEndian<quint32>(iconEntry.dwBytesInRes, &tmp[8]);
-        qToLittleEndian<quint32>(iconEntry.dwImageOffset, &tmp[12]);
-        return iodev->write((char*)tmp, ICONDIRENTRY_SIZE) == ICONDIRENTRY_SIZE;
-    }
-
+    if (iodev)
+        return iodev->write((char*)&iconEntry, ICONDIRENTRY_SIZE) == ICONDIRENTRY_SIZE;
     return false;
 }
 
 static bool readIconDir(QIODevice *iodev, ICONDIR *iconDir)
 {
-    if (iodev) {
-        uchar tmp[ICONDIR_SIZE];
-        if (iodev->read((char*)tmp, ICONDIR_SIZE) == ICONDIR_SIZE) {
-            iconDir->idReserved = qFromLittleEndian<quint16>(&tmp[0]);
-            iconDir->idType = qFromLittleEndian<quint16>(&tmp[2]);
-            iconDir->idCount = qFromLittleEndian<quint16>(&tmp[4]);
-            return true;
-        }
-    }
+    if (iodev)
+        return (iodev->read((char*)iconDir, ICONDIR_SIZE) == ICONDIR_SIZE);
     return false;
 }
 
 static bool writeIconDir(QIODevice *iodev, const ICONDIR &iconDir)
 {
-    if (iodev) {
-        uchar tmp[6];
-        qToLittleEndian(iconDir.idReserved, tmp);
-        qToLittleEndian(iconDir.idType, &tmp[2]);
-        qToLittleEndian(iconDir.idCount, &tmp[4]);
-        return iodev->write((char*)tmp, 6) == 6;
-    }
+    if (iodev)
+        return iodev->write((char*)&iconDir, 6) == 6;
     return false;
 }
 
 static bool readBMPInfoHeader(QIODevice *iodev, BMP_INFOHDR *pHeader)
 {
-    if (iodev) {
-        uchar header[BMP_INFOHDR_SIZE];
-        if (iodev->read((char*)header, BMP_INFOHDR_SIZE) == BMP_INFOHDR_SIZE) {
-            pHeader->biSize = qFromLittleEndian<quint32>(&header[0]);
-            pHeader->biWidth = qFromLittleEndian<quint32>(&header[4]);
-            pHeader->biHeight = qFromLittleEndian<quint32>(&header[8]);
-            pHeader->biPlanes = qFromLittleEndian<quint16>(&header[12]);
-            pHeader->biBitCount = qFromLittleEndian<quint16>(&header[14]);
-            pHeader->biCompression = qFromLittleEndian<quint32>(&header[16]);
-            pHeader->biSizeImage = qFromLittleEndian<quint32>(&header[20]);
-            pHeader->biXPelsPerMeter = qFromLittleEndian<quint32>(&header[24]);
-            pHeader->biYPelsPerMeter = qFromLittleEndian<quint32>(&header[28]);
-            pHeader->biClrUsed = qFromLittleEndian<quint32>(&header[32]);
-            pHeader->biClrImportant = qFromLittleEndian<quint32>(&header[36]);
-            return true;
-        }
-    }
+    if (iodev)
+        return (iodev->read((char*)pHeader, BMP_INFOHDR_SIZE) == BMP_INFOHDR_SIZE);
     return false;
 }
 
 static bool writeBMPInfoHeader(QIODevice *iodev, const BMP_INFOHDR &header)
 {
-    if (iodev) {
-        uchar tmp[BMP_INFOHDR_SIZE];
-        qToLittleEndian<quint32>(header.biSize, &tmp[0]);
-        qToLittleEndian<quint32>(header.biWidth, &tmp[4]);
-        qToLittleEndian<quint32>(header.biHeight, &tmp[8]);
-        qToLittleEndian<quint16>(header.biPlanes, &tmp[12]);
-        qToLittleEndian<quint16>(header.biBitCount, &tmp[14]);
-        qToLittleEndian<quint32>(header.biCompression, &tmp[16]);
-        qToLittleEndian<quint32>(header.biSizeImage, &tmp[20]);
-        qToLittleEndian<quint32>(header.biXPelsPerMeter, &tmp[24]);
-        qToLittleEndian<quint32>(header.biYPelsPerMeter, &tmp[28]);
-        qToLittleEndian<quint32>(header.biClrUsed, &tmp[32]);
-        qToLittleEndian<quint32>(header.biClrImportant, &tmp[36]);
-
-        return iodev->write((char*)tmp, BMP_INFOHDR_SIZE) == BMP_INFOHDR_SIZE;
-    }
+    if (iodev)
+        return iodev->write((char*)&header, BMP_INFOHDR_SIZE) == BMP_INFOHDR_SIZE;
     return false;
 }
 
@@ -561,7 +497,7 @@ QImage ICOReader::iconAt(int index)
                 if (icoAttrib.depth == 32)                // there's no colormap
                     icoAttrib.ncolors = 0;
                 else                    // # colors used
-                    icoAttrib.ncolors = header.biClrUsed ? header.biClrUsed : 1 << icoAttrib.nbits;
+                    icoAttrib.ncolors = header.biClrUsed ? uint(header.biClrUsed) : 1 << icoAttrib.nbits;
                 if (icoAttrib.ncolors > 256) //color table can't be more than 256
                     return img;
                 icoAttrib.w = iconEntry.bWidth;

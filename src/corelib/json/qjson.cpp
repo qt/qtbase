@@ -45,15 +45,8 @@ QT_BEGIN_NAMESPACE
 namespace QJsonPrivate
 {
 
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-#define Q_TO_LITTLE_ENDIAN(x) (x)
-#else
-#define Q_TO_LITTLE_ENDIAN(x) ( ((x & 0xff) << 24) | ((x & 0xff00) << 8) | ((x & 0xff0000) >> 8) | ((x & 0xff000000) >> 24) )
-#endif
-
-static const Base emptyArray = { { Q_TO_LITTLE_ENDIAN(sizeof(Base)) }, { 0 }, { 0 } };
-static const Base emptyObject = { { Q_TO_LITTLE_ENDIAN(sizeof(Base)) }, { 0 }, { 0 } };
-
+static Q_CONSTEXPR Base emptyArray  = { { qle_uint(sizeof(Base)) }, { 0 }, { qle_uint(0) } };
+static Q_CONSTEXPR Base emptyObject = { { qle_uint(sizeof(Base)) }, { 0 }, { qle_uint(0) } };
 
 void Data::compact()
 {
@@ -394,7 +387,7 @@ int Value::requiredStorage(QJsonValue &v, bool *compressed)
             v.d->compact();
             v.base = static_cast<QJsonPrivate::Base *>(v.d->header->root());
         }
-        return v.base ? v.base->size : sizeof(QJsonPrivate::Base);
+        return v.base ? uint(v.base->size) : sizeof(QJsonPrivate::Base);
     case QJsonValue::Undefined:
     case QJsonValue::Null:
     case QJsonValue::Bool:

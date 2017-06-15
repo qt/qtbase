@@ -40,6 +40,7 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qcolorprofile_p.h>
+#include <private/qendian_p.h>
 #include <private/qsimd_p.h>
 #include <private/qimage_p.h>
 #include <qendian.h>
@@ -341,10 +342,10 @@ Q_GUI_EXPORT void QT_FASTCALL qt_convert_rgb888_to_rgb32(quint32 *dest_data, con
 
     // Handle 4 pixels at a time 12 bytes input to 16 bytes output.
     for (; pixel + 3 < len; pixel += 4) {
-        const quint32 *src_packed = (const quint32 *) src_data;
-        const quint32 src1 = qFromBigEndian(src_packed[0]);
-        const quint32 src2 = qFromBigEndian(src_packed[1]);
-        const quint32 src3 = qFromBigEndian(src_packed[2]);
+        const quint32_be *src_packed = reinterpret_cast<const quint32_be *>(src_data);
+        const quint32 src1 = src_packed[0];
+        const quint32 src2 = src_packed[1];
+        const quint32 src3 = src_packed[2];
 
         dest_data[0] = 0xff000000 | (src1 >> 8);
         dest_data[1] = 0xff000000 | (src1 << 16) | (src2 >> 16);

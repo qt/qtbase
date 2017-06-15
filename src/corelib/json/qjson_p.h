@@ -61,6 +61,7 @@
 #include <qendian.h>
 #include <qnumeric.h>
 
+#include "private/qendian_p.h"
 #include "private/qsimd_p.h"
 
 #include <limits.h>
@@ -131,42 +132,7 @@ class Value;
 class Entry;
 
 template<typename T>
-class q_littleendian
-{
-public:
-    T val;
-
-    q_littleendian &operator =(T i) { val = qToLittleEndian(i); return *this; }
-    operator T() const { return qFromLittleEndian(val); }
-
-    bool operator ==(T i) { return qFromLittleEndian(val) == i; }
-    bool operator !=(T i) { return qFromLittleEndian(val) != i; }
-    bool operator ==(q_littleendian<T> i) { return val == i.val; }
-    bool operator !=(q_littleendian<T> i) { return val != i.val; }
-    bool operator <(T i) { return qFromLittleEndian(val) < i; }
-    bool operator >(T i) { return qFromLittleEndian(val) > i; }
-    bool operator <=(T i) { return qFromLittleEndian(val) <= i; }
-    bool operator >=(T i) { return qFromLittleEndian(val) >= i; }
-    q_littleendian &operator +=(T i) {
-        val = qToLittleEndian(qFromLittleEndian(val) + i);
-        return *this;
-    }
-    q_littleendian &operator |=(T i) {
-        val = qToLittleEndian(qFromLittleEndian(val) | i);
-        return *this;
-    }
-    q_littleendian &operator &=(T i) {
-        val = qToLittleEndian(qFromLittleEndian(val) & i);
-        return *this;
-    }
-};
-} // namespace QJsonPrivate
-
-template <typename T>
-class QTypeInfo<QJsonPrivate::q_littleendian<T> >
-    : public QTypeInfoMerger<QJsonPrivate::q_littleendian<T>, T> {};
-
-namespace QJsonPrivate {
+using q_littleendian = QLEInteger<T>;
 
 typedef q_littleendian<short> qle_short;
 typedef q_littleendian<unsigned short> qle_ushort;

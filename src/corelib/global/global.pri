@@ -9,6 +9,7 @@ HEADERS +=  \
         global/qprocessordetection.h \
 	global/qnamespace.h \
         global/qendian.h \
+        global/qendian_p.h \
         global/qnumeric_p.h \
         global/qnumeric.h \
         global/qfloat16_p.h \
