@@ -57,7 +57,6 @@ QWindowsPipeWriter::QWindowsPipeWriter(HANDLE pipeWriteEnd, QObject *parent)
     : QObject(parent),
       handle(pipeWriteEnd),
       overlapped(this),
-      numberOfBytesToWrite(0),
       pendingBytesWrittenValue(0),
       stopped(true),
       writeSequenceStarted(false),
@@ -97,7 +96,7 @@ bool QWindowsPipeWriter::waitForWrite(int msecs)
 
 qint64 QWindowsPipeWriter::bytesToWrite() const
 {
-    return numberOfBytesToWrite + pendingBytesWrittenValue;
+    return buffer.size() + pendingBytesWrittenValue;
 }
 
 void QWindowsPipeWriter::emitPendingBytesWrittenValue()
@@ -133,7 +132,6 @@ void QWindowsPipeWriter::notified(DWORD errorCode, DWORD numberOfBytesWritten)
 {
     notifiedCalled = true;
     writeSequenceStarted = false;
-    numberOfBytesToWrite = 0;
     Q_ASSERT(errorCode != ERROR_SUCCESS || numberOfBytesWritten == DWORD(buffer.size()));
     buffer.clear();
 
@@ -187,13 +185,11 @@ bool QWindowsPipeWriter::write(const QByteArray &ba)
 
     overlapped.clear();
     buffer = ba;
-    numberOfBytesToWrite = buffer.size();
     stopped = false;
     writeSequenceStarted = true;
-    if (!WriteFileEx(handle, buffer.constData(), numberOfBytesToWrite,
+    if (!WriteFileEx(handle, buffer.constData(), buffer.size(),
                      &overlapped, &writeFileCompleted)) {
         writeSequenceStarted = false;
-        numberOfBytesToWrite = 0;
         buffer.clear();
         qErrnoWarning("QWindowsPipeWriter::write failed.");
         return false;
