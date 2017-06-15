@@ -3366,6 +3366,7 @@ QModelIndex QTreeWidget::indexFromItem(const QTreeWidgetItem *item, int column) 
     return d->index(item, column);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
     \overload
     \internal
@@ -3374,6 +3375,7 @@ QModelIndex QTreeWidget::indexFromItem(QTreeWidgetItem *item, int column) const
 {
     return indexFromItem(const_cast<const QTreeWidgetItem *>(item), column);
 }
+#endif
 
 /*!
     Returns a pointer to the QTreeWidgetItem associated with the given \a index.

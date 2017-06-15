@@ -335,7 +335,10 @@ protected:
 #endif
     QList<QTableWidgetItem*> items(const QMimeData *data) const;
 
-    QModelIndex indexFromItem(QTableWidgetItem *item) const;
+    QModelIndex indexFromItem(const QTableWidgetItem *item) const;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QModelIndex indexFromItem(QTableWidgetItem *item) const; // ### Qt 6: remove
+#endif
     QTableWidgetItem *itemFromIndex(const QModelIndex &index) const;
 
 protected:

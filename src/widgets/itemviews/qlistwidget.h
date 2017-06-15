@@ -297,7 +297,10 @@ protected:
 #endif
     QList<QListWidgetItem*> items(const QMimeData *data) const;
 
-    QModelIndex indexFromItem(QListWidgetItem *item) const;
+    QModelIndex indexFromItem(const QListWidgetItem *item) const;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QModelIndex indexFromItem(QListWidgetItem *item) const; // ### Qt 6: remove
+#endif
     QListWidgetItem *itemFromIndex(const QModelIndex &index) const;
 
 private:
