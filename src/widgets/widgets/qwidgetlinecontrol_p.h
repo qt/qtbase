@@ -217,7 +217,7 @@ public:
     void cursorWordBackward(bool mark) { moveCursor(m_textLayout.previousCursorPosition(m_cursor, QTextLayout::SkipWords), mark); }
 
     void home(bool mark) { moveCursor(0, mark); }
-    void end(bool mark) { moveCursor(text().length(), mark); }
+    void end(bool mark) { moveCursor(m_text.length(), mark); }
 
     int xToPos(int x, QTextLine::CursorPosition = QTextLine::CursorBetweenCharacters) const;
     QRect rectForPos(int pos) const;
