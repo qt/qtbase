@@ -1090,11 +1090,14 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
         WSABUF buf;
         buf.buf = &c;
         buf.len = sizeof(c);
+        DWORD bytesReceived;
         DWORD flags = MSG_PEEK;
-        if (::WSARecvFrom(socketDescriptor, &buf, 1, 0, &flags, 0,0,0,0) == SOCKET_ERROR) {
+        if (::WSARecvFrom(socketDescriptor, &buf, 1, &bytesReceived, &flags, 0,0,0,0) == SOCKET_ERROR) {
             int err = WSAGetLastError();
             if (err != WSAECONNRESET && err != WSAENETRESET)
                 return 0;
+        } else {
+            return bytesReceived;
         }
     }
     return nbytes;
