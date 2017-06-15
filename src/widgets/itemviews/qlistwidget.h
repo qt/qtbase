@@ -254,6 +254,9 @@ public:
 
     bool isItemHidden(const QListWidgetItem *item) const;
     void setItemHidden(const QListWidgetItem *item, bool hide);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+protected:
+#endif
 #if QT_CONFIG(draganddrop)
     void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
 #endif
@@ -286,6 +289,12 @@ protected:
 #ifndef QT_NO_DRAGANDDROP
     virtual bool dropMimeData(int index, const QMimeData *data, Qt::DropAction action);
     virtual Qt::DropActions supportedDropActions() const;
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+public:
+#else
+protected:
 #endif
     QList<QListWidgetItem*> items(const QMimeData *data) const;
 
