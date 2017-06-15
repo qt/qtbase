@@ -277,6 +277,8 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 /*!
     Constructs an action with \a parent. If \a parent is an action
     group the action will be automatically inserted into the group.
+
+    \note The \a parent argument is optional since Qt 5.7.
 */
 QAction::QAction(QObject* parent)
     : QAction(*new QActionPrivate, parent)
