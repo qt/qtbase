@@ -84,7 +84,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfiledevice.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp \
-	   $(SOURCE_PATH)/src/corelib/global/qrandom.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp \
@@ -301,9 +300,6 @@ qmalloc.o: $(SOURCE_PATH)/src/corelib/global/qmalloc.cpp
 
 qglobal.o: $(SOURCE_PATH)/src/corelib/global/qglobal.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
-qrandom.o: $(SOURCE_PATH)/src/corelib/global/qrandom.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qrandom.cpp
 
 qarraydata.o: $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
