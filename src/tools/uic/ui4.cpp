@@ -39,6 +39,7 @@ using namespace QFormInternal;
 /*******************************************************************************
 ** Implementations
 */
+
 DomUI::~DomUI()
 {
     delete m_widget;
@@ -134,6 +135,11 @@ void DomUI::read(QXmlStreamReader &reader)
                 DomTabStops *v = new DomTabStops();
                 v->read(reader);
                 setElementTabStops(v);
+                continue;
+            }
+            if (!tag.compare(QLatin1String("images"), Qt::CaseInsensitive)) {
+                qWarning("Omitting deprecated element <images>.");
+                reader.skipCurrentElement();
                 continue;
             }
             if (!tag.compare(QLatin1String("includes"), Qt::CaseInsensitive)) {
@@ -1236,8 +1242,23 @@ void DomCustomWidget::read(QXmlStreamReader &reader)
                 setElementContainer(reader.readElementText().toInt());
                 continue;
             }
+            if (!tag.compare(QLatin1String("sizepolicy"), Qt::CaseInsensitive)) {
+                qWarning("Omitting deprecated element <sizepolicy>.");
+                reader.skipCurrentElement();
+                continue;
+            }
             if (!tag.compare(QLatin1String("pixmap"), Qt::CaseInsensitive)) {
                 setElementPixmap(reader.readElementText());
+                continue;
+            }
+            if (!tag.compare(QLatin1String("script"), Qt::CaseInsensitive)) {
+                qWarning("Omitting deprecated element <script>.");
+                reader.skipCurrentElement();
+                continue;
+            }
+            if (!tag.compare(QLatin1String("properties"), Qt::CaseInsensitive)) {
+                qWarning("Omitting deprecated element <properties>.");
+                reader.skipCurrentElement();
                 continue;
             }
             if (!tag.compare(QLatin1String("slots"), Qt::CaseInsensitive)) {
@@ -2109,6 +2130,16 @@ void DomWidget::read(QXmlStreamReader &reader)
                 DomProperty *v = new DomProperty();
                 v->read(reader);
                 m_property.append(v);
+                continue;
+            }
+            if (!tag.compare(QLatin1String("script"), Qt::CaseInsensitive)) {
+                qWarning("Omitting deprecated element <script>.");
+                reader.skipCurrentElement();
+                continue;
+            }
+            if (!tag.compare(QLatin1String("widgetdata"), Qt::CaseInsensitive)) {
+                qWarning("Omitting deprecated element <widgetdata>.");
+                reader.skipCurrentElement();
                 continue;
             }
             if (!tag.compare(QLatin1String("attribute"), Qt::CaseInsensitive)) {
