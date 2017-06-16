@@ -450,11 +450,6 @@ void QProcessPrivate::Channel::clear()
     process = 0;
 }
 
-/*! \fn bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
-
-\internal
- */
-
 /*!
     \class QProcess
     \inmodule QtCore

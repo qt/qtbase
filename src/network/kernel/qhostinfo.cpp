@@ -293,7 +293,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
 /*!
     \fn void QHostInfo::swap(QHostInfo &other)
 
-    Swaps host-info \other with this host-info. This operation is
+    Swaps host-info \a other with this host-info. This operation is
     very fast and never fails.
 
     \since 5.10

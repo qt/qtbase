@@ -381,7 +381,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     }
 }
 
-/**
+/*!
     \class QRandomGenerator
     \inmodule QtCore
     \since 5.10
@@ -482,13 +482,13 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa QRandomGenerator64, qrand()
  */
 
-/**
+/*!
     \fn QRandomGenerator::QRandomGenerator()
     \internal
     Defaulted constructor, does nothing.
  */
 
-/**
+/*!
     \typedef QRandomGenerator::result_type
 
     A typedef to the type that operator()() returns. That is, quint32.
@@ -496,7 +496,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa operator()()
  */
 
-/**
+/*!
     \fn result_type QRandomGenerator::operator()()
 
     Generates a 32-bit random quantity and returns it.
@@ -504,7 +504,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa QRandomGenerator::get32(), QRandomGenerator::get64()
  */
 
-/**
+/*!
     \fn double QRandomGenerator::entropy() const
 
     Returns the estimate of the entropy in the random generator source.
@@ -521,7 +521,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     this function always returns 0.0.
  */
 
-/**
+/*!
     \fn result_type QRandomGenerator::min()
 
     Returns the minimum value that QRandomGenerator may ever generate. That is, 0.
@@ -529,7 +529,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa max(), QRandomGenerator64::max()
  */
 
-/**
+/*!
     \fn result_type QRandomGenerator::max()
 
     Returns the maximum value that QRandomGenerator may ever generate. That is,
@@ -538,7 +538,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa min(), QRandomGenerator64::max()
  */
 
-/**
+/*!
     \fn void QRandomGenerator::generate(ForwardIterator begin, ForwardIterator end)
 
     Generates 32-bit quantities and stores them in the range between \a begin
@@ -567,7 +567,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa fillRange()
  */
 
-/**
+/*!
     \fn void QRandomGenerator::generate(quint32 *begin, quint32 *end)
     \overload
     \internal
@@ -575,7 +575,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Same as the other overload, but more efficiently fills \a begin to \a end.
  */
 
-/**
+/*!
     \fn void QRandomGenerator::fillRange(UInt *buffer, qssize_t count)
 
     Generates \a count 32- or 64-bit quantities (depending on the type \c UInt)
@@ -595,7 +595,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa generate()
  */
 
-/**
+/*!
     \fn void QRandomGenerator::fillRange(UInt (&buffer)[N})
 
     Generates \c N 32- or 64-bit quantities (depending on the type \c UInt) and
@@ -616,7 +616,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa generate()
  */
 
-/**
+/*!
     \fn qreal QRandomGenerator::getReal()
 
     Generates one random qreal in the canonical range [0, 1) (that is,
@@ -635,7 +635,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa get32(), get64(), bounded()
  */
 
-/**
+/*!
     \fn qreal QRandomGenerator::bounded(qreal sup)
 
     Generates one random qreal in the range between 0 (inclusive) and \a
@@ -648,7 +648,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa getReal(), bounded()
  */
 
-/**
+/*!
     \fn quint32 QRandomGenerator::bounded(quint32 sup)
     \overload
 
@@ -673,7 +673,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa get32(), get64(), getReal()
  */
 
-/**
+/*!
     \fn quint32 QRandomGenerator::bounded(int sup)
     \overload
 
@@ -686,7 +686,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa get32(), get64(), getReal()
  */
 
-/**
+/*!
     \fn quint32 QRandomGenerator::bounded(quint32 min, quint32 sup)
     \overload
 
@@ -710,7 +710,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa get32(), get64(), getReal()
  */
 
-/**
+/*!
     \fn quint32 QRandomGenerator::bounded(int min, int sup)
     \overload
 
@@ -723,7 +723,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa get32(), get64(), getReal()
  */
 
-/**
+/*!
     \class QRandomGenerator64
     \inmodule QtCore
     \since 5.10
@@ -743,13 +743,13 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa QRandomGenerator
 */
 
-/**
+/*!
     \fn QRandomGenerator64::QRandomGenerator64()
     \internal
     Defaulted constructor, does nothing.
  */
 
-/**
+/*!
     \typedef QRandomGenerator64::result_type
 
     A typedef to the type that operator()() returns. That is, quint64.
@@ -757,7 +757,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa operator()()
  */
 
-/**
+/*!
     \fn result_type QRandomGenerator64::operator()()
 
     Generates a 64-bit random quantity and returns it.
@@ -765,7 +765,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa QRandomGenerator::get32(), QRandomGenerator::get64()
  */
 
-/**
+/*!
     \fn double QRandomGenerator64::entropy() const
 
     Returns the estimate of the entropy in the random generator source.
@@ -782,7 +782,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     this function always returns 0.0.
  */
 
-/**
+/*!
     \fn result_type QRandomGenerator64::min()
 
     Returns the minimum value that QRandomGenerator64 may ever generate. That is, 0.
@@ -790,7 +790,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa max(), QRandomGenerator::max()
  */
 
-/**
+/*!
     \fn result_type QRandomGenerator64::max()
 
     Returns the maximum value that QRandomGenerator64 may ever generate. That is,
@@ -799,7 +799,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa min(), QRandomGenerator::max()
  */
 
-/**
+/*!
     Generates one 32-bit random value and returns it.
 
     \sa get64(), getReal()
@@ -811,7 +811,7 @@ quint32 QRandomGenerator::get32()
     return ret;
 }
 
-/**
+/*!
     Generates one 64-bit random value and returns it.
 
     \sa get32(), getReal(), QRandomGenerator64
@@ -823,7 +823,7 @@ quint64 QRandomGenerator::get64()
     return ret;
 }
 
-/**
+/*!
     \internal
 
     Fills the range pointed by \a buffer and \a bufferEnd with 32-bit random

@@ -120,7 +120,7 @@
 */
 
 /*!
-    \fn QStringIterator::QStringIterator(QStringView string, QStringView::size_type idx)
+    \fn QStringIterator::QStringIterator(QStringView string, qssize_t idx)
 
     Constructs an iterator over the contents of \a string. The iterator will point
     before position \a idx in the string.

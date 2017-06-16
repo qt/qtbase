@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QPlatformCursor::OverrideCursor
+    \enum QPlatformCursor::Capability
     \since 5.10
 
     \value OverrideCursor Indicates that the platform implements

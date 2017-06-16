@@ -120,7 +120,7 @@ public:
 */
 
 /*! \fn QSqlError::swap(QSqlError &other)
-    Swaps error \other with this error. This operation is very fast
+    Swaps error \a other with this error. This operation is very fast
     and never fails.
 
     \since 5.10
