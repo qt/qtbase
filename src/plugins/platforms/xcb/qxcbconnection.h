@@ -569,7 +569,7 @@ private:
     TouchDeviceData *populateTouchDevices(void *info);
     TouchDeviceData *touchDeviceForId(int id);
     void xi2HandleEvent(xcb_ge_event_t *event);
-    void xi2HandleHierachyEvent(void *event);
+    void xi2HandleHierarchyEvent(void *event);
     void xi2HandleDeviceChangedEvent(void *event);
     int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
 #ifdef XCB_USE_XINPUT22

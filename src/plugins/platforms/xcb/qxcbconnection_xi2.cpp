@@ -509,7 +509,7 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
         break;
     }
     case XI_HierarchyChanged:
-        xi2HandleHierachyEvent(xiEvent);
+        xi2HandleHierarchyEvent(xiEvent);
         return;
     case XI_DeviceChanged:
         xi2HandleDeviceChangedEvent(xiEvent);
@@ -819,7 +819,7 @@ bool QXcbConnection::xi2SetMouseGrabEnabled(xcb_window_t w, bool grab)
 }
 #endif // XCB_USE_XINPUT22
 
-void QXcbConnection::xi2HandleHierachyEvent(void *event)
+void QXcbConnection::xi2HandleHierarchyEvent(void *event)
 {
     xXIHierarchyEvent *xiEvent = reinterpret_cast<xXIHierarchyEvent *>(event);
     // We only care about hotplugged devices
