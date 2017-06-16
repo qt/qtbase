@@ -818,6 +818,7 @@
             "condition": "features.avx && tests.avx2",
             "output": [
                 "privateConfig",
+                "privateFeature",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_AVX2", "value": 1 }
             ]
         },
