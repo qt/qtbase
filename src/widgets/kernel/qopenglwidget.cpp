@@ -815,18 +815,18 @@ void QOpenGLWidgetPrivate::initialize()
     // Propagate settings that make sense only for the tlw. Note that this only
     // makes sense for properties that get picked up even after the native
     // window is created.
-    QSurfaceFormat tlwFormat;
-    if (tlw->windowHandle())
-        tlwFormat = tlw->windowHandle()->format();
-    if (requestedFormat.swapInterval() != tlwFormat.swapInterval()) {
-        // Most platforms will pick up the changed swap interval on the next
-        // makeCurrent or swapBuffers.
-        tlwFormat.setSwapInterval(requestedFormat.swapInterval());
-        tlw->windowHandle()->setFormat(tlwFormat);
-    }
-    if (requestedFormat.swapBehavior() != tlwFormat.swapBehavior()) {
-        tlwFormat.setSwapBehavior(requestedFormat.swapBehavior());
-        tlw->windowHandle()->setFormat(tlwFormat);
+    if (tlw->windowHandle()) {
+        QSurfaceFormat tlwFormat = tlw->windowHandle()->format();
+        if (requestedFormat.swapInterval() != tlwFormat.swapInterval()) {
+            // Most platforms will pick up the changed swap interval on the next
+            // makeCurrent or swapBuffers.
+            tlwFormat.setSwapInterval(requestedFormat.swapInterval());
+            tlw->windowHandle()->setFormat(tlwFormat);
+        }
+        if (requestedFormat.swapBehavior() != tlwFormat.swapBehavior()) {
+            tlwFormat.setSwapBehavior(requestedFormat.swapBehavior());
+            tlw->windowHandle()->setFormat(tlwFormat);
+        }
     }
 
     // The top-level window's surface is not good enough since it causes way too
