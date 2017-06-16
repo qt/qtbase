@@ -62,6 +62,7 @@ private slots:
     void task229128TriggeredSignalWithoutActiongroup();
     void task229128TriggeredSignalWhenInActiongroup();
     void repeat();
+    void keysequence(); // QTBUG-53381
 
 private:
     int m_lastEventType;
@@ -273,6 +274,40 @@ void tst_QAction::alternateShortcuts()
 
 
     //this tests a crash (if the action did not unregister its alternate shortcuts)
+    QTest::keyClick(&testWidget, Qt::Key_A, Qt::ControlModifier);
+}
+
+void tst_QAction::keysequence()
+{
+    MyWidget testWidget(this);
+    testWidget.show();
+    QApplication::setActiveWindow(&testWidget);
+
+    {
+        QAction act(&testWidget);
+        testWidget.addAction(&act);
+
+        QKeySequence ks(QKeySequence::SelectAll);
+
+        act.setShortcut(ks);
+
+        QSignalSpy spy(&act, &QAction::triggered);
+
+        act.setAutoRepeat(true);
+        QTest::keySequence(&testWidget, ks);
+        QCoreApplication::processEvents();
+        QCOMPARE(spy.count(), 1); // act should have been triggered
+
+        act.setAutoRepeat(false);
+        QTest::keySequence(&testWidget, ks);
+        QCoreApplication::processEvents();
+        QCOMPARE(spy.count(), 2); //act should have been triggered a 2nd time
+
+        // end of the scope of the action, it will be destroyed and removed from widget
+        // This action should also unregister its shortcuts
+    }
+
+    // this tests a crash (if the action did not unregister its alternate shortcuts)
     QTest::keyClick(&testWidget, Qt::Key_A, Qt::ControlModifier);
 }
 

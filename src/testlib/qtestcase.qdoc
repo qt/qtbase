@@ -570,6 +570,15 @@
     \sa QTest::keyClicks()
 */
 
+/*! \fn void QTest::keySequence(QWidget *widget, const QKeySequence &keySequence)
+    \overload
+    \since 5.10
+
+    Simulates typing of \a keySequence into a \a widget.
+
+    \sa QTest::keyClick(), QTest::keyClicks()
+*/
+
 /*! \fn void QTest::keyClick(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     \overload
     \since 5.0
@@ -604,6 +613,15 @@
     any keyboard modifiers and without delay of the test.
 
     \sa QTest::keyClicks()
+*/
+
+/*! \fn void QTest::keySequence(QWindow *window, const QKeySequence &keySequence)
+    \overload
+    \since 5.10
+
+    Simulates typing of \a keySequence into a \a window.
+
+    \sa QTest::keyClick(), QTest::keyClicks()
 */
 
 /*! \fn void QTest::keyEvent(KeyAction action, QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)

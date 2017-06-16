@@ -54,6 +54,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qevent.h>
+#include <QtGui/qkeysequence.h>
 
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qwidget.h>
@@ -164,6 +165,15 @@ namespace QTest
     { keyEvent(Press, window, key, modifier, delay); }
     Q_DECL_UNUSED inline static void keyPress(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Press, window, key, modifier, delay); }
+
+    Q_DECL_UNUSED inline static void keySequence(QWindow *window, const QKeySequence &keySequence)
+    {
+        for (int i = 0; i < keySequence.count(); ++i) {
+            const Qt::Key key = Qt::Key(keySequence[i] & ~Qt::KeyboardModifierMask);
+            const Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(keySequence[i] & Qt::KeyboardModifierMask);
+            keyClick(window, key, modifiers);
+        }
+    }
 
 #ifdef QT_WIDGETS_LIB
     static void simulateEvent(QWidget *widget, bool press, int code,
@@ -294,6 +304,16 @@ namespace QTest
     { keyEvent(Release, widget, key, modifier, delay); }
     inline static void keyClick(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay=-1)
     { keyEvent(Click, widget, key, modifier, delay); }
+
+    inline static void keySequence(QWidget *widget, const QKeySequence &keySequence)
+    {
+        for (int i = 0; i < keySequence.count(); ++i) {
+            const Qt::Key key = Qt::Key(keySequence[i] & ~Qt::KeyboardModifierMask);
+            const Qt::KeyboardModifiers modifiers = Qt::KeyboardModifiers(keySequence[i] & Qt::KeyboardModifierMask);
+            keyClick(widget, key, modifiers);
+        }
+    }
+
 #endif // QT_WIDGETS_LIB
 
 }
