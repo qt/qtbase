@@ -72,6 +72,11 @@
     that occurred, or errorString() to get a human readable
     description of what went wrong.
 
+    \note QImageReader assumes exclusive control over the file or
+    device that is assigned. Any attempts to modify the assigned file
+    or device during the lifetime of the QImageReader object will
+    yield undefined results.
+
     \section1 Formats
 
     Call supportedImageFormats() for a list of formats that
