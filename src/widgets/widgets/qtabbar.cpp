@@ -447,9 +447,10 @@ void QTabBarPrivate::layoutTabs()
     QVector<QLayoutStruct> tabChain(tabList.count() + 2);
 
     // We put an empty item at the front and back and set its expansive attribute
-    // depending on tabAlignment.
+    // depending on tabAlignment and expanding.
     tabChain[tabChainIndex].init();
-    tabChain[tabChainIndex].expansive = (tabAlignment != Qt::AlignLeft)
+    tabChain[tabChainIndex].expansive = (!expanding)
+                                        && (tabAlignment != Qt::AlignLeft)
                                         && (tabAlignment != Qt::AlignJustify);
     tabChain[tabChainIndex].empty = true;
     ++tabChainIndex;
@@ -514,13 +515,12 @@ void QTabBarPrivate::layoutTabs()
         maxExtent = maxWidth;
     }
 
-    if (!expanding) {
-        // Mirror our front item.
-        tabChain[tabChainIndex].init();
-        tabChain[tabChainIndex].expansive = (tabAlignment != Qt::AlignRight)
-                                            && (tabAlignment != Qt::AlignJustify);
-        tabChain[tabChainIndex].empty = true;
-    }
+    // Mirror our front item.
+    tabChain[tabChainIndex].init();
+    tabChain[tabChainIndex].expansive = (!expanding)
+                                        && (tabAlignment != Qt::AlignRight)
+                                        && (tabAlignment != Qt::AlignJustify);
+    tabChain[tabChainIndex].empty = true;
     Q_ASSERT(tabChainIndex == tabChain.count() - 1); // add an assert just to make sure.
 
     // Do the calculation

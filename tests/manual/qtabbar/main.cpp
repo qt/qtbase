@@ -56,12 +56,28 @@
 #include <QLayout>
 #include <QDesktopWidget>
 #include <QTabWidget>
+#include <QProxyStyle>
+
+class MyProxyStyle : public QProxyStyle
+{
+public:
+    int styleHint(StyleHint hint, const QStyleOption *option = 0,
+                  const QWidget *widget = 0, QStyleHintReturn *returnData = 0) const
+    {
+        if (hint == QStyle::SH_TabBar_Alignment)
+            return Qt::AlignLeft;
+//            return Qt::AlignRight;
+//            return Qt::AlignCenter;
+        return QProxyStyle::styleHint(hint, option, widget, returnData);
+    }
+};
 
 const int TabCount = 5;
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    app.setStyle(new MyProxyStyle);
 
     QWidget widget;
     QStackedWidget stackedWidget;
@@ -69,7 +85,7 @@ int main(int argc, char *argv[])
     tabBar.setDocumentMode(true);
     tabBar.setTabsClosable(true);
     tabBar.setMovable(true);
-    tabBar.setExpanding(true);
+    tabBar.setExpanding(false);
 
     // top
     tabBar.setShape(QTabBar::RoundedNorth);
