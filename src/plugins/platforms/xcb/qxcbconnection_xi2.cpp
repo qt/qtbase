@@ -591,6 +591,20 @@ void QXcbConnection::xi2HandleEvent(xcb_ge_event_t *event)
 }
 
 #ifdef XCB_USE_XINPUT22
+bool QXcbConnection::xi2MouseEvents() const
+{
+    static bool mouseViaXI2 = !qEnvironmentVariableIsSet("QT_XCB_NO_XI2_MOUSE");
+    // FIXME: Don't use XInput2 mouse events when Xinerama extension
+    // is enabled, because it causes problems with multi-monitor setup.
+    return mouseViaXI2 && isAtLeastXI22() && !has_xinerama_extension;
+}
+
+bool QXcbConnection::isTouchScreen(int id)
+{
+    auto device = touchDeviceForId(id);
+    return device && device->qtTouchDevice->type() == QTouchDevice::TouchScreen;
+}
+
 void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow)
 {
     xXIDeviceEvent *xiDeviceEvent = static_cast<xXIDeviceEvent *>(xiDevEvent);
@@ -1059,12 +1073,6 @@ Qt::MouseButton QXcbConnection::xiToQtMouseButton(uint32_t b)
     if (b >= 8 && b <= Qt::MaxMouseButton)
         return static_cast<Qt::MouseButton>(Qt::BackButton << (b - 8));
     return Qt::NoButton;
-}
-
-bool QXcbConnection::isTouchScreen(int id)
-{
-    auto device = touchDeviceForId(id);
-    return device && device->qtTouchDevice->type() == QTouchDevice::TouchScreen;
 }
 
 #if QT_CONFIG(tabletevent)

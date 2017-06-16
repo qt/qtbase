@@ -2118,16 +2118,6 @@ void QXcbConnection::initializeXKB()
 #endif
 }
 
-#if defined(XCB_USE_XINPUT22)
-bool QXcbConnection::xi2MouseEvents() const
-{
-    static bool mouseViaXI2 = !qEnvironmentVariableIsSet("QT_XCB_NO_XI2_MOUSE");
-    // FIXME: Don't use XInput2 mouse events when Xinerama extension
-    // is enabled, because it causes problems with multi-monitor setup.
-    return mouseViaXI2 && !has_xinerama_extension;
-}
-#endif
-
 QXcbSystemTrayTracker *QXcbConnection::systemTrayTracker() const
 {
     if (!m_systemTrayTracker) {

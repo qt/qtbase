@@ -493,12 +493,15 @@ public:
 
 #ifdef XCB_USE_XINPUT21
     void xi2UpdateScrollingDevices();
-#endif
+#endif // XCB_USE_XINPUT21
 
 #ifdef XCB_USE_XINPUT22
     bool startSystemResizeForTouchBegin(xcb_window_t window, const QPoint &point, Qt::Corner corner);
     bool xi2SetMouseGrabEnabled(xcb_window_t w, bool grab);
-#endif
+    bool xi2MouseEvents() const;
+    bool isTouchScreen(int id);
+#endif // XCB_USE_XINPUT22
+
     Qt::MouseButton xiToQtMouseButton(uint32_t b);
 
     QXcbEventReader *eventReader() const { return m_reader; }
@@ -506,11 +509,6 @@ public:
     bool canGrab() const { return m_canGrabServer; }
 
     QXcbGlIntegration *glIntegration() const { return m_glIntegration; }
-
-#ifdef XCB_USE_XINPUT22
-    bool xi2MouseEvents() const;
-    bool isTouchScreen(int id);
-#endif
 
 protected:
     bool event(QEvent *e) override;
