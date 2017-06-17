@@ -644,6 +644,15 @@ void QXcbWindow::setGeometry(const QRect &rect)
             qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
         };
         xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values));
+        if (window()->parent() && !window()->transientParent()) {
+            // Wait for server reply for parented windows to ensure that a few window
+            // moves will come as a one event. This is important when native widget is
+            // moved a few times in X and Y directions causing native scroll. Widget
+            // must get single event to not trigger unwanted widget position changes
+            // and then expose events causing backingstore flushes with incorrect
+            // offset causing image crruption.
+            connection()->sync();
+        }
     }
 
     xcb_flush(xcb_connection());

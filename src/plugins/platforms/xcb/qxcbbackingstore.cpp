@@ -69,6 +69,8 @@ public:
     QXcbShmImage(QXcbScreen *connection, const QSize &size, uint depth, QImage::Format format);
     ~QXcbShmImage() { destroy(); }
 
+    void flushScrolledRegion(bool clientSideScroll);
+
     bool scroll(const QRegion &area, int dx, int dy);
 
     QImage *image() { return &m_qimage; }
@@ -86,7 +88,8 @@ private:
     void destroy();
 
     void ensureGC(xcb_drawable_t dst);
-    void flushPixmap(const QRegion &region);
+    void shmPutImage(xcb_drawable_t drawable, const QRegion &region, const QPoint &offset = QPoint());
+    void flushPixmap(const QRegion &region, bool fullRegion = false);
     void setClip(const QRegion &region);
 
     xcb_shm_segment_info_t m_shm_info;
@@ -99,18 +102,26 @@ private:
     xcb_gcontext_t m_gc;
     xcb_drawable_t m_gc_drawable;
 
-    // When using shared memory this is the region currently shared with the server
-    QRegion m_dirtyShm;
-
+    // When using shared memory these variables are used only for server-side scrolling.
     // When not using shared memory, we maintain a server-side pixmap with the backing
     // store as well as repainted content not yet flushed to the pixmap. We only flush
     // the regions we need and only when these are marked dirty. This way we can just
     // do a server-side copy on expose instead of sending the pixels every time
     xcb_pixmap_t m_xcb_pixmap;
     QRegion m_pendingFlush;
+
+    // This is the scrolled region which is stored in server-side pixmap
+    QRegion m_scrolledRegion;
+
+    // When using shared memory this is the region currently shared with the server
+    QRegion m_dirtyShm;
+
+    // When not using shared memory this is a temporary buffer which is uploaded
+    // as a pixmap region to server
     QByteArray m_flushBuffer;
 
     bool m_hasAlpha;
+    bool m_clientSideScroll;
 };
 
 class QXcbShmGraphicsBuffer : public QPlatformGraphicsBuffer
@@ -149,6 +160,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     , m_gc(0)
     , m_gc_drawable(0)
     , m_xcb_pixmap(0)
+    , m_clientSideScroll(false)
 {
     const xcb_format_t *fmt = connection()->formatForDepth(depth);
     Q_ASSERT(fmt);
@@ -202,13 +214,59 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     m_qimage = QImage( (uchar*) m_xcb_image->data, m_xcb_image->width, m_xcb_image->height, m_xcb_image->stride, format);
     m_graphics_buffer = new QXcbShmGraphicsBuffer(&m_qimage);
 
-    if (!hasShm()) {
-        m_xcb_pixmap = xcb_generate_id(xcb_connection());
-        xcb_create_pixmap(xcb_connection(),
-                          m_xcb_image->depth,
-                          m_xcb_pixmap,
-                          screen->screen()->root,
-                          m_xcb_image->width, m_xcb_image->height);
+    m_xcb_pixmap = xcb_generate_id(xcb_connection());
+    xcb_create_pixmap(xcb_connection(),
+                      m_xcb_image->depth,
+                      m_xcb_pixmap,
+                      screen->screen()->root,
+                      m_xcb_image->width, m_xcb_image->height);
+}
+
+void QXcbShmImage::flushScrolledRegion(bool clientSideScroll)
+{
+    if (m_clientSideScroll == clientSideScroll)
+       return;
+
+    m_clientSideScroll = clientSideScroll;
+
+    if (m_scrolledRegion.isNull())
+        return;
+
+    if (hasShm() && m_dirtyShm.intersects(m_scrolledRegion)) {
+        connection()->sync();
+        m_dirtyShm = QRegion();
+    }
+
+    if (m_clientSideScroll) {
+        // Copy scrolled image region from server-side pixmap to client-side memory
+        for (const QRect &rect : m_scrolledRegion) {
+            const int w = rect.width();
+            const int h = rect.height();
+
+            auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_image,
+                                               xcb_connection(),
+                                               m_xcb_image->format,
+                                               m_xcb_pixmap,
+                                               rect.x(), rect.y(),
+                                               w, h,
+                                               ~0u);
+
+            if (reply && reply->depth == m_xcb_image->depth) {
+                const QImage img(xcb_get_image_data(reply.get()), w, h, m_qimage.format());
+
+                QPainter p(&m_qimage);
+                p.setCompositionMode(QPainter::CompositionMode_Source);
+                p.drawImage(rect.topLeft(), img);
+            }
+        }
+        m_scrolledRegion = QRegion();
+    } else {
+        // Copy scrolled image region from client-side memory to server-side pixmap
+        ensureGC(m_xcb_pixmap);
+        if (hasShm())
+            shmPutImage(m_xcb_pixmap, m_scrolledRegion);
+        else
+            flushPixmap(m_scrolledRegion, true);
     }
 }
 
@@ -216,21 +274,28 @@ extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &o
 
 bool QXcbShmImage::scroll(const QRegion &area, int dx, int dy)
 {
-    if (image()->isNull())
-        return false;
-
-    if (hasShm())
-        preparePaint(area);
-
+    const QRect bounds(QPoint(), size());
+    const QRegion scrollArea(area & bounds);
     const QPoint delta(dx, dy);
-    for (const QRect &rect : area)
-        qt_scrollRectInImage(*image(), rect, delta);
 
-    if (m_xcb_pixmap) {
-        flushPixmap(area);
+    if (m_clientSideScroll) {
+        if (m_qimage.isNull())
+            return false;
+
+        if (hasShm())
+            preparePaint(scrollArea);
+
+        for (const QRect &rect : scrollArea)
+            qt_scrollRectInImage(m_qimage, rect, delta);
+    } else {
+        if (hasShm())
+            shmPutImage(m_xcb_pixmap, m_pendingFlush.intersected(scrollArea));
+        else
+            flushPixmap(scrollArea);
+
         ensureGC(m_xcb_pixmap);
-        const QRect bounds(QPoint(0, 0), size());
-        for (const QRect &src : area) {
+
+        for (const QRect &src : scrollArea) {
             const QRect dst = src.translated(delta).intersected(bounds);
             xcb_copy_area(xcb_connection(),
                           m_xcb_pixmap,
@@ -240,6 +305,12 @@ bool QXcbShmImage::scroll(const QRegion &area, int dx, int dy)
                           dst.x(), dst.y(),
                           dst.width(), dst.height());
         }
+    }
+
+    m_scrolledRegion |= scrollArea.translated(delta).intersected(bounds);
+    if (hasShm()) {
+        m_pendingFlush -= scrollArea;
+        m_pendingFlush -= m_scrolledRegion;
     }
 
     return true;
@@ -267,10 +338,8 @@ void QXcbShmImage::destroy()
     delete m_graphics_buffer;
     m_graphics_buffer = nullptr;
 
-    if (m_xcb_pixmap) {
-        xcb_free_pixmap(xcb_connection(), m_xcb_pixmap);
-        m_xcb_pixmap = 0;
-    }
+    xcb_free_pixmap(xcb_connection(), m_xcb_pixmap);
+    m_xcb_pixmap = 0;
 }
 
 void QXcbShmImage::ensureGC(xcb_drawable_t dst)
@@ -353,10 +422,36 @@ static inline quint32 round_up_scanline(quint32 base, quint32 pad)
     return (base + pad - 1) & -pad;
 }
 
-void QXcbShmImage::flushPixmap(const QRegion &region)
+void QXcbShmImage::shmPutImage(xcb_drawable_t drawable, const QRegion &region, const QPoint &offset)
 {
-    const QVector<QRect> rects = m_pendingFlush.intersected(region).rects();
-    m_pendingFlush -= region;
+    for (const QRect &rect : region) {
+        const QPoint source = rect.translated(offset).topLeft();
+        xcb_shm_put_image(xcb_connection(),
+                          drawable,
+                          m_gc,
+                          m_xcb_image->width,
+                          m_xcb_image->height,
+                          source.x(), source.y(),
+                          rect.width(), rect.height(),
+                          rect.x(), rect.y(),
+                          m_xcb_image->depth,
+                          m_xcb_image->format,
+                          0, // send event?
+                          m_shm_info.shmseg,
+                          m_xcb_image->data - m_shm_info.shmaddr);
+    }
+    m_dirtyShm |= region.translated(offset);
+}
+
+void QXcbShmImage::flushPixmap(const QRegion &region, bool fullRegion)
+{
+    QVector<QRect> rects;
+    if (!fullRegion) {
+        rects = m_pendingFlush.intersected(region).rects();
+        m_pendingFlush -= region;
+    } else {
+        rects = region.rects();
+    }
 
     xcb_image_t xcb_subimage;
     memset(&xcb_subimage, 0, sizeof(xcb_image_t));
@@ -372,7 +467,7 @@ void QXcbShmImage::flushPixmap(const QRegion &region)
 
     const bool needsByteSwap = xcb_subimage.byte_order != m_xcb_image->byte_order;
 
-    for (const QRect &rect : rects) {
+    for (const QRect &rect : qAsConst(rects)) {
         // We must make sure that each request is not larger than max_req_size.
         // Each request takes req_size + m_xcb_image->stride * height bytes.
         static const uint32_t req_size = sizeof(xcb_put_image_request_t);
@@ -445,29 +540,32 @@ void QXcbShmImage::setClip(const QRegion &region)
 
 void QXcbShmImage::put(xcb_drawable_t dst, const QRegion &region, const QPoint &offset)
 {
+    Q_ASSERT(!m_clientSideScroll);
+
     ensureGC(dst);
     setClip(region);
 
-    const QRect bounds = region.boundingRect();
-    const QPoint target = bounds.topLeft();
-    const QRect source = bounds.translated(offset);
-
     if (hasShm()) {
-        xcb_shm_put_image(xcb_connection(),
+        // Copy scrolled area on server-side from pixmap to window
+        const QRegion scrolledRegion = m_scrolledRegion.translated(-offset);
+        for (const QRect &rect : scrolledRegion) {
+            const QPoint source = rect.translated(offset).topLeft();
+            xcb_copy_area(xcb_connection(),
+                          m_xcb_pixmap,
                           dst,
                           m_gc,
-                          m_xcb_image->width,
-                          m_xcb_image->height,
                           source.x(), source.y(),
-                          source.width(), source.height(),
-                          target.x(), target.y(),
-                          m_xcb_image->depth,
-                          m_xcb_image->format,
-                          0, // send event?
-                          m_shm_info.shmseg,
-                          m_xcb_image->data - m_shm_info.shmaddr);
-        m_dirtyShm |= region.translated(offset);
+                          rect.x(), rect.y(),
+                          rect.width(), rect.height());
+        }
+
+        // Copy non-scrolled image from client-side memory to server-side window
+        const QRegion notScrolledArea = region - scrolledRegion;
+        shmPutImage(dst, notScrolledArea, offset);
     } else {
+        const QRect bounds = region.boundingRect();
+        const QPoint target = bounds.topLeft();
+        const QRect source = bounds.translated(offset);
         flushPixmap(region);
         xcb_copy_area(xcb_connection(),
                       m_xcb_pixmap,
@@ -489,9 +587,9 @@ void QXcbShmImage::preparePaint(const QRegion &region)
             connection()->sync();
             m_dirtyShm = QRegion();
         }
-    } else {
-        m_pendingFlush |= region;
     }
+    m_scrolledRegion -= region;
+    m_pendingFlush |= region;
 }
 
 QXcbBackingStore::QXcbBackingStore(QWindow *window)
@@ -573,6 +671,8 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     if (!m_image || m_image->size().isEmpty())
         return;
 
+    m_image->flushScrolledRegion(false);
+
     QSize imageSize = m_image->size();
 
     QRegion clipped = region;
@@ -603,6 +703,11 @@ void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
                                        QPlatformTextureList *textures,
                                        bool translucentBackground)
 {
+    if (!m_image || m_image->size().isEmpty())
+        return;
+
+    m_image->flushScrolledRegion(true);
+
     QPlatformBackingStore::composeAndFlush(window, region, offset, textures, translucentBackground);
 
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
