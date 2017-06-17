@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include "private/qglobal_p.h"
+
 /* Copied from #include <elf.h>:
  */
 #define ELF_NOTE_GNU            "GNU"
@@ -76,7 +78,7 @@
 
 /* Minimum Linux kernel version:
  * We require the following features in Qt (unconditional, no fallback):
- *   Feature                    Added in version
+ *   Feature                    Added in version        Macro
  * - inotify_init1              before 2.6.12-rc12
  * - futex(2)                   before 2.6.12-rc12
  * - FUTEX_PRIVATE_FLAG         2.6.22
@@ -84,9 +86,15 @@
  * - eventfd                    2.6.23
  * - pipe2 & dup3               2.6.27
  * - accept4                    2.6.28
+ * - getrandom                  3.17                    QT_CONFIG(getentropy)
  */
 
+#if QT_CONFIG(getentropy)
+    .long       3
+    .long       17
+    .long       0
+#else
     .long       2
     .long       6
     .long       28
-
+#endif

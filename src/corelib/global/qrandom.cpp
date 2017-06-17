@@ -48,15 +48,19 @@
 
 #include <errno.h>
 
-#if QT_CONFIG(cxx11_random)
-#  include <random>
-#  include "qdeadlinetimer.h"
-#  include "qhashfunctions.h"
-#endif
+#if QT_CONFIG(getentropy)
+#  include <sys/random.h>
+#else
+#  if QT_CONFIG(cxx11_random)
+#    include <random>
+#    include "qdeadlinetimer.h"
+#    include "qhashfunctions.h"
+#  endif
 
-#if QT_CONFIG(sys_auxv)
-#  include <sys/auxv.h>
-#endif
+#  if QT_CONFIG(sys_auxv)
+#    include <sys/auxv.h>
+#  endif
+#endif // !QT_CONFIG(getentropy)
 
 #ifdef Q_OS_UNIX
 #  include <fcntl.h>
@@ -111,7 +115,26 @@ out:
 #endif
 
 namespace {
-#ifdef Q_OS_UNIX
+#if QT_CONFIG(getentropy)
+class SystemRandom
+{
+public:
+    enum { EfficientBufferFill = true };
+    static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
+    {
+        // getentropy can read at most 256 bytes, so break the reading
+        qssize_t read = 0;
+        while (count - read > 256) {
+            // getentropy can't fail under normal circumstances
+            read += getentropy(reinterpret_cast<uchar *>(buffer) + read, 256);
+        }
+
+        getentropy(reinterpret_cast<uchar *>(buffer) + read, count - read);
+        return count;
+    }
+};
+
+#elif defined(Q_OS_UNIX)
 class SystemRandom
 {
     static QBasicAtomicInt s_fdp1;  // "file descriptor plus 1"
@@ -207,6 +230,12 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
         rand_s(&value);
         return value;
     });
+}
+#elif QT_CONFIG(getentropy)
+static void fallback_update_seed(unsigned) {}
+static void fallback_fill(quint32 *, qssize_t) Q_DECL_NOTHROW
+{
+    // no fallback necessary, getentropy cannot fail under normal circumstances
 }
 #elif defined(Q_OS_BSD4)
 static void fallback_update_seed(unsigned) {}

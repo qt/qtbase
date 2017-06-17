@@ -1,0 +1,1 @@
+SOURCES = getentropy.cpp

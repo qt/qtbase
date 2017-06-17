@@ -76,6 +76,7 @@
 # define QT_FEATURE_alloca_malloc_h -1
 #endif
 #define QT_FEATURE_cxx11_random (QT_HAS_INCLUDE(<random>) ? 1 : -1)
+#define QT_FEATURE_getentropy -1
 #define QT_FEATURE_iconv -1
 #define QT_FEATURE_icu -1
 #define QT_FEATURE_journald -1

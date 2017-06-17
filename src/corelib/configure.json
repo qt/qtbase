@@ -163,6 +163,11 @@
             "type": "compile",
             "test": "unix/futimesat"
         },
+        "getentropy": {
+            "label": "getentropy()",
+            "type": "compile",
+            "test": "unix/getentropy"
+        },
         "posix-iconv": {
             "label": "POSIX iconv",
             "type": "compile",
@@ -275,6 +280,11 @@
         "futimesat": {
             "label": "futimesat()",
             "condition": "!config.win32 && !features.futimens && !features.futimes && tests.futimesat",
+            "output": [ "privateFeature" ]
+        },
+        "getentropy": {
+            "label": "getentropy()",
+            "condition": "config.unix && tests.getentropy",
             "output": [ "privateFeature" ]
         },
         "glib": {

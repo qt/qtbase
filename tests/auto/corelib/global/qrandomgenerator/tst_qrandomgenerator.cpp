@@ -38,7 +38,7 @@
 #  include <random>
 #endif
 
-#if QT_CONFIG(cxx11_random) || defined(Q_OS_BSD4) || defined(Q_OS_WIN)
+#if !QT_CONFIG(getentropy) && (QT_CONFIG(cxx11_random) || defined(Q_OS_BSD4) || defined(Q_OS_WIN))
 #  define HAVE_FALLBACK_ENGINE
 #endif
 
