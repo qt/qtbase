@@ -59,6 +59,22 @@ if(linux*|hurd*):!cross_compile:!static:!*-armcc* {
    DEFINES += ELF_INTERPRETER=\\\"$$system(LC_ALL=C readelf -l /bin/ls | perl -n -e \'$$prog\')\\\"
 }
 
+linux:!static {
+    precompile_header {
+        # we'll get an error if we just use SOURCES +=
+        no_pch_assembler.commands = $$QMAKE_CC -c $(CFLAGS) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+        no_pch_assembler.dependency_type = TYPE_C
+        no_pch_assembler.output = ${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+        no_pch_assembler.input = NO_PCH_ASM
+        no_pch_assembler.name = compiling[no_pch] ${QMAKE_FILE_IN}
+        silent: no_pch_assembler.commands = @echo compiling[no_pch] ${QMAKE_FILE_IN} && $$no_pch_assembler.commands
+        QMAKE_EXTRA_COMPILERS += no_pch_assembler
+        NO_PCH_ASM += global/minimum-linux.S
+    } else {
+        SOURCES += global/minimum-linux.S
+    }
+}
+
 qtConfig(slog2): \
     LIBS_PRIVATE += -lslog2
 
