@@ -46,8 +46,9 @@
 #  include <cstddef>
 #  include <utility>
 #endif
-
-#include <stddef.h>
+#ifndef __ASSEMBLER__
+#  include <stddef.h>
+#endif
 
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
@@ -188,6 +189,7 @@ namespace QT_NAMESPACE {}
 #  define QT_LARGEFILE_SUPPORT 64
 #endif
 
+#ifndef __ASSEMBLER__
 QT_BEGIN_NAMESPACE
 
 /*
@@ -1173,5 +1175,6 @@ QT_END_NAMESPACE
 #include <QtCore/qversiontagging.h>
 
 #endif /* __cplusplus */
+#endif /* !__ASSEMBLER__ */
 
 #endif /* QGLOBAL_H */
