@@ -170,7 +170,7 @@ struct Property
     inline Property(qint32 k, const QVariant &v) : key(k), value(v) {}
     inline Property() {}
 
-    qint32 key;
+    qint32 key = -1;
     QVariant value;
 
     inline bool operator==(const Property &other) const
