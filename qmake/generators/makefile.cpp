@@ -176,7 +176,7 @@ MakefileGenerator::initOutPaths()
 
 #ifdef Q_OS_WIN
         // We don't want to add a separator for DLLDESTDIR on Windows (###why?)
-        if(!(dirs[x] == "DLLDESTDIR"))
+        if (dkey != "DLLDESTDIR")
 #endif
         {
             if(!pathRef.endsWith(Option::dir_sep))

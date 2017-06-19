@@ -75,7 +75,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
                 int nameLen = equal - entry;
                 QString name = QString::fromWCharArray(entry, nameLen);
                 QString value = QString::fromWCharArray(equal + 1, entryLen - nameLen - 1);
-                env.d->hash.insert(QProcessEnvironmentPrivate::Key(name), value);
+                env.d->vars.insert(QProcessEnvironmentPrivate::Key(name), value);
             }
             entry += entryLen + 1;
         }
@@ -390,11 +390,11 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     return args;
 }
 
-static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &environment)
+static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Map &environment)
 {
     QByteArray envlist;
     if (!environment.isEmpty()) {
-        QProcessEnvironmentPrivate::Hash copy = environment;
+        QProcessEnvironmentPrivate::Map copy = environment;
 
         // add PATH if necessary (for DLL loading)
         QProcessEnvironmentPrivate::Key pathKey(QLatin1String("PATH"));
@@ -413,8 +413,8 @@ static QByteArray qt_create_environment(const QProcessEnvironmentPrivate::Hash &
         }
 
         int pos = 0;
-        QProcessEnvironmentPrivate::Hash::ConstIterator it = copy.constBegin(),
-                                                       end = copy.constEnd();
+        auto it = copy.constBegin();
+        const auto end = copy.constEnd();
 
         static const wchar_t equal = L'=';
         static const wchar_t nul = L'\0';
@@ -475,7 +475,7 @@ void QProcessPrivate::startProcess()
     QString args = qt_create_commandline(program, arguments);
     QByteArray envlist;
     if (environment.d.constData())
-        envlist = qt_create_environment(environment.d.constData()->hash);
+        envlist = qt_create_environment(environment.d.constData()->vars);
     if (!nativeArguments.isEmpty()) {
         if (!args.isEmpty())
              args += QLatin1Char(' ');

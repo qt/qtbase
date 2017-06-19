@@ -490,7 +490,7 @@ public class QtActivityDelegate
        be adjusted.
        mode is one of QAndroidInputContext::CursorHandleShowMode
     */
-    public void updateHandles(int mode, int x1, int y1, int x2, int y2)
+    public void updateHandles(int mode, int x1, int y1, int x2, int y2, boolean rtl)
     {
         if (mode == CursorHandleNotShown) {
             if (m_cursorHandle != null)
@@ -498,6 +498,8 @@ public class QtActivityDelegate
             if (m_rightSelectionHandle != null) {
                 m_rightSelectionHandle.hide();
                 m_leftSelectionHandle.hide();
+                m_rightSelectionHandle = null;
+                m_leftSelectionHandle = null;
             }
             if (m_editMenu != null)
                 m_editMenu.hide();
@@ -506,19 +508,25 @@ public class QtActivityDelegate
         } else if (mode == CursorHandleShowNormal || mode == CursorHandleShowPopup) {
             if (m_cursorHandle == null) {
                 m_cursorHandle = new CursorHandle(m_activity, m_layout, QtNative.IdCursorHandle,
-                                                  android.R.attr.textSelectHandle);
+                                                  android.R.attr.textSelectHandle, false);
             }
             m_cursorHandle.setPosition(x1, y1);
             if (m_rightSelectionHandle != null) {
                 m_rightSelectionHandle.hide();
                 m_leftSelectionHandle.hide();
+                m_rightSelectionHandle = null;
+                m_leftSelectionHandle = null;
             }
         } else if (mode == CursorHandleShowSelection) {
             if (m_rightSelectionHandle == null) {
                 m_leftSelectionHandle = new CursorHandle(m_activity, m_layout, QtNative.IdLeftHandle,
-                                                         android.R.attr.textSelectHandleLeft);
+                                                         !rtl ? android.R.attr.textSelectHandleLeft :
+                                                                android.R.attr.textSelectHandleRight,
+                                                         rtl);
                 m_rightSelectionHandle = new CursorHandle(m_activity, m_layout, QtNative.IdRightHandle,
-                                                          android.R.attr.textSelectHandleRight);
+                                                          !rtl ? android.R.attr.textSelectHandleRight :
+                                                                 android.R.attr.textSelectHandleLeft,
+                                                          rtl);
             }
             m_leftSelectionHandle.setPosition(x1,y1);
             m_rightSelectionHandle.setPosition(x2,y2);

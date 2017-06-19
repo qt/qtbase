@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the config.tests of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,65 +37,16 @@
 **
 ****************************************************************************/
 
-#ifndef QCOLUMNVIEWGRIP_P_H
-#define QCOLUMNVIEWGRIP_P_H
+#if defined(__QNXNTO__)
+#include <sys/neutrino.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#if _NTO_VERSION < 700
+#error stack-protector not used (by default) before QNX 7.0.0.
+#endif
 
-#include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <private/qwidget_p.h>
+#endif
 
-QT_REQUIRE_CONFIG(columnview);
-
-QT_BEGIN_NAMESPACE
-
-class QColumnViewGripPrivate;
-
-class Q_AUTOTEST_EXPORT QColumnViewGrip : public QWidget {
-
-Q_OBJECT
-
-Q_SIGNALS:
-    void gripMoved(int offset);
-
-public:
-    explicit QColumnViewGrip(QWidget *parent = 0);
-    ~QColumnViewGrip();
-    int moveGrip(int offset);
-
-protected:
-    QColumnViewGrip(QColumnViewGripPrivate &, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-    void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-
-private:
-    Q_DECLARE_PRIVATE(QColumnViewGrip)
-    Q_DISABLE_COPY(QColumnViewGrip)
-};
-
-class QColumnViewGripPrivate : public QWidgetPrivate
+int main()
 {
-    Q_DECLARE_PUBLIC(QColumnViewGrip)
-
-public:
-    QColumnViewGripPrivate();
-    ~QColumnViewGripPrivate() {}
-
-    int originalXLocation;
-};
-
-QT_END_NAMESPACE
-
-#endif //QCOLUMNVIEWGRIP_P_H
+    return 0;
+}

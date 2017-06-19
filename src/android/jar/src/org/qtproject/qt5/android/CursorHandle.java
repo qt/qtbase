@@ -107,13 +107,14 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
     private int m_id;
     private int m_attr;
     private Activity m_activity;
-    private int m_posX;
-    private int m_posY;
+    private int m_posX = 0;
+    private int m_posY = 0;
     private int m_lastX;
     private int m_lastY;
     int tolerance;
+    private boolean m_rtl;
 
-    public CursorHandle(Activity activity, View layout, int id, int attr) {
+    public CursorHandle(Activity activity, View layout, int id, int attr, boolean rtl) {
         m_activity = activity;
         m_id = id;
         m_attr = attr;
@@ -122,6 +123,7 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
         tolerance = Math.round(2 * metrics.density);
         m_lastX = m_lastY = -1 - tolerance;
+        m_rtl = rtl;
     }
 
     private boolean initOverlay(){
@@ -160,9 +162,9 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 
         if (m_id == QtNative.IdCursorHandle) {
             x2 -= m_cursorView.getWidth() / 2 ;
-        } else if (m_id == QtNative.IdLeftHandle) {
+        } else if ((m_id == QtNative.IdLeftHandle && !m_rtl) || (m_id == QtNative.IdRightHandle && m_rtl)) {
             x2 -= m_cursorView.getWidth() * 3 / 4;
-        } else if (m_id == QtNative.IdRightHandle) {
+        } else {
             x2 -= m_cursorView.getWidth() / 4;
         }
 

@@ -94,6 +94,7 @@ private slots:
     void setEnvironment();
     void setProcessEnvironment_data();
     void setProcessEnvironment();
+    void environmentIsSorted();
     void spaceInName();
     void setStandardInputFile();
     void setStandardOutputFile_data();
@@ -1731,6 +1732,47 @@ void tst_QProcess::setProcessEnvironment()
 
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
+}
+
+void tst_QProcess::environmentIsSorted()
+{
+    QProcessEnvironment env;
+    env.insert(QLatin1String("a"), QLatin1String("foo_a"));
+    env.insert(QLatin1String("B"), QLatin1String("foo_B"));
+    env.insert(QLatin1String("c"), QLatin1String("foo_c"));
+    env.insert(QLatin1String("D"), QLatin1String("foo_D"));
+    env.insert(QLatin1String("e"), QLatin1String("foo_e"));
+    env.insert(QLatin1String("F"), QLatin1String("foo_F"));
+    env.insert(QLatin1String("Path"), QLatin1String("foo_Path"));
+    env.insert(QLatin1String("SystemRoot"), QLatin1String("foo_SystemRoot"));
+
+    const QStringList envlist = env.toStringList();
+
+#ifdef Q_OS_WIN32
+    // The environment block passed to CreateProcess "[Requires that] All strings in the
+    // environment block must be sorted alphabetically by name. The sort is case-insensitive,
+    // Unicode order, without regard to locale."
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms682009(v=vs.85).aspx
+    // So on Windows we sort that way.
+    const QStringList expected = { QLatin1String("a=foo_a"),
+                                   QLatin1String("B=foo_B"),
+                                   QLatin1String("c=foo_c"),
+                                   QLatin1String("D=foo_D"),
+                                   QLatin1String("e=foo_e"),
+                                   QLatin1String("F=foo_F"),
+                                   QLatin1String("Path=foo_Path"),
+                                   QLatin1String("SystemRoot=foo_SystemRoot") };
+#else
+    const QStringList expected = { QLatin1String("B=foo_B"),
+                                   QLatin1String("D=foo_D"),
+                                   QLatin1String("F=foo_F"),
+                                   QLatin1String("Path=foo_Path"),
+                                   QLatin1String("SystemRoot=foo_SystemRoot"),
+                                   QLatin1String("a=foo_a"),
+                                   QLatin1String("c=foo_c"),
+                                   QLatin1String("e=foo_e") };
+#endif
+    QCOMPARE(envlist, expected);
 }
 
 void tst_QProcess::systemEnvironment()

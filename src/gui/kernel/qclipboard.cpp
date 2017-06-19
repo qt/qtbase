@@ -137,6 +137,17 @@ QT_BEGIN_NAMESPACE
 
     \endlist
 
+    \section1 Notes for Universal Windows Platform Users
+
+    \list
+
+    \li The Universal Windows Platform only allows to query the
+    clipboard in case the application is active and an application
+    window has focus. Accessing the clipboard data when in background
+    will fail due to access denial.
+
+    \endlist
+
     \sa QGuiApplication
 */
 

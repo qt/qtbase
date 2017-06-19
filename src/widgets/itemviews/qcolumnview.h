@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractitemview.h>
 
+QT_REQUIRE_CONFIG(columnview);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_COLUMNVIEW
 
 class QColumnViewPrivate;
 
@@ -108,8 +107,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_changeCurrentColumn())
     Q_PRIVATE_SLOT(d_func(), void _q_clicked(const QModelIndex &))
 };
-
-#endif // QT_NO_COLUMNVIEW
 
 QT_END_NAMESPACE
 

@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-#include "qglobalstatic.h"
-
 /*!
     \macro Q_GLOBAL_STATIC(Type, VariableName)
     \since 5.1

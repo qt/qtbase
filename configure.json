@@ -10,11 +10,11 @@
     "subconfigs": [
         "src/corelib",
         "src/network",
-        "src/sql",
         "src/gui",
         "src/xml",
         "src/widgets",
-        "src/printsupport"
+        "src/printsupport",
+        "src/plugins/sqldrivers"
     ],
 
     "commandline": {
@@ -425,8 +425,8 @@
         },
         "stack_protector": {
             "label": "stack protection",
-            "type": "compilerSupportsFlag",
-            "test": "-fstack-protector-strong"
+            "type": "compile",
+            "test": "unix/stack-protector"
         },
         "incredibuild_xge": {
             "label": "IncrediBuild",
@@ -930,7 +930,7 @@
         "stack-protector-strong": {
             "label": "stack protection",
             "condition": "config.qnx && tests.stack_protector",
-            "output": [ "publicQtConfig" ]
+            "output": [ "privateFeature" ]
         },
         "system-zlib": {
             "label": "Using system zlib",

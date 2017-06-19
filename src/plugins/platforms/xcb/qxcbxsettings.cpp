@@ -45,10 +45,6 @@
 #include <vector>
 #include <algorithm>
 
-#ifdef XCB_USE_XLIB
-#include <X11/extensions/XIproto.h>
-#endif //XCB_USE_XLIB
-
 QT_BEGIN_NAMESPACE
 /* Implementation of http://standards.freedesktop.org/xsettings-spec/xsettings-0.5.html */
 
@@ -145,19 +141,18 @@ public:
         return value + 4 - remainder;
     }
 
-#ifdef XCB_USE_XLIB
     void populateSettings(const QByteArray &xSettings)
     {
         if (xSettings.length() < 12)
             return;
         char byteOrder = xSettings.at(0);
-        if (byteOrder != LSBFirst && byteOrder != MSBFirst) {
+        if (byteOrder != XCB_IMAGE_ORDER_LSB_FIRST && byteOrder != XCB_IMAGE_ORDER_MSB_FIRST) {
             qWarning("ByteOrder byte %d not 0 or 1", byteOrder);
             return;
         }
 
 #define ADJUST_BO(b, t, x) \
-        ((b == LSBFirst) ?                          \
+        ((b == XCB_IMAGE_ORDER_LSB_FIRST) ?                          \
          qFromLittleEndian<t>(x) : \
          qFromBigEndian<t>(x))
 #define VALIDATE_LENGTH(x)    \
@@ -220,7 +215,6 @@ public:
         }
 
     }
-#endif //XCB_USE_XLIB
 
     QXcbVirtualDesktop *screen;
     xcb_window_t x_settings_window;
@@ -267,10 +261,8 @@ QXcbXSettings::QXcbXSettings(QXcbVirtualDesktop *screen)
     const uint32_t event_mask[] = { XCB_EVENT_MASK_STRUCTURE_NOTIFY|XCB_EVENT_MASK_PROPERTY_CHANGE };
     xcb_change_window_attributes(screen->xcb_connection(),d_ptr->x_settings_window,event,event_mask);
 
-#ifdef XCB_USE_XLIB
     d_ptr->populateSettings(d_ptr->getSettings());
     d_ptr->initialized = true;
-#endif //XCB_USE_XLIB
 }
 
 QXcbXSettings::~QXcbXSettings()
@@ -290,9 +282,8 @@ void QXcbXSettings::handlePropertyNotifyEvent(const xcb_property_notify_event_t 
     Q_D(QXcbXSettings);
     if (event->window != d->x_settings_window)
         return;
-#ifdef XCB_USE_XLIB
+
     d->populateSettings(d->getSettings());
-#endif //XCB_USE_XLIB
 }
 
 void QXcbXSettings::registerCallbackForProperty(const QByteArray &property, QXcbXSettings::PropertyChangeFunc func, void *handle)

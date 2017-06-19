@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qpagesetupwidget.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.9.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -31,21 +31,22 @@ class Ui_QPageSetupWidget
 {
 public:
     QGridLayout *gridLayout_3;
-    QHBoxLayout *horizontalLayout_4;
-    QComboBox *unit;
-    QSpacerItem *horizontalSpacer_3;
     QGroupBox *groupBox_2;
     QGridLayout *gridLayout_2;
     QLabel *pageSizeLabel;
-    QComboBox *paperSize;
+    QComboBox *pageSizeCombo;
     QLabel *widthLabel;
     QHBoxLayout *horizontalLayout_3;
-    QDoubleSpinBox *paperWidth;
+    QDoubleSpinBox *pageWidth;
     QLabel *heightLabel;
-    QDoubleSpinBox *paperHeight;
+    QDoubleSpinBox *pageHeight;
     QLabel *paperSourceLabel;
     QComboBox *paperSource;
     QSpacerItem *horizontalSpacer_4;
+    QHBoxLayout *horizontalLayout_4;
+    QComboBox *unitCombo;
+    QSpacerItem *horizontalSpacer_3;
+    QWidget *preview;
     QGroupBox *groupBox_3;
     QVBoxLayout *verticalLayout;
     QRadioButton *portrait;
@@ -53,7 +54,6 @@ public:
     QRadioButton *reverseLandscape;
     QRadioButton *reversePortrait;
     QSpacerItem *verticalSpacer_5;
-    QWidget *preview;
     QGroupBox *groupBox;
     QHBoxLayout *horizontalLayout_2;
     QGridLayout *gridLayout;
@@ -64,33 +64,26 @@ public:
     QSpacerItem *horizontalSpacer;
     QDoubleSpinBox *rightMargin;
     QSpacerItem *horizontalSpacer_8;
-    QDoubleSpinBox *bottomMargin;
     QSpacerItem *horizontalSpacer_2;
+    QDoubleSpinBox *bottomMargin;
     QSpacerItem *horizontalSpacer_5;
+    QGroupBox *pagesPerSheetButtonGroup;
+    QGridLayout *gridLayout_4;
+    QComboBox *pagesPerSheetCombo;
+    QSpacerItem *horizontalSpacer_6;
+    QLabel *label;
+    QComboBox *pagesPerSheetLayoutCombo;
+    QLabel *label_2;
     QSpacerItem *verticalSpacer;
 
     void setupUi(QWidget *QPageSetupWidget)
     {
         if (QPageSetupWidget->objectName().isEmpty())
             QPageSetupWidget->setObjectName(QStringLiteral("QPageSetupWidget"));
-        QPageSetupWidget->resize(416, 488);
+        QPageSetupWidget->resize(416, 515);
         gridLayout_3 = new QGridLayout(QPageSetupWidget);
         gridLayout_3->setContentsMargins(0, 0, 0, 0);
         gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
-        horizontalLayout_4 = new QHBoxLayout();
-        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
-        unit = new QComboBox(QPageSetupWidget);
-        unit->setObjectName(QStringLiteral("unit"));
-
-        horizontalLayout_4->addWidget(unit);
-
-        horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        horizontalLayout_4->addItem(horizontalSpacer_3);
-
-
-        gridLayout_3->addLayout(horizontalLayout_4, 0, 0, 1, 2);
-
         groupBox_2 = new QGroupBox(QPageSetupWidget);
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
         gridLayout_2 = new QGridLayout(groupBox_2);
@@ -100,10 +93,10 @@ public:
 
         gridLayout_2->addWidget(pageSizeLabel, 0, 0, 1, 1);
 
-        paperSize = new QComboBox(groupBox_2);
-        paperSize->setObjectName(QStringLiteral("paperSize"));
+        pageSizeCombo = new QComboBox(groupBox_2);
+        pageSizeCombo->setObjectName(QStringLiteral("pageSizeCombo"));
 
-        gridLayout_2->addWidget(paperSize, 0, 1, 1, 1);
+        gridLayout_2->addWidget(pageSizeCombo, 0, 1, 1, 1);
 
         widthLabel = new QLabel(groupBox_2);
         widthLabel->setObjectName(QStringLiteral("widthLabel"));
@@ -112,22 +105,22 @@ public:
 
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
-        paperWidth = new QDoubleSpinBox(groupBox_2);
-        paperWidth->setObjectName(QStringLiteral("paperWidth"));
-        paperWidth->setMaximum(9999.99);
+        pageWidth = new QDoubleSpinBox(groupBox_2);
+        pageWidth->setObjectName(QStringLiteral("pageWidth"));
+        pageWidth->setMaximum(9999.99);
 
-        horizontalLayout_3->addWidget(paperWidth);
+        horizontalLayout_3->addWidget(pageWidth);
 
         heightLabel = new QLabel(groupBox_2);
         heightLabel->setObjectName(QStringLiteral("heightLabel"));
 
         horizontalLayout_3->addWidget(heightLabel);
 
-        paperHeight = new QDoubleSpinBox(groupBox_2);
-        paperHeight->setObjectName(QStringLiteral("paperHeight"));
-        paperHeight->setMaximum(9999.99);
+        pageHeight = new QDoubleSpinBox(groupBox_2);
+        pageHeight->setObjectName(QStringLiteral("pageHeight"));
+        pageHeight->setMaximum(9999.99);
 
-        horizontalLayout_3->addWidget(paperHeight);
+        horizontalLayout_3->addWidget(pageHeight);
 
 
         gridLayout_2->addLayout(horizontalLayout_3, 1, 1, 1, 1);
@@ -148,6 +141,25 @@ public:
 
 
         gridLayout_3->addWidget(groupBox_2, 1, 0, 1, 2);
+
+        horizontalLayout_4 = new QHBoxLayout();
+        horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
+        unitCombo = new QComboBox(QPageSetupWidget);
+        unitCombo->setObjectName(QStringLiteral("unitCombo"));
+
+        horizontalLayout_4->addWidget(unitCombo);
+
+        horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_4->addItem(horizontalSpacer_3);
+
+
+        gridLayout_3->addLayout(horizontalLayout_4, 0, 0, 1, 2);
+
+        preview = new QWidget(QPageSetupWidget);
+        preview->setObjectName(QStringLiteral("preview"));
+
+        gridLayout_3->addWidget(preview, 2, 1, 2, 1);
 
         groupBox_3 = new QGroupBox(QPageSetupWidget);
         groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
@@ -180,11 +192,6 @@ public:
 
 
         gridLayout_3->addWidget(groupBox_3, 2, 0, 1, 1);
-
-        preview = new QWidget(QPageSetupWidget);
-        preview->setObjectName(QStringLiteral("preview"));
-
-        gridLayout_3->addWidget(preview, 2, 1, 2, 1);
 
         groupBox = new QGroupBox(QPageSetupWidget);
         groupBox->setObjectName(QStringLiteral("groupBox"));
@@ -230,16 +237,16 @@ public:
 
         gridLayout->addLayout(horizontalLayout, 1, 0, 1, 3);
 
+        horizontalSpacer_2 = new QSpacerItem(0, 20, QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+
+        gridLayout->addItem(horizontalSpacer_2, 0, 2, 1, 1);
+
         bottomMargin = new QDoubleSpinBox(groupBox);
         bottomMargin->setObjectName(QStringLiteral("bottomMargin"));
         bottomMargin->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         bottomMargin->setMaximum(999.99);
 
         gridLayout->addWidget(bottomMargin, 2, 1, 1, 1);
-
-        horizontalSpacer_2 = new QSpacerItem(0, 20, QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-
-        gridLayout->addItem(horizontalSpacer_2, 0, 2, 1, 1);
 
         horizontalSpacer_5 = new QSpacerItem(0, 20, QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
@@ -251,14 +258,45 @@ public:
 
         gridLayout_3->addWidget(groupBox, 3, 0, 1, 1);
 
-        verticalSpacer = new QSpacerItem(20, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        pagesPerSheetButtonGroup = new QGroupBox(QPageSetupWidget);
+        pagesPerSheetButtonGroup->setObjectName(QStringLiteral("pagesPerSheetButtonGroup"));
+        gridLayout_4 = new QGridLayout(pagesPerSheetButtonGroup);
+        gridLayout_4->setObjectName(QStringLiteral("gridLayout_4"));
+        pagesPerSheetCombo = new QComboBox(pagesPerSheetButtonGroup);
+        pagesPerSheetCombo->setObjectName(QStringLiteral("pagesPerSheetCombo"));
 
-        gridLayout_3->addItem(verticalSpacer, 4, 0, 1, 1);
+        gridLayout_4->addWidget(pagesPerSheetCombo, 0, 1, 1, 1);
+
+        horizontalSpacer_6 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        gridLayout_4->addItem(horizontalSpacer_6, 0, 2, 1, 1);
+
+        label = new QLabel(pagesPerSheetButtonGroup);
+        label->setObjectName(QStringLiteral("label"));
+
+        gridLayout_4->addWidget(label, 1, 0, 1, 1);
+
+        pagesPerSheetLayoutCombo = new QComboBox(pagesPerSheetButtonGroup);
+        pagesPerSheetLayoutCombo->setObjectName(QStringLiteral("pagesPerSheetLayoutCombo"));
+
+        gridLayout_4->addWidget(pagesPerSheetLayoutCombo, 1, 1, 1, 1);
+
+        label_2 = new QLabel(pagesPerSheetButtonGroup);
+        label_2->setObjectName(QStringLiteral("label_2"));
+
+        gridLayout_4->addWidget(label_2, 0, 0, 1, 1);
+
+
+        gridLayout_3->addWidget(pagesPerSheetButtonGroup, 5, 0, 1, 2);
+
+        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+        gridLayout_3->addItem(verticalSpacer, 6, 0, 1, 1);
 
 #ifndef QT_NO_SHORTCUT
-        pageSizeLabel->setBuddy(paperSize);
-        widthLabel->setBuddy(paperWidth);
-        heightLabel->setBuddy(paperHeight);
+        pageSizeLabel->setBuddy(pageSizeCombo);
+        widthLabel->setBuddy(pageWidth);
+        heightLabel->setBuddy(pageHeight);
         paperSourceLabel->setBuddy(paperSource);
 #endif // QT_NO_SHORTCUT
 
@@ -305,6 +343,9 @@ public:
 #ifndef QT_NO_ACCESSIBILITY
         bottomMargin->setAccessibleName(QApplication::translate("QPageSetupWidget", "bottom margin", Q_NULLPTR));
 #endif // QT_NO_ACCESSIBILITY
+        pagesPerSheetButtonGroup->setTitle(QApplication::translate("QPageSetupWidget", "Page Layout", Q_NULLPTR));
+        label->setText(QApplication::translate("QPageSetupWidget", "Page order:", Q_NULLPTR));
+        label_2->setText(QApplication::translate("QPageSetupWidget", "Pages per sheet:", Q_NULLPTR));
     } // retranslateUi
 
 };

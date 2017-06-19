@@ -162,8 +162,12 @@ macx-xcode {
         else: \
             use_flag = -include
 
+        # Only use Xarch with multi-arch, as the option confuses ccache
+        count(VALID_ARCHS, 1, greaterThan): \
+            QMAKE_CFLAGS_USE_PRECOMPILE += \
+                -Xarch_$${arch}
+
         QMAKE_CFLAGS_USE_PRECOMPILE += \
-            -Xarch_$${arch} \
             $${use_flag}${QMAKE_PCH_OUTPUT_$${arch}}
     }
     icc_pch_style {

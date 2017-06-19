@@ -1,0 +1,110 @@
+From c30bdc7d961ff09d74117e038c1bb9f06ad49738 Mon Sep 17 00:00:00 2001
+From: Oliver Wolff <oliver.wolff@qt.io>
+Date: Wed, 7 Jun 2017 10:07:43 +0200
+Subject: [PATCH] ANGLE: Fix crash with ltcg on Visual Studio 2015 Update 3
+
+Release builds of applications that used Qt configured with "link time
+code generation" crashed (memory access violation), when calling
+GetInternalFormatInfo in Context::initCaps.
+
+It looks like this is a compiler problem that can be avoided by not
+using a reference for the return value.
+
+Task-number: QTBUG-55718
+Change-Id: Ic1fb95d7b518a49859f41c819e860864387a8d3c
+---
+ src/3rdparty/angle/src/libANGLE/formatutils.cpp   |  2 +-
+ src/3rdparty/angle/src/libANGLE/formatutils.h     |  2 +-
+ src/3rdparty/angle/src/libANGLE/validationES3.cpp | 18 +++++++++---------
+ 3 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/formatutils.cpp b/src/3rdparty/angle/src/libANGLE/formatutils.cpp
+index 3a4df12..f8b9a8b 100644
+--- a/src/3rdparty/angle/src/libANGLE/formatutils.cpp
++++ b/src/3rdparty/angle/src/libANGLE/formatutils.cpp
+@@ -652,7 +652,7 @@ const Type &GetTypeInfo(GLenum type)
+     }
+ }
+ 
+-const InternalFormat &GetInternalFormatInfo(GLenum internalFormat)
++const InternalFormat GetInternalFormatInfo(GLenum internalFormat)
+ {
+     const InternalFormatInfoMap &formatMap = GetInternalFormatMap();
+     InternalFormatInfoMap::const_iterator iter = formatMap.find(internalFormat);
+diff --git a/src/3rdparty/angle/src/libANGLE/formatutils.h b/src/3rdparty/angle/src/libANGLE/formatutils.h
+index 6863e4d..2165e6b 100644
+--- a/src/3rdparty/angle/src/libANGLE/formatutils.h
++++ b/src/3rdparty/angle/src/libANGLE/formatutils.h
+@@ -79,7 +79,7 @@ struct InternalFormat
+                              GLint skipRows,
+                              GLint skipPixels) const;
+ };
+-const InternalFormat &GetInternalFormatInfo(GLenum internalFormat);
++const InternalFormat GetInternalFormatInfo(GLenum internalFormat);
+ 
+ GLenum GetSizedInternalFormat(GLenum internalFormat, GLenum type);
+ 
+diff --git a/src/3rdparty/angle/src/libANGLE/validationES3.cpp b/src/3rdparty/angle/src/libANGLE/validationES3.cpp
+index e08e5d2..2db64ec 100644
+--- a/src/3rdparty/angle/src/libANGLE/validationES3.cpp
++++ b/src/3rdparty/angle/src/libANGLE/validationES3.cpp
+@@ -775,20 +775,20 @@ static bool IsValidES3CopyTexImageCombination(GLenum textureInternalFormat, GLen
+         //      with the values of the source buffer's [channel sizes]. Table 3.17 is used if the
+         //      FRAMEBUFFER_ATTACHMENT_ENCODING is LINEAR and table 3.18 is used if the FRAMEBUFFER_ATTACHMENT_ENCODING
+         //      is SRGB.
+-        const InternalFormat *sourceEffectiveFormat = NULL;
++        InternalFormat sourceEffectiveFormat;
+         if (readBufferHandle != 0)
+         {
+             // Not the default framebuffer, therefore the read buffer must be a user-created texture or renderbuffer
+             if (framebufferInternalFormatInfo.pixelBytes > 0)
+             {
+-                sourceEffectiveFormat = &framebufferInternalFormatInfo;
++                sourceEffectiveFormat = framebufferInternalFormatInfo;
+             }
+             else
+             {
+                 // Renderbuffers cannot be created with an unsized internal format, so this must be an unsized-format
+                 // texture. We can use the same table we use when creating textures to get its effective sized format.
+                 GLenum sizedInternalFormat = GetSizedInternalFormat(framebufferInternalFormatInfo.format, framebufferInternalFormatInfo.type);
+-                sourceEffectiveFormat = &GetInternalFormatInfo(sizedInternalFormat);
++                sourceEffectiveFormat = GetInternalFormatInfo(sizedInternalFormat);
+             }
+         }
+         else
+@@ -800,7 +800,7 @@ static bool IsValidES3CopyTexImageCombination(GLenum textureInternalFormat, GLen
+                 GLenum effectiveFormat;
+                 if (GetEffectiveInternalFormat(framebufferInternalFormatInfo, textureInternalFormatInfo, &effectiveFormat))
+                 {
+-                    sourceEffectiveFormat = &GetInternalFormatInfo(effectiveFormat);
++                    sourceEffectiveFormat = GetInternalFormatInfo(effectiveFormat);
+                 }
+                 else
+                 {
+@@ -816,7 +816,7 @@ static bool IsValidES3CopyTexImageCombination(GLenum textureInternalFormat, GLen
+                     (framebufferInternalFormatInfo.blueBits  >= 1 && framebufferInternalFormatInfo.blueBits  <= 8) &&
+                     (framebufferInternalFormatInfo.alphaBits >= 1 && framebufferInternalFormatInfo.alphaBits <= 8))
+                 {
+-                    sourceEffectiveFormat = &GetInternalFormatInfo(GL_SRGB8_ALPHA8);
++                    sourceEffectiveFormat = GetInternalFormatInfo(GL_SRGB8_ALPHA8);
+                 }
+                 else
+                 {
+@@ -834,10 +834,10 @@ static bool IsValidES3CopyTexImageCombination(GLenum textureInternalFormat, GLen
+         {
+             // Section 3.8.5 of the GLES 3.0.3 spec, pg 139, requires that, if the destination format is sized,
+             // component sizes of the source and destination formats must exactly match
+-            if (textureInternalFormatInfo.redBits   != sourceEffectiveFormat->redBits   ||
+-                textureInternalFormatInfo.greenBits != sourceEffectiveFormat->greenBits ||
+-                textureInternalFormatInfo.blueBits  != sourceEffectiveFormat->blueBits  ||
+-                textureInternalFormatInfo.alphaBits != sourceEffectiveFormat->alphaBits)
++            if (textureInternalFormatInfo.redBits   != sourceEffectiveFormat.redBits   ||
++                textureInternalFormatInfo.greenBits != sourceEffectiveFormat.greenBits ||
++                textureInternalFormatInfo.blueBits  != sourceEffectiveFormat.blueBits  ||
++                textureInternalFormatInfo.alphaBits != sourceEffectiveFormat.alphaBits)
+             {
+                 return false;
+             }
+-- 
+2.5.3.windows.1
+

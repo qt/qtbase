@@ -84,6 +84,14 @@
                 "-ldl"
             ]
         },
+        "librt": {
+            "label": "clock_gettime()",
+            "test": "unix/clock-gettime",
+            "sources": [
+                "",
+                "-lrt"
+            ]
+        },
         "pcre2": {
             "label": "PCRE2",
             "test": "unix/pcre2",
@@ -119,15 +127,11 @@
             "type": "compile",
             "test": "common/atomicfptr"
         },
-        "clock-gettime": {
-            "label": "clock_gettime()",
-            "type": "compile",
-            "test": "unix/clock-gettime"
-        },
         "clock-monotonic": {
             "label": "POSIX monotonic clock",
             "type": "compile",
-            "test": "unix/clock-monotonic"
+            "test": "unix/clock-monotonic",
+            "use": "librt"
         },
         "cloexec": {
             "label": "O_CLOEXEC",
@@ -199,7 +203,7 @@
     "features": {
         "clock-gettime": {
             "label": "clock_gettime()",
-            "condition": "tests.clock-gettime",
+            "condition": "config.unix && libs.librt",
             "output": [ "privateFeature" ]
         },
         "clock-monotonic": {

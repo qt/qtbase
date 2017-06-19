@@ -42,7 +42,6 @@ const char _CLCompile[]                         = "ClCompile";
 const char _ItemGroup[]                         = "ItemGroup";
 const char _Link[]                              = "Link";
 const char _Lib[]                               = "Lib";
-const char _ManifestTool[]                      = "ManifestTool";
 const char _Midl[]                              = "Midl";
 const char _ResourceCompile[]                   = "ResourceCompile";
 
@@ -55,7 +54,6 @@ const char _AdditionalManifestDependencies[]    = "AdditionalManifestDependencie
 const char _AdditionalOptions[]                 = "AdditionalOptions";
 const char _AdditionalUsingDirectories[]        = "AdditionalUsingDirectories";
 const char _AllowIsolation[]                    = "AllowIsolation";
-const char _AlwaysAppend[]                      = "AlwaysAppend";
 const char _ApplicationConfigurationMode[]      = "ApplicationConfigurationMode";
 const char _AssemblerListingLocation[]          = "AssemblerListingLocation";
 const char _AssemblerOutput[]                   = "AssemblerOutput";
@@ -82,7 +80,6 @@ const char _CompileAsWinRT[]                    = "CompileAsWinRT";
 const char _ConfigurationType[]                 = "ConfigurationType";
 const char _CPreprocessOptions[]                = "CPreprocessOptions";
 const char _CreateHotpatchableImage[]           = "CreateHotpatchableImage";
-const char _CreateHotPatchableImage[]           = "CreateHotPatchableImage";
 const char _Culture[]                           = "Culture";
 const char _DataExecutionPrevention[]           = "DataExecutionPrevention";
 const char _DebugInformationFormat[]            = "DebugInformationFormat";
@@ -92,7 +89,6 @@ const char _DelaySign[]                         = "DelaySign";
 const char _DeleteExtensionsOnClean[]           = "DeleteExtensionsOnClean";
 const char _DisableLanguageExtensions[]         = "DisableLanguageExtensions";
 const char _DisableSpecificWarnings[]           = "DisableSpecificWarnings";
-const char _DisplayLibrary[]                    = "DisplayLibrary";
 const char _DLLDataFileName[]                   = "DLLDataFileName";
 const char _EmbedManagedResourceFile[]          = "EmbedManagedResourceFile";
 const char _EmbedManifest[]                     = "EmbedManifest";
@@ -166,8 +162,6 @@ const char _ModuleDefinitionFile[]              = "ModuleDefinitionFile";
 const char _MultiProcessorCompilation[]         = "MultiProcessorCompilation";
 const char _Name[]                              = "Name";
 const char _NoEntryPoint[]                      = "NoEntryPoint";
-const char _NullTerminateStrings[]              = "NullTerminateStrings";
-const char _ObjectFiles[]                       = "ObjectFiles";
 const char _ObjectFileName[]                    = "ObjectFileName";
 const char _OmitDefaultLibName[]                = "OmitDefaultLibName";
 const char _OmitFramePointers[]                 = "OmitFramePointers";
@@ -195,7 +189,6 @@ const char _ProxyFileName[]                     = "ProxyFileName";
 const char _RandomizedBaseAddress[]             = "RandomizedBaseAddress";
 const char _RedirectOutputAndErrors[]           = "RedirectOutputAndErrors";
 const char _RegisterOutput[]                    = "RegisterOutput";
-const char _RemoveObjects[]                     = "RemoveObjects";
 const char _ResourceOutputFileName[]            = "ResourceOutputFileName";
 const char _RuntimeLibrary[]                    = "RuntimeLibrary";
 const char _RuntimeTypeInfo[]                   = "RuntimeTypeInfo";
@@ -211,7 +204,6 @@ const char _StringPooling[]                     = "StringPooling";
 const char _StripPrivateSymbols[]               = "StripPrivateSymbols";
 const char _StructMemberAlignment[]             = "StructMemberAlignment";
 const char _SubSystem[]                         = "SubSystem";
-const char _SupportNobindOfDelayLoadedDLL[]     = "SupportNobindOfDelayLoadedDLL";
 const char _SupportUnloadOfDelayLoadedDLL[]     = "SupportUnloadOfDelayLoadedDLL";
 const char _SuppressCompilerWarnings[]          = "SuppressCompilerWarnings";
 const char _SuppressStartupBanner[]             = "SuppressStartupBanner";
@@ -220,8 +212,6 @@ const char _SwapRunFromNet[]                    = "SwapRunFromNet";
 const char _TargetEnvironment[]                 = "TargetEnvironment";
 const char _TargetMachine[]                     = "TargetMachine";
 const char _TerminalServerAware[]               = "TerminalServerAware";
-const char _TrackerLogDirectory[]               = "TrackerLogDirectory";
-const char _TreatLibWarningAsErrors[]           = "TreatLibWarningAsErrors";
 const char _TreatLinkerWarningAsErrors[]        = "TreatLinkerWarningAsErrors";
 const char _TreatSpecificWarningsAsErrors[]     = "TreatSpecificWarningsAsErrors";
 const char _TreatWarningAsError[]               = "TreatWarningAsError";
@@ -240,8 +230,6 @@ const char _UseOfATL[]                          = "UseOfATL";
 const char _UseOfMfc[]                          = "UseOfMfc";
 const char _UseUnicodeForAssemblerListing[]     = "UseUnicodeForAssemblerListing";
 const char _ValidateAllParameters[]             = "ValidateAllParameters";
-const char _VCCustomBuildTool[]                 = "VCCustomBuildTool";
-const char _Verbose[]                           = "Verbose";
 const char _Version[]                           = "Version";
 const char _WarnAsError[]                       = "WarnAsError";
 const char _WarningLevel[]                      = "WarningLevel";
@@ -1450,7 +1438,6 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagX(_AdditionalIncludeDirectories, tool.AdditionalIncludeDirectories, ";")
             << attrTagX(_AdditionalOptions, tool.AdditionalOptions, " ")
             << attrTagX(_AdditionalUsingDirectories, tool.AdditionalUsingDirectories, ";")
-//unused    << attrTagS(_AlwaysAppend, tool.AlwaysAppend)
             << attrTagS(_AssemblerListingLocation, tool.AssemblerListingLocation)
             << attrTagS(_AssemblerOutput, toString(tool.AssemblerOutput))
             << attrTagS(_BasicRuntimeChecks, toString(tool.BasicRuntimeChecks))
@@ -1486,7 +1473,6 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagT(_MinimalRebuild, tool.MinimalRebuild)
             << attrTagT(_MultiProcessorCompilation, tool.MultiProcessorCompilation)
             << attrTagS(_ObjectFileName, tool.ObjectFile)
-//unused    << attrTagX(_ObjectFiles, tool.ObjectFiles, ";")
             << attrTagT(_OmitDefaultLibName, tool.OmitDefaultLibName)
             << attrTagT(_OmitFramePointers, tool.OmitFramePointers)
             << attrTagT(_OpenMPSupport, tool.OpenMP)
@@ -1538,7 +1524,6 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCLinkerTool &tool)
             << attrTagS(_CLRSupportLastError, tool.CLRSupportLastError)
             << attrTagS(_CLRThreadAttribute, tool.CLRThreadAttribute)
             << attrTagT(_CLRUnmanagedCodeCheck, tool.CLRUnmanagedCodeCheck)
-//unused    << attrTagS(_CreateHotPatchableImage, tool.CreateHotPatchableImage)
             << attrTagT(_DataExecutionPrevention, tool.DataExecutionPrevention)
             << attrTagX(_DelayLoadDLLs, tool.DelayLoadDLLs, ";")
             << attrTagT(_DelaySign, tool.DelaySign)
@@ -1690,22 +1675,13 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCLibrarianTool &tool)
             << attrTagX(_AdditionalDependencies, tool.AdditionalDependencies, ";")
             << attrTagX(_AdditionalLibraryDirectories, tool.AdditionalLibraryDirectories, ";")
             << attrTagX(_AdditionalOptions, tool.AdditionalOptions, " ")
-//unused    << attrTagS(_DisplayLibrary, tool.DisplayLibrary)
-//unused    << attrTagS(_ErrorReporting, tool.ErrorReporting)
             << attrTagX(_ExportNamedFunctions, tool.ExportNamedFunctions, ";")
             << attrTagX(_ForceSymbolReferences, tool.ForceSymbolReferences, ";")
             << attrTagT(_IgnoreAllDefaultLibraries, tool.IgnoreAllDefaultLibraries)
             << attrTagX(_IgnoreSpecificDefaultLibraries, tool.IgnoreDefaultLibraryNames, ";")
-//unused    << attrTagT(_LinkTimeCodeGeneration, tool.LinkTimeCodeGeneration)
             << attrTagS(_ModuleDefinitionFile, tool.ModuleDefinitionFile)
-//unused    << attrTagS(_Name, tool.Name)
             << attrTagS(_OutputFile, tool.OutputFile)
-//unused    << attrTagX(_RemoveObjects, tool.RemoveObjects, ";")
-//unused    << attrTagS(_SubSystem, tool.SubSystem)
             << attrTagT(_SuppressStartupBanner, tool.SuppressStartupBanner)
-//unused    << attrTagS(_TargetMachine, tool.TargetMachine)
-//unused    << attrTagT(_TreatLibWarningAsErrors, tool.TreatLibWarningAsErrors)
-//unused    << attrTagT(_Verbose, tool.Verbose)
         << closetag(_Lib);
 }
 
@@ -1717,13 +1693,10 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCResourceCompilerTool &tool)
             << attrTagX(_AdditionalOptions, tool.AdditionalOptions, " ")
             << attrTagS(_Culture, toString(tool.Culture))
             << attrTagT(_IgnoreStandardIncludePath, tool.IgnoreStandardIncludePath)
-//unused    << attrTagT(_NullTerminateStrings, tool.NullTerminateStrings)
             << attrTagX(_PreprocessorDefinitions, tool.PreprocessorDefinitions, ";")
             << attrTagS(_ResourceOutputFileName, tool.ResourceOutputFileName)
             << attrTagT(_ShowProgress, toTriState(tool.ShowProgress))
             << attrTagT(_SuppressStartupBanner, tool.SuppressStartupBanner)
-//unused    << attrTagS(_TrackerLogDirectory, tool.TrackerLogDirectory)
-//unused    << attrTagS(_UndefinePreprocessorDefinitions, tool.UndefinePreprocessorDefinitions)
         << closetag(_ResourceCompile);
 }
 

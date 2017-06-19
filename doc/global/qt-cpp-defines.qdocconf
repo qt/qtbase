@@ -240,5 +240,4 @@ excludefiles += \
                 "*_unix.cpp" \
                 "*_udev.cpp" \
                 "*_vxworks.cpp" \
-                "*_darwin.cpp" \
-                "*_x11.cpp"
+                "*_darwin.cpp"
