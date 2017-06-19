@@ -1194,6 +1194,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #include "qpictureformatplugin.h"
 QT_END_INCLUDE_NAMESPACE
 
+#if QT_DEPRECATED_SINCE(5, 0)
 /*!
     \obsolete
 
@@ -1279,6 +1280,7 @@ QList<QByteArray> QPicture::outputFormats()
 {
     return QPictureIO::outputFormats();
 }
+#endif // QT_DEPRECATED_SINCE(5, 0)
 
 /*****************************************************************************
   QPictureIO member functions
