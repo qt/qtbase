@@ -60,6 +60,10 @@ static inline HWND getHWNDForWidget(const QWidget *widget)
 }
 #endif // Q_OS_WIN
 
+Q_DECLARE_METATYPE(QAbstractItemView::ScrollMode)
+Q_DECLARE_METATYPE(QMargins)
+Q_DECLARE_METATYPE(QSize)
+
 // Make a widget frameless to prevent size constraints of title bars
 // from interfering (Windows).
 static inline void setFrameless(QWidget *w)
@@ -902,10 +906,11 @@ class PublicListView : public QListView
 class TestDelegate : public QItemDelegate
 {
 public:
-    TestDelegate(QObject *parent) : QItemDelegate(parent), m_sizeHint(50,50) {}
+    explicit TestDelegate(QObject *parent, const QSize &sizeHint = QSize(50,50))
+        : QItemDelegate(parent), m_sizeHint(sizeHint) {}
     QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const { return m_sizeHint; }
 
-    QSize m_sizeHint;
+    const QSize m_sizeHint;
 };
 
 typedef QList<int> IntList;
@@ -1250,9 +1255,7 @@ void tst_QListView::scrollBarRanges()
     lv.setModel(&model);
     lv.resize(250, 130);
 
-    TestDelegate *delegate = new TestDelegate(&lv);
-    delegate->m_sizeHint = QSize(100, rowHeight);
-    lv.setItemDelegate(delegate);
+    lv.setItemDelegate(new TestDelegate(&lv, QSize(100, rowHeight)));
     topLevel.show();
 
     for (int h = 30; h <= 210; ++h) {
@@ -1268,14 +1271,18 @@ void tst_QListView::scrollBarAsNeeded_data()
 {
     QTest::addColumn<QSize>("size");
     QTest::addColumn<int>("itemCount");
+    QTest::addColumn<QAbstractItemView::ScrollMode>("verticalScrollMode");
+    QTest::addColumn<QMargins>("viewportMargins");
+    QTest::addColumn<QSize>("delegateSize");
     QTest::addColumn<int>("flow");
     QTest::addColumn<bool>("horizontalScrollBarVisible");
     QTest::addColumn<bool>("verticalScrollBarVisible");
 
-
     QTest::newRow("TopToBottom, count:0")
             << QSize(200, 100)
             << 0
+            << QListView::ScrollPerItem
+            << QMargins() << QSize()
             << int(QListView::TopToBottom)
             << false
             << false;
@@ -1283,6 +1290,8 @@ void tst_QListView::scrollBarAsNeeded_data()
     QTest::newRow("TopToBottom, count:1")
             << QSize(200, 100)
             << 1
+            << QListView::ScrollPerItem
+            << QMargins() << QSize()
             << int(QListView::TopToBottom)
             << false
             << false;
@@ -1290,13 +1299,46 @@ void tst_QListView::scrollBarAsNeeded_data()
     QTest::newRow("TopToBottom, count:20")
             << QSize(200, 100)
             << 20
+            << QListView::ScrollPerItem
+            << QMargins() << QSize()
             << int(QListView::TopToBottom)
             << false
             << true;
 
+    QTest::newRow("TopToBottom, fixed size, count:4")
+            << QSize(200, 200)
+            << 4
+            << QListView::ScrollPerPixel
+            << QMargins() << QSize(40, 40)
+            << int(QListView::TopToBottom)
+            << false
+            << false;
+
+    // QTBUG-61383, vertical case: take viewport margins into account
+    QTest::newRow("TopToBottom, fixed size, vertical margins, count:4")
+            << QSize(200, 200)
+            << 4
+            << QListView::ScrollPerPixel
+            << QMargins(0, 50, 0, 50) << QSize(40, 40)
+            << int(QListView::TopToBottom)
+            << false
+            << true;
+
+    // QTBUG-61383, horizontal case: take viewport margins into account
+    QTest::newRow("TopToBottom, fixed size, horizontal margins, count:4")
+            << QSize(200, 200)
+            << 4
+            << QListView::ScrollPerPixel
+            << QMargins(50, 0, 50, 0) << QSize(120, 40)
+            << int(QListView::TopToBottom)
+            << true
+            << false;
+
     QTest::newRow("LeftToRight, count:0")
             << QSize(200, 100)
             << 0
+            << QListView::ScrollPerItem
+            << QMargins() << QSize()
             << int(QListView::LeftToRight)
             << false
             << false;
@@ -1304,6 +1346,8 @@ void tst_QListView::scrollBarAsNeeded_data()
     QTest::newRow("LeftToRight, count:1")
             << QSize(200, 100)
             << 1
+            << QListView::ScrollPerItem
+            << QMargins() << QSize()
             << int(QListView::LeftToRight)
             << false
             << false;
@@ -1311,17 +1355,31 @@ void tst_QListView::scrollBarAsNeeded_data()
     QTest::newRow("LeftToRight, count:20")
             << QSize(200, 100)
             << 20
+            << QListView::ScrollPerItem
+            << QMargins() << QSize()
             << int(QListView::LeftToRight)
             << true
             << false;
 
 
 }
+
+class ScrollBarTestListView : public QListView
+{
+  public:
+    explicit ScrollBarTestListView(QWidget *p) : QListView(p) {}
+
+    using QAbstractScrollArea::setViewportMargins;
+};
+
 void tst_QListView::scrollBarAsNeeded()
 {
 
     QFETCH(QSize, size);
     QFETCH(int, itemCount);
+    QFETCH(QAbstractItemView::ScrollMode, verticalScrollMode);
+    QFETCH(QMargins, viewportMargins);
+    QFETCH(QSize, delegateSize);
     QFETCH(int, flow);
     QFETCH(bool, horizontalScrollBarVisible);
     QFETCH(bool, verticalScrollBarVisible);
@@ -1330,10 +1388,17 @@ void tst_QListView::scrollBarAsNeeded()
     const int rowCounts[3] = {0, 1, 20};
 
     QWidget topLevel;
-    QListView lv(&topLevel);
+    topLevel.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QStringLiteral("::")
+                            + QLatin1String(QTest::currentDataTag()));
+    ScrollBarTestListView lv(&topLevel);
     lv.setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     lv.setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    lv.setVerticalScrollMode(verticalScrollMode);
+    lv.setViewportMargins(viewportMargins);
     lv.setFlow((QListView::Flow)flow);
+    if (!delegateSize.isEmpty())
+        lv.setItemDelegate(new TestDelegate(&lv, delegateSize));
+
     QStringListModel model(&lv);
     lv.setModel(&model);
     lv.resize(size);
@@ -2380,9 +2445,7 @@ void tst_QListView::horizontalScrollingByVerticalWheelEvents()
     QListView lv;
     lv.setWrapping(true);
 
-    TestDelegate *delegate = new TestDelegate(&lv);
-    delegate->m_sizeHint = QSize(100, 100);
-    lv.setItemDelegate(delegate);
+    lv.setItemDelegate(new TestDelegate(&lv, QSize(100, 100)));
 
     QtTestModel model;
     model.colCount = 1;
