@@ -561,7 +561,7 @@ void QXcbBackingStore::endPaint()
         return;
     QPainter p(m_image->image());
     while (it != end) {
-        const QRect rect = *it;
+        const QRect rect = *(it++);
         p.drawImage(rect.topLeft(), m_rgbImage.copy(rect).rgbSwapped());
     }
 }
