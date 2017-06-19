@@ -183,7 +183,7 @@ QT_BEGIN_NAMESPACE
          \li "C:/Users/<USER>"
     \row \li DataLocation
          \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
-         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data", "<APPDIR>/data/<APPNAME>"
     \row \li CacheLocation
          \li "~/Library/Caches/<APPNAME>", "/Library/Caches/<APPNAME>"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>/cache"
@@ -207,10 +207,10 @@ QT_BEGIN_NAMESPACE
          \li "C:/Users/<USER>/AppData/Local/cache"
     \row \li AppDataLocation
          \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
-         \li "C:/Users/<USER>/AppData/Roaming/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data"
+         \li "C:/Users/<USER>/AppData/Roaming/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data", "<APPDIR>/data/<APPNAME>"
     \row \li AppLocalDataLocation
          \li "~/Library/Application Support/<APPNAME>", "/Library/Application Support/<APPNAME>". "<APPDIR>/../Resources"
-         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data"
+         \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>", "<APPDIR>", "<APPDIR>/data", "<APPDIR>/data/<APPNAME>"
     \row \li AppConfigLocation
          \li "~/Library/Preferences/<APPNAME>"
          \li "C:/Users/<USER>/AppData/Local/<APPNAME>", "C:/ProgramData/<APPNAME>"

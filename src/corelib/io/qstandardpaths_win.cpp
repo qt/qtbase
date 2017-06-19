@@ -218,7 +218,15 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         }
 #ifndef QT_BOOTSTRAPPED
         dirs.append(QCoreApplication::applicationDirPath());
-        dirs.append(QCoreApplication::applicationDirPath() + QLatin1String("/data"));
+        const QString dataDir = QCoreApplication::applicationDirPath() + QLatin1String("/data");
+        dirs.append(dataDir);
+
+        if (!isGenericConfigLocation(type)) {
+            QString appDataDir = dataDir;
+            appendOrganizationAndApp(appDataDir);
+            if (appDataDir != dataDir)
+                dirs.append(appDataDir);
+        }
 #endif // !QT_BOOTSTRAPPED
     } // isConfigLocation()
 
