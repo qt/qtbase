@@ -212,10 +212,10 @@ public:
     inline char operator[](uint i) const;
     inline QByteRef operator[](int i);
     inline QByteRef operator[](uint i);
-    char front() const Q_REQUIRED_RESULT { return at(0); }
-    inline QByteRef front() Q_REQUIRED_RESULT;
-    char back() const Q_REQUIRED_RESULT { return at(size() - 1); }
-    inline QByteRef back() Q_REQUIRED_RESULT;
+    Q_REQUIRED_RESULT char front() const { return at(0); }
+    Q_REQUIRED_RESULT inline QByteRef front();
+    Q_REQUIRED_RESULT char back() const { return at(size() - 1); }
+    Q_REQUIRED_RESULT inline QByteRef back();
 
     int indexOf(char c, int from = 0) const;
     int indexOf(const char *c, int from = 0) const;

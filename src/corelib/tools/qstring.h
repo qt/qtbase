@@ -109,8 +109,8 @@ public:
     { return Q_ASSERT(i >= 0), Q_ASSERT(i < size()), QLatin1Char(m_data[i]); }
     Q_DECL_CONSTEXPR QLatin1Char operator[](int i) const { return at(i); }
 
-    Q_DECL_CONSTEXPR QLatin1Char front() const Q_REQUIRED_RESULT { return at(0); }
-    Q_DECL_CONSTEXPR QLatin1Char back() const Q_REQUIRED_RESULT { return at(size() - 1); }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char front() const { return at(0); }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char back() const { return at(size() - 1); }
 
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
     { return qStartsWith(*this, s, cs); }
@@ -159,7 +159,7 @@ public:
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, n); }
     Q_DECL_CONSTEXPR QLatin1String right(int n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data + m_size - n, n); }
-    Q_DECL_CONSTEXPR QLatin1String chopped(int n) const Q_REQUIRED_RESULT
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1String chopped(int n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QLatin1String(m_data, m_size - n); }
 
     Q_DECL_RELAXED_CONSTEXPR void chop(int n)
@@ -1543,8 +1543,8 @@ public:
     inline const QChar at(int i) const
         { Q_ASSERT(uint(i) < uint(size())); return m_string->at(i + m_position); }
     QChar operator[](int i) const { return at(i); }
-    QChar front() const Q_REQUIRED_RESULT { return at(0); }
-    QChar back() const Q_REQUIRED_RESULT { return at(size() - 1); }
+    Q_REQUIRED_RESULT QChar front() const { return at(0); }
+    Q_REQUIRED_RESULT QChar back() const { return at(size() - 1); }
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     // ASCII compatibility
