@@ -102,13 +102,6 @@ static QList<QByteArray> m_applicationParams;
 pthread_t m_qtAppThread = 0;
 static sem_t m_exitSemaphore, m_terminateSemaphore;
 
-struct SurfaceData
-{
-    ~SurfaceData() { delete surface; }
-    QJNIObjectPrivate *surface = nullptr;
-    AndroidSurfaceClient *client = nullptr;
-};
-
 QHash<int, AndroidSurfaceClient *> m_surfaces;
 
 static QMutex m_surfacesMutex;
@@ -142,6 +135,7 @@ namespace QtAndroid
         // flush the pending state if necessary.
         if (m_androidPlatformIntegration) {
             flushPendingApplicationState();
+            m_androidPlatformIntegration->flushPendingUpdates();
         } else {
             QMutexLocker locker(&m_pendingAppStateMtx);
             m_pendingApplicationState = -1;
@@ -627,6 +621,7 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     m_scaledDensity = scaledDensity;
     m_density = density;
 
+    QMutexLocker lock(&m_surfacesMutex);
     if (!m_androidPlatformIntegration) {
         QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
                                                               desktopHeightPixels,
@@ -691,7 +686,6 @@ static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state
 
         // Don't send timers and sockets events anymore if we are going to hide all windows
         QAndroidEventDispatcherStopper::instance()->goingToStop(true);
-        QCoreApplication::processEvents();
         QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState(state));
         if (state == Qt::ApplicationSuspended)
             QAndroidEventDispatcherStopper::instance()->stopAll();

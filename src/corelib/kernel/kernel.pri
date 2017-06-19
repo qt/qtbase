@@ -162,7 +162,7 @@ unix|integrity {
         QMAKE_USE_PRIVATE += glib
     }
 
-   qtConfig(clock-gettime): include($$QT_SOURCE_TREE/config.tests/unix/clock-gettime/clock-gettime.pri)
+    qtConfig(clock-gettime): QMAKE_USE_PRIVATE += librt
 
     !android {
         SOURCES += kernel/qsharedmemory_posix.cpp \

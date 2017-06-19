@@ -146,6 +146,15 @@ signals:
 
 #undef QString
 
+#ifdef Q_MOC_RUN
+// Normaly, redefining keywords is forbidden, but we should not abort parsing
+#define and    &&
+#define and_eq &=
+#define bitand  &
+#define true 1
+#undef true
+#endif
+
 PD_END_NAMESPACE
 
 #endif

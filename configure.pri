@@ -252,7 +252,7 @@ defineTest(qtConfTest_architecture) {
         error("Could not determine $$eval($${1}.label). See config.log for details.")
 
     test = $$eval($${1}.test)
-    test_out_dir = $$shadowed($$QMAKE_CONFIG_TESTS_DIR/$$test)
+    test_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)/$$test
     unix:exists($$test_out_dir/arch): \
         content = $$cat($$test_out_dir/arch, blob)
     else: win32:exists($$test_out_dir/arch.exe): \
@@ -1063,6 +1063,37 @@ defineReplace(qtConfOutputPostProcess_publicPro) {
     #libinfix and namespace
     !isEmpty(config.input.qt_libinfix): output += "QT_LIBINFIX = $$config.input.qt_libinfix"
     !isEmpty(config.input.qt_namespace): output += "QT_NAMESPACE = $$config.input.qt_namespace"
+
+    !isEmpty(QMAKE_GCC_MAJOR_VERSION) {
+        output += \
+            "QT_GCC_MAJOR_VERSION = $$QMAKE_GCC_MAJOR_VERSION" \
+            "QT_GCC_MINOR_VERSION = $$QMAKE_GCC_MINOR_VERSION" \
+            "QT_GCC_PATCH_VERSION = $$QMAKE_GCC_PATCH_VERSION"
+    }
+    !isEmpty(QMAKE_CLANG_MAJOR_VERSION) {
+        output += \
+            "QT_CLANG_MAJOR_VERSION = $$QMAKE_CLANG_MAJOR_VERSION" \
+            "QT_CLANG_MINOR_VERSION = $$QMAKE_CLANG_MINOR_VERSION" \
+            "QT_CLANG_PATCH_VERSION = $$QMAKE_CLANG_PATCH_VERSION"
+    }
+    !isEmpty(QMAKE_APPLE_CLANG_MAJOR_VERSION) {
+        output += \
+            "QT_APPLE_CLANG_MAJOR_VERSION = $$QMAKE_APPLE_CLANG_MAJOR_VERSION" \
+            "QT_APPLE_CLANG_MINOR_VERSION = $$QMAKE_APPLE_CLANG_MINOR_VERSION" \
+            "QT_APPLE_CLANG_PATCH_VERSION = $$QMAKE_APPLE_CLANG_PATCH_VERSION"
+    }
+    !isEmpty(QMAKE_MSC_VER) {
+        output += \
+            "QT_MSVC_MAJOR_VERSION = $$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", "\\1")" \
+            "QT_MSVC_MINOR_VERSION = $$format_number($$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", "\\2"))" \
+            "QT_MSVC_PATCH_VERSION = $$replace(QMAKE_MSC_FULL_VER, "(..)(..)(.*)", "\\3")"
+    }
+    !isEmpty(QMAKE_ICC_VER) {
+        output += \
+            "QT_ICC_MAJOR_VERSION = $$replace(QMAKE_ICC_VER, "(..)(..)", "\\1")" \
+            "QT_ICC_MINOR_VERSION = $$format_number($$replace(QMAKE_ICC_VER, "(..)(..)", "\\2"))" \
+            "QT_ICC_PATCH_VERSION = $$QMAKE_ICC_UPDATE_VER"
+    }
 
     output += "QT_EDITION = $$config.input.qt_edition"
     !contains(config.input.qt_edition, "(OpenSource|Preview)") {

@@ -111,8 +111,8 @@ const char _slnExtSections[]    = "\n\tGlobalSection(ExtensibilityGlobals) = pos
 VcprojGenerator::VcprojGenerator()
     : Win32MakefileGenerator(),
       is64Bit(false),
-      projectWriter(0),
-      customBuildToolFilterFileSuffix(QStringLiteral(".cbt"))
+      customBuildToolFilterFileSuffix(QStringLiteral(".cbt")),
+      projectWriter(0)
 {
 }
 

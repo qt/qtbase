@@ -55,6 +55,7 @@
 #include "QtCore/qprocess.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qhash.h"
+#include "QtCore/qmap.h"
 #include "QtCore/qshareddata.h"
 #include "private/qiodevice_p.h"
 
@@ -90,22 +91,19 @@ public:
     QProcEnvKey(const QProcEnvKey &other) : QString(other) {}
     bool operator==(const QProcEnvKey &other) const { return !compare(other, Qt::CaseInsensitive); }
 };
-inline uint qHash(const QProcEnvKey &key) { return qHash(key.toCaseFolded()); }
+
+inline bool operator<(const QProcEnvKey &a, const QProcEnvKey &b)
+{
+    // On windows use case-insensitive ordering because that is how Windows needs the environment
+    // block sorted (https://msdn.microsoft.com/en-us/library/windows/desktop/ms682009(v=vs.85).aspx)
+    return a.compare(b, Qt::CaseInsensitive) < 0;
+}
+
+Q_DECLARE_TYPEINFO(QProcEnvKey, Q_MOVABLE_TYPE);
 
 typedef QString QProcEnvValue;
 #else
-class QProcEnvKey
-{
-public:
-    QProcEnvKey() : hash(0) {}
-    explicit QProcEnvKey(const QByteArray &other) : key(other), hash(qHash(key)) {}
-    QProcEnvKey(const QProcEnvKey &other) { *this = other; }
-    bool operator==(const QProcEnvKey &other) const { return key == other.key; }
-
-    QByteArray key;
-    uint hash;
-};
-inline uint qHash(const QProcEnvKey &key) Q_DECL_NOTHROW { return key.hash; }
+using QProcEnvKey = QByteArray;
 
 class QProcEnvValue
 {
@@ -138,7 +136,6 @@ public:
 };
 Q_DECLARE_TYPEINFO(QProcEnvValue, Q_MOVABLE_TYPE);
 #endif
-Q_DECLARE_TYPEINFO(QProcEnvKey, Q_MOVABLE_TYPE);
 
 class QProcessEnvironmentPrivate: public QSharedData
 {
@@ -161,13 +158,13 @@ public:
     inline Key prepareName(const QString &name) const
     {
         Key &ent = nameMap[name];
-        if (ent.key.isEmpty())
-            ent = Key(name.toLocal8Bit());
+        if (ent.isEmpty())
+            ent = name.toLocal8Bit();
         return ent;
     }
     inline QString nameToString(const Key &name) const
     {
-        const QString sname = QString::fromLocal8Bit(name.key);
+        const QString sname = QString::fromLocal8Bit(name);
         nameMap[sname] = name;
         return sname;
     }
@@ -197,17 +194,17 @@ public:
         // do not need a lock, as they detach objects (however, we need to
         // ensure that they really detach before using prepareName()).
         MutexLocker locker(&other);
-        hash = other.hash;
+        vars = other.vars;
         nameMap = other.nameMap;
         // We need to detach our members, so that our mutex can protect them.
         // As we are being detached, they likely would be detached a moment later anyway.
-        hash.detach();
+        vars.detach();
         nameMap.detach();
     }
 #endif
 
-    typedef QHash<Key, Value> Hash;
-    Hash hash;
+    using Map = QMap<Key, Value>;
+    Map vars;
 
 #ifdef Q_OS_UNIX
     typedef QHash<QString, Key> NameHash;

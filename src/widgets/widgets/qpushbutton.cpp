@@ -513,7 +513,8 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
     Ownership of the menu is \e not transferred to the push button.
 
     \image fusion-pushbutton-menu.png Screenshot of a Fusion style push button with popup menu.
-    A push button with popup menus shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
+    A push button with popup menus shown in the \l{Qt Widget Gallery}
+    {Fusion widget style}.
 
     \sa menu()
 */

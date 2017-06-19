@@ -1907,7 +1907,7 @@ void QFormLayout::getItemPosition(int index, int *rowPtr, ItemRole *rolePtr) con
 
     if (rowPtr)
         *rowPtr = row;
-    if (rolePtr && col != -1) {
+    if (rolePtr && row != -1) {
         const bool spanning = col == 1 && d->m_matrix(row, col)->fullRow;
         if (spanning) {
             *rolePtr = SpanningRole;

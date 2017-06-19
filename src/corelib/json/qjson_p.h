@@ -243,7 +243,7 @@ public:
         uint i = qFromLittleEndian(val);
         i <<= 32 - width - pos;
         int t = (int) i;
-        t >>= pos;
+        t >>= 32 - width;
         return t;
     }
     bool operator !() const {

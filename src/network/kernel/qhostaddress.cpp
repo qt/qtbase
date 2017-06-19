@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -393,7 +393,7 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
 
 /*! \enum QHostAddress::SpecialAddress
 
-    \value Null The null address object. Equivalent to QHostAddress().
+    \value Null The null address object. Equivalent to QHostAddress(). See also QHostAddress::isNull().
     \value LocalHost The IPv4 localhost address. Equivalent to QHostAddress("127.0.0.1").
     \value LocalHostIPv6 The IPv6 localhost address. Equivalent to QHostAddress("::1").
     \value Broadcast The IPv4 broadcast address. Equivalent to QHostAddress("255.255.255.255").
@@ -606,6 +606,14 @@ QHostAddress &QHostAddress::operator=(SpecialAddress address)
 }
 
 /*!
+    \fn void QHostAddress::swap(QHostAddress &other)
+    \since 5.6
+
+    Swaps this host address with \a other. This operation is very fast
+    and never fails.
+*/
+
+/*!
     \fn bool QHostAddress::operator!=(const QHostAddress &other) const
     \since 4.2
 
@@ -621,7 +629,9 @@ QHostAddress &QHostAddress::operator=(SpecialAddress address)
 */
 
 /*!
-    Sets the host address to 0.0.0.0.
+    Sets the host address to null.
+
+    \sa QHostAddress::Null
 */
 void QHostAddress::clear()
 {
@@ -982,9 +992,11 @@ bool QHostAddress::operator ==(SpecialAddress other) const
 }
 
 /*!
-    Returns \c true if this host address is null (INADDR_ANY or in6addr_any).
-    The default constructor creates a null address, and that address is
-    not valid for any host or interface.
+    Returns \c true if this host address is not valid for any host or interface.
+
+    The default constructor creates a null address.
+
+    \sa QHostAddress::Null
 */
 bool QHostAddress::isNull() const
 {

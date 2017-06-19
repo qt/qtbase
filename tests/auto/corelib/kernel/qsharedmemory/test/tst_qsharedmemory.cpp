@@ -459,6 +459,8 @@ void tst_QSharedMemory::readOnly()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support", SkipAll);
+#elif defined(Q_OS_MACOS)
+    QSKIP("QTBUG-59936: Times out on macOS", SkipAll);
 #else
     rememberKey("readonly_segfault");
     // ### on windows disable the popup somehow

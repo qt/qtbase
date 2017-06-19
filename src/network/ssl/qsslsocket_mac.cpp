@@ -1223,8 +1223,10 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     QCFType<CFMutableArrayRef> certArray = CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
     for (const QSslCertificate &cert : qAsConst(configuration.caCertificates)) {
         QCFType<CFDataRef> certData = cert.d->derData.toCFData();
-        QCFType<SecCertificateRef> certRef = SecCertificateCreateWithData(NULL, certData);
-        CFArrayAppendValue(certArray, certRef);
+        if (QCFType<SecCertificateRef> secRef = SecCertificateCreateWithData(NULL, certData))
+            CFArrayAppendValue(certArray, secRef);
+        else
+            qCWarning(lcSsl, "Failed to create SecCertificate from QSslCertificate");
     }
 
     SecTrustSetAnchorCertificates(trust, certArray);

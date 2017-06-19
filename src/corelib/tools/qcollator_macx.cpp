@@ -66,7 +66,7 @@ void QCollatorPrivate::init()
         options |= kUCCollateCaseInsensitiveMask;
     if (numericMode)
         options |= kUCCollateDigitsAsNumberMask | kUCCollateDigitsOverrideMask;
-    if (ignorePunctuation)
+    if (!ignorePunctuation)
         options |= kUCCollatePunctuationSignificantMask;
 
     OSStatus status = UCCreateCollator(

@@ -1978,7 +1978,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
             }
 
 
-            if (!placeholderText().isEmpty() && document()->isEmpty()) {
+            if (!placeholderText().isEmpty() && document()->isEmpty() && layout->preeditAreaText().isEmpty()) {
               Q_D(QPlainTextEdit);
               QColor col = d->control->palette().text().color();
               col.setAlpha(128);

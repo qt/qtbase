@@ -53,6 +53,12 @@
     },
 
     "libraries": {
+        "atspi": {
+            "label": "atspi",
+            "sources": [
+                { "type": "pkgConfig", "args": "atspi-2" }
+            ]
+        },
         "bcm_host": {
             "export": "",
             "sources": [
@@ -445,7 +451,7 @@
     "features": {
         "accessibility-atspi-bridge": {
             "label": "ATSPI Bridge",
-            "condition": "features.accessibility && features.xcb && features.dbus",
+            "condition": "features.accessibility && features.xcb && features.dbus && config.atspi",
             "output": [ "privateFeature", "feature" ]
         },
         "angle": {
@@ -1181,7 +1187,6 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                 "linuxfb", "vnc", "mirclient",
                 {
                     "type": "feature",
-                    "message": "INTEGRITY framebuffer",
                     "condition": "config.integrity",
                     "args": "integrityfb"
                 },

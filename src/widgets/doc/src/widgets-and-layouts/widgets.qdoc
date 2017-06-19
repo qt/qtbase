@@ -45,20 +45,14 @@
     \row
     \li \image fusion-label.png
     \li \image windowsvista-pushbutton.png
-    \li \image macintosh-progressbar.png
+    \li \image macos-progressbar.png
     \row
     \li \image fusion-combobox.png
     \li \image windowsvista-radiobutton.png
-    \li \image macintosh-lineedit.png
+    \li \image macos-lineedit.png
     \endtable
 
     \annotatedlist basicwidgets
-
-    \table
-    \row
-    \li \image windowsvista-tabwidget.png
-    \li \image macintosh-groupbox.png
-    \endtable
 
 
   \section2 Advanced Widget Classes

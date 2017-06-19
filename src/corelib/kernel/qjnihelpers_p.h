@@ -52,8 +52,10 @@
 //
 
 #include <jni.h>
-#include <QtCore/private/qglobal_p.h>
 #include <functional>
+#include <QtCore/private/qglobal_p.h>
+#include <QHash>
+#include <QMetaType>
 
 QT_BEGIN_NAMESPACE
 
@@ -117,7 +119,7 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT void runOnAndroidThreadSync(const Runnable &runnable, JNIEnv *env, int timeoutMs = INT_MAX);
     Q_CORE_EXPORT void runOnUiThread(QRunnable *runnable, JNIEnv *env);
     Q_CORE_EXPORT void requestPermissions(JNIEnv *env, const QStringList &permissions, const PermissionsResultFunc &callbackFunc, bool directCall = false);
-    Q_CORE_EXPORT QHash<QString, PermissionsResult> requestPermissionsSync(JNIEnv *env, const QStringList &permissions, int timeoutMs = INT_MAX);
+    Q_CORE_EXPORT PermissionsHash requestPermissionsSync(JNIEnv *env, const QStringList &permissions, int timeoutMs = INT_MAX);
     Q_CORE_EXPORT PermissionsResult checkPermission(const QString &permission);
     Q_CORE_EXPORT bool shouldShowRequestPermissionRationale(const QString &permission);
 
@@ -144,5 +146,7 @@ namespace QtAndroidPrivate
 }
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QtAndroidPrivate::PermissionsHash)
 
 #endif // QJNIHELPERS_H

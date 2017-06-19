@@ -13,17 +13,17 @@ QMAKE_APPLE_CC = __APPLE_CC__
 #endif
 #ifdef __clang__
 #ifdef __APPLE_CC__
-QT_APPLE_CLANG_MAJOR_VERSION = __clang_major__
-QT_APPLE_CLANG_MINOR_VERSION = __clang_minor__
-QT_APPLE_CLANG_PATCH_VERSION = __clang_patchlevel__
+QMAKE_APPLE_CLANG_MAJOR_VERSION = __clang_major__
+QMAKE_APPLE_CLANG_MINOR_VERSION = __clang_minor__
+QMAKE_APPLE_CLANG_PATCH_VERSION = __clang_patchlevel__
 #else
-QT_CLANG_MAJOR_VERSION = __clang_major__
-QT_CLANG_MINOR_VERSION = __clang_minor__
-QT_CLANG_PATCH_VERSION = __clang_patchlevel__
+QMAKE_CLANG_MAJOR_VERSION = __clang_major__
+QMAKE_CLANG_MINOR_VERSION = __clang_minor__
+QMAKE_CLANG_PATCH_VERSION = __clang_patchlevel__
 #endif
 #endif
 #ifdef __GNUC__
-QT_GCC_MAJOR_VERSION = __GNUC__
-QT_GCC_MINOR_VERSION = __GNUC_MINOR__
-QT_GCC_PATCH_VERSION = __GNUC_PATCHLEVEL__
+QMAKE_GCC_MAJOR_VERSION = __GNUC__
+QMAKE_GCC_MINOR_VERSION = __GNUC_MINOR__
+QMAKE_GCC_PATCH_VERSION = __GNUC_PATCHLEVEL__
 #endif

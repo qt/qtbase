@@ -3197,9 +3197,6 @@ void tst_QWidget::restoreVersion1Geometry()
     widget.showNormal();
     QTest::qWait(10);
 
-    if (m_platform == QStringLiteral("xcb"))
-        QSKIP("QTBUG-26421");
-
     if (expectedWindowState != Qt::WindowNoState) {
         // restoring from maximized or fullscreen, we can only restore to the normal geometry
         QTRY_COMPARE(widget.geometry(), expectedNormalGeometry);

@@ -83,9 +83,10 @@ namespace {
         int w = 0;
         int h = 0;
         if (const DomProperty *sh = properties.value(QLatin1String("sizeHint"))) {
-            const DomSize *sizeHint = sh->elementSize();
-            w = sizeHint->elementWidth();
-            h = sizeHint->elementHeight();
+            if (const DomSize *sizeHint = sh->elementSize()) {
+                w = sizeHint->elementWidth();
+                h = sizeHint->elementHeight();
+            }
         }
         output << w << ", " << h << ", ";
 

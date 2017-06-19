@@ -413,6 +413,14 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSSierra =
     QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 12);
 
 /*!
+    \variable QOperatingSystemVersion::MacOSHighSierra
+    \brief a version corresponding to macOS High Sierra (version 10.13).
+    \since 5.9.1
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::MacOSHighSierra =
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 13);
+
+/*!
     \variable QOperatingSystemVersion::AndroidJellyBean
     \brief a version corresponding to Android Jelly Bean (version 4.1, API level 16).
     \since 5.9

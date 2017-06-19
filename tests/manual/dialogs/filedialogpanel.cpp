@@ -300,7 +300,7 @@ QFileDialog::Options FileDialogPanel::options() const
         result |= QFileDialog::DontConfirmOverwrite;
     if (!m_native->isChecked())
         result |= QFileDialog::DontUseNativeDialog;
-    if (!m_customDirIcons->isChecked())
+    if (m_customDirIcons->isChecked())
         result |= QFileDialog::DontUseCustomDirectoryIcons;
     return result;
 }

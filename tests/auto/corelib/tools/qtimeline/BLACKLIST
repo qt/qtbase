@@ -1,4 +1,7 @@
 [interpolation]
 windows
+osx-10.12
 [duration]
 windows
+[frameRate]
+osx-10.12
