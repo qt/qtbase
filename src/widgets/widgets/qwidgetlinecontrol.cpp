@@ -711,7 +711,7 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
             m_validInput = (m_validator->validate(textCopy, cursorCopy) != QValidator::Invalid);
             if (m_validInput) {
                 if (m_text != textCopy) {
-                    internalSetText(textCopy, cursorCopy, false);
+                    internalSetText(textCopy, cursorCopy, edited);
                     return true;
                 }
                 m_cursor = cursorCopy;

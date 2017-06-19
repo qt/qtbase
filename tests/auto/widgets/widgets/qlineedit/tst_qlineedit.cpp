@@ -2268,6 +2268,16 @@ void tst_QLineEdit::deleteSelectedText()
 
 }
 
+class ToUpperValidator : public QValidator
+{
+public:
+    ToUpperValidator() {}
+    State validate(QString &input, int &) const override
+    {
+        input = input.toUpper();
+        return QValidator::Acceptable;
+    }
+};
 
 void tst_QLineEdit::textChangedAndTextEdited()
 {
@@ -2309,6 +2319,23 @@ void tst_QLineEdit::textChangedAndTextEdited()
     QCOMPARE(edited_count, 0);
     QVERIFY(changed_string.isEmpty());
     QVERIFY(!changed_string.isNull());
+
+    changed_count = 0;
+    edited_count = 0;
+    changed_string.clear();
+
+    QScopedPointer<ToUpperValidator> validator(new ToUpperValidator());
+    testWidget->setValidator(validator.data());
+    testWidget->setText("foo");
+    QCOMPARE(changed_count, 1);
+    QCOMPARE(edited_count, 0);
+    QCOMPARE(changed_string, QLatin1String("FOO"));
+    testWidget->setCursorPosition(sizeof("foo"));
+    QTest::keyClick(testWidget, 'b');
+    QCOMPARE(changed_count, 2);
+    QCOMPARE(edited_count, 1);
+    QCOMPARE(changed_string, QLatin1String("FOOB"));
+    testWidget->setValidator(nullptr);
 }
 
 void tst_QLineEdit::onTextChanged(const QString &text)
