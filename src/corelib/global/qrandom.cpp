@@ -46,6 +46,8 @@
 #include <qthreadstorage.h>
 #include <private/qsimd_p.h>
 
+#include <errno.h>
+
 #if QT_CONFIG(cxx11_random)
 #  include <random>
 #  include "qdeadlinetimer.h"
@@ -223,58 +225,76 @@ static void fallback_update_seed(unsigned value)
     seed.fetchAndXorRelaxed(value);
 }
 
-static void emergency_seed(quint32 &v) Q_DECL_NOTHROW
-{
-    // we don't have any seed at all, so let's use the some bits from the
-    // seed variable's address (hoping to get entropy from the system ASLR)
-    // and the current monotonic time in nanoseconds
-    // (wall-clock time can be predicted)
-
-    v = quint32(quintptr(&seed)) >> 12;    // PAGE_SHIFT
-    if (sizeof(quintptr) == sizeof(quint32)) {
-        // mask off highest 4 bits, since they're likely to be constant
-        v &= ~0xf00000000U;
-    }
-
-#ifndef QT_BUILD_QMAKE
-    // see QtPrivate::QHashCombine for the algorithm
-    quint32 nsecs = quint32(QDeadlineTimer::current(Qt::PreciseTimer).deadline());
-    v = QtPrivate::QHashCombine()(v, nsecs);
-#endif
-}
-
 Q_NEVER_INLINE
 #ifdef Q_CC_GNU
 __attribute__((cold))   // this function is pretty big, so optimize for size
 #endif
 static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
 {
+    quint32 scratch[12];    // see element count below
+    quint32 *end = scratch;
+
+    auto foldPointer = [](quintptr v) {
+        if (sizeof(quintptr) == sizeof(quint32)) {
+            // For 32-bit systems, we simply return the pointer.
+            return quint32(v);
+        } else {
+            // For 64-bit systems, we try to return the variable part of the
+            // pointer. On current x86-64 and AArch64, the top 17 bits are
+            // architecturally required to be the same, but in reality the top
+            // 24 bits on Linux are likely to be the same for all processes.
+            return quint32(v >> (32 - 24));
+        }
+    };
+
     Q_ASSERT(left);
 
-    // ELF's auxv AT_RANDOM has 16 random bytes
-    using RandomBytes = quint32[16 / sizeof(quint32)];
-    RandomBytes scratch = {};
-    RandomBytes *auxvSeed = nullptr;
+    *end++ = foldPointer(quintptr(&seed));          // 1: variable in this library/executable's .data
+    *end++ = foldPointer(quintptr(&scratch));       // 2: variable in the stack
+    *end++ = foldPointer(quintptr(&errno));         // 3: veriable either in libc or thread-specific
+    *end++ = foldPointer(quintptr(reinterpret_cast<void*>(strerror)));   // 4: function in libc (and unlikely to be a macro)
 
-#if QT_HAS_INCLUDE(<sys/auxv.h>) && defined(AT_RANDOM)
-    // works on Linux -- all modern libc have getauxval
-    // other ELF-based systems don't seem to have AT_RANDOM
-    auxvSeed = reinterpret_cast<RandomBytes *>(getauxval(AT_RANDOM));
-    if (auxvSeed)
-        memcpy(scratch, auxvSeed, sizeof(RandomBytes));
+#ifndef QT_BOOTSTRAPPED
+    quint64 nsecs = QDeadlineTimer::current(Qt::PreciseTimer).deadline();
+    *end++ = quint32(nsecs);    // 5
 #endif
 
-    quint32 v = seed.load();
-    if (Q_LIKELY(v)) {
-        // mix the stored seed value
-        // (using the fact that qHash(unsigned) is idempotent)
-        scratch[0] = QtPrivate::QHashCombine()(scratch[0], v);
-    } else if (Q_UNLIKELY(auxvSeed == nullptr)) {
-        emergency_seed(scratch[0]);
+    if (quint32 v = seed.load())
+        *end++ = v; // 6
+
+#if QT_CONFIG(sys_auxv)
+    // works on Linux -- all modern libc have getauxval
+#  ifdef AT_RANDOM
+    // ELF's auxv AT_RANDOM has 16 random bytes
+    // (other ELF-based systems don't seem to have AT_RANDOM)
+    ulong auxvSeed = getauxval(AT_RANDOM);
+    if (auxvSeed) {
+        memcpy(scratch, reinterpret_cast<void *>(auxvSeed), 16);
+        end += 4;   // 7 to 10
     }
+#  endif
+
+    // Both AT_BASE and AT_SYSINFO_EHDR have some randomness in them due to the
+    // system's ASLR, even if many bits are the same. They also have randomness
+    // between them.
+#  ifdef AT_BASE
+    // present at least on the BSDs too, indicates the address of the loader
+    ulong base = getauxval(AT_BASE);
+    if (base)
+        *end++ = foldPointer(base); // 11
+#  endif
+#  ifdef AT_SYSINFO_EHDR
+    // seems to be Linux-only, indicates the global page of the sysinfo
+    ulong sysinfo_ehdr = getauxval(AT_SYSINFO_EHDR);
+    if (sysinfo_ehdr)
+        *end++ = foldPointer(sysinfo_ehdr); // 12
+#  endif
+#endif
+
+    Q_ASSERT(end <= std::end(scratch));
 
     // this is highly inefficient, we should save the generator across calls...
-    std::seed_seq sseq(std::begin(scratch), std::end(scratch));
+    std::seed_seq sseq(scratch, end);
     std::mt19937 generator(sseq);
     std::generate(ptr, ptr + left, generator);
 
