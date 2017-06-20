@@ -62,10 +62,14 @@
 
 QT_BEGIN_NAMESPACE
 
+class QColor;
+class QObject;
 class QPainter;
+class QPalette;
 class QPixmap;
 class QStyleOptionSlider;
 class QStyleOption;
+class QWidget;
 class QWindow;
 
 namespace QStyleHelper
