@@ -9,5 +9,5 @@ qtHaveModule(gui) {
     !android:qtConfig(library): SUBDIRS *= generic
 }
 
-!winrt:!wince:qtHaveModule(printsupport): \
+!winrt:qtHaveModule(printsupport): \
     SUBDIRS += printsupport

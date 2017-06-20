@@ -67,15 +67,6 @@ macx: {
     SOURCES += kernel/qmacgesturerecognizer.cpp
 }
 
-wince {
-        HEADERS += \
-                ../corelib/kernel/qfunctions_wince.h \
-                kernel/qwidgetsfunctions_wince.h
-
-        SOURCES += \
-                kernel/qwidgetsfunctions_wince.cpp
-}
-
 qtConfig(opengl) {
     HEADERS += kernel/qopenglwidget.h
     SOURCES += kernel/qopenglwidget.cpp
