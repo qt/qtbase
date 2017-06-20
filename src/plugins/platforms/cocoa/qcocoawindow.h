@@ -50,77 +50,8 @@
 #include "qcocoaglcontext.h"
 #endif
 #include "qnsview.h"
+#include "qnswindow.h"
 #include "qt_mac_p.h"
-
-QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
-
-@class QT_MANGLE_NAMESPACE(QNSWindowHelper);
-
-@protocol QNSWindowProtocol
-
-@property (nonatomic, readonly) QT_MANGLE_NAMESPACE(QNSWindowHelper) *helper;
-
-- (void)superSendEvent:(NSEvent *)theEvent;
-- (void)closeAndRelease;
-
-@end
-
-typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
-
-@interface QT_MANGLE_NAMESPACE(QNSWindowHelper) : NSObject
-{
-    QCocoaNSWindow *_window;
-    QPointer<QCocoaWindow> _platformWindow;
-    BOOL _grabbingMouse;
-    BOOL _releaseOnMouseUp;
-}
-
-@property (nonatomic, readonly) QCocoaNSWindow *window;
-@property (nonatomic, readonly) QCocoaWindow *platformWindow;
-@property (nonatomic) BOOL grabbingMouse;
-@property (nonatomic) BOOL releaseOnMouseUp;
-
-- (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow;
-- (void)handleWindowEvent:(NSEvent *)theEvent;
-- (void) clearWindow;
-
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowHelper);
-
-@interface QT_MANGLE_NAMESPACE(QNSWindow) : NSWindow<QNSWindowProtocol>
-{
-    QNSWindowHelper *_helper;
-}
-
-@property (nonatomic, readonly) QNSWindowHelper *helper;
-
-- (id)initWithContentRect:(NSRect)contentRect
-      screen:(NSScreen*)screen
-      styleMask:(NSUInteger)windowStyle
-      qPlatformWindow:(QCocoaWindow *)qpw;
-
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindow);
-
-@interface QT_MANGLE_NAMESPACE(QNSPanel) : NSPanel<QNSWindowProtocol>
-{
-    QNSWindowHelper *_helper;
-}
-
-@property (nonatomic, readonly) QNSWindowHelper *helper;
-
-- (id)initWithContentRect:(NSRect)contentRect
-      screen:(NSScreen*)screen
-      styleMask:(NSUInteger)windowStyle
-      qPlatformWindow:(QCocoaWindow *)qpw;
-
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanel);
-
-@class QT_MANGLE_NAMESPACE(QNSWindowDelegate);
 
 QT_BEGIN_NAMESPACE
 // QCocoaWindow
