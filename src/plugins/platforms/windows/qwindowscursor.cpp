@@ -56,7 +56,7 @@
 
 static bool initResources()
 {
-#if !defined (QT_NO_IMAGEFORMAT_PNG)
+#if QT_CONFIG(imageformat_png)
     Q_INIT_RESOURCE(cursors);
 #endif
     return true;
@@ -203,7 +203,7 @@ static QSize systemCursorSize(const QPlatformScreen *screen = Q_NULLPTR)
     return primaryScreenCursorSize;
 }
 
-#if defined (QT_NO_IMAGEFORMAT_PNG)
+#if !QT_CONFIG(imageformat_png)
 
 static inline QSize standardCursorSize() { return QSize(32, 32); }
 

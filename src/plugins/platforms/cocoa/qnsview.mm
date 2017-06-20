@@ -171,7 +171,10 @@ static QTouchDevice *touchDevice = 0;
 - (void)dealloc
 {
     CGImageRelease(m_maskImage);
-    [m_trackingArea release];
+    if (m_trackingArea) {
+        [self removeTrackingArea:m_trackingArea];
+        [m_trackingArea release];
+    }
     m_maskImage = 0;
     [m_inputSource release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];

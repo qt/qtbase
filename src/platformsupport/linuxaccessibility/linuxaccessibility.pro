@@ -7,7 +7,13 @@ CONFIG += static internal_module
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../../corelib/global/qt_pch.h
 
-include(../../3rdparty/atspi2/atspi2.pri)
+DBUS_ADAPTORS = $$PWD/dbusxml/Cache.xml $$PWD/dbusxml/DeviceEventController.xml
+QDBUSXML2CPP_ADAPTOR_HEADER_FLAGS = -i struct_marshallers_p.h
+
+DBUS_INTERFACES = $$PWD/dbusxml/Socket.xml $$PWD/dbusxml/Bus.xml
+QDBUSXML2CPP_INTERFACE_HEADER_FLAGS = -i struct_marshallers_p.h
+
+QMAKE_USE += atspi/nolink
 
 HEADERS += \
     application_p.h \

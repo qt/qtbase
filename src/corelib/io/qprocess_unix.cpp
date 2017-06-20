@@ -137,7 +137,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
 
         QByteArray name(entry, equal - entry);
         QByteArray value(equal + 1);
-        env.d->hash.insert(QProcessEnvironmentPrivate::Key(name),
+        env.d->vars.insert(QProcessEnvironmentPrivate::Key(name),
                            QProcessEnvironmentPrivate::Value(value));
     }
     return env;
@@ -339,7 +339,7 @@ bool QProcessPrivate::openChannel(Channel &channel)
     }
 }
 
-static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environment, int *envc)
+static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Map &environment, int *envc)
 {
     *envc = 0;
     if (environment.isEmpty())
@@ -349,10 +349,10 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Hash &environm
     envp[environment.count()] = 0;
     envp[environment.count() + 1] = 0;
 
-    QProcessEnvironmentPrivate::Hash::ConstIterator it = environment.constBegin();
-    const QProcessEnvironmentPrivate::Hash::ConstIterator end = environment.constEnd();
+    auto it = environment.constBegin();
+    const auto end = environment.constEnd();
     for ( ; it != end; ++it) {
-        QByteArray key = it.key().key;
+        QByteArray key = it.key();
         QByteArray value = it.value().bytes();
         key.reserve(key.length() + 1 + value.length());
         key.append('=');
@@ -445,7 +445,7 @@ void QProcessPrivate::startProcess()
     char **envp = 0;
     if (environment.d.constData()) {
         QProcessEnvironmentPrivate::MutexLocker locker(environment.d);
-        envp = _q_dupEnvironment(environment.d.constData()->hash, &envc);
+        envp = _q_dupEnvironment(environment.d.constData()->vars, &envc);
     }
 
     // Encode the working directory if it's non-empty, otherwise just pass 0.
@@ -969,7 +969,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             char **envp = nullptr;
             if (environment.d.constData()) {
                 QProcessEnvironmentPrivate::MutexLocker locker(environment.d);
-                envp = _q_dupEnvironment(environment.d.constData()->hash, &envc);
+                envp = _q_dupEnvironment(environment.d.constData()->vars, &envc);
             }
 
             QByteArray tmp;

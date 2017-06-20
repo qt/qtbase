@@ -54,8 +54,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qcolumnview.h"
 
-#ifndef QT_NO_QCOLUMNVIEW
-
 #include <private/qabstractitemview_p.h>
 
 #include <QtCore/qabstractitemmodel.h>
@@ -66,6 +64,8 @@
 #include <qlistview.h>
 #include <qevent.h>
 #include <qscrollbar.h>
+
+QT_REQUIRE_CONFIG(columnview);
 
 QT_BEGIN_NAMESPACE
 
@@ -190,9 +190,7 @@ public:
                const QStyleOptionViewItem &option,
                const QModelIndex &index) const Q_DECL_OVERRIDE;
 };
-#endif // QT_NO_QCOLUMNVIEW
-
 
 QT_END_NAMESPACE
-#endif //QCOLUMNVIEW_P_H
 
+#endif //QCOLUMNVIEW_P_H

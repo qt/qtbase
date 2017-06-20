@@ -17,6 +17,7 @@ DEFINES *= QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
 qtConfig(c++11): CONFIG += c++11 strict_c++
 qtConfig(c++14): CONFIG += c++14
 qtConfig(c++1z): CONFIG += c++1z
+qtConfig(stack-protector-strong): CONFIG += stack_protector_strong
 contains(TEMPLATE, .*lib) {
     # module and plugins
     if(!host_build|!cross_compile):qtConfig(reduce_exports): CONFIG += hide_symbols

@@ -83,7 +83,7 @@ bool tst_QIcon::haveImageFormat(QByteArray const& desiredFormat)
 tst_QIcon::tst_QIcon()
     : m_pngImageFileName(QFINDTESTDATA("image.png"))
     , m_pngRectFileName(QFINDTESTDATA("rect.png"))
-    , m_sourceFileName(QFINDTESTDATA(__FILE__))
+    , m_sourceFileName(":/tst_qicon.cpp")
 {
 }
 

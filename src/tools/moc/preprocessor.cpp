@@ -1109,19 +1109,18 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
         }
         case PP_DEFINE:
         {
-            next(IDENTIFIER);
+            next();
             QByteArray name = lexem();
+            if (name.isEmpty() || !is_ident_start(name[0]))
+                error();
             Macro macro;
             macro.isVariadic = false;
-            Token t = next();
-            if (t == LPAREN) {
+            if (test(LPAREN)) {
                 // we have a function macro
                 macro.isFunction = true;
                 parseDefineArguments(&macro);
-            } else if (t == PP_WHITESPACE){
-                macro.isFunction = false;
             } else {
-                error("Moc: internal error");
+                macro.isFunction = false;
             }
             int start = index;
             until(PP_NEWLINE);
@@ -1160,7 +1159,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             continue;
         }
         case PP_UNDEF: {
-            next(IDENTIFIER);
+            next();
             QByteArray name = lexem();
             until(PP_NEWLINE);
             macros.remove(name);

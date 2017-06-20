@@ -652,7 +652,7 @@ const Type &GetTypeInfo(GLenum type)
     }
 }
 
-const InternalFormat &GetInternalFormatInfo(GLenum internalFormat)
+const InternalFormat GetInternalFormatInfo(GLenum internalFormat)
 {
     const InternalFormatInfoMap &formatMap = GetInternalFormatMap();
     InternalFormatInfoMap::const_iterator iter = formatMap.find(internalFormat);

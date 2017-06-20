@@ -721,6 +721,14 @@ void qDumpCPUFeatures()
             printf("%s%s", features_string + features_indices[i],
                    minFeature & (Q_UINT64_C(1) << i) ? "[required]" : "");
     }
+    if ((features = (qCompilerCpuFeatures & ~features))) {
+        printf("\n!!!!!!!!!!!!!!!!!!!!\n!!! Missing required features:");
+        for (int i = 0; i < features_count; ++i) {
+            if (features & (Q_UINT64_C(1) << i))
+                printf("%s", features_string + features_indices[i]);
+        }
+        printf("\n!!! Applications will likely crash with \"Invalid Instruction\"\n!!!!!!!!!!!!!!!!!!!!");
+    }
     puts("");
 }
 

@@ -47,15 +47,15 @@ static DotNET vsVersionFromString(const char *versionString)
         DotNET version;
     };
     static VSVersionMapping mapping[] = {
-        "7.0", NET2002,
-        "7.1", NET2003,
-        "8.0", NET2005,
-        "9.0", NET2008,
-        "10.0", NET2010,
-        "11.0", NET2012,
-        "12.0", NET2013,
-        "14.0", NET2015,
-        "15.0", NET2017
+        { "7.0", NET2002 },
+        { "7.1", NET2003 },
+        { "8.0", NET2005 },
+        { "9.0", NET2008 },
+        { "10.0", NET2010 },
+        { "11.0", NET2012 },
+        { "12.0", NET2013 },
+        { "14.0", NET2015 },
+        { "15.0", NET2017 }
     };
     DotNET result = NETUnknown;
     for (const auto entry : mapping) {

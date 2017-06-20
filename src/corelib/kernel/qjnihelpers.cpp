@@ -80,13 +80,13 @@ class PermissionsResultClass : public QObject
     Q_OBJECT
 public:
     PermissionsResultClass(const QtAndroidPrivate::PermissionsResultFunc &func) : m_func(func) {}
-    Q_INVOKABLE void sendResult(const QtAndroidPrivate::PermissionsHash &result) { m_func(result); }
+    Q_INVOKABLE void sendResult(const QtAndroidPrivate::PermissionsHash &result) { m_func(result); delete this;}
 
 private:
     QtAndroidPrivate::PermissionsResultFunc m_func;
 };
 
-typedef QHash<int, QSharedPointer<PermissionsResultClass>> PendingPermissionRequestsHash;
+typedef QHash<int, PermissionsResultClass*> PendingPermissionRequestsHash;
 Q_GLOBAL_STATIC(PendingPermissionRequestsHash, g_pendingPermissionRequests);
 static QBasicMutex g_pendingPermissionRequestsMutex;
 static int nextRequestCode()
@@ -131,11 +131,11 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject /*obj*/, jint requ
         // show an error or something ?
         return;
     }
-    auto request = std::move(*it);
+    auto request = *it;
     g_pendingPermissionRequests->erase(it);
     locker.unlock();
 
-    Qt::ConnectionType connection = QThread::currentThread() == request->thread() ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
+    Qt::ConnectionType connection = QThread::currentThread() == request->thread() ? Qt::DirectConnection : Qt::QueuedConnection;
     QtAndroidPrivate::PermissionsHash hash;
     const int size = env->GetArrayLength(permissions);
     std::unique_ptr<jint[]> results(new jint[size]);
@@ -147,7 +147,7 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject /*obj*/, jint requ
                             QtAndroidPrivate::PermissionsResult::Denied;
         hash[permission] = value;
     }
-    QMetaObject::invokeMethod(request.data(), "sendResult", connection, Q_ARG(QtAndroidPrivate::PermissionsHash, hash));
+    QMetaObject::invokeMethod(request, "sendResult", connection, Q_ARG(QtAndroidPrivate::PermissionsHash, hash));
 }
 
 static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, jobject event)
@@ -410,6 +410,7 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
     g_jNativeClass = static_cast<jclass>(env->NewGlobalRef(jQtNative));
     env->DeleteLocalRef(jQtNative);
 
+    qRegisterMetaType<QtAndroidPrivate::PermissionsHash>();
     return JNI_OK;
 }
 
@@ -491,13 +492,13 @@ void QtAndroidPrivate::requestPermissions(JNIEnv *env, const QStringList &permis
     const int requestCode = nextRequestCode();
     if (!directCall) {
         QMutexLocker locker(&g_pendingPermissionRequestsMutex);
-        (*g_pendingPermissionRequests)[requestCode] = QSharedPointer<PermissionsResultClass>::create(callbackFunc);
+        (*g_pendingPermissionRequests)[requestCode] = new PermissionsResultClass(callbackFunc);
     }
 
     runOnAndroidThread([permissions, callbackFunc, requestCode, directCall] {
         if (directCall) {
             QMutexLocker locker(&g_pendingPermissionRequestsMutex);
-            (*g_pendingPermissionRequests)[requestCode] = QSharedPointer<PermissionsResultClass>::create(callbackFunc);
+            (*g_pendingPermissionRequests)[requestCode] = new PermissionsResultClass(callbackFunc);
         }
 
         QJNIEnvironmentPrivate env;

@@ -71,6 +71,11 @@ debug {
     QMAKE_LIBFLAGS += $$QMAKE_LIBFLAGS_RELEASE
 }
 
+stack_protector_strong {
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS_STACK_PROTECTOR_STRONG
+    QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_STACK_PROTECTOR_STRONG
+}
+
 # disable special linker flags for host builds (no proper test for host support yet)
 !host_build|!cross_compile {
     use_gold_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_GOLD

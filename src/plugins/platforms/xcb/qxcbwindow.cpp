@@ -616,13 +616,17 @@ QXcbWindow::~QXcbWindow()
     }
 
     destroy();
+}
 
-    if (isForeignWindow()) {
-        if (connection()->mouseGrabber() == this)
-            connection()->setMouseGrabber(Q_NULLPTR);
-        if (connection()->mousePressWindow() == this)
-            connection()->setMousePressWindow(Q_NULLPTR);
-    }
+QXcbForeignWindow::~QXcbForeignWindow()
+{
+    // Clear window so that destroy() does not affect it
+    m_window = 0;
+
+    if (connection()->mouseGrabber() == this)
+        connection()->setMouseGrabber(nullptr);
+    if (connection()->mousePressWindow() == this)
+        connection()->setMousePressWindow(nullptr);
 }
 
 void QXcbWindow::destroy()

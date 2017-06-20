@@ -232,7 +232,7 @@
 #if defined(__SSE4_2__) || (defined(QT_COMPILER_SUPPORTS_SSE4_2) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS))
 #include <nmmintrin.h>
 
-#  if defined(__SSE4_2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+#  if defined(__SSE4_2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
 // POPCNT instructions:
 // All processors that support SSE4.2 support POPCNT
 // (but neither MSVC nor the Intel compiler define this macro)
@@ -245,7 +245,7 @@
 // immintrin.h is the ultimate header, we don't need anything else after this
 #include <immintrin.h>
 
-#  if defined(__AVX__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+#  if defined(__AVX__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
 // AES, PCLMULQDQ instructions:
 // All processors that support AVX support AES, PCLMULQDQ
 // (but neither MSVC nor the Intel compiler define these macros)
@@ -253,7 +253,7 @@
 #    define __PCLMUL__                      1
 #  endif
 
-#  if defined(__AVX2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
+#  if defined(__AVX2__) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC))
 // F16C & RDRAND instructions:
 // All processors that support AVX2 support F16C & RDRAND:
 // (but neither MSVC nor the Intel compiler define these macros)

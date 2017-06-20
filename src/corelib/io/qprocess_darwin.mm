@@ -48,7 +48,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
     __block QProcessEnvironment env;
     [[[NSProcessInfo processInfo] environment]
         enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSString *value, BOOL *__unused stop) {
-        env.d->hash.insert(
+        env.d->vars.insert(
             QProcessEnvironmentPrivate::Key(QString::fromNSString(name).toLocal8Bit()),
             QProcessEnvironmentPrivate::Value(QString::fromNSString(value).toLocal8Bit()));
     }];

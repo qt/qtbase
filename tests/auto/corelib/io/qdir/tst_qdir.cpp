@@ -2322,8 +2322,11 @@ void tst_QDir::cdBelowRoot()
 void tst_QDir::emptyDir()
 {
     const QString tempDir = QDir::currentPath() + "/tmpdir/";
-    QVERIFY(QDir().mkdir(tempDir));
-    QVERIFY(QDir(tempDir).mkdir("emptyDirectory"));
+    QDir temp(tempDir);
+    if (!temp.exists()) {
+        QVERIFY(QDir().mkdir(tempDir));
+    }
+    QVERIFY(temp.mkdir("emptyDirectory"));
 
     QDir testDir(tempDir + "emptyDirectory");
     QVERIFY(testDir.isEmpty());

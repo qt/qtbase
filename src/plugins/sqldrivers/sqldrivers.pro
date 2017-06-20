@@ -1,5 +1,9 @@
 TEMPLATE = subdirs
-QT_FOR_CONFIG += sql
+
+sqldrivers_standalone {
+    _QMAKE_CACHE_ = $$shadowed($$SQLDRV_SRC_TREE)/.qmake.conf
+    load(qt_configure)
+}
 
 qtConfig(sql-psql)     : SUBDIRS += psql
 qtConfig(sql-mysql)    : SUBDIRS += mysql

@@ -29,7 +29,6 @@ HEADERS +=  \
 SOURCES += \
         global/archdetect.cpp \
 	global/qglobal.cpp \
-        global/qglobalstatic.cpp \
         global/qlibraryinfo.cpp \
 	global/qmalloc.cpp \
         global/qnumeric.cpp \

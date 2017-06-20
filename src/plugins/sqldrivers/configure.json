@@ -1,9 +1,9 @@
 {
-    "module": "sql",
+    "module": "sqldrivers",
     "depends": [
         "core"
     ],
-    "testDir": "../../config.tests",
+    "testDir": "../../../config.tests",
 
     "commandline": {
         "assignments": {
@@ -129,47 +129,42 @@
         "sql-db2": {
             "label": "DB2 (IBM)",
             "condition": "libs.db2",
-            "output": [ "publicFeature" ]
+            "output": [ "privateFeature" ]
         },
         "sql-ibase": {
             "label": "InterBase",
             "condition": "libs.ibase",
-            "output": [ "publicFeature" ]
+            "output": [ "privateFeature" ]
         },
         "sql-mysql": {
             "label": "MySql",
             "condition": "libs.mysql",
-            "output": [ "publicFeature" ]
-        },
-        "use_libmysqlclient_r": {
-            "label": "MySql (threadsafe)",
-            "condition": "features.sql-mysql && (libs.mysql.source == 0 || libs.mysql.source == 2)",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "sql-oci": {
             "label": "OCI (Oracle)",
             "condition": "libs.oci",
-            "output": [ "publicFeature" ]
+            "output": [ "privateFeature" ]
         },
         "sql-odbc": {
             "label": "ODBC",
-            "condition": "libs.odbc && features.datestring",
-            "output": [ "publicFeature" ]
+            "condition": "features.datestring && libs.odbc",
+            "output": [ "privateFeature" ]
         },
         "sql-psql": {
             "label": "PostgreSQL",
             "condition": "libs.psql",
-            "output": [ "publicFeature" ]
+            "output": [ "privateFeature" ]
         },
         "sql-sqlite2": {
             "label": "SQLite2",
             "condition": "libs.sqlite2",
-            "output": [ "publicFeature" ]
+            "output": [ "privateFeature" ]
         },
         "sql-sqlite": {
             "label": "SQLite",
             "condition": "features.datestring",
-            "output": [ "publicFeature" ]
+            "output": [ "privateFeature" ]
         },
         "system-sqlite": {
             "label": "  Using system provided SQLite",
@@ -179,8 +174,8 @@
         },
         "sql-tds": {
             "label": "TDS (Sybase)",
-            "condition": "libs.tds && features.datestring",
-            "output": [ "publicFeature" ]
+            "condition": "features.datestring && libs.tds",
+            "output": [ "privateFeature" ]
         }
     },
 

@@ -299,7 +299,7 @@ void tst_QTimeZone::nullTest()
 
 void tst_QTimeZone::dataStreamTest()
 {
-    // Test the OffsetFromUtc backend serialization
+    // Test the OffsetFromUtc backend serialization. First with a custom timezone:
     QTimeZone tz1("QST", 123456, "Qt Standard Time", "QST", QLocale::Norway, "Qt Testing");
     QByteArray tmp;
     {
@@ -320,6 +320,20 @@ void tst_QTimeZone::dataStreamTest()
     QCOMPARE(tz2.displayName(QTimeZone::DaylightTime, QTimeZone::LongName, QString()),
              QString("Qt Standard Time"));
     QCOMPARE(tz2.offsetFromUtc(QDateTime::currentDateTime()), 123456);
+
+    // And then with a standard IANA timezone (QTBUG-60595):
+    tz1 = QTimeZone("UTC");
+    QCOMPARE(tz1.isValid(), true);
+    {
+        QDataStream ds(&tmp, QIODevice::WriteOnly);
+        ds << tz1;
+    }
+    {
+        QDataStream ds(&tmp, QIODevice::ReadOnly);
+        ds >> tz2;
+    }
+    QCOMPARE(tz2.isValid(), true);
+    QCOMPARE(tz2.id(), tz1.id());
 
     // Test the system backend serialization
     tz1 = QTimeZone("Pacific/Auckland");
