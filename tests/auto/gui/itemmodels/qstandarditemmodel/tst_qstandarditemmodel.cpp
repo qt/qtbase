@@ -117,6 +117,9 @@ private slots:
     void useCase2();
     void useCase3();
 
+    void setNullChild();
+    void deleteChild();
+
     void rootItemFlags();
 #ifdef QT_BUILD_INTERNAL
     void treeDragAndDrop();
@@ -1362,6 +1365,30 @@ void tst_QStandardItemModel::useCase3()
         }
     }
     delete childItem;
+}
+
+void tst_QStandardItemModel::setNullChild()
+{
+    QStandardItemModel model;
+    model.setColumnCount(2);
+    createChildren(&model, model.invisibleRootItem(), 0);
+    QStandardItem *item = model.item(0);
+    QSignalSpy spy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+    item->setChild(0, nullptr);
+    QCOMPARE(item->child(0), nullptr);
+    QCOMPARE(spy.count(), 1);
+}
+
+void tst_QStandardItemModel::deleteChild()
+{
+    QStandardItemModel model;
+    model.setColumnCount(2);
+    createChildren(&model, model.invisibleRootItem(), 0);
+    QStandardItem *item = model.item(0);
+    QSignalSpy spy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+    delete item->child(0);
+    QCOMPARE(item->child(0), nullptr);
+    QCOMPARE(spy.count(), 1);
 }
 
 void tst_QStandardItemModel::rootItemFlags()
