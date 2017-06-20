@@ -693,12 +693,14 @@ void tst_QTableView::keyboardNavigation()
         case Qt::Key_Backtab:
             if (!tabKeyNavigation)
                 break;
+            Q_FALLTHROUGH();
         case Qt::Key_Left:
             column = qMax(0, column - 1);
             break;
         case Qt::Key_Tab:
             if (!tabKeyNavigation)
                 break;
+            Q_FALLTHROUGH();
         case Qt::Key_Right:
             column = qMin(columnCount - 1, column + 1);
             break;
