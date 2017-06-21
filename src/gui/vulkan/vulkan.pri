@@ -50,3 +50,6 @@ qtConfig(vulkan): \
 else: \
     qvkgen_pimpl.CONFIG += target_predeps no_link
 QMAKE_EXTRA_COMPILERS += qvkgen_pimpl
+
+# Ensure qvulkanfunctions.h gets installed correctly
+targ_headers.CONFIG += no_check_exist
