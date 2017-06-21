@@ -92,6 +92,7 @@ private slots:
     void tryTake();
     void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
+    void stackSize();
     void stressTest();
 
 private:
@@ -1134,6 +1135,39 @@ void tst_QThreadPool::destroyingWaitsForTasksToFinish()
         }
         QCOMPARE(count.load(), runs);
     }
+}
+
+// Verify that QThreadPool::stackSize is used when creating
+// new threads. Note that this tests the Qt property only
+// since QThread::stackSize() does not reflect the actual
+// stack size used by the native thread.
+void tst_QThreadPool::stackSize()
+{
+    uint targetStackSize = 512 * 1024;
+    uint threadStackSize = 1; // impossible value
+
+    class StackSizeChecker : public QRunnable
+    {
+        public:
+        uint *stackSize;
+
+        StackSizeChecker(uint *stackSize)
+        :stackSize(stackSize)
+        {
+
+        }
+
+        void run()
+        {
+            *stackSize = QThread::currentThread()->stackSize();
+        }
+    };
+
+    QThreadPool threadPool;
+    threadPool.setStackSize(targetStackSize);
+    threadPool.start(new StackSizeChecker(&threadStackSize));
+    QVERIFY(threadPool.waitForDone(30000)); // 30s timeout
+    QCOMPARE(threadStackSize, targetStackSize);
 }
 
 void tst_QThreadPool::stressTest()

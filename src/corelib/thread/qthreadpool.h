@@ -58,6 +58,7 @@ class Q_CORE_EXPORT QThreadPool : public QObject
     Q_PROPERTY(int expiryTimeout READ expiryTimeout WRITE setExpiryTimeout)
     Q_PROPERTY(int maxThreadCount READ maxThreadCount WRITE setMaxThreadCount)
     Q_PROPERTY(int activeThreadCount READ activeThreadCount)
+    Q_PROPERTY(uint stackSize READ stackSize WRITE setStackSize)
     friend class QFutureInterfaceBase;
 
 public:
@@ -76,6 +77,9 @@ public:
     void setMaxThreadCount(int maxThreadCount);
 
     int activeThreadCount() const;
+
+    void setStackSize(uint stackSize);
+    uint stackSize() const;
 
     void reserveThread();
     void releaseThread();

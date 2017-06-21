@@ -96,6 +96,7 @@ public:
     int maxThreadCount = QThread::idealThreadCount();
     int reservedThreads = 0;
     int activeThreads = 0;
+    uint stackSize = 0;
     bool isExiting = false;
 };
 
