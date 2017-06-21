@@ -317,7 +317,7 @@ QList<QByteArray> QGbkCodec::_aliases()
 
 QString QGbkCodec::convertToUnicode(const char* chars, int len, ConverterState *state) const
 {
-    uchar buf[2];
+    uchar buf[2] = {0, 0};
     int nbuf = 0;
     ushort replacement = QChar::ReplacementCharacter;
     if (state) {
@@ -467,7 +467,7 @@ QByteArray QGb2312Codec::_name()
 
 QString QGb2312Codec::convertToUnicode(const char* chars, int len, ConverterState *state) const
 {
-    uchar buf[2];
+    uchar buf[2] = {0, 0};
     int nbuf = 0;
     ushort replacement = QChar::ReplacementCharacter;
     if (state) {
