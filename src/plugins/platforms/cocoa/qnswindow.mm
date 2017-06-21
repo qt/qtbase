@@ -118,22 +118,6 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)handleWindowEvent:(NSEvent *)theEvent
 {
-    QCocoaWindow *pw = self.platformWindow;
-    if (pw && pw->m_forwardWindow) {
-        if (theEvent.type == NSLeftMouseUp || theEvent.type == NSLeftMouseDragged) {
-            QNSView *forwardView = qnsview_cast(pw->view());
-            if (theEvent.type == NSLeftMouseUp) {
-                [forwardView mouseUp:theEvent];
-                pw->m_forwardWindow.clear();
-            } else {
-                [forwardView mouseDragged:theEvent];
-            }
-        }
-        if (pw->window()->isTopLevel() && theEvent.type == NSLeftMouseDown) {
-            pw->m_forwardWindow.clear();
-        }
-    }
-
     if (theEvent.type == NSLeftMouseDown) {
         self.grabbingMouse = YES;
     } else if (theEvent.type == NSLeftMouseUp) {
@@ -157,7 +141,8 @@ static bool isMouseEvent(NSEvent *ev)
     if (!self.platformWindow)
         return; // Platform window went away while processing event
 
-    if (pw && pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
+    QCocoaWindow *pw = self.platformWindow;
+    if (pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
         NSPoint loc = [theEvent locationInWindow];
         NSRect windowFrame = [self.window convertRectFromScreen:[self.window frame]];
         NSRect contentFrame = [[self.window contentView] frame];
@@ -217,10 +202,8 @@ static const bool kNoDefer = NO;
 
 - (BOOL)canBecomeKeyWindow
 {
-    // Prevent child NSWindows from becoming the key window in
-    // order keep the active apperance of the top-level window.
     QCocoaWindow *pw = self.helper.platformWindow;
-    if (!pw || !pw->window()->isTopLevel())
+    if (!pw)
         return NO;
 
     if (pw->shouldRefuseKeyWindowAndFirstResponder())
@@ -239,7 +222,7 @@ static const bool kNoDefer = NO;
     // Windows with a transient parent (such as combobox popup windows)
     // cannot become the main window:
     QCocoaWindow *pw = self.helper.platformWindow;
-    if (!pw || !pw->window()->isTopLevel() || pw->window()->transientParent())
+    if (!pw || pw->window()->transientParent())
         canBecomeMain = NO;
 
     return canBecomeMain;

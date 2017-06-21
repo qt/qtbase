@@ -281,20 +281,7 @@ static QTouchDevice *touchDevice = 0;
 
     QRect geometry;
 
-    if (self.window.parentWindow) {
-         return;
-#if 0
-        //geometry = QRectF::fromCGRect([self frame]).toRect();
-        qDebug() << "nsview updateGeometry" << m_platformWindow->window();
-        QRect screenRect = QRectF::fromCGRect([m_platformWindow->nativeWindow() convertRectToScreen:[self frame]]).toRect();
-        qDebug() << "screenRect" << screenRect;
-
-        screenRect.moveTop(qt_mac_flipYCoordinate(screenRect.y() + screenRect.height()));
-        geometry = QRect(m_platformWindow->window()->parent()->mapFromGlobal(screenRect.topLeft()), screenRect.size());
-        qDebug() << "geometry" << geometry;
-#endif
-        //geometry = QRect(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y + screenRect.size.height), screenRect.size.width, screenRect.size.height);
-    } else if (m_platformWindow->isContentView()) {
+    if (m_platformWindow->isContentView()) {
         // top level window, get window rect and flip y.
         NSRect rect = [self frame];
         NSRect windowRect = [[self window] frame];
@@ -639,12 +626,6 @@ static QTouchDevice *touchDevice = 0;
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
     QNSView *targetView = self;
-    if (m_platformWindow && m_platformWindow->m_forwardWindow) {
-        if (theEvent.type == NSLeftMouseDragged || theEvent.type == NSLeftMouseUp)
-            targetView = qnsview_cast(m_platformWindow->m_forwardWindow->view());
-        else
-            m_platformWindow->m_forwardWindow.clear();
-    }
     if (!targetView.platformWindow)
         return;
 

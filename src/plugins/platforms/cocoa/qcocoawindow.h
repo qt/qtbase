@@ -93,10 +93,7 @@ public:
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
     QRect geometry() const Q_DECL_OVERRIDE;
     void setCocoaGeometry(const QRect &rect);
-    void clipChildWindows();
-    void clipWindow(const NSRect &clipRect);
-    void show(bool becauseOfAncestor = false);
-    void hide(bool becauseOfAncestor = false);
+
     void setVisible(bool visible) Q_DECL_OVERRIDE;
     void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
     void setWindowState(Qt::WindowStates state) Q_DECL_OVERRIDE;
@@ -202,7 +199,6 @@ public:
         ParentChanged = 0x1,
         MissingWindow = 0x2,
         WindowModalityChanged = 0x4,
-        ChildNSWindowChanged = 0x8,
         ContentViewChanged = 0x10,
         PanelChanged = 0x20,
     };
@@ -210,14 +206,10 @@ public:
     Q_FLAG(RecreationReasons)
 
 protected:
-    void foreachChildNSWindow(void (^block)(QCocoaWindow *));
-
     void recreateWindowIfNeeded();
-    QCocoaNSWindow *createNSWindow(bool shouldBeChildNSWindow, bool shouldBePanel);
+    QCocoaNSWindow *createNSWindow(bool shouldBePanel);
 
     QRect nativeWindowGeometry() const;
-    void reinsertChildWindow(QCocoaWindow *child);
-    void removeChildWindow(QCocoaWindow *child);
 
     Qt::WindowState windowState() const;
     void applyWindowState(Qt::WindowStates newState);
@@ -231,14 +223,12 @@ public: // for QNSView
     friend class QCocoaNativeInterface;
 
     bool isContentView() const;
-    bool isChildNSWindow() const;
 
     bool alwaysShowToolWindow() const;
     void removeMonitor();
 
     NSView *m_view;
     QCocoaNSWindow *m_nsWindow;
-    QPointer<QCocoaWindow> m_forwardWindow;
 
     // TODO merge to one variable if possible
     bool m_viewIsEmbedded; // true if the m_view is actually embedded in a "foreign" NSView hiearchy
@@ -268,8 +258,6 @@ public: // for QNSView
     qreal m_exposedDevicePixelRatio;
     int m_registerTouchCount;
     bool m_resizableTransientParent;
-    bool m_hiddenByClipping;
-    bool m_hiddenByAncestor;
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest;
