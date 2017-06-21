@@ -81,7 +81,7 @@ qreal latitudeFromTile(qreal ty, int zoom)
 {
     qreal zn = static_cast<qreal>(1 << zoom);
     qreal n = M_PI - 2 * M_PI * ty / zn;
-    return qRadiansToDegrees(atan(0.5 * (exp(n) - exp(-n))));
+    return qRadiansToDegrees(atan(sinh(n)));
 }
 
 
