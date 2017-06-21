@@ -396,6 +396,30 @@
                 "-lts"
             ]
         },
+        "v4l2": {
+            "label": "V4L2",
+            "test": {
+                "include": [
+                    "cstddef"
+                ],
+                "tail": [
+                    "extern \"C\" {",
+                    "#include <mediactl/mediactl.h>",
+                    "#include <mediactl/v4l2subdev.h>",
+                    "}"
+                ],
+                "main": [
+                    "v4l2_format fmt;",
+                    "media_pad *pad = nullptr;",
+                    "media_device *device = media_device_new(\"/dev/media\");",
+                    "v4l2_subdev_set_format(nullptr, nullptr, 0, V4L2_SUBDEV_FORMAT_ACTIVE);"
+                ]
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "libv4l2 libmediactl" },
+                "-lmediactl -lv4l2 -lv4l2subdev"
+            ]
+        },
         "vulkan": {
             "label": "Vulkan",
             "test": "qpa/vulkan",
@@ -1021,6 +1045,12 @@
             "condition": "tests.linuxfb && features.regularexpression",
             "output": [ "privateFeature" ]
         },
+        "vsp2": {
+            "label": "VSP2",
+            "condition": "libs.v4l2",
+            "autoDetect": false,
+            "output": [ "privateFeature" ]
+        },
         "vnc": {
             "label": "VNC",
             "section": "Platform plugins",
@@ -1139,6 +1169,11 @@
         "eglfs_gbm": {
             "label": "EGLFS GBM",
             "condition": "features.eglfs && features.gbm && features.kms",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_vsp2": {
+            "label": "EGLFS VSP2",
+            "condition": "features.eglfs && features.gbm && features.kms && features.vsp2",
             "output": [ "privateFeature" ]
         },
         "eglfs_mali": {
@@ -1666,7 +1701,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "EGLFS details",
                     "condition": "features.eglfs",
                     "entries": [
-                        "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_rcar", "eglfs_egldevice", "eglfs_gbm", "eglfs_mali", "eglfs_brcm", "egl_x11"
+                        "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_rcar", "eglfs_egldevice", "eglfs_gbm", "eglfs_vsp2", "eglfs_mali", "eglfs_brcm", "egl_x11"
                     ]
                 },
                 "linuxfb", "vnc", "mirclient",
