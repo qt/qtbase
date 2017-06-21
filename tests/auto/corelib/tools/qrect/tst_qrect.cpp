@@ -171,6 +171,7 @@ private slots:
     void containsPointF_data();
     void containsPointF();
     void smallRects() const;
+    void toRect();
 };
 
 // Used to work around some floating point precision problems.
@@ -4329,6 +4330,37 @@ void tst_QRect::smallRects() const
     // r2 is 10000 times bigger than r1
     QVERIFY(!(r1 == r2));
     QVERIFY(r1 != r2);
+}
+
+void tst_QRect::toRect()
+{
+    for (qreal x = 1.0; x < 2.0; x += 0.25) {
+        for (qreal y = 1.0; y < 2.0; y += 0.25) {
+            for (qreal w = 1.0; w < 2.0; w += 0.25) {
+                for (qreal h = 1.0; h < 2.0; h += 0.25) {
+                    const QRectF rectf(x, y, w, h);
+                    const QRectF rect = rectf.toRect();
+                    QVERIFY(qAbs(rect.x() - rectf.x()) < 1.0);
+                    QVERIFY(qAbs(rect.y() - rectf.y()) < 1.0);
+                    QVERIFY(qAbs(rect.width() - rectf.width()) < 1.0);
+                    QVERIFY(qAbs(rect.height() - rectf.height()) < 1.0);
+                    QVERIFY(qAbs(rect.right() - rectf.right()) < 1.0);
+                    QVERIFY(qAbs(rect.bottom() - rectf.bottom()) < 1.0);
+
+                    const QRectF arect = rectf.toAlignedRect();
+                    QVERIFY(qAbs(arect.x() - rectf.x()) < 1.0);
+                    QVERIFY(qAbs(arect.y() - rectf.y()) < 1.0);
+                    QVERIFY(qAbs(arect.width() - rectf.width()) < 2.0);
+                    QVERIFY(qAbs(arect.height() - rectf.height()) < 2.0);
+                    QVERIFY(qAbs(arect.right() - rectf.right()) < 1.0);
+                    QVERIFY(qAbs(arect.bottom() - rectf.bottom()) < 1.0);
+
+                    QVERIFY(arect.contains(rectf));
+                    QVERIFY(arect.contains(rect));
+                }
+            }
+        }
+    }
 }
 
 QTEST_MAIN(tst_QRect)

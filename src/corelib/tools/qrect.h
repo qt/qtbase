@@ -870,7 +870,7 @@ Q_DECL_CONSTEXPR inline bool operator!=(const QRectF &r1, const QRectF &r2) Q_DE
 
 Q_DECL_CONSTEXPR inline QRect QRectF::toRect() const Q_DECL_NOTHROW
 {
-    return QRect(qRound(xp), qRound(yp), qRound(w), qRound(h));
+    return QRect(QPoint(qRound(xp), qRound(yp)), QPoint(qRound(xp + w) - 1, qRound(yp + h) - 1));
 }
 
 Q_DECL_CONSTEXPR inline QRectF operator+(const QRectF &lhs, const QMarginsF &rhs) Q_DECL_NOTHROW
