@@ -411,7 +411,9 @@ QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardBut
     else
         addButton(button, static_cast<QDialogButtonBox::ButtonRole>(role), doLayout);
 #if QT_CONFIG(shortcut)
-    button->setShortcut(QGuiApplicationPrivate::platformTheme()->standardButtonShortcut(sbutton));
+    const QKeySequence standardShortcut = QGuiApplicationPrivate::platformTheme()->standardButtonShortcut(sbutton);
+    if (!standardShortcut.isEmpty())
+        button->setShortcut(standardShortcut);
 #endif
     return button;
 }
