@@ -886,6 +886,7 @@ int QNativeSocketEnginePrivate::nativeAccept()
             break;
         case WSAENETDOWN:
             setError(QAbstractSocket::NetworkError, NetworkUnreachableErrorString);
+            break;
         case WSAENOTSOCK:
             setError(QAbstractSocket::SocketResourceError, NotSocketErrorString);
             break;
