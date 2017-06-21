@@ -925,9 +925,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return false;
 #endif
     case QtWindows::DisplayChangedEvent:
-        return d->m_screenManager.handleDisplayChange(wParam, lParam);
         if (QWindowsTheme *t = QWindowsTheme::instance())
             t->displayChanged();
+        return d->m_screenManager.handleDisplayChange(wParam, lParam);
     case QtWindows::SettingChangedEvent:
         return d->m_screenManager.handleScreenChanges();
     default:

@@ -2153,6 +2153,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
             rect = visualRect(cb->direction, cb->rect, rect);
             return rect;
         }
+        break;
 #endif // QT_NO_COMBOBOX
     case CC_TitleBar:
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(option)) {
