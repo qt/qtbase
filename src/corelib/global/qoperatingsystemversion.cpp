@@ -336,6 +336,7 @@ QString QOperatingSystemVersion::name() const
     }
 }
 
+#ifdef Q_COMPILER_INITIALIZER_LISTS
 /*!
     \fn bool QOperatingSystemVersion::isAnyOfType(std::initializer_list<OSType> types) const
 
@@ -350,6 +351,7 @@ bool QOperatingSystemVersion::isAnyOfType(std::initializer_list<OSType> types) c
     }
     return false;
 }
+#endif
 
 /*!
     \variable QOperatingSystemVersion::Windows7
