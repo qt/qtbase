@@ -53,7 +53,6 @@ SOURCES += \
            ../../corelib/io/qloggingregistry.cpp \
            ../../corelib/kernel/qcoreapplication.cpp \
            ../../corelib/kernel/qcoreglobaldata.cpp \
-           ../../corelib/kernel/qdeadlinetimer.cpp \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
            ../../corelib/kernel/qsystemerror.cpp \
