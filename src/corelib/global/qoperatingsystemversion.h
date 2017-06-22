@@ -81,7 +81,6 @@ public:
     static const QOperatingSystemVersion AndroidNougat;
     static const QOperatingSystemVersion AndroidNougat_MR1;
 
-    QOperatingSystemVersion(const QOperatingSystemVersion &other) = default;
     Q_DECL_CONSTEXPR QOperatingSystemVersion(OSType osType,
                                              int vmajor, int vminor = -1, int vmicro = -1)
         : m_os(osType),
