@@ -43,5 +43,6 @@ int main(int argc, char *argv[])
     if (!arguments.contains(QLatin1String("-e")))
         controller.registerEventFilter();
     controller.show();
+    controller.lower();
     return app.exec();
 }

@@ -172,37 +172,37 @@ static QPlainTextEdit *createControlPanel(QWidget *widget)
     QGridLayout *buttonLayout = new QGridLayout;
     bottomLayout->addStretch();
     bottomLayout->addLayout(buttonLayout);
-    QPushButton *showNormalButton = new QPushButton(PreviewWindow::tr("Show normal"));
+    QPushButton *showNormalButton = new QPushButton(PreviewWidget::tr("Show normal"));
     QObject::connect(showNormalButton, SIGNAL(clicked()), widget, SLOT(showNormal()));
     buttonLayout->addWidget(showNormalButton, 0, 0);
-    QPushButton *showMinimizedButton = new QPushButton(PreviewWindow::tr("Show minimized"));
+    QPushButton *showMinimizedButton = new QPushButton(PreviewWidget::tr("Show minimized"));
     QObject::connect(showMinimizedButton, SIGNAL(clicked()), widget, SLOT(showMinimized()));
     buttonLayout->addWidget(showMinimizedButton, 0, 1);
-    QPushButton *showMaximizedButton = new QPushButton(PreviewWindow::tr("Show maximized"));
+    QPushButton *showMaximizedButton = new QPushButton(PreviewWidget::tr("Show maximized"));
     QObject::connect(showMaximizedButton, SIGNAL(clicked()), widget, SLOT(showMaximized()));
     buttonLayout->addWidget(showMaximizedButton, 0, 2);
-    QPushButton *showFullScreenButton = new QPushButton(PreviewWindow::tr("Show fullscreen"));
+    QPushButton *showFullScreenButton = new QPushButton(PreviewWidget::tr("Show fullscreen"));
     QObject::connect(showFullScreenButton, SIGNAL(clicked()), widget, SLOT(showFullScreen()));
     buttonLayout->addWidget(showFullScreenButton, 0, 3);
 
-    QPushButton *updateInfoButton = new QPushButton(PreviewWindow::tr("&Update Info"));
+    QPushButton *updateInfoButton = new QPushButton(PreviewWidget::tr("&Update Info"));
     QObject::connect(updateInfoButton, SIGNAL(clicked()), widget, SLOT(updateInfo()));
     buttonLayout->addWidget(updateInfoButton, 1, 0);
-    QPushButton *closeButton = new QPushButton(PreviewWindow::tr("&Close"));
+    QPushButton *closeButton = new QPushButton(PreviewWidget::tr("&Close"));
     QObject::connect(closeButton, SIGNAL(clicked()), widget, SLOT(close()));
     buttonLayout->addWidget(closeButton, 1, 3);
 
     return textEdit;
 }
 
-PreviewWindow::PreviewWindow(QWidget *parent)
+PreviewWidget::PreviewWidget(QWidget *parent)
     : QWidget(parent)
 {
     textEdit = createControlPanel(this);
     setWindowTitle(tr("Preview <QWidget> Qt %1").arg(QLatin1String(QT_VERSION_STR)));
 }
 
-bool PreviewWindow::event(QEvent *event)
+bool PreviewWidget::event(QEvent *event)
 {
     const bool ret = QWidget::event(event);
 
@@ -219,7 +219,7 @@ bool PreviewWindow::event(QEvent *event)
     return ret;
 }
 
-void PreviewWindow::setWindowFlags(Qt::WindowFlags flags)
+void PreviewWidget::setWindowFlags(Qt::WindowFlags flags)
 {
     if (flags == windowFlags())
         return;
@@ -227,7 +227,7 @@ void PreviewWindow::setWindowFlags(Qt::WindowFlags flags)
     QTimer::singleShot(0, this, SLOT(updateInfo()));
 }
 
-void PreviewWindow::updateInfo()
+void PreviewWidget::updateInfo()
 {
       textEdit->setPlainText(formatWidgetInfo(this));
 }

@@ -60,20 +60,27 @@ private slots:
     void updateStateControl();
 
 private:
+    void updatePreview(QWindow *);
+    void updatePreview(QWidget *);
     void createTypeGroupBox();
     QCheckBox *createCheckBox(const QString &text);
     QRadioButton *createRadioButton(const QString &text);
 
     QMainWindow *parentWindow;
-    PreviewWindow *previewWindow;
+
+    QWindow *previewWindow;
+    PreviewWidget *previewWidget;
     PreviewDialog *previewDialog;
-    QWidget *previewWidget;
+
+    QWindow *activePreview;
+
     QGroupBox *widgetTypeGroupBox;
     QGroupBox *additionalOptionsGroupBox;
     TypeControl *typeControl;
     HintControl *hintsControl;
     WindowStatesControl *statesControl;
 
+    QRadioButton *previewWindowButton;
     QRadioButton *previewWidgetButton;
     QRadioButton *previewDialogButton;
     QCheckBox *modalWindowCheckBox;

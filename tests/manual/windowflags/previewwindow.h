@@ -35,12 +35,12 @@ QT_BEGIN_NAMESPACE
 class QPlainTextEdit;
 QT_END_NAMESPACE
 
-class PreviewWindow : public QWidget
+class PreviewWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    PreviewWindow(QWidget *parent = 0);
+    PreviewWidget(QWidget *parent = 0);
 
     void setWindowFlags(Qt::WindowFlags flags);
 
