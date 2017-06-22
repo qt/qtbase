@@ -29,6 +29,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/qendian.h>
+#include <QtCore/private/qendian_p.h>
 
 
 class tst_QtEndian: public QObject
@@ -41,6 +42,11 @@ private slots:
 
     void toBigEndian();
     void toLittleEndian();
+
+    void endianIntegers_data();
+    void endianIntegers();
+
+    void endianBitfields();
 };
 
 struct TestData
@@ -128,6 +134,84 @@ void tst_QtEndian::toLittleEndian()
 }
 
 #undef ENDIAN_TEST
+
+void tst_QtEndian::endianIntegers_data()
+{
+    QTest::addColumn<int>("val");
+
+    QTest::newRow("-30000") << -30000;
+    QTest::newRow("-1") << -1;
+    QTest::newRow("0") << 0;
+    QTest::newRow("1020") << 1020;
+    QTest::newRow("16385") << 16385;
+}
+
+void tst_QtEndian::endianIntegers()
+{
+    QFETCH(int, val);
+
+    qint16 vi16 = val;
+    qint32 vi32 = val;
+    qint64 vi64 = val;
+    quint16 vu16 = val;
+    quint32 vu32 = val;
+    quint64 vu64 = val;
+
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+    QCOMPARE(*reinterpret_cast<qint16_be*>(&vi16), vi16);
+    QCOMPARE(*reinterpret_cast<qint32_be*>(&vi32), vi32);
+    QCOMPARE(*reinterpret_cast<qint64_be*>(&vi64), vi64);
+    QCOMPARE(*reinterpret_cast<qint16_le*>(&vi16), qbswap(vi16));
+    QCOMPARE(*reinterpret_cast<qint32_le*>(&vi32), qbswap(vi32));
+    QCOMPARE(*reinterpret_cast<qint64_le*>(&vi64), qbswap(vi64));
+    QCOMPARE(*reinterpret_cast<quint16_be*>(&vu16), vu16);
+    QCOMPARE(*reinterpret_cast<quint32_be*>(&vu32), vu32);
+    QCOMPARE(*reinterpret_cast<quint64_be*>(&vu64), vu64);
+    QCOMPARE(*reinterpret_cast<quint16_le*>(&vu16), qbswap(vu16));
+    QCOMPARE(*reinterpret_cast<quint32_le*>(&vu32), qbswap(vu32));
+    QCOMPARE(*reinterpret_cast<quint64_le*>(&vu64), qbswap(vu64));
+#else
+    QCOMPARE(*reinterpret_cast<qint16_be*>(&vi16), qbswap(vi16));
+    QCOMPARE(*reinterpret_cast<qint32_be*>(&vi32), qbswap(vi32));
+    QCOMPARE(*reinterpret_cast<qint64_be*>(&vi64), qbswap(vi64));
+    QCOMPARE(*reinterpret_cast<qint16_le*>(&vi16), vi16);
+    QCOMPARE(*reinterpret_cast<qint32_le*>(&vi32), vi32);
+    QCOMPARE(*reinterpret_cast<qint64_le*>(&vi64), vi64);
+    QCOMPARE(*reinterpret_cast<quint16_be*>(&vu16), qbswap(vu16));
+    QCOMPARE(*reinterpret_cast<quint32_be*>(&vu32), qbswap(vu32));
+    QCOMPARE(*reinterpret_cast<quint64_be*>(&vu64), qbswap(vu64));
+    QCOMPARE(*reinterpret_cast<quint16_le*>(&vu16), vu16);
+    QCOMPARE(*reinterpret_cast<quint32_le*>(&vu32), vu32);
+    QCOMPARE(*reinterpret_cast<quint64_le*>(&vu64), vu64);
+#endif
+}
+
+void tst_QtEndian::endianBitfields()
+{
+    union {
+        quint32_be_bitfield<21, 11> upper;
+        quint32_be_bitfield<10, 11> lower;
+        qint32_be_bitfield<0, 10> bottom;
+    } u;
+
+    u.upper = 200;
+    QCOMPARE(u.upper, 200U);
+    u.lower = 1000;
+    u.bottom = -8;
+    QCOMPARE(u.lower, 1000U);
+    QCOMPARE(u.upper, 200U);
+
+    u.lower += u.upper;
+    QCOMPARE(u.upper, 200U);
+    QCOMPARE(u.lower, 1200U);
+
+    u.upper = 65536 + 7;
+    u.lower = 65535;
+    QCOMPARE(u.lower, 65535U & ((1<<11) - 1));
+    QCOMPARE(u.upper, 7U);
+
+    QCOMPARE(u.bottom, -8);
+}
 
 QTEST_MAIN(tst_QtEndian)
 #include "tst_qtendian.moc"

@@ -1,4 +1,4 @@
 CONFIG += testcase
 TARGET = tst_qtendian
-QT = core testlib
+QT = core core-private testlib
 SOURCES = tst_qtendian.cpp

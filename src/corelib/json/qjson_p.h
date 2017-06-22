@@ -140,97 +140,10 @@ typedef q_littleendian<int> qle_int;
 typedef q_littleendian<unsigned int> qle_uint;
 
 template<int pos, int width>
-class qle_bitfield
-{
-public:
-    uint val;
-
-    enum {
-        mask = ((1u << width) - 1) << pos
-    };
-
-    void operator =(uint t) {
-        uint i = qFromLittleEndian(val);
-        i &= ~mask;
-        i |= t << pos;
-        val = qToLittleEndian(i);
-    }
-    operator uint() const {
-        uint t = qFromLittleEndian(val);
-        t &= mask;
-        t >>= pos;
-        return t;
-    }
-    bool operator !() const {
-        return !operator uint();
-    }
-
-    bool operator ==(uint t) { return uint(*this) == t; }
-    bool operator !=(uint t) { return uint(*this) != t; }
-    bool operator <(uint t) { return uint(*this) < t; }
-    bool operator >(uint t) { return uint(*this) > t; }
-    bool operator <=(uint t) { return uint(*this) <= t; }
-    bool operator >=(uint t) { return uint(*this) >= t; }
-    qle_bitfield &operator +=(uint i) {
-        *this = (uint(*this) + i);
-        return *this;
-    }
-    qle_bitfield &operator -=(uint i) {
-        *this = (uint(*this) - i);
-        return *this;
-    }
-    qle_bitfield &operator |=(uint i) {
-        *this = (uint(*this) | i);
-        return *this;
-    }
-    qle_bitfield &operator &=(uint i) {
-        *this = (uint(*this) & i);
-        return *this;
-    }
-};
+using qle_bitfield = QLEIntegerBitfield<uint, pos, width>;
 
 template<int pos, int width>
-class qle_signedbitfield
-{
-public:
-    uint val;
-
-    enum {
-        mask = ((1u << width) - 1) << pos
-    };
-
-    void operator =(int t) {
-        uint i = qFromLittleEndian(val);
-        i &= ~mask;
-        i |= t << pos;
-        val = qToLittleEndian(i);
-    }
-    operator int() const {
-        uint i = qFromLittleEndian(val);
-        i <<= 32 - width - pos;
-        int t = (int) i;
-        t >>= 32 - width;
-        return t;
-    }
-    bool operator !() const {
-        return !operator int();
-    }
-
-    bool operator ==(int t) { return int(*this) == t; }
-    bool operator !=(int t) { return int(*this) != t; }
-    bool operator <(int t) { return int(*this) < t; }
-    bool operator >(int t) { return int(*this) > t; }
-    bool operator <=(int t) { return int(*this) <= t; }
-    bool operator >=(int t) { return int(*this) >= t; }
-    qle_signedbitfield &operator +=(int i) {
-        *this = (int(*this) + i);
-        return *this;
-    }
-    qle_signedbitfield &operator -=(int i) {
-        *this = (int(*this) - i);
-        return *this;
-    }
-};
+using qle_signedbitfield = QLEIntegerBitfield<int, pos, width>;
 
 typedef qle_uint offset;
 
