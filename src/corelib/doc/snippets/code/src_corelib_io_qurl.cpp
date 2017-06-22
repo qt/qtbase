@@ -62,7 +62,7 @@ QUrl url = QUrl::fromEncoded("http://qt-project.org/List%20of%20holidays.xml");
 //! [2]
 bool checkUrl(const QUrl &url) {
     if (!url.isValid()) {
-        qDebug(QString("Invalid URL: %1").arg(url.toString()));
+        qDebug("Invalid URL: %s", qUtf8Printable(url.toString()));
         return false;
     }
 
