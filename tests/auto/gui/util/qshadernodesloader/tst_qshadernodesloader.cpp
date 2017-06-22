@@ -270,7 +270,12 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream()
     QCOMPARE(loader.status(), status);
 
     QFETCH(NodeHash, nodes);
-    QCOMPARE(loader.nodes().keys(), nodes.keys());
+    const auto sortedKeys = [](const NodeHash &nodes) {
+        auto res = nodes.keys();
+        res.sort();
+        return res;
+    };
+    QCOMPARE(sortedKeys(loader.nodes()), sortedKeys(nodes));
     for (const auto &key : nodes.keys()) {
         const auto actual = loader.nodes().value(key);
         const auto expected = nodes.value(key);
