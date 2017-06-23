@@ -381,6 +381,14 @@ static bool _q_dontOverrideCtrlLMB = false;
 
     m_backingStore = backingStore;
     m_backingStoreOffset = offset * m_backingStore->paintDevice()->devicePixelRatio();
+
+    // Prevent buildup of NSDisplayCycle objects during setNeedsDisplayInRect, which
+    // would normally be released as part of the root runloop's autorelease pool, but
+    // can be kept alive during repeated painting which starve the root runloop.
+    // FIXME: Move this to the event dispatcher, to cover more cases of starvation.
+    // FIXME: Figure out if there's a way to detect and/or prevent runloop starvation.
+    QMacAutoReleasePool pool;
+
     for (const QRect &rect : region)
         [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
 }
