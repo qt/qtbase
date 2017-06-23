@@ -4210,6 +4210,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             // outside world, unless they read the source, in which case, it's
             // their own fault).
             bool nonDefaultFont = p->font() != qt_app_fonts_hash()->value("QComboMenuItem");
+
+            if (!myTab.documentMode && (myTab.state & State_Selected) && (myTab.state & State_Active))
+                if (const auto *tabBar = qobject_cast<const QTabBar *>(w))
+                    if (!tabBar->tabTextColor(tabBar->currentIndex()).isValid())
+                        myTab.palette.setColor(QPalette::WindowText, Qt::white);
+
             if (verticalTabs || nonDefaultFont || !tab->icon.isNull()
                 || !myTab.leftButtonSize.isEmpty() || !myTab.rightButtonSize.isEmpty()) {
                 int heightOffset = 0;
