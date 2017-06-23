@@ -1302,9 +1302,9 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
 
     const NSWindow *nsWindow = m_view.window;
 
-    if (nsWindow.styleMask & NSUtilityWindowMask) {
-        // Utility panels cannot be fullscreen
-        qWarning() << window()->type() << "windows can not be made full screen";
+    if (nsWindow.styleMask & NSUtilityWindowMask
+        && newState & (Qt::WindowMinimized | Qt::WindowFullScreen)) {
+        qWarning() << window()->type() << "windows can not be made" << newState;
         reportCurrentWindowState(true);
         return;
     }
