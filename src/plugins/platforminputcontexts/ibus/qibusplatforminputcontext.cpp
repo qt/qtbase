@@ -395,8 +395,8 @@ void QIBusPlatformInputContext::filterEventFinished(QDBusPendingCallWatcher *cal
 
     Qt::KeyboardModifiers modifiers = watcher->modifiers();
     QVariantList args = watcher->arguments();
-    const ulong time = static_cast<const ulong>(args.at(0).toUInt());
-    const QEvent::Type type = static_cast<const QEvent::Type>(args.at(1).toUInt());
+    const ulong time = static_cast<ulong>(args.at(0).toUInt());
+    const QEvent::Type type = static_cast<QEvent::Type>(args.at(1).toUInt());
     const int qtcode = args.at(2).toInt();
     const quint32 code = args.at(3).toUInt();
     const quint32 sym = args.at(4).toUInt();
