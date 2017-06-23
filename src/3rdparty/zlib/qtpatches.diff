@@ -1,0 +1,154 @@
+diff -ruN orig/ChangeLog src/ChangeLog
+--- orig/ChangeLog	2017-08-03 08:25:11.347386101 +0200
++++ src/ChangeLog	2017-08-03 08:25:21.477268439 +0200
+@@ -1,6 +1,10 @@
+ 
+                 ChangeLog file for zlib
+ 
++Changes in 1.2.11 (Qt) (28 Jul 2017)
++- This is a stripped down copy of zlib that contains patches to
++  make it compile as part of Qt. See also "qtpatches.diff".
++
+ Changes in 1.2.11 (15 Jan 2017)
+ - Fix deflate stored bug when pulling last block from window
+ - Permit immediate deflateParams changes before any deflate input
+diff -ruN orig/gzguts.h src/gzguts.h
+--- orig/gzguts.h	2017-08-03 08:25:11.347386101 +0200
++++ src/gzguts.h	2017-08-03 08:25:21.477268439 +0200
+@@ -3,6 +3,15 @@
+  * For conditions of distribution and use, see copyright notice in zlib.h
+  */
+ 
++#ifdef _MSC_VER
++#  ifndef _CRT_SECURE_NO_DEPRECATE
++#    define _CRT_SECURE_NO_DEPRECATE
++#  endif
++#  ifndef _CRT_NONSTDC_NO_DEPRECATE
++#    define _CRT_NONSTDC_NO_DEPRECATE
++#  endif
++#endif
++
+ #ifdef _LARGEFILE64_SOURCE
+ #  ifndef _LARGEFILE_SOURCE
+ #    define _LARGEFILE_SOURCE 1
+@@ -12,6 +21,15 @@
+ #  endif
+ #endif
+ 
++#ifndef QT_BOOTSTRAPPED
++#  include <qconfig.h>
++#endif
++
++#ifdef QT_VISIBILITY_AVAILABLE
++#define HAVE_HIDDEN
++#endif
++
++
+ #ifdef HAVE_HIDDEN
+ #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
+ #else
+diff -ruN orig/README src/README
+--- orig/README	2017-08-03 08:25:11.347386101 +0200
++++ src/README	2017-08-03 08:25:21.477268439 +0200
+@@ -6,6 +6,9 @@
+ http://tools.ietf.org/html/rfc1950 (zlib format), rfc1951 (deflate format) and
+ rfc1952 (gzip format).
+ 
++This is a stripped down copy of zlib that contains patches to make it compile
++as part of Qt. See also "qtpatches.diff".
++
+ All functions of the compression library are documented in the file zlib.h
+ (volunteer to write man pages welcome, contact zlib@gzip.org).  A usage example
+ of the library is given in the file test/example.c which also tests that
+diff -ruN orig/zconf.h src/zconf.h
+--- orig/zconf.h	2017-08-03 08:25:11.347386101 +0200
++++ src/zconf.h	2017-08-03 08:25:21.477268439 +0200
+@@ -8,6 +8,9 @@
+ #ifndef ZCONF_H
+ #define ZCONF_H
+ 
++/* Since Qt Core must export these symbols, define Z_PREFIX to avoid clashes system zlib */
++#define Z_PREFIX
++
+ /*
+  * If you *really* need a unique prefix for all types and library functions,
+  * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
+@@ -136,6 +139,7 @@
+ #  endif
+ #  define zlibCompileFlags      z_zlibCompileFlags
+ #  define zlibVersion           z_zlibVersion
++#  define z_errmsg              z_z_errmsg
+ 
+ /* all zlib typedefs in zlib.h and zconf.h */
+ #  define Byte                  z_Byte
+@@ -431,7 +435,7 @@
+    typedef unsigned long z_crc_t;
+ #endif
+ 
+-#ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */
++#if defined(HAVE_UNISTD_H) || !defined(WIN32)
+ #  define Z_HAVE_UNISTD_H
+ #endif
+ 
+diff -ruN orig/zlib.h src/zlib.h
+--- orig/zlib.h	2017-08-03 08:25:11.347386101 +0200
++++ src/zlib.h	2017-08-03 08:25:21.480601733 +0200
+@@ -33,12 +33,16 @@
+ 
+ #include "zconf.h"
+ 
++#include <qglobal.h>
++#undef ZEXTERN
++#define ZEXTERN Q_CORE_EXPORT
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+ 
+-#define ZLIB_VERSION "1.2.11"
+-#define ZLIB_VERNUM 0x12b0
++#define ZLIB_VERSION "1.2.11 (Qt)"
++#define ZLIB_VERNUM 0x12b0f
+ #define ZLIB_VER_MAJOR 1
+ #define ZLIB_VER_MINOR 2
+ #define ZLIB_VER_REVISION 11
+diff -ruN orig/zutil.h src/zutil.h
+--- orig/zutil.h	2017-08-03 08:25:11.347386101 +0200
++++ src/zutil.h	2017-08-03 08:30:04.490657570 +0200
+@@ -13,6 +13,15 @@
+ #ifndef ZUTIL_H
+ #define ZUTIL_H
+ 
++#ifndef QT_BOOTSTRAPPED
++#  include <qconfig.h>
++#endif
++
++#ifdef QT_VISIBILITY_AVAILABLE
++#define HAVE_HIDDEN
++#endif
++
++
+ #ifdef HAVE_HIDDEN
+ #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
+ #else
+@@ -136,6 +145,11 @@
+ #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
+ #      include <unix.h> /* for fdopen */
+ #    else
++//     We need to include stdio.h here because zlib.h will include TargetConditionals.h
++//     This will define TARGET_OS_MAC that leads to this check.
++//     Since zutil.h will include gzguts.h and gzguts.h includes stdio.h
++//     AFTER check for fdopen we need to include stdio.h directly
++#      include <stdio.h>
+ #      ifndef fdopen
+ #        define fdopen(fd,mode) NULL /* No fdopen() */
+ #      endif
+@@ -159,7 +173,7 @@
+ #  define OS_CODE 18
+ #endif
+ 
+-#ifdef __APPLE__
++#if defined(__APPLE__) && !defined(OS_CODE)
+ #  define OS_CODE 19
+ #endif
+ 
