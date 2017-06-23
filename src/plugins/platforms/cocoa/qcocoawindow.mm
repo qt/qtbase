@@ -541,15 +541,6 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     return styleMask;
 }
 
-void QCocoaWindow::setWindowShadow(Qt::WindowFlags flags)
-{
-    if (!isContentView())
-        return;
-
-    bool keepShadow = !(flags & Qt::NoDropShadowWindowHint);
-    m_view.window.hasShadow = keepShadow;
-}
-
 void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
 {
     if (!isContentView())
@@ -575,7 +566,9 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         m_view.window.styleMask = windowStyleMask(flags);
         m_inSetStyleMask = false;
         m_view.window.level = this->windowLevel(flags);
-        setWindowShadow(flags);
+
+        m_view.window.hasShadow = !(flags & Qt::NoDropShadowWindowHint);
+
         if (!(flags & Qt::FramelessWindowHint))
             setWindowTitle(window()->title());
 

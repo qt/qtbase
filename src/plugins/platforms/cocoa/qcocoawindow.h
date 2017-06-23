@@ -153,7 +153,6 @@ public:
 
     NSInteger windowLevel(Qt::WindowFlags flags);
     NSUInteger windowStyleMask(Qt::WindowFlags flags);
-    void setWindowShadow(Qt::WindowFlags flags);
     void setWindowZoomButton(Qt::WindowFlags flags);
 
 #ifndef QT_NO_OPENGL
