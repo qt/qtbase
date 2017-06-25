@@ -44,8 +44,6 @@
 #endif
 #include "qundostack_p.h"
 
-#ifndef QT_NO_UNDOCOMMAND
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -341,8 +339,6 @@ const QUndoCommand *QUndoCommand::child(int index) const
         return 0;
     return d->child_list.at(index);
 }
-
-#endif // QT_NO_UNDOCOMMAND
 
 #if QT_CONFIG(undostack)
 
