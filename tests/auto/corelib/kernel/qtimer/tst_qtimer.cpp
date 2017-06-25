@@ -37,6 +37,7 @@
 
 #include <qtimer.h>
 #include <qthread.h>
+#include <qoperatingsystemversion.h>
 
 #if defined Q_OS_UNIX
 #include <unistd.h>
@@ -498,6 +499,9 @@ void tst_QTimer::moveToThread()
 {
 #if defined(Q_OS_WIN32)
     QSKIP("Does not work reliably on Windows :(");
+#elif defined(Q_OS_MACOS)
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra)
+        QSKIP("Does not work reliably on macOS 10.12 (QTBUG-59679)");
 #endif
     QTimer ti1;
     QTimer ti2;
