@@ -74,7 +74,7 @@ public:
     bool obsolete;
 };
 
-#ifndef QT_NO_UNDOSTACK
+#if QT_CONFIG(undostack)
 
 class QUndoStackPrivate : public QObjectPrivate
 {
@@ -108,7 +108,6 @@ private:
 };
 #endif // QT_NO_ACTION
 
-
 QT_END_NAMESPACE
-#endif // QT_NO_UNDOSTACK
+#endif // QT_CONFIG(undostack)
 #endif // QUNDOSTACK_P_H

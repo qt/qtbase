@@ -344,7 +344,7 @@ const QUndoCommand *QUndoCommand::child(int index) const
 
 #endif // QT_NO_UNDOCOMMAND
 
-#ifndef QT_NO_UNDOSTACK
+#if QT_CONFIG(undostack)
 
 /*!
     \class QUndoStack
@@ -1334,4 +1334,4 @@ QT_END_NAMESPACE
 #include "moc_qundostack.cpp"
 #include "moc_qundostack_p.cpp"
 
-#endif // QT_NO_UNDOSTACK
+#endif // QT_CONFIG(undostack)

@@ -85,7 +85,7 @@ private:
 
 #endif // QT_NO_UNDOCOMMAND
 
-#ifndef QT_NO_UNDOSTACK
+#if QT_CONFIG(undostack)
 
 class Q_WIDGETS_EXPORT QUndoStack : public QObject
 {
@@ -150,7 +150,7 @@ private:
     friend class QUndoGroup;
 };
 
-#endif // QT_NO_UNDOSTACK
+#endif // QT_CONFIG(undostack)
 
 QT_END_NAMESPACE
 
