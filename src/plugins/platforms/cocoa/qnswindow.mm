@@ -90,8 +90,6 @@ static bool isMouseEvent(NSEvent *ev)
 @implementation QNSWindowHelper
 
 @synthesize window = _window;
-@synthesize grabbingMouse = _grabbingMouse;
-@synthesize releaseOnMouseUp = _releaseOnMouseUp;
 
 - (QCocoaWindow *)platformWindow
 {
@@ -118,17 +116,6 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)handleWindowEvent:(NSEvent *)theEvent
 {
-    if (theEvent.type == NSLeftMouseDown) {
-        self.grabbingMouse = YES;
-    } else if (theEvent.type == NSLeftMouseUp) {
-        self.grabbingMouse = NO;
-        if (self.releaseOnMouseUp) {
-            [self detachFromPlatformWindow];
-            [self.window release];
-            return;
-        }
-    }
-
     // The call to -[NSWindow sendEvent] may result in the window being deleted
     // (e.g., when closing the window by pressing the title bar close button).
     [self retain];
@@ -242,14 +229,9 @@ static const bool kNoDefer = NO;
 {
     qCDebug(lcQpaCocoaWindow) << "closeAndRelease" << self;
 
+    [self.helper detachFromPlatformWindow];
     [self close];
-
-    if (self.helper.grabbingMouse) {
-        self.helper.releaseOnMouseUp = YES;
-    } else {
-        [self.helper detachFromPlatformWindow];
-        [self release];
-    }
+    [self release];
 }
 
 - (void)dealloc

@@ -77,14 +77,10 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 {
     QCocoaNSWindow *_window;
     QPointer<QCocoaWindow> _platformWindow;
-    BOOL _grabbingMouse;
-    BOOL _releaseOnMouseUp;
 }
 
 @property (nonatomic, readonly) QCocoaNSWindow *window;
 @property (nonatomic, readonly) QCocoaWindow *platformWindow;
-@property (nonatomic) BOOL grabbingMouse;
-@property (nonatomic) BOOL releaseOnMouseUp;
 
 - (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow;
 - (void)handleWindowEvent:(NSEvent *)theEvent;
