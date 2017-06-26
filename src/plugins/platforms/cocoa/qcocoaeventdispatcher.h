@@ -177,8 +177,6 @@ public:
     void maybeCancelWaitForMoreEvents();
     void ensureNSAppInitialized();
 
-    void removeQueuedUserInputEvents(int nsWinNumber);
-
     QCFSocketNotifier cfSocketNotifier;
     QList<void *> queuedUserInputEvents; // NSEvent *
     CFRunLoopSourceRef postedEventsSource;

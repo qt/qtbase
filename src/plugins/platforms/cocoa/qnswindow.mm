@@ -147,15 +147,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)clearWindow
 {
-    if (_window) {
-        QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
-        if (cocoaEventDispatcher) {
-            QCocoaEventDispatcherPrivate *cocoaEventDispatcherPrivate = static_cast<QCocoaEventDispatcherPrivate *>(QObjectPrivate::get(cocoaEventDispatcher));
-            cocoaEventDispatcherPrivate->removeQueuedUserInputEvents([_window windowNumber]);
-        }
-
-        _window = nil;
-    }
+    _window = nil;
 }
 
 - (void)dealloc

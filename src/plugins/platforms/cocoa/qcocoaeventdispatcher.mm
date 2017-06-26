@@ -889,21 +889,6 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
     }
 }
 
-void QCocoaEventDispatcherPrivate::removeQueuedUserInputEvents(int nsWinNumber)
-{
-    if (nsWinNumber) {
-        int eventIndex = queuedUserInputEvents.size();
-
-        while (--eventIndex >= 0) {
-            NSEvent * nsevent = static_cast<NSEvent *>(queuedUserInputEvents.at(eventIndex));
-            if ([nsevent windowNumber] == nsWinNumber) {
-                queuedUserInputEvents.removeAt(eventIndex);
-                [nsevent release];
-            }
-        }
-    }
-}
-
 void QCocoaEventDispatcherPrivate::firstLoopEntry(CFRunLoopObserverRef ref,
                                                 CFRunLoopActivity activity,
                                                 void *info)
