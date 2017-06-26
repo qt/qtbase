@@ -83,7 +83,6 @@ typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
 - (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow;
 - (void)handleWindowEvent:(NSEvent *)theEvent;
-- (void)clearWindow;
 - (void)detachFromPlatformWindow;
 
 @end

@@ -114,14 +114,7 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)handleWindowEvent:(NSEvent *)theEvent
 {
-    // The call to -[NSWindow sendEvent] may result in the window being deleted
-    // (e.g., when closing the window by pressing the title bar close button).
-    [self retain];
     [self.window superSendEvent:theEvent];
-    bool windowStillAlive = self.window != nil; // We need to read before releasing
-    [self release];
-    if (!windowStillAlive)
-        return;
 
     if (!self.platformWindow)
         return; // Platform window went away while processing event
@@ -141,11 +134,6 @@ static bool isMouseEvent(NSEvent *ev)
     _platformWindow.clear();
     [self.window.delegate release];
     self.window.delegate = nil;
-}
-
-- (void)clearWindow
-{
-    _window = nil;
 }
 
 - (void)dealloc
@@ -226,7 +214,6 @@ static const bool kNoDefer = NO;
 
 - (void)dealloc
 {
-    [_helper clearWindow];
     [_helper release];
     _helper = nil;
     [super dealloc];
@@ -364,7 +351,6 @@ static const bool kNoDefer = NO;
 
 - (void)dealloc
 {
-    [_helper clearWindow];
     [_helper release];
     _helper = nil;
     [super dealloc];
