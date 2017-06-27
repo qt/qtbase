@@ -1186,6 +1186,7 @@ QMargins QLineEdit::textMargins() const
     \row \li \c > \li All following alphabetic characters are uppercased.
     \row \li \c < \li All following alphabetic characters are lowercased.
     \row \li \c ! \li Switch off case conversion.
+    \row \li \c {[ ] { }} \li Reserved.
     \row \li \tt{\\} \li Use \tt{\\} to escape the special
                            characters listed above to use them as
                            separators.
