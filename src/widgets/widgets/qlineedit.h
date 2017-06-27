@@ -155,6 +155,8 @@ public:
     bool hasSelectedText() const;
     QString selectedText() const;
     int selectionStart() const;
+    int selectionEnd() const;
+    int selectionLength() const;
 
     bool isUndoAvailable() const;
     bool isRedoAvailable() const;

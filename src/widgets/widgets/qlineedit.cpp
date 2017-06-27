@@ -954,6 +954,8 @@ QString QLineEdit::selectedText() const
     line edit or -1 if no text is selected.
 
     \sa selectedText()
+    \sa selectionEnd()
+    \sa selectionLength()
 */
 
 int QLineEdit::selectionStart() const
@@ -962,8 +964,33 @@ int QLineEdit::selectionStart() const
     return d->control->selectionStart();
 }
 
+/*!
+    Returns the index of the character directly after the selection
+    in the line edit or -1 if no text is selected.
+    \since 5.10
 
+    \sa selectedText()
+    \sa selectionStart()
+    \sa selectionLength()
+*/
+int QLineEdit::selectionEnd() const
+{
+   Q_D(const QLineEdit);
+   return d->control->selectionEnd();
+}
 
+/*!
+    Returns the length of the selection.
+    \since 5.10
+
+    \sa selectedText()
+    \sa selectionStart()
+    \sa selectionEnd()
+*/
+int QLineEdit::selectionLength() const
+{
+   return selectionEnd() - selectionStart();
+}
 
 /*!
     Selects text from position \a start and for \a length characters.

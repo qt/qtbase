@@ -3953,6 +3953,8 @@ void tst_QLineEdit::QTBUG16850_setSelection()
     le.setText("  1");
     le.setSelection(3, 1);
     QCOMPARE(le.selectionStart(), 3);
+    QCOMPARE(le.selectionEnd(), 4);
+    QCOMPARE(le.selectionLength(), 1);
     QCOMPARE(le.selectedText(), QString("1"));
 }
 
@@ -4147,11 +4149,16 @@ void tst_QLineEdit::inputMethodSelection()
 
     QCOMPARE(selectionSpy.count(), 0);
     QCOMPARE(testWidget->selectionStart(), -1);
+    QCOMPARE(testWidget->selectionEnd(), -1);
+    QCOMPARE(testWidget->selectionLength(), 0);
 
     testWidget->setSelection(0,5);
 
     QCOMPARE(selectionSpy.count(), 1);
     QCOMPARE(testWidget->selectionStart(), 0);
+    QCOMPARE(testWidget->selectionEnd(), 5);
+    QCOMPARE(testWidget->selectionLength(), 5);
+
 
     // selection gained
     {
@@ -4163,6 +4170,8 @@ void tst_QLineEdit::inputMethodSelection()
 
     QCOMPARE(selectionSpy.count(), 2);
     QCOMPARE(testWidget->selectionStart(), 12);
+    QCOMPARE(testWidget->selectionEnd(), 17);
+    QCOMPARE(testWidget->selectionLength(), 5);
 
     // selection removed
     {
@@ -4173,6 +4182,10 @@ void tst_QLineEdit::inputMethodSelection()
     }
 
     QCOMPARE(selectionSpy.count(), 3);
+    QCOMPARE(testWidget->selectionStart(), -1);
+    QCOMPARE(testWidget->selectionEnd(), -1);
+    QCOMPARE(testWidget->selectionLength(), 0);
+
 }
 
 Q_DECLARE_METATYPE(Qt::InputMethodHints)
