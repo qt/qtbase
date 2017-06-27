@@ -54,7 +54,7 @@ class QXcbShmImage;
 class QXcbBackingStore : public QXcbObject, public QPlatformBackingStore
 {
 public:
-    QXcbBackingStore(QWindow *widget);
+    QXcbBackingStore(QWindow *window);
     ~QXcbBackingStore();
 
     QPaintDevice *paintDevice() override;
