@@ -955,7 +955,7 @@ QString QLineEdit::selectedText() const
 }
 
 /*!
-    selectionStart() returns the index of the first selected character in the
+    Returns the index of the first selected character in the
     line edit or -1 if no text is selected.
 
     \sa selectedText()
