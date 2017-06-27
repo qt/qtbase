@@ -973,12 +973,20 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
     // calculate m_maxLength / m_maskData length
     m_maxLength = 0;
     QChar c = 0;
+    bool escaped = false;
     for (int i=0; i<m_inputMask.length(); i++) {
         c = m_inputMask.at(i);
-        if (i > 0 && m_inputMask.at(i-1) == QLatin1Char('\\')) {
-            m_maxLength++;
-            continue;
+        if (escaped) {
+           ++m_maxLength;
+           escaped = false;
+           continue;
         }
+
+        if (c == '\\') {
+           escaped = true;
+           continue;
+        }
+
         if (c != QLatin1Char('\\') && c != QLatin1Char('!') &&
              c != QLatin1Char('<') && c != QLatin1Char('>') &&
              c != QLatin1Char('{') && c != QLatin1Char('}') &&

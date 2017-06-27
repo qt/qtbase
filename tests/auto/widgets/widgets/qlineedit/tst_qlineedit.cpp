@@ -3106,7 +3106,6 @@ void tst_QLineEdit::inputMaskAndValidator()
 
 void tst_QLineEdit::maxLengthAndInputMask()
 {
-    // Really a test for #30447
     QLineEdit *testWidget = ensureTestWidget();
     QVERIFY(testWidget->inputMask().isNull());
     testWidget->setMaxLength(10);
@@ -3114,6 +3113,16 @@ void tst_QLineEdit::maxLengthAndInputMask()
     testWidget->setInputMask(QString());
     QVERIFY(testWidget->inputMask().isNull());
     QCOMPARE(testWidget->maxLength(), 10);
+
+    testWidget->setInputMask("XXXX");
+    QCOMPARE(testWidget->maxLength(), 4);
+
+    testWidget->setMaxLength(15);
+    QCOMPARE(testWidget->maxLength(), 4);
+
+    // 8 \ => raw string with 4 \ => input mask with 2 \ => maxLength = 2
+    testWidget->setInputMask("\\\\\\\\");
+    QCOMPARE(testWidget->maxLength(), 2);
 }
 
 
