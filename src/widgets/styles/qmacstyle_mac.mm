@@ -2262,6 +2262,8 @@ void QMacStyle::polish(QWidget* w)
             QPalette p = w->palette();
             p.setColor(QPalette::WindowText, QColor(17, 17, 17));
             w->setPalette(p);
+            w->setAttribute(Qt::WA_SetPalette, false);
+            w->setAttribute(Qt::WA_SetFont, false);
         }
     }
 #endif
@@ -2301,6 +2303,15 @@ void QMacStyle::unpolish(QWidget* w)
             if (QWidget *widget = combo->findChild<QComboBoxPrivateContainer *>())
                 widget->setWindowOpacity(1.0);
         }
+    }
+#endif
+
+#ifndef QT_NO_TABBAR
+    if (QTabBar *tb = qobject_cast<QTabBar*>(w)) {
+        if (!w->testAttribute(Qt::WA_SetFont))
+            w->setFont(qApp->font(w));
+        if (!w->testAttribute(Qt::WA_SetPalette))
+            w->setPalette(qApp->palette(w));
     }
 #endif
 
