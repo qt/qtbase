@@ -47,6 +47,7 @@ class tst_QInputDialog : public QObject
     static void testFuncGetDouble(QInputDialog *dialog);
     static void testFuncGetText(QInputDialog *dialog);
     static void testFuncGetItem(QInputDialog *dialog);
+    static void testFuncSingleStepDouble(QInputDialog *dialog);
     void timerEvent(QTimerEvent *event);
 private slots:
     void getInt_data();
@@ -61,6 +62,8 @@ private slots:
     void getItem();
     void task256299_getTextReturnNullStringOnRejected();
     void inputMethodHintsOfChildWidget();
+    void setDoubleStep_data();
+    void setDoubleStep();
 };
 
 QString stripFraction(const QString &s)
@@ -480,6 +483,46 @@ void tst_QInputDialog::inputMethodHintsOfChildWidget()
     dialog.setInputMethodHints(Qt::ImhDigitsOnly);
     QCOMPARE(editWidget->inputMethodHints(), dialog.inputMethodHints());
     QCOMPARE(editWidget->inputMethodHints(), Qt::ImhDigitsOnly);
+}
+
+void tst_QInputDialog::testFuncSingleStepDouble(QInputDialog *dialog)
+{
+    QDoubleSpinBox *sbox = dialog->findChild<QDoubleSpinBox *>();
+    QVERIFY(sbox);
+    QTest::keyClick(sbox, Qt::Key_Up);
+}
+
+void tst_QInputDialog::setDoubleStep_data()
+{
+    QTest::addColumn<double>("min");
+    QTest::addColumn<double>("max");
+    QTest::addColumn<int>("decimals");
+    QTest::addColumn<double>("doubleStep");
+    QTest::addColumn<double>("actualResult");
+    QTest::newRow("step 2.0") << 0.0 << 10.0 << 0 << 2.0 << 2.0;
+    QTest::newRow("step 2.5") << 0.5 << 10.5 << 1 << 2.5 << 3.0;
+    QTest::newRow("step 2.25") << 10.05 << 20.05 << 2 << 2.25 << 12.30;
+    QTest::newRow("step 2.25 fewer decimals") << 0.5 << 10.5 << 1 << 2.25 << 2.75;
+}
+
+void tst_QInputDialog::setDoubleStep()
+{
+    QFETCH(double, min);
+    QFETCH(double, max);
+    QFETCH(int, decimals);
+    QFETCH(double, doubleStep);
+    QFETCH(double, actualResult);
+    QWidget p;
+    parent = &p;
+    doneCode = QDialog::Accepted;
+    testFunc = &tst_QInputDialog::testFuncSingleStepDouble;
+    startTimer(0);
+    bool ok = false;
+    const double result = QInputDialog::getDouble(parent, QString(), QString(), min, min,
+                                                  max, decimals, &ok, QFlags<Qt::WindowType>(),
+                                                  doubleStep);
+    QVERIFY(ok);
+    QCOMPARE(result, actualResult);
 }
 
 QTEST_MAIN(tst_QInputDialog)
