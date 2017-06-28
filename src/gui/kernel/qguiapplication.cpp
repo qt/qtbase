@@ -2213,7 +2213,7 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
         }
         // we may have changed scaling, so trigger resize event if needed
         if (window->handle()) {
-            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window), QRect());
+            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(window, QHighDpi::fromNativePixels(window->handle()->geometry(), window));
             processGeometryChangeEvent(&gce);
         }
     }
@@ -2238,35 +2238,46 @@ void QGuiApplicationPrivate::processGeometryChangeEvent(QWindowSystemInterfacePr
     if (!window)
         return;
 
-    QRect newRect = e->newGeometry;
-    QRect oldRect = e->oldGeometry.isNull() ? window->d_func()->geometry : e->oldGeometry;
+    const QRect lastReportedGeometry = window->d_func()->geometry;
+    const QRect requestedGeometry = e->requestedGeometry;
+    const QRect actualGeometry = e->newGeometry;
 
-    bool isResize = oldRect.size() != newRect.size();
-    bool isMove = oldRect.topLeft() != newRect.topLeft();
+    // We send size and move events only if the geometry has changed from
+    // what was last reported, or if the user tried to set a new geometry,
+    // but the window manager responded by keeping the old geometry. In the
+    // latter case we send move/resize events with the same geometry as the
+    // last reported geometry, to indicate that the window wasn't moved or
+    // resized. Note that this logic does not apply to the property changes
+    // of the window, as we don't treat them as part of this request/response
+    // protocol of QWindow/QPA.
+    const bool isResize = actualGeometry.size() != lastReportedGeometry.size()
+        || requestedGeometry.size() != actualGeometry.size();
+    const bool isMove = actualGeometry.topLeft() != lastReportedGeometry.topLeft()
+        || requestedGeometry.topLeft() != actualGeometry.topLeft();
 
-    window->d_func()->geometry = newRect;
+    window->d_func()->geometry = actualGeometry;
 
     if (isResize || window->d_func()->resizeEventPending) {
-        QResizeEvent e(newRect.size(), oldRect.size());
+        QResizeEvent e(actualGeometry.size(), lastReportedGeometry.size());
         QGuiApplication::sendSpontaneousEvent(window, &e);
 
         window->d_func()->resizeEventPending = false;
 
-        if (oldRect.width() != newRect.width())
-            window->widthChanged(newRect.width());
-        if (oldRect.height() != newRect.height())
-            window->heightChanged(newRect.height());
+        if (actualGeometry.width() != lastReportedGeometry.width())
+            window->widthChanged(actualGeometry.width());
+        if (actualGeometry.height() != lastReportedGeometry.height())
+            window->heightChanged(actualGeometry.height());
     }
 
     if (isMove) {
         //### frame geometry
-        QMoveEvent e(newRect.topLeft(), oldRect.topLeft());
+        QMoveEvent e(actualGeometry.topLeft(), lastReportedGeometry.topLeft());
         QGuiApplication::sendSpontaneousEvent(window, &e);
 
-        if (oldRect.x() != newRect.x())
-            window->xChanged(newRect.x());
-        if (oldRect.y() != newRect.y())
-            window->yChanged(newRect.y());
+        if (actualGeometry.x() != lastReportedGeometry.x())
+            window->xChanged(actualGeometry.x());
+        if (actualGeometry.y() != lastReportedGeometry.y())
+            window->yChanged(actualGeometry.y());
     }
 }
 

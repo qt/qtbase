@@ -41,6 +41,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
+#include <private/qwindow_p.h>
 #ifndef QT_NO_OPENGL
 # include <QtGui/private/qopenglcontext_p.h>
 # include <QtGui/QOpenGLContext>
@@ -234,21 +235,19 @@ void QEglFSWindow::setVisible(bool visible)
 
 void QEglFSWindow::setGeometry(const QRect &r)
 {
-    QRect rect;
-    bool forceFullscreen = m_flags.testFlag(HasNativeWindow);
-    if (forceFullscreen)
+    // Persist the requested rect, like a normal setGeometry call
+    QPlatformWindow::setGeometry(r);
+
+    // Take care of WM behavior, constrain/modify geometry
+    QRect rect = r;
+    if (m_flags.testFlag(HasNativeWindow))
         rect = screen()->availableGeometry();
-    else
-        rect = r;
 
-    const bool changed = rect != QPlatformWindow::geometry();
-    QPlatformWindow::setGeometry(rect);
+    // React to the setGeometry, as if from a WM callback
+    QRect lastReportedGeometry = qt_window_private(window())->geometry;
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
 
-    // if we corrected the size, trigger a resize event
-    if (rect != r)
-        QWindowSystemInterface::handleGeometryChange(window(), rect, r);
-
-    if (changed)
+    if (rect != lastReportedGeometry)
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
 }
 

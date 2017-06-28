@@ -160,7 +160,7 @@ public:
 
     // rect is relative to parent
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleGeometryChange(QWindow *window, const QRect &newRect, const QRect &oldRect = QRect());
+    static void handleGeometryChange(QWindow *window, const QRect &newRect);
 
     // region is in local coordinates, do not confuse with geometry which is parent-relative
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>

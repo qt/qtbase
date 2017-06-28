@@ -273,13 +273,18 @@ void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState 
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-/*!
-  If \a oldRect is null, Qt will use the previously reported geometry instead.
- */
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *window, const QRect &newRect, const QRect &oldRect)
+QWindowSystemInterfacePrivate::GeometryChangeEvent::GeometryChangeEvent(QWindow *window, const QRect &newGeometry)
+    : WindowSystemEvent(GeometryChange)
+    , window(window)
+    , requestedGeometry(window->handle() ? window->handle()->QPlatformWindow::geometry() : QRect())
+    , newGeometry(newGeometry)
+{
+}
+
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *window, const QRect &newRect)
 {
     Q_ASSERT(window);
-    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(window, QHighDpi::fromNativePixels(newRect, window), QHighDpi::fromNativePixels(oldRect, window));
+    QWindowSystemInterfacePrivate::GeometryChangeEvent *e = new QWindowSystemInterfacePrivate::GeometryChangeEvent(window, QHighDpi::fromNativePixels(newRect, window));
     if (window->handle()) {
         // Persist the new geometry so that QWindow::geometry() can be queried in the resize event
         window->handle()->QPlatformWindow::setGeometry(newRect);

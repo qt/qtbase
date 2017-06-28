@@ -151,19 +151,12 @@
         qWarning() << m_qioswindow->window()
             << "is backed by a UIView that has a transform set. This is not supported.";
 
-    // The original geometry requested by setGeometry() might be different
-    // from what we end up with after applying window constraints.
-    QRect requestedGeometry = m_qioswindow->geometry();
-
-    QRect actualGeometry = QRectF::fromCGRect(self.frame).toRect();
-
-    QRect previousGeometry = requestedGeometry != actualGeometry ?
-            requestedGeometry : qt_window_private(m_qioswindow->window())->geometry;
-
     QWindow *window = m_qioswindow->window();
-    QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(window, actualGeometry, previousGeometry);
+    QRect lastReportedGeometry = qt_window_private(window)->geometry;
+    QRect currentGeometry = QRectF::fromCGRect(self.frame).toRect();
+    QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(window, currentGeometry);
 
-    if (actualGeometry.size() != previousGeometry.size()) {
+    if (currentGeometry.size() != lastReportedGeometry.size()) {
         // Trigger expose event on resize
         [self setNeedsDisplay];
 
