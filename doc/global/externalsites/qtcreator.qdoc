@@ -555,3 +555,7 @@
     \externalpage http://doc.qt.io/qtcreator/creator-project-creating.html#creating-c-classes
     \title Qt Creator: Creating C++ Classes
 */
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-writing-program.html
+    \title Creating a Qt Widget Based Application
+*/

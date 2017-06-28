@@ -133,6 +133,10 @@ interfaces
         \section2 Tutorials
     \list
         \li \l{Widgets Tutorial}
+        \li \l{Getting Started Programming with Qt Widgets}
+        \li \l{Creating a Qt Widget Based Application}
+
+
         \li \l{Model/View Tutorial}
     \endlist
 
