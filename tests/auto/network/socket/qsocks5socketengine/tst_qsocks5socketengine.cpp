@@ -728,6 +728,10 @@ void tst_QSocks5SocketEngine::downloadBigFile()
 
     QTcpSocket socket;
     qint64 bytesAvailable = 0;
+
+    QElapsedTimer stopWatch;
+    stopWatch.start();
+
     connect(&socket, &QAbstractSocket::connected,
             &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
     connect(&socket, &QIODevice::readyRead,
@@ -743,10 +747,11 @@ void tst_QSocks5SocketEngine::downloadBigFile()
             });
 
     connect(&socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),
-            [&socket] (QAbstractSocket::SocketError errorCode)
+            [&socket, &stopWatch] (QAbstractSocket::SocketError errorCode)
             {
                 qWarning().noquote().nospace() << QTest::currentTestFunction()
-                    << ": error " << errorCode << ": " << socket.errorString();
+                    << ": error " << errorCode << ": " << socket.errorString()
+                    << " (" << stopWatch.elapsed() << "ms)";
             });
 
     socket.connectToHost(QtNetworkSettings::serverName(), 80);
@@ -763,11 +768,7 @@ void tst_QSocks5SocketEngine::downloadBigFile()
     QVERIFY(socket.write("\r\n") > 0);
     QVERIFY(socket.write("\r\n") > 0);
 
-
-
-    QTime stopWatch;
-    stopWatch.start();
-
+    stopWatch.restart();
     QTestEventLoop::instance().enterLoop(60);
     if (QTestEventLoop::instance().timeout())
         QFAIL("Network operation timed out");
