@@ -32,16 +32,7 @@
 #include <QtNetwork/QDnsLookup>
 #include <QtNetwork/QHostAddress>
 
-static bool waitForDone(QDnsLookup *lookup)
-{
-    if (lookup->isFinished())
-        return true;
-
-    QObject::connect(lookup, SIGNAL(finished()),
-                     &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(10);
-    return !QTestEventLoop::instance().timeout();
-}
+static const int Timeout = 15000; // 15s
 
 class tst_QDnsLookup: public QObject
 {
@@ -231,8 +222,7 @@ void tst_QDnsLookup::lookup()
     lookup.setType(static_cast<QDnsLookup::Type>(type));
     lookup.setName(domain);
     lookup.lookup();
-    QVERIFY(waitForDone(&lookup));
-    QVERIFY(lookup.isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
 
 #if defined(Q_OS_ANDROID)
     if (lookup.errorString() == QStringLiteral("Not yet supported on Android"))
@@ -331,8 +321,7 @@ void tst_QDnsLookup::lookupReuse()
     lookup.setType(QDnsLookup::A);
     lookup.setName(domainName("a-single"));
     lookup.lookup();
-    QVERIFY(waitForDone(&lookup));
-    QVERIFY(lookup.isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
 
 #if defined(Q_OS_ANDROID)
     if (lookup.errorString() == QStringLiteral("Not yet supported on Android"))
@@ -348,8 +337,7 @@ void tst_QDnsLookup::lookupReuse()
     lookup.setType(QDnsLookup::AAAA);
     lookup.setName(domainName("aaaa-single"));
     lookup.lookup();
-    QVERIFY(waitForDone(&lookup));
-    QVERIFY(lookup.isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
     QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
     QVERIFY(!lookup.hostAddressRecords().isEmpty());
     QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("aaaa-single"));
@@ -366,8 +354,7 @@ void tst_QDnsLookup::lookupAbortRetry()
     lookup.setName(domainName("a-single"));
     lookup.lookup();
     lookup.abort();
-    QVERIFY(waitForDone(&lookup));
-    QVERIFY(lookup.isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
     QCOMPARE(int(lookup.error()), int(QDnsLookup::OperationCancelledError));
     QVERIFY(lookup.hostAddressRecords().isEmpty());
 
@@ -375,8 +362,7 @@ void tst_QDnsLookup::lookupAbortRetry()
     lookup.setType(QDnsLookup::AAAA);
     lookup.setName(domainName("aaaa-single"));
     lookup.lookup();
-    QVERIFY(waitForDone(&lookup));
-    QVERIFY(lookup.isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
 
 #if defined(Q_OS_ANDROID)
     if (lookup.errorString() == QStringLiteral("Not yet supported on Android"))
