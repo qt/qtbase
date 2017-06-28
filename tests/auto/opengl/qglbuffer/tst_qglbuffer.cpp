@@ -85,7 +85,7 @@ void tst_QGLBuffer::testBuffer(QGLBuffer::Type type)
     QGLWidget w;
     w.makeCurrent();
 
-#if defined(Q_OS_WINDOWS)
+#if defined(Q_OS_WIN)
     if (w.context()->contextHandle()->isOpenGLES()) {
         QSKIP("Unfortunately Angle in Qt 5.6 does not support this test -- QTQAINFRA-1199");
     }
