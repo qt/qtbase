@@ -375,8 +375,7 @@ void QAbstractEventDispatcher::closingDown()
 */
 
 /*!
-    Installs an event filter \a filterObj for all native event filters
-    received by the application.
+    Installs an event filter \a filterObj for all native events received by the application.
 
     The event filter \a filterObj receives events via its \l {QAbstractNativeEventFilter::}{nativeEventFilter()}
     function, which is called for all events received by all threads.
