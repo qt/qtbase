@@ -40,7 +40,12 @@ isEmpty($${target_prefix}.INCDIRS) {
         # While technically incorrect but without any likely practical effect,
         # UIKit simulator platforms will see the device SDK's sysroot in
         # QMAKE_DEFAULT_*DIRS, because they're handled in a single build pass.
-        darwin: cxx_flags += -isysroot $$QMAKE_MAC_SDK_PATH
+        darwin {
+            uikit:macx-xcode: \
+                cxx_flags += -isysroot $$sdk_path_device.value
+            else: \
+                cxx_flags += -isysroot $$QMAKE_MAC_SDK_PATH
+        }
 
         rim_qcc: \
             # Need the cc1plus and ld command lines to pick up the paths
