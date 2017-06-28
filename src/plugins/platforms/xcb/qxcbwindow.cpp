@@ -2077,10 +2077,6 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     if (!newScreen)
         return;
 
-    // Persist the actual geometry so that QWindow::geometry() can
-    // be queried in the resize event.
-    QPlatformWindow::setGeometry(actualGeometry);
-
     // FIXME: In the case of the requestedGeometry not matching the actualGeometry due
     // to e.g. the window manager applying restrictions to the geometry, the application
     // will never see a move/resize event if the actualGeometry is the same as the current

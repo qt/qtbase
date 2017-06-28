@@ -516,7 +516,6 @@ UbuntuSurface::UbuntuSurface(QMirClientWindow *platformWindow, EGLDisplay displa
 
     // Assume that the buffer size matches the surface size at creation time
     mBufferSize = geom.size();
-    platformWindow->QPlatformWindow::setGeometry(geom);
     QWindowSystemInterface::handleGeometryChange(mWindow, geom);
 
     qCDebug(mirclient) << "Created surface with geometry:" << geom << "title:" << mWindow->title()
@@ -636,7 +635,6 @@ void UbuntuSurface::onSwapBuffersDone()
         QRect newGeometry = mPlatformWindow->geometry();
         newGeometry.setSize(mBufferSize);
 
-        mPlatformWindow->QPlatformWindow::setGeometry(newGeometry);
         QWindowSystemInterface::handleGeometryChange(mWindow, newGeometry);
     } else {
         qCDebug(mirclientBufferSwap, "onSwapBuffersDone(window=%p) [%d] - buffer size (%d,%d)",

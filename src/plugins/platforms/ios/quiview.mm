@@ -157,10 +157,6 @@
 
     QRect actualGeometry = QRectF::fromCGRect(self.frame).toRect();
 
-    // Persist the actual/new geometry so that QWindow::geometry() can
-    // be queried on the resize event.
-    m_qioswindow->QPlatformWindow::setGeometry(actualGeometry);
-
     QRect previousGeometry = requestedGeometry != actualGeometry ?
             requestedGeometry : qt_window_private(m_qioswindow->window())->geometry;
 

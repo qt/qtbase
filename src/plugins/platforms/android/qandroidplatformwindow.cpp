@@ -73,7 +73,6 @@ void QAndroidPlatformWindow::raise()
 void QAndroidPlatformWindow::setGeometry(const QRect &rect)
 {
     QWindowSystemInterface::handleGeometryChange(window(), rect);
-    QPlatformWindow::setGeometry(rect);
 }
 
 void QAndroidPlatformWindow::setVisible(bool visible)

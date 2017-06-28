@@ -99,7 +99,6 @@ void QEglFSWindow::create()
 
     if (window()->type() == Qt::Desktop) {
         QRect fullscreenRect(QPoint(), screen()->availableGeometry().size());
-        QPlatformWindow::setGeometry(fullscreenRect);
         QWindowSystemInterface::handleGeometryChange(window(), fullscreenRect);
         return;
     }

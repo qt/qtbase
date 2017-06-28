@@ -294,9 +294,6 @@ static QTouchDevice *touchDevice = 0;
         geometry = QRectF::fromCGRect(NSRectToCGRect([self frame])).toRect();
     }
 
-    if (m_platformWindow->isContentView() && geometry == m_platformWindow->geometry())
-        return;
-
     const bool isResize = geometry.size() != m_platformWindow->geometry().size();
 
     // It can happen that self.window is nil (if we are changing
@@ -307,11 +304,6 @@ static QTouchDevice *touchDevice = 0;
 
      qCDebug(lcQpaCocoaWindow) << "[QNSView udpateGeometry:]" << m_platformWindow->window()
                                << "current" << m_platformWindow->geometry() << "new" << geometry;
-
-    // Call setGeometry on QPlatformWindow. (not on QCocoaWindow,
-    // doing that will initiate a geometry change it and possibly create
-    // an infinite loop when this notification is triggered again.)
-    m_platformWindow->QPlatformWindow::setGeometry(geometry);
 
     // Don't send the geometry change if the QWindow is designated to be
     // embedded in a foreign view hiearchy but has not actually been

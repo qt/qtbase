@@ -281,11 +281,11 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setCocoaGeometry" << window() << rect;
     QMacAutoReleasePool pool;
 
+    QPlatformWindow::setGeometry(rect);
+
     if (m_viewIsEmbedded) {
         if (!isForeignWindow()) {
             [m_view setFrame:NSMakeRect(0, 0, rect.width(), rect.height())];
-        } else {
-            QPlatformWindow::setGeometry(rect);
         }
         return;
     }
@@ -296,9 +296,6 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
     } else {
         [m_view setFrame:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
     }
-
-    if (isForeignWindow())
-        QPlatformWindow::setGeometry(rect);
 
     // will call QPlatformWindow::setGeometry(rect) during resize confirmation (see qnsview.mm)
 }

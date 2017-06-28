@@ -1607,7 +1607,6 @@ void QWindowsWindow::handleGeometryChange()
 {
     const QRect previousGeometry = m_data.geometry;
     m_data.geometry = geometry_sys();
-    QPlatformWindow::setGeometry(m_data.geometry);
     QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE) do not receive
     // expose events when shrinking, synthesize.

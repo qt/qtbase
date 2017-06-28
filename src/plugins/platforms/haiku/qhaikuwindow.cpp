@@ -309,7 +309,6 @@ void QHaikuWindow::haikuWindowMoved(const QPoint &pos)
 {
     const QRect newGeometry(pos, geometry().size());
 
-    QPlatformWindow::setGeometry(newGeometry);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
     QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), newGeometry.size()));
 }
@@ -318,7 +317,6 @@ void QHaikuWindow::haikuWindowResized(const QSize &size, bool zoomInProgress)
 {
     const QRect newGeometry(geometry().topLeft(), size);
 
-    QPlatformWindow::setGeometry(newGeometry);
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
     QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), newGeometry.size()));
 
