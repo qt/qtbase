@@ -43,8 +43,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LOCALSERVER
-
 /*!
     \class QLocalServer
     \since 4.4
@@ -495,8 +493,6 @@ bool QLocalServer::waitForNewConnection(int msec, bool *timedOut)
 
     return !d->pendingConnections.isEmpty();
 }
-
-#endif
 
 QT_END_NAMESPACE
 

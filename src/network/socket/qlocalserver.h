@@ -43,10 +43,9 @@
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtNetwork/qabstractsocket.h>
 
+QT_REQUIRE_CONFIG(localserver);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_LOCALSERVER
 
 class QLocalSocket;
 class QLocalServerPrivate;
@@ -102,8 +101,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocalServer::SocketOptions)
-
-#endif // QT_NO_LOCALSERVER
 
 QT_END_NAMESPACE
 

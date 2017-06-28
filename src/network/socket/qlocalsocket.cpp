@@ -40,8 +40,6 @@
 #include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
 
-#ifndef QT_NO_LOCALSOCKET
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -559,7 +557,5 @@ QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketState state)
 #endif
 
 QT_END_NAMESPACE
-
-#endif
 
 #include "moc_qlocalsocket.cpp"
