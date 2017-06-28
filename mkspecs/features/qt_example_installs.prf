@@ -26,8 +26,14 @@ defineTest(addInstallFiles) {
 }
 
 probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
-isEmpty(probase)|contains(probase, ^\\..*)|isEmpty(_QMAKE_CACHE_): \
+isEmpty(probase)|contains(probase, ^\\..*): \
     return()
+
+isEmpty(_QMAKE_CACHE_) {
+    !equals(OUT_PWD, $$_PRO_FILE_PWD_): \
+        return()
+    error("You cannot build examples inside the Qt source tree, except as part of a proper Qt build.")
+}
 
 contains(TEMPLATE, "vc.*"): \
     return()
