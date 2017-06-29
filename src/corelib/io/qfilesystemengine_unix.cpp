@@ -338,7 +338,8 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 {
     QT_STATBUF statResult;
     if (QT_STAT(entry.nativeFilePath().constData(), &statResult)) {
-        qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
+        if (errno != ENOENT)
+            qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
         return QByteArray();
     }
     QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
