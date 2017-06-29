@@ -336,8 +336,8 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 //static
 QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 {
-    struct stat statResult;
-    if (stat(entry.nativeFilePath().constData(), &statResult)) {
+    QT_STATBUF statResult;
+    if (QT_STAT(entry.nativeFilePath().constData(), &statResult)) {
         qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
         return QByteArray();
     }
