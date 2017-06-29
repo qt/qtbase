@@ -269,13 +269,6 @@ void QTemporaryFileEngine::setFileName(const QString &file)
     QFSFileEngine::setFileName(file);
 }
 
-void QTemporaryFileEngine::setFileTemplate(const QString &fileTemplate)
-{
-    Q_D(QFSFileEngine);
-    if (filePathIsTemplate)
-        d->fileEntry = QFileSystemEntry(fileTemplate);
-}
-
 bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
@@ -286,7 +279,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
 
-    QString qfilename = d->fileEntry.filePath();
+    QString qfilename = templateName;
 
     // Ensure there is a placeholder mask
     uint phPos = qfilename.length();
@@ -425,7 +418,7 @@ QTemporaryFilePrivate::~QTemporaryFilePrivate()
 QAbstractFileEngine *QTemporaryFilePrivate::engine() const
 {
     if (!fileEngine) {
-        fileEngine = new QTemporaryFileEngine;
+        fileEngine = new QTemporaryFileEngine(&templateName);
         resetFileEngine();
     }
     return fileEngine;
@@ -684,8 +677,6 @@ void QTemporaryFile::setFileTemplate(const QString &name)
 {
     Q_D(QTemporaryFile);
     d->templateName = name;
-    if (d->fileEngine)
-        static_cast<QTemporaryFileEngine*>(d->fileEngine)->setFileTemplate(name);
 }
 
 /*!
