@@ -76,6 +76,15 @@ typedef char Latin1Char;
 typedef int NativeFileHandle;
 #endif
 
+namespace {
+struct NativeTemplate {
+    QFileSystemEntry::NativePath path;
+    qssize_t pos;
+    qssize_t length;
+};
+}
+
+// The following code is a heavily modified version, originally copyright:
 /*
  * Copyright (c) 1987, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -108,23 +117,18 @@ typedef int NativeFileHandle;
 /*!
     \internal
 
-    Generates a unique file path and returns a native handle to the open file.
-    \a path is used as a template when generating unique paths, \a pos
-    identifies the position of the first character that will be replaced in the
-    template and \a length the number of characters that may be substituted.
-    \a mode specifies the file mode bits (not used on Windows).
-
-    Returns an open handle to the newly created file if successful, an invalid
-    handle otherwise. In both cases, the string in \a path will be changed and
-    contain the generated path name.
+    Generates a unique file path from the template \a templ and returns it.
+    The path in \c templ.path is modified.
 */
-static bool createFileFromTemplate(NativeFileHandle &file,
-        QFileSystemEntry::NativePath &path, size_t pos, size_t length, quint32 mode,
-        QSystemError &error)
+static QFileSystemEntry::NativePath generateNameFromTemplate(NativeTemplate &templ)
 {
+    QFileSystemEntry::NativePath &path = templ.path;
+    qssize_t pos = templ.pos;
+    qssize_t length = templ.length;
+
     Q_ASSERT(length != 0);
-    Q_ASSERT(pos < size_t(path.length()));
-    Q_ASSERT(length <= size_t(path.length()) - pos);
+    Q_ASSERT(pos < path.length());
+    Q_ASSERT(length <= path.length() - pos);
 
     Char *const placeholderStart = (Char *)path.data() + pos;
     Char *const placeholderEnd = placeholderStart + length;
@@ -152,8 +156,30 @@ static bool createFileFromTemplate(NativeFileHandle &file,
         }
     }
 
-    for (;;) {
+    return path;
+}
+
+/*!
+    \internal
+
+    Generates a unique file path from the template \a templ and creates a new
+    file based based on those parameters: the \c templ.length characters in \c
+    templ.path starting at \c templ.pos will be replacd by a random sequence of
+    characters. \a mode specifies the file mode bits (not used on Windows).
+
+    Returns true on success and sets the file handle on \a file. On error,
+    returns false, sets an invalid handle on \a handle and sets the error
+    condition in \a error. In both cases, the string in \a templ will be
+    changed and contain the generated path name.
+*/
+static bool createFileFromTemplate(NativeFileHandle &file, NativeTemplate &templ,
+                                   quint32 mode, QSystemError &error)
+{
+    const int maxAttempts = 16;
+    for (int attempt = 0; attempt < maxAttempts; ++attempt) {
         // Atomically create file and obtain handle
+        const QFileSystemEntry::NativePath &path = generateNameFromTemplate(templ);
+
 #if defined(Q_OS_WIN)
         Q_UNUSED(mode);
 
@@ -200,42 +226,8 @@ static bool createFileFromTemplate(NativeFileHandle &file,
             return false;
         }
 #endif
-
-        /* tricky little algorwwithm for backward compatibility */
-        for (Char *iter = placeholderStart;;) {
-            // Character progression: [0-9] => 'a' ... 'z' => 'A' .. 'Z'
-            // String progression: "ZZaiC" => "aabiC"
-            switch (char(*iter)) {
-                case 'Z':
-                    // Rollover, advance next character
-                    *iter = Latin1Char('a');
-                    if (++iter == placeholderEnd) {
-                        // Out of alternatives. Return file exists error, previously set.
-                        error = QSystemError(err, QSystemError::NativeError);
-                        return false;
-                    }
-
-                    continue;
-
-                case '0': case '1': case '2': case '3': case '4':
-                case '5': case '6': case '7': case '8': case '9':
-                    *iter = Latin1Char('a');
-                    break;
-
-                case 'z':
-                    // increment 'z' to 'A'
-                    *iter = Latin1Char('A');
-                    break;
-
-                default:
-                    ++*iter;
-                    break;
-            }
-            break;
-        }
     }
 
-    Q_ASSERT(false);
     return false;
 }
 
@@ -269,18 +261,8 @@ void QTemporaryFileEngine::setFileName(const QString &file)
     QFSFileEngine::setFileName(file);
 }
 
-bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
+static NativeTemplate makeNativeTemplate(QString qfilename)
 {
-    Q_D(QFSFileEngine);
-    Q_ASSERT(!isReallyOpen());
-
-    openMode |= QIODevice::ReadWrite;
-
-    if (!filePathIsTemplate)
-        return QFSFileEngine::open(openMode);
-
-    QString qfilename = templateName;
-
     // Ensure there is a placeholder mask
     uint phPos = qfilename.length();
     uint phLength = 0;
@@ -332,6 +314,21 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     }
 
     Q_ASSERT(phLength >= 6);
+    return {filename, phPos, phLength};
+}
+
+bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
+{
+    Q_D(QFSFileEngine);
+    Q_ASSERT(!isReallyOpen());
+
+    openMode |= QIODevice::ReadWrite;
+
+    if (!filePathIsTemplate)
+        return QFSFileEngine::open(openMode);
+
+    QString qfilename = templateName;
+    NativeTemplate templ = makeNativeTemplate(qfilename);
 
     QSystemError error;
 #if defined(Q_OS_WIN)
@@ -340,12 +337,12 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     NativeFileHandle &file = d->fd;
 #endif
 
-    if (!createFileFromTemplate(file, filename, phPos, phLength, fileMode, error)) {
+    if (!createFileFromTemplate(file, templ, fileMode, error)) {
         setError(QFile::OpenError, error.toString());
         return false;
     }
 
-    d->fileEntry = QFileSystemEntry(filename, QFileSystemEntry::FromNativePath());
+    d->fileEntry = QFileSystemEntry(templ.path, QFileSystemEntry::FromNativePath());
 
 #if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
     d->closeFileHandle = true;
