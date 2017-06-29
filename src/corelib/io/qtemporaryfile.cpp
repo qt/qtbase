@@ -39,8 +39,6 @@
 
 #include "qtemporaryfile.h"
 
-#ifndef QT_NO_TEMPORARYFILE
-
 #include "qplatformdefs.h"
 #include "qrandom.h"
 #include "private/qtemporaryfile_p.h"
@@ -76,12 +74,63 @@ typedef char Latin1Char;
 typedef int NativeFileHandle;
 #endif
 
-namespace {
-struct NativeTemplate {
-    QFileSystemEntry::NativePath path;
-    qssize_t pos;
-    qssize_t length;
-};
+QTemporaryFileName::QTemporaryFileName(const QString &templateName)
+{
+    // Ensure there is a placeholder mask
+    QString qfilename = templateName;
+    uint phPos = qfilename.length();
+    uint phLength = 0;
+
+    while (phPos != 0) {
+        --phPos;
+
+        if (qfilename[phPos] == QLatin1Char('X')) {
+            ++phLength;
+            continue;
+        }
+
+        if (phLength >= 6
+                || qfilename[phPos] == QLatin1Char('/')) {
+            ++phPos;
+            break;
+        }
+
+        // start over
+        phLength = 0;
+    }
+
+    if (phLength < 6)
+        qfilename.append(QLatin1String(".XXXXXX"));
+
+    // "Nativify" :-)
+    QFileSystemEntry::NativePath filename = QFileSystemEngine::absoluteName(
+            QFileSystemEntry(qfilename, QFileSystemEntry::FromInternalPath()))
+        .nativeFilePath();
+
+    // Find mask in native path
+    phPos = filename.length();
+    phLength = 0;
+    while (phPos != 0) {
+        --phPos;
+
+        if (filename[phPos] == Latin1Char('X')) {
+            ++phLength;
+            continue;
+        }
+
+        if (phLength >= 6) {
+            ++phPos;
+            break;
+        }
+
+        // start over
+        phLength = 0;
+    }
+
+    Q_ASSERT(phLength >= 6);
+    path = filename;
+    pos = phPos;
+    length = phLength;
 }
 
 // The following code is a heavily modified version, originally copyright:
@@ -120,12 +169,8 @@ struct NativeTemplate {
     Generates a unique file path from the template \a templ and returns it.
     The path in \c templ.path is modified.
 */
-static QFileSystemEntry::NativePath generateNameFromTemplate(NativeTemplate &templ)
+QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
 {
-    QFileSystemEntry::NativePath &path = templ.path;
-    qssize_t pos = templ.pos;
-    qssize_t length = templ.length;
-
     Q_ASSERT(length != 0);
     Q_ASSERT(pos < path.length());
     Q_ASSERT(length <= path.length() - pos);
@@ -159,6 +204,8 @@ static QFileSystemEntry::NativePath generateNameFromTemplate(NativeTemplate &tem
     return path;
 }
 
+#ifndef QT_NO_TEMPORARYFILE
+
 /*!
     \internal
 
@@ -172,13 +219,13 @@ static QFileSystemEntry::NativePath generateNameFromTemplate(NativeTemplate &tem
     condition in \a error. In both cases, the string in \a templ will be
     changed and contain the generated path name.
 */
-static bool createFileFromTemplate(NativeFileHandle &file, NativeTemplate &templ,
+static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &templ,
                                    quint32 mode, QSystemError &error)
 {
     const int maxAttempts = 16;
     for (int attempt = 0; attempt < maxAttempts; ++attempt) {
         // Atomically create file and obtain handle
-        const QFileSystemEntry::NativePath &path = generateNameFromTemplate(templ);
+        const QFileSystemEntry::NativePath &path = templ.generateNext();
 
 #if defined(Q_OS_WIN)
         Q_UNUSED(mode);
@@ -261,62 +308,6 @@ void QTemporaryFileEngine::setFileName(const QString &file)
     QFSFileEngine::setFileName(file);
 }
 
-static NativeTemplate makeNativeTemplate(QString qfilename)
-{
-    // Ensure there is a placeholder mask
-    uint phPos = qfilename.length();
-    uint phLength = 0;
-
-    while (phPos != 0) {
-        --phPos;
-
-        if (qfilename[phPos] == QLatin1Char('X')) {
-            ++phLength;
-            continue;
-        }
-
-        if (phLength >= 6
-                || qfilename[phPos] == QLatin1Char('/')) {
-            ++phPos;
-            break;
-        }
-
-        // start over
-        phLength = 0;
-    }
-
-    if (phLength < 6)
-        qfilename.append(QLatin1String(".XXXXXX"));
-
-    // "Nativify" :-)
-    QFileSystemEntry::NativePath filename = QFileSystemEngine::absoluteName(
-            QFileSystemEntry(qfilename, QFileSystemEntry::FromInternalPath()))
-        .nativeFilePath();
-
-    // Find mask in native path
-    phPos = filename.length();
-    phLength = 0;
-    while (phPos != 0) {
-        --phPos;
-
-        if (filename[phPos] == Latin1Char('X')) {
-            ++phLength;
-            continue;
-        }
-
-        if (phLength >= 6) {
-            ++phPos;
-            break;
-        }
-
-        // start over
-        phLength = 0;
-    }
-
-    Q_ASSERT(phLength >= 6);
-    return {filename, phPos, phLength};
-}
-
 bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
@@ -327,8 +318,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
 
-    QString qfilename = templateName;
-    NativeTemplate templ = makeNativeTemplate(qfilename);
+    QTemporaryFileName tfn(templateName);
 
     QSystemError error;
 #if defined(Q_OS_WIN)
@@ -337,12 +327,12 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     NativeFileHandle &file = d->fd;
 #endif
 
-    if (!createFileFromTemplate(file, templ, fileMode, error)) {
+    if (!createFileFromTemplate(file, tfn, fileMode, error)) {
         setError(QFile::OpenError, error.toString());
         return false;
     }
 
-    d->fileEntry = QFileSystemEntry(templ.path, QFileSystemEntry::FromNativePath());
+    d->fileEntry = QFileSystemEntry(tfn.path, QFileSystemEntry::FromNativePath());
 
 #if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
     d->closeFileHandle = true;
@@ -815,9 +805,9 @@ bool QTemporaryFile::open(OpenMode flags)
     return false;
 }
 
-QT_END_NAMESPACE
-
 #endif // QT_NO_TEMPORARYFILE
+
+QT_END_NAMESPACE
 
 #ifndef QT_NO_QOBJECT
 #include "moc_qtemporaryfile.cpp"

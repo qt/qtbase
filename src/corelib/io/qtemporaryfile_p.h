@@ -53,13 +53,24 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_TEMPORARYFILE
-
 #include "private/qfsfileengine_p.h"
 #include "private/qfilesystemengine_p.h"
 #include "private/qfile_p.h"
+#include "qtemporaryfile.h"
 
 QT_BEGIN_NAMESPACE
+
+struct QTemporaryFileName
+{
+    QFileSystemEntry::NativePath path;
+    qssize_t pos;
+    qssize_t length;
+
+    QTemporaryFileName(const QString &templateName);
+    QFileSystemEntry::NativePath generateNext();
+};
+
+#ifndef QT_NO_TEMPORARYFILE
 
 class QTemporaryFilePrivate : public QFilePrivate
 {
@@ -120,9 +131,9 @@ public:
     bool filePathWasTemplate;
 };
 
-QT_END_NAMESPACE
-
 #endif // QT_NO_TEMPORARYFILE
+
+QT_END_NAMESPACE
 
 #endif /* QTEMPORARYFILE_P_H */
 
