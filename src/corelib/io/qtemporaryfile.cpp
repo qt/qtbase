@@ -54,6 +54,8 @@
 
 #if defined(QT_BUILD_CORE_LIB)
 #include "qcoreapplication.h"
+#else
+#define tr(X) QString::fromLatin1(X)
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -684,6 +686,36 @@ void QTemporaryFile::setFileTemplate(const QString &name)
     d->templateName = name;
     if (d->fileEngine)
         static_cast<QTemporaryFileEngine*>(d->fileEngine)->setFileTemplate(name);
+}
+
+/*!
+    \internal
+
+    This is just a simplified version of QFile::rename() because we know a few
+    extra details about what kind of file we have. The documentation is hidden
+    from the user because QFile::rename() should be enough.
+*/
+bool QTemporaryFile::rename(const QString &newName)
+{
+    Q_D(QTemporaryFile);
+    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine);
+    if (!tef || !tef->isReallyOpen() || !tef->filePathWasTemplate)
+        return QFile::rename(newName);
+
+    unsetError();
+    close();
+    if (error() == QFile::NoError) {
+        if (tef->rename(newName)) {
+            unsetError();
+            // engine was able to handle the new name so we just reset it
+            tef->setFileName(newName);
+            d->fileName = newName;
+            return true;
+        }
+
+        d->setError(QFile::RenameError, tef->errorString());
+    }
+    return false;
 }
 
 /*!
