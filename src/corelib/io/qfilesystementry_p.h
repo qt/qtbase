@@ -98,7 +98,10 @@ public:
 #endif
     bool isRoot() const;
 
-    bool isEmpty() const;
+    bool isEmpty() const
+    {
+        return m_filePath.isEmpty() && m_nativeFilePath.isEmpty();
+    }
     void clear()
     {
         *this = QFileSystemEntry();
