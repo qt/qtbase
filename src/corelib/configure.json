@@ -379,6 +379,15 @@
                 ]
             }
         },
+        "renameat2": {
+            "label": "renameat2()",
+            "type": "compile",
+            "test": {
+                "head": "#define _ATFILE_SOURCE 1",
+                "include": [ "fcntl.h", "stdio.h" ],
+                "main": "renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEOUT);"
+            }
+        },
         "syslog": {
             "label": "syslog",
             "type": "compile",
@@ -575,6 +584,11 @@
             "label": "QEventTransition class",
             "condition": "features.statemachine",
             "output": [ "publicFeature" ]
+        },
+        "renameat2": {
+            "label": "renameat2()",
+            "condition": "config.linux && tests.renameat2",
+            "output": [ "privateFeature" ]
         },
         "slog2": {
             "label": "slog2",

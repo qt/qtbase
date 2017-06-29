@@ -88,6 +88,7 @@
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1
 #define QT_NO_SYSTEMLOCALE
+#define QT_FEATURE_renameat2 -1
 #define QT_FEATURE_slog2 -1
 #define QT_FEATURE_syslog -1
 #define QT_FEATURE_temporaryfile 1

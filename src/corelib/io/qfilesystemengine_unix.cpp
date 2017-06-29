@@ -54,7 +54,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-
 #if defined(Q_OS_MAC)
 # include <QtCore/private/qcore_mac_p.h>
 # include <CoreFoundation/CFBundle.h>
@@ -76,6 +75,16 @@
 // we need these declarations:
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 extern "C" NSString *NSTemporaryDirectory();
+#endif
+
+#if defined(Q_OS_LINUX)
+#  include <sys/syscall.h>
+#  include <linux/fs.h>
+
+#  if !QT_CONFIG(renameat2) && defined(SYS_renameat2)
+static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newpath, unsigned flags)
+{ return syscall(SYS_renameat2, oldfd, oldpath, newfd, newpath, flags); }
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -653,6 +662,33 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 {
     QFileSystemEntry::NativePath srcPath = source.nativeFilePath();
     QFileSystemEntry::NativePath tgtPath = target.nativeFilePath();
+
+#if defined(RENAME_NOREPLACE) && (QT_CONFIG(renameat2) || defined(SYS_renameat2))
+    if (renameat2(AT_FDCWD, srcPath, AT_FDCWD, tgtPath, RENAME_NOREPLACE) == 0)
+        return true;
+
+    // If we're using syscall(), check for ENOSYS;
+    // if renameat2 came from libc, we don't accept ENOSYS.
+    if (QT_CONFIG(renameat2) || errno != ENOSYS) {
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+        return false;
+    }
+#endif
+#if defined(Q_OS_DARWIN) && defined(RENAME_EXCL)
+    const auto current = QOperatingSystemVersion::current();
+    if (current >= QOperatingSystemVersion::MacOSSierra ||
+        current >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 10) ||
+        current >= QOperatingSystemVersion(QOperatingSystemVersion::TvOS, 10) ||
+        current >= QOperatingSystemVersion(QOperatingSystemVersion::WatchOS, 3)) {
+        if (renameatx_np(AT_FDCWD, srcPath, AT_FDCWD, tgtPath, RENAME_EXCL) == 0)
+            return true;
+        if (errno != ENOTSUP) {
+            error = QSystemError(errno, QSystemError::StandardLibraryError);
+            return false;
+        }
+    }
+#endif
+
     if (::link(srcPath, tgtPath) == 0) {
         if (::unlink(srcPath) == 0)
             return true;

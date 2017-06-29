@@ -86,12 +86,17 @@
  * - eventfd                    2.6.23
  * - pipe2 & dup3               2.6.27
  * - accept4                    2.6.28
+ * - renameat2                  3.16                    QT_CONFIG(renameat2)
  * - getrandom                  3.17                    QT_CONFIG(getentropy)
  */
 
 #if QT_CONFIG(getentropy)
     .long       3
     .long       17
+    .long       0
+#elif QT_CONFIG(renameat2)
+    .long       3
+    .long       16
     .long       0
 #else
     .long       2
