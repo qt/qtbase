@@ -651,6 +651,50 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
 //static
 bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
+    QFileSystemEntry::NativePath srcPath = source.nativeFilePath();
+    QFileSystemEntry::NativePath tgtPath = target.nativeFilePath();
+    if (::link(srcPath, tgtPath) == 0) {
+        if (::unlink(srcPath) == 0)
+            return true;
+
+        // if we managed to link but can't unlink the source, it's likely
+        // it's in a directory we don't have write access to; fail the
+        // renaming instead
+        int savedErrno = errno;
+
+        // this could fail too, but there's nothing we can do about it now
+        ::unlink(tgtPath);
+
+        error = QSystemError(savedErrno, QSystemError::StandardLibraryError);
+        return false;
+    }
+
+    switch (errno) {
+    case EACCES:
+    case EEXIST:
+    case ENAMETOOLONG:
+    case ENOENT:
+    case ENOTDIR:
+    case EROFS:
+    case EXDEV:
+        // accept the error from link(2) (especially EEXIST) and don't retry
+        break;
+
+    default:
+        // fall back to rename()
+        // ### Race condition. If a file is moved in after this, it /will/ be
+        // overwritten.
+        if (::rename(srcPath, tgtPath) == 0)
+            return true;
+    }
+
+    error = QSystemError(errno, QSystemError::StandardLibraryError);
+    return false;
+}
+
+//static
+bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
+{
     if (::rename(source.nativeFilePath().constData(), target.nativeFilePath().constData()) == 0)
         return true;
     error = QSystemError(errno, QSystemError::StandardLibraryError);

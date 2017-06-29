@@ -1247,6 +1247,17 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 }
 
 //static
+bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
+{
+    bool ret = ::MoveFileEx(reinterpret_cast<const wchar_t *>(source.nativeFilePath().utf16()),
+                            reinterpret_cast<const wchar_t *>(target.nativeFilePath().utf16()),
+                            MOVEFILE_REPLACE_EXISTING) != 0;
+    if (!ret)
+        error = QSystemError(::GetLastError(), QSystemError::NativeError);
+    return ret;
+}
+
+//static
 bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &error)
 {
     bool ret = ::DeleteFile((wchar_t*)entry.nativeFilePath().utf16()) != 0;

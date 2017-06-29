@@ -566,18 +566,18 @@ QFile::rename(const QString &newName)
         d->setError(QFile::RenameError, tr("Source file does not exist."));
         return false;
     }
+
     // If the file exists and it is a case-changing rename ("foo" -> "Foo"),
     // compare Ids to make sure it really is a different file.
     // Note: this does not take file engines into account.
+    bool changingCase = false;
     QByteArray targetId = QFileSystemEngine::id(QFileSystemEntry(newName));
     if (!targetId.isNull()) {
         QByteArray fileId = d->fileEngine ?
                     d->fileEngine->id() :
                     QFileSystemEngine::id(QFileSystemEntry(d->fileName));
-        if (fileId != targetId || d->fileName.compare(newName, Qt::CaseInsensitive)) {
-            // ### Race condition. If a file is moved in after this, it /will/ be
-            // overwritten. On Unix, the proper solution is to use hardlinks:
-            // return ::link(old, new) && ::remove(old);
+        changingCase = (fileId == targetId && d->fileName.compare(newName, Qt::CaseInsensitive) == 0);
+        if (!changingCase) {
             d->setError(QFile::RenameError, tr("Destination file exists"));
             return false;
         }
@@ -593,7 +593,7 @@ QFile::rename(const QString &newName)
             return false;
         }
         tempFile.close();
-        if (!d->engine()->rename(tempFile.fileName())) {
+        if (!d->engine()->renameOverwrite(tempFile.fileName())) {
             d->setError(QFile::RenameError, tr("Error while renaming."));
             return false;
         }
@@ -616,7 +616,7 @@ QFile::rename(const QString &newName)
     unsetError();
     close();
     if(error() == QFile::NoError) {
-        if (d->engine()->rename(newName)) {
+        if (changingCase ? d->engine()->renameOverwrite(newName) : d->engine()->rename(newName)) {
             unsetError();
             // engine was able to handle the new name so we just reset it
             d->fileEngine->setFileName(newName);

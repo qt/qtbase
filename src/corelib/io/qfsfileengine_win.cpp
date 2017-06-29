@@ -507,11 +507,10 @@ bool QFSFileEngine::rename(const QString &newName)
 bool QFSFileEngine::renameOverwrite(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    bool ret = ::MoveFileEx((wchar_t*)d->fileEntry.nativeFilePath().utf16(),
-                            (wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16(),
-                            MOVEFILE_REPLACE_EXISTING) != 0;
+    QSystemError error;
+    bool ret = QFileSystemEngine::renameOverwriteFile(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret)
-        setError(QFile::RenameError, QSystemError(::GetLastError(), QSystemError::NativeError).toString());
+        setError(QFile::RenameError, error.toString());
     return ret;
 }
 

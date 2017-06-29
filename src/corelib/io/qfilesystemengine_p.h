@@ -121,6 +121,7 @@ public:
 
     static bool copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
     static bool renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
+    static bool renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
     static bool removeFile(const QFileSystemEntry &entry, QSystemError &error);
 
     static bool setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error,

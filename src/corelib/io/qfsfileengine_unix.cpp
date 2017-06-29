@@ -362,8 +362,14 @@ bool QFSFileEngine::copy(const QString &newName)
 
 bool QFSFileEngine::renameOverwrite(const QString &newName)
 {
-    // On Unix, rename() overwrites.
-    return rename(newName);
+    Q_D(QFSFileEngine);
+    QSystemError error;
+    bool ret = QFileSystemEngine::renameOverwriteFile(d->fileEntry, QFileSystemEntry(newName), error);
+
+    if (!ret)
+        setError(QFile::RenameError, error.toString());
+
+    return ret;
 }
 
 bool QFSFileEngine::rename(const QString &newName)
