@@ -93,6 +93,9 @@ private slots:
     void entryList_data();
     void entryList();
 
+    void entryListWithTestFiles_data();
+    void entryListWithTestFiles();
+
     void entryListTimedSort();
 
     void entryListSimple_data();
@@ -717,6 +720,32 @@ void tst_QDir::entryList_data()
     QTest::newRow("resources2") << QString(":/tst_qdir/resources/entryList") << QStringList("*.data")
                              << (int)(QDir::Files) << (int)(QDir::NoSort)
                              << QString("file1.data,file2.data,file3.data").split(',');
+}
+
+void tst_QDir::entryList()
+{
+    QFETCH(QString, dirName);
+    QFETCH(QStringList, nameFilters);
+    QFETCH(int, filterspec);
+    QFETCH(int, sortspec);
+    QFETCH(QStringList, expected);
+
+    QDir dir(dirName);
+    QVERIFY2(dir.exists(), msgDoesNotExist(dirName).constData());
+
+    QStringList actual = dir.entryList(nameFilters, (QDir::Filters)filterspec,
+                                       (QDir::SortFlags)sortspec);
+
+    QCOMPARE(actual, expected);
+}
+
+void tst_QDir::entryListWithTestFiles_data()
+{
+    QTest::addColumn<QString>("dirName"); // relative from current path or abs
+    QTest::addColumn<QStringList>("nameFilters");
+    QTest::addColumn<int>("filterspec");
+    QTest::addColumn<int>("sortspec");
+    QTest::addColumn<QStringList>("expected");
 
     QTest::newRow("nofilter") << (m_dataPath + "/entrylist/") << QStringList("*")
                               << int(QDir::NoFilter) << int(QDir::Name)
@@ -823,7 +852,7 @@ void tst_QDir::entryList_data()
                                   << QString("c,b,a,a.a,a.b,a.c,b.b,b.c,b.a,c.c,c.b,c.a,f.c,f.b,f.a,f,e.c,e.b,e.a,e,d.c,d.b,d.a,d").split(',');
 }
 
-void tst_QDir::entryList()
+void tst_QDir::entryListWithTestFiles()
 {
     QFETCH(QString, dirName);
     QFETCH(QStringList, nameFilters);
@@ -831,28 +860,49 @@ void tst_QDir::entryList()
     QFETCH(int, sortspec);
     QFETCH(QStringList, expected);
 
+    QStringList testFiles;
+
     QString entrylistPath = (m_dataPath + "/entrylist/");
-    QFile(entrylistPath + "writable").open(QIODevice::ReadWrite);
-    QFile(entrylistPath + "file").setPermissions(QFile::ReadOwner | QFile::ReadUser);
-    QFile::remove(entrylistPath + "linktofile");
-    QFile::remove(entrylistPath + "linktodirectory");
-    QFile::remove(entrylistPath + "linktofile.lnk");
-    QFile::remove(entrylistPath + "linktodirectory.lnk");
-    QFile::remove(entrylistPath + "brokenlink.lnk");
-    QFile::remove(entrylistPath + "brokenlink");
+
+    {
+        const QString writableFileName = entrylistPath + "writable";
+        QFile writableFile(writableFileName);
+        testFiles.append(writableFileName);
+
+        QVERIFY2(writableFile.open(QIODevice::ReadWrite),
+                 qPrintable(writableFile.errorString()));
+    }
+
+    {
+        QFile readOnlyFile(entrylistPath + "file");
+        QVERIFY2(readOnlyFile.setPermissions(QFile::ReadOwner | QFile::ReadUser),
+                 qPrintable(readOnlyFile.errorString()));
+    }
+
 
 #ifndef Q_NO_SYMLINKS
 #if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
     // Note we are using capital L in entryList on one side here, to test case-insensitivity
-    QFile::link((m_dataPath + "/entryList/") + "file", entrylistPath + "linktofile.lnk");
-    QFile::link((m_dataPath + "/entryList/") + "directory", entrylistPath + "linktodirectory.lnk");
-    QFile::link((m_dataPath + "/entryList/") + "nothing", entrylistPath + "brokenlink.lnk");
+    const QVector<QPair<QString, QString> > symLinks =
+    {
+        {m_dataPath + "/entryList/file", entrylistPath + "linktofile.lnk"},
+        {m_dataPath + "/entryList/directory", entrylistPath + "linktodirectory.lnk"},
+        {m_dataPath + "/entryList/nothing", entrylistPath + "brokenlink.lnk"}
+    };
 #else
-    QFile::link("file", entrylistPath + "linktofile.lnk");
-    QFile::link("directory", entrylistPath + "linktodirectory.lnk");
-    QFile::link("nothing", entrylistPath + "brokenlink.lnk");
+    const QVector<QPair<QString, QString> > symLinks =
+    {
+        {"file", entrylistPath + "linktofile.lnk"},
+        {"directory", entrylistPath + "linktodirectory.lnk"},
+        {"nothing", entrylistPath + "brokenlink.lnk"}
+    };
 #endif
+    for (const auto &symLink : symLinks) {
+        QVERIFY2(QFile::link(symLink.first, symLink.second),
+                 qPrintable(symLink.first + "->" + symLink.second));
+        testFiles.append(symLink.second);
+    }
 #endif //Q_NO_SYMLINKS
 
     QDir dir(dirName);
@@ -860,8 +910,6 @@ void tst_QDir::entryList()
 
     QStringList actual = dir.entryList(nameFilters, (QDir::Filters)filterspec,
                                        (QDir::SortFlags)sortspec);
-
-    int max = qMin(actual.count(), expected.count());
 
     bool doContentCheck = true;
 #if defined(Q_OS_UNIX)
@@ -872,20 +920,11 @@ void tst_QDir::entryList()
     }
 #endif
 
-    if (doContentCheck) {
-        for (int i=0; i<max; ++i)
-            QCOMPARE(actual[i], expected[i]);
+    for (int i = testFiles.size() - 1; i >= 0; --i)
+        QVERIFY2(QFile::remove(testFiles.at(i)), qPrintable(testFiles.at(i)));
 
-        QCOMPARE(actual.count(), expected.count());
-    }
-
-    QFile::remove(entrylistPath + "writable");
-    QFile::remove(entrylistPath + "linktofile");
-    QFile::remove(entrylistPath + "linktodirectory");
-    QFile::remove(entrylistPath + "linktofile.lnk");
-    QFile::remove(entrylistPath + "linktodirectory.lnk");
-    QFile::remove(entrylistPath + "brokenlink.lnk");
-    QFile::remove(entrylistPath + "brokenlink");
+    if (doContentCheck)
+        QCOMPARE(actual, expected);
 }
 
 void tst_QDir::entryListTimedSort()
