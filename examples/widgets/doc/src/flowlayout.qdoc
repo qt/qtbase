@@ -28,6 +28,7 @@
 /*!
     \example layouts/flowlayout
     \title Flow Layout Example
+    \ingroup examples-layout
     \brief Shows how to arrange widgets for different window sizes.
 
     \e{Flow Layout} implements a layout that handles different window sizes. The

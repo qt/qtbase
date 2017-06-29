@@ -392,7 +392,6 @@
     Many Qt Widgets \l{Qt Widgets Examples}{examples} already use layouts,
     however, several examples exist to showcase various layouts.
 
-    \list
-    \li \l{Layout Examples}
-    \endlist
+    \annotatedlist examples-layout
+
 */

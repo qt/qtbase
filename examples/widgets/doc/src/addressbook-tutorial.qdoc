@@ -29,6 +29,7 @@
     \page tutorials-addressbook.html
 
     \title Address Book Tutorial
+    \ingroup examples-layout
     \brief An introduction to GUI programming, showing how to put together a
     simple yet fully-functioning application.
 
