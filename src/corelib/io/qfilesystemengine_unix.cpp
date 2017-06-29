@@ -349,6 +349,20 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 }
 
 //static
+QByteArray QFileSystemEngine::id(int id)
+{
+    QT_STATBUF statResult;
+    if (QT_FSTAT(id, &statResult)) {
+        qErrnoWarning("fstat() failed for fd %d", id);
+        return QByteArray();
+    }
+    QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
+    result += ':';
+    result += QByteArray::number(quint64(statResult.st_ino));
+    return result;
+}
+
+//static
 QString QFileSystemEngine::resolveUserName(uint userId)
 {
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)

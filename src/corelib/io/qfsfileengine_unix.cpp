@@ -596,6 +596,14 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     return ret;
 }
 
+QByteArray QFSFileEngine::id() const
+{
+    Q_D(const QFSFileEngine);
+    if (d->fd != -1)
+        return QFileSystemEngine::id(d->fd);
+    return QFileSystemEngine::id(d->fileEntry);
+}
+
 QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);

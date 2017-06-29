@@ -718,6 +718,24 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     return ret;
 }
 
+QByteArray QFSFileEngine::id() const
+{
+    Q_D(const QFSFileEngine);
+    HANDLE h = d->fileHandle;
+    if (h == INVALID_HANDLE_VALUE) {
+        int localFd = d->fd;
+        if (d->fh && d->fileEntry.isEmpty())
+            localFd = QT_FILENO(d->fh);
+        if (localFd != -1)
+            h = HANDLE(_get_osfhandle(localFd));
+    }
+    if (h != INVALID_HANDLE_VALUE)
+        return QFileSystemEngine::id(h);
+
+    // file is not open, try by path
+    return QFileSystemEngine::id(d->fileEntry);
+}
+
 QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);

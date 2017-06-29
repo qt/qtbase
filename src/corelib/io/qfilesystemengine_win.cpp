@@ -621,11 +621,17 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
                     FILE_SHARE_READ, OPEN_EXISTING, NULL);
 #endif // Q_OS_WINRT
     if (handle != INVALID_HANDLE_VALUE) {
-        result = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8 ?
-                 fileIdWin8(handle) : fileId(handle);
+        result = id(handle);
         CloseHandle(handle);
     }
     return result;
+}
+
+//static
+QByteArray QFileSystemEngine::id(HANDLE fHandle)
+{
+    return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8 ?
+                fileIdWin8(HANDLE(fHandle)) : fileId(HANDLE(fHandle));
 }
 
 //static
