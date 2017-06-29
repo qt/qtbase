@@ -281,6 +281,7 @@ void tst_QNetworkDiskCache::clear()
     // don't delete files that it didn't create
     QTemporaryFile file(cacheDirectory + "/XXXXXX");
     if (file.open()) {
+        file.fileName();    // make sure it exists with a name
         QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);
         cache.clear();
         QCOMPARE(countFiles(cacheDirectory).count(), NUM_SUBDIRECTORIES + 3);

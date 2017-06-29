@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -264,6 +265,53 @@ static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &t
     return false;
 }
 
+enum class CreateUnnamedFileStatus {
+    Success = 0,
+    NotSupported,
+    OtherError
+};
+
+static CreateUnnamedFileStatus
+createUnnamedFile(NativeFileHandle &file, QTemporaryFileName &tfn, quint32 mode, QSystemError *error)
+{
+#ifdef LINUX_UNNAMED_TMPFILE
+    // first, check if we have /proc, otherwise can't make the file exist later
+    // (no error message set, as caller will try regular temporary file)
+    if (!qt_haveLinuxProcfs())
+        return CreateUnnamedFileStatus::NotSupported;
+
+    const char *p = ".";
+    int lastSlash = tfn.path.lastIndexOf('/');
+    if (lastSlash != -1) {
+        tfn.path[lastSlash] = '\0';
+        p = tfn.path.data();
+    }
+
+    file = QT_OPEN(p, O_TMPFILE | QT_OPEN_RDWR | QT_OPEN_LARGEFILE,
+            static_cast<mode_t>(mode));
+    if (file != -1)
+        return CreateUnnamedFileStatus::Success;
+
+    if (errno == EOPNOTSUPP || errno == EISDIR) {
+        // fs or kernel doesn't support O_TMPFILE, so
+        // put the slash back so we may try a regular file
+        if (lastSlash != -1)
+            tfn.path[lastSlash] = '/';
+        return CreateUnnamedFileStatus::NotSupported;
+    }
+
+    // real error
+    *error = QSystemError(errno, QSystemError::NativeError);
+    return CreateUnnamedFileStatus::OtherError;
+#else
+    Q_UNUSED(file);
+    Q_UNUSED(tfn);
+    Q_UNUSED(mode);
+    Q_UNUSED(error);
+    return CreateUnnamedFileStatus::NotSupported;
+#endif
+}
+
 //************* QTemporaryFileEngine
 QTemporaryFileEngine::~QTemporaryFileEngine()
 {
@@ -313,18 +361,23 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     NativeFileHandle &file = d->fd;
 #endif
 
-    if (!createFileFromTemplate(file, tfn, fileMode, error)) {
+    CreateUnnamedFileStatus st = createUnnamedFile(file, tfn, fileMode, &error);
+    if (st == CreateUnnamedFileStatus::Success) {
+        unnamedFile = true;
+        d->fileEntry.clear();
+    } else if (st == CreateUnnamedFileStatus::NotSupported &&
+               createFileFromTemplate(file, tfn, fileMode, error)) {
+        filePathIsTemplate = false;
+        unnamedFile = false;
+        d->fileEntry = QFileSystemEntry(tfn.path, QFileSystemEntry::FromNativePath());
+    } else {
         setError(QFile::OpenError, error.toString());
         return false;
     }
 
-    d->fileEntry = QFileSystemEntry(tfn.path, QFileSystemEntry::FromNativePath());
-
 #if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
     d->closeFileHandle = true;
 #endif
-
-    filePathIsTemplate = false;
 
     d->openMode = openMode;
     d->lastFlushFailed = false;
@@ -340,7 +393,7 @@ bool QTemporaryFileEngine::remove()
     // we must explicitly call QFSFileEngine::close() before we remove it.
     d->unmapAll();
     QFSFileEngine::close();
-    if (QFSFileEngine::remove()) {
+    if (isUnnamedFile() || QFSFileEngine::remove()) {
         d->fileEntry.clear();
         // If a QTemporaryFile is constructed using a template file path, the path
         // is generated in QTemporaryFileEngine::open() and then filePathIsTemplate
@@ -355,12 +408,22 @@ bool QTemporaryFileEngine::remove()
 
 bool QTemporaryFileEngine::rename(const QString &newName)
 {
+    if (isUnnamedFile()) {
+        bool ok = materializeUnnamedFile(newName, DontOverwrite);
+        QFSFileEngine::close();
+        return ok;
+    }
     QFSFileEngine::close();
     return QFSFileEngine::rename(newName);
 }
 
 bool QTemporaryFileEngine::renameOverwrite(const QString &newName)
 {
+    if (isUnnamedFile()) {
+        bool ok = materializeUnnamedFile(newName, Overwrite);
+        QFSFileEngine::close();
+        return ok;
+    }
     QFSFileEngine::close();
     return QFSFileEngine::renameOverwrite(newName);
 }
@@ -371,6 +434,88 @@ bool QTemporaryFileEngine::close()
     seek(0);
     setError(QFile::UnspecifiedError, QString());
     return true;
+}
+
+QString QTemporaryFileEngine::fileName(QAbstractFileEngine::FileName file) const
+{
+    if (isUnnamedFile()) {
+        if (file == LinkName) {
+            // we know our file isn't (won't be) a symlink
+            return QString();
+        }
+
+        // for all other cases, materialize the file
+        const_cast<QTemporaryFileEngine *>(this)->materializeUnnamedFile(templateName, NameIsTemplate);
+    }
+    return QFSFileEngine::fileName(file);
+}
+
+bool QTemporaryFileEngine::materializeUnnamedFile(const QString &newName, QTemporaryFileEngine::MaterializationMode mode)
+{
+    Q_ASSERT(isUnnamedFile());
+
+#ifdef LINUX_UNNAMED_TMPFILE
+    Q_D(QFSFileEngine);
+    const QByteArray src = "/proc/self/fd/" + QByteArray::number(d->fd);
+    auto materializeAt = [=](const QFileSystemEntry &dst) {
+        return ::linkat(AT_FDCWD, src, AT_FDCWD, dst.nativeFilePath(), AT_SYMLINK_FOLLOW) == 0;
+    };
+#else
+    auto materializeAt = [](const QFileSystemEntry &) { return false; };
+#endif
+
+    auto success = [this](const QFileSystemEntry &entry) {
+        filePathIsTemplate = false;
+        unnamedFile = false;
+        d_func()->fileEntry = entry;
+        return true;
+    };
+
+    auto materializeAsTemplate = [=](const QString &newName) {
+        QTemporaryFileName tfn(newName);
+        static const int maxAttempts = 16;
+        for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+            tfn.generateNext();
+            QFileSystemEntry entry(tfn.path, QFileSystemEntry::FromNativePath());
+            if (materializeAt(entry))
+                return success(entry);
+        }
+        return false;
+    };
+
+    if (mode == NameIsTemplate) {
+        if (materializeAsTemplate(newName))
+            return true;
+    } else {
+        // Use linkat to materialize the file
+        QFileSystemEntry dst(newName);
+        if (materializeAt(dst))
+            return success(dst);
+
+        if (errno == EEXIST && mode == Overwrite) {
+            // retry by first creating a temporary file in the right dir
+            if (!materializeAsTemplate(templateName))
+                return false;
+
+            // then rename the materialized file to target (same as renameOverwrite)
+            QFSFileEngine::close();
+            return QFSFileEngine::renameOverwrite(newName);
+        }
+    }
+
+    // failed
+    setError(QFile::RenameError, QSystemError(errno, QSystemError::NativeError).toString());
+    return false;
+}
+
+bool QTemporaryFileEngine::isUnnamedFile() const
+{
+#ifdef LINUX_UNNAMED_TMPFILE
+    Q_ASSERT(unnamedFile == d_func()->fileEntry.isEmpty());
+    return unnamedFile;
+#else
+    return false;
+#endif
 }
 
 //************* QTemporaryFilePrivate
@@ -407,6 +552,17 @@ void QTemporaryFilePrivate::resetFileEngine() const
         tef->initialize(templateName, 0600);
     else
         tef->initialize(fileName, 0600, false);
+}
+
+void QTemporaryFilePrivate::materializeUnnamedFile()
+{
+#ifdef LINUX_UNNAMED_TMPFILE
+    if (!fileName.isEmpty() || !fileEngine)
+        return;
+
+    auto *tef = static_cast<QTemporaryFileEngine *>(fileEngine);
+    fileName = tef->fileName(QAbstractFileEngine::DefaultName);
+#endif
 }
 
 QString QTemporaryFilePrivate::defaultTemplateName()
@@ -617,6 +773,10 @@ void QTemporaryFile::setAutoRemove(bool b)
 QString QTemporaryFile::fileName() const
 {
     Q_D(const QTemporaryFile);
+    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine);
+    if (tef && tef->isReallyOpen())
+        const_cast<QTemporaryFilePrivate *>(d)->materializeUnnamedFile();
+
     if(d->fileName.isEmpty())
         return QString();
     return d->engine()->fileName(QAbstractFileEngine::DefaultName);
@@ -770,11 +930,10 @@ QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
 bool QTemporaryFile::open(OpenMode flags)
 {
     Q_D(QTemporaryFile);
-    if (!d->fileName.isEmpty()) {
-        if (static_cast<QTemporaryFileEngine*>(d->engine())->isReallyOpen()) {
-            setOpenMode(flags);
-            return true;
-        }
+    auto tef = static_cast<QTemporaryFileEngine *>(d->fileEngine);
+    if (tef && tef->isReallyOpen()) {
+        setOpenMode(flags);
+        return true;
     }
 
     // reset the engine state so it creates a new, unique file name from the template;
@@ -785,7 +944,11 @@ bool QTemporaryFile::open(OpenMode flags)
     d->resetFileEngine();
 
     if (QFile::open(flags)) {
-        d->fileName = d->fileEngine->fileName(QAbstractFileEngine::DefaultName);
+        tef = static_cast<QTemporaryFileEngine *>(d->fileEngine);
+        if (tef->isUnnamedFile())
+            d->fileName.clear();
+        else
+            d->fileName = tef->fileName(QAbstractFileEngine::DefaultName);
         return true;
     }
     return false;

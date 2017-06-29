@@ -556,7 +556,9 @@ bool
 QFile::rename(const QString &newName)
 {
     Q_D(QFile);
-    if (d->fileName.isEmpty()) {
+
+    // if this is a QTemporaryFile, the virtual fileName() call here may do something
+    if (fileName().isEmpty()) {
         qWarning("QFile::rename: Empty or null file name");
         return false;
     }
@@ -717,7 +719,7 @@ bool
 QFile::link(const QString &linkName)
 {
     Q_D(QFile);
-    if (d->fileName.isEmpty()) {
+    if (fileName().isEmpty()) {
         qWarning("QFile::link: Empty or null file name");
         return false;
     }
@@ -763,7 +765,7 @@ bool
 QFile::copy(const QString &newName)
 {
     Q_D(QFile);
-    if (d->fileName.isEmpty()) {
+    if (fileName().isEmpty()) {
         qWarning("QFile::copy: Empty or null file name");
         return false;
     }
