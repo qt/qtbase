@@ -10001,6 +10001,7 @@ void QWidget::hideEvent(QHideEvent *)
     \table
     \header \li Platform \li Event Type Identifier \li Message Type \li Result Type
     \row \li Windows \li "windows_generic_MSG" \li MSG * \li LRESULT
+    \row \li macOS \li "NSEvent" \li NSEvent * \li
     \endtable
 */
 

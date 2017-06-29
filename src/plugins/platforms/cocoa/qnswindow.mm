@@ -43,6 +43,7 @@
 #include "qcocoahelpers.h"
 #include "qcocoaeventdispatcher.h"
 
+#include <qpa/qwindowsysteminterface.h>
 #include <qoperatingsystemversion.h>
 
 static bool isMouseEvent(NSEvent *ev)
@@ -121,6 +122,12 @@ static bool isMouseEvent(NSEvent *ev)
     // come via events, but if they do there's no point in propagating them.
     if (!self.platformWindow)
         return;
+
+    const char *eventType = object_getClassName(theEvent);
+    if (QWindowSystemInterface::handleNativeEvent(self.platformWindow->window(),
+        QByteArray::fromRawData(eventType, qstrlen(eventType)), theEvent, nullptr)) {
+        return;
+    }
 
     [self.window superSendEvent:theEvent];
 
