@@ -319,6 +319,9 @@ qmetatype.o: $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp
 qcore_mac.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
+qcore_unix.o: $(SOURCE_PATH)/src/corelib/kernel/qcore_unix.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
 qoperatingsystemversion.o: $(SOURCE_PATH)/src/corelib/global/qoperatingsystemversion.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 

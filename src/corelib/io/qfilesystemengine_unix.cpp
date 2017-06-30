@@ -44,6 +44,7 @@
 #include "qfile.h"
 
 #include <QtCore/qoperatingsystemversion.h>
+#include <QtCore/private/qcore_unix_p.h>
 #include <QtCore/qvarlengtharray.h>
 
 #include <stdlib.h> // for realpath()
@@ -150,30 +151,8 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 //static
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data)
 {
-#if defined(__GLIBC__) && !defined(PATH_MAX)
-#define PATH_CHUNK_SIZE 256
-    char *s = 0;
-    int len = -1;
-    int size = PATH_CHUNK_SIZE;
-
-    while (1) {
-        s = (char *) ::realloc(s, size);
-        Q_CHECK_PTR(s);
-        len = ::readlink(link.nativeFilePath().constData(), s, size);
-        if (len < 0) {
-            ::free(s);
-            break;
-        }
-        if (len < size) {
-            break;
-        }
-        size *= 2;
-    }
-#else
-    char s[PATH_MAX+1];
-    int len = readlink(link.nativeFilePath().constData(), s, PATH_MAX);
-#endif
-    if (len > 0) {
+    QByteArray s = qt_readlink(link.nativeFilePath().constData());
+    if (s.length() > 0) {
         QString ret;
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             fillMetaData(link, data, QFileSystemMetaData::DirectoryType);
@@ -184,11 +163,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
             if (!ret.isEmpty() && !ret.endsWith(QLatin1Char('/')))
                 ret += QLatin1Char('/');
         }
-        s[len] = '\0';
-        ret += QFile::decodeName(QByteArray(s));
-#if defined(__GLIBC__) && !defined(PATH_MAX)
-        ::free(s);
-#endif
+        ret += QFile::decodeName(s);
 
         if (!ret.startsWith(QLatin1Char('/'))) {
             const QString linkFilePath = link.filePath();

@@ -94,7 +94,8 @@ SOURCES += \
            ../../xml/dom/qdom.cpp \
            ../../xml/sax/qxml.cpp
 
-unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
+unix:SOURCES += ../../corelib/kernel/qcore_unix.cpp \
+                ../../corelib/io/qfilesystemengine_unix.cpp \
                 ../../corelib/io/qfilesystemiterator_unix.cpp \
                 ../../corelib/io/qfsfileengine_unix.cpp
 

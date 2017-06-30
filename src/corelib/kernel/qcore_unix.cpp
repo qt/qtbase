@@ -50,6 +50,37 @@
 
 QT_BEGIN_NAMESPACE
 
+QByteArray qt_readlink(const char *path)
+{
+#ifndef PATH_MAX
+    // suitably large value that won't consume too much memory
+#  define PATH_MAX  1024*1024
+#endif
+
+    QByteArray buf(256, Qt::Uninitialized);
+
+    ssize_t len = ::readlink(path, buf.data(), buf.size());
+    while (len == buf.size()) {
+        // readlink(2) will fill our buffer and not necessarily terminate with NUL;
+        if (buf.size() >= PATH_MAX) {
+            errno = ENAMETOOLONG;
+            return QByteArray();
+        }
+
+        // double the size and try again
+        buf.resize(buf.size() * 2);
+        len = ::readlink(path, buf.data(), buf.size());
+    }
+
+    if (len == -1)
+        return QByteArray();
+
+    buf.resize(len);
+    return buf;
+}
+
+#ifndef QT_BOOTSTRAPPED
+
 #if QT_CONFIG(poll_pollts)
 #  define ppoll pollts
 #endif
@@ -120,5 +151,7 @@ int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout
         }
     }
 }
+
+#endif // QT_BOOTSTRAPPED
 
 QT_END_NAMESPACE

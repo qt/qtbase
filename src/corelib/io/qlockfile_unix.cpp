@@ -260,15 +260,15 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
 #elif defined(Q_OS_LINUX)
     if (!qt_haveLinuxProcfs())
         return QString();
+
     char exePath[64];
-    char buf[PATH_MAX + 1];
     sprintf(exePath, "/proc/%lld/exe", pid);
-    size_t len = (size_t)readlink(exePath, buf, sizeof(buf));
-    if (len >= sizeof(buf)) {
+
+    QByteArray buf = qt_readlink(exePath);
+    if (buf.isEmpty()) {
         // The pid is gone. Return some invalid process name to fail the test.
         return QStringLiteral("/ERROR/");
     }
-    buf[len] = 0;
     return QFileInfo(QFile::decodeName(buf)).fileName();
 #elif defined(Q_OS_HAIKU)
     thread_info info;

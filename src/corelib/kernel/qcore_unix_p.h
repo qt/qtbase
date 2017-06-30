@@ -55,6 +55,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qplatformdefs.h"
 #include "qatomic.h"
+#include "qbytearray.h"
 
 #ifndef Q_OS_UNIX
 # error "qcore_unix_p.h included on a non-Unix system"
@@ -339,6 +340,7 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 // in qelapsedtimer_mac.cpp or qtimestamp_unix.cpp
 timespec qt_gettime() Q_DECL_NOTHROW;
 void qt_nanosleep(timespec amount);
+QByteArray qt_readlink(const char *path);
 
 /* non-static */
 inline bool qt_haveLinuxProcfs()
