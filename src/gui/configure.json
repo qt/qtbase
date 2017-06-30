@@ -421,6 +421,12 @@
             "test": "unix/opengles31",
             "use": "opengl_es2"
         },
+        "opengles32": {
+            "label": "OpenGL ES 3.2",
+            "type": "compile",
+            "test": "unix/opengles32",
+            "use": "opengl_es2"
+        },
         "qpa_default_platform": {
             "label": "default QPA platform",
             "type": "qpaDefaultPlatform",
@@ -623,6 +629,14 @@
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_3_1" }
+            ]
+        },
+        "opengles32": {
+            "label": "OpenGL ES 3.2",
+            "condition": "features.opengles31 && tests.opengles32",
+            "output": [
+                "publicFeature",
+                { "type": "define", "name": "QT_OPENGL_ES_3_2" }
             ]
         },
         "opengl-desktop": {
@@ -1155,7 +1169,8 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                         },
                         "opengles2",
                         "opengles3",
-                        "opengles31"
+                        "opengles31",
+                        "opengles32"
                     ]
                 },
                 "vulkan",

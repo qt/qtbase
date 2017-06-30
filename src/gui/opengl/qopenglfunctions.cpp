@@ -2213,17 +2213,17 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 
 /*!
     \class QOpenGLExtraFunctions
-    \brief The QOpenGLExtraFunctions class provides cross-platform access to the OpenGL ES 3.0 and 3.1 API.
+    \brief The QOpenGLExtraFunctions class provides cross-platform access to the OpenGL ES 3.0, 3.1 and 3.2 API.
     \since 5.6
     \ingroup painting-3D
     \inmodule QtGui
 
-    This subclass of QOpenGLFunctions includes the OpenGL ES 3.0 and 3.1
-    functions. These will only work when an OpenGL ES 3.0 or 3.1 context, or an
+    This subclass of QOpenGLFunctions includes the OpenGL ES 3.0, 3.1 and 3.2
+    functions. These will only work when an OpenGL ES 3.x context, or an
     OpenGL context of a version containing the functions in question either in
-    core or as extension, is in use. This allows developing GLES 3.0 and 3.1
+    core or as extension, is in use. This allows developing GLES 3.x
     applications in a cross-platform manner: development can happen on a desktop
-    platform with OpenGL 3.x or 4.x, deploying to a real GLES 3.1 device later
+    platform with OpenGL 3.x or 4.x, deploying to a true GLES 3.x device later
     on will require no or minimal changes to the application.
 
     \note This class is different from the versioned OpenGL wrappers, for
@@ -4466,6 +4466,578 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 
     For more information, see the OpenGL ES 3.x documentation for
     \l{http://www.khronos.org/opengles/sdk/docs/man31/glVertexBindingDivisor.xml}{glVertexBindingDivisor()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBlendBarrier()
+
+    Convenience function that calls glBlendBarrier().
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendBarrier.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBlendEquationSeparatei(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
+
+    Convenience function that calls glBlendEquationSeparatei(\a buf, \a modeRGB, \a modeAlpha).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendEquationSeparatei.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBlendEquationi(GLuint buf, GLenum mode)
+
+    Convenience function that calls glBlendEquationi(\a buf, \a mode).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendEquationi.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBlendFuncSeparatei(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
+
+    Convenience function that calls glBlendFuncSeparatei(\a buf, \a srcRGB, \a dstRGB, \a srcAlpha, \a dstAlpha).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendFuncSeparatei.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glBlendFunci(GLuint buf, GLenum src, GLenum dst)
+
+    Convenience function that calls glBlendFunci(\a buf, \a src, \a dst).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendFunci.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glColorMaski(GLuint index, GLboolean r, GLboolean g, GLboolean b, GLboolean a)
+
+    Convenience function that calls glColorMaski(\a index, \a r, \a g, \a b, \a a).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glColorMaski.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth)
+
+    Convenience function that calls glCopyImageSubData(\a srcName, \a srcTarget, \a srcLevel, \a srcX, \a srcY, \a srcZ, \a dstName, \a dstTarget, \a dstLevel, \a dstX, \a dstY, \a dstZ, \a srcWidth, \a srcHeight, \a srcDepth).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glCopyImageSubData.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDebugMessageCallback(GLDEBUGPROC callback, const void * userParam)
+
+    Convenience function that calls glDebugMessageCallback(\a callback, \a userParam).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageCallback.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDebugMessageControl(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint * ids, GLboolean enabled)
+
+    Convenience function that calls glDebugMessageControl(\a source, \a type, \a severity, \a count, \a ids, \a enabled).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageControl.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDebugMessageInsert(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * buf)
+
+    Convenience function that calls glDebugMessageInsert(\a source, \a type, \a id, \a severity, \a length, \a buf).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageInsert.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDisablei(GLenum target, GLuint index)
+
+    Convenience function that calls glDisablei(\a target, \a index).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDisablei.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawElementsBaseVertex(GLenum mode, GLsizei count, GLenum type, const void * indices, GLint basevertex)
+
+    Convenience function that calls glDrawElementsBaseVertex(\a mode, \a count, \a type, \a indices, \a basevertex).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawElementsBaseVertex.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawElementsInstancedBaseVertex(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount, GLint basevertex)
+
+    Convenience function that calls glDrawElementsInstancedBaseVertex(\a mode, \a count, \a type, \a indices, \a instancecount, \a basevertex).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawElementsInstancedBaseVertex.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glDrawRangeElementsBaseVertex(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void * indices, GLint basevertex)
+
+    Convenience function that calls glDrawRangeElementsBaseVertex(\a mode, \a start, \a end, \a count, \a type, \a indices, \a basevertex).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawRangeElementsBaseVertex.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glEnablei(GLenum target, GLuint index)
+
+    Convenience function that calls glEnablei(\a target, \a index).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glEnablei.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glFramebufferTexture(GLenum target, GLenum attachment, GLuint texture, GLint level)
+
+    Convenience function that calls glFramebufferTexture(\a target, \a attachment, \a texture, \a level).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glFramebufferTexture.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetDebugMessageLog(GLuint count, GLsizei bufSize, GLenum* sources, GLenum* types, GLuint* ids, GLenum* severities, GLsizei* lengths, GLchar* messageLog)
+
+    Convenience function that calls glGetDebugMessageLog(\a count, \a bufSize, \a sources, \a types, \a ids, \a severities, \a lengths, \a messageLog).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetDebugMessageLog.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetGraphicsResetStatus()
+
+    Convenience function that calls glGetGraphicsResetStatus().
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetGraphicsResetStatus.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetObjectLabel(GLenum identifier, GLuint name, GLsizei bufSize, GLsizei* length, GLchar* label)
+
+    Convenience function that calls glGetObjectLabel(\a identifier, \a name, \a bufSize, \a length, \a label).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetObjectLabel.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetObjectPtrLabel(const void * ptr, GLsizei bufSize, GLsizei* length, GLchar* label)
+
+    Convenience function that calls glGetObjectPtrLabel(\a ptr, \a bufSize, \a length, \a label).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetObjectPtrLabel.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetPointerv(GLenum pname, void ** params)
+
+    Convenience function that calls glGetPointerv(\a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetPointerv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetSamplerParameterIiv(GLuint sampler, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetSamplerParameterIiv(\a sampler, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetSamplerParameterIiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetSamplerParameterIuiv(GLuint sampler, GLenum pname, GLuint* params)
+
+    Convenience function that calls glGetSamplerParameterIuiv(\a sampler, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetSamplerParameterIuiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetTexParameterIiv(GLenum target, GLenum pname, GLint* params)
+
+    Convenience function that calls glGetTexParameterIiv(\a target, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetTexParameterIiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetTexParameterIuiv(GLenum target, GLenum pname, GLuint* params)
+
+    Convenience function that calls glGetTexParameterIuiv(\a target, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetTexParameterIuiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetnUniformfv(GLuint program, GLint location, GLsizei bufSize, GLfloat* params)
+
+    Convenience function that calls glGetnUniformfv(\a program, \a location, \a bufSize, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformfv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetnUniformiv(GLuint program, GLint location, GLsizei bufSize, GLint* params)
+
+    Convenience function that calls glGetnUniformiv(\a program, \a location, \a bufSize, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glGetnUniformuiv(GLuint program, GLint location, GLsizei bufSize, GLuint* params)
+
+    Convenience function that calls glGetnUniformuiv(\a program, \a location, \a bufSize, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformuiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glIsEnabledi(GLenum target, GLuint index)
+
+    Convenience function that calls glIsEnabledi(\a target, \a index).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glIsEnabledi.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glMinSampleShading(GLfloat value)
+
+    Convenience function that calls glMinSampleShading(\a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glMinSampleShading.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glObjectLabel(GLenum identifier, GLuint name, GLsizei length, const GLchar * label)
+
+    Convenience function that calls glObjectLabel(\a identifier, \a name, \a length, \a label).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glObjectLabel.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glObjectPtrLabel(const void * ptr, GLsizei length, const GLchar * label)
+
+    Convenience function that calls glObjectPtrLabel(\a ptr, \a length, \a label).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glObjectPtrLabel.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glPatchParameteri(GLenum pname, GLint value)
+
+    Convenience function that calls glPatchParameteri(\a pname, \a value).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPatchParameteri.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glPopDebugGroup()
+
+    Convenience function that calls glPopDebugGroup().
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPopDebugGroup.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glPrimitiveBoundingBox(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat minW, GLfloat maxX, GLfloat maxY, GLfloat maxZ, GLfloat maxW)
+
+    Convenience function that calls glPrimitiveBoundingBox(\a minX, \a minY, \a minZ, \a minW, \a maxX, \a maxY, \a maxZ, \a maxW).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPrimitiveBoundingBox.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glPushDebugGroup(GLenum source, GLuint id, GLsizei length, const GLchar * message)
+
+    Convenience function that calls glPushDebugGroup(\a source, \a id, \a length, \a message).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPushDebugGroup.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glReadnPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei bufSize, void * data)
+
+    Convenience function that calls glReadnPixels(\a x, \a y, \a width, \a height, \a format, \a type, \a bufSize, \a data).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glReadnPixels.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glSamplerParameterIiv(GLuint sampler, GLenum pname, const GLint * param)
+
+    Convenience function that calls glSamplerParameterIiv(\a sampler, \a pname, \a param).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glSamplerParameterIiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glSamplerParameterIuiv(GLuint sampler, GLenum pname, const GLuint * param)
+
+    Convenience function that calls glSamplerParameterIuiv(\a sampler, \a pname, \a param).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glSamplerParameterIuiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexBuffer(GLenum target, GLenum internalformat, GLuint buffer)
+
+    Convenience function that calls glTexBuffer(\a target, \a internalformat, \a buffer).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexBuffer.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexBufferRange(GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size)
+
+    Convenience function that calls glTexBufferRange(\a target, \a internalformat, \a buffer, \a offset, \a size).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexBufferRange.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexParameterIiv(GLenum target, GLenum pname, const GLint * params)
+
+    Convenience function that calls glTexParameterIiv(\a target, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexParameterIiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexParameterIuiv(GLenum target, GLenum pname, const GLuint * params)
+
+    Convenience function that calls glTexParameterIuiv(\a target, \a pname, \a params).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexParameterIuiv.xml}{${NAME}()}.
+*/
+
+/*!
+    \fn void QOpenGLExtraFunctions::glTexStorage3DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations)
+
+    Convenience function that calls glTexStorage3DMultisample(\a target, \a samples, \a internalformat, \a width, \a height, \a depth, \a fixedsamplelocations).
+
+    This function is only available in OpenGL ES 3.x, or OpenGL 3.x or 4.x contexts. When running
+    with plain OpenGL, the function is only usable when the given profile and version contains the
+    function either in core or as an extension.
+
+    For more information, see the OpenGL ES 3.2 documentation for
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexStorage3DMultisample.xml}{${NAME}()}.
 */
 
 /*!

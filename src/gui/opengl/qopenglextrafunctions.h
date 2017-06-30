@@ -52,6 +52,11 @@
 #undef MemoryBarrier
 #endif
 
+// GLES build without having included gl32.h -> GLDEBUGPROC is still need for the protos, define it here
+#if defined(QT_OPENGL_ES_2) && !defined(QT_OPENGL_ES_3_2)
+typedef void (QOPENGLF_APIENTRYP  *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QOpenGLExtraFunctionsPrivate;
@@ -229,6 +234,50 @@ class QOpenGLExtraFunctionsPrivate;
 #undef glVertexAttribIFormat
 #undef glVertexAttribBinding
 #undef glVertexBindingDivisor
+
+#undef glBlendBarrier
+#undef glCopyImageSubData
+#undef glDebugMessageControl
+#undef glDebugMessageInsert
+#undef glDebugMessageCallback
+#undef glGetDebugMessageLog
+#undef glPushDebugGroup
+#undef glPopDebugGroup
+#undef glObjectLabel
+#undef glGetObjectLabel
+#undef glGetObjectPtrLabel
+#undef glGetPointerv
+#undef glEnablei
+#undef glDisablei
+#undef glBlendEquationi
+#undef glBlendEquationSeparatei
+#undef glBlendFunci
+#undef glBlendFuncSeparatei
+#undef glColorMaski
+#undef glIsEnabledi
+#undef glDrawElementsBaseVertex
+#undef glDrawRangeElementsBaseVertex
+#undef glDrawElementsInstancedBaseVertex
+#undef glFrameBufferTexture
+#undef glPrimitiveBoundingBox
+#undef glGetGraphicsResetStatus
+#undef glReadnPixels
+#undef glGetnUniformfv
+#undef glGetnUniformiv
+#undef glGetnUniformuiv
+#undef glMinSampleShading
+#undef glPatchParameteri
+#undef glTexParameterIiv
+#undef glTexParameterIuiv
+#undef glGetTexParameterIiv
+#undef glGetTexParameterIuiv
+#undef glSamplerParameterIiv
+#undef glSamplerParameterIuiv
+#undef glGetSamplerParameterIiv
+#undef glGetSamplerParameterIuiv
+#undef glTexBuffer
+#undef glTexBufferRange
+#undef glTexStorage3DMultisample
 
 class Q_GUI_EXPORT QOpenGLExtraFunctions : public QOpenGLFunctions
 {
@@ -414,6 +463,52 @@ public:
     void glVertexAttribIFormat(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset);
     void glVertexAttribBinding(GLuint attribindex, GLuint bindingindex);
     void glVertexBindingDivisor(GLuint bindingindex, GLuint divisor);
+
+    // GLES 3.2
+    void glBlendBarrier(void);
+    void glCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth);
+    void glDebugMessageControl(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
+    void glDebugMessageInsert(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *buf);
+    void glDebugMessageCallback(GLDEBUGPROC callback, const void *userParam);
+    GLuint glGetDebugMessageLog(GLuint count, GLsizei bufSize, GLenum *sources, GLenum *types, GLuint *ids, GLenum *severities, GLsizei *lengths, GLchar *messageLog);
+    void glPushDebugGroup(GLenum source, GLuint id, GLsizei length, const GLchar *message);
+    void glPopDebugGroup(void);
+    void glObjectLabel(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
+    void glGetObjectLabel(GLenum identifier, GLuint name, GLsizei bufSize, GLsizei *length, GLchar *label);
+    void glObjectPtrLabel(const void *ptr, GLsizei length, const GLchar *label);
+    void glGetObjectPtrLabel(const void *ptr, GLsizei bufSize, GLsizei *length, GLchar *label);
+    void glGetPointerv(GLenum pname, void **params);
+    void glEnablei(GLenum target, GLuint index);
+    void glDisablei(GLenum target, GLuint index);
+    void glBlendEquationi(GLuint buf, GLenum mode);
+    void glBlendEquationSeparatei(GLuint buf, GLenum modeRGB, GLenum modeAlpha);
+    void glBlendFunci(GLuint buf, GLenum src, GLenum dst);
+    void glBlendFuncSeparatei(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
+    void glColorMaski(GLuint index, GLboolean r, GLboolean g, GLboolean b, GLboolean a);
+    GLboolean glIsEnabledi(GLenum target, GLuint index);
+    void glDrawElementsBaseVertex(GLenum mode, GLsizei count, GLenum type, const void *indices, GLint basevertex);
+    void glDrawRangeElementsBaseVertex(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void *indices, GLint basevertex);
+    void glDrawElementsInstancedBaseVertex(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex);
+    void glFramebufferTexture(GLenum target, GLenum attachment, GLuint texture, GLint level);
+    void glPrimitiveBoundingBox(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat minW, GLfloat maxX, GLfloat maxY, GLfloat maxZ, GLfloat maxW);
+    GLenum glGetGraphicsResetStatus(void);
+    void glReadnPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei bufSize, void *data);
+    void glGetnUniformfv(GLuint program, GLint location, GLsizei bufSize, GLfloat *params);
+    void glGetnUniformiv(GLuint program, GLint location, GLsizei bufSize, GLint *params);
+    void glGetnUniformuiv(GLuint program, GLint location, GLsizei bufSize, GLuint *params);
+    void glMinSampleShading(GLfloat value);
+    void glPatchParameteri(GLenum pname, GLint value);
+    void glTexParameterIiv(GLenum target, GLenum pname, const GLint *params);
+    void glTexParameterIuiv(GLenum target, GLenum pname, const GLuint *params);
+    void glGetTexParameterIiv(GLenum target, GLenum pname, GLint *params);
+    void glGetTexParameterIuiv(GLenum target, GLenum pname, GLuint *params);
+    void glSamplerParameterIiv(GLuint sampler, GLenum pname, const GLint *param);
+    void glSamplerParameterIuiv(GLuint sampler, GLenum pname, const GLuint *param);
+    void glGetSamplerParameterIiv(GLuint sampler, GLenum pname, GLint *params);
+    void glGetSamplerParameterIuiv(GLuint sampler, GLenum pname, GLuint *params);
+    void glTexBuffer(GLenum target, GLenum internalformat, GLuint buffer);
+    void glTexBufferRange(GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size);
+    void glTexStorage3DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
 
 private:
     static bool isInitialized(const QOpenGLExtraFunctionsPrivate *d) { return d != Q_NULLPTR; }
@@ -615,6 +710,50 @@ public:
     F(void, VertexAttribIFormat, (GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset)) \
     F(void, VertexAttribBinding, (GLuint attribindex, GLuint bindingindex)) \
     F(void, VertexBindingDivisor, (GLuint bindingindex, GLuint divisor)) \
+    F(void, BlendBarrier, (void)) \
+    F(void, BlendEquationSeparatei, (GLuint buf, GLenum modeRGB, GLenum modeAlpha)) \
+    F(void, BlendEquationi, (GLuint buf, GLenum mode))              \
+    F(void, BlendFuncSeparatei, (GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)) \
+    F(void, BlendFunci, (GLuint buf, GLenum src, GLenum dst)) \
+    F(void, ColorMaski, (GLuint index, GLboolean r, GLboolean g, GLboolean b, GLboolean a)) \
+    F(void, CopyImageSubData, (GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth)) \
+    F(void, DebugMessageCallback, (GLDEBUGPROC callback, const void * userParam)) \
+    F(void, DebugMessageControl, (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint * ids, GLboolean enabled)) \
+    F(void, DebugMessageInsert, (GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * buf)) \
+    F(void, Disablei, (GLenum target, GLuint index)) \
+    F(void, DrawElementsBaseVertex, (GLenum mode, GLsizei count, GLenum type, const void * indices, GLint basevertex)) \
+    F(void, DrawElementsInstancedBaseVertex, (GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount, GLint basevertex)) \
+    F(void, DrawRangeElementsBaseVertex, (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void * indices, GLint basevertex)) \
+    F(void, Enablei, (GLenum target, GLuint index)) \
+    F(void, FramebufferTexture, (GLenum target, GLenum attachment, GLuint texture, GLint level)) \
+    F(GLuint, GetDebugMessageLog, (GLuint count, GLsizei bufSize, GLenum* sources, GLenum* types, GLuint* ids, GLenum* severities, GLsizei* lengths, GLchar* messageLog)) \
+    F(GLenum, GetGraphicsResetStatus, (void)) \
+    F(void, GetObjectLabel, (GLenum identifier, GLuint name, GLsizei bufSize, GLsizei* length, GLchar* label)) \
+    F(void, GetObjectPtrLabel, (const void * ptr, GLsizei bufSize, GLsizei* length, GLchar* label)) \
+    F(void, GetPointerv, (GLenum pname, void ** params)) \
+    F(void, GetSamplerParameterIiv, (GLuint sampler, GLenum pname, GLint* params)) \
+    F(void, GetSamplerParameterIuiv, (GLuint sampler, GLenum pname, GLuint* params)) \
+    F(void, GetTexParameterIiv, (GLenum target, GLenum pname, GLint* params)) \
+    F(void, GetTexParameterIuiv, (GLenum target, GLenum pname, GLuint* params)) \
+    F(void, GetnUniformfv, (GLuint program, GLint location, GLsizei bufSize, GLfloat* params)) \
+    F(void, GetnUniformiv, (GLuint program, GLint location, GLsizei bufSize, GLint* params)) \
+    F(void, GetnUniformuiv, (GLuint program, GLint location, GLsizei bufSize, GLuint* params)) \
+    F(GLboolean, IsEnabledi, (GLenum target, GLuint index)) \
+    F(void, MinSampleShading, (GLfloat value)) \
+    F(void, ObjectLabel, (GLenum identifier, GLuint name, GLsizei length, const GLchar * label)) \
+    F(void, ObjectPtrLabel, (const void * ptr, GLsizei length, const GLchar * label)) \
+    F(void, PatchParameteri, (GLenum pname, GLint value)) \
+    F(void, PopDebugGroup, (void)) \
+    F(void, PrimitiveBoundingBox, (GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat minW, GLfloat maxX, GLfloat maxY, GLfloat maxZ, GLfloat maxW)) \
+    F(void, PushDebugGroup, (GLenum source, GLuint id, GLsizei length, const GLchar * message)) \
+    F(void, ReadnPixels, (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei bufSize, void * data)) \
+    F(void, SamplerParameterIiv, (GLuint sampler, GLenum pname, const GLint * param)) \
+    F(void, SamplerParameterIuiv, (GLuint sampler, GLenum pname, const GLuint * param)) \
+    F(void, TexBuffer, (GLenum target, GLenum internalformat, GLuint buffer)) \
+    F(void, TexBufferRange, (GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size)) \
+    F(void, TexParameterIiv, (GLenum target, GLenum pname, const GLint * params)) \
+    F(void, TexParameterIuiv, (GLenum target, GLenum pname, const GLuint * params)) \
+    F(void, TexStorage3DMultisample, (GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations)) \
 
     QT_OPENGL_DECLARE(QT_OPENGL_EXTRA_FUNCTIONS)
 };
@@ -2010,6 +2149,363 @@ inline void QOpenGLExtraFunctions::glVertexBindingDivisor(GLuint bindingindex, G
     Q_D(QOpenGLExtraFunctions);
     Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
     d->f.VertexBindingDivisor(bindingindex, divisor);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+// GLES 3.2
+
+inline void QOpenGLExtraFunctions::glBlendBarrier()
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.BlendBarrier();
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glBlendEquationSeparatei(GLuint buf, GLenum modeRGB, GLenum modeAlpha)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.BlendEquationSeparatei(buf, modeRGB, modeAlpha);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glBlendEquationi(GLuint buf, GLenum mode)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.BlendEquationi(buf, mode);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glBlendFuncSeparatei(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.BlendFuncSeparatei(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glBlendFunci(GLuint buf, GLenum src, GLenum dst)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.BlendFunci(buf, src, dst);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glColorMaski(GLuint index, GLboolean r, GLboolean g, GLboolean b, GLboolean a)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.ColorMaski(index, r, g, b, a);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.CopyImageSubData(srcName, srcTarget, srcLevel, srcX, srcY, srcZ, dstName, dstTarget, dstLevel, dstX, dstY, dstZ, srcWidth, srcHeight, srcDepth);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glDebugMessageCallback(GLDEBUGPROC callback, const void * userParam)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.DebugMessageCallback(callback, userParam);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glDebugMessageControl(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint * ids, GLboolean enabled)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.DebugMessageControl(source, type, severity, count, ids, enabled);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glDebugMessageInsert(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * buf)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.DebugMessageInsert(source, type, id, severity, length, buf);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glDisablei(GLenum target, GLuint index)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.Disablei(target, index);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glDrawElementsBaseVertex(GLenum mode, GLsizei count, GLenum type, const void * indices, GLint basevertex)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.DrawElementsBaseVertex(mode, count, type, indices, basevertex);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glDrawElementsInstancedBaseVertex(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount, GLint basevertex)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.DrawElementsInstancedBaseVertex(mode, count, type, indices, instancecount, basevertex);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glDrawRangeElementsBaseVertex(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void * indices, GLint basevertex)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.DrawRangeElementsBaseVertex(mode, start, end, count, type, indices, basevertex);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glEnablei(GLenum target, GLuint index)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.Enablei(target, index);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glFramebufferTexture(GLenum target, GLenum attachment, GLuint texture, GLint level)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.FramebufferTexture(target, attachment, texture, level);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline GLuint QOpenGLExtraFunctions::glGetDebugMessageLog(GLuint count, GLsizei bufSize, GLenum* sources, GLenum* types, GLuint* ids, GLenum* severities, GLsizei* lengths, GLchar* messageLog)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    GLuint result = d->f.GetDebugMessageLog(count, bufSize, sources, types, ids, severities, lengths, messageLog);
+    Q_OPENGL_FUNCTIONS_DEBUG
+    return result;
+}
+
+inline GLenum QOpenGLExtraFunctions::glGetGraphicsResetStatus()
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    GLenum result = d->f.GetGraphicsResetStatus();
+    Q_OPENGL_FUNCTIONS_DEBUG
+    return result;
+}
+
+inline void QOpenGLExtraFunctions::glGetObjectLabel(GLenum identifier, GLuint name, GLsizei bufSize, GLsizei* length, GLchar* label)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetObjectLabel(identifier, name, bufSize, length, label);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetObjectPtrLabel(const void * ptr, GLsizei bufSize, GLsizei* length, GLchar* label)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetObjectPtrLabel(ptr, bufSize, length, label);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetPointerv(GLenum pname, void ** params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetPointerv(pname, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetSamplerParameterIiv(GLuint sampler, GLenum pname, GLint* params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetSamplerParameterIiv(sampler, pname, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetSamplerParameterIuiv(GLuint sampler, GLenum pname, GLuint* params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetSamplerParameterIuiv(sampler, pname, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetTexParameterIiv(GLenum target, GLenum pname, GLint* params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetTexParameterIiv(target, pname, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetTexParameterIuiv(GLenum target, GLenum pname, GLuint* params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetTexParameterIuiv(target, pname, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetnUniformfv(GLuint program, GLint location, GLsizei bufSize, GLfloat* params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetnUniformfv(program, location, bufSize, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetnUniformiv(GLuint program, GLint location, GLsizei bufSize, GLint* params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetnUniformiv(program, location, bufSize, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glGetnUniformuiv(GLuint program, GLint location, GLsizei bufSize, GLuint* params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.GetnUniformuiv(program, location, bufSize, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline GLboolean QOpenGLExtraFunctions::glIsEnabledi(GLenum target, GLuint index)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    GLboolean result = d->f.IsEnabledi(target, index);
+    Q_OPENGL_FUNCTIONS_DEBUG
+    return result;
+}
+
+inline void QOpenGLExtraFunctions::glMinSampleShading(GLfloat value)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.MinSampleShading(value);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glObjectLabel(GLenum identifier, GLuint name, GLsizei length, const GLchar * label)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.ObjectLabel(identifier, name, length, label);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glObjectPtrLabel(const void * ptr, GLsizei length, const GLchar * label)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.ObjectPtrLabel(ptr, length, label);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glPatchParameteri(GLenum pname, GLint value)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.PatchParameteri(pname, value);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glPopDebugGroup()
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.PopDebugGroup();
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glPrimitiveBoundingBox(GLfloat minX, GLfloat minY, GLfloat minZ, GLfloat minW, GLfloat maxX, GLfloat maxY, GLfloat maxZ, GLfloat maxW)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.PrimitiveBoundingBox(minX, minY, minZ, minW, maxX, maxY, maxZ, maxW);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glPushDebugGroup(GLenum source, GLuint id, GLsizei length, const GLchar * message)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.PushDebugGroup(source, id, length, message);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glReadnPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei bufSize, void * data)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.ReadnPixels(x, y, width, height, format, type, bufSize, data);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glSamplerParameterIiv(GLuint sampler, GLenum pname, const GLint * param)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.SamplerParameterIiv(sampler, pname, param);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glSamplerParameterIuiv(GLuint sampler, GLenum pname, const GLuint * param)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.SamplerParameterIuiv(sampler, pname, param);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glTexBuffer(GLenum target, GLenum internalformat, GLuint buffer)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.TexBuffer(target, internalformat, buffer);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glTexBufferRange(GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.TexBufferRange(target, internalformat, buffer, offset, size);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glTexParameterIiv(GLenum target, GLenum pname, const GLint * params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.TexParameterIiv(target, pname, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glTexParameterIuiv(GLenum target, GLenum pname, const GLuint * params)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.TexParameterIuiv(target, pname, params);
+    Q_OPENGL_FUNCTIONS_DEBUG
+}
+
+inline void QOpenGLExtraFunctions::glTexStorage3DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations)
+{
+    Q_D(QOpenGLExtraFunctions);
+    Q_ASSERT(QOpenGLExtraFunctions::isInitialized(d));
+    d->f.TexStorage3DMultisample(target, samples, internalformat, width, height, depth, fixedsamplelocations);
     Q_OPENGL_FUNCTIONS_DEBUG
 }
 

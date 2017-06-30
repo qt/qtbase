@@ -101,7 +101,9 @@ typedef void* GLeglImageOES;
 #   define QGL_TEMP_GLEXT_PROTO
 #  endif
 
-#  if defined(QT_OPENGL_ES_3_1)
+#  if defined(QT_OPENGL_ES_3_2)
+#   include <GLES3/gl32.h>
+#  elif defined(QT_OPENGL_ES_3_1)
 #   include <GLES3/gl31.h>
 #  elif defined(QT_OPENGL_ES_3)
 #   include <GLES3/gl3.h>
