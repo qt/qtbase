@@ -2303,7 +2303,11 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
     QTest::newRow("include(): fail")
             << "include(include/nope.pri): OK = 1"
             << "OK = UNDEF"
+#ifdef Q_OS_WIN
+            << "Cannot read " + m_indir + "/include/nope.pri: The system cannot find the file specified."
+#else
             << "Cannot read " + m_indir + "/include/nope.pri: No such file or directory"
+#endif
             << true;
 
     QTest::newRow("include(): silent fail")
