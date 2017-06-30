@@ -39,6 +39,7 @@
 #include <qpainter.h>
 #include <qprintengine.h>
 #include <qpagelayout.h>
+#include <qtemporarydir.h>
 
 #include <math.h>
 
@@ -70,12 +71,9 @@ class tst_QPrinter : public QObject
 {
     Q_OBJECT
 
-public slots:
-#ifdef QT_NO_PRINTER
-    void initTestCase();
-    void cleanupTestCase();
-#else
 private slots:
+    void initTestCase();
+#if QT_CONFIG(printer)
     void testPageRectAndPaperRect();
     void testPageRectAndPaperRect_data();
     void testSetOptions();
@@ -134,19 +132,19 @@ private slots:
     void testPageMetrics_data();
     void testPageMetrics();
 #endif
+private:
+    QTemporaryDir m_tempDir;
 };
 
-#ifdef QT_NO_PRINTER
 void tst_QPrinter::initTestCase()
 {
+#if !QT_CONFIG(printer)
     QSKIP("This test requires printing support");
+#endif
+    QVERIFY2(m_tempDir.isValid(), qPrintable(m_tempDir.errorString()));
 }
 
-void tst_QPrinter::cleanupTestCase()
-{
-    QSKIP("This test requires printing support");
-}
-#else
+#if QT_CONFIG(printer)
 
 #define MYCOMPARE(a, b) QCOMPARE(QVariant((int)a), QVariant((int)b))
 
@@ -248,8 +246,9 @@ void tst_QPrinter::testPageRectAndPaperRect()
     QPainter *painter = 0;
     QPrinter printer(QPrinter::HighResolution);
     printer.setOrientation(QPrinter::Orientation(orientation));
-    printer.setOutputFileName("silly");
-    TempFileCleanup tmpFile("silly");
+    const QString fileName = m_tempDir.path() + QLatin1String("/silly");
+    printer.setOutputFileName(fileName);
+    TempFileCleanup tmpFile(fileName);
 
     QRect pageRect = doPaperRect ? printer.paperRect() : printer.pageRect();
     float inchesX = float(pageRect.width()) / float(printer.resolution());
@@ -421,8 +420,9 @@ void tst_QPrinter::outputFormatFromSuffix()
         QSKIP("No printers available.");
     QPrinter p;
     QCOMPARE(p.outputFormat(), QPrinter::NativeFormat);
-    p.setOutputFileName("test.pdf");
-    TempFileCleanup tmpFile("test.pdf");
+    const QString fileName = m_tempDir.path() + QLatin1String("/test.pdf");
+    p.setOutputFileName(fileName);
+    TempFileCleanup tmpFile(fileName);
     QCOMPARE(p.outputFormat(), QPrinter::PdfFormat);
     p.setOutputFileName(QString());
     QCOMPARE(p.outputFormat(), QPrinter::NativeFormat);
@@ -510,8 +510,9 @@ void tst_QPrinter::errorReporting()
     p.setOutputFileName("/foobar/nonwritable.pdf");
     QCOMPARE(painter.begin(&p), false); // it should check the output file is writable
 #endif
-    p.setOutputFileName("test.pdf");
-    TempFileCleanup tmpFile("test.pdf");
+    const QString fileName = m_tempDir.path() + QLatin1String("/test.pdf");
+    p.setOutputFileName(fileName);
+    TempFileCleanup tmpFile(fileName);
     QCOMPARE(painter.begin(&p), true); // it should check the output
     QCOMPARE(p.isValid(), true);
     painter.end();
@@ -626,28 +627,30 @@ static void printPage(QPainter *painter)
 
 void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
 {
-    TempFileCleanup tmpFile1("out1.pdf");
-    TempFileCleanup tmpFile2("out2.pdf");
+    const QString fileName1 = m_tempDir.path() + QLatin1String("/out1.pdf");
+    const QString fileName2 = m_tempDir.path() + QLatin1String("/out2.pdf");
+    TempFileCleanup tmpFile1(fileName1);
+    TempFileCleanup tmpFile2(fileName2);
 
     QPrinter printer;
     {
 
-        printer.setOutputFileName("out1.pdf");
+        printer.setOutputFileName(fileName1);
         QPainter painter(&printer);
         printPage(&painter);
 
     }
     {
 
-        printer.setOutputFileName("out2.pdf");
+        printer.setOutputFileName(fileName2);
         QPainter painter(&printer);
         printPage(&painter);
 
     }
-    QFile file1("out1.pdf");
+    QFile file1(fileName1);
     QVERIFY(file1.open(QIODevice::ReadOnly));
 
-    QFile file2("out2.pdf");
+    QFile file2(fileName2);
     QVERIFY(file2.open(QIODevice::ReadOnly));
 
     while (!file1.atEnd() && !file2.atEnd()) {
@@ -686,6 +689,8 @@ void tst_QPrinter::testCurrentPage()
 
 void tst_QPrinter::testPdfTitle()
 {
+    const QString fileName = m_tempDir.path() + QLatin1String("/file.pdf");
+
     // Check the document name is represented correctly in produced pdf
     {
         QPainter painter;
@@ -693,13 +698,13 @@ void tst_QPrinter::testPdfTitle()
         // This string is just the UTF-8 encoding of the string: \()f &oslash; hiragana o
         const unsigned char titleBuf[]={0x5c, 0x28, 0x29, 0x66, 0xc3, 0xb8, 0xe3, 0x81, 0x8a, 0x00};
         const char *title = reinterpret_cast<const char*>(titleBuf);
-        printer.setOutputFileName("file.pdf");
+        printer.setOutputFileName(fileName);
         printer.setDocName(QString::fromUtf8(title));
         painter.begin(&printer);
         painter.end();
     }
-    TempFileCleanup tmpFile("file.pdf");
-    QFile file("file.pdf");
+    TempFileCleanup tmpFile(fileName);
+    QFile file(fileName);
     QVERIFY(file.open(QIODevice::ReadOnly));
     // The we expect the title to appear in the PDF as:
     // ASCII('\title (') UTF16(\\\(\)f &oslash; hiragana o) ASCII(')').
@@ -1955,7 +1960,7 @@ void tst_QPrinter::testPageMetrics()
     QCOMPARE(printer.pageRect(QPrinter::Millimeter), QRectF(leftMMf, topMMf, heightMMf - leftMMf - rightMMf, widthMMf - topMMf - bottomMMf));
 }
 
-#endif // QT_NO_PRINTER
+#endif // QT_CONFIG(printer)
 
 QTEST_MAIN(tst_QPrinter)
 #include "tst_qprinter.moc"
