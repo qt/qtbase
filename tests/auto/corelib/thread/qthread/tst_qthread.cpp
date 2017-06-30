@@ -47,6 +47,8 @@
 #endif
 #endif
 
+#include "emulationdetector.h"
+
 class tst_QThread : public QObject
 {
     Q_OBJECT
@@ -937,6 +939,9 @@ void tst_QThread::adoptMultipleThreadsOverlap()
 // Disconnects on WinCE
 void tst_QThread::stressTest()
 {
+    if (EmulationDetector::isRunningArmOnX86())
+        QSKIP("Qemu uses too much memory for each thread. Test would run out of memory.");
+
     QTime t;
     t.start();
     while (t.elapsed() < one_minute) {
