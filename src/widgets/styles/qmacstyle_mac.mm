@@ -242,7 +242,7 @@ static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
 }
 
 
-void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pressed)
+static void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pressed, bool documentMode)
 {
     p->setRenderHints(QPainter::Antialiasing);
     QRect rect(0, 0, closeButtonSize, closeButtonSize);
@@ -253,10 +253,16 @@ void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pressed)
         // draw background circle
         QColor background;
         if (selected) {
-            background = pressed ? tabBarCloseButtonBackgroundSelectedPressed : tabBarCloseButtonBackgroundSelectedHovered;
+            if (documentMode)
+                background = pressed ? tabBarCloseButtonBackgroundSelectedPressed : tabBarCloseButtonBackgroundSelectedHovered;
+            else
+                background = QColor(255, 255, 255, pressed ? 150 : 100); // Translucent white
         } else {
             background = pressed ? tabBarCloseButtonBackgroundPressed : tabBarCloseButtonBackgroundHovered;
+            if (!documentMode)
+                background = background.lighter(pressed ? 135 : 140); // Lighter tab background, lighter color
         }
+
         p->setPen(Qt::transparent);
         p->setBrush(background);
         p->drawRoundedRect(rect, closeButtonCornerRadius, closeButtonCornerRadius);
@@ -265,7 +271,7 @@ void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pressed)
     // draw cross
     const int margin = 3;
     QPen crossPen;
-    crossPen.setColor(selected ? tabBarCloseButtonCrossSelected : tabBarCloseButtonCross);
+    crossPen.setColor(selected ? (documentMode ? tabBarCloseButtonCrossSelected : Qt::white) : tabBarCloseButtonCross);
     crossPen.setWidthF(1.1);
     crossPen.setCapStyle(Qt::FlatCap);
     p->setPen(crossPen);
@@ -3551,14 +3557,16 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorTabClose: {
         // Make close button visible only on the hovered tab.
         if (QTabBar *tabBar = qobject_cast<QTabBar*>(w->parentWidget())) {
+            const bool documentMode = tabBar->documentMode();
             const QTabBarPrivate *tabBarPrivate = static_cast<QTabBarPrivate *>(QObjectPrivate::get(tabBar));
             const int hoveredTabIndex = tabBarPrivate->hoveredTabIndex();
-            if (hoveredTabIndex != -1 && ((w == tabBar->tabButton(hoveredTabIndex, QTabBar::LeftSide)) ||
-                                          (w == tabBar->tabButton(hoveredTabIndex, QTabBar::RightSide)))) {
+            if (!documentMode ||
+                (hoveredTabIndex != -1 && ((w == tabBar->tabButton(hoveredTabIndex, QTabBar::LeftSide)) ||
+                                           (w == tabBar->tabButton(hoveredTabIndex, QTabBar::RightSide))))) {
                 const bool hover = (opt->state & State_MouseOver);
                 const bool selected = (opt->state & State_Selected);
                 const bool pressed = (opt->state & State_Sunken);
-                drawTabCloseButton(p, hover, selected, pressed);
+                drawTabCloseButton(p, hover, selected, pressed, documentMode);
             }
         }
         } break;
