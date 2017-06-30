@@ -252,7 +252,7 @@ qint64 QFSFileEnginePrivate::nativeSize() const
         filled = doStat(QFileSystemMetaData::SizeAttribute);
 
     if (!filled) {
-        thatQ->setError(QFile::UnspecifiedError, qt_error_string(errno));
+        thatQ->setError(QFile::UnspecifiedError, QSystemError::stdString());
         return 0;
     }
     return metaData.size();
@@ -319,7 +319,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 maxlen)
     if (fh || fd != -1) {
         // stdio / stdlib mode.
         if (fh && nativeIsSequential() && feof(fh)) {
-            q->setError(QFile::ReadError, qt_error_string(int(errno)));
+            q->setError(QFile::ReadError, QSystemError::stdString());
             return -1;
         }
 

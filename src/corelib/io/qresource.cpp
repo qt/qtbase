@@ -53,6 +53,7 @@
 #include <qshareddata.h>
 #include <qplatformdefs.h>
 #include "private/qabstractfileengine_p.h"
+#include "private/qsystemerror_p.h"
 
 #ifdef Q_OS_UNIX
 # include "private/qcore_unix_p.h"
@@ -1284,7 +1285,7 @@ bool QResourceFileEngine::open(QIODevice::OpenMode flags)
         return false;
     d->uncompress();
     if (!d->resource.isValid()) {
-        d->errorString = qt_error_string(ENOENT);
+        d->errorString = QSystemError::stdString(ENOENT);
         return false;
     }
     return true;
