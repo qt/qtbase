@@ -199,7 +199,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     }
 
     if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size()) {
-        close(fd);
+        qt_safe_close(fd);
         if (!QFile::remove(fileName))
             qWarning("QLockFile: Could not remove our own lock file %s.", qPrintable(fileName));
         return QLockFile::UnknownError; // partition full
@@ -258,7 +258,7 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     proc_name(pid, name, sizeof(name) / sizeof(char));
     return QFile::decodeName(name);
 #elif defined(Q_OS_LINUX)
-    if (!QFile::exists(QStringLiteral("/proc/version")))
+    if (!qt_haveLinuxProcfs())
         return QString();
     char exePath[64];
     char buf[PATH_MAX + 1];

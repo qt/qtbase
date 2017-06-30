@@ -340,6 +340,21 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 timespec qt_gettime() Q_DECL_NOTHROW;
 void qt_nanosleep(timespec amount);
 
+/* non-static */
+inline bool qt_haveLinuxProcfs()
+{
+#ifdef Q_OS_LINUX
+#  ifdef QT_LINUX_ALWAYS_HAVE_PROCFS
+    return true;
+#  else
+    static const bool present = (access("/proc/version", F_OK) == 0);
+    return present;
+#  endif
+#else
+    return false;
+#endif
+}
+
 Q_CORE_EXPORT int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout_ts);
 
 static inline int qt_poll_msecs(struct pollfd *fds, nfds_t nfds, int timeout)
