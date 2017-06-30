@@ -434,7 +434,7 @@
     "features": {
         "accessibility-atspi-bridge": {
             "label": "ATSPI Bridge",
-            "condition": "features.accessibility && features.xcb && features.dbus && config.atspi",
+            "condition": "features.accessibility && features.xcb && features.dbus && libs.atspi",
             "output": [ "privateFeature", "feature" ]
         },
         "angle": {
