@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -49,6 +50,7 @@
 #include "private/qfile_p.h"
 #include "private/qfilesystemengine_p.h"
 #include "private/qsystemerror_p.h"
+#include "private/qtemporaryfile_p.h"
 #if defined(QT_BUILD_CORE_LIB)
 # include "qcoreapplication.h"
 #endif
@@ -581,37 +583,44 @@ QFile::rename(const QString &newName)
             d->setError(QFile::RenameError, tr("Destination file exists"));
             return false;
         }
-#ifndef QT_NO_TEMPORARYFILE
-        // This #ifndef disables the workaround it encloses. Therefore, this configuration is not recommended.
+
 #ifdef Q_OS_LINUX
         // rename() on Linux simply does nothing when renaming "foo" to "Foo" on a case-insensitive
         // FS, such as FAT32. Move the file away and rename in 2 steps to work around.
-        QTemporaryFile tempFile(d->fileName + QLatin1String(".XXXXXX"));
-        tempFile.setAutoRemove(false);
-        if (!tempFile.open(QIODevice::ReadWrite)) {
-            d->setError(QFile::RenameError, tempFile.errorString());
-            return false;
-        }
-        tempFile.close();
-        if (!d->engine()->renameOverwrite(tempFile.fileName())) {
-            d->setError(QFile::RenameError, tr("Error while renaming."));
-            return false;
-        }
-        if (tempFile.rename(newName)) {
-            d->fileEngine->setFileName(newName);
-            d->fileName = newName;
-            return true;
-        }
-        d->setError(QFile::RenameError, tempFile.errorString());
-        // We need to restore the original file.
-        if (!tempFile.rename(d->fileName)) {
-            d->setError(QFile::RenameError, errorString() + QLatin1Char('\n')
+        QTemporaryFileName tfn(d->fileName);
+        QFileSystemEntry src(d->fileName);
+        QSystemError error;
+        for (int attempt = 0; attempt < 16; ++attempt) {
+            QFileSystemEntry tmp(tfn.generateNext(), QFileSystemEntry::FromNativePath());
+
+            // rename to temporary name
+            if (!QFileSystemEngine::renameFile(src, tmp, error))
+                continue;
+
+            // rename to final name
+            if (QFileSystemEngine::renameFile(tmp, QFileSystemEntry(newName), error)) {
+                d->fileEngine->setFileName(newName);
+                d->fileName = newName;
+                return true;
+            }
+
+            // We need to restore the original file.
+            QSystemError error2;
+            if (QFileSystemEngine::renameFile(tmp, src, error2))
+                break;      // report the original error, below
+
+            // report both errors
+            d->setError(QFile::RenameError,
+                        tr("Error while renaming: %1").arg(error.toString())
+                        + QLatin1Char('\n')
                         + tr("Unable to restore from %1: %2").
-                        arg(QDir::toNativeSeparators(tempFile.fileName()), tempFile.errorString()));
+                        arg(QDir::toNativeSeparators(tmp.filePath()), error2.toString()));
+            return false;
         }
+        d->setError(QFile::RenameError,
+                    tr("Error while renaming: %1").arg(error.toString()));
         return false;
 #endif // Q_OS_LINUX
-#endif // QT_NO_TEMPORARYFILE
     }
     unsetError();
     close();
