@@ -261,7 +261,7 @@
             "label": "XCB Xlib",
             "test": "qpa/xcb-xlib",
             "sources": [
-                { "type": "pkgConfig", "args": "X11-xcb x11 xcb" },
+                { "type": "pkgConfig", "args": "x11-xcb x11 xcb" },
                 "-lxcb -lX11 -lX11-xcb"
             ]
         },
