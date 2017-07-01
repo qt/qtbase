@@ -421,7 +421,7 @@ QFile::exists() const
     Q_D(const QFile);
     // 0x1000000 = QAbstractFileEngine::Refresh, forcing an update
     return (d->engine()->fileFlags(QAbstractFileEngine::FlagsMask
-                                    | QAbstractFileEngine::FileFlag(0x1000000)) & QAbstractFileEngine::ExistsFlag);
+                                    | QAbstractFileEngine::Refresh) & QAbstractFileEngine::ExistsFlag);
 }
 
 /*!

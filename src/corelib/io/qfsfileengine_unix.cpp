@@ -495,11 +495,14 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
                     | QFileSystemMetaData::LinkType
                     | QFileSystemMetaData::FileType
                     | QFileSystemMetaData::DirectoryType
-                    | QFileSystemMetaData::BundleType;
+                    | QFileSystemMetaData::BundleType
+                    | QFileSystemMetaData::WasDeletedAttribute;
 
         if (type & FlagsMask)
             queryFlags |= QFileSystemMetaData::HiddenAttribute
                     | QFileSystemMetaData::ExistsAttribute;
+        else if (type & ExistsFlag)
+            queryFlags |= QFileSystemMetaData::WasDeletedAttribute;
 
         queryFlags |= QFileSystemMetaData::LinkType;
 
@@ -531,7 +534,8 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     }
 
     if (type & FlagsMask) {
-        if (exists)
+        // the inode existing does not mean the file exists
+        if (!d->metaData.wasDeleted())
             ret |= ExistsFlag;
         if (d->fileEntry.isRoot())
             ret |= RootFlag;

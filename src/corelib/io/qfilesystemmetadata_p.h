@@ -120,9 +120,14 @@ public:
         // Attributes
         HiddenAttribute     = 0x00100000,
         SizeAttribute       = 0x00200000,   // Note: overlaps with QAbstractFileEngine::LocalDiskFlag
-        ExistsAttribute     = 0x00400000,
+        ExistsAttribute     = 0x00400000,   // For historical reasons, indicates existence of data, not the file
+#if defined(Q_OS_WIN)
+        WasDeletedAttribute =        0x0,
+#else
+        WasDeletedAttribute = 0x40000000,   // Indicates the file was deleted
+#endif
 
-        Attributes          = HiddenAttribute | SizeAttribute | ExistsAttribute,
+        Attributes          = HiddenAttribute | SizeAttribute | ExistsAttribute | WasDeletedAttribute,
 
         // Times
         CreationTime        = 0x01000000,   // Note: overlaps with QAbstractFileEngine::Refresh
@@ -144,6 +149,7 @@ public:
                             | QFileSystemMetaData::DirectoryType
                             | QFileSystemMetaData::SequentialType
                             | QFileSystemMetaData::SizeAttribute
+                            | QFileSystemMetaData::WasDeletedAttribute
                             | QFileSystemMetaData::Times
                             | QFileSystemMetaData::OwnerIds,
 
@@ -191,6 +197,7 @@ public:
     bool isLegacyLink() const               { return (entryFlags & LegacyLinkType); }
     bool isSequential() const               { return (entryFlags & SequentialType); }
     bool isHidden() const                   { return (entryFlags & HiddenAttribute); }
+    bool wasDeleted() const                 { return (entryFlags & WasDeletedAttribute); }
 #if defined(Q_OS_WIN)
     bool isLnkFile() const                  { return (entryFlags & WinLnkType); }
 #else

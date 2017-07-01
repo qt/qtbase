@@ -741,6 +741,8 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     }
     if (type & FlagsMask) {
         if (d->metaData.exists()) {
+            // if we succeeded in querying, then the file exists: a file on
+            // Windows cannot be deleted if we have an open handle to it
             ret |= ExistsFlag;
             if (d->fileEntry.isRoot())
                 ret |= RootFlag;

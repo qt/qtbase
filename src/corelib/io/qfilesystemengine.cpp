@@ -281,7 +281,9 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
         entryFlags |= QFileSystemMetaData::SequentialType;
 
     // Attributes
-    entryFlags |= QFileSystemMetaData::ExistsAttribute;
+    entryFlags |= QFileSystemMetaData::ExistsAttribute; // inode exists
+    if (statBuffer.st_nlink == 0)
+        entryFlags |= QFileSystemMetaData::WasDeletedAttribute;
     size_ = statBuffer.st_size;
 #if defined(Q_OS_DARWIN)
     if (statBuffer.st_flags & UF_HIDDEN) {
