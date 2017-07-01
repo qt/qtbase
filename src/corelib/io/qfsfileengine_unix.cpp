@@ -725,7 +725,6 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
 #endif
 
     Q_Q(QFSFileEngine);
-    Q_UNUSED(flags);
     if (openMode == QIODevice::NotOpen) {
         q->setError(QFile::PermissionsError, qt_error_string(int(EACCES)));
         return 0;
