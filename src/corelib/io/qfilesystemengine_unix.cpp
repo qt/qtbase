@@ -157,7 +157,7 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 }
 #endif
 
-#if !QT_CONFIG(futimens) && (QT_CONFIG(futimes) || QT_CONFIG(futimesat))
+#if !QT_CONFIG(futimens) && (QT_CONFIG(futimes))
 namespace {
 namespace GetFileTimes {
 
@@ -873,7 +873,7 @@ bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractF
     }
 
     return true;
-#elif QT_CONFIG(futimes) || QT_CONFIG(futimesat)
+#elif QT_CONFIG(futimes)
     struct timeval tv[2];
     QT_STATBUF st;
 
@@ -894,11 +894,7 @@ bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractF
         tv[1].tv_usec = (msecs % 1000) * 1000;
     }
 
-#if QT_CONFIG(futimes)
     if (futimes(fd, tv) == -1) {
-#else
-    if (futimesat(fd, NULL, tv) == -1) {
-#endif
         error = QSystemError(errno, QSystemError::StandardLibraryError);
         return false;
     }

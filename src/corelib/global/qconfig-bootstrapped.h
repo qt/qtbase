@@ -83,7 +83,6 @@
 #define QT_FEATURE_journald -1
 #define QT_FEATURE_futimens -1
 #define QT_FEATURE_futimes -1
-#define QT_FEATURE_futimesat -1
 #define QT_FEATURE_library -1
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1

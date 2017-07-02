@@ -279,11 +279,6 @@
             "type": "compile",
             "test": "unix/futimes"
         },
-        "futimesat": {
-            "label": "futimesat()",
-            "type": "compile",
-            "test": "unix/futimesat"
-        },
         "getauxval": {
             "label": "getauxval()",
             "type": "compile",
@@ -452,11 +447,6 @@
         "futimes": {
             "label": "futimes()",
             "condition": "!config.win32 && !features.futimens && tests.futimes",
-            "output": [ "privateFeature" ]
-        },
-        "futimesat": {
-            "label": "futimesat()",
-            "condition": "!config.win32 && !features.futimens && !features.futimes && tests.futimesat",
             "output": [ "privateFeature" ]
         },
         "getauxval": {
