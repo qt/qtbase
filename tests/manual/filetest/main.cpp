@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include <QDateTime>
 #include <QDebug>
 #include <QCoreApplication>
 #include <QFileInfo>
@@ -40,11 +41,24 @@ static const char usage1[] =
 "Usage: ";
 static const char usage2[] =" [KEYWORD] [ARGUMENTS]\n\n"
 "Keywords: ls  FILES             list file information\n"
+"          stat FILES            print detailed file information\n"
 "          mv  SOURCE TARGET     rename files using QFile::rename\n"
 "          cp  SOURCE TARGET     copy files using QFile::copy\n"
 "          rm  FILE              remove file using QFile::remove\n"
 "          rmr DIR               remove directory recursively\n"
 "                                using QDir::removeRecursively\n";
+
+std::ostream &operator<<(std::ostream &o, const QString &str)
+{
+    return o << qPrintable(str);
+}
+
+std::ostream &operator<<(std::ostream &o, const QDateTime &dt)
+{
+    if (dt.isValid())
+        return o << dt.toString(Qt::ISODateWithMs);
+    return o << '-';
+}
 
 static inline std::string permissions(QFile::Permissions permissions)
 {
@@ -102,6 +116,44 @@ static int ls(int argCount, char **args)
     return 0;
 }
 
+static int stat(int argCount, char **args)
+{
+    for (int i = 0 ; i < argCount; ++i) {
+        const QFileInfo fi(QFile::decodeName(args[i]));
+        std::cout << "Name:\t" << fi.fileName() << std::endl;
+        std::cout << "Path:\t" << QDir::toNativeSeparators(fi.path())
+                  << " (" << QDir::toNativeSeparators(fi.absolutePath()) << ')' << std::endl;
+        std::cout << "Size:\t" << fi.size()
+                  << "\tType: "
+                  << (fi.isSymLink() && !fi.exists() ? "Broken symlink" :
+                      !fi.exists() ? "Non-existent" :
+                      fi.isSymLink() ? "Symlink to " : "")
+                  << (!fi.exists() ? "" :
+                      fi.isFile() ? "Regular file" :
+                      fi.isDir() ? "Directory" : "Special node")
+                  << std::endl;
+        if (fi.isSymLink())
+            std::cout << "Target:\t" << fi.symLinkTarget() << std::endl;
+        std::cout << "Attrs:  "
+                  << (fi.isReadable() ? " readable" : "")
+                  << (fi.isWritable() ? " writable" : "")
+                  << (fi.isExecutable() ? " executable" : "")
+                  << (fi.isHidden() ? " hidden" : "")
+                  << (fi.isNativePath() ? " nativepath" : "")
+                  << (fi.isRoot() ? " root" : "")
+                  << (fi.isBundle() ? " bundle" : "")
+                  << std::endl;
+        std::cout << "Mode:\t" << permissions(fi) << std::endl;
+        std::cout << "Owner:\t" << fi.owner() << " (" << fi.ownerId()
+                  << ")\tGroup:\t" << fi.group() << " ("  << fi.groupId() << ')' << std::endl;
+        std::cout << "Access:\t" << fi.lastRead() << std::endl;
+        std::cout << "Birth:\t" << fi.birthTime() << std::endl;
+        std::cout << "Change:\t" << fi.metadataChangeTime() << std::endl;
+        std::cout << "Modified: " << fi.lastModified() << std::endl;
+    }
+    return 0;
+}
+
 static int mv(const char *sourceFileName, const char *targetFileName)
 {
     QFile sourceFile(QString::fromLocal8Bit(sourceFileName));
@@ -154,6 +206,9 @@ int main(int argc, char *argv[])
     Q_UNUSED(a)
     if (argc >= 3 && !qstrcmp(argv[1], "ls"))
         return ls(argc -2, argv + 2);
+
+    if (argc >= 3 && !qstrcmp(argv[1], "stat"))
+        return stat(argc -2, argv + 2);
 
     if (argc == 4 && !qstrcmp(argv[1], "mv"))
         return mv(argv[2], argv[3]);

@@ -157,10 +157,9 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 }
 #endif
 
-#if !QT_CONFIG(futimens) && (QT_CONFIG(futimes))
 namespace {
 namespace GetFileTimes {
-
+#if !QT_CONFIG(futimens) && (QT_CONFIG(futimes))
 template <typename T>
 static inline typename QtPrivate::QEnableIf<(&T::st_atim, &T::st_mtim, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
 {
@@ -190,10 +189,85 @@ static inline typename QtPrivate::QEnableIf<(&T::st_atimensec, &T::st_mtimensec,
     modification->tv_sec = p->st_mtime;
     modification->tv_usec = p->st_mtimensec / 1000;
 }
-
-}
-}
 #endif
+
+qint64 timespecToMSecs(const timespec &spec)
+{
+    return (qint64(spec.tv_sec) * 1000) + (spec.tv_nsec / 1000000);
+}
+
+// fallback set
+Q_DECL_UNUSED qint64 atime(const QT_STATBUF &statBuffer, ulong) { return qint64(statBuffer.st_atime) * 1000; }
+Q_DECL_UNUSED qint64 birthtime(const QT_STATBUF &, ulong)       { return Q_INT64_C(0); }
+Q_DECL_UNUSED qint64 ctime(const QT_STATBUF &statBuffer, ulong) { return qint64(statBuffer.st_ctime) * 1000; }
+Q_DECL_UNUSED qint64 mtime(const QT_STATBUF &statBuffer, ulong) { return qint64(statBuffer.st_mtime) * 1000; }
+
+// Xtim, POSIX.1-2008
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_atim, true), qint64>::type
+atime(const T &statBuffer, int)
+{ return timespecToMSecs(statBuffer.st_atim); }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_birthtim, true), qint64>::type
+birthtime(const T &statBuffer, int)
+{ return timespecToMSecs(statBuffer.st_birthtim); }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_ctim, true), qint64>::type
+ctime(const T &statBuffer, int)
+{ return timespecToMSecs(statBuffer.st_ctim); }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_mtim, true), qint64>::type
+mtime(const T &statBuffer, int)
+{ return timespecToMSecs(statBuffer.st_mtim); }
+
+#ifndef st_mtimespec
+// Xtimespec
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_atimespec, true), qint64>::type
+atime(const T &statBuffer, int)
+{ return timespecToMSecs(statBuffer.st_atimespec); }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_birthtimespec, true), qint64>::type
+birthtime(const T &statBuffer, int)
+{ return timespecToMSecs(statBuffer.st_birthtimespec); }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_ctimespec, true), qint64>::type
+ctime(const T &statBuffer, int)
+{ return timespecToMSecs(statBuffer.st_ctimespec); }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_mtimespec, true), qint64>::type
+mtime(const T &statBuffer, int)
+{ return timespecToMSecs(statBuffer.st_mtimespec); }
+#endif
+
+// Xtimensec
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_atimensec, true), qint64>::type
+atime(const T &statBuffer, int)
+{ return statBuffer.st_atime * Q_INT64_C(1000) + statBuffer.st_atimensec / 1000000; }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_birthtimensec, true), qint64>::type
+birthtime(const T &statBuffer, int)
+{ return statBuffer.st_birthtime * Q_INT64_C(1000) + statBuffer.st_birthtimensec / 1000000; }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_ctimensec, true), qint64>::type
+ctime(const T &statBuffer, int)
+{ return statBuffer.st_ctime * Q_INT64_C(1000) + statBuffer.st_ctimensec / 1000000; }
+
+template <typename T>
+Q_DECL_UNUSED static typename std::enable_if<(&T::st_mtimensec, true), qint64>::type
+mtime(const T &statBuffer, int)
+{ return statBuffer.st_mtime * Q_INT64_C(1000) + statBuffer.st_mtimensec / 1000000; }
+}
+}
 
 //static
 bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
@@ -226,13 +300,6 @@ static void fillStat64fromStat32(struct stat64 *statBuf64, const struct stat &st
 #endif
     statBuf64->st_uid = statBuf32.st_uid;
     statBuf64->st_gid = statBuf32.st_gid;
-}
-#endif
-
-#if _POSIX_VERSION >= 200809L
-static qint64 timespecToMSecs(const timespec &spec)
-{
-    return (qint64(spec.tv_sec) * 1000) + (spec.tv_nsec / 1000000);
 }
 #endif
 
@@ -281,16 +348,11 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
 #endif
 
     // Times
-    birthTime_ = 0;
-#if _POSIX_VERSION >= 200809L
-    modificationTime_ = timespecToMSecs(statBuffer.st_mtim);
-    metadataChangeTime_ = timespecToMSecs(statBuffer.st_ctim);
-    accessTime_ = timespecToMSecs(statBuffer.st_atim);
-#else
-    modificationTime_ = qint64(statBuffer.st_mtime) * 1000;
-    metadataChangeTime_ = qint64(statBuffer.st_ctime) * 1000;
-    accessTime_ = qint64(statBuffer.st_atime) * 1000;
-#endif
+    accessTime_ = GetFileTimes::atime(statBuffer, 0);
+    birthTime_ = GetFileTimes::birthtime(statBuffer, 0);
+    metadataChangeTime_ = GetFileTimes::ctime(statBuffer, 0);
+    modificationTime_ = GetFileTimes::mtime(statBuffer, 0);
+
     userId_ = statBuffer.st_uid;
     groupId_ = statBuffer.st_gid;
 }
