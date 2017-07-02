@@ -525,6 +525,25 @@ bool QFSFileEngine::seek(qint64 pos)
 }
 
 /*!
+    \reimp
+*/
+QDateTime QFSFileEngine::fileTime(FileTime time) const
+{
+    Q_D(const QFSFileEngine);
+
+    if (time == AccessTime) {
+        // always refresh for the access time
+        d->metaData.clearFlags(QFileSystemMetaData::AccessTime);
+    }
+
+    if (d->doStat(QFileSystemMetaData::Times))
+        return d->metaData.fileTime(time);
+
+    return QDateTime();
+}
+
+
+/*!
     \internal
 */
 bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
@@ -708,6 +727,7 @@ qint64 QFSFileEnginePrivate::readLineFdFh(char *data, qint64 maxlen)
 qint64 QFSFileEngine::write(const char *data, qint64 len)
 {
     Q_D(QFSFileEngine);
+    d->metaData.clearFlags(QFileSystemMetaData::Times);
 
     // On Windows' stdlib implementation, the results of calling fread and
     // fwrite are undefined if not called either in sequence, or if preceded

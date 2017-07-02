@@ -699,16 +699,6 @@ bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
 #endif
 }
 
-QDateTime QFSFileEngine::fileTime(FileTime time) const
-{
-    Q_D(const QFSFileEngine);
-
-    if (d->doStat(QFileSystemMetaData::Times))
-        return d->metaData.fileTime(time);
-
-    return QDateTime();
-}
-
 uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
 {
 #if (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && Q_PROCESSOR_WORDSIZE == 4
