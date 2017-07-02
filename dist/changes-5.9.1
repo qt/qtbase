@@ -21,6 +21,13 @@ information about a particular change.
 *                               Qt 5.9.1 Changes                           *
 ****************************************************************************
 
+Deprecation Notice
+------------------
+
+ - The following platforms or toolchains are deprecated and will be
+   removed as of Qt 5.11:
+   * Microsoft Visual Studio 2013
+
 Important Behavior Changes
 --------------------------
 
@@ -104,8 +111,6 @@ configure & build system
 qmake
 -----
 
- - [QTBUG-38452][Android] Fixed overwriting of INSTALLS for target, and the
-   resulting bogus attempts to write to /libs on the host system.
  - [QTBUG-42830][Android] INSTALL targets are no longer created for static
    libraries.
  - [QTBUG-40825][QTBUG-59457][Unix] Fixed various makespecs to append shared
