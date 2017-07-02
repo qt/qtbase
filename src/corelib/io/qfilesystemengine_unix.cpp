@@ -157,6 +157,44 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 }
 #endif
 
+#if !QT_CONFIG(futimens) && (QT_CONFIG(futimes) || QT_CONFIG(futimesat))
+namespace {
+namespace GetFileTimes {
+
+template <typename T>
+static inline typename QtPrivate::QEnableIf<(&T::st_atim, &T::st_mtim, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
+{
+    access->tv_sec = p->st_atim.tv_sec;
+    access->tv_usec = p->st_atim.tv_nsec / 1000;
+
+    modification->tv_sec = p->st_mtim.tv_sec;
+    modification->tv_usec = p->st_mtim.tv_nsec / 1000;
+}
+
+template <typename T>
+static inline typename QtPrivate::QEnableIf<(&T::st_atimespec, &T::st_mtimespec, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
+{
+    access->tv_sec = p->st_atimespec.tv_sec;
+    access->tv_usec = p->st_atimespec.tv_nsec / 1000;
+
+    modification->tv_sec = p->st_mtimespec.tv_sec;
+    modification->tv_usec = p->st_mtimespec.tv_nsec / 1000;
+}
+
+template <typename T>
+static inline typename QtPrivate::QEnableIf<(&T::st_atimensec, &T::st_mtimensec, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
+{
+    access->tv_sec = p->st_atime;
+    access->tv_usec = p->st_atimensec / 1000;
+
+    modification->tv_sec = p->st_mtime;
+    modification->tv_usec = p->st_mtimensec / 1000;
+}
+
+}
+}
+#endif
+
 //static
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data)
 {
@@ -801,6 +839,74 @@ bool QFileSystemEngine::setPermissions(int fd, QFile::Permissions permissions, Q
     if (!success)
         error = QSystemError(errno, QSystemError::StandardLibraryError);
     return success;
+}
+
+//static
+bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractFileEngine::FileTime time, QSystemError &error)
+{
+    if (!newDate.isValid() || time == QAbstractFileEngine::CreationTime) {
+        error = QSystemError(EINVAL, QSystemError::StandardLibraryError);
+        return false;
+    }
+
+#if QT_CONFIG(futimens)
+    struct timespec ts[2];
+
+    ts[0].tv_sec = ts[1].tv_sec = 0;
+    ts[0].tv_nsec = ts[1].tv_nsec = UTIME_OMIT;
+
+    const qint64 msecs = newDate.toMSecsSinceEpoch();
+
+    if (time == QAbstractFileEngine::AccessTime) {
+        ts[0].tv_sec = msecs / 1000;
+        ts[0].tv_nsec = (msecs % 1000) * 1000000;
+    } else if (time == QAbstractFileEngine::ModificationTime) {
+        ts[1].tv_sec = msecs / 1000;
+        ts[1].tv_nsec = (msecs % 1000) * 1000000;
+    }
+
+    if (futimens(fd, ts) == -1) {
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+        return false;
+    }
+
+    return true;
+#elif QT_CONFIG(futimes) || QT_CONFIG(futimesat)
+    struct timeval tv[2];
+    QT_STATBUF st;
+
+    if (QT_FSTAT(fd, &st) == -1) {
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+        return false;
+    }
+
+    GetFileTimes::get(&st, &tv[0], &tv[1]);
+
+    const qint64 msecs = newDate.toMSecsSinceEpoch();
+
+    if (time == QAbstractFileEngine::AccessTime) {
+        tv[0].tv_sec = msecs / 1000;
+        tv[0].tv_usec = (msecs % 1000) * 1000;
+    } else if (time == QAbstractFileEngine::ModificationTime) {
+        tv[1].tv_sec = msecs / 1000;
+        tv[1].tv_usec = (msecs % 1000) * 1000;
+    }
+
+#if QT_CONFIG(futimes)
+    if (futimes(fd, tv) == -1) {
+#else
+    if (futimesat(fd, NULL, tv) == -1) {
+#endif
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+        return false;
+    }
+
+    return true;
+#else
+    Q_UNUSED(fd);
+    error = QSystemError(ENOSYS, QSystemError::StandardLibraryError);
+    return false;
+#endif
 }
 
 QString QFileSystemEngine::homePath()

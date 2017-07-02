@@ -231,6 +231,28 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
+static inline bool toFileTime(const QDateTime &date, FILETIME *fileTime)
+{
+    SYSTEMTIME lTime;
+    const QDate d = date.date();
+    const QTime t = date.time();
+
+    lTime.wYear = d.year();
+    lTime.wMonth = d.month();
+    lTime.wDay = d.day();
+    lTime.wHour = t.hour();
+    lTime.wMinute = t.minute();
+    lTime.wSecond = t.second();
+    lTime.wMilliseconds = t.msec();
+    lTime.wDayOfWeek = d.dayOfWeek() % 7;
+
+    SYSTEMTIME sTime;
+    if (!::TzSpecificLocalTimeToSystemTime(0, &lTime, &sTime))
+        return false;
+
+    return ::SystemTimeToFileTime(&sTime, fileTime);
+}
+
 static QString readSymLink(const QFileSystemEntry &link)
 {
     QString result;
@@ -571,6 +593,42 @@ QByteArray QFileSystemEngine::id(HANDLE fHandle)
 }
 
 //static
+bool QFileSystemEngine::setFileTime(HANDLE fHandle, const QDateTime &newDate,
+                                    QAbstractFileEngine::FileTime time, QSystemError &error)
+{
+    FILETIME fTime;
+    FILETIME *pLastWrite = NULL;
+    FILETIME *pLastAccess = NULL;
+    FILETIME *pCreationTime = NULL;
+
+    switch (time) {
+    case QAbstractFileEngine::ModificationTime:
+        pLastWrite = &fTime;
+        break;
+
+    case QAbstractFileEngine::AccessTime:
+        pLastAccess = &fTime;
+        break;
+
+    case QAbstractFileEngine::CreationTime:
+        pCreationTime = &fTime;
+        break;
+
+    default:
+        error = QSystemError(ERROR_INVALID_PARAMETER, QSystemError::NativeError);
+        return false;
+    }
+
+    if (!toFileTime(newDate, &fTime))
+        return false;
+
+    if (!::SetFileTime(fHandle, pCreationTime, pLastAccess, pLastWrite)) {
+        error = QSystemError(::GetLastError(), QSystemError::NativeError);
+        return false;
+    }
+    return true;
+}
+
 QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own)
 {
     QString name;
