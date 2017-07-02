@@ -89,7 +89,6 @@ public:
     bool setPermissions(uint perms) override;
     QString fileName(FileName type=DefaultName) const override;
     QDateTime fileTime(FileTime type) const override;
-    bool setFileTime(const QDateTime &newDate, FileTime time) override;
 
     qint64 read(char *data, qint64 maxlen) override;
     qint64 write(const char *data, qint64 len) override;

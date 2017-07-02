@@ -103,7 +103,6 @@ public:
     virtual uint ownerId(FileOwner) const Q_DECL_OVERRIDE;
     virtual QString owner(FileOwner) const Q_DECL_OVERRIDE;
 
-    virtual bool setFileTime(const QDateTime &newDate, FileTime time) Q_DECL_OVERRIDE;
     virtual QDateTime fileTime(FileTime time) const Q_DECL_OVERRIDE;
 
     virtual Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) Q_DECL_OVERRIDE;

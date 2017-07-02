@@ -435,13 +435,6 @@ bool QIOSFileEngineAssetsLibrary::seek(qint64 pos)
     return true;
 }
 
-bool QIOSFileEngineAssetsLibrary::setFileTime(const QDateTime &newDate, FileTime time)
-{
-    Q_UNUSED(newDate);
-    Q_UNUSED(time);
-    return false;
-}
-
 QString QIOSFileEngineAssetsLibrary::fileName(FileName file) const
 {
     Q_UNUSED(file);

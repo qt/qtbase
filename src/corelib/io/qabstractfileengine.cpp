@@ -726,10 +726,10 @@ QString QAbstractFileEngine::owner(FileOwner owner) const
     return QString();
 }
 
-/*!
-    \fn bool QAbstractFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
 
+/*!
     \since 5.10
+
     Sets the file \a time to \a newDate, returning true if successful;
     otherwise returns false.
 
@@ -737,6 +737,12 @@ QString QAbstractFileEngine::owner(FileOwner owner) const
 
     \sa fileTime()
 */
+bool QAbstractFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+{
+    Q_UNUSED(newDate);
+    Q_UNUSED(time);
+    return false;
+}
 
 /*!
     If \a time is \c CreationTime, return when the file was created.

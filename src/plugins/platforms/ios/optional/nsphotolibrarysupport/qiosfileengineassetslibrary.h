@@ -61,7 +61,6 @@ public:
     qint64 read(char *data, qint64 maxlen) override;
     qint64 pos() const override;
     bool seek(qint64 pos) override;
-    bool setFileTime(const QDateTime &newDate, FileTime time) override;
     QString fileName(FileName file) const override;
     void setFileName(const QString &file) override;
     QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const override;
