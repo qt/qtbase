@@ -1364,20 +1364,6 @@ QDateTime QFileInfo::lastRead() const
 }
 
 /*!
-    \enum QFileInfo::FileTime
-    \since 5.10
-
-    This enum is used by the fileTime() function.
-
-    \value FileCreationTime     When the file was created (not supported on UNIX).
-    \value FileModificationTime When the file was most recently modified.
-    \value FileAccessTime       When the file was most recently accessed (e.g.
-                                read or written to).
-
-    \sa fileTime()
-*/
-
-/*!
     \since 5.10
     Returns the file time specified by \a time.
     If the time cannot be determined return QDateTime() (an invalid
@@ -1385,16 +1371,16 @@ QDateTime QFileInfo::lastRead() const
 
     \sa FileTime, QDateTime::isValid()
 */
-QDateTime QFileInfo::fileTime(QFileInfo::FileTime time) const
+QDateTime QFileInfo::fileTime(QFile::FileTime time) const
 {
     switch (time) {
-    case QFileInfo::FileCreationTime:
+    case QFile::FileCreationTime:
         return created();
 
-    case QFileInfo::FileModificationTime:
+    case QFile::FileModificationTime:
         return lastModified();
 
-    case QFileInfo::FileAccessTime:
+    case QFile::FileAccessTime:
         return lastRead();
 
     default:
