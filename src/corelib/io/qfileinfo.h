@@ -129,6 +129,7 @@ public:
 
     qint64 size() const;
 
+    // ### Qt6: inline these functions
     QDateTime created() const;
     QDateTime lastModified() const;
     QDateTime lastRead() const;

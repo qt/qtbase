@@ -1310,16 +1310,7 @@ qint64 QFileInfo::size() const
 */
 QDateTime QFileInfo::created() const
 {
-    Q_D(const QFileInfo);
-    if (d->isDefaultConstructed)
-        return QDateTime();
-    if (d->fileEngine == 0) {
-        if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::CreationTime))
-            if (!QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::CreationTime))
-                return QDateTime();
-        return d->metaData.creationTime().toLocalTime();
-    }
-    return d->getFileTime(QAbstractFileEngine::CreationTime).toLocalTime();
+    return fileTime(QFile::FileCreationTime);
 }
 
 /*!
@@ -1329,16 +1320,7 @@ QDateTime QFileInfo::created() const
 */
 QDateTime QFileInfo::lastModified() const
 {
-    Q_D(const QFileInfo);
-    if (d->isDefaultConstructed)
-        return QDateTime();
-    if (d->fileEngine == 0) {
-        if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::ModificationTime))
-            if (!QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::ModificationTime))
-                return QDateTime();
-        return d->metaData.modificationTime().toLocalTime();
-    }
-    return d->getFileTime(QAbstractFileEngine::ModificationTime).toLocalTime();
+    return fileTime(QFile::FileModificationTime);
 }
 
 /*!
@@ -1351,16 +1333,7 @@ QDateTime QFileInfo::lastModified() const
 */
 QDateTime QFileInfo::lastRead() const
 {
-    Q_D(const QFileInfo);
-    if (d->isDefaultConstructed)
-        return QDateTime();
-    if (d->fileEngine == 0) {
-        if (!d->cache_enabled || !d->metaData.hasFlags(QFileSystemMetaData::AccessTime))
-            if (!QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, QFileSystemMetaData::AccessTime))
-                return QDateTime();
-        return d->metaData.accessTime().toLocalTime();
-    }
-    return d->getFileTime(QAbstractFileEngine::AccessTime).toLocalTime();
+    return fileTime(QFile::FileAccessTime);
 }
 
 /*!
@@ -1373,19 +1346,34 @@ QDateTime QFileInfo::lastRead() const
 */
 QDateTime QFileInfo::fileTime(QFile::FileTime time) const
 {
+    Q_STATIC_ASSERT(int(QFile::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
+    Q_STATIC_ASSERT(int(QFile::FileCreationTime) == int(QAbstractFileEngine::CreationTime));
+    Q_STATIC_ASSERT(int(QFile::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
+
+    Q_D(const QFileInfo);
+    auto fetime = QAbstractFileEngine::FileTime(time);
+    if (d->isDefaultConstructed)
+        return QDateTime();
+    if (d->fileEngine)
+        return d->getFileTime(fetime).toLocalTime();
+
+    QFileSystemMetaData::MetaDataFlags flag;
     switch (time) {
-    case QFile::FileCreationTime:
-        return created();
-
-    case QFile::FileModificationTime:
-        return lastModified();
-
     case QFile::FileAccessTime:
-        return lastRead();
-
-    default:
-        Q_UNREACHABLE();
+        flag = QFileSystemMetaData::AccessTime;
+        break;
+    case QFile::FileCreationTime:
+        flag = QFileSystemMetaData::CreationTime;
+        break;
+    case QFile::FileModificationTime:
+        flag = QFileSystemMetaData::ModificationTime;
+        break;
     }
+
+    if (!d->cache_enabled || !d->metaData.hasFlags(flag))
+        if (!QFileSystemEngine::fillMetaData(d->fileEntry, d->metaData, flag))
+            return QDateTime();
+    return d->metaData.fileTime(fetime).toLocalTime();
 }
 
 /*!
