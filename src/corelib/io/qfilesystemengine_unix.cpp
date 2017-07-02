@@ -449,15 +449,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     data.entryFlags &= ~what;
 
-    const char * nativeFilePath;
-    int nativeFilePathLength;
-    {
-        const QByteArray &path = entry.nativeFilePath();
-        nativeFilePath = path.constData();
-        nativeFilePathLength = path.size();
-        Q_UNUSED(nativeFilePathLength);
-    }
-
+    const QByteArray nativeFilePath = entry.nativeFilePath();
     bool entryExists = true; // innocent until proven otherwise
 
     QT_STATBUF statBuffer;
