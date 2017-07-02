@@ -85,6 +85,12 @@ extern "C" NSString *NSTemporaryDirectory();
 static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newpath, unsigned flags)
 { return syscall(SYS_renameat2, oldfd, oldpath, newfd, newpath, flags); }
 #  endif
+
+#  if !QT_CONFIG(statx) && defined(SYS_statx) && QT_HAS_INCLUDE(<linux/stat.h>)
+#    include <linux/stat.h>
+static int statx(int dirfd, const char *pathname, int flag, unsigned mask, struct statx *statxbuf)
+{ return syscall(SYS_statx, dirfd, pathname, flag, mask, statxbuf); }
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -269,13 +275,131 @@ mtime(const T &statBuffer, int)
 }
 }
 
+#ifdef STATX_BASIC_STATS
+static int qt_real_statx(int fd, const char *pathname, int flags, struct statx *statxBuffer)
+{
+#ifdef Q_ATOMIC_INT8_IS_SUPPORTED
+    static QBasicAtomicInteger<qint8> statxTested  = Q_BASIC_ATOMIC_INITIALIZER(0);
+#else
+    static QBasicAtomicInt statxTested = Q_BASIC_ATOMIC_INITIALIZER(0);
+#endif
+
+    if (statxTested.load() == -1)
+        return -ENOSYS;
+
+    unsigned mask = STATX_BASIC_STATS | STATX_BTIME;
+    int ret = statx(fd, pathname, flags, mask, statxBuffer);
+    if (ret == -1 && errno == ENOSYS) {
+        statxTested.store(-1);
+        return -ENOSYS;
+    }
+    statxTested.store(1);
+    return ret == -1 ? -errno : 0;
+}
+
+static int qt_statx(const char *pathname, struct statx *statxBuffer)
+{
+    return qt_real_statx(AT_FDCWD, pathname, 0, statxBuffer);
+}
+
+static int qt_lstatx(const char *pathname, struct statx *statxBuffer)
+{
+    return qt_real_statx(AT_FDCWD, pathname, AT_SYMLINK_NOFOLLOW, statxBuffer);
+}
+
+static int qt_fstatx(int fd, struct statx *statxBuffer)
+{
+    return qt_real_statx(fd, "", AT_EMPTY_PATH, statxBuffer);
+}
+
+inline void QFileSystemMetaData::fillFromStatxBuf(const struct statx &statxBuffer)
+{
+    // Permissions
+    if (statxBuffer.stx_mode & S_IRUSR)
+        entryFlags |= QFileSystemMetaData::OwnerReadPermission;
+    if (statxBuffer.stx_mode & S_IWUSR)
+        entryFlags |= QFileSystemMetaData::OwnerWritePermission;
+    if (statxBuffer.stx_mode & S_IXUSR)
+        entryFlags |= QFileSystemMetaData::OwnerExecutePermission;
+
+    if (statxBuffer.stx_mode & S_IRGRP)
+        entryFlags |= QFileSystemMetaData::GroupReadPermission;
+    if (statxBuffer.stx_mode & S_IWGRP)
+        entryFlags |= QFileSystemMetaData::GroupWritePermission;
+    if (statxBuffer.stx_mode & S_IXGRP)
+        entryFlags |= QFileSystemMetaData::GroupExecutePermission;
+
+    if (statxBuffer.stx_mode & S_IROTH)
+        entryFlags |= QFileSystemMetaData::OtherReadPermission;
+    if (statxBuffer.stx_mode & S_IWOTH)
+        entryFlags |= QFileSystemMetaData::OtherWritePermission;
+    if (statxBuffer.stx_mode & S_IXOTH)
+        entryFlags |= QFileSystemMetaData::OtherExecutePermission;
+
+    // Type
+    if (S_ISLNK(statxBuffer.stx_mode))
+        entryFlags |= QFileSystemMetaData::LinkType;
+    if ((statxBuffer.stx_mode & S_IFMT) == S_IFREG)
+        entryFlags |= QFileSystemMetaData::FileType;
+    else if ((statxBuffer.stx_mode & S_IFMT) == S_IFDIR)
+        entryFlags |= QFileSystemMetaData::DirectoryType;
+    else if ((statxBuffer.stx_mode & S_IFMT) != S_IFBLK)
+        entryFlags |= QFileSystemMetaData::SequentialType;
+
+    // Attributes
+    entryFlags |= QFileSystemMetaData::ExistsAttribute; // inode exists
+    if (statxBuffer.stx_nlink == 0)
+        entryFlags |= QFileSystemMetaData::WasDeletedAttribute;
+    size_ = qint64(statxBuffer.stx_size);
+
+    // Times
+    auto toMSecs = [](struct statx_timestamp ts)
+    {
+        return qint64(ts.tv_sec) * 1000 + (ts.tv_nsec / 1000000);
+    };
+    accessTime_ = toMSecs(statxBuffer.stx_atime);
+    metadataChangeTime_ = toMSecs(statxBuffer.stx_ctime);
+    modificationTime_ = toMSecs(statxBuffer.stx_mtime);
+    if (statxBuffer.stx_mask & STATX_BTIME)
+        birthTime_ = toMSecs(statxBuffer.stx_btime);
+    else
+        birthTime_ = 0;
+
+    userId_ = statxBuffer.stx_uid;
+    groupId_ = statxBuffer.stx_gid;
+}
+#else
+struct statx { mode_t stx_mode; };
+static int qt_statx(const char *, struct statx *)
+{ return -ENOSYS; }
+
+static int qt_lstatx(const char *, struct statx *)
+{ return -ENOSYS; }
+
+static int qt_fstatx(int, struct statx *)
+{ return -ENOSYS; }
+
+inline void QFileSystemMetaData::fillFromStatxBuf(const struct statx &)
+{ }
+#endif
+
 //static
 bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
 {
     data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
     data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags;
 
-    QT_STATBUF statBuffer;
+    union {
+        struct statx statxBuffer;
+        QT_STATBUF statBuffer;
+    };
+
+    int ret = qt_fstatx(fd, &statxBuffer);
+    if (ret != -ENOSYS) {
+        data.fillFromStatxBuf(statxBuffer);
+        return ret == 0;
+    }
+
     if (QT_FSTAT(fd, &statBuffer) == 0) {
         data.fillFromStatBuf(statBuffer);
         return true;
@@ -771,28 +895,46 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     // first, we may try lstat(2). Possible outcomes:
     //  - success and is a symlink: filesystem entry exists, but we need stat(2)
-    //    -> statBufferValid = false
+    //    -> statResult = -1;
     //  - success and is not a symlink: filesystem entry exists and we're done
-    //    -> statBufferValid = true
+    //    -> statResult = 0
     //  - failure: really non-existent filesystem entry
-    //    -> entryExists = false; statBufferValid = true
+    //    -> entryExists = false; statResult = 0;
     //    both stat(2) and lstat(2) may generate a number of different errno
     //    conditions, but of those, the only ones that could happen and the
     //    entry still exist are EACCES, EFAULT, ENOMEM and EOVERFLOW. If we get
     //    EACCES or ENOMEM, then we have no choice on how to proceed, so we may
     //    as well conclude it doesn't exist; EFAULT can't happen and EOVERFLOW
     //    shouldn't happen because we build in _LARGEFIE64.
-    QT_STATBUF statBuffer;
-    bool statBufferValid = false;
+    union {
+        QT_STATBUF statBuffer;
+        struct statx statxBuffer;
+    };
+    int statResult = -1;
     if (what & QFileSystemMetaData::LinkType) {
-        if (QT_LSTAT(nativeFilePath, &statBuffer) == 0) {
-            if (S_ISLNK(statBuffer.st_mode)) {
-                // it's a symlink, we don't know if the file "exists"
+        mode_t mode = 0;
+        statResult = qt_lstatx(nativeFilePath, &statxBuffer);
+        if (statResult == -ENOSYS) {
+            // use lstst(2)
+            statResult = QT_LSTAT(nativeFilePath, &statBuffer);
+            if (statResult == 0)
+                mode = statBuffer.st_mode;
+        } else if (statResult == 0) {
+            statResult = 1; // record it was statx(2) that succeeded
+            mode = statxBuffer.stx_mode;
+        }
+
+        if (statResult >= 0) {
+            if (S_ISLNK(mode)) {
+               // it's a symlink, we don't know if the file "exists"
                 data.entryFlags |= QFileSystemMetaData::LinkType;
+                statResult = -1;    // force stat(2) below
             } else {
                 // it's a reagular file and it exists
-                statBufferValid = true;
-                data.fillFromStatBuf(statBuffer);
+                if (statResult)
+                    data.fillFromStatxBuf(statxBuffer);
+                else
+                    data.fillFromStatBuf(statBuffer);
                 data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags
                         | QFileSystemMetaData::ExistsAttribute;
                 data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
@@ -807,15 +949,21 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     }
 
     // second, we try a regular stat(2)
-    if (statBufferValid || (what & QFileSystemMetaData::PosixStatFlags)) {
-        if (entryExists && !statBufferValid) {
-            statBufferValid = (QT_STAT(nativeFilePath, &statBuffer) == 0);
+    if (statResult != 0 && (what & QFileSystemMetaData::PosixStatFlags)) {
+        if (entryExists && statResult == -1) {
             data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
-            if (statBufferValid)
-                data.fillFromStatBuf(statBuffer);
+            statResult = qt_statx(nativeFilePath, &statxBuffer);
+            if (statResult == -ENOSYS) {
+                // use stat(2)
+                statResult = QT_STAT(nativeFilePath, &statBuffer);
+                if (statResult == 0)
+                    data.fillFromStatBuf(statBuffer);
+            } else if (statResult == 0) {
+                data.fillFromStatxBuf(statxBuffer);
+            }
         }
 
-        if (!statBufferValid) {
+        if (statResult != 0) {
             entryExists = false;
             data.birthTime_ = 0;
             data.metadataChangeTime_ = 0;

@@ -220,6 +220,7 @@ public:
     uint ownerId(QAbstractFileEngine::FileOwner owner) const;
 
 #ifdef Q_OS_UNIX
+    void fillFromStatxBuf(const struct statx &statBuffer);
     void fillFromStatBuf(const QT_STATBUF &statBuffer);
     void fillFromDirEnt(const QT_DIRENT &statBuffer);
 #endif

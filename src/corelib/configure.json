@@ -383,6 +383,19 @@
                 "main": "renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEOUT);"
             }
         },
+        "statx": {
+            "label": "statx() in libc",
+            "type": "compile",
+            "test": {
+                "head": "#define _ATFILE_SOURCE 1",
+                "include": [ "sys/types.h", "sys/stat.h", "unistd.h", "fcntl.h" ],
+                "main": [
+                    "struct statx statxbuf;",
+                    "unsigned int mask = STATX_BASIC_STATS;",
+                    "return statx(AT_FDCWD, \"\", AT_STATX_SYNC_AS_STAT, mask, &statxbuf);"
+                ]
+            }
+        },
         "syslog": {
             "label": "syslog",
             "type": "compile",
@@ -583,6 +596,11 @@
         "slog2": {
             "label": "slog2",
             "condition": "libs.slog2",
+            "output": [ "privateFeature" ]
+        },
+        "statx": {
+            "label": "statx() in libc",
+            "condition": "config.linux && tests.statx",
             "output": [ "privateFeature" ]
         },
         "syslog": {
