@@ -1,4 +1,4 @@
-requires(if(wince|embedded|x11):qtHaveModule(gui))
+requires(if(embedded|x11):qtHaveModule(gui))
 
 TEMPLATE  = subdirs
 SUBDIRS   = styleexample raycasting flickable digiflip
