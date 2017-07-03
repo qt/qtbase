@@ -241,8 +241,11 @@ public:
         TextForceRightToLeft = 0x40000,
         // Ensures that the longest variant is always used when computing the
         // size of a multi-variant string.
-        TextLongestVariant = 0x80000,
-        TextBypassShaping = 0x100000
+        TextLongestVariant = 0x80000
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        , TextBypassShaping = 0x100000
+#endif
     };
 
     enum TextElideMode {

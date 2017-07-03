@@ -78,6 +78,9 @@ private slots:
     void thaiIsolatedSaraAm();
     void thaiWithZWJ();
     void thaiMultipleVowels();
+
+    void shapingDisabledDevanagari();
+    void shapingDisabledLatin();
 private:
     bool haveTestFonts;
 };
@@ -1278,6 +1281,63 @@ void tst_QTextScriptEngine::thaiMultipleVowels()
         e->shape(item);
 
     // If we haven't crashed at this point, then the test has passed.
+}
+
+void tst_QTextScriptEngine::shapingDisabledLatin()
+{
+    QString s("fi");
+
+    QFont font("Calibri");
+    font.setStyleStrategy(QFont::PreferNoShaping);
+
+    QTextLayout layout(s);
+    layout.setFont(font);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QList<QGlyphRun> runs = layout.glyphRuns();
+
+    QCOMPARE(runs.size(), 1);
+    QCOMPARE(runs.first().glyphIndexes().size(), 2);
+}
+
+void tst_QTextScriptEngine::shapingDisabledDevanagari()
+{
+    QString s;
+    s += QChar(0x0915); // KA
+    s += QChar(0x094D); // VIRAMA
+    s += QChar(0x0915); // KA
+
+
+    QList<QGlyphRun> normalRuns;
+    {
+        QTextLayout layout(s);
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        normalRuns = layout.glyphRuns();
+    }
+
+    QFont font;
+    font.setStyleStrategy(QFont::PreferNoShaping);
+
+    QList<QGlyphRun> noShapingRuns;
+    {
+        QTextLayout layout(s);
+        layout.setFont(font);
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        noShapingRuns = layout.glyphRuns();
+    }
+
+    // Even though shaping is disabled, Devanagari requires it, so the flag should be ignored.
+    QCOMPARE(normalRuns.size(), 1);
+    QCOMPARE(noShapingRuns.size(), 1);
+    QCOMPARE(noShapingRuns.first().glyphIndexes().size(), normalRuns.first().glyphIndexes().size());
 }
 
 QTEST_MAIN(tst_QTextScriptEngine)

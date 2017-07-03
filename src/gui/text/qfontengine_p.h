@@ -242,6 +242,12 @@ public:
     void *harfbuzzFace() const;
     bool supportsScript(QChar::Script script) const;
 
+    inline static bool scriptRequiresOpenType(QChar::Script script)
+    {
+        return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
+                || script == QChar::Script_Khmer || script == QChar::Script_Nko);
+    }
+
     virtual int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints);
 
     void clearGlyphCache(const void *key);

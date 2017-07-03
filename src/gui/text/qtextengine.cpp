@@ -1005,20 +1005,53 @@ void QTextEngine::shapeText(int item) const
 
     QFontEngine *fontEngine = this->fontEngine(si, &si.ascent, &si.descent, &si.leading);
 
+    bool kerningEnabled;
+    bool letterSpacingIsAbsolute;
+    bool shapingEnabled;
+    QFixed letterSpacing, wordSpacing;
+#ifndef QT_NO_RAWFONT
+    if (useRawFont) {
+        QTextCharFormat f = format(&si);
+        kerningEnabled = f.fontKerning();
+        shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
+                || (f.fontStyleStrategy() & QFont::PreferNoShaping) == 0;
+        wordSpacing = QFixed::fromReal(f.fontWordSpacing());
+        letterSpacing = QFixed::fromReal(f.fontLetterSpacing());
+        letterSpacingIsAbsolute = true;
+    } else
+#endif
+    {
+        QFont font = this->font(si);
+        kerningEnabled = font.d->kerning;
+        shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
+                || (font.d->request.styleStrategy & QFont::PreferNoShaping) == 0;
+        letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
+        letterSpacing = font.d->letterSpacing;
+        wordSpacing = font.d->wordSpacing;
+
+        if (letterSpacingIsAbsolute && letterSpacing.value())
+            letterSpacing *= font.d->dpi / qt_defaultDpiY();
+    }
+
     // split up the item into parts that come from different font engines
     // k * 3 entries, array[k] == index in string, array[k + 1] == index in glyphs, array[k + 2] == engine index
     QVector<uint> itemBoundaries;
     itemBoundaries.reserve(24);
-    if (fontEngine->type() == QFontEngine::Multi) {
+
+    QGlyphLayout initialGlyphs = availableGlyphs(&si);
+    int nGlyphs = initialGlyphs.numGlyphs;
+    if (fontEngine->type() == QFontEngine::Multi || !shapingEnabled) {
         // ask the font engine to find out which glyphs (as an index in the specific font)
         // to use for the text in one item.
-        QGlyphLayout initialGlyphs = availableGlyphs(&si);
-
-        int nGlyphs = initialGlyphs.numGlyphs;
-        QFontEngine::ShaperFlags shaperFlags(QFontEngine::GlyphIndicesOnly);
+        QFontEngine::ShaperFlags shaperFlags =
+                shapingEnabled
+                    ? QFontEngine::GlyphIndicesOnly
+                    : QFontEngine::ShaperFlag(0);
         if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags))
             Q_UNREACHABLE();
+    }
 
+    if (fontEngine->type() == QFontEngine::Multi) {
         uint lastEngine = ~0u;
         for (int i = 0, glyph_pos = 0; i < itemLength; ++i, ++glyph_pos) {
             const uint engineIdx = initialGlyphs.glyphs[glyph_pos] >> 24;
@@ -1046,35 +1079,29 @@ void QTextEngine::shapeText(int item) const
         itemBoundaries.append(0);
     }
 
-    bool kerningEnabled;
-    bool letterSpacingIsAbsolute;
-    QFixed letterSpacing, wordSpacing;
-#ifndef QT_NO_RAWFONT
-    if (useRawFont) {
-        QTextCharFormat f = format(&si);
-        kerningEnabled = f.fontKerning();
-        wordSpacing = QFixed::fromReal(f.fontWordSpacing());
-        letterSpacing = QFixed::fromReal(f.fontLetterSpacing());
-        letterSpacingIsAbsolute = true;
-    } else
-#endif
-    {
-        QFont font = this->font(si);
-        kerningEnabled = font.d->kerning;
-        letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
-        letterSpacing = font.d->letterSpacing;
-        wordSpacing = font.d->wordSpacing;
+    if (Q_UNLIKELY(!shapingEnabled)) {
+        ushort *log_clusters = logClusters(&si);
 
-        if (letterSpacingIsAbsolute && letterSpacing.value())
-            letterSpacing *= font.d->dpi / qt_defaultDpiY();
-    }
+        int glyph_pos = 0;
+        for (int i = 0; i < itemLength; ++i, ++glyph_pos) {
+            log_clusters[i] = glyph_pos;
+            initialGlyphs.attributes[glyph_pos].clusterStart = true;
+            if (QChar::isHighSurrogate(string[i])
+                    && i + 1 < itemLength
+                    && QChar::isLowSurrogate(string[i + 1])) {
+                ++i;
+                log_clusters[i] = glyph_pos;
+            }
+        }
 
+        si.num_glyphs = glyph_pos;
 #if QT_CONFIG(harfbuzz)
-    if (Q_LIKELY(qt_useHarfbuzzNG()))
+    } else if (Q_LIKELY(qt_useHarfbuzzNG())) {
         si.num_glyphs = shapeTextWithHarfbuzzNG(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled, letterSpacing != 0);
-    else
 #endif
-    si.num_glyphs = shapeTextWithHarfbuzz(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled);
+    } else {
+        si.num_glyphs = shapeTextWithHarfbuzz(si, string, itemLength, fontEngine, itemBoundaries, kerningEnabled);
+    }
     if (Q_UNLIKELY(si.num_glyphs == 0)) {
         Q_UNREACHABLE(); // ### report shaping errors somehow
         return;

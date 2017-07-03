@@ -359,10 +359,8 @@ bool QFontEngine::supportsScript(QChar::Script script) const
     // ### TODO: This only works for scripts that require OpenType. More generally
     // for scripts that do not require OpenType we should just look at the list of
     // supported writing systems in the font's OS/2 table.
-    if (!((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
-          || script == QChar::Script_Khmer || script == QChar::Script_Nko)) {
+    if (!scriptRequiresOpenType(script))
         return true;
-    }
 
 #if QT_CONFIG(harfbuzz)
     if (qt_useHarfbuzzNG()) {

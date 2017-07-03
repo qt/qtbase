@@ -541,6 +541,7 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
     if (len == 0)
         return 0;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (flags & Qt::TextBypassShaping) {
         // Skip complex shaping, only use advances
         int numGlyphs = len;
@@ -554,6 +555,7 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
             width += glyphs.advances[i];
         return qRound(width);
     }
+#endif
 
     QStackTextEngine layout(text, QFont(d.data()));
     return qRound(layout.width(0, len));

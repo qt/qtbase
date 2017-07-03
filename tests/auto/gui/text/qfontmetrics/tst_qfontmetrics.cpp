@@ -47,7 +47,11 @@ private slots:
     void elidedText();
     void veryNarrowElidedText();
     void averageCharWidth();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void bypassShaping();
+#endif
+
     void elidedMultiLength();
     void elidedMultiLengthF();
     void inFontUcs4();
@@ -187,6 +191,7 @@ void tst_QFontMetrics::averageCharWidth()
     QVERIFY(fmf.averageCharWidth() != 0);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void tst_QFontMetrics::bypassShaping()
 {
     QFont f;
@@ -201,6 +206,7 @@ void tst_QFontMetrics::bypassShaping()
     // This assertion is needed in Qt WebKit's WebCore::Font::offsetForPositionForSimpleText
     QCOMPARE(textWidth, charsWidth);
 }
+#endif
 
 template<class FontMetrics, typename PrimitiveType> void elidedMultiLength_helper()
 {

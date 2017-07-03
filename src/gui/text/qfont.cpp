@@ -1312,6 +1312,11 @@ QFont::StyleHint QFont::styleHint() const
            looking font that contains the character. The NoFontMerging flag disables this feature.
            Please note that enabling this flag will not prevent Qt from automatically picking a
            suitable font when the selected font does not support the writing system of the text.
+    \value PreferNoShaping Sometimes, a font will apply complex rules to a set of characters in
+           order to display them correctly. In some writing systems, such as Brahmic scripts, this is
+           required in order for the text to be legible, but in e.g. Latin script, it is merely
+           a cosmetic feature. The PreferNoShaping flag will disable all such features when they
+           are not required, which will improve performance in most cases.
 
     Any of these may be OR-ed with one of these flags:
 
