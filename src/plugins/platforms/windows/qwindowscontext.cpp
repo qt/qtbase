@@ -1106,7 +1106,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     }   break;
     case QtWindows::DpiChangedEvent: {
-        if (GetWindowLongPtr(hwnd, GWL_STYLE) & WS_DLGFRAME)
+        if (platformWindow->window()->flags().testFlag(Qt::MSWindowsFixedSizeDialogHint))
             return false; // Fixed-size window should not be resized
 
         platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
