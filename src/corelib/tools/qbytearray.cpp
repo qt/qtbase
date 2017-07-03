@@ -1516,13 +1516,13 @@ void QByteArray::chop(int n)
     \snippet code/src_corelib_tools_qbytearray.cpp 12
 
     Note: QByteArray is an \l{implicitly shared} class. Consequently,
-    if \e this is an empty QByteArray, then \e this will just share
-    the data held in \a ba. In this case, no copying of data is done,
+    if you append to an empty byte array, then the byte array will just
+    share the data held in \a ba. In this case, no copying of data is done,
     taking \l{constant time}. If a shared instance is modified, it will
     be copied (copy-on-write), taking \l{linear time}.
 
-    If \e this is not an empty QByteArray, a deep copy of the data is
-    performed, taking \l{linear time}.
+    If the byte array being appended to is not empty, a deep copy of the
+    data is performed, taking \l{linear time}.
 
     This operation typically does not suffer from allocation overhead,
     because QByteArray preallocates extra space at the end of the data
@@ -1781,13 +1781,13 @@ QByteArray QByteArray::nulTerminated() const
     This is the same as insert(0, \a ba).
 
     Note: QByteArray is an \l{implicitly shared} class. Consequently,
-    if \e this is an empty QByteArray, then \e this will just share
-    the data held in \a ba. In this case, no copying of data is done,
+    if you prepend to an empty byte array, then the byte array will just
+    share the data held in \a ba. In this case, no copying of data is done,
     taking \l{constant time}. If a shared instance is modified, it will
     be copied (copy-on-write), taking \l{linear time}.
 
-    If \e this is not an empty QByteArray, a deep copy of the data is
-    performed, taking \l{linear time}.
+    If the byte array being prepended to is not empty, a deep copy of the
+    data is performed, taking \l{linear time}.
 
     \sa append(), insert()
 */
@@ -1869,13 +1869,13 @@ QByteArray &QByteArray::prepend(char ch)
     This is the same as insert(size(), \a ba).
 
     Note: QByteArray is an \l{implicitly shared} class. Consequently,
-    if \e this is an empty QByteArray, then \e this will just share
-    the data held in \a ba. In this case, no copying of data is done,
+    if you append to an empty byte array, then the byte array will just
+    share the data held in \a ba. In this case, no copying of data is done,
     taking \l{constant time}. If a shared instance is modified, it will
     be copied (copy-on-write), taking \l{linear time}.
 
-    If \e this is not an empty QByteArray, a deep copy of the data is
-    performed, taking \l{linear time}.
+    If the byte array being appended to is not empty, a deep copy of the
+    data is performed, taking \l{linear time}.
 
     This operation typically does not suffer from allocation overhead,
     because QByteArray preallocates extra space at the end of the data
