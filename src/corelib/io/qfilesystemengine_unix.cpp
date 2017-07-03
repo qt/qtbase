@@ -698,43 +698,62 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     }
 #endif // defined(Q_OS_DARWIN)
 
+    // if we're asking for any of the stat(2) flags, then we're getting them all
     if (what & QFileSystemMetaData::PosixStatFlags)
         what |= QFileSystemMetaData::PosixStatFlags;
-
-    if (what & QFileSystemMetaData::ExistsAttribute) {
-        //  FIXME:  Would other queries being performed provide this bit?
-        what |= QFileSystemMetaData::PosixStatFlags;
-    }
 
     data.entryFlags &= ~what;
 
     const QByteArray nativeFilePath = entry.nativeFilePath();
     bool entryExists = true; // innocent until proven otherwise
 
+    // first, we may try lstat(2). Possible outcomes:
+    //  - success and is a symlink: filesystem entry exists, but we need stat(2)
+    //    -> statBufferValid = false
+    //  - success and is not a symlink: filesystem entry exists and we're done
+    //    -> statBufferValid = true
+    //  - failure: really non-existent filesystem entry
+    //    -> entryExists = false; statBufferValid = true
+    //    both stat(2) and lstat(2) may generate a number of different errno
+    //    conditions, but of those, the only ones that could happen and the
+    //    entry still exist are EACCES, EFAULT, ENOMEM and EOVERFLOW. If we get
+    //    EACCES or ENOMEM, then we have no choice on how to proceed, so we may
+    //    as well conclude it doesn't exist; EFAULT can't happen and EOVERFLOW
+    //    shouldn't happen because we build in _LARGEFIE64.
     QT_STATBUF statBuffer;
     bool statBufferValid = false;
     if (what & QFileSystemMetaData::LinkType) {
         if (QT_LSTAT(nativeFilePath, &statBuffer) == 0) {
             if (S_ISLNK(statBuffer.st_mode)) {
+                // it's a symlink, we don't know if the file "exists"
                 data.entryFlags |= QFileSystemMetaData::LinkType;
             } else {
+                // it's a reagular file and it exists
                 statBufferValid = true;
-                data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
+                data.fillFromStatBuf(statBuffer);
+                data.knownFlagsMask |= QFileSystemMetaData::PosixStatFlags
+                        | QFileSystemMetaData::ExistsAttribute;
+                data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
             }
         } else {
+            // it doesn't exist
             entryExists = false;
+            data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
         }
 
         data.knownFlagsMask |= QFileSystemMetaData::LinkType;
     }
 
+    // second, we try a regular stat(2)
     if (statBufferValid || (what & QFileSystemMetaData::PosixStatFlags)) {
-        if (entryExists && !statBufferValid)
+        if (entryExists && !statBufferValid) {
             statBufferValid = (QT_STAT(nativeFilePath, &statBuffer) == 0);
+            data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
+            if (statBufferValid)
+                data.fillFromStatBuf(statBuffer);
+        }
 
-        if (statBufferValid)
-            data.fillFromStatBuf(statBuffer);
-        else {
+        if (!statBufferValid) {
             entryExists = false;
             data.birthTime_ = 0;
             data.metadataChangeTime_ = 0;
@@ -750,34 +769,49 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             | QFileSystemMetaData::ExistsAttribute;
     }
 
+    // third, we try access(2)
+    if (what & (QFileSystemMetaData::UserPermissions | QFileSystemMetaData::ExistsAttribute)) {
+        // calculate user permissions
+        auto checkAccess = [&](QFileSystemMetaData::MetaDataFlag flag, int mode) {
+            if (!entryExists || (what & flag) == 0)
+                return;
+            if (QT_ACCESS(nativeFilePath, mode) == 0) {
+                // access ok (and file exists)
+                data.entryFlags |= flag | QFileSystemMetaData::ExistsAttribute;
+            } else if (errno != EACCES && errno != EROFS) {
+                entryExists = false;
+            }
+        };
+
+        checkAccess(QFileSystemMetaData::UserReadPermission, R_OK);
+        checkAccess(QFileSystemMetaData::UserWritePermission, W_OK);
+        checkAccess(QFileSystemMetaData::UserExecutePermission, X_OK);
+
+        // if we still haven't found out if the file exists, try F_OK
+        if (entryExists && (data.entryFlags & QFileSystemMetaData::ExistsAttribute) == 0) {
+            entryExists = QT_ACCESS(nativeFilePath, F_OK) == 0;
+            if (entryExists)
+                data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
+        }
+
+        data.knownFlagsMask |= (what & QFileSystemMetaData::UserPermissions) |
+                QFileSystemMetaData::ExistsAttribute;
+    }
+
 #if defined(Q_OS_DARWIN)
-    if (what & QFileSystemMetaData::AliasType)
-    {
+    if (what & QFileSystemMetaData::AliasType) {
         if (entryExists && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey))
             data.entryFlags |= QFileSystemMetaData::AliasType;
         data.knownFlagsMask |= QFileSystemMetaData::AliasType;
     }
-#endif
 
-    if (what & QFileSystemMetaData::UserPermissions) {
-        // calculate user permissions
+    if (what & QFileSystemMetaData::BundleType) {
+        if (entryExists && isPackage(data, entry))
+            data.entryFlags |= QFileSystemMetaData::BundleType;
 
-        if (entryExists) {
-            if (what & QFileSystemMetaData::UserReadPermission) {
-                if (QT_ACCESS(nativeFilePath, R_OK) == 0)
-                    data.entryFlags |= QFileSystemMetaData::UserReadPermission;
-            }
-            if (what & QFileSystemMetaData::UserWritePermission) {
-                if (QT_ACCESS(nativeFilePath, W_OK) == 0)
-                    data.entryFlags |= QFileSystemMetaData::UserWritePermission;
-            }
-            if (what & QFileSystemMetaData::UserExecutePermission) {
-                if (QT_ACCESS(nativeFilePath, X_OK) == 0)
-                    data.entryFlags |= QFileSystemMetaData::UserExecutePermission;
-            }
-        }
-        data.knownFlagsMask |= (what & QFileSystemMetaData::UserPermissions);
+        data.knownFlagsMask |= QFileSystemMetaData::BundleType;
     }
+#endif
 
     if (what & QFileSystemMetaData::HiddenAttribute
             && !data.isHidden()) {
@@ -791,15 +825,8 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         data.knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
     }
 
-#if defined(Q_OS_DARWIN)
-    if (what & QFileSystemMetaData::BundleType) {
-        if (entryExists && isPackage(data, entry))
-            data.entryFlags |= QFileSystemMetaData::BundleType;
-
-        data.knownFlagsMask |= QFileSystemMetaData::BundleType;
-    }
-#endif
     if (!entryExists) {
+        what &= ~QFileSystemMetaData::LinkType; // don't clear link: could be broken symlink
         data.clearFlags(what);
         return false;
     }
