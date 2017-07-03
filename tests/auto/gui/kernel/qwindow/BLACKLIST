@@ -1,6 +1,9 @@
 [positioning:default]
 ubuntu-14.04
 ubuntu-16.04
+osx-10.12 ci
+[positioning:fake]
+osx-10.12 ci
 [modalWindowPosition]
 ubuntu-14.04
 ubuntu-16.04
