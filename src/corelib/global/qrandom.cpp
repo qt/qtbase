@@ -57,7 +57,7 @@
 #    include "qhashfunctions.h"
 #  endif
 
-#  if QT_CONFIG(sys_auxv)
+#  if QT_CONFIG(getauxval)
 #    include <sys/auxv.h>
 #  endif
 #endif // !QT_CONFIG(getentropy)
@@ -291,7 +291,7 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
     if (quint32 v = seed.load())
         *end++ = v; // 6
 
-#if QT_CONFIG(sys_auxv)
+#if QT_CONFIG(getauxval)
     // works on Linux -- all modern libc have getauxval
 #  ifdef AT_RANDOM
     // ELF's auxv AT_RANDOM has 16 random bytes

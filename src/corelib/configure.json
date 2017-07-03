@@ -162,6 +162,11 @@
             "type": "compile",
             "test": "unix/futimesat"
         },
+        "getauxval": {
+            "label": "getauxval()",
+            "type": "compile",
+            "test": "unix/getauxval"
+        },
         "getentropy": {
             "label": "getentropy()",
             "type": "compile",
@@ -216,11 +221,6 @@
             "label": "syslog",
             "type": "compile",
             "test": "unix/syslog"
-        },
-        "sys_auxv": {
-            "label": "sys/auxv.h",
-            "type": "compile",
-            "test": "unix/sys_auxv"
         },
         "xlocalescanprint": {
             "label": "xlocale.h (or equivalents)",
@@ -279,6 +279,11 @@
         "futimesat": {
             "label": "futimesat()",
             "condition": "!config.win32 && !features.futimens && !features.futimes && tests.futimesat",
+            "output": [ "privateFeature" ]
+        },
+        "getauxval": {
+            "label": "getauxval()",
+            "condition": "config.linux && tests.getauxval",
             "output": [ "privateFeature" ]
         },
         "getentropy": {
@@ -416,11 +421,6 @@
             "label": "syslog",
             "autoDetect": false,
             "condition": "tests.syslog",
-            "output": [ "privateFeature" ]
-        },
-        "sys_auxv": {
-            "label": "sys/auxv.h",
-            "condition": "config.linux && tests.sys_auxv",
             "output": [ "privateFeature" ]
         },
         "threadsafe-cloexec": {

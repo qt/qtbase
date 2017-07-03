@@ -76,6 +76,7 @@
 # define QT_FEATURE_alloca_malloc_h -1
 #endif
 #define QT_FEATURE_cxx11_random (QT_HAS_INCLUDE(<random>) ? 1 : -1)
+#define QT_FEATURE_getauxval (QT_HAS_INCLUDE(<sys/auxv.h>) ? 1 : -1)
 #define QT_FEATURE_getentropy -1
 #define QT_FEATURE_iconv -1
 #define QT_FEATURE_icu -1
@@ -98,7 +99,6 @@
 #define QT_NO_GEOM_VARIANT
 #define QT_FEATURE_sharedmemory -1
 #define QT_FEATURE_systemsemaphore -1
-#define QT_FEATURE_sys_auxv (QT_HAS_INCLUDE(<sys/auxv.h>) ? 1 : -1)
 
 #ifdef QT_BUILD_QMAKE
 #define QT_FEATURE_commandlineparser -1
