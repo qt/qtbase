@@ -274,56 +274,6 @@ static QTouchDevice *touchDevice = 0;
     return focusWindow;
 }
 
-- (void)updateGeometry
-{
-    if (!m_platformWindow)
-        return;
-
-    QRect geometry;
-
-    if (m_platformWindow->isContentView()) {
-        // top level window, get window rect and flip y.
-        NSRect rect = [self frame];
-        NSRect windowRect = [[self window] frame];
-        geometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
-    } else if (m_platformWindow->m_viewIsToBeEmbedded) {
-        // embedded child window, use the frame rect ### merge with case below
-        geometry = QRectF::fromCGRect(NSRectToCGRect([self bounds])).toRect();
-    } else {
-        // child window, use the frame rect
-        geometry = QRectF::fromCGRect(NSRectToCGRect([self frame])).toRect();
-    }
-
-    const bool isResize = geometry.size() != m_platformWindow->geometry().size();
-
-    // It can happen that self.window is nil (if we are changing
-    // styleMask from/to borderless and content view is being re-parented)
-    // - this results in an invalid coordinates.
-    if (m_platformWindow->m_inSetStyleMask && !self.window)
-        return;
-
-     qCDebug(lcQpaCocoaWindow) << "[QNSView udpateGeometry:]" << m_platformWindow->window()
-                               << "current" << m_platformWindow->geometry() << "new" << geometry;
-
-    // Don't send the geometry change if the QWindow is designated to be
-    // embedded in a foreign view hiearchy but has not actually been
-    // embedded yet - it's too early.
-    if (m_platformWindow->m_viewIsToBeEmbedded && !m_platformWindow->m_viewIsEmbedded)
-        return;
-
-    // Send a geometry change event to Qt, if it's ready to handle events
-    if (!m_platformWindow->m_inConstructor) {
-        QWindowSystemInterface::handleGeometryChange(m_platformWindow->window(), geometry);
-        m_platformWindow->updateExposedGeometry();
-        // Guard against processing window system events during QWindow::setGeometry
-        // calles, which Qt and Qt applications do not excpect.
-        if (!m_platformWindow->m_inSetGeometry)
-            QWindowSystemInterface::flushWindowSystemEvents();
-        else if (isResize)
-            m_backingStore = 0;
-    }
-}
-
 - (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification
 {
     Q_UNUSED(textInputContextKeyboardSelectionDidChangeNotification)
@@ -365,6 +315,11 @@ static QTouchDevice *touchDevice = 0;
 
     for (const QRect &rect : region)
         [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
+}
+
+- (void)clearBackingStore
+{
+    m_backingStore = nullptr;
 }
 
 - (void)clearBackingStore:(QCocoaBackingStore *)backingStore

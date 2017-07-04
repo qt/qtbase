@@ -95,12 +95,12 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif
 - (void)flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset;
+- (void)clearBackingStore;
 - (void)clearBackingStore:(QCocoaBackingStore *)backingStore;
 - (void)setMaskRegion:(const QRegion *)region;
 - (void)invalidateWindowShadowIfNeeded;
 - (void)drawRect:(NSRect)dirtyRect;
 - (void)drawBackingStoreUsingCoreGraphics:(NSRect)dirtyRect;
-- (void)updateGeometry;
 - (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification;
 - (void)viewDidHide;
 - (void)viewDidUnhide;

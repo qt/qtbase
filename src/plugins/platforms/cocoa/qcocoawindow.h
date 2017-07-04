@@ -226,6 +226,8 @@ public: // for QNSView
     bool alwaysShowToolWindow() const;
     void removeMonitor();
 
+    void handleGeometryChange();
+
     NSView *m_view;
     QCocoaNSWindow *m_nsWindow;
 

@@ -558,7 +558,7 @@ void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     if (isContentView()) {
-        // While setting style mask we can have -updateGeometry calls on a content
+        // While setting style mask we can have handleGeometryChange calls on a content
         // view with null geometry, reporting an invalid coordinates as a result.
         m_inSetStyleMask = true;
         m_view.window.styleMask = windowStyleMask(flags);
@@ -837,7 +837,7 @@ void QCocoaWindow::windowWillMove()
 
 void QCocoaWindow::windowDidMove()
 {
-    [qnsview_cast(m_view) updateGeometry];
+    handleGeometryChange();
 
     // Moving a window might bring it out of maximized state
     reportCurrentWindowState();
@@ -848,7 +848,7 @@ void QCocoaWindow::windowDidResize()
     if (!isContentView())
         return;
 
-    [qnsview_cast(m_view) updateGeometry];
+    handleGeometryChange();
 
     if (!m_view.inLiveResize)
         reportCurrentWindowState();
@@ -856,7 +856,7 @@ void QCocoaWindow::windowDidResize()
 
 void QCocoaWindow::viewDidChangeFrame()
 {
-    [qnsview_cast(m_view) updateGeometry];
+    handleGeometryChange();
 }
 
 /*!
@@ -1021,6 +1021,55 @@ bool QCocoaWindow::windowShouldClose()
     QWindowSystemInterface::handleCloseEvent(window(), &accepted);
     QWindowSystemInterface::flushWindowSystemEvents();
     return accepted;
+}
+
+// ----------------------------- QPA forwarding -----------------------------
+
+void QCocoaWindow::handleGeometryChange()
+{
+    // Don't send geometry change event to Qt unless it's ready to handle events
+    if (m_inConstructor)
+        return;
+
+    // Don't send the geometry change if the QWindow is designated to be
+    // embedded in a foreign view hierarchy but has not actually been
+    // embedded yet - it's too early.
+    if (m_viewIsToBeEmbedded && !m_viewIsEmbedded)
+        return;
+
+    // It can happen that the current NSWindow is nil (if we are changing styleMask
+    // from/to borderless, and the content view is being re-parented), which results
+    // in invalid coordinates.
+    if (m_inSetStyleMask && !m_view.window)
+        return;
+
+    QRect newGeometry;
+
+    if (isContentView()) {
+        // Top level window, get window rect and flip y
+        NSRect rect = m_view.frame;
+        NSRect windowRect = m_view.window.frame;
+        newGeometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+    } else if (m_viewIsToBeEmbedded) {
+        // Embedded child window, use the frame rect ### merge with case below
+        newGeometry = QRectF::fromCGRect(NSRectToCGRect(m_view.bounds)).toRect();
+    } else {
+        // Child window, use the frame rect
+        newGeometry = QRectF::fromCGRect(NSRectToCGRect(m_view.frame)).toRect();
+    }
+
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleGeometryChange" << window()
+                               << "current" << geometry() << "new" << newGeometry;
+
+    QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
+    updateExposedGeometry();
+
+    // Guard against processing window system events during QWindow::setGeometry
+    // calls, which Qt and Qt applications do not expect.
+    if (!m_inSetGeometry)
+        QWindowSystemInterface::flushWindowSystemEvents();
+    else if (newGeometry.size() != geometry().size())
+        [qnsview_cast(m_view) clearBackingStore];
 }
 
 // --------------------------------------------------------------------------
