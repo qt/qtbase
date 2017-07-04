@@ -3440,6 +3440,10 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 /*!
     Returns a decoded copy of \a input. \a input is first decoded from
     percent encoding, then converted from UTF-8 to unicode.
+
+    \note Given invalid input (such as a string containing the sequence "%G5",
+    which is not a valid hexadecimal number) the output will be invalid as
+    well. As an example: the sequence "%G5" could be decoded to 'W'.
 */
 QString QUrl::fromPercentEncoding(const QByteArray &input)
 {

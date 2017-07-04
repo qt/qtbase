@@ -43,7 +43,7 @@
 #include <qtableview.h>
 #include <qlistview.h>
 #include <qtreeview.h>
-#include <private/qtreewidget_p.h>
+#include <private/qtreeview_p.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 

@@ -4563,6 +4563,10 @@ void q_fromPercentEncoding(QByteArray *ba)
         text.data();            // returns "Qt is great!"
     \endcode
 
+    \note Given invalid input (such as a string containing the sequence "%G5",
+    which is not a valid hexadecimal number) the output will be invalid as
+    well. As an example: the sequence "%G5" could be decoded to 'W'.
+
     \sa toPercentEncoding(), QUrl::fromPercentEncoding()
 */
 QByteArray QByteArray::fromPercentEncoding(const QByteArray &input, char percent)

@@ -41,13 +41,14 @@
 #define QWINDOWSTABLETSUPPORT_H
 
 #include "qtwindowsglobal.h"
-
-#if !defined(QT_NO_TABLETEVENT)
+#include <QtGui/qtguiglobal.h>
 
 #include <QtCore/QVector>
 #include <QtCore/QPointF>
 
 #include <wintab.h>
+
+QT_REQUIRE_CONFIG(tabletevent);
 
 QT_BEGIN_NAMESPACE
 
@@ -140,5 +141,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // !QT_NO_TABLETEVENT
 #endif // QWINDOWSTABLETSUPPORT_H

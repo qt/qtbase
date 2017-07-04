@@ -1119,7 +1119,7 @@ void QAbstractSpinBox::keyReleaseEvent(QKeyEvent *event)
     \reimp
 */
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QAbstractSpinBox::wheelEvent(QWheelEvent *event)
 {
     Q_D(QAbstractSpinBox);

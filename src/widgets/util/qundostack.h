@@ -44,14 +44,13 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(undocommand);
 
+QT_BEGIN_NAMESPACE
 
 class QAction;
 class QUndoCommandPrivate;
 class QUndoStackPrivate;
-
-#ifndef QT_NO_UNDOCOMMAND
 
 class Q_WIDGETS_EXPORT QUndoCommand
 {
@@ -83,9 +82,7 @@ private:
     friend class QUndoStack;
 };
 
-#endif // QT_NO_UNDOCOMMAND
-
-#ifndef QT_NO_UNDOSTACK
+#if QT_CONFIG(undostack)
 
 class Q_WIDGETS_EXPORT QUndoStack : public QObject
 {
@@ -150,7 +147,7 @@ private:
     friend class QUndoGroup;
 };
 
-#endif // QT_NO_UNDOSTACK
+#endif // QT_CONFIG(undostack)
 
 QT_END_NAMESPACE
 

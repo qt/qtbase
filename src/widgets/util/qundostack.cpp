@@ -39,10 +39,10 @@
 
 #include <QtCore/qdebug.h>
 #include "qundostack.h"
+#if QT_CONFIG(undogroup)
 #include "qundogroup.h"
+#endif
 #include "qundostack_p.h"
-
-#ifndef QT_NO_UNDOCOMMAND
 
 QT_BEGIN_NAMESPACE
 
@@ -340,9 +340,7 @@ const QUndoCommand *QUndoCommand::child(int index) const
     return d->child_list.at(index);
 }
 
-#endif // QT_NO_UNDOCOMMAND
-
-#ifndef QT_NO_UNDOSTACK
+#if QT_CONFIG(undostack)
 
 /*!
     \class QUndoStack
@@ -544,7 +542,7 @@ bool QUndoStackPrivate::checkUndoLimit()
 QUndoStack::QUndoStack(QObject *parent)
     : QObject(*(new QUndoStackPrivate), parent)
 {
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     if (QUndoGroup *group = qobject_cast<QUndoGroup*>(parent))
         group->addStack(this);
 #endif
@@ -559,7 +557,7 @@ QUndoStack::QUndoStack(QObject *parent)
 
 QUndoStack::~QUndoStack()
 {
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     Q_D(QUndoStack);
     if (d->group != 0)
         d->group->removeStack(this);
@@ -1247,7 +1245,7 @@ int QUndoStack::undoLimit() const
 
 void QUndoStack::setActive(bool active)
 {
-#ifdef QT_NO_UNDOGROUP
+#if !QT_CONFIG(undogroup)
     Q_UNUSED(active);
 #else
     Q_D(QUndoStack);
@@ -1263,7 +1261,7 @@ void QUndoStack::setActive(bool active)
 
 bool QUndoStack::isActive() const
 {
-#ifdef QT_NO_UNDOGROUP
+#if !QT_CONFIG(undogroup)
     return true;
 #else
     Q_D(const QUndoStack);
@@ -1332,4 +1330,4 @@ QT_END_NAMESPACE
 #include "moc_qundostack.cpp"
 #include "moc_qundostack_p.cpp"
 
-#endif // QT_NO_UNDOSTACK
+#endif // QT_CONFIG(undostack)

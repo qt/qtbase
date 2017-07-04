@@ -702,10 +702,10 @@ public:
     QString toolTip;
     int toolTipDuration;
 #endif
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
     QString statusTip;
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     QString whatsThis;
 #endif
 #ifndef QT_NO_ACCESSIBILITY

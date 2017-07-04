@@ -123,7 +123,7 @@ public:
     QString tabToolTip(int index) const;
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     void setTabWhatsThis(int index, const QString &text);
     QString tabWhatsThis(int index) const;
 #endif
@@ -203,7 +203,7 @@ protected:
     void mousePressEvent (QMouseEvent *) Q_DECL_OVERRIDE;
     void mouseMoveEvent (QMouseEvent *) Q_DECL_OVERRIDE;
     void mouseReleaseEvent (QMouseEvent *) Q_DECL_OVERRIDE;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
 #endif
     void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;

@@ -38,6 +38,8 @@
 **
 ****************************************************************************/
 
+#include <QtGui/qtguiglobal.h>
+
 #include "androidjniinput.h"
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
@@ -292,17 +294,17 @@ namespace QtAndroidInput
 
     static bool isTabletEventSupported(JNIEnv */*env*/, jobject /*thiz*/)
     {
-#ifdef QT_NO_TABLETEVENT
-        return false;
-#else
+#if QT_CONFIG(tabletevent)
         return true;
-#endif // QT_NO_TABLETEVENT
+#else
+        return false;
+#endif // QT_CONFIG(tabletevent)
     }
 
     static void tabletEvent(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint deviceId, jlong time, jint action,
         jint pointerType, jint buttonState, jfloat x, jfloat y, jfloat pressure)
     {
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
         QPointF globalPosF(x, y);
         QPoint globalPos((int)x, (int)y);
         QWindow *tlw = topLevelWindowAt(globalPos);
@@ -344,7 +346,7 @@ namespace QtAndroidInput
         QWindowSystemInterface::handleTabletEvent(tlw, ulong(time),
             localPos, globalPosF, QTabletEvent::Stylus, pointerType,
             buttons, pressure, 0, 0, 0., 0., 0, deviceId, Qt::NoModifier);
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
     }
 
     static int mapAndroidKey(int key)

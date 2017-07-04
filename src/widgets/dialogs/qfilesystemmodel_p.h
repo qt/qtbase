@@ -54,8 +54,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qfilesystemmodel.h"
 
-#ifndef QT_NO_FILESYSTEMMODEL
-
 #include <private/qabstractitemmodel_p.h>
 #include <qabstractitemmodel.h>
 #include "qfileinfogatherer_p.h"
@@ -65,6 +63,8 @@
 #include <qfileinfo.h>
 #include <qtimer.h>
 #include <qhash.h>
+
+QT_REQUIRE_CONFIG(filesystemmodel);
 
 QT_BEGIN_NAMESPACE
 
@@ -313,9 +313,7 @@ public:
 
 };
 Q_DECLARE_TYPEINFO(QFileSystemModelPrivate::Fetching, Q_MOVABLE_TYPE);
-#endif // QT_NO_FILESYSTEMMODEL
 
 QT_END_NAMESPACE
 
 #endif
-

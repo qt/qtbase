@@ -199,7 +199,7 @@ private slots:
     void findWithRegExpReturnsFalseIfNoMoreResults();
 #endif
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent();
 #endif
 
@@ -2566,7 +2566,7 @@ void tst_QTextEdit::findWithRegExpReturnsFalseIfNoMoreResults()
 }
 #endif
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 
 class TextEdit : public QTextEdit
 {

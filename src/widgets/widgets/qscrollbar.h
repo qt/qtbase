@@ -64,7 +64,7 @@ public:
     bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 protected:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
 #endif
     void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;

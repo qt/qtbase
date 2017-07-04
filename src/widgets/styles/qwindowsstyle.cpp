@@ -60,7 +60,9 @@
 #include "qfile.h"
 #include "qtextstream.h"
 #include "qpixmapcache.h"
+#if QT_CONFIG(wizard)
 #include "qwizard.h"
+#endif
 #include "qlistview.h"
 #include <private/qmath_p.h>
 #include <qmath.h>
@@ -621,7 +623,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         }
         break;
 #endif // QT_NO_RUBBERBAND
-#ifndef QT_NO_WIZARD
+#if QT_CONFIG(wizard)
     case SH_WizardStyle:
         ret = QWizard::ModernStyle;
         break;

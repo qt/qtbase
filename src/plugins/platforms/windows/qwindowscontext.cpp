@@ -60,6 +60,7 @@
 #include "qwindowsscreen.h"
 #include "qwindowstheme.h"
 
+#include <QtGui/qtguiglobal.h>
 #include <QtGui/QWindow>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -940,9 +941,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return false;
 #endif
     case QtWindows::DisplayChangedEvent:
-        return d->m_screenManager.handleDisplayChange(wParam, lParam);
         if (QWindowsTheme *t = QWindowsTheme::instance())
             t->displayChanged();
+        return d->m_screenManager.handleDisplayChange(wParam, lParam);
     case QtWindows::SettingChangedEvent:
         return d->m_screenManager.handleScreenChanges();
     default:
@@ -1089,10 +1090,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             *result = LRESULT(MA_NOACTIVATE);
             return true;
         }
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
         if (!d->m_tabletSupport.isNull())
             d->m_tabletSupport->notifyActivate();
-#endif // !QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
         if (platformWindow->testFlag(QWindowsWindow::BlockedByModal))
             if (const QWindow *modalWindow = QGuiApplication::modalWindow()) {
                 QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(modalWindow);

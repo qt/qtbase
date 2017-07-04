@@ -42,12 +42,11 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 
-#ifndef QT_NO_MESSAGEBOX
-
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(messagebox);
 
+QT_BEGIN_NAMESPACE
 
 class QLabel;
 class QMessageBoxPrivate;
@@ -324,7 +323,5 @@ str)).arg(QString::fromLatin1(qVersion())); QMessageBox::critical(0, QApplicatio
 "Incompatible Qt Library Error"), s, QMessageBox::Abort, 0); qFatal("%s", s.toLatin1().data()); }}
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MESSAGEBOX
 
 #endif // QMESSAGEBOX_H

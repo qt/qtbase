@@ -867,7 +867,7 @@ void QWindowSystemInterface::handleContextMenuEvent(QWindow *window, bool mouseT
 }
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 void QWindowSystemInterface::handleEnterWhatsThisEvent()
 {
     QWindowSystemInterfacePrivate::WindowSystemEvent *e =

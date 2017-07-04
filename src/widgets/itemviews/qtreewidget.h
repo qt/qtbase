@@ -46,10 +46,9 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 
+QT_REQUIRE_CONFIG(treewidget);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TREEWIDGET
 
 class QTreeWidget;
 class QTreeModel;
@@ -120,7 +119,7 @@ public:
     inline void setToolTip(int column, const QString &toolTip);
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     inline QString whatsThis(int column) const
         { return data(column, Qt::WhatsThisRole).toString(); }
     inline void setWhatsThis(int column, const QString &whatsThis);
@@ -225,7 +224,7 @@ inline void QTreeWidgetItem::setText(int column, const QString &atext)
 inline void QTreeWidgetItem::setIcon(int column, const QIcon &aicon)
 { setData(column, Qt::DecorationRole, aicon); }
 
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
 inline void QTreeWidgetItem::setStatusTip(int column, const QString &astatusTip)
 { setData(column, Qt::StatusTipRole, astatusTip); }
 #endif
@@ -235,7 +234,7 @@ inline void QTreeWidgetItem::setToolTip(int column, const QString &atoolTip)
 { setData(column, Qt::ToolTipRole, atoolTip); }
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 inline void QTreeWidgetItem::setWhatsThis(int column, const QString &awhatsThis)
 { setData(column, Qt::WhatsThisRole, awhatsThis); }
 #endif
@@ -431,8 +430,6 @@ inline void QTreeWidgetItem::setDisabled(bool disabled)
 
 inline bool QTreeWidgetItem::isDisabled() const
 { return !(flags() & Qt::ItemIsEnabled); }
-
-#endif // QT_NO_TREEWIDGET
 
 QT_END_NAMESPACE
 

@@ -42,12 +42,11 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 
-#ifndef QT_NO_PROGRESSDIALOG
-
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(progressdialog);
 
+QT_BEGIN_NAMESPACE
 
 class QPushButton;
 class QLabel;
@@ -129,7 +128,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_PROGRESSDIALOG
 
 #endif // QPROGRESSDIALOG_H

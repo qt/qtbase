@@ -348,7 +348,7 @@ void tst_QCompleter::getSetCheck()
     completer.setWrapAround(false);
     QCOMPARE(completer.wrapAround(), false);
 
-#ifndef QT_NO_FILESYSTEMMODEL
+#if QT_CONFIG(filesystemmodel)
     // QTBUG-54642, changing from QFileSystemModel to another model should restore role.
     completer.setCompletionRole(Qt::EditRole);
     QCOMPARE(completer.completionRole(), static_cast<int>(Qt::EditRole)); // default value
@@ -361,7 +361,7 @@ void tst_QCompleter::getSetCheck()
     QStandardItemModel standardItemModel2(2, 2); // Do not clobber a custom role when changing models
     completer.setModel(&standardItemModel2);
     QCOMPARE(completer.completionRole(), static_cast<int>(Qt::ToolTipRole));
-#endif // QT_NO_FILESYSTEMMODEL
+#endif // QT_CONFIG(filesystemmodel)
 }
 
 void tst_QCompleter::csMatchingOnCsSortedModel_data()

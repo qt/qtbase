@@ -21,8 +21,6 @@ OBJECTIVE_SOURCES += main.mm \
     qmultitouch_mac.mm \
     qcocoaaccessibilityelement.mm \
     qcocoaaccessibility.mm \
-    qcocoacolordialoghelper.mm \
-    qcocoafiledialoghelper.mm \
     qcocoafontdialoghelper.mm \
     qcocoacursor.mm \
     qcocoaclipboard.mm \
@@ -57,8 +55,6 @@ HEADERS += qcocoaintegration.h \
     qmultitouch_mac_p.h \
     qcocoaaccessibilityelement.h \
     qcocoaaccessibility.h \
-    qcocoacolordialoghelper.h \
-    qcocoafiledialoghelper.h \
     qcocoafontdialoghelper.h \
     qcocoacursor.h \
     qcocoaclipboard.h \
@@ -91,6 +87,8 @@ QT += \
 CONFIG += no_app_extension_api_only
 
 qtHaveModule(widgets) {
+    QT_FOR_CONFIG += widgets
+
     OBJECTIVE_SOURCES += \
         qpaintengine_mac.mm \
         qprintengine_mac.mm \
@@ -102,6 +100,16 @@ qtHaveModule(widgets) {
         qprintengine_mac_p.h \
         qcocoaprintersupport.h \
         qcocoaprintdevice.h \
+
+    qtConfig(colordialog) {
+        SOURCES += qcocoacolordialoghelper.mm
+        HEADERS += qcocoacolordialoghelper.h
+    }
+
+    qtConfig(filedialog) {
+        SOURCES += qcocoafiledialoghelper.mm
+        HEADERS += qcocoafiledialoghelper.h
+    }
 
     QT += widgets-private printsupport-private
 }

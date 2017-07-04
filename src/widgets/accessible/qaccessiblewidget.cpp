@@ -48,7 +48,9 @@
 #include "qlabel.h"
 #endif
 #include "qtooltip.h"
+#if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
+#endif
 #include "qwidget.h"
 #include "qdebug.h"
 #include <qmath.h>
@@ -436,7 +438,7 @@ QString QAccessibleWidget::text(QAccessible::Text t) const
 #endif
         break;
     case QAccessible::Help:
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
         str = widget()->whatsThis();
 #endif
         break;

@@ -593,6 +593,8 @@ namespace QTest {
         } else {
             ok = qmake.waitForFinished();
             exitCode = qmake.exitCode();
+            if (!ok)
+                qmake.terminate();
 
             std_out += qmake.readAllStandardOutput();
             std_err += qmake.readAllStandardError();

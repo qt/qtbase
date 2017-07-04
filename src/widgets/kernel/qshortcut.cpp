@@ -42,7 +42,9 @@
 
 #ifndef QT_NO_SHORTCUT
 #include <qevent.h>
+#if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
+#endif
 #include <qmenu.h>
 #include <qmenubar.h>
 #include <qapplication.h>
@@ -641,7 +643,7 @@ bool QShortcut::event(QEvent *e)
     if (d->sc_enabled && e->type() == QEvent::Shortcut) {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         if (se->shortcutId() == d->sc_id && se->key() == d->sc_sequence){
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
             if (QWhatsThis::inWhatsThisMode()) {
                 QWhatsThis::showText(QCursor::pos(), d->sc_whatsthis);
                 handled = true;

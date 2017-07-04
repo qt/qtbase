@@ -14,7 +14,6 @@ HEADERS += \
         widgets/qdockwidget.h \
         widgets/qdockwidget_p.h \
         widgets/qdockarealayout_p.h \
-        widgets/qfontcombobox.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
         widgets/qgroupbox.h \
@@ -78,7 +77,6 @@ SOURCES += \
         widgets/qdockwidget.cpp \
         widgets/qdockarealayout.cpp \
         widgets/qeffects.cpp \
-        widgets/qfontcombobox.cpp \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
         widgets/qkeysequenceedit.cpp \
@@ -150,6 +148,11 @@ qtConfig(commandlinkbutton) {
 
     SOURCES += \
         widgets/qcommandlinkbutton.cpp
+}
+
+qtConfig(fontcombobox) {
+    HEADERS += widgets/qfontcombobox.h
+    SOURCES += widgets/qfontcombobox.cpp
 }
 
 qtConfig(label) {

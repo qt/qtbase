@@ -42,12 +42,11 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 
-#ifndef QT_NO_COLORDIALOG
-
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(colordialog);
 
+QT_BEGIN_NAMESPACE
 
 class QColorDialogPrivate;
 
@@ -126,7 +125,5 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QColorDialog::ColorDialogOptions)
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_COLORDIALOG
 
 #endif // QCOLORDIALOG_H

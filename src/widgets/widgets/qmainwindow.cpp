@@ -1311,7 +1311,7 @@ bool QMainWindow::event(QEvent *event)
         }
 #endif
 
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
         case QEvent::StatusTip:
 #ifndef QT_NO_STATUSBAR
             if (QStatusBar *sb = d->layout->statusBar())
@@ -1320,7 +1320,7 @@ bool QMainWindow::event(QEvent *event)
 #endif
                 static_cast<QStatusTipEvent*>(event)->ignore();
             return true;
-#endif // QT_NO_STATUSTIP
+#endif // QT_CONFIG(statustip)
 
         case QEvent::StyleChange:
 #ifndef QT_NO_DOCKWIDGET

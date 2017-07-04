@@ -40,9 +40,9 @@
 #include "qundostack.h"
 #include "qundoview.h"
 
-#ifndef QT_NO_UNDOVIEW
-
+#if QT_CONFIG(undogroup)
 #include "qundogroup.h"
+#endif
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qpointer.h>
 #include <QtGui/qicon.h>
@@ -273,12 +273,12 @@ class QUndoViewPrivate : public QListViewPrivate
     Q_DECLARE_PUBLIC(QUndoView)
 public:
     QUndoViewPrivate() :
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
         group(0),
 #endif
         model(0) {}
 
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     QPointer<QUndoGroup> group;
 #endif
     QUndoModel *model;
@@ -318,7 +318,7 @@ QUndoView::QUndoView(QUndoStack *stack, QWidget *parent)
     setStack(stack);
 }
 
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
 
 /*!
     Constructs a new view with parent \a parent and sets the observed group to \a group.
@@ -334,7 +334,7 @@ QUndoView::QUndoView(QUndoGroup *group, QWidget *parent)
     setGroup(group);
 }
 
-#endif // QT_NO_UNDOGROUP
+#endif // QT_CONFIG(undogroup)
 
 /*!
     Destroys this view.
@@ -369,13 +369,13 @@ QUndoStack *QUndoView::stack() const
 void QUndoView::setStack(QUndoStack *stack)
 {
     Q_D(QUndoView);
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     setGroup(0);
 #endif
     d->model->setStack(stack);
 }
 
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
 
 /*!
     Sets the group displayed by this view to \a group. If \a group is 0, the view will
@@ -423,7 +423,7 @@ QUndoGroup *QUndoView::group() const
     return d->group;
 }
 
-#endif // QT_NO_UNDOGROUP
+#endif // QT_CONFIG(undogroup)
 
 /*!
     \property QUndoView::emptyLabel
@@ -473,5 +473,3 @@ QT_END_NAMESPACE
 
 #include "qundoview.moc"
 #include "moc_qundoview.cpp"
-
-#endif // QT_NO_UNDOVIEW

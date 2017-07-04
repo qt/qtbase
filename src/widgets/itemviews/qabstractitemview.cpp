@@ -48,7 +48,6 @@
 #include <qdrag.h>
 #include <qevent.h>
 #include <qscrollbar.h>
-#include <qwhatsthis.h>
 #include <qtooltip.h>
 #include <qdatetime.h>
 #include <qlineedit.h>
@@ -174,7 +173,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
 
         if (index.isValid()) {
             emit q->entered(index);
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
             QString statustip = model->data(index, Qt::StatusTipRole).toString();
             if (parent && (shouldClearStatusTip || !statustip.isEmpty())) {
                 QStatusTipEvent tip(statustip);
@@ -183,7 +182,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
             }
 #endif
         } else {
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
             if (parent && shouldClearStatusTip) {
                 QString emptyString;
                 QStatusTipEvent tip( emptyString );
@@ -1704,7 +1703,7 @@ bool QAbstractItemView::viewportEvent(QEvent *event)
         break;
     case QEvent::Leave:
         d->setHoverIndex(QModelIndex()); // If we've left, no hover should be needed anymore
-    #ifndef QT_NO_STATUSTIP
+    #if QT_CONFIG(statustip)
         if (d->shouldClearStatusTip && d->parent) {
             QString empty;
             QStatusTipEvent tip(empty);

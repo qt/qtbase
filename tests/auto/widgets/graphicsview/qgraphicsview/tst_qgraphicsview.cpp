@@ -199,7 +199,7 @@ private slots:
     void mapFromScenePoly();
     void mapFromScenePath();
     void sendEvent();
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent();
 #endif
 #ifndef QT_NO_CURSOR
@@ -2188,7 +2188,7 @@ void tst_QGraphicsView::sendEvent()
     QCOMPARE(item->events.last(), QEvent::KeyPress);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 class MouseWheelScene : public QGraphicsScene
 {
 public:
@@ -2245,7 +2245,7 @@ void tst_QGraphicsView::wheelEvent()
     QCOMPARE(spy.count(), 2);
     QVERIFY(widget->hasFocus());
 }
-#endif // !QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 #ifndef QT_NO_CURSOR
 void tst_QGraphicsView::cursor()

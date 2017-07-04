@@ -847,7 +847,7 @@
         "xinput2": {
             "label": "Xinput2",
             "emitIf": "features.xcb",
-            "condition": "libs.xinput2",
+            "condition": "features.xcb-xlib && libs.xinput2",
             "output": [ "privateFeature" ]
         },
         "xkbcommon-evdev": {
@@ -1068,6 +1068,12 @@
             "section": "Utilities",
             "condition": "!config.integrity",
             "output": [ "privateFeature" ]
+        },
+        "whatsthis": {
+            "label": "QWhatsThis",
+            "purpose": "Supports displaying \"What's this\" help.",
+            "section": "Widget Support",
+            "output": [ "publicFeature", "feature" ]
         }
     },
 
@@ -1089,7 +1095,7 @@ XKB configuration data. This is required for keyboard input support."
         {
             "type": "note",
             "condition": "features.accessibility && features.xcb && !features.accessibility-atspi-bridge",
-            "message": "Disabling Linux Accessibility Bridge: D-Bus is missing."
+            "message": "Disabling X11 Accessibility Bridge: D-Bus or AT-SPI is missing."
         },
         {
             "type": "warning",

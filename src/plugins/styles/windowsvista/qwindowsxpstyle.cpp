@@ -1515,10 +1515,9 @@ case PE_Frame:
                 return;
             } else if (fillType == BT_NONE) {
                 return;
-            } else {
-                break;
             }
         }
+        break;
     }
     case PE_FrameLineEdit: {
         // we try to check if this lineedit is a delegate on a QAbstractItemView-derived class.
@@ -2434,6 +2433,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             p->restore();
             return;
         }
+        break;
 #endif // QT_NO_RUBBERBAND
     case CE_HeaderEmptyArea:
         if (option->state & State_Horizontal)
@@ -3760,10 +3760,9 @@ int QWindowsXPStyle::styleHint(StyleHint hint, const QStyleOption *option, const
         break;
 #ifndef QT_NO_RUBBERBAND
     case SH_RubberBand_Mask:
-        if (qstyleoption_cast<const QStyleOptionRubberBand *>(option)) {
+        if (qstyleoption_cast<const QStyleOptionRubberBand *>(option))
             res = 0;
-            break;
-        }
+        break;
 #endif // QT_NO_RUBBERBAND
 
     case SH_ItemView_DrawDelegateFrame:

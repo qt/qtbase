@@ -70,7 +70,9 @@
 #include "private/qwidgetwindow_p.h"
 #include "qpainter.h"
 #include "qtooltip.h"
+#if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
+#endif
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
@@ -5114,8 +5116,11 @@ void qt_qpa_set_cursor(QWidget *w, bool force)
 
     \snippet code/src_gui_kernel_qwidget.cpp 8
 
-    \note To obtain the contents of an OpenGL widget, use QGLWidget::grabFrameBuffer()
-    or QGLWidget::renderPixmap() instead.
+    \note To obtain the contents of a QOpenGLWidget, use QOpenGLWidget::grabFramebuffer()
+    instead.
+
+    \note To obtain the contents of a QGLWidget (deprecated), use
+    QGLWidget::grabFrameBuffer() or QGLWidget::renderPixmap() instead.
 */
 void QWidget::render(QPaintDevice *target, const QPoint &targetOffset,
                      const QRegion &sourceRegion, RenderFlags renderFlags)
@@ -5845,7 +5850,7 @@ QRectF QWidgetEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) con
 
 void QWidgetEffectSourcePrivate::draw(QPainter *painter)
 {
-    if (!context || context->painter != painter || !context->sharedPainter) {
+    if (!context || context->painter != painter) {
         m_widget->render(painter);
         return;
     }
@@ -8762,7 +8767,7 @@ bool QWidget::event(QEvent *event)
         case QEvent::ContextMenu:
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
         case QEvent::Wheel:
 #endif
             return false;
@@ -8786,12 +8791,12 @@ bool QWidget::event(QEvent *event)
     case QEvent::MouseButtonDblClick:
         mouseDoubleClickEvent((QMouseEvent*)event);
         break;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         wheelEvent((QWheelEvent*)event);
         break;
 #endif
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletMove:
         if (static_cast<QTabletEvent *>(event)->buttons() == Qt::NoButton && !testAttribute(Qt::WA_TabletTracking))
             break;
@@ -8838,7 +8843,7 @@ bool QWidget::event(QEvent *event)
             }
         }
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
         if (!k->isAccepted()
             && k->modifiers() & Qt::ShiftModifier && k->key() == Qt::Key_F1
             && d->whatsThis.size()) {
@@ -8906,7 +8911,7 @@ bool QWidget::event(QEvent *event)
         break;
 
     case QEvent::Enter:
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
         if (d->statusTip.size()) {
             QStatusTipEvent tip(d->statusTip);
             QApplication::sendEvent(const_cast<QWidget *>(this), &tip);
@@ -8916,7 +8921,7 @@ bool QWidget::event(QEvent *event)
         break;
 
     case QEvent::Leave:
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
         if (d->statusTip.size()) {
             QString empty;
             QStatusTipEvent tip(empty);
@@ -9137,7 +9142,7 @@ bool QWidget::event(QEvent *event)
             event->ignore();
         break;
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     case QEvent::WhatsThis:
         if (d->whatsThis.size())
             QWhatsThis::showText(static_cast<QHelpEvent *>(event)->globalPos(), d->whatsThis, this);
@@ -9403,7 +9408,7 @@ void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
     mousePressEvent(event);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 /*!
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive wheel events for the widget.
@@ -9422,9 +9427,9 @@ void QWidget::wheelEvent(QWheelEvent *event)
 {
     event->ignore();
 }
-#endif // QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 /*!
     This event handler, for event \a event, can be reimplemented in a
     subclass to receive tablet events for the widget.
@@ -9449,7 +9454,7 @@ void QWidget::tabletEvent(QTabletEvent *event)
 {
     event->ignore();
 }
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
 /*!
     This event handler, for event \a event, can be reimplemented in a
@@ -10494,7 +10499,7 @@ static void sendWindowChangeToTextureChildrenRecursively(QWidget *widget)
 
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
-        if (w && !w->isWindow() && !w->isHidden() && QWidgetPrivate::get(w)->textureChildSeen)
+        if (w && !w->isWindow() && QWidgetPrivate::get(w)->textureChildSeen)
             sendWindowChangeToTextureChildrenRecursively(w);
     }
 }
@@ -11542,7 +11547,7 @@ int QWidget::toolTipDuration() const
 #endif // QT_NO_TOOLTIP
 
 
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
 /*!
   \property QWidget::statusTip
   \brief the widget's status tip
@@ -11562,9 +11567,9 @@ QString QWidget::statusTip() const
     Q_D(const QWidget);
     return d->statusTip;
 }
-#endif // QT_NO_STATUSTIP
+#endif // QT_CONFIG(statustip)
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 /*!
   \property QWidget::whatsThis
 
@@ -11585,7 +11590,7 @@ QString QWidget::whatsThis() const
     Q_D(const QWidget);
     return d->whatsThis;
 }
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
 
 #ifndef QT_NO_ACCESSIBILITY
 /*!

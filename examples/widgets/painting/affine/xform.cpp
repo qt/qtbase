@@ -260,7 +260,7 @@ void XFormView::timerEvent(QTimerEvent *e)
     }
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void XFormView::wheelEvent(QWheelEvent *e)
 {
     m_scale += e->delta() / qreal(600);

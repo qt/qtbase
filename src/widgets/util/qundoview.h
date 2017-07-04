@@ -44,7 +44,7 @@
 #include <QtWidgets/qlistview.h>
 #include <QtCore/qstring.h>
 
-#ifndef QT_NO_UNDOVIEW
+QT_REQUIRE_CONFIG(undoview);
 
 QT_BEGIN_NAMESPACE
 
@@ -64,13 +64,13 @@ class Q_WIDGETS_EXPORT QUndoView : public QListView
 public:
     explicit QUndoView(QWidget *parent = Q_NULLPTR);
     explicit QUndoView(QUndoStack *stack, QWidget *parent = Q_NULLPTR);
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     explicit QUndoView(QUndoGroup *group, QWidget *parent = Q_NULLPTR);
 #endif
     ~QUndoView();
 
     QUndoStack *stack() const;
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     QUndoGroup *group() const;
 #endif
 
@@ -82,7 +82,7 @@ public:
 
 public Q_SLOTS:
     void setStack(QUndoStack *stack);
-#ifndef QT_NO_UNDOGROUP
+#if QT_CONFIG(undogroup)
     void setGroup(QUndoGroup *group);
 #endif
 
@@ -92,5 +92,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_UNDOVIEW
 #endif // QUNDOVIEW_H

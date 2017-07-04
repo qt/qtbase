@@ -778,10 +778,10 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
             if (qobject_cast<const QMessageBox *> (widget))
                 buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
-#ifndef QT_NO_INPUTDIALOG
+#if QT_CONFIG(inputdialog)
             else if (qobject_cast<const QInputDialog *> (widget))
                 buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
-#endif // QT_NO_INPUTDIALOG
+#endif // QT_CONFIG(inputdialog)
 
             if (buttonBox) {
                 //draw white panel part
@@ -2151,6 +2151,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
             rect = visualRect(cb->direction, cb->rect, rect);
             return rect;
         }
+        break;
 #endif // QT_NO_COMBOBOX
     case CC_TitleBar:
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(option)) {
@@ -2321,7 +2322,7 @@ void QWindowsVistaStyle::polish(QWidget *widget)
             buttonBox->setContentsMargins(0, 9, 0, 0);
 #endif
     }
-#ifndef QT_NO_INPUTDIALOG
+#if QT_CONFIG(inputdialog)
     else if (qobject_cast<QInputDialog *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
 #if QT_CONFIG(dialogbuttonbox)
@@ -2330,7 +2331,7 @@ void QWindowsVistaStyle::polish(QWidget *widget)
             buttonBox->setContentsMargins(0, 9, 0, 0);
 #endif
     }
-#endif // QT_NO_INPUTDIALOG
+#endif // QT_CONFIG(inputdialog)
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget)) {
         tree->viewport()->setAttribute(Qt::WA_Hover);
     }
@@ -2365,7 +2366,7 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
             buttonBox->setContentsMargins(0, 0, 0, 0);
 #endif
     }
-#ifndef QT_NO_INPUTDIALOG
+#if QT_CONFIG(inputdialog)
     else if (qobject_cast<QInputDialog *> (widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
 #if QT_CONFIG(dialogbuttonbox)
@@ -2374,7 +2375,7 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
             buttonBox->setContentsMargins(0, 0, 0, 0);
 #endif
     }
-#endif // QT_NO_INPUTDIALOG
+#endif // QT_CONFIG(inputdialog)
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget)) {
         tree->viewport()->setAttribute(Qt::WA_Hover, false);
     } else if (qobject_cast<QCommandLinkButton*>(widget)) {

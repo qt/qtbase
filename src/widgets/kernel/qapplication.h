@@ -76,7 +76,7 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
     Q_PROPERTY(int cursorFlashTime READ cursorFlashTime WRITE setCursorFlashTime)
     Q_PROPERTY(int doubleClickInterval  READ doubleClickInterval WRITE setDoubleClickInterval)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval WRITE setKeyboardInputInterval)
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     Q_PROPERTY(int wheelScrollLines  READ wheelScrollLines WRITE setWheelScrollLines)
 #endif
     Q_PROPERTY(QSize globalStrut READ globalStrut WRITE setGlobalStrut)
@@ -154,7 +154,7 @@ public:
     static void setKeyboardInputInterval(int);
     static int keyboardInputInterval();
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     static void setWheelScrollLines(int);
     static int wheelScrollLines();
 #endif

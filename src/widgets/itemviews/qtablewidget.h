@@ -44,12 +44,10 @@
 #include <QtWidgets/qtableview.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
-//#include <QtWidgets/qitemselectionmodel.h>
+
+QT_REQUIRE_CONFIG(tablewidget);
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TABLEWIDGET
 
 class Q_WIDGETS_EXPORT QTableWidgetSelectionRange
 {
@@ -118,7 +116,7 @@ public:
     inline void setToolTip(const QString &toolTip);
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     inline QString whatsThis() const
         { return data(Qt::WhatsThisRole).toString(); }
     inline void setWhatsThis(const QString &whatsThis);
@@ -198,7 +196,7 @@ inline void QTableWidgetItem::setToolTip(const QString &atoolTip)
 { setData(Qt::ToolTipRole, atoolTip); }
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 inline void QTableWidgetItem::setWhatsThis(const QString &awhatsThis)
 { setData(Qt::WhatsThisRole, awhatsThis); }
 #endif
@@ -378,8 +376,6 @@ inline void QTableWidgetItem::setSelected(bool aselect)
 
 inline bool QTableWidgetItem::isSelected() const
 { return (view ? view->isItemSelected(this) : false); }
-
-#endif // QT_NO_TABLEWIDGET
 
 QT_END_NAMESPACE
 

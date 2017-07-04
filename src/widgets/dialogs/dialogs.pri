@@ -1,42 +1,17 @@
 # Qt dialogs module
 
 HEADERS += \
-	dialogs/qcolordialog.h \
-        dialogs/qfscompleter_p.h \
-	dialogs/qerrormessage.h \
-	dialogs/qfiledialog.h \
-	dialogs/qfiledialog_p.h \
 	dialogs/qfontdialog.h \
-	dialogs/qfontdialog_p.h \
-	dialogs/qinputdialog.h \
-	dialogs/qmessagebox.h \
-	dialogs/qprogressdialog.h \
-        dialogs/qsidebar_p.h \
-        dialogs/qfilesystemmodel.h \
-        dialogs/qfilesystemmodel_p.h \
-        dialogs/qfileinfogatherer_p.h \
-        dialogs/qwizard.h
-
-win32 {
-    HEADERS += dialogs/qwizard_win_p.h
-    SOURCES += dialogs/qwizard_win.cpp
-}
-
-FORMS += dialogs/qfiledialog.ui
+        dialogs/qfontdialog_p.h
 
 INCLUDEPATH += $$PWD
 SOURCES += \
-	dialogs/qcolordialog.cpp \
-	dialogs/qerrormessage.cpp \
-	dialogs/qfiledialog.cpp \
-	dialogs/qfontdialog.cpp \
-	dialogs/qinputdialog.cpp \
-	dialogs/qmessagebox.cpp \
-	dialogs/qprogressdialog.cpp \
-        dialogs/qsidebar.cpp \
-        dialogs/qfilesystemmodel.cpp \
-        dialogs/qfileinfogatherer.cpp \
-	dialogs/qwizard.cpp \
+        dialogs/qfontdialog.cpp
+
+qtConfig(colordialog) {
+    HEADERS += dialogs/qcolordialog.h
+    SOURCES += dialogs/qcolordialog.cpp
+}
 
 qtConfig(dialog) {
     HEADERS += \
@@ -47,4 +22,61 @@ qtConfig(dialog) {
         dialogs/qdialog.cpp
 }
 
-RESOURCES += dialogs/qmessagebox.qrc
+qtConfig(errormessage) {
+    HEADERS += dialogs/qerrormessage.h
+    SOURCES += dialogs/qerrormessage.cpp
+}
+
+qtConfig(filedialog) {
+    HEADERS += \
+        dialogs/qfiledialog.h \
+        dialogs/qfiledialog_p.h \
+        dialogs/qsidebar_p.h
+
+    SOURCES += \
+        dialogs/qfiledialog.cpp \
+        dialogs/qsidebar.cpp
+
+    FORMS += dialogs/qfiledialog.ui
+}
+
+qtConfig(filesystemmodel) {
+    HEADERS += \
+        dialogs/qfilesystemmodel.h \
+        dialogs/qfilesystemmodel_p.h \
+        dialogs/qfileinfogatherer_p.h
+
+    SOURCES += \
+        dialogs/qfilesystemmodel.cpp \
+        dialogs/qfileinfogatherer.cpp
+}
+
+qtConfig(fscompleter) {
+    HEADERS += dialogs/qfscompleter_p.h
+}
+
+qtConfig(inputdialog) {
+    HEADERS += dialogs/qinputdialog.h
+    SOURCES += dialogs/qinputdialog.cpp
+}
+
+qtConfig(messagebox) {
+    HEADERS += dialogs/qmessagebox.h
+    SOURCES += dialogs/qmessagebox.cpp
+    RESOURCES += dialogs/qmessagebox.qrc
+}
+
+qtConfig(progressdialog) {
+    HEADERS += dialogs/qprogressdialog.h
+    SOURCES += dialogs/qprogressdialog.cpp
+}
+
+qtConfig(wizard) {
+    HEADERS += dialogs/qwizard.h
+    SOURCES += dialogs/qwizard.cpp
+
+    win32 {
+        HEADERS += dialogs/qwizard_win_p.h
+        SOURCES += dialogs/qwizard_win.cpp
+    }
+}

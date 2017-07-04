@@ -61,7 +61,7 @@ namespace
 inline bool is_valid_client_stream(quint32 streamID)
 {
     // A valid client stream ID is an odd integer number in the range [1, INT_MAX].
-    return (streamID & 0x1) && streamID <= std::numeric_limits<qint32>::max();
+    return (streamID & 0x1) && streamID <= quint32(std::numeric_limits<qint32>::max());
 }
 
 void fill_push_header(const HttpHeader &originalRequest, HttpHeader &promisedRequest)

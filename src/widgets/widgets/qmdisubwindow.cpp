@@ -153,7 +153,9 @@
 #include <QStylePainter>
 #include <QVBoxLayout>
 #include <QMouseEvent>
+#if QT_CONFIG(whatsthis)
 #include <QWhatsThis>
+#endif
 #include <QToolTip>
 #include <QMainWindow>
 #include <QScrollBar>
@@ -1487,7 +1489,7 @@ void QMdiSubWindowPrivate::processClickedSubControl()
     Q_Q(QMdiSubWindow);
     switch (activeSubControl) {
     case QStyle::SC_TitleBarContextHelpButton:
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
         QWhatsThis::enterWhatsThisMode();
 #endif
         break;

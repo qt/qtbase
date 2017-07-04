@@ -89,7 +89,7 @@ void ButtonTester::mouseDoubleClickEvent(QMouseEvent *e)
     this->setText(result);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void ButtonTester::wheelEvent (QWheelEvent *e)
 {
     QString result;

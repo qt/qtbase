@@ -118,14 +118,15 @@ ProjectGenerator::init()
                     dir = regex.left(s+1);
                     regex = regex.right(regex.length() - (s+1));
                 }
+                const QDir d(dir);
                 if (Option::recursive) {
-                    QStringList entries = QDir(dir).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+                    QStringList entries = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
                     for (int i = 0; i < entries.count(); i++)
                         dirs.append(dir + entries[i] + QDir::separator() + regex);
                 }
-                QStringList files = QDir(dir).entryList(QDir::nameFiltersFromString(regex));
+                QStringList files = d.entryList(QDir::nameFiltersFromString(regex));
                 for(int i = 0; i < (int)files.count(); i++) {
-                    QString file = dir + files[i];
+                    QString file = d.absoluteFilePath(files[i]);
                     if (addFile(file)) {
                         add_depend = true;
                         file_count++;

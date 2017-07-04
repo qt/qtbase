@@ -41,12 +41,18 @@
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
 #include "private/qabstractprintdialog_p.h"
+#if QT_CONFIG(messagebox)
 #include <QtWidgets/qmessagebox.h>
+#endif
 #include "qprintdialog.h"
+#if QT_CONFIG(filedialog)
 #include "qfiledialog.h"
+#endif
 #include <QtCore/qdir.h>
 #include <QtGui/qevent.h>
+#if QT_CONFIG(filesystemmodel)
 #include <QtWidgets/qfilesystemmodel.h>
+#endif
 #include <QtWidgets/qstyleditemdelegate.h>
 #include <QtPrintSupport/qprinter.h>
 
@@ -57,7 +63,7 @@
 
 #include <QtWidgets/qdialogbuttonbox.h>
 
-#include "private/qfscompleter_p.h"
+#include <private/qcompleter_p.h>
 #include "ui_qprintpropertieswidget.h"
 #include "ui_qprintsettingsoutput.h"
 #include "ui_qprintwidget.h"
@@ -201,7 +207,7 @@ public:
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
     void _q_togglePageSetCombo(bool);
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
     void _q_checkFields();
 #endif
     void _q_collapseOrExpandDialog();
@@ -335,7 +341,7 @@ void QPrintDialogPrivate::init()
     lay->addWidget(bottom);
     lay->addWidget(buttons);
 
-#ifdef QT_NO_MESSAGEBOX
+#if !QT_CONFIG(messagebox)
     QObject::connect(buttons, SIGNAL(accepted()), q, SLOT(accept()));
 #else
     QObject::connect(buttons, SIGNAL(accepted()), q, SLOT(_q_checkFields()));
@@ -494,14 +500,14 @@ void QPrintDialogPrivate::_q_collapseOrExpandDialog()
     }
 }
 
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
 void QPrintDialogPrivate::_q_checkFields()
 {
     Q_Q(QPrintDialog);
     if (top->d->checkFields())
         q->accept();
 }
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
 
 
 void QPrintDialogPrivate::updateWidgets()
@@ -673,7 +679,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
     }
     widget.properties->setEnabled(true);
 
-#if !defined(QT_NO_FILESYSTEMMODEL) && !defined(QT_NO_COMPLETER)
+#if QT_CONFIG(filesystemmodel) && !defined(QT_NO_COMPLETER)
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
     widget.filename->setCompleter(new QCompleter(fsm, widget.filename));
@@ -780,7 +786,7 @@ void QUnixPrintWidgetPrivate::setOptionsPane(QPrintDialogPrivate *pane)
 void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
 {
     QString filename = widget.filename->text();
-#ifndef QT_NO_FILEDIALOG
+#if QT_CONFIG(filedialog)
     filename = QFileDialog::getSaveFileName(parent, QPrintDialog::tr("Print To File ..."), filename,
                                             QString(), 0, QFileDialog::DontConfirmOverwrite);
 #else
@@ -834,7 +840,7 @@ void QUnixPrintWidgetPrivate::applyPrinterProperties()
         propertiesDialog->applyPrinterProperties(printer);
 }
 
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
 bool QUnixPrintWidgetPrivate::checkFields()
 {
     if (widget.filename->isEnabled()) {
@@ -885,7 +891,7 @@ bool QUnixPrintWidgetPrivate::checkFields()
     // Every test passed. Accept the dialog.
     return true;
 }
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
 
 void QUnixPrintWidgetPrivate::setupPrinterProperties()
 {

@@ -1188,7 +1188,7 @@ bool QAbstractScrollArea::viewportEvent(QEvent *e)
     case QEvent::TouchEnd:
     case QEvent::MouseMove:
     case QEvent::ContextMenu:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
 #endif
 #ifndef QT_NO_DRAGANDDROP
@@ -1305,7 +1305,7 @@ void QAbstractScrollArea::mouseMoveEvent(QMouseEvent *e)
 
     \sa QWidget::wheelEvent()
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QAbstractScrollArea::wheelEvent(QWheelEvent *e)
 {
     Q_D(QAbstractScrollArea);

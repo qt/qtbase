@@ -55,9 +55,9 @@
 #include "qcompleter.h"
 #include <QtWidgets/qfilesystemmodel.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(fscompleter);
 
-#ifndef QT_NO_FSCOMPLETER
+QT_BEGIN_NAMESPACE
 
 /*!
     QCompleter that can deal with QFileSystemModel
@@ -77,8 +77,6 @@ public:
     QAbstractProxyModel *proxyModel;
     QFileSystemModel *sourceModel;
 };
-
-#endif // QT_NO_FSCOMPLETER
 
 QT_END_NAMESPACE
 

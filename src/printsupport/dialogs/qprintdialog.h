@@ -94,9 +94,9 @@ private:
 #if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
     Q_PRIVATE_SLOT(d_func(), void _q_togglePageSetCombo(bool))
     Q_PRIVATE_SLOT(d_func(), void _q_collapseOrExpandDialog())
-# if !defined(QT_NO_MESSAGEBOX)
+#if QT_CONFIG(messagebox)
     Q_PRIVATE_SLOT(d_func(), void _q_checkFields())
-# endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
     friend class QUnixPrintWidget;
 # endif // Q_OS_UNIX
 };

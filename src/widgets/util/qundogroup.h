@@ -44,14 +44,13 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 
+QT_REQUIRE_CONFIG(undogroup);
+
 QT_BEGIN_NAMESPACE
 
 class QUndoGroupPrivate;
 class QUndoStack;
 class QAction;
-
-
-#ifndef QT_NO_UNDOGROUP
 
 class Q_WIDGETS_EXPORT QUndoGroup : public QObject
 {
@@ -96,8 +95,6 @@ Q_SIGNALS:
 private:
     Q_DISABLE_COPY(QUndoGroup)
 };
-
-#endif // QT_NO_UNDOGROUP
 
 QT_END_NAMESPACE
 

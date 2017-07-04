@@ -1194,7 +1194,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
   \reimp
 */
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QDateTimeEdit::wheelEvent(QWheelEvent *event)
 {
     QAbstractSpinBox::wheelEvent(event);

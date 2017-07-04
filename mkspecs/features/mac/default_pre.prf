@@ -10,18 +10,23 @@ isEmpty(QMAKE_XCODE_DEVELOPER_PATH) {
     # Make sure Xcode path is valid
     !exists($$QMAKE_XCODE_DEVELOPER_PATH): \
         error("Xcode is not installed in $${QMAKE_XCODE_DEVELOPER_PATH}. Please use xcode-select to choose Xcode installation path.")
-
-    # Make sure Xcode is set up properly
-    isEmpty($$list($$system("/usr/bin/xcrun -find xcodebuild 2>/dev/null"))): \
-        error("Xcode not set up properly. You may need to confirm the license agreement by running /usr/bin/xcodebuild.")
 }
 
-isEmpty(QMAKE_XCODE_VERSION) {
-    # Extract Xcode version using xcodebuild
-    xcode_version = $$system("/usr/bin/xcodebuild -version")
-    QMAKE_XCODE_VERSION = $$member(xcode_version, 1)
-    isEmpty(QMAKE_XCODE_VERSION): error("Could not resolve Xcode version.")
-    unset(xcode_version)
+isEmpty(QMAKE_XCODEBUILD_PATH): \
+    QMAKE_XCODEBUILD_PATH = $$system("/usr/bin/xcrun -find xcodebuild 2>/dev/null")
+
+!isEmpty(QMAKE_XCODEBUILD_PATH) {
+    # Make sure Xcode is set up properly
+    !system("/usr/bin/xcrun xcodebuild -license check 2>/dev/null"): \
+        error("Xcode not set up properly. You need to confirm the license agreement by running 'sudo xcrun xcodebuild -license accept'.")
+
+    isEmpty(QMAKE_XCODE_VERSION) {
+        # Extract Xcode version using xcodebuild
+        xcode_version = $$system("/usr/bin/xcrun xcodebuild -version")
+        QMAKE_XCODE_VERSION = $$member(xcode_version, 1)
+        isEmpty(QMAKE_XCODE_VERSION): error("Could not resolve Xcode version.")
+        unset(xcode_version)
+    }
 }
 
 isEmpty(QMAKE_TARGET_BUNDLE_PREFIX) {
