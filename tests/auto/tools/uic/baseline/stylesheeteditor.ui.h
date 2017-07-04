@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'stylesheeteditor.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.10.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -63,6 +63,9 @@ public:
         gridLayout->addItem(spacerItem1, 0, 0, 1, 1);
 
         styleSheetCombo = new QComboBox(StyleSheetEditor);
+        styleSheetCombo->addItem(QString());
+        styleSheetCombo->addItem(QString());
+        styleSheetCombo->addItem(QString());
         styleSheetCombo->setObjectName(QStringLiteral("styleSheetCombo"));
 
         gridLayout->addWidget(styleSheetCombo, 0, 5, 1, 1);
@@ -131,12 +134,10 @@ public:
     void retranslateUi(QWidget *StyleSheetEditor)
     {
         StyleSheetEditor->setWindowTitle(QApplication::translate("StyleSheetEditor", "Style Editor", Q_NULLPTR));
-        styleSheetCombo->clear();
-        styleSheetCombo->insertItems(0, QStringList()
-         << QApplication::translate("StyleSheetEditor", "Default", Q_NULLPTR)
-         << QApplication::translate("StyleSheetEditor", "Coffee", Q_NULLPTR)
-         << QApplication::translate("StyleSheetEditor", "Pagefold", Q_NULLPTR)
-        );
+        styleSheetCombo->setItemText(0, QApplication::translate("StyleSheetEditor", "Default", Q_NULLPTR));
+        styleSheetCombo->setItemText(1, QApplication::translate("StyleSheetEditor", "Coffee", Q_NULLPTR));
+        styleSheetCombo->setItemText(2, QApplication::translate("StyleSheetEditor", "Pagefold", Q_NULLPTR));
+
         label_7->setText(QApplication::translate("StyleSheetEditor", "Style:", Q_NULLPTR));
         applyButton->setText(QApplication::translate("StyleSheetEditor", "&Apply", Q_NULLPTR));
         label_8->setText(QApplication::translate("StyleSheetEditor", "Style Sheet:", Q_NULLPTR));

@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'config.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.10.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -286,6 +286,7 @@ public:
         hboxLayout2->addWidget(TextLabel1_3);
 
         skin = new QComboBox(Config);
+        skin->addItem(QString());
         skin->setObjectName(QStringLiteral("skin"));
         QSizePolicy sizePolicy2(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy2.setHorizontalStretch(0);
@@ -729,10 +730,8 @@ public:
         depth_32->setText(QApplication::translate("Config", "32 bit", Q_NULLPTR));
         depth_32_argb->setText(QApplication::translate("Config", "32 bit ARGB", Q_NULLPTR));
         TextLabel1_3->setText(QApplication::translate("Config", "Skin", Q_NULLPTR));
-        skin->clear();
-        skin->insertItems(0, QStringList()
-         << QApplication::translate("Config", "None", Q_NULLPTR)
-        );
+        skin->setItemText(0, QApplication::translate("Config", "None", Q_NULLPTR));
+
         touchScreen->setText(QApplication::translate("Config", "Emulate touch screen (no mouse move)", Q_NULLPTR));
         lcdScreen->setText(QApplication::translate("Config", "Emulate LCD screen (Only with fixed zoom of 3.0 times magnification)", Q_NULLPTR));
         TextLabel1->setText(QApplication::translate("Config", "<p>Note that any applications using the virtual framebuffer will be terminated if you change the Size or Depth <i>above</i>. You may freely modify the Gamma <i>below</i>.", Q_NULLPTR));

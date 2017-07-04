@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'embeddeddialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.10.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -49,6 +49,8 @@ public:
         formLayout->setWidget(0, QFormLayout::LabelRole, label);
 
         layoutDirection = new QComboBox(embeddedDialog);
+        layoutDirection->addItem(QString());
+        layoutDirection->addItem(QString());
         layoutDirection->setObjectName(QStringLiteral("layoutDirection"));
 
         formLayout->setWidget(0, QFormLayout::FieldRole, layoutDirection);
@@ -100,11 +102,9 @@ public:
     {
         embeddedDialog->setWindowTitle(QApplication::translate("embeddedDialog", "Embedded Dialog", Q_NULLPTR));
         label->setText(QApplication::translate("embeddedDialog", "Layout Direction:", Q_NULLPTR));
-        layoutDirection->clear();
-        layoutDirection->insertItems(0, QStringList()
-         << QApplication::translate("embeddedDialog", "Left to Right", Q_NULLPTR)
-         << QApplication::translate("embeddedDialog", "Right to Left", Q_NULLPTR)
-        );
+        layoutDirection->setItemText(0, QApplication::translate("embeddedDialog", "Left to Right", Q_NULLPTR));
+        layoutDirection->setItemText(1, QApplication::translate("embeddedDialog", "Right to Left", Q_NULLPTR));
+
         label_2->setText(QApplication::translate("embeddedDialog", "Select Font:", Q_NULLPTR));
         label_3->setText(QApplication::translate("embeddedDialog", "Style:", Q_NULLPTR));
         label_4->setText(QApplication::translate("embeddedDialog", "Layout spacing:", Q_NULLPTR));

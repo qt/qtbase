@@ -1899,63 +1899,34 @@ QString WriteInitialization::pixCall(const QString &t, const QString &text) cons
 void WriteInitialization::initializeComboBox(DomWidget *w)
 {
     const QString varName = m_driver->findOrInsertWidget(w);
-    const QString className = w->attributeClass();
 
     const auto &items = w->elementItem();
 
     if (items.isEmpty())
         return;
 
-    // If possible use qcombobox's addItems() which is much faster then a bunch of addItem() calls
-    bool makeStringListCall = true;
-    bool translatable = false;
-    QStringList list;
-    for (int i=0; i<items.size(); ++i) {
+    for (int i = 0; i < items.size(); ++i) {
         const DomItem *item = items.at(i);
         const DomPropertyMap properties = propertyMap(item->elementProperty());
         const DomProperty *text = properties.value(QLatin1String("text"));
-        const DomProperty *pixmap = properties.value(QLatin1String("icon"));
-        bool needsTr = needsTranslation(text->elementString());
-        if (pixmap != 0 || (i > 0 && translatable != needsTr)) {
-            makeStringListCall = false;
-            break;
+        const DomProperty *icon = properties.value(QLatin1String("icon"));
+
+        QString iconValue;
+        if (icon)
+            iconValue = iconCall(icon);
+
+        m_output << m_indent << varName << "->addItem(";
+        if (icon)
+            m_output << iconValue << ", ";
+
+        if (needsTranslation(text->elementString())) {
+            m_output << "QString());\n";
+            m_refreshOut << m_indent << varName << "->setItemText(" << i << ", " << trCall(text->elementString()) << ");\n";
+        } else {
+            m_output << noTrCall(text->elementString()) << ");\n";
         }
-        translatable = needsTr;
-        list.append(autoTrCall(text->elementString()));  // fix me here
     }
-
-    if (makeStringListCall) {
-        QTextStream &o = translatable ? m_refreshOut : m_output;
-        if (translatable)
-            o << m_indent << varName << "->clear();\n";
-        o << m_indent << varName << "->insertItems(0, QStringList()" << '\n';
-        for (int i = 0; i < list.size(); ++i)
-            o << m_indent << " << " << list.at(i) << "\n";
-        o << m_indent << ");\n";
-    } else {
-        for (int i = 0; i < items.size(); ++i) {
-            const DomItem *item = items.at(i);
-            const DomPropertyMap properties = propertyMap(item->elementProperty());
-            const DomProperty *text = properties.value(QLatin1String("text"));
-            const DomProperty *icon = properties.value(QLatin1String("icon"));
-
-            QString iconValue;
-            if (icon)
-                iconValue = iconCall(icon);
-
-            m_output << m_indent << varName << "->addItem(";
-            if (icon)
-                m_output << iconValue << ", ";
-
-            if (needsTranslation(text->elementString())) {
-                m_output << "QString());\n";
-                m_refreshOut << m_indent << varName << "->setItemText(" << i << ", " << trCall(text->elementString()) << ");\n";
-            } else {
-                m_output << noTrCall(text->elementString()) << ");\n";
-            }
-        }
-        m_refreshOut << "\n";
-    }
+    m_refreshOut << "\n";
 }
 
 QString WriteInitialization::disableSorting(DomWidget *w, const QString &varName)
@@ -2090,7 +2061,6 @@ void WriteInitialization::addCommonInitializers(Item *item,
 void WriteInitialization::initializeListWidget(DomWidget *w)
 {
     const QString varName = m_driver->findOrInsertWidget(w);
-    const QString className = w->attributeClass();
 
     const auto &items = w->elementItem();
 

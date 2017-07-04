@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'pagefold.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.10.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -102,6 +102,10 @@ public:
 #endif
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
         nameCombo = new QComboBox(mainFrame);
+        nameCombo->addItem(QString());
+        nameCombo->addItem(QString());
+        nameCombo->addItem(QString());
+        nameCombo->addItem(QString());
         nameCombo->setObjectName(QStringLiteral("nameCombo"));
         nameCombo->setEditable(true);
 
@@ -180,6 +184,13 @@ public:
         gridLayout->addWidget(label, 5, 0, 1, 1);
 
         countryCombo = new QComboBox(mainFrame);
+        countryCombo->addItem(QString());
+        countryCombo->addItem(QString());
+        countryCombo->addItem(QString());
+        countryCombo->addItem(QString());
+        countryCombo->addItem(QString());
+        countryCombo->addItem(QString());
+        countryCombo->addItem(QString());
         countryCombo->setObjectName(QStringLiteral("countryCombo"));
 
         gridLayout->addWidget(countryCombo, 4, 1, 1, 3);
@@ -238,13 +249,11 @@ public:
         aboutQtAction->setText(QApplication::translate("MainWindow", "About Qt", Q_NULLPTR));
         editStyleAction->setText(QApplication::translate("MainWindow", "Edit &Style", Q_NULLPTR));
         aboutAction->setText(QApplication::translate("MainWindow", "About", Q_NULLPTR));
-        nameCombo->clear();
-        nameCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Girish", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Jasmin", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Simon", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Zack", Q_NULLPTR)
-        );
+        nameCombo->setItemText(0, QApplication::translate("MainWindow", "Girish", Q_NULLPTR));
+        nameCombo->setItemText(1, QApplication::translate("MainWindow", "Jasmin", Q_NULLPTR));
+        nameCombo->setItemText(2, QApplication::translate("MainWindow", "Simon", Q_NULLPTR));
+        nameCombo->setItemText(3, QApplication::translate("MainWindow", "Zack", Q_NULLPTR));
+
 #ifndef QT_NO_TOOLTIP
         nameCombo->setToolTip(QApplication::translate("MainWindow", "Specify your name", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP
@@ -296,16 +305,14 @@ public:
         professionList->setWhatsThis(QApplication::translate("MainWindow", "Specify your name here", Q_NULLPTR));
 #endif // QT_NO_WHATSTHIS
         label->setText(QApplication::translate("MainWindow", "Profession:", Q_NULLPTR));
-        countryCombo->clear();
-        countryCombo->insertItems(0, QStringList()
-         << QApplication::translate("MainWindow", "Egypt", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "France", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Germany", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "India", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Italy", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Korea", Q_NULLPTR)
-         << QApplication::translate("MainWindow", "Norway", Q_NULLPTR)
-        );
+        countryCombo->setItemText(0, QApplication::translate("MainWindow", "Egypt", Q_NULLPTR));
+        countryCombo->setItemText(1, QApplication::translate("MainWindow", "France", Q_NULLPTR));
+        countryCombo->setItemText(2, QApplication::translate("MainWindow", "Germany", Q_NULLPTR));
+        countryCombo->setItemText(3, QApplication::translate("MainWindow", "India", Q_NULLPTR));
+        countryCombo->setItemText(4, QApplication::translate("MainWindow", "Italy", Q_NULLPTR));
+        countryCombo->setItemText(5, QApplication::translate("MainWindow", "Korea", Q_NULLPTR));
+        countryCombo->setItemText(6, QApplication::translate("MainWindow", "Norway", Q_NULLPTR));
+
 #ifndef QT_NO_TOOLTIP
         countryCombo->setToolTip(QApplication::translate("MainWindow", "Specify country of origin", Q_NULLPTR));
 #endif // QT_NO_TOOLTIP

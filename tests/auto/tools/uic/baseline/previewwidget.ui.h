@@ -31,7 +31,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'previewwidget.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.10.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -122,6 +122,7 @@ public:
         vboxLayout->addWidget(LineEdit1);
 
         ComboBox1 = new QComboBox(qdesigner_internal__PreviewWidget);
+        ComboBox1->addItem(QString());
         ComboBox1->setObjectName(QStringLiteral("ComboBox1"));
 
         vboxLayout->addWidget(ComboBox1);
@@ -239,10 +240,8 @@ public:
     {
         qdesigner_internal__PreviewWidget->setWindowTitle(QApplication::translate("qdesigner_internal::PreviewWidget", "Preview Window", Q_NULLPTR));
         LineEdit1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "LineEdit", Q_NULLPTR));
-        ComboBox1->clear();
-        ComboBox1->insertItems(0, QStringList()
-         << QApplication::translate("qdesigner_internal::PreviewWidget", "ComboBox", Q_NULLPTR)
-        );
+        ComboBox1->setItemText(0, QApplication::translate("qdesigner_internal::PreviewWidget", "ComboBox", Q_NULLPTR));
+
         PushButton1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "PushButton", Q_NULLPTR));
         ButtonGroup2->setTitle(QApplication::translate("qdesigner_internal::PreviewWidget", "ButtonGroup2", Q_NULLPTR));
         CheckBox1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "CheckBox1", Q_NULLPTR));

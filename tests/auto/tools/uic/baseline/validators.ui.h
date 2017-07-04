@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'validators.ui'
 **
-** Created by: Qt User Interface Compiler version 5.0.0
+** Created by: Qt User Interface Compiler version 5.10.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -268,6 +268,8 @@ public:
         gridLayout1->addWidget(label_5, 0, 2, 1, 1);
 
         doubleFormat = new QComboBox(groupBox_2);
+        doubleFormat->addItem(QString());
+        doubleFormat->addItem(QString());
         doubleFormat->setObjectName(QStringLiteral("doubleFormat"));
 
         gridLayout1->addWidget(doubleFormat, 0, 3, 1, 1);
@@ -384,11 +386,9 @@ public:
         groupBox_2->setTitle(QApplication::translate("ValidatorsForm", "QDoubleValidator", Q_NULLPTR));
         label_3->setText(QApplication::translate("ValidatorsForm", "Min:", Q_NULLPTR));
         label_5->setText(QApplication::translate("ValidatorsForm", "Format:", Q_NULLPTR));
-        doubleFormat->clear();
-        doubleFormat->insertItems(0, QStringList()
-         << QApplication::translate("ValidatorsForm", "Standard", Q_NULLPTR)
-         << QApplication::translate("ValidatorsForm", "Scientific", Q_NULLPTR)
-        );
+        doubleFormat->setItemText(0, QApplication::translate("ValidatorsForm", "Standard", Q_NULLPTR));
+        doubleFormat->setItemText(1, QApplication::translate("ValidatorsForm", "Scientific", Q_NULLPTR));
+
         label_4->setText(QApplication::translate("ValidatorsForm", "Max:", Q_NULLPTR));
         label_6->setText(QApplication::translate("ValidatorsForm", "Decimals:", Q_NULLPTR));
         doubleLedWidget->setText(QString());
