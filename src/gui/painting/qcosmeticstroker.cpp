@@ -304,8 +304,8 @@ void QCosmeticStroker::setup()
     ymin = deviceRect.top() - 1;
     ymax = deviceRect.bottom() + 2;
 
-    lastPixel.x = -1;
-    lastPixel.y = -1;
+    lastPixel.x = INT_MIN;
+    lastPixel.y = INT_MIN;
 }
 
 // returns true if the whole line gets clipped away
@@ -325,11 +325,11 @@ bool QCosmeticStroker::clipLine(qreal &x1, qreal &y1, qreal &x2, qreal &y2)
         x1 = xmax;
     }
     if (x2 < xmin) {
-        lastPixel.x = -1;
+        lastPixel.x = INT_MIN;
         y2 += (y2 - y1)/(x2 - x1) * (xmin - x2);
         x2 = xmin;
     } else if (x2 > xmax) {
-        lastPixel.x = -1;
+        lastPixel.x = INT_MIN;
         y2 += (y2 - y1)/(x2 - x1) * (xmax - x2);
         x2 = xmax;
     }
@@ -346,11 +346,11 @@ bool QCosmeticStroker::clipLine(qreal &x1, qreal &y1, qreal &x2, qreal &y2)
         y1 = ymax;
     }
     if (y2 < ymin) {
-        lastPixel.x = -1;
+        lastPixel.x = INT_MIN;
         x2 += (x2 - x1)/(y2 - y1) * (ymin - y2);
         y2 = ymin;
     } else if (y2 > ymax) {
-        lastPixel.x = -1;
+        lastPixel.x = INT_MIN;
         x2 += (x2 - x1)/(y2 - y1) * (ymax - y2);
         y2 = ymax;
     }
@@ -358,7 +358,7 @@ bool QCosmeticStroker::clipLine(qreal &x1, qreal &y1, qreal &x2, qreal &y2)
     return false;
 
   clipped:
-    lastPixel.x = -1;
+    lastPixel.x = INT_MIN;
     return true;
 }
 
@@ -374,7 +374,7 @@ void QCosmeticStroker::drawLine(const QPointF &p1, const QPointF &p2)
     QPointF end = p2 * state->matrix;
 
     patternOffset = state->lastPen.dashOffset()*64;
-    lastPixel.x = -1;
+    lastPixel.x = INT_MIN;
 
     stroke(this, start.x(), start.y(), end.x(), end.y(), drawCaps ? CapBegin|CapEnd : 0);
 
@@ -417,8 +417,8 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
     // by calculating the direction and last pixel of the last segment in the contour.
     // the info is then used to perform dropout control when drawing the first line segment
     // of the contour
-    lastPixel.x = -1;
-    lastPixel.y = -1;
+    lastPixel.x = INT_MIN;
+    lastPixel.y = INT_MIN;
 
     if (clipLine(rx1, ry1, rx2, ry2))
         return;
@@ -599,7 +599,11 @@ void QCosmeticStroker::drawPath(const QVectorPath &path)
         bool closed = path.hasImplicitClose() || (points[0] == end[-2] && points[1] == end[-1]);
         int caps = (!closed && drawCaps) ? CapBegin : NoCaps;
         if (closed) {
-            QPointF p2 = QPointF(end[-2], end[-1]) * state->matrix;
+            QPointF p2;
+            if (points[0] == end[-2] && points[1] == end[-1] && path.elementCount() > 2)
+                p2 = QPointF(end[-4], end[-3]) * state->matrix;
+            else
+                p2 = QPointF(end[-2], end[-1]) * state->matrix;
             calculateLastPoint(p2.x(), p2.y(), p.x(), p.y());
         }
 
@@ -770,6 +774,11 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
         int ys = (y2 + 32) >> 6;
         int round = (xinc > 0) ? 32 : 0;
 
+        // If capAdjust made us round away from what calculateLastPoint gave us,
+        // round back the other way so we start and end on the right point.
+        if ((caps & QCosmeticStroker::CapBegin) && stroker->lastPixel.y == y + 1)
+           y++;
+
         if (y != ys) {
             x += ((y * (1<<6)) + round - y1) * xinc >> 6;
 
@@ -783,7 +792,7 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
                 qSwap(first, last);
 
             bool axisAligned = qAbs(xinc) < (1 << 14);
-            if (stroker->lastPixel.x >= 0) {
+            if (stroker->lastPixel.x > INT_MIN) {
                 if (first.x == stroker->lastPixel.x &&
                     first.y == stroker->lastPixel.y) {
                     // remove duplicated pixel
@@ -805,6 +814,14 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
                         --y;
                         x -= xinc;
                     }
+                } else if (stroker->lastDir == dir &&
+                           ((qAbs(stroker->lastPixel.x - first.x) <= 1 &&
+                             qAbs(stroker->lastPixel.y - first.y) > 1))) {
+                    x += xinc >> 1;
+                    if (swapped)
+                        last.x = (x >> 16);
+                    else
+                        last.x = (x + (ys - y - 1)*xinc) >> 16;
                 }
             }
             stroker->lastDir = dir;
@@ -847,6 +864,11 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
         int xs = (x2 + 32) >> 6;
         int round = (yinc > 0) ? 32 : 0;
 
+        // If capAdjust made us round away from what calculateLastPoint gave us,
+        // round back the other way so we start and end on the right point.
+        if ((caps & QCosmeticStroker::CapBegin) && stroker->lastPixel.x == x + 1)
+            x++;
+
         if (x != xs) {
             y += ((x * (1<<6)) + round - x1) * yinc >> 6;
 
@@ -860,7 +882,7 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
                 qSwap(first, last);
 
             bool axisAligned = qAbs(yinc) < (1 << 14);
-            if (stroker->lastPixel.x >= 0) {
+            if (stroker->lastPixel.x > INT_MIN) {
                 if (first.x == stroker->lastPixel.x && first.y == stroker->lastPixel.y) {
                     // remove duplicated pixel
                     if (swapped) {
@@ -881,6 +903,14 @@ static bool drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
                         --x;
                         y -= yinc;
                     }
+                } else if (stroker->lastDir == dir &&
+                           ((qAbs(stroker->lastPixel.x - first.x) <= 1 &&
+                             qAbs(stroker->lastPixel.y - first.y) > 1))) {
+                    y += yinc >> 1;
+                    if (swapped)
+                        last.y = (y >> 16);
+                    else
+                        last.y = (y + (xs - x - 1)*yinc) >> 16;
                 }
             }
             stroker->lastDir = dir;
