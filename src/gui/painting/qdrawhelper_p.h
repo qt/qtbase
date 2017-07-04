@@ -885,7 +885,7 @@ do {                                          \
     case 1:      *--_d = *--_s;                 \
     } while (--n > 0);                        \
     }                                         \
-} while (0)
+} while (false)
 
 #define QT_MEMCPY_USHORT(dest, src, length) \
 do {                                          \
@@ -905,7 +905,7 @@ do {                                          \
     case 1:      *_d++ = *_s++;                 \
     } while (--n > 0);                        \
     }                                         \
-} while (0)
+} while (false)
 
 inline ushort qConvertRgb32To16(uint c)
 {

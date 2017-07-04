@@ -339,10 +339,10 @@ typedef double qreal;
 
 #define Q_INIT_RESOURCE(name) \
     do { extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();       \
-        QT_MANGLE_NAMESPACE(qInitResources_ ## name) (); } while (0)
+        QT_MANGLE_NAMESPACE(qInitResources_ ## name) (); } while (false)
 #define Q_CLEANUP_RESOURCE(name) \
     do { extern int QT_MANGLE_NAMESPACE(qCleanupResources_ ## name) ();    \
-        QT_MANGLE_NAMESPACE(qCleanupResources_ ## name) (); } while (0)
+        QT_MANGLE_NAMESPACE(qCleanupResources_ ## name) (); } while (false)
 
 /*
  * If we're compiling C++ code:
@@ -646,7 +646,7 @@ inline void qt_noop(void) {}
 #  define QT_CATCH(A) else
 #  define QT_THROW(A) qt_noop()
 #  define QT_RETHROW qt_noop()
-#  define QT_TERMINATE_ON_EXCEPTION(expr) do { expr; } while (0)
+#  define QT_TERMINATE_ON_EXCEPTION(expr) do { expr; } while (false)
 #else
 #  define QT_TRY try
 #  define QT_CATCH(A) catch (A)
@@ -654,9 +654,9 @@ inline void qt_noop(void) {}
 #  define QT_RETHROW throw
 Q_NORETURN Q_CORE_EXPORT void qTerminate() Q_DECL_NOTHROW;
 #  ifdef Q_COMPILER_NOEXCEPT
-#    define QT_TERMINATE_ON_EXCEPTION(expr) do { expr; } while (0)
+#    define QT_TERMINATE_ON_EXCEPTION(expr) do { expr; } while (false)
 #  else
-#    define QT_TERMINATE_ON_EXCEPTION(expr) do { try { expr; } catch (...) { qTerminate(); } } while (0)
+#    define QT_TERMINATE_ON_EXCEPTION(expr) do { try { expr; } catch (...) { qTerminate(); } } while (false)
 #  endif
 #endif
 
@@ -760,10 +760,10 @@ Q_CORE_EXPORT void qBadAlloc();
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
 #    define Q_CHECK_PTR(p) qt_noop()
 #  else
-#    define Q_CHECK_PTR(p) do {if(!(p))qt_check_pointer(__FILE__,__LINE__);} while (0)
+#    define Q_CHECK_PTR(p) do {if (!(p)) qt_check_pointer(__FILE__,__LINE__);} while (false)
 #  endif
 #else
-#  define Q_CHECK_PTR(p) do { if (!(p)) qBadAlloc(); } while (0)
+#  define Q_CHECK_PTR(p) do { if (!(p)) qBadAlloc(); } while (false)
 #endif
 
 template <typename T>
