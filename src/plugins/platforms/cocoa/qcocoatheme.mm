@@ -44,7 +44,6 @@
 
 #include <QtCore/QVariant>
 
-#include "qcocoacolordialoghelper.h"
 #include "qcocoafontdialoghelper.h"
 #include "qcocoasystemsettings.h"
 #include "qcocoasystemtrayicon.h"
@@ -64,6 +63,9 @@
 
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qtwidgetsglobal.h>
+#if QT_CONFIG(colordialog)
+#include "qcocoacolordialoghelper.h"
+#endif
 #if QT_CONFIG(filedialog)
 #include "qcocoafiledialoghelper.h"
 #endif
