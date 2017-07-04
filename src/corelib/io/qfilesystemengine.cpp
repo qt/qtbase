@@ -213,6 +213,8 @@ QString QFileSystemEngine::resolveUserName(const QFileSystemEntry &entry, QFileS
 #else //(Q_OS_UNIX)
     if (!metaData.hasFlags(QFileSystemMetaData::UserId))
         QFileSystemEngine::fillMetaData(entry, metaData, QFileSystemMetaData::UserId);
+    if (!metaData.exists())
+        return QString();
     return resolveUserName(metaData.userId());
 #endif
 }
@@ -226,6 +228,8 @@ QString QFileSystemEngine::resolveGroupName(const QFileSystemEntry &entry, QFile
 #else //(Q_OS_UNIX)
     if (!metaData.hasFlags(QFileSystemMetaData::GroupId))
         QFileSystemEngine::fillMetaData(entry, metaData, QFileSystemMetaData::GroupId);
+    if (!metaData.exists())
+        return QString();
     return resolveGroupName(metaData.groupId());
 #endif
 }

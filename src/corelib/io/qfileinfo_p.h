@@ -103,7 +103,7 @@ public:
         fileEngine(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(fileEntry, metaData)),
         cachedFlags(0),
 #ifndef QT_NO_FSFILEENGINE
-        isDefaultConstructed(false),
+        isDefaultConstructed(file.isEmpty()),
 #else
         isDefaultConstructed(!fileEngine),
 #endif
@@ -179,6 +179,27 @@ public:
     inline void setCachedFlag(uint c) const
     { if (cache_enabled) cachedFlags |= c; }
 
+    template <typename Ret, typename FSLambda, typename EngineLambda>
+    Ret checkAttribute(Ret defaultValue, QFileSystemMetaData::MetaDataFlags fsFlags, const FSLambda &fsLambda,
+                       const EngineLambda &engineLambda) const
+    {
+        if (isDefaultConstructed)
+            return defaultValue;
+        if (fileEngine)
+            return engineLambda();
+        if (!cache_enabled || !metaData.hasFlags(fsFlags)) {
+            QFileSystemEngine::fillMetaData(fileEntry, metaData, fsFlags);
+            // ignore errors, fillMetaData will have cleared the flags
+        }
+        return fsLambda();
+    }
+
+    template <typename Ret, typename FSLambda, typename EngineLambda>
+    Ret checkAttribute(QFileSystemMetaData::MetaDataFlags fsFlags, const FSLambda &fsLambda,
+                       const EngineLambda &engineLambda) const
+    {
+        return checkAttribute(Ret(), fsFlags, fsLambda, engineLambda);
+    }
 };
 
 QT_END_NAMESPACE

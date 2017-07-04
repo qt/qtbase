@@ -232,8 +232,9 @@ private slots:
 #endif
     void group();
 
+    void invalidState_data();
     void invalidState();
-    void nonExistingFileDates();
+    void nonExistingFile();
 
 private:
     const QString m_currentDir;
@@ -1366,7 +1367,7 @@ void tst_QFileInfo::isNativePath_data()
     QTest::addColumn<bool>("isNativePath");
 
     QTest::newRow("default-constructed") << QString() << false;
-    QTest::newRow("empty") << QString("") << true;
+    QTest::newRow("empty") << QString("") << false;
 
     QTest::newRow("local root") << QString::fromLatin1("/") << true;
     QTest::newRow("local non-existent file") << QString::fromLatin1("/abrakadabra.boo") << true;
@@ -1896,64 +1897,96 @@ void tst_QFileInfo::group()
     QCOMPARE(fi.group(), expected);
 }
 
-void tst_QFileInfo::invalidState()
+static void stateCheck(const QFileInfo &info, const QString &dirname, const QString &filename)
 {
-    // Shouldn't crash;
-
-    {
-        QFileInfo info;
-        QCOMPARE(info.size(), qint64(0));
-        QVERIFY(!info.exists());
-
-        info.setCaching(false);
-
-        info.created();
-        info.birthTime();
-        info.metadataChangeTime();
-        info.lastRead();
-        info.lastModified();
-    }
-
-    {
-        QFileInfo info("");
-        QCOMPARE(info.size(), qint64(0));
-        QVERIFY(!info.exists());
-
-        info.setCaching(false);
-
-        info.created();
-        info.birthTime();
-        info.metadataChangeTime();
-        info.lastRead();
-        info.lastModified();
-    }
-
-    {
-        QFileInfo info("file-doesn't-really-exist.txt");
-        QCOMPARE(info.size(), qint64(0));
-        QVERIFY(!info.exists());
-
-        info.setCaching(false);
-
-        info.created();
-        info.birthTime();
-        info.metadataChangeTime();
-        info.lastRead();
-        info.lastModified();
-    }
-
-    QVERIFY(true);
-}
-
-void tst_QFileInfo::nonExistingFileDates()
-{
-    QFileInfo info("non-existing-file.foobar");
+    QCOMPARE(info.size(), qint64(0));
     QVERIFY(!info.exists());
+
+    QString path;
+    QString abspath;
+    if (!dirname.isEmpty()) {
+        path = ".";
+        abspath = dirname + '/' + filename;
+    }
+
+    QCOMPARE(info.filePath(), filename);
+    QCOMPARE(info.absoluteFilePath(), abspath);
+    QCOMPARE(info.canonicalFilePath(), QString());
+    QCOMPARE(info.fileName(), filename);
+    QCOMPARE(info.baseName(), filename);
+    QCOMPARE(info.completeBaseName(), filename);
+    QCOMPARE(info.suffix(), QString());
+    QCOMPARE(info.bundleName(), QString());
+    QCOMPARE(info.completeSuffix(), QString());
+
+    QVERIFY(info.isRelative());
+    QCOMPARE(info.path(), path);
+    QCOMPARE(info.absolutePath(), dirname);
+    QCOMPARE(info.dir().path(), ".");
+
+    // these don't look right
+    QCOMPARE(info.canonicalPath(), path);
+    QCOMPARE(info.absoluteDir().path(), dirname.isEmpty() ? "." : dirname);
+
+    QVERIFY(!info.isReadable());
+    QVERIFY(!info.isWritable());
+    QVERIFY(!info.isExecutable());
+    QVERIFY(!info.isHidden());
+    QVERIFY(!info.isFile());
+    QVERIFY(!info.isDir());
+    QVERIFY(!info.isSymLink());
+    QVERIFY(!info.isBundle());
+    QVERIFY(!info.isRoot());
+    QCOMPARE(info.isNativePath(), !filename.isEmpty());
+
+    QCOMPARE(info.readLink(), QString());
+    QCOMPARE(info.ownerId(), uint(-2));
+    QCOMPARE(info.groupId(), uint(-2));
+    QCOMPARE(info.owner(), QString());
+    QCOMPARE(info.group(), QString());
+
+    QCOMPARE(info.permissions(), QFile::Permissions());
+
     QVERIFY(!info.created().isValid());
     QVERIFY(!info.birthTime().isValid());
     QVERIFY(!info.metadataChangeTime().isValid());
     QVERIFY(!info.lastRead().isValid());
     QVERIFY(!info.lastModified().isValid());
+};
+
+void tst_QFileInfo::invalidState_data()
+{
+    QTest::addColumn<int>("mode");
+    QTest::newRow("default") << 0;
+    QTest::newRow("empty") << 1;
+    QTest::newRow("copy-of-default") << 2;
+    QTest::newRow("copy-of-empty") << 3;
+}
+
+void tst_QFileInfo::invalidState()
+{
+    // Shouldn't crash or produce warnings
+    QFETCH(int, mode);
+    const QFileInfo &info = (mode & 1 ? QFileInfo("") : QFileInfo());
+
+    if (mode & 2) {
+        QFileInfo copy(info);
+        stateCheck(copy, QString(), QString());
+    } else {
+        stateCheck(info, QString(), QString());
+    }
+}
+
+void tst_QFileInfo::nonExistingFile()
+{
+    QString dirname = QDir::currentPath();
+    QString cdirname = QFileInfo(dirname).canonicalFilePath();
+    if (dirname != cdirname)
+        QDir::setCurrent(cdirname); // chdir() to our canonical path
+
+    QString filename = "non-existing-file-foobar";
+    QFileInfo info(filename);
+    stateCheck(info, dirname, filename);
 }
 
 QTEST_MAIN(tst_QFileInfo)
