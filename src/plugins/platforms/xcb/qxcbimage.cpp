@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qxcbimage.h"
+#include <QtCore/QtEndian>
 #include <QtGui/QColor>
 #include <QtGui/private/qimage_p.h>
 #include <QtGui/private/qdrawhelper_p.h>
@@ -54,6 +55,7 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
+// TODO: Merge with imageFormatForVisual in qxcbwindow.cpp
 QImage::Format qt_xcb_imageFormatForVisual(QXcbConnection *connection, uint8_t depth,
                                            const xcb_visualtype_t *visual)
 {
@@ -82,6 +84,7 @@ QImage::Format qt_xcb_imageFormatForVisual(QXcbConnection *connection, uint8_t d
         && visual->green_mask == 0x7e0 && visual->blue_mask == 0x1f)
         return QImage::Format_RGB16;
 
+    qWarning("qt_xcb_imageFormatForVisual did not recognize format");
     return QImage::Format_Invalid;
 }
 
@@ -106,36 +109,26 @@ QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap
     if (format != QImage::Format_Invalid) {
         uint32_t bytes_per_line = length / height;
         QImage image(const_cast<uint8_t *>(data), width, height, bytes_per_line, format);
-        uint8_t image_byte_order = connection->setup()->image_byte_order;
 
         // we may have to swap the byte order
-        if ((QSysInfo::ByteOrder == QSysInfo::LittleEndian && image_byte_order == XCB_IMAGE_ORDER_MSB_FIRST)
-            || (QSysInfo::ByteOrder == QSysInfo::BigEndian && image_byte_order == XCB_IMAGE_ORDER_LSB_FIRST))
-        {
-            for (int i=0; i < image.height(); i++) {
-                switch (format) {
-                case QImage::Format_RGB16: {
-                    ushort *p = (ushort*)image.scanLine(i);
+        if (connection->imageNeedsEndianSwap()) {
+            if (image.depth() == 16) {
+                for (int i = 0; i < image.height(); ++i) {
+                    ushort *p = reinterpret_cast<ushort *>(image.scanLine(i));
                     ushort *end = p + image.width();
                     while (p < end) {
-                        *p = ((*p << 8) & 0xff00) | ((*p >> 8) & 0x00ff);
+                        *p = qbswap(*p);
                         p++;
                     }
-                    break;
                 }
-                case QImage::Format_RGB32: // fall-through
-                case QImage::Format_ARGB32_Premultiplied: {
-                    uint *p = (uint*)image.scanLine(i);
+            } else if (image.depth() == 32) {
+                for (int i = 0; i < image.height(); ++i) {
+                    uint *p = reinterpret_cast<uint *>(image.scanLine(i));
                     uint *end = p + image.width();
                     while (p < end) {
-                        *p = ((*p << 24) & 0xff000000) | ((*p << 8) & 0x00ff0000)
-                            | ((*p >> 8) & 0x0000ff00) | ((*p >> 24) & 0x000000ff);
+                        *p = qbswap(*p);
                         p++;
                     }
-                    break;
-                }
-                default:
-                    Q_ASSERT(false);
                 }
             }
         }

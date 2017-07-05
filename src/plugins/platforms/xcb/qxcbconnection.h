@@ -409,6 +409,15 @@ public:
     const xcb_setup_t *setup() const { return m_setup; }
     const xcb_format_t *formatForDepth(uint8_t depth) const;
 
+    bool imageNeedsEndianSwap() const
+    {
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        return m_setup->image_byte_order != XCB_IMAGE_ORDER_MSB_FIRST;
+#else
+        return m_setup->image_byte_order != XCB_IMAGE_ORDER_LSB_FIRST;
+#endif
+    }
+
     QXcbKeyboard *keyboard() const { return m_keyboard; }
 
 #ifndef QT_NO_CLIPBOARD

@@ -3261,14 +3261,31 @@ QImage QImage::rgbSwapped_helper() const
             res.d->colortable[i] = QRgb(((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00));
         }
         break;
-    case Format_RGB32:
-    case Format_ARGB32:
-    case Format_ARGB32_Premultiplied:
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     case Format_RGBX8888:
     case Format_RGBA8888:
     case Format_RGBA8888_Premultiplied:
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        res = QImage(d->width, d->height, d->format);
+        QIMAGE_SANITYCHECK_MEMORY(res);
+        for (int i = 0; i < d->height; i++) {
+            uint *q = (uint*)res.scanLine(i);
+            const uint *p = (const uint*)constScanLine(i);
+            const uint *end = p + d->width;
+            while (p < end) {
+                uint c = *p;
+                *q = ((c << 16) & 0xff000000) | ((c >> 16) & 0xff00) | (c & 0x00ff00ff);
+                p++;
+                q++;
+            }
+        }
+        break;
+#else
+        // On little-endian rgba8888 is abgr32 and can use same rgb-swap as argb32
+        Q_FALLTHROUGH();
 #endif
+    case Format_RGB32:
+    case Format_ARGB32:
+    case Format_ARGB32_Premultiplied:
         res = QImage(d->width, d->height, d->format);
         QIMAGE_SANITYCHECK_MEMORY(res);
         for (int i = 0; i < d->height; i++) {
@@ -3352,14 +3369,27 @@ void QImage::rgbSwapped_inplace()
             d->colortable[i] = QRgb(((c << 16) & 0xff0000) | ((c >> 16) & 0xff) | (c & 0xff00ff00));
         }
         break;
-    case Format_RGB32:
-    case Format_ARGB32:
-    case Format_ARGB32_Premultiplied:
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
     case Format_RGBX8888:
     case Format_RGBA8888:
     case Format_RGBA8888_Premultiplied:
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        for (int i = 0; i < d->height; i++) {
+            uint *p = (uint*)scanLine(i);
+            uint *end = p + d->width;
+            while (p < end) {
+                uint c = *p;
+                *p = ((c << 16) & 0xff000000) | ((c >> 16) & 0xff00) | (c & 0x00ff00ff);
+                p++;
+            }
+        }
+        break;
+#else
+        // On little-endian rgba8888 is abgr32 and can use same rgb-swap as argb32
+        Q_FALLTHROUGH();
 #endif
+    case Format_RGB32:
+    case Format_ARGB32:
+    case Format_ARGB32_Premultiplied:
         for (int i = 0; i < d->height; i++) {
             uint *p = (uint*)scanLine(i);
             uint *end = p + d->width;
