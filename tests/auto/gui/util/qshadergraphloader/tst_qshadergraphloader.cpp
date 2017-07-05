@@ -461,36 +461,62 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                              "}";
 
     const auto complexProtos = [this]{
+        const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
+        const auto openGL3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
+
         auto protos = PrototypeHash();
 
         auto worldPosition = createNode({
             createPort(QShaderNodePort::Output, "worldPosition")
         });
+        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp vec3 $worldPosition = worldPosition;",
+                                                           QByteArrayList() << "varying highp vec3 worldPosition;"));
+        worldPosition.addRule(openGL3, QShaderNode::Rule("vec3 $worldPosition = worldPosition;",
+                                                         QByteArrayList() << "in vec3 worldPosition;"));
         protos.insert("worldPosition", worldPosition);
 
         auto texture = createNode({
             createPort(QShaderNodePort::Output, "texture")
         });
+        texture.addRule(openGLES2, QShaderNode::Rule("sampler2D $texture = texture;",
+                                                     QByteArrayList() << "uniform sampler2D texture;"));
+        texture.addRule(openGL3, QShaderNode::Rule("sampler2D $texture = texture;",
+                                                   QByteArrayList() << "uniform sampler2D texture;"));
         protos.insert("texture", texture);
 
         auto texCoord = createNode({
             createPort(QShaderNodePort::Output, "texCoord")
         });
+        texCoord.addRule(openGLES2, QShaderNode::Rule("highp vec2 $texCoord = texCoord;",
+                                                      QByteArrayList() << "varying highp vec2 texCoord;"));
+        texCoord.addRule(openGL3, QShaderNode::Rule("vec2 $texCoord = texCoord;",
+                                                    QByteArrayList() << "in vec2 texCoord;"));
         protos.insert("texCoord", texCoord);
 
         auto lightIntensity = createNode({
             createPort(QShaderNodePort::Output, "lightIntensity")
         });
+        lightIntensity.addRule(openGLES2, QShaderNode::Rule("highp float $lightIntensity = lightIntensity;",
+                                                            QByteArrayList() << "varying highp float lightIntensity;"));
+        lightIntensity.addRule(openGL3, QShaderNode::Rule("vec3 $lightIntensity = lightIntensity;",
+                                                          QByteArrayList() << "in float lightIntensity;"));
         protos.insert("lightIntensity", lightIntensity);
 
         auto exposure = createNode({
             createPort(QShaderNodePort::Output, "exposure")
         });
+        exposure.addRule(openGLES2, QShaderNode::Rule("highp float $exposure = exposure;",
+                                                      QByteArrayList() << "uniform highp float exposure;"));
+        exposure.addRule(openGL3, QShaderNode::Rule("float $exposure = exposure;",
+                                                    QByteArrayList() << "uniform float exposure;"));
         protos.insert("exposure", exposure);
 
         auto fragColor = createNode({
             createPort(QShaderNodePort::Input, "fragColor")
         });
+        fragColor.addRule(openGLES2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
+        fragColor.addRule(openGL3, QShaderNode::Rule("fragColor = $fragColor;",
+                                                     QByteArrayList() << "out vec4 fragColor;"));
         protos.insert("fragColor", fragColor);
 
         auto sampleTexture = createNode({
@@ -498,6 +524,8 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
             createPort(QShaderNodePort::Input, "coord"),
             createPort(QShaderNodePort::Output, "color")
         });
+        sampleTexture.addRule(openGLES2, QShaderNode::Rule("highp vec4 $color = texture2D($sampler, $coord);"));
+        sampleTexture.addRule(openGL3, QShaderNode::Rule("vec4 $color = texture2D($sampler, $coord);"));
         protos.insert("sampleTexture", sampleTexture);
 
         auto lightModel = createNode({
@@ -506,6 +534,10 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
             createPort(QShaderNodePort::Input, "lightIntensity"),
             createPort(QShaderNodePort::Output, "outputColor")
         });
+        lightModel.addRule(openGLES2, QShaderNode::Rule("highp vec4 $outputColor = lightModel($baseColor, $position, $lightIntensity);",
+                                                        QByteArrayList() << "#pragma include es2/lightmodel.frag.inc"));
+        lightModel.addRule(openGL3, QShaderNode::Rule("vec4 $outputColor = lightModel($baseColor, $position, $lightIntensity);",
+                                                      QByteArrayList() << "#pragma include gl3/lightmodel.frag.inc"));
         protos.insert("lightModel", lightModel);
 
         auto exposureFunction = createNode({
@@ -513,6 +545,8 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
             createPort(QShaderNodePort::Input, "exposure"),
             createPort(QShaderNodePort::Output, "outputColor")
         });
+        exposureFunction.addRule(openGLES2, QShaderNode::Rule("highp vec4 $outputColor = $inputColor * pow(2.0, $exposure);"));
+        exposureFunction.addRule(openGL3, QShaderNode::Rule("vec4 $outputColor = $inputColor * pow(2.0, $exposure);"));
         protos.insert("exposureFunction", exposureFunction);
 
         return protos;
@@ -545,6 +579,17 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream()
     const auto expected = graph.createStatements();
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
+
+    for (int i = 0; i < statements.size(); i++) {
+        const auto actualNode = statements.at(i).node;
+        const auto expectedNode = expected.at(i).node;
+
+        QCOMPARE(actualNode.ports(), expectedNode.ports());
+        QCOMPARE(actualNode.availableFormats(), expectedNode.availableFormats());
+        for (const auto &format : expectedNode.availableFormats()) {
+            QCOMPARE(actualNode.rule(format), expectedNode.rule(format));
+        }
+    }
 }
 
 QTEST_MAIN(tst_QShaderGraphLoader)
