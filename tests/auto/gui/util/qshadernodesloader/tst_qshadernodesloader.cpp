@@ -126,10 +126,13 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream_data()
     QTest::newRow("empty") << createBuffer("", QIODevice::ReadOnly) << NodeHash() << QShaderNodesLoader::Error;
 
     const auto smallJson = "{"
-                           "    \"worldPosition\": {"
+                           "    \"inputValue\": {"
                            "        \"outputs\": ["
-                           "            \"worldPosition\""
+                           "            \"value\""
                            "        ],"
+                           "        \"parameters\": {"
+                           "            \"name\": \"defaultName\""
+                           "        },"
                            "        \"rules\": ["
                            "            {"
                            "                \"format\": {"
@@ -137,8 +140,8 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream_data()
                            "                    \"major\": 2,"
                            "                    \"minor\": 0"
                            "                },"
-                           "                \"substitution\": \"highp vec3 $worldPosition = worldPosition;\","
-                           "                \"headerSnippets\": [ \"varying highp vec3 worldPosition;\" ]"
+                           "                \"substitution\": \"highp vec3 $value = $name;\","
+                           "                \"headerSnippets\": [ \"varying highp vec3 $name;\" ]"
                            "            },"
                            "            {"
                            "                \"format\": {"
@@ -146,8 +149,8 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream_data()
                            "                    \"major\": 2,"
                            "                    \"minor\": 1"
                            "                },"
-                           "                \"substitution\": \"vec3 $worldPosition = worldPosition;\","
-                           "                \"headerSnippets\": [ \"in vec3 worldPosition;\" ]"
+                           "                \"substitution\": \"vec3 $value = $name;\","
+                           "                \"headerSnippets\": [ \"in vec3 $name;\" ]"
                            "            }"
                            "        ]"
                            "    },"
@@ -218,14 +221,15 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream_data()
 
         auto protos = NodeHash();
 
-        auto worldPosition = createNode({
-            createPort(QShaderNodePort::Output, "worldPosition")
+        auto inputValue = createNode({
+            createPort(QShaderNodePort::Output, "value")
         });
-        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp vec3 $worldPosition = worldPosition;",
-                                                           QByteArrayList() << "varying highp vec3 worldPosition;"));
-        worldPosition.addRule(openGL2, QShaderNode::Rule("vec3 $worldPosition = worldPosition;",
-                                                         QByteArrayList() << "in vec3 worldPosition;"));
-        protos.insert("worldPosition", worldPosition);
+        inputValue.setParameter("name", "defaultName");
+        inputValue.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
+                                                        QByteArrayList() << "varying highp vec3 $name;"));
+        inputValue.addRule(openGL2, QShaderNode::Rule("vec3 $value = $name;",
+                                                      QByteArrayList() << "in vec3 $name;"));
+        protos.insert("inputValue", inputValue);
 
         auto fragColor = createNode({
             createPort(QShaderNodePort::Input, "fragColor")
@@ -275,6 +279,11 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream()
         res.sort();
         return res;
     };
+    const auto sortedParameters = [](const QShaderNode &node) {
+        auto res = node.parameterNames();
+        res.sort();
+        return res;
+    };
     QCOMPARE(sortedKeys(loader.nodes()), sortedKeys(nodes));
     for (const auto &key : nodes.keys()) {
         const auto actual = loader.nodes().value(key);
@@ -282,6 +291,10 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream()
 
         QVERIFY(actual.uuid().isNull());
         QCOMPARE(actual.ports(), expected.ports());
+        QCOMPARE(sortedParameters(actual), sortedParameters(expected));
+        for (const auto &name : expected.parameterNames()) {
+            QCOMPARE(actual.parameter(name), expected.parameter(name));
+        }
         QCOMPARE(actual.availableFormats(), expected.availableFormats());
         for (const auto &format : expected.availableFormats()) {
             QCOMPARE(actual.rule(format), expected.rule(format));

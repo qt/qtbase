@@ -147,6 +147,14 @@ void QShaderNodesLoader::load()
             }
         }
 
+        const auto parametersValue = nodeObject.value(QStringLiteral("parameters"));
+        if (parametersValue.isObject()) {
+            const auto parametersObject = parametersValue.toObject();
+            for (const auto &parameterName : parametersObject.keys()) {
+                node.setParameter(parameterName, parametersObject.value(parameterName).toVariant());
+            }
+        }
+
         const auto rulesValue = nodeObject.value(QStringLiteral("rules"));
         if (rulesValue.isArray()) {
             const auto rulesArray = rulesValue.toArray();
