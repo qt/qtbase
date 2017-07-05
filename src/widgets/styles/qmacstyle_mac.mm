@@ -1066,9 +1066,10 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
 }
 
 #ifndef QT_NO_TABBAR
-void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect) const
+void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const
 {
     Q_ASSERT(textRect);
+    Q_ASSERT(iconRect);
     QRect tr = opt->rect;
     const bool verticalTabs = opt->shape == QTabBar::RoundedEast
                               || opt->shape == QTabBar::RoundedWest
@@ -1100,6 +1101,26 @@ void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widg
         // make text aligned to center
         if (opt->leftButtonSize.isEmpty())
             tr.setLeft(tr.left() + 4 + buttonSize);
+    }
+
+    // icon
+    if (!opt->icon.isNull()) {
+        QSize iconSize = opt->iconSize;
+        if (!iconSize.isValid()) {
+            int iconExtent = proxyStyle->pixelMetric(QStyle::PM_SmallIconSize);
+            iconSize = QSize(iconExtent, iconExtent);
+        }
+        QSize tabIconSize = opt->icon.actualSize(iconSize,
+                        (opt->state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled,
+                        (opt->state & QStyle::State_Selected) ? QIcon::On : QIcon::Off);
+        // High-dpi icons do not need adjustment; make sure tabIconSize is not larger than iconSize
+        tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.height()));
+
+        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
+                    tabIconSize.width(), tabIconSize.height());
+        if (!verticalTabs)
+            *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
+        tr.setLeft(tr.left() + tabIconSize.width() + 4);
     }
 
     if (!verticalTabs)
@@ -4967,7 +4988,8 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     case SE_TabBarTabText:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            d->tabLayout(tab, widget, &rect);
+            QRect dummyIconRect;
+            d->tabLayout(tab, widget, &rect, &dummyIconRect);
         }
         break;
     case SE_TabBarTabLeftButton:
