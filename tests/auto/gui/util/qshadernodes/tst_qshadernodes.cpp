@@ -70,7 +70,7 @@ private slots:
     void shouldVerifyPortsEquality_data();
     void shouldVerifyPortsEquality();
 
-    void shouldManipulateNodeUuidPortsAndRules();
+    void shouldManipulateNodeMembers();
     void shouldHandleNodeRulesSupportAndOrder();
 };
 
@@ -336,7 +336,7 @@ void tst_QShaderNodes::shouldVerifyPortsEquality()
     QCOMPARE(notEqual, !expected);
 }
 
-void tst_QShaderNodes::shouldManipulateNodeUuidPortsAndRules()
+void tst_QShaderNodes::shouldManipulateNodeMembers()
 {
     // GIVEN
     const auto openGLES2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
@@ -352,6 +352,7 @@ void tst_QShaderNodes::shouldManipulateNodeUuidPortsAndRules()
     QCOMPARE(node.type(), QShaderNode::Invalid);
     QVERIFY(node.uuid().isNull());
     QVERIFY(node.ports().isEmpty());
+    QVERIFY(node.parameterNames().isEmpty());
     QVERIFY(node.availableFormats().isEmpty());
 
     // WHEN
@@ -395,6 +396,50 @@ void tst_QShaderNodes::shouldManipulateNodeUuidPortsAndRules()
     QCOMPARE(node.ports().at(0), secondPort);
     QVERIFY(node.availableFormats().isEmpty());
 
+    // WHEN
+    node.setParameter(QStringLiteral("baz"), 42);
+
+    // THEN
+    QCOMPARE(node.type(), QShaderNode::Input);
+    QCOMPARE(node.ports().size(), 1);
+    QCOMPARE(node.ports().at(0), secondPort);
+    auto parameterNames = node.parameterNames();
+    parameterNames.sort();
+    QCOMPARE(parameterNames.size(), 1);
+    QCOMPARE(parameterNames.at(0), QStringLiteral("baz"));
+    QCOMPARE(node.parameter(QStringLiteral("baz")), QVariant(42));
+    QVERIFY(node.availableFormats().isEmpty());
+
+    // WHEN
+    node.setParameter(QStringLiteral("bleh"), QStringLiteral("value"));
+
+    // THEN
+    QCOMPARE(node.type(), QShaderNode::Input);
+    QCOMPARE(node.ports().size(), 1);
+    QCOMPARE(node.ports().at(0), secondPort);
+    parameterNames = node.parameterNames();
+    parameterNames.sort();
+    QCOMPARE(parameterNames.size(), 2);
+    QCOMPARE(parameterNames.at(0), QStringLiteral("baz"));
+    QCOMPARE(parameterNames.at(1), QStringLiteral("bleh"));
+    QCOMPARE(node.parameter(QStringLiteral("baz")), QVariant(42));
+    QCOMPARE(node.parameter(QStringLiteral("bleh")), QVariant(QStringLiteral("value")));
+    QVERIFY(node.availableFormats().isEmpty());
+
+    // WHEN
+    node.clearParameter(QStringLiteral("baz"));
+
+    // THEN
+    QCOMPARE(node.type(), QShaderNode::Input);
+    QCOMPARE(node.ports().size(), 1);
+    QCOMPARE(node.ports().at(0), secondPort);
+    parameterNames = node.parameterNames();
+    parameterNames.sort();
+    QCOMPARE(parameterNames.size(), 1);
+    QCOMPARE(parameterNames.at(0), QStringLiteral("bleh"));
+    QCOMPARE(node.parameter(QStringLiteral("baz")), QVariant());
+    QCOMPARE(node.parameter(QStringLiteral("bleh")), QVariant(QStringLiteral("value")));
+    QVERIFY(node.availableFormats().isEmpty());
 
     // WHEN
     node.addRule(openGLES2, es2Rule);

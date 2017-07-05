@@ -88,6 +88,11 @@ public:
     Q_GUI_EXPORT void addPort(const QShaderNodePort &port);
     Q_GUI_EXPORT void removePort(const QShaderNodePort &port);
 
+    Q_GUI_EXPORT QStringList parameterNames() const;
+    Q_GUI_EXPORT QVariant parameter(const QString &name) const;
+    Q_GUI_EXPORT void setParameter(const QString &name, const QVariant &value);
+    Q_GUI_EXPORT void clearParameter(const QString &name);
+
     Q_GUI_EXPORT void addRule(const QShaderFormat &format, const Rule &rule);
     Q_GUI_EXPORT void removeRule(const QShaderFormat &format);
 
@@ -97,6 +102,7 @@ public:
 private:
     QUuid m_uuid;
     QVector<QShaderNodePort> m_ports;
+    QHash<QString, QVariant> m_parameters;
     QVector<QPair<QShaderFormat, QShaderNode::Rule>> m_rules;
 };
 

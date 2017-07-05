@@ -93,6 +93,26 @@ void QShaderNode::removePort(const QShaderNodePort &port)
         m_ports.erase(it);
 }
 
+QStringList QShaderNode::parameterNames() const
+{
+    return m_parameters.keys();
+}
+
+QVariant QShaderNode::parameter(const QString &name) const
+{
+    return m_parameters.value(name);
+}
+
+void QShaderNode::setParameter(const QString &name, const QVariant &value)
+{
+    m_parameters.insert(name, value);
+}
+
+void QShaderNode::clearParameter(const QString &name)
+{
+    m_parameters.remove(name);
+}
+
 void QShaderNode::addRule(const QShaderFormat &format, const QShaderNode::Rule &rule)
 {
     removeRule(format);
