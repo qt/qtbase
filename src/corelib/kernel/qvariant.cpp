@@ -2070,6 +2070,7 @@ void QVariant::load(QDataStream &s)
         typeId = QMetaType::type(name.constData());
         if (typeId == QMetaType::UnknownType) {
             s.setStatus(QDataStream::ReadCorruptData);
+            qWarning("QVariant::load: unknown user type with name %s.", name.constData());
             return;
         }
     }
