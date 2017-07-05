@@ -2281,7 +2281,14 @@ static void miRegionOp(QRegionPrivate &dest,
 
     dest.vectorize();
 
-    QVector<QRect> oldRects = dest.rects;
+    /*
+     * The following calls are going to detach dest.rects. Since dest might be
+     * aliasing *reg1 and/or *reg2, and we could have active iterators on
+     * reg1->rects and reg2->rects (if the regions have more than 1 rectangle),
+     * take a copy of dest.rects to keep those iteractors valid.
+     */
+    const QVector<QRect> destRectsCopy = dest.rects;
+    Q_UNUSED(destRectsCopy);
 
     dest.numRects = 0;
 
