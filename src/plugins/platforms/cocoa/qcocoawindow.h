@@ -149,8 +149,6 @@ public:
     bool windowShouldClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
-    void reportCurrentWindowState(bool unconditionally = false);
-
     NSInteger windowLevel(Qt::WindowFlags flags);
     NSUInteger windowStyleMask(Qt::WindowFlags flags);
     void setWindowZoomButton(Qt::WindowFlags flags);
@@ -226,7 +224,13 @@ public: // for QNSView
     bool alwaysShowToolWindow() const;
     void removeMonitor();
 
+    enum HandleFlags {
+        NoHandleFlags = 0,
+        HandleUnconditionally = 1
+    };
+
     void handleGeometryChange();
+    void handleWindowStateChanged(HandleFlags flags = NoHandleFlags);
 
     NSView *m_view;
     QCocoaNSWindow *m_nsWindow;

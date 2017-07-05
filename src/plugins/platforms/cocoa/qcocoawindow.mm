@@ -840,7 +840,7 @@ void QCocoaWindow::windowDidMove()
     handleGeometryChange();
 
     // Moving a window might bring it out of maximized state
-    reportCurrentWindowState();
+    handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowDidResize()
@@ -851,7 +851,7 @@ void QCocoaWindow::windowDidResize()
     handleGeometryChange();
 
     if (!m_view.inLiveResize)
-        reportCurrentWindowState();
+        handleWindowStateChanged();
 }
 
 void QCocoaWindow::viewDidChangeFrame()
@@ -873,7 +873,7 @@ void QCocoaWindow::viewDidChangeGlobalFrame()
 
 void QCocoaWindow::windowDidEndLiveResize()
 {
-    reportCurrentWindowState();
+    handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowDidBecomeKey()
@@ -910,12 +910,12 @@ void QCocoaWindow::windowDidResignKey()
 
 void QCocoaWindow::windowDidMiniaturize()
 {
-    reportCurrentWindowState();
+    handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowDidDeminiaturize()
 {
-    reportCurrentWindowState();
+    handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowWillEnterFullScreen()
@@ -934,7 +934,7 @@ void QCocoaWindow::windowDidEnterFullScreen()
     // Reset to original styleMask
     setWindowFlags(m_windowFlags);
 
-    reportCurrentWindowState();
+    handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowWillExitFullScreen()
@@ -955,7 +955,7 @@ void QCocoaWindow::windowDidExitFullScreen()
     Qt::WindowState requestedState = window()->windowState();
 
     // Deliver update of QWindow state
-    reportCurrentWindowState();
+    handleWindowStateChanged();
 
     if (requestedState != windowState() && requestedState != Qt::WindowFullScreen) {
         // We were only going out of full screen as an intermediate step before
@@ -1069,6 +1069,17 @@ void QCocoaWindow::handleGeometryChange()
         QWindowSystemInterface::flushWindowSystemEvents();
     else if (newGeometry.size() != geometry().size())
         [qnsview_cast(m_view) clearBackingStore];
+}
+
+void QCocoaWindow::handleWindowStateChanged(HandleFlags flags)
+{
+    Qt::WindowState currentState = windowState();
+    if (!(flags & HandleUnconditionally) && currentState == m_lastReportedWindowState)
+        return;
+
+    QWindowSystemInterface::handleWindowStateChanged<QWindowSystemInterface::SynchronousDelivery>(
+        window(), currentState, m_lastReportedWindowState);
+    m_lastReportedWindowState = currentState;
 }
 
 // --------------------------------------------------------------------------
@@ -1344,7 +1355,7 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
         // If content view width or height is 0 then the window animations will crash so
         // do nothing. We report the current state back to reflect the failed operation.
         qWarning("invalid window content view size, check your window geometry");
-        reportCurrentWindowState(true);
+        handleWindowStateChanged(HandleUnconditionally);
         return;
     }
 
@@ -1353,7 +1364,7 @@ void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
     if (nsWindow.styleMask & NSUtilityWindowMask
         && newState & (Qt::WindowMinimized | Qt::WindowFullScreen)) {
         qWarning() << window()->type() << "windows can not be made" << newState;
-        reportCurrentWindowState(true);
+        handleWindowStateChanged(HandleUnconditionally);
         return;
     }
 
@@ -1451,17 +1462,6 @@ Qt::WindowState QCocoaWindow::windowState() const
     // is true, as QtGui does not expect this window state to be set.
 
     return Qt::WindowNoState;
-}
-
-void QCocoaWindow::reportCurrentWindowState(bool unconditionally)
-{
-    Qt::WindowState currentState = windowState();
-    if (!unconditionally && currentState == m_lastReportedWindowState)
-        return;
-
-    QWindowSystemInterface::handleWindowStateChanged<QWindowSystemInterface::SynchronousDelivery>(
-        window(), currentState, m_lastReportedWindowState);
-    m_lastReportedWindowState = currentState;
 }
 
 bool QCocoaWindow::setWindowModified(bool modified)
