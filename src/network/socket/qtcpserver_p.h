@@ -63,7 +63,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QTcpServerPrivate : public QObjectPrivate, public QAbstractSocketEngineReceiver
+class Q_NETWORK_EXPORT QTcpServerPrivate : public QObjectPrivate,
+                                           public QAbstractSocketEngineReceiver
 {
     Q_DECLARE_PUBLIC(QTcpServer)
 public:
