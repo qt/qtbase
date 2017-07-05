@@ -206,6 +206,7 @@ private: \
     QT_ANNOTATE_CLASS(qt_qgadget, "") \
     /*end*/
 
+/* qmake ignore Q_NAMESPACE */
 #define Q_NAMESPACE \
     extern const QMetaObject staticMetaObject; \
     QT_ANNOTATE_CLASS(qt_qnamespace, "") \
