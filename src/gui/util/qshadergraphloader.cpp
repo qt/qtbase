@@ -152,6 +152,15 @@ void QShaderGraphLoader::load()
 
         auto node = m_prototypes.value(type);
         node.setUuid(uuid);
+
+        const auto parametersValue = nodeObject.value(QStringLiteral("parameters"));
+        if (parametersValue.isObject()) {
+            const auto parametersObject = parametersValue.toObject();
+            for (const auto &parameterName : parametersObject.keys()) {
+                node.setParameter(parameterName, parametersObject.value(parameterName).toVariant());
+            }
+        }
+
         m_graph.addNode(node);
     }
 

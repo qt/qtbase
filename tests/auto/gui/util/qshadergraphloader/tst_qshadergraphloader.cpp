@@ -94,13 +94,14 @@ namespace
         auto graph = QShaderGraph();
 
         auto worldPosition = createNode({
-            createPort(QShaderNodePort::Output, "worldPosition")
+            createPort(QShaderNodePort::Output, "value")
         });
         worldPosition.setUuid(QUuid("{00000000-0000-0000-0000-000000000001}"));
-        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp vec3 $worldPosition = worldPosition;",
-                                                           QByteArrayList() << "varying highp vec3 worldPosition;"));
-        worldPosition.addRule(openGL3, QShaderNode::Rule("vec3 $worldPosition = worldPosition;",
-                                                         QByteArrayList() << "in vec3 worldPosition;"));
+        worldPosition.setParameter("name", "worldPosition");
+        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
+                                                           QByteArrayList() << "varying highp vec3 $name;"));
+        worldPosition.addRule(openGL3, QShaderNode::Rule("vec3 $value = $name;",
+                                                         QByteArrayList() << "in vec3 $name;"));
 
         auto texture = createNode({
             createPort(QShaderNodePort::Output, "texture")
@@ -121,13 +122,14 @@ namespace
                                                     QByteArrayList() << "in vec2 texCoord;"));
 
         auto lightIntensity = createNode({
-            createPort(QShaderNodePort::Output, "lightIntensity")
+            createPort(QShaderNodePort::Output, "value")
         });
         lightIntensity.setUuid(QUuid("{00000000-0000-0000-0000-000000000004}"));
-        lightIntensity.addRule(openGLES2, QShaderNode::Rule("highp float $lightIntensity = lightIntensity;",
-                                                            QByteArrayList() << "uniform highp float lightIntensity;"));
-        lightIntensity.addRule(openGL3, QShaderNode::Rule("float $lightIntensity = lightIntensity;",
-                                                          QByteArrayList() << "uniform float lightIntensity;"));
+        lightIntensity.setParameter("name", "defaultName");
+        lightIntensity.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
+                                                            QByteArrayList() << "varying highp vec3 $name;"));
+        lightIntensity.addRule(openGL3, QShaderNode::Rule("vec3 $value = $name;",
+                                                          QByteArrayList() << "in vec3 $name;"));
 
         auto exposure = createNode({
             createPort(QShaderNodePort::Output, "exposure")
@@ -189,9 +191,9 @@ namespace
         graph.addEdge(createEdge(texture.uuid(), "texture", sampleTexture.uuid(), "sampler"));
         graph.addEdge(createEdge(texCoord.uuid(), "texCoord", sampleTexture.uuid(), "coord"));
 
-        graph.addEdge(createEdge(worldPosition.uuid(), "worldPosition", lightFunction.uuid(), "position"));
+        graph.addEdge(createEdge(worldPosition.uuid(), "value", lightFunction.uuid(), "position"));
         graph.addEdge(createEdge(sampleTexture.uuid(), "color", lightFunction.uuid(), "baseColor"));
-        graph.addEdge(createEdge(lightIntensity.uuid(), "lightIntensity", lightFunction.uuid(), "lightIntensity"));
+        graph.addEdge(createEdge(lightIntensity.uuid(), "value", lightFunction.uuid(), "lightIntensity"));
 
         graph.addEdge(createEdge(lightFunction.uuid(), "outputColor", exposureFunction.uuid(), "inputColor"));
         graph.addEdge(createEdge(exposure.uuid(), "exposure", exposureFunction.uuid(), "exposure"));
@@ -373,7 +375,10 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                              "    \"nodes\": ["
                              "        {"
                              "            \"uuid\": \"{00000000-0000-0000-0000-000000000001}\","
-                             "            \"type\": \"worldPosition\""
+                             "            \"type\": \"inputValue\","
+                             "            \"parameters\": {"
+                             "                \"name\": \"worldPosition\""
+                             "            }"
                              "        },"
                              "        {"
                              "            \"uuid\": \"{00000000-0000-0000-0000-000000000002}\","
@@ -385,7 +390,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                              "        },"
                              "        {"
                              "            \"uuid\": \"{00000000-0000-0000-0000-000000000004}\","
-                             "            \"type\": \"lightIntensity\""
+                             "            \"type\": \"inputValue\""
                              "        },"
                              "        {"
                              "            \"uuid\": \"{00000000-0000-0000-0000-000000000005}\","
@@ -423,7 +428,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                              "        },"
                              "        {"
                              "            \"sourceUuid\": \"{00000000-0000-0000-0000-000000000001}\","
-                             "            \"sourcePort\": \"worldPosition\","
+                             "            \"sourcePort\": \"value\","
                              "            \"targetUuid\": \"{00000000-0000-0000-0000-000000000008}\","
                              "            \"targetPort\": \"position\""
                              "        },"
@@ -435,7 +440,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                              "        },"
                              "        {"
                              "            \"sourceUuid\": \"{00000000-0000-0000-0000-000000000004}\","
-                             "            \"sourcePort\": \"lightIntensity\","
+                             "            \"sourcePort\": \"value\","
                              "            \"targetUuid\": \"{00000000-0000-0000-0000-000000000008}\","
                              "            \"targetPort\": \"lightIntensity\""
                              "        },"
@@ -466,14 +471,15 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
 
         auto protos = PrototypeHash();
 
-        auto worldPosition = createNode({
-            createPort(QShaderNodePort::Output, "worldPosition")
+        auto inputValue = createNode({
+            createPort(QShaderNodePort::Output, "value")
         });
-        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp vec3 $worldPosition = worldPosition;",
-                                                           QByteArrayList() << "varying highp vec3 worldPosition;"));
-        worldPosition.addRule(openGL3, QShaderNode::Rule("vec3 $worldPosition = worldPosition;",
-                                                         QByteArrayList() << "in vec3 worldPosition;"));
-        protos.insert("worldPosition", worldPosition);
+        inputValue.setParameter("name", "defaultName");
+        inputValue.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
+                                                        QByteArrayList() << "varying highp vec3 $name;"));
+        inputValue.addRule(openGL3, QShaderNode::Rule("vec3 $value = $name;",
+                                                      QByteArrayList() << "in vec3 $name;"));
+        protos.insert("inputValue", inputValue);
 
         auto texture = createNode({
             createPort(QShaderNodePort::Output, "texture")
@@ -492,15 +498,6 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
         texCoord.addRule(openGL3, QShaderNode::Rule("vec2 $texCoord = texCoord;",
                                                     QByteArrayList() << "in vec2 texCoord;"));
         protos.insert("texCoord", texCoord);
-
-        auto lightIntensity = createNode({
-            createPort(QShaderNodePort::Output, "lightIntensity")
-        });
-        lightIntensity.addRule(openGLES2, QShaderNode::Rule("highp float $lightIntensity = lightIntensity;",
-                                                            QByteArrayList() << "varying highp float lightIntensity;"));
-        lightIntensity.addRule(openGL3, QShaderNode::Rule("vec3 $lightIntensity = lightIntensity;",
-                                                          QByteArrayList() << "in float lightIntensity;"));
-        protos.insert("lightIntensity", lightIntensity);
 
         auto exposure = createNode({
             createPort(QShaderNodePort::Output, "exposure")
@@ -580,11 +577,21 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream()
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
 
+    const auto sortedParameters = [](const QShaderNode &node) {
+        auto res = node.parameterNames();
+        res.sort();
+        return res;
+    };
+
     for (int i = 0; i < statements.size(); i++) {
         const auto actualNode = statements.at(i).node;
         const auto expectedNode = expected.at(i).node;
 
         QCOMPARE(actualNode.ports(), expectedNode.ports());
+        QCOMPARE(sortedParameters(actualNode), sortedParameters(expectedNode));
+        for (const auto &name : expectedNode.parameterNames()) {
+            QCOMPARE(actualNode.parameter(name), expectedNode.parameter(name));
+        }
         QCOMPARE(actualNode.availableFormats(), expectedNode.availableFormats());
         for (const auto &format : expectedNode.availableFormats()) {
             QCOMPARE(actualNode.rule(format), expectedNode.rule(format));
