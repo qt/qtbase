@@ -395,7 +395,7 @@ bool QNativeSocketEnginePrivate::checkProxy(const QHostAddress &address)
         // QNetworkProxyQuery).
         QNetworkProxyQuery query;
         query.setQueryType(queryType);
-        proxy = QNetworkProxyFactory::systemProxyForQuery(query).constFirst();
+        proxy = QNetworkProxyFactory::proxyForQuery(query).constFirst();
     }
 
     if (proxy.type() != QNetworkProxy::DefaultProxy &&

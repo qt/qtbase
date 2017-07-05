@@ -49,7 +49,9 @@
 #include "qstylepainter.h"
 #include "qtabwidget.h"
 #include "qtooltip.h"
+#if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
+#endif
 #include "private/qtextengine_p.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -176,10 +178,6 @@ void QTabBarPrivate::initBasicStyleOption(QStyleOptionTab *option, int tabIndex)
 
     if (tab.textColor.isValid())
         option->palette.setColor(q->foregroundRole(), tab.textColor);
-    else if (q->style()->inherits("QMacStyle")
-             && isCurrent && !documentMode && q->isActiveWindow()) {
-        option->palette.setColor(QPalette::WindowText, Qt::white);
-    }
     option->icon = tab.icon;
     option->iconSize = q->iconSize();  // Will get the default value then.
 
@@ -451,9 +449,10 @@ void QTabBarPrivate::layoutTabs()
     QVector<QLayoutStruct> tabChain(tabList.count() + 2);
 
     // We put an empty item at the front and back and set its expansive attribute
-    // depending on tabAlignment.
+    // depending on tabAlignment and expanding.
     tabChain[tabChainIndex].init();
-    tabChain[tabChainIndex].expansive = (tabAlignment != Qt::AlignLeft)
+    tabChain[tabChainIndex].expansive = (!expanding)
+                                        && (tabAlignment != Qt::AlignLeft)
                                         && (tabAlignment != Qt::AlignJustify);
     tabChain[tabChainIndex].empty = true;
     ++tabChainIndex;
@@ -518,13 +517,12 @@ void QTabBarPrivate::layoutTabs()
         maxExtent = maxWidth;
     }
 
-    if (!expanding) {
-        // Mirror our front item.
-        tabChain[tabChainIndex].init();
-        tabChain[tabChainIndex].expansive = (tabAlignment != Qt::AlignRight)
-                                            && (tabAlignment != Qt::AlignJustify);
-        tabChain[tabChainIndex].empty = true;
-    }
+    // Mirror our front item.
+    tabChain[tabChainIndex].init();
+    tabChain[tabChainIndex].expansive = (!expanding)
+                                        && (tabAlignment != Qt::AlignRight)
+                                        && (tabAlignment != Qt::AlignJustify);
+    tabChain[tabChainIndex].empty = true;
     Q_ASSERT(tabChainIndex == tabChain.count() - 1); // add an assert just to make sure.
 
     // Do the calculation
@@ -1224,7 +1222,7 @@ QString QTabBar::tabToolTip(int index) const
 }
 #endif // QT_NO_TOOLTIP
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 /*!
     \since 4.1
 
@@ -1252,7 +1250,7 @@ QString QTabBar::tabWhatsThis(int index) const
     return QString();
 }
 
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
 
 /*!
     Sets the data of the tab at position \a index to \a data.
@@ -1632,7 +1630,7 @@ bool QTabBar::event(QEvent *event)
             }
         }
 #endif // QT_NO_TOOLTIP
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     } else if (event->type() == QEvent::QueryWhatsThis) {
         const QTabBarPrivate::Tab *tab = d->at(d->indexAtPos(static_cast<QHelpEvent*>(event)->pos()));
         if (!tab || tab->whatsThis.isEmpty())
@@ -1646,7 +1644,7 @@ bool QTabBar::event(QEvent *event)
                 return true;
             }
         }
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
 #ifndef QT_NO_SHORTCUT
     } else if (event->type() == QEvent::Shortcut) {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(event);
@@ -2185,7 +2183,7 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
 
 /*!\reimp
  */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QTabBar::wheelEvent(QWheelEvent *event)
 {
 #ifndef Q_OS_MAC
@@ -2197,7 +2195,7 @@ void QTabBar::wheelEvent(QWheelEvent *event)
     Q_UNUSED(event)
 #endif
 }
-#endif //QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 void QTabBarPrivate::setCurrentNextEnabledIndex(int offset)
 {

@@ -1273,7 +1273,7 @@ void QGraphicsProxyWidget::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event
 /*!
     \reimp
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QGraphicsProxyWidget::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     Q_D(QGraphicsProxyWidget);

@@ -112,7 +112,7 @@ private slots:
     void resizeEvent_data();
     void resizeEvent();
     void paintEvent();
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent();
 #endif
     void sizeHint_data();
@@ -254,7 +254,7 @@ public:
     int focusOut;
 };
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 class WheelWidget : public QWidget
 {
 public:
@@ -264,7 +264,7 @@ public:
 
     bool wheelEventCalled;
 };
-#endif // !QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 // This will be called before the first test function is executed.
 // It is only called once.
@@ -1297,7 +1297,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
 }
 
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void tst_QGraphicsProxyWidget::wheelEvent()
 {
     QGraphicsScene scene;
@@ -1321,7 +1321,7 @@ void tst_QGraphicsProxyWidget::wheelEvent()
     QVERIFY(event.isAccepted());
     QVERIFY(wheelWidget->wheelEventCalled);
 }
-#endif // !QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 Q_DECLARE_METATYPE(Qt::SizeHint)
 void tst_QGraphicsProxyWidget::sizeHint_data()

@@ -710,7 +710,7 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
         // offset), we might end up with a fraction (e.g. scroll 1.3 lines). We can
         // only scroll whole lines, so we keep the reminder until next event.
         qreal stepsToScrollF =
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
                 QApplication::wheelScrollLines() *
 #endif
                 offset * effectiveSingleStep();
@@ -759,7 +759,7 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
 /*!
     \reimp
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QAbstractSlider::wheelEvent(QWheelEvent * e)
 {
     Q_D(QAbstractSlider);

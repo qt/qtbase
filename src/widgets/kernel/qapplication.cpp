@@ -65,7 +65,9 @@
 #include "qdebug.h"
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
+#if QT_CONFIG(messagebox)
 #include "qmessagebox.h"
+#endif
 #include "qwidgetwindow_p.h"
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtGui/qstylehints.h>
@@ -73,7 +75,7 @@
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/qtouchdevice.h>
 #include <qpa/qplatformtheme.h>
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 #include <QtWidgets/QWhatsThis>
 #endif
 
@@ -407,7 +409,7 @@ QWidget *QApplicationPrivate::main_widget = 0;        // main application widget
 QWidget *QApplicationPrivate::focus_widget = 0;        // has keyboard input focus
 QWidget *QApplicationPrivate::hidden_focus_widget = 0; // will get keyboard input focus after show()
 QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboard focus
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 QPointer<QWidget> QApplicationPrivate::wheel_widget;
 #endif
 bool qt_in_tab_key_event = false;
@@ -1916,9 +1918,9 @@ void QApplication::closeAllWindows()
 */
 void QApplication::aboutQt()
 {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
     QMessageBox::aboutQt(activeWindow());
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
 }
 
 /*!
@@ -1999,7 +2001,7 @@ bool QApplication::event(QEvent *e)
         } else if (te->timerId() == d->toolTipFallAsleep.timerId()) {
             d->toolTipFallAsleep.stop();
         }
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     } else if (e->type() == QEvent::EnterWhatsThisMode) {
         QWhatsThis::enterWhatsThisMode();
         return true;
@@ -2987,13 +2989,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
         case QEvent::MouseMove:
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
         case QEvent::Wheel:
 #endif
         case QEvent::TouchBegin:
         case QEvent::TouchUpdate:
         case QEvent::TouchEnd:
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
         case QEvent::TabletMove:
         case QEvent::TabletPress:
         case QEvent::TabletRelease:
@@ -3230,7 +3232,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             d->hoverGlobalPos = mouse->globalPos();
         }
         break;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         {
             QWidget* w = static_cast<QWidget *>(receiver);
@@ -3352,7 +3354,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif // QT_NO_CONTEXTMENU
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     case QEvent::TabletMove:
     case QEvent::TabletPress:
     case QEvent::TabletRelease:
@@ -3382,9 +3384,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             tablet->setAccepted(eventAccepted);
         }
         break;
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
-#if !defined(QT_NO_TOOLTIP) || !defined(QT_NO_WHATSTHIS)
+#if !defined(QT_NO_TOOLTIP) || QT_CONFIG(whatsthis)
     case QEvent::ToolTip:
     case QEvent::WhatsThis:
     case QEvent::QueryWhatsThis:
@@ -3409,7 +3411,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
-#if !defined(QT_NO_STATUSTIP) || !defined(QT_NO_WHATSTHIS)
+#if QT_CONFIG(statustip) || QT_CONFIG(whatsthis)
     case QEvent::StatusTip:
     case QEvent::WhatsThisClicked:
         {
@@ -4043,7 +4045,7 @@ int QApplication::keyboardInputInterval()
 
     \sa QStyleHints::wheelScrollLines()
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 int QApplication::wheelScrollLines()
 {
     return styleHints()->wheelScrollLines();

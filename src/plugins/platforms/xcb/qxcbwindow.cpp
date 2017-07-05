@@ -99,12 +99,12 @@
 #include <QTextCodec>
 #include <stdio.h>
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XI2proto.h>
 #endif
@@ -257,7 +257,7 @@ static inline bool positionIncludesFrame(QWindow *w)
     return qt_window_private(w)->positionPolicy == QWindowPrivate::WindowFrameInclusive;
 }
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
 static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
 {
     #include <X11/Xatom.h>
@@ -303,7 +303,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
 #endif
     return &tp;
 }
-#endif // XCB_USE_XLIB
+#endif // QT_CONFIG(xcb_xlib)
 
 // TODO move this into a utility function in QWindow or QGuiApplication
 static QWindow *childWindowAt(QWindow *win, const QPoint &p)
@@ -577,7 +577,7 @@ void QXcbWindow::create()
                         32, 2, (void *)data);
 
 
-#if defined(XCB_USE_XINPUT2)
+#if QT_CONFIG(xinput2)
     connection()->xi2Select(m_window);
 #endif
 
@@ -588,7 +588,7 @@ void QXcbWindow::create()
     if (window()->flags() & Qt::WindowTransparentForInput)
         setTransparentForMouseEvents(true);
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     // force sync to read outstanding requests - see QTBUG-29106
     XSync(static_cast<Display*>(platformScreen->connection()->xlib_display()), false);
 #endif
@@ -1504,7 +1504,7 @@ void QXcbWindow::setWindowTitle(const QString &title)
                                    ba.length(),
                                    ba.constData());
 
-#ifdef XCB_USE_XLIB
+#if QT_CONFIG(xcb_xlib)
     Display *dpy = static_cast<Display *>(connection()->xlib_display());
     XTextProperty *text = qstringToXTP(dpy, title);
     if (text)

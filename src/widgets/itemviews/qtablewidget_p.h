@@ -58,7 +58,7 @@
 #include <private/qtableview_p.h>
 #include <private/qwidgetitemdata_p.h>
 
-#ifndef QT_NO_TABLEWIDGET
+QT_REQUIRE_CONFIG(tablewidget);
 
 QT_BEGIN_NAMESPACE
 
@@ -217,7 +217,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TABLEWIDGET
 
 #endif // QTABLEWIDGET_P_H

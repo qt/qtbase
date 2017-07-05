@@ -59,7 +59,7 @@
 #ifndef QT_NO_EFFECTS
 # include <private/qeffects_p.h>
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 # include <qwhatsthis.h>
 #endif
 
@@ -187,7 +187,7 @@ private:
 void QMenuPrivate::init()
 {
     Q_Q(QMenu);
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     q->setAttribute(Qt::WA_CustomWhatsThis);
 #endif
     q->setAttribute(Qt::WA_X11NetWmWindowTypePopupMenu);
@@ -663,7 +663,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
                 }
             }
         }
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
     }  else if (previousAction) {
         previousAction->d_func()->showStatusText(topCausedWidget(), QString());
 #endif
@@ -1333,12 +1333,12 @@ void QMenuPrivate::activateCausedStack(const QVector<QPointer<QWidget> > &caused
 void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e, bool self)
 {
     Q_Q(QMenu);
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     bool inWhatsThisMode = QWhatsThis::inWhatsThisMode();
 #endif
     if (!action || !q->isEnabled()
         || (action_e == QAction::Trigger
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
             && !inWhatsThisMode
 #endif
             && (action->isSeparator() ||!action->isEnabled())))
@@ -1349,7 +1349,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
     */
     const QVector<QPointer<QWidget> > causedStack = calcCausedStack();
     if (action_e == QAction::Trigger) {
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
         if (!inWhatsThisMode)
             actionAboutToTrigger = action;
 #endif
@@ -1368,7 +1368,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
             }
         }
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
         if (inWhatsThisMode) {
             QString s = action->whatsThis();
             if (s.isEmpty())
@@ -2805,7 +2805,7 @@ void QMenu::paintEvent(QPaintEvent *e)
     style()->drawControl(QStyle::CE_MenuEmptyArea, &menuOpt, &p, this);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 /*!
   \reimp
 */
@@ -2979,7 +2979,7 @@ QMenu::event(QEvent *e)
         }
         break;
 #endif // QT_NO_TOOLTIP
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     case QEvent::QueryWhatsThis:
         e->setAccepted(d->whatsThis.size());
         if (QAction *action = d->actionAt(static_cast<QHelpEvent*>(e)->pos())) {
@@ -3241,7 +3241,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         key_consumed = true;
         break; }
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     case Qt::Key_F1:
         if (!d->currentAction || d->currentAction->whatsThis().isNull())
             break;

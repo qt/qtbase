@@ -4,3 +4,5 @@
 *
 [serverTest]
 windows
+[downloadBigFile]
+windows

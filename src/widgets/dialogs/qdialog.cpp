@@ -37,20 +37,31 @@
 **
 ****************************************************************************/
 
+#include <QtWidgets/qtwidgetsglobal.h>
+#if QT_CONFIG(colordialog)
 #include "qcolordialog.h"
+#endif
 #include "qfontdialog.h"
+#if QT_CONFIG(filedialog)
 #include "qfiledialog.h"
+#endif
 
 #include "qevent.h"
 #include "qdesktopwidget.h"
 #include "qapplication.h"
 #include "qlayout.h"
 #include "qsizegrip.h"
+#if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
+#endif
 #include "qmenu.h"
 #include "qcursor.h"
+#if QT_CONFIG(messagebox)
 #include "qmessagebox.h"
+#endif
+#if QT_CONFIG(errormessage)
 #include "qerrormessage.h"
+#endif
 #include <qpa/qplatformtheme.h>
 #include "private/qdialog_p.h"
 #include "private/qguiapplication_p.h"
@@ -62,11 +73,11 @@ QT_BEGIN_NAMESPACE
 
 static inline int themeDialogType(const QDialog *dialog)
 {
-#ifndef QT_NO_FILEDIALOG
+#if QT_CONFIG(filedialog)
     if (qobject_cast<const QFileDialog *>(dialog))
         return QPlatformTheme::FileDialog;
 #endif
-#ifndef QT_NO_COLORDIALOG
+#if QT_CONFIG(colordialog)
     if (qobject_cast<const QColorDialog *>(dialog))
         return QPlatformTheme::ColorDialog;
 #endif
@@ -74,11 +85,11 @@ static inline int themeDialogType(const QDialog *dialog)
     if (qobject_cast<const QFontDialog *>(dialog))
         return QPlatformTheme::FontDialog;
 #endif
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
     if (qobject_cast<const QMessageBox *>(dialog))
         return QPlatformTheme::MessageDialog;
 #endif
-#ifndef QT_NO_ERRORMESSAGE
+#if QT_CONFIG(errormessage)
     if (qobject_cast<const QErrorMessage *>(dialog))
         return QPlatformTheme::MessageDialog;
 #endif
@@ -607,7 +618,7 @@ bool QDialog::eventFilter(QObject *o, QEvent *e)
 /*! \reimp */
 void QDialog::contextMenuEvent(QContextMenuEvent *e)
 {
-#if defined(QT_NO_WHATSTHIS) || defined(QT_NO_MENU)
+#if !QT_CONFIG(whatsthis) || defined(QT_NO_MENU)
     Q_UNUSED(e);
 #else
     QWidget *w = childAt(e->pos());
@@ -672,7 +683,7 @@ void QDialog::keyPressEvent(QKeyEvent *e)
 /*! \reimp */
 void QDialog::closeEvent(QCloseEvent *e)
 {
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     if (isModal() && QWhatsThis::inWhatsThisMode())
         QWhatsThis::leaveWhatsThisMode();
 #endif

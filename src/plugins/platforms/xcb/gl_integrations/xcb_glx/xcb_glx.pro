@@ -4,7 +4,7 @@ include(../gl_integrations_plugin_base.pri)
 QT += glx_support-private
 
 #should be removed from the sources
-DEFINES += XCB_USE_GLX XCB_USE_XLIB
+DEFINES += XCB_USE_GLX
 DEFINES += QT_NO_FOREACH
 
 qtConfig(xcb-glx) {

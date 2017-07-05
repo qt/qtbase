@@ -1,3 +1,5 @@
+QT_FOR_CONFIG += widgets
+
 TEMPLATE      = subdirs
 SUBDIRS       = classwizard \
                 configdialog \
@@ -13,5 +15,7 @@ SUBDIRS       = classwizard \
 }
 
 !qtHaveModule(printsupport): SUBDIRS -= licensewizard
-contains(DEFINES, QT_NO_WIZARD): SUBDIRS -= trivialwizard licensewizard classwizard
+!qtConfig(wizard) {
+    SUBDIRS -= trivialwizard licensewizard classwizard
+}
 wince: SUBDIRS += sipdialog

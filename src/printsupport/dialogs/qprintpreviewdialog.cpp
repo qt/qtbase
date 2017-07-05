@@ -51,7 +51,9 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qtoolbutton.h>
 #include <QtGui/qvalidator.h>
+#if QT_CONFIG(filedialog)
 #include <QtWidgets/qfiledialog.h>
+#endif
 #include <QtWidgets/qmainwindow.h>
 #include <QtWidgets/qtoolbar.h>
 #include <QtCore/QCoreApplication>

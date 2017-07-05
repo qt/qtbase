@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qwhatsthis.h"
-#ifndef QT_NO_WHATSTHIS
 #include "qpointer.h"
 #include "qapplication.h"
 #include <private/qguiapplication_p.h>
@@ -54,7 +53,6 @@
 #include "qtextdocument.h"
 #include <qpa/qplatformtheme.h>
 #include "private/qtextdocumentlayout_p.h"
-#include "qtoolbutton.h"
 #include "qdebug.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -681,5 +679,3 @@ QAction *QWhatsThis::createAction(QObject *parent)
 QT_END_NAMESPACE
 
 #include "qwhatsthis.moc"
-
-#endif // QT_NO_WHATSTHIS

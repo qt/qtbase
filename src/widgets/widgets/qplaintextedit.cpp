@@ -2296,7 +2296,7 @@ void QPlainTextEdit::changeEvent(QEvent *e)
 
 /*! \reimp
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QPlainTextEdit::wheelEvent(QWheelEvent *e)
 {
     Q_D(QPlainTextEdit);

@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_FILESYSTEMMODEL
-
 #ifdef QT_BUILD_INTERNAL
 static QBasicAtomicInt fetchedRoot = Q_BASIC_ATOMIC_INITIALIZER(false);
 Q_AUTOTEST_EXPORT void qt_test_resetFetchedRoot()
@@ -365,8 +363,6 @@ void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bo
         firstTime = false;
     }
 }
-
-#endif // QT_NO_FILESYSTEMMODEL
 
 QT_END_NAMESPACE
 

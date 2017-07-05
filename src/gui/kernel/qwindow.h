@@ -71,11 +71,11 @@ class QShowEvent;
 class QHideEvent;
 class QKeyEvent;
 class QMouseEvent;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 class QWheelEvent;
 #endif
 class QTouchEvent;
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 class QTabletEvent;
 #endif
 
@@ -354,11 +354,11 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent *);
     virtual void mouseDoubleClickEvent(QMouseEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     virtual void wheelEvent(QWheelEvent *);
 #endif
     virtual void touchEvent(QTouchEvent *);
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
     virtual void tabletEvent(QTabletEvent *);
 #endif
     virtual bool nativeEvent(const QByteArray &eventType, void *message, long *result);

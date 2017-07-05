@@ -147,10 +147,6 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
 
 #if QT_CONFIG(process)
 
-// POSIX requires PIPE_BUF to be 512 or larger
-// so we will use 512
-static const int errorBufferMax = 512;
-
 namespace {
 struct QProcessPoller
 {
@@ -530,11 +526,18 @@ void QProcessPrivate::startProcess()
     }
 }
 
+struct ChildError
+{
+    int code;
+    char function[8];
+};
+
 void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp)
 {
     ::signal(SIGPIPE, SIG_DFL);         // reset the signal that we ignored
 
     Q_Q(QProcess);
+    ChildError error = { 0, {} };       // force zeroing of function[8]
 
     // copy the stdin socket if asked to (without closing on exec)
     if (inputChannelMode != QProcess::ForwardedInputChannel)
@@ -557,9 +560,9 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
     qt_safe_close(childStartedPipe[0]);
 
     // enter the working directory
-    const char *callthatfailed = "chdir: ";
     if (workingDir && QT_CHDIR(workingDir) == -1) {
         // failed, stop the process
+        strcpy(error.function, "chdir");
         goto report_errno;
     }
 
@@ -569,39 +572,28 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
     // execute the process
     if (!envp) {
         qt_safe_execv(argv[0], argv);
-        callthatfailed = "execv: ";
+        strcpy(error.function, "execvp");
     } else {
 #if defined (QPROCESS_DEBUG)
         fprintf(stderr, "QProcessPrivate::execChild() starting %s\n", argv[0]);
 #endif
         qt_safe_execve(argv[0], argv, envp);
-        callthatfailed = "execve: ";
+        strcpy(error.function, "execve");
     }
 
     // notify failure
-    // we're running in the child process, so we don't need to be thread-safe;
-    // we can use strerror
+    // don't use strerror or any other routines that may allocate memory, since
+    // some buggy libc versions can deadlock on locked mutexes.
 report_errno:
-    const char *msg = strerror(errno);
-#if defined (QPROCESS_DEBUG)
-    fprintf(stderr, "QProcessPrivate::execChild() failed (%s), notifying parent process\n", msg);
-#endif
-    qt_safe_write(childStartedPipe[1], callthatfailed, strlen(callthatfailed));
-    qt_safe_write(childStartedPipe[1], msg, strlen(msg));
-    qt_safe_close(childStartedPipe[1]);
+    error.code = errno;
+    qt_safe_write(childStartedPipe[1], &error, sizeof(error));
     childStartedPipe[1] = -1;
 }
 
 bool QProcessPrivate::processStarted(QString *errorMessage)
 {
-    char buf[errorBufferMax];
-    int i = 0;
-    int ret;
-    do {
-        ret = qt_safe_read(childStartedPipe[0], buf + i, sizeof buf - i);
-        if (ret > 0)
-            i += ret;
-    } while (ret > 0 && i < int(sizeof buf));
+    ChildError buf;
+    int ret = qt_safe_read(childStartedPipe[0], &buf, sizeof(buf));
 
     if (startupSocketNotifier) {
         startupSocketNotifier->setEnabled(false);
@@ -616,10 +608,10 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
 #endif
 
     // did we read an error message?
-    if ((i > 0) && errorMessage)
-        *errorMessage = QString::fromLocal8Bit(buf, i);
+    if (ret > 0 && errorMessage)
+        *errorMessage = QLatin1String(buf.function) + QLatin1String(": ") + qt_error_string(buf.code);
 
-    return i <= 0;
+    return ret <= 0;
 }
 
 qint64 QProcessPrivate::bytesAvailableInChannel(const Channel *channel) const

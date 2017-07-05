@@ -69,7 +69,7 @@ public:
     {
         return QSpinBox::valueFromText(text);
     }
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent(QWheelEvent *event)
     {
         QSpinBox::wheelEvent(event);
@@ -1218,7 +1218,7 @@ void tst_QSpinBox::setGroupSeparatorShown()
 
 void tst_QSpinBox::wheelEvents()
 {
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     SpinBox spinBox;
     spinBox.setRange(-20, 20);
     spinBox.setValue(0);

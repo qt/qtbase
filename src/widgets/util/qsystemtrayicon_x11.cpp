@@ -210,7 +210,7 @@ bool QSystemTrayIconSys::event(QEvent *e)
     case QEvent::ToolTip:
         QApplication::sendEvent(q, e);
         break;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     case QEvent::Wheel:
         return QApplication::sendEvent(q, e);
 #endif

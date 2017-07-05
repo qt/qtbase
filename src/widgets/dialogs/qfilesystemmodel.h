@@ -47,10 +47,9 @@
 #include <QtGui/qicon.h>
 #include <QtCore/qdiriterator.h>
 
+QT_REQUIRE_CONFIG(filesystemmodel);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_FILESYSTEMMODEL
 
 class ExtendedInformation;
 class QFileSystemModelPrivate;
@@ -166,9 +165,6 @@ inline QString QFileSystemModel::fileName(const QModelIndex &aindex) const
 inline QIcon QFileSystemModel::fileIcon(const QModelIndex &aindex) const
 { return qvariant_cast<QIcon>(aindex.data(Qt::DecorationRole)); }
 
-#endif // QT_NO_FILESYSTEMMODEL
-
 QT_END_NAMESPACE
 
 #endif // QFILESYSTEMMODEL_H
-

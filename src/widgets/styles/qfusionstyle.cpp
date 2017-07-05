@@ -65,7 +65,9 @@
 #include <qslider.h>
 #include <qsplitter.h>
 #include <qprogressbar.h>
+#if QT_CONFIG(wizard)
 #include <qwizard.h>
+#endif
 #include <qdrawutil.h>
 #include <private/qstylehelper_p.h>
 #include <private/qdrawhelper_p.h>
@@ -3683,7 +3685,7 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
 
     case SH_MessageBox_TextInteractionFlags:
         return Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse;
-#ifndef QT_NO_WIZARD
+#if QT_CONFIG(wizard)
     case SH_WizardStyle:
         return QWizard::ClassicStyle;
 #endif

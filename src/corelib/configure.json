@@ -44,7 +44,6 @@
         },
         "icu": {
             "label": "ICU",
-            "export": "",
             "test": "unix/icu",
             "sources": [
                 {

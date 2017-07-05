@@ -559,6 +559,9 @@ void Moc::parse()
                     if (test(EQ)) {
                         // namespace Foo = Bar::Baz;
                         until(SEMIC);
+                    } else if (test(LPAREN)) {
+                        // Ignore invalid code such as: 'namespace __identifier("x")' (QTBUG-56634)
+                        until(RPAREN);
                     } else if (!test(SEMIC)) {
                         NamespaceDef def;
                         def.classname = nsName;

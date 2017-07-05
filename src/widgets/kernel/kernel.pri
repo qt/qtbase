@@ -24,7 +24,6 @@ HEADERS += \
 	kernel/qsizepolicy.h \
         kernel/qstackedlayout.h \
 	kernel/qtooltip.h \
-	kernel/qwhatsthis.h \
         kernel/qwidget.h \
         kernel/qwidget_p.h \
 	kernel/qwidgetaction.h \
@@ -52,7 +51,6 @@ SOURCES += \
         kernel/qsizepolicy.cpp \
         kernel/qstackedlayout.cpp \
 	kernel/qtooltip.cpp \
-	kernel/qwhatsthis.cpp \
 	kernel/qwidget.cpp \
 	kernel/qwidgetaction.cpp \
 	kernel/qgesture.cpp \
@@ -86,4 +84,9 @@ qtConfig(opengl) {
 qtConfig(formlayout) {
     HEADERS += kernel/qformlayout.h
     SOURCES += kernel/qformlayout.cpp
+}
+
+qtConfig(whatsthis) {
+    HEADERS += kernel/qwhatsthis.h
+    SOURCES += kernel/qwhatsthis.cpp
 }

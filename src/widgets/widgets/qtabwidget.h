@@ -94,7 +94,7 @@ public:
     QString tabToolTip(int index) const;
 #endif
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     void setTabWhatsThis(int index, const QString &text);
     QString tabWhatsThis(int index) const;
 #endif

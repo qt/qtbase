@@ -140,7 +140,7 @@ private slots:
 
     void execAfterExit();
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelScrollLines();
 #endif
 
@@ -1773,7 +1773,7 @@ void tst_QApplication::execAfterExit()
     QCOMPARE(exitCode, 0);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void tst_QApplication::wheelScrollLines()
 {
     int argc = 1;
@@ -1781,7 +1781,7 @@ void tst_QApplication::wheelScrollLines()
     // If wheelScrollLines returns 0, the mose wheel will be disabled.
     QVERIFY(app.wheelScrollLines() > 0);
 }
-#endif // !QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 void tst_QApplication::style()
 {

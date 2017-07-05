@@ -93,7 +93,7 @@ QActionPrivate::~QActionPrivate()
 
 bool QActionPrivate::showStatusText(QWidget *widget, const QString &str)
 {
-#ifdef QT_NO_STATUSTIP
+#if !QT_CONFIG(statustip)
     Q_UNUSED(widget);
     Q_UNUSED(str);
 #else

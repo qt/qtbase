@@ -1372,7 +1372,7 @@ void tst_QByteArray::toULongLong()
     QCOMPARE(b, ok);
 }
 
-static bool checkSize(size_t value, uint min)
+static bool checkSize(size_t value, size_t min)
 {
     return value >= min && value <= INT_MAX;
 }

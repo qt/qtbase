@@ -3409,7 +3409,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 #endif
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 /*!
     \reimp
 */
@@ -3437,7 +3437,7 @@ void QGraphicsView::wheelEvent(QWheelEvent *event)
     if (!event->isAccepted())
         QAbstractScrollArea::wheelEvent(event);
 }
-#endif // QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 /*!
     \reimp

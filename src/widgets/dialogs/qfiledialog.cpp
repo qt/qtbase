@@ -43,7 +43,6 @@
 #include <private/qwidgetitemdata_p.h>
 #include "qfiledialog.h"
 
-#ifndef QT_NO_FILEDIALOG
 #include "qfiledialog_p.h"
 #include <private/qguiapplication_p.h>
 #include <qfontmetrics.h>
@@ -52,8 +51,9 @@
 #include <qshortcut.h>
 #include <qgridlayout.h>
 #include <qmenu.h>
+#if QT_CONFIG(messagebox)
 #include <qmessagebox.h>
-#include <qinputdialog.h>
+#endif
 #include <stdlib.h>
 #include <qsettings.h>
 #include <qdebug.h>
@@ -841,7 +841,7 @@ void QFileDialog::setVisible(bool visible)
             // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
             // updates the state correctly, but skips showing the non-native version:
             setAttribute(Qt::WA_DontShowOnScreen);
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
             // So the completer doesn't try to complete and therefore show a popup
             if (!d->nativeDialogInUse)
                 d->completer->setModel(0);
@@ -849,7 +849,7 @@ void QFileDialog::setVisible(bool visible)
         } else {
             d->createWidgets();
             setAttribute(Qt::WA_DontShowOnScreen, false);
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
             if (!d->nativeDialogInUse) {
                 if (d->proxyModel != 0)
                     d->completer->setModel(d->proxyModel);
@@ -922,7 +922,7 @@ void QFileDialog::setDirectory(const QString &directory)
     if (!d->nativeDialogInUse) {
         d->qFileDialogUi->newFolderButton->setEnabled(d->model->flags(root) & Qt::ItemIsDropEnabled);
         if (root != d->rootIndex()) {
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
             if (directory.endsWith(QLatin1Char('/')))
                 d->completer->setCompletionPrefix(newDirectory);
             else
@@ -2629,11 +2629,11 @@ void QFileDialog::accept()
         if (!info.exists())
             info = QFileInfo(d->getEnvironmentVariable(fn));
         if (!info.exists()) {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
             QString message = tr("%1\nDirectory not found.\nPlease verify the "
                                           "correct directory name was given.");
             QMessageBox::warning(this, windowTitle(), message.arg(info.fileName()));
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
             return;
         }
         if (info.isDir()) {
@@ -2661,7 +2661,7 @@ void QFileDialog::accept()
         if (!info.exists() || !confirmOverwrite() || acceptMode() == AcceptOpen) {
             d->emitFilesSelected(QStringList(fn));
             QDialog::accept();
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
         } else {
             if (QMessageBox::warning(this, windowTitle(),
                                      tr("%1 already exists.\nDo you want to replace it?")
@@ -2683,11 +2683,11 @@ void QFileDialog::accept()
             if (!info.exists())
                 info = QFileInfo(d->getEnvironmentVariable(file));
             if (!info.exists()) {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
                 QString message = tr("%1\nFile not found.\nPlease verify the "
                                      "correct file name was given.");
                 QMessageBox::warning(this, windowTitle(), message.arg(info.fileName()));
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
                 return;
             }
             if (info.isDir()) {
@@ -2909,10 +2909,10 @@ void QFileDialogPrivate::createWidgets()
 #ifndef QT_NO_SHORTCUT
     qFileDialogUi->fileNameLabel->setBuddy(qFileDialogUi->fileNameEdit);
 #endif
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
-#endif // QT_NO_FSCOMPLETER
+#endif // QT_CONFIG(fscompleter)
 
     qFileDialogUi->fileNameEdit->setInputMethodHints(Qt::ImhNoPredictiveText);
 
@@ -3078,7 +3078,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         proxyModel->setSourceModel(d->model);
         d->qFileDialogUi->listView->setModel(d->proxyModel);
         d->qFileDialogUi->treeView->setModel(d->proxyModel);
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
         d->completer->setModel(d->proxyModel);
         d->completer->proxyModel = d->proxyModel;
 #endif
@@ -3088,7 +3088,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         d->proxyModel = 0;
         d->qFileDialogUi->listView->setModel(d->model);
         d->qFileDialogUi->treeView->setModel(d->model);
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
         d->completer->setModel(d->model);
         d->completer->sourceModel = d->model;
         d->completer->proxyModel = 0;
@@ -3430,7 +3430,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
         bool isDir = model->isDir(index);
 
         QFile::Permissions p(index.parent().data(QFileSystemModel::FilePermissions).toInt());
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
         Q_Q(QFileDialog);
         if (!(p & QFile::WriteUser) && (QMessageBox::warning(q_func(), QFileDialog::tr("Delete"),
                                     QFileDialog::tr("'%1' is write protected.\nDo you want to delete it anyway?")
@@ -3446,12 +3446,12 @@ void QFileDialogPrivate::_q_deleteCurrent()
 #else
         if (!(p & QFile::WriteUser))
             return;
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
 
         // the event loop has run, we can NOT reuse index because the model might have removed it.
         if (isDir) {
             if (!removeDirectory(filePath)) {
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
             QMessageBox::warning(q, q->windowTitle(),
                                 QFileDialog::tr("Could not delete directory."));
 #endif
@@ -3632,7 +3632,7 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
 */
 void QFileDialogPrivate::_q_goToDirectory(const QString &path)
 {
- #ifndef QT_NO_MESSAGEBOX
+ #if QT_CONFIG(messagebox)
     Q_Q(QFileDialog);
 #endif
     QModelIndex index = qFileDialogUi->lookInCombo->model()->index(qFileDialogUi->lookInCombo->currentIndex(),
@@ -3651,12 +3651,12 @@ void QFileDialogPrivate::_q_goToDirectory(const QString &path)
 
     if (dir.exists() || path2.isEmpty() || path2 == model->myComputer().toString()) {
         _q_enterDirectory(index);
-#ifndef QT_NO_MESSAGEBOX
+#if QT_CONFIG(messagebox)
     } else {
         QString message = QFileDialog::tr("%1\nDirectory not found.\nPlease verify the "
                                           "correct directory name was given.");
         QMessageBox::warning(q, q->windowTitle(), message.arg(path2));
-#endif // QT_NO_MESSAGEBOX
+#endif // QT_CONFIG(messagebox)
     }
 }
 
@@ -4028,7 +4028,7 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
         e->accept();
 }
 
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
 
 QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
 {
@@ -4134,5 +4134,3 @@ QStringList QFSCompleter::splitPath(const QString &path) const
 QT_END_NAMESPACE
 
 #include "moc_qfiledialog.cpp"
-
-#endif // QT_NO_FILEDIALOG

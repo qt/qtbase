@@ -919,10 +919,10 @@ void QToolButton::setDefaultAction(QAction *action)
 #ifndef QT_NO_TOOLTIP
     setToolTip(action->toolTip());
 #endif
-#ifndef QT_NO_STATUSTIP
+#if QT_CONFIG(statustip)
     setStatusTip(action->statusTip());
 #endif
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
     setWhatsThis(action->whatsThis());
 #endif
 #ifndef QT_NO_MENU

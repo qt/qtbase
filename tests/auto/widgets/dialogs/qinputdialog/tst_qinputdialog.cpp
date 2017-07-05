@@ -349,11 +349,12 @@ void tst_QInputDialog::taskQTBUG_54693_crashWhenParentIsDeletedWhileDialogIsOpen
     }
 
     // getItem
-    for (int editable = false; editable <= true; ++editable) {
+    for (int editable = 0; editable < 2; ++editable) {
         QAutoPointer<SelfDestructParent> dialog(new SelfDestructParent);
         bool ok = true;
         const QString result = QInputDialog::getItem(dialog.get(), "Title", "Label",
-                                                     QStringList() << "1" << "2", 1, editable, &ok);
+                                                     QStringList() << "1" << "2", 1,
+                                                     editable != 0, &ok);
         QVERIFY(!dialog);
         QVERIFY(!ok);
         QCOMPARE(result, QLatin1String("2"));

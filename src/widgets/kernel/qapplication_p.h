@@ -195,7 +195,7 @@ public:
     static QWidget *focus_widget;
     static QWidget *hidden_focus_widget;
     static QWidget *active_window;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     static int  wheel_scroll_lines;
     static QPointer<QWidget> wheel_widget;
 #endif

@@ -4,6 +4,12 @@ QT = core-private core testlib
 qtHaveModule(network): QT += network
 else: DEFINES += QT_NO_NETWORK
 
+contains(CONFIG, builtin_testdata) {
+    DEFINES += BUILTIN_TESTDATA
+}
+
+TESTDATA += ../BLACKLIST
+
 TARGET = ../tst_qfile
 SOURCES = ../tst_qfile.cpp
 INCLUDEPATH += ../../../../../shared/

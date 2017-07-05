@@ -125,7 +125,7 @@ signals:
 
 protected:
     void timerEvent(QTimerEvent *e) override;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent(QWheelEvent *) override;
 #endif
 

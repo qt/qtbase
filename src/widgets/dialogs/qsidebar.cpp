@@ -40,8 +40,6 @@
 #include "qsidebar_p.h"
 #include "qfilesystemmodel.h"
 
-#ifndef QT_NO_FILEDIALOG
-
 #include <qaction.h>
 #include <qurl.h>
 #include <qmenu.h>
@@ -518,5 +516,3 @@ bool QSidebar::event(QEvent * event)
 QT_END_NAMESPACE
 
 #include "moc_qsidebar_p.cpp"
-
-#endif

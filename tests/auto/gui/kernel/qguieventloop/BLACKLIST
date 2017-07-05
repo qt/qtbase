@@ -1,2 +1,4 @@
 [processEvents]
 osx-10.12
+[testQuitLock]
+osx-10.12

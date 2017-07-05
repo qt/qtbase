@@ -1427,6 +1427,8 @@ bool QOpenGLWidget::event(QEvent *e)
             break;
         if (d->initialized)
             d->reset();
+        if (isHidden())
+            break;
         // FALLTHROUGH
     case QEvent::Show: // reparenting may not lead to a resize so reinitalize on Show too
         if (d->initialized && window()->windowHandle()

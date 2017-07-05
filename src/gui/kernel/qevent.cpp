@@ -767,7 +767,7 @@ QHoverEvent::~QHoverEvent()
 
     \sa pos(), pixelDelta(), angleDelta()
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 QWheelEvent::QWheelEvent(const QPointF &pos, int delta,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          Qt::Orientation orient)
@@ -952,7 +952,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
       invertedScrolling(inverted)
 {}
 
-#endif // QT_NO_WHEELEVENT
+#endif // QT_CONFIG(wheelevent)
 
 /*!
     \fn QPoint QWheelEvent::pixelDelta() const
@@ -2264,7 +2264,7 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
     return QVariant();
 }
 
-#ifndef QT_NO_TABLETEVENT
+#if QT_CONFIG(tabletevent)
 
 /*!
     \class QTabletEvent
@@ -2706,7 +2706,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \sa posF()
 */
 
-#endif // QT_NO_TABLETEVENT
+#endif // QT_CONFIG(tabletevent)
 
 #ifndef QT_NO_GESTURES
 /*!
@@ -3325,7 +3325,7 @@ QStatusTipEvent::~QStatusTipEvent()
 
 #endif // QT_NO_STATUSTIP
 
-#ifndef QT_NO_WHATSTHIS
+#if QT_CONFIG(whatsthis)
 
 /*!
     \class QWhatsThisClickedEvent
@@ -3362,7 +3362,7 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
     This?" text.
 */
 
-#endif // QT_NO_WHATSTHIS
+#endif // QT_CONFIG(whatsthis)
 
 #ifndef QT_NO_ACTION
 
@@ -3856,7 +3856,7 @@ static void formatDropEvent(QDebug d, const QDropEvent *e)
 
 #  endif // !QT_NO_DRAGANDDROP
 
-#  ifndef QT_NO_TABLETEVENT
+#  if QT_CONFIG(tabletevent)
 
 static void formatTabletEvent(QDebug d, const QTabletEvent *e)
 {
@@ -3883,7 +3883,7 @@ static void formatTabletEvent(QDebug d, const QTabletEvent *e)
         d << ", tangentialPressure=" << e->tangentialPressure();
 }
 
-#  endif // !QT_NO_TABLETEVENT
+#  endif // QT_CONFIG(tabletevent)
 
 QDebug operator<<(QDebug dbg, const QTouchEvent::TouchPoint &tp)
 {
@@ -3956,13 +3956,13 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << ')';
     }
         break;
-#  ifndef QT_NO_WHEELEVENT
+#  if QT_CONFIG(wheelevent)
     case QEvent::Wheel: {
         const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
         dbg << "QWheelEvent(" << "pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta() << ')';
     }
         break;
-#  endif // !QT_NO_WHEELEVENT
+#  endif // QT_CONFIG(wheelevent)
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
     case QEvent::ShortcutOverride:
@@ -4063,7 +4063,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
         dbg << "QContextMenuEvent(" << static_cast<const QContextMenuEvent *>(e)->pos() << ')';
         break;
 #  endif // !QT_NO_CONTEXTMENU
-#  ifndef QT_NO_TABLETEVENT
+#  if QT_CONFIG(tabletevent)
     case QEvent::TabletEnterProximity:
     case QEvent::TabletLeaveProximity:
     case QEvent::TabletPress:
@@ -4071,7 +4071,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     case QEvent::TabletRelease:
         formatTabletEvent(dbg, static_cast<const QTabletEvent *>(e));
         break;
-#  endif // !QT_NO_TABLETEVENT
+#  endif // QT_CONFIG(tabletevent)
     case QEvent::Enter:
         dbg << "QEnterEvent(" << static_cast<const QEnterEvent *>(e)->pos() << ')';
         break;

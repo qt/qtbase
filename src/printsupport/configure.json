@@ -40,7 +40,8 @@
                 "features.combobox",
                 "features.cups",
                 "features.datetimeedit",
-                "features.groupbox"
+                "features.groupbox",
+                "features.tablewidget"
             ],
             "output": [ "privateFeature", "feature" ]
         },

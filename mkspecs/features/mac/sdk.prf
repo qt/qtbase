@@ -7,13 +7,22 @@ contains(QMAKE_MAC_SDK, .*/.*): \
 
 defineReplace(xcodeSDKInfo) {
     info = $$1
+    equals(info, "Path"): \
+        info = --show-sdk-path
+    equals(info, "PlatformPath"): \
+        info = --show-sdk-platform-path
+    equals(info, "SDKVersion"): \
+        info = --show-sdk-version
     sdk = $$2
     isEmpty(sdk): \
         sdk = $$QMAKE_MAC_SDK
 
     isEmpty(QMAKE_MAC_SDK.$${sdk}.$${info}) {
-        QMAKE_MAC_SDK.$${sdk}.$${info} = $$system("/usr/bin/xcodebuild -sdk $$sdk -version $$info 2>/dev/null")
-        isEmpty(QMAKE_MAC_SDK.$${sdk}.$${info}): error("Could not resolve SDK $$info for \'$$sdk\'")
+        QMAKE_MAC_SDK.$${sdk}.$${info} = $$system("/usr/bin/xcrun --sdk $$sdk $$info 2>/dev/null")
+        # --show-sdk-platform-path won't work for Command Line Tools; this is fine
+        # only used by the XCTest backend to testlib
+        isEmpty(QMAKE_MAC_SDK.$${sdk}.$${info}):if(!isEmpty(QMAKE_XCODEBUILD_PATH)|!equals(info, "--show-sdk-platform-path")): \
+            error("Could not resolve SDK $$info for \'$$sdk\'")
         cache(QMAKE_MAC_SDK.$${sdk}.$${info}, set stash, QMAKE_MAC_SDK.$${sdk}.$${info})
     }
 

@@ -47,7 +47,6 @@
 #include "qcocoahelpers.h"
 #include "qcocoaapplication.h"
 #include "qcocoaapplicationdelegate.h"
-#include "qcocoafiledialoghelper.h"
 #include "qcocoatheme.h"
 #include "qcocoainputcontext.h"
 #include "qcocoamimetypes.h"
@@ -59,6 +58,13 @@
 #include <QtCore/qcoreapplication.h>
 
 #include <QtGui/private/qcoregraphics_p.h>
+
+#ifdef QT_WIDGETS_LIB
+#include <QtWidgets/qtwidgetsglobal.h>
+#if QT_CONFIG(filedialog)
+#include "qcocoafiledialoghelper.h"
+#endif
+#endif
 
 #include <IOKit/graphics/IOGraphicsLib.h>
 

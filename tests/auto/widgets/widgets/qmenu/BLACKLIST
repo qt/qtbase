@@ -1,2 +1,4 @@
 [task258920_mouseBorder]
 osx
+[submenuTearOffDontClose]
+osx-10.11 ci

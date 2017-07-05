@@ -177,7 +177,7 @@ public Q_SLOTS:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void wheelEvent(QWheelEvent *event) override;
 #endif
     void focusInEvent(QFocusEvent *event) override;

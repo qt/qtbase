@@ -50,7 +50,7 @@ class tst_QScrollBar : public QObject
 private slots:
     void scrollSingleStep();
     void task_209492();
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
     void QTBUG_27308();
 #endif
     void QTBUG_42871();
@@ -143,7 +143,7 @@ void tst_QScrollBar::task_209492()
     QCOMPARE(spy.count(), 1);
 }
 
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 #define WHEEL_DELTA 120 // copied from tst_QAbstractSlider / tst_QComboBox
 void tst_QScrollBar::QTBUG_27308()
 {

@@ -53,8 +53,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#ifndef QT_NO_FILEDIALOG
-
 #include "qfiledialog.h"
 #include "private/qdialog_p.h"
 #include "qplatformdefs.h"
@@ -75,11 +73,15 @@
 #include <qpointer.h>
 #include <qdebug.h>
 #include "qsidebar_p.h"
+#if QT_CONFIG(fscompleter)
 #include "qfscompleter_p.h"
+#endif
 
 #if defined (Q_OS_UNIX)
 #include <unistd.h>
 #endif
+
+QT_REQUIRE_CONFIG(filedialog);
 
 QT_BEGIN_NAMESPACE
 
@@ -231,9 +233,9 @@ public:
     QStringList watching;
     QFileSystemModel *model;
 
-#ifndef QT_NO_FSCOMPLETER
+#if QT_CONFIG(fscompleter)
     QFSCompleter *completer;
-#endif //QT_NO_FSCOMPLETER
+#endif //QT_CONFIG(fscompleter)
 
     QString setWindowTitle;
 
@@ -431,7 +433,5 @@ QString QFileDialogPrivate::selectedNameFilter_sys() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_FILEDIALOG
 
 #endif // QFILEDIALOG_P_H

@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_WIZARD
-
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
 #if QT_CONFIG(style_windowsvista)
@@ -724,5 +722,3 @@ int QVistaHelper::topOffset()
 QT_END_NAMESPACE
 
 #endif // style_windowsvista
-
-#endif // QT_NO_WIZARD

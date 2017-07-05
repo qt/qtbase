@@ -1,0 +1,131 @@
+Qt 5.9.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.9.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.9 series is binary compatible with the 5.8.x series.
+Applications compiled for 5.8 will continue to run with 5.9.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                               Qt 5.9.1 Changes                           *
+****************************************************************************
+
+Deprecation Notice
+------------------
+
+ - The following platforms or toolchains are deprecated and will be
+   removed as of Qt 5.11:
+   * Microsoft Visual Studio 2013
+
+Important Behavior Changes
+--------------------------
+
+ - The Q_REQUIRED_RESULT macro now expands to the C++17 attribute
+   [[nodiscard]] if the compiler supports it. Code using this macro needs
+   to pay attention to its placement, as C++ function attributes must come
+   before the declaration, unlike the GCC extension that this macro
+   previously expanded to.
+
+Binary Compatibility Note
+-------------------------
+
+ - The variable QOperatingSystemVersion::MacOSHighSierra was added in this
+   release. Code that uses this variable will not run under Qt 5.9.0. If
+   backwards compatibility is desired, use instead
+     QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 13)
+
+Third-Party Code
+----------------
+
+ - Sqlite was updated to version 3.16.2.
+ - Deleted the src/3rdparty/atspi2 directory.
+
+QtCore
+------
+
+ - [QTBUG-60558] Fixed a bug that caused QInternal::unregisterCallback to
+   crash on exit.
+ - [QTBUG-61034] QT_NO_EXCEPTIONS is now reliably set when using Clang, even
+   in Objective C++ mode.
+
+ - QHash/QMultiHash:
+    * [QTBUG-60395] Fixed operator== so that two containers compare equal when
+      there are multiple values with the same key.
+
+ - QStorageInfo
+    * [QTBUG-61096] Fixed a hang on certain systems when retrieving
+      information from unresponsive filesystems.
+
+ - QTimeZone:
+   * [QTBUG-60595] Fixed sending IANA standard UTC-offset QTimeZones
+     through QDataStream, which previously came out invalid after
+     deserialization.
+
+moc
+---
+
+ - [QTBUG-61204] moc no longer errors out if a C++ keyword is #define'ed
+
+Platform Specific Changes
+-------------------------
+
+ - macOS / iOS:
+   * [QTBUG-41978] QCollator now respects the ignorePunctuation property on
+     Apple based platforms correctly.
+   * [QTBUG-61205] Fixed the architecture information in QSysInfo.
+   * QSysInfo and QOperatingSystemVersion now support the newest versions of
+     Apple's operating systems.
+   * [QTBUG-61053] Fixed SSL certificate verification on iOS with Secure
+     Transport back-end.
+
+ - Windows:
+   * [QTBUG-61315] Fixed invalid sorting of custom environment variables set
+     via QProcessEnvironment when starting subprocesses.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-58372] The SQL driver plugins can be built separately again.
+   Note that it is necessary to configure the whole sqldrivers directory.
+ - [QTBUG-60925][Unix] Fixed library retrieval from pkg-config. Again.
+ - [QTBUG-60936] Fixed module version number in Qt modules' cmake config files.
+ - [QTBUG-61017] Fixed configure hanging upon selecting commercial license.
+ - [QTBUG-61044] Fixed license checker invocation on 32 bit systems.
+ - [MinGW] The gold linker is no longer used.
+
+qmake
+-----
+
+ - [QTBUG-42830][Android] INSTALL targets are no longer created for static
+   libraries.
+ - [QTBUG-40825][QTBUG-59457][Unix] Fixed various makespecs to append shared
+   include and library locations only at the end of the search lists.
+ - [QTBUG-52383][Windows] midl and rc are now invoked with /NOLOGO.
+ - [QTBUG-58391][MSVC] MSVC extensions are not disabled any more when
+   querying the compiler for the predefined macros to pass to moc.
+ - [QTBUG-59431][VS] Fixed parsing of /utf-8 option. Again.
+ - [QTBUG-60895][VS] Fixed .vcxproj generation for ActiveQt server projects.
+ - [QTBUG-60059] qmake will now be more verbose when it fails to run the
+   compiler while querying the toolchain's properties.
+ - Various QT_<compiler>_VERSION variables were reverted to refer to the
+   toolchain Qt was built with. The current toolchain's versions can be
+   found in the QMAKE_<compiler>_VERSION variables.
+ - QMAKE_DEFAULT_{INC,LIB}DIRS is now populated also when using clang.
+ - [MinGW] Re-builds of static library projects will now create a new library
+   instead of updating the previously built one.
+ - [VS] Unknown /Zc:XXX options are no longer complained about.

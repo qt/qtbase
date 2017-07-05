@@ -74,7 +74,9 @@
 #include <private/qmath_p.h>
 #include <qdebug.h>
 #include <qtextformat.h>
+#if QT_CONFIG(wizard)
 #include <qwizard.h>
+#endif
 #include <qfileinfo.h>
 #include <qdir.h>
 #include <qsettings.h>
@@ -5187,7 +5189,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             vret->variant = fmt;
         }
         break;
-#ifndef QT_NO_WIZARD
+#if QT_CONFIG(wizard)
     case SH_WizardStyle:
         ret = QWizard::ClassicStyle;
         break;

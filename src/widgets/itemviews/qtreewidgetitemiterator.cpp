@@ -42,8 +42,6 @@
 #include "qtreewidget_p.h"
 #include "qwidgetitemdata_p.h"
 
-#ifndef QT_NO_TREEWIDGET
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -453,5 +451,3 @@ void QTreeWidgetItemIteratorPrivate::ensureValidIterator(const QTreeWidgetItem *
 */
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TREEWIDGET

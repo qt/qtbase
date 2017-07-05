@@ -1560,10 +1560,9 @@ void tst_QTreeWidget::scrollToItem()
 {
     // Check if all parent nodes of the item found are expanded.
     // Reported in task #78761
-    QTreeWidgetItem *bar;
-    QTreeWidgetItem *search;
+    QTreeWidgetItem *search = nullptr;
     for (int i=0; i<2; ++i) {
-        bar = new QTreeWidgetItem(testWidget);
+        QTreeWidgetItem *bar = new QTreeWidgetItem(testWidget);
         bar->setText(0, QString::number(i));
 
         for (int j=0; j<2; ++j) {
@@ -1571,9 +1570,8 @@ void tst_QTreeWidget::scrollToItem()
             foo->setText(0, bar->text(0) + QString::number(j));
 
             for (int k=0; k<2; ++k) {
-                QTreeWidgetItem *yo = new QTreeWidgetItem(foo);
-                yo->setText(0, foo->text(0) + QString::number(k));
-                search = yo;
+                search = new QTreeWidgetItem(foo);
+                search->setText(0, foo->text(0) + QString::number(k));
             }
         }
     }
@@ -1582,10 +1580,10 @@ void tst_QTreeWidget::scrollToItem()
     testWidget->scrollToItem(search);
     QCOMPARE(search->text(0), QLatin1String("111"));
 
-    bar = search->parent();
-    QVERIFY(testWidget->isItemExpanded(bar));
-    bar = bar->parent();
-    QVERIFY(testWidget->isItemExpanded(bar));
+    QTreeWidgetItem *par = search->parent();
+    QVERIFY(testWidget->isItemExpanded(par));
+    par = par->parent();
+    QVERIFY(testWidget->isItemExpanded(par));
 }
 
 // From task #85413
@@ -2663,7 +2661,7 @@ void tst_QTreeWidget::expandAndCallapse()
 {
     QTreeWidget tw;
     QTreeWidgetItem *top = new QTreeWidgetItem(&tw, QStringList() << "top");
-    QTreeWidgetItem *p;
+    QTreeWidgetItem *p = nullptr;
     for (int i = 0; i < 10; ++i) {
         p = new QTreeWidgetItem(top, QStringList(QString::number(i)));
         for (int j = 0; j < 10; ++j)

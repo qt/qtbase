@@ -175,7 +175,10 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
     version.m_major = -1;
     version.m_minor = -1;
 
-    static const int versions[][2] = {
+    static const struct {
+        uint major : 4;
+        uint minor : 4;
+    } versions[] = {
         { 1, 0 }, // API level 1
         { 1, 1 }, // API level 2
         { 1, 5 }, // API level 3
@@ -207,8 +210,8 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
     const size_t versionIdx = size_t(QJNIObjectPrivate::getStaticField<jint>(
         "android/os/Build$VERSION", "SDK_INT")) - 1;
     if (versionIdx < sizeof(versions) / sizeof(versions[0])) {
-        version.m_major = versions[versionIdx][0];
-        version.m_minor = versions[versionIdx][1];
+        version.m_major = versions[versionIdx].major;
+        version.m_minor = versions[versionIdx].minor;
     }
 
     // API level 6 was exactly version 2.0.1
@@ -333,6 +336,7 @@ QString QOperatingSystemVersion::name() const
     }
 }
 
+#ifdef Q_COMPILER_INITIALIZER_LISTS
 /*!
     \fn bool QOperatingSystemVersion::isAnyOfType(std::initializer_list<OSType> types) const
 
@@ -347,6 +351,7 @@ bool QOperatingSystemVersion::isAnyOfType(std::initializer_list<OSType> types) c
     }
     return false;
 }
+#endif
 
 /*!
     \variable QOperatingSystemVersion::Windows7

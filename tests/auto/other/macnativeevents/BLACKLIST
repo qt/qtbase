@@ -21,3 +21,6 @@ osx
 osx
 [testMouseDragToNonClientArea]
 osx
+# QTQAINFRA-1292
+[testPushButtonPressRelease]
+osx-10.11 ci

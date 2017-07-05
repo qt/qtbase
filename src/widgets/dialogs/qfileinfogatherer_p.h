@@ -66,6 +66,8 @@
 
 #include <private/qfilesystemengine_p.h>
 
+QT_REQUIRE_CONFIG(filesystemmodel);
+
 QT_BEGIN_NAMESPACE
 
 class QExtendedInformation {
@@ -150,8 +152,6 @@ private :
 
 class QFileIconProvider;
 
-#ifndef QT_NO_FILESYSTEMMODEL
-
 class Q_AUTOTEST_EXPORT QFileInfoGatherer : public QThread
 {
 Q_OBJECT
@@ -208,9 +208,6 @@ private:
     QFileIconProvider *m_iconProvider; // not accessed by run()
     QFileIconProvider defaultProvider;
 };
-#endif // QT_NO_FILESYSTEMMODEL
-
 
 QT_END_NAMESPACE
 #endif // QFILEINFOGATHERER_H
-

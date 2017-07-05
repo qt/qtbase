@@ -3294,7 +3294,7 @@ void QComboBox::keyReleaseEvent(QKeyEvent *e)
 /*!
     \reimp
 */
-#ifndef QT_NO_WHEELEVENT
+#if QT_CONFIG(wheelevent)
 void QComboBox::wheelEvent(QWheelEvent *e)
 {
 #ifdef Q_OS_DARWIN

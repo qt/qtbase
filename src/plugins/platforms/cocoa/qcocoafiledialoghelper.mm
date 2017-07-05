@@ -41,8 +41,6 @@
 
 #include "qcocoafiledialoghelper.h"
 
-#ifndef QT_NO_FILEDIALOG
-
 /*****************************************************************************
   QFileDialog debug facilities
  *****************************************************************************/
@@ -775,5 +773,3 @@ bool QCocoaFileDialogHelper::defaultNameFilterDisables() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_FILEDIALOG
