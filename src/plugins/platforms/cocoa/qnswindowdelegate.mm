@@ -78,6 +78,21 @@
     return m_cocoaWindow->screen()->availableGeometry().toCGRect();
 }
 
+#if QT_MACOS_DEPLOYMENT_TARGET_BELOW(__MAC_10_11)
+/*
+    AppKit on OS X 10.10 wrongly calls windowWillUseStandardFrame:defaultFrame
+    from -[NSWindow _frameForFullScreenMode] when going into fullscreen, resulting
+    in black bars on top and bottom of the window. By implementing the following
+    method, AppKit will choose that instead, and resolve the right fullscreen
+    geometry.
+*/
+- (NSSize)window:(NSWindow *)window willUseFullScreenContentSize:(NSSize)proposedSize
+{
+    Q_ASSERT(NSEqualSizes(m_cocoaWindow->screen()->geometry().size().toCGSize(), proposedSize));
+    return proposedSize;
+}
+#endif
+
 - (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
 {
     Q_UNUSED(window);
