@@ -40,9 +40,9 @@
 #ifndef QINTEGRITYHIDMANAGER_P_H
 #define QINTEGRITYHIDMANAGER_P_H
 
-#include <QObject>
-#include <QList>
-#include <QThread>
+#include <QtCore/QObject>
+#include <QtCore/QList>
+#include <QtCore/QThread>
 
 QT_BEGIN_NAMESPACE
 
