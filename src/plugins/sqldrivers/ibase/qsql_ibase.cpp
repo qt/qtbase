@@ -544,6 +544,7 @@ static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
             case blr_varying:
             case blr_varying2:
                  strLen += 2; // for the two terminating null values
+                 Q_FALLTHROUGH();
             case blr_text:
             case blr_text2: {
                 int o;
