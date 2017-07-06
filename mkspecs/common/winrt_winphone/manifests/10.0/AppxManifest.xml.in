@@ -4,8 +4,9 @@
   xmlns=\"http://schemas.microsoft.com/appx/manifest/foundation/windows10\"
   xmlns:mp=\"http://schemas.microsoft.com/appx/2014/phone/manifest\"
   xmlns:uap=\"http://schemas.microsoft.com/appx/manifest/uap/windows10\"
+  xmlns:uap3=\"http://schemas.microsoft.com/appx/manifest/uap/windows10/3\"
   xmlns:mobile=\"http://schemas.microsoft.com/appx/manifest/mobile/windows10\"
-  IgnorableNamespaces=\"uap mp mobile\">
+  IgnorableNamespaces=\"uap uap3 mp mobile\">
 
   <Identity
     Name=\"$${WINRT_MANIFEST.identity}\"

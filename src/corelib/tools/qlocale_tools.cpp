@@ -370,7 +370,7 @@ double asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
                 // if a digit before any 'e' is not 0, then a non-zero number was intended.
                 ok = false;
                 return 0.0;
-            } else if (num[i] == 'e') {
+            } else if (num[i] == 'e' || num[i] == 'E') {
                 break;
             }
         }

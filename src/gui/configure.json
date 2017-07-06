@@ -271,7 +271,7 @@
             "label": "XCB Xlib",
             "test": "qpa/xcb-xlib",
             "sources": [
-                { "type": "pkgConfig", "args": "X11-xcb x11 xcb" },
+                { "type": "pkgConfig", "args": "x11-xcb x11 xcb" },
                 "-lxcb -lX11 -lX11-xcb"
             ]
         },
@@ -457,7 +457,7 @@
     "features": {
         "accessibility-atspi-bridge": {
             "label": "ATSPI Bridge",
-            "condition": "features.accessibility && features.xcb && features.dbus && config.atspi",
+            "condition": "features.accessibility && features.xcb && features.dbus && libs.atspi",
             "output": [ "privateFeature", "feature" ]
         },
         "angle": {

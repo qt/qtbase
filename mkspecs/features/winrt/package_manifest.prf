@@ -116,9 +116,8 @@
 
         INDENT = "$$escape_expand(\\r\\n)  "
 
-        # All Windows 10 applications need to have internetClient. It is also not marked as additional
-        # capability anymore and is assumed to be standard.
-        *-msvc2015|*-msvc2017: WINRT_MANIFEST.capabilities += internetClient
+        # All Windows 10 applications need to have internetClient.
+        WINRT_MANIFEST.capabilities += internetClient
 
         contains(WINRT_MANIFEST.capabilities, defaults) {
             WINRT_MANIFEST.capabilities -= defaults
@@ -130,13 +129,39 @@
             WINRT_MANIFEST.capabilities_device += $$WINRT_MANIFEST.capabilities_device_default
         }
 
+        UAP_CAPABILITIES += \
+            appointments \
+            blockedChatMessages \
+            chat \
+            contacts \
+            enterpriseAuthentication \
+            # internetClient is special, as it needs to be written without namespace
+            #internetClient \
+            musicLibrary \
+            objects3D \
+            phoneCall \
+            picturesLibrary \
+            removableStorage \
+            sharedUserCertificates \
+            userAccountInformation \
+            videosLibrary \
+            voipCall
+
+        UAP3_CAPABILITIES += backgroundMediaPlayback remoteSystem userNotificationListener
+
         # Capabilities are given as a string list and may change with the configuration (network, sensors, etc.)
         WINRT_MANIFEST.capabilities = $$unique(WINRT_MANIFEST.capabilities)
         WINRT_MANIFEST.capabilities_device = $$unique(WINRT_MANIFEST.capabilities_device)
         !isEmpty(WINRT_MANIFEST.capabilities)|!isEmpty(WINRT_MANIFEST.capabilities_device) {
             MANIFEST_CAPABILITIES += "<Capabilities>"
-            for(CAPABILITY, WINRT_MANIFEST.capabilities): \
-                MANIFEST_CAPABILITIES += "  <Capability Name=\"$$CAPABILITY\" />"
+            for (CAPABILITY, WINRT_MANIFEST.capabilities) {
+                contains(UAP_CAPABILITIES, $$CAPABILITY): \
+                    MANIFEST_CAPABILITIES += "  <uap:Capability Name=\"$$CAPABILITY\" />"
+                else:contains(UAP3_CAPABILITIES, $$CAPABILITY): \
+                    MANIFEST_CAPABILITIES += "  <uap3:Capability Name=\"$$CAPABILITY\" />"
+                else: \
+                    MANIFEST_CAPABILITIES += "  <Capability Name=\"$$CAPABILITY\" />"
+            }
             for(CAPABILITY, WINRT_MANIFEST.capabilities_device): \
                 MANIFEST_CAPABILITIES += "  <DeviceCapability Name=\"$$CAPABILITY\" />"
             MANIFEST_CAPABILITIES += "</Capabilities>"

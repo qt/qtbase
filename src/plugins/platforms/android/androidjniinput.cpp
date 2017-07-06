@@ -273,6 +273,7 @@ namespace QtAndroidInput
         if (m_touchPoints.isEmpty())
             return;
 
+        QMutexLocker lock(QtAndroid::platformInterfaceMutex());
         QAndroidPlatformIntegration *platformIntegration = QtAndroid::androidPlatformIntegration();
         if (!platformIntegration)
             return;

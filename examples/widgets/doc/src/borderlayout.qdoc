@@ -28,6 +28,7 @@
 /*!
     \example layouts/borderlayout
     \title Border Layout Example
+    \ingroup examples-layout
     \brief Shows how to arrange child widgets along a border.
 
     \e{Border Layout} implements a layout that arranges child widgets to

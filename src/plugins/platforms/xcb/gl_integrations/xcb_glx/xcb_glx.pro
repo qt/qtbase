@@ -3,14 +3,9 @@ TARGET = qxcb-glx-integration
 include(../gl_integrations_plugin_base.pri)
 QT += glx_support-private
 
-#should be removed from the sources
-DEFINES += XCB_USE_GLX
 DEFINES += QT_NO_FOREACH
 
-qtConfig(xcb-glx) {
-    DEFINES += XCB_HAS_XCB_GLX
-    QMAKE_USE += xcb_glx
-}
+qtConfig(xcb-glx): QMAKE_USE += xcb_glx
 
 !static:qtConfig(dlopen): QMAKE_USE += libdl
 

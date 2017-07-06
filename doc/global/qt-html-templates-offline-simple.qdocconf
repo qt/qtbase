@@ -6,7 +6,7 @@ qhp.extraFiles    += style/offline-simple.css
 HTML.headerstyles  = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline-simple.css\" />\n" \
     "  <script type=\"text/javascript\">\n" \
-    "    window.onload = function(){document.getElementsByTagName(\"link\").item(0).setAttribute(\"href\", \"style/offline.css\");};\n" \
+    "    document.getElementsByTagName(\"link\").item(0).setAttribute(\"href\", \"style/offline.css\");\n" \
     "  </script>\n"
 
 HTML.postheader = \

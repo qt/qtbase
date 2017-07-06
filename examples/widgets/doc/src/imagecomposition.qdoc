@@ -29,6 +29,7 @@
     \example painting/imagecomposition
     \title Image Composition Example
     \ingroup examples-painting
+    \ingroup examples-layout
     \brief Shows how composition modes work in QPainter.
 
     \brief The Image Composition example lets the user combine images

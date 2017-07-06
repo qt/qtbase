@@ -519,7 +519,7 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("xpm") << QString("marble.xpm") << QByteArray("xpm") << QImage::Format_Indexed8;
     QTest::newRow("bmp-1") << QString("colorful.bmp") << QByteArray("bmp") << QImage::Format_Indexed8;
     QTest::newRow("bmp-2") << QString("font.bmp") << QByteArray("bmp") << QImage::Format_Indexed8;
-    QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp") << QImage::Format_RGB32;
+    QTest::newRow("bmp-3") << QString("test32bfv4.bmp") << QByteArray("bmp") << QImage::Format_ARGB32;
     QTest::newRow("bmp-4") << QString("test32v5.bmp") << QByteArray("bmp") << QImage::Format_RGB32;
     QTest::newRow("png") << QString("kollada.png") << QByteArray("png") << QImage::Format_ARGB32;
     QTest::newRow("png-2") << QString("YCbCr_cmyk.png") << QByteArray("png") << QImage::Format_RGB32;
@@ -736,7 +736,6 @@ void tst_QImageReader::imageFormatBeforeRead()
         QSize size = reader.size();
         QImage image(size, fileFormat);
         QVERIFY(reader.read(&image));
-        QEXPECT_FAIL("bmp-3", "Semi-transparent BMPs not predicted", Continue);
         QCOMPARE(image.format(), fileFormat);
     }
 }

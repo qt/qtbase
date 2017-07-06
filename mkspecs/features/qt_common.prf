@@ -65,6 +65,8 @@ clang {
     greaterThan(QT_GCC_MAJOR_VERSION, 4): QMAKE_CXXFLAGS_WARN_ON += -Wdate-time
     # GCC 6 introduced these
     greaterThan(QT_GCC_MAJOR_VERSION, 5): QMAKE_CXXFLAGS_WARN_ON += -Wshift-overflow=2 -Wduplicated-cond
+    # GCC 7 has a lot of false positives relating to this, so disable completely
+    greaterThan(QT_GCC_MAJOR_VERSION, 6): QMAKE_CXXFLAGS_WARN_ON += -Wno-stringop-overflow
 }
 
 warnings_are_errors:warning_clean {

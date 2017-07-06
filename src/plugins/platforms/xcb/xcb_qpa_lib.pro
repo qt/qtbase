@@ -61,9 +61,7 @@ qtConfig(xcb-xlib) {
     }
 }
 
-# build with session management support
 qtConfig(xcb-sm) {
-    DEFINES += XCB_USE_SM
     QMAKE_USE += x11sm
     SOURCES += qxcbsessionmanager.cpp
     HEADERS += qxcbsessionmanager.h
@@ -83,16 +81,11 @@ qtConfig(vulkan) {
 }
 
 !qtConfig(system-xcb) {
-    DEFINES += XCB_USE_RENDER
     QMAKE_USE += xcb-static xcb
 } else {
     LIBS += -lxcb-xinerama  ### there is no configure test for this!
     qtConfig(xkb): QMAKE_USE += xcb_xkb
-    # to support custom cursors with depth > 1
-    qtConfig(xcb-render) {
-        DEFINES += XCB_USE_RENDER
-        QMAKE_USE += xcb_render
-    }
+    qtConfig(xcb-render): QMAKE_USE += xcb_render
     QMAKE_USE += xcb_syslibs
 }
 

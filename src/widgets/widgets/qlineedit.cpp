@@ -950,7 +950,7 @@ QString QLineEdit::selectedText() const
 }
 
 /*!
-    selectionStart() returns the index of the first selected character in the
+    Returns the index of the first selected character in the
     line edit or -1 if no text is selected.
 
     \sa selectedText()
@@ -1181,6 +1181,7 @@ QMargins QLineEdit::textMargins() const
     \row \li \c > \li All following alphabetic characters are uppercased.
     \row \li \c < \li All following alphabetic characters are lowercased.
     \row \li \c ! \li Switch off case conversion.
+    \row \li \c {[ ] { }} \li Reserved.
     \row \li \tt{\\} \li Use \tt{\\} to escape the special
                            characters listed above to use them as
                            separators.

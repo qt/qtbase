@@ -303,7 +303,23 @@ void QCocoaMenuBar::resetKnownMenuItemsToQt()
     // Undo the effect of redirectKnownMenuItemsToFirstResponder():
     // set the menu items' actions to itemFired and their targets to
     // the QCocoaMenuDelegate.
-    updateMenuBarImmediately();
+    foreach (QCocoaMenuBar *mb, static_menubars) {
+        foreach (QCocoaMenu *m, mb->m_menus) {
+            foreach (QCocoaMenuItem *i, m->items()) {
+                switch (i->effectiveRole()) {
+                case QPlatformMenuItem::CutRole:
+                case QPlatformMenuItem::CopyRole:
+                case QPlatformMenuItem::PasteRole:
+                case QPlatformMenuItem::SelectAllRole:
+                   [i->nsItem() setTarget:m->nsMenu().delegate];
+                   [i->nsItem() setAction:@selector(itemFired:)];
+                   break;
+                default:
+                   break;
+                }
+            }
+        }
+    }
 }
 
 void QCocoaMenuBar::updateMenuBarImmediately()

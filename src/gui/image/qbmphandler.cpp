@@ -114,6 +114,15 @@ static QDataStream &operator>>(QDataStream &s, BMP_INFOHDR &bi)
         s >> bi.biCompression >> bi.biSizeImage;
         s >> bi.biXPelsPerMeter >> bi.biYPelsPerMeter;
         s >> bi.biClrUsed >> bi.biClrImportant;
+        if (bi.biSize >= BMP_WIN4) {
+            s >> bi.biRedMask >> bi.biGreenMask >> bi.biBlueMask >> bi.biAlphaMask;
+            s >> bi.biCSType;
+            for (int i = 0; i < 9; ++i)
+                s >> bi.biEndpoints[i];
+            s >> bi.biGammaRed >> bi.biGammaGreen >> bi.biGammaBlue;
+            if (bi.biSize == BMP_WIN5)
+                s >> bi.biIntent >> bi.biProfileData >> bi.biProfileSize >> bi.biReserved;
+        }
     }
     else {                                        // probably old Windows format
         qint16 w, h;
@@ -219,53 +228,20 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 offset, 
     int alpha_scale = 0;
 
     if (!d->isSequential())
-        d->seek(startpos + BMP_FILEHDR_SIZE + (bi.biSize >= BMP_WIN4 ? BMP_WIN : bi.biSize)); // goto start of colormap or masks
+        d->seek(startpos + BMP_FILEHDR_SIZE + bi.biSize); // goto start of colormap or masks
 
-    if (bi.biSize >= BMP_WIN4 || (comp == BMP_BITFIELDS && (nbits == 16 || nbits == 32))) {
+    if (bi.biSize >= BMP_WIN4) {
+        red_mask = bi.biRedMask;
+        green_mask = bi.biGreenMask;
+        blue_mask = bi.biBlueMask;
+        alpha_mask = bi.biAlphaMask;
+    } else if (comp == BMP_BITFIELDS && (nbits == 16 || nbits == 32)) {
         if (d->read((char *)&red_mask, sizeof(red_mask)) != sizeof(red_mask))
             return false;
         if (d->read((char *)&green_mask, sizeof(green_mask)) != sizeof(green_mask))
             return false;
         if (d->read((char *)&blue_mask, sizeof(blue_mask)) != sizeof(blue_mask))
             return false;
-
-        // Read BMP v4+ header
-        if (bi.biSize >= BMP_WIN4) {
-            int CSType       = 0;
-            int gamma_red    = 0;
-            int gamma_green  = 0;
-            int gamma_blue   = 0;
-            int endpoints[9];
-
-            if (d->read((char *)&alpha_mask, sizeof(alpha_mask)) != sizeof(alpha_mask))
-                return false;
-            if (d->read((char *)&CSType, sizeof(CSType)) != sizeof(CSType))
-                return false;
-            if (d->read((char *)&endpoints, sizeof(endpoints)) != sizeof(endpoints))
-                return false;
-            if (d->read((char *)&gamma_red, sizeof(gamma_red)) != sizeof(gamma_red))
-                return false;
-            if (d->read((char *)&gamma_green, sizeof(gamma_green)) != sizeof(gamma_green))
-                return false;
-            if (d->read((char *)&gamma_blue, sizeof(gamma_blue)) != sizeof(gamma_blue))
-                return false;
-
-            if (bi.biSize == BMP_WIN5) {
-                qint32 intent      = 0;
-                qint32 profileData = 0;
-                qint32 profileSize = 0;
-                qint32 reserved    = 0;
-
-                if (d->read((char *)&intent, sizeof(intent)) != sizeof(intent))
-                    return false;
-                if (d->read((char *)&profileData, sizeof(profileData)) != sizeof(profileData))
-                    return false;
-                if (d->read((char *)&profileSize, sizeof(profileSize)) != sizeof(profileSize))
-                    return false;
-                if (d->read((char *)&reserved, sizeof(reserved)) != sizeof(reserved) || reserved != 0)
-                    return false;
-            }
-        }
     }
 
     bool transp = (comp == BMP_BITFIELDS) && alpha_mask;
@@ -876,7 +852,10 @@ QVariant QBmpHandler::option(ImageOption option) const
             case 32:
             case 24:
             case 16:
-                format = QImage::Format_RGB32;
+                if (infoHeader.biCompression == BMP_BITFIELDS && infoHeader.biSize >= BMP_WIN4 && infoHeader.biAlphaMask)
+                    format = QImage::Format_ARGB32;
+                else
+                    format = QImage::Format_RGB32;
                 break;
             case 8:
             case 4:

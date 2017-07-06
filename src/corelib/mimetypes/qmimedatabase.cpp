@@ -526,7 +526,7 @@ QMimeType QMimeDatabase::mimeTypeForUrl(const QUrl &url) const
     if (scheme.startsWith(QLatin1String("http")) || scheme == QLatin1String("mailto"))
         return mimeTypeForName(d->defaultMimeType());
 
-    return mimeTypeForFile(url.path());
+    return mimeTypeForFile(url.path(), MatchExtension);
 }
 
 /*!

@@ -74,14 +74,9 @@
 
     \snippet rasterwindow/rasterwindow.cpp 1
 
-    The constructor first of all calls \l QWindow::create(). This will
-    create the window in the windowing system. Without calling create,
-    the window will not get events and will not be visible in the
-    windowing system. The call to create does not show the window. We
-    then set the geometry to be something reasonable.
-
-    Then we create the backingstore and pass it the window instance it
-    is supposed to manage.
+    In the constructor we create the backingstore and pass it the window
+    instance it is supposed to manage. We also set the initial window
+    geometry.
 
     \snippet rasterwindow/rasterwindow.cpp 2
 

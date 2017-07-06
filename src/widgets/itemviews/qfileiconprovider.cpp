@@ -46,6 +46,7 @@
 #include <private/qfunctions_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qicon_p.h>
+#include <private/qfilesystementry_p.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformservices.h>
 #include <qpa/qplatformtheme.h>
@@ -247,10 +248,11 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
     if (!retIcon.isNull())
         return retIcon;
 
-    if (info.isRoot())
+    const QString &path = info.absoluteFilePath();
+    if (path.isEmpty() || QFileSystemEntry::isRootPath(path))
 #if defined (Q_OS_WIN) && !defined(Q_OS_WINRT)
     {
-        UINT type = GetDriveType((wchar_t *)info.absoluteFilePath().utf16());
+        UINT type = GetDriveType(reinterpret_cast<const wchar_t *>(path.utf16()));
 
         switch (type) {
         case DRIVE_REMOVABLE:
@@ -298,7 +300,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
 
 QString QFileIconProvider::type(const QFileInfo &info) const
 {
-    if (info.isRoot())
+    if (QFileSystemEntry::isRootPath(info.absoluteFilePath()))
         return QApplication::translate("QFileDialog", "Drive");
     if (info.isFile()) {
         if (!info.suffix().isEmpty()) {

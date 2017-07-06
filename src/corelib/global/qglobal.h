@@ -771,7 +771,7 @@ template <> class QStaticAssertFailure<true> {};
 #define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
 #endif
 
-Q_CORE_EXPORT void qt_check_pointer(const char *, int);
+Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) Q_DECL_NOTHROW;
 Q_CORE_EXPORT void qBadAlloc();
 
 #ifdef QT_NO_EXCEPTIONS

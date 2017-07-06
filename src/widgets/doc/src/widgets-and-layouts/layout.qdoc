@@ -57,15 +57,15 @@
     is set on a widget in this way, it takes charge of the following tasks:
 
     \list
-    \li Positioning of child widgets.
-    \li Sensible default sizes for windows.
-    \li Sensible minimum sizes for windows.
-    \li Resize handling.
+    \li Positioning of child widgets
+    \li Sensible default sizes for windows
+    \li Sensible minimum sizes for windows
+    \li Resize handling
     \li Automatic updates when contents change:
         \list
-        \li Font size, text or other contents of child widgets.
-        \li Hiding or showing a child widget.
-        \li Removal of child widgets.
+        \li Font size, text or other contents of child widgets
+        \li Hiding or showing a child widget
+        \li Removal of child widgets
         \endlist
     \endlist
 
@@ -392,7 +392,6 @@
     Many Qt Widgets \l{Qt Widgets Examples}{examples} already use layouts,
     however, several examples exist to showcase various layouts.
 
-    \list
-    \li \l{Layout Examples}
-    \endlist
+    \annotatedlist examples-layout
+
 */

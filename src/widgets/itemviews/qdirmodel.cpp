@@ -52,6 +52,7 @@
 #include <qstyle.h>
 #include <qapplication.h>
 #include <private/qabstractitemmodel_p.h>
+#include <private/qfilesystementry_p.h>
 #include <qdebug.h>
 
 #include <stack>
@@ -1104,8 +1105,9 @@ QString QDirModel::fileName(const QModelIndex &index) const
     if (!d->indexValid(index))
         return QString();
     QFileInfo info = fileInfo(index);
-    if (info.isRoot())
-        return info.absoluteFilePath();
+    const QString &path = info.absoluteFilePath();
+    if (QFileSystemEntry::isRootPath(path))
+        return path;
     if (d->resolveSymlinks && info.isSymLink())
         info = d->resolvedInfo(info);
     return info.fileName();
@@ -1280,8 +1282,8 @@ QString QDirModelPrivate::name(const QModelIndex &index) const
 {
     const QDirNode *n = node(index);
     const QFileInfo info = n->info;
-    if (info.isRoot()) {
-        QString name = info.absoluteFilePath();
+    QString name = info.absoluteFilePath();
+    if (QFileSystemEntry::isRootPath(name)) {
 #if defined(Q_OS_WIN)
         if (name.startsWith(QLatin1Char('/'))) // UNC host
             return info.fileName();

@@ -94,6 +94,7 @@ public:
 
 #if defined(Q_OS_WIN)
     bool isDriveRoot() const;
+    static bool isDriveRootPath(const QString &path);
 #endif
     bool isRoot() const;
 
@@ -102,6 +103,8 @@ public:
     {
         *this = QFileSystemEntry();
     }
+
+    Q_CORE_EXPORT static bool isRootPath(const QString &path);
 
 private:
     // creates the QString version out of the bytearray version

@@ -143,8 +143,13 @@ void *QAndroidPlatformNativeInterface::nativeResourceForWindow(const QByteArray 
 
 void QAndroidPlatformNativeInterface::customEvent(QEvent *event)
 {
-    if (event->type() == QEvent::User)
-        QtAndroid::setAndroidPlatformIntegration(static_cast<QAndroidPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration()));
+    if (event->type() != QEvent::User)
+        return;
+
+    QMutexLocker lock(QtAndroid::platformInterfaceMutex());
+    QAndroidPlatformIntegration *api = static_cast<QAndroidPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QtAndroid::setAndroidPlatformIntegration(api);
+    api->flushPendingUpdates();
 }
 
 QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &paramList)

@@ -58,9 +58,11 @@ class QWidget;
 class QString;
 class QWindow;
 class AndroidSurfaceClient;
+class QBasicMutex;
 
 namespace QtAndroid
 {
+    QBasicMutex *platformInterfaceMutex();
     QAndroidPlatformIntegration *androidPlatformIntegration();
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration);
     void setQtThread(QThread *thread);
