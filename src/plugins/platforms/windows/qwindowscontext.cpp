@@ -824,6 +824,27 @@ static inline QWindowsInputContext *windowsInputContext()
     return qobject_cast<QWindowsInputContext *>(QWindowsIntegration::instance()->inputContext());
 }
 
+
+// Child windows, fixed-size windows or pop-ups and similar should not be resized
+static inline bool resizeOnDpiChanged(const QWindow *w)
+{
+    bool result = false;
+    if (w->isTopLevel()) {
+        switch (w->type()) {
+        case Qt::Window:
+        case Qt::Dialog:
+        case Qt::Sheet:
+        case Qt::Drawer:
+        case Qt::Tool:
+            result = !w->flags().testFlag(Qt::MSWindowsFixedSizeDialogHint);
+            break;
+        default:
+            break;
+        }
+    }
+    return result;
+}
+
 /*!
      \brief Main windows procedure registered for windows.
 
@@ -1106,9 +1127,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     }   break;
     case QtWindows::DpiChangedEvent: {
-        if (platformWindow->window()->flags().testFlag(Qt::MSWindowsFixedSizeDialogHint))
-            return false; // Fixed-size window should not be resized
-
+        if (!resizeOnDpiChanged(platformWindow->window()))
+            return false;
         platformWindow->setFlag(QWindowsWindow::WithinDpiChanged);
         const RECT *prcNewWindow = reinterpret_cast<RECT *>(lParam);
         SetWindowPos(hwnd, NULL, prcNewWindow->left, prcNewWindow->top,
