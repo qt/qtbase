@@ -114,6 +114,14 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (void)handleWindowEvent:(NSEvent *)theEvent
 {
+    // We might get events for a NSWindow after the corresponding platform
+    // window has been deleted, as the NSWindow can outlive the QCocoaWindow
+    // e.g. if being retained by other parts of AppKit, or in an auto-release
+    // pool. We guard against this in QNSView as well, as not all callbacks
+    // come via events, but if they do there's no point in propagating them.
+    if (!self.platformWindow)
+        return;
+
     [self.window superSendEvent:theEvent];
 
     if (!self.platformWindow)
