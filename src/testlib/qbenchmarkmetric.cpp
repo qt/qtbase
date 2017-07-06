@@ -40,6 +40,53 @@
 
 #include <QtTest/private/qbenchmarkmetric_p.h>
 
+QT_BEGIN_NAMESPACE
+
+namespace QTest {
+
+struct QBenchmarkMetricKey {
+    int metric;
+    const char * name;
+    const char * unit;
+};
+
+static const QBenchmarkMetricKey entries[] = {
+    { FramesPerSecond, "FramesPerSecond", "fps" },
+    { BitsPerSecond, "BitsPerSecond", "bits/s" },
+    { BytesPerSecond, "BytesPerSecond", "bytes/s" },
+    { WalltimeMilliseconds, "WalltimeMilliseconds", "msecs" },
+    { CPUTicks, "CPUTicks", "CPU ticks" },
+    { InstructionReads, "InstructionReads", "instruction reads" },
+    { Events, "Events", "events" },
+    { WalltimeNanoseconds, "WalltimeNanoseconds", "nsecs" },
+    { BytesAllocated, "BytesAllocated", "bytes" },
+    { CPUMigrations, "CPUMigrations", "CPU migrations" },
+    { CPUCycles, "CPUCycles", "CPU cycles" },
+    { BusCycles, "BusCycles", "bus cycles" },
+    { StalledCycles, "StalledCycles", "stalled cycles" },
+    { Instructions, "Instructions", "instructions" },
+    { BranchInstructions, "BranchInstructions", "branch instructions" },
+    { BranchMisses, "BranchMisses", "branch misses" },
+    { CacheReferences, "CacheReferences", "cache references" },
+    { CacheReads, "CacheReads", "cache loads" },
+    { CacheWrites, "CacheWrites", "cache stores" },
+    { CachePrefetches, "CachePrefetches", "cache prefetches" },
+    { CacheMisses, "CacheMisses", "cache misses" },
+    { CacheReadMisses, "CacheReadMisses", "cache load misses" },
+    { CacheWriteMisses, "CacheWriteMisses", "cache store misses" },
+    { CachePrefetchMisses, "CachePrefetchMisses", "cache prefetch misses" },
+    { ContextSwitches, "ContextSwitches", "context switches" },
+    { PageFaults, "PageFaults", "page faults" },
+    { MinorPageFaults, "MinorPageFaults", "minor page faults" },
+    { MajorPageFaults, "MajorPageFaults", "major page faults" },
+    { AlignmentFaults, "AlignmentFaults", "alignment faults" },
+    { EmulationFaults, "EmulationFaults", "emulation faults" },
+    { RefCPUCycles, "RefCPUCycles", "Reference CPU cycles" },
+};
+static const int NumEntries = sizeof(entries) / sizeof(entries[0]);
+
+}
+
 /*!
   \enum QTest::QBenchmarkMetric
   \since 4.7
@@ -92,73 +139,11 @@
  */
 const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
 {
-    switch (metric) {
-    case FramesPerSecond:
-        return "FramesPerSecond";
-    case BitsPerSecond:
-        return "BitsPerSecond";
-    case BytesPerSecond:
-        return "BytesPerSecond";
-    case WalltimeMilliseconds:
-        return "WalltimeMilliseconds";
-    case Events:
-        return "Events";
-    case CPUTicks:
-        return "CPUTicks";
-    case CPUMigrations:
-        return "CPUMigrations";
-    case CPUCycles:
-        return "CPUCycles";
-    case RefCPUCycles:
-        return "RefCPUCycles";
-    case BusCycles:
-        return "BusCycles";
-    case StalledCycles:
-        return "StalledCycles";
-    case InstructionReads:
-        return "InstructionReads";
-    case Instructions:
-        return "Instructions";
-    case WalltimeNanoseconds:
-        return "WalltimeNanoseconds";
-    case BytesAllocated:
-        return "BytesAllocated";
-    case BranchInstructions:
-        return "BranchInstructions";
-    case BranchMisses:
-        return "BranchMisses";
-    case CacheReferences:
-        return "CacheReferences";
-    case CacheReads:
-        return "CacheReads";
-    case CacheWrites:
-        return "CacheWrites";
-    case CachePrefetches:
-        return "CachePrefetches";
-    case CacheMisses:
-        return "CacheMisses";
-    case CacheReadMisses:
-        return "CacheReadMisses";
-    case CacheWriteMisses:
-        return "CacheWriteMisses";
-    case CachePrefetchMisses:
-        return "CachePrefetchMisses";
-    case ContextSwitches:
-        return "ContextSwitches";
-    case PageFaults:
-        return "PageFaults";
-    case MinorPageFaults:
-        return "MinorPageFaults";
-    case MajorPageFaults:
-        return "MajorPageFaults";
-    case AlignmentFaults:
-        return "AlignmentFaults";
-    case EmulationFaults:
-        return "EmulationFaults";
-    default:
-        return "";
-    }
-};
+    if (metric >= 0 && metric < QTest::NumEntries)
+        return entries[metric].name;
+
+    return "";
+}
 
 /*!
   \since 4.7
@@ -166,71 +151,10 @@ const char * QTest::benchmarkMetricName(QBenchmarkMetric metric)
  */
 const char * QTest::benchmarkMetricUnit(QBenchmarkMetric metric)
 {
-    switch (metric) {
-    case FramesPerSecond:
-        return "fps";
-    case BitsPerSecond:
-        return "bits/s";
-    case BytesPerSecond:
-        return "bytes/s";
-    case WalltimeMilliseconds:
-        return "msecs";
-    case Events:
-        return "events";
-    case CPUTicks:
-        return "CPU ticks";
-    case CPUMigrations:
-        return "CPU migrations";
-    case CPUCycles:
-        return "CPU cycles";
-    case RefCPUCycles:
-        return "Reference CPU cycles";
-    case BusCycles:
-        return "bus cycles";
-    case StalledCycles:
-        return "stalled cycles";
-    case InstructionReads:
-        return "instruction reads";
-    case Instructions:
-        return "instructions";
-    case WalltimeNanoseconds:
-        return "nsecs";
-    case BytesAllocated:
-        return "bytes";
-    case BranchInstructions:
-        return "branch instructions";
-    case BranchMisses:
-        return "branch misses";
-    case CacheReferences:
-        return "cache references";
-    case CacheReads:
-        return "cache loads";
-    case CacheWrites:
-        return "cache stores";
-    case CachePrefetches:
-        return "cache prefetches";
-    case CacheMisses:
-        return "cache misses";
-    case CacheReadMisses:
-        return "cache load misses";
-    case CacheWriteMisses:
-        return "cache store misses";
-    case CachePrefetchMisses:
-        return "cache prefetch misses";
-    case ContextSwitches:
-        return "context switches";
-    case PageFaults:
-        return "page faults";
-    case MinorPageFaults:
-        return "minor page faults";
-    case MajorPageFaults:
-        return "major page faults";
-    case AlignmentFaults:
-        return "alignment faults";
-    case EmulationFaults:
-        return "emulation faults";
-    default:
-        return "";
-    }
+    if (metric >= 0 && metric < QTest::NumEntries)
+        return entries[metric].unit;
+
+    return "";
 }
 
+QT_END_NAMESPACE
