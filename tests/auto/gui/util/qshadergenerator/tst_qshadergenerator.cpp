@@ -77,12 +77,13 @@ namespace
         auto graph = QShaderGraph();
 
         auto worldPosition = createNode({
-            createPort(QShaderNodePort::Output, "worldPosition")
+            createPort(QShaderNodePort::Output, "value")
         });
-        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp vec3 $worldPosition = worldPosition;",
-                                                           QByteArrayList() << "varying highp vec3 worldPosition;"));
-        worldPosition.addRule(openGL3, QShaderNode::Rule("vec3 $worldPosition = worldPosition;",
-                                                         QByteArrayList() << "in vec3 worldPosition;"));
+        worldPosition.setParameter("name", "worldPosition");
+        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
+                                                           QByteArrayList() << "varying highp vec3 $name;"));
+        worldPosition.addRule(openGL3, QShaderNode::Rule("vec3 $value = $name;",
+                                                         QByteArrayList() << "in vec3 $name;"));
 
         auto texture = createNode({
             createPort(QShaderNodePort::Output, "texture")
@@ -163,7 +164,7 @@ namespace
         graph.addEdge(createEdge(texture.uuid(), "texture", sampleTexture.uuid(), "sampler"));
         graph.addEdge(createEdge(texCoord.uuid(), "texCoord", sampleTexture.uuid(), "coord"));
 
-        graph.addEdge(createEdge(worldPosition.uuid(), "worldPosition", lightFunction.uuid(), "position"));
+        graph.addEdge(createEdge(worldPosition.uuid(), "value", lightFunction.uuid(), "position"));
         graph.addEdge(createEdge(sampleTexture.uuid(), "color", lightFunction.uuid(), "baseColor"));
         graph.addEdge(createEdge(lightIntensity.uuid(), "lightIntensity", lightFunction.uuid(), "lightIntensity"));
 

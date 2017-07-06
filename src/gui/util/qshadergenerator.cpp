@@ -41,6 +41,22 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace
+{
+    QByteArray replaceParameters(const QByteArray &original, const QShaderNode &node)
+    {
+        auto result = original;
+
+        for (const auto &parameterName : node.parameterNames()) {
+            const auto placeholder = QByteArray(QByteArrayLiteral("$") + parameterName.toUtf8());
+            const auto value = node.parameter(parameterName).toString().toUtf8();
+            result.replace(placeholder, value);
+        }
+
+        return result;
+    }
+}
+
 QByteArray QShaderGenerator::createShaderCode() const
 {
     auto code = QByteArrayList();
@@ -67,7 +83,7 @@ QByteArray QShaderGenerator::createShaderCode() const
 
     for (const auto &node : graph.nodes()) {
         for (const auto &snippet : node.rule(format).headerSnippets) {
-            code << snippet;
+            code << replaceParameters(snippet, node);
         }
     }
 
@@ -93,7 +109,8 @@ QByteArray QShaderGenerator::createShaderCode() const
             const auto variable = QByteArray(QByteArrayLiteral("v") + QByteArray::number(variableIndex));
             line.replace(placeholder, variable);
         }
-        code << QByteArrayLiteral("    ") + line;
+
+        code << QByteArrayLiteral("    ") + replaceParameters(line, node);
     }
 
     code << QByteArrayLiteral("}");
