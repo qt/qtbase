@@ -56,7 +56,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QSystemError
+class QSystemError
 {
 public:
     enum ErrorScope
@@ -76,10 +76,10 @@ public:
     Q_DECL_CONSTEXPR ErrorScope scope() const { return errorScope; }
     Q_DECL_CONSTEXPR int error() const { return errorCode; }
 
-    static QString string(ErrorScope errorScope, int errorCode);
-    static QString stdString(int errorCode = -1);
+    static Q_CORE_EXPORT QString string(ErrorScope errorScope, int errorCode);
+    static Q_CORE_EXPORT QString stdString(int errorCode = -1);
 #ifdef Q_OS_WIN
-    static QString windowsString(int errorCode = -1);
+    static Q_CORE_EXPORT QString windowsString(int errorCode = -1);
 #endif
 
     //data members
