@@ -50,22 +50,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QPrinter)
 
-// Helper class to make sure temp files are cleaned up after test complete
-class TempFileCleanup
-{
-public:
-    TempFileCleanup(const QString &file)
-        : m_file(file)
-    {
-    }
-
-    ~TempFileCleanup()
-    {
-        QFile::remove(m_file);
-    }
-private:
-    QString m_file;
-};
+static int fileNumber = 0;
 
 class tst_QPrinter : public QObject
 {
@@ -133,6 +118,9 @@ private slots:
     void testPageMetrics();
 #endif
 private:
+    QString testFileName(const QString &prefix, const QString &suffix);
+    QString testPdfFileName(const QString &prefix) { return testFileName(prefix, QStringLiteral("pdf")); }
+
     QTemporaryDir m_tempDir;
 };
 
@@ -246,9 +234,7 @@ void tst_QPrinter::testPageRectAndPaperRect()
     QPainter *painter = 0;
     QPrinter printer(QPrinter::HighResolution);
     printer.setOrientation(QPrinter::Orientation(orientation));
-    const QString fileName = m_tempDir.path() + QLatin1String("/silly");
-    printer.setOutputFileName(fileName);
-    TempFileCleanup tmpFile(fileName);
+    printer.setOutputFileName(testFileName(QLatin1String("silly"), QString()));
 
     QRect pageRect = doPaperRect ? printer.paperRect() : printer.pageRect();
     float inchesX = float(pageRect.width()) / float(printer.resolution());
@@ -328,7 +314,7 @@ void tst_QPrinter::testMargins()
     Q_UNUSED(height);
     QPrinter printer;
     QPainter *painter = 0;
-    printer.setOutputFileName("silly");
+    printer.setOutputFileName(testFileName(QLatin1String("silly"), QString()));
     printer.setOrientation((QPrinter::Orientation)orientation);
     printer.setFullPage(fullpage);
     printer.setPageSize((QPrinter::PageSize)pagesize);
@@ -337,7 +323,6 @@ void tst_QPrinter::testMargins()
 
     if (painter)
         delete painter;
-    QFile::remove("silly");
 }
 
 void tst_QPrinter::testMulitpleSets_data()
@@ -420,9 +405,7 @@ void tst_QPrinter::outputFormatFromSuffix()
         QSKIP("No printers available.");
     QPrinter p;
     QCOMPARE(p.outputFormat(), QPrinter::NativeFormat);
-    const QString fileName = m_tempDir.path() + QLatin1String("/test.pdf");
-    p.setOutputFileName(fileName);
-    TempFileCleanup tmpFile(fileName);
+    p.setOutputFileName(testPdfFileName(QLatin1String("test")));
     QCOMPARE(p.outputFormat(), QPrinter::PdfFormat);
     p.setOutputFileName(QString());
     QCOMPARE(p.outputFormat(), QPrinter::NativeFormat);
@@ -510,9 +493,7 @@ void tst_QPrinter::errorReporting()
     p.setOutputFileName("/foobar/nonwritable.pdf");
     QCOMPARE(painter.begin(&p), false); // it should check the output file is writable
 #endif
-    const QString fileName = m_tempDir.path() + QLatin1String("/test.pdf");
-    p.setOutputFileName(fileName);
-    TempFileCleanup tmpFile(fileName);
+    p.setOutputFileName(testPdfFileName(QLatin1String("test")));
     QCOMPARE(painter.begin(&p), true); // it should check the output
     QCOMPARE(p.isValid(), true);
     painter.end();
@@ -606,8 +587,7 @@ void tst_QPrinter::customPaperSizeAndMargins()
 void tst_QPrinter::printDialogCompleter()
 {
     QPrintDialog dialog;
-    dialog.printer()->setOutputFileName("file.pdf");
-    TempFileCleanup tmpFile("file.pdf");
+    dialog.printer()->setOutputFileName(testPdfFileName(QLatin1String("file")));
     dialog.setEnabledOptions(QAbstractPrintDialog::PrintToFile);
     dialog.show();
 
@@ -627,10 +607,8 @@ static void printPage(QPainter *painter)
 
 void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
 {
-    const QString fileName1 = m_tempDir.path() + QLatin1String("/out1.pdf");
-    const QString fileName2 = m_tempDir.path() + QLatin1String("/out2.pdf");
-    TempFileCleanup tmpFile1(fileName1);
-    TempFileCleanup tmpFile2(fileName2);
+    const QString fileName1 = testPdfFileName(QLatin1String("out1_"));
+    const QString fileName2 = testPdfFileName(QLatin1String("out2_"));
 
     QPrinter printer;
     {
@@ -689,7 +667,7 @@ void tst_QPrinter::testCurrentPage()
 
 void tst_QPrinter::testPdfTitle()
 {
-    const QString fileName = m_tempDir.path() + QLatin1String("/file.pdf");
+    const QString fileName = testPdfFileName(QLatin1String("file"));
 
     // Check the document name is represented correctly in produced pdf
     {
@@ -703,7 +681,6 @@ void tst_QPrinter::testPdfTitle()
         painter.begin(&printer);
         painter.end();
     }
-    TempFileCleanup tmpFile(fileName);
     QFile file(fileName);
     QVERIFY(file.open(QIODevice::ReadOnly));
     // The we expect the title to appear in the PDF as:
@@ -1244,8 +1221,9 @@ void tst_QPrinter::outputFileName()
     QPrinter pdf;
     pdf.setOutputFormat(QPrinter::PdfFormat);
     QCOMPARE(pdf.outputFileName(), QString());
-    pdf.setOutputFileName(QStringLiteral("Test File"));
-    QCOMPARE(pdf.outputFileName(), QString("Test File"));
+    const QString fileName = testFileName(QStringLiteral("Test File"), QString());
+    pdf.setOutputFileName(fileName);
+    QCOMPARE(pdf.outputFileName(), fileName);
 
     QPrinter native;
     if (native.outputFormat() == QPrinter::NativeFormat) {
@@ -1253,7 +1231,7 @@ void tst_QPrinter::outputFileName()
         QCOMPARE(native.outputFileName(), QString());
 
         // Test set/get
-        QString expected = QStringLiteral("Test File");
+        QString expected = fileName;
         native.setOutputFileName(expected);
         QCOMPARE(native.outputFileName(), expected);
 
@@ -1958,6 +1936,15 @@ void tst_QPrinter::testPageMetrics()
 
     // QPrinter::pageRect() always returns set orientation
     QCOMPARE(printer.pageRect(QPrinter::Millimeter), QRectF(leftMMf, topMMf, heightMMf - leftMMf - rightMMf, widthMMf - topMMf - bottomMMf));
+}
+
+QString tst_QPrinter::testFileName(const QString &prefix, const QString &suffix)
+{
+    QString result = m_tempDir.path() + QLatin1Char('/') + prefix
+        + QString::number(fileNumber++);
+    if (!suffix.isEmpty())
+        result += QLatin1Char('.') + suffix;
+    return result;
 }
 
 #endif // QT_CONFIG(printer)
