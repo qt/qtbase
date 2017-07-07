@@ -1083,6 +1083,11 @@ void tst_QDBusAbstractAdaptor::methodCallsPeer_data()
 
 void tst_QDBusAbstractAdaptor::methodCallsPeer()
 {
+    if (QSysInfo::productType().compare("opensuse", Qt::CaseInsensitive) == 0
+        && QSysInfo::productVersion() == QLatin1String("42.1")
+        && qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci")) {
+        QSKIP("This test is occasionally hanging in the CI");
+    }
     QDBusConnection con("peer");
     QVERIFY(con.isConnected());
 
