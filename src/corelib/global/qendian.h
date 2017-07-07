@@ -219,6 +219,127 @@ template <> inline quint8 qFromBigEndian<quint8>(const void *src)
 template <> inline qint8 qFromBigEndian<qint8>(const void *src)
 { return static_cast<const qint8 *>(src)[0]; }
 
+template<class S>
+class QSpecialInteger
+{
+    typedef typename S::StorageType T;
+    T val;
+public:
+    QSpecialInteger() = default;
+    explicit Q_DECL_CONSTEXPR QSpecialInteger(T i) : val(S::toSpecial(i)) {}
+
+    QSpecialInteger &operator =(T i) { val = S::toSpecial(i); return *this; }
+    operator T() const { return S::fromSpecial(val); }
+
+    bool operator ==(QSpecialInteger<S> i) const { return val == i.val; }
+    bool operator !=(QSpecialInteger<S> i) const { return val != i.val; }
+
+    QSpecialInteger &operator +=(T i)
+    {   return (*this = S::fromSpecial(val) + i); }
+    QSpecialInteger &operator -=(T i)
+    {   return (*this = S::fromSpecial(val) - i); }
+    QSpecialInteger &operator *=(T i)
+    {   return (*this = S::fromSpecial(val) * i); }
+    QSpecialInteger &operator >>=(T i)
+    {   return (*this = S::fromSpecial(val) >> i); }
+    QSpecialInteger &operator <<=(T i)
+    {   return (*this = S::fromSpecial(val) << i); }
+    QSpecialInteger &operator /=(T i)
+    {   return (*this = S::fromSpecial(val) / i); }
+    QSpecialInteger &operator %=(T i)
+    {   return (*this = S::fromSpecial(val) % i); }
+    QSpecialInteger &operator |=(T i)
+    {   return (*this = S::fromSpecial(val) | i); }
+    QSpecialInteger &operator &=(T i)
+    {   return (*this = S::fromSpecial(val) & i); }
+    QSpecialInteger &operator ^=(T i)
+    {   return (*this = S::fromSpecial(val) ^ i); }
+};
+
+template<typename T>
+class QLittleEndianStorageType {
+public:
+    typedef T StorageType;
+    static Q_DECL_CONSTEXPR T toSpecial(T source) { return qToLittleEndian(source); }
+    static Q_DECL_CONSTEXPR T fromSpecial(T source) { return qFromLittleEndian(source); }
+};
+
+template<typename T>
+class QBigEndianStorageType {
+public:
+    typedef T StorageType;
+    static Q_DECL_CONSTEXPR T toSpecial(T source) { return qToBigEndian(source); }
+    static Q_DECL_CONSTEXPR T fromSpecial(T source) { return qFromBigEndian(source); }
+};
+
+#ifdef Q_QDOC
+class QLEInteger {
+public:
+    explicit Q_DECL_CONSTEXPR QLEInteger(T i);
+    QLEInteger &operator =(T i);
+    operator T() const;
+    bool operator ==(QLEInteger i) const;
+    bool operator !=(QLEInteger i) const;
+    QLEInteger &operator +=(T i);
+    QLEInteger &operator -=(T i);
+    QLEInteger &operator *=(T i);
+    QLEInteger &operator >>=(T i);
+    QLEInteger &operator <<=(T i);
+    QLEInteger &operator /=(T i);
+    QLEInteger &operator %=(T i);
+    QLEInteger &operator |=(T i);
+    QLEInteger &operator &=(T i);
+    QLEInteger &operator ^=(T i);
+};
+
+class QBEInteger {
+public:
+    explicit Q_DECL_CONSTEXPR QBEInteger(T i);
+    QBEInteger &operator =(T i);
+    operator T() const;
+    bool operator ==(QBEInteger i) const;
+    bool operator !=(QBEInteger i) const;
+    QBEInteger &operator +=(T i);
+    QBEInteger &operator -=(T i);
+    QBEInteger &operator *=(T i);
+    QBEInteger &operator >>=(T i);
+    QBEInteger &operator <<=(T i);
+    QBEInteger &operator /=(T i);
+    QBEInteger &operator %=(T i);
+    QBEInteger &operator |=(T i);
+    QBEInteger &operator &=(T i);
+    QBEInteger &operator ^=(T i);
+};
+#else
+
+template<typename T>
+using QLEInteger = QSpecialInteger<QLittleEndianStorageType<T>>;
+
+template<typename T>
+using QBEInteger = QSpecialInteger<QBigEndianStorageType<T>>;
+#endif
+template <typename T>
+class QTypeInfo<QLEInteger<T> >
+    : public QTypeInfoMerger<QLEInteger<T>, T> {};
+
+template <typename T>
+class QTypeInfo<QBEInteger<T> >
+    : public QTypeInfoMerger<QBEInteger<T>, T> {};
+
+typedef QLEInteger<qint16> qint16_le;
+typedef QLEInteger<qint32> qint32_le;
+typedef QLEInteger<qint64> qint64_le;
+typedef QLEInteger<quint16> quint16_le;
+typedef QLEInteger<quint32> quint32_le;
+typedef QLEInteger<quint64> quint64_le;
+
+typedef QBEInteger<qint16> qint16_be;
+typedef QBEInteger<qint32> qint32_be;
+typedef QBEInteger<qint64> qint64_be;
+typedef QBEInteger<quint16> quint16_be;
+typedef QBEInteger<quint32> quint32_be;
+typedef QBEInteger<quint64> quint64_be;
+
 QT_END_NAMESPACE
 
 #endif // QENDIAN_H

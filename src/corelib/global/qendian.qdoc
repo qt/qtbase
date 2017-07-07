@@ -183,3 +183,372 @@
     unmodified.
 */
 
+/*!
+    \class QLEInteger
+    \inmodule QtCore
+    \brief The QLEInteger class provides platform-independent little-endian integers.
+    \since 5.10
+
+    The template parameter \c T must be a C++ integer type:
+    \list
+       \li 8-bit: char, signed char, unsigned char, qint8, quint8
+       \li 16-bit: short, unsigned short, qint16, quint16, char16_t
+       \li 32-bit: int, unsigned int, qint32, quint32, char32_t
+       \li 64-bit: long long, unsigned long long, qint64, quint64
+       \li platform-specific size: long, unsigned long
+       \li pointer size: qintptr, quintptr, qptrdiff
+    \endlist
+
+    \note Using this class may be slower than using native integers, so only use it when
+    an exact endian is needed.
+*/
+
+/*! \fn QLEInteger::QLEInteger(T value)
+
+    Constructs a QLEInteger with the given \a value.
+*/
+
+/*! \fn QLEInteger &QLEInteger::operator=(T value)
+
+    Assigns \a value to this QLEInteger and returns a reference to
+    this QLEInteger.
+*/
+
+/*!
+    \fn QLEInteger::operator T() const
+
+    Returns the value of this QLEInteger as a native integer.
+*/
+
+/*!
+    \fn bool QLEInteger::operator==(QLEInteger other) const
+
+    Returns \c true if the value of this QLEInteger is equal to the value of \a other.
+*/
+
+/*!
+    \fn bool QLEInteger::operator!=(QLEInteger other) const
+
+    Returns \c true if the value of this QLEInteger is not equal to the value of \a other.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator+=(T i)
+
+    Adds \a i to this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator-=(T i)
+
+    Subtracts \a i from this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator*=(T i)
+
+    Multiplies \a i with this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator/=(T i)
+
+    Divides this QLEInteger with \a i and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator%=(T i)
+
+    Sets this QLEInteger to the remainder of a division by \a i and
+    returns a reference to this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator>>=(T i)
+
+    Performs a left-shift by \a i on this QLEInteger and returns a
+    reference to this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator<<=(T i)
+
+    Performs a right-shift by \a i on this QLEInteger and returns a
+    reference to this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator|=(T i)
+
+    Performs a bitwise OR with \a i onto this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator&=(T i)
+
+    Performs a bitwise AND with \a i onto this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QLEInteger &QLEInteger::operator^=(T i)
+
+    Performs a bitwise XOR with \a i onto this QLEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \class QBEInteger
+    \inmodule QtCore
+    \brief The QBEInteger class provides platform-independent big-endian integers.
+    \since 5.10
+
+    The template parameter \c T must be a C++ integer type:
+    \list
+       \li 8-bit: char, signed char, unsigned char, qint8, quint8
+       \li 16-bit: short, unsigned short, qint16, quint16, char16_t (C++11)
+       \li 32-bit: int, unsigned int, qint32, quint32, char32_t (C++11)
+       \li 64-bit: long long, unsigned long long, qint64, quint64
+       \li platform-specific size: long, unsigned long
+       \li pointer size: qintptr, quintptr, qptrdiff
+    \endlist
+
+    \note Using this class may be slower than using native integers, so only use it when
+    an exact endian is needed.
+*/
+
+/*! \fn QBEInteger::QBEInteger(T value)
+
+    Constructs a QBEInteger with the given \a value.
+*/
+
+/*! \fn QBEInteger &QBEInteger::operator=(T value)
+
+    Assigns \a value to this QBEInteger and returns a reference to
+    this QBEInteger.
+*/
+
+/*!
+    \fn QBEInteger::operator T() const
+
+    Returns the value of this QBEInteger as a native integer.
+*/
+
+/*!
+    \fn bool QBEInteger::operator==(QBEInteger other) const
+
+    Returns \c true if the value of this QBEInteger is equal to the value of \a other.
+*/
+
+/*!
+    \fn bool QBEInteger::operator!=(QBEInteger other) const
+
+    Returns \c true if the value of this QBEInteger is not equal to the value of \a other.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator+=(T i)
+
+    Adds \a i to this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator-=(T i)
+
+    Subtracts \a i from this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator*=(T i)
+
+    Multiplies \a i with this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator/=(T i)
+
+    Divides this QBEInteger with \a i and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator%=(T i)
+
+    Sets this QBEInteger to the remainder of a division by \a i and
+    returns a reference to this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator>>=(T i)
+
+    Performs a left-shift by \a i on this QBEInteger and returns a
+    reference to this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator<<=(T i)
+
+    Performs a right-shift by \a i on this QBEInteger and returns a
+    reference to this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator|=(T i)
+
+    Performs a bitwise OR with \a i onto this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator&=(T i)
+
+    Performs a bitwise AND with \a i onto this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \fn QBEInteger &QBEInteger::operator^=(T i)
+
+    Performs a bitwise XOR with \a i onto this QBEInteger and returns a reference to
+    this object.
+*/
+
+/*!
+    \typedef quint16_le
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QLEInteger<quint16>. This type is guaranteed to be stored in memory as
+    a 16-bit little-endian unsigned integer on all platforms supported by Qt.
+
+    \sa quint16
+*/
+
+/*!
+    \typedef quint32_le
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QLEInteger<quint32>. This type is guaranteed to be stored in memory as
+    a 32-bit little-endian unsigned integer on all platforms supported by Qt.
+
+    \sa quint32
+*/
+
+/*!
+    \typedef quint64_le
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QLEInteger<quint64>. This type is guaranteed to be stored in memory as
+    a 64-bit little-endian unsigned integer on all platforms supported by Qt.
+
+    \sa quint64
+*/
+
+/*!
+    \typedef quint16_be
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QBEInteger<quint16>. This type is guaranteed to be stored in memory as
+    a 16-bit big-endian unsigned integer on all platforms supported by Qt.
+
+    \sa quint16
+*/
+
+/*!
+    \typedef quint32_be
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QBEInteger<quint32>. This type is guaranteed to be stored in memory as
+    a 32-bit big-endian unsigned integer on all platforms supported by Qt.
+
+    \sa quint32
+*/
+
+/*!
+    \typedef quint64_be
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QBEInteger<quint64>. This type is guaranteed to be stored in memory as
+    a 64-bit big-endian unsigned integer on all platforms supported by Qt.
+
+    \sa quint64
+*/
+
+/*!
+    \typedef qint16_le
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QLEInteger<qint16>. This type is guaranteed to be stored in memory as
+    a 16-bit little-endian signed integer on all platforms supported by Qt.
+
+    \sa qint16
+*/
+
+/*!
+    \typedef qint32_le
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QLEInteger<qint32>. This type is guaranteed to be stored in memory as
+    a 32-bit little-endian signed integer on all platforms supported by Qt.
+
+    \sa qint32
+*/
+
+/*!
+    \typedef qint64_le
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QLEInteger<qint64>. This type is guaranteed to be stored in memory as
+    a 64-bit little-endian signed integer on all platforms supported by Qt.
+
+    \sa qint64
+*/
+
+/*!
+    \typedef qint16_be
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QBEInteger<qint16>. This type is guaranteed to be stored in memory as
+    a 16-bit big-endian signed integer on all platforms supported by Qt.
+
+    \sa qint16
+*/
+
+/*!
+    \typedef qint32_be
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QBEInteger<qint32>. This type is guaranteed to be stored in memory as
+    a 32-bit big-endian signed integer on all platforms supported by Qt.
+
+    \sa qint32
+*/
+
+/*!
+    \typedef qint64_be
+    \relates <QtEndian>
+    \since 5.10
+
+    Typedef for QBEInteger<qint64>. This type is guaranteed to be stored in memory as
+    a 64-bit big-endian signed integer on all platforms supported by Qt.
+
+    \sa qint64
+*/
