@@ -39,6 +39,7 @@
 #include <qpainter.h>
 #include <qprintengine.h>
 #include <qpagelayout.h>
+#include <qsharedpointer.h>
 #include <qtemporarydir.h>
 
 #include <math.h>
@@ -47,8 +48,13 @@
 #include <windows.h>
 #endif
 
+#if QT_CONFIG(printer)
+typedef QSharedPointer<QPrinter> PrinterPtr;
 
-QT_FORWARD_DECLARE_CLASS(QPrinter)
+Q_DECLARE_METATYPE(PrinterPtr)
+Q_DECLARE_METATYPE(QPrinter::Orientation)
+Q_DECLARE_METATYPE(QPrinter::PageSize)
+#endif // printer
 
 static int fileNumber = 0;
 
@@ -190,70 +196,72 @@ void tst_QPrinter::testPrintPreviewDialog()
 
 void tst_QPrinter::testPageRectAndPaperRect_data()
 {
-    QTest::addColumn<int>("orientation");
+    QTest::addColumn<PrinterPtr>("printer");
+    QTest::addColumn<QPrinter::Orientation>("orientation");
     QTest::addColumn<bool>("withPainter");
     QTest::addColumn<int>("resolution");
     QTest::addColumn<bool>("doPaperRect");
 
+    const PrinterPtr printer(new QPrinter(QPrinter::HighResolution));
     // paperrect
-    QTest::newRow("paperRect0") << int(QPrinter::Portrait) << true << 300 << true;
-    QTest::newRow("paperRect1") << int(QPrinter::Portrait) << false << 300 << true;
-    QTest::newRow("paperRect2") << int(QPrinter::Landscape) << true << 300 << true;
-    QTest::newRow("paperRect3") << int(QPrinter::Landscape) << false << 300 << true;
-    QTest::newRow("paperRect4") << int(QPrinter::Portrait) << true << 600 << true;
-    QTest::newRow("paperRect5") << int(QPrinter::Portrait) << false << 600 << true;
-    QTest::newRow("paperRect6") << int(QPrinter::Landscape) << true << 600 << true;
-    QTest::newRow("paperRect7") << int(QPrinter::Landscape) << false << 600 << true;
-    QTest::newRow("paperRect8") << int(QPrinter::Portrait) << true << 1200 << true;
-    QTest::newRow("paperRect9") << int(QPrinter::Portrait) << false << 1200 << true;
-    QTest::newRow("paperRect10") << int(QPrinter::Landscape) << true << 1200 << true;
-    QTest::newRow("paperRect11") << int(QPrinter::Landscape) << false << 1200 << true;
+    QTest::newRow("paperRect0") << printer << QPrinter::Portrait << true << 300 << true;
+    QTest::newRow("paperRect1") << printer << QPrinter::Portrait << false << 300 << true;
+    QTest::newRow("paperRect2") << printer << QPrinter::Landscape << true << 300 << true;
+    QTest::newRow("paperRect3") << printer << QPrinter::Landscape << false << 300 << true;
+    QTest::newRow("paperRect4") << printer << QPrinter::Portrait << true << 600 << true;
+    QTest::newRow("paperRect5") << printer << QPrinter::Portrait << false << 600 << true;
+    QTest::newRow("paperRect6") << printer << QPrinter::Landscape << true << 600 << true;
+    QTest::newRow("paperRect7") << printer << QPrinter::Landscape << false << 600 << true;
+    QTest::newRow("paperRect8") << printer << QPrinter::Portrait << true << 1200 << true;
+    QTest::newRow("paperRect9") << printer << QPrinter::Portrait << false << 1200 << true;
+    QTest::newRow("paperRect10") << printer << QPrinter::Landscape << true << 1200 << true;
+    QTest::newRow("paperRect11") << printer << QPrinter::Landscape << false << 1200 << true;
 
     // page rect
-    QTest::newRow("pageRect0") << int(QPrinter::Portrait) << true << 300 << false;
-    QTest::newRow("pageRect1") << int(QPrinter::Portrait) << false << 300 << false;
-    QTest::newRow("pageRect2") << int(QPrinter::Landscape) << true << 300 << false;
-    QTest::newRow("pageRect3") << int(QPrinter::Landscape) << false << 300 << false;
-    QTest::newRow("pageRect4") << int(QPrinter::Portrait) << true << 600 << false;
-    QTest::newRow("pageRect5") << int(QPrinter::Portrait) << false << 600 << false;
-    QTest::newRow("pageRect6") << int(QPrinter::Landscape) << true << 600 << false;
-    QTest::newRow("pageRect7") << int(QPrinter::Landscape) << false << 600 << false;
-    QTest::newRow("pageRect8") << int(QPrinter::Portrait) << true << 1200 << false;
-    QTest::newRow("pageRect9") << int(QPrinter::Portrait) << false << 1200 << false;
-    QTest::newRow("pageRect10") << int(QPrinter::Landscape) << true << 1200 << false;
-    QTest::newRow("pageRect11") << int(QPrinter::Landscape) << false << 1200 << false;
+    QTest::newRow("pageRect0") << printer << QPrinter::Portrait << true << 300 << false;
+    QTest::newRow("pageRect1") << printer << QPrinter::Portrait << false << 300 << false;
+    QTest::newRow("pageRect2") << printer << QPrinter::Landscape << true << 300 << false;
+    QTest::newRow("pageRect3") << printer << QPrinter::Landscape << false << 300 << false;
+    QTest::newRow("pageRect4") << printer << QPrinter::Portrait << true << 600 << false;
+    QTest::newRow("pageRect5") << printer << QPrinter::Portrait << false << 600 << false;
+    QTest::newRow("pageRect6") << printer << QPrinter::Landscape << true << 600 << false;
+    QTest::newRow("pageRect7") << printer << QPrinter::Landscape << false << 600 << false;
+    QTest::newRow("pageRect8") << printer << QPrinter::Portrait << true << 1200 << false;
+    QTest::newRow("pageRect9") << printer << QPrinter::Portrait << false << 1200 << false;
+    QTest::newRow("pageRect10") << printer << QPrinter::Landscape << true << 1200 << false;
+    QTest::newRow("pageRect11") << printer << QPrinter::Landscape << false << 1200 << false;
 }
 
 void tst_QPrinter::testPageRectAndPaperRect()
 {
+    QFETCH(PrinterPtr, printer);
     QFETCH(bool,  withPainter);
-    QFETCH(int,  orientation);
+    QFETCH(QPrinter::Orientation, orientation);
     QFETCH(int, resolution);
     QFETCH(bool, doPaperRect);
 
     QPainter *painter = 0;
-    QPrinter printer(QPrinter::HighResolution);
-    printer.setOrientation(QPrinter::Orientation(orientation));
-    printer.setOutputFileName(testFileName(QLatin1String("silly"), QString()));
+    printer->setOrientation(orientation);
+    printer->setOutputFileName(testFileName(QLatin1String("silly"), QString()));
 
-    QRect pageRect = doPaperRect ? printer.paperRect() : printer.pageRect();
-    float inchesX = float(pageRect.width()) / float(printer.resolution());
-    float inchesY = float(pageRect.height()) / float(printer.resolution());
-    printer.setResolution(resolution);
+    QRect pageRect = doPaperRect ? printer->paperRect() : printer->pageRect();
+    float inchesX = float(pageRect.width()) / float(printer->resolution());
+    float inchesY = float(pageRect.height()) / float(printer->resolution());
+    printer->setResolution(resolution);
     if (withPainter)
-        painter = new QPainter(&printer);
+        painter = new QPainter(printer.data());
 
-    QRect otherRect = doPaperRect ? printer.paperRect() : printer.pageRect();
-    float otherInchesX = float(otherRect.width()) / float(printer.resolution());
-    float otherInchesY = float(otherRect.height()) / float(printer.resolution());
+    QRect otherRect = doPaperRect ? printer->paperRect() : printer->pageRect();
+    float otherInchesX = float(otherRect.width()) / float(printer->resolution());
+    float otherInchesY = float(otherRect.height()) / float(printer->resolution());
     if (painter != 0)
         delete painter;
 
     QVERIFY(qAbs(otherInchesX - inchesX) < 0.01);
     QVERIFY(qAbs(otherInchesY - inchesY) < 0.01);
 
-    QVERIFY(printer.orientation() == QPrinter::Portrait || pageRect.width() > pageRect.height());
-    QVERIFY(printer.orientation() != QPrinter::Portrait || pageRect.width() < pageRect.height());
+    QVERIFY(printer->orientation() == QPrinter::Portrait || pageRect.width() > pageRect.height());
+    QVERIFY(printer->orientation() != QPrinter::Portrait || pageRect.width() < pageRect.height());
 }
 
 void tst_QPrinter::testSetOptions()
@@ -285,41 +293,37 @@ void tst_QPrinter::testSetOptions()
 
 void tst_QPrinter::testMargins_data()
 {
-    QTest::addColumn<int>("orientation");
+    QTest::addColumn<PrinterPtr>("printer");
+    QTest::addColumn<QPrinter::Orientation>("orientation");
     QTest::addColumn<bool>("fullpage");
-    QTest::addColumn<int>("pagesize");
-    QTest::addColumn<int>("width");
-    QTest::addColumn<int>("height");
+    QTest::addColumn<QPrinter::PageSize>("pagesize");
     QTest::addColumn<bool>("withPainter");
 
-    QTest::newRow("data0") << int(QPrinter::Portrait) << true << int(QPrinter::A4) << 210 << 297 << false;
-    QTest::newRow("data1") << int(QPrinter::Landscape) << true << int(QPrinter::A4) << 297 << 210 << false;
-    QTest::newRow("data2") << int(QPrinter::Landscape) << false << int(QPrinter::A4) << 297 << 210 << false;
-    QTest::newRow("data3") << int(QPrinter::Portrait) << false << int(QPrinter::A4) << 210 << 297 << false;
-    QTest::newRow("data4") << int(QPrinter::Portrait) << true << int(QPrinter::A4) << 210 << 297 << true;
-    QTest::newRow("data5") << int(QPrinter::Landscape) << true << int(QPrinter::A4) << 297 << 210 << true;
-    QTest::newRow("data6") << int(QPrinter::Landscape) << false << int(QPrinter::A4) << 297 << 210 << true;
-    QTest::newRow("data7") << int(QPrinter::Portrait) << false << int(QPrinter::A4) << 210 << 297 << true;
+    const PrinterPtr printer(new QPrinter);
+    QTest::newRow("data0") << printer << QPrinter::Portrait << true << QPrinter::A4 << false;
+    QTest::newRow("data1") << printer << QPrinter::Landscape << true << QPrinter::A4 << false;
+    QTest::newRow("data2") << printer << QPrinter::Landscape << false << QPrinter::A4 << false;
+    QTest::newRow("data3") << printer << QPrinter::Portrait << false << QPrinter::A4 << false;
+    QTest::newRow("data4") << printer << QPrinter::Portrait << true << QPrinter::A4 << true;
+    QTest::newRow("data5") << printer << QPrinter::Landscape << true << QPrinter::A4 << true;
+    QTest::newRow("data6") << printer << QPrinter::Landscape << false << QPrinter::A4 << true;
+    QTest::newRow("data7") << printer << QPrinter::Portrait << false << QPrinter::A4 << true;
 }
 
 void tst_QPrinter::testMargins()
 {
+    QFETCH(PrinterPtr, printer);
     QFETCH(bool,  withPainter);
-    QFETCH(int,  orientation);
-    QFETCH(int,  pagesize);
-    QFETCH(int,  width);
-    QFETCH(int,  height);
+    QFETCH(QPrinter::Orientation, orientation);
+    QFETCH(QPrinter::PageSize, pagesize);
     QFETCH(bool, fullpage);
-    Q_UNUSED(width);
-    Q_UNUSED(height);
-    QPrinter printer;
     QPainter *painter = 0;
-    printer.setOutputFileName(testFileName(QLatin1String("silly"), QString()));
-    printer.setOrientation((QPrinter::Orientation)orientation);
-    printer.setFullPage(fullpage);
-    printer.setPageSize((QPrinter::PageSize)pagesize);
+    printer->setOutputFileName(testFileName(QLatin1String("silly"), QString()));
+    printer->setOrientation(orientation);
+    printer->setFullPage(fullpage);
+    printer->setPageSize(pagesize);
     if (withPainter)
-        painter = new QPainter(&printer);
+        painter = new QPainter(printer.data());
 
     if (painter)
         delete painter;
