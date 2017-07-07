@@ -103,6 +103,9 @@ static QString windowsErrorString(int errorCode)
         ret = QString::fromLatin1("The specified module could not be found.");
     if (ret.endsWith(QLatin1String("\r\n")))
         ret.chop(2);
+    if (ret.isEmpty())
+        ret = QString::fromLatin1("Unknown error 0x%1.")
+                .arg(unsigned(errorCode), 8, 16, QLatin1Char('0'));
     return ret;
 }
 #endif
