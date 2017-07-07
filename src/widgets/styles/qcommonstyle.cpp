@@ -572,13 +572,8 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break; }
 #endif // QT_NO_SPINBOX
     case PE_PanelTipLabel: {
-        QBrush oldBrush = p->brush();
-        QPen oldPen = p->pen();
-        p->setPen(QPen(opt->palette.toolTipText(), 0));
-        p->setBrush(opt->palette.toolTipBase());
-        p->drawRect(opt->rect.adjusted(0, 0, -1, -1));
-        p->setPen(oldPen);
-        p->setBrush(oldBrush);
+        const QBrush brush(opt->palette.toolTipBase());
+        qDrawPlainRect(p, opt->rect, opt->palette.toolTipText().color(), 1, &brush);
         break;
     }
 #if QT_CONFIG(tabbar)
