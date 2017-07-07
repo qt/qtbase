@@ -66,12 +66,15 @@ public:
         NativeError
     };
 
-    inline QSystemError(int error, ErrorScope scope);
-    inline QSystemError();
+    Q_DECL_CONSTEXPR explicit QSystemError(int error, ErrorScope scope)
+        : errorCode(error), errorScope(scope)
+    {
+    }
+    Q_DECL_CONSTEXPR QSystemError() = default;
 
-    inline QString toString() const;
-    inline ErrorScope scope() const;
-    inline int error() const;
+    QString toString() const { return string(errorScope, errorCode); }
+    Q_DECL_CONSTEXPR ErrorScope scope() const { return errorScope; }
+    Q_DECL_CONSTEXPR int error() const { return errorCode; }
 
     static QString string(ErrorScope errorScope, int errorCode);
     static QString stdString(int errorCode = -1);
@@ -80,36 +83,9 @@ public:
 #endif
 
     //data members
-    int errorCode;
-    ErrorScope errorScope;
+    int errorCode = 0;
+    ErrorScope errorScope = NoError;
 };
-
-QSystemError::QSystemError(int error, QSystemError::ErrorScope scope)
-: errorCode(error), errorScope(scope)
-{
-
-}
-
-QSystemError::QSystemError()
-: errorCode(0), errorScope(NoError)
-{
-
-}
-
-QString QSystemError::toString() const
-{
-    return string(errorScope, errorCode);
-}
-
-QSystemError::ErrorScope QSystemError::scope() const
-{
-    return errorScope;
-}
-
-int QSystemError::error() const
-{
-    return errorCode;
-}
 
 QT_END_NAMESPACE
 
