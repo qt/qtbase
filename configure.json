@@ -396,11 +396,6 @@
             "subarch": "neon"
         },
 
-        "mremap": {
-            "label": "mremap()",
-            "type": "compile",
-            "test": "unix/mremap"
-        },
         "posix_fallocate": {
             "label": "POSIX fallocate()",
             "type": "compile",
@@ -901,11 +896,6 @@
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_NEON", "value": 1 }
             ]
-        },
-        "mremap": {
-            "label": "mremap()",
-            "condition": "tests.mremap",
-            "output": [ "feature" ]
         },
         "posix_fallocate": {
             "label": "POSIX fallocate()",
