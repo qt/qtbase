@@ -50,11 +50,11 @@ isEmpty($${target_prefix}.INCDIRS) {
         rim_qcc: \
             # Need the cc1plus and ld command lines to pick up the paths
             cxx_flags += $$QMAKE_LFLAGS_SHLIB -o $$null_file -v
-        else: clang: \
+        else: darwin:clang: \
             # Need to link to pick up library paths
             cxx_flags += $$QMAKE_LFLAGS_SHLIB -o /dev/null -v -Wl,-v
         else: \
-            # gcc is fine with just preprocessing
+            # Just preprocess, might not pick up library paths
             cxx_flags += -E -v
 
         output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ - 2>&1 $$cmd_suffix", lines, ec)
