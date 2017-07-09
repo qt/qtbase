@@ -130,7 +130,7 @@ win32 {
             io/qwindowspipereader.cpp \
             io/qwindowspipewriter.cpp
 
-        LIBS += -lmpr
+        LIBS += -lmpr -luserenv
     } else {
         SOURCES += \
                 io/qstandardpaths_winrt.cpp \

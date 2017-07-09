@@ -146,49 +146,30 @@ typedef struct _REPARSE_DATA_BUFFER {
 #  define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif
 
-QT_BEGIN_NAMESPACE
-
-Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
-
-#if defined(Q_OS_WINRT)
-// As none of the functions we try to resolve do exist on WinRT we
-// avoid library loading on WinRT in general to shorten everything
-// up a little bit.
+#if defined(Q_OS_WINRT) || defined(QT_BOOTSTRAPPED)
 #  define QT_FEATURE_fslibs -1
 #else
-#  define QT_FEATURE_fslibs QT_FEATURE_library
+#  define QT_FEATURE_fslibs 1
 #endif // Q_OS_WINRT
 
 #if QT_CONFIG(fslibs)
-QT_BEGIN_INCLUDE_NAMESPACE
-typedef DWORD (WINAPI *PtrGetNamedSecurityInfoW)(LPWSTR, SE_OBJECT_TYPE, SECURITY_INFORMATION, PSID*, PSID*, PACL*, PACL*, PSECURITY_DESCRIPTOR*);
-static PtrGetNamedSecurityInfoW ptrGetNamedSecurityInfoW = 0;
-typedef BOOL (WINAPI *PtrLookupAccountSidW)(LPCWSTR, PSID, LPWSTR, LPDWORD, LPWSTR, LPDWORD, PSID_NAME_USE);
-static PtrLookupAccountSidW ptrLookupAccountSidW = 0;
-typedef VOID (WINAPI *PtrBuildTrusteeWithSidW)(PTRUSTEE_W, PSID);
-static PtrBuildTrusteeWithSidW ptrBuildTrusteeWithSidW = 0;
-typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACCESS_MASK);
-static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
-typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
-static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
-QT_END_INCLUDE_NAMESPACE
-
+#include <aclapi.h>
+#include <userenv.h>
 static TRUSTEE_W currentUserTrusteeW;
 static TRUSTEE_W worldTrusteeW;
 static PSID currentUserSID = 0;
 static PSID worldSID = 0;
 
+QT_BEGIN_NAMESPACE
+
 namespace {
-/*
-    Deletes the allocated SIDs during global static cleanup
-*/
-class SidCleanup
+struct GlobalSid
 {
-public:
-    ~SidCleanup();
+    GlobalSid();
+    ~GlobalSid();
 };
 
-SidCleanup::~SidCleanup()
+GlobalSid::~GlobalSid()
 {
     free(currentUserSID);
     currentUserSID = 0;
@@ -200,24 +181,13 @@ SidCleanup::~SidCleanup()
     }
 }
 
-Q_GLOBAL_STATIC(SidCleanup, initSidCleanup)
-
-struct LibResolver
+GlobalSid::GlobalSid()
 {
-    LibResolver()
     {
-        HINSTANCE advapiHnd = QSystemLibrary::load(L"advapi32");
-        if (advapiHnd) {
-            ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
-            ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
-            ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)GetProcAddress(advapiHnd, "BuildTrusteeWithSidW");
-            ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)GetProcAddress(advapiHnd, "GetEffectiveRightsFromAclW");
-        }
-        if (ptrBuildTrusteeWithSidW) {
+        {
             // Create TRUSTEE for current user
             HANDLE hnd = ::GetCurrentProcess();
             HANDLE token = 0;
-            initSidCleanup();
             if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
                 DWORD retsize = 0;
                 // GetTokenInformation requires a buffer big enough for the TOKEN_USER struct and
@@ -232,33 +202,30 @@ struct LibResolver
                         DWORD sidLen = ::GetLengthSid(tokenSid);
                         currentUserSID = reinterpret_cast<PSID>(malloc(sidLen));
                         if (::CopySid(sidLen, currentUserSID, tokenSid))
-                            ptrBuildTrusteeWithSidW(&currentUserTrusteeW, currentUserSID);
+                            BuildTrusteeWithSid(&currentUserTrusteeW, currentUserSID);
                     }
                     free(tokenBuffer);
                 }
                 ::CloseHandle(token);
             }
 
-            typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
-            PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
-            if (ptrAllocateAndInitializeSid) {
+            {
                 // Create TRUSTEE for Everyone (World)
                 SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
-                if (ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &worldSID))
-                    ptrBuildTrusteeWithSidW(&worldTrusteeW, worldSID);
+                if (AllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &worldSID))
+                    BuildTrusteeWithSid(&worldTrusteeW, worldSID);
             }
         }
-        HINSTANCE userenvHnd = QSystemLibrary::load(L"userenv");
-        if (userenvHnd)
-            ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
     }
-};
-Q_GLOBAL_STATIC(LibResolver, resolveLibs)
+}
+
+Q_GLOBAL_STATIC(GlobalSid, initGlobalSid)
+
+QT_END_NAMESPACE
 
 } // anonymous namespace
 #endif // QT_CONFIG(fslibs)
 
-QT_BEGIN_INCLUDE_NAMESPACE
 typedef DWORD (WINAPI *PtrNetShareEnum)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
 static PtrNetShareEnum ptrNetShareEnum = 0;
 typedef DWORD (WINAPI *PtrNetApiBufferFree)(LPVOID);
@@ -268,7 +235,10 @@ typedef struct _SHARE_INFO_1 {
     DWORD shi1_type;
     LPWSTR shi1_remark;
 } SHARE_INFO_1;
-QT_END_INCLUDE_NAMESPACE
+
+QT_BEGIN_NAMESPACE
+
+Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
 namespace {
 struct UNCLibResolver
@@ -329,7 +299,7 @@ static QString readSymLink(const QFileSystemEntry &link)
         CloseHandle(handle);
 
 #if QT_CONFIG(fslibs)
-        resolveLibs();
+        initGlobalSid();
         QRegExp matchVolName(QLatin1String("^Volume\\{([a-z]|[0-9]|-)+\\}\\\\"), Qt::CaseInsensitive);
         if (matchVolName.indexIn(result) == 0) {
             DWORD len;
@@ -630,31 +600,31 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
     QString name;
 #if QT_CONFIG(fslibs)
     extern int qt_ntfs_permission_lookup;
-    if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
-        resolveLibs();
-        if (ptrGetNamedSecurityInfoW && ptrLookupAccountSidW) {
+    if (qt_ntfs_permission_lookup > 0) {
+        initGlobalSid();
+        {
             PSID pOwner = 0;
             PSECURITY_DESCRIPTOR pSD;
-            if (ptrGetNamedSecurityInfoW((wchar_t*)entry.nativeFilePath().utf16(), SE_FILE_OBJECT,
-                                         own == QAbstractFileEngine::OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
-                                         own == QAbstractFileEngine::OwnerUser ? &pOwner : 0, own == QAbstractFileEngine::OwnerGroup ? &pOwner : 0,
-                                         0, 0, &pSD) == ERROR_SUCCESS) {
+            if (GetNamedSecurityInfo(reinterpret_cast<const wchar_t*>(entry.nativeFilePath().utf16()), SE_FILE_OBJECT,
+                                     own == QAbstractFileEngine::OwnerGroup ? GROUP_SECURITY_INFORMATION : OWNER_SECURITY_INFORMATION,
+                                     own == QAbstractFileEngine::OwnerUser ? &pOwner : 0, own == QAbstractFileEngine::OwnerGroup ? &pOwner : 0,
+                                     0, 0, &pSD) == ERROR_SUCCESS) {
                 DWORD lowner = 64;
                 DWORD ldomain = 64;
                 QVarLengthArray<wchar_t, 64> owner(lowner);
                 QVarLengthArray<wchar_t, 64> domain(ldomain);
                 SID_NAME_USE use = SidTypeUnknown;
                 // First call, to determine size of the strings (with '\0').
-                if (!ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
-                                          (LPWSTR)domain.data(), &ldomain, (SID_NAME_USE*)&use)) {
+                if (!LookupAccountSid(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
+                                      domain.data(), &ldomain, &use)) {
                     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
                         if (lowner > (DWORD)owner.size())
                             owner.resize(lowner);
                         if (ldomain > (DWORD)domain.size())
                             domain.resize(ldomain);
                         // Second call, try on resized buf-s
-                        if (!ptrLookupAccountSidW(NULL, pOwner, (LPWSTR)owner.data(), &lowner,
-                                                  (LPWSTR)domain.data(), &ldomain, (SID_NAME_USE*)&use)) {
+                        if (!LookupAccountSid(NULL, pOwner, owner.data(), &lowner,
+                                              domain.data(), &ldomain, &use)) {
                             lowner = 0;
                         }
                     } else {
@@ -679,9 +649,9 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                                         QFileSystemMetaData::MetaDataFlags what)
 {
 #if QT_CONFIG(fslibs)
-    if((qt_ntfs_permission_lookup > 0) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
-        resolveLibs();
-        if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
+    if (qt_ntfs_permission_lookup > 0) {
+        initGlobalSid();
+        {
             enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
 
             QString fname = entry.nativeFilePath();
@@ -689,15 +659,15 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
             PSID pGroup = 0;
             PACL pDacl;
             PSECURITY_DESCRIPTOR pSD;
-            DWORD res = ptrGetNamedSecurityInfoW((wchar_t*)fname.utf16(), SE_FILE_OBJECT,
-                                                 OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
-                                                 &pOwner, &pGroup, &pDacl, 0, &pSD);
+            DWORD res = GetNamedSecurityInfo(reinterpret_cast<const wchar_t*>(fname.utf16()), SE_FILE_OBJECT,
+                                             OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+                                             &pOwner, &pGroup, &pDacl, 0, &pSD);
             if(res == ERROR_SUCCESS) {
                 ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
                 if (what & QFileSystemMetaData::UserPermissions) { // user
                     data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
-                    if(ptrGetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
+                    if (GetEffectiveRightsFromAcl(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
                     if(access_mask & ReadMask)
                         data.entryFlags |= QFileSystemMetaData::UserReadPermission;
@@ -708,8 +678,8 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                 }
                 if (what & QFileSystemMetaData::OwnerPermissions) { // owner
                     data.knownFlagsMask |= QFileSystemMetaData::OwnerPermissions;
-                    ptrBuildTrusteeWithSidW(&trustee, pOwner);
-                    if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
+                    BuildTrusteeWithSid(&trustee, pOwner);
+                    if (GetEffectiveRightsFromAcl(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
                     if(access_mask & ReadMask)
                         data.entryFlags |= QFileSystemMetaData::OwnerReadPermission;
@@ -720,8 +690,8 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                 }
                 if (what & QFileSystemMetaData::GroupPermissions) { // group
                     data.knownFlagsMask |= QFileSystemMetaData::GroupPermissions;
-                    ptrBuildTrusteeWithSidW(&trustee, pGroup);
-                    if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
+                    BuildTrusteeWithSid(&trustee, pGroup);
+                    if (GetEffectiveRightsFromAcl(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1;
                     if(access_mask & ReadMask)
                         data.entryFlags |= QFileSystemMetaData::GroupReadPermission;
@@ -732,7 +702,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                 }
                 if (what & QFileSystemMetaData::OtherPermissions) { // other (world)
                     data.knownFlagsMask |= QFileSystemMetaData::OtherPermissions;
-                    if(ptrGetEffectiveRightsFromAclW(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
+                    if (GetEffectiveRightsFromAcl(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
                         access_mask = (ACCESS_MASK)-1; // ###
                     if(access_mask & ReadMask)
                         data.entryFlags |= QFileSystemMetaData::OtherReadPermission;
@@ -1143,19 +1113,19 @@ QString QFileSystemEngine::homePath()
 {
     QString ret;
 #if QT_CONFIG(fslibs)
-    resolveLibs();
-    if (ptrGetUserProfileDirectoryW) {
+    initGlobalSid();
+    {
         HANDLE hnd = ::GetCurrentProcess();
         HANDLE token = 0;
         BOOL ok = ::OpenProcessToken(hnd, TOKEN_QUERY, &token);
         if (ok) {
             DWORD dwBufferSize = 0;
             // First call, to determine size of the strings (with '\0').
-            ok = ptrGetUserProfileDirectoryW(token, NULL, &dwBufferSize);
+            ok = GetUserProfileDirectory(token, NULL, &dwBufferSize);
             if (!ok && dwBufferSize != 0) {        // We got the required buffer size
                 wchar_t *userDirectory = new wchar_t[dwBufferSize];
                 // Second call, now we can fill the allocated buffer.
-                ok = ptrGetUserProfileDirectoryW(token, userDirectory, &dwBufferSize);
+                ok = GetUserProfileDirectory(token, userDirectory, &dwBufferSize);
                 if (ok)
                     ret = QString::fromWCharArray(userDirectory);
                 delete [] userDirectory;
