@@ -47,9 +47,9 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qbrush.h>
 
-#ifndef QT_NO_GRAPHICSEFFECT
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(graphicseffect);
 
+QT_BEGIN_NAMESPACE
 
 class QGraphicsItem;
 class QStyleOption;
@@ -278,8 +278,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSEFFECT
 
 #endif // QGRAPHICSEFFECT_H
 

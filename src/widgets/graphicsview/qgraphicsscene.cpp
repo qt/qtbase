@@ -243,10 +243,11 @@
 #include <QtWidgets/qtooltip.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/qinputmethod.h>
-#include <QtWidgets/qgraphicseffect.h>
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
+#if QT_CONFIG(graphicseffect)
 #include <private/qgraphicseffect_p.h>
+#endif
 #include <private/qgesturemanager_p.h>
 #include <private/qpathclipper_p.h>
 
@@ -4810,7 +4811,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (itemHasChildren && itemClipsChildrenToShape)
         ENSURE_TRANSFORM_PTR;
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     if (item->d_ptr->graphicsEffect && item->d_ptr->graphicsEffect->isEnabled()) {
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, effectTransform, exposedRegion, widget, &styleOptionTmp,
@@ -4847,7 +4848,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
     } else
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
     {
         draw(item, painter, viewTransform, transformPtr, exposedRegion, widget, opacity,
              effectTransform, wasDirtyParentSceneTransform, drawItem);

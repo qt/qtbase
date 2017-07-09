@@ -64,7 +64,9 @@
 #include "QtWidgets/qsizepolicy.h"
 #include "QtWidgets/qstyle.h"
 #include "QtWidgets/qapplication.h"
+#if QT_CONFIG(graphicseffect)
 #include <private/qgraphicseffect_p.h>
+#endif
 #include "QtWidgets/qgraphicsproxywidget.h"
 #include "QtWidgets/qgraphicsscene.h"
 #include "QtWidgets/qgraphicsview.h"
@@ -418,9 +420,9 @@ public:
     void setOpaque(bool opaque);
     void updateIsTranslucent();
     bool paintOnScreen() const;
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     void invalidateGraphicsEffectsRecursively();
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
     const QRegion &getOpaqueChildren() const;
     void setDirtyOpaqueRegion();
@@ -589,10 +591,10 @@ public:
 
     inline QRect effectiveRectFor(const QRect &rect) const
     {
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
         if (graphicsEffect && graphicsEffect->isEnabled())
             return graphicsEffect->boundingRectFor(rect).toAlignedRect();
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
         return rect;
     }
 
@@ -882,7 +884,7 @@ struct QWidgetPaintContext
     QPainter *painter;
 };
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
 class QWidgetEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
@@ -935,7 +937,7 @@ public:
     QTransform lastEffectTransform;
     bool updateDueToGraphicsEffect;
 };
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
 inline QWExtra *QWidgetPrivate::extraData() const
 {

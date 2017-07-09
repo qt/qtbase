@@ -23,8 +23,10 @@ include(itemviews/itemviews.pri)
 include(graphicsview/graphicsview.pri)
 include(util/util.pri)
 include(statemachine/statemachine.pri)
-include(effects/effects.pri)
 
+qtConfig(graphicseffect) {
+    include(effects/effects.pri)
+}
 
 QMAKE_LIBS += $$QMAKE_LIBS_GUI
 

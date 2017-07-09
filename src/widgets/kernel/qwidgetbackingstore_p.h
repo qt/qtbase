@@ -176,11 +176,11 @@ private:
     {
         if (widget && !widget->d_func()->inDirtyList && !widget->data->in_destructor) {
             QWidgetPrivate *widgetPrivate = widget->d_func();
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
             if (widgetPrivate->graphicsEffect)
                 widgetPrivate->dirty = widgetPrivate->effectiveRectFor(rgn.boundingRect());
             else
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
                 widgetPrivate->dirty = rgn;
             dirtyWidgets.append(widget);
             widgetPrivate->inDirtyList = true;
