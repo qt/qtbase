@@ -96,7 +96,9 @@
 #endif
 #include <qdebug.h>
 #include <qlibrary.h>
+#if QT_CONFIG(datetimeedit)
 #include <qdatetimeedit.h>
+#endif
 #include <qmath.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
@@ -1391,7 +1393,7 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
         // an extra check here before using the mini and small buttons.
         int h = combo->rect.size().height();
         if (combo->editable){
-#ifndef QT_NO_DATETIMEEDIT
+#if QT_CONFIG(datetimeedit)
             if (qobject_cast<const QDateTimeEdit *>(widget)) {
                 // Except when, you know, we get a QDateTimeEdit with calendarPopup
                 // enabled. And then things get weird, basically because it's a

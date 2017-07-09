@@ -96,7 +96,9 @@
 #include <qtreeview.h>
 #include <qtableview.h>
 #include <qdebug.h>
+#if QT_CONFIG(datetimeedit)
 #include <qdatetimeedit.h>
+#endif
 #include <qmath.h>
 #include <qpair.h>
 #include <qvector.h>

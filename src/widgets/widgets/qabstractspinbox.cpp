@@ -49,7 +49,9 @@
 #include <qstylehints.h>
 #include <qclipboard.h>
 #include <qdatetime.h>
+#if QT_CONFIG(datetimeedit)
 #include <qdatetimeedit.h>
+#endif
 #include <qevent.h>
 #include <qmenu.h>
 #include <qpainter.h>

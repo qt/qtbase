@@ -8,8 +8,6 @@ HEADERS += \
         widgets/qcalendarwidget.h \
         widgets/qcombobox.h \
         widgets/qcombobox_p.h \
-        widgets/qdatetimeedit.h \
-        widgets/qdatetimeedit_p.h \
         widgets/qdial.h \
         widgets/qdockwidget.h \
         widgets/qdockwidget_p.h \
@@ -71,7 +69,6 @@ SOURCES += \
         widgets/qabstractspinbox.cpp \
         widgets/qcalendarwidget.cpp \
         widgets/qcombobox.cpp \
-        widgets/qdatetimeedit.cpp \
         widgets/qdial.cpp \
         widgets/qdockwidget.cpp \
         widgets/qdockarealayout.cpp \
@@ -146,6 +143,15 @@ qtConfig(commandlinkbutton) {
 
     SOURCES += \
         widgets/qcommandlinkbutton.cpp
+}
+
+qtConfig(datetimeedit) {
+    HEADERS += \
+         widgets/qdatetimeedit.h \
+         widgets/qdatetimeedit_p.h
+
+    SOURCES += \
+         widgets/qdatetimeedit.cpp
 }
 
 qtConfig(fontcombobox) {
