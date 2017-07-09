@@ -68,7 +68,9 @@
 #include <qtabwidget.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
+#if QT_CONFIG(rubberband)
 #include <qrubberband.h>
+#endif
 #include "qtreeview.h"
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
@@ -2002,7 +2004,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         p->restore();
         break; }
 #endif // QT_NO_SIZEGRIP
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     case CE_RubberBand: {
         if (const QStyleOptionRubberBand *rbOpt = qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
             QPixmap tiledPixmap(16, 16);
@@ -2030,7 +2032,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->restore();
         }
         break; }
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 #ifndef QT_NO_DOCKWIDGET
     case CE_DockWidgetTitle:
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
@@ -5093,7 +5095,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             }
         }
         break;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     case SH_RubberBand_Mask:
         if (const QStyleOptionRubberBand *rbOpt = qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
             ret = 0;
@@ -5107,7 +5109,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             }
         }
         break;
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
     case SH_SpinControls_DisableOnBounds:
         ret = 1;
         break;

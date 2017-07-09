@@ -48,7 +48,9 @@
 #include <qmainwindow.h>
 #include <qmenu.h>
 #include <qmenubar.h>
+#if QT_CONFIG(rubberband)
 #include <qrubberband.h>
+#endif
 #include <qsignalmapper.h>
 #include <qstylepainter.h>
 #include <qtoolbutton.h>

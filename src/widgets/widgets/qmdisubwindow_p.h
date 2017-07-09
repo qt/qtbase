@@ -179,7 +179,7 @@ public:
 #ifndef QT_NO_SIZEGRIP
     QPointer<QSizeGrip> sizeGrip;
 #endif
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     QRubberBand *rubberBand;
 #endif
     QPoint mousePressPosition;
@@ -190,7 +190,7 @@ public:
     bool resizeEnabled;
     bool moveEnabled;
     bool isInInteractiveMode;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     bool isInRubberBandMode;
 #endif
     bool isShadeMode;
@@ -258,7 +258,7 @@ public:
     void removeButtonsFromMenuBar();
 #endif
     void updateWindowTitle(bool requestFromChild);
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     void enterRubberBandMode();
     void leaveRubberBandMode();
 #endif
@@ -310,7 +310,7 @@ public:
         Q_Q(QMdiSubWindow);
         Q_ASSERT(parent);
         geometry->setSize(geometry->size().expandedTo(internalMinimumSize));
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         if (isInRubberBandMode)
             rubberBand->setGeometry(*geometry);
         else

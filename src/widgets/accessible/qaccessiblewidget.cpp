@@ -54,7 +54,9 @@
 #include "qwidget.h"
 #include "qdebug.h"
 #include <qmath.h>
+#if QT_CONFIG(rubberband)
 #include <QRubberBand>
+#endif
 #include <QFocusFrame>
 #include <QMenu>
 #include <QtWidgets/private/qwidget_p.h>

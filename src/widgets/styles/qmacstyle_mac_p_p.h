@@ -82,7 +82,9 @@
 #include <qpushbutton.h>
 #endif
 #include <qradiobutton.h>
+#if QT_CONFIG(rubberband)
 #include <qrubberband.h>
+#endif
 #include <qsizegrip.h>
 #include <qspinbox.h>
 #include <qsplitter.h>

@@ -2797,7 +2797,7 @@ QStyleOptionToolBox::QStyleOptionToolBox(int version)
     a selected tab nor is it the selected tab.
 */
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
 /*!
     \class QStyleOptionRubberBand
     \brief The QStyleOptionRubberBand class is used to describe the
@@ -2887,7 +2887,7 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
 
     The default value is true.
 */
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 
 /*!
     \class QStyleOptionTitleBar

@@ -49,7 +49,9 @@
 #include "qtoolbar.h"
 #include "qtoolbarlayout_p.h"
 #include "qwidgetanimator_p.h"
+#if QT_CONFIG(rubberband)
 #include "qrubberband.h"
+#endif
 #include "qtabbar_p.h"
 
 #include <qapplication.h>
@@ -2449,7 +2451,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
 
 void QMainWindowLayout::updateGapIndicator()
 {
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if ((!widgetAnimator.animating() && !currentGapPos.isEmpty())
 #if QT_CONFIG(dockwidget)
         || currentHoveredFloat
@@ -2477,7 +2479,7 @@ void QMainWindowLayout::updateGapIndicator()
     } else if (gapIndicator) {
         gapIndicator->hide();
     }
-#endif //QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 }
 
 void QMainWindowLayout::hover(QLayoutItem *widgetItem, const QPoint &mousePos)

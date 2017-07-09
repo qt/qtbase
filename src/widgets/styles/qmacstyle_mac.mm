@@ -80,7 +80,9 @@
 #include <qpushbutton.h>
 #endif
 #include <qradiobutton.h>
+#if QT_CONFIG(rubberband)
 #include <qrubberband.h>
+#endif
 #include <qscrollbar.h>
 #include <qsizegrip.h>
 #include <qstyleoption.h>

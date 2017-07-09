@@ -43,8 +43,6 @@
 #include "qrubberband.h"
 #include "qtimer.h"
 
-#ifndef QT_NO_RUBBERBAND
-
 #include "qstyle.h"
 #include "qstyleoption.h"
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
@@ -334,5 +332,3 @@ bool QRubberBand::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qrubberband.cpp"
-
-#endif // QT_NO_RUBBERBAND

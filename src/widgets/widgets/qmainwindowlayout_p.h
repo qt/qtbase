@@ -301,7 +301,7 @@ public:
     QList<int> currentGapPos;
     QRect currentGapRect;
     QWidget *pluggingWidget;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     QPointer<QRubberBand> gapIndicator;
 #endif
 #ifndef QT_NO_DOCKWIDGET

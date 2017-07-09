@@ -672,7 +672,7 @@ QMdiAreaPrivate::QMdiAreaPrivate()
       regularTiler(0),
       iconTiler(0),
       placer(0),
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
       rubberBand(0),
 #endif
 #ifndef QT_NO_TABBAR
@@ -1036,7 +1036,7 @@ void QMdiAreaPrivate::activateHighlightedWindow()
         activateWindow(nextVisibleSubWindow(-1, QMdiArea::ActivationHistoryOrder));
     else
         activateWindow(childWindows.at(indexToHighlighted));
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     hideRubberBand();
 #endif
 }
@@ -1140,7 +1140,7 @@ void QMdiAreaPrivate::updateActiveWindow(int removedIndex, bool activeRemoved)
     }
 
     if (indexToHighlighted >= 0) {
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         // Hide rubber band if highlighted window is removed.
         if (indexToHighlighted == removedIndex)
             hideRubberBand();
@@ -1514,7 +1514,7 @@ void QMdiAreaPrivate::highlightNextSubWindow(int increaseFactor)
     if (!highlight)
         return;
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if (!rubberBand) {
         rubberBand = new QRubberBand(QRubberBand::Rectangle, q);
         // For accessibility to identify this special widget.
@@ -1524,7 +1524,7 @@ void QMdiAreaPrivate::highlightNextSubWindow(int increaseFactor)
 #endif
 
     // Only highlight if we're not switching back to the previously active window (Ctrl-Tab once).
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if (tabToPreviousTimerId == -1)
         showRubberBandFor(highlight);
 #endif
@@ -2351,7 +2351,7 @@ void QMdiArea::timerEvent(QTimerEvent *timerEvent)
         d->tabToPreviousTimerId = -1;
         if (d->indexToHighlighted < 0)
             return;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         // We're not doing a "quick switch" ... show rubber band.
         Q_ASSERT(d->indexToHighlighted < d->childWindows.size());
         Q_ASSERT(d->rubberBand);
@@ -2594,7 +2594,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
             if (keyPress)
                 area->d_func()->highlightNextSubWindow(keyEvent->key() == Qt::Key_Tab ? 1 : -1);
             return true;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         case Qt::Key_Escape:
             area->d_func()->hideRubberBand();
             break;
@@ -2643,7 +2643,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
     case QEvent::Hide:
         d->isSubWindowsTiled = false;
         break;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     case QEvent::Close:
         if (d->childWindows.indexOf(subWindow) == d->indexToHighlighted)
             d->hideRubberBand();

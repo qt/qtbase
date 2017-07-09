@@ -864,14 +864,14 @@ QMdiSubWindowPrivate::QMdiSubWindowPrivate()
 #ifndef QT_NO_SIZEGRIP
       sizeGrip(0),
 #endif
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
       rubberBand(0),
 #endif
       userMinimumSize(0,0),
       resizeEnabled(true),
       moveEnabled(true),
       isInInteractiveMode(false),
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
       isInRubberBandMode(false),
 #endif
       isShadeMode(false),
@@ -945,13 +945,13 @@ void QMdiSubWindowPrivate::_q_enterInteractiveMode()
     oldGeometry = q->geometry();
     isInInteractiveMode = true;
     q->setFocus();
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if ((q->testOption(QMdiSubWindow::RubberBandResize)
             && (currentOperation == BottomRightResize || currentOperation == BottomLeftResize))
             || (q->testOption(QMdiSubWindow::RubberBandMove) && currentOperation == Move)) {
         enterRubberBandMode();
     } else
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
     {
         q->grabMouse();
     }
@@ -978,7 +978,7 @@ void QMdiSubWindowPrivate::_q_processFocusChanged(QWidget *old, QWidget *now)
 void QMdiSubWindowPrivate::leaveInteractiveMode()
 {
     Q_Q(QMdiSubWindow);
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if (isInRubberBandMode)
         leaveRubberBandMode();
     else
@@ -1893,7 +1893,7 @@ void QMdiSubWindowPrivate::updateWindowTitle(bool isRequestFromChild)
     ignoreWindowTitleChange = false;
 }
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
 void QMdiSubWindowPrivate::enterRubberBandMode()
 {
     Q_Q(QMdiSubWindow);
@@ -1925,7 +1925,7 @@ void QMdiSubWindowPrivate::leaveRubberBandMode()
     rubberBand->hide();
     currentOperation = None;
 }
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 
 // Taken from the old QWorkspace (::readColors())
 QPalette QMdiSubWindowPrivate::desktopPalette() const
@@ -2424,7 +2424,7 @@ void QMdiSubWindow::setOption(SubWindowOption option, bool on)
     Q_D(QMdiSubWindow);
     d->options.setFlag(option, on);
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if ((option & (RubberBandResize | RubberBandMove)) && !on && d->isInRubberBandMode)
         d->leaveRubberBandMode();
 #endif
@@ -2723,7 +2723,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
         d->oldGeometry = geometry();
         d->currentOperation = isLeftToRight() ? QMdiSubWindowPrivate::BottomRightResize
                                               : QMdiSubWindowPrivate::BottomLeftResize;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         d->enterRubberBandMode();
 #endif
         return true;
@@ -2837,7 +2837,7 @@ bool QMdiSubWindow::event(QEvent *event)
         d->currentOperation = QMdiSubWindowPrivate::None;
         d->activeSubControl = QStyle::SC_None;
         d->hoveredSubControl = QStyle::SC_None;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         if (d->isInRubberBandMode)
             d->leaveRubberBandMode();
 #endif
@@ -3196,7 +3196,7 @@ void QMdiSubWindow::mousePressEvent(QMouseEvent *mouseEvent)
     Q_D(QMdiSubWindow);
     if (d->isInInteractiveMode)
         d->leaveInteractiveMode();
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if (d->isInRubberBandMode)
         d->leaveRubberBandMode();
 #endif
@@ -3211,7 +3211,7 @@ void QMdiSubWindow::mousePressEvent(QMouseEvent *mouseEvent)
         d->mousePressPosition = mapToParent(mouseEvent->pos());
         if (d->resizeEnabled || d->moveEnabled)
             d->oldGeometry = geometry();
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         if ((testOption(QMdiSubWindow::RubberBandResize) && d->isResizeOperation())
             || (testOption(QMdiSubWindow::RubberBandMove) && d->isMoveOperation())) {
             d->enterRubberBandMode();
@@ -3291,7 +3291,7 @@ void QMdiSubWindow::mouseReleaseEvent(QMouseEvent *mouseEvent)
 
     Q_D(QMdiSubWindow);
     if (d->currentOperation != QMdiSubWindowPrivate::None) {
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         if (d->isInRubberBandMode && !d->isInInteractiveMode)
             d->leaveRubberBandMode();
 #endif
@@ -3406,13 +3406,13 @@ void QMdiSubWindow::keyPressEvent(QKeyEvent *keyEvent)
 #ifndef QT_NO_CURSOR
     QPoint newPosition = parentWidget()->mapFromGlobal(cursor().pos() + delta);
     QRect oldGeometry =
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         d->isInRubberBandMode ? d->rubberBand->geometry() :
 #endif
         geometry();
     d->setNewGeometry(newPosition);
     QRect currentGeometry =
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
         d->isInRubberBandMode ? d->rubberBand->geometry() :
 #endif
         geometry();

@@ -47,7 +47,9 @@
 #include "qlayout.h"
 #include "qlist.h"
 #include "qpainter.h"
+#if QT_CONFIG(rubberband)
 #include "qrubberband.h"
+#endif
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qtextstream.h"
