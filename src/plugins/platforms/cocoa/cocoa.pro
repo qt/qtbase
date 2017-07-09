@@ -20,7 +20,6 @@ OBJECTIVE_SOURCES += main.mm \
     qmultitouch_mac.mm \
     qcocoaaccessibilityelement.mm \
     qcocoaaccessibility.mm \
-    qcocoafontdialoghelper.mm \
     qcocoacursor.mm \
     qcocoaclipboard.mm \
     qcocoadrag.mm \
@@ -53,7 +52,6 @@ HEADERS += qcocoaintegration.h \
     qmultitouch_mac_p.h \
     qcocoaaccessibilityelement.h \
     qcocoaaccessibility.h \
-    qcocoafontdialoghelper.h \
     qcocoacursor.h \
     qcocoaclipboard.h \
     qcocoadrag.h \
@@ -107,6 +105,11 @@ qtHaveModule(widgets) {
     qtConfig(filedialog) {
         SOURCES += qcocoafiledialoghelper.mm
         HEADERS += qcocoafiledialoghelper.h
+    }
+
+    qtConfig(fontdialog) {
+        SOURCES += qcocoafontdialoghelper.mm
+        HEADERS += qcocoafontdialoghelper.h
     }
 
     QT += widgets-private printsupport-private

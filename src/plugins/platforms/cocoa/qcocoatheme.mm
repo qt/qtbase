@@ -44,7 +44,6 @@
 
 #include <QtCore/QVariant>
 
-#include "qcocoafontdialoghelper.h"
 #include "qcocoasystemsettings.h"
 #include "qcocoasystemtrayicon.h"
 #include "qcocoamenuitem.h"
@@ -68,6 +67,9 @@
 #endif
 #if QT_CONFIG(filedialog)
 #include "qcocoafiledialoghelper.h"
+#endif
+#if QT_CONFIG(fontdialog)
+#include "qcocoafontdialoghelper.h"
 #endif
 #endif
 
@@ -136,7 +138,7 @@ bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const
     if (dialogType == QPlatformTheme::ColorDialog)
         return true;
 #endif
-#ifndef QT_NO_FONTDIALOG
+#if defined(QT_WIDGETS_LIB) && QT_CONFIG(fontdialog)
     if (dialogType == QPlatformTheme::FontDialog)
         return true;
 #endif
@@ -154,7 +156,7 @@ QPlatformDialogHelper * QCocoaTheme::createPlatformDialogHelper(DialogType dialo
     case QPlatformTheme::ColorDialog:
         return new QCocoaColorDialogHelper();
 #endif
-#ifndef QT_NO_FONTDIALOG
+#if defined(QT_WIDGETS_LIB) && QT_CONFIG(fontdialog)
     case QPlatformTheme::FontDialog:
         return new QCocoaFontDialogHelper();
 #endif

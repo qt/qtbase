@@ -1,12 +1,6 @@
 # Qt dialogs module
 
-HEADERS += \
-	dialogs/qfontdialog.h \
-        dialogs/qfontdialog_p.h
-
 INCLUDEPATH += $$PWD
-SOURCES += \
-        dialogs/qfontdialog.cpp
 
 qtConfig(colordialog) {
     HEADERS += dialogs/qcolordialog.h
@@ -49,6 +43,14 @@ qtConfig(filesystemmodel) {
     SOURCES += \
         dialogs/qfilesystemmodel.cpp \
         dialogs/qfileinfogatherer.cpp
+}
+
+qtConfig(fontdialog) {
+    HEADERS += \
+        dialogs/qfontdialog.h \
+        dialogs/qfontdialog_p.h
+
+    SOURCES += dialogs/qfontdialog.cpp
 }
 
 qtConfig(fscompleter) {
