@@ -194,6 +194,7 @@ public:
     inline bool isClosed() const;
     inline void close();
     inline void maybeMoveTo();
+    inline void clear();
 
     const QVectorPath &vectorPath() {
         if (!pathConverter)
@@ -290,6 +291,25 @@ inline void QPainterPathData::maybeMoveTo()
     }
 }
 
+inline void QPainterPathData::clear()
+{
+    Q_ASSERT(ref.load() == 1);
+
+    elements.clear();
+
+    cStart = 0;
+
+    bounds = {};
+    controlBounds = {};
+
+    require_moveTo = false;
+    dirtyBounds = false;
+    dirtyControlBounds = false;
+    convex = false;
+
+    delete pathConverter;
+    pathConverter = nullptr;
+}
 #define KAPPA qreal(0.5522847498)
 
 

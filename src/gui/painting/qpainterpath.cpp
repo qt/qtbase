@@ -629,6 +629,55 @@ QPainterPath::~QPainterPath()
 }
 
 /*!
+    Clears the path elements stored.
+
+    This allows the path to reuse previous memory allocations.
+
+    \sa reserve(), capacity()
+    \since 5.13
+*/
+void QPainterPath::clear()
+{
+    if (!d_ptr)
+        return;
+
+    detach();
+    d_func()->clear();
+}
+
+/*!
+    Reserves a given amount of elements in QPainterPath's internal memory.
+
+    Attempts to allocate memory for at least \a size elements.
+
+    \sa clear(), capacity(), QVector::reserve()
+    \since 5.13
+*/
+void QPainterPath::reserve(int size)
+{
+    Q_D(QPainterPath);
+    if ((!d && size > 0) || (d && d->elements.capacity() < size)) {
+        detach();
+        d->elements.reserve(size);
+    }
+}
+
+/*!
+    Returns the number of elements allocated by the QPainterPath.
+
+    \sa clear(), reserve()
+    \since 5.13
+*/
+int QPainterPath::capacity() const
+{
+    Q_D(QPainterPath);
+    if (d)
+        return d->elements.capacity();
+
+    return 0;
+}
+
+/*!
     Closes the current subpath by drawing a line to the beginning of
     the subpath, automatically starting a new path. The current point
     of the new path is (0, 0).
@@ -2271,13 +2320,19 @@ static inline bool epsilonCompare(const QPointF &a, const QPointF &b, const QSiz
 bool QPainterPath::operator==(const QPainterPath &path) const
 {
     QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
-    if (path.d_func() == d)
+    QPainterPathData *other_d = path.d_func();
+    if (other_d == d)
         return true;
-    else if (!d || !path.d_func())
+    else if (!d || !other_d) {
+        if (!d && other_d->elements.empty() && other_d->fillRule == Qt::OddEvenFill)
+            return true;
+        if (!other_d && d && d->elements.empty() && d->fillRule == Qt::OddEvenFill)
+            return true;
         return false;
-    else if (d->fillRule != path.d_func()->fillRule)
+    }
+    else if (d->fillRule != other_d->fillRule)
         return false;
-    else if (d->elements.size() != path.d_func()->elements.size())
+    else if (d->elements.size() != other_d->elements.size())
         return false;
 
     const qreal qt_epsilon = sizeof(qreal) == sizeof(double) ? 1e-12 : qreal(1e-5);
@@ -2287,8 +2342,8 @@ bool QPainterPath::operator==(const QPainterPath &path) const
     epsilon.rheight() *= qt_epsilon;
 
     for (int i = 0; i < d->elements.size(); ++i)
-        if (d->elements.at(i).type != path.d_func()->elements.at(i).type
-            || !epsilonCompare(d->elements.at(i), path.d_func()->elements.at(i), epsilon))
+        if (d->elements.at(i).type != other_d->elements.at(i).type
+            || !epsilonCompare(d->elements.at(i), other_d->elements.at(i), epsilon))
             return false;
 
     return true;

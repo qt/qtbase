@@ -97,7 +97,12 @@ public:
     { qSwap(d_ptr, other.d_ptr); return *this; }
 #endif
     ~QPainterPath();
+
     inline void swap(QPainterPath &other) Q_DECL_NOEXCEPT { d_ptr.swap(other.d_ptr); }
+
+    void clear();
+    void reserve(int size);
+    int capacity() const;
 
     void closeSubpath();
 
