@@ -59,6 +59,7 @@
 #include <objbase.h>
 #ifndef Q_OS_WINRT
 #  include <shlobj.h>
+#  include <lm.h>
 #  include <accctrl.h>
 #endif
 #include <initguid.h>
@@ -226,43 +227,9 @@ QT_END_NAMESPACE
 } // anonymous namespace
 #endif // QT_CONFIG(fslibs)
 
-typedef DWORD (WINAPI *PtrNetShareEnum)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
-static PtrNetShareEnum ptrNetShareEnum = 0;
-typedef DWORD (WINAPI *PtrNetApiBufferFree)(LPVOID);
-static PtrNetApiBufferFree ptrNetApiBufferFree = 0;
-typedef struct _SHARE_INFO_1 {
-    LPWSTR shi1_netname;
-    DWORD shi1_type;
-    LPWSTR shi1_remark;
-} SHARE_INFO_1;
-
 QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
-
-namespace {
-struct UNCLibResolver
-{
-    UNCLibResolver()
-    {
-#if !defined(Q_OS_WINRT)
-        HINSTANCE hLib = QSystemLibrary::load(L"Netapi32");
-        if (hLib) {
-            ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
-            if (ptrNetShareEnum)
-                ptrNetApiBufferFree = (PtrNetApiBufferFree)GetProcAddress(hLib, "NetApiBufferFree");
-        }
-#endif // !Q_OS_WINRT
-    }
-};
-Q_GLOBAL_STATIC(UNCLibResolver, uncLibResolver)
-} // anonymous namespace
-
-static bool resolveUNCLibs()
-{
-    uncLibResolver();
-    return ptrNetShareEnum && ptrNetApiBufferFree;
-}
 
 static QString readSymLink(const QFileSystemEntry &link)
 {
@@ -396,25 +363,27 @@ static inline bool getFindData(QString path, WIN32_FIND_DATA &findData)
 
 bool QFileSystemEngine::uncListSharesOnServer(const QString &server, QStringList *list)
 {
-    if (resolveUNCLibs()) {
-        SHARE_INFO_1 *BufPtr, *p;
-        DWORD res;
-        DWORD er = 0, tr = 0, resume = 0, i;
-        do {
-            res = ptrNetShareEnum((wchar_t*)server.utf16(), 1, (LPBYTE *)&BufPtr, DWORD(-1), &er, &tr, &resume);
-            if (res == ERROR_SUCCESS || res == ERROR_MORE_DATA) {
-                p = BufPtr;
-                for (i = 1; i <= er; ++i) {
-                    if (list && p->shi1_type == 0)
-                        list->append(QString::fromWCharArray(p->shi1_netname));
-                    p++;
-                }
+    DWORD res = ERROR_NOT_SUPPORTED;
+#ifndef Q_OS_WINRT
+    SHARE_INFO_1 *BufPtr, *p;
+    DWORD er = 0, tr = 0, resume = 0, i;
+    do {
+        res = NetShareEnum((wchar_t*)server.utf16(), 1, (LPBYTE *)&BufPtr, DWORD(-1), &er, &tr, &resume);
+        if (res == ERROR_SUCCESS || res == ERROR_MORE_DATA) {
+            p = BufPtr;
+            for (i = 1; i <= er; ++i) {
+                if (list && p->shi1_type == 0)
+                    list->append(QString::fromWCharArray(p->shi1_netname));
+                p++;
             }
-            ptrNetApiBufferFree(BufPtr);
-        } while (res == ERROR_MORE_DATA);
-        return res == ERROR_SUCCESS;
-    }
-    return false;
+        }
+        NetApiBufferFree(BufPtr);
+    } while (res == ERROR_MORE_DATA);
+#else
+    Q_UNUSED(server);
+    Q_UNUSED(list);
+#endif
+    return res == ERROR_SUCCESS;
 }
 
 void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)

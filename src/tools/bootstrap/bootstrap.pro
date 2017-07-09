@@ -139,7 +139,7 @@ macx {
 }
 
 win32 {
-    LIBS += -luser32 -lole32 -ladvapi32 -lshell32
+    LIBS += -luser32 -lole32 -ladvapi32 -lshell32 -lnetapi32
     mingw: LIBS += -luuid
 }
 

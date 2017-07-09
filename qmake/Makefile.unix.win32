@@ -1,6 +1,6 @@
 EXEEXT = .exe
 EXTRA_CXXFLAGS = -DUNICODE
-EXTRA_LFLAGS = -static -s -lole32 -luuid -ladvapi32 -lkernel32
+EXTRA_LFLAGS = -static -s -lole32 -luuid -ladvapi32 -lkernel32 -lnetapi32
 QTOBJS = \
     qfilesystemengine_win.o \
     qfilesystemiterator_win.o \
