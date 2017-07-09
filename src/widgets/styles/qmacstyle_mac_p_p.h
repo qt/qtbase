@@ -93,7 +93,9 @@
 #include <qtextstream.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
+#if QT_CONFIG(treeview)
 #include <qtreeview.h>
+#endif
 #if QT_CONFIG(tableview)
 #include <qtableview.h>
 #endif

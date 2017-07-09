@@ -38,7 +38,6 @@
 ****************************************************************************/
 #include "qtreeview.h"
 
-#ifndef QT_NO_TREEVIEW
 #include <qheaderview.h>
 #include <qitemdelegate.h>
 #include <qapplication.h>
@@ -3996,5 +3995,3 @@ int QTreeView::visualIndex(const QModelIndex &index) const
 QT_END_NAMESPACE
 
 #include "moc_qtreeview.cpp"
-
-#endif // QT_NO_TREEVIEW

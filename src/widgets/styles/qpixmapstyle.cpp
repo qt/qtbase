@@ -55,7 +55,6 @@
 #include <QComboBox>
 #include <QAbstractItemView>
 #include <QListView>
-#include <QTreeView>
 #include <QStyledItemDelegate>
 #include <QAbstractScrollArea>
 #include <QScrollBar>

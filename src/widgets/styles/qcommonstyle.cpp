@@ -41,6 +41,7 @@
 #include "qcommonstyle_p.h"
 
 #include <qfile.h>
+#include <qabstractitemview.h>
 #include <qapplication.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
@@ -71,7 +72,9 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#if QT_CONFIG(treeview)
 #include "qtreeview.h"
+#endif
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
 #include <qdebug.h>
@@ -5250,7 +5253,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         break;
 #endif
     case SH_Widget_Animate:
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
         if (qobject_cast<const QTreeView*>(widget)) {
             ret = false;
         } else

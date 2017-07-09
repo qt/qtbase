@@ -88,7 +88,9 @@
 #include <qstyleoption.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
+#if QT_CONFIG(treeview)
 #include <qtreeview.h>
+#endif
 #if QT_CONFIG(tableview)
 #include <qtableview.h>
 #endif
@@ -420,7 +422,7 @@ static int getControlSize(const QStyleOption *option, const QWidget *widget)
 }
 
 
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
 static inline bool isTreeView(const QWidget *widget)
 {
     return (widget && widget->parentWidget() &&
@@ -899,7 +901,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         break;
 #endif
     case QStyle::CT_HeaderSection:
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
         if (isTreeView(widg))
            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricListHeaderHeight));
 #endif

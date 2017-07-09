@@ -77,7 +77,9 @@
 #include <qprogressbar.h>
 #include <qdockwidget.h>
 #include <qlistview.h>
+#if QT_CONFIG(treeview)
 #include <qtreeview.h>
+#endif
 #include <qtextedit.h>
 #include <qmessagebox.h>
 #if QT_CONFIG(dialogbuttonbox)

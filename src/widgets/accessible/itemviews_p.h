@@ -145,7 +145,7 @@ private:
     QAccessible::Role m_role;
 };
 
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
 class QAccessibleTree :public QAccessibleTable
 {
 public:
@@ -223,7 +223,7 @@ private:
     void unselectCell();
 
 friend class QAccessibleTable;
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
 friend class QAccessibleTree;
 #endif
 };
@@ -259,7 +259,7 @@ private:
     Qt::Orientation orientation;
 
 friend class QAccessibleTable;
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
 friend class QAccessibleTree;
 #endif
 };
