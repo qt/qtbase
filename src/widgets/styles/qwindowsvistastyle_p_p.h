@@ -84,7 +84,9 @@
 #include <qdialogbuttonbox.h>
 #endif
 #include <qinputdialog.h>
+#if QT_CONFIG(tableview)
 #include <qtableview.h>
+#endif
 #include <qdatetime.h>
 #include <qcommandlinkbutton.h>
 

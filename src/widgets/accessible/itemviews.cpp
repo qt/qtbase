@@ -40,7 +40,9 @@
 #include "itemviews_p.h"
 
 #include <qheaderview.h>
+#if QT_CONFIG(tableview)
 #include <qtableview.h>
+#endif
 #include <qlistview.h>
 #include <qtreeview.h>
 #include <private/qtreeview_p.h>
@@ -81,7 +83,7 @@ QAccessibleTable::QAccessibleTable(QWidget *w)
 {
     Q_ASSERT(view());
 
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     if (qobject_cast<const QTableView*>(view())) {
         m_role = QAccessible::Table;
     } else
@@ -117,7 +119,7 @@ QHeaderView *QAccessibleTable::horizontalHeader() const
 {
     QHeaderView *header = 0;
     if (false) {
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     } else if (const QTableView *tv = qobject_cast<const QTableView*>(view())) {
         header = tv->horizontalHeader();
 #endif
@@ -133,7 +135,7 @@ QHeaderView *QAccessibleTable::verticalHeader() const
 {
     QHeaderView *header = 0;
     if (false) {
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     } else if (const QTableView *tv = qobject_cast<const QTableView*>(view())) {
         header = tv->verticalHeader();
 #endif
@@ -866,7 +868,7 @@ QHeaderView *QAccessibleTableCell::horizontalHeader() const
     QHeaderView *header = 0;
 
     if (false) {
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     } else if (const QTableView *tv = qobject_cast<const QTableView*>(view)) {
         header = tv->horizontalHeader();
 #endif
@@ -882,7 +884,7 @@ QHeaderView *QAccessibleTableCell::horizontalHeader() const
 QHeaderView *QAccessibleTableCell::verticalHeader() const
 {
     QHeaderView *header = 0;
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     if (const QTableView *tv = qobject_cast<const QTableView*>(view))
         header = tv->verticalHeader();
 #endif
@@ -1125,7 +1127,7 @@ QRect QAccessibleTableHeaderCell::rect() const
 {
     QHeaderView *header = 0;
     if (false) {
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     } else if (const QTableView *tv = qobject_cast<const QTableView*>(view)) {
         if (orientation == Qt::Horizontal) {
             header = tv->horizontalHeader();
@@ -1192,7 +1194,7 @@ QHeaderView *QAccessibleTableHeaderCell::headerView() const
 {
     QHeaderView *header = 0;
     if (false) {
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     } else if (const QTableView *tv = qobject_cast<const QTableView*>(view)) {
         if (orientation == Qt::Horizontal) {
             header = tv->horizontalHeader();

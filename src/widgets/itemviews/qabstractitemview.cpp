@@ -53,7 +53,6 @@
 #include <qlineedit.h>
 #include <qspinbox.h>
 #include <qtreeview.h>
-#include <qtableview.h>
 #include <qheaderview.h>
 #include <qstyleditemdelegate.h>
 #include <private/qabstractitemview_p.h>

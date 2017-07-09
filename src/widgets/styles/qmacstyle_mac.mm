@@ -89,7 +89,9 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qtreeview.h>
+#if QT_CONFIG(tableview)
 #include <qtableview.h>
+#endif
 #include <qoperatingsystemversion.h>
 #if QT_CONFIG(wizard)
 #include <qwizard.h>
@@ -3722,7 +3724,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             HIRect bounds = qt_hirectForQRect(ir);
 
             bool noVerticalHeader = true;
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
             if (w)
                 if (const QTableView *table = qobject_cast<const QTableView *>(w->parentWidget()))
                     noVerticalHeader = !table->verticalHeader()->isVisible();

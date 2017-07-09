@@ -94,7 +94,9 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qtreeview.h>
+#if QT_CONFIG(tableview)
 #include <qtableview.h>
+#endif
 #include <qdebug.h>
 #if QT_CONFIG(datetimeedit)
 #include <qdatetimeedit.h>
