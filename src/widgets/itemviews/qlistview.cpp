@@ -40,7 +40,6 @@
 
 #include "qlistview.h"
 
-#ifndef QT_NO_LISTVIEW
 #include <qabstractitemdelegate.h>
 #include <qapplication.h>
 #include <qpainter.h>
@@ -3298,5 +3297,3 @@ QSize QListView::viewportSizeHint() const
 QT_END_NAMESPACE
 
 #include "moc_qlistview.cpp"
-
-#endif // QT_NO_LISTVIEW

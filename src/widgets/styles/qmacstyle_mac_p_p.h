@@ -69,7 +69,9 @@
 #include <qheaderview.h>
 #include <qlayout.h>
 #include <qlineedit.h>
+#if QT_CONFIG(listview)
 #include <qlistview.h>
+#endif
 #include <qmainwindow.h>
 #include <qmap.h>
 #include <qmenubar.h>

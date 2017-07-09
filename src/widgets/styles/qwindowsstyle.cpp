@@ -65,7 +65,9 @@
 #if QT_CONFIG(wizard)
 #include "qwizard.h"
 #endif
+#if QT_CONFIG(listview)
 #include "qlistview.h"
+#endif
 #include <private/qmath_p.h>
 #include <qmath.h>
 #include <QtGui/qscreen.h>
@@ -548,7 +550,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
 
         break;
     case SH_ItemView_ShowDecorationSelected:
-#ifndef QT_NO_LISTVIEW
+#if QT_CONFIG(listview)
         if (qobject_cast<const QListView*>(widget))
             ret = 1;
 #endif

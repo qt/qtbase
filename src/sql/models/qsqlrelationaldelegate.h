@@ -45,7 +45,9 @@
 #ifdef QT_WIDGETS_LIB
 
 #include <QtWidgets/qitemdelegate.h>
+#if QT_CONFIG(listview)
 #include <QtWidgets/qlistview.h>
+#endif
 #include <QtWidgets/qcombobox.h>
 #include <QtSql/qsqldriver.h>
 #include <QtSql/qsqlrelationaltablemodel.h>

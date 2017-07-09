@@ -43,7 +43,9 @@
 #if QT_CONFIG(tableview)
 #include <qtableview.h>
 #endif
+#if QT_CONFIG(listview)
 #include <qlistview.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #include <private/qtreeview_p.h>
@@ -96,7 +98,7 @@ QAccessibleTable::QAccessibleTable(QWidget *w)
         m_role = QAccessible::Tree;
     } else
 #endif
-#ifndef QT_NO_LISTVIEW
+#if QT_CONFIG(listview)
     if (qobject_cast<const QListView*>(view())) {
         m_role = QAccessible::List;
     } else

@@ -63,7 +63,9 @@
 #include <qscrollbar.h>
 #include <qheaderview.h>
 #include <qspinbox.h>
+#if QT_CONFIG(listview)
 #include <qlistview.h>
+#endif
 #include <qstackedwidget.h>
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>

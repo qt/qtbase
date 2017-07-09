@@ -54,7 +54,9 @@
 #include <QEvent>
 #include <QComboBox>
 #include <QAbstractItemView>
+#if QT_CONFIG(listview)
 #include <QListView>
+#endif
 #include <QStyledItemDelegate>
 #include <QAbstractScrollArea>
 #include <QScrollBar>

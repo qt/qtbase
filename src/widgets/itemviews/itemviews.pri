@@ -6,8 +6,6 @@ HEADERS += \
     itemviews/qabstractitemview_p.h \
 	itemviews/qheaderview.h \
 	itemviews/qheaderview_p.h \
-	itemviews/qlistview.h \
-	itemviews/qlistview_p.h \
 	itemviews/qbsptree_p.h \
 	itemviews/qabstractitemdelegate.h \
         itemviews/qabstractitemdelegate_p.h \
@@ -22,7 +20,6 @@ HEADERS += \
 SOURCES += \
 	itemviews/qabstractitemview.cpp \
 	itemviews/qheaderview.cpp \
-	itemviews/qlistview.cpp \
 	itemviews/qbsptree.cpp \
 	itemviews/qabstractitemdelegate.cpp \
         itemviews/qitemdelegate.cpp \
@@ -41,6 +38,14 @@ qtConfig(columnview) {
     SOURCES += \
         itemviews/qcolumnview.cpp \
         itemviews/qcolumnviewgrip.cpp
+}
+
+qtConfig(listview) {
+    HEADERS += \
+        itemviews/qlistview.h \
+        itemviews/qlistview_p.h
+
+    SOURCES += itemviews/qlistview.cpp
 }
 
 qtConfig(listwidget) {

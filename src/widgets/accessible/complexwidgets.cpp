@@ -45,7 +45,6 @@
 #include <qheaderview.h>
 #include <qtabbar.h>
 #include <qcombobox.h>
-#include <qlistview.h>
 #include <qlineedit.h>
 #include <qstyle.h>
 #include <qstyleoption.h>

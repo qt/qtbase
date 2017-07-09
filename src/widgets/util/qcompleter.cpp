@@ -152,7 +152,9 @@
 #include "QtWidgets/qfilesystemmodel.h"
 #endif
 #include "QtWidgets/qheaderview.h"
+#if QT_CONFIG(listview)
 #include "QtWidgets/qlistview.h"
+#endif
 #include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
 #include "QtWidgets/qdesktopwidget.h"
@@ -816,11 +818,11 @@ void QCompleterPrivate::init(QAbstractItemModel *m)
     proxy = new QCompletionModel(this, q);
     QObject::connect(proxy, SIGNAL(rowsAdded()), q, SLOT(_q_autoResizePopup()));
     q->setModel(m);
-#ifdef QT_NO_LISTVIEW
+#if !QT_CONFIG(listview)
     q->setCompletionMode(QCompleter::InlineCompletion);
 #else
     q->setCompletionMode(QCompleter::PopupCompletion);
-#endif // QT_NO_LISTVIEW
+#endif // QT_CONFIG(listview)
 }
 
 void QCompleterPrivate::setCurrentIndex(QModelIndex index, bool select)
@@ -1214,7 +1216,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
     popup->setFocusProxy(d->widget);
     popup->installEventFilter(this);
     popup->setItemDelegate(new QCompleterItemDelegate(popup));
-#ifndef QT_NO_LISTVIEW
+#if QT_CONFIG(listview)
     if (QListView *listView = qobject_cast<QListView *>(popup)) {
         listView->setModelColumn(d->column);
     }
@@ -1238,7 +1240,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
 QAbstractItemView *QCompleter::popup() const
 {
     Q_D(const QCompleter);
-#ifndef QT_NO_LISTVIEW
+#if QT_CONFIG(listview)
     if (!d->popup && completionMode() != QCompleter::InlineCompletion) {
         QListView *listView = new QListView;
         listView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -1249,7 +1251,7 @@ QAbstractItemView *QCompleter::popup() const
         QCompleter *that = const_cast<QCompleter*>(this);
         that->setPopup(listView);
     }
-#endif // QT_NO_LISTVIEW
+#endif // QT_CONFIG(listview)
     return d->popup;
 }
 
@@ -1580,7 +1582,7 @@ void QCompleter::setCompletionColumn(int column)
     Q_D(QCompleter);
     if (d->column == column)
         return;
-#ifndef QT_NO_LISTVIEW
+#if QT_CONFIG(listview)
     if (QListView *listView = qobject_cast<QListView *>(d->popup))
         listView->setModelColumn(column);
 #endif
