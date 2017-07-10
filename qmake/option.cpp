@@ -174,7 +174,7 @@ bool usage(const char *a0)
             "  -set <prop> <value> Set persistent property\n"
             "  -unset <prop>  Unset persistent property\n"
             "  -query <prop>  Query persistent property. Show all if <prop> is empty.\n"
-            "  -qtconf file   Use file instead of looking for qt.conf\n"
+            "  -qtconf file   Use file instead of looking for qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf, then qt.conf\n"
             "  -cache file    Use file as cache           [makefile mode only]\n"
             "  -spec spec     Use spec as QMAKESPEC       [makefile mode only]\n"
             "  -nocache       Don't use a cache file      [makefile mode only]\n"
@@ -660,8 +660,15 @@ QString qmake_libraryInfoFile()
 {
     if (!Option::globals->qtconf.isEmpty())
         return Option::globals->qtconf;
-    if (!Option::globals->qmake_abslocation.isEmpty())
-        return QDir(QFileInfo(Option::globals->qmake_abslocation).absolutePath()).filePath("qt.conf");
+    if (!Option::globals->qmake_abslocation.isEmpty()) {
+        QDir dir(QFileInfo(Option::globals->qmake_abslocation).absolutePath());
+        QString qtconfig = dir.filePath("qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf");
+        if (QFile::exists(qtconfig))
+            return qtconfig;
+        qtconfig = dir.filePath("qt.conf");
+        if (QFile::exists(qtconfig))
+            return qtconfig;
+    }
     return QString();
 }
 
