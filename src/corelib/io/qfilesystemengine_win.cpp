@@ -233,22 +233,37 @@ Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
 static inline bool toFileTime(const QDateTime &date, FILETIME *fileTime)
 {
-    SYSTEMTIME lTime;
-    const QDate d = date.date();
-    const QTime t = date.time();
-
-    lTime.wYear = d.year();
-    lTime.wMonth = d.month();
-    lTime.wDay = d.day();
-    lTime.wHour = t.hour();
-    lTime.wMinute = t.minute();
-    lTime.wSecond = t.second();
-    lTime.wMilliseconds = t.msec();
-    lTime.wDayOfWeek = d.dayOfWeek() % 7;
-
     SYSTEMTIME sTime;
-    if (!::TzSpecificLocalTimeToSystemTime(0, &lTime, &sTime))
-        return false;
+    if (date.timeSpec() == Qt::LocalTime) {
+        SYSTEMTIME lTime;
+        const QDate d = date.date();
+        const QTime t = date.time();
+
+        lTime.wYear = d.year();
+        lTime.wMonth = d.month();
+        lTime.wDay = d.day();
+        lTime.wHour = t.hour();
+        lTime.wMinute = t.minute();
+        lTime.wSecond = t.second();
+        lTime.wMilliseconds = t.msec();
+        lTime.wDayOfWeek = d.dayOfWeek() % 7;
+
+        if (!::TzSpecificLocalTimeToSystemTime(0, &lTime, &sTime))
+            return false;
+    } else {
+        QDateTime utcDate = date.toUTC();
+        const QDate d = utcDate.date();
+        const QTime t = utcDate.time();
+
+        sTime.wYear = d.year();
+        sTime.wMonth = d.month();
+        sTime.wDay = d.day();
+        sTime.wHour = t.hour();
+        sTime.wMinute = t.minute();
+        sTime.wSecond = t.second();
+        sTime.wMilliseconds = t.msec();
+        sTime.wDayOfWeek = d.dayOfWeek() % 7;
+    }
 
     return ::SystemTimeToFileTime(&sTime, fileTime);
 }
