@@ -938,6 +938,107 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             return false;
         }
         break;
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QJsonValue:
+        switch (d->type) {
+        case QMetaType::Nullptr:
+            *static_cast<QJsonValue *>(result) = QJsonValue(QJsonValue::Null);
+            break;
+        case QVariant::Bool:
+            *static_cast<QJsonValue *>(result) = QJsonValue(d->data.b);
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+        case QMetaType::Double:
+        case QMetaType::Float:
+        case QMetaType::ULong:
+        case QMetaType::Long:
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+        case QMetaType::UShort:
+        case QMetaType::UChar:
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::Short:
+            *static_cast<QJsonValue *>(result) = QJsonValue(qConvertToRealNumber(d, ok));
+            Q_ASSERT(ok);
+            break;
+        case QVariant::String:
+            *static_cast<QJsonValue *>(result) = QJsonValue(*v_cast<QString>(d));
+            break;
+        case QVariant::StringList:
+            *static_cast<QJsonValue *>(result) = QJsonValue(QJsonArray::fromStringList(*v_cast<QStringList>(d)));
+            break;
+        case QVariant::List:
+            *static_cast<QJsonValue *>(result) = QJsonValue(QJsonArray::fromVariantList(*v_cast<QVariantList>(d)));
+            break;
+        case QVariant::Map:
+            *static_cast<QJsonValue *>(result) = QJsonValue(QJsonObject::fromVariantMap(*v_cast<QVariantMap>(d)));
+            break;
+        case QVariant::Hash:
+            *static_cast<QJsonValue *>(result) = QJsonValue(QJsonObject::fromVariantHash(*v_cast<QVariantHash>(d)));
+            break;
+        case QMetaType::QJsonObject:
+            *static_cast<QJsonValue *>(result) = *v_cast<QJsonObject>(d);
+            break;
+        case QMetaType::QJsonArray:
+            *static_cast<QJsonValue *>(result) = *v_cast<QJsonArray>(d);
+            break;
+        case QMetaType::QJsonDocument: {
+            QJsonDocument doc = *v_cast<QJsonDocument>(d);
+            *static_cast<QJsonValue *>(result) = doc.isArray() ? QJsonValue(doc.array()) : QJsonValue(doc.object());
+            break;
+        }
+        default:
+            *static_cast<QJsonValue *>(result) = QJsonValue(QJsonValue::Undefined);
+            return false;
+        }
+        break;
+    case QMetaType::QJsonArray:
+        switch (d->type) {
+        case QVariant::StringList:
+            *static_cast<QJsonArray *>(result) = QJsonArray::fromStringList(*v_cast<QStringList>(d));
+            break;
+        case QVariant::List:
+            *static_cast<QJsonArray *>(result) = QJsonArray::fromVariantList(*v_cast<QVariantList>(d));
+            break;
+        case QMetaType::QJsonValue:
+            if (!v_cast<QJsonValue>(d)->isArray())
+                return false;
+            *static_cast<QJsonArray *>(result) = v_cast<QJsonValue>(d)->toArray();
+            break;
+        case QMetaType::QJsonDocument:
+            if (!v_cast<QJsonDocument>(d)->isArray())
+                return false;
+            *static_cast<QJsonArray *>(result) = v_cast<QJsonDocument>(d)->array();
+            break;
+        default:
+            return false;
+        }
+        break;
+    case QMetaType::QJsonObject:
+        switch (d->type) {
+        case QVariant::Map:
+            *static_cast<QJsonObject *>(result) = QJsonObject::fromVariantMap(*v_cast<QVariantMap>(d));
+            break;
+        case QVariant::Hash:
+            *static_cast<QJsonObject *>(result) = QJsonObject::fromVariantHash(*v_cast<QVariantHash>(d));
+            break;
+        case QMetaType::QJsonValue:
+            if (!v_cast<QJsonValue>(d)->isObject())
+                return false;
+            *static_cast<QJsonObject *>(result) = v_cast<QJsonValue>(d)->toObject();
+            break;
+        case QMetaType::QJsonDocument:
+            if (v_cast<QJsonDocument>(d)->isArray())
+                return false;
+            *static_cast<QJsonObject *>(result) = v_cast<QJsonDocument>(d)->object();
+            break;
+        default:
+            return false;
+        }
+        break;
+#endif
     default:
 #ifndef QT_NO_QOBJECT
         if (d->type == QVariant::String || d->type == QVariant::ByteArray) {
@@ -3106,8 +3207,8 @@ bool QVariant::canConvert(int targetTypeId) const
         }
     }
 
-    if (currentType == QMetaType::QJsonValue) {
-        switch (targetTypeId) {
+    if (currentType == QMetaType::QJsonValue || targetTypeId == QMetaType::QJsonValue) {
+        switch (currentType == QMetaType::QJsonValue ? targetTypeId : currentType) {
         case QMetaType::Nullptr:
         case QMetaType::QString:
         case QMetaType::Bool:
