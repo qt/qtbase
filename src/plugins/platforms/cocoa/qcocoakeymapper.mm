@@ -376,18 +376,7 @@ bool QCocoaKeyMapper::updateKeyboard()
     }
     currentInputSource = source;
     keyboard_dead = 0;
-    CFStringRef iso639Code;
 
-    CFArrayRef array = static_cast<CFArrayRef>(TISGetInputSourceProperty(currentInputSource, kTISPropertyInputSourceLanguages));
-    iso639Code = static_cast<CFStringRef>(CFArrayGetValueAtIndex(array, 0)); // Actually a RFC3066bis, but it's close enough
-
-    if (iso639Code) {
-        keyboardInputLocale = QLocale(QString::fromCFString(iso639Code));
-        keyboardInputDirection = keyboardInputLocale.textDirection();
-    } else {
-        keyboardInputLocale = QLocale::c();
-        keyboardInputDirection = Qt::LeftToRight;
-    }
     return true;
 }
 
