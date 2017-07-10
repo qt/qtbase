@@ -9664,7 +9664,7 @@ void QWidget::leaveEvent(QEvent *)
 
     \note Generally, you should refrain from calling update() or repaint()
     \b{inside} a paintEvent(). For example, calling update() or repaint() on
-    children inside a paintevent() results in undefined behavior; the child may
+    children inside a paintEvent() results in undefined behavior; the child may
     or may not get a paint event.
 
     \warning If you are using a custom paint engine without Qt's backingstore,
