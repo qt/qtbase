@@ -2558,6 +2558,8 @@ void tst_QVariant::variantMap()
     QVariant v3 = QVariant(QMetaType::type("QMap<QString, QVariant>"), &map);
     QCOMPARE(qvariant_cast<QVariantMap>(v3).value("test").toInt(), 42);
 
+    QCOMPARE(v, QVariant(v.toHash()));
+
     // multi-keys
     map.insertMulti("test", 47);
     v = map;
@@ -2565,6 +2567,8 @@ void tst_QVariant::variantMap()
     QCOMPARE(map2, map);
     map2 = v.toMap();
     QCOMPARE(map2, map);
+
+    QCOMPARE(v, QVariant(v.toHash()));
 }
 
 void tst_QVariant::variantHash()
@@ -2587,6 +2591,8 @@ void tst_QVariant::variantHash()
     QVariant v3 = QVariant(QMetaType::type("QHash<QString, QVariant>"), &hash);
     QCOMPARE(qvariant_cast<QVariantHash>(v3).value("test").toInt(), 42);
 
+    QCOMPARE(v, QVariant(v.toMap()));
+
     // multi-keys
     hash.insertMulti("test", 47);
     v = hash;
@@ -2594,6 +2600,8 @@ void tst_QVariant::variantHash()
     QCOMPARE(hash2, hash);
     hash2 = v.toHash();
     QCOMPARE(hash2, hash);
+
+    QCOMPARE(v, QVariant(v.toMap()));
 }
 
 class CustomQObject : public QObject {
