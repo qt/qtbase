@@ -976,18 +976,10 @@ void QCocoaWindow::windowDidOrderOnScreen()
 
 void QCocoaWindow::windowDidChangeOcclusionState()
 {
-    // Several unit tests expect paint and/or expose events for windows that are
-    // sometimes (unpredictably) occluded and some unit tests depend on QWindow::isExposed.
-    // Don't send Expose/Obscure events when running under QTestLib.
-    static const bool onTestLib = qt_mac_resolveOption(false, "QT_QTESTLIB_RUNNING");
-    if (!onTestLib) {
-        if ((NSUInteger)[m_view.window occlusionState] & NSWindowOcclusionStateVisible) {
-            exposeWindow();
-        } else {
-            // Send Obscure events on window occlusion to stop animations.
-            obscureWindow();
-        }
-    }
+    if (m_view.window.occlusionState & NSWindowOcclusionStateVisible)
+        exposeWindow();
+    else
+        obscureWindow();
 }
 
 void QCocoaWindow::windowDidChangeScreen()
