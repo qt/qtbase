@@ -98,7 +98,7 @@ void QWindowsPipeReader::stop()
         if (!CancelIoEx(handle, &overlapped)) {
             const DWORD dwError = GetLastError();
             if (dwError != ERROR_NOT_FOUND) {
-                qErrnoWarning(dwError, "QWindowsPipeReader: qt_cancelIo on handle %x failed.",
+                qErrnoWarning(dwError, "QWindowsPipeReader: CancelIoEx on handle %p failed.",
                               handle);
             }
         }
