@@ -1268,6 +1268,11 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
     QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:frame
         screen:cocoaScreen->nativeScreen() styleMask:windowStyleMask(flags) qPlatformWindow:this];
+    Q_ASSERT_X(nsWindow.screen == cocoaScreen->nativeScreen(), "QCocoaWindow",
+        "Resulting NSScreen should match the requested NSScreen");
+
+    if (targetScreen != window()->screen())
+        QWindowSystemInterface::handleWindowScreenChanged(window(), targetScreen);
 
     nsWindow.restorable = NO;
     nsWindow.level = windowLevel(flags);
@@ -1654,16 +1659,6 @@ void QCocoaWindow::exposeWindow()
 
     if (!isWindowExposable())
         return;
-
-    if (window()->isTopLevel()) {
-        // Update the QWindow's screen property. This property is set
-        // to QGuiApplication::primaryScreen() at QWindow construciton
-        // time, and we won't get a NSWindowDidChangeScreenNotification
-        // on show. The case where the window is initially displayed
-        // on a non-primary screen needs special handling here.
-        if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen))
-            window()->setScreen(cocoaScreen->screen());
-    }
 
     if (!m_isExposed) {
         m_isExposed = true;
