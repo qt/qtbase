@@ -184,7 +184,7 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 {
 #ifdef QT_BUILD_QMAKE
     QString qtconfig = qmake_libraryInfoFile();
-    if (QFile::exists(qtconfig))
+    if (!qtconfig.isEmpty())
         return new QSettings(qtconfig, QSettings::IniFormat);
 #else
     QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
@@ -207,6 +207,9 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 #endif
     if (QCoreApplication::instance()) {
         QDir pwd(QCoreApplication::applicationDirPath());
+        qtconfig = pwd.filePath(QLatin1String("qt" QT_STRINGIFY(QT_VERSION_MAJOR) ".conf"));
+        if (QFile::exists(qtconfig))
+            return new QSettings(qtconfig, QSettings::IniFormat);
         qtconfig = pwd.filePath(QLatin1String("qt.conf"));
         if (QFile::exists(qtconfig))
             return new QSettings(qtconfig, QSettings::IniFormat);
