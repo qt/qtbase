@@ -3685,7 +3685,9 @@ void tst_QSslSocket::ephemeralServerKey_data()
     QTest::addColumn<QString>("cipher");
     QTest::addColumn<bool>("emptyKey");
 
+#if !QT_CONFIG(opensslv11) // 1.1 drops support for RC4-SHA
     QTest::newRow("NonForwardSecrecyCipher") << "RC4-SHA" << true;
+#endif // !opensslv11
     QTest::newRow("ForwardSecrecyCipher") << "ECDHE-RSA-AES256-SHA" << (QSslSocket::sslLibraryVersionNumber() < 0x10002000L);
 }
 
