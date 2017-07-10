@@ -1266,36 +1266,36 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     // Create NSWindow
     Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
-    QCocoaNSWindow *window = [[windowClass alloc] initWithContentRect:frame
+    QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:frame
         screen:cocoaScreen->nativeScreen() styleMask:windowStyleMask(flags) qPlatformWindow:this];
 
-    window.restorable = NO;
-    window.level = windowLevel(flags);
+    nsWindow.restorable = NO;
+    nsWindow.level = windowLevel(flags);
 
     if (!isOpaque()) {
-        window.backgroundColor = [NSColor clearColor];
-        window.opaque = NO;
+        nsWindow.backgroundColor = [NSColor clearColor];
+        nsWindow.opaque = NO;
     }
 
     if (shouldBePanel) {
         // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set
-        window.hidesOnDeactivate = ((type & Qt::Tool) == Qt::Tool) && !alwaysShowToolWindow();
+        nsWindow.hidesOnDeactivate = ((type & Qt::Tool) == Qt::Tool) && !alwaysShowToolWindow();
 
         // Make popup windows show on the same desktop as the parent full-screen window
-        window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
+        nsWindow.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
 
         if ((type & Qt::Popup) == Qt::Popup) {
-            window.hasShadow = YES;
-            window.animationBehavior = NSWindowAnimationBehaviorUtilityWindow;
+            nsWindow.hasShadow = YES;
+            nsWindow.animationBehavior = NSWindowAnimationBehaviorUtilityWindow;
         }
     }
 
     // Persist modality so we can detect changes later on
     m_windowModality = QPlatformWindow::window()->modality();
 
-    applyContentBorderThickness(window);
+    applyContentBorderThickness(nsWindow);
 
-    return window;
+    return nsWindow;
 }
 
 bool QCocoaWindow::alwaysShowToolWindow() const
