@@ -63,33 +63,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceIndexToLuid)(NET_IFINDEX, PNET_LUID);
-typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceLuidToName)(const NET_LUID *, PWSTR, SIZE_T);
-typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceLuidToIndex)(const NET_LUID *, PNET_IFINDEX);
-typedef NETIO_STATUS (WINAPI *PtrConvertInterfaceNameToLuid)(const WCHAR *, PNET_LUID);
-static PtrConvertInterfaceIndexToLuid ptrConvertInterfaceIndexToLuid = 0;
-static PtrConvertInterfaceLuidToName ptrConvertInterfaceLuidToName = 0;
-static PtrConvertInterfaceLuidToIndex ptrConvertInterfaceLuidToIndex = 0;
-static PtrConvertInterfaceNameToLuid ptrConvertInterfaceNameToLuid = 0;
-
-static void resolveLibs()
-{
-    // try to find the functions we need from Iphlpapi.dll
-    static bool done = false;
-
-    if (!done) {
-        HINSTANCE iphlpapiHnd = GetModuleHandle(L"iphlpapi");
-        Q_ASSERT(iphlpapiHnd);
-
-        // since Windows Vista
-        ptrConvertInterfaceIndexToLuid = (PtrConvertInterfaceIndexToLuid)GetProcAddress(iphlpapiHnd, "ConvertInterfaceIndexToLuid");
-        ptrConvertInterfaceLuidToName = (PtrConvertInterfaceLuidToName)GetProcAddress(iphlpapiHnd, "ConvertInterfaceLuidToNameW");
-        ptrConvertInterfaceLuidToIndex = (PtrConvertInterfaceLuidToIndex)GetProcAddress(iphlpapiHnd, "ConvertInterfaceLuidToIndex");
-        ptrConvertInterfaceNameToLuid = (PtrConvertInterfaceNameToLuid)GetProcAddress(iphlpapiHnd, "ConvertInterfaceNameToLuidW");
-        done = true;
-    }
-}
-
 static QHostAddress addressFromSockaddr(sockaddr *sa)
 {
     QHostAddress address;
@@ -111,30 +84,22 @@ static QHostAddress addressFromSockaddr(sockaddr *sa)
 
 uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
 {
-    resolveLibs();
-    if (!ptrConvertInterfaceNameToLuid || !ptrConvertInterfaceLuidToIndex)
-        return 0;
-
     NET_IFINDEX id;
     NET_LUID luid;
-    if (ptrConvertInterfaceNameToLuid(reinterpret_cast<const wchar_t *>(name.constData()), &luid) == NO_ERROR
-            && ptrConvertInterfaceLuidToIndex(&luid, &id) == NO_ERROR)
+    if (ConvertInterfaceNameToLuidW(reinterpret_cast<const wchar_t *>(name.constData()), &luid) == NO_ERROR
+            && ConvertInterfaceLuidToIndex(&luid, &id) == NO_ERROR)
         return uint(id);
     return 0;
 }
 
 QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
 {
-    resolveLibs();
-    if (ptrConvertInterfaceIndexToLuid && ptrConvertInterfaceLuidToName) {
-        NET_LUID luid;
-        if (ptrConvertInterfaceIndexToLuid(index, &luid) == NO_ERROR) {
-            WCHAR buf[IF_MAX_STRING_SIZE + 1];
-            if (ptrConvertInterfaceLuidToName(&luid, buf, sizeof(buf)/sizeof(buf[0])) == NO_ERROR)
-                return QString::fromWCharArray(buf);
-        }
+    NET_LUID luid;
+    if (ConvertInterfaceIndexToLuid(index, &luid) == NO_ERROR) {
+        WCHAR buf[IF_MAX_STRING_SIZE + 1];
+        if (ConvertInterfaceLuidToNameW(&luid, buf, sizeof(buf)/sizeof(buf[0])) == NO_ERROR)
+            return QString::fromWCharArray(buf);
     }
-
     return QString::number(index);
 }
 
@@ -223,11 +188,11 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
         if (ptr->IfType == IF_TYPE_PPP)
             iface->flags |= QNetworkInterface::IsPointToPoint;
 
-        if (ptrConvertInterfaceLuidToName && ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Luid)) {
-            // use ConvertInterfaceLuidToName because that returns a friendlier name, though not
+        if (ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Luid)) {
+            // use ConvertInterfaceLuidToNameW because that returns a friendlier name, though not
             // as friendly as FriendlyName below
             WCHAR buf[IF_MAX_STRING_SIZE + 1];
-            if (ptrConvertInterfaceLuidToName(&ptr->Luid, buf, sizeof(buf)/sizeof(buf[0])) == NO_ERROR)
+            if (ConvertInterfaceLuidToNameW(&ptr->Luid, buf, sizeof(buf)/sizeof(buf[0])) == NO_ERROR)
                 iface->name = QString::fromWCharArray(buf);
         }
         if (iface->name.isEmpty())
@@ -275,14 +240,11 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
 
 QList<QNetworkInterfacePrivate *> QNetworkInterfaceManager::scan()
 {
-    resolveLibs();
     return interfaceListingWinXP();
 }
 
 QString QHostInfo::localDomainName()
 {
-    resolveLibs();
-
     FIXED_INFO info, *pinfo;
     ULONG bufSize = sizeof info;
     pinfo = &info;
