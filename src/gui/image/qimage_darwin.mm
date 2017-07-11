@@ -130,7 +130,7 @@ CGImageRef QImage::toCGImage() const
     auto deleter = [](void *image, const void *, size_t)
                    { delete static_cast<QImage *>(image); };
     QCFType<CGDataProviderRef> dataProvider =
-        CGDataProviderCreateWithData(new QImage(*this), bits(), byteCount(), deleter);
+        CGDataProviderCreateWithData(new QImage(*this), bits(), sizeInBytes(), deleter);
 
     QCFType<CGColorSpaceRef> colorSpace =  CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
 

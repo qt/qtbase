@@ -2541,8 +2541,8 @@ void tst_QImage::inplaceRgbSwapped()
         QImage dataSwapped;
         {
             QVERIFY(!orig.isNull());
-            volatileData = new uchar[orig.byteCount()];
-            memcpy(volatileData, orig.constBits(), orig.byteCount());
+            volatileData = new uchar[orig.sizeInBytes()];
+            memcpy(volatileData, orig.constBits(), orig.sizeInBytes());
 
             QImage dataImage;
             if (rw)
@@ -2653,8 +2653,8 @@ void tst_QImage::inplaceMirrored()
         QImage dataSwapped;
         {
             QVERIFY(!orig.isNull());
-            volatileData = new uchar[orig.byteCount()];
-            memcpy(volatileData, orig.constBits(), orig.byteCount());
+            volatileData = new uchar[orig.sizeInBytes()];
+            memcpy(volatileData, orig.constBits(), orig.sizeInBytes());
 
             QImage dataImage;
             if (rw)

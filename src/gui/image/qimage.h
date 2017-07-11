@@ -471,7 +471,7 @@ inline void QImage::setNumColors(int n)
 
 inline int QImage::numBytes() const
 {
-    return byteCount();
+    return int(sizeInBytes());
 }
 #endif
 

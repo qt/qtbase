@@ -539,7 +539,7 @@ void QX11PlatformPixmap::fromImage(const QImage &img, Qt::ImageConversionFlags f
     Visual *visual = (Visual *)xinfo.visual();
     XImage *xi = 0;
     bool    trucol = (visual->c_class >= TrueColor);
-    int     nbytes = image.byteCount();
+    size_t  nbytes = image.sizeInBytes();
     uchar  *newbits= 0;
 
 #if QT_CONFIG(xrender)
@@ -1125,7 +1125,7 @@ void QX11PlatformPixmap::fromImage(const QImage &img, Qt::ImageConversionFlags f
         }
 
         p = newbits;
-        for (int i = 0; i < nbytes; i++) {                // translate pixels
+        for (size_t i = 0; i < nbytes; i++) {                // translate pixels
             *p = pix[*p];
             p++;
         }
