@@ -46,14 +46,8 @@
 #include <QtCore/qt_windows.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtGui/qaccessible.h>
-#ifndef Q_CC_MINGW
-# include <oleacc.h>
-# include "ia2_api_all.h"   // IAccessible2 inherits from IAccessible
-#else
-    // MinGW
-# include <basetyps.h>
-# include <oleacc.h>
-#endif
+#include <oleacc.h>
+#include "ia2_api_all.h"   // IAccessible2 inherits from IAccessible
 
 QT_BEGIN_NAMESPACE
 
@@ -88,13 +82,7 @@ QDebug operator<<(QDebug d, const QWindowsAccessibleGuid &aguid);
  *                     QWindowsAccessible                     *
  **************************************************************/
 
-#ifndef Q_CC_MINGW
-typedef IAccessible2 AccessibleBase;
-#else
-typedef IAccessible AccessibleBase;
-#endif
-
-class QWindowsMsaaAccessible : public AccessibleBase, public IOleWindow
+class QWindowsMsaaAccessible : public IAccessible2, public IOleWindow
 {
 public:
     QWindowsMsaaAccessible(QAccessibleInterface *a)

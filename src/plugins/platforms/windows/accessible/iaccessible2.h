@@ -52,6 +52,12 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_CC_MINGW
+// MinGW's __uuidof operator does not work for the Accessible2 interfaces
+template <>
+IID qUuidOf<IAccessibleComponent>() { return IID_IAccessibleComponent; }
+#endif // Q_CC_MINGW
+
 class QWindowsIA2Accessible : public QWindowsMsaaAccessible,
         public IAccessibleAction,
         public IAccessibleComponent,
@@ -258,6 +264,19 @@ private:
 /**************************************************************\
  *                     AccessibleApplication                  *
  **************************************************************/
+
+#ifdef Q_CC_MINGW
+// MinGW's __uuidof operator does not work for the IAccessible2 interfaces
+template <>
+IID qUuidOf<IAccessibleApplication>() { return IID_IAccessibleApplication; }
+
+template <>
+IID qUuidOf<IAccessible2>() { return IID_IAccessible2; }
+
+template <>
+IID qUuidOf<IAccessibleRelation>() { return IID_IAccessibleRelation; }
+#endif // Q_CC_MINGW
+
 class AccessibleApplication : public QWindowsComBase<IAccessibleApplication>
 {
 public:
@@ -277,6 +296,9 @@ public:
 /**************************************************************\
  *                     AccessibleRelation                      *
  **************************************************************/
+
+
+
 class AccessibleRelation : public QWindowsComBase<IAccessibleRelation>
 {
 public:

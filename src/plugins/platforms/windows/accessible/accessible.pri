@@ -6,13 +6,14 @@ HEADERS += \
     $$PWD/qwindowsaccessibility.h \
     $$PWD/comutils.h
 
-SOURCES += $$PWD/qwindowsmsaaaccessible.cpp
-HEADERS += $$PWD/qwindowsmsaaaccessible.h
+SOURCES += \
+    $$PWD/qwindowsmsaaaccessible.cpp \
+    $$PWD/iaccessible2.cpp
 
-!mingw: {
-    SOURCES += $$PWD/iaccessible2.cpp
-    HEADERS += $$PWD/iaccessible2.h
-    include(../../../../3rdparty/iaccessible2/iaccessible2.pri)
-}
+HEADERS += \
+    $$PWD/qwindowsmsaaaccessible.h \
+    $$PWD/iaccessible2.h
+
+include(../../../../3rdparty/iaccessible2/iaccessible2.pri)
 
 mingw: LIBS *= -luuid

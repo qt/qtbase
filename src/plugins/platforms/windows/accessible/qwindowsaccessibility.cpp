@@ -56,11 +56,7 @@
 #include <QtFontDatabaseSupport/private/qwindowsfontdatabase_p.h> // registry helper
 
 #include "qwindowsaccessibility.h"
-#ifdef Q_CC_MINGW
-#   include "qwindowsmsaaaccessible.h"
-#else
-#   include "iaccessible2.h"
-#endif
+#include "iaccessible2.h"
 #include "comutils.h"
 
 #include <oleacc.h>
@@ -198,11 +194,7 @@ IAccessible *QWindowsAccessibility::wrap(QAccessibleInterface *acc)
     if (!QAccessible::uniqueId(acc))
         QAccessible::registerAccessibleInterface(acc);
 
-# ifdef Q_CC_MINGW
-    QWindowsMsaaAccessible *wacc = new QWindowsMsaaAccessible(acc);
-# else
     QWindowsIA2Accessible *wacc = new QWindowsIA2Accessible(acc);
-# endif
     IAccessible *iacc = 0;
     wacc->QueryInterface(IID_IAccessible, reinterpret_cast<void **>(&iacc));
     return iacc;

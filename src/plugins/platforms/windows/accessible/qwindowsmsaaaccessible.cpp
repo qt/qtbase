@@ -156,7 +156,7 @@ void accessibleDebugClientCalls_helper(const char* funcName, const QAccessibleIn
 HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::QueryInterface(REFIID id, LPVOID *iface)
 {
     *iface = nullptr;
-    const bool result = qWindowsComQueryUnknownInterfaceMulti<AccessibleBase>(this, id, iface)
+    const bool result = qWindowsComQueryUnknownInterfaceMulti<IAccessible2>(this, id, iface)
         || qWindowsComQueryInterface<IDispatch>(this, id, iface)
         || qWindowsComQueryInterface<IAccessible>(this, id, iface)
         || qWindowsComQueryInterface<IOleWindow>(this, id, iface);
@@ -1172,7 +1172,6 @@ const char *QWindowsAccessibleGuid::iidToString(const GUID &id)
         result = "IID_IOleWindow";
     else if (id == IID_IServiceProvider)
         result = "IID_IServiceProvider";
-#ifndef Q_CC_MINGW
     else if (id == IID_IAccessible2)
         result = "IID_IAccessible2";
     else if (id == IID_IAccessibleAction)
@@ -1201,7 +1200,6 @@ const char *QWindowsAccessibleGuid::iidToString(const GUID &id)
         result = "IID_IAccessibleText";
     else if (id == IID_IAccessibleValue)
         result = "IID_IAccessibleValue";
-#endif // !Q_CC_MINGW
     return result;
 }
 

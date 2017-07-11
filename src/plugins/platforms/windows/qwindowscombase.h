@@ -46,11 +46,17 @@
 
 QT_BEGIN_NAMESPACE
 
+// The __uuidof operator of MinGW does not work for all interfaces (for example,
+// IAccessible2). Specializations of this function can be provides to work
+// around this.
+template <class DesiredInterface>
+static IID qUuidOf() { return __uuidof(DesiredInterface); }
+
 // Helper for implementing IUnknown::QueryInterface.
 template <class DesiredInterface, class Derived>
 bool qWindowsComQueryInterface(Derived *d, REFIID id, LPVOID *iface)
 {
-    if (id == __uuidof(DesiredInterface)) {
+    if (id == qUuidOf<DesiredInterface>()) {
         *iface = static_cast<DesiredInterface *>(d);
         d->AddRef();
         return true;
