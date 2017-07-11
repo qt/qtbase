@@ -933,6 +933,16 @@ h1,h2,h3,h4,h5,h6 {
   border-bottom:2px #eee solid;
   word-wrap:break-word
 }
+.context .fngroup {
+  border-bottom:2px #eee solid;
+  padding-bottom:15px;
+  margin-bottom:1.5em
+}
+.context .fngroup h3.fngroupitem {
+  margin:0;
+  padding-bottom:0;
+  border:none
+}
 .context h3.fn .name,
 .context h3 span.type,
 .qmlname span.name {

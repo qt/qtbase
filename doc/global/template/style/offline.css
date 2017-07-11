@@ -384,6 +384,9 @@ h3.fn, span.fn {
     margin: 0px;
     margin-top: 45px;
 }
+.fngroup h3.fngroupitem {
+    margin-bottom: 5px;
+}
 h3.fn code {
     float: right;
 }
