@@ -73,6 +73,7 @@ protected:
     virtual QImage::Format format() const;
 
     QImage m_image;
+    QSize m_requestedSize;
 };
 
 QT_END_NAMESPACE

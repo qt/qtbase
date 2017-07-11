@@ -59,20 +59,7 @@ QRasterBackingStore::~QRasterBackingStore()
 void QRasterBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents);
-
-    // We can't guarantee that we have a platform-window at this point, so we have
-    // to pull out the DPR using QWindow and its QScreen fallback, and then remove
-    // the Qt scaling factor.
-    qreal nativeWindowDevicePixelRatio = window()->devicePixelRatio() / QHighDpiScaling::factor(window());
-    QSize effectiveBufferSize = size * nativeWindowDevicePixelRatio;
-
-    if (m_image.size() == effectiveBufferSize)
-        return;
-
-    m_image = QImage(effectiveBufferSize, format());
-    m_image.setDevicePixelRatio(nativeWindowDevicePixelRatio);
-    if (m_image.format() == QImage::Format_ARGB32_Premultiplied)
-        m_image.fill(Qt::transparent);
+    m_requestedSize = size;
 }
 
 QImage::Format QRasterBackingStore::format() const
@@ -111,11 +98,13 @@ bool QRasterBackingStore::scroll(const QRegion &region, int dx, int dy)
 
 void QRasterBackingStore::beginPaint(const QRegion &region)
 {
-    // Keep backing store device pixel ratio in sync with window
     qreal nativeWindowDevicePixelRatio = window()->handle()->devicePixelRatio();
-    if (m_image.devicePixelRatio() != nativeWindowDevicePixelRatio) {
-        const QSize nativeSize = QHighDpi::toNativePixels(backingStore()->size(), window());
-        resize(nativeSize, backingStore()->staticContents());
+    QSize effectiveBufferSize = m_requestedSize * nativeWindowDevicePixelRatio;
+    if (m_image.devicePixelRatio() != nativeWindowDevicePixelRatio || m_image.size() != effectiveBufferSize) {
+        m_image = QImage(effectiveBufferSize, format());
+        m_image.setDevicePixelRatio(nativeWindowDevicePixelRatio);
+        if (m_image.format() == QImage::Format_ARGB32_Premultiplied)
+            m_image.fill(Qt::transparent);
     }
 
     if (!m_image.hasAlphaChannel())
@@ -123,9 +112,8 @@ void QRasterBackingStore::beginPaint(const QRegion &region)
 
     QPainter painter(&m_image);
     painter.setCompositionMode(QPainter::CompositionMode_Source);
-    const QColor blank = Qt::transparent;
     for (const QRect &rect : region)
-        painter.fillRect(rect, blank);
+        painter.fillRect(rect, Qt::transparent);
 }
 
 QT_END_NAMESPACE
