@@ -39,7 +39,9 @@
 
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
-#include "qwindowsdrag.h"
+#if QT_CONFIG(draganddrop)
+#  include "qwindowsdrag.h"
+#endif
 #include "qwindowsscreen.h"
 #include "qwindowsintegration.h"
 #include "qwindowsnativeinterface.h"
