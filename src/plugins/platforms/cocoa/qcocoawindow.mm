@@ -1059,8 +1059,6 @@ void QCocoaWindow::handleGeometryChange()
     // calls, which Qt and Qt applications do not expect.
     if (!m_inSetGeometry)
         QWindowSystemInterface::flushWindowSystemEvents();
-    else if (newGeometry.size() != geometry().size())
-        [qnsview_cast(m_view) clearBackingStore];
 }
 
 void QCocoaWindow::handleExposeEvent(const QRegion &region)

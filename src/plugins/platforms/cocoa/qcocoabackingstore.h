@@ -53,6 +53,7 @@ public:
     void flush(QWindow *, const QRegion &, const QPoint &) Q_DECL_OVERRIDE;
 
 private:
+    bool windowHasUnifiedToolbar() const;
     QImage::Format format() const Q_DECL_OVERRIDE;
 };
 

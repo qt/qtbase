@@ -134,7 +134,6 @@ static QTouchDevice *touchDevice = 0;
 - (id) init
 {
     if (self = [super initWithFrame:NSZeroRect]) {
-        m_backingStore = 0;
         m_maskImage = 0;
         m_shouldInvalidateWindowShadow = false;
         m_buttons = Qt::NoButton;
@@ -267,11 +266,6 @@ static QTouchDevice *touchDevice = 0;
     }
 }
 
-- (void)viewDidMoveToWindow
-{
-    m_backingStore = Q_NULLPTR;
-}
-
 - (QWindow *)topLevelWindow
 {
     if (!m_platformWindow)
@@ -316,67 +310,6 @@ static QTouchDevice *touchDevice = 0;
     [super removeFromSuperview];
 }
 
-- (void)flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
-{
-    qCDebug(lcQpaCocoaWindow) << "[QNSView flushBackingStore:]" << m_platformWindow->window() << region.rectCount() << region.boundingRect() << offset;
-
-    m_backingStore = backingStore;
-    m_backingStoreOffset = offset * m_backingStore->paintDevice()->devicePixelRatio();
-
-    // FIXME: Clean up this method now that the drawRect logic has been merged into it
-
-    const NSRect dirtyRect = region.boundingRect().toCGRect();
-
-    // Normally a NSView is drawn via drawRect, as part of the display cycle in the
-    // main runloop, via setNeedsDisplay and friends. AppKit will lock focus on each
-    // individual view, starting with the top level and then traversing any subviews,
-    // calling drawRect for each of them. This pull model results in expose events
-    // sent to Qt, which result in drawing to the backingstore and flushing it.
-    // Qt may also decide to paint and flush the backingstore via e.g. timers,
-    // or other events such as mouse events, in which case we're in a push model.
-    // If there is no focused view, it means we're in the latter case, and need
-    // to manually flush the NSWindow after drawing to its graphic context.
-    const bool drawingOutsideOfDisplayCycle = ![NSView focusView];
-
-    // We also need to ensure the flushed view has focus, so that the graphics
-    // context is set up correctly (coordinate system, clipping, etc). Outside
-    // of the normal display cycle there is no focused view, as explained above,
-    // so we have to handle it manually. There's also a corner case inside the
-    // normal display cycle due to way QWidgetBackingStore composits native child
-    // widgets, where we'll get a flush of a native child during the drawRect of
-    // its parent/ancestor, and the parent/ancestor being the one locked by AppKit.
-    // In this case we also need to lock and unlock focus manually.
-    const bool shouldHandleViewLockManually = [NSView focusView] != self;
-    if (shouldHandleViewLockManually && ![self lockFocusIfCanDraw]) {
-        qWarning() << "failed to lock focus of" << self;
-        return;
-    }
-
-    if (m_platformWindow->m_drawContentBorderGradient)
-        NSDrawWindowBackground(dirtyRect);
-
-    [self drawBackingStoreUsingCoreGraphics:dirtyRect];
-
-    if (shouldHandleViewLockManually)
-        [self unlockFocus];
-
-    if (drawingOutsideOfDisplayCycle)
-        [self.window flushWindow];
-
-    [self invalidateWindowShadowIfNeeded];
-}
-
-- (void)clearBackingStore
-{
-    m_backingStore = nullptr;
-}
-
-- (void)clearBackingStore:(QCocoaBackingStore *)backingStore
-{
-    if (backingStore == m_backingStore)
-        m_backingStore = 0;
-}
-
 - (BOOL) hasMask
 {
     return !m_maskRegion.isEmpty();
@@ -418,6 +351,11 @@ static QTouchDevice *touchDevice = 0;
     m_maskImage = qt_mac_toCGImageMask(maskImage);
 }
 
+- (CGImageRef)maskImage
+{
+    return m_maskImage;
+}
+
 - (void)invalidateWindowShadowIfNeeded
 {
     if (m_shouldInvalidateWindowShadow && m_platformWindow->isContentView()) {
@@ -452,69 +390,7 @@ static QTouchDevice *touchDevice = 0;
     m_platformWindow->handleExposeEvent(exposedRegion);
 }
 
-// Draws the backing store content to the QNSView using Core Graphics.
-// This function assumes that the QNSView is in a configuration that
-// supports Core Graphics, such as "classic" mode or layer mode with
-// the default layer.
-- (void)drawBackingStoreUsingCoreGraphics:(NSRect)dirtyRect
-{
-    if (!m_backingStore)
-        return;
-
-    // Calculate source and target rects. The target rect is the dirtyRect:
-    CGRect dirtyWindowRect = NSRectToCGRect(dirtyRect);
-
-    // The backing store source rect will be larger on retina displays.
-    // Scale dirtyRect by the device pixel ratio:
-    const qreal devicePixelRatio = m_backingStore->paintDevice()->devicePixelRatio();
-    CGRect dirtyBackingRect = CGRectMake(dirtyRect.origin.x * devicePixelRatio,
-                                         dirtyRect.origin.y * devicePixelRatio,
-                                         dirtyRect.size.width * devicePixelRatio,
-                                         dirtyRect.size.height * devicePixelRatio);
-
-    NSGraphicsContext *nsGraphicsContext = [NSGraphicsContext currentContext];
-    CGContextRef cgContext = (CGContextRef) [nsGraphicsContext graphicsPort];
-
-    // Translate coordiate system from CoreGraphics (bottom-left) to NSView (top-left):
-    CGContextSaveGState(cgContext);
-    int dy = dirtyWindowRect.origin.y + CGRectGetMaxY(dirtyWindowRect);
-
-    CGContextTranslateCTM(cgContext, 0, dy);
-    CGContextScaleCTM(cgContext, 1, -1);
-
-    // If a mask is set, modify the sub image accordingly:
-    CGImageRef subMask = 0;
-    if (m_maskImage) {
-        subMask = CGImageCreateWithImageInRect(m_maskImage, dirtyWindowRect);
-        CGContextClipToMask(cgContext, dirtyWindowRect, subMask);
-    }
-
-    // Clip out and draw the correct sub image from the (shared) backingstore:
-    CGRect backingStoreRect = CGRectMake(
-        dirtyBackingRect.origin.x + m_backingStoreOffset.x(),
-        dirtyBackingRect.origin.y + m_backingStoreOffset.y(),
-        dirtyBackingRect.size.width,
-        dirtyBackingRect.size.height
-    );
-    CGImageRef bsCGImage = qt_mac_toCGImage(m_backingStore->toImage());
-    CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
-
-    // Optimization: Copy frame buffer content instead of blending for
-    // top-level windows where Qt fills the entire window content area.
-    // (But don't overpaint the title-bar gradient)
-    if (m_platformWindow->isContentView() && !m_platformWindow->m_drawContentBorderGradient)
-        CGContextSetBlendMode(cgContext, kCGBlendModeCopy);
-
-    CGContextDrawImage(cgContext, dirtyWindowRect, cleanImg);
-
-    // Clean-up:
-    CGContextRestoreGState(cgContext);
-    CGImageRelease(cleanImg);
-    CGImageRelease(subMask);
-    CGImageRelease(bsCGImage);
-}
-
-- (BOOL) isFlipped
+- (BOOL)isFlipped
 {
     return YES;
 }

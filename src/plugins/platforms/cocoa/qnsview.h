@@ -51,15 +51,12 @@
 
 QT_BEGIN_NAMESPACE
 class QCocoaWindow;
-class QCocoaBackingStore;
 class QCocoaGLContext;
 QT_END_NAMESPACE
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 @interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
-    QCocoaBackingStore* m_backingStore;
-    QPoint m_backingStoreOffset;
     QRegion m_maskRegion;
     CGImageRef m_maskImage;
     bool m_shouldInvalidateWindowShadow;
@@ -93,13 +90,10 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif
-- (void)flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset;
-- (void)clearBackingStore;
-- (void)clearBackingStore:(QCocoaBackingStore *)backingStore;
 - (void)setMaskRegion:(const QRegion *)region;
+- (CGImageRef)maskImage;
 - (void)invalidateWindowShadowIfNeeded;
 - (void)drawRect:(NSRect)dirtyRect;
-- (void)drawBackingStoreUsingCoreGraphics:(NSRect)dirtyRect;
 - (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification;
 - (void)viewDidHide;
 - (void)removeFromSuperview;
