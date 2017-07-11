@@ -41,6 +41,7 @@
 #include <qevent.h>
 #include <qlineedit.h>
 #include <QBoxLayout>
+#include <QSysInfo>
 
 QT_FORWARD_DECLARE_CLASS(QWidget)
 
@@ -352,6 +353,14 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
 
     QTRY_VERIFY(childFocusWidgetOne->focusOutEventRecieved);
     QVERIFY(childFocusWidgetOne->focusOutEventLostFocus);
+
+#if defined(Q_OS_WIN)
+    if (QSysInfo::kernelVersion() == "10.0.15063") {
+        // Activate window of testFocusWidget, focus in that window goes to childFocusWidgetOne
+        QWARN("Windows 10 Creators Update (10.0.15063) requires explicit activateWindow()");
+        testFocusWidget->activateWindow();
+    }
+#endif
 
     QVERIFY( !childFocusWidgetOne->focusInEventRecieved );
     QVERIFY( childFocusWidgetOne->focusOutEventRecieved );
