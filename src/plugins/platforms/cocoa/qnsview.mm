@@ -428,11 +428,19 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)drawRect:(NSRect)dirtyRect
 {
+    Q_UNUSED(dirtyRect);
+
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_platformWindow->window()
-        << QRectF::fromCGRect(NSRectToCGRect(dirtyRect));
+    QRegion exposedRegion;
+    const NSRect *dirtyRects;
+    NSInteger numDirtyRects;
+    [self getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
+    for (int i = 0; i < numDirtyRects; ++i)
+        exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
+
+    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
 
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {
@@ -441,7 +449,7 @@ static QTouchDevice *touchDevice = 0;
     }
 #endif
 
-    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(dirtyRect).toRect());
+    m_platformWindow->handleExposeEvent(exposedRegion);
 }
 
 // Draws the backing store content to the QNSView using Core Graphics.
