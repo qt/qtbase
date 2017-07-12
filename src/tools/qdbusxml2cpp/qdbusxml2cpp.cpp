@@ -1134,6 +1134,11 @@ int main(int argc, char **argv)
     QDBusIntrospection::Interfaces interfaces = readInput();
     cleanInterfaces(interfaces);
 
+    QStringList args = app.arguments();
+    args.removeFirst();
+    commandLine = QLatin1String(PROGRAMNAME " ");
+    commandLine += args.join(QLatin1Char(' '));
+
     if (!proxyFile.isEmpty() || adaptorFile.isEmpty())
         writeProxy(proxyFile, interfaces);
 
