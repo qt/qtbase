@@ -52,7 +52,11 @@ QT_BEGIN_NAMESPACE
 
 QDebug operator<<(QDebug dbg, const NSObject *nsObject)
 {
-    return dbg << (nsObject ? nsObject.description.UTF8String : "NSObject(0x0)");
+    return dbg << (nsObject ?
+            dbg.verbosity() > 2 ?
+                nsObject.debugDescription.UTF8String :
+                nsObject.description.UTF8String
+        : "NSObject(0x0)");
 }
 
 QDebug operator<<(QDebug dbg, CFStringRef stringRef)
