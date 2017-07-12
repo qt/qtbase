@@ -88,6 +88,7 @@
 */
 - (NSSize)window:(NSWindow *)window willUseFullScreenContentSize:(NSSize)proposedSize
 {
+    Q_UNUSED(window);
     Q_ASSERT(NSEqualSizes(m_cocoaWindow->screen()->geometry().size().toCGSize(), proposedSize));
     return proposedSize;
 }
