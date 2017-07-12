@@ -29,7 +29,9 @@
 
 #include <QtTest/QtTest>
 
+#include <QtCore/qmetaobject.h>
 #include <QtGui/private/qshadergenerator_p.h>
+#include <QtGui/private/qshaderlanguage_p.h>
 
 namespace
 {
@@ -186,6 +188,8 @@ private slots:
     void shouldGenerateShaderCode();
     void shouldGenerateVersionCommands_data();
     void shouldGenerateVersionCommands();
+    void shouldProcessLanguageQualifierAndTypeEnums_data();
+    void shouldProcessLanguageQualifierAndTypeEnums();
 };
 
 void tst_QShaderGenerator::shouldHaveDefaultState()
@@ -347,6 +351,359 @@ void tst_QShaderGenerator::shouldGenerateVersionCommands()
                                                 << "{"
                                                 << "}"
                                                 << "").join('\n');
+    QCOMPARE(code, expectedCode);
+}
+
+
+namespace {
+    QString toGlsl(QShaderLanguage::StorageQualifier qualifier, const QShaderFormat &format)
+    {
+        if (format.version().majorVersion() <= 2) {
+            // Note we're assuming fragment shader only here, it'd be different
+            // values for vertex shader, will need to be fixed properly at some
+            // point but isn't necessary yet (this problem already exists in past
+            // commits anyway)
+            switch (qualifier) {
+            case QShaderLanguage::Const:
+                return "const";
+            case QShaderLanguage::Input:
+                return "varying";
+            case QShaderLanguage::Output:
+                return ""; // Although fragment shaders for <=2 only have fixed outputs
+            case QShaderLanguage::Uniform:
+                return "uniform";
+            }
+        } else {
+            switch (qualifier) {
+            case QShaderLanguage::Const:
+                return "const";
+            case QShaderLanguage::Input:
+                return "in";
+            case QShaderLanguage::Output:
+                return "out";
+            case QShaderLanguage::Uniform:
+                return "uniform";
+            }
+        }
+
+        Q_UNREACHABLE();
+    }
+
+    QString toGlsl(QShaderLanguage::VariableType type)
+    {
+        switch (type) {
+        case QShaderLanguage::Bool:
+            return "bool";
+        case QShaderLanguage::Int:
+            return "int";
+        case QShaderLanguage::Uint:
+            return "uint";
+        case QShaderLanguage::Float:
+            return "float";
+        case QShaderLanguage::Double:
+            return "double";
+        case QShaderLanguage::Vec2:
+            return "vec2";
+        case QShaderLanguage::Vec3:
+            return "vec3";
+        case QShaderLanguage::Vec4:
+            return "vec4";
+        case QShaderLanguage::DVec2:
+            return "dvec2";
+        case QShaderLanguage::DVec3:
+            return "dvec3";
+        case QShaderLanguage::DVec4:
+            return "dvec4";
+        case QShaderLanguage::BVec2:
+            return "bvec2";
+        case QShaderLanguage::BVec3:
+            return "bvec3";
+        case QShaderLanguage::BVec4:
+            return "bvec4";
+        case QShaderLanguage::IVec2:
+            return "ivec2";
+        case QShaderLanguage::IVec3:
+            return "ivec3";
+        case QShaderLanguage::IVec4:
+            return "ivec4";
+        case QShaderLanguage::UVec2:
+            return "uvec2";
+        case QShaderLanguage::UVec3:
+            return "uvec3";
+        case QShaderLanguage::UVec4:
+            return "uvec4";
+        case QShaderLanguage::Mat2:
+            return "mat2";
+        case QShaderLanguage::Mat3:
+            return "mat3";
+        case QShaderLanguage::Mat4:
+            return "mat4";
+        case QShaderLanguage::Mat2x2:
+            return "mat2x2";
+        case QShaderLanguage::Mat2x3:
+            return "mat2x3";
+        case QShaderLanguage::Mat2x4:
+            return "mat2x4";
+        case QShaderLanguage::Mat3x2:
+            return "mat3x2";
+        case QShaderLanguage::Mat3x3:
+            return "mat3x3";
+        case QShaderLanguage::Mat3x4:
+            return "mat3x4";
+        case QShaderLanguage::Mat4x2:
+            return "mat4x2";
+        case QShaderLanguage::Mat4x3:
+            return "mat4x3";
+        case QShaderLanguage::Mat4x4:
+            return "mat4x4";
+        case QShaderLanguage::DMat2:
+            return "dmat2";
+        case QShaderLanguage::DMat3:
+            return "dmat3";
+        case QShaderLanguage::DMat4:
+            return "dmat4";
+        case QShaderLanguage::DMat2x2:
+            return "dmat2x2";
+        case QShaderLanguage::DMat2x3:
+            return "dmat2x3";
+        case QShaderLanguage::DMat2x4:
+            return "dmat2x4";
+        case QShaderLanguage::DMat3x2:
+            return "dmat3x2";
+        case QShaderLanguage::DMat3x3:
+            return "dmat3x3";
+        case QShaderLanguage::DMat3x4:
+            return "dmat3x4";
+        case QShaderLanguage::DMat4x2:
+            return "dmat4x2";
+        case QShaderLanguage::DMat4x3:
+            return "dmat4x3";
+        case QShaderLanguage::DMat4x4:
+            return "dmat4x4";
+        case QShaderLanguage::Sampler1D:
+            return "sampler1D";
+        case QShaderLanguage::Sampler2D:
+            return "sampler2D";
+        case QShaderLanguage::Sampler3D:
+            return "sampler3D";
+        case QShaderLanguage::SamplerCube:
+            return "samplerCube";
+        case QShaderLanguage::Sampler2DRect:
+            return "sampler2DRect";
+        case QShaderLanguage::Sampler2DMs:
+            return "sampler2DMS";
+        case QShaderLanguage::SamplerBuffer:
+            return "samplerBuffer";
+        case QShaderLanguage::Sampler1DArray:
+            return "sampler1DArray";
+        case QShaderLanguage::Sampler2DArray:
+            return "sampler2DArray";
+        case QShaderLanguage::Sampler2DMsArray:
+            return "sampler2DMSArray";
+        case QShaderLanguage::SamplerCubeArray:
+            return "samplerCubeArray";
+        case QShaderLanguage::Sampler1DShadow:
+            return "sampler1DShadow";
+        case QShaderLanguage::Sampler2DShadow:
+            return "sampler2DShadow";
+        case QShaderLanguage::Sampler2DRectShadow:
+            return "sampler2DRectShadow";
+        case QShaderLanguage::Sampler1DArrayShadow:
+            return "sampler1DArrayShadow";
+        case QShaderLanguage::Sampler2DArrayShadow:
+            return "sample2DArrayShadow";
+        case QShaderLanguage::SamplerCubeShadow:
+            return "samplerCubeShadow";
+        case QShaderLanguage::SamplerCubeArrayShadow:
+            return "samplerCubeArrayShadow";
+        case QShaderLanguage::ISampler1D:
+            return "isampler1D";
+        case QShaderLanguage::ISampler2D:
+            return "isampler2D";
+        case QShaderLanguage::ISampler3D:
+            return "isampler3D";
+        case QShaderLanguage::ISamplerCube:
+            return "isamplerCube";
+        case QShaderLanguage::ISampler2DRect:
+            return "isampler2DRect";
+        case QShaderLanguage::ISampler2DMs:
+            return "isampler2DMS";
+        case QShaderLanguage::ISamplerBuffer:
+            return "isamplerBuffer";
+        case QShaderLanguage::ISampler1DArray:
+            return "isampler1DArray";
+        case QShaderLanguage::ISampler2DArray:
+            return "isampler2DArray";
+        case QShaderLanguage::ISampler2DMsArray:
+            return "isampler2DMSArray";
+        case QShaderLanguage::ISamplerCubeArray:
+            return "isamplerCubeArray";
+        case QShaderLanguage::USampler1D:
+            return "usampler1D";
+        case QShaderLanguage::USampler2D:
+            return "usampler2D";
+        case QShaderLanguage::USampler3D:
+            return "usampler3D";
+        case QShaderLanguage::USamplerCube:
+            return "usamplerCube";
+        case QShaderLanguage::USampler2DRect:
+            return "usampler2DRect";
+        case QShaderLanguage::USampler2DMs:
+            return "usampler2DMS";
+        case QShaderLanguage::USamplerBuffer:
+            return "usamplerBuffer";
+        case QShaderLanguage::USampler1DArray:
+            return "usampler1DArray";
+        case QShaderLanguage::USampler2DArray:
+            return "usampler2DArray";
+        case QShaderLanguage::USampler2DMsArray:
+            return "usampler2DMSArray";
+        case QShaderLanguage::USamplerCubeArray:
+            return "usamplerCubeArray";
+        }
+
+        Q_UNREACHABLE();
+    }
+}
+
+void tst_QShaderGenerator::shouldProcessLanguageQualifierAndTypeEnums_data()
+{
+    QTest::addColumn<QShaderGraph>("graph");
+    QTest::addColumn<QShaderFormat>("format");
+    QTest::addColumn<QByteArray>("expectedCode");
+
+    const auto es2 = createFormat(QShaderFormat::OpenGLES, 2, 0);
+    const auto es3 = createFormat(QShaderFormat::OpenGLES, 3, 0);
+    const auto gl2 = createFormat(QShaderFormat::OpenGLNoProfile, 2, 0);
+    const auto gl3 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 0);
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    const auto qualifierEnum = QMetaEnum::fromType<QShaderLanguage::StorageQualifier>();
+    const auto typeEnum = QMetaEnum::fromType<QShaderLanguage::VariableType>();
+
+    for (int qualifierIndex = 0; qualifierIndex < qualifierEnum.keyCount(); qualifierIndex++) {
+        const auto qualifierName = qualifierEnum.key(qualifierIndex);
+        const auto qualifierValue = static_cast<QShaderLanguage::StorageQualifier>(qualifierEnum.value(qualifierIndex));
+
+        for (int typeIndex = 0; typeIndex < typeEnum.keyCount(); typeIndex++) {
+            const auto typeName = typeEnum.key(typeIndex);
+            const auto typeValue = static_cast<QShaderLanguage::VariableType>(typeEnum.value(typeIndex));
+
+            auto graph = QShaderGraph();
+
+            auto worldPosition = createNode({
+                createPort(QShaderNodePort::Output, "value")
+            });
+            worldPosition.setParameter("name", "worldPosition");
+            worldPosition.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(qualifierValue));
+            worldPosition.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(typeValue));
+            worldPosition.addRule(es2, QShaderNode::Rule("highp $type $value = $name;",
+                                                         QByteArrayList() << "$qualifier highp $type $name;"));
+            worldPosition.addRule(gl2, QShaderNode::Rule("$type $value = $name;",
+                                                         QByteArrayList() << "$qualifier $type $name;"));
+            worldPosition.addRule(gl3, QShaderNode::Rule("$type $value = $name;",
+                                                         QByteArrayList() << "$qualifier $type $name;"));
+
+            auto fragColor = createNode({
+                createPort(QShaderNodePort::Input, "fragColor")
+            });
+            fragColor.addRule(es2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
+            fragColor.addRule(gl2, QShaderNode::Rule("gl_fragColor = $fragColor;"));
+            fragColor.addRule(gl3, QShaderNode::Rule("fragColor = $fragColor;",
+                                                     QByteArrayList() << "out vec4 fragColor;"));
+
+            graph.addNode(worldPosition);
+            graph.addNode(fragColor);
+
+            graph.addEdge(createEdge(worldPosition.uuid(), "value", fragColor.uuid(), "fragColor"));
+
+            const auto gl2Code = (QByteArrayList() << "#version 110"
+                                                   << ""
+                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl2))
+                                                                                            .arg(toGlsl(typeValue))
+                                                                                            .toUtf8()
+                                                   << ""
+                                                   << "void main()"
+                                                   << "{"
+                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                   << "    gl_fragColor = v0;"
+                                                   << "}"
+                                                   << "").join("\n");
+            const auto gl3Code = (QByteArrayList() << "#version 130"
+                                                   << ""
+                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl3))
+                                                                                            .arg(toGlsl(typeValue))
+                                                                                            .toUtf8()
+                                                   << "out vec4 fragColor;"
+                                                   << ""
+                                                   << "void main()"
+                                                   << "{"
+                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                   << "    fragColor = v0;"
+                                                   << "}"
+                                                   << "").join("\n");
+            const auto gl4Code = (QByteArrayList() << "#version 400 core"
+                                                   << ""
+                                                   << QStringLiteral("%1 %2 worldPosition;").arg(toGlsl(qualifierValue, gl4))
+                                                                                            .arg(toGlsl(typeValue))
+                                                                                            .toUtf8()
+                                                   << "out vec4 fragColor;"
+                                                   << ""
+                                                   << "void main()"
+                                                   << "{"
+                                                   << QStringLiteral("    %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                   << "    fragColor = v0;"
+                                                   << "}"
+                                                   << "").join("\n");
+            const auto es2Code = (QByteArrayList() << "#version 100 es"
+                                                   << ""
+                                                   << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es2))
+                                                                                                  .arg(toGlsl(typeValue))
+                                                                                                  .toUtf8()
+                                                   << ""
+                                                   << "void main()"
+                                                   << "{"
+                                                   << QStringLiteral("    highp %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                   << "    gl_fragColor = v0;"
+                                                   << "}"
+                                                   << "").join("\n");
+            const auto es3Code = (QByteArrayList() << "#version 300 es"
+                                                   << ""
+                                                   << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es3))
+                                                                                                  .arg(toGlsl(typeValue))
+                                                                                                  .toUtf8()
+                                                   << ""
+                                                   << "void main()"
+                                                   << "{"
+                                                   << QStringLiteral("    highp %1 v0 = worldPosition;").arg(toGlsl(typeValue)).toUtf8()
+                                                   << "    gl_fragColor = v0;"
+                                                   << "}"
+                                                   << "").join("\n");
+
+            QTest::addRow("%s %s ES2", qualifierName, typeName) << graph << es2 << es2Code;
+            QTest::addRow("%s %s ES3", qualifierName, typeName) << graph << es3 << es3Code;
+            QTest::addRow("%s %s GL2", qualifierName, typeName) << graph << gl2 << gl2Code;
+            QTest::addRow("%s %s GL3", qualifierName, typeName) << graph << gl3 << gl3Code;
+            QTest::addRow("%s %s GL4", qualifierName, typeName) << graph << gl4 << gl4Code;
+        }
+    }
+}
+
+void tst_QShaderGenerator::shouldProcessLanguageQualifierAndTypeEnums()
+{
+    // GIVEN
+    QFETCH(QShaderGraph, graph);
+    QFETCH(QShaderFormat, format);
+
+    auto generator = QShaderGenerator();
+    generator.graph = graph;
+    generator.format = format;
+
+    // WHEN
+    const auto code = generator.createShaderCode();
+
+    // THEN
+    QFETCH(QByteArray, expectedCode);
     QCOMPARE(code, expectedCode);
 }
 
