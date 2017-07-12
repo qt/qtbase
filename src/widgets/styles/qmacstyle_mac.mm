@@ -2340,7 +2340,7 @@ void QMacStyle::unpolish(QWidget* w)
 #endif
 
 #ifndef QT_NO_TABBAR
-    if (QTabBar *tb = qobject_cast<QTabBar*>(w)) {
+    if (qobject_cast<QTabBar*>(w)) {
         if (!w->testAttribute(Qt::WA_SetFont))
             w->setFont(qApp->font(w));
         if (!w->testAttribute(Qt::WA_SetPalette))
