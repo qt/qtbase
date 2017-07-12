@@ -32,6 +32,7 @@
 #include <QtCore/qbuffer.h>
 
 #include <QtGui/private/qshadernodesloader_p.h>
+#include <QtGui/private/qshaderlanguage_p.h>
 
 using QBufferPointer = QSharedPointer<QBuffer>;
 Q_DECLARE_METATYPE(QBufferPointer);
@@ -131,7 +132,19 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream_data()
                            "            \"value\""
                            "        ],"
                            "        \"parameters\": {"
-                           "            \"name\": \"defaultName\""
+                           "            \"name\": \"defaultName\","
+                           "            \"qualifier\": {"
+                           "                \"type\": \"QShaderLanguage::StorageQualifier\","
+                           "                \"value\": \"QShaderLanguage::Uniform\""
+                           "            },"
+                           "            \"type\": {"
+                           "                \"type\": \"QShaderLanguage::VariableType\","
+                           "                \"value\": \"QShaderLanguage::Vec3\""
+                           "            },"
+                           "            \"defaultValue\": {"
+                           "                \"type\": \"float\","
+                           "                \"value\": \"1.25\""
+                           "            }"
                            "        },"
                            "        \"rules\": ["
                            "            {"
@@ -225,6 +238,9 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream_data()
             createPort(QShaderNodePort::Output, "value")
         });
         inputValue.setParameter("name", "defaultName");
+        inputValue.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(QShaderLanguage::Uniform));
+        inputValue.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(QShaderLanguage::Vec3));
+        inputValue.setParameter("defaultValue", QVariant(1.25f));
         inputValue.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
                                                         QByteArrayList() << "varying highp vec3 $name;"));
         inputValue.addRule(openGL2, QShaderNode::Rule("vec3 $value = $name;",
