@@ -32,7 +32,9 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qdir.h>
 
+#include <QtNetwork/private/qhstsstore_p.h>
 #include <QtNetwork/private/qhsts_p.h>
 
 QT_USE_NAMESPACE
@@ -46,6 +48,7 @@ private Q_SLOTS:
     void testMultilpeKnownHosts();
     void testPolicyExpiration();
     void testSTSHeaderParser();
+    void testStore();
 };
 
 void tst_QHsts::testSingleKnownHost_data()
@@ -311,6 +314,75 @@ void tst_QHsts::testSTSHeaderParser()
     QVERIFY(!parser.parse(list));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
+}
+
+const QLatin1String storeDir(".");
+
+struct TestStoreDeleter
+{
+    ~TestStoreDeleter()
+    {
+        QDir cwd;
+        if (!cwd.remove(QHstsStore::absoluteFilePath(storeDir)))
+            qWarning() << "tst_QHsts::testStore: failed to remove the hsts store file";
+    }
+};
+
+void tst_QHsts::testStore()
+{
+    // Delete the store's file after we finish the test.
+    TestStoreDeleter cleaner;
+
+    const QUrl exampleCom(QStringLiteral("http://example.com"));
+    const QUrl subDomain(QStringLiteral("http://subdomain.example.com"));
+    const QDateTime validDate(QDateTime::currentDateTimeUtc().addDays(1));
+
+    {
+        // We start from an empty cache and empty store:
+        QHstsCache cache;
+        QHstsStore store(storeDir);
+        cache.setStore(&store);
+        QVERIFY(!cache.isKnownHost(exampleCom));
+        QVERIFY(!cache.isKnownHost(subDomain));
+        // (1) This will also store the policy:
+        cache.updateKnownHost(exampleCom, validDate, true);
+        QVERIFY(cache.isKnownHost(exampleCom));
+        QVERIFY(cache.isKnownHost(subDomain));
+    }
+    {
+        // Test the policy stored at (1):
+        QHstsCache cache;
+        QHstsStore store(storeDir);
+        cache.setStore(&store);
+        QVERIFY(cache.isKnownHost(exampleCom));
+        QVERIFY(cache.isKnownHost(subDomain));
+        // (2) Remove subdomains:
+        cache.updateKnownHost(exampleCom, validDate, false);
+        QVERIFY(!cache.isKnownHost(subDomain));
+    }
+    {
+        // Test the previous update (2):
+        QHstsCache cache;
+        QHstsStore store(storeDir);
+        cache.setStore(&store);
+        QVERIFY(cache.isKnownHost(exampleCom));
+        QVERIFY(!cache.isKnownHost(subDomain));
+    }
+    {
+        QHstsCache cache;
+        cache.updateKnownHost(subDomain, validDate, false);
+        QVERIFY(cache.isKnownHost(subDomain));
+        QHstsStore store(storeDir);
+        // (3) This should store policy from cache, over old policy from store:
+        cache.setStore(&store);
+    }
+    {
+        // Test that (3) was stored:
+        QHstsCache cache;
+        QHstsStore store(storeDir);
+        cache.setStore(&store);
+        QVERIFY(cache.isKnownHost(subDomain));
+    }
 }
 
 QTEST_MAIN(tst_QHsts)

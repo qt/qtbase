@@ -56,6 +56,7 @@
 #include "qnetworkaccesscache_p.h"
 #include "qnetworkaccessbackend_p.h"
 #include "qnetworkrequest.h"
+#include "qhstsstore_p.h"
 #include "qhsts_p.h"
 #include "private/qobject_p.h"
 #include "QtNetwork/qnetworkproxy.h"
@@ -211,6 +212,7 @@ public:
     Q_AUTOTEST_EXPORT static void clearConnectionCache(QNetworkAccessManager *manager);
 
     QHstsCache stsCache;
+    QScopedPointer<QHstsStore> stsStore;
     bool stsEnabled = false;
 
 #ifndef QT_NO_BEARERMANAGEMENT

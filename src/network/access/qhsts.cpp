@@ -37,6 +37,7 @@
 **
 ****************************************************************************/
 
+#include "qhstsstore_p.h"
 #include "qhsts_p.h"
 
 #include "QtCore/private/qipaddress_p.h"
@@ -80,14 +81,24 @@ void QHstsCache::updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &h
         return;
 
     QHstsHeaderParser parser;
-    if (parser.parse(headers))
+    if (parser.parse(headers)) {
         updateKnownHost(url.host(), parser.expirationDate(), parser.includeSubDomains());
+        if (hstsStore)
+            hstsStore->synchronize();
+    }
 }
 
 void QHstsCache::updateFromPolicies(const QVector<QHstsPolicy> &policies)
 {
     for (const auto &policy : policies)
         updateKnownHost(policy.host(), policy.expiry(), policy.includesSubDomains());
+
+    if (hstsStore && policies.size()) {
+        // These policies are coming either from store or from QNAM's setter
+        // function. As a result we can notice expired or new policies, time
+        // to sync ...
+        hstsStore->synchronize();
+    }
 }
 
 void QHstsCache::updateKnownHost(const QUrl &url, const QDateTime &expires,
@@ -97,6 +108,8 @@ void QHstsCache::updateKnownHost(const QUrl &url, const QDateTime &expires,
         return;
 
     updateKnownHost(url.host(), expires, includeSubDomains);
+    if (hstsStore)
+        hstsStore->synchronize();
 }
 
 void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
@@ -124,13 +137,20 @@ void QHstsCache::updateKnownHost(const QString &host, const QDateTime &expires,
         }
 
         knownHosts.insert(pos, hostName, newPolicy);
+        if (hstsStore)
+            hstsStore->addToObserved(newPolicy);
         return;
     }
 
     if (newPolicy.isExpired())
         knownHosts.erase(pos);
-    else
+    else  if (*pos != newPolicy)
         *pos = std::move(newPolicy);
+    else
+        return;
+
+    if (hstsStore)
+        hstsStore->addToObserved(newPolicy);
 }
 
 bool QHstsCache::isKnownHost(const QUrl &url) const
@@ -165,10 +185,15 @@ bool QHstsCache::isKnownHost(const QUrl &url) const
     while (nameToTest.fragment.size()) {
         auto const pos = knownHosts.find(nameToTest);
         if (pos != knownHosts.end()) {
-            if (pos.value().isExpired())
+            if (pos.value().isExpired()) {
                 knownHosts.erase(pos);
-            else if (!superDomainMatch || pos.value().includesSubDomains())
+                if (hstsStore) {
+                    // Inform our store that this policy has expired.
+                    hstsStore->addToObserved(pos.value());
+                }
+            } else if (!superDomainMatch || pos.value().includesSubDomains()) {
                 return true;
+            }
         }
 
         const int dot = nameToTest.fragment.indexOf(QLatin1Char('.'));
@@ -194,6 +219,34 @@ QVector<QHstsPolicy> QHstsCache::policies() const
     for (const auto &host : knownHosts)
         values << host;
     return values;
+}
+
+void QHstsCache::setStore(QHstsStore *store)
+{
+    // Caller retains ownership of store, which must outlive this cache.
+    if (store != hstsStore) {
+        hstsStore = store;
+
+        if (!hstsStore)
+            return;
+
+        // First we augment our store with the policies we already know about
+        // (and thus the cached policy takes priority over whatever policy we
+        // had in the store for the same host, if any).
+        if (knownHosts.size()) {
+            const QVector<QHstsPolicy> observed(policies());
+            for (const auto &policy : observed)
+                hstsStore->addToObserved(policy);
+            hstsStore->synchronize();
+        }
+
+        // Now we update the cache with anything we have not observed yet, but
+        // the store knows about (well, it can happen we synchronize again as a
+        // result if some policies managed to expire or if we add a new one
+        // from the store to cache):
+        const QVector<QHstsPolicy> restored(store->readPolicies());
+        updateFromPolicies(restored);
+    }
 }
 
 // The parser is quite simple: 'nextToken' knowns exactly what kind of tokens

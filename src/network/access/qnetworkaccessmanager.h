@@ -42,6 +42,7 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtNetwork/qnetworkrequest.h>
+#include <QtCore/QString>
 #include <QtCore/QVector>
 #include <QtCore/QObject>
 #ifndef QT_NO_SSL
@@ -124,6 +125,8 @@ public:
 
     void setStrictTransportSecurityEnabled(bool enabled);
     bool isStrictTransportSecurityEnabled() const;
+    void enableStrictTransportSecurityStore(bool enabled, const QString &storeDir = QString());
+    bool isStrictTransportSecurityStoreEnabled() const;
     void addStrictTransportSecurityHosts(const QVector<QHstsPolicy> &knownHosts);
     QVector<QHstsPolicy> strictTransportSecurityHosts() const;
 

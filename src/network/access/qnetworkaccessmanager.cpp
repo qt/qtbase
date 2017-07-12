@@ -730,6 +730,48 @@ bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
 }
 
 /*!
+    \since 5.10
+
+    If \a enabled is \c true, the internal HSTS cache will use a persistent store
+    to read and write HSTS policies. \a storeDir defines where this store will be
+    located. The default location is defined by QStandardPaths::CacheLocation.
+    If there is no writable QStandartPaths::CacheLocation and \a storeDir is an
+    empty string, the store will be located in the program's working directory.
+
+    \note If HSTS cache already contains HSTS policies by the time persistent
+    store is enabled, these policies will be preserved in the store. In case both
+    cache and store contain the same known hosts, policies from cache are considered
+    to be more up-to-date (and thus will overwrite the previous values in the store).
+    If this behavior is undesired, enable HSTS store before enabling Strict Tranport
+    Security. By default, the persistent store of HSTS policies is disabled.
+
+    \sa isStrictTransportSecurityStoreEnabled(), setStrictTransportSecurityEnabled(),
+    QStandardPaths::standardLocations()
+*/
+
+void QNetworkAccessManager::enableStrictTransportSecurityStore(bool enabled, const QString &storeDir)
+{
+    Q_D(QNetworkAccessManager);
+    d->stsStore.reset(enabled ? new QHstsStore(storeDir) : nullptr);
+    d->stsCache.setStore(d->stsStore.data());
+}
+
+/*!
+    \since 5.10
+
+    Returns true if HSTS cache uses a permanent store to load and store HSTS
+    policies.
+
+    \sa enableStrictTransportSecurityStore()
+*/
+
+bool QNetworkAccessManager::isStrictTransportSecurityStoreEnabled() const
+{
+    Q_D(const QNetworkAccessManager);
+    return bool(d->stsStore.data());
+}
+
+/*!
     \since 5.9
 
     Adds HTTP Strict Transport Security policies contained in \a knownHosts into HSTS cache.
@@ -744,7 +786,7 @@ bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
     policies, but this information can be overridden by "Strict-Transport-Security"
     response headers.
 
-    \sa addStrictTransportSecurityHosts(), QHstsPolicy
+    \sa addStrictTransportSecurityHosts(), enableStrictTransportSecurityStore(), QHstsPolicy
 */
 
 void QNetworkAccessManager::addStrictTransportSecurityHosts(const QVector<QHstsPolicy> &knownHosts)

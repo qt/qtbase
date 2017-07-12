@@ -41,7 +41,8 @@ HEADERS += \
     access/qnetworkfile_p.h \
     access/qhttp2protocolhandler_p.h \
     access/qhsts_p.h \
-    access/qhstspolicy.h
+    access/qhstspolicy.h \
+    access/qhstsstore_p.h
 
 SOURCES += \
     access/qftp.cpp \
@@ -76,7 +77,8 @@ SOURCES += \
     access/qnetworkfile.cpp \
     access/qhttp2protocolhandler.cpp \
     access/qhsts.cpp \
-    access/qhstspolicy.cpp
+    access/qhstspolicy.cpp \
+    access/qhstsstore.cpp
 
 mac: LIBS_PRIVATE += -framework Security
 
