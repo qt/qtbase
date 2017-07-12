@@ -44,6 +44,7 @@
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
+#include <QtCore/qmetaobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -157,7 +158,30 @@ void QShaderGraphLoader::load()
         if (parametersValue.isObject()) {
             const auto parametersObject = parametersValue.toObject();
             for (const auto &parameterName : parametersObject.keys()) {
-                node.setParameter(parameterName, parametersObject.value(parameterName).toVariant());
+                const auto parameterValue = parametersObject.value(parameterName);
+                if (parameterValue.isObject()) {
+                    const auto parameterObject = parameterValue.toObject();
+                    const auto type = parameterObject.value(QStringLiteral("type")).toString();
+                    const auto typeId = QMetaType::type(type.toUtf8());
+
+                    const auto value = parameterObject.value(QStringLiteral("value")).toString();
+                    auto variant = QVariant(value);
+
+                    if (QMetaType::typeFlags(typeId) & QMetaType::IsEnumeration) {
+                        const auto metaObject = QMetaType::metaObjectForType(typeId);
+                        const auto className = metaObject->className();
+                        const auto enumName = type.mid(static_cast<int>(qstrlen(className)) + 2).toUtf8();
+                        const auto metaEnum = metaObject->enumerator(metaObject->indexOfEnumerator(enumName));
+                        const auto enumValue = metaEnum.keyToValue(value.toUtf8());
+                        variant = QVariant(enumValue);
+                        variant.convert(typeId);
+                    } else {
+                        variant.convert(typeId);
+                    }
+                    node.setParameter(parameterName, variant);
+                } else {
+                    node.setParameter(parameterName, parameterValue.toVariant());
+                }
             }
         }
 

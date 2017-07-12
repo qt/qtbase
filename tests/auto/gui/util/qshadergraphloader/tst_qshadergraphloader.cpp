@@ -32,6 +32,7 @@
 #include <QtCore/qbuffer.h>
 
 #include <QtGui/private/qshadergraphloader_p.h>
+#include <QtGui/private/qshaderlanguage_p.h>
 
 using QBufferPointer = QSharedPointer<QBuffer>;
 Q_DECLARE_METATYPE(QBufferPointer);
@@ -98,10 +99,12 @@ namespace
         });
         worldPosition.setUuid(QUuid("{00000000-0000-0000-0000-000000000001}"));
         worldPosition.setParameter("name", "worldPosition");
-        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
-                                                           QByteArrayList() << "varying highp vec3 $name;"));
-        worldPosition.addRule(openGL3, QShaderNode::Rule("vec3 $value = $name;",
-                                                         QByteArrayList() << "in vec3 $name;"));
+        worldPosition.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(QShaderLanguage::Input));
+        worldPosition.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(QShaderLanguage::Vec3));
+        worldPosition.addRule(openGLES2, QShaderNode::Rule("highp $type $value = $name;",
+                                                           QByteArrayList() << "$qualifier highp $type $name;"));
+        worldPosition.addRule(openGL3, QShaderNode::Rule("$type $value = $name;",
+                                                         QByteArrayList() << "$qualifier $type $name;"));
 
         auto texture = createNode({
             createPort(QShaderNodePort::Output, "texture")
@@ -126,10 +129,12 @@ namespace
         });
         lightIntensity.setUuid(QUuid("{00000000-0000-0000-0000-000000000004}"));
         lightIntensity.setParameter("name", "defaultName");
-        lightIntensity.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
-                                                            QByteArrayList() << "varying highp vec3 $name;"));
-        lightIntensity.addRule(openGL3, QShaderNode::Rule("vec3 $value = $name;",
-                                                          QByteArrayList() << "in vec3 $name;"));
+        lightIntensity.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(QShaderLanguage::Uniform));
+        lightIntensity.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(QShaderLanguage::Float));
+        lightIntensity.addRule(openGLES2, QShaderNode::Rule("highp $type $value = $name;",
+                                                            QByteArrayList() << "$qualifier highp $type $name;"));
+        lightIntensity.addRule(openGL3, QShaderNode::Rule("$type $value = $name;",
+                                                          QByteArrayList() << "$qualifier $type $name;"));
 
         auto exposure = createNode({
             createPort(QShaderNodePort::Output, "exposure")
@@ -377,7 +382,15 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                              "            \"uuid\": \"{00000000-0000-0000-0000-000000000001}\","
                              "            \"type\": \"inputValue\","
                              "            \"parameters\": {"
-                             "                \"name\": \"worldPosition\""
+                             "                \"name\": \"worldPosition\","
+                             "                \"qualifier\": {"
+                             "                    \"type\": \"QShaderLanguage::StorageQualifier\","
+                             "                    \"value\": \"QShaderLanguage::Input\""
+                             "                },"
+                             "                \"type\": {"
+                             "                    \"type\": \"QShaderLanguage::VariableType\","
+                             "                    \"value\": \"QShaderLanguage::Vec3\""
+                             "                }"
                              "            }"
                              "        },"
                              "        {"
@@ -475,10 +488,12 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
             createPort(QShaderNodePort::Output, "value")
         });
         inputValue.setParameter("name", "defaultName");
-        inputValue.addRule(openGLES2, QShaderNode::Rule("highp vec3 $value = $name;",
-                                                        QByteArrayList() << "varying highp vec3 $name;"));
-        inputValue.addRule(openGL3, QShaderNode::Rule("vec3 $value = $name;",
-                                                      QByteArrayList() << "in vec3 $name;"));
+        inputValue.setParameter("qualifier", QVariant::fromValue<QShaderLanguage::StorageQualifier>(QShaderLanguage::Uniform));
+        inputValue.setParameter("type", QVariant::fromValue<QShaderLanguage::VariableType>(QShaderLanguage::Float));
+        inputValue.addRule(openGLES2, QShaderNode::Rule("highp $type $value = $name;",
+                                                        QByteArrayList() << "$qualifier highp $type $name;"));
+        inputValue.addRule(openGL3, QShaderNode::Rule("$type $value = $name;",
+                                                      QByteArrayList() << "$qualifier $type $name;"));
         protos.insert("inputValue", inputValue);
 
         auto texture = createNode({
