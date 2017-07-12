@@ -221,6 +221,22 @@ static QTouchDevice *touchDevice = 0;
     return self;
 }
 
+- (NSString *)description
+{
+    NSMutableString *description = [NSMutableString stringWithString:[super description]];
+
+#ifndef QT_NO_DEBUG_STREAM
+    QString platformWindowDescription;
+    QDebug debug(&platformWindowDescription);
+    debug.nospace() << "; " << m_platformWindow << ">";
+
+    NSRange lastCharacter = [description rangeOfComposedCharacterSequenceAtIndex:description.length - 1];
+    [description replaceCharactersInRange:lastCharacter withString:platformWindowDescription.toNSString()];
+#endif
+
+    return description;
+}
+
 #ifndef QT_NO_OPENGL
 - (void) setQCocoaGLContext:(QCocoaGLContext *)context
 {

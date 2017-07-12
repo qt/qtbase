@@ -62,6 +62,8 @@
 
 #include <vector>
 
+QT_BEGIN_NAMESPACE
+
 enum {
     defaultWindowWidth = 160,
     defaultWindowHeight = 160
@@ -1776,4 +1778,19 @@ void QCocoaWindow::setFrameStrutEventsEnabled(bool enabled)
     m_frameStrutEventsEnabled = enabled;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QCocoaWindow *window)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QCocoaWindow(" << (const void *)window;
+    if (window)
+        debug << ", window=" << window->window();
+    debug << ')';
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
+
 #include "moc_qcocoawindow.cpp"
+
+QT_END_NAMESPACE

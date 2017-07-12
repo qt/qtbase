@@ -54,6 +54,11 @@
 #include "qt_mac_p.h"
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_DEBUG_STREAM
+class QDebug;
+#endif
+
 // QCocoaWindow
 //
 // QCocoaWindow is an NSView (not an NSWindow!) in the sense
@@ -286,6 +291,10 @@ public: // for QNSView
 
     bool m_hasWindowFilePath;
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QCocoaWindow *window);
+#endif
 
 QT_END_NAMESPACE
 
