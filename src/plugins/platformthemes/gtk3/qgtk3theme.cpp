@@ -153,7 +153,7 @@ bool QGtk3Theme::usePlatformNativeDialog(DialogType type) const
     case ColorDialog:
         return true;
     case FileDialog:
-        return true;
+        return useNativeFileDialog();
     case FontDialog:
         return true;
     default:
@@ -167,6 +167,8 @@ QPlatformDialogHelper *QGtk3Theme::createPlatformDialogHelper(DialogType type) c
     case ColorDialog:
         return new QGtk3ColorDialogHelper;
     case FileDialog:
+        if (!useNativeFileDialog())
+            return nullptr;
         return new QGtk3FileDialogHelper;
     case FontDialog:
         return new QGtk3FontDialogHelper;
@@ -183,6 +185,19 @@ QPlatformMenu* QGtk3Theme::createPlatformMenu() const
 QPlatformMenuItem* QGtk3Theme::createPlatformMenuItem() const
 {
     return new QGtk3MenuItem;
+}
+
+bool QGtk3Theme::useNativeFileDialog()
+{
+    /* Require GTK3 >= 3.15.5 to avoid running into this bug:
+     * https://bugzilla.gnome.org/show_bug.cgi?id=725164
+     *
+     * While this bug only occurs when using widget-based file dialogs
+     * (native GTK3 dialogs are fine) we have to disable platform file
+     * dialogs entirely since we can't avoid creation of a platform
+     * dialog helper.
+     */
+    return gtk_check_version(3, 15, 5) == 0;
 }
 
 QT_END_NAMESPACE
