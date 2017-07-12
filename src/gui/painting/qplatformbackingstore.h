@@ -117,8 +117,6 @@ public:
 
     virtual QPaintDevice *paintDevice() = 0;
 
-    // 'window' can be a child window, in which case 'region' is in child window coordinates and
-    // offset is the (child) window's offset in relation to the window surface.
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) = 0;
 #ifndef QT_NO_OPENGL
     virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,

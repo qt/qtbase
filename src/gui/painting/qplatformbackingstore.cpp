@@ -234,17 +234,6 @@ void QPlatformTextureList::clear()
     windows.
 */
 
-/*!
-    \fn void QPlatformBackingStore::flush(QWindow *window, const QRegion &region,
-                                  const QPoint &offset)
-
-    Flushes the given \a region from the specified \a window onto the
-    screen.
-
-    The \a offset parameter is relative to the origin of the backing
-    store image.
-*/
-
 #ifndef QT_NO_OPENGL
 
 static inline QRect deviceRect(const QRect &rect, QWindow *window)

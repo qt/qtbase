@@ -90,50 +90,6 @@ public:
 */
 
 /*!
-    Flushes the given \a region from the specified window \a win onto the
-    screen.
-
-    Note that the \a offset parameter is currently unused.
-*/
-void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &offset)
-{
-    if (!win)
-        win = window();
-    if (!win->handle()) {
-        qWarning() << "QBackingStore::flush() called for "
-            << win << " which does not have a handle.";
-        return;
-    }
-
-#ifdef QBACKINGSTORE_DEBUG
-    if (win && win->isTopLevel() && !qt_window_private(win)->receivedExpose) {
-        qWarning().nospace() << "QBackingStore::flush() called with non-exposed window "
-            << win << ", behavior is undefined";
-    }
-#endif
-
-    Q_ASSERT(win == this->window() || this->window()->isAncestorOf(win, QWindow::ExcludeTransients));
-
-    d_ptr->platformBackingStore->flush(win, QHighDpi::toNativeLocalRegion(region, win),
-                                            QHighDpi::toNativeLocalPosition(offset, win));
-}
-
-/*!
-    \fn QPaintDevice* QBackingStore::paintDevice()
-
-    Implement this function to return the appropriate paint device.
-*/
-QPaintDevice *QBackingStore::paintDevice()
-{
-    QPaintDevice *device = d_ptr->platformBackingStore->paintDevice();
-
-    if (QHighDpiScaling::isActive() && device->devType() == QInternal::Image)
-        return d_ptr->highDpiBackingstore.data();
-
-    return device;
-}
-
-/*!
     Constructs an empty surface for the given top-level \a window.
 */
 QBackingStore::QBackingStore(QWindow *window)
@@ -161,8 +117,10 @@ QWindow* QBackingStore::window() const
 }
 
 /*!
-    This function is called before painting onto the surface begins,
-    with the \a region in which the painting will occur.
+    Begins painting on the backing store surface in the given \a region.
+
+    You should call this function before using the paintDevice() to
+    paint.
 
     \sa endPaint(), paintDevice()
 */
@@ -203,7 +161,26 @@ void QBackingStore::beginPaint(const QRegion &region)
 }
 
 /*!
-    This function is called after painting onto the surface has ended.
+    Returns the paint device for this surface.
+
+    \warning The device is only valid between calls to beginPaint() and
+    endPaint(). You should not cache the returned value.
+*/
+QPaintDevice *QBackingStore::paintDevice()
+{
+    QPaintDevice *device = d_ptr->platformBackingStore->paintDevice();
+
+    if (QHighDpiScaling::isActive() && device->devType() == QInternal::Image)
+        return d_ptr->highDpiBackingstore.data();
+
+    return device;
+}
+
+/*!
+    Ends painting.
+
+    You should call this function after painting with the paintDevice()
+    has ended.
 
     \sa beginPaint(), paintDevice()
 */
@@ -213,9 +190,50 @@ void QBackingStore::endPaint()
 }
 
 /*!
-      Sets the size of the windowsurface to be \a size.
+    Flushes the given \a region from the specified \a window onto the
+    screen.
 
-      \sa size()
+    The \a window must either be the top level window represented by
+    this backingstore, or a non-transient child of that window. Passing
+    \c nullptr falls back to using the backingstore's top level window.
+
+    If the \a window is a child window, the \a region should be in child window
+    coordinates, and the \a offset should be the child window's offset in relation
+    to the backingstore's top level window.
+
+    You should call this function after ending painting with endPaint().
+
+    \sa QWindow::transientParent()
+*/
+void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &offset)
+{
+    QWindow *topLevelWindow = this->window();
+
+    if (!window)
+        window = topLevelWindow;
+    if (!window->handle()) {
+        qWarning() << "QBackingStore::flush() called for "
+            << window << " which does not have a handle.";
+        return;
+    }
+
+#ifdef QBACKINGSTORE_DEBUG
+    if (window && window->isTopLevel() && !qt_window_private(window)->receivedExpose) {
+        qWarning().nospace() << "QBackingStore::flush() called with non-exposed window "
+            << window << ", behavior is undefined";
+    }
+#endif
+
+    Q_ASSERT(window == topLevelWindow || topLevelWindow->isAncestorOf(window, QWindow::ExcludeTransients));
+
+    d_ptr->platformBackingStore->flush(window, QHighDpi::toNativeLocalRegion(region, window),
+                                            QHighDpi::toNativeLocalPosition(offset, window));
+}
+
+/*!
+    Sets the size of the window surface to \a size.
+
+    \sa size()
 */
 void QBackingStore::resize(const QSize &size)
 {
@@ -224,7 +242,7 @@ void QBackingStore::resize(const QSize &size)
 }
 
 /*!
-    Returns the current size of the windowsurface.
+    Returns the current size of the window surface.
 */
 QSize QBackingStore::size() const
 {
@@ -252,7 +270,7 @@ bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
 }
 
 /*!
-   Set \a region as the static contents of this window.
+    Set \a region as the static contents of this window.
 */
 void QBackingStore::setStaticContents(const QRegion &region)
 {
@@ -260,8 +278,8 @@ void QBackingStore::setStaticContents(const QRegion &region)
 }
 
 /*!
-   Returns a pointer to the QRegion that has the static contents
-   of this window.
+    Returns a QRegion representing the area of the window that
+    has static contents.
 */
 QRegion QBackingStore::staticContents() const
 {
@@ -269,8 +287,7 @@ QRegion QBackingStore::staticContents() const
 }
 
 /*!
-   Returns a boolean indicating if this window
-   has static contents or not.
+    Returns a boolean indicating if this window has static contents or not.
 */
 bool QBackingStore::hasStaticContents() const
 {
@@ -325,7 +342,7 @@ void Q_GUI_EXPORT qt_scrollRectInImage(QImage &img, const QRect &rect, const QPo
 }
 
 /*!
-   Returns a pointer to the QPlatformBackingStore implementation
+    Returns a pointer to the QPlatformBackingStore implementation
 */
 QPlatformBackingStore *QBackingStore::handle() const
 {
