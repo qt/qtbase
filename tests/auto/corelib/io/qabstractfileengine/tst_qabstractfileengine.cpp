@@ -466,7 +466,7 @@ protected:
         if (create) {
             QSharedPointer<File> &p = fileSystem[fileName_];
             if (p.isNull())
-                p = QSharedPointer<File>(new File);
+                p = QSharedPointer<File>::create();
             return p;
         }
 
@@ -564,7 +564,7 @@ class FileEngineHandler
 void tst_QAbstractFileEngine::initTestCase()
 {
     m_previousCurrent = QDir::currentPath();
-    m_currentDir = QSharedPointer<QTemporaryDir>(new QTemporaryDir());
+    m_currentDir = QSharedPointer<QTemporaryDir>::create();
     QVERIFY2(!m_currentDir.isNull(), qPrintable("Could not create current directory."));
     QDir::setCurrent(m_currentDir->path());
 }

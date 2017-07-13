@@ -5753,14 +5753,14 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
     QList <EventSpyPtr> applicationEventSpies;
     QList <EventSpyPtr> widgetEventSpies;
     foreach (QWidget *widget, widgets) {
-        applicationEventSpies.append(EventSpyPtr(new EventSpy<QWidget>(widget, QEvent::ApplicationWindowIconChange)));
-        widgetEventSpies.append(EventSpyPtr(new EventSpy<QWidget>(widget, QEvent::WindowIconChange)));
+        applicationEventSpies.append(EventSpyPtr::create(widget, QEvent::ApplicationWindowIconChange));
+        widgetEventSpies.append(EventSpyPtr::create(widget, QEvent::WindowIconChange));
     }
     QList <WindowEventSpyPtr> appWindowEventSpies;
     QList <WindowEventSpyPtr> windowEventSpies;
     foreach (QWindow *window, windows) {
-        appWindowEventSpies.append(WindowEventSpyPtr(new EventSpy<QWindow>(window, QEvent::ApplicationWindowIconChange)));
-        windowEventSpies.append(WindowEventSpyPtr(new EventSpy<QWindow>(window, QEvent::WindowIconChange)));
+        appWindowEventSpies.append(WindowEventSpyPtr::create(window, QEvent::ApplicationWindowIconChange));
+        windowEventSpies.append(WindowEventSpyPtr::create(window, QEvent::WindowIconChange));
     }
 
     // QApplication::setWindowIcon
