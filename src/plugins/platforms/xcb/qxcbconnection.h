@@ -653,7 +653,7 @@ private:
     QHash<int, TouchDeviceData> m_touchDevices;
 #ifdef XCB_USE_XINPUT22
     struct StartSystemResizeInfo {
-        xcb_window_t window;
+        xcb_window_t window = XCB_NONE;
         uint16_t deviceid;
         uint32_t pointid;
         Qt::Corner corner;

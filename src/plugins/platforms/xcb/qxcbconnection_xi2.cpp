@@ -78,9 +78,6 @@ void QXcbConnection::initializeXInput2()
             // X server's supported version.
             qCDebug(lcQpaXInput, "Using XInput version %d.%d", xiMajor, m_xi2Minor);
             m_xi2Enabled = true;
-#ifdef XCB_USE_XINPUT22
-            m_startSystemResizeInfo.window = XCB_NONE;
-#endif
             xi2SetupDevices();
             break;
         case BadRequest: // Must be an X server with XInput 1
