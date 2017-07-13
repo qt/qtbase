@@ -147,6 +147,7 @@ private slots:
 
     void keypress_inputMask_data();
     void keypress_inputMask();
+    void keypress_inputMethod_inputMask();
 
     void inputMaskAndValidator_data();
     void inputMaskAndValidator();
@@ -803,6 +804,37 @@ void tst_QLineEdit::keypress_inputMask()
     QCOMPARE(testWidget->displayText(), expectedDisplayText);
 }
 
+void tst_QLineEdit::keypress_inputMethod_inputMask()
+{
+    // Similar to the keypress_inputMask test, but this is done solely via
+    // input methods
+    QLineEdit *testWidget = ensureTestWidget();
+    testWidget->setInputMask("AA.AA.AA");
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("EE");
+        QApplication::sendEvent(testWidget, &event);
+    }
+    QCOMPARE(testWidget->cursorPosition(), 3);
+    QCOMPARE(testWidget->text(), QStringLiteral("EE.."));
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("EE");
+        QApplication::sendEvent(testWidget, &event);
+    }
+    QCOMPARE(testWidget->cursorPosition(), 6);
+    QCOMPARE(testWidget->text(), QStringLiteral("EE.EE."));
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("EE");
+        QApplication::sendEvent(testWidget, &event);
+    }
+    QCOMPARE(testWidget->cursorPosition(), 8);
+    QCOMPARE(testWidget->text(), QStringLiteral("EE.EE.EE"));
+}
 
 void tst_QLineEdit::hasAcceptableInputMask_data()
 {
