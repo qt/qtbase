@@ -39,7 +39,9 @@
 
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
-#include "qwindowsdrag.h"
+#if QT_CONFIG(draganddrop)
+#  include "qwindowsdrag.h"
+#endif
 #include "qwindowsscreen.h"
 #include "qwindowsintegration.h"
 #include "qwindowsmenu.h"
@@ -1834,6 +1836,8 @@ bool QWindowsWindow::isFullScreen_sys() const
     if (!w->isTopLevel())
         return false;
     QRect geometry = geometry_sys();
+    if (testFlag(HasBorderInFullScreen))
+        geometry += QMargins(1, 1, 1, 1);
     QPlatformScreen *screen = screenForGeometry(geometry);
     return screen && geometry == QHighDpi::toNativePixels(screen->geometry(), screen);
 }

@@ -58,7 +58,9 @@
 #include <QDialogButtonBox>
 #endif
 #include <limits.h>
+#if QT_CONFIG(rubberband)
 #include <QRubberBand>
+#endif
 #include <QTextBrowser>
 #include <QCalendarWidget>
 #include <QAbstractItemView>

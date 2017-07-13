@@ -855,6 +855,12 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         if (qstrcmp(QMetaType::typeName(d->type), "QMap<QString, QVariant>") == 0) {
             *static_cast<QVariantMap *>(result) =
                 *static_cast<QMap<QString, QVariant> *>(d->data.shared->ptr);
+        } else if (d->type == QVariant::Hash) {
+            QVariantMap *map = static_cast<QVariantMap *>(result);
+            const QVariantHash *hash = v_cast<QVariantHash>(d);
+            const auto end = hash->end();
+            for (auto it = hash->begin(); it != end; ++it)
+                map->insertMulti(it.key(), it.value());
 #ifndef QT_BOOTSTRAPPED
         } else if (d->type == QMetaType::QJsonValue) {
             if (!v_cast<QJsonValue>(d)->isObject())
@@ -871,6 +877,12 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
         if (qstrcmp(QMetaType::typeName(d->type), "QHash<QString, QVariant>") == 0) {
             *static_cast<QVariantHash *>(result) =
                 *static_cast<QHash<QString, QVariant> *>(d->data.shared->ptr);
+        } else if (d->type == QVariant::Map) {
+            QVariantHash *hash = static_cast<QVariantHash *>(result);
+            const QVariantMap *map = v_cast<QVariantMap>(d);
+            const auto end = map->end();
+            for (auto it = map->begin(); it != end; ++it)
+                hash->insertMulti(it.key(), it.value());
 #ifndef QT_BOOTSTRAPPED
         } else if (d->type == QMetaType::QJsonValue) {
             if (!v_cast<QJsonValue>(d)->isObject())
@@ -2070,6 +2082,7 @@ void QVariant::load(QDataStream &s)
         typeId = QMetaType::type(name.constData());
         if (typeId == QMetaType::UnknownType) {
             s.setStatus(QDataStream::ReadCorruptData);
+            qWarning("QVariant::load: unknown user type with name %s.", name.constData());
             return;
         }
     }

@@ -211,14 +211,14 @@ struct QDBusDispatchLocker: QDBusMutexLocker
     QDBusLockerBase::reportThreadAction(action, QDBusLockerBase::BeforeAcquire, this); \
     sem.acquire();                                                      \
     QDBusLockerBase::reportThreadAction(action, QDBusLockerBase::AfterAcquire, this); \
-    } while (0)
+    } while (false)
 
 # define SEM_RELEASE(action, sem)                                       \
     do {                                                                \
     QDBusLockerBase::reportThreadAction(action, QDBusLockerBase::BeforeRelease, that); \
     sem.release();                                                      \
     QDBusLockerBase::reportThreadAction(action, QDBusLockerBase::AfterRelease, that); \
-    } while (0)
+    } while (false)
 
 #else
 # define SEM_ACQUIRE(action, sem)       sem.acquire()

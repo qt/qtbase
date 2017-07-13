@@ -600,6 +600,7 @@ bool PathStrokeRenderer::event(QEvent *e)
     switch (e->type()) {
     case QEvent::TouchBegin:
         touchBegin = true;
+        Q_FALLTHROUGH();
     case QEvent::TouchUpdate:
     {
         const QTouchEvent *const event = static_cast<const QTouchEvent*>(e);

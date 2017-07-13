@@ -450,7 +450,7 @@ public:
     }
 
     QSize minimumSizeHint() const Q_DECL_OVERRIDE {
-        if (!pixmap() && !pixmap()->isNull())
+        if (pixmap() && !pixmap()->isNull())
             return pixmap()->size();
         return QFrame::minimumSizeHint();
     }

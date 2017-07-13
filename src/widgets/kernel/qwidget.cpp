@@ -83,7 +83,9 @@
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/qoffscreensurface.h>
 
+#if QT_CONFIG(graphicseffect)
 #include <private/qgraphicseffect_p.h>
+#endif
 #include <qbackingstore.h>
 #include <private/qwidgetbackingstore_p.h>
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
@@ -2115,7 +2117,7 @@ void QWidgetPrivate::setSystemClip(QPaintEngine *paintEngine, qreal devicePixelR
 
 }
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
 void QWidgetPrivate::invalidateGraphicsEffectsRecursively()
 {
     Q_Q(QWidget);
@@ -2130,7 +2132,7 @@ void QWidgetPrivate::invalidateGraphicsEffectsRecursively()
         w = w->parentWidget();
     } while (w);
 }
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
 void QWidgetPrivate::setDirtyOpaqueRegion()
 {
@@ -2138,9 +2140,9 @@ void QWidgetPrivate::setDirtyOpaqueRegion()
 
     dirtyOpaqueChildren = true;
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     invalidateGraphicsEffectsRecursively();
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
     if (q->isWindow())
         return;
@@ -2294,12 +2296,12 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
     const QWidget *w = q;
     QPoint offset;
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     if (graphicsEffect) {
         w = q->parentWidget();
         offset -= data.crect.topLeft();
     }
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
     while (w) {
         const QWidgetPrivate *wd = w->d_func();
@@ -2332,13 +2334,13 @@ void QWidgetPrivate::updateIsOpaque()
     // hw: todo: only needed if opacity actually changed
     setDirtyOpaqueRegion();
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     if (graphicsEffect) {
         // ### We should probably add QGraphicsEffect::isOpaque at some point.
         setOpaque(false);
         return;
     }
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
     Q_Q(QWidget);
 #if 0 // Used to be included in Qt4 for Q_WS_X11
@@ -5282,13 +5284,13 @@ QPixmap QWidget::grab(const QRect &rectangle)
 
     \sa setGraphicsEffect()
 */
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
 QGraphicsEffect *QWidget::graphicsEffect() const
 {
     Q_D(const QWidget);
     return d->graphicsEffect;
 }
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
 /*!
 
@@ -5312,7 +5314,7 @@ QGraphicsEffect *QWidget::graphicsEffect() const
 
     \sa graphicsEffect()
 */
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
 void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
 {
     Q_D(QWidget);
@@ -5336,7 +5338,7 @@ void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
 
     d->updateIsOpaque();
 }
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
 bool QWidgetPrivate::isAboutToShow() const
 {
@@ -5488,7 +5490,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
     bool onScreen = paintOnScreen();
 
     Q_Q(QWidget);
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     if (graphicsEffect && graphicsEffect->isEnabled()) {
         QGraphicsEffectSource *source = graphicsEffect->d_func()->source;
         QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
@@ -5526,7 +5528,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             return;
         }
     }
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
     const bool recursive = flags & DrawRecursive;
@@ -5833,7 +5835,7 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
     }
 }
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
 QRectF QWidgetEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
 {
     if (system != Qt::DeviceCoordinates)
@@ -5908,7 +5910,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
     m_widget->render(&pixmap, pixmapOffset, QRegion(), QWidget::DrawChildren);
     return pixmap;
 }
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
 #ifndef QT_NO_GRAPHICSVIEW
 /*!
@@ -9647,7 +9649,7 @@ void QWidget::leaveEvent(QEvent *)
 
     \note Generally, you should refrain from calling update() or repaint()
     \b{inside} a paintEvent(). For example, calling update() or repaint() on
-    children inside a paintevent() results in undefined behavior; the child may
+    children inside a paintEvent() results in undefined behavior; the child may
     or may not get a paint event.
 
     \warning If you are using a custom paint engine without Qt's backingstore,

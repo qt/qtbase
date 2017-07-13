@@ -1336,14 +1336,14 @@
     do {\
         Q_ASSERT_X(false, "Q_UNREACHABLE()", "Q_UNREACHABLE was reached");\
         Q_UNREACHABLE_IMPL();\
-    } while (0)
+    } while (false)
 
 #define Q_ASSUME(Expr) \
     do {\
         const bool valueOfExpression = Expr;\
         Q_ASSERT_X(valueOfExpression, "Q_ASSUME()", "Assumption in Q_ASSUME(\"" #Expr "\") was not correct");\
         Q_ASSUME_IMPL(valueOfExpression);\
-    } while (0)
+    } while (false)
 
 #if defined(__cplusplus)
 #if QT_HAS_CPP_ATTRIBUTE(fallthrough)

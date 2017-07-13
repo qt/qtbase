@@ -72,7 +72,7 @@ class Q_WIDGETS_EXPORT QGraphicsView : public QAbstractScrollArea
     Q_PROPERTY(ViewportAnchor transformationAnchor READ transformationAnchor WRITE setTransformationAnchor)
     Q_PROPERTY(ViewportAnchor resizeAnchor READ resizeAnchor WRITE setResizeAnchor)
     Q_PROPERTY(ViewportUpdateMode viewportUpdateMode READ viewportUpdateMode WRITE setViewportUpdateMode)
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     Q_PROPERTY(Qt::ItemSelectionMode rubberBandSelectionMode READ rubberBandSelectionMode WRITE setRubberBandSelectionMode)
 #endif
     Q_PROPERTY(OptimizationFlags optimizationFlags READ optimizationFlags WRITE setOptimizationFlags)
@@ -144,7 +144,7 @@ public:
     DragMode dragMode() const;
     void setDragMode(DragMode mode);
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     Qt::ItemSelectionMode rubberBandSelectionMode() const;
     void setRubberBandSelectionMode(Qt::ItemSelectionMode mode);
     QRect rubberBandRect() const;
@@ -228,7 +228,7 @@ public Q_SLOTS:
     void invalidateScene(const QRectF &rect = QRectF(), QGraphicsScene::SceneLayers layers = QGraphicsScene::AllLayers);
     void updateSceneRect(const QRectF &rect);
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
 Q_SIGNALS:
     void rubberBandChanged(QRect viewportRect, QPointF fromScenePoint, QPointF toScenePoint);
 #endif

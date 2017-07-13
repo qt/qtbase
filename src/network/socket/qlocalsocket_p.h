@@ -53,12 +53,12 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#ifndef QT_NO_LOCALSOCKET
-
 #include "qlocalsocket.h"
 #include "private/qiodevice_p.h"
 
 #include <qtimer.h>
+
+QT_REQUIRE_CONFIG(localserver);
 
 #if defined(QT_LOCALSOCKET_TCP)
 #   include "qtcpsocket.h"
@@ -160,8 +160,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LOCALSOCKET
 
 #endif // QLOCALSOCKET_P_H
 

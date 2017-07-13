@@ -50,11 +50,11 @@ isEmpty($${target_prefix}.INCDIRS) {
         rim_qcc: \
             # Need the cc1plus and ld command lines to pick up the paths
             cxx_flags += $$QMAKE_LFLAGS_SHLIB -o $$null_file -v
-        else: clang: \
+        else: darwin:clang: \
             # Need to link to pick up library paths
             cxx_flags += $$QMAKE_LFLAGS_SHLIB -o /dev/null -v -Wl,-v
         else: \
-            # gcc is fine with just preprocessing
+            # Just preprocess, might not pick up library paths
             cxx_flags += -E -v
 
         output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ - 2>&1 $$cmd_suffix", lines, ec)
@@ -108,6 +108,26 @@ isEmpty($${target_prefix}.INCDIRS) {
                 } else: $$add_includes {
                     !contains(line, ".* \\(framework directory\\)"): \
                         QMAKE_DEFAULT_INCDIRS += $$clean_path($$line)
+                }
+            }
+        }
+        !darwin:clang {
+            # Clang on a non-Apple system (that is, a system without ld64 -- say, with GNU ld
+            # or gold under Linux) will not print any library search path. Need to use another
+            # invocation with different options (which in turn doesn't print include search
+            # paths, so it can't just be used in place of the above code).
+            # What's more, -print-search-dirs can't be used on clang on Apple because it
+            # won't print all the library paths (only the clang-internal ones).
+            output = $$system("$$cmd_prefix $$QMAKE_CXX -print-search-dirs", lines, ec)
+            !equals(ec, 0): \
+                error("Cannot run compiler '$$QMAKE_CXX'. Maybe you forgot to setup the environment?")
+
+            for (line, output) {
+                contains(line, "^libraries: .*") {
+                    line ~= s,^libraries: ,,
+                    paths = $$split(line, $$QMAKE_DIRLIST_SEP)
+                    for (path, paths): \
+                        QMAKE_DEFAULT_LIBDIRS += $$clean_path($$replace(path, ^=, $$[SYSROOT]))
                 }
             }
         }

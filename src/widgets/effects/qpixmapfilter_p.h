@@ -56,9 +56,9 @@
 #include <QtGui/qpixmap.h>
 #include <QtWidgets/qgraphicseffect.h>
 
-#ifndef QT_NO_GRAPHICSEFFECT
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(graphicseffect);
 
+QT_BEGIN_NAMESPACE
 
 class QPainter;
 class QPlatformPixmap;
@@ -187,5 +187,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif //QT_NO_GRAPHICSEFFECT
 #endif // QPIXMAPFILTER_H

@@ -92,6 +92,8 @@ public:
                              QFileSystemMetaData::MetaDataFlags what);
 #if defined(Q_OS_UNIX)
     static bool fillMetaData(int fd, QFileSystemMetaData &data); // what = PosixStatFlags
+    static bool setPermissions(int fd, QFile::Permissions permissions, QSystemError &error,
+                               QFileSystemMetaData *data = nullptr);
 #endif
 #if defined(Q_OS_WIN)
 

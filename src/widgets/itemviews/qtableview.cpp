@@ -39,7 +39,6 @@
 
 #include "qtableview.h"
 
-#ifndef QT_NO_TABLEVIEW
 #include <qheaderview.h>
 #include <qitemdelegate.h>
 #include <qapplication.h>
@@ -3352,5 +3351,3 @@ QT_END_NAMESPACE
 #include "qtableview.moc"
 
 #include "moc_qtableview.cpp"
-
-#endif // QT_NO_TABLEVIEW

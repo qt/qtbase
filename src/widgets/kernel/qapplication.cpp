@@ -51,6 +51,7 @@
 #include "qhash.h"
 #include "qset.h"
 #include "qlayout.h"
+#include "qpixmapcache.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qstylefactory.h"

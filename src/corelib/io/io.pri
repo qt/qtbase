@@ -113,7 +113,10 @@ win32 {
         SOURCES += io/qfilesystemwatcher_win.cpp
         HEADERS += io/qfilesystemwatcher_win_p.h
         SOURCES += io/qfilesystemengine_win.cpp
-        SOURCES += io/qfilesystemiterator_win.cpp
+
+        qtConfig(filesystemiterator) {
+            SOURCES += io/qfilesystemiterator_win.cpp
+        }
 
     !winrt {
         HEADERS += \

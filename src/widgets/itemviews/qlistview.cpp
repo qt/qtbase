@@ -50,7 +50,9 @@
 #include <qstyle.h>
 #include <qevent.h>
 #include <qscrollbar.h>
+#if QT_CONFIG(rubberband)
 #include <qrubberband.h>
+#endif
 #include <private/qlistview_p.h>
 #include <private/qscrollbar_p.h>
 #include <qdebug.h>
@@ -1042,7 +1044,7 @@ void QListView::paintEvent(QPaintEvent *e)
     d->commonListView->paintDragDrop(&painter);
 #endif
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     // #### move this implementation into a dynamic class
     if (d->showElasticBand && d->elasticBand.isValid()) {
         QStyleOptionRubberBand opt;
@@ -1870,6 +1872,11 @@ void QCommonListViewBase::paintDragDrop(QPainter *painter)
 }
 #endif
 
+QSize QListModeViewBase::viewportSize(const QAbstractItemView *v)
+{
+    return v->contentsRect().marginsRemoved(v->viewportMargins()).size();
+}
+
 void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
 {
     horizontalScrollBar()->d_func()->itemviewChangeSingleStep(step.width() + spacing());
@@ -1882,7 +1889,7 @@ void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
     const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
                                     qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
 
-    const QSize viewportSize = qq->contentsRect().size();
+    const QSize viewportSize = QListModeViewBase::viewportSize(qq);
 
     bool verticalWantsToShow = contentsSize.height() > viewportSize.height();
     bool horizontalWantsToShow;
@@ -1912,7 +1919,7 @@ void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
     const bool bothScrollBarsAuto = qq->verticalScrollBarPolicy() == Qt::ScrollBarAsNeeded &&
                                     qq->horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded;
 
-    const QSize viewportSize = qq->contentsRect().size();
+    const QSize viewportSize = QListModeViewBase::viewportSize(qq);
 
     bool horizontalWantsToShow = contentsSize.width() > viewportSize.width();
     bool verticalWantsToShow;

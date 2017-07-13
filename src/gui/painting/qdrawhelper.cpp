@@ -5561,13 +5561,13 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
                 Q_ASSERT(clip.len <= buffer_size);
-                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, clip.len);
+                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, end - start);
 
                 for (int xp=start; xp<end; ++xp) {
                     const int coverage = map[xp - x];
                     alphamapblend_generic(coverage, dest, xp - start, srcColor, color, colorProfile);
                 }
-                destStore64(rasterBuffer, start, clip.y, dest, clip.len);
+                destStore64(rasterBuffer, start, clip.y, dest, end - start);
             } // for (i -> line.count)
             map += mapStride;
         } // for (yp -> bottom)
@@ -5834,13 +5834,13 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
                 Q_ASSERT(clip.len <= buffer_size);
-                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, clip.len);
+                QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, end - start);
 
                 for (int xp=start; xp<end; ++xp) {
                     const uint coverage = src[xp - x];
                     alphargbblend_generic(coverage, dest, xp - start, srcColor, color, colorProfile);
                 }
-                destStore64(rasterBuffer, start, clip.y, dest, clip.len);
+                destStore64(rasterBuffer, start, clip.y, dest, end - start);
             } // for (i -> line.count)
             src += srcStride;
         } // for (yp -> bottom)

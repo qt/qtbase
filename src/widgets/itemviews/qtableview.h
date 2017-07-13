@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractitemview.h>
 
+QT_REQUIRE_CONFIG(tableview);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TABLEVIEW
 
 class QHeaderView;
 class QTableViewPrivate;
@@ -190,8 +189,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_updateSpanRemovedRows(QModelIndex,int,int))
     Q_PRIVATE_SLOT(d_func(), void _q_updateSpanRemovedColumns(QModelIndex,int,int))
 };
-
-#endif // QT_NO_TABLEVIEW
 
 QT_END_NAMESPACE
 

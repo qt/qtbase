@@ -59,9 +59,6 @@
 #include "qgraphicstransform.h"
 #include <private/qgraphicstransform_p.h>
 
-#include <private/qgraphicseffect_p.h>
-#include <qgraphicseffect.h>
-
 #include <QtCore/qpoint.h>
 
 #if !defined(QT_NO_GRAPHICSVIEW)
@@ -217,13 +214,13 @@ public:
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     virtual void transformChanged() {}
     int depth() const;
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     enum InvalidateReason {
         OpacityChanged
     };
     void invalidateParentGraphicsEffectsRecursively();
     void invalidateChildGraphicsEffectsRecursively(InvalidateReason reason);
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
     void invalidateDepthRecursively();
     void resolveDepth();
     void addChild(QGraphicsItem *child);
@@ -590,7 +587,7 @@ struct QGraphicsItemPaintInfo
     quint32 drawItem : 1;
 };
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
 class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
@@ -650,7 +647,7 @@ public:
     QGraphicsItemPaintInfo *info;
     QTransform lastEffectTransform;
 };
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
 /*!
     Returns \c true if \a item1 is on top of \a item2.
@@ -784,7 +781,7 @@ inline bool QGraphicsItemPrivate::insertionOrder(QGraphicsItem *a, QGraphicsItem
 inline void QGraphicsItemPrivate::markParentDirty(bool updateBoundingRect)
 {
     QGraphicsItemPrivate *parentp = this;
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     if (updateBoundingRect && parentp->graphicsEffect && !parentp->inSetPosHelper) {
         parentp->notifyInvalidated = 1;
         static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()
@@ -800,7 +797,7 @@ inline void QGraphicsItemPrivate::markParentDirty(bool updateBoundingRect)
             // ### Only do this if the parent's effect applies to the entire subtree.
             parentp->notifyBoundingRectChanged = 1;
         }
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
         if (parentp->graphicsEffect) {
             if (updateBoundingRect) {
                 static_cast<QGraphicsItemEffectSourcePrivate *>(parentp->graphicsEffect->d_func()

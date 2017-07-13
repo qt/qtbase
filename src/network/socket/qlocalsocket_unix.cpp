@@ -41,8 +41,6 @@
 #include "qlocalsocket_p.h"
 #include "qnet_unix_p.h"
 
-#ifndef QT_NO_LOCALSOCKET
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -555,5 +553,3 @@ bool QLocalSocket::waitForReadyRead(int msecs)
 }
 
 QT_END_NAMESPACE
-
-#endif

@@ -315,9 +315,10 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 //static
 QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 {
-    struct stat statResult;
-    if (stat(entry.nativeFilePath().constData(), &statResult)) {
-        qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
+    QT_STATBUF statResult;
+    if (QT_STAT(entry.nativeFilePath().constData(), &statResult)) {
+        if (errno != ENOENT)
+            qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
         return QByteArray();
     }
     QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
@@ -428,15 +429,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     data.entryFlags &= ~what;
 
-    const char * nativeFilePath;
-    int nativeFilePathLength;
-    {
-        const QByteArray &path = entry.nativeFilePath();
-        nativeFilePath = path.constData();
-        nativeFilePathLength = path.size();
-        Q_UNUSED(nativeFilePathLength);
-    }
-
+    const QByteArray nativeFilePath = entry.nativeFilePath();
     bool entryExists = true; // innocent until proven otherwise
 
     QT_STATBUF statBuffer;
@@ -660,8 +653,7 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
 
 }
 
-//static
-bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error, QFileSystemMetaData *data)
+static mode_t toMode_t(QFile::Permissions permissions)
 {
     mode_t mode = 0;
     if (permissions & (QFile::ReadOwner | QFile::ReadUser))
@@ -682,8 +674,31 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
         mode |= S_IWOTH;
     if (permissions & QFile::ExeOther)
         mode |= S_IXOTH;
+    return mode;
+}
+
+//static
+bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error, QFileSystemMetaData *data)
+{
+    mode_t mode = toMode_t(permissions);
 
     bool success = ::chmod(entry.nativeFilePath().constData(), mode) == 0;
+    if (success && data) {
+        data->entryFlags &= ~QFileSystemMetaData::Permissions;
+        data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));
+        data->knownFlagsMask |= QFileSystemMetaData::Permissions;
+    }
+    if (!success)
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+    return success;
+}
+
+//static
+bool QFileSystemEngine::setPermissions(int fd, QFile::Permissions permissions, QSystemError &error, QFileSystemMetaData *data)
+{
+    mode_t mode = toMode_t(permissions);
+
+    bool success = ::fchmod(fd, mode) == 0;
     if (success && data) {
         data->entryFlags &= ~QFileSystemMetaData::Permissions;
         data->entryFlags |= QFileSystemMetaData::MetaDataFlag(uint(permissions));

@@ -144,7 +144,7 @@ public:
     QMdi::Rearranger *regularTiler;
     QMdi::Rearranger *iconTiler;
     QMdi::Placer *placer;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     QRubberBand *rubberBand;
 #endif
     QMdiAreaTabBar *tabBar;
@@ -254,7 +254,7 @@ public:
             subWindow->d_func()->setActive(active, changeFocus);
     }
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     void showRubberBandFor(QMdiSubWindow *subWindow);
 
     inline void hideRubberBand()
@@ -263,7 +263,7 @@ public:
             rubberBand->hide();
         indexToHighlighted = -1;
     }
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 };
 
 #endif // QT_NO_MDIAREA

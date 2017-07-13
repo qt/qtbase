@@ -292,6 +292,8 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
         if (!var("BUILD_NAME").isEmpty()) {
             ar_script_file += "." + var("BUILD_NAME");
         }
+        if (!var("MAKEFILE").isEmpty())
+            ar_script_file += "." + var("MAKEFILE");
         // QMAKE_LIB is used for win32, including mingw, whereas QMAKE_AR is used on Unix.
         // Strip off any options since the ar commands will be read from file.
         QString ar_cmd = var("QMAKE_LIB").section(" ", 0, 0);
@@ -304,6 +306,8 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
         if (!var("BUILD_NAME").isEmpty()) {
             ld_script_file += "." + var("BUILD_NAME");
         }
+        if (!var("MAKEFILE").isEmpty())
+            ld_script_file += "." + var("MAKEFILE");
         createLdObjectScriptFile(ld_script_file, project->values("OBJECTS"));
         objectsLinkLine = escapeFilePath(ld_script_file);
     }

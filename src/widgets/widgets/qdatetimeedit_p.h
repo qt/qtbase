@@ -63,8 +63,6 @@
 
 #include "qdebug.h"
 
-#ifndef QT_NO_DATETIMEEDIT
-
 QT_BEGIN_NAMESPACE
 
 class QCalendarPopup;
@@ -180,7 +178,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_DATETIMEEDIT
 
 #endif // QDATETIMEEDIT_P_H

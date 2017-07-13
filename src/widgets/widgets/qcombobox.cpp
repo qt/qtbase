@@ -47,7 +47,9 @@
 #include <qapplication.h>
 #include <qdesktopwidget.h>
 #include <qlistview.h>
+#if QT_CONFIG(tableview)
 #include <qtableview.h>
+#endif
 #include <qitemdelegate.h>
 #include <qmap.h>
 #include <qmenu.h>
@@ -615,7 +617,7 @@ int QComboBoxPrivateContainer::topMargin() const
 {
     if (const QListView *lview = qobject_cast<const QListView*>(view))
         return lview->spacing();
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     if (const QTableView *tview = qobject_cast<const QTableView*>(view))
         return tview->showGrid() ? 1 : 0;
 #endif
@@ -630,7 +632,7 @@ int QComboBoxPrivateContainer::spacing() const
     QListView *lview = qobject_cast<QListView*>(view);
     if (lview)
         return 2 * lview->spacing(); // QListView::spacing is the padding around the item.
-#ifndef QT_NO_TABLEVIEW
+#if QT_CONFIG(tableview)
     QTableView *tview = qobject_cast<QTableView*>(view);
     if (tview)
         return tview->showGrid() ? 1 : 0;

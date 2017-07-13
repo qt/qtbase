@@ -54,8 +54,6 @@
 
 #include <algorithm>
 
-#ifndef QT_NO_DATETIMEEDIT
-
 //#define QDATETIMEEDIT_QDTEDEBUG
 #ifdef QDATETIMEEDIT_QDTEDEBUG
 #  define QDTEDEBUG qDebug() << QString::fromLatin1("%1:%2").arg(__FILE__).arg(__LINE__)
@@ -2675,5 +2673,3 @@ void QCalendarPopup::hideEvent(QHideEvent *)
 QT_END_NAMESPACE
 #include "moc_qdatetimeedit.cpp"
 #include "moc_qdatetimeedit_p.cpp"
-
-#endif // QT_NO_DATETIMEEDIT

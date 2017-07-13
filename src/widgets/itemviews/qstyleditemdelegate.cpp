@@ -67,7 +67,9 @@
 #include <private/qlayoutengine_p.h>
 #include <qdebug.h>
 #include <qlocale.h>
+#if QT_CONFIG(tableview)
 #include <qtableview.h>
+#endif
 
 #include <limits.h>
 
@@ -500,7 +502,7 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
     // let the editor take up all available space
     //if the editor is not a QLineEdit
     //or it is in a QTableView
-#if !defined(QT_NO_TABLEVIEW) && !defined(QT_NO_LINEEDIT)
+#if QT_CONFIG(tableview) && !defined(QT_NO_LINEEDIT)
     if (qobject_cast<QExpandingLineEdit*>(editor) && !qobject_cast<const QTableView*>(widget))
         opt.showDecorationSelected = editor->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, editor);
     else
