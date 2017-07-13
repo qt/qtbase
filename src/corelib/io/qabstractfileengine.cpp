@@ -864,13 +864,14 @@ bool QAbstractFileEngine::unmap(uchar *address)
 /*!
     \since 5.10
 
-    Copies the contents from the file specified by \a sourceHandle to this file
-    by cloning it.
+    Duplicates the contents of this file (starting from the current position)
+    to the file specified by the engine \a target.
+
     Returns \c true on success; otherwise, \c false is returned.
  */
-bool QAbstractFileEngine::clone(int sourceHandle)
+bool QAbstractFileEngine::cloneTo(QAbstractFileEngine *target)
 {
-    Q_UNUSED(sourceHandle);
+    Q_UNUSED(target);
     return false;
 }
 

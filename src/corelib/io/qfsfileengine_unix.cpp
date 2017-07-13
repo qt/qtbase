@@ -735,16 +735,19 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
 /*!
     \reimp
 */
-bool QFSFileEngine::clone(int sourceHandle)
+bool QFSFileEngine::cloneTo(QAbstractFileEngine *target)
 {
+    if ((target->fileFlags(LocalDiskFlag) & LocalDiskFlag) == 0)
+        return false;
 #if defined(Q_OS_LINUX)
     Q_D(QFSFileEngine);
 #  if !defined FICLONE
 #    define FICLONE _IOW (0x94, 9, int)
 #  endif
-    return ::ioctl(d->fd, FICLONE, sourceHandle) == 0;
+    int srcfd = d->nativeHandle();
+    int dstfd = target->handle();
+    return ::ioctl(dstfd, FICLONE, srcfd) == 0;
 #else
-    Q_UNUSED(sourceHandle);
     return false;
 #endif
 }

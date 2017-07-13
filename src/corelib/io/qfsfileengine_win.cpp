@@ -1032,9 +1032,11 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
 /*!
     \reimp
 */
-bool QFSFileEngine::clone(int sourceHandle)
+bool QFSFileEngine::cloneTo(QAbstractFileEngine *target)
 {
-    Q_UNUSED(sourceHandle);
+    // There's some Windows Server 2016 API, but we won't
+    // bother with it.
+    Q_UNUSED(target);
     return false;
 }
 

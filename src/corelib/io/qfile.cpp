@@ -804,7 +804,7 @@ QFile::copy(const QString &newName)
                     close();
                     d->setError(QFile::CopyError, tr("Cannot open for output"));
                 } else {
-                    if (!out.d_func()->engine()->clone(d->engine()->handle())) {
+                    if (!d->engine()->cloneTo(out.d_func()->engine())) {
                         char block[4096];
                         qint64 totalRead = 0;
                         while (!atEnd()) {
