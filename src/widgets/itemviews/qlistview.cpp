@@ -2814,11 +2814,17 @@ bool QIconModeViewBase::filterDragLeaveEvent(QDragLeaveEvent *e)
 
 bool QIconModeViewBase::filterDragMoveEvent(QDragMoveEvent *e)
 {
-    if (e->source() != qq || !dd->canDrop(e))
-        return false;
+    const bool wasAccepted = e->isAccepted();
 
     // ignore by default
     e->ignore();
+
+    if (e->source() != qq || !dd->canDrop(e)) {
+        // restore previous acceptance on failure
+        e->setAccepted(wasAccepted);
+        return false;
+    }
+
     // get old dragged items rect
     QRect itemsRect = this->itemsRect(draggedItems);
     viewport()->update(itemsRect.translated(draggedItemsDelta()));
