@@ -373,7 +373,7 @@ public:
         typedef const T *pointer;
         typedef const T &reference;
 
-        inline const_iterator() : i(Q_NULLPTR) { }
+        Q_DECL_CONSTEXPR inline const_iterator() : i(Q_NULLPTR) { }
         explicit inline const_iterator(void *node)
             : i(reinterpret_cast<QHashData::Node *>(node)) { }
 #ifdef QT_STRICT_ITERATORS
@@ -387,8 +387,8 @@ public:
         inline const T &value() const { return concrete(i)->value; }
         inline const T &operator*() const { return concrete(i)->value; }
         inline const T *operator->() const { return &concrete(i)->value; }
-        inline bool operator==(const const_iterator &o) const { return i == o.i; }
-        inline bool operator!=(const const_iterator &o) const { return i != o.i; }
+        Q_DECL_CONSTEXPR inline bool operator==(const const_iterator &o) const { return i == o.i; }
+        Q_DECL_CONSTEXPR inline bool operator!=(const const_iterator &o) const { return i != o.i; }
 
         inline const_iterator &operator++() {
             i = QHashData::nextNode(i);
