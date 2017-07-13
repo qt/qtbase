@@ -246,6 +246,7 @@ bool QSqlDriver::isOpenError() const
 
 /*!
     \enum QSqlDriver::DbmsType
+    \internal
 
     This enum contains DBMS types.
 
@@ -807,6 +808,7 @@ QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
 
 /*!
     \since 5.4
+    \internal
 
     Returns the current DBMS type for the database connection.
 */
