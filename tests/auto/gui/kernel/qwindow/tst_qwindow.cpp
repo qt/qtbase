@@ -1851,6 +1851,9 @@ void tst_QWindow::modalDialog()
     if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
+    if (QGuiApplication::platformName() == QLatin1String("cocoa"))
+        QSKIP("Test fails due to QTBUG-61965, and is slow due to QTBUG-61964");
+
     QWindow normalWindow;
     normalWindow.setFramePosition(m_availableTopLeft + QPoint(80, 80));
     normalWindow.resize(m_testWindowSize);
