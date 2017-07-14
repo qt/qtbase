@@ -81,6 +81,17 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 #  include <private/qjni_p.h>
 #endif
 
+// This file is too low-level for regular Q_ASSERT (the logging framework may
+// recurse back), so use regular assert()
+#undef NDEBUG
+#undef Q_ASSERT_X
+#undef Q_ASSERT
+#define Q_ASSERT(cond) assert(cond)
+#if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
+#  define NDEBUG    1
+#endif
+#include <assert.h>
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
@@ -126,10 +137,13 @@ public:
         qssize_t read = 0;
         while (count - read > 256) {
             // getentropy can't fail under normal circumstances
-            read += getentropy(reinterpret_cast<uchar *>(buffer) + read, 256);
+            int ret = getentropy(reinterpret_cast<uchar *>(buffer) + read, 256);
+            Q_ASSERT(ret == 0);
+            read += 256;
         }
 
-        getentropy(reinterpret_cast<uchar *>(buffer) + read, count - read);
+        int ret = getentropy(reinterpret_cast<uchar *>(buffer) + read, count - read);
+        Q_ASSERT(ret == 0);
         return count;
     }
 };

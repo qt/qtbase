@@ -288,7 +288,7 @@ template <typename T> void generate_template()
 
     // fill in a longer range
     auto longerArrayCheck = [] {
-        T array[32] = {};
+        T array[72] = {};   // at least 256 bytes
         QRandomGenerator().generate(begin(array), end(array));
         return find_if(begin(array), end(array), [](T cur) {
                 return cur == 0 || cur == RandomValue32 ||
