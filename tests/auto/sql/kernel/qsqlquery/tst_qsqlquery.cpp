@@ -243,6 +243,9 @@ private slots:
     void integralTypesMysql_data() { generic_data("QMYSQL"); }
     void integralTypesMysql();
 
+    void QTBUG_57138_data() { generic_data("QSQLITE"); }
+    void QTBUG_57138();
+
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
@@ -4081,6 +4084,41 @@ void tst_QSqlQuery::integralTypesMysql()
         runIntegralTypesMysqlTest<qint64>(db, "bigIntTest", "BIGINT", withPreparedStatement);
         runIntegralTypesMysqlTest<quint64>(db, "unsignedBigIntTest", "BIGINT UNSIGNED", withPreparedStatement);
     }
+}
+
+void tst_QSqlQuery::QTBUG_57138()
+{
+    QDateTime utc = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::UTC);
+    QDateTime localtime = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::LocalTime);
+    QDateTime tzoffset = QDateTime(QDate(2150, 1, 5), QTime(14, 0, 0, 123), Qt::OffsetFromUTC, 3600);
+
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery create(db);
+    QString tableName = qTableName("qtbug57138", __FILE__, db);
+
+    QVERIFY_SQL(create, exec("create table " + tableName + " (id int, dt_utc datetime, dt_lt datetime, dt_tzoffset datetime)"));
+    QVERIFY_SQL(create, prepare("insert into " + tableName + " (id, dt_utc, dt_lt, dt_tzoffset) values (?, ?, ?, ?)"));
+
+    create.addBindValue(0);
+    create.addBindValue(utc);
+    create.addBindValue(localtime);
+    create.addBindValue(tzoffset);
+
+    QVERIFY_SQL(create, exec());
+
+    QSqlQuery q(db);
+    q.prepare("SELECT dt_utc, dt_lt, dt_tzoffset FROM " + tableName + " WHERE id = ?");
+    q.addBindValue(0);
+
+    QVERIFY_SQL(q, exec());
+    QVERIFY(q.next());
+
+    QCOMPARE(q.value(0).toDateTime(), utc);
+    QCOMPARE(q.value(1).toDateTime(), localtime);
+    QCOMPARE(q.value(2).toDateTime(), tzoffset);
 }
 
 QTEST_MAIN( tst_QSqlQuery )

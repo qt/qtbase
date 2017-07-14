@@ -51,6 +51,7 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qdebug.h>
+#include <QTimeZone>
 
 #if defined Q_OS_WIN
 # include <qt_windows.h>
@@ -410,6 +411,32 @@ bool QSQLiteResult::prepare(const QString &query)
     return true;
 }
 
+static QString secondsToOffset(int seconds)
+{
+    const QChar sign = ushort(seconds < 0 ? '-' : '+');
+    seconds = qAbs(seconds);
+    const int hours = seconds / 3600;
+    const int minutes = (seconds % 3600) / 60;
+
+    return QString(QStringLiteral("%1%2:%3")).arg(sign).arg(hours, 2, 10, QLatin1Char('0')).arg(minutes, 2, 10, QLatin1Char('0'));
+}
+
+static QString timespecToString(const QDateTime &dateTime)
+{
+    switch (dateTime.timeSpec()) {
+    case Qt::LocalTime:
+        return QString();
+    case Qt::UTC:
+        return QStringLiteral("Z");
+    case Qt::OffsetFromUTC:
+        return secondsToOffset(dateTime.offsetFromUtc());
+    case Qt::TimeZone:
+        return secondsToOffset(dateTime.timeZone().offsetFromUtc(dateTime));
+    default:
+        return QString();
+    }
+}
+
 bool QSQLiteResult::exec()
 {
     Q_D(QSQLiteResult);
@@ -456,7 +483,7 @@ bool QSQLiteResult::exec()
                     break;
                 case QVariant::DateTime: {
                     const QDateTime dateTime = value.toDateTime();
-                    const QString str = dateTime.toString(QStringLiteral("yyyy-MM-ddThh:mm:ss.zzz"));
+                    const QString str = dateTime.toString(QStringLiteral("yyyy-MM-ddThh:mm:ss.zzz") + timespecToString(dateTime));
                     res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
                                               str.size() * sizeof(ushort), SQLITE_TRANSIENT);
                     break;
