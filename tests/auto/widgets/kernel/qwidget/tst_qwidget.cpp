@@ -10507,6 +10507,8 @@ void tst_QWidget::qmlSetParentHelper()
 
 void tst_QWidget::testForOutsideWSRangeFlag()
 {
+    QSKIP("Test assumes QWindows can have 0x0 size, see QTBUG-61953");
+
     // QTBUG-49445
     {
         QWidget widget;
