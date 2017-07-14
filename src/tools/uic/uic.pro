@@ -12,4 +12,5 @@ HEADERS += uic.h
 SOURCES += main.cpp \
            uic.cpp
 
+QMAKE_TARGET_DESCRIPTION = "Qt User Interface Compiler"
 load(qt_tool)

@@ -12,4 +12,5 @@ include(moc.pri)
 HEADERS += qdatetime_p.h
 SOURCES += main.cpp
 
+QMAKE_TARGET_DESCRIPTION = "Qt Meta Object Compiler"
 load(qt_tool)

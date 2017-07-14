@@ -12,4 +12,5 @@ QMAKE_CXXFLAGS += $$QT_HOST_CFLAGS_DBUS
 
 SOURCES = qdbusxml2cpp.cpp
 
+QMAKE_TARGET_DESCRIPTION = "Qt D-Bus XML to C++ Compiler"
 load(qt_tool)

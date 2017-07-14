@@ -9,4 +9,5 @@ include(../moc/moc.pri)
 
 SOURCES += qdbuscpp2xml.cpp
 
+QMAKE_TARGET_DESCRIPTION = "Qt D-Bus C++ to XML Compiler"
 load(qt_tool)
