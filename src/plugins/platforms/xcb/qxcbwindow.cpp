@@ -1978,11 +1978,7 @@ void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     QRect rect(event->x, event->y, event->width, event->height);
 
-    if (m_exposeRegion.isEmpty())
-        m_exposeRegion = rect;
-    else
-        m_exposeRegion |= rect;
-
+    m_exposeRegion |= rect;
     bool pending = compressExposeEvent(m_exposeRegion);
 
     // if count is non-zero there are more expose events pending
