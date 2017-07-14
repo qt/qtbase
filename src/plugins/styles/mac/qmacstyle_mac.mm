@@ -300,7 +300,8 @@ static bool setupScroller(NSScroller *scroller, const QStyleOptionSlider *sb)
     if (qFuzzyIsNull(length))
         return false;
     const qreal proportion = sb->pageStep / length;
-    qreal value = qreal(sb->sliderValue - sb->minimum) / qreal(sb->maximum - sb->minimum);
+    const qreal range = qreal(sb->maximum - sb->minimum);
+    qreal value = range ? qreal(sb->sliderValue - sb->minimum) / range : 0;
     if (sb->orientation == Qt::Horizontal && sb->direction == Qt::RightToLeft)
         value = 1.0 - value;
 
