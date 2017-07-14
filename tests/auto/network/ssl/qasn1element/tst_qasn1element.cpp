@@ -134,6 +134,33 @@ void tst_QAsn1Element::dateTime_data()
     QTest::newRow("UTCTime - no trailing Z")
         << QByteArray::fromHex("170d30373034313730373430323659")
         << QDateTime();
+    QTest::newRow("UTCTime - year 1950")
+        << QByteArray::fromHex("170d3530313232343035353530305a")
+        << QDateTime(QDate(1950, 12, 24), QTime(5, 55), Qt::UTC);
+    QTest::newRow("UTCTime - year 1999")
+        << QByteArray::fromHex("170d3939313232343035353530305a")
+        << QDateTime(QDate(1999, 12, 24), QTime(5, 55), Qt::UTC);
+    QTest::newRow("UTCTime - year 2000")
+        << QByteArray::fromHex("170d3030313232343035353530305a")
+        << QDateTime(QDate(2000, 12, 24), QTime(5, 55), Qt::UTC);
+    QTest::newRow("UTCTime - year 2049")
+        << QByteArray::fromHex("170d3439313232343035353530305a")
+        << QDateTime(QDate(2049, 12, 24), QTime(5, 55), Qt::UTC);
+    QTest::newRow("UTCTime - invalid year ('-9')")
+        << QByteArray::fromHex("170d2d39313232343035353530305a")
+        << QDateTime();
+    QTest::newRow("UTCTime - invalid year ('*9')")
+        << QByteArray::fromHex("170d2a39313232343035353530305a")
+        << QDateTime();
+    QTest::newRow("UTCTime - invalid year ('5*')")
+        << QByteArray::fromHex("170d352a313232343035353530305a")
+        << QDateTime();
+    QTest::newRow("UTCTime - invalid year ('AB')")
+        << QByteArray::fromHex("170d4142313232343035353530305a")
+        << QDateTime();
+    QTest::newRow("UTCTime - invalid year ('+1')")
+        << QByteArray::fromHex("170d2b31313232343035353530305a")
+        << QDateTime();
     QTest::newRow("GeneralizedTime - 20510829095341Z")
         << QByteArray::fromHex("180f32303531303832393039353334315a")
         << QDateTime(QDate(2051, 8, 29), QTime(9, 53, 41), Qt::UTC);
