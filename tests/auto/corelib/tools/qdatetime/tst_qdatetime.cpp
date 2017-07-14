@@ -131,6 +131,8 @@ private slots:
     void setOffsetFromUtc();
     void toOffsetFromUtc();
 
+    void zoneAtTime_data();
+    void zoneAtTime();
     void timeZoneAbbreviation();
 
     void getDate();
@@ -2625,6 +2627,71 @@ void tst_QDateTime::toOffsetFromUtc()
     QCOMPARE(dt2.timeSpec(), Qt::UTC);
     QCOMPARE(dt2.date(), QDate(2013, 1, 1));
     QCOMPARE(dt2.time(), QTime(0, 0, 0));
+}
+
+void tst_QDateTime::zoneAtTime_data()
+{
+    QTest::addColumn<QByteArray>("ianaID");
+    QTest::addColumn<QDate>("date");
+    QTest::addColumn<int>("offset");
+#define ADDROW(name, zone, date, offset) \
+    QTest::newRow(name) << QByteArray(zone) << (date) << (offset)
+
+    // Check DST handling around epoch:
+    {
+        QDate epoch(1970, 1, 1);
+        ADDROW("epoch:UTC", "UTC", epoch, 0);
+        // Paris and Berlin skipped DST around 1970; but Rome used it.
+        ADDROW("epoch:CET", "Europe/Rome", epoch, 3600);
+        ADDROW("epoch:PST", "America/Vancouver", epoch, -8 * 3600);
+        ADDROW("epoch:EST", "America/New_York", epoch, -5 * 3600);
+    }
+    {
+        // QDateTime deliberately ignores DST before the epoch.
+        QDate summer69(1969, 8, 15); // Woodstock started
+        ADDROW("summer69:UTC", "UTC", summer69, 0);
+        ADDROW("summer69:CET", "Europe/Rome", summer69, 3600);
+        ADDROW("summer69:PST", "America/Vancouver", summer69, -8 * 3600);
+        ADDROW("summer69:EST", "America/New_York", summer69, -5 * 3600);
+    }
+    {
+        // ... but takes it into account after:
+        QDate summer70(1970, 8, 26); // Isle of Wight festival
+        ADDROW("summer70:UTC", "UTC", summer70, 0);
+        ADDROW("summer70:CET", "Europe/Rome", summer70, 2 * 3600);
+        ADDROW("summer70:PST", "America/Vancouver", summer70, -7 * 3600);
+        ADDROW("summer70:EST", "America/New_York", summer70, -4 * 3600);
+    }
+
+#ifndef Q_OS_WIN
+    // Bracket a few noteworthy transitions:
+    ADDROW("before:ACWST", "Australia/Eucla", QDate(1974, 10, 26), 31500); // 8:45
+    ADDROW("after:ACWST", "Australia/Eucla", QDate(1974, 10, 27), 35100); // 9:45
+    ADDROW("before:NPT", "Asia/Kathmandu", QDate(1985, 12, 31), 19800); // 5:30
+    ADDROW("after:NPT", "Asia/Kathmandu", QDate(1986, 1, 1), 20700); // 5:45
+    // The two that have skipped a day (each):
+    ADDROW("before:LINT", "Pacific/Kiritimati", QDate(1994, 12, 31), -36000);
+    ADDROW("after:LINT", "Pacific/Kiritimati", QDate(1995, 2, 1), 14 * 3600);
+    ADDROW("after:WST", "Pacific/Apia", QDate(2011, 12, 31), 14 * 3600);
+#endif // MS lacks ACWST, NPT; doesn't grok date-line crossings; and Windows 7 lacks LINT.
+    ADDROW("before:WST", "Pacific/Apia", QDate(2011, 12, 29), -36000);
+#undef ADDROW
+}
+
+void tst_QDateTime::zoneAtTime()
+{
+    QFETCH(QByteArray, ianaID);
+    QFETCH(QDate, date);
+    QFETCH(int, offset);
+    const QTime noon(12, 0);
+
+    QTimeZone zone(ianaID);
+    QVERIFY(zone.isValid());
+    QCOMPARE(QDateTime(date, noon, zone).offsetFromUtc(), offset);
+    if (date.year() < 1970)
+        QCOMPARE(zone.standardTimeOffset(QDateTime(date, noon, zone)), offset);
+    else // zone.offsetFromUtc *does* include DST, even before epoch
+        QCOMPARE(zone.offsetFromUtc(QDateTime(date, noon, zone)), offset);
 }
 
 void tst_QDateTime::timeZoneAbbreviation()
