@@ -153,7 +153,8 @@ static QDebug operator<<(QDebug dbg, const QWindowsScreenData &d)
         << d.availableGeometry.width() << 'x' << d.availableGeometry.height() << '+' << d.availableGeometry.x() << '+' << d.availableGeometry.y()
         << " physical: " << d.physicalSizeMM.width() << 'x' << d.physicalSizeMM.height()
         << " DPI: " << d.dpi.first << 'x' << d.dpi.second << " Depth: " << d.depth
-        << " Format: " << d.format;
+        << " Format: " << d.format
+        << " hMonitor: " << d.hMonitor;
     if (d.flags & QWindowsScreenData::PrimaryScreen)
         dbg << " primary";
     if (d.flags & QWindowsScreenData::VirtualDesktop)
@@ -289,6 +290,13 @@ QList<QPlatformScreen *> QWindowsScreen::virtualSiblings() const
 void QWindowsScreen::handleChanges(const QWindowsScreenData &newData)
 {
     m_data.physicalSizeMM = newData.physicalSizeMM;
+
+    if (m_data.hMonitor != newData.hMonitor) {
+        qCDebug(lcQpaWindows) << "Monitor" << m_data.name
+            << "has had its hMonitor handle changed from"
+            << m_data.hMonitor << "to" << newData.hMonitor;
+        m_data.hMonitor = newData.hMonitor;
+    }
 
     if (m_data.geometry != newData.geometry || m_data.availableGeometry != newData.availableGeometry) {
         m_data.geometry = newData.geometry;

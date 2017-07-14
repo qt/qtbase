@@ -49,7 +49,9 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qtabbar.h>
 #include <QtWidgets/qtabwidget.h>
+#if QT_CONFIG(rubberband)
 #include <QtWidgets/qrubberband.h>
+#endif
 #include <QtWidgets/qframe.h>
 #ifndef QT_NO_ITEMVIEWS
 #   include <QtCore/qabstractitemmodel.h>
@@ -467,7 +469,7 @@ protected:
 
 typedef Q_DECL_DEPRECATED QStyleOptionToolBox QStyleOptionToolBoxV2;
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
 class Q_WIDGETS_EXPORT QStyleOptionRubberBand : public QStyleOption
 {
 public:
@@ -483,7 +485,7 @@ public:
 protected:
     QStyleOptionRubberBand(int version);
 };
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 
 // -------------------------- Complex style options -------------------------------
 class Q_WIDGETS_EXPORT QStyleOptionComplex : public QStyleOption

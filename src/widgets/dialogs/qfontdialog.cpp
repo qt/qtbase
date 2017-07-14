@@ -40,8 +40,6 @@
 #include "qwindowdefs.h"
 #include "qfontdialog.h"
 
-#if QT_CONFIG(fontdialog)
-
 #include "qfontdialog_p.h"
 
 #include <qapplication.h>
@@ -1049,5 +1047,3 @@ QT_END_NAMESPACE
 
 #include "qfontdialog.moc"
 #include "moc_qfontdialog.cpp"
-
-#endif // QT_CONFIG(fontdialog)

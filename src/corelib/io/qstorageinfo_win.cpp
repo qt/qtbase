@@ -43,36 +43,52 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qvarlengtharray.h>
 
+#include "qfilesystementry_p.h"
+
 #include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
 static const int defaultBufferSize = MAX_PATH + 1;
 
-void QStorageInfoPrivate::initRootPath()
+static QString canonicalPath(const QString &rootPath)
 {
-    rootPath = QFileInfo(rootPath).canonicalFilePath();
-
-    if (rootPath.isEmpty())
-        return;
-
-    QString path = QDir::toNativeSeparators(rootPath);
-    rootPath.clear();
+    QString path = QDir::toNativeSeparators(QFileInfo(rootPath).canonicalFilePath());
+    if (path.isEmpty())
+        return path;
 
     if (path.startsWith(QLatin1String("\\\\?\\")))
         path.remove(0, 4);
     if (path.length() < 2 || path.at(1) != QLatin1Char(':'))
-        return;
+        return QString();
+
     path[0] = path[0].toUpper();
     if (!(path.at(0).unicode() >= 'A' && path.at(0).unicode() <= 'Z'))
-        return;
+        return QString();
     if (!path.endsWith(QLatin1Char('\\')))
         path.append(QLatin1Char('\\'));
+    return path;
+}
+
+void QStorageInfoPrivate::initRootPath()
+{
+    // Do not unnecessarily call QFileInfo::canonicalFilePath() if the path is
+    // already a drive root since it may hang on network drives.
+    const QString path = QFileSystemEntry::isDriveRootPath(rootPath)
+        ? QDir::toNativeSeparators(rootPath)
+        : canonicalPath(rootPath);
+
+    if (path.isEmpty()) {
+        valid = ready = false;
+        return;
+    }
 
     // ### test if disk mounted to folder on other disk
     wchar_t buffer[defaultBufferSize];
     if (::GetVolumePathName(reinterpret_cast<const wchar_t *>(path.utf16()), buffer, defaultBufferSize))
         rootPath = QDir::fromNativeSeparators(QString::fromWCharArray(buffer));
+    else
+        valid = ready = false;
 }
 
 static inline QByteArray getDevice(const QString &rootPath)
@@ -108,11 +124,14 @@ static inline QByteArray getDevice(const QString &rootPath)
 
 void QStorageInfoPrivate::doStat()
 {
+    valid = ready = true;
     initRootPath();
-    if (rootPath.isEmpty())
+    if (!valid || !ready)
         return;
 
     retrieveVolumeInfo();
+    if (!valid || !ready)
+        return;
     device = getDevice(rootPath);
     retrieveDiskFreeSpace();
 }
@@ -137,9 +156,6 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         ready = false;
         valid = ::GetLastError() == ERROR_NOT_READY;
     } else {
-        ready = true;
-        valid = true;
-
         fileSystemType = QString::fromWCharArray(fileSystemTypeBuffer).toLatin1();
         name = QString::fromWCharArray(nameBuffer);
 
@@ -154,10 +170,10 @@ void QStorageInfoPrivate::retrieveDiskFreeSpace()
     const UINT oldmode = ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
     const QString path = QDir::toNativeSeparators(rootPath);
-    ::GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(path.utf16()),
-                         PULARGE_INTEGER(&bytesAvailable),
-                         PULARGE_INTEGER(&bytesTotal),
-                         PULARGE_INTEGER(&bytesFree));
+    ready = ::GetDiskFreeSpaceEx(reinterpret_cast<const wchar_t *>(path.utf16()),
+                                 PULARGE_INTEGER(&bytesAvailable),
+                                 PULARGE_INTEGER(&bytesTotal),
+                                 PULARGE_INTEGER(&bytesFree));
 
     ::SetErrorMode(oldmode);
 }

@@ -53,12 +53,11 @@
 
 #include <QtWidgets/qgraphicseffect.h>
 
-#ifndef QT_NO_GRAPHICSEFFECT
-
 #include <QtOpenGL/qtopenglglobal.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(graphicseffect);
 
+QT_BEGIN_NAMESPACE
 
 class QGLShaderProgram;
 class QGLCustomShaderEffectStage;
@@ -87,7 +86,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_GRAPHICSEFFECT
 
 #endif // QGRAPHICSSHADEREFFECT_P_H

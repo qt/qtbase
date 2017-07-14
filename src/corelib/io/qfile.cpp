@@ -568,9 +568,11 @@ QFile::rename(const QString &newName)
     }
     // If the file exists and it is a case-changing rename ("foo" -> "Foo"),
     // compare Ids to make sure it really is a different file.
-    if (QFile::exists(newName)) {
-        if (d->fileName.compare(newName, Qt::CaseInsensitive)
-            || QFileSystemEngine::id(QFileSystemEntry(d->fileName)) != QFileSystemEngine::id(QFileSystemEntry(newName))) {
+    // Note: this does not take file engines into account.
+    QByteArray targetId = QFileSystemEngine::id(QFileSystemEntry(newName));
+    if (!targetId.isNull()) {
+        QByteArray fileId = QFileSystemEngine::id(QFileSystemEntry(d->fileName));
+        if (fileId != targetId || d->fileName.compare(newName, Qt::CaseInsensitive)) {
             // ### Race condition. If a file is moved in after this, it /will/ be
             // overwritten. On Unix, the proper solution is to use hardlinks:
             // return ::link(old, new) && ::remove(old);

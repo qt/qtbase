@@ -426,8 +426,7 @@ QDateTime QWinRTFileEngine::fileTime(FileTime type) const
         ComPtr<FileProperties::IBasicProperties> properties;
         hr = QWinRTFunctions::await(op, properties.GetAddressOf());
         RETURN_IF_FAILED("Failed to get file properties", return QDateTime());
-        hr = type == ModificationTime ? properties->get_DateModified(&dateTime)
-                                      : properties->get_ItemDate(&dateTime);
+        hr = properties->get_DateModified(&dateTime);
         RETURN_IF_FAILED("Failed to get file date", return QDateTime());
     }
         break;

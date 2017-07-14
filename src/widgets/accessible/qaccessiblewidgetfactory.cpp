@@ -193,7 +193,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QDial")) {
         iface = new QAccessibleDial(widget);
 #endif
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     } else if (classname == QLatin1String("QRubberBand")) {
         iface = new QAccessibleWidget(widget, QAccessible::Border);
 #endif

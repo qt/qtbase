@@ -44,10 +44,9 @@
 #include <QtCore/qiodevice.h>
 #include <QtNetwork/qabstractsocket.h>
 
+QT_REQUIRE_CONFIG(localserver);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_LOCALSOCKET
 
 class QLocalSocketPrivate;
 
@@ -147,8 +146,6 @@ private:
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, QLocalSocket::LocalSocketError);
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, QLocalSocket::LocalSocketState);
 #endif
-
-#endif // QT_NO_LOCALSOCKET
 
 QT_END_NAMESPACE
 

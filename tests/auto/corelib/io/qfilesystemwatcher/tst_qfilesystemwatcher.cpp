@@ -568,6 +568,10 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QCOMPARE(fileChangedSpy.count(), 0);
     QCOMPARE(dirChangedSpy.count(), 1);
 
+    // QTBUG-61792, removal should succeed (bug on Windows which uses one change
+    // notification per directory).
+    QVERIFY(watcher.removePath(testDir.absolutePath()));
+
     QVERIFY(temporaryDir.rmdir(testDirName));
 }
 

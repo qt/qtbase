@@ -49,6 +49,35 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+class PainterStateGuard {
+    Q_DISABLE_COPY(PainterStateGuard)
+public:
+    explicit PainterStateGuard(QPainter *p) : m_painter(p) {}
+    ~PainterStateGuard()
+    {
+        for ( ; m_level > 0; --m_level)
+            m_painter->restore();
+    }
+
+    void save()
+    {
+        m_painter->save();
+        ++m_level;
+    }
+
+    void restore()
+    {
+        m_painter->restore();
+        --m_level;
+    }
+
+private:
+    QPainter *m_painter;
+    int m_level= 0;
+};
+} // namespace
+
 /*!
     \headerfile <qdrawutil.h>
     \title Drawing Utility Functions
@@ -213,6 +242,21 @@ void qDrawShadeRect(QPainter *p, int x, int y, int w, int h,
         qWarning("qDrawShadeRect: Invalid parameters");
         return;
     }
+
+    PainterStateGuard painterGuard(p);
+    const qreal devicePixelRatio = p->device()->devicePixelRatioF();
+    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+        painterGuard.save();
+        const qreal inverseScale = qreal(1) / devicePixelRatio;
+        p->scale(inverseScale, inverseScale);
+        x = qRound(devicePixelRatio * x);
+        y = qRound(devicePixelRatio * y);
+        w = qRound(devicePixelRatio * w);
+        h = qRound(devicePixelRatio * h);
+        lineWidth = qRound(devicePixelRatio * lineWidth);
+        midLineWidth = qRound(devicePixelRatio * midLineWidth);
+    }
+
     QPen oldPen = p->pen();
     if (sunken)
         p->setPen(pal.dark().color());
@@ -312,6 +356,20 @@ void qDrawShadePanel(QPainter *p, int x, int y, int w, int h,
     if (Q_UNLIKELY(w < 0 || h < 0 || lineWidth < 0)) {
         qWarning("qDrawShadePanel: Invalid parameters");
     }
+
+    PainterStateGuard painterGuard(p);
+    const qreal devicePixelRatio = p->device()->devicePixelRatioF();
+    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+        painterGuard.save();
+        const qreal inverseScale = qreal(1) / devicePixelRatio;
+        p->scale(inverseScale, inverseScale);
+        x = qRound(devicePixelRatio * x);
+        y = qRound(devicePixelRatio * y);
+        w = qRound(devicePixelRatio * w);
+        h = qRound(devicePixelRatio * h);
+        lineWidth = qRound(devicePixelRatio * lineWidth);
+    }
+
     QColor shade = pal.dark().color();
     QColor light = pal.light().color();
     if (fill) {
@@ -389,6 +447,19 @@ static void qDrawWinShades(QPainter *p,
 {
     if (w < 2 || h < 2)                        // can't do anything with that
         return;
+
+    PainterStateGuard painterGuard(p);
+    const qreal devicePixelRatio = p->device()->devicePixelRatioF();
+    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+        painterGuard.save();
+        const qreal inverseScale = qreal(1) / devicePixelRatio;
+        p->scale(inverseScale, inverseScale);
+        x = qRound(devicePixelRatio * x);
+        y = qRound(devicePixelRatio * y);
+        w = qRound(devicePixelRatio * w);
+        h = qRound(devicePixelRatio * h);
+    }
+
     QPen oldPen = p->pen();
     QPoint a[3] = { QPoint(x, y+h-2), QPoint(x, y), QPoint(x+w-2, y) };
     p->setPen(c1);
@@ -518,6 +589,20 @@ void qDrawPlainRect(QPainter *p, int x, int y, int w, int h, const QColor &c,
     if (Q_UNLIKELY(w < 0 || h < 0 || lineWidth < 0)) {
         qWarning("qDrawPlainRect: Invalid parameters");
     }
+
+    PainterStateGuard painterGuard(p);
+    const qreal devicePixelRatio = p->device()->devicePixelRatioF();
+    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+        painterGuard.save();
+        const qreal inverseScale = qreal(1) / devicePixelRatio;
+        p->scale(inverseScale, inverseScale);
+        x = qRound(devicePixelRatio * x);
+        y = qRound(devicePixelRatio * y);
+        w = qRound(devicePixelRatio * w);
+        h = qRound(devicePixelRatio * h);
+        lineWidth = qRound(devicePixelRatio * lineWidth);
+    }
+
     QPen   oldPen   = p->pen();
     QBrush oldBrush = p->brush();
     p->setPen(c);

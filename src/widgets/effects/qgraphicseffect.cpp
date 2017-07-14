@@ -114,7 +114,6 @@
 #include <QtCore/qdebug.h>
 #include <private/qdrawhelper_p.h>
 
-#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
 QGraphicsEffectPrivate::~QGraphicsEffectPrivate()
@@ -1237,5 +1236,3 @@ QT_END_NAMESPACE
 
 #include "moc_qgraphicseffect.cpp"
 #include "moc_qgraphicseffect_p.cpp"
-
-#endif //QT_NO_GRAPHICSEFFECT

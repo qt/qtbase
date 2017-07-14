@@ -53,7 +53,9 @@
 #include <private/qwidget_p.h>
 #include <private/qapplication_p.h>
 #include <private/qpaintengine_raster_p.h>
+#if QT_CONFIG(graphicseffect)
 #include <private/qgraphicseffect_p.h>
+#endif
 #include <QtGui/private/qwindow_p.h>
 
 #include <qpa/qplatformbackingstore.h>
@@ -520,9 +522,9 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget,
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!rgn.isEmpty());
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     widget->d_func()->invalidateGraphicsEffectsRecursively();
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {
@@ -561,11 +563,11 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget,
 
     if (bufferState == BufferInvalid) {
         const bool eventAlreadyPosted = !dirty.isEmpty() || updateRequestSent;
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
         if (widget->d_func()->graphicsEffect)
             dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect()).translated(offset);
         else
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
             dirty += rgn.translated(offset);
         if (!eventAlreadyPosted || updateTime == UpdateNow)
             sendUpdateRequest(tlw, updateTime);
@@ -580,11 +582,11 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget,
 
     if (widget->d_func()->inDirtyList) {
         if (!qt_region_strictContains(widget->d_func()->dirty, widgetRect)) {
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
             if (widget->d_func()->graphicsEffect)
                 widget->d_func()->dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect());
             else
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
                 widget->d_func()->dirty += rgn;
         }
     } else {
@@ -612,9 +614,9 @@ void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget,
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!rect.isEmpty());
 
-#ifndef QT_NO_GRAPHICSEFFECT
+#if QT_CONFIG(graphicseffect)
     widget->d_func()->invalidateGraphicsEffectsRecursively();
-#endif //QT_NO_GRAPHICSEFFECT
+#endif // QT_CONFIG(graphicseffect)
 
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {

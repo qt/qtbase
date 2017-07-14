@@ -63,13 +63,13 @@ class QRegularExpression;
 do {\
     if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))\
         return;\
-} while (0)
+} while (false)
 
 #define QFAIL(message) \
 do {\
     QTest::qFail(message, __FILE__, __LINE__);\
     return;\
-} while (0)
+} while (false)
 
 #define QVERIFY2(statement, description) \
 do {\
@@ -80,13 +80,13 @@ do {\
         if (!QTest::qVerify(false, #statement, (description), __FILE__, __LINE__))\
             return;\
     }\
-} while (0)
+} while (false)
 
 #define QCOMPARE(actual, expected) \
 do {\
     if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))\
         return;\
-} while (0)
+} while (false)
 
 
 #ifndef QT_NO_EXCEPTIONS
@@ -111,7 +111,7 @@ do {\
                          " but unknown exception caught", __FILE__, __LINE__);\
             return;\
         }\
-    } while (0)
+    } while (false)
 
 #else // QT_NO_EXCEPTIONS
 
@@ -158,7 +158,7 @@ do {\
 do { \
     QTRY_IMPL((expr), timeout);\
     QVERIFY(expr); \
-} while (0)
+} while (false)
 
 #define QTRY_VERIFY(expr) QTRY_VERIFY_WITH_TIMEOUT((expr), 5000)
 
@@ -167,7 +167,7 @@ do { \
 do { \
     QTRY_IMPL((expr), timeout);\
     QVERIFY2(expr, messageExpression); \
-} while (0)
+} while (false)
 
 #define QTRY_VERIFY2(expr, messageExpression) QTRY_VERIFY2_WITH_TIMEOUT((expr), (messageExpression), 5000)
 
@@ -176,7 +176,7 @@ do { \
 do { \
     QTRY_IMPL(((expr) == (expected)), timeout);\
     QCOMPARE((expr), expected); \
-} while (0)
+} while (false)
 
 #define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT((expr), expected, 5000)
 
@@ -184,7 +184,7 @@ do { \
 do {\
     QTest::qSkip(statement, __FILE__, __LINE__);\
     return;\
-} while (0)
+} while (false)
 
 #ifdef Q_COMPILER_VARIADIC_MACROS
 
@@ -200,7 +200,7 @@ do {\
 do {\
     if (!QTest::qExpectFail(dataIndex, comment, QTest::mode, __FILE__, __LINE__))\
         return;\
-} while (0)
+} while (false)
 
 #define QFETCH(Type, name)\
     Type name = *static_cast<Type *>(QTest::qData(#name, ::qMetaTypeId<typename std::remove_cv<Type >::type>()))
@@ -212,7 +212,7 @@ do {\
 do {\
     if (!QTest::qTest(actual, testElement, #actual, #testElement, __FILE__, __LINE__))\
         return;\
-} while (0)
+} while (false)
 
 #define QWARN(msg)\
     QTest::qWarn(msg, __FILE__, __LINE__)

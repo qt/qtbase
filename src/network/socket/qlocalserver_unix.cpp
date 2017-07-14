@@ -44,8 +44,6 @@
 #include "qnet_unix_p.h"
 #include "qtemporarydir.h"
 
-#ifndef QT_NO_LOCALSERVER
-
 #include <sys/socket.h>
 #include <sys/un.h>
 
@@ -341,5 +339,3 @@ void QLocalServerPrivate::setError(const QString &function)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LOCALSERVER

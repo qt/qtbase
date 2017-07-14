@@ -33,7 +33,6 @@ SOURCES += qgl.cpp \
            qglbuffer.cpp \
 
 HEADERS +=  qglshaderprogram.h \
-            qgraphicsshadereffect_p.h \
             gl2paintengineex/qglgradientcache_p.h \
             gl2paintengineex/qglengineshadermanager_p.h \
             gl2paintengineex/qgl2pexvertexarray_p.h \
@@ -44,12 +43,16 @@ HEADERS +=  qglshaderprogram.h \
             gl2paintengineex/qglshadercache_p.h
 
 SOURCES +=  qglshaderprogram.cpp \
-            qgraphicsshadereffect.cpp \
             gl2paintengineex/qglgradientcache.cpp \
             gl2paintengineex/qglengineshadermanager.cpp \
             gl2paintengineex/qgl2pexvertexarray.cpp \
             gl2paintengineex/qpaintengineex_opengl2.cpp \
             gl2paintengineex/qglcustomshaderstage.cpp \
             gl2paintengineex/qtextureglyphcache_gl.cpp
+
+qtConfig(graphicseffect) {
+    HEADERS += qgraphicsshadereffect_p.h
+    SOURCES += qgraphicsshadereffect.cpp
+}
 
 load(qt_module)

@@ -420,7 +420,7 @@ void QDeadlineTimer::setTimerType(Qt::TimerType timerType)
 qint64 QDeadlineTimer::remainingTime() const Q_DECL_NOTHROW
 {
     qint64 ns = remainingTimeNSecs();
-    return ns <= 0 ? ns : ns / (1000 * 1000);
+    return ns <= 0 ? ns : (ns + 999999) / (1000 * 1000);
 }
 
 /*!

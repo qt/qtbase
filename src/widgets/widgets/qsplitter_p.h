@@ -53,7 +53,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qframe_p.h"
-#include "qrubberband.h"
 
 QT_BEGIN_NAMESPACE
 

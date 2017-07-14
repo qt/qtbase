@@ -602,13 +602,13 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
     QByteArray result;
     const HANDLE handle =
 #ifndef Q_OS_WINRT
-        CreateFile((wchar_t*)entry.nativeFilePath().utf16(), GENERIC_READ,
+        CreateFile((wchar_t*)entry.nativeFilePath().utf16(), 0,
                    FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #else // !Q_OS_WINRT
-        CreateFile2((const wchar_t*)entry.nativeFilePath().utf16(), GENERIC_READ,
+        CreateFile2((const wchar_t*)entry.nativeFilePath().utf16(), 0,
                     FILE_SHARE_READ, OPEN_EXISTING, NULL);
 #endif // Q_OS_WINRT
-    if (handle) {
+    if (handle != INVALID_HANDLE_VALUE) {
         result = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8 ?
                  fileIdWin8(handle) : fileId(handle);
         CloseHandle(handle);

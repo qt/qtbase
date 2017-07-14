@@ -8,8 +8,6 @@ HEADERS += \
         widgets/qcalendarwidget.h \
         widgets/qcombobox.h \
         widgets/qcombobox_p.h \
-        widgets/qdatetimeedit.h \
-        widgets/qdatetimeedit_p.h \
         widgets/qdial.h \
         widgets/qdockwidget.h \
         widgets/qdockwidget_p.h \
@@ -32,7 +30,6 @@ HEADERS += \
         widgets/qmenubar.h \
         widgets/qmenubar_p.h \
         widgets/qprogressbar.h \
-        widgets/qrubberband.h \
         widgets/qscrollbar.h \
         widgets/qscrollbar_p.h \
         widgets/qscrollarea_p.h \
@@ -72,7 +69,6 @@ SOURCES += \
         widgets/qabstractspinbox.cpp \
         widgets/qcalendarwidget.cpp \
         widgets/qcombobox.cpp \
-        widgets/qdatetimeedit.cpp \
         widgets/qdial.cpp \
         widgets/qdockwidget.cpp \
         widgets/qdockarealayout.cpp \
@@ -89,7 +85,6 @@ SOURCES += \
         widgets/qmenu.cpp \
         widgets/qmenubar.cpp \
         widgets/qprogressbar.cpp \
-        widgets/qrubberband.cpp \
         widgets/qscrollbar.cpp \
         widgets/qsizegrip.cpp \
         widgets/qslider.cpp \
@@ -150,6 +145,15 @@ qtConfig(commandlinkbutton) {
         widgets/qcommandlinkbutton.cpp
 }
 
+qtConfig(datetimeedit) {
+    HEADERS += \
+         widgets/qdatetimeedit.h \
+         widgets/qdatetimeedit_p.h
+
+    SOURCES += \
+         widgets/qdatetimeedit.cpp
+}
+
 qtConfig(fontcombobox) {
     HEADERS += widgets/qfontcombobox.h
     SOURCES += widgets/qfontcombobox.cpp
@@ -195,6 +199,11 @@ qtConfig(dialogbuttonbox) {
 
     SOURCES += \
         widgets/qdialogbuttonbox.cpp
+}
+
+qtConfig(rubberband) {
+    HEADERS += widgets/qrubberband.h
+    SOURCES += widgets/qrubberband.cpp
 }
 
 qtConfig(splashscreen) {

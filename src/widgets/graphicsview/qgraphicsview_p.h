@@ -136,7 +136,7 @@ public:
     QGraphicsView::OptimizationFlags optimizationFlags;
 
     QPointer<QGraphicsScene> scene;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     QRect rubberBandRect;
     QRegion rubberBandRegion(const QWidget *widget, const QRect &rect) const;
     void updateRubberBand(const QMouseEvent *event);

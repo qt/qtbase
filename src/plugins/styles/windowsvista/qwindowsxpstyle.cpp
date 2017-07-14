@@ -1165,7 +1165,7 @@ void QWindowsXPStyle::polish(QWidget *widget)
         widget->setAttribute(Qt::WA_Hover);
     }
 
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if (qobject_cast<QRubberBand*>(widget)) {
         widget->setWindowOpacity(0.6);
     }
@@ -1200,7 +1200,7 @@ void QWindowsXPStyle::polish(QPalette &pal)
 /*! \reimp */
 void QWindowsXPStyle::unpolish(QWidget *widget)
 {
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     if (qobject_cast<QRubberBand*>(widget)) {
         widget->setWindowOpacity(1.0);
     }
@@ -2418,7 +2418,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
         }
         break;
 #endif // QT_NO_DOCKWIDGET
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     case CE_RubberBand:
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(option)) {
             QColor highlight = option->palette.color(QPalette::Active, QPalette::Highlight);
@@ -2434,7 +2434,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             return;
         }
         break;
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
     case CE_HeaderEmptyArea:
         if (option->state & State_Horizontal)
         {
@@ -3758,12 +3758,12 @@ int QWindowsXPStyle::styleHint(StyleHint hint, const QStyleOption *option, const
             }
         }
         break;
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     case SH_RubberBand_Mask:
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(option))
             res = 0;
         break;
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 
     case SH_ItemView_DrawDelegateFrame:
         res = 1;

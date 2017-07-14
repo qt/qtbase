@@ -53,11 +53,11 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
-#ifndef QT_NO_LOCALSERVER
-
 #include "qlocalserver.h"
 #include "private/qobject_p.h"
 #include <qqueue.h>
+
+QT_REQUIRE_CONFIG(localserver);
 
 #if defined(QT_LOCALSOCKET_TCP)
 #   include <qtcpserver.h>
@@ -127,8 +127,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LOCALSERVER
 
 #endif // QLOCALSERVER_P_H
 

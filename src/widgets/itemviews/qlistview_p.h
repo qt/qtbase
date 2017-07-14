@@ -53,7 +53,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractitemview_p.h"
-#include "qrubberband.h"
 #include "qbitarray.h"
 #include "qbsptree_p.h"
 #include <limits.h>
@@ -225,6 +224,7 @@ public:
     QRect mapToViewport(const QRect &rect) const override;
     int horizontalOffset() const override;
     int verticalOffset() const override;
+    inline static QSize viewportSize(const QAbstractItemView *v);
     void updateHorizontalScrollBar(const QSize &step) override;
     void updateVerticalScrollBar(const QSize &step) override;
 

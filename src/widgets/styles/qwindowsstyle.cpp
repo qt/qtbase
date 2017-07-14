@@ -51,7 +51,9 @@
 #include <private/qmenubar_p.h>
 #include "qpaintengine.h"
 #include "qpainter.h"
+#if QT_CONFIG(rubberband)
 #include "qrubberband.h"
+#endif
 #include "qstyleoption.h"
 #include "qtabbar.h"
 #include "qwidget.h"
@@ -606,7 +608,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
             ret = 400;
         break;
     }
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     case SH_RubberBand_Mask:
         if (const QStyleOptionRubberBand *rbOpt = qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
             ret = 0;
@@ -622,7 +624,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
             }
         }
         break;
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 #if QT_CONFIG(wizard)
     case SH_WizardStyle:
         ret = QWizard::ModernStyle;
@@ -1080,7 +1082,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                                 const QWidget *widget) const
 {
     switch (ce) {
-#ifndef QT_NO_RUBBERBAND
+#if QT_CONFIG(rubberband)
     case CE_RubberBand:
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
             // ### workaround for slow general painter path
@@ -1103,7 +1105,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             return;
         }
         break;
-#endif // QT_NO_RUBBERBAND
+#endif // QT_CONFIG(rubberband)
 
 #if !defined(QT_NO_MENU) && !defined(QT_NO_MAINWINDOW)
     case CE_MenuBarEmptyArea:

@@ -41,7 +41,9 @@
 #if QT_CONFIG(colordialog)
 #include "qcolordialog.h"
 #endif
+#if QT_CONFIG(fontdialog)
 #include "qfontdialog.h"
+#endif
 #if QT_CONFIG(filedialog)
 #include "qfiledialog.h"
 #endif
@@ -81,7 +83,7 @@ static inline int themeDialogType(const QDialog *dialog)
     if (qobject_cast<const QColorDialog *>(dialog))
         return QPlatformTheme::ColorDialog;
 #endif
-#ifndef QT_NO_FONTDIALOG
+#if QT_CONFIG(fontdialog)
     if (qobject_cast<const QFontDialog *>(dialog))
         return QPlatformTheme::FontDialog;
 #endif

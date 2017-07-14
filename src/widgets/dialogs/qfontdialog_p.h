@@ -59,7 +59,7 @@
 #include <qpa/qplatformdialoghelper.h>
 #include "qsharedpointer.h"
 
-#ifndef QT_NO_FONTDIALOG
+QT_REQUIRE_CONFIG(fontdialog);
 
 QT_BEGIN_NAMESPACE
 
@@ -148,8 +148,6 @@ private:
     virtual void initHelper(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
     virtual void helperPrepareShow(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
 };
-
-#endif // QT_NO_FONTDIALOG
 
 QT_END_NAMESPACE
 

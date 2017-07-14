@@ -44,7 +44,9 @@
 #ifndef QT_NO_ITEMVIEWS
 
 #include <qcombobox.h>
+#if QT_CONFIG(datetimeedit)
 #include <qdatetimeedit.h>
+#endif
 #if QT_CONFIG(label)
 #include <qlabel.h>
 #endif
@@ -252,7 +254,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         sb->setMaximum(INT_MAX);
         return sb; }
 #endif
-#ifndef QT_NO_DATETIMEEDIT
+#if QT_CONFIG(datetimeedit)
     case QVariant::Date: {
         QDateTimeEdit *ed = new QDateEdit(parent);
         ed->setFrame(false);
@@ -308,7 +310,7 @@ QByteArray QDefaultItemEditorFactory::valuePropertyName(int userType) const
     case QVariant::Double:
         return "value";
 #endif
-#ifndef QT_NO_DATETIMEEDIT
+#if QT_CONFIG(datetimeedit)
     case QVariant::Date:
         return "date";
     case QVariant::Time:

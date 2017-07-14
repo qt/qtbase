@@ -1,8 +1,10 @@
 # QTBUG-48455
 [readLineStdin]
-msvc-2015
+msvc-2015 ci
+msvc-2017 ci
 [readLineStdin_lineByLine]
-msvc-2015
+msvc-2015 ci
+msvc-2017 ci
 [openStandardStreamsFileDescriptors]
 osx
 [openStandardStreamsBufferedStreams]
