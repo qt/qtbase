@@ -144,7 +144,9 @@ static inline bool hasFastCrc32()
 }
 
 template <typename Char>
+#if defined(Q_PROCESSOR_ARM_64)
 QT_FUNCTION_TARGET(CRC32)
+#endif
 static uint crc32(const Char *ptr, size_t len, uint h)
 {
     // The crc32[whbd] instructions on Aarch64/Aarch32 calculate a 32-bit CRC32 checksum
