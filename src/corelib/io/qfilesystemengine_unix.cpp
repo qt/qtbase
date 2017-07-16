@@ -78,8 +78,15 @@ extern "C" NSString *NSTemporaryDirectory();
 #endif
 
 #if defined(Q_OS_LINUX)
+#  include <sys/ioctl.h>
 #  include <sys/syscall.h>
+#  include <sys/sendfile.h>
 #  include <linux/fs.h>
+
+// in case linux/fs.h is too old and doesn't define it:
+#ifndef FICLONE
+#  define FICLONE       _IOW(0x94, 9, int)
+#endif
 
 #  if !QT_CONFIG(renameat2) && defined(SYS_renameat2)
 static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newpath, unsigned flags)
@@ -1063,6 +1070,19 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         return false;
     }
     return data.hasFlags(what);
+}
+
+// static
+bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaData &knownData)
+{
+#if defined(Q_OS_LINUX)
+    // try FICLONE (only works on regular files and only on certain fs)
+    return ::ioctl(dstfd, FICLONE, srcfd) == 0;
+#else
+    Q_UNUSED(srcfd);
+    Q_UNUSED(dstfd);
+    return false;
+#endif
 }
 
 // Note: if \a shouldMkdirFirst is false, we assume the caller did try to mkdir
