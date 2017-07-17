@@ -70,7 +70,7 @@ osx
 [setClearAndResizeMask]
 osx
 [setToolTip]
-osx-10.9
+osx
 [moveInResizeEvent]
 ubuntu-14.04
 [moveChild:right]
