@@ -1117,9 +1117,12 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
     }
     if (customize)
         ; // don't modify window flags if the user explicitly set them.
-    else if (type == Qt::Dialog || type == Qt::Sheet)
-        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
-    else if (type == Qt::Tool)
+    else if (type == Qt::Dialog || type == Qt::Sheet) {
+        flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
+        // ### fixme: Qt 6: Never set Qt::WindowContextHelpButtonHint flag automatically
+        if (!QApplicationPrivate::testAttribute(Qt::AA_DisableWindowContextHelpButton))
+            flags |= Qt::WindowContextHelpButtonHint;
+    } else if (type == Qt::Tool)
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
     else
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint |
