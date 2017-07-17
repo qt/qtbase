@@ -74,6 +74,8 @@ public:
     explicit QPlatformWindow(QWindow *window);
     virtual ~QPlatformWindow();
 
+    virtual void initialize();
+
     QWindow *window() const;
     QPlatformWindow *parent() const;
 

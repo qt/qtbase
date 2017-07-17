@@ -95,6 +95,8 @@ public:
     QCocoaWindow(QWindow *tlw, WId nativeHandle = 0);
     ~QCocoaWindow();
 
+    void initialize() override;
+
     void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
     QRect geometry() const Q_DECL_OVERRIDE;
     void setCocoaGeometry(const QRect &rect);
@@ -250,7 +252,7 @@ public: // for QNSView
     QPointer<QWindow> m_enterLeaveTargetWindow;
     bool m_windowUnderMouse;
 
-    bool m_inConstructor;
+    bool m_initialized;
     bool m_inSetVisible;
     bool m_inSetGeometry;
     bool m_inSetStyleMask;

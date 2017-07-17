@@ -509,6 +509,8 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
         return;
     }
 
+    platformWindow->initialize();
+
     QObjectList childObjects = q->children();
     for (int i = 0; i < childObjects.size(); i ++) {
         QObject *object = childObjects.at(i);

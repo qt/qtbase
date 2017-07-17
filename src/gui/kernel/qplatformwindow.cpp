@@ -71,6 +71,17 @@ QPlatformWindow::~QPlatformWindow()
 }
 
 /*!
+    Called as part of QWindow::create(), after constructing
+    the window. Platforms should prefer to do initialization
+    here instead of in the constructor, as the platform window
+    object will be fully constructed, and associated to the
+    corresponding QWindow, allowing synchronous event delivery.
+*/
+void QPlatformWindow::initialize()
+{
+}
+
+/*!
     Returns the window which belongs to the QPlatformWindow
 */
 QWindow *QPlatformWindow::window() const

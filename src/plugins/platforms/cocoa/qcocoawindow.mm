@@ -132,8 +132,8 @@ Q_CONSTRUCTOR_FUNCTION(qRegisterNotificationCallbacks)
 
 const int QCocoaWindow::NoAlertRequest = -1;
 
-QCocoaWindow::QCocoaWindow(QWindow *tlw, WId nativeHandle)
-    : QPlatformWindow(tlw)
+QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
+    : QPlatformWindow(win)
     , m_view(nil)
     , m_nsWindow(0)
     , m_viewIsEmbedded(false)
@@ -141,7 +141,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw, WId nativeHandle)
     , m_lastReportedWindowState(Qt::WindowNoState)
     , m_windowModality(Qt::NonModal)
     , m_windowUnderMouse(false)
-    , m_inConstructor(true)
+    , m_initialized(false)
     , m_inSetVisible(false)
     , m_inSetGeometry(false)
     , m_inSetStyleMask(false)
@@ -165,24 +165,31 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw, WId nativeHandle)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::QCocoaWindow" << window();
 
-    QMacAutoReleasePool pool;
-
     if (nativeHandle) {
         m_view = reinterpret_cast<NSView *>(nativeHandle);
         [m_view retain];
-    } else {
+    }
+}
+
+void QCocoaWindow::initialize()
+{
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::initialize" << window();
+
+    QMacAutoReleasePool pool;
+
+    if (!m_view) {
         m_view = [[QNSView alloc] initWithCocoaWindow:this];
         // Enable high-dpi OpenGL for retina displays. Enabling has the side
         // effect that Cocoa will start calling glViewport(0, 0, width, height),
         // overriding any glViewport calls in application code. This is usually not a
         // problem, except if the appilcation wants to have a "custom" viewport.
         // (like the hellogl example)
-        if (tlw->supportsOpenGL()) {
-            BOOL enable = qt_mac_resolveOption(YES, tlw, "_q_mac_wantsBestResolutionOpenGLSurface",
+        if (window()->supportsOpenGL()) {
+            BOOL enable = qt_mac_resolveOption(YES, window(), "_q_mac_wantsBestResolutionOpenGLSurface",
                                                           "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
             [m_view setWantsBestResolutionOpenGLSurface:enable];
         }
-        BOOL enable = qt_mac_resolveOption(NO, tlw, "_q_mac_wantsLayer",
+        BOOL enable = qt_mac_resolveOption(NO, window(), "_q_mac_wantsLayer",
                                                      "QT_MAC_WANTS_LAYER");
         [m_view setWantsLayer:enable];
     }
@@ -190,10 +197,11 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw, WId nativeHandle)
     setGeometry(initialGeometry(window(), windowGeometry(), defaultWindowWidth, defaultWindowHeight));
 
     recreateWindowIfNeeded();
-    tlw->setGeometry(geometry());
-    if (tlw->isTopLevel())
-        setWindowIcon(tlw->icon());
-    m_inConstructor = false;
+    window()->setGeometry(geometry());
+    if (window()->isTopLevel())
+        setWindowIcon(window()->icon());
+
+    m_initialized = true;
 }
 
 QCocoaWindow::~QCocoaWindow()
@@ -1021,8 +1029,10 @@ bool QCocoaWindow::windowShouldClose()
 
 void QCocoaWindow::handleGeometryChange()
 {
-    // Don't send geometry change event to Qt unless it's ready to handle events
-    if (m_inConstructor)
+    // Prevent geometry change during initialization, as that will result
+    // in a resize event, and Qt expects those to come after the show event.
+    // FIXME: Remove once we've clarified the Qt behavior for this.
+    if (!m_initialized)
         return;
 
     // Don't send the geometry change if the QWindow is designated to be
