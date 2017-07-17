@@ -12,7 +12,7 @@
 CONFIG += no_launch_target
 isEmpty(VERSION): VERSION = $$MODULE_VERSION
 isEmpty(QMAKE_TARGET_DESCRIPTION): QMAKE_TARGET_DESCRIPTION = \
-    "Tool for the Qt Application Development Framework"
+    "Tool for the Qt Application Development Framework ($$TARGET)"
 load(qt_app)
 
 CONFIG += console
