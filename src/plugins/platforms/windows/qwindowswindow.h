@@ -319,6 +319,8 @@ public:
     void setHasBorderInFullScreen(bool border);
     static QString formatWindowTitle(const QString &title);
 
+    static const char *embeddedNativeParentHandleProperty;
+
 private:
     inline void show_sys() const;
     inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;

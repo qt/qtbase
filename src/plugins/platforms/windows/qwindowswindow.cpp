@@ -489,7 +489,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     // Sometimes QWindow doesn't have a QWindow parent but does have a native parent window,
     // e.g. in case of embedded ActiveQt servers. They should not be considered a top-level
     // windows in such cases.
-    QVariant prop = w->property("_q_embedded_native_parent_handle");
+    QVariant prop = w->property(QWindowsWindow::embeddedNativeParentHandleProperty);
     if (prop.isValid()) {
         embedded = true;
         parentHandle = reinterpret_cast<HWND>(prop.value<WId>());
@@ -1034,6 +1034,8 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
     \internal
     \ingroup qt-lighthouse-win
 */
+
+const char *QWindowsWindow::embeddedNativeParentHandleProperty = "_q_embedded_native_parent_handle";
 
 QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data) :
     QWindowsBaseWindow(aWindow),
