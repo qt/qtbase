@@ -8079,8 +8079,8 @@ void tst_QWidget::setMaskInResizeEvent()
 
     QRegion expectedParentUpdate(0, 0, 100, 10); // Old testWidget area.
     expectedParentUpdate += testWidget.geometry(); // New testWidget area.
-    QCOMPARE(w.paintedRegion, expectedParentUpdate);
-    QCOMPARE(testWidget.paintedRegion, testWidget.mask());
+    QTRY_COMPARE(w.paintedRegion, expectedParentUpdate);
+    QTRY_COMPARE(testWidget.paintedRegion, testWidget.mask());
 
     testWidget.paintedRegion = QRegion();
     // Now resize the widget again, but in the oposite direction
