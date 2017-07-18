@@ -268,11 +268,20 @@ class Window : public QWindow
 {
 public:
     Window(const Qt::WindowFlags flags = Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint)
+        : QWindow(), lastReceivedWindowState(windowState())
     {
         reset();
         setFlags(flags);
 #if defined(Q_OS_QNX)
         setSurfaceType(QSurface::OpenGLSurface);
+#endif
+
+#if !defined(Q_OS_MACOS)
+        // FIXME: All platforms should send window-state change events, regardless
+        // of the sync/async nature of the the underlying platform, but they don't.
+        connect(this, &QWindow::windowStateChanged, [=]() {
+            lastReceivedWindowState = windowState();
+        });
 #endif
     }
 
@@ -298,6 +307,10 @@ public:
         case QEvent::Move:
             m_framePositionsOnMove << framePosition();
             break;
+
+        case QEvent::WindowStateChange:
+            lastReceivedWindowState = windowState();
+
         default:
             break;
         }
@@ -326,6 +339,8 @@ public:
     }
 
     QVector<QPoint> m_framePositionsOnMove;
+    Qt::WindowStates lastReceivedWindowState;
+
 private:
     QHash<QEvent::Type, int> m_received;
     QVector<QEvent::Type> m_order;
@@ -482,17 +497,15 @@ void tst_QWindow::positioning()
 
     window.reset();
     window.setWindowState(Qt::WindowFullScreen);
-    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.lastReceivedWindowState, Qt::WindowFullScreen);
 
     QTRY_VERIFY(window.received(QEvent::Resize) > 0);
-    QTest::qWait(2000);
 
     window.reset();
     window.setWindowState(Qt::WindowNoState);
-    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.lastReceivedWindowState, Qt::WindowNoState);
 
     QTRY_VERIFY(window.received(QEvent::Resize) > 0);
-    QTest::qWait(2000);
 
     QTRY_COMPARE(originalPos, window.position());
     QTRY_COMPARE(originalFramePos, window.framePosition());
@@ -1748,7 +1761,7 @@ void tst_QWindow::visibility()
 {
     qRegisterMetaType<Qt::WindowModality>("QWindow::Visibility");
 
-    QWindow window;
+    Window window;
     QSignalSpy spy(&window, SIGNAL(visibilityChanged(QWindow::Visibility)));
 
     window.setVisibility(QWindow::AutomaticVisibility);
@@ -1769,11 +1782,13 @@ void tst_QWindow::visibility()
     QCOMPARE(window.windowState(), Qt::WindowFullScreen);
     QCOMPARE(window.visibility(), QWindow::FullScreen);
     QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(window.lastReceivedWindowState, Qt::WindowFullScreen);
     spy.clear();
 
     window.setWindowState(Qt::WindowNoState);
     QCOMPARE(window.visibility(), QWindow::Windowed);
     QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(window.lastReceivedWindowState, Qt::WindowNoState);
     spy.clear();
 
     window.setVisible(false);
