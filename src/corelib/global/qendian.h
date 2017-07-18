@@ -272,7 +272,8 @@ public:
     static Q_DECL_CONSTEXPR T fromSpecial(T source) { return qFromBigEndian(source); }
 };
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
+template<typename T>
 class QLEInteger {
 public:
     explicit Q_DECL_CONSTEXPR QLEInteger(T i);
@@ -292,6 +293,7 @@ public:
     QLEInteger &operator ^=(T i);
 };
 
+template<typename T>
 class QBEInteger {
 public:
     explicit Q_DECL_CONSTEXPR QBEInteger(T i);
