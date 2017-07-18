@@ -2529,7 +2529,7 @@ void tst_QLocale::textDirection()
 
 void tst_QLocale::bcp47Name()
 {
-    QCOMPARE(QLocale("C").bcp47Name(), QStringLiteral("C"));
+    QCOMPARE(QLocale("C").bcp47Name(), QStringLiteral("en"));
     QCOMPARE(QLocale("en").bcp47Name(), QStringLiteral("en"));
     QCOMPARE(QLocale("en_US").bcp47Name(), QStringLiteral("en"));
     QCOMPARE(QLocale("en_GB").bcp47Name(), QStringLiteral("en-GB"));
