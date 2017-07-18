@@ -113,6 +113,7 @@ private slots:
     void shouldHandleUnboundPortsDuringGraphSerialization();
     void shouldSurviveCyclesDuringGraphSerialization();
     void shouldDealWithEdgesJumpingOverLayers();
+    void shouldGenerateDifferentStatementsDependingOnActiveLayers();
 };
 
 void tst_QShaderGraph::shouldHaveEdgeDefaultState()
@@ -655,6 +656,122 @@ void tst_QShaderGraph::shouldDealWithEdgesJumpingOverLayers()
             << createStatement(fragColor, {7}, {});
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
+}
+
+void tst_QShaderGraph::shouldGenerateDifferentStatementsDependingOnActiveLayers()
+{
+    // GIVEN
+    const auto texCoord = createNode({
+        createPort(QShaderNodePort::Output, "texCoord")
+    }, {
+        "diffuseTexture",
+        "normalTexture"
+    });
+    const auto diffuseUniform = createNode({
+        createPort(QShaderNodePort::Output, "color")
+    }, {"diffuseUniform"});
+    const auto diffuseTexture = createNode({
+        createPort(QShaderNodePort::Input, "coord"),
+        createPort(QShaderNodePort::Output, "color")
+    }, {"diffuseTexture"});
+    const auto normalUniform = createNode({
+        createPort(QShaderNodePort::Output, "normal")
+    }, {"normalUniform"});
+    const auto normalTexture = createNode({
+        createPort(QShaderNodePort::Input, "coord"),
+        createPort(QShaderNodePort::Output, "normal")
+    }, {"normalTexture"});
+    const auto lightFunction = createNode({
+        createPort(QShaderNodePort::Input, "color"),
+        createPort(QShaderNodePort::Input, "normal"),
+        createPort(QShaderNodePort::Output, "output")
+    });
+    const auto fragColor = createNode({
+        createPort(QShaderNodePort::Input, "fragColor")
+    });
+
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+
+        res.addNode(texCoord);
+        res.addNode(diffuseUniform);
+        res.addNode(diffuseTexture);
+        res.addNode(normalUniform);
+        res.addNode(normalTexture);
+        res.addNode(lightFunction);
+        res.addNode(fragColor);
+
+        res.addEdge(createEdge(diffuseUniform.uuid(), "color", lightFunction.uuid(), "color", {"diffuseUniform"}));
+        res.addEdge(createEdge(texCoord.uuid(), "texCoord", diffuseTexture.uuid(), "coord", {"diffuseTexture"}));
+        res.addEdge(createEdge(diffuseTexture.uuid(), "color", lightFunction.uuid(), "color", {"diffuseTexture"}));
+
+        res.addEdge(createEdge(normalUniform.uuid(), "normal", lightFunction.uuid(), "normal", {"normalUniform"}));
+        res.addEdge(createEdge(texCoord.uuid(), "texCoord", normalTexture.uuid(), "coord", {"normalTexture"}));
+        res.addEdge(createEdge(normalTexture.uuid(), "normal", lightFunction.uuid(), "normal", {"normalTexture"}));
+
+        res.addEdge(createEdge(lightFunction.uuid(), "output", fragColor.uuid(), "fragColor"));
+
+        return res;
+    }();
+
+    {
+        // WHEN
+        const auto statements = graph.createStatements({"diffuseUniform", "normalUniform"});
+
+        // THEN
+        const auto expected = QVector<QShaderGraph::Statement>()
+                << createStatement(normalUniform, {}, {1})
+                << createStatement(diffuseUniform, {}, {0})
+                << createStatement(lightFunction, {0, 1}, {2})
+                << createStatement(fragColor, {2}, {});
+        dumpStatementsIfNeeded(statements, expected);
+        QCOMPARE(statements, expected);
+    }
+
+    {
+        // WHEN
+        const auto statements = graph.createStatements({"diffuseUniform", "normalTexture"});
+
+        // THEN
+        const auto expected = QVector<QShaderGraph::Statement>()
+                << createStatement(texCoord, {}, {0})
+                << createStatement(normalTexture, {0}, {2})
+                << createStatement(diffuseUniform, {}, {1})
+                << createStatement(lightFunction, {1, 2}, {3})
+                << createStatement(fragColor, {3}, {});
+        dumpStatementsIfNeeded(statements, expected);
+        QCOMPARE(statements, expected);
+    }
+
+    {
+        // WHEN
+        const auto statements = graph.createStatements({"diffuseTexture", "normalUniform"});
+
+        // THEN
+        const auto expected = QVector<QShaderGraph::Statement>()
+                << createStatement(texCoord, {}, {0})
+                << createStatement(normalUniform, {}, {2})
+                << createStatement(diffuseTexture, {0}, {1})
+                << createStatement(lightFunction, {1, 2}, {3})
+                << createStatement(fragColor, {3}, {});
+        dumpStatementsIfNeeded(statements, expected);
+        QCOMPARE(statements, expected);
+    }
+
+    {
+        // WHEN
+        const auto statements = graph.createStatements({"diffuseTexture", "normalTexture"});
+
+        // THEN
+        const auto expected = QVector<QShaderGraph::Statement>()
+                << createStatement(texCoord, {}, {0})
+                << createStatement(normalTexture, {0}, {2})
+                << createStatement(diffuseTexture, {0}, {1})
+                << createStatement(lightFunction, {1, 2}, {3})
+                << createStatement(fragColor, {3}, {});
+        dumpStatementsIfNeeded(statements, expected);
+        QCOMPARE(statements, expected);
+    }
 }
 
 QTEST_MAIN(tst_QShaderGraph)

@@ -89,7 +89,7 @@ public:
     Q_GUI_EXPORT void removeEdge(const Edge &edge);
     Q_GUI_EXPORT QVector<Edge> edges() const Q_DECL_NOTHROW;
 
-    Q_GUI_EXPORT QVector<Statement> createStatements() const;
+    Q_GUI_EXPORT QVector<Statement> createStatements(const QStringList &enabledLayers = QStringList()) const;
 
 private:
     QVector<QShaderNode> m_nodes;

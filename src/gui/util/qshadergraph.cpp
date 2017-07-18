@@ -172,20 +172,46 @@ QVector<QShaderGraph::Edge> QShaderGraph::edges() const Q_DECL_NOTHROW
     return m_edges;
 }
 
-QVector<QShaderGraph::Statement> QShaderGraph::createStatements() const
+QVector<QShaderGraph::Statement> QShaderGraph::createStatements(const QStringList &enabledLayers) const
 {
-    const auto idHash = [this] {
+    const auto intersectsEnabledLayers = [enabledLayers] (const QStringList &layers) {
+        return layers.isEmpty()
+            || std::any_of(layers.cbegin(), layers.cend(),
+                           [enabledLayers] (const QString &s) { return enabledLayers.contains(s); });
+    };
+
+    const auto enabledNodes = [this, intersectsEnabledLayers] {
+        auto res = QVector<QShaderNode>();
+        std::copy_if(m_nodes.cbegin(), m_nodes.cend(),
+                     std::back_inserter(res),
+                     [intersectsEnabledLayers] (const QShaderNode &node) {
+                         return intersectsEnabledLayers(node.layers());
+                     });
+        return res;
+    }();
+
+    const auto enabledEdges = [this, intersectsEnabledLayers] {
+        auto res = QVector<Edge>();
+        std::copy_if(m_edges.cbegin(), m_edges.cend(),
+                     std::back_inserter(res),
+                     [intersectsEnabledLayers] (const Edge &edge) {
+                         return intersectsEnabledLayers(edge.layers);
+                     });
+        return res;
+    }();
+
+    const auto idHash = [enabledNodes] {
         auto nextVarId = 0;
         auto res = QHash<QUuid, Statement>();
-        for (const auto &node : qAsConst(m_nodes))
+        for (const auto &node : enabledNodes)
             res.insert(node.uuid(), nodeToStatement(node, nextVarId));
         return res;
     }();
 
     auto result = QVector<Statement>();
-    auto currentEdges = m_edges;
-    auto currentUuids = [this] {
-        const auto inputs = copyOutputNodes(m_nodes);
+    auto currentEdges = enabledEdges;
+    auto currentUuids = [enabledNodes] {
+        const auto inputs = copyOutputNodes(enabledNodes);
         auto res = QVector<QUuid>();
         std::transform(inputs.cbegin(), inputs.cend(),
                        std::back_inserter(res),
@@ -201,7 +227,7 @@ QVector<QShaderGraph::Statement> QShaderGraph::createStatements() const
     // input nodes
     while (!currentUuids.isEmpty()) {
         const auto uuid = currentUuids.takeFirst();
-        result.append(completeStatement(idHash, m_edges, uuid));
+        result.append(completeStatement(idHash, enabledEdges, uuid));
 
         const auto outgoing = outgoingEdges(currentEdges, uuid);
         for (const auto &outgoingEdge : outgoing) {
