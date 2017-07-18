@@ -725,11 +725,10 @@ void QCocoaWindow::propagateSizeHints()
     if (!isContentView())
         return;
 
-    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::propagateSizeHints" << window() << "\n"
-                              << "       min/max" << windowMinimumSize() << windowMaximumSize()
-                              << "size increment" << windowSizeIncrement()
-                              << "      basesize" << windowBaseSize()
-                              << "      geometry" << windowGeometry();
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::propagateSizeHints" << window()
+                              << "min:" << windowMinimumSize() << "max:" << windowMaximumSize()
+                              << "increment:" << windowSizeIncrement()
+                              << "base:" << windowBaseSize();
 
     const NSWindow *window = m_view.window;
 
@@ -1081,6 +1080,9 @@ void QCocoaWindow::handleWindowStateChanged(HandleFlags flags)
     if (!(flags & HandleUnconditionally) && currentState == m_lastReportedWindowState)
         return;
 
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleWindowStateChanged" <<
+        m_lastReportedWindowState << "-->" << currentState;
+
     QWindowSystemInterface::handleWindowStateChanged<QWindowSystemInterface::SynchronousDelivery>(
         window(), currentState, m_lastReportedWindowState);
     m_lastReportedWindowState = currentState;
@@ -1173,16 +1175,18 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
     // Remove current window (if any)
     if ((isContentView() && !shouldBeContentView) || (recreateReason & PanelChanged)) {
-        qCDebug(lcQpaCocoaWindow) << "Getting rid of existing window" << m_nsWindow;
-        [m_nsWindow closeAndRelease];
-        if (isContentView()) {
-            // We explicitly disassociate m_view from the window's contentView,
-            // as AppKit does not automatically do this in response to removing
-            // the view from the NSThemeFrame subview list, so we might end up
-            // with a NSWindow contentView pointing to a deallocated NSView.
-            m_view.window.contentView = nil;
+        if (m_nsWindow) {
+            qCDebug(lcQpaCocoaWindow) << "Getting rid of existing window" << m_nsWindow;
+            [m_nsWindow closeAndRelease];
+            if (isContentView()) {
+                // We explicitly disassociate m_view from the window's contentView,
+                // as AppKit does not automatically do this in response to removing
+                // the view from the NSThemeFrame subview list, so we might end up
+                // with a NSWindow contentView pointing to a deallocated NSView.
+                m_view.window.contentView = nil;
+            }
+            m_nsWindow = 0;
         }
-        m_nsWindow = 0;
     }
 
     if (shouldBeContentView) {
@@ -1193,7 +1197,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
         // Move view to new NSWindow if needed
         if (newWindow) {
-            qCDebug(lcQpaCocoaWindow) << "Ensuring that view is content view for" << m_nsWindow;
+            qCDebug(lcQpaCocoaWindow) << "Ensuring that" << m_view << "is content view for" << newWindow;
             [m_view setPostsFrameChangedNotifications:NO];
             [newWindow setContentView:m_view];
             [m_view setPostsFrameChangedNotifications:YES];
@@ -1245,8 +1249,6 @@ void QCocoaWindow::requestActivateWindow()
 
 QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 {
-    qCDebug(lcQpaCocoaWindow) << "createNSWindow, shouldBePanel =" << shouldBePanel;
-
     QMacAutoReleasePool pool;
 
     QRect rect = geometry();
