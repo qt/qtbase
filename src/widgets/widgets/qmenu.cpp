@@ -2430,8 +2430,6 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
                 pos.setY(qMin(mouse.y() - (size.height() + desktopFrame), screen.bottom()-desktopFrame-size.height()+1));
             else
                 pos.setY(qMax(p.y() - (size.height() + desktopFrame), screen.bottom()-desktopFrame-size.height()+1));
-        } else if (pos.y() < screen.top() + desktopFrame) {
-            pos.setY(screen.top() + desktopFrame);
         }
 
         if (pos.y() < screen.top() + desktopFrame)
