@@ -32,14 +32,22 @@ QDEBUG : tst_globaldata::skipLocal(global=false:local=true) init skipLocal local
 SKIP   : tst_globaldata::skipLocal(global=false:local=true) skipping
    Loc: [qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp(0)]
 QDEBUG : tst_globaldata::skipLocal(global=false:local=true) cleanup skipLocal local=true
+QDEBUG : tst_globaldata::skipLocal(global=true:local=false) init skipLocal local=false
+SKIP   : tst_globaldata::skipLocal(global=true:local=false) skipping
+   Loc: [qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp(0)]
+QDEBUG : tst_globaldata::skipLocal(global=true:local=false) cleanup skipLocal local=false
+QDEBUG : tst_globaldata::skipLocal(global=true:local=true) init skipLocal local=true
+SKIP   : tst_globaldata::skipLocal(global=true:local=true) skipping
+   Loc: [qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp(0)]
+QDEBUG : tst_globaldata::skipLocal(global=true:local=true) cleanup skipLocal local=true
 QDEBUG : tst_globaldata::skipSingle(global=false:local=false) init skipSingle local=false
 QDEBUG : tst_globaldata::skipSingle(global=false:local=false) global: false local: false
 QDEBUG : tst_globaldata::skipSingle(global=false:local=false) cleanup skipSingle local=false
 PASS   : tst_globaldata::skipSingle(global=false:local=false)
 QDEBUG : tst_globaldata::skipSingle(global=false:local=true) init skipSingle local=true
-QDEBUG : tst_globaldata::skipSingle(global=false:local=true) global: false local: true
+SKIP   : tst_globaldata::skipSingle(global=false:local=true) Skipping
+   Loc: [qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp(0)]
 QDEBUG : tst_globaldata::skipSingle(global=false:local=true) cleanup skipSingle local=true
-PASS   : tst_globaldata::skipSingle(global=false:local=true)
 QDEBUG : tst_globaldata::skipSingle(global=true:local=false) init skipSingle local=false
 SKIP   : tst_globaldata::skipSingle(global=true:local=false) Skipping
    Loc: [qtbase/tests/auto/testlib/selftests/globaldata/tst_globaldata.cpp(0)]
@@ -50,5 +58,5 @@ QDEBUG : tst_globaldata::skipSingle(global=true:local=true) cleanup skipSingle l
 PASS   : tst_globaldata::skipSingle(global=true:local=true)
 QDEBUG : tst_globaldata::cleanupTestCase() cleanupTestCase cleanupTestCase (null)
 PASS   : tst_globaldata::cleanupTestCase()
-Totals: 9 passed, 0 failed, 4 skipped, 0 blacklisted, 0ms
+Totals: 8 passed, 0 failed, 7 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_globaldata *********

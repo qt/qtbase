@@ -125,11 +125,12 @@ void tst_globaldata::skipSingle()
     QFETCH_GLOBAL(bool, global);
     QFETCH(bool, local);
 
-    // A skip in the last run of one global row suppresses the test in the next
-    // global row (where a skip in an earlier run of the first row does not).
-    if (global && !local)
+    // A skip in the last run of one global row used to suppress the test in the
+    // next global row (where a skip in an earlier run of the first row did not).
+    if (global ^ local)
         QSKIP("Skipping");
     qDebug() << "global:" << global << "local:" << local;
+    QCOMPARE(global, local);
 }
 
 void tst_globaldata::skipLocal()

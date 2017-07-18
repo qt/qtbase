@@ -1095,7 +1095,7 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
     const int globalDataCount = gTable->dataCount();
     int curGlobalDataIndex = 0;
 
-    /* For each test function that has a *_data() table/function, do: */
+    /* For each entry in the global data table, do: */
     do {
         if (!gTable->isEmpty())
             QTestResult::setCurrentGlobalTestData(gTable->testData(curGlobalDataIndex));
@@ -1103,50 +1103,50 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
         if (curGlobalDataIndex == 0) {
             qsnprintf(member, 512, "%s_data()", name.constData());
             invokeMethod(QTest::currentTestObject, member);
+            if (QTestResult::skipCurrentTest())
+                break;
         }
 
         bool foundFunction = false;
-        if (!QTestResult::skipCurrentTest()) {
-            int curDataIndex = 0;
-            const int dataCount = table.dataCount();
+        int curDataIndex = 0;
+        const int dataCount = table.dataCount();
 
-            // Data tag requested but none available?
-            if (data && !dataCount) {
-                // Let empty data tag through.
-                if (!*data)
-                    data = 0;
-                else {
-                    fprintf(stderr, "Unknown testdata for function %s(): '%s'\n", name.constData(), data);
-                    fprintf(stderr, "Function has no testdata.\n");
-                    return false;
-                }
+        // Data tag requested but none available?
+        if (data && !dataCount) {
+            // Let empty data tag through.
+            if (!*data)
+                data = 0;
+            else {
+                fprintf(stderr, "Unknown testdata for function %s(): '%s'\n", name.constData(), data);
+                fprintf(stderr, "Function has no testdata.\n");
+                return false;
             }
-
-            /* For each entry in the data table, do: */
-            do {
-                QTestResult::setSkipCurrentTest(false);
-                QTestResult::setBlacklistCurrentTest(false);
-                if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
-                    foundFunction = true;
-
-                    QTestPrivate::checkBlackLists(name.constData(), dataCount ? table.testData(curDataIndex)->dataTag() : 0);
-
-                    QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
-                                                      : table.testData(curDataIndex));
-
-                    QTestPrivate::qtestMouseButtons = Qt::NoButton;
-                    if (watchDog)
-                        watchDog->beginTest();
-                    invokeTestOnData(index);
-                    if (watchDog)
-                        watchDog->testFinished();
-
-                    if (data)
-                        break;
-                }
-                ++curDataIndex;
-            } while (curDataIndex < dataCount);
         }
+
+        /* For each entry in this test's data table, do: */
+        do {
+            QTestResult::setSkipCurrentTest(false);
+            QTestResult::setBlacklistCurrentTest(false);
+            if (!data || !qstrcmp(data, table.testData(curDataIndex)->dataTag())) {
+                foundFunction = true;
+
+                QTestPrivate::checkBlackLists(name.constData(), dataCount ? table.testData(curDataIndex)->dataTag() : 0);
+
+                QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
+                                  : table.testData(curDataIndex));
+
+                QTestPrivate::qtestMouseButtons = Qt::NoButton;
+                if (watchDog)
+                    watchDog->beginTest();
+                invokeTestOnData(index);
+                if (watchDog)
+                    watchDog->testFinished();
+
+                if (data)
+                    break;
+            }
+            ++curDataIndex;
+        } while (curDataIndex < dataCount);
 
         if (data && !foundFunction) {
             fprintf(stderr, "Unknown testdata for function %s: '%s()'\n", name.constData(), data);

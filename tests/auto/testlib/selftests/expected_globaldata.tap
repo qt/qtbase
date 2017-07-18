@@ -29,24 +29,29 @@ ok 7 - skipLocal(global=false:local=false) # SKIP skipping
 # init skipLocal local=true
 ok 8 - skipLocal(global=false:local=true) # SKIP skipping
 # cleanup skipLocal local=true
+# init skipLocal local=false
+ok 9 - skipLocal(global=true:local=false) # SKIP skipping
+# cleanup skipLocal local=false
+# init skipLocal local=true
+ok 10 - skipLocal(global=true:local=true) # SKIP skipping
+# cleanup skipLocal local=true
 # init skipSingle local=false
 # global: false local: false
 # cleanup skipSingle local=false
-ok 9 - skipSingle(global=false:local=false)
+ok 11 - skipSingle(global=false:local=false)
 # init skipSingle local=true
-# global: false local: true
+ok 12 - skipSingle(global=false:local=true) # SKIP Skipping
 # cleanup skipSingle local=true
-ok 10 - skipSingle(global=false:local=true)
 # init skipSingle local=false
-ok 11 - skipSingle(global=true:local=false) # SKIP Skipping
+ok 13 - skipSingle(global=true:local=false) # SKIP Skipping
 # cleanup skipSingle local=false
 # init skipSingle local=true
 # global: true local: true
 # cleanup skipSingle local=true
-ok 12 - skipSingle(global=true:local=true)
+ok 14 - skipSingle(global=true:local=true)
 # cleanupTestCase cleanupTestCase (null)
-ok 13 - cleanupTestCase()
-1..13
-# tests 13
-# pass 9
+ok 15 - cleanupTestCase()
+1..15
+# tests 15
+# pass 8
 # fail 0

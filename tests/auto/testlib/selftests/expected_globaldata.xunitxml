@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="37" failures="0" tests="6" name="tst_globaldata">
+<testsuite errors="43" failures="0" tests="6" name="tst_globaldata">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -36,13 +36,19 @@
     <!-- tag="global=false:local=true" message="init skipLocal local=true" type="qdebug" -->
     <!-- tag="global=false:local=true" message="skipping" type="skip" -->
     <!-- tag="global=false:local=true" message="cleanup skipLocal local=true" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="init skipLocal local=false" type="qdebug" -->
+    <!-- tag="global=true:local=false" message="skipping" type="skip" -->
+    <!-- tag="global=true:local=false" message="cleanup skipLocal local=false" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="init skipLocal local=true" type="qdebug" -->
+    <!-- tag="global=true:local=true" message="skipping" type="skip" -->
+    <!-- tag="global=true:local=true" message="cleanup skipLocal local=true" type="qdebug" -->
   </testcase>
   <testcase result="pass" name="skipSingle">
     <!-- tag="global=false:local=false" message="init skipSingle local=false" type="qdebug" -->
     <!-- tag="global=false:local=false" message="global: false local: false" type="qdebug" -->
     <!-- tag="global=false:local=false" message="cleanup skipSingle local=false" type="qdebug" -->
     <!-- tag="global=false:local=true" message="init skipSingle local=true" type="qdebug" -->
-    <!-- tag="global=false:local=true" message="global: false local: true" type="qdebug" -->
+    <!-- tag="global=false:local=true" message="Skipping" type="skip" -->
     <!-- tag="global=false:local=true" message="cleanup skipSingle local=true" type="qdebug" -->
     <!-- tag="global=true:local=false" message="init skipSingle local=false" type="qdebug" -->
     <!-- tag="global=true:local=false" message="Skipping" type="skip" -->
@@ -79,11 +85,17 @@
 <![CDATA[init skipLocal local=true]]>
 <![CDATA[skipping]]>
 <![CDATA[cleanup skipLocal local=true]]>
+<![CDATA[init skipLocal local=false]]>
+<![CDATA[skipping]]>
+<![CDATA[cleanup skipLocal local=false]]>
+<![CDATA[init skipLocal local=true]]>
+<![CDATA[skipping]]>
+<![CDATA[cleanup skipLocal local=true]]>
 <![CDATA[init skipSingle local=false]]>
 <![CDATA[global: false local: false]]>
 <![CDATA[cleanup skipSingle local=false]]>
 <![CDATA[init skipSingle local=true]]>
-<![CDATA[global: false local: true]]>
+<![CDATA[Skipping]]>
 <![CDATA[cleanup skipSingle local=true]]>
 <![CDATA[init skipSingle local=false]]>
 <![CDATA[Skipping]]>
