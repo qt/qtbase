@@ -41,23 +41,26 @@ namespace
         return port;
     }
 
-    QShaderNode createNode(const QVector<QShaderNodePort> &ports)
+    QShaderNode createNode(const QVector<QShaderNodePort> &ports, const QStringList &layers = QStringList())
     {
         auto node = QShaderNode();
         node.setUuid(QUuid::createUuid());
+        node.setLayers(layers);
         for (const auto &port : ports)
             node.addPort(port);
         return node;
     }
 
     QShaderGraph::Edge createEdge(const QUuid &sourceUuid, const QString &sourceName,
-                                  const QUuid &targetUuid, const QString &targetName)
+                                  const QUuid &targetUuid, const QString &targetName,
+                                  const QStringList &layers = QStringList())
     {
         auto edge = QShaderGraph::Edge();
         edge.sourceNodeUuid = sourceUuid;
         edge.sourcePortName = sourceName;
         edge.targetNodeUuid = targetUuid;
         edge.targetPortName = targetName;
+        edge.layers = layers;
         return edge;
     }
 

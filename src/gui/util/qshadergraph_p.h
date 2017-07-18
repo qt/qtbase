@@ -63,6 +63,7 @@ public:
     class Edge
     {
     public:
+        QStringList layers;
         QUuid sourceNodeUuid;
         QString sourcePortName;
         QUuid targetNodeUuid;

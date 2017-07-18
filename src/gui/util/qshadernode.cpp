@@ -72,6 +72,16 @@ void QShaderNode::setUuid(const QUuid &uuid) Q_DECL_NOTHROW
     m_uuid = uuid;
 }
 
+QStringList QShaderNode::layers() const Q_DECL_NOTHROW
+{
+    return m_layers;
+}
+
+void QShaderNode::setLayers(const QStringList &layers) Q_DECL_NOTHROW
+{
+    m_layers = layers;
+}
+
 QVector<QShaderNodePort> QShaderNode::ports() const Q_DECL_NOTHROW
 {
     return m_ports;

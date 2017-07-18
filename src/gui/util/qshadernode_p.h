@@ -84,6 +84,9 @@ public:
     Q_GUI_EXPORT QUuid uuid() const Q_DECL_NOTHROW;
     Q_GUI_EXPORT void setUuid(const QUuid &uuid) Q_DECL_NOTHROW;
 
+    Q_GUI_EXPORT QStringList layers() const Q_DECL_NOTHROW;
+    Q_GUI_EXPORT void setLayers(const QStringList &layers) Q_DECL_NOTHROW;
+
     Q_GUI_EXPORT QVector<QShaderNodePort> ports() const Q_DECL_NOTHROW;
     Q_GUI_EXPORT void addPort(const QShaderNodePort &port);
     Q_GUI_EXPORT void removePort(const QShaderNodePort &port);
@@ -101,6 +104,7 @@ public:
 
 private:
     QUuid m_uuid;
+    QStringList m_layers;
     QVector<QShaderNodePort> m_ports;
     QHash<QString, QVariant> m_parameters;
     QVector<QPair<QShaderFormat, QShaderNode::Rule>> m_rules;

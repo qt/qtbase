@@ -351,6 +351,7 @@ void tst_QShaderNodes::shouldManipulateNodeMembers()
     // THEN (default state)
     QCOMPARE(node.type(), QShaderNode::Invalid);
     QVERIFY(node.uuid().isNull());
+    QVERIFY(node.layers().isEmpty());
     QVERIFY(node.ports().isEmpty());
     QVERIFY(node.parameterNames().isEmpty());
     QVERIFY(node.availableFormats().isEmpty());
@@ -361,6 +362,12 @@ void tst_QShaderNodes::shouldManipulateNodeMembers()
 
     // THEN
     QCOMPARE(node.uuid(), uuid);
+
+    // WHEN
+    node.setLayers({"foo", "bar"});
+
+    // THEN
+    QCOMPARE(node.layers(), QStringList({"foo", "bar"}));
 
     // WHEN
     auto firstPort = QShaderNodePort();
