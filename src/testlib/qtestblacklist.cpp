@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 /*
   The BLACKLIST file format is a grouped listing of keywords.
 
-  Blank lines and lines starting with # are simply ignored.  An initial #-line
+  Blank lines and everything after # is simply ignored.  An initial #-line
   referring to this documentation is kind to readers.  Comments can also be used
   to indicate the reasons for ignoring particular cases.
 
@@ -247,8 +247,12 @@ void parseBlackList()
     QByteArray function;
 
     while (!ignored.atEnd()) {
-        QByteArray line = ignored.readLine().simplified();
-        if (line.isEmpty() || line.startsWith('#'))
+        QByteArray line = ignored.readLine();
+        const int commentPosition = line.indexOf('#');
+        if (commentPosition >= 0)
+            line.truncate(commentPosition);
+        line = line.simplified();
+        if (line.isEmpty())
             continue;
         if (line.startsWith('[')) {
             function = line.mid(1, line.length() - 2);
