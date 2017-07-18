@@ -186,10 +186,11 @@ static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 07
     int fd;
     EINTR_LOOP(fd, QT_OPEN(pathname, flags, mode));
 
-    // unknown flags are ignored, so we have no way of verifying if
-    // O_CLOEXEC was accepted
+#ifndef O_CLOEXEC
     if (fd != -1)
         ::fcntl(fd, F_SETFD, FD_CLOEXEC);
+#endif
+
     return fd;
 }
 #undef QT_OPEN
