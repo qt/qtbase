@@ -1459,7 +1459,11 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 /*!
     \fn QVariant::QVariant(Type type)
 
-    Constructs a null variant of type \a type.
+    Constructs an uninitialized variant of type \a type. This will create a
+    variant in a special null state that if accessed will return a default
+    constructed value of the \a type.
+
+    \sa isNull()
 */
 
 
@@ -3305,17 +3309,20 @@ bool QVariant::canConvert(int targetTypeId) const
 
 /*!
     Casts the variant to the requested type, \a targetTypeId. If the cast cannot be
-    done, the variant is cleared. Returns \c true if the current type of
-    the variant was successfully cast; otherwise returns \c false.
+    done, the variant is still changed to the requested type, but is left in a cleared
+    null state similar to that constructed by QVariant(Type).
+
+    Returns \c true if the current type of the variant was successfully cast;
+    otherwise returns \c false.
 
     A QVariant containing a pointer to a type derived from QObject will also convert
     and return true for this function if a qobject_cast to the type described
     by \a targetTypeId would succeed. Note that this only works for QObject subclasses
     which use the Q_OBJECT macro.
 
-    \warning For historical reasons, converting a null QVariant results
-    in a null value of the desired type (e.g., an empty string for
-    QString) and a result of false.
+    \note converting QVariants that are null due to not being initialized or having
+    failed a previous conversion will always fail, changing the type, remaining null,
+    and returning \c false.
 
     \sa canConvert(), clear()
 */
@@ -3332,7 +3339,8 @@ bool QVariant::convert(int targetTypeId)
         return false;
 
     create(targetTypeId, 0);
-    if (oldValue.isNull())
+    // Fail if the value is not initialized or was forced null by a previous failed convert.
+    if (oldValue.d.is_null)
         return false;
 
     if ((QMetaType::typeFlags(oldValue.userType()) & QMetaType::PointerToQObject) && (QMetaType::typeFlags(targetTypeId) & QMetaType::PointerToQObject)) {
@@ -3732,12 +3740,14 @@ void* QVariant::data()
 
 /*!
     Returns \c true if this is a null variant, false otherwise. A variant is
-    considered null if it contains a default constructed value or a built-in
-    type instance that has an isNull method, in which case the result
-    would be the same as calling isNull on the wrapped object.
+    considered null if it contains no initialized value or it contains an instance
+    of built-in type that has an isNull method, in which case the result would be
+    the same as calling isNull on the wrapped object.
 
-    \warning The result of the function doesn't affect == operator, which means
-    that two values can be equal even if one of them is null and another is not.
+    \warning Null variants is not a single state and two null variants may easily
+    return \c false on the == operator if they do not contain similar null values.
+
+    \sa QVariant(Type), convert(int)
 */
 bool QVariant::isNull() const
 {

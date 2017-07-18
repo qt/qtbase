@@ -277,6 +277,8 @@ private slots:
     void compareSanity();
     void compareRich();
 
+    void nullConvert();
+
     void accessSequentialContainerKey();
 
 private:
@@ -4861,6 +4863,33 @@ void tst_QVariant::compareRich()
                                  << QStringLiteral("d"));
 }
 
+void tst_QVariant::nullConvert()
+{
+    // Test quirks with QVariants different types of null states.
+
+    // null variant with no initialized value
+    QVariant nullVar(QVariant::String);
+    QVERIFY(nullVar.isValid());
+    QVERIFY(nullVar.isNull());
+    // We can not convert a variant with no value
+    QVERIFY(!nullVar.convert(QVariant::Url));
+    QCOMPARE(nullVar.type(), QVariant::Url);
+    QVERIFY(nullVar.isNull());
+
+    // variant initialized with null value
+    QVariant nullStr = QVariant::fromValue(QString());
+    QVERIFY(nullStr.isValid());
+    QVERIFY(nullStr.isNull());
+    // We can convert an initialized null value however
+    QVERIFY(nullStr.convert(QVariant::Url));
+    QCOMPARE(nullStr.type(), QVariant::Url);
+    QVERIFY(nullStr.isValid());
+    // QUrl does not have an isNull method
+    QVERIFY(!nullStr.isNull());
+    // The URL is not valid however
+    QVERIFY(!nullStr.toUrl().isValid());
+}
+
 void tst_QVariant::accessSequentialContainerKey()
 {
     QString nameResult;
@@ -4884,7 +4913,6 @@ void tst_QVariant::accessSequentialContainerKey()
 
     QCOMPARE(nameResult, QStringLiteral("Seven"));
 }
-
 
 QTEST_MAIN(tst_QVariant)
 #include "tst_qvariant.moc"
