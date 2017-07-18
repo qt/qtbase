@@ -4952,8 +4952,7 @@ static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
 {
     QScreen *screen = window->screen();
     Q_ASSERT(screen);
-    QPixmap result = screen->grabWindow(window->winId(), x, y, width, height);
-    return result.devicePixelRatio() > 1 ? result.scaled(width, height) : result;
+    return screen->grabWindow(window->winId(), x, y, width, height);
 }
 
 #define VERIFY_COLOR(child, region, color) verifyColor(child, region, color, __LINE__)
@@ -4971,7 +4970,8 @@ bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, uns
             const QPixmap pixmap = grabBackingStore
                 ? child.grab(rect)
                 : grabWindow(window, rect.left(), rect.top(), rect.width(), rect.height());
-            if (!QTest::qCompare(pixmap.size(), rect.size(), "pixmap.size()", "rect.size()", __FILE__, callerLine))
+            const QSize actualSize = pixmap.size() / pixmap.devicePixelRatioF();
+            if (!QTest::qCompare(actualSize, rect.size(), "pixmap.size()", "rect.size()", __FILE__, callerLine))
                 return false;
             QPixmap expectedPixmap(pixmap); /* ensure equal formats */
             expectedPixmap.detach();
@@ -10339,7 +10339,8 @@ public slots:
         QPoint point2(15, 20);
         QPoint point3(20, 20);
         QWindow *window = modal->windowHandle();
-        QWindowSystemInterface::handleEnterEvent(window, point1, window->mapToGlobal(point1));
+        const QPoint nativePoint1 = QHighDpi::toNativePixels(point1, window->screen());
+        QWindowSystemInterface::handleEnterEvent(window, nativePoint1);
         QTest::mouseMove(window, point1);
         QTest::mouseMove(window, point2);
         QTest::mouseMove(window, point3);
