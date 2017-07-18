@@ -76,6 +76,8 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QSharedPointer<QWindowCreationContext> QWindowCreationContextPtr;
+
 enum {
     defaultWindowWidth = 160,
     defaultWindowHeight = 160
@@ -621,8 +623,6 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 QWindowsWindowData
     WindowCreationData::create(const QWindow *w, const WindowData &data, QString title) const
 {
-    typedef QSharedPointer<QWindowCreationContext> QWindowCreationContextPtr;
-
     WindowData result;
     result.flags = flags;
 
@@ -1070,8 +1070,6 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const QWindowsWindowData &data)
   , m_vkSurface(0)
 #endif
 {
-    // Clear the creation context as the window can be found in QWindowsContext's map.
-    QWindowsContext::instance()->setWindowCreationContext(QSharedPointer<QWindowCreationContext>());
     QWindowsContext::instance()->addWindow(m_data.hwnd, this);
     const Qt::WindowType type = aWindow->type();
     if (type == Qt::Desktop)
@@ -1110,6 +1108,27 @@ QWindowsWindow::~QWindowsWindow()
         QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
     destroyWindow();
     destroyIcon();
+}
+
+void QWindowsWindow::initialize()
+{
+    // Clear the creation context as the window can be found in QWindowsContext's map.
+    QWindowCreationContextPtr creationContext =
+        QWindowsContext::instance()->setWindowCreationContext(QWindowCreationContextPtr());
+
+    // Trigger geometry change (unless it has a special state in which case setWindowState()
+    // will send the message) and screen change signals of QWindow.
+    QWindow *w = window();
+    if (w->type() != Qt::Desktop) {
+        const Qt::WindowState state = w->windowState();
+        if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen
+            && creationContext->requestedGeometry != creationContext->obtainedGeometry) {
+            QWindowSystemInterface::handleGeometryChange(w, creationContext->obtainedGeometry);
+        }
+        QPlatformScreen *obtainedScreen = screenForGeometry(creationContext->obtainedGeometry);
+        if (obtainedScreen && screen() != obtainedScreen)
+            QWindowSystemInterface::handleWindowScreenChanged(w, obtainedScreen->screen());
+    }
 }
 
 void QWindowsWindow::fireExpose(const QRegion &region, bool force)

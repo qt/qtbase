@@ -221,6 +221,8 @@ public:
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsWindow();
 
+    void initialize() override;
+
     using QPlatformWindow::screenForGeometry;
 
     QSurfaceFormat format() const override { return m_format; }

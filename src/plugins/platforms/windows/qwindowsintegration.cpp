@@ -344,21 +344,6 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     if (QWindowsMenuBar *menuBarToBeInstalled = QWindowsMenuBar::menuBarOf(window))
         menuBarToBeInstalled->install(result);
 
-    if (requested.flags != obtained.flags)
-        window->setFlags(obtained.flags);
-    // Trigger geometry change (unless it has a special state in which case setWindowState()
-    // will send the message) and screen change signals of QWindow.
-    if ((obtained.flags & Qt::Desktop) != Qt::Desktop) {
-        const Qt::WindowState state = window->windowState();
-        if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen
-            && requested.geometry != obtained.geometry) {
-            QWindowSystemInterface::handleGeometryChange(window, obtained.geometry);
-        }
-        QPlatformScreen *screen = result->screenForGeometry(obtained.geometry);
-        if (screen && result->screen() != screen)
-            QWindowSystemInterface::handleWindowScreenChanged(window, screen->screen());
-    }
-
     return result;
 }
 

@@ -405,9 +405,11 @@ QList<int> QWindowsContext::possibleKeys(const QKeyEvent *e) const
     return d->m_keyMapper.possibleKeys(e);
 }
 
-void QWindowsContext::setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx)
+QSharedPointer<QWindowCreationContext> QWindowsContext::setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx)
 {
+    const QSharedPointer<QWindowCreationContext> old = d->m_creationContext;
     d->m_creationContext = ctx;
+    return old;
 }
 
 QSharedPointer<QWindowCreationContext> QWindowsContext::windowCreationContext() const

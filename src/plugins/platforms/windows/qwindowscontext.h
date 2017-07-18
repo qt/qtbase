@@ -196,7 +196,7 @@ public:
     QWindow *keyGrabber() const;
     void setKeyGrabber(QWindow *hwnd);
 
-    void setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx);
+    QSharedPointer<QWindowCreationContext> setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx);
     QSharedPointer<QWindowCreationContext> windowCreationContext() const;
 
     void setTabletAbsoluteRange(int a);
