@@ -1763,7 +1763,7 @@ bool QWindowsWindow::isFullScreen_sys() const
     if (testFlag(HasBorderInFullScreen))
         geometry += QMargins(1, 1, 1, 1);
     QPlatformScreen *screen = screenForGeometry(geometry);
-    return screen && geometry == QHighDpi::toNativePixels(screen->geometry(), screen);
+    return screen && geometry == screen->geometry();
 }
 
 /*!
