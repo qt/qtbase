@@ -151,8 +151,15 @@ void QShaderGraphLoader::load()
             continue;
         }
 
+        const auto layersArray = nodeObject.value(QStringLiteral("layers")).toArray();
+        auto layers = QStringList();
+        for (const auto &layerValue : layersArray) {
+            layers.append(layerValue.toString());
+        }
+
         auto node = m_prototypes.value(type);
         node.setUuid(uuid);
+        node.setLayers(layers);
 
         const auto parametersValue = nodeObject.value(QStringLiteral("parameters"));
         if (parametersValue.isObject()) {
@@ -218,11 +225,18 @@ void QShaderGraphLoader::load()
 
         const auto targetPort = edgeObject.value(QStringLiteral("targetPort")).toString();
 
+        const auto layersArray = edgeObject.value(QStringLiteral("layers")).toArray();
+        auto layers = QStringList();
+        for (const auto &layerValue : layersArray) {
+            layers.append(layerValue.toString());
+        }
+
         auto edge = QShaderGraph::Edge();
         edge.sourceNodeUuid = sourceUuid;
         edge.sourcePortName = sourcePort;
         edge.targetNodeUuid = targetUuid;
         edge.targetPortName = targetPort;
+        edge.layers = layers;
         m_graph.addEdge(edge);
     }
 

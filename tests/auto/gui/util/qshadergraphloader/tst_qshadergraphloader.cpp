@@ -67,23 +67,26 @@ namespace
         return port;
     }
 
-    QShaderNode createNode(const QVector<QShaderNodePort> &ports)
+    QShaderNode createNode(const QVector<QShaderNodePort> &ports, const QStringList &layers = QStringList())
     {
         auto node = QShaderNode();
         node.setUuid(QUuid::createUuid());
+        node.setLayers(layers);
         for (const auto &port : ports)
             node.addPort(port);
         return node;
     }
 
     QShaderGraph::Edge createEdge(const QUuid &sourceUuid, const QString &sourceName,
-                                  const QUuid &targetUuid, const QString &targetName)
+                                  const QUuid &targetUuid, const QString &targetName,
+                                  const QStringList &layers = QStringList())
     {
         auto edge = QShaderGraph::Edge();
         edge.sourceNodeUuid = sourceUuid;
         edge.sourcePortName = sourceName;
         edge.targetNodeUuid = targetUuid;
         edge.targetPortName = targetName;
+        edge.layers = layers;
         return edge;
     }
 
@@ -298,7 +301,8 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                            "    \"nodes\": ["
                            "        {"
                            "            \"uuid\": \"{00000000-0000-0000-0000-000000000001}\","
-                           "            \"type\": \"MyInput\""
+                           "            \"type\": \"MyInput\","
+                           "            \"layers\": [\"foo\", \"bar\"]"
                            "        },"
                            "        {"
                            "            \"uuid\": \"{00000000-0000-0000-0000-000000000002}\","
@@ -314,7 +318,8 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
                            "            \"sourceUuid\": \"{00000000-0000-0000-0000-000000000001}\","
                            "            \"sourcePort\": \"input\","
                            "            \"targetUuid\": \"{00000000-0000-0000-0000-000000000003}\","
-                           "            \"targetPort\": \"functionInput\""
+                           "            \"targetPort\": \"functionInput\","
+                           "            \"layers\": [\"bar\", \"baz\"]"
                            "        },"
                            "        {"
                            "            \"sourceUuid\": \"{00000000-0000-0000-0000-000000000003}\","
@@ -351,7 +356,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
 
         auto input = createNode({
             createPort(QShaderNodePort::Output, "input")
-        });
+        }, {"foo", "bar"});
         input.setUuid(QUuid("{00000000-0000-0000-0000-000000000001}"));
         auto output = createNode({
             createPort(QShaderNodePort::Input, "output")
@@ -366,7 +371,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream_data()
         graph.addNode(input);
         graph.addNode(output);
         graph.addNode(function);
-        graph.addEdge(createEdge(input.uuid(), "input", function.uuid(), "functionInput"));
+        graph.addEdge(createEdge(input.uuid(), "input", function.uuid(), "functionInput", {"bar", "baz"}));
         graph.addEdge(createEdge(function.uuid(), "functionOutput", output.uuid(), "output"));
 
         return graph;
@@ -587,8 +592,8 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream()
     QCOMPARE(loader.status(), status);
 
     QFETCH(QShaderGraph, graph);
-    const auto statements = loader.graph().createStatements();
-    const auto expected = graph.createStatements();
+    const auto statements = loader.graph().createStatements({"foo", "bar", "baz"});
+    const auto expected = graph.createStatements({"foo", "bar", "baz"});
     dumpStatementsIfNeeded(statements, expected);
     QCOMPARE(statements, expected);
 
@@ -602,6 +607,7 @@ void tst_QShaderGraphLoader::shouldLoadFromJsonStream()
         const auto actualNode = statements.at(i).node;
         const auto expectedNode = expected.at(i).node;
 
+        QCOMPARE(actualNode.layers(), expectedNode.layers());
         QCOMPARE(actualNode.ports(), expectedNode.ports());
         QCOMPARE(sortedParameters(actualNode), sortedParameters(expectedNode));
         for (const auto &name : expectedNode.parameterNames()) {
