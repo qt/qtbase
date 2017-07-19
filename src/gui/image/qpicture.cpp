@@ -1206,7 +1206,12 @@ QT_END_INCLUDE_NAMESPACE
 
 const char* QPicture::pictureFormat(const QString &fileName)
 {
-    return QPictureIO::pictureFormat(fileName);
+    const QByteArray format = QPictureIO::pictureFormat(fileName);
+    // This function returns a const char * from a QByteArray.
+    // Double check that the QByteArray is not detached, otherwise
+    // we would return a dangling pointer.
+    Q_ASSERT(!format.isDetached());
+    return format;
 }
 
 /*!
