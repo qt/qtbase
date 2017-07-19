@@ -387,12 +387,13 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                 && (!hasCapture || currentWindowUnderMouse == window))
             || (m_previousCaptureWindow && window != m_previousCaptureWindow && currentWindowUnderMouse
                 && currentWindowUnderMouse != m_previousCaptureWindow)) {
+            QPoint localPosition;
             qCDebug(lcQpaEvents) << "Entering " << currentWindowUnderMouse;
-            if (QWindowsWindow *wumPlatformWindow = QWindowsWindow::windowsWindowOf(currentWindowUnderMouse))
+            if (QWindowsWindow *wumPlatformWindow = QWindowsWindow::windowsWindowOf(currentWindowUnderMouse)) {
+                localPosition = wumPlatformWindow->mapFromGlobal(globalPosition);
                 wumPlatformWindow->applyCursor();
-            QWindowSystemInterface::handleEnterEvent(currentWindowUnderMouse,
-                                                     currentWindowUnderMouse->mapFromGlobal(globalPosition),
-                                                     globalPosition);
+            }
+            QWindowSystemInterface::handleEnterEvent(currentWindowUnderMouse, localPosition, globalPosition);
         }
         // We need to track m_windowUnderMouse separately from m_trackedWindow, as
         // Windows mouse tracking will not trigger WM_MOUSELEAVE for leaving window when
