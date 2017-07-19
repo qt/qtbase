@@ -79,7 +79,7 @@ public:
         return *this;
     }
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     T load() const;
     T loadAcquire() const;
     void store(T newValue);
