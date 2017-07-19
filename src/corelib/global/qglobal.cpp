@@ -182,28 +182,28 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 /*!
     \fn QFlag::QFlag(int value)
 
-    Constructs a QFlag object that stores the given \a value.
+    Constructs a QFlag object that stores the \a value.
 */
 
 /*!
     \fn QFlag::QFlag(uint value)
     \since 5.3
 
-    Constructs a QFlag object that stores the given \a value.
+    Constructs a QFlag object that stores the \a value.
 */
 
 /*!
     \fn QFlag::QFlag(short value)
     \since 5.3
 
-    Constructs a QFlag object that stores the given \a value.
+    Constructs a QFlag object that stores the \a value.
 */
 
 /*!
     \fn QFlag::QFlag(ushort value)
     \since 5.3
 
-    Constructs a QFlag object that stores the given \a value.
+    Constructs a QFlag object that stores the \a value.
 */
 
 /*!
@@ -298,29 +298,28 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags::QFlags(const QFlags &other)
+    \fn template<typename Enum> QFlags<Enum>::QFlags(const QFlags &other)
 
     Constructs a copy of \a other.
 */
 
 /*!
-    \fn QFlags::QFlags(Enum flag)
+    \fn template <typename Enum> QFlags<Enum>::QFlags(Enum flags)
 
-    Constructs a QFlags object storing the given \a flag.
+    Constructs a QFlags object storing the \a flags.
 */
 
 /*!
-    \fn QFlags::QFlags(Zero zero)
+    \fn template <typename Enum> QFlags<Enum>::QFlags(Zero)
 
-    Constructs a QFlags object with no flags set. \a zero must be a
+    Constructs a QFlags object with no flags set. The parameter must be a
     literal 0 value.
 */
 
 /*!
-    \fn QFlags::QFlags(QFlag value)
+    \fn template <typename Enum> QFlags<Enum>::QFlags(QFlag flag)
 
-    Constructs a QFlags object initialized with the given integer \a
-    value.
+    Constructs a QFlags object initialized with the integer \a flag.
 
     The QFlag type is a helper type. By using it here instead of \c
     int, we effectively ensure that arbitrary enum values cannot be
@@ -329,7 +328,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags::QFlags(std::initializer_list<Enum> flags)
+    \fn template <typename Enum> QFlags<Enum>::QFlags(std::initializer_list<Enum> flags)
     \since 5.4
 
     Constructs a QFlags object initialized with all \a flags
@@ -339,14 +338,14 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags &QFlags::operator=(const QFlags &other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator=(const QFlags &other)
 
     Assigns \a other to this object and returns a reference to this
     object.
 */
 
 /*!
-    \fn QFlags &QFlags::operator&=(int mask)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(int mask)
 
     Performs a bitwise AND operation with \a mask and stores the
     result in this QFlags object. Returns a reference to this object.
@@ -355,19 +354,19 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags &QFlags::operator&=(uint mask)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(uint mask)
 
     \overload
 */
 
 /*!
-    \fn QFlags &QFlags::operator&=(Enum mask)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator&=(Enum mask)
 
     \overload
 */
 
 /*!
-    \fn QFlags &QFlags::operator|=(QFlags other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator|=(QFlags other)
 
     Performs a bitwise OR operation with \a other and stores the
     result in this QFlags object. Returns a reference to this object.
@@ -376,13 +375,13 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags &QFlags::operator|=(Enum other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator|=(Enum other)
 
     \overload
 */
 
 /*!
-    \fn QFlags &QFlags::operator^=(QFlags other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator^=(QFlags other)
 
     Performs a bitwise XOR operation with \a other and stores the
     result in this QFlags object. Returns a reference to this object.
@@ -391,13 +390,13 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags &QFlags::operator^=(Enum other)
+    \fn template <typename Enum> QFlags &QFlags<Enum>::operator^=(Enum other)
 
     \overload
 */
 
 /*!
-    \fn QFlags::operator Int() const
+    \fn template <typename Enum> QFlags<Enum>::operator Int() const
 
     Returns the value stored in the QFlags object as an integer.
 
@@ -405,7 +404,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags QFlags::operator|(QFlags other) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator|(QFlags other) const
 
     Returns a QFlags object containing the result of the bitwise OR
     operation on this object and \a other.
@@ -414,13 +413,13 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags QFlags::operator|(Enum other) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator|(Enum other) const
 
     \overload
 */
 
 /*!
-    \fn QFlags QFlags::operator^(QFlags other) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator^(QFlags other) const
 
     Returns a QFlags object containing the result of the bitwise XOR
     operation on this object and \a other.
@@ -429,13 +428,13 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags QFlags::operator^(Enum other) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator^(Enum other) const
 
     \overload
 */
 
 /*!
-    \fn QFlags QFlags::operator&(int mask) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(int mask) const
 
     Returns a QFlags object containing the result of the bitwise AND
     operation on this object and \a mask.
@@ -444,19 +443,19 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn QFlags QFlags::operator&(uint mask) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(uint mask) const
 
     \overload
 */
 
 /*!
-    \fn QFlags QFlags::operator&(Enum mask) const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator&(Enum mask) const
 
     \overload
 */
 
 /*!
-    \fn QFlags QFlags::operator~() const
+    \fn template <typename Enum> QFlags QFlags<Enum>::operator~() const
 
     Returns a QFlags object that contains the bitwise negation of
     this object.
@@ -465,24 +464,24 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \fn bool QFlags::operator!() const
+    \fn template <typename Enum> bool QFlags<Enum>::operator!() const
 
     Returns \c true if no flag is set (i.e., if the value stored by the
     QFlags object is 0); otherwise returns \c false.
 */
 
 /*!
-    \fn bool QFlags::testFlag(Enum flag) const
+    \fn template <typename Enum> bool QFlags<Enum>::testFlag(Enum flag) const
     \since 4.2
 
-    Returns \c true if the \a flag is set, otherwise \c false.
+    Returns \c true if the flag \a flag is set, otherwise \c false.
 */
 
 /*!
-    \fn QFlags QFlags::setFlag(Enum flag, bool on)
+    \fn template <typename Enum> QFlags QFlags<Enum>::setFlag(Enum flag, bool on)
     \since 5.7
 
-    Sets the indicated \a flag if \a on is \c true or unsets it if
+    Sets the flag \a flag if \a on is \c true or unsets it if
     \a on is \c false. Returns a reference to this object.
 */
 
@@ -920,11 +919,11 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \sa quint64, qlonglong
 */
 
-/*! \fn T qAbs(const T &value)
+/*! \fn template <typename T> T qAbs(const T &t)
     \relates <QtGlobal>
 
-    Compares \a value to the 0 of type T and returns the absolute
-    value. Thus if T is \e {double}, then \a value is compared to
+    Compares \a t to the 0 of type T and returns the absolute
+    value. Thus if T is \e {double}, then \a t is compared to
     \e{(double) 0}.
 
     Example:
@@ -932,50 +931,50 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \snippet code/src_corelib_global_qglobal.cpp 10
 */
 
-/*! \fn int qRound(double value)
+/*! \fn int qRound(double d)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest integer.
+    Rounds \a d to the nearest integer.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11A
 */
 
-/*! \fn int qRound(float value)
+/*! \fn int qRound(float d)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest integer.
+    Rounds \a d to the nearest integer.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 11B
 */
 
-/*! \fn qint64 qRound64(double value)
+/*! \fn qint64 qRound64(double d)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest 64-bit integer.
+    Rounds \a d to the nearest 64-bit integer.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12A
 */
 
-/*! \fn qint64 qRound64(float value)
+/*! \fn qint64 qRound64(float d)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest 64-bit integer.
+    Rounds \a d to the nearest 64-bit integer.
 
     Example:
 
     \snippet code/src_corelib_global_qglobal.cpp 12B
 */
 
-/*! \fn const T &qMin(const T &value1, const T &value2)
+/*! \fn template <typename T> const T &qMin(const T &a, const T &b)
     \relates <QtGlobal>
 
-    Returns the minimum of \a value1 and \a value2.
+    Returns the minimum of \a a and \a b.
 
     Example:
 
@@ -984,10 +983,10 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \sa qMax(), qBound()
 */
 
-/*! \fn const T &qMax(const T &value1, const T &value2)
+/*! \fn template <typename T> const T &qMax(const T &a, const T &b)
     \relates <QtGlobal>
 
-    Returns the maximum of \a value1 and \a value2.
+    Returns the maximum of \a a and \a b.
 
     Example:
 
@@ -996,11 +995,11 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \sa qMin(), qBound()
 */
 
-/*! \fn const T &qBound(const T &min, const T &value, const T &max)
+/*! \fn template <typename T> const T &qBound(const T &min, const T &val, const T &max)
     \relates <QtGlobal>
 
-    Returns \a value bounded by \a min and \a max. This is equivalent
-    to qMax(\a min, qMin(\a value, \a max)).
+    Returns \a val bounded by \a min and \a max. This is equivalent
+    to qMax(\a min, qMin(\a val, \a max)).
 
     Example:
 
@@ -1009,7 +1008,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     \sa qMin(), qMax()
 */
 
-/*! \fn auto qOverload(T functionPointer)
+/*! \fn template <typename T> auto qOverload(T functionPointer)
     \relates <QtGlobal>
     \since 5.7
 
@@ -1031,7 +1030,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     and Functor-Based Connections}
 */
 
-/*! \fn auto qConstOverload(T memberFunctionPointer)
+/*! \fn template <typename T> auto qConstOverload(T memberFunctionPointer)
     \relates <QtGlobal>
     \since 5.7
 
@@ -1043,7 +1042,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     and Functor-Based Connections}
 */
 
-/*! \fn auto qNonConstOverload(T memberFunctionPointer)
+/*! \fn template <typename T> auto qNonConstOverload(T memberFunctionPointer)
     \relates <QtGlobal>
     \since 5.7
 
@@ -3105,10 +3104,10 @@ QByteArray QSysInfo::bootUniqueId()
 */
 
 /*!
-    \fn T *q_check_ptr(T *pointer)
+    \fn template <typename T> T *q_check_ptr(T *p)
     \relates <QtGlobal>
 
-    Uses Q_CHECK_PTR on \a pointer, then returns \a pointer.
+    Uses Q_CHECK_PTR on \a p, then returns \a p.
 
     This can be used as an inline version of Q_CHECK_PTR.
 */
@@ -3603,7 +3602,7 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
-    \fn qAsConst(T &t)
+    \fn template <typename T> qAsConst(T &t)
     \relates <QtGlobal>
     \since 5.7
 
@@ -3655,7 +3654,7 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
-    \fn qAsConst(const T &&t)
+    \fn template <typename T> qAsConst(const T &&t)
     \relates <QtGlobal>
     \since 5.7
     \overload

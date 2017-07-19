@@ -54,20 +54,20 @@ class QFlag
 {
     int i;
 public:
-    Q_DECL_CONSTEXPR inline QFlag(int ai) Q_DECL_NOTHROW : i(ai) {}
+    Q_DECL_CONSTEXPR inline QFlag(int value) Q_DECL_NOTHROW : i(value) {}
     Q_DECL_CONSTEXPR inline operator int() const Q_DECL_NOTHROW { return i; }
 
 #if !defined(Q_CC_MSVC)
     // Microsoft Visual Studio has buggy behavior when it comes to
     // unsigned enums: even if the enum is unsigned, the enum tags are
     // always signed
-#  if !defined(__LP64__) && !defined(Q_QDOC)
-    Q_DECL_CONSTEXPR inline QFlag(long ai) Q_DECL_NOTHROW : i(int(ai)) {}
-    Q_DECL_CONSTEXPR inline QFlag(ulong ai) Q_DECL_NOTHROW : i(int(long(ai))) {}
+#  if !defined(__LP64__) && !defined(Q_CLANG_QDOC)
+    Q_DECL_CONSTEXPR inline QFlag(long value) Q_DECL_NOTHROW : i(int(value)) {}
+    Q_DECL_CONSTEXPR inline QFlag(ulong value) Q_DECL_NOTHROW : i(int(long(value))) {}
 #  endif
-    Q_DECL_CONSTEXPR inline QFlag(uint ai) Q_DECL_NOTHROW : i(int(ai)) {}
-    Q_DECL_CONSTEXPR inline QFlag(short ai) Q_DECL_NOTHROW : i(int(ai)) {}
-    Q_DECL_CONSTEXPR inline QFlag(ushort ai) Q_DECL_NOTHROW : i(int(uint(ai))) {}
+    Q_DECL_CONSTEXPR inline QFlag(uint value) Q_DECL_NOTHROW : i(int(value)) {}
+    Q_DECL_CONSTEXPR inline QFlag(short value) Q_DECL_NOTHROW : i(int(value)) {}
+    Q_DECL_CONSTEXPR inline QFlag(ushort value) Q_DECL_NOTHROW : i(int(uint(value))) {}
     Q_DECL_CONSTEXPR inline operator uint() const Q_DECL_NOTHROW { return uint(i); }
 #endif
 };
@@ -82,7 +82,7 @@ public:
 };
 Q_DECLARE_TYPEINFO(QIncompatibleFlag, Q_PRIMITIVE_TYPE);
 
-Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int ai) Q_DECL_NOTHROW : i(ai) {}
+Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int value) Q_DECL_NOTHROW : i(value) {}
 
 
 #ifndef Q_NO_TYPESAFE_FLAGS
@@ -100,7 +100,7 @@ class QFlags
     template <typename E> friend QDataStream &operator>>(QDataStream &, QFlags<E> &);
     template <typename E> friend QDataStream &operator<<(QDataStream &, QFlags<E>);
 public:
-#if defined(Q_CC_MSVC) || defined(Q_QDOC)
+#if defined(Q_CC_MSVC) || defined(Q_CLANG_QDOC)
     // see above for MSVC
     // the definition below is too complex for qdoc
     typedef int Int;
@@ -113,13 +113,13 @@ public:
 #endif
     typedef Enum enum_type;
     // compiler-generated copy/move ctor/assignment operators are fine!
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     Q_DECL_CONSTEXPR inline QFlags(const QFlags &other);
     Q_DECL_CONSTEXPR inline QFlags &operator=(const QFlags &other);
 #endif
-    Q_DECL_CONSTEXPR inline QFlags(Enum f) Q_DECL_NOTHROW : i(Int(f)) {}
-    Q_DECL_CONSTEXPR inline QFlags(Zero = nullptr) Q_DECL_NOTHROW : i(0) {}
-    Q_DECL_CONSTEXPR inline QFlags(QFlag f) Q_DECL_NOTHROW : i(f) {}
+    Q_DECL_CONSTEXPR inline QFlags(Enum flags) Q_DECL_NOTHROW : i(Int(flags)) {}
+    Q_DECL_CONSTEXPR inline QFlags(Zero = Q_NULLPTR) Q_DECL_NOTHROW : i(0) {}
+    Q_DECL_CONSTEXPR inline QFlags(QFlag flag) Q_DECL_NOTHROW : i(flag) {}
 
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     Q_DECL_CONSTEXPR inline QFlags(std::initializer_list<Enum> flags) Q_DECL_NOTHROW
@@ -129,28 +129,28 @@ public:
     Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(int mask) Q_DECL_NOTHROW { i &= mask; return *this; }
     Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(uint mask) Q_DECL_NOTHROW { i &= mask; return *this; }
     Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator&=(Enum mask) Q_DECL_NOTHROW { i &= Int(mask); return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator|=(QFlags f) Q_DECL_NOTHROW { i |= f.i; return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator|=(Enum f) Q_DECL_NOTHROW { i |= Int(f); return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator^=(QFlags f) Q_DECL_NOTHROW { i ^= f.i; return *this; }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator^=(Enum f) Q_DECL_NOTHROW { i ^= Int(f); return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator|=(QFlags other) Q_DECL_NOTHROW { i |= other.i; return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator|=(Enum other) Q_DECL_NOTHROW { i |= Int(other); return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator^=(QFlags other) Q_DECL_NOTHROW { i ^= other.i; return *this; }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &operator^=(Enum other) Q_DECL_NOTHROW { i ^= Int(other); return *this; }
 
     Q_DECL_CONSTEXPR inline operator Int() const Q_DECL_NOTHROW { return i; }
 
-    Q_DECL_CONSTEXPR inline QFlags operator|(QFlags f) const Q_DECL_NOTHROW { return QFlags(QFlag(i | f.i)); }
-    Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const Q_DECL_NOTHROW { return QFlags(QFlag(i | Int(f))); }
-    Q_DECL_CONSTEXPR inline QFlags operator^(QFlags f) const Q_DECL_NOTHROW { return QFlags(QFlag(i ^ f.i)); }
-    Q_DECL_CONSTEXPR inline QFlags operator^(Enum f) const Q_DECL_NOTHROW { return QFlags(QFlag(i ^ Int(f))); }
+    Q_DECL_CONSTEXPR inline QFlags operator|(QFlags other) const Q_DECL_NOTHROW { return QFlags(QFlag(i | other.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator|(Enum other) const Q_DECL_NOTHROW { return QFlags(QFlag(i | Int(other))); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(QFlags other) const Q_DECL_NOTHROW { return QFlags(QFlag(i ^ other.i)); }
+    Q_DECL_CONSTEXPR inline QFlags operator^(Enum other) const Q_DECL_NOTHROW { return QFlags(QFlag(i ^ Int(other))); }
     Q_DECL_CONSTEXPR inline QFlags operator&(int mask) const Q_DECL_NOTHROW { return QFlags(QFlag(i & mask)); }
     Q_DECL_CONSTEXPR inline QFlags operator&(uint mask) const Q_DECL_NOTHROW { return QFlags(QFlag(i & mask)); }
-    Q_DECL_CONSTEXPR inline QFlags operator&(Enum f) const Q_DECL_NOTHROW { return QFlags(QFlag(i & Int(f))); }
+    Q_DECL_CONSTEXPR inline QFlags operator&(Enum other) const Q_DECL_NOTHROW { return QFlags(QFlag(i & Int(other))); }
     Q_DECL_CONSTEXPR inline QFlags operator~() const Q_DECL_NOTHROW { return QFlags(QFlag(~i)); }
 
     Q_DECL_CONSTEXPR inline bool operator!() const Q_DECL_NOTHROW { return !i; }
 
-    Q_DECL_CONSTEXPR inline bool testFlag(Enum f) const Q_DECL_NOTHROW { return (i & Int(f)) == Int(f) && (Int(f) != 0 || i == Int(f) ); }
-    Q_DECL_RELAXED_CONSTEXPR inline QFlags &setFlag(Enum f, bool on = true) Q_DECL_NOTHROW
+    Q_DECL_CONSTEXPR inline bool testFlag(Enum flag) const Q_DECL_NOTHROW { return (i & Int(flag)) == Int(flag) && (Int(flag) != 0 || i == Int(flag) ); }
+    Q_DECL_RELAXED_CONSTEXPR inline QFlags &setFlag(Enum flag, bool on = true) Q_DECL_NOTHROW
     {
-        return on ? (*this |= f) : (*this &= ~Int(f));
+        return on ? (*this |= flag) : (*this &= ~Int(flag));
     }
 
 private:
