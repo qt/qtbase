@@ -181,13 +181,18 @@ public:
 #endif
     };
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-    void sha3Finish(int bitCount);
+    enum class Sha3Variant
+    {
+        Sha3,
+        Keccak
+    };
+    void sha3Finish(int bitCount, Sha3Variant sha3Variant);
 #endif
     QByteArray result;
 };
 
 #ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-void QCryptographicHashPrivate::sha3Finish(int bitCount)
+void QCryptographicHashPrivate::sha3Finish(int bitCount, Sha3Variant sha3Variant)
 {
     /*
         FIPS 202 §6.1 defines SHA-3 in terms of calculating the Keccak function
@@ -214,7 +219,15 @@ void QCryptographicHashPrivate::sha3Finish(int bitCount)
     result.resize(bitCount / 8);
 
     SHA3Context copy = sha3Context;
-    sha3Update(&copy, reinterpret_cast<const BitSequence *>(&sha3FinalSuffix), 2);
+
+    switch (sha3Variant) {
+    case Sha3Variant::Sha3:
+        sha3Update(&copy, reinterpret_cast<const BitSequence *>(&sha3FinalSuffix), 2);
+        break;
+    case Sha3Variant::Keccak:
+        break;
+    }
+
     sha3Final(&copy, reinterpret_cast<BitSequence *>(result.data()));
 }
 #endif
@@ -239,6 +252,10 @@ void QCryptographicHashPrivate::sha3Finish(int bitCount)
 /*!
   \enum QCryptographicHash::Algorithm
 
+  \note In Qt versions before 5.9, when asked to generate a SHA3 hash sum,
+  QCryptographicHash actually calculated Keccak. If you need compatibility with
+  SHA-3 hashes produced by those versions of Qt, use the \c{Keccak_} enumerators.
+
   \value Md4 Generate an MD4 hash sum
   \value Md5 Generate an MD5 hash sum
   \value Sha1 Generate an SHA-1 hash sum
@@ -250,6 +267,10 @@ void QCryptographicHashPrivate::sha3Finish(int bitCount)
   \value Sha3_256 Generate an SHA3-256 hash sum. Introduced in Qt 5.1
   \value Sha3_384 Generate an SHA3-384 hash sum. Introduced in Qt 5.1
   \value Sha3_512 Generate an SHA3-512 hash sum. Introduced in Qt 5.1
+  \value Keccak_224 \deprecated Generate a Keccak-224 hash sum. Introduced in Qt 5.10
+  \value Keccak_256 \deprecated Generate a Keccak-256 hash sum. Introduced in Qt 5.10
+  \value Keccak_384 \deprecated Generate a Keccak-384 hash sum. Introduced in Qt 5.10
+  \value Keccak_512 \deprecated Generate a Keccak-512 hash sum. Introduced in Qt 5.10
 */
 
 /*!
@@ -304,15 +325,19 @@ void QCryptographicHash::reset()
         SHA512Reset(&d->sha512Context);
         break;
     case Sha3_224:
+    case Keccak_224:
         sha3Init(&d->sha3Context, 224);
         break;
     case Sha3_256:
+    case Keccak_256:
         sha3Init(&d->sha3Context, 256);
         break;
     case Sha3_384:
+    case Keccak_384:
         sha3Init(&d->sha3Context, 384);
         break;
     case Sha3_512:
+    case Keccak_512:
         sha3Init(&d->sha3Context, 512);
         break;
 #endif
@@ -355,15 +380,19 @@ void QCryptographicHash::addData(const char *data, int length)
         SHA512Input(&d->sha512Context, reinterpret_cast<const unsigned char *>(data), length);
         break;
     case Sha3_224:
+    case Keccak_224:
         sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
         break;
     case Sha3_256:
+    case Keccak_256:
         sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
         break;
     case Sha3_384:
+    case Keccak_384:
         sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
         break;
     case Sha3_512:
+    case Keccak_512:
         sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
         break;
 #endif
@@ -463,19 +492,35 @@ QByteArray QCryptographicHash::result() const
         break;
     }
     case Sha3_224: {
-        d->sha3Finish(224);
+        d->sha3Finish(224, QCryptographicHashPrivate::Sha3Variant::Sha3);
         break;
     }
     case Sha3_256: {
-        d->sha3Finish(256);
+        d->sha3Finish(256, QCryptographicHashPrivate::Sha3Variant::Sha3);
         break;
     }
     case Sha3_384: {
-        d->sha3Finish(384);
+        d->sha3Finish(384, QCryptographicHashPrivate::Sha3Variant::Sha3);
         break;
     }
     case Sha3_512: {
-        d->sha3Finish(512);
+        d->sha3Finish(512, QCryptographicHashPrivate::Sha3Variant::Sha3);
+        break;
+    }
+    case Keccak_224: {
+        d->sha3Finish(224, QCryptographicHashPrivate::Sha3Variant::Keccak);
+        break;
+    }
+    case Keccak_256: {
+        d->sha3Finish(256, QCryptographicHashPrivate::Sha3Variant::Keccak);
+        break;
+    }
+    case Keccak_384: {
+        d->sha3Finish(384, QCryptographicHashPrivate::Sha3Variant::Keccak);
+        break;
+    }
+    case Keccak_512: {
+        d->sha3Finish(512, QCryptographicHashPrivate::Sha3Variant::Keccak);
         break;
     }
 #endif

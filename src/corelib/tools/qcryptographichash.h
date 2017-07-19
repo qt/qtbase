@@ -68,7 +68,12 @@ public:
         Sha3_224,
         Sha3_256,
         Sha3_384,
-        Sha3_512
+        Sha3_512,
+        // ### Qt 6: remove the Keccak enumerators
+        Keccak_224,
+        Keccak_256,
+        Keccak_384,
+        Keccak_512
 #endif
     };
     Q_ENUM(Algorithm)
