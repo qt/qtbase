@@ -1018,17 +1018,17 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
             NSBezierPath *focusRingPath;
             if (radius > 0) {
                 const CGFloat roundedRectInset = -1.5;
-                focusRingPath = [NSBezierPath bezierPathWithRoundedRect:CGRectInset(focusRingRect, roundedRectInset, roundedRectInset)
+                focusRingPath = [NSBezierPath bezierPathWithRoundedRect:NSRectFromCGRect(CGRectInset(focusRingRect, roundedRectInset, roundedRectInset))
                                                                 xRadius:radius
                                                                 yRadius:radius];
             } else {
                 const CGFloat outerClipInset = -focusRingWidth / 2;
-                NSBezierPath *focusRingClipPath = [NSBezierPath bezierPathWithRect:CGRectInset(focusRingRect, outerClipInset, outerClipInset)];
+                NSBezierPath *focusRingClipPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(CGRectInset(focusRingRect, outerClipInset, outerClipInset))];
                 const CGFloat innerClipInset = 1;
-                NSBezierPath *focusRingInnerClipPath = [NSBezierPath bezierPathWithRect:CGRectInset(focusRingRect, innerClipInset, innerClipInset)];
+                NSBezierPath *focusRingInnerClipPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(CGRectInset(focusRingRect, innerClipInset, innerClipInset))];
                 [focusRingClipPath appendBezierPath:focusRingInnerClipPath.bezierPathByReversingPath];
                 [focusRingClipPath setClip];
-                focusRingPath = [NSBezierPath bezierPathWithRect:focusRingRect];
+                focusRingPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(focusRingRect)];
                 focusRingPath.lineJoinStyle = NSRoundLineJoinStyle;
             }
 

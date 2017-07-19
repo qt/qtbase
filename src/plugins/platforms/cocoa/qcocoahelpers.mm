@@ -303,6 +303,11 @@ QT_END_NAMESPACE
  */
 @implementation QNSPanelContentsWrapper
 
+@synthesize okButton = _okButton;
+@synthesize cancelButton = _cancelButton;
+@synthesize panelContents = _panelContents;
+@synthesize panelContentsMargins = _panelContentsMargins;
+
 - (instancetype)initWithPanelDelegate:(id<QT_MANGLE_NAMESPACE(QNSPanelDelegate)>)panelDelegate
 {
     if ((self = [super initWithFrame:NSZeroRect])) {
