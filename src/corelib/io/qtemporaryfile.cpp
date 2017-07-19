@@ -133,36 +133,6 @@ QTemporaryFileName::QTemporaryFileName(const QString &templateName)
     length = phLength;
 }
 
-// The following code is a heavily modified version, originally copyright:
-/*
- * Copyright (c) 1987, 1993
- *      The Regents of the University of California.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-
 /*!
     \internal
 
@@ -178,26 +148,42 @@ QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
     Char *const placeholderStart = (Char *)path.data() + pos;
     Char *const placeholderEnd = placeholderStart + length;
 
-    // Initialize placeholder with random chars + PID.
+    // Replace placeholder with random chars.
     {
+        // Since our dictionary is 26+26 characters, it would seem we only need
+        // a random number from 0 to 63 to select a character. However, due to
+        // the limited range, that would mean 12 (64-52) characters have double
+        // the probability of the others: 1 in 32 instead of 1 in 64.
+        //
+        // To overcome this limitation, we use more bits per character. With 10
+        // bits, there are 16 characters with probability 19/1024 and the rest
+        // at 20/1024 (i.e, less than .1% difference). This allows us to do 3
+        // characters per 32-bit random number, which is also half the typical
+        // placeholder length.
+        enum { BitsPerCharacter = 10 };
+
         Char *rIter = placeholderEnd;
-
-#if defined(QT_BUILD_CORE_LIB)
-        // don't consume more than half of the template with the PID
-        Char *pidStart = placeholderEnd - (placeholderEnd - placeholderStart) / 2;
-        quint64 pid = quint64(QCoreApplication::applicationPid());
-        do {
-            *--rIter = Latin1Char((pid % 10) + '0');
-            pid /= 10;
-        } while (rIter != pidStart && pid != 0);
-#endif
-
         while (rIter != placeholderStart) {
-            char ch = char(QRandomGenerator::bounded(26 + 26));
-            if (ch < 26)
-                *--rIter = Latin1Char(ch + 'A');
-            else
-                *--rIter = Latin1Char(ch - 26 + 'a');
+            quint32 rnd = QRandomGenerator::get32();
+            auto applyOne = [&]() {
+                quint32 v = rnd & ((1 << BitsPerCharacter) - 1);
+                rnd >>= BitsPerCharacter;
+                char ch = char((26 + 26) * v / (1 << BitsPerCharacter));
+                if (ch < 26)
+                    *--rIter = Latin1Char(ch + 'A');
+                else
+                    *--rIter = Latin1Char(ch - 26 + 'a');
+            };
+
+            applyOne();
+            if (rIter == placeholderStart)
+                break;
+
+            applyOne();
+            if (rIter == placeholderStart)
+                break;
+
+            applyOne();
         }
     }
 
