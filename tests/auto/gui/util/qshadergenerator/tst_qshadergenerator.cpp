@@ -51,23 +51,26 @@ namespace
         return port;
     }
 
-    QShaderNode createNode(const QVector<QShaderNodePort> &ports)
+    QShaderNode createNode(const QVector<QShaderNodePort> &ports, const QStringList &layers = QStringList())
     {
         auto node = QShaderNode();
         node.setUuid(QUuid::createUuid());
+        node.setLayers(layers);
         for (const auto &port : ports)
             node.addPort(port);
         return node;
     }
 
     QShaderGraph::Edge createEdge(const QUuid &sourceUuid, const QString &sourceName,
-                                  const QUuid &targetUuid, const QString &targetName)
+                                  const QUuid &targetUuid, const QString &targetName,
+                                  const QStringList &layers = QStringList())
     {
         auto edge = QShaderGraph::Edge();
         edge.sourceNodeUuid = sourceUuid;
         edge.sourcePortName = sourceName;
         edge.targetNodeUuid = targetUuid;
         edge.targetPortName = targetName;
+        edge.layers = layers;
         return edge;
     }
 
@@ -190,6 +193,7 @@ private slots:
     void shouldGenerateVersionCommands();
     void shouldProcessLanguageQualifierAndTypeEnums_data();
     void shouldProcessLanguageQualifierAndTypeEnums();
+    void shouldGenerateDifferentCodeDependingOnActiveLayers();
 };
 
 void tst_QShaderGenerator::shouldHaveDefaultState()
@@ -705,6 +709,185 @@ void tst_QShaderGenerator::shouldProcessLanguageQualifierAndTypeEnums()
     // THEN
     QFETCH(QByteArray, expectedCode);
     QCOMPARE(code, expectedCode);
+}
+
+void tst_QShaderGenerator::shouldGenerateDifferentCodeDependingOnActiveLayers()
+{
+    // GIVEN
+    const auto gl4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
+
+    auto texCoord = createNode({
+        createPort(QShaderNodePort::Output, "texCoord")
+    }, {
+        "diffuseTexture",
+        "normalTexture"
+    });
+    texCoord.addRule(gl4, QShaderNode::Rule("vec2 $texCoord = texCoord;",
+                                            QByteArrayList() << "in vec2 texCoord;"));
+    auto diffuseUniform = createNode({
+        createPort(QShaderNodePort::Output, "color")
+    }, {"diffuseUniform"});
+    diffuseUniform.addRule(gl4, QShaderNode::Rule("vec4 $color = diffuseUniform;",
+                                                  QByteArrayList() << "uniform vec4 diffuseUniform;"));
+    auto diffuseTexture = createNode({
+        createPort(QShaderNodePort::Input, "coord"),
+        createPort(QShaderNodePort::Output, "color")
+    }, {"diffuseTexture"});
+    diffuseTexture.addRule(gl4, QShaderNode::Rule("vec4 $color = texture2D(diffuseTexture, $coord);",
+                                                 QByteArrayList() << "uniform sampler2D diffuseTexture;"));
+    auto normalUniform = createNode({
+        createPort(QShaderNodePort::Output, "normal")
+    }, {"normalUniform"});
+    normalUniform.addRule(gl4, QShaderNode::Rule("vec3 $normal = normalUniform;",
+                                                 QByteArrayList() << "uniform vec3 normalUniform;"));
+    auto normalTexture = createNode({
+        createPort(QShaderNodePort::Input, "coord"),
+        createPort(QShaderNodePort::Output, "normal")
+    }, {"normalTexture"});
+    normalTexture.addRule(gl4, QShaderNode::Rule("vec3 $normal = texture2D(normalTexture, $coord).rgb;",
+                                                 QByteArrayList() << "uniform sampler2D normalTexture;"));
+    auto lightFunction = createNode({
+        createPort(QShaderNodePort::Input, "color"),
+        createPort(QShaderNodePort::Input, "normal"),
+        createPort(QShaderNodePort::Output, "output")
+    });
+    lightFunction.addRule(gl4, QShaderNode::Rule("vec4 $output = lightModel($color, $normal);",
+                                                 QByteArrayList() << "#pragma include gl4/lightmodel.frag.inc"));
+    auto fragColor = createNode({
+        createPort(QShaderNodePort::Input, "fragColor")
+    });
+    fragColor.addRule(gl4, QShaderNode::Rule("fragColor = $fragColor;",
+                                             QByteArrayList() << "out vec4 fragColor;"));
+
+    const auto graph = [=] {
+        auto res = QShaderGraph();
+
+        res.addNode(texCoord);
+        res.addNode(diffuseUniform);
+        res.addNode(diffuseTexture);
+        res.addNode(normalUniform);
+        res.addNode(normalTexture);
+        res.addNode(lightFunction);
+        res.addNode(fragColor);
+
+        res.addEdge(createEdge(diffuseUniform.uuid(), "color", lightFunction.uuid(), "color", {"diffuseUniform"}));
+        res.addEdge(createEdge(texCoord.uuid(), "texCoord", diffuseTexture.uuid(), "coord", {"diffuseTexture"}));
+        res.addEdge(createEdge(diffuseTexture.uuid(), "color", lightFunction.uuid(), "color", {"diffuseTexture"}));
+
+        res.addEdge(createEdge(normalUniform.uuid(), "normal", lightFunction.uuid(), "normal", {"normalUniform"}));
+        res.addEdge(createEdge(texCoord.uuid(), "texCoord", normalTexture.uuid(), "coord", {"normalTexture"}));
+        res.addEdge(createEdge(normalTexture.uuid(), "normal", lightFunction.uuid(), "normal", {"normalTexture"}));
+
+        res.addEdge(createEdge(lightFunction.uuid(), "output", fragColor.uuid(), "fragColor"));
+
+        return res;
+    }();
+
+    auto generator = QShaderGenerator();
+    generator.graph = graph;
+    generator.format = gl4;
+
+    {
+        // WHEN
+        const auto code = generator.createShaderCode({"diffuseUniform", "normalUniform"});
+
+        // THEN
+        const auto expected = QByteArrayList()
+                << "#version 400 core"
+                << ""
+                << "uniform vec4 diffuseUniform;"
+                << "uniform vec3 normalUniform;"
+                << "#pragma include gl4/lightmodel.frag.inc"
+                << "out vec4 fragColor;"
+                << ""
+                << "void main()"
+                << "{"
+                << "    vec3 v1 = normalUniform;"
+                << "    vec4 v0 = diffuseUniform;"
+                << "    vec4 v2 = lightModel(v0, v1);"
+                << "    fragColor = v2;"
+                << "}"
+                << "";
+        QCOMPARE(code, expected.join("\n"));
+    }
+
+    {
+        // WHEN
+        const auto code = generator.createShaderCode({"diffuseUniform", "normalTexture"});
+
+        // THEN
+        const auto expected = QByteArrayList()
+                << "#version 400 core"
+                << ""
+                << "in vec2 texCoord;"
+                << "uniform vec4 diffuseUniform;"
+                << "uniform sampler2D normalTexture;"
+                << "#pragma include gl4/lightmodel.frag.inc"
+                << "out vec4 fragColor;"
+                << ""
+                << "void main()"
+                << "{"
+                << "    vec2 v0 = texCoord;"
+                << "    vec3 v2 = texture2D(normalTexture, v0).rgb;"
+                << "    vec4 v1 = diffuseUniform;"
+                << "    vec4 v3 = lightModel(v1, v2);"
+                << "    fragColor = v3;"
+                << "}"
+                << "";
+        QCOMPARE(code, expected.join("\n"));
+    }
+
+    {
+        // WHEN
+        const auto code = generator.createShaderCode({"diffuseTexture", "normalUniform"});
+
+        // THEN
+        const auto expected = QByteArrayList()
+                << "#version 400 core"
+                << ""
+                << "in vec2 texCoord;"
+                << "uniform sampler2D diffuseTexture;"
+                << "uniform vec3 normalUniform;"
+                << "#pragma include gl4/lightmodel.frag.inc"
+                << "out vec4 fragColor;"
+                << ""
+                << "void main()"
+                << "{"
+                << "    vec2 v0 = texCoord;"
+                << "    vec3 v2 = normalUniform;"
+                << "    vec4 v1 = texture2D(diffuseTexture, v0);"
+                << "    vec4 v3 = lightModel(v1, v2);"
+                << "    fragColor = v3;"
+                << "}"
+                << "";
+        QCOMPARE(code, expected.join("\n"));
+    }
+
+    {
+        // WHEN
+        const auto code = generator.createShaderCode({"diffuseTexture", "normalTexture"});
+
+        // THEN
+        const auto expected = QByteArrayList()
+                << "#version 400 core"
+                << ""
+                << "in vec2 texCoord;"
+                << "uniform sampler2D diffuseTexture;"
+                << "uniform sampler2D normalTexture;"
+                << "#pragma include gl4/lightmodel.frag.inc"
+                << "out vec4 fragColor;"
+                << ""
+                << "void main()"
+                << "{"
+                << "    vec2 v0 = texCoord;"
+                << "    vec3 v2 = texture2D(normalTexture, v0).rgb;"
+                << "    vec4 v1 = texture2D(diffuseTexture, v0);"
+                << "    vec4 v3 = lightModel(v1, v2);"
+                << "    fragColor = v3;"
+                << "}"
+                << "";
+        QCOMPARE(code, expected.join("\n"));
+    }
 }
 
 QTEST_MAIN(tst_QShaderGenerator)

@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 class QShaderGenerator
 {
 public:
-    Q_GUI_EXPORT QByteArray createShaderCode() const;
+    Q_GUI_EXPORT QByteArray createShaderCode(const QStringList &enabledLayers = QStringList()) const;
 
     QShaderGraph graph;
     QShaderFormat format;

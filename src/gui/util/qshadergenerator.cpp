@@ -279,7 +279,7 @@ namespace
     }
 }
 
-QByteArray QShaderGenerator::createShaderCode() const
+QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) const
 {
     auto code = QByteArrayList();
 
@@ -303,9 +303,17 @@ QByteArray QShaderGenerator::createShaderCode() const
         code << QByteArray();
     }
 
+    const auto intersectsEnabledLayers = [enabledLayers] (const QStringList &layers) {
+        return layers.isEmpty()
+            || std::any_of(layers.cbegin(), layers.cend(),
+                           [enabledLayers] (const QString &s) { return enabledLayers.contains(s); });
+    };
+
     for (const auto &node : graph.nodes()) {
-        for (const auto &snippet : node.rule(format).headerSnippets) {
-            code << replaceParameters(snippet, node, format);
+        if (intersectsEnabledLayers(node.layers())) {
+            for (const auto &snippet : node.rule(format).headerSnippets) {
+                code << replaceParameters(snippet, node, format);
+            }
         }
     }
 
@@ -313,7 +321,7 @@ QByteArray QShaderGenerator::createShaderCode() const
     code << QByteArrayLiteral("void main()");
     code << QByteArrayLiteral("{");
 
-    for (const auto &statement : graph.createStatements()) {
+    for (const auto &statement : graph.createStatements(enabledLayers)) {
         const auto node = statement.node;
         auto line = node.rule(format).substitution;
         for (const auto &port : node.ports()) {
