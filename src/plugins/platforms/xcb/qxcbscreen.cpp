@@ -719,9 +719,8 @@ void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
         updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
 }
 
-void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
+void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
 {
-    QRect xGeometry = geom;
     switch (rotation) {
     case XCB_RANDR_ROTATION_ROTATE_0: // xrandr --rotate normal
         m_orientation = Qt::LandscapeOrientation;
@@ -745,12 +744,12 @@ void QXcbScreen::updateGeometry(const QRect &geom, uint8_t rotation)
     // is known (probably back-calculated from DPI and resolution),
     // e.g. on VNC or with some hardware.
     if (m_sizeMillimeters.isEmpty())
-        m_sizeMillimeters = sizeInMillimeters(xGeometry.size(), virtualDpi());
+        m_sizeMillimeters = sizeInMillimeters(geometry.size(), virtualDpi());
 
-    qreal dpi = xGeometry.width() / physicalSize().width() * qreal(25.4);
+    qreal dpi = geometry.width() / physicalSize().width() * qreal(25.4);
     m_pixelDensity = qMax(1, qRound(dpi/96));
-    m_geometry = QRect(xGeometry.topLeft(), xGeometry.size());
-    m_availableGeometry = xGeometry & m_virtualDesktop->workArea();
+    m_geometry = geometry;
+    m_availableGeometry = geometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
 }
 

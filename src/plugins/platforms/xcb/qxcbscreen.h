@@ -198,7 +198,7 @@ public:
     QString name() const override { return m_outputName; }
 
     void handleScreenChange(xcb_randr_screen_change_notify_event_t *change_event);
-    void updateGeometry(const QRect &geom, uint8_t rotation);
+    void updateGeometry(const QRect &geometry, uint8_t rotation);
     void updateGeometry(xcb_timestamp_t timestamp = XCB_TIME_CURRENT_TIME);
     void updateAvailableGeometry();
     void updateRefreshRate(xcb_randr_mode_t mode);
