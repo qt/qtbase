@@ -747,7 +747,8 @@ QPlainTextEditPrivate::QPlainTextEditPrivate()
       tabChangesFocus(false),
       lineWrap(QPlainTextEdit::WidgetWidth),
       wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere),
-      clickCausedFocus(0),topLine(0),topLineFracture(0),
+      clickCausedFocus(0), placeholderVisible(1),
+      topLine(0), topLineFracture(0),
       pageUpDownLastCursorYIsValid(false)
 {
     showCursorOnInitialShow = true;
@@ -784,6 +785,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
     QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(_q_cursorPositionChanged()));
 
+    QObject::connect(control, SIGNAL(textChanged()), q, SLOT(_q_textChanged()));
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(updateMicroFocus()));
 
     // set a null page size initially to avoid any relayouting until the textedit
@@ -814,6 +816,24 @@ void QPlainTextEditPrivate::init(const QString &txt)
 #if 0 // Used to be included in Qt4 for Q_WS_WIN
     setSingleFingerPanEnabled(true);
 #endif
+}
+
+void QPlainTextEditPrivate::_q_textChanged()
+{
+    Q_Q(QPlainTextEdit);
+
+    // We normally only repaint the part of view that contains text in the
+    // document that has changed (in _q_repaintContents). But the placeholder
+    // text is not a part of the document, but is drawn on separately. So whenever
+    // we either show or hide the placeholder text, we issue a full update.
+    bool placeholderCurrentyVisible = placeholderVisible;
+
+    placeholderVisible = !placeholderText.isEmpty()
+            && q->document()->isEmpty()
+            && q->firstVisibleBlock().layout()->preeditAreaText().isEmpty();
+
+    if (placeholderCurrentyVisible != placeholderVisible)
+        viewport->update();
 }
 
 void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
@@ -1881,6 +1901,7 @@ static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, const 
 */
 void QPlainTextEdit::paintEvent(QPaintEvent *e)
 {
+    Q_D(QPlainTextEdit);
     QPainter painter(viewport());
     Q_ASSERT(qobject_cast<QPlainTextDocumentLayout*>(document()->documentLayout()));
 
@@ -1903,6 +1924,15 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
     er.setRight(qMin(er.right(), maxX));
     painter.setClipRect(er);
 
+    if (d->placeholderVisible) {
+        QColor col = d->control->palette().text().color();
+        col.setAlpha(128);
+        painter.setPen(col);
+        painter.setClipRect(e->rect());
+        const int margin = int(document()->documentMargin());
+        QRectF textRect = viewportRect.adjusted(margin, margin, 0, 0);
+        painter.drawText(textRect, Qt::AlignTop | Qt::TextWordWrap, placeholderText());
+    }
 
     QAbstractTextDocumentLayout::PaintContext context = getPaintContext();
 
@@ -1977,17 +2007,8 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
                 }
             }
 
+            layout->draw(&painter, offset, selections, er);
 
-            if (!placeholderText().isEmpty() && document()->isEmpty() && layout->preeditAreaText().isEmpty()) {
-              Q_D(QPlainTextEdit);
-              QColor col = d->control->palette().text().color();
-              col.setAlpha(128);
-              painter.setPen(col);
-              const int margin = int(document()->documentMargin());
-              painter.drawText(r.adjusted(margin, 0, 0, 0), Qt::AlignTop | Qt::TextWordWrap, placeholderText());
-            } else {
-              layout->draw(&painter, offset, selections, er);
-            }
             if ((drawCursor && !drawCursorAsBlock)
                 || (editable && context.cursorPosition < -1
                     && !layout->preeditAreaText().isEmpty())) {

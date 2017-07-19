@@ -121,6 +121,7 @@ public:
 
     void init(const QString &txt = QString());
     void _q_repaintContents(const QRectF &contentsRect);
+    void _q_textChanged();
 
     inline QPoint mapToContents(const QPoint &point) const
         { return QPoint(point.x() + horizontalOffset(), point.y() + verticalOffset()); }
@@ -157,6 +158,7 @@ public:
     uint centerOnScroll : 1;
     uint inDrag : 1;
     uint clickCausedFocus : 1;
+    uint placeholderVisible : 1;
 
     int topLine;
     qreal topLineFracture; // for non-int sized fonts
