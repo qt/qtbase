@@ -57,7 +57,7 @@ void QWindowsPipeReader::Overlapped::clear()
 QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
     : QObject(parent),
       handle(INVALID_HANDLE_VALUE),
-      overlapped(this),
+      overlapped(nullptr),
       readBufferMaxSize(0),
       actualReadBufferSize(0),
       stopped(true),
@@ -74,6 +74,7 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
 QWindowsPipeReader::~QWindowsPipeReader()
 {
     stop();
+    delete overlapped;
 }
 
 /*!
@@ -95,14 +96,16 @@ void QWindowsPipeReader::stop()
 {
     stopped = true;
     if (readSequenceStarted) {
-        if (!CancelIoEx(handle, &overlapped)) {
+        overlapped->pipeReader = nullptr;
+        if (!CancelIoEx(handle, overlapped)) {
             const DWORD dwError = GetLastError();
             if (dwError != ERROR_NOT_FOUND) {
-                qErrnoWarning(dwError, "QWindowsPipeReader: qt_cancelIo on handle %x failed.",
+                qErrnoWarning(dwError, "QWindowsPipeReader: CancelIoEx on handle %p failed.",
                               handle);
             }
         }
-        waitForNotification(-1);
+        overlapped = nullptr;       // The object will be deleted in the I/O callback.
+        readSequenceStarted = false;
     }
 }
 
@@ -223,8 +226,10 @@ void QWindowsPipeReader::startAsyncRead()
 
     stopped = false;
     readSequenceStarted = true;
-    overlapped.clear();
-    if (!ReadFileEx(handle, ptr, bytesToRead, &overlapped, &readFileCompleted)) {
+    if (!overlapped)
+        overlapped = new Overlapped(this);
+    overlapped->clear();
+    if (!ReadFileEx(handle, ptr, bytesToRead, overlapped, &readFileCompleted)) {
         readSequenceStarted = false;
 
         const DWORD dwError = GetLastError();
@@ -251,7 +256,10 @@ void QWindowsPipeReader::readFileCompleted(DWORD errorCode, DWORD numberOfBytesT
                                            OVERLAPPED *overlappedBase)
 {
     Overlapped *overlapped = static_cast<Overlapped *>(overlappedBase);
-    overlapped->pipeReader->notified(errorCode, numberOfBytesTransfered);
+    if (overlapped->pipeReader)
+        overlapped->pipeReader->notified(errorCode, numberOfBytesTransfered);
+    else
+        delete overlapped;
 }
 
 /*!

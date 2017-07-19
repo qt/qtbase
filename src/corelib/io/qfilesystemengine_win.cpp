@@ -561,19 +561,21 @@ typedef struct _FILE_ID_INFO {
 // File ID for Windows up to version 7.
 static inline QByteArray fileId(HANDLE handle)
 {
-    QByteArray result;
 #ifndef Q_OS_WINRT
     BY_HANDLE_FILE_INFORMATION info;
     if (GetFileInformationByHandle(handle, &info)) {
-        result = QByteArray::number(uint(info.nFileIndexLow), 16);
-        result += ':';
-        result += QByteArray::number(uint(info.nFileIndexHigh), 16);
+        char buffer[sizeof "01234567:0123456701234567"];
+        qsnprintf(buffer, sizeof(buffer), "%lx:%08lx%08lx",
+                  info.dwVolumeSerialNumber,
+                  info.nFileIndexHigh,
+                  info.nFileIndexLow);
+        return buffer;
     }
 #else // !Q_OS_WINRT
     Q_UNUSED(handle);
     Q_UNIMPLEMENTED();
 #endif // Q_OS_WINRT
-    return result;
+    return QByteArray();
 }
 
 // File ID for Windows starting from version 8.
@@ -609,11 +611,17 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
                     FILE_SHARE_READ, OPEN_EXISTING, NULL);
 #endif // Q_OS_WINRT
     if (handle != INVALID_HANDLE_VALUE) {
-        result = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8 ?
-                 fileIdWin8(handle) : fileId(handle);
+        result = id(handle);
         CloseHandle(handle);
     }
     return result;
+}
+
+//static
+QByteArray QFileSystemEngine::id(HANDLE fHandle)
+{
+    return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8 ?
+                fileIdWin8(HANDLE(fHandle)) : fileId(HANDLE(fHandle));
 }
 
 //static

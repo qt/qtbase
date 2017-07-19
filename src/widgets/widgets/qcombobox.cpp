@@ -56,7 +56,9 @@
 #include <qevent.h>
 #include <qlayout.h>
 #include <qscrollbar.h>
+#if QT_CONFIG(treeview)
 #include <qtreeview.h>
+#endif
 #include <qheaderview.h>
 #include <qmath.h>
 #include <qmetaobject.h>
@@ -2619,7 +2621,7 @@ void QComboBox::showPopup()
         int count = 0;
         QStack<QModelIndex> toCheck;
         toCheck.push(view()->rootIndex());
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
         QTreeView *treeView = qobject_cast<QTreeView*>(view());
         if (treeView && treeView->header() && !treeView->header()->isHidden())
             listHeight += treeView->header()->height();
@@ -2631,7 +2633,7 @@ void QComboBox::showPopup()
                 if (!idx.isValid())
                     continue;
                 listHeight += view()->visualRect(idx).height();
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
                 if (d->model->hasChildren(idx) && treeView && treeView->isExpanded(idx))
                     toCheck.push(idx);
 #endif

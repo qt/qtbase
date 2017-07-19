@@ -53,7 +53,6 @@
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif
-#include <qtreeview.h>
 #include <private/qtabbar_p.h>
 #include <QAbstractScrollArea>
 #include <QScrollArea>

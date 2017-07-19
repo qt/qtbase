@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -334,12 +334,11 @@ bool QLoggingCategory::isEnabled(QtMsgType msgtype) const
 /*!
     Changes the message type \a type for the category to \a enable.
 
-    \note Changes only affect the current QLoggingCategory object, and won't
-    change the settings of other objects for the same category name.
-    Use either \l setFilterRules() or \l installFilter() to change the
-    configuration globally.
+    This method is meant to be used only from inside a filter
+    installed by \l installFilter(). See \l {Configuring Categories} for
+    an overview on how to configure categories globally.
 
-    \note \c QtFatalMsg cannot be changed. It will always return \c true.
+    \note \c QtFatalMsg cannot be changed. It will always remain \c true.
 */
 void QLoggingCategory::setEnabled(QtMsgType type, bool enable)
 {
@@ -411,8 +410,8 @@ QLoggingCategory *QLoggingCategory::defaultCategory()
     filter is free to change the respective category configuration with
     \l setEnabled().
 
-    The filter might be called concurrently from different threads, and
-    therefore has to be reentrant.
+    The filter might be called from different threads, but never concurrently.
+    The filter shall not call any static functions of QLoggingCategory.
 
     Example:
     \snippet qloggingcategory/main.cpp 21

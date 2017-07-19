@@ -41,6 +41,7 @@
 #include "qcommonstyle_p.h"
 
 #include <qfile.h>
+#include <qabstractitemview.h>
 #include <qapplication.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
@@ -71,7 +72,9 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#if QT_CONFIG(treeview)
 #include "qtreeview.h"
+#endif
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
 #include <qdebug.h>
@@ -5252,7 +5255,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_Widget_Animate:
     // TODO Qt6: move this code in the SH_Widget_Animation_Duration case
     // and replace false with 0 and true with 200.
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
         if (qobject_cast<const QTreeView*>(widget)) {
             ret = false;
         } else

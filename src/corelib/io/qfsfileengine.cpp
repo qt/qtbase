@@ -277,7 +277,7 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
 
         if (ret != 0) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
-                        qt_error_string(int(errno)));
+                        QSystemError::stdString());
 
             this->openMode = QIODevice::NotOpen;
             this->fh = 0;
@@ -341,7 +341,7 @@ bool QFSFileEnginePrivate::openFd(QIODevice::OpenMode openMode, int fd)
 
         if (ret == -1) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
-                        qt_error_string(int(errno)));
+                        QSystemError::stdString());
 
             this->openMode = QIODevice::NotOpen;
             this->fd = -1;
@@ -400,7 +400,7 @@ bool QFSFileEnginePrivate::closeFdFh()
     if (!flushed || !closed) {
         if (flushed) {
             // If not flushed, we want the flush error to fall through.
-            q->setError(QFile::UnspecifiedError, qt_error_string(errno));
+            q->setError(QFile::UnspecifiedError, QSystemError::stdString());
         }
         return false;
     }
@@ -452,7 +452,7 @@ bool QFSFileEnginePrivate::flushFh()
 
     if (ret != 0) {
         q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError,
-                    qt_error_string(errno));
+                    QSystemError::stdString());
         return false;
     }
     return true;
@@ -567,14 +567,14 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
         } while (ret != 0 && errno == EINTR);
 
         if (ret != 0) {
-            q->setError(QFile::ReadError, qt_error_string(int(errno)));
+            q->setError(QFile::ReadError, QSystemError::stdString());
             return false;
         }
     } else {
         // Unbuffered stdio mode.
         if (QT_LSEEK(fd, QT_OFF_T(pos), SEEK_SET) == -1) {
             qWarning("QFile::at: Cannot set file position %lld", pos);
-            q->setError(QFile::PositionError, qt_error_string(errno));
+            q->setError(QFile::PositionError, QSystemError::stdString());
             return false;
         }
     }
@@ -616,7 +616,7 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
     Q_Q(QFSFileEngine);
 
     if (len < 0 || len != qint64(size_t(len))) {
-        q->setError(QFile::ReadError, qt_error_string(EINVAL));
+        q->setError(QFile::ReadError, QSystemError::stdString(EINVAL));
         return -1;
     }
 
@@ -662,7 +662,7 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
 
     if (!eof && readBytes == 0) {
         readBytes = -1;
-        q->setError(QFile::ReadError, qt_error_string(errno));
+        q->setError(QFile::ReadError, QSystemError::stdString());
     }
 
     return readBytes;
@@ -708,7 +708,7 @@ qint64 QFSFileEnginePrivate::readLineFdFh(char *data, qint64 maxlen)
     // solves this.
     if (!fgets(data, int(maxlen + 1), fh)) {
         if (!feof(fh))
-            q->setError(QFile::ReadError, qt_error_string(int(errno)));
+            q->setError(QFile::ReadError, QSystemError::stdString());
         return -1;              // error
     }
 
@@ -748,7 +748,7 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
     Q_Q(QFSFileEngine);
 
     if (len < 0 || len != qint64(size_t(len))) {
-        q->setError(QFile::WriteError, qt_error_string(EINVAL));
+        q->setError(QFile::WriteError, QSystemError::stdString(EINVAL));
         return -1;
     }
 
@@ -785,7 +785,7 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
 
     if (len &&  writtenBytes == 0) {
         writtenBytes = -1;
-        q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError, qt_error_string(errno));
+        q->setError(errno == ENOSPC ? QFile::ResourceError : QFile::WriteError, QSystemError::stdString());
     } else {
         // reset the cached size, if any
         metaData.clearFlags(QFileSystemMetaData::SizeAttribute);

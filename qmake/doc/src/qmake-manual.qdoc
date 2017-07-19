@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -1809,6 +1809,14 @@
 
     \note Most of the time, the default \c{Info.plist} is good enough.
 
+    \section1 QMAKE_IOS_DEPLOYMENT_TARGET
+
+    \note This variable is used on the iOS platform only.
+
+    Specifies the hard minimum version of iOS that the application supports.
+
+    For more information, see \l {Expressing Supported iOS Versions}.
+
     \section1 QMAKE_LFLAGS
 
     Specifies a general set of flags that are passed to
@@ -2101,12 +2109,11 @@
 
     \section1 QMAKE_MACOSX_DEPLOYMENT_TARGET
 
-    This variable only takes effect when building on \macos. On that
-    platform, the variable will be forwarded to the MACOSX_DEPLOYMENT_TARGET
-    environment variable, which is interpreted by the compiler or linker.
-    For more information, see the
-    \l{Qt for macOS - Deployment#macOS Version Dependencies}{Deploying
-    an Application on \macos} document.
+    \note This variable is used on the \macos platform only.
+
+    Specifies the hard minimum version of \macos that the application supports.
+
+    For more information, see \l{macOS Version Dependencies}.
 
     \section1 QMAKE_MAKEFILE
 
@@ -2250,6 +2257,22 @@
     where applicable for putting the product in the application's properties.
     This is only utilized if the \l{VERSION} or \l{RC_ICONS} variable is set
     and the \l{RC_FILE} and \l{RES_FILE} variables are not set.
+
+    \section1 QMAKE_TVOS_DEPLOYMENT_TARGET
+
+    \note This variable is used on the tvOS platform only.
+
+    Specifies the hard minimum version of tvOS that the application supports.
+
+    For more information, see \l {Expressing Supported iOS Versions}.
+
+    \section1 QMAKE_WATCHOS_DEPLOYMENT_TARGET
+
+    \note This variable is used on the watchOS platform only.
+
+    Specifies the hard minimum version of watchOS that the application supports.
+
+    For more information, see \l {Expressing Supported iOS Versions}.
 
     \section1 QT
 

@@ -45,6 +45,8 @@
 #include <QtCore/qvector.h>
 #include <QDebug>
 
+#include <locale>
+
 QT_BEGIN_NAMESPACE
 
 typedef QMap<QByteArray, QByteArray> OidNameMap;
@@ -81,6 +83,27 @@ static OidNameMap createOidMap()
     return oids;
 }
 Q_GLOBAL_STATIC_WITH_ARGS(OidNameMap, oidNameMap, (createOidMap()))
+
+static bool stringToNonNegativeInt(const QByteArray &asnString, int *val)
+{
+    // Helper function for toDateTime(), which handles chunking of the original
+    // string into smaller sub-components, so we expect the whole 'asnString' to
+    // be a valid non-negative number.
+    Q_ASSERT(val);
+
+    // We want the C locale, as used by QByteArray; however, no leading sign is
+    // allowed (which QByteArray would accept), so we have to check the data:
+    const std::locale localeC;
+    for (char v : asnString) {
+        if (!std::isdigit(v, localeC))
+            return false;
+    }
+
+    bool ok = false;
+    *val = asnString.toInt(&ok);
+    Q_ASSERT(ok && *val >= 0);
+    return true;
+}
 
 QAsn1Element::QAsn1Element(quint8 type, const QByteArray &value)
     : mType(type)
@@ -231,15 +254,19 @@ bool QAsn1Element::toBool(bool *ok) const
 QDateTime QAsn1Element::toDateTime() const
 {
     if (mValue.endsWith('Z')) {
-        if (mType == UtcTimeType && mValue.size() == 13)
-            return QDateTime(QDate(2000 + mValue.mid(0, 2).toInt(),
+        if (mType == UtcTimeType && mValue.size() == 13) {
+            int year = 0;
+            if (!stringToNonNegativeInt(mValue.mid(0, 2), &year))
+                return QDateTime();
+            // RFC 2459: YY represents a year in the range [1950, 2049]
+            return QDateTime(QDate(year < 50 ? 2000 + year : 1900 + year,
                                    mValue.mid(2, 2).toInt(),
                                    mValue.mid(4, 2).toInt()),
                              QTime(mValue.mid(6, 2).toInt(),
                                    mValue.mid(8, 2).toInt(),
                                    mValue.mid(10, 2).toInt()),
                              Qt::UTC);
-        else if (mType == GeneralizedTimeType && mValue.size() == 15)
+        } else if (mType == GeneralizedTimeType && mValue.size() == 15) {
             return QDateTime(QDate(mValue.mid(0, 4).toInt(),
                                    mValue.mid(4, 2).toInt(),
                                    mValue.mid(6, 2).toInt()),
@@ -247,6 +274,7 @@ QDateTime QAsn1Element::toDateTime() const
                                    mValue.mid(10, 2).toInt(),
                                    mValue.mid(12, 2).toInt()),
                              Qt::UTC);
+        }
     }
     return QDateTime();
 }

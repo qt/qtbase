@@ -678,6 +678,17 @@ bool QAbstractFileEngine::setPermissions(uint perms)
 }
 
 /*!
+    \since 5.9
+
+    Return an identifier that (hopefully) uniquely identifies this file in the
+    system. Returns an invalid QByteArray() if that cannot be calculated.
+*/
+QByteArray QAbstractFileEngine::id() const
+{
+    return QByteArray();
+}
+
+/*!
     Return  the file engine's current file name in the format
     specified by \a file.
 

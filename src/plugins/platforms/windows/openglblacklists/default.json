@@ -126,18 +126,6 @@
           "features": [
               "disable_desktopgl"
           ]
-       },
-       {
-          "id": 11,
-          "description": "VMWare Workstation Player 12 has insufficient support for OpenGL",
-          "vendor_id": "0x15AD",
-          "device_id": [ "0x0405" ],
-          "os": {
-              "type": "win"
-          },
-          "features": [
-              "disable_desktopgl", "disable_d3d11"
-          ]
        }
     ]
 }

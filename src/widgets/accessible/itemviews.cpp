@@ -44,8 +44,11 @@
 #include <qtableview.h>
 #endif
 #include <qlistview.h>
+#if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #include <private/qtreeview_p.h>
+#endif
+#include <private/qwidget_p.h>
 
 #ifndef QT_NO_ACCESSIBILITY
 
@@ -88,7 +91,7 @@ QAccessibleTable::QAccessibleTable(QWidget *w)
         m_role = QAccessible::Table;
     } else
 #endif
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
     if (qobject_cast<const QTreeView*>(view())) {
         m_role = QAccessible::Tree;
     } else
@@ -123,7 +126,7 @@ QHeaderView *QAccessibleTable::horizontalHeader() const
     } else if (const QTableView *tv = qobject_cast<const QTableView*>(view())) {
         header = tv->horizontalHeader();
 #endif
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
     } else if (const QTreeView *tv = qobject_cast<const QTreeView*>(view())) {
         header = tv->header();
 #endif
@@ -647,7 +650,7 @@ void QAccessibleTable::modelChange(QAccessibleTableModelChangeEvent *event)
     }
 }
 
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
 
 // TREE VIEW
 
@@ -820,7 +823,7 @@ bool QAccessibleTree::selectRow(int row)
     return true;
 }
 
-#endif // QT_NO_TREEVIEW
+#endif // QT_CONFIG(treeview)
 
 // TABLE CELL
 
@@ -872,7 +875,7 @@ QHeaderView *QAccessibleTableCell::horizontalHeader() const
     } else if (const QTableView *tv = qobject_cast<const QTableView*>(view)) {
         header = tv->horizontalHeader();
 #endif
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
     } else if (const QTreeView *tv = qobject_cast<const QTreeView*>(view)) {
         header = tv->header();
 #endif
@@ -898,7 +901,7 @@ int QAccessibleTableCell::columnIndex() const
 
 int QAccessibleTableCell::rowIndex() const
 {
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
     if (role() == QAccessible::TreeItem) {
        const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
        Q_ASSERT(treeView);
@@ -1034,7 +1037,7 @@ QAccessible::State QAccessibleTableCell::state() const
         if (view->selectionMode() == QAbstractItemView::ExtendedSelection)
             st.extSelectable = true;
     }
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
     if (m_role == QAccessible::TreeItem) {
         const QTreeView *treeView = qobject_cast<const QTreeView*>(view);
         if (treeView->model()->hasChildren(m_index))
@@ -1135,7 +1138,7 @@ QRect QAccessibleTableHeaderCell::rect() const
             header = tv->verticalHeader();
         }
 #endif
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
     } else if (const QTreeView *tv = qobject_cast<const QTreeView*>(view)) {
         header = tv->header();
 #endif
@@ -1202,7 +1205,7 @@ QHeaderView *QAccessibleTableHeaderCell::headerView() const
             header = tv->verticalHeader();
         }
 #endif
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
     } else if (const QTreeView *tv = qobject_cast<const QTreeView*>(view)) {
         header = tv->header();
 #endif

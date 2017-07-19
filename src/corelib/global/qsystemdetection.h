@@ -267,6 +267,9 @@
 #  if !defined(__MAC_10_12)
 #       define __MAC_10_12 101200
 #  endif
+#  if !defined(__MAC_10_13)
+#       define __MAC_10_13 101300
+#  endif
 #  if !defined(MAC_OS_X_VERSION_10_7)
 #       define MAC_OS_X_VERSION_10_7 1070
 #  endif
@@ -284,6 +287,9 @@
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_12)
 #       define MAC_OS_X_VERSION_10_12 101200
+#  endif
+#  if !defined(MAC_OS_X_VERSION_10_13)
+#       define MAC_OS_X_VERSION_10_13 101300
 #  endif
 #
 #  if !defined(__IPHONE_4_3)
@@ -336,6 +342,18 @@
 #  endif
 #  if !defined(__IPHONE_10_0)
 #       define __IPHONE_10_0 100000
+#  endif
+#  if !defined(__IPHONE_10_1)
+#       define __IPHONE_10_1 100100
+#  endif
+#  if !defined(__IPHONE_10_2)
+#       define __IPHONE_10_2 100200
+#  endif
+#  if !defined(__IPHONE_10_3)
+#       define __IPHONE_10_3 100300
+#  endif
+#  if !defined(__IPHONE_11_0)
+#       define __IPHONE_11_0 110000
 #  endif
 #endif
 

@@ -57,7 +57,7 @@
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qvector.h>
 
-#ifndef QT_NO_TREEVIEW
+QT_REQUIRE_CONFIG(treeview);
 
 QT_BEGIN_NAMESPACE
 
@@ -271,7 +271,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TREEVIEW
 
 #endif // QTREEVIEW_P_H
