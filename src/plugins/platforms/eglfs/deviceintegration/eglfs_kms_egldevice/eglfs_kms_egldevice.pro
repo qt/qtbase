@@ -16,7 +16,12 @@ HEADERS += $$PWD/qeglfskmsegldeviceintegration.h
 
 OTHER_FILES += $$PWD/eglfs_kms_egldevice.json
 
-LIBS += -ldrm
+!contains(QT_CONFIG, no-pkg-config) {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += libdrm
+} else {
+    LIBS += -ldrm
+}
 
 PLUGIN_TYPE = egldeviceintegrations
 PLUGIN_CLASS_NAME = QEglFSKmsEglDeviceIntegrationPlugin
