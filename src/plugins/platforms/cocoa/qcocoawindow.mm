@@ -152,7 +152,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_windowCursor(0)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
-    , m_geometryUpdateExposeAllowed(false)
     , m_isExposed(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
@@ -346,13 +345,6 @@ void QCocoaWindow::setVisible(bool visible)
             }
 
         }
-
-        // This call is here to handle initial window show correctly:
-        // - top-level windows need to have backing store content ready when the
-        //   window is shown, sendin the expose event here makes that more likely.
-        // - QNSViews for child windows are initialy not hidden and won't get the
-        //   viewDidUnhide message.
-        exposeWindow();
 
         if (isContentView()) {
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
@@ -877,7 +869,7 @@ void QCocoaWindow::viewDidChangeFrame()
 */
 void QCocoaWindow::viewDidChangeGlobalFrame()
 {
-    updateExposedGeometry();
+    [m_view setNeedsDisplay:YES];
 }
 
 void QCocoaWindow::windowDidEndLiveResize()
@@ -975,20 +967,20 @@ void QCocoaWindow::windowDidExitFullScreen()
 
 void QCocoaWindow::windowDidOrderOffScreen()
 {
-    obscureWindow();
+    handleExposeEvent(QRegion());
 }
 
 void QCocoaWindow::windowDidOrderOnScreen()
 {
-    exposeWindow();
+    [m_view setNeedsDisplay:YES];
 }
 
 void QCocoaWindow::windowDidChangeOcclusionState()
 {
     if (m_view.window.occlusionState & NSWindowOcclusionStateVisible)
-        exposeWindow();
+        [m_view setNeedsDisplay:YES];
     else
-        obscureWindow();
+        handleExposeEvent(QRegion());
 }
 
 void QCocoaWindow::windowDidChangeScreen()
@@ -998,8 +990,6 @@ void QCocoaWindow::windowDidChangeScreen()
 
     if (QCocoaScreen *cocoaScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen))
         QWindowSystemInterface::handleWindowScreenChanged(window(), cocoaScreen->screen());
-
-    updateExposedGeometry();
 }
 
 void QCocoaWindow::windowWillClose()
@@ -1064,7 +1054,6 @@ void QCocoaWindow::handleGeometryChange()
                                << "current" << geometry() << "new" << newGeometry;
 
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
-    updateExposedGeometry();
 
     // Guard against processing window system events during QWindow::setGeometry
     // calls, which Qt and Qt applications do not expect.
@@ -1072,6 +1061,29 @@ void QCocoaWindow::handleGeometryChange()
         QWindowSystemInterface::flushWindowSystemEvents();
     else if (newGeometry.size() != geometry().size())
         [qnsview_cast(m_view) clearBackingStore];
+}
+
+void QCocoaWindow::handleExposeEvent(const QRegion &region)
+{
+    // Ideally we'd implement isExposed() in terms of these properties,
+    // plus the occlusionState of the NSWindow, and let the expose event
+    // pull the exposed state out when needed. However, when the window
+    // is first shown we receive a drawRect call where the occlusionState
+    // of the window is still hidden, but we still want to prepare the
+    // window for display by issuing an expose event to Qt. To work around
+    // this we don't use the occlusionState directly, but instead base
+    // the exposed state on the region we get in, which in the case of
+    // a window being obscured is an empty region, and in the case of
+    // a drawRect call is a non-null region, even if occlusionState
+    // is still hidden. This ensures the window is prepared for display.
+    m_isExposed = m_view.window.visible
+        && m_view.window.screen
+        && !geometry().size().isEmpty()
+        && !region.isEmpty()
+        && !m_view.hiddenOrHasHiddenAncestor;
+
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
+    QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), region);
 }
 
 void QCocoaWindow::handleWindowStateChanged(HandleFlags flags)
@@ -1653,75 +1665,6 @@ qreal QCocoaWindow::devicePixelRatio() const
     // or ignored by the OpenGL driver.
     NSSize backingSize = [m_view convertSizeToBacking:NSMakeSize(1.0, 1.0)];
     return backingSize.height;
-}
-
-// Returns whether the window can be expose, which it can
-// if it is on screen and has a valid geometry.
-bool QCocoaWindow::isWindowExposable()
-{
-    QSize size = geometry().size();
-    bool validGeometry = (size.width() > 0 && size.height() > 0);
-    bool validScreen = ([[m_view window] screen] != 0);
-    bool nonHiddenSuperView = ![[m_view superview] isHidden];
-    return (validGeometry && validScreen && nonHiddenSuperView);
-}
-
-// Exposes the window by posting an expose event to QWindowSystemInterface
-void QCocoaWindow::exposeWindow()
-{
-    m_geometryUpdateExposeAllowed = true;
-
-    if (!isWindowExposable())
-        return;
-
-    if (!m_isExposed) {
-        m_isExposed = true;
-        m_exposedGeometry = geometry();
-        m_exposedDevicePixelRatio = devicePixelRatio();
-        QRect geometry(QPoint(0, 0), m_exposedGeometry.size());
-        qCDebug(lcQpaCocoaWindow) << "QCocoaWindow: exposeWindow" << window() << geometry;
-        QWindowSystemInterface::handleExposeEvent(window(), geometry);
-    }
-}
-
-// Obscures the window by posting an empty expose event to QWindowSystemInterface
-void QCocoaWindow::obscureWindow()
-{
-    if (m_isExposed) {
-        m_geometryUpdateExposeAllowed = false;
-        m_isExposed = false;
-
-        qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::obscureWindow" << window();
-        QWindowSystemInterface::handleExposeEvent(window(), QRegion());
-    }
-}
-
-// Updates window geometry by posting an expose event to QWindowSystemInterface
-void QCocoaWindow::updateExposedGeometry()
-{
-    // updateExposedGeometry is not allowed to send the initial expose. If you want
-    // that call exposeWindow();
-    if (!m_geometryUpdateExposeAllowed)
-        return;
-
-    // Do not send incorrect exposes in case the window is not even visible yet.
-    // We might get here as a result of a resize() from QWidget's show(), for instance.
-    if (!window()->isVisible())
-        return;
-
-    if (!isWindowExposable())
-        return;
-
-    if (m_exposedGeometry.size() == geometry().size() && m_exposedDevicePixelRatio == devicePixelRatio())
-        return;
-
-    m_isExposed = true;
-    m_exposedGeometry = geometry();
-    m_exposedDevicePixelRatio = devicePixelRatio();
-
-    QRect geometry(QPoint(0, 0), m_exposedGeometry.size());
-    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::updateExposedGeometry" << window() << geometry;
-    QWindowSystemInterface::handleExposeEvent(window(), geometry);
 }
 
 QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)

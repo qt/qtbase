@@ -188,10 +188,6 @@ public:
     void updateNSToolbar();
 
     qreal devicePixelRatio() const Q_DECL_OVERRIDE;
-    bool isWindowExposable();
-    void exposeWindow();
-    void obscureWindow();
-    void updateExposedGeometry();
     QWindow *childWindowAt(QPoint windowPoint);
     bool shouldRefuseKeyWindowAndFirstResponder();
 
@@ -238,6 +234,7 @@ public: // for QNSView
 
     void handleGeometryChange();
     void handleWindowStateChanged(HandleFlags flags = NoHandleFlags);
+    void handleExposeEvent(const QRegion &region);
 
     NSView *m_view;
     QCocoaNSWindow *m_nsWindow;
@@ -264,10 +261,7 @@ public: // for QNSView
 
     bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;
-    bool m_geometryUpdateExposeAllowed;
     bool m_isExposed;
-    QRect m_exposedGeometry;
-    qreal m_exposedDevicePixelRatio;
     int m_registerTouchCount;
     bool m_resizableTransientParent;
 

@@ -260,7 +260,7 @@ static QTouchDevice *touchDevice = 0;
     if ([self superview]) {
         m_platformWindow->m_viewIsEmbedded = true;
         QWindowSystemInterface::handleGeometryChange(m_platformWindow->window(), m_platformWindow->geometry());
-        m_platformWindow->updateExposedGeometry();
+        [self setNeedsDisplay:YES];
         QWindowSystemInterface::flushWindowSystemEvents();
     } else {
         m_platformWindow->m_viewIsEmbedded = false;
@@ -301,12 +301,13 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)viewDidHide
 {
-    m_platformWindow->obscureWindow();
-}
+    if (!m_platformWindow->isExposed())
+        return;
 
-- (void)viewDidUnhide
-{
-    m_platformWindow->exposeWindow();
+    m_platformWindow->handleExposeEvent(QRegion());
+
+    // Note: setNeedsDisplay is automatically called for
+    // viewDidUnhide so no reason to override it here.
 }
 
 - (void)removeFromSuperview
@@ -315,22 +316,54 @@ static QTouchDevice *touchDevice = 0;
     [super removeFromSuperview];
 }
 
-- (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
+- (void)flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
     qCDebug(lcQpaCocoaWindow) << "[QNSView flushBackingStore:]" << m_platformWindow->window() << region.rectCount() << region.boundingRect() << offset;
 
     m_backingStore = backingStore;
     m_backingStoreOffset = offset * m_backingStore->paintDevice()->devicePixelRatio();
 
-    // Prevent buildup of NSDisplayCycle objects during setNeedsDisplayInRect, which
-    // would normally be released as part of the root runloop's autorelease pool, but
-    // can be kept alive during repeated painting which starve the root runloop.
-    // FIXME: Move this to the event dispatcher, to cover more cases of starvation.
-    // FIXME: Figure out if there's a way to detect and/or prevent runloop starvation.
-    QMacAutoReleasePool pool;
+    // FIXME: Clean up this method now that the drawRect logic has been merged into it
 
-    for (const QRect &rect : region)
-        [self setNeedsDisplayInRect:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
+    const NSRect dirtyRect = region.boundingRect().toCGRect();
+
+    // Normally a NSView is drawn via drawRect, as part of the display cycle in the
+    // main runloop, via setNeedsDisplay and friends. AppKit will lock focus on each
+    // individual view, starting with the top level and then traversing any subviews,
+    // calling drawRect for each of them. This pull model results in expose events
+    // sent to Qt, which result in drawing to the backingstore and flushing it.
+    // Qt may also decide to paint and flush the backingstore via e.g. timers,
+    // or other events such as mouse events, in which case we're in a push model.
+    // If there is no focused view, it means we're in the latter case, and need
+    // to manually flush the NSWindow after drawing to its graphic context.
+    const bool drawingOutsideOfDisplayCycle = ![NSView focusView];
+
+    // We also need to ensure the flushed view has focus, so that the graphics
+    // context is set up correctly (coordinate system, clipping, etc). Outside
+    // of the normal display cycle there is no focused view, as explained above,
+    // so we have to handle it manually. There's also a corner case inside the
+    // normal display cycle due to way QWidgetBackingStore composits native child
+    // widgets, where we'll get a flush of a native child during the drawRect of
+    // its parent/ancestor, and the parent/ancestor being the one locked by AppKit.
+    // In this case we also need to lock and unlock focus manually.
+    const bool shouldHandleViewLockManually = [NSView focusView] != self;
+    if (shouldHandleViewLockManually && ![self lockFocusIfCanDraw]) {
+        qWarning() << "failed to lock focus of" << self;
+        return;
+    }
+
+    if (m_platformWindow->m_drawContentBorderGradient)
+        NSDrawWindowBackground(dirtyRect);
+
+    [self drawBackingStoreUsingCoreGraphics:dirtyRect];
+
+    if (shouldHandleViewLockManually)
+        [self unlockFocus];
+
+    if (drawingOutsideOfDisplayCycle)
+        [self.window flushWindow];
+
+    [self invalidateWindowShadowIfNeeded];
 }
 
 - (void)clearBackingStore
@@ -398,7 +431,8 @@ static QTouchDevice *touchDevice = 0;
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_platformWindow->window() << QRectF::fromCGRect(NSRectToCGRect(dirtyRect));
+    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_platformWindow->window()
+        << QRectF::fromCGRect(NSRectToCGRect(dirtyRect));
 
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {
@@ -407,13 +441,7 @@ static QTouchDevice *touchDevice = 0;
     }
 #endif
 
-    if (m_platformWindow->m_drawContentBorderGradient)
-        NSDrawWindowBackground(dirtyRect);
-
-    if (m_backingStore)
-        [self drawBackingStoreUsingCoreGraphics:dirtyRect];
-
-    [self invalidateWindowShadowIfNeeded];
+    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(dirtyRect).toRect());
 }
 
 // Draws the backing store content to the QNSView using Core Graphics.
