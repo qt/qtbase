@@ -915,9 +915,6 @@ public:
     QUrl remote;
     int localPort;
     QNetworkProxyQuery::QueryType type;
-#ifndef QT_NO_BEARERMANAGEMENT
-    QNetworkConfiguration config;
-#endif
 };
 
 template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
@@ -1129,29 +1126,32 @@ QNetworkProxyQuery::QNetworkProxyQuery(quint16 bindPort, const QString &protocol
     d->type = queryType;
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#if !defined(QT_NO_BEARERMANAGEMENT) && QT_DEPRECATED_SINCE(5, 10)
 /*!
+    \deprecated
+
     Constructs a QNetworkProxyQuery with the URL \a requestUrl and
     sets the query type to \a queryType. The specified \a networkConfiguration
-    is used to resolve the proxy settings.
+    parameter is ignored.
 
     \sa protocolTag(), peerHostName(), peerPort(), networkConfiguration()
 */
 QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfiguration,
                                        const QUrl &requestUrl, QueryType queryType)
 {
-    d->config = networkConfiguration;
+    Q_UNUSED(networkConfiguration)
     d->remote = requestUrl;
     d->type = queryType;
 }
 
 /*!
+    \deprecated
+
     Constructs a QNetworkProxyQuery of type \a queryType and sets the
     protocol tag to be \a protocolTag. This constructor is suitable
     for QNetworkProxyQuery::TcpSocket queries, because it sets the
     peer hostname to \a hostname and the peer's port number to \a
-    port. The specified \a networkConfiguration
-    is used to resolve the proxy settings.
+    port. The specified \a networkConfiguration parameter is ignored.
 
     \sa networkConfiguration()
 */
@@ -1160,7 +1160,7 @@ QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfi
                                        const QString &protocolTag,
                                        QueryType queryType)
 {
-    d->config = networkConfiguration;
+    Q_UNUSED(networkConfiguration);
     d->remote.setScheme(protocolTag);
     d->remote.setHost(hostname);
     d->remote.setPort(port);
@@ -1168,11 +1168,13 @@ QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfi
 }
 
 /*!
+    \deprecated
+
     Constructs a QNetworkProxyQuery of type \a queryType and sets the
     protocol tag to be \a protocolTag. This constructor is suitable
     for QNetworkProxyQuery::TcpSocket queries because it sets the
     local port number to \a bindPort. The specified \a networkConfiguration
-    is used to resolve the proxy settings.
+    parameter is ignored.
 
     Note that \a bindPort is of type quint16 to indicate the exact
     port number that is requested. The value of -1 (unknown) is not
@@ -1184,12 +1186,12 @@ QNetworkProxyQuery::QNetworkProxyQuery(const QNetworkConfiguration &networkConfi
                                        quint16 bindPort, const QString &protocolTag,
                                        QueryType queryType)
 {
-    d->config = networkConfiguration;
+    Q_UNUSED(networkConfiguration);
     d->remote.setScheme(protocolTag);
     d->localPort = bindPort;
     d->type = queryType;
 }
-#endif
+#endif // !defined(QT_NO_BEARERMANAGEMENT) && QT_DEPRECATED_SINCE(5, 10)
 
 /*!
     Constructs a QNetworkProxyQuery object that is a copy of \a other.
@@ -1413,34 +1415,32 @@ void QNetworkProxyQuery::setUrl(const QUrl &url)
     d->remote = url;
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
+#if !defined(QT_NO_BEARERMANAGEMENT) && QT_DEPRECATED_SINCE(5, 10)
 /*!
-    Returns the network configuration component of the query.
+    \deprecated
+
+    Returns QNetworkConfiguration().
 
     \sa setNetworkConfiguration()
 */
 QNetworkConfiguration QNetworkProxyQuery::networkConfiguration() const
 {
-    return d ? d->config : QNetworkConfiguration();
+    return QNetworkConfiguration();
 }
 
 /*!
-    Sets the network configuration component of this QNetworkProxyQuery
-    object to be \a networkConfiguration. The network configuration can
-    be used to return different proxy settings based on the network in
-    use, for example WLAN vs cellular networks on a mobile phone.
+    \deprecated
 
-    In the case of "user choice" or "service network" configurations,
-    you should first start the QNetworkSession and obtain the active
-    configuration from its properties.
+    This function does nothing. The specified \a networkConfiguration parameter
+    is ignored.
 
     \sa networkConfiguration()
 */
 void QNetworkProxyQuery::setNetworkConfiguration(const QNetworkConfiguration &networkConfiguration)
 {
-    d->config = networkConfiguration;
+    Q_UNUSED(networkConfiguration);
 }
-#endif
+#endif // !defined(QT_NO_BEARERMANAGEMENT) && QT_DEPRECATED_SINCE(5, 10)
 
 /*!
     \class QNetworkProxyFactory

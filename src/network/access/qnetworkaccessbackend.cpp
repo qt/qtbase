@@ -396,29 +396,7 @@ bool QNetworkAccessBackend::start()
 #endif
 
 #ifndef QT_NO_NETWORKPROXY
-#ifndef QT_NO_BEARERMANAGEMENT
-    // Get the proxy settings from the network session (in the case of service networks,
-    // the proxy settings change depending which AP was activated)
-    QNetworkSession *session = networkSession.data();
-    QNetworkConfiguration config;
-    if (session) {
-        QNetworkConfigurationManager configManager;
-        // The active configuration tells us what IAP is in use
-        QVariant v = session->sessionProperty(QLatin1String("ActiveConfiguration"));
-        if (v.isValid())
-            config = configManager.configurationFromIdentifier(qvariant_cast<QString>(v));
-        // Fallback to using the configuration if no active configuration
-        if (!config.isValid())
-            config = session->configuration();
-        // or unspecified configuration if that is no good either
-        if (!config.isValid())
-            config = QNetworkConfiguration();
-    }
-    reply->proxyList = manager->queryProxy(QNetworkProxyQuery(config, url()));
-#else // QT_NO_BEARERMANAGEMENT
-    // Without bearer management, the proxy depends only on the url
     reply->proxyList = manager->queryProxy(QNetworkProxyQuery(url()));
-#endif
 #endif
 
     // now start the request

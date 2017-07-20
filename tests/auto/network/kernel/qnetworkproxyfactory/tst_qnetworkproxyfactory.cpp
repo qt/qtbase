@@ -34,10 +34,8 @@
 #include <qdebug.h>
 #include <qnetworkproxy.h>
 
-#include <QNetworkConfiguration>
-#include <QNetworkConfigurationManager>
-#include <QNetworkSession>
 #include <QNetworkAccessManager>
+#include <QNetworkInterface>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QList>
@@ -69,11 +67,6 @@ private slots:
     void systemProxyForQuery_data();
     void systemProxyForQuery() const;
     void systemProxyForQuery_local();
-#ifndef QT_NO_BEARERMANAGEMENT
-    void fromConfigurations();
-    void inNetworkAccessManager_data();
-    void inNetworkAccessManager();
-#endif
     void genericSystemProxy();
     void genericSystemProxy_data();
 
@@ -250,111 +243,6 @@ void tst_QNetworkProxyFactory::systemProxyForQuery_local()
     list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QString("another.host.com"), 80));
     QVERIFY(list.isEmpty() || (list[0].type() == QNetworkProxy::NoProxy));
 }
-
-#ifndef QT_NO_BEARERMANAGEMENT
-
-//Purpose of this test is just to check systemProxyForQuery doesn't hang or crash
-//with any given configuration including no configuration.
-//We can't test it returns the right proxies without implementing the native proxy code
-//again here, which would be testing our implementation against itself.
-//Therefore it's just testing that something valid is returned (at least a NoProxy entry)
-void tst_QNetworkProxyFactory::fromConfigurations()
-{
-    QNetworkConfigurationManager manager;
-    QList<QNetworkProxy> proxies;
-    QUrl url(QLatin1String("http://qt-project.org"));
-    //get from known configurations
-    foreach (QNetworkConfiguration config, manager.allConfigurations()) {
-        QNetworkProxyQuery query(config, url, QNetworkProxyQuery::UrlRequest);
-        proxies = QNetworkProxyFactory::systemProxyForQuery(query);
-        QVERIFY(!proxies.isEmpty());
-        foreach (QNetworkProxy proxy, proxies) {
-            qDebug() << config.name() << " - " << config.identifier() << " - " << formatProxyName(proxy);
-        }
-    }
-
-    //get from default configuration
-    QNetworkProxyQuery defaultquery(url, QNetworkProxyQuery::UrlRequest);
-    proxies = QNetworkProxyFactory::systemProxyForQuery(defaultquery);
-    QVERIFY(!proxies.isEmpty());
-    foreach (QNetworkProxy proxy, proxies) {
-        qDebug() << "default - " << formatProxyName(proxy);
-    }
-
-    //get from active configuration
-    QNetworkSession session(manager.defaultConfiguration());
-    session.open();
-    QVERIFY(session.waitForOpened(30000));
-    proxies = QNetworkProxyFactory::systemProxyForQuery(defaultquery);
-    QVERIFY(!proxies.isEmpty());
-    foreach (QNetworkProxy proxy, proxies) {
-        qDebug() << "active - " << formatProxyName(proxy);
-    }
-
-    //get from known configurations while there is one active
-    foreach (QNetworkConfiguration config, manager.allConfigurations()) {
-        QNetworkProxyQuery query(config, url, QNetworkProxyQuery::UrlRequest);
-        proxies = QNetworkProxyFactory::systemProxyForQuery(query);
-        QVERIFY(!proxies.isEmpty());
-        foreach (QNetworkProxy proxy, proxies) {
-            qDebug() << config.name() << " - " << config.identifier() << " - " << formatProxyName(proxy);
-        }
-    }
-}
-
-void tst_QNetworkProxyFactory::inNetworkAccessManager_data()
-{
-    QTest::addColumn<QNetworkConfiguration>("config");
-    QTest::addColumn<QList<QNetworkProxy> >("proxies");
-    QNetworkConfigurationManager manager;
-    //get from known configurations
-    foreach (QNetworkConfiguration config, manager.allConfigurations()) {
-        QNetworkProxyQuery query(config, QUrl(QString("http://qt-project.org")), QNetworkProxyQuery::UrlRequest);
-        QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(query);
-        QTest::newRow(config.name().toUtf8()) << config << proxies;
-    }
-}
-
-//Purpose of this test is to check that QNetworkAccessManager uses the proxy from the configuration it
-//has been given. Needs two or more working configurations to be a good test.
-void tst_QNetworkProxyFactory::inNetworkAccessManager()
-{
-    QFETCH(QNetworkConfiguration, config);
-    QFETCH(QList<QNetworkProxy>, proxies);
-
-    int count = QDebugProxyFactory::requestCounter;
-
-    QNetworkAccessManager manager;
-    manager.setConfiguration(config);
-
-    //using an internet server, because cellular APs won't have a route to the test server.
-    QNetworkRequest req(QUrl(QString("http://qt-project.org")));
-    QNetworkReply *reply = manager.get(req);
-    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTestEventLoop::instance().enterLoop(30);
-    delete reply;
-
-    if (count == QDebugProxyFactory::requestCounter) {
-        //RND phones are preconfigured with several test access points which won't work without a matching SIM
-        //If the network fails to start, QNAM won't ask the factory for proxies so we can't test.
-        QSKIP("network configuration didn't start");
-    }
-    QVERIFY(factory);
-
-    qDebug() << "testing network configuration for" << config.name();
-    foreach (QNetworkProxy proxy, factory->returnedList) {
-        qDebug() << formatProxyName(proxy);
-    }
-    qDebug() << " <vs> ";
-    foreach (QNetworkProxy proxy, proxies) {
-        qDebug() << formatProxyName(proxy);
-    }
-    if (config.type() != QNetworkConfiguration::InternetAccessPoint)
-        QEXPECT_FAIL("","QNetworkProxyFactory::systemProxyForQuery doesn't work for service networks yet", Continue);
-    QCOMPARE(factory->returnedList, proxies);
-}
-
-#endif //QT_NO_BEARERMANAGEMENT
 
 Q_DECLARE_METATYPE(QNetworkProxy::ProxyType)
 
