@@ -2028,10 +2028,7 @@ for (currentConfig, allConfigs) {
 }
 qtConfCheckErrors()
 
-!isEmpty(_QMAKE_SUPER_CACHE_): \
-    QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_SUPER_CACHE_)/config.cache
-else: \
-    QMAKE_CONFIG_CACHE = $$dirname(_QMAKE_CACHE_)/config.cache
+QMAKE_CONFIG_CACHE = $$OUT_PWD/config.cache
 QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
 isEmpty(QMAKE_CONFIG_CACHE_USE): \
     QMAKE_CONFIG_CACHE_USE = all
