@@ -121,15 +121,15 @@ using QtMiscUtils::fromHex;
 */
 
 /*!
-    \fn QDebug::QDebug(QtMsgType type)
+    \fn QDebug::QDebug(QtMsgType t)
 
-    Constructs a debug stream that writes to the handler for the message type specified by \a type.
+    Constructs a debug stream that writes to the handler for the message type \a t.
 */
 
 /*!
-    \fn QDebug::QDebug(const QDebug &other)
+    \fn QDebug::QDebug(const QDebug &o)
 
-    Constructs a copy of the \a other debug stream.
+    Constructs a copy of the other debug stream \a o.
 */
 
 /*!
@@ -501,79 +501,79 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(signed short i)
+    \fn QDebug &QDebug::operator<<(signed short t)
 
-    Writes the signed short integer, \a i, to the stream and returns a reference
+    Writes the signed short integer, \a t, to the stream and returns a reference
     to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(unsigned short i)
+    \fn QDebug &QDebug::operator<<(unsigned short t)
 
-    Writes then unsigned short integer, \a i, to the stream and returns a
+    Writes then unsigned short integer, \a t, to the stream and returns a
     reference to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(signed int i)
+    \fn QDebug &QDebug::operator<<(signed int t)
 
-    Writes the signed integer, \a i, to the stream and returns a reference
+    Writes the signed integer, \a t, to the stream and returns a reference
     to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(unsigned int i)
+    \fn QDebug &QDebug::operator<<(unsigned int t)
 
-    Writes then unsigned integer, \a i, to the stream and returns a reference to
+    Writes then unsigned integer, \a t, to the stream and returns a reference to
     the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(signed long l)
+    \fn QDebug &QDebug::operator<<(signed long t)
 
-    Writes the signed long integer, \a l, to the stream and returns a reference
+    Writes the signed long integer, \a t, to the stream and returns a reference
     to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(unsigned long l)
+    \fn QDebug &QDebug::operator<<(unsigned long t)
 
-    Writes then unsigned long integer, \a l, to the stream and returns a reference
+    Writes then unsigned long integer, \a t, to the stream and returns a reference
     to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(qint64 i)
+    \fn QDebug &QDebug::operator<<(qint64 t)
 
-    Writes the signed 64-bit integer, \a i, to the stream and returns a reference
+    Writes the signed 64-bit integer, \a t, to the stream and returns a reference
     to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(quint64 i)
+    \fn QDebug &QDebug::operator<<(quint64 t)
 
-    Writes then unsigned 64-bit integer, \a i, to the stream and returns a
+    Writes then unsigned 64-bit integer, \a t, to the stream and returns a
     reference to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(float f)
+    \fn QDebug &QDebug::operator<<(float t)
 
-    Writes the 32-bit floating point number, \a f, to the stream and returns a
+    Writes the 32-bit floating point number, \a t, to the stream and returns a
     reference to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(double f)
+    \fn QDebug &QDebug::operator<<(double t)
 
-    Writes the 64-bit floating point number, \a f, to the stream and returns a
+    Writes the 64-bit floating point number, \a t, to the stream and returns a
     reference to the stream.
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(const char *s)
+    \fn QDebug &QDebug::operator<<(const char *t)
 
-    Writes the '\\0'-terminated string, \a s, to the stream and returns a
+    Writes the '\\0'-terminated string, \a t, to the stream and returns a
     reference to the stream. The string is never quoted nor transformed to the
     output, but note that some QDebug backends might not be 8-bit clean.
 */
@@ -595,9 +595,9 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(const QString &s)
+    \fn QDebug &QDebug::operator<<(const QString &t)
 
-    Writes the string, \a s, to the stream and returns a reference to the
+    Writes the string, \a t, to the stream and returns a reference to the
     stream. Normally, QDebug prints the string inside quotes and transforms
     non-printable characters to their Unicode values (\\u1234).
 
@@ -634,9 +634,9 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(const QStringRef &s)
+    \fn QDebug &QDebug::operator<<(const QStringRef &t)
 
-    Writes the string, \a s, to the stream and returns a reference to the
+    Writes the string, \a t, to the stream and returns a reference to the
     stream. Normally, QDebug prints the string inside quotes and transforms
     non-printable characters to their Unicode values (\\u1234).
 
@@ -663,9 +663,9 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(QLatin1String s)
+    \fn QDebug &QDebug::operator<<(QLatin1String t)
 
-    Writes the string, \a s, to the stream and returns a reference to the
+    Writes the string, \a t, to the stream and returns a reference to the
     stream. Normally, QDebug prints the string inside quotes and transforms
     non-printable characters to their Unicode values (\\u1234).
 
@@ -677,9 +677,9 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(const QByteArray &b)
+    \fn QDebug &QDebug::operator<<(const QByteArray &t)
 
-    Writes the byte array, \a b, to the stream and returns a reference to the
+    Writes the byte array, \a t, to the stream and returns a reference to the
     stream. Normally, QDebug prints the array inside quotes and transforms
     control or non-US-ASCII characters to their C escape sequences (\\xAB). This
     way, the output is always 7-bit clean and the string can be copied from the
@@ -716,9 +716,9 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug &QDebug::operator<<(const void *p)
+    \fn QDebug &QDebug::operator<<(const void *t)
 
-    Writes a pointer, \a p, to the stream and returns a reference to the stream.
+    Writes a pointer, \a t, to the stream and returns a reference to the stream.
 */
 
 /*!
@@ -732,99 +732,99 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const QList<T> &list)
+    \fn template <class T> QDebug operator<<(QDebug debug, const QList<T> &list)
     \relates QDebug
 
-    Writes the contents of \a list to \a stream. \c T needs to
+    Writes the contents of \a list to \a debug. \c T needs to
     support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const std::list<T, Alloc> &list)
+    \fn template <typename T, typename Alloc> QDebug operator<<(QDebug debug, const std::list<T, Alloc> &vec)
     \relates QDebug
     \since 5.7
 
-    Writes the contents of \a list to \a stream. \c T needs to
+    Writes the contents of list \a vec to \a debug. \c T needs to
     support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const QVector<T> &vector)
+    \fn template <typename T> QDebug operator<<(QDebug debug, const QVector<T> &vec)
     \relates QDebug
 
-    Writes the contents of \a vector to \a stream. \c T needs to
+    Writes the contents of vector \a vec to \a debug. \c T needs to
     support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const std::vector<T, Alloc> &vector)
+    \fn template <typename T, typename Alloc> QDebug operator<<(QDebug debug, const std::vector<T, Alloc> &vec)
     \relates QDebug
     \since 5.7
 
-    Writes the contents of \a vector to \a stream. \c T needs to
+    Writes the contents of vector \a vec to \a debug. \c T needs to
     support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const QSet<T> &set)
+    \fn template <typename T> QDebug operator<<(QDebug debug, const QSet<T> &set)
     \relates QDebug
 
-    Writes the contents of \a set to \a stream. \c T needs to
+    Writes the contents of \a set to \a debug. \c T needs to
     support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const QMap<Key, T> &map)
+    \fn template <class Key, class T> QDebug operator<<(QDebug debug, const QMap<Key, T> &map)
     \relates QDebug
 
-    Writes the contents of \a map to \a stream. Both \c Key and
+    Writes the contents of \a map to \a debug. Both \c Key and
     \c T need to support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const std::map<Key, T, Compare, Alloc> &map)
+    \fn template <typename Key, typename T, typename Compare, typename Alloc> QDebug operator<<(QDebug debug, const std::map<Key, T, Compare, Alloc> &map)
     \relates QDebug
     \since 5.7
 
-    Writes the contents of \a map to \a stream. Both \c Key and
+    Writes the contents of \a map to \a debug. Both \c Key and
     \c T need to support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const std::multimap<Key, T, Compare, Alloc> &map)
+    \fn template <typename Key, typename T, typename Compare, typename Alloc> QDebug operator<<(QDebug debug, const std::multimap<Key, T, Compare, Alloc> &map)
     \relates QDebug
     \since 5.7
 
-    Writes the contents of \a map to \a stream. Both \c Key and
+    Writes the contents of \a map to \a debug. Both \c Key and
     \c T need to support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const QHash<Key, T> &hash)
+    \fn template <class Key, class T> QDebug operator<<(QDebug debug, const QHash<Key, T> &hash)
     \relates QDebug
 
-    Writes the contents of \a hash to \a stream. Both \c Key and
+    Writes the contents of \a hash to \a debug. Both \c Key and
     \c T need to support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const QPair<T1, T2> &pair)
+    \fn template <class T1, class T2> QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
     \relates QDebug
 
-    Writes the contents of \a pair to \a stream. Both \c T1 and
+    Writes the contents of \a pair to \a debug. Both \c T1 and
     \c T2 need to support streaming into QDebug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug stream, const QFlags<T> &flag)
+    \fn template<typename T> QDebug operator<<(QDebug debug, const QFlags<T> &flags)
     \relates QDebug
     \since 4.7
 
-    Writes \a flag to \a stream.
+    Writes \a flags to \a debug.
 */
 
 /*!
-    \fn QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)
+    \fn template<typename T> QDebug operator<<(QDebug debug, const QSharedPointer<T> &ptr)
     \relates QSharedPointer
     \since 5.7
 
@@ -833,6 +833,11 @@ QDebug &QDebug::resetFormat()
 
     \sa {Debugging Techniques}
 */
+
+/*!
+  \fn QDebug &QDebug::operator<<(std::nullptr_t)
+  \internal
+ */
 
 /*!
     \class QDebugStateSaver
