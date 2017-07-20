@@ -437,6 +437,9 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     , q_ptr(0)
 #endif
 {
+#if defined(Q_OS_DARWIN)
+    qt_apple_check_os_version();
+#endif
     app_compile_version = flags & 0xffffff;
     static const char *const empty = "";
     if (argc == 0 || argv == 0) {

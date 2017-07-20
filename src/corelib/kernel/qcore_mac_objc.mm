@@ -280,6 +280,36 @@ Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode)
 
 #endif // Q_OS_OSX
 
+void qt_apple_check_os_version()
+{
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+    const char *os = "iOS";
+    const int version = __IPHONE_OS_VERSION_MIN_REQUIRED;
+#elif defined(__TV_OS_VERSION_MIN_REQUIRED)
+    const char *os = "tvOS";
+    const int version = __TV_OS_VERSION_MIN_REQUIRED;
+#elif defined(__WATCH_OS_VERSION_MIN_REQUIRED)
+    const char *os = "watchOS";
+    const int version = __WATCH_OS_VERSION_MIN_REQUIRED;
+#elif defined(__MAC_OS_X_VERSION_MIN_REQUIRED)
+    const char *os = "macOS";
+    const int version = __MAC_OS_X_VERSION_MIN_REQUIRED;
+#endif
+    const NSOperatingSystemVersion required = version >= 100000
+    ? (NSOperatingSystemVersion){version / 10000, version / 100 % 100, version % 100}
+    : (NSOperatingSystemVersion){version / 100, version / 10 % 10, version % 10};
+    const NSOperatingSystemVersion current = NSProcessInfo.processInfo.operatingSystemVersion;
+    if (![NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:required]) {
+        fprintf(stderr, "You can't use this version of %s with this version of %s. "
+                "You have %s %ld.%ld.%ld. Qt requires %s %ld.%ld.%ld or later.\n",
+                ((NSString *)NSBundle.mainBundle.infoDictionary[@"CFBundleName"]).UTF8String,
+                os,
+                os, current.majorVersion, current.minorVersion, current.patchVersion,
+                os, required.majorVersion, required.minorVersion, required.patchVersion);
+        abort();
+    }
+}
+
 // -------------------------------------------------------------------------
 
 QT_END_NAMESPACE
