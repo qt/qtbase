@@ -172,11 +172,20 @@
     \snippet drilldown/informationwindow.cpp 4
 
     Finally, we connect the "something's changed" signals in the
-    editors to our custom \c enableButtons() slot, enabling the users
-    to either submit or revert their changes. We add all the widgets
-    into a layout, store the item ID and the name of the displayed
-    image file for future reference, and set the window title and
-    initial size.
+    editors to our custom \c enableButtons slot, enabling the users
+    to either submit or revert their changes.
+    We need to use lambdas for connecting the \c enableButtons slot
+    because its signature does not match \c QTextEdit::textChanged
+    and \c QComboBox::currentIndexChanged.
+    Since the latter has another overload with the signature
+    \c {const QString &} and the selected signal would be ambiguous,
+    we need to use \c QOverload<int>::of to select a specific overload
+    for \c currentIndexChanged.
+
+    We add all the widgets into a layout, store the item ID and the
+    name of the displayed image file for future reference, and set
+    the window title and initial size.
+
 
     Note that we also set the Qt::Window window flag to indicate that
     our widget is in fact a window, with a window system frame and a
@@ -389,19 +398,21 @@
     \snippet drilldown/view.cpp 6
 
     The \c showInformation() function is given an \c ImageItem object
-    as argument, and starts off by extracting the item's item
-    ID. Then it determines if there already is created an information
-    window for this location. If it is, and the window is visible, it
-    ensures that the window is raised to the top of the widget stack
-    and activated. If the window exists but is hidden, calling its \l
-    {QWidget::}{show()} slot gives the same result.
+    as argument, and starts off by extracting the item's item ID.
 
+    Then it determines if there already is created an information
+    window for this location.
     If no window for the given location exists, we create one by
     passing the item ID, a pointer to the model, and our view as a
     parent, to the \c InformationWindow constructor. Note that we
     connect the information window's \c imageChanged() signal to \e
     this widget's \c updateImage() slot, before we give it a suitable
     position and add it to the list of existing windows.
+    If there is a window for the given location, and that window is
+    visible, it ensures that the window is raised to the top of the
+    widget stack and activated. If it is hidden, calling its \l
+    {QWidget::}{show()} slot gives the same result.
+
 
     \snippet drilldown/view.cpp 7
 

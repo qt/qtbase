@@ -71,7 +71,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(const QString &artistTable, const QString &albumTable,
-               QFile *albumDetails, QWidget *parent = 0);
+               QFile *albumDetails, QWidget *parent = nullptr);
 
 private slots:
     void about();

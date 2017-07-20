@@ -61,9 +61,9 @@ class InformationWindow : public QDialog
 
 public:
     InformationWindow(int id, QSqlRelationalTableModel *items,
-                      QWidget *parent = 0);
+                      QWidget *parent = nullptr);
 
-    int id();
+    int id() const;
 
 signals:
     void imageChanged(int id, const QString &fileName);
@@ -83,16 +83,16 @@ private:
     int itemId;
     QString displayedImage;
 
-    QComboBox *imageFileEditor;
-    QLabel *itemText;
-    QTextEdit *descriptionEditor;
+    QComboBox *imageFileEditor = nullptr;
+    QLabel *itemText = nullptr;
+    QTextEdit *descriptionEditor = nullptr;
 
-    QPushButton *closeButton;
-    QPushButton *submitButton;
-    QPushButton *revertButton;
-    QDialogButtonBox *buttonBox;
+    QPushButton *closeButton = nullptr;
+    QPushButton *submitButton = nullptr;
+    QPushButton *revertButton = nullptr;
+    QDialogButtonBox *buttonBox = nullptr;
 
-    QDataWidgetMapper *mapper;
+    QDataWidgetMapper *mapper = nullptr;
 };
 //! [2]
 

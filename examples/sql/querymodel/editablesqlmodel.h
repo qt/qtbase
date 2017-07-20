@@ -58,7 +58,7 @@ class EditableSqlModel : public QSqlQueryModel
     Q_OBJECT
 
 public:
-    EditableSqlModel(QObject *parent = 0);
+    EditableSqlModel(QObject *parent = nullptr);
 
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
