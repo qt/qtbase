@@ -154,11 +154,6 @@ void QThreadPoolThread::registerThreadInactive()
     \internal
 */
 QThreadPoolPrivate:: QThreadPoolPrivate()
-    : isExiting(false),
-      expiryTimeout(30000),
-      maxThreadCount(qAbs(QThread::idealThreadCount())),
-      reservedThreads(0),
-      activeThreads(0)
 { }
 
 bool QThreadPoolPrivate::tryStart(QRunnable *task)
