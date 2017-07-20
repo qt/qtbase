@@ -46,7 +46,7 @@
 
 #define PROGRAMNAME     "qdbusxml2cpp"
 #define PROGRAMVERSION  "0.8"
-#define PROGRAMCOPYRIGHT "Copyright (C) 2016 The Qt Company Ltd."
+#define PROGRAMCOPYRIGHT "Copyright (C) 2017 The Qt Company Ltd."
 
 #define ANNOTATION_NO_WAIT      "org.freedesktop.DBus.Method.NoReply"
 
@@ -1133,6 +1133,11 @@ int main(int argc, char **argv)
 
     QDBusIntrospection::Interfaces interfaces = readInput();
     cleanInterfaces(interfaces);
+
+    QStringList args = app.arguments();
+    args.removeFirst();
+    commandLine = QLatin1String(PROGRAMNAME " ");
+    commandLine += args.join(QLatin1Char(' '));
 
     if (!proxyFile.isEmpty() || adaptorFile.isEmpty())
         writeProxy(proxyFile, interfaces);

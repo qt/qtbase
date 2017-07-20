@@ -101,6 +101,11 @@ static QString windowsErrorString(int errorCode)
 
     if (ret.isEmpty() && errorCode == ERROR_MOD_NOT_FOUND)
         ret = QString::fromLatin1("The specified module could not be found.");
+    if (ret.endsWith(QLatin1String("\r\n")))
+        ret.chop(2);
+    if (ret.isEmpty())
+        ret = QString::fromLatin1("Unknown error 0x%1.")
+                .arg(unsigned(errorCode), 8, 16, QLatin1Char('0'));
     return ret;
 }
 #endif
@@ -126,7 +131,7 @@ static QString standardLibraryErrorString(int errorCode)
         break;
     default: {
       #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && _POSIX_VERSION >= 200112L && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_QNX)
-            QByteArray buf(1024, '\0');
+            QByteArray buf(1024, Qt::Uninitialized);
             ret = fromstrerror_helper(strerror_r(errorCode, buf.data(), buf.size()), buf);
       #else
             ret = QString::fromLocal8Bit(strerror(errorCode));
@@ -141,7 +146,7 @@ static QString standardLibraryErrorString(int errorCode)
     return ret.trimmed();
 }
 
-QString QSystemError::toString() const
+QString QSystemError::string(ErrorScope errorScope, int errorCode)
 {
     switch(errorScope) {
     case NativeError:
@@ -161,5 +166,26 @@ QString QSystemError::toString() const
     }
 }
 
-QT_END_NAMESPACE
+QString QSystemError::stdString(int errorCode)
+{
+    return standardLibraryErrorString(errorCode == -1 ? errno : errorCode);
+}
 
+#ifdef Q_OS_WIN
+QString QSystemError::windowsString(int errorCode)
+{
+    return windowsErrorString(errorCode == -1 ? GetLastError() : errorCode);
+}
+
+QString qt_error_string(int code)
+{
+    return windowsErrorString(code == -1 ? GetLastError() : code);
+}
+#else
+QString qt_error_string(int code)
+{
+    return standardLibraryErrorString(code == -1 ? errno : code);
+}
+#endif
+
+QT_END_NAMESPACE

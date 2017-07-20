@@ -93,6 +93,7 @@ public:
     QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const Q_DECL_OVERRIDE;
     FileFlags fileFlags(FileFlags type) const Q_DECL_OVERRIDE;
     bool setPermissions(uint perms) Q_DECL_OVERRIDE;
+    QByteArray id() const override;
     QString fileName(FileName file) const Q_DECL_OVERRIDE;
     uint ownerId(FileOwner) const Q_DECL_OVERRIDE;
     QString owner(FileOwner) const Q_DECL_OVERRIDE;

@@ -52,7 +52,6 @@
 #include <qdatetime.h>
 #include <qlineedit.h>
 #include <qspinbox.h>
-#include <qtreeview.h>
 #include <qheaderview.h>
 #include <qstyleditemdelegate.h>
 #include <private/qabstractitemview_p.h>

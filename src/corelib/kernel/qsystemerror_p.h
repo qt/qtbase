@@ -69,9 +69,15 @@ public:
     inline QSystemError(int error, ErrorScope scope);
     inline QSystemError();
 
-    QString toString() const;
+    inline QString toString() const;
     inline ErrorScope scope() const;
     inline int error() const;
+
+    static QString string(ErrorScope errorScope, int errorCode);
+    static QString stdString(int errorCode = -1);
+#ifdef Q_OS_WIN
+    static QString windowsString(int errorCode = -1);
+#endif
 
     //data members
     int errorCode;
@@ -90,6 +96,11 @@ QSystemError::QSystemError()
 
 }
 
+QString QSystemError::toString() const
+{
+    return string(errorScope, errorCode);
+}
+
 QSystemError::ErrorScope QSystemError::scope() const
 {
     return errorScope;
@@ -99,7 +110,6 @@ int QSystemError::error() const
 {
     return errorCode;
 }
-
 
 QT_END_NAMESPACE
 

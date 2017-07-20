@@ -46,7 +46,9 @@
 #include "itemviews_p.h"
 
 #include <qtoolbutton.h>
+#if QT_CONFIG(treeview)
 #include <qtreeview.h>
+#endif
 #include <qvariant.h>
 #include <qaccessible.h>
 
@@ -140,10 +142,10 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QMenu")) {
         iface = new QAccessibleMenu(widget);
 #endif
-#ifndef QT_NO_TREEVIEW
+#if QT_CONFIG(treeview)
     } else if (classname == QLatin1String("QTreeView")) {
         iface = new QAccessibleTree(widget);
-#endif // QT_NO_TREEVIEW
+#endif // QT_CONFIG(treeview)
 #ifndef QT_NO_ITEMVIEWS
     } else if (classname == QLatin1String("QTableView") || classname == QLatin1String("QListView")) {
         iface = new QAccessibleTable(widget);

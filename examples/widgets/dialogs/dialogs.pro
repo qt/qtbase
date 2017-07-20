@@ -3,16 +3,12 @@ QT_FOR_CONFIG += widgets
 TEMPLATE      = subdirs
 SUBDIRS       = classwizard \
                 configdialog \
+                extension \
+                findfiles \
+                licensewizard \
                 standarddialogs \
                 tabdialog \
                 trivialwizard
-
-!wince {
-    SUBDIRS += \
-        licensewizard \
-        extension \
-        findfiles
-}
 
 !qtHaveModule(printsupport): SUBDIRS -= licensewizard
 !qtConfig(wizard) {

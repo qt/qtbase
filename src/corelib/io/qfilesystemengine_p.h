@@ -92,6 +92,7 @@ public:
                              QFileSystemMetaData::MetaDataFlags what);
 #if defined(Q_OS_UNIX)
     static bool fillMetaData(int fd, QFileSystemMetaData &data); // what = PosixStatFlags
+    static QByteArray id(int fd);
     static bool setPermissions(int fd, QFile::Permissions permissions, QSystemError &error,
                                QFileSystemMetaData *data = nullptr);
 #endif
@@ -104,6 +105,7 @@ public:
                              QFileSystemMetaData::MetaDataFlags what);
     static bool fillPermissions(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                 QFileSystemMetaData::MetaDataFlags what);
+    static QByteArray id(HANDLE fHandle);
     static QString owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own);
     static QString nativeAbsoluteFilePath(const QString &path);
 #endif

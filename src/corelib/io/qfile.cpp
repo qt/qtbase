@@ -571,7 +571,9 @@ QFile::rename(const QString &newName)
     // Note: this does not take file engines into account.
     QByteArray targetId = QFileSystemEngine::id(QFileSystemEntry(newName));
     if (!targetId.isNull()) {
-        QByteArray fileId = QFileSystemEngine::id(QFileSystemEntry(d->fileName));
+        QByteArray fileId = d->fileEngine ?
+                    d->fileEngine->id() :
+                    QFileSystemEngine::id(QFileSystemEntry(d->fileName));
         if (fileId != targetId || d->fileName.compare(newName, Qt::CaseInsensitive)) {
             // ### Race condition. If a file is moved in after this, it /will/ be
             // overwritten. On Unix, the proper solution is to use hardlinks:

@@ -141,6 +141,7 @@ public:
     virtual QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const;
     virtual FileFlags fileFlags(FileFlags type=FileInfoAll) const;
     virtual bool setPermissions(uint perms);
+    virtual QByteArray id() const;
     virtual QString fileName(FileName file=DefaultName) const;
     virtual uint ownerId(FileOwner) const;
     virtual QString owner(FileOwner) const;

@@ -48,6 +48,7 @@
 #include <qmutex.h>
 #include <qmap.h>
 #include <private/qcoreapplication_p.h>
+#include <private/qsystemerror_p.h>
 #ifdef Q_OS_MAC
 #  include <private/qcore_mac_p.h>
 #endif
@@ -237,7 +238,7 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
             lib->errorString = file.errorString();
         if (qt_debug_component()) {
             qWarning("%s: %s", (const char*) QFile::encodeName(library),
-                qPrintable(qt_error_string(errno)));
+                qPrintable(QSystemError::stdString()));
         }
         return false;
     }
