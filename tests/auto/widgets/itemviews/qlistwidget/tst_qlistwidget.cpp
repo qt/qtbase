@@ -1710,11 +1710,10 @@ void tst_QListWidget::QTBUG50891_ensureSelectionModelSignalConnectionsAreSet()
 
     list.setSelectionModel(new QItemSelectionModel(list.model()));
     list.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&list));
 
     QSignalSpy currentItemChangedSpy(&list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
     QSignalSpy itemSelectionChangedSpy(&list, SIGNAL(itemSelectionChanged()));
-
-    QVERIFY(QTest::qWaitForWindowExposed(&list));
 
     QCOMPARE(currentItemChangedSpy.count(), 0);
     QCOMPARE(itemSelectionChangedSpy.count(), 0);
