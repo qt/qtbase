@@ -384,6 +384,10 @@ QRect QScreen::geometry() const
 
   The available geometry is the geometry excluding window manager reserved areas
   such as task bars and system menus.
+
+  Note, on X11 this will return the true available geometry only on systems with one monitor and
+  if window manager has set _NET_WORKAREA atom. In all other cases this is equal to geometry().
+  This is a limitation in X11 window manager specification.
 */
 QRect QScreen::availableGeometry() const
 {

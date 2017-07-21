@@ -154,7 +154,7 @@ public:
     QString serialNumber() const override;
 
     QRect geometry() const override { return m_geometry; }
-    QRect availableGeometry() const override {return m_availableGeometry;}
+    QRect availableGeometry() const override;
     int depth() const override { return screen()->root_depth; }
     QImage::Format format() const override;
     QSizeF physicalSize() const override { return m_sizeMillimeters; }

@@ -152,7 +152,7 @@
      on \macos, or the task bar on Windows). The default screen is used if
      \a screen is -1.
 
-     \sa screenNumber(), screenGeometry()
+     \sa screenNumber(), screenGeometry(), QScreen::availableGeometry()
 */
 
 /*!
