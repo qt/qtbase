@@ -62,7 +62,9 @@ private slots:
 private:
     void printTimeZone(const QTimeZone &tz);
 #ifdef QT_BUILD_INTERNAL
+    // Generic tests of privates, called by implementation-specific private tests:
     void testCetPrivate(const QTimeZonePrivate &tzp);
+    void testEpochTranPrivate(const QTimeZonePrivate &tzp);
 #endif // QT_BUILD_INTERNAL
     const bool debug;
 };
@@ -757,6 +759,7 @@ void tst_QTimeZone::icuTest()
     }
 
     testCetPrivate(tzp);
+    testEpochTranPrivate(QIcuTimeZonePrivate("America/Toronto"));
 #endif // QT_USE_ICU
 }
 
@@ -830,6 +833,7 @@ void tst_QTimeZone::tzTest()
     }
 
     testCetPrivate(tzp);
+    testEpochTranPrivate(QTzTimeZonePrivate("America/Toronto"));
 
     // Test first and last transition rule
     // Warning: This could vary depending on age of TZ file!
@@ -982,6 +986,7 @@ void tst_QTimeZone::macTest()
     }
 
     testCetPrivate(tzp);
+    testEpochTranPrivate(QMacTimeZonePrivate("America/Toronto"));
 #endif // QT_BUILD_INTERNAL && Q_OS_DARWIN
 }
 
@@ -1047,6 +1052,7 @@ void tst_QTimeZone::winTest()
     }
 
     testCetPrivate(tzp);
+    testEpochTranPrivate(QWinTimeZonePrivate("America/Toronto"));
 #endif // Q_OS_WIN
 }
 
@@ -1146,6 +1152,44 @@ void tst_QTimeZone::testCetPrivate(const QTimeZonePrivate &tzp)
             QCOMPARE(result.at(i).standardTimeOffset, expected.at(i).standardTimeOffset);
             QCOMPARE(result.at(i).daylightTimeOffset, expected.at(i).daylightTimeOffset);
         }
+    }
+}
+
+// Needs a zone with DST around the epoch; currently America/Toronto (EST5EDT)
+void tst_QTimeZone::testEpochTranPrivate(const QTimeZonePrivate &tzp)
+{
+    if (!tzp.hasTransitions())
+        return; // test only viable for transitions
+
+    QTimeZonePrivate::Data tran = tzp.nextTransition(0); // i.e. first after epoch
+    // 1970-04-26 02:00 EST, -5 -> -4
+    const QDateTime after = QDateTime(QDate(1970, 4, 26), QTime(2, 0), Qt::OffsetFromUTC, -5 * 3600);
+    const QDateTime found = QDateTime::fromMSecsSinceEpoch(tran.atMSecsSinceEpoch, Qt::UTC);
+#ifdef Q_OS_WIN // MS gets the date wrong: 5th April instead of 26th.
+    QCOMPARE(found.toOffsetFromUtc(-5 * 3600).time(), after.time());
+#else
+    QCOMPARE(found, after);
+#endif
+    QCOMPARE(tran.offsetFromUtc, -4 * 3600);
+    QCOMPARE(tran.standardTimeOffset, -5 * 3600);
+    QCOMPARE(tran.daylightTimeOffset, 3600);
+
+    // Pre-epoch time-zones might not be supported at all:
+    tran = tzp.nextTransition(QDateTime(QDate(1601, 1, 1), QTime(0, 0),
+                                        Qt::UTC).toMSecsSinceEpoch());
+    if (tran.atMSecsSinceEpoch != QTimeZonePrivate::invalidSeconds()
+        && tran.atMSecsSinceEpoch < 0) {
+        // ... but, if they are, we should be able to search back to them:
+        tran = tzp.previousTransition(0); // i.e. last before epoch
+        // 1969-10-26 02:00 EDT, -4 -> -5
+        QCOMPARE(QDateTime::fromMSecsSinceEpoch(tran.atMSecsSinceEpoch, Qt::UTC),
+                 QDateTime(QDate(1969, 10, 26), QTime(2, 0), Qt::OffsetFromUTC, -4 * 3600));
+        QCOMPARE(tran.offsetFromUtc, -5 * 3600);
+        QCOMPARE(tran.standardTimeOffset, -5 * 3600);
+        QCOMPARE(tran.daylightTimeOffset, 0);
+    } else {
+        // Do not use QSKIP(): that would discard the rest of this sub-test's caller.
+        qDebug() << "No support for pre-epoch time-zone transitions";
     }
 }
 #endif // QT_BUILD_INTERNAL
