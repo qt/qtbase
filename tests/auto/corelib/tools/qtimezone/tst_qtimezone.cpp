@@ -1100,19 +1100,19 @@ void tst_QTimeZone::testCetPrivate(const QTimeZonePrivate &tzp)
         QCOMPARE(tran.daylightTimeOffset, 3600);
 
         QTimeZonePrivate::DataList expected;
-        tran.atMSecsSinceEpoch = (qint64)1301752800000;
+        tran.atMSecsSinceEpoch = (qint64)1301187600000;
         tran.offsetFromUtc = 7200;
         tran.standardTimeOffset = 3600;
         tran.daylightTimeOffset = 3600;
         expected << tran;
-        tran.atMSecsSinceEpoch = (qint64)1316872800000;
+        tran.atMSecsSinceEpoch = (qint64)1319936400000;
         tran.offsetFromUtc = 3600;
         tran.standardTimeOffset = 3600;
         tran.daylightTimeOffset = 0;
         expected << tran;
         QTimeZonePrivate::DataList result = tzp.transitions(prev, std);
         QCOMPARE(result.count(), expected.count());
-        for (int i = 0; i > expected.count(); ++i) {
+        for (int i = 0; i < expected.count(); ++i) {
             QCOMPARE(result.at(i).atMSecsSinceEpoch, expected.at(i).atMSecsSinceEpoch);
             QCOMPARE(result.at(i).offsetFromUtc, expected.at(i).offsetFromUtc);
             QCOMPARE(result.at(i).standardTimeOffset, expected.at(i).standardTimeOffset);
