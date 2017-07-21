@@ -197,7 +197,7 @@ static inline QDBusError::ErrorType get(const char *name)
     values:
 
     \value NoError              QDBusError is invalid (i.e., the call succeeded)
-    \value Other                QDBusError contains an error that is one of the well-known ones
+    \value Other                QDBusError contains an error that is not one of the well-known ones
     \value Failed               The call failed (\c org.freedesktop.DBus.Error.Failed)
     \value NoMemory             Out of memory (\c org.freedesktop.DBus.Error.NoMemory)
     \value ServiceUnknown       The called service is not known
