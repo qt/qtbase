@@ -167,11 +167,11 @@ void tst_QTimeZone::createTest()
     QDateTime jun = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC);
     QDateTime janPrev = QDateTime(QDate(2011, 1, 1), QTime(0, 0, 0), Qt::UTC);
 
-    QCOMPARE(tz.offsetFromUtc(jan), 46800);
-    QCOMPARE(tz.offsetFromUtc(jun), 43200);
+    QCOMPARE(tz.offsetFromUtc(jan), 13 * 3600);
+    QCOMPARE(tz.offsetFromUtc(jun), 12 * 3600);
 
-    QCOMPARE(tz.standardTimeOffset(jan), 43200);
-    QCOMPARE(tz.standardTimeOffset(jun), 43200);
+    QCOMPARE(tz.standardTimeOffset(jan), 12 * 3600);
+    QCOMPARE(tz.standardTimeOffset(jun), 12 * 3600);
 
     QCOMPARE(tz.daylightTimeOffset(jan), 3600);
     QCOMPARE(tz.daylightTimeOffset(jun), 0);
@@ -183,38 +183,46 @@ void tst_QTimeZone::createTest()
     // Only test transitions if host system supports them
     if (tz.hasTransitions()) {
         QTimeZone::OffsetData tran = tz.nextTransition(jan);
-        QCOMPARE(tran.atUtc.toMSecsSinceEpoch(), (qint64)1333202400000);
-        QCOMPARE(tran.offsetFromUtc, 43200);
-        QCOMPARE(tran.standardTimeOffset, 43200);
+        // 2012-04-01 03:00 NZDT, +13 -> +12
+        QCOMPARE(tran.atUtc,
+                 QDateTime(QDate(2012, 4, 1), QTime(3, 0), Qt::OffsetFromUTC, 13 * 3600));
+        QCOMPARE(tran.offsetFromUtc, 12 * 3600);
+        QCOMPARE(tran.standardTimeOffset, 12 * 3600);
         QCOMPARE(tran.daylightTimeOffset, 0);
 
         tran = tz.nextTransition(jun);
-        QCOMPARE(tran.atUtc.toMSecsSinceEpoch(), (qint64)1348927200000);
-        QCOMPARE(tran.offsetFromUtc, 46800);
-        QCOMPARE(tran.standardTimeOffset, 43200);
+        // 2012-09-30 02:00 NZST, +12 -> +13
+        QCOMPARE(tran.atUtc,
+                 QDateTime(QDate(2012, 9, 30), QTime(2, 0), Qt::OffsetFromUTC, 12 * 3600));
+        QCOMPARE(tran.offsetFromUtc, 13 * 3600);
+        QCOMPARE(tran.standardTimeOffset, 12 * 3600);
         QCOMPARE(tran.daylightTimeOffset, 3600);
 
         tran = tz.previousTransition(jan);
-        QCOMPARE(tran.atUtc.toMSecsSinceEpoch(), (qint64)1316872800000);
-        QCOMPARE(tran.offsetFromUtc, 46800);
-        QCOMPARE(tran.standardTimeOffset, 43200);
+        // 2011-09-25 02:00 NZST, +12 -> +13
+        QCOMPARE(tran.atUtc,
+                 QDateTime(QDate(2011, 9, 25), QTime(2, 0), Qt::OffsetFromUTC, 12 * 3600));
+        QCOMPARE(tran.offsetFromUtc, 13 * 3600);
+        QCOMPARE(tran.standardTimeOffset, 12 * 3600);
         QCOMPARE(tran.daylightTimeOffset, 3600);
 
         tran = tz.previousTransition(jun);
-        QCOMPARE(tran.atUtc.toMSecsSinceEpoch(), (qint64)1333202400000);
-        QCOMPARE(tran.offsetFromUtc, 43200);
-        QCOMPARE(tran.standardTimeOffset, 43200);
+        // 2012-04-01 03:00 NZDT, +13 -> +12 (again)
+        QCOMPARE(tran.atUtc,
+                 QDateTime(QDate(2012, 4, 1), QTime(3, 0), Qt::OffsetFromUTC, 13 * 3600));
+        QCOMPARE(tran.offsetFromUtc, 12 * 3600);
+        QCOMPARE(tran.standardTimeOffset, 12 * 3600);
         QCOMPARE(tran.daylightTimeOffset, 0);
 
         QTimeZone::OffsetDataList expected;
-        tran.atUtc = QDateTime::fromMSecsSinceEpoch(1301752800000, Qt::UTC);
-        tran.offsetFromUtc = 46800;
-        tran.standardTimeOffset = 43200;
+        tran.atUtc = QDateTime(QDate(2011, 4, 3), QTime(2, 0), Qt::OffsetFromUTC, 13 * 3600);
+        tran.offsetFromUtc = 13 * 3600;
+        tran.standardTimeOffset = 12 * 3600;
         tran.daylightTimeOffset = 3600;
         expected << tran;
-        tran.atUtc = QDateTime::fromMSecsSinceEpoch(1316872800000, Qt::UTC);
-        tran.offsetFromUtc = 43200;
-        tran.standardTimeOffset = 43200;
+        tran.atUtc = QDateTime(QDate(2011, 9, 25), QTime(2, 0), Qt::OffsetFromUTC, 12 * 3600);
+        tran.offsetFromUtc = 12 * 3600;
+        tran.standardTimeOffset = 12 * 3600;
         tran.daylightTimeOffset = 0;
         expected << tran;
         QTimeZone::OffsetDataList result = tz.transitions(janPrev, jan);
@@ -845,7 +853,8 @@ void tst_QTimeZone::tzTest()
     }
 
     dat = tzp.nextTransition(-9999999999999);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)-2422054408000);
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
+             QDateTime(QDate(1893, 4, 1), QTime(0, 6, 32), Qt::OffsetFromUTC, 3600));
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
@@ -855,37 +864,41 @@ void tst_QTimeZone::tzTest()
 
     // Tets high dates use the POSIX rule
     dat = tzp.data(stdHi);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)stdHi);
+    QCOMPARE(dat.atMSecsSinceEpoch - stdHi, (qint64)0);
     QCOMPARE(dat.offsetFromUtc, 3600);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
     dat = tzp.data(dstHi);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)dstHi);
+    QCOMPARE(dat.atMSecsSinceEpoch - dstHi, (qint64)0);
     QCOMPARE(dat.offsetFromUtc, 7200);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 3600);
 
     dat = tzp.previousTransition(stdHi);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)4096659600000);
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
+             QDateTime(QDate(2099, 10, 26), QTime(2, 0), Qt::OffsetFromUTC, 3600));
     QCOMPARE(dat.offsetFromUtc, 3600);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
 
     dat = tzp.previousTransition(dstHi);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)4109965200000);
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
+             QDateTime(QDate(2100, 3, 29), QTime(2, 0), Qt::OffsetFromUTC, 3600));
     QCOMPARE(dat.offsetFromUtc, 7200);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 3600);
 
     dat = tzp.nextTransition(stdHi);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)4109965200000);
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
+             QDateTime(QDate(2100, 3, 29), QTime(2, 0), Qt::OffsetFromUTC, 3600));
     QCOMPARE(dat.offsetFromUtc, 7200);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 3600);
 
     dat = tzp.nextTransition(dstHi);
-    QCOMPARE(dat.atMSecsSinceEpoch, (qint64)4128109200000);
+    QCOMPARE(QDateTime::fromMSecsSinceEpoch(dat.atMSecsSinceEpoch, Qt::OffsetFromUTC, 3600),
+             QDateTime(QDate(2100, 10, 25), QTime(2, 0), Qt::OffsetFromUTC, 3600));
     QCOMPARE(dat.offsetFromUtc, 3600);
     QCOMPARE(dat.standardTimeOffset, 3600);
     QCOMPARE(dat.daylightTimeOffset, 0);
@@ -1076,36 +1089,48 @@ void tst_QTimeZone::testCetPrivate(const QTimeZonePrivate &tzp)
     // Only test transitions if host system supports them
     if (tzp.hasTransitions()) {
         QTimeZonePrivate::Data tran = tzp.nextTransition(std);
-        QCOMPARE(tran.atMSecsSinceEpoch, (qint64)1332637200000);
+        // 2012-03-25 02:00 CET, +1 -> +2
+        QCOMPARE(QDateTime::fromMSecsSinceEpoch(tran.atMSecsSinceEpoch, Qt::UTC),
+                 QDateTime(QDate(2012, 3, 25), QTime(2, 0), Qt::OffsetFromUTC, 3600));
         QCOMPARE(tran.offsetFromUtc, 7200);
         QCOMPARE(tran.standardTimeOffset, 3600);
         QCOMPARE(tran.daylightTimeOffset, 3600);
 
         tran = tzp.nextTransition(dst);
-        QCOMPARE(tran.atMSecsSinceEpoch, (qint64)1351386000000);
+        // 2012-10-28 03:00 CEST, +2 -> +1
+        QCOMPARE(QDateTime::fromMSecsSinceEpoch(tran.atMSecsSinceEpoch, Qt::UTC),
+                 QDateTime(QDate(2012, 10, 28), QTime(3, 0), Qt::OffsetFromUTC, 2 * 3600));
         QCOMPARE(tran.offsetFromUtc, 3600);
         QCOMPARE(tran.standardTimeOffset, 3600);
         QCOMPARE(tran.daylightTimeOffset, 0);
 
         tran = tzp.previousTransition(std);
-        QCOMPARE(tran.atMSecsSinceEpoch, (qint64)1319936400000);
+        // 2011-10-30 03:00 CEST, +2 -> +1
+        QCOMPARE(QDateTime::fromMSecsSinceEpoch(tran.atMSecsSinceEpoch, Qt::UTC),
+                 QDateTime(QDate(2011, 10, 30), QTime(3, 0), Qt::OffsetFromUTC, 2 * 3600));
         QCOMPARE(tran.offsetFromUtc, 3600);
         QCOMPARE(tran.standardTimeOffset, 3600);
         QCOMPARE(tran.daylightTimeOffset, 0);
 
         tran = tzp.previousTransition(dst);
-        QCOMPARE(tran.atMSecsSinceEpoch, (qint64)1332637200000);
+        // 2012-03-25 02:00 CET, +1 -> +2 (again)
+        QCOMPARE(QDateTime::fromMSecsSinceEpoch(tran.atMSecsSinceEpoch, Qt::UTC),
+                 QDateTime(QDate(2012, 3, 25), QTime(2, 0), Qt::OffsetFromUTC, 3600));
         QCOMPARE(tran.offsetFromUtc, 7200);
         QCOMPARE(tran.standardTimeOffset, 3600);
         QCOMPARE(tran.daylightTimeOffset, 3600);
 
         QTimeZonePrivate::DataList expected;
-        tran.atMSecsSinceEpoch = (qint64)1301187600000;
+        // 2011-03-27 02:00 CET, +1 -> +2
+        tran.atMSecsSinceEpoch = QDateTime(QDate(2011, 3, 27), QTime(2, 0),
+                                           Qt::OffsetFromUTC, 3600).toMSecsSinceEpoch();
         tran.offsetFromUtc = 7200;
         tran.standardTimeOffset = 3600;
         tran.daylightTimeOffset = 3600;
         expected << tran;
-        tran.atMSecsSinceEpoch = (qint64)1319936400000;
+        // 2011-10-30 03:00 CEST, +2 -> +1
+        tran.atMSecsSinceEpoch = QDateTime(QDate(2011, 10, 30), QTime(3, 0),
+                                           Qt::OffsetFromUTC, 2 * 3600).toMSecsSinceEpoch();
         tran.offsetFromUtc = 3600;
         tran.standardTimeOffset = 3600;
         tran.daylightTimeOffset = 0;
@@ -1113,7 +1138,10 @@ void tst_QTimeZone::testCetPrivate(const QTimeZonePrivate &tzp)
         QTimeZonePrivate::DataList result = tzp.transitions(prev, std);
         QCOMPARE(result.count(), expected.count());
         for (int i = 0; i < expected.count(); ++i) {
-            QCOMPARE(result.at(i).atMSecsSinceEpoch, expected.at(i).atMSecsSinceEpoch);
+            QCOMPARE(QDateTime::fromMSecsSinceEpoch(result.at(i).atMSecsSinceEpoch,
+                                                    Qt::OffsetFromUTC, 3600),
+                     QDateTime::fromMSecsSinceEpoch(expected.at(i).atMSecsSinceEpoch,
+                                                    Qt::OffsetFromUTC, 3600));
             QCOMPARE(result.at(i).offsetFromUtc, expected.at(i).offsetFromUtc);
             QCOMPARE(result.at(i).standardTimeOffset, expected.at(i).standardTimeOffset);
             QCOMPARE(result.at(i).daylightTimeOffset, expected.at(i).daylightTimeOffset);
