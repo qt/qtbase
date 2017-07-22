@@ -203,8 +203,12 @@ QFileInfo QFileSystemModel::fileInfo(const QModelIndex &index) const
 
 bool QFileSystemModel::remove(const QModelIndex &aindex)
 {
-    const QString path = filePath(aindex);
-    const bool success = QFileInfo(path).isFile() ? QFile::remove(path) : QDir(path).removeRecursively();
+    Q_D(QFileSystemModel);
+
+    const QString path = d->filePath(aindex);
+    const QFileInfo fileInfo(path);
+    const bool success = (fileInfo.isFile() || fileInfo.isSymLink())
+            ? QFile::remove(path) : QDir(path).removeRecursively();
 #ifndef QT_NO_FILESYSTEMWATCHER
     if (success) {
         QFileSystemModelPrivate * d = const_cast<QFileSystemModelPrivate*>(d_func());

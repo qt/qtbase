@@ -3427,7 +3427,6 @@ void QFileDialogPrivate::_q_deleteCurrent()
 
         QString fileName = index.data(QFileSystemModel::FileNameRole).toString();
         QString filePath = index.data(QFileSystemModel::FilePathRole).toString();
-        bool isDir = model->isDir(index);
 
         QFile::Permissions p(index.parent().data(QFileSystemModel::FilePermissions).toInt());
 #if QT_CONFIG(messagebox)
@@ -3452,7 +3451,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
             return;
 #endif // QT_CONFIG(messagebox)
 
-        if (isDir) {
+        if (model->isDir(index) && !model->fileInfo(index).isSymLink()) {
             if (!removeDirectory(filePath)) {
 #if QT_CONFIG(messagebox)
             QMessageBox::warning(q, q->windowTitle(),
