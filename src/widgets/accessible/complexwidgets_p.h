@@ -124,7 +124,7 @@ protected:
 };
 #endif // QT_NO_TABBAR
 
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
 class QAccessibleComboBox : public QAccessibleWidget
 {
 public:
@@ -146,7 +146,7 @@ public:
 protected:
     QComboBox *comboBox() const;
 };
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
 
 #endif // QT_NO_ACCESSIBILITY
 

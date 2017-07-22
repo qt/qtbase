@@ -44,7 +44,9 @@
 #include <qevent.h>
 #include <qheaderview.h>
 #include <qtabbar.h>
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
+#endif
 #include <qlineedit.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
@@ -260,7 +262,7 @@ QString QAccessibleTabBar::text(QAccessible::Text t) const
 
 #endif // QT_NO_TABBAR
 
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
 /*!
   \class QAccessibleComboBox
   \brief The QAccessibleComboBox class implements the QAccessibleInterface for editable and read-only combo boxes.
@@ -378,7 +380,7 @@ QStringList QAccessibleComboBox::keyBindingsForAction(const QString &/*actionNam
     return QStringList();
 }
 
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
 
 #ifndef QT_NO_SCROLLAREA
 // ======================= QAccessibleAbstractScrollArea =======================

@@ -59,7 +59,9 @@
 #include <qdesktopwidget.h>
 #include <qtoolbutton.h>
 #include <qtabbar.h>
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
+#endif
 #include <qscrollbar.h>
 #include <qheaderview.h>
 #include <qspinbox.h>
@@ -1147,9 +1149,9 @@ void QWindowsXPStyle::polish(QWidget *widget)
 #endif
         || qobject_cast<QToolButton*>(widget)
         || qobject_cast<QTabBar*>(widget)
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
         || qobject_cast<QComboBox*>(widget)
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
         || qobject_cast<QScrollBar*>(widget)
         || qobject_cast<QSlider*>(widget)
         || qobject_cast<QHeaderView*>(widget)
@@ -1222,9 +1224,9 @@ void QWindowsXPStyle::unpolish(QWidget *widget)
 #endif
         || qobject_cast<QToolButton*>(widget)
         || qobject_cast<QTabBar*>(widget)
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
         || qobject_cast<QComboBox*>(widget)
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
         || qobject_cast<QScrollBar*>(widget)
         || qobject_cast<QSlider*>(widget)
         || qobject_cast<QHeaderView*>(widget)
@@ -2550,7 +2552,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 #endif // QT_NO_SPINBOX
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option))
         {
@@ -2601,7 +2603,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             }
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(option))
         {

@@ -51,12 +51,14 @@
 //#define DEBUG_SIZE_CONSTRAINT
 
 #include <private/qcore_mac_p.h>
-#include <private/qcombobox_p.h>
 #include <private/qtabbar_p.h>
 #include <private/qpainter_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
+#if QT_CONFIG(combobox)
+#include <private/qcombobox_p.h>
 #include <qcombobox.h>
+#endif
 #if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
 #endif
@@ -643,7 +645,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         else if (qobject_cast<const QCheckBox *>(widg))
             ct = QStyle::CT_CheckBox;
 #endif
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
         else if (qobject_cast<const QComboBox *>(widg))
             ct = QStyle::CT_ComboBox;
 #endif
@@ -889,7 +891,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         break;
     }
 #endif
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case QStyle::CT_LineEdit:
         if (!widg || !qobject_cast<QComboBox *>(widg->parentWidget())) {
             //should I take into account the font dimentions of the lineedit? -Sam
@@ -2264,7 +2266,7 @@ void QMacStyle::polish(QWidget* w)
 
 #ifndef QT_NO_MENU
     if (qobject_cast<QMenu*>(w)
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
             || qobject_cast<QComboBoxPrivateContainer *>(w)
 #endif
             ) {
@@ -2332,7 +2334,7 @@ void QMacStyle::unpolish(QWidget* w)
         w->setWindowOpacity(1.0);
     }
 
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     if (QComboBox *combo = qobject_cast<QComboBox *>(w)) {
         if (!combo->isEditable()) {
             if (QWidget *widget = combo->findChild<QComboBoxPrivateContainer *>())
@@ -4484,7 +4486,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // Always be normal or disabled to follow the Mac style.
                 int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize);
                 QSize iconSize(smallIconSize, smallIconSize);
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
                 if (const QComboBox *comboBox = qobject_cast<const QComboBox *>(w)) {
                     iconSize = comboBox->iconSize();
                 }
@@ -5065,7 +5067,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 #endif
     case SE_LineEditContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
         if (widget && qobject_cast<const QComboBox*>(widget->parentWidget()))
             rect.adjust(-1, -2, 0, 0);
         else
@@ -6742,7 +6744,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case QStyle::CT_MenuItem:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             int maxpmw = mi->maxIconWidth;
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
             const QComboBox *comboBox = qobject_cast<const QComboBox *>(widget);
 #endif
             int w = sz.width(),
@@ -6755,7 +6757,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             } else {
                 h = mi->fontMetrics.height() + 2;
                 if (!mi->icon.isNull()) {
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
                     if (comboBox) {
                         const QSize &iconSize = comboBox->iconSize();
                         h = qMax(h, iconSize.height() + 4);
@@ -6776,7 +6778,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 w += maxpmw + 6;
             // add space for a check. All items have place for a check too.
             w += 20;
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
             if (comboBox && comboBox->isVisible()) {
                 QStyleOptionComboBox cmb;
                 cmb.initFrom(comboBox);

@@ -54,7 +54,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qcombobox.h"
 
-#ifndef QT_NO_COMBOBOX
 #include "QtWidgets/qabstractslider.h"
 #include "QtWidgets/qapplication.h"
 #include "QtWidgets/qitemdelegate.h"
@@ -73,6 +72,8 @@
 #include "QtCore/qdebug.h"
 
 #include <limits.h>
+
+QT_REQUIRE_CONFIG(combobox);
 
 QT_BEGIN_NAMESPACE
 
@@ -422,7 +423,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_COMBOBOX
 
 #endif // QCOMBOBOX_P_H

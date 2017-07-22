@@ -2096,7 +2096,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
     case CE_HeaderEmptyArea:
             p->fillRect(opt->rect, opt->palette.background());
         break;
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CE_ComboBoxLabel:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QRect editRect = proxy()->subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
@@ -2128,7 +2128,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->restore();
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
 #ifndef QT_NO_TOOLBAR
     case CE_ToolBar:
         if (const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
@@ -2505,7 +2505,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_PROGRESSBAR
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case SE_ComboBoxFocusRect:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             int margin = cb->frame ? 3 : 0;
@@ -2514,7 +2514,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = visualRect(opt->direction, opt->rect, r);
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
 #ifndef QT_NO_TOOLBOX
     case SE_ToolBoxTabContents:
         r = opt->rect;
@@ -3892,7 +3892,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
             }
         }
         break;
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QRect r;
@@ -3907,7 +3907,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
             }
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
 #ifndef QT_NO_GROUPBOX
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
@@ -4140,7 +4140,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         }
         break;
 #endif // QT_NO_TOOLBUTTON
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             int x = cb->rect.x(),
@@ -4172,7 +4172,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             ret = visualRect(cb->direction, cb->rect, ret);
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
     case CC_TitleBar:
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
             const int controlMargin = 2;
@@ -4839,7 +4839,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         sz = QSize(sz.width() + 6, sz.height() + 5);
         break;
 #endif // QT_NO_TOOLBUTTON
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CT_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             int fw = cmb->frame ? proxy()->pixelMetric(PM_ComboBoxFrameWidth, opt, widget) * 2 : 0;
@@ -4849,7 +4849,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QSize(sz.width() + fw + other, sz.height() + fw);
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
     case CT_HeaderSection:
         if (const QStyleOptionHeader *hdr = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             bool nullIcon = hdr->icon.isNull();

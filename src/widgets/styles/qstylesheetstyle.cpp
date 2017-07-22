@@ -51,7 +51,9 @@
 #include <qstyleoption.h>
 #include <qlineedit.h>
 #include <private/qwindowsstyle_p.h>
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
+#endif
 #include "private/qcssparser_p.h"
 #include "private/qmath_p.h"
 #include <qabstractscrollarea.h>
@@ -1639,7 +1641,7 @@ int QStyleSheetStyle::nativeFrameWidth(const QWidget *w)
         return base->pixelMetric(QStyle::PM_SpinBoxFrameWidth, 0, w);
 #endif
 
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     if (qobject_cast<const QComboBox *>(w))
         return base->pixelMetric(QStyle::PM_ComboBoxFrameWidth, 0, w);
 #endif
@@ -2338,7 +2340,7 @@ QRect QStyleSheetStyle::positionRect(const QWidget *w, const QRenderRule& rule1,
  */
 static QWidget *embeddedWidget(QWidget *w)
 {
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     if (QComboBox *cmb = qobject_cast<QComboBox *>(w)) {
         if (cmb->isEditable())
             return cmb->lineEdit();
@@ -2372,7 +2374,7 @@ static QWidget *containerWidget(const QWidget *w)
 #ifndef QT_NO_LINEEDIT
     if (qobject_cast<const QLineEdit *>(w)) {
         //if the QLineEdit is an embeddedWidget, we need the rule of the real widget
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
         if (qobject_cast<const QComboBox *>(w->parentWidget()))
             return w->parentWidget();
 #endif
@@ -2411,7 +2413,7 @@ static bool unstylable(const QWidget *w)
     // detect QComboBoxPrivateContainer
     else if (qobject_cast<const QFrame *>(w)) {
         if (0
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
             || qobject_cast<const QComboBox *>(w->parentWidget())
 #endif
            )
@@ -2436,7 +2438,7 @@ static quint64 extendedPseudoClass(const QWidget *w)
         pc |= ((slider->orientation() == Qt::Vertical) ? PseudoClass_Vertical : PseudoClass_Horizontal);
     } else
 #endif
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     if (const QComboBox *combo = qobject_cast<const QComboBox *>(w)) {
         if (combo->isEditable())
         pc |= (combo->isEditable() ? PseudoClass_Editable : PseudoClass_ReadOnly);
@@ -3769,7 +3771,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         }
         return;
 
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CE_ComboBoxLabel:
         if (!rule.hasBox())
             break;
@@ -3805,7 +3807,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             return;
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
 
     case CE_Header:
         if (hasStyleRule(w, PseudoElement_HeaderViewUpArrow)
@@ -5297,7 +5299,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
         case SH_TabBar_ElideMode: s = QLatin1String("tabbar-elide-mode"); break;
         case SH_TabBar_PreferNoArrows: s = QLatin1String("tabbar-prefer-no-arrows"); break;
         case SH_ComboBox_PopupFrameStyle:
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
             if (qobject_cast<const QComboBox *>(w)) {
                 QAbstractItemView *view = w->findChild<QAbstractItemView *>();
                 if (view) {
@@ -5307,7 +5309,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
                         return QFrame::NoFrame;
                 }
             }
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
             break;
         case SH_DialogButtonBox_ButtonsHaveIcons: s = QLatin1String("dialogbuttonbox-buttons-have-icons"); break;
         case SH_Workspace_FillSpaceOnMaximize: s = QLatin1String("mdi-fill-space-on-maximize"); break;

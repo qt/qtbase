@@ -1474,11 +1474,11 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             break;
         }
 #endif // QT_NO_ITEMVIEWS
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CE_ComboBoxLabel:
         QCommonStyle::drawControl(element, option, painter, widget);
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
     default:
         QWindowsXPStyle::drawControl(element, option, painter, widget);
         break;
@@ -2121,7 +2121,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
 
     QRect rect = QWindowsXPStyle::subControlRect(control, option, subControl, widget);
     switch (control) {
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             int x = cb->rect.x(),
@@ -2154,7 +2154,7 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
             return rect;
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
     case CC_TitleBar:
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(option)) {
             if (!buttonVisible(subControl, tb))

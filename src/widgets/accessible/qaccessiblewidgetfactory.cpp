@@ -79,7 +79,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         else
             iface = new QAccessibleLineEdit(widget);
 #endif
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     } else if (classname == QLatin1String("QComboBox")) {
         iface = new QAccessibleComboBox(widget);
 #endif

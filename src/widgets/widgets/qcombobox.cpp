@@ -39,7 +39,6 @@
 
 #include "qcombobox.h"
 
-#ifndef QT_NO_COMBOBOX
 #include <qstylepainter.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformmenu.h>
@@ -3486,5 +3485,3 @@ QT_END_NAMESPACE
 
 #include "moc_qcombobox.cpp"
 #include "moc_qcombobox_p.cpp"
-
-#endif // QT_NO_COMBOBOX

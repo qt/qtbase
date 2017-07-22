@@ -5,8 +5,6 @@ HEADERS += \
         widgets/qbuttongroup_p.h \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
-        widgets/qcombobox.h \
-        widgets/qcombobox_p.h \
         widgets/qdial.h \
         widgets/qdockwidget.h \
         widgets/qdockwidget_p.h \
@@ -66,7 +64,6 @@ HEADERS += \
 SOURCES += \
         widgets/qbuttongroup.cpp \
         widgets/qabstractspinbox.cpp \
-        widgets/qcombobox.cpp \
         widgets/qdial.cpp \
         widgets/qdockwidget.cpp \
         widgets/qdockarealayout.cpp \
@@ -138,6 +135,14 @@ qtConfig(checkbox) {
 
     SOURCES += \
         widgets/qcheckbox.cpp
+}
+
+qtConfig(combobox) {
+    HEADERS += \
+        widgets/qcombobox.h \
+        widgets/qcombobox_p.h
+
+    SOURCES += widgets/qcombobox.cpp
 }
 
 qtConfig(commandlinkbutton) {

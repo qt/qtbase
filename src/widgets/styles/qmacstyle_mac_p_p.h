@@ -48,7 +48,9 @@
 #include "qmacstyle_mac_p.h"
 #include "qcommonstyle_p.h"
 #include <private/qapplication_p.h>
+#if QT_CONFIG(combobox)
 #include <private/qcombobox_p.h>
+#endif
 #include <private/qpainter_p.h>
 #include <private/qstylehelper_p.h>
 #include <qapplication.h>

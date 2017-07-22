@@ -72,7 +72,9 @@
 #include <qtoolbutton.h>
 #include <qspinbox.h>
 #include <qtoolbar.h>
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
+#endif
 #include <qscrollbar.h>
 #include <qprogressbar.h>
 #include <qdockwidget.h>

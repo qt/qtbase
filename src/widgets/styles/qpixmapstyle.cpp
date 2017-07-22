@@ -52,7 +52,9 @@
 #include <QProgressBar>
 #include <QSlider>
 #include <QEvent>
+#if QT_CONFIG(combobox)
 #include <QComboBox>
+#endif
 #include <QAbstractItemView>
 #if QT_CONFIG(listview)
 #include <QListView>

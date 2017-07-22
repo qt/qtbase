@@ -48,7 +48,9 @@
 #if QT_CONFIG(listview)
 #include <QtWidgets/qlistview.h>
 #endif
+#if QT_CONFIG(combobox)
 #include <QtWidgets/qcombobox.h>
+#endif
 #include <QtSql/qsqldriver.h>
 #include <QtSql/qsqlrelationaltablemodel.h>
 
