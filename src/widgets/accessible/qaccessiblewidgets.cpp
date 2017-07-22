@@ -62,7 +62,9 @@
 #include <QRubberBand>
 #endif
 #include <QTextBrowser>
+#if QT_CONFIG(calendarwidget)
 #include <QCalendarWidget>
+#endif
 #include <QAbstractItemView>
 #include <QDockWidget>
 #include <QMainWindow>
@@ -506,7 +508,7 @@ QAccessible::Role QAccessibleTextBrowser::role() const
 }
 #endif // QT_NO_TEXTBROWSER && QT_NO_CURSOR
 
-#ifndef QT_NO_CALENDARWIDGET
+#if QT_CONFIG(calendarwidget)
 // ===================== QAccessibleCalendarWidget ========================
 QAccessibleCalendarWidget::QAccessibleCalendarWidget(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Table)
@@ -561,7 +563,7 @@ QWidget *QAccessibleCalendarWidget::navigationBar() const
     }
     return 0;
 }
-#endif // QT_NO_CALENDARWIDGET
+#endif // QT_CONFIG(calendarwidget)
 
 #ifndef QT_NO_DOCKWIDGET
 

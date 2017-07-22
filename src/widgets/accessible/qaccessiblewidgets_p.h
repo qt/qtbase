@@ -266,7 +266,7 @@ public:
 };
 #endif // QT_NO_TEXTBROWSER && QT_NO_CURSOR
 
-#ifndef QT_NO_CALENDARWIDGET
+#if QT_CONFIG(calendarwidget)
 class QAccessibleCalendarWidget : public QAccessibleWidget
 {
 public:
@@ -284,7 +284,7 @@ private:
     QAbstractItemView *calendarView() const;
     QWidget *navigationBar() const;
 };
-#endif // QT_NO_CALENDARWIDGET
+#endif // QT_CONFIG(calendarwidget)
 
 #ifndef QT_NO_DOCKWIDGET
 class QAccessibleDockWidget: public QAccessibleWidget

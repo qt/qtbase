@@ -5,7 +5,6 @@ HEADERS += \
         widgets/qbuttongroup_p.h \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
-        widgets/qcalendarwidget.h \
         widgets/qcombobox.h \
         widgets/qcombobox_p.h \
         widgets/qdial.h \
@@ -67,7 +66,6 @@ HEADERS += \
 SOURCES += \
         widgets/qbuttongroup.cpp \
         widgets/qabstractspinbox.cpp \
-        widgets/qcalendarwidget.cpp \
         widgets/qcombobox.cpp \
         widgets/qdial.cpp \
         widgets/qdockwidget.cpp \
@@ -127,6 +125,11 @@ qtConfig(abstractslider) {
 
     SOURCES += \
         widgets/qabstractslider.cpp
+}
+
+qtConfig(calendarwidget) {
+    HEADERS += widgets/qcalendarwidget.h
+    SOURCES += widgets/qcalendarwidget.cpp
 }
 
 qtConfig(checkbox) {

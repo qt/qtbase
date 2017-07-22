@@ -209,7 +209,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QScrollArea")) {
         iface = new QAccessibleScrollArea(widget);
 #endif
-#ifndef QT_NO_CALENDARWIDGET
+#if QT_CONFIG(calendarwidget)
     } else if (classname == QLatin1String("QCalendarWidget")) {
         iface = new QAccessibleCalendarWidget(widget);
 #endif

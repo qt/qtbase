@@ -3344,7 +3344,7 @@ void tst_QAccessibility::tableTest()
 
 void tst_QAccessibility::calendarWidgetTest()
 {
-#ifndef QT_NO_CALENDARWIDGET
+#if QT_CONFIG(calendarwidget)
     {
     QCalendarWidget calendarWidget;
 
@@ -3420,7 +3420,7 @@ void tst_QAccessibility::calendarWidgetTest()
 
     }
     QTestAccessibility::clearEvents();
-#endif // QT_NO_CALENDARWIDGET
+#endif // QT_CONFIG(calendarwidget)
 }
 
 void tst_QAccessibility::dockWidgetTest()
