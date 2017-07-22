@@ -153,6 +153,10 @@ Q_CORE_EXPORT QChar qt_mac_qtKey2CocoaKey(Qt::Key key);
 Q_CORE_EXPORT Qt::Key qt_mac_cocoaKey2QtKey(QChar keyCode);
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
+#endif
+
 Q_CORE_EXPORT void qt_apple_check_os_version();
 
 QT_END_NAMESPACE
