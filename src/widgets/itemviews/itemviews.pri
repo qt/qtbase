@@ -13,7 +13,6 @@ HEADERS += \
 	itemviews/qwidgetitemdata_p.h \
 	itemviews/qitemeditorfactory.h \
 	itemviews/qitemeditorfactory_p.h \
-    itemviews/qdatawidgetmapper.h \
     itemviews/qstyleditemdelegate.h
 
 SOURCES += \
@@ -23,7 +22,6 @@ SOURCES += \
 	itemviews/qabstractitemdelegate.cpp \
         itemviews/qitemdelegate.cpp \
 	itemviews/qitemeditorfactory.cpp \
-    itemviews/qdatawidgetmapper.cpp \
     itemviews/qstyleditemdelegate.cpp
 }
 
@@ -36,6 +34,11 @@ qtConfig(columnview) {
     SOURCES += \
         itemviews/qcolumnview.cpp \
         itemviews/qcolumnviewgrip.cpp
+}
+
+qtConfig(datawidgetmapper) {
+    HEADERS += itemviews/qdatawidgetmapper.h
+    SOURCES += itemviews/qdatawidgetmapper.cpp
 }
 
 qtConfig(dirmodel) {
