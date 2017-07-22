@@ -1238,8 +1238,8 @@ void tst_QAbstractItemView::task200665_itemEntered()
     moveCursorAway(&view);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QCursor::setPos( view.geometry().center() );
-    QCoreApplication::processEvents();
+    QCursor::setPos(view.geometry().center());
+    QTRY_COMPARE(QCursor::pos(), view.geometry().center());
     QSignalSpy spy(&view, SIGNAL(entered(QModelIndex)));
     view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
 
