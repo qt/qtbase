@@ -1438,7 +1438,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 }
             }
             break;
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     case CE_ItemViewItem:
         {
             const QStyleOptionViewItem *vopt;
@@ -1473,7 +1473,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
             break;
         }
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 #if QT_CONFIG(combobox)
     case CE_ComboBoxLabel:
         QCommonStyle::drawControl(element, option, painter, widget);

@@ -71,7 +71,9 @@
 #include <qcheckbox.h>
 #endif
 #include <qstatusbar.h>
+#if QT_CONFIG(itemviews)
 #include <qheaderview.h>
+#endif
 #include <private/qwindowsstyle_p_p.h>
 #include <private/qstyleanimation_p.h>
 #include <qtabbar.h>
@@ -2008,7 +2010,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                 extraClass |= PseudoClass_Movable;
         }
 #endif // QT_NO_DOCKWIDGET
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
         else if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             if (vopt->features & QStyleOptionViewItem::Alternate)
                 extraClass |= PseudoClass_Alternate;
@@ -2805,7 +2807,7 @@ void QStyleSheetStyle::polish(QWidget *w)
     QRenderRule rule = renderRule(w, PseudoElement_None, PseudoClass_Any);
     if (rule.hasDrawable() || rule.hasBox()) {
         if (w->metaObject() == &QWidget::staticMetaObject
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
               || qobject_cast<QHeaderView *>(w)
 #endif
 #ifndef QT_NO_TABBAR
@@ -4069,7 +4071,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         fallback = true;
         break;
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     case CE_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_ViewItem);
@@ -4086,7 +4088,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             return;
         }
         break;
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 
 #ifndef QT_NO_TABBAR
     case CE_TabBarTab:
@@ -5107,7 +5109,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
         }
         break;
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     case CT_ItemViewItem: {
         QRenderRule subRule = renderRule(w, opt, PseudoElement_ViewItem);
         sz = baseStyle()->sizeFromContents(ct, opt, csz, w);
@@ -5116,7 +5118,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             sz = subRule.boxSize(sz);
         return sz;
                       }
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 
     default:
         break;
@@ -5756,7 +5758,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     case SE_CheckBoxClickRect: // relies on indicator and contents
         return ParentStyle::subElementRect(se, opt, w);
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     case SE_ViewItemCheckIndicator:
         if (!qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             return subElementRect(SE_CheckBoxIndicator, opt, w);
@@ -5785,7 +5787,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
             }
          }
         break;
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 
     case SE_HeaderArrow: {
         QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewUpArrow);

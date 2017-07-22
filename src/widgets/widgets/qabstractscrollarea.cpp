@@ -50,7 +50,9 @@
 #include "qboxlayout.h"
 #include "qpainter.h"
 #include "qmargins.h"
+#if QT_CONFIG(itemviews)
 #include "qheaderview.h"
+#endif
 
 #include <QDebug>
 

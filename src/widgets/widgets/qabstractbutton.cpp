@@ -40,7 +40,9 @@
 #include "private/qabstractbutton_p.h"
 
 #include "private/qbuttongroup_p.h"
+#if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
+#endif
 #include "qbuttongroup.h"
 #include "qabstractbutton_p.h"
 #include "qevent.h"
@@ -1071,7 +1073,7 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
 #ifndef QT_NO_BUTTONGROUP
         || d->group
 #endif
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
         || (pw && qobject_cast<QAbstractItemView *>(pw->parentWidget()))
 #endif
         ) {

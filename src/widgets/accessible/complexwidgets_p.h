@@ -54,7 +54,9 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qpointer.h>
 #include <QtWidgets/qaccessiblewidget.h>
+#if QT_CONFIG(itemviews)
 #include <QtWidgets/qabstractitemview.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

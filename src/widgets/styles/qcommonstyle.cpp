@@ -41,7 +41,9 @@
 #include "qcommonstyle_p.h"
 
 #include <qfile.h>
+#if QT_CONFIG(itemviews)
 #include <qabstractitemview.h>
+#endif
 #include <qapplication.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
@@ -91,7 +93,7 @@
 
 #include <limits.h>
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
 #   include "private/qtextengine_p.h"
 #endif
 
@@ -675,7 +677,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         else
             p->drawRect(rect);
         break; }
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     case PE_PanelItemViewRow:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QPalette::ColorGroup cg = (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled))
@@ -713,7 +715,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             }
         }
         break;
-#endif //QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
     case PE_PanelScrollAreaCorner: {
         const QBrush brush(opt->palette.brush(QPalette::Window));
         p->fillRect(opt->rect, brush);
@@ -824,7 +826,7 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 }
 #endif // QT_NO_TOOLBUTTON
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
 
 static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
 {
@@ -1095,7 +1097,7 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItem *opt,  QRect
         *textRect = display;
     }
 }
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 
 
 #ifndef QT_NO_TABBAR
@@ -2168,7 +2170,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     case CE_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             p->save();
@@ -2248,7 +2250,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
 
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 #ifndef QT_NO_FRAME
     case CE_ShapedFrame:
         if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
@@ -3020,7 +3022,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     }
 #endif
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     case SE_ItemViewItemCheckIndicator:
         if (!qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             r = subElementRect(SE_CheckBoxIndicator, opt, widget);
@@ -3047,7 +3049,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 r = d->displayRect;
                                }
         break;
-#endif //QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 #ifndef QT_NO_TOOLBAR
     case SE_ToolBarHandle:
         if (const QStyleOptionToolBar *tbopt = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
@@ -4897,7 +4899,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QSize(1 + 3 * (buttonSize + 1), buttonSize);
         }
         break;
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     case CT_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRect decorationRect, displayRect, checkRect;
@@ -4909,7 +4911,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
 #else
         Q_UNUSED(d);
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 #ifndef QT_NO_SPINBOX
     case CT_SpinBox:
         if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {

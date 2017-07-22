@@ -39,7 +39,6 @@
 
 #include "qstyleditemdelegate.h"
 
-#ifndef QT_NO_ITEMVIEWS
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
 #include <qbrush.h>
@@ -643,5 +642,3 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
 QT_END_NAMESPACE
 
 #include "moc_qstyleditemdelegate.cpp"
-
-#endif // QT_NO_ITEMVIEWS

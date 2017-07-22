@@ -65,7 +65,9 @@
 #if QT_CONFIG(calendarwidget)
 #include <QCalendarWidget>
 #endif
+#if QT_CONFIG(itemviews)
 #include <QAbstractItemView>
+#endif
 #include <QDockWidget>
 #include <QMainWindow>
 #include <private/qdockwidget_p.h>

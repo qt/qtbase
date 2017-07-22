@@ -56,7 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ITEMVIEWS
 /*
 Implementation of the IAccessible2 table2 interface. Much simpler than
 the other table interfaces since there is only the main table and cells:
@@ -1214,8 +1213,6 @@ QHeaderView *QAccessibleTableHeaderCell::headerView() const
     }
     return header;
 }
-
-#endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
 

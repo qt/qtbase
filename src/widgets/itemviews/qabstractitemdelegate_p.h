@@ -55,7 +55,7 @@
 #include "qabstractitemdelegate.h"
 #include <private/qobject_p.h>
 
-#ifndef QT_NO_ITEMVIEWS
+QT_REQUIRE_CONFIG(itemviews);
 
 QT_BEGIN_NAMESPACE
 
@@ -72,7 +72,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_ITEMVIEWS
 
 #endif // QABSTRACTITEMDELEGATE_P_H

@@ -55,12 +55,11 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <qlineedit.h>
 
-#ifndef QT_NO_ITEMVIEWS
-
 #ifndef QT_NO_LINEEDIT
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(itemviews);
 
+QT_BEGIN_NAMESPACE
 
 class QExpandingLineEdit : public QLineEdit
 {
@@ -91,7 +90,5 @@ private:
 QT_END_NAMESPACE
 
 #endif // QT_NO_LINEEDIT
-
-#endif //QT_NO_ITEMVIEWS
 
 #endif //QITEMEDITORFACTORY_P_H

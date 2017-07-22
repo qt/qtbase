@@ -41,7 +41,9 @@
 
 #ifndef QT_NO_LINEEDIT
 
+#if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
+#endif
 #include "qclipboard.h"
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>

@@ -43,7 +43,9 @@
 #include "simplewidgets_p.h"
 #include "rangecontrols_p.h"
 #include "complexwidgets_p.h"
+#if QT_CONFIG(itemviews)
 #include "itemviews_p.h"
+#endif
 
 #include <qtoolbutton.h>
 #if QT_CONFIG(treeview)
@@ -146,11 +148,11 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QTreeView")) {
         iface = new QAccessibleTree(widget);
 #endif // QT_CONFIG(treeview)
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     } else if (classname == QLatin1String("QTableView") || classname == QLatin1String("QListView")) {
         iface = new QAccessibleTable(widget);
     // ### This should be cleaned up. We return the parent for the scrollarea to hide it.
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 #ifndef QT_NO_TABBAR
     } else if (classname == QLatin1String("QTabBar")) {
         iface = new QAccessibleTabBar(widget);

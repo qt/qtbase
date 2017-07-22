@@ -49,10 +49,9 @@
 class tst_QAbstractItemView;
 class tst_QTreeView;
 
+QT_REQUIRE_CONFIG(itemviews);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ITEMVIEWS
 
 class QMenu;
 class QDrag;
@@ -380,8 +379,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemView::EditTriggers)
-
-#endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
 

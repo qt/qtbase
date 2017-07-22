@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "private/qlayoutengine_p.h"
+#if QT_CONFIG(itemviews)
 #include "qabstractitemdelegate.h"
+#endif
 #include "qapplication.h"
 #include "qbitmap.h"
 #include "qcursor.h"

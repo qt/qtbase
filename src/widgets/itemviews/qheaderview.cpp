@@ -39,7 +39,6 @@
 
 #include "qheaderview.h"
 
-#ifndef QT_NO_ITEMVIEWS
 #include <qbitarray.h>
 #include <qbrush.h>
 #include <qdebug.h>
@@ -3948,7 +3947,5 @@ bool QHeaderViewPrivate::read(QDataStream &in)
 #endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_ITEMVIEWS
 
 #include "moc_qheaderview.cpp"

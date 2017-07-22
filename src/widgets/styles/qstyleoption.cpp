@@ -3000,7 +3000,7 @@ QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
     \sa Qt::WindowFlags
 */
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
 /*!
     \class QStyleOptionViewItem
     \brief The QStyleOptionViewItem class is used to describe the
@@ -3267,7 +3267,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
                      therefore both at the beginning and the end.
 */
 
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 /*!
     \fn T qstyleoption_cast<T>(const QStyleOption *option)
     \relates QStyleOption

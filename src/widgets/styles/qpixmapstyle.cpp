@@ -55,11 +55,13 @@
 #if QT_CONFIG(combobox)
 #include <QComboBox>
 #endif
+#if QT_CONFIG(itemviews)
 #include <QAbstractItemView>
+#include <QStyledItemDelegate>
+#endif
 #if QT_CONFIG(listview)
 #include <QListView>
 #endif
-#include <QStyledItemDelegate>
 #include <QAbstractScrollArea>
 #include <QScrollBar>
 

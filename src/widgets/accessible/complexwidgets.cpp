@@ -42,7 +42,9 @@
 #include <qaccessible.h>
 #include <qapplication.h>
 #include <qevent.h>
+#if QT_CONFIG(itemviews)
 #include <qheaderview.h>
+#endif
 #include <qtabbar.h>
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>

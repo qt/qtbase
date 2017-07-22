@@ -41,8 +41,6 @@
 #include "qitemeditorfactory.h"
 #include "qitemeditorfactory_p.h"
 
-#ifndef QT_NO_ITEMVIEWS
-
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif
@@ -627,5 +625,3 @@ QT_END_NAMESPACE
 #endif
 
 #include "moc_qitemeditorfactory_p.cpp"
-
-#endif // QT_NO_ITEMVIEWS

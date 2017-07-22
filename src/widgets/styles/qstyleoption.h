@@ -53,7 +53,7 @@
 #include <QtWidgets/qrubberband.h>
 #endif
 #include <QtWidgets/qframe.h>
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
 #   include <QtCore/qabstractitemmodel.h>
 #endif
 
@@ -388,7 +388,7 @@ protected:
 
 typedef Q_DECL_DEPRECATED QStyleOptionDockWidget QStyleOptionDockWidgetV2;
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
 
 class Q_WIDGETS_EXPORT QStyleOptionViewItem : public QStyleOption
 {
@@ -443,7 +443,7 @@ typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV2;
 typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV3;
 typedef Q_DECL_DEPRECATED QStyleOptionViewItem QStyleOptionViewItemV4;
 
-#endif // QT_NO_ITEMVIEWS
+#endif // QT_CONFIG(itemviews)
 
 class Q_WIDGETS_EXPORT QStyleOptionToolBox : public QStyleOption
 {
