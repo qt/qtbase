@@ -7,3 +7,5 @@ osx-10.11 ci
 osx ci
 [pushButtonPopulateOnAboutToShow]
 osx
+[tearOff]
+osx
