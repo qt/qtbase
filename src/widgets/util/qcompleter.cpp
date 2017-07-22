@@ -147,7 +147,9 @@
 
 #include "QtWidgets/qscrollbar.h"
 #include "QtCore/qstringlistmodel.h"
+#if QT_CONFIG(dirmodel)
 #include "QtWidgets/qdirmodel.h"
+#endif
 #if QT_CONFIG(filesystemmodel)
 #include "QtWidgets/qfilesystemmodel.h"
 #endif
@@ -465,7 +467,7 @@ QMatchData QCompletionEngine::filterHistory()
     if (curParts.count() <= 1 || c->proxy->showAll || !source)
         return QMatchData();
 
-#ifndef QT_NO_DIRMODEL
+#if QT_CONFIG(dirmodel)
     const bool isDirModel = (qobject_cast<QDirModel *>(source) != 0);
 #else
     const bool isDirModel = false;
@@ -869,7 +871,7 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
         QModelIndex si = proxy->mapToSource(index);
         si = si.sibling(si.row(), column); // for clicked()
         completion = q->pathFromIndex(si);
-#ifndef QT_NO_DIRMODEL
+#if QT_CONFIG(dirmodel)
         // add a trailing separator in inline
         if (mode == QCompleter::InlineCompletion) {
             if (qobject_cast<QDirModel *>(proxy->sourceModel()) && QFileInfo(completion).isDir())
@@ -1057,7 +1059,7 @@ void QCompleter::setModel(QAbstractItemModel *model)
         setPopup(d->popup); // set the model and make new connections
     if (oldModel && oldModel->QObject::parent() == this)
         delete oldModel;
-#ifndef QT_NO_DIRMODEL
+#if QT_CONFIG(dirmodel)
     if (qobject_cast<QDirModel *>(model)) {
 #if defined(Q_OS_WIN)
         setCaseSensitivity(Qt::CaseInsensitive);
@@ -1065,7 +1067,7 @@ void QCompleter::setModel(QAbstractItemModel *model)
         setCaseSensitivity(Qt::CaseSensitive);
 #endif
     }
-#endif // QT_NO_DIRMODEL
+#endif // QT_CONFIG(dirmodel)
 #if QT_CONFIG(filesystemmodel)
     QFileSystemModel *fsModel = qobject_cast<QFileSystemModel *>(model);
     if (fsModel) {
@@ -1771,7 +1773,7 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
         return QString();
     bool isDirModel = false;
     bool isFsModel = false;
-#ifndef QT_NO_DIRMODEL
+#if QT_CONFIG(dirmodel)
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
 #endif
 #if QT_CONFIG(filesystemmodel)
@@ -1820,12 +1822,12 @@ QStringList QCompleter::splitPath(const QString& path) const
 {
     bool isDirModel = false;
     bool isFsModel = false;
-#ifndef QT_NO_DIRMODEL
+#if QT_CONFIG(dirmodel)
     Q_D(const QCompleter);
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != 0;
 #endif
 #if QT_CONFIG(filesystemmodel)
-#ifdef QT_NO_DIRMODEL
+#if !QT_CONFIG(dirmodel)
     Q_D(const QCompleter);
 #endif
     isFsModel = qobject_cast<QFileSystemModel *>(d->proxy->sourceModel()) != 0;
