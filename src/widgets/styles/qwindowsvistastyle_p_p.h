@@ -77,7 +77,9 @@
 #endif
 #include <qscrollbar.h>
 #include <qprogressbar.h>
+#if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
+#endif
 #if QT_CONFIG(listview)
 #include <qlistview.h>
 #endif

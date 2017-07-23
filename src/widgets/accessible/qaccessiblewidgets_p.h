@@ -286,7 +286,7 @@ private:
 };
 #endif // QT_CONFIG(calendarwidget)
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
 class QAccessibleDockWidget: public QAccessibleWidget
 {
 public:
@@ -302,7 +302,7 @@ protected:
     QDockWidgetLayout *dockWidgetLayout() const;
 };
 
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 
 #ifndef QT_NO_MAINWINDOW
 class QAccessibleMainWindow : public QAccessibleWidget

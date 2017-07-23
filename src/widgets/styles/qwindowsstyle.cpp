@@ -717,7 +717,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
     case PE_FrameButtonTool:
     case PE_PanelButtonTool: {
         QPen oldPen = p->pen();
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
         if (w && w->inherits("QDockWidgetTitleButton")) {
            if (const QWidget *dw = w->parentWidget())
                 if (dw->isWindow()){
@@ -727,7 +727,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                     return;
                 }
         }
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
         QBrush fill;
         bool stippled;
         bool panel = (pe == PE_PanelButtonTool);
@@ -1022,7 +1022,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
          popupPal.setColor(QPalette::Midlight, opt->palette.light().color());
          qDrawWinPanel(p, opt->rect, popupPal, opt->state & State_Sunken);
         break; }
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case PE_IndicatorDockWidgetResizeHandle:
         break;
     case PE_FrameDockWidget:
@@ -1030,7 +1030,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             proxy()->drawPrimitive(QStyle::PE_FrameWindow, opt, p, w);
         }
     break;
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 
     case PE_FrameStatusBarItem:
         qDrawShadePanel(p, opt->rect, opt->palette, true, 1, 0);
@@ -1784,7 +1784,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         }
         break;
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case CE_DockWidgetTitle:
 
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
@@ -1858,7 +1858,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 p->restore();
         }
         return;
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 #if QT_CONFIG(combobox)
     case CE_ComboBoxLabel:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {

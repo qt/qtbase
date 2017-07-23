@@ -79,7 +79,9 @@
 #include <qtabbar.h>
 #include <QMetaProperty>
 #include <qmainwindow.h>
+#if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
+#endif
 #include <qmdisubwindow.h>
 #if QT_CONFIG(dialog)
 #include <qdialog.h>
@@ -1721,7 +1723,7 @@ static quint64 pseudoClass(QStyle::State state)
 
 static void qt_check_if_internal_object(const QObject **obj, int *element)
 {
-#ifdef QT_NO_DOCKWIDGET
+#if !QT_CONFIG(dockwidget)
     Q_UNUSED(obj);
     Q_UNUSED(element);
 #else
@@ -1996,7 +1998,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                 extraClass |= PseudoClass_PreviousSelected;
         }
 #endif // QT_NO_TOOLBOX
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
         else if (const QStyleOptionDockWidget *dw = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
             if (dw->verticalTitleBar)
                 extraClass |= PseudoClass_Vertical;
@@ -2009,7 +2011,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             if (dw->movable)
                 extraClass |= PseudoClass_Movable;
         }
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 #if QT_CONFIG(itemviews)
         else if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             if (vopt->features & QStyleOptionViewItem::Alternate)

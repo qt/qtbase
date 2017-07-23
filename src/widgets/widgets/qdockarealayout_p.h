@@ -58,7 +58,7 @@
 #include "QtCore/qvector.h"
 #include "QtWidgets/qlayout.h"
 
-#ifndef QT_NO_DOCKWIDGET
+QT_REQUIRE_CONFIG(dockwidget);
 
 QT_BEGIN_NAMESPACE
 
@@ -309,7 +309,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QDOCKWIDGET
 
 #endif // QDOCKAREALAYOUT_P_H

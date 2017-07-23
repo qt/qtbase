@@ -62,7 +62,9 @@
 #if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
 #endif
+#if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
+#endif
 #include <qevent.h>
 #include <qfocusframe.h>
 #include <qformlayout.h>
@@ -4319,7 +4321,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
 #endif
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case CE_DockWidgetTitle:
         if (const QDockWidget *dockWidget = qobject_cast<const QDockWidget *>(w)) {
             bool floating = dockWidget->isFloating();
@@ -5226,7 +5228,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
 #endif
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
         case SE_DockWidgetCloseButton:
         case SE_DockWidgetFloatButton:
         case SE_DockWidgetTitleBarText:

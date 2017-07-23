@@ -68,9 +68,11 @@
 #if QT_CONFIG(itemviews)
 #include <QAbstractItemView>
 #endif
+#if QT_CONFIG(dockwidget)
 #include <QDockWidget>
-#include <QMainWindow>
 #include <private/qdockwidget_p.h>
+#endif
+#include <QMainWindow>
 #include <QFocusFrame>
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -567,7 +569,7 @@ QWidget *QAccessibleCalendarWidget::navigationBar() const
 }
 #endif // QT_CONFIG(calendarwidget)
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
 
 // Dock Widget - order of children:
 // - Content widget
@@ -648,7 +650,7 @@ QString QAccessibleDockWidget::text(QAccessible::Text t) const
     }
     return QString();
 }
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 
 #ifndef QT_NO_CURSOR
 

@@ -49,7 +49,9 @@
 #include <qpa/qplatformtheme.h>
 #include <qbitmap.h>
 #include <qcache.h>
+#if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
+#endif
 #include <qdrawutil.h>
 #if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
@@ -454,7 +456,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         }
         break;
 #endif // QT_NO_GROUPBOX
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case PE_FrameDockWidget:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             int lw = frame->lineWidth;
@@ -464,7 +466,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             qDrawShadePanel(p, frame->rect, frame->palette, false, lw);
         }
         break;
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 #ifndef QT_NO_TOOLBAR
     case PE_IndicatorToolBarHandle:
         p->save();
@@ -2040,7 +2042,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break; }
 #endif // QT_CONFIG(rubberband)
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case CE_DockWidgetTitle:
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
             QRect r = dwOpt->rect.adjusted(0, 0, -1, -1);
@@ -2072,7 +2074,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
         }
         break;
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
     case CE_Header:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             QRegion clipRegion = p->clipRegion();
@@ -2923,7 +2925,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = f->rect.adjusted(frameWidth, frameWidth, -frameWidth, -frameWidth);
         }
         break;
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case SE_DockWidgetCloseButton:
     case SE_DockWidgetFloatButton:
     case SE_DockWidgetTitleBarText:
@@ -3443,7 +3445,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarCloseButton, widget);
                 down = tb->activeSubControls & SC_TitleBarCloseButton && (opt->state & State_Sunken);
                 if ((tb->titleBarFlags & Qt::WindowType_Mask) == Qt::Tool
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
                     || qobject_cast<const QDockWidget *>(widget)
 #endif
                     )
@@ -4416,7 +4418,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
             if ((tb->titleBarFlags & Qt::WindowType_Mask) == Qt::Tool) {
                 ret = qMax(widget ? widget->fontMetrics().height() : opt->fontMetrics.height(), 16);
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
             } else if (qobject_cast<const QDockWidget*>(widget)) {
                 ret = qMax(widget->fontMetrics().height(), int(QStyleHelper::dpiScaled(13)));
 #endif
@@ -4528,7 +4530,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         }
         break;
 #endif // QT_NO_SLIDER
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case PM_DockWidgetSeparatorExtent:
         ret = int(QStyleHelper::dpiScaled(6.));
         break;
@@ -4542,7 +4544,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_DockWidgetFrameWidth:
         ret = 1;
         break;
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 
     case PM_SpinBoxSliderHeight:
     case PM_MenuBarPanelWidth:

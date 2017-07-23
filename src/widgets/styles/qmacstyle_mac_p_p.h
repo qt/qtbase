@@ -62,7 +62,9 @@
 #if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
 #endif
+#if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
+#endif
 #include <qevent.h>
 #include <qfocusframe.h>
 #include <qformlayout.h>

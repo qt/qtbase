@@ -64,7 +64,9 @@
 #include "private/qlayoutengine_p.h"
 #include "private/qwidgetanimator_p.h"
 
+#if QT_CONFIG(dockwidget)
 #include "qdockarealayout_p.h"
+#endif
 #include "qtoolbararealayout_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -72,7 +74,7 @@ QT_BEGIN_NAMESPACE
 class QToolBar;
 class QRubberBand;
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
 class QDockWidgetGroupWindow : public QWidget
 {
     Q_OBJECT
@@ -126,7 +128,7 @@ public:
     QToolBarAreaLayout toolBarAreaLayout;
 #endif
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     QDockAreaLayout dockAreaLayout;
 #else
     QLayoutItem *centralWidgetItem;
@@ -217,7 +219,7 @@ public:
 
     // dock widgets
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     void setCorner(Qt::Corner corner, Qt::DockWidgetArea area);
     Qt::DockWidgetArea corner(Qt::Corner corner) const;
     void addDockWidget(Qt::DockWidgetArea area,
@@ -271,7 +273,7 @@ public:
     bool separatorMove(const QPoint &pos);
     bool endSeparatorMove(const QPoint &pos);
     void keepSize(QDockWidget *w);
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 
     // save/restore
 
@@ -304,7 +306,7 @@ public:
 #if QT_CONFIG(rubberband)
     QPointer<QRubberBand> gapIndicator;
 #endif
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     QPointer<QWidget> currentHoveredFloat; // set when dragging over a floating dock widget
     void setCurrentHoveredFloat(QWidget *w);
 #endif
@@ -321,7 +323,7 @@ public:
 
 private Q_SLOTS:
     void updateGapIndicator();
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
 #ifndef QT_NO_TABBAR
     void tabChanged();
     void tabMoved(int from, int to);
@@ -367,7 +369,7 @@ public:
 #endif
 };
 
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_DEBUG_STREAM)
+#if QT_CONFIG(dockwidget) && !defined(QT_NO_DEBUG_STREAM)
 class QDebug;
 QDebug operator<<(QDebug debug, const QDockAreaLayout &layout);
 QDebug operator<<(QDebug debug, const QMainWindowLayout *layout);

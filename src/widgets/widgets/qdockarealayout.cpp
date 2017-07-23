@@ -56,8 +56,6 @@
 #include <qpainter.h>
 #include <qstyleoption.h>
 
-#ifndef QT_NO_DOCKWIDGET
-
 QT_BEGIN_NAMESPACE
 
 // qmainwindow.cpp
@@ -3483,5 +3481,3 @@ void QDockAreaLayout::styleChangedEvent()
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_DOCKWIDGET

@@ -39,7 +39,6 @@
 
 #include "qdockwidget.h"
 
-#ifndef QT_NO_DOCKWIDGET
 #include <qaction.h>
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -1695,5 +1694,3 @@ QT_END_NAMESPACE
 #include "qdockwidget.moc"
 #include "moc_qdockwidget.cpp"
 #include "moc_qdockwidget_p.cpp"
-
-#endif // QT_NO_DOCKWIDGET

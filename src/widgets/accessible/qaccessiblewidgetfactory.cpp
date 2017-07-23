@@ -215,7 +215,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QCalendarWidget")) {
         iface = new QAccessibleCalendarWidget(widget);
 #endif
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     } else if (classname == QLatin1String("QDockWidget")) {
         iface = new QAccessibleDockWidget(widget);
 #endif

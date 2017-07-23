@@ -2290,7 +2290,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 drawItemText(p, mbi->rect, alignment, mbi->palette, mbi->state & State_Enabled, mbi->text, textRole);
         }
         return;
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case CE_DockWidgetTitle:
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option))
         {
@@ -2415,7 +2415,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             return;
         }
         break;
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 #if QT_CONFIG(rubberband)
     case CE_RubberBand:
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(option)) {

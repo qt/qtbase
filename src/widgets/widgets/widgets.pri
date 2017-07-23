@@ -6,9 +6,6 @@ HEADERS += \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
         widgets/qdial.h \
-        widgets/qdockwidget.h \
-        widgets/qdockwidget_p.h \
-        widgets/qdockarealayout_p.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
         widgets/qgroupbox.h \
@@ -64,8 +61,6 @@ SOURCES += \
         widgets/qbuttongroup.cpp \
         widgets/qabstractspinbox.cpp \
         widgets/qdial.cpp \
-        widgets/qdockwidget.cpp \
-        widgets/qdockarealayout.cpp \
         widgets/qeffects.cpp \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
@@ -158,6 +153,17 @@ qtConfig(datetimeedit) {
 
     SOURCES += \
          widgets/qdatetimeedit.cpp
+}
+
+qtConfig(dockwidget) {
+    HEADERS += \
+        widgets/qdockwidget.h \
+        widgets/qdockwidget_p.h \
+        widgets/qdockarealayout_p.h
+
+    SOURCES += \
+        widgets/qdockwidget.cpp \
+        widgets/qdockarealayout.cpp
 }
 
 qtConfig(fontcombobox) {
