@@ -94,10 +94,7 @@ public:
 
     inline static QString replaceNewLine(QString text)
         {
-            const QChar nl = QLatin1Char('\n');
-            for (int i = 0; i < text.count(); ++i)
-                if (text.at(i) == nl)
-                    text[i] = QChar::LineSeparator;
+            text.replace(QLatin1Char('\n'), QChar::LineSeparator);
             return text;
         }
 
