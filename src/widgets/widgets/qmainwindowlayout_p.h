@@ -248,7 +248,7 @@ public:
     QList<QWidget*> unusedSeparatorWidgets;
     int sep; // separator extent
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     QTabWidget::TabPosition tabPositions[4];
     QTabWidget::TabShape _tabShape;
 
@@ -258,7 +258,7 @@ public:
     void setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::TabPosition tabPosition);
 
     QDockWidgetGroupWindow *createTabbedDockWindow();
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 #endif // QT_NO_TABBAR
 
     // separators

@@ -1038,7 +1038,7 @@ void QMainWindow::setDocumentMode(bool enabled)
 }
 #endif // QT_NO_TABBAR
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
 /*!
     \property QMainWindow::tabShape
     \brief the tab shape used for tabbed dock widgets.
@@ -1090,7 +1090,7 @@ void QMainWindow::setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::TabPosit
 {
     d_func()->layout->setTabPosition(areas, tabPosition);
 }
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
 /*!
     Adds the given \a dockwidget to the specified \a area.

@@ -68,7 +68,9 @@
 #include <qslider.h>
 #include <qstyleoption.h>
 #include <qtabbar.h>
+#if QT_CONFIG(tabwidget)
 #include <qtabwidget.h>
+#endif
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #if QT_CONFIG(rubberband)
@@ -2566,7 +2568,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         r = subElementRect(SE_CheckBoxFocusRect, opt, widget);
         r |= subElementRect(SE_CheckBoxIndicator, opt, widget);
         break;
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     case SE_TabWidgetTabBar:
         if (const QStyleOptionTabWidgetFrame *twf
                 = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
@@ -2808,7 +2810,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
 
         break;
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 #ifndef QT_NO_TABBAR
     case SE_TabBarTearIndicator:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
@@ -5179,7 +5181,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_FocusFrame_AboveWidget:
         ret = false;
         break;
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     case SH_TabWidget_DefaultTabPosition:
         ret = QTabWidget::North;
         break;

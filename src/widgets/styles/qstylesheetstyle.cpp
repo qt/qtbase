@@ -1887,7 +1887,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                 extraClass |= PseudoClass_NextSelected;
             else if (hdr->selectedPosition == QStyleOptionHeader::PreviousIsSelected)
                 extraClass |= PseudoClass_PreviousSelected;
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
         } else if (const QStyleOptionTabWidgetFrame *tab = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
             switch (tab->shape) {
                 case QTabBar::RoundedNorth:
@@ -4479,7 +4479,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         rule.drawBorder(p, opt->rect);
         return;
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     case PE_FrameTabWidget:
         if (const QStyleOptionTabWidgetFrame *frm = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TabWidgetPane);
@@ -4494,7 +4494,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             return;
         }
         break;
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
     case PE_IndicatorProgressChunk:
         pseudoElement = PseudoElement_ProgressBarChunk;
@@ -4792,7 +4792,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         }
         break;
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     case PM_TabBarTabHSpace:
     case PM_TabBarTabVSpace:
         subRule = renderRule(w, opt, PseudoElement_TabBarTab);
@@ -4825,7 +4825,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         }
         break;
     }
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
     case PM_SliderThickness: // horizontal slider's height (sizeHint)
     case PM_SliderLength: // minimum length of slider
@@ -5277,13 +5277,13 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
         case SH_ScrollBar_RollBetweenButtons: s = QLatin1String("scrollbar-roll-between-buttons"); break;
         case SH_ScrollBar_ScrollWhenPointerLeavesControl: s = QLatin1String("scrollbar-scroll-when-pointer-leaves-control"); break;
         case SH_TabBar_Alignment:
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
             if (qobject_cast<const QTabWidget *>(w)) {
                 rule = renderRule(w, opt, PseudoElement_TabWidgetTabBar);
                 if (rule.hasPosition())
                     return rule.position()->position;
             }
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
             s = QLatin1String("alignment");
             break;
 #ifndef QT_NO_TABBAR

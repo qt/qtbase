@@ -1477,7 +1477,7 @@ void QMainWindowLayout::setVerticalTabsEnabled(bool enabled)
 #endif // QT_NO_TABBAR
 }
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
 QTabWidget::TabShape QMainWindowLayout::tabShape() const
 {
     return _tabShape;
@@ -1533,12 +1533,12 @@ static inline QTabBar::Shape tabBarShapeFrom(QTabWidget::TabShape shape, QTabWid
         return rounded ? QTabBar::RoundedWest : QTabBar::TriangularWest;
     return QTabBar::RoundedNorth;
 }
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
 #ifndef QT_NO_TABBAR
 void QMainWindowLayout::updateTabBarShapes()
 {
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     const QTabWidget::TabPosition vertical[] = {
         QTabWidget::West,
         QTabWidget::East,
@@ -1557,7 +1557,7 @@ void QMainWindowLayout::updateTabBarShapes()
     QDockAreaLayout &layout = layoutState.dockAreaLayout;
 
     for (int i = 0; i < QInternal::DockCount; ++i) {
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
         QTabWidget::TabPosition pos = verticalTabsEnabled ? vertical[i] : tabPositions[i];
         QTabBar::Shape shape = tabBarShapeFrom(_tabShape, pos);
 #else
@@ -2267,7 +2267,7 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
 #ifndef QT_NO_TABBAR
     , _documentMode(false)
     , verticalTabsEnabled(false)
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     , _tabShape(QTabWidget::Rounded)
 #endif
 #endif
@@ -2286,7 +2286,7 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
     sep = mainwindow->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, mainwindow);
 #endif
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     for (int i = 0; i < QInternal::DockCount; ++i)
         tabPositions[i] = QTabWidget::South;
 #endif

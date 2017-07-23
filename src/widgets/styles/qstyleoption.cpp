@@ -3290,7 +3290,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
     Returns a T or 0 depending on the type of the given \a option.
 */
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
 /*!
     \class QStyleOptionTabWidgetFrame
     \brief The QStyleOptionTabWidgetFrame class is used to describe the
@@ -3434,7 +3434,7 @@ QStyleOptionTabWidgetFrame::QStyleOptionTabWidgetFrame(int version)
     and the height set to 0.
 */
 
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
 #ifndef QT_NO_TABBAR
 

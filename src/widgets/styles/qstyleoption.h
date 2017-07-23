@@ -48,7 +48,9 @@
 #include <QtWidgets/qslider.h>
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qtabbar.h>
+#if QT_CONFIG(tabwidget)
 #include <QtWidgets/qtabwidget.h>
+#endif
 #if QT_CONFIG(rubberband)
 #include <QtWidgets/qrubberband.h>
 #endif
@@ -143,7 +145,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionFrame::FrameFeatures)
 typedef Q_DECL_DEPRECATED QStyleOptionFrame QStyleOptionFrameV2;
 typedef Q_DECL_DEPRECATED QStyleOptionFrame QStyleOptionFrameV3;
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
 class Q_WIDGETS_EXPORT QStyleOptionTabWidgetFrame : public QStyleOption
 {
 public:
@@ -168,7 +170,7 @@ protected:
 };
 
 typedef Q_DECL_DEPRECATED QStyleOptionTabWidgetFrame QStyleOptionTabWidgetFrameV2;
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
 
 #ifndef QT_NO_TABBAR

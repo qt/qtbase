@@ -2893,7 +2893,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = Qt::AlignRight;
         break;
     case SH_TabBar_Alignment: {
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
         if (const QTabWidget *tab = qobject_cast<const QTabWidget*>(w)) {
             if (tab->documentMode()) {
                 ret = Qt::AlignLeft;
@@ -3560,7 +3560,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
 
         break;
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     case PE_FrameTabWidget:
         if (const QStyleOptionTabWidgetFrame *twf
                 = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
@@ -4934,7 +4934,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                   int(outRect.size.height));
         break;
     }
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     case SE_TabWidgetLeftCorner:
         if (const QStyleOptionTabWidgetFrame *twf
                 = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
@@ -5211,7 +5211,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         rect.setBottom(rect.bottom() - 1);
         break;
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     case SE_TabWidgetLayoutItem:
         if (const QStyleOptionTabWidgetFrame *tabWidgetOpt =
                 qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
@@ -6645,7 +6645,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
              * overlap is how much the pane should overlap the tab bar
         */
         // then add the size between the stackwidget and the "contentsRect"
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
         if (const QStyleOptionTabWidgetFrame *twf
                 = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
             QSize extra(0,0);

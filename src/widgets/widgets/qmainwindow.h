@@ -42,7 +42,9 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
+#if QT_CONFIG(tabwidget)
 #include <QtWidgets/qtabwidget.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -67,9 +69,9 @@ class Q_WIDGETS_EXPORT QMainWindow : public QWidget
 #ifndef QT_NO_TABBAR
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
 #endif // QT_NO_TABBAR
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
     Q_PROPERTY(bool dockNestingEnabled READ isDockNestingEnabled WRITE setDockNestingEnabled)
 #endif // QT_NO_DOCKWIDGET
     Q_PROPERTY(DockOptions dockOptions READ dockOptions WRITE setDockOptions)
@@ -109,12 +111,12 @@ public:
     void setDocumentMode(bool enabled);
 #endif
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     QTabWidget::TabShape tabShape() const;
     void setTabShape(QTabWidget::TabShape tabShape);
     QTabWidget::TabPosition tabPosition(Qt::DockWidgetArea area) const;
     void setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::TabPosition tabPosition);
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
     void setDockOptions(DockOptions options);
     DockOptions dockOptions() const;

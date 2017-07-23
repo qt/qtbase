@@ -257,7 +257,7 @@ static inline QMdiArea *mdiAreaParent(QWidget *widget)
     return 0;
 }
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
 static inline QTabBar::Shape tabBarShapeFrom(QTabWidget::TabShape shape, QTabWidget::TabPosition position)
 {
     const bool rounded = (shape == QTabWidget::Rounded);
@@ -271,7 +271,7 @@ static inline QTabBar::Shape tabBarShapeFrom(QTabWidget::TabShape shape, QTabWid
         return rounded ? QTabBar::RoundedWest : QTabBar::TriangularWest;
     return QTabBar::RoundedNorth;
 }
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
 static inline QString tabTextFor(QMdiSubWindow *subWindow)
 {
@@ -685,7 +685,7 @@ QMdiAreaPrivate::QMdiAreaPrivate()
       tabsClosable(false),
       tabsMovable(false),
 #endif
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
       tabShape(QTabWidget::Rounded),
       tabPosition(QTabWidget::North),
 #endif
@@ -1570,7 +1570,7 @@ void QMdiAreaPrivate::setViewMode(QMdiArea::ViewMode mode)
         tabBar->setDocumentMode(documentMode);
         tabBar->setTabsClosable(tabsClosable);
         tabBar->setMovable(tabsMovable);
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
         tabBar->setShape(tabBarShapeFrom(tabShape, tabPosition));
 #endif
 
@@ -1634,7 +1634,7 @@ void QMdiAreaPrivate::updateTabBarGeometry()
         return;
 
     Q_Q(QMdiArea);
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     Q_ASSERT(tabBarShapeFrom(tabShape, tabPosition) == tabBar->shape());
 #endif
     const QSize tabBarSizeHint = tabBar->sizeHint();
@@ -1648,7 +1648,7 @@ void QMdiAreaPrivate::updateTabBarGeometry()
         areaWidth -= vbar->width();
 
     QRect tabBarRect;
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     switch (tabPosition) {
     case QTabWidget::North:
         q->setViewportMargins(0, tabBarSizeHint.height(), 0, 0);
@@ -1675,7 +1675,7 @@ void QMdiAreaPrivate::updateTabBarGeometry()
     default:
         break;
     }
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
     tabBar->setGeometry(QStyle::visualRect(q->layoutDirection(), q->contentsRect(), tabBarRect));
 }
@@ -1691,7 +1691,7 @@ void QMdiAreaPrivate::refreshTabBar()
     tabBar->setDocumentMode(documentMode);
     tabBar->setTabsClosable(tabsClosable);
     tabBar->setMovable(tabsMovable);
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     tabBar->setShape(tabBarShapeFrom(tabShape, tabPosition));
 #endif
     updateTabBarGeometry();
@@ -2218,7 +2218,7 @@ void QMdiArea::setTabsMovable(bool movable)
 }
 #endif // QT_NO_TABBAR
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
 /*!
     \property QMdiArea::tabShape
     \brief the shape of the tabs in tabbed view mode.
@@ -2270,7 +2270,7 @@ void QMdiArea::setTabPosition(QTabWidget::TabPosition position)
     d->tabPosition = position;
     d->refreshTabBar();
 }
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
 /*!
     \reimp

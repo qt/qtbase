@@ -163,7 +163,7 @@ public:
     bool tabsClosable;
     bool tabsMovable;
 #endif
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     QTabWidget::TabShape tabShape;
     QTabWidget::TabPosition tabPosition;
 #endif
