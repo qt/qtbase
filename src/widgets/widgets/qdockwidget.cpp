@@ -1397,14 +1397,14 @@ void QDockWidget::changeEvent(QEvent *event)
         d->fixedWindowTitle = qt_setWindowTitle_helperHelper(windowTitle(), this);
         d->toggleViewAction->setText(d->fixedWindowTitle);
 #endif
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
         {
             if (QMainWindowLayout *winLayout = qt_mainwindow_layout_from_dock(this)) {
                 if (QDockAreaLayoutInfo *info = winLayout->layoutState.dockAreaLayout.info(this))
                     info->updateTabBar();
             }
         }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
         break;
     default:
         break;

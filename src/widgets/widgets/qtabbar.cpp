@@ -67,8 +67,6 @@
 #include "qdebug.h"
 #include "private/qtabbar_p.h"
 
-#ifndef QT_NO_TABBAR
-
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -2693,7 +2691,5 @@ void QTabBarPrivate::Tab::TabBarAnimation::updateState(QAbstractAnimation::State
 QT_END_NAMESPACE
 
 #include "moc_qtabbar.cpp"
-
-#endif // QT_NO_TABBAR
 
 #include "moc_qtabbar_p.cpp"

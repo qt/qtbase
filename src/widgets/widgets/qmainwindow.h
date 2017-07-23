@@ -66,9 +66,9 @@ class Q_WIDGETS_EXPORT QMainWindow : public QWidget
     Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle)
 #if QT_CONFIG(dockwidget)
     Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 #if QT_CONFIG(tabwidget)
     Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
 #endif // QT_CONFIG(tabwidget)
@@ -106,7 +106,7 @@ public:
     bool isDockNestingEnabled() const;
 #endif
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     bool documentMode() const;
     void setDocumentMode(bool enabled);
 #endif

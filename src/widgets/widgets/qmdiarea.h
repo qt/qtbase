@@ -60,7 +60,7 @@ class Q_WIDGETS_EXPORT QMdiArea : public QAbstractScrollArea
     Q_PROPERTY(QBrush background READ background WRITE setBackground)
     Q_PROPERTY(WindowOrder activationOrder READ activationOrder WRITE setActivationOrder)
     Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
     Q_PROPERTY(bool tabsClosable READ tabsClosable WRITE setTabsClosable)
     Q_PROPERTY(bool tabsMovable READ tabsMovable WRITE setTabsMovable)
@@ -113,7 +113,7 @@ public:
     void setViewMode(ViewMode mode);
     ViewMode viewMode() const;
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     bool documentMode() const;
     void setDocumentMode(bool enabled);
 

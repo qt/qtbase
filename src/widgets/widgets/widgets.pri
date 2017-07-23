@@ -34,8 +34,6 @@ HEADERS += \
         widgets/qsplitter_p.h \
         widgets/qstackedwidget.h \
         widgets/qstatusbar.h \
-        widgets/qtabbar.h \
-        widgets/qtabbar_p.h \
         widgets/qtextedit.h \
         widgets/qtextedit_p.h \
         widgets/qtextbrowser.h \
@@ -81,7 +79,6 @@ SOURCES += \
         widgets/qsplitter.cpp \
         widgets/qstackedwidget.cpp \
         widgets/qstatusbar.cpp \
-        widgets/qtabbar.cpp \
         widgets/qtextedit.cpp \
         widgets/qtextbrowser.cpp \
         widgets/qtoolbar.cpp \
@@ -224,6 +221,14 @@ qtConfig(splashscreen) {
 
     SOURCES += \
         widgets/qsplashscreen.cpp
+}
+
+qtConfig(tabbar) {
+    HEADERS += \
+        widgets/qtabbar.h \
+        widgets/qtabbar_p.h
+
+    SOURCES += widgets/qtabbar.cpp
 }
 
 qtConfig(tabwidget) {

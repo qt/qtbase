@@ -58,7 +58,9 @@
 
 #include <qdesktopwidget.h>
 #include <qtoolbutton.h>
+#if QT_CONFIG(tabbar)
 #include <qtabbar.h>
+#endif
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif

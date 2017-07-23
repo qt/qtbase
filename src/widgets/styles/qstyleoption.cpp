@@ -1231,7 +1231,7 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
 
 #endif
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 /*!
     \class QStyleOptionTab
     \brief The QStyleOptionTab class is used to describe the
@@ -1479,7 +1479,7 @@ QStyleOptionTab::QStyleOptionTab(int version)
     The default value is QSize(-1, -1), i.e. an invalid size;
 */
 
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 /*!
     \class QStyleOptionProgressBar
@@ -3436,7 +3436,7 @@ QStyleOptionTabWidgetFrame::QStyleOptionTabWidgetFrame(int version)
 
 #endif // QT_CONFIG(tabwidget)
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 
 /*!
     \class QStyleOptionTabBarBase
@@ -3556,7 +3556,7 @@ QStyleOptionTabBarBase::QStyleOptionTabBarBase(int version)
     The default value is false;
 */
 
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 #ifndef QT_NO_SIZEGRIP
 /*!

@@ -57,7 +57,9 @@
 #ifndef QT_NO_MAINWINDOW
 
 #include "QtWidgets/qlayout.h"
+#if QT_CONFIG(tabbar)
 #include "QtWidgets/qtabbar.h"
+#endif
 #include "QtCore/qvector.h"
 #include "QtCore/qset.h"
 #include "QtCore/qbasictimer.h"
@@ -234,7 +236,7 @@ public:
     void setVerticalTabsEnabled(bool enabled);
     bool restoreDockWidget(QDockWidget *dockwidget);
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     QDockAreaLayoutInfo *dockInfo(QWidget *w);
     bool _documentMode;
     bool documentMode() const;
@@ -261,7 +263,7 @@ public:
 
     QDockWidgetGroupWindow *createTabbedDockWindow();
 #endif // QT_CONFIG(tabwidget)
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
     // separators
 
@@ -324,13 +326,13 @@ public:
 private Q_SLOTS:
     void updateGapIndicator();
 #if QT_CONFIG(dockwidget)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     void tabChanged();
     void tabMoved(int from, int to);
 #endif
 #endif
 private:
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     void updateTabBarShapes();
 #endif
 #if 0 // Used to be included in Qt4 for Q_WS_MAC

@@ -153,7 +153,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         iface = new QAccessibleTable(widget);
     // ### This should be cleaned up. We return the parent for the scrollarea to hide it.
 #endif // QT_CONFIG(itemviews)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     } else if (classname == QLatin1String("QTabBar")) {
         iface = new QAccessibleTabBar(widget);
 #endif

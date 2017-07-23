@@ -76,7 +76,9 @@
 #endif
 #include <private/qwindowsstyle_p_p.h>
 #include <private/qstyleanimation_p.h>
+#if QT_CONFIG(tabbar)
 #include <qtabbar.h>
+#endif
 #include <QMetaProperty>
 #include <qmainwindow.h>
 #if QT_CONFIG(dockwidget)
@@ -1912,7 +1914,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                     break;
             }
 #endif
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
         } else if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             if (tab->position == QStyleOptionTab::OnlyOneTab)
                 extraClass |= PseudoClass_OnlyOne;
@@ -1948,7 +1950,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                 default:
                     break;
             }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
         } else if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             if (btn->features & QStyleOptionButton::Flat)
                 extraClass |= PseudoClass_Flat;
@@ -2425,7 +2427,7 @@ static bool unstylable(const QWidget *w)
     }
 #endif
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     if (w->metaObject() == &QWidget::staticMetaObject
             && qobject_cast<const QTabBar*>(w->parentWidget()))
         return true; // The moving tab of a QTabBar
@@ -2812,7 +2814,7 @@ void QStyleSheetStyle::polish(QWidget *w)
 #if QT_CONFIG(itemviews)
               || qobject_cast<QHeaderView *>(w)
 #endif
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
               || qobject_cast<QTabBar *>(w)
 #endif
 #ifndef QT_NO_FRAME
@@ -2916,7 +2918,7 @@ void QStyleSheetStyle::unpolish(QApplication *app)
     styleSheetCaches->styleSheetCache.remove(qApp);
 }
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 inline static bool verticalTabs(QTabBar::Shape shape)
 {
     return shape == QTabBar::RoundedWest
@@ -2924,7 +2926,7 @@ inline static bool verticalTabs(QTabBar::Shape shape)
            || shape == QTabBar::TriangularWest
            || shape == QTabBar::TriangularEast;
 }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                           const QWidget *w) const
@@ -4092,7 +4094,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         break;
 #endif // QT_CONFIG(itemviews)
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case CE_TabBarTab:
         if (hasStyleRule(w, PseudoElement_TabBarTab)) {
             QWindowsStyle::drawControl(ce, opt, p, w);
@@ -4127,7 +4129,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             return;
         }
        break;
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
     case CE_ColumnViewGrip:
        if (rule.hasDrawable()) {
@@ -4534,7 +4536,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     case PE_IndicatorSpinPlus:
         pseudoElement = PseudoElement_SpinBoxUpArrow;
         break;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case PE_IndicatorTabClose:
         if (w)
             w = w->parentWidget(); //match on the QTabBar instead of the CloseButton
@@ -5055,7 +5057,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             return rule.boxSize(sz);
         break;
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case CT_TabBarTab: {
         QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
         if (subRule.hasBox() || !subRule.hasNativeBorder()) {
@@ -5079,7 +5081,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
         sz = subRule.adjustSize(csz);
         break;
     }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
     case CT_MdiControls:
         if (const QStyleOptionComplex *ccOpt = qstyleoption_cast<const QStyleOptionComplex *>(opt)) {
@@ -5288,7 +5290,7 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
 #endif // QT_CONFIG(tabwidget)
             s = QLatin1String("alignment");
             break;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
         case SH_TabBar_CloseButtonPosition:
             rule = renderRule(w, opt, PseudoElement_TabBarTabCloseButton);
             if (rule.hasPosition()) {
@@ -5694,7 +5696,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     RECURSION_GUARD(return baseStyle()->subElementRect(se, opt, w))
 
     QRenderRule rule = renderRule(w, opt);
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     int pe = PseudoElement_None;
 #endif
 
@@ -5822,7 +5824,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         }
         break;
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case SE_TabWidgetLeftCorner:
         pe = PseudoElement_TabWidgetLeftCorner;
         // intentionally falls through
@@ -5889,7 +5891,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         }
         break;
     }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
     case SE_DockWidgetCloseButton:
     case SE_DockWidgetFloatButton: {

@@ -1019,7 +1019,7 @@ static bool checkDockWidgetArea(Qt::DockWidgetArea area, const char *where)
     return false;
 }
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 /*!
     \property QMainWindow::documentMode
     \brief whether the tab bar for tabbed dockwidgets is set to document mode.
@@ -1038,7 +1038,7 @@ void QMainWindow::setDocumentMode(bool enabled)
 {
     d_func()->layout->setDocumentMode(enabled);
 }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 #if QT_CONFIG(tabwidget)
 /*!
@@ -1210,7 +1210,7 @@ void QMainWindow::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 QList<QDockWidget*> QMainWindow::tabifiedDockWidgets(QDockWidget *dockwidget) const
 {
     QList<QDockWidget*> ret;
-#if defined(QT_NO_TABBAR)
+#if !QT_CONFIG(tabbar)
     Q_UNUSED(dockwidget);
 #else
     const QDockAreaLayoutInfo *info = d_func()->layout->layoutState.dockAreaLayout.info(dockwidget);

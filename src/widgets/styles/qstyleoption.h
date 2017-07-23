@@ -47,7 +47,9 @@
 #include <QtGui/qmatrix.h>
 #include <QtWidgets/qslider.h>
 #include <QtWidgets/qstyle.h>
+#if QT_CONFIG(tabbar)
 #include <QtWidgets/qtabbar.h>
+#endif
 #if QT_CONFIG(tabwidget)
 #include <QtWidgets/qtabwidget.h>
 #endif
@@ -173,7 +175,7 @@ typedef Q_DECL_DEPRECATED QStyleOptionTabWidgetFrame QStyleOptionTabWidgetFrameV
 #endif // QT_CONFIG(tabwidget)
 
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 class Q_WIDGETS_EXPORT QStyleOptionTabBarBase : public QStyleOption
 {
 public:
@@ -193,7 +195,7 @@ protected:
 };
 
 typedef Q_DECL_DEPRECATED QStyleOptionTabBarBase QStyleOptionTabBarBaseV2;
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 class Q_WIDGETS_EXPORT QStyleOptionHeader : public QStyleOption
 {
@@ -247,7 +249,7 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionButton::ButtonFeatures)
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 class Q_WIDGETS_EXPORT QStyleOptionTab : public QStyleOption
 {
 public:
@@ -286,7 +288,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionTab::CornerWidgets)
 
 typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV2;
 typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV3;
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 
 #ifndef QT_NO_TOOLBAR

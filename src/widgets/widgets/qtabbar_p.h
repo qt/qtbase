@@ -60,11 +60,11 @@
 #include <qdebug.h>
 #include <qvariantanimation.h>
 
-#ifndef QT_NO_TABBAR
-
 #define ANIMATION_DURATION 250
 
 #include <qstyleoption.h>
+
+QT_REQUIRE_CONFIG(tabbar);
 
 QT_BEGIN_NAMESPACE
 
@@ -286,9 +286,6 @@ public:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 };
 
-
 QT_END_NAMESPACE
-
-#endif
 
 #endif

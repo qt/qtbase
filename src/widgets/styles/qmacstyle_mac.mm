@@ -51,7 +51,9 @@
 //#define DEBUG_SIZE_CONSTRAINT
 
 #include <private/qcore_mac_p.h>
+#if QT_CONFIG(tabbar)
 #include <private/qtabbar_p.h>
+#endif
 #include <private/qpainter_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
@@ -232,7 +234,7 @@ static const qreal closeButtonCornerRadius = 2.0;
 typedef HIRect * (*PtrHIShapeGetBounds)(HIShapeRef, HIRect *);
 static PtrHIShapeGetBounds ptrHIShapeGetBounds = 0;
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 static bool isVerticalTabs(const QTabBar::Shape shape) {
     return (shape == QTabBar::RoundedEast
                 || shape == QTabBar::TriangularEast
@@ -291,7 +293,7 @@ static void drawTabCloseButton(QPainter *p, bool hover, bool selected, bool pres
     p->drawLine(margin, height - margin, width - margin, margin);
 }
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 QRect rotateTabPainter(QPainter *p, QTabBar::Shape shape, QRect tabRect)
 {
     if (isVerticalTabs(shape)) {
@@ -435,7 +437,7 @@ static inline bool isTreeView(const QWidget *widget)
 }
 #endif
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 static inline ThemeTabDirection getTabDirection(QTabBar::Shape shape)
 {
     ThemeTabDirection ttd;
@@ -1077,7 +1079,7 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
                   QRect(focusRingPixmap.width() - shCornerSize, svCornerSize, shCornerSize, focusRingPixmap.width() - 2 * svCornerSize));
 }
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const
 {
     Q_ASSERT(textRect);
@@ -1140,7 +1142,7 @@ void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widg
 
     *textRect = tr;
 }
-#endif //QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 QAquaWidgetSize QMacStylePrivate::effectiveAquaSizeConstrain(const QStyleOption *option,
                                                             const QWidget *widg,
@@ -2293,7 +2295,7 @@ void QMacStyle::polish(QWidget* w)
     }
 #endif
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     if (QTabBar *tb = qobject_cast<QTabBar*>(w)) {
         if (tb->documentMode()) {
             w->setAttribute(Qt::WA_Hover);
@@ -2345,7 +2347,7 @@ void QMacStyle::unpolish(QWidget* w)
     }
 #endif
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     if (qobject_cast<QTabBar*>(w)) {
         if (!w->testAttribute(Qt::WA_SetFont))
             w->setFont(qApp->font(w));
@@ -2870,7 +2872,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = QEvent::MouseButtonRelease;
         break;
     case SH_TabBar_SelectMouseType:
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
         if (const QStyleOptionTabBarBase *opt2 = qstyleoption_cast<const QStyleOptionTabBarBase *>(opt)) {
             ret = opt2->documentMode ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
         } else
@@ -2903,7 +2905,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             }
         }
 #endif
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
         if (const QTabBar *tab = qobject_cast<const QTabBar*>(w)) {
             if (tab->documentMode()) {
                 ret = Qt::AlignLeft;
@@ -3080,7 +3082,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_ItemView_PaintAlternatingRowColorsForEmptyArea:
         ret = true;
         break;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case SH_TabBar_CloseButtonPosition:
         ret = QTabBar::LeftSide;
         break;
@@ -3236,7 +3238,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->drawPath(path);
         p->restore();
         break; }
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case PE_FrameTabBarBase:
         if (const QStyleOptionTabBarBase *tbb
                 = qstyleoption_cast<const QStyleOptionTabBarBase *>(opt)) {
@@ -4135,7 +4137,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
         }
         break;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tabOpt = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             if (tabOpt->documentMode) {
@@ -6663,7 +6665,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
 #endif
         break;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case QStyle::CT_TabBarTab:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             const QAquaWidgetSize AquaSize = d->aquaSizeConstrain(opt, widget);

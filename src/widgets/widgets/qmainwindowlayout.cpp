@@ -54,7 +54,9 @@
 #if QT_CONFIG(rubberband)
 #include "qrubberband.h"
 #endif
+#if QT_CONFIG(tabbar)
 #include "qtabbar_p.h"
+#endif
 
 #include <qapplication.h>
 #include <qstatusbar.h>
@@ -883,7 +885,7 @@ void QMainWindowLayoutState::saveState(QDataStream &stream) const
 {
 #if QT_CONFIG(dockwidget)
     dockAreaLayout.saveState(stream);
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     QList<QDockWidgetGroupWindow *> floatingTabs =
         mainWindow->findChildren<QDockWidgetGroupWindow *>(QString(), Qt::FindDirectChildrenOnly);
 
@@ -963,7 +965,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
                     }
                 }
                 break;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
             case QDockAreaLayout::FloatingDockWidgetTabMarker:
                 {
                     QRect geom;
@@ -974,7 +976,7 @@ bool QMainWindowLayoutState::checkFormat(QDataStream &stream)
                         return false;
                 }
                 break;
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 #endif // QT_CONFIG(dockwidget)
             default:
                 //there was an error during the parsing
@@ -1444,7 +1446,7 @@ bool QMainWindowLayout::restoreDockWidget(QDockWidget *dockwidget)
     return true;
 }
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 bool QMainWindowLayout::documentMode() const
 {
     return _documentMode;
@@ -1463,11 +1465,11 @@ void QMainWindowLayout::setDocumentMode(bool enabled)
     foreach (QTabBar *bar, unusedTabBars)
         bar->setDocumentMode(_documentMode);
 }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 void QMainWindowLayout::setVerticalTabsEnabled(bool enabled)
 {
-#ifdef QT_NO_TABBAR
+#if !QT_CONFIG(tabbar)
     Q_UNUSED(enabled);
 #else
     if (verticalTabsEnabled == enabled)
@@ -1476,7 +1478,7 @@ void QMainWindowLayout::setVerticalTabsEnabled(bool enabled)
     verticalTabsEnabled = enabled;
 
     updateTabBarShapes();
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 }
 
 #if QT_CONFIG(tabwidget)
@@ -1537,7 +1539,7 @@ static inline QTabBar::Shape tabBarShapeFrom(QTabWidget::TabShape shape, QTabWid
 }
 #endif // QT_CONFIG(tabwidget)
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 void QMainWindowLayout::updateTabBarShapes()
 {
 #if QT_CONFIG(tabwidget)
@@ -1568,7 +1570,7 @@ void QMainWindowLayout::updateTabBarShapes()
         layout.docks[i].setTabBarShape(shape);
     }
 }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 void QMainWindowLayout::splitDockWidget(QDockWidget *after,
                                         QDockWidget *dockwidget,
@@ -1593,7 +1595,7 @@ void QMainWindowLayout::keepSize(QDockWidget *w)
     layoutState.dockAreaLayout.keepSize(w);
 }
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 
 // Handle custom tooltip, and allow to drag tabs away.
 class QMainWindowTabBar : public QTabBar
@@ -1778,7 +1780,7 @@ void QMainWindowLayout::tabMoved(int from, int to)
 
     info->moveTab(from, to);
 }
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 bool QMainWindowLayout::startSeparatorMove(const QPoint &pos)
 {
@@ -1815,7 +1817,7 @@ bool QMainWindowLayout::endSeparatorMove(const QPoint&)
 
 void QMainWindowLayout::raise(QDockWidget *widget)
 {
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     QDockAreaLayoutInfo *info = dockInfo(widget);
     if (info == 0)
         return;
@@ -2220,7 +2222,7 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         layoutState.apply(false);
 
 #if QT_CONFIG(dockwidget)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
         if (qobject_cast<QDockWidget*>(widget) != 0) {
             // info() might return null if the widget is destroyed while
             // animating but before the animationFinished signal is received.
@@ -2235,10 +2237,10 @@ void QMainWindowLayout::animationFinished(QWidget *widget)
         //all animations are finished
 #if QT_CONFIG(dockwidget)
         parentWidget()->update(layoutState.dockAreaLayout.separatorRegion());
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
         foreach (QTabBar *tab_bar, usedTabBars)
             tab_bar->show();
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 #endif // QT_CONFIG(dockwidget)
     }
 
@@ -2266,7 +2268,7 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
     , dockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowTabbedDocks)
     , statusbar(0)
 #if QT_CONFIG(dockwidget)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     , _documentMode(false)
     , verticalTabsEnabled(false)
 #if QT_CONFIG(tabwidget)
@@ -2284,7 +2286,7 @@ QMainWindowLayout::QMainWindowLayout(QMainWindow *mainwindow, QLayout *parentLay
         setParent(parentLayout);
 
 #if QT_CONFIG(dockwidget)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     sep = mainwindow->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, mainwindow);
 #endif
 
@@ -2371,7 +2373,7 @@ void QMainWindowLayout::setCentralWidget(QWidget *widget)
  */
 QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, bool group)
 {
-#if QT_CONFIG(dockwidget) && !defined(QT_NO_TABBAR)
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
     if (!widget->isWindow() && qobject_cast<const QDockWidgetGroupWindow *>(widget->parentWidget())) {
         if (group) {
             // We are just dragging a floating window as it, not need to do anything, we just have to
@@ -2670,7 +2672,7 @@ bool QMainWindowLayout::restoreState(QDataStream &stream)
 
 #if QT_CONFIG(dockwidget)
     if (parentWidget()->isVisible()) {
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
         foreach (QTabBar *tab_bar, usedTabBars)
             tab_bar->show();
 

@@ -69,7 +69,9 @@
 #include <qpainterpath.h>
 #include <qslider.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(tabbar)
 #include <qtabbar.h>
+#endif
 #if QT_CONFIG(tabwidget)
 #include <qtabwidget.h>
 #endif
@@ -368,7 +370,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             p->setPen(oldPen);
         }
         break;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case PE_FrameTabBarBase:
         if (const QStyleOptionTabBarBase *tbb
                 = qstyleoption_cast<const QStyleOptionTabBarBase *>(opt)) {
@@ -431,7 +433,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     }
 #else
     Q_UNUSED(d);
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
     case PE_FrameTabWidget:
     case PE_FrameWindow:
         qDrawWinPanel(p, opt->rect, opt->palette, false, 0);
@@ -575,7 +577,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->setBrush(oldBrush);
         break;
     }
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case PE_IndicatorTabTear:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             bool rtl = tab->direction == Qt::RightToLeft;
@@ -609,7 +611,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             p->drawPath(path);
         }
         break;
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 #ifndef QT_NO_LINEEDIT
     case PE_PanelLineEdit:
         if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
@@ -1104,7 +1106,7 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItem *opt,  QRect
 #endif // QT_CONFIG(itemviews)
 
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 /*! \internal
     Compute the textRect and the pixmapRect from the opt rect
 
@@ -1171,7 +1173,7 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *w
 
     *textRect = tr;
 }
-#endif //QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
 #ifndef QT_NO_ANIMATION
 /*! \internal */
@@ -1718,7 +1720,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_TOOLBOX
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case CE_TabBarTab:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             proxy()->drawControl(CE_TabBarTabShape, tab, p, widget);
@@ -1938,7 +1940,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
         }
         break;
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 #ifndef QT_NO_SIZEGRIP
     case CE_SizeGrip: {
         p->save();
@@ -2813,7 +2815,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
         break;
 #endif // QT_CONFIG(tabwidget)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case SE_TabBarTearIndicator:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             switch (tab->shape) {
@@ -4581,7 +4583,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         break;
 #endif // QT_NO_TOOLBAR
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case PM_TabBarTabOverlap:
         ret = 3;
         break;
@@ -5225,7 +5227,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_ItemView_DrawDelegateFrame:
         ret = 0;
         break;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case SH_TabBar_CloseButtonPosition:
         ret = QTabBar::RightSide;
         break;

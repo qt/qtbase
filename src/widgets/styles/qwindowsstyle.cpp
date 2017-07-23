@@ -55,7 +55,9 @@
 #include "qrubberband.h"
 #endif
 #include "qstyleoption.h"
+#if QT_CONFIG(tabbar)
 #include "qtabbar.h"
+#endif
 #include "qwidget.h"
 #include "qdebug.h"
 #include "qmainwindow.h"
@@ -334,7 +336,7 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
         break;
     case QStyle::PM_DockWidgetSeparatorExtent:
         return 4;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case QStyle::PM_TabBarTabShiftHorizontal:
         return 0;
     case QStyle::PM_TabBarTabShiftVertical:
@@ -1283,7 +1285,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         }
         break;
 #endif // QT_NO_MENUBAR
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             bool rtlHorTabs = (tab->direction == Qt::RightToLeft
@@ -1486,7 +1488,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             }
         }
         break;
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
     case CE_ToolBoxTabShape:
         qDrawShadePanel(p, opt->rect, opt->palette,
                         opt->state & (State_Sunken | State_On), 1,
