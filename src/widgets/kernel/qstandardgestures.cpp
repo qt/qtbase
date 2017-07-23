@@ -43,7 +43,9 @@
 #include "qevent.h"
 #include "qwidget.h"
 #include "qabstractscrollarea.h"
+#if QT_CONFIG(graphicsview)
 #include <qgraphicssceneevent.h>
+#endif
 #include "qdebug.h"
 
 #ifndef QT_NO_GESTURES
@@ -511,7 +513,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     enum { TapRadius = 40 };
 
     switch (event->type()) {
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     case QEvent::GraphicsSceneMousePress: {
         const QGraphicsSceneMouseEvent *gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
         d->position = gsme->screenPos();
@@ -540,7 +542,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     }
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     case QEvent::GraphicsSceneMouseRelease:
 #endif
     case QEvent::MouseButtonRelease:
@@ -563,7 +565,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
             return QGestureRecognizer::MayBeGesture;
         return QGestureRecognizer::CancelGesture;
     }
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     case QEvent::GraphicsSceneMouseMove: {
         const QGraphicsSceneMouseEvent *gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
         QPoint delta = gsme->screenPos() - d->position.toPoint();

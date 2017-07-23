@@ -301,7 +301,7 @@ public:
     void setWidget(QWidget *widget);
     QWidget *widget() const;
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     QPointF mapToGraphicsScene(const QPointF &gesturePoint) const;
 #endif
 

@@ -53,13 +53,13 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#if !defined(QT_NO_GRAPHICSVIEW)
-
 #include "qgraphicslayout.h"
 #include "qgraphicslayoutitem_p.h"
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qstyleoption.h>
+
+QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
 
@@ -144,9 +144,6 @@ public:
     bool activated;
 };
 
-
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW
 
 #endif

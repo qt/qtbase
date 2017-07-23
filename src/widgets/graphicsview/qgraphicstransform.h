@@ -46,9 +46,9 @@
 #include <QtGui/QTransform>
 #include <QtGui/QMatrix4x4>
 
-#ifndef QT_NO_GRAPHICSVIEW
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(graphicsview);
 
+QT_BEGIN_NAMESPACE
 
 class QGraphicsItem;
 class QGraphicsTransformPrivate;
@@ -148,7 +148,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW
 
 #endif // QFXTRANSFORM_H

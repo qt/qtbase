@@ -1475,7 +1475,7 @@ bool QAbstractScrollAreaPrivate::canStartScrollingAt( const QPoint &startPos )
 {
     Q_Q(QAbstractScrollArea);
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     // don't start scrolling when a drag mode has been set.
     // don't start scrolling on a movable item.
     if (QGraphicsView *view = qobject_cast<QGraphicsView *>(q)) {

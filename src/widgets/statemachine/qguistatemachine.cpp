@@ -40,7 +40,10 @@
 #include <QtCore/qstatemachine.h>
 #include <private/qstatemachine_p.h>
 #include <QtGui/qevent.h>
+#include <QtWidgets/qtwidgetsglobal.h>
+#if QT_CONFIG(graphicsview)
 #include <QtWidgets/qgraphicssceneevent.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -285,7 +288,7 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::ZeroTimerEvent:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     case QEvent::GraphicsSceneMouseMove:
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseRelease:
@@ -396,7 +399,7 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::FutureCallOut:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     case QEvent::GraphicsSceneResize: {
         QGraphicsSceneResizeEvent *re = static_cast<QGraphicsSceneResizeEvent*>(e);
         QGraphicsSceneResizeEvent *re2 = new QGraphicsSceneResizeEvent();

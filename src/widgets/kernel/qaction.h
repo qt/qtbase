@@ -172,7 +172,7 @@ public:
     QWidget *parentWidget() const;
 
     QList<QWidget *> associatedWidgets() const;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     QList<QGraphicsWidget *> associatedGraphicsWidgets() const; // ### suboptimal
 #endif
 

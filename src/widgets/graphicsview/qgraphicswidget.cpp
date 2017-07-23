@@ -39,8 +39,6 @@
 
 #include "qglobal.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicswidget.h"
 #include "qgraphicswidget_p.h"
 #include "qgraphicslayout.h"
@@ -2425,5 +2423,3 @@ void QGraphicsWidget::dumpFocusChain()
 QT_END_NAMESPACE
 
 #include "moc_qgraphicswidget.cpp"
-
-#endif //QT_NO_GRAPHICSVIEW

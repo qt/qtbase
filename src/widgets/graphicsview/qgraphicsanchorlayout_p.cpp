@@ -50,7 +50,6 @@
 
 #include <numeric>
 
-#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
 
 // To ensure that all variables inside the simplex solver are non-negative,
@@ -2976,4 +2975,3 @@ void QGraphicsAnchorLayoutPrivate::dumpGraph(const QString &name)
 #endif
 
 QT_END_NAMESPACE
-#endif //QT_NO_GRAPHICSVIEW

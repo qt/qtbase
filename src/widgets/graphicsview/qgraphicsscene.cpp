@@ -203,8 +203,6 @@
 
 #include "qgraphicsscene.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicsitem.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicslayout.h"
@@ -6585,5 +6583,3 @@ void QGraphicsScenePrivate::ungrabGesture(QGraphicsItem *item, Qt::GestureType g
 QT_END_NAMESPACE
 
 #include "moc_qgraphicsscene.cpp"
-
-#endif // QT_NO_GRAPHICSVIEW

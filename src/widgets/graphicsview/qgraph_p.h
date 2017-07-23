@@ -61,6 +61,8 @@
 
 #include <float.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
 
 template <typename Vertex, typename EdgeData>

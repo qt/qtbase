@@ -55,7 +55,7 @@
 #include "qgraphicsproxywidget.h"
 #include "private/qgraphicswidget_p.h"
 
-#if !defined(QT_NO_GRAPHICSVIEW)
+QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
 
@@ -112,7 +112,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif
 
 #endif

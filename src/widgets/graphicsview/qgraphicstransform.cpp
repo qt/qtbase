@@ -93,7 +93,6 @@
 #include <QtCore/qmath.h>
 #include <QtCore/qnumeric.h>
 
-#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
 
 QGraphicsTransformPrivate::~QGraphicsTransformPrivate()
@@ -597,4 +596,3 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
 #include "moc_qgraphicstransform.cpp"
 
 QT_END_NAMESPACE
-#endif //QT_NO_GRAPHICSVIEW

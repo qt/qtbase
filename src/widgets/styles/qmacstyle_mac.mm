@@ -117,7 +117,9 @@
 #endif
 #include <qmath.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
+#if QT_CONFIG(graphicsview)
 #include <QtWidgets/qgraphicsview.h>
+#endif
 #include <QtCore/qvariant.h>
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
@@ -6962,7 +6964,7 @@ bool QMacStyle::event(QEvent *e)
     if(e->type() == QEvent::FocusIn) {
         QWidget *f = 0;
         QWidget *focusWidget = QApplication::focusWidget();
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         if (QGraphicsView *graphicsView = qobject_cast<QGraphicsView *>(focusWidget)) {
             QGraphicsItem *focusItem = graphicsView->scene() ? graphicsView->scene()->focusItem() : 0;
             if (focusItem && focusItem->type() == QGraphicsProxyWidget::Type) {

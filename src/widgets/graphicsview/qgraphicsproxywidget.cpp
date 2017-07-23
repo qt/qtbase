@@ -39,8 +39,6 @@
 
 #include "qglobal.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicslayout.h"
 #include "qgraphicsproxywidget.h"
 #include "private/qgraphicsproxywidget_p.h"
@@ -1606,5 +1604,3 @@ QGraphicsProxyWidget *QGraphicsProxyWidget::newProxyWidget(const QWidget *)
 QT_END_NAMESPACE
 
 #include "moc_qgraphicsproxywidget.cpp"
-
-#endif //QT_NO_GRAPHICSVIEW

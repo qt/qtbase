@@ -41,13 +41,15 @@
 #include "private/qstandardgestures_p.h"
 #include "private/qwidget_p.h"
 #include "private/qgesture_p.h"
+#if QT_CONFIG(graphicsview)
 #include "private/qgraphicsitem_p.h"
+#include "qgraphicsitem.h"
+#endif
 #include "private/qevent_p.h"
 #include "private/qapplication_p.h"
 #include "private/qwidgetwindow_p.h"
 #include "qgesture.h"
 #include "qevent.h"
-#include "qgraphicsitem.h"
 
 #ifdef Q_OS_OSX
 #include "qmacgesturerecognizer_p.h"
@@ -209,7 +211,7 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
             return 0;
     } else if (QGesture *g = qobject_cast<QGesture *>(object)) {
         return g;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     } else {
         Q_ASSERT(qobject_cast<QGraphicsObject *>(object));
         QGraphicsObject *graphicsObject = static_cast<QGraphicsObject *>(object);
@@ -512,7 +514,7 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
     return contexts.isEmpty() ? false : filterEventThroughContexts(contexts, event);
 }
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
 bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
 {
     QMap<Qt::GestureType, int> types;

@@ -55,6 +55,8 @@
 #include <QtCore/QSizeF>
 #include <QtWidgets/QSizePolicy>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
 
 class QGraphicsLayoutItem;

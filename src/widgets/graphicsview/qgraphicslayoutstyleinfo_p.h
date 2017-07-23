@@ -54,6 +54,8 @@
 #include <QtGui/private/qabstractlayoutstyleinfo_p.h>
 #include <QtWidgets/qstyleoption.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
 
 class QStyle;

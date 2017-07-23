@@ -44,10 +44,9 @@
 #include <QtWidgets/qgraphicsitem.h>
 #include <QtWidgets/qgraphicslayout.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
-
-
-#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QGraphicsLinearLayoutPrivate;
 
@@ -105,9 +104,6 @@ private:
     Q_DECLARE_PRIVATE(QGraphicsLinearLayout)
 };
 
-#endif
-
 QT_END_NAMESPACE
 
 #endif
-

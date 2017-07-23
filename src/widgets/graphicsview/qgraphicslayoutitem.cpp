@@ -39,8 +39,6 @@
 
 #include "qglobal.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicslayout.h"
 #include "qgraphicsscene.h"
 #include "qgraphicslayoutitem.h"
@@ -930,5 +928,3 @@ void QGraphicsLayoutItem::setGraphicsItem(QGraphicsItem *item)
 }
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW

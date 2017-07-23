@@ -39,8 +39,6 @@
 
 #include "qgraphicsgridlayoutengine_p.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicslayoutitem_p.h"
 #include "qgraphicslayout_p.h"
 #include "qgraphicswidget.h"
@@ -118,7 +116,4 @@ int QGraphicsGridLayoutEngine::stretchFactor(QGraphicsLayoutItem *layoutItem, Qt
     return 0;
 }
 
-
 QT_END_NAMESPACE
-
-#endif // QT_NO_GRAPHICSVIEW

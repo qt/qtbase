@@ -39,8 +39,6 @@
 
 #include "qglobal.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicslayout_p.h"
 #include "qgraphicslayout.h"
 #include "qgraphicswidget.h"
@@ -195,7 +193,4 @@ void QGraphicsLayoutPrivate::activateRecursive(QGraphicsLayoutItem *item)
     }
 }
 
-
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW
