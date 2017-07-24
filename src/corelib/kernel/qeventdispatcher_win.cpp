@@ -207,7 +207,8 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
         // in the queue. WM_QT_ACTIVATENOTIFIERS will be posted again as a result of
         // event processing.
         MSG msg;
-        if (!PeekMessage(&msg, 0, WM_QT_SOCKETNOTIFIER, WM_QT_SOCKETNOTIFIER, PM_NOREMOVE)
+        if (!PeekMessage(&msg, d->internalHwnd,
+                         WM_QT_SOCKETNOTIFIER, WM_QT_SOCKETNOTIFIER, PM_NOREMOVE)
             && d->queuedSocketEvents.isEmpty()) {
             // register all socket notifiers
             for (QSFDict::iterator it = d->active_fd.begin(), end = d->active_fd.end();
