@@ -211,7 +211,7 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
 {
     ParsedRfcDateTime result;
 
-    // Matches "Wdy, DD Mon YYYY HH:mm:ss ±hhmm" (Wdy, being optional)
+    // Matches "Wdy, dd Mon yyyy HH:mm:ss ±hhmm" (Wdy, being optional)
     QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
     if (s.indexOf(rex) == 0) {
         const QStringList cap = rex.capturedTexts();
@@ -223,7 +223,7 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
         const int minOffset = cap[9].toInt();
         result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
     } else {
-        // Matches "Wdy Mon DD HH:mm:ss YYYY"
+        // Matches "Wdy Mon dd HH:mm:ss yyyy"
         QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
         if (s.indexOf(rex) == 0) {
             const QStringList cap = rex.capturedTexts();
@@ -810,8 +810,8 @@ static QString toStringIsoDate(qint64 jd)
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
-    dates and times, taking the form YYYY-MM-DD, where YYYY is the
-    year, MM is the month of the year (between 01 and 12), and DD is
+    dates and times, taking the form yyyy-MM-dd, where yyyy is the
+    year, MM is the month of the year (between 01 and 12), and dd is
     the day of the month between 01 and 31.
 
     If the \a format is Qt::SystemLocaleShortDate or
@@ -3785,13 +3785,13 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
-    dates and times, taking the form YYYY-MM-DDTHH:mm:ss[Z|[+|-]HH:mm],
+    dates and times, taking the form yyyy-MM-ddTHH:mm:ss[Z|[+|-]HH:mm],
     depending on the timeSpec() of the QDateTime. If the timeSpec()
     is Qt::UTC, Z will be appended to the string; if the timeSpec() is
     Qt::OffsetFromUTC, the offset in hours and minutes from UTC will
     be appended to the string. To include milliseconds in the ISO 8601
     date, use the \a format Qt::ISODateWithMs, which corresponds to
-    YYYY-MM-DDTHH:mm:ss.zzz[Z|[+|-]HH:mm].
+    yyyy-MM-ddTHH:mm:ss.zzz[Z|[+|-]HH:mm].
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale

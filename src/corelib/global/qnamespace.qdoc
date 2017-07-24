@@ -672,8 +672,9 @@
     be short, localized names. This is basically equivalent to using the date format
     string, "ddd MMM d yyyy". See QDate::toString() for more information.
 
-    \value ISODate \l{ISO 8601} extended format: either \c{YYYY-MM-DD} for dates or
-    \c{YYYY-MM-DDTHH:mm:ss}, \c{YYYY-MM-DDTHH:mm:ssTZD} (e.g., 1997-07-16T19:20:30+01:00)
+    \value ISODate \l{ISO 8601} extended format: either \c{yyyy-MM-dd} for dates or
+    \c{yyyy-MM-ddTHH:mm:ss} (e.g. 2017-07-24T15:46:29), or with a time-zone
+    suffix (Z for UTC otherwise an offset as [+|-]HH:mm) where appropriate
     for combined dates and times.
 
     \value ISODateWithMs \l{ISO 8601} extended format, including milliseconds if applicable.
