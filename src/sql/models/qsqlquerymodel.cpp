@@ -214,7 +214,7 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
 
 /*!
     \since 5.10
-    \override
+    \reimp
 
     Returns the model's role names.
 

@@ -749,7 +749,7 @@ bool QFileDevice::unmap(uchar *address)
     \value FileAccessTime       When the file was most recently accessed (e.g.
                                 read or written to).
 
-    \sa setFileName(), fileTime()
+    \sa setFileTime(), fileTime()
 */
 
 static inline QAbstractFileEngine::FileTime FileDeviceTimeToAbstractFileEngineTime(QFileDevice::FileTime time)
@@ -775,7 +775,7 @@ static inline QAbstractFileEngine::FileTime FileDeviceTimeToAbstractFileEngineTi
     If the time cannot be determined return QDateTime() (an invalid
     date time).
 
-    \sa setFileName(), FileTime, QDateTime::isValid()
+    \sa setFileTime(), FileTime, QDateTime::isValid()
 */
 QDateTime QFileDevice::fileTime(QFileDevice::FileTime time) const
 {
@@ -789,8 +789,8 @@ QDateTime QFileDevice::fileTime(QFileDevice::FileTime time) const
 
 /*!
     \since 5.10
-    Sets the file \a time to \a newDate, returning true if successful;
-    otherwise returns false.
+    Sets the file time specified by \a fileTime to \a newDate, returning true
+    if successful; otherwise returns false.
 
     \note The file must be open to use this function.
 

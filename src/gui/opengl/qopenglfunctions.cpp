@@ -4469,7 +4469,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glBlendBarrier()
+    \fn void QOpenGLExtraFunctions::glBlendBarrier(void)
 
     Convenience function that calls glBlendBarrier().
 
@@ -4690,7 +4690,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glGetGraphicsResetStatus()
+    \fn void QOpenGLExtraFunctions::glGetGraphicsResetStatus(void)
 
     Convenience function that calls glGetGraphicsResetStatus().
 
@@ -4898,7 +4898,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
 */
 
 /*!
-    \fn void QOpenGLExtraFunctions::glPopDebugGroup()
+    \fn void QOpenGLExtraFunctions::glPopDebugGroup(void)
 
     Convenience function that calls glPopDebugGroup().
 

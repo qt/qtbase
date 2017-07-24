@@ -1347,7 +1347,7 @@ QDateTime QFileInfo::lastRead() const
     If the time cannot be determined return QDateTime() (an invalid
     date time).
 
-    \sa FileTime, QDateTime::isValid()
+    \sa QFile::FileTime, QDateTime::isValid()
 */
 QDateTime QFileInfo::fileTime(QFile::FileTime time) const
 {
