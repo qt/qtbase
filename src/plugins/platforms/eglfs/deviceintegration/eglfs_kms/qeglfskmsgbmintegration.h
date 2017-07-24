@@ -56,14 +56,12 @@ public:
     QEglFSKmsGbmIntegration();
 
     EGLDisplay createDisplay(EGLNativeDisplayType nativeDisplay) override;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *platformWindow,
-                                           const QSize &size,
-                                           const QSurfaceFormat &format) override;
     EGLNativeWindowType createNativeOffscreenWindow(const QSurfaceFormat &format) override;
     void destroyNativeWindow(EGLNativeWindowType window) override;
 
     QPlatformCursor *createCursor(QPlatformScreen *screen) const override;
     void presentBuffer(QPlatformSurface *surface) override;
+    QEglFSWindow *createWindow(QWindow *window) const override;
 
 protected:
     QKmsDevice *createDevice() override;
