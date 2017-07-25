@@ -3417,7 +3417,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
 
     QModelIndexList list = qFileDialogUi->listView->selectionModel()->selectedRows();
     for (int i = list.count() - 1; i >= 0; --i) {
-        QModelIndex index = list.at(i);
+        QPersistentModelIndex index = list.at(i);
         if (index == qFileDialogUi->listView->rootIndex())
             continue;
 
@@ -3443,12 +3443,15 @@ void QFileDialogPrivate::_q_deleteCurrent()
                                       QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No)
             return;
 
+        // the event loop has run, we have to validate if the index is valid because the model might have removed it.
+        if (!index.isValid())
+            return;
+
 #else
         if (!(p & QFile::WriteUser))
             return;
 #endif // QT_CONFIG(messagebox)
 
-        // the event loop has run, we can NOT reuse index because the model might have removed it.
         if (isDir) {
             if (!removeDirectory(filePath)) {
 #if QT_CONFIG(messagebox)
