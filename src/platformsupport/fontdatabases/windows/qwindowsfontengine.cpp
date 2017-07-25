@@ -56,6 +56,7 @@
 #include <QtCore/QtEndian>
 #include <QtCore/QFile>
 #include <QtCore/qmath.h>
+#include <QtCore/QTextStream>
 #include <QtCore/QThreadStorage>
 #include <QtCore/private/qsystemlibrary_p.h>
 #include <QtCore/private/qstringiterator_p.h>
@@ -66,6 +67,7 @@
 
 #if !defined(QT_NO_DIRECTWRITE)
 #  include <dwrite.h>
+#  include <comdef.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1228,6 +1230,22 @@ QWindowsMultiFontEngine::QWindowsMultiFontEngine(QFontEngine *fe, int script)
 {
 }
 
+#ifndef QT_NO_DIRECTWRITE
+static QString msgDirectWriteFunctionFailed(HRESULT hr, const char *function,
+                                            const QString &fam, const QString &substitute)
+{
+    _com_error error(hr);
+    QString result;
+    QTextStream str(&result);
+    str << function << " failed for \"" << fam << '"';
+    if (substitute != fam)
+        str << " (substitute: \"" <<  substitute << "\")";
+    str << ": error " << hex << showbase << ulong(hr) << ' ' << noshowbase << dec
+        << ": " << QString::fromWCharArray(error.ErrorMessage());
+    return result;
+}
+#endif // !QT_NO_DIRECTWRITE
+
 QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
 {
     QFontEngine *fontEngine = engine(0);
@@ -1266,7 +1284,8 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
         IDWriteFont *directWriteFont = 0;
         HRESULT hr = data->directWriteGdiInterop->CreateFontFromLOGFONT(&lf, &directWriteFont);
         if (FAILED(hr)) {
-            qErrnoWarning("%s: CreateFontFromLOGFONT failed", __FUNCTION__);
+            qWarning("%s: %s", __FUNCTION__,
+                     qPrintable(msgDirectWriteFunctionFailed(hr, "CreateFontFromLOGFONT", fam, nameSubstitute)));
         } else {
             Q_ASSERT(directWriteFont);
             IDWriteFontFace *directWriteFontFace = NULL;
@@ -1284,7 +1303,8 @@ QFontEngine *QWindowsMultiFontEngine::loadEngine(int at)
                 fedw->fontDef.stretch = fontEngine->fontDef.stretch;
                 return fedw;
             } else {
-                qErrnoWarning("%s: CreateFontFace failed", __FUNCTION__);
+                qWarning("%s: %s", __FUNCTION__,
+                         qPrintable(msgDirectWriteFunctionFailed(hr, "CreateFontFace", fam, nameSubstitute)));
             }
         }
     }
