@@ -100,6 +100,7 @@ QMinimalEglIntegration::QMinimalEglIntegration()
 QMinimalEglIntegration::~QMinimalEglIntegration()
 {
     destroyScreen(mScreen);
+    delete mFontDb;
 }
 
 bool QMinimalEglIntegration::hasCapability(QPlatformIntegration::Capability cap) const
