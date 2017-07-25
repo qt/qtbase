@@ -1621,6 +1621,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 default:
                     break;
                 }
+                Q_FALLTHROUGH(); // It continues in the end of the next case
             case Qt::TopToolBarArea :
                 switch(toolbar->positionWithinLine){
                 case QStyleOptionToolBar::Beginning:
