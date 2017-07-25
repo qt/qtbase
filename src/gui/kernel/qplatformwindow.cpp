@@ -122,11 +122,12 @@ QSurfaceFormat QPlatformWindow::format() const
     implementation of this function in any override of QPlatformWindow::setGeometry(), as
     QWindow::geometry() is expected to report back the set geometry until a confirmation
     (or rejection) of the new geometry comes back from the window manager and is reported
-    via handleGeometryChange().
+    via QWindowSystemInterface::handleGeometryChange().
 
     Window move/resizes can also be triggered spontaneously by the window manager, or as a
     response to an earlier requested move/resize via the Qt APIs. There is no need to call
-    this function from the window manager callback, instead call QPA::handleGeometryChange.
+    this function from the window manager callback, instead call
+    QWindowSystemInterface::handleGeometryChange().
 
     The position(x, y) part of the rect might be inclusive or exclusive of the window frame
     as returned by frameMargins(). You can detect this in the plugin by checking
