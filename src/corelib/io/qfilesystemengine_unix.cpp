@@ -1084,13 +1084,52 @@ bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
     } else if (knownData.hasFlags(QFileSystemMetaData::PosixStatFlags) &&
                knownData.isDirectory()) {
         return false;   // fcopyfile(3) returns success on directories
-    } else if (QT_FSTAT(srcfd, &statBuffer) == -1 || S_ISDIR(statBuffer.st_mode)) {
+    } else if (QT_FSTAT(srcfd, &statBuffer) == -1) {
+        return false;
+    } else if (!S_ISREG((statBuffer.st_mode))) {
+        // not a regular file, let QFile do the copy
         return false;
     }
 
 #if defined(Q_OS_LINUX)
-    // try FICLONE (only works on regular files and only on certain fs)
-    return ::ioctl(dstfd, FICLONE, srcfd) == 0;
+    if (statBuffer.st_size == 0) {
+        // empty file? we're done.
+        return true;
+    }
+
+    // first, try FICLONE (only works on regular files and only on certain fs)
+    if (::ioctl(dstfd, FICLONE, srcfd) == 0)
+        return true;
+
+    // Second, try sendfile (it can send to some special types too).
+    // sendfile(2) is limited in the kernel to 2G - 4k
+    auto sendfileSize = [](QT_OFF_T size) { return size_t(qMin<qint64>(0x7ffff000, size)); };
+
+    ssize_t n = ::sendfile(dstfd, srcfd, NULL, sendfileSize(statBuffer.st_size));
+    if (n == -1) {
+        // if we got an error here, give up and try at an upper layer
+        return false;
+    }
+
+    statBuffer.st_size -= n;
+    while (statBuffer.st_size) {
+        n = ::sendfile(dstfd, srcfd, NULL, sendfileSize(statBuffer.st_size));
+        if (n == 0) {
+            // uh oh, this is probably a real error (like ENOSPC), but we have
+            // no way to notify QFile of partial success, so just erase any work
+            // done (hopefully we won't get any errors, because there's nothing
+            // we can do about them)
+            n = ftruncate(dstfd, 0);
+            n = lseek(srcfd, 0, SEEK_SET);
+            n = lseek(dstfd, 0, SEEK_SET);
+            return false;
+        }
+        if (n == 0)
+            return true;
+        statBuffer.st_size -= n;
+    }
+
+    return true;
 #elif defined(Q_OS_DARWIN)
     // try fcopyfile
     return fcopyfile(srcfd, dstfd, nullptr, COPYFILE_DATA | COPYFILE_STAT) == 0;
