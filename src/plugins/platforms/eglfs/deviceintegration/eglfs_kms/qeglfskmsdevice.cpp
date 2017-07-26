@@ -441,7 +441,7 @@ void QEglFSKmsDevice::handleDrmEvent()
 {
     drmEventContext drmEvent;
     memset(&drmEvent, 0, sizeof(drmEvent));
-    drmEvent.version = DRM_EVENT_CONTEXT_VERSION;
+    drmEvent.version = 2;
     drmEvent.vblank_handler = nullptr;
     drmEvent.page_flip_handler = pageFlipHandler;
 
