@@ -464,7 +464,7 @@ void QFileSystemMetaData::fillFromStatBuf(const QT_STATBUF &statBuffer)
     if (statBuffer.st_nlink == 0)
         entryFlags |= QFileSystemMetaData::WasDeletedAttribute;
     size_ = statBuffer.st_size;
-#if defined(Q_OS_DARWIN)
+#ifdef UF_HIDDEN
     if (statBuffer.st_flags & UF_HIDDEN) {
         entryFlags |= QFileSystemMetaData::HiddenAttribute;
         knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
@@ -878,6 +878,8 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             what |= QFileSystemMetaData::DirectoryType;
     }
+#endif
+#ifdef UF_HIDDEN
     if (what & QFileSystemMetaData::HiddenAttribute) {
         // OS X >= 10.5: st_flags & UF_HIDDEN
         what |= QFileSystemMetaData::PosixStatFlags;
