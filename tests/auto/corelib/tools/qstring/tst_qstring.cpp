@@ -452,6 +452,8 @@ private slots:
     void trimmed();
     void toUpper();
     void toLower();
+    void isUpper();
+    void isLower();
     void toCaseFolded();
     void rightJustified();
     void leftJustified();
@@ -2314,6 +2316,46 @@ void tst_QString::toLower()
             QVERIFY(str.toLower() == QString(1, QChar(i).toLower()));
     }
 #endif
+}
+
+void tst_QString::isUpper()
+{
+    QVERIFY(!QString().isUpper());
+    QVERIFY(!QString("").isUpper());
+    QVERIFY(QString("TEXT").isUpper());
+    QVERIFY(!QString("text").isUpper());
+    QVERIFY(!QString("Text").isUpper());
+    QVERIFY(!QString("tExt").isUpper());
+    QVERIFY(!QString("teXt").isUpper());
+    QVERIFY(!QString("texT").isUpper());
+    QVERIFY(!QString("TExt").isUpper());
+    QVERIFY(!QString("teXT").isUpper());
+    QVERIFY(!QString("tEXt").isUpper());
+    QVERIFY(!QString("tExT").isUpper());
+    QVERIFY(!QString("@ABYZ[").isUpper());
+    QVERIFY(!QString("@abyz[").isUpper());
+    QVERIFY(!QString("`ABYZ{").isUpper());
+    QVERIFY(!QString("`abyz{").isUpper());
+}
+
+void tst_QString::isLower()
+{
+    QVERIFY(!QString().isLower());
+    QVERIFY(!QString("").isLower());
+    QVERIFY(QString("text").isLower());
+    QVERIFY(!QString("Text").isLower());
+    QVERIFY(!QString("tExt").isLower());
+    QVERIFY(!QString("teXt").isLower());
+    QVERIFY(!QString("texT").isLower());
+    QVERIFY(!QString("TExt").isLower());
+    QVERIFY(!QString("teXT").isLower());
+    QVERIFY(!QString("tEXt").isLower());
+    QVERIFY(!QString("tExT").isLower());
+    QVERIFY(!QString("TEXT").isLower());
+    QVERIFY(!QString("@ABYZ[").isLower());
+    QVERIFY(!QString("@abyz[").isLower());
+    QVERIFY(!QString("`ABYZ{").isLower());
+    QVERIFY(!QString("`abyz{").isLower());
 }
 
 void tst_QString::toCaseFolded()

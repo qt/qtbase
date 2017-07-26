@@ -4896,6 +4896,50 @@ bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
     return qt_ends_with(*this, c, cs);
 }
 
+/*!
+    Returns \c true if the string only contains uppercase letters,
+    otherwise returns \c false.
+    \since 5.12
+
+    \sa QChar::isUpper(), isLower()
+*/
+bool QString::isUpper() const
+{
+    if (isEmpty())
+        return false;
+
+    const QChar *d = data();
+
+    for (int i = 0, max = size(); i < max; ++i) {
+        if (!d[i].isUpper())
+            return false;
+    }
+
+    return true;
+}
+
+/*!
+    Returns \c true if the string only contains lowercase letters,
+    otherwise returns \c false.
+    \since 5.12
+
+    \sa QChar::isLower(), isUpper()
+ */
+bool QString::isLower() const
+{
+    if (isEmpty())
+        return false;
+
+    const QChar *d = data();
+
+    for (int i = 0, max = size(); i < max; ++i) {
+        if (!d[i].isLower())
+            return false;
+    }
+
+    return true;
+}
+
 static QByteArray qt_convert_to_latin1(QStringView string);
 
 QByteArray QString::toLatin1_helper(const QString &string)
