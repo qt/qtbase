@@ -492,8 +492,8 @@ defineTest(qtConfSetupLibraries) {
 # overrides from the command line are accepted.
 defineTest(qtConfLibrary_inline) {
     lib = $$eval($${1}.library)
-    !defined($${1}.libs, var): \
-        error("'inline' source in library '$$lib' does not specify 'libs'.")
+    !defined($${1}.libs, var):isEmpty($${1}.builds._KEYS_): \
+        error("'inline' source in library '$$lib' specifies neither 'libs' nor 'builds'.")
 
     # if multiple libraries provide the same export, it makes sense
     # to make them recognize the same input variables.
