@@ -1405,6 +1405,11 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
             return;
     }
 
+    if (!readOnly && !confFile->isWritable()) {
+        setStatus(QSettings::AccessError);
+        return;
+    }
+
 #ifndef QT_BOOTSTRAPPED
     /*
         Use a lockfile in order to protect us against other QSettings instances
@@ -1414,17 +1419,11 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
         Concurrent read and write are not a problem because the writing operation is atomic.
     */
     QLockFile lockFile(confFile->name + QLatin1String(".lock"));
-#endif
-    if (!readOnly) {
-        if (!confFile->isWritable()
-#ifndef QT_BOOTSTRAPPED
-            || !lockFile.lock()
-#endif
-            ) {
-            setStatus(QSettings::AccessError);
-            return;
-        }
+    if (!readOnly && !lockFile.lock() && atomicSyncOnly) {
+        setStatus(QSettings::AccessError);
+        return;
     }
+#endif
 
     /*
         We hold the lock. Let's reread the file if it has changed
@@ -1496,6 +1495,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
 
 #if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(temporaryfile)
         QSaveFile sf(confFile->name);
+        sf.setDirectWriteFallback(!atomicSyncOnly);
 #else
         QFile sf(confFile->name);
 #endif
@@ -2201,10 +2201,16 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     QSettings can safely be used from different processes (which can
     be different instances of your application running at the same
     time or different applications altogether) to read and write to
-    the same system locations. It uses advisory file locking and a
-    smart merging algorithm to ensure data integrity. Note that sync()
-    imports changes made by other processes (in addition to writing
-    the changes from this QSettings).
+    the same system locations, provided certain conditions are met. For
+    QSettings::IniFormat, it uses advisory file locking and a smart merging
+    algorithm to ensure data integrity. The condition for that to work is that
+    the writeable configuration file must be a regular file and must reside in
+    a directory that the current user can create new, temporary files in. If
+    that is not the case, then one must use setAtomicSyncRequired() to turn the
+    safety off.
+
+    Note that sync() imports changes made by other processes (in addition to
+    writing the changes from this QSettings).
 
     \section1 Platform-Specific Notes
 
@@ -2882,6 +2888,50 @@ QSettings::Status QSettings::status() const
 {
     Q_D(const QSettings);
     return d->status;
+}
+
+/*!
+    \since 5.10
+
+    Returns \c true if QSettings is only allowed to perform atomic saving and
+    reloading (synchronization) of the settings. Returns \c false if it is
+    allowed to save the settings contents directly to the configuration file.
+
+    The default is \c true.
+
+    \sa setAtomicSyncRequired(), QSaveFile
+*/
+bool QSettings::isAtomicSyncRequired() const
+{
+    Q_D(const QSettings);
+    return d->atomicSyncOnly;
+}
+
+/*!
+    \since 5.10
+
+    Configures whether QSettings is required to perform atomic saving and
+    reloading (synchronization) of the settings. If the \a enable argument is
+    \c true (the default), sync() will only perform synchronization operations
+    that are atomic. If this is not possible, sync() will fail and status()
+    will be an error condition.
+
+    Setting this property to \c false will allow QSettings to write directly to
+    the configuration file and ignore any errors trying to lock it against
+    other processes trying to write at the same time. Because of the potential
+    for corruption, this option should be used with care, but is required in
+    certain conditions, like a QSettings::IniFormat configuration file that
+    exists in an otherwise non-writeable directory or NTFS Alternate Data
+    Streams.
+
+    See \l QSaveFile for more information on the feature.
+
+    \sa isAtomicSyncRequired(), QSaveFile
+*/
+void QSettings::setAtomicSyncRequired(bool enable)
+{
+    Q_D(QSettings);
+    d->atomicSyncOnly = enable;
 }
 
 /*!

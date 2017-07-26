@@ -118,6 +118,10 @@ private slots:
     void remove();
     void contains();
     void sync();
+    void syncNonWriteableDir();
+#ifdef Q_OS_WIN
+    void syncAlternateDataStream();
+#endif
     void setFallbacksEnabled();
     void setFallbacksEnabled_data();
     void fromFile_data();
@@ -1749,6 +1753,78 @@ void tst_QSettings::sync()
     QCOMPARE(settings1.value("moo/gamma/splitter").toInt(), 5);
     QCOMPARE(settings1.allKeys().count(), 11);
 }
+
+void tst_QSettings::syncNonWriteableDir()
+{
+    QTemporaryDir tempDir;
+    QVERIFY2(tempDir.isValid(), qUtf8Printable(tempDir.errorString()));
+
+    // first, create a file
+    QString filename = tempDir.path() + "/config.ini";
+    {
+        QFile f(filename);
+        QVERIFY2(f.open(QIODevice::WriteOnly), qUtf8Printable(f.errorString()));
+    }
+
+    // second, make the dir unwriteable
+    QVERIFY(QFile::setPermissions(tempDir.path(), QFile::ReadUser | QFile::ExeUser));
+    struct UndoSetPermissions {
+        QString name;
+        UndoSetPermissions(const QString &name) : name(name) {}
+        ~UndoSetPermissions()
+        { QFile::setPermissions(name, QFile::ReadUser | QFile::WriteUser | QFile::ExeUser); }
+    };
+    UndoSetPermissions undo(tempDir.path());    // otherwise, QTemporaryDir will fail
+
+    {
+        QSettings settings(filename, QSettings::IniFormat);
+        QVERIFY(settings.isAtomicSyncRequired());
+        settings.setAtomicSyncRequired(false);
+        settings.setValue("alpha/beta", 1);
+        settings.sync();
+        QCOMPARE(settings.status(), QSettings::NoError);
+    }
+
+    QVERIFY(QFileInfo(filename).size() != 0);
+    QSettings settings(filename, QSettings::IniFormat);
+    QCOMPARE(settings.value("alpha/beta"), QVariant(1));
+}
+
+#ifdef Q_OS_WIN
+void tst_QSettings::syncAlternateDataStream()
+{
+    QTemporaryDir tempDir;
+    QVERIFY2(tempDir.isValid(), qUtf8Printable(tempDir.errorString()));
+
+    // first, create a file
+    QString filename = tempDir.path() + "/file";
+    {
+        QFile f(filename);
+        QVERIFY2(f.open(QIODevice::WriteOnly), qUtf8Printable(f.errorString()));
+    }
+
+    // then create an ADS
+    filename += ":config.ini";
+    {
+        QFile f(filename);
+        if (!f.open(QIODevice::WriteOnly))
+            QSKIP("Could not create ADS file (" + f.errorString().toUtf8() + ") - FAT drive?");
+    }
+
+    {
+        QSettings settings(filename, QSettings::IniFormat);
+        QVERIFY(settings.isAtomicSyncRequired());
+        settings.setAtomicSyncRequired(false);
+        settings.setValue("alpha/beta", 1);
+        settings.sync();
+        QCOMPARE(settings.status(), QSettings::NoError);
+    }
+
+    QVERIFY(QFileInfo(filename).size() != 0);
+    QSettings settings(filename, QSettings::IniFormat);
+    QCOMPARE(settings.value("alpha/beta"), QVariant(1));
+}
+#endif
 
 void tst_QSettings::setFallbacksEnabled_data()
 {

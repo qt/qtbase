@@ -146,6 +146,8 @@ public:
     void clear();
     void sync();
     Status status() const;
+    bool isAtomicSyncRequired() const;
+    void setAtomicSyncRequired(bool enable);
 
     void beginGroup(const QString &prefix);
     void endGroup();

@@ -249,6 +249,7 @@ protected:
     QString groupPrefix;
     bool fallbacks;
     bool pendingChanges;
+    bool atomicSyncOnly = true;
     mutable QSettings::Status status;
 };
 
