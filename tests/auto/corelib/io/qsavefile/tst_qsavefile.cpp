@@ -82,6 +82,11 @@ private slots:
     void transactionalWriteErrorRenaming();
     void symlink();
     void directory();
+
+#ifdef Q_OS_WIN
+    void alternateDataStream_data();
+    void alternateDataStream();
+#endif
 };
 
 static inline QByteArray msgCannotOpen(const QFileDevice &f)
@@ -473,6 +478,61 @@ void tst_QSaveFile::directory()
     }
 #endif
 }
+
+#ifdef Q_OS_WIN
+void tst_QSaveFile::alternateDataStream_data()
+{
+    QTest::addColumn<bool>("directWriteFallback");
+    QTest::addColumn<bool>("success");
+
+    QTest::newRow("default") << false << false;
+    QTest::newRow("directWriteFallback") << true << true;
+}
+
+void tst_QSaveFile::alternateDataStream()
+{
+    QFETCH(bool, directWriteFallback);
+    QFETCH(bool, success);
+    static const char newContent[] = "New content\r\n";
+
+    QTemporaryDir dir;
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
+    QString baseName = dir.path() + QLatin1String("/base");
+    {
+        QFile baseFile(baseName);
+        QVERIFY2(baseFile.open(QIODevice::ReadWrite), qPrintable(baseFile.errorString()));
+    }
+
+    // First, create a file with old content
+    QString adsName = baseName + QLatin1String(":outfile");
+    {
+        QFile targetFile(adsName);
+        if (!targetFile.open(QIODevice::ReadWrite))
+            QSKIP("Failed to ceate ADS file (" + targetFile.errorString().toUtf8()
+                  + "). Temp dir is FAT?");
+        targetFile.write("Old content\r\n");
+    }
+
+    // And write to it again using QSaveFile; only works if directWriteFallback is enabled
+    QSaveFile file(adsName);
+    file.setDirectWriteFallback(directWriteFallback);
+    QCOMPARE(file.directWriteFallback(), directWriteFallback);
+
+    if (success) {
+        QVERIFY2(file.open(QIODevice::WriteOnly), qPrintable(file.errorString()));
+        file.write(newContent);
+        QVERIFY2(file.commit(), qPrintable(file.errorString()));
+
+        // check the contents
+        QFile targetFile(adsName);
+        QVERIFY2(targetFile.open(QIODevice::ReadOnly), qPrintable(targetFile.errorString()));
+        QByteArray contents = targetFile.readAll();
+        QCOMPARE(contents, QByteArray(newContent));
+    } else {
+        QVERIFY(!file.open(QIODevice::WriteOnly));
+    }
+}
+#endif
 
 QTEST_MAIN(tst_QSaveFile)
 #include "tst_qsavefile.moc"
