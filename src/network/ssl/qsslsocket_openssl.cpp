@@ -756,15 +756,15 @@ void QSslSocketBackendPrivate::transmit()
         // we have a readBufferMaxSize. There's no point in leaving data there
         // just so that readBuffer.size() == readBufferMaxSize.
         int readBytes = 0;
-        data.resize(4096);
-        ::memset(data.data(), 0, data.size());
+        const int bytesToRead = 4096;
         do {
             // Don't use SSL_pending(). It's very unreliable.
-            if ((readBytes = q_SSL_read(ssl, data.data(), data.size())) > 0) {
+            readBytes = q_SSL_read(ssl, buffer.reserve(bytesToRead), bytesToRead);
+            if (readBytes > 0) {
 #ifdef QSSLSOCKET_DEBUG
                 qCDebug(lcSsl) << "QSslSocketBackendPrivate::transmit: decrypted" << readBytes << "bytes";
 #endif
-                buffer.append(data.constData(), readBytes);
+                buffer.chop(bytesToRead - readBytes);
 
                 if (readyReadEmittedPointer)
                     *readyReadEmittedPointer = true;
@@ -773,6 +773,7 @@ void QSslSocketBackendPrivate::transmit()
                 transmitting = true;
                 continue;
             }
+            buffer.chop(bytesToRead);
 
             // Error.
             switch (q_SSL_get_error(ssl, readBytes)) {
