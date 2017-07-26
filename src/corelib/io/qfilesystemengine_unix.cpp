@@ -71,6 +71,7 @@
 # if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(101200, 100000, 100000, 30000)
 #  include <sys/clonefile.h>
 # endif
+# include <copyfile.h>
 // We cannot include <Foundation/Foundation.h> (it's an Objective-C header), but
 // we need these declarations:
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
@@ -1075,11 +1076,25 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 // static
 bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaData &knownData)
 {
+    QT_STATBUF statBuffer;
+    if (knownData.hasFlags(QFileSystemMetaData::PosixStatFlags) &&
+            knownData.isFile()) {
+        statBuffer.st_size = knownData.size();
+        statBuffer.st_mode = S_IFREG;
+    } else if (knownData.hasFlags(QFileSystemMetaData::PosixStatFlags) &&
+               knownData.isDirectory()) {
+        return false;   // fcopyfile(3) returns success on directories
+    } else if (QT_FSTAT(srcfd, &statBuffer) == -1 || S_ISDIR(statBuffer.st_mode)) {
+        return false;
+    }
+
 #if defined(Q_OS_LINUX)
     // try FICLONE (only works on regular files and only on certain fs)
     return ::ioctl(dstfd, FICLONE, srcfd) == 0;
+#elif defined(Q_OS_DARWIN)
+    // try fcopyfile
+    return fcopyfile(srcfd, dstfd, nullptr, COPYFILE_DATA | COPYFILE_STAT) == 0;
 #else
-    Q_UNUSED(srcfd);
     Q_UNUSED(dstfd);
     return false;
 #endif
