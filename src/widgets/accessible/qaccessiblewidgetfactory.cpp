@@ -130,7 +130,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
     } else if (classname == QLatin1String("QStatusBar")) {
         iface = new QAccessibleDisplay(widget);
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     } else if (classname == QLatin1String("QProgressBar")) {
         iface = new QAccessibleProgressBar(widget);
 #endif

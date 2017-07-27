@@ -83,7 +83,9 @@
 #include <qpainter.h>
 #include <qpixmapcache.h>
 #include <qpointer.h>
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif

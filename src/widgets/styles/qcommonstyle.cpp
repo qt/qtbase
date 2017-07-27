@@ -288,7 +288,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_PanelToolBar:
        break;
 #endif // QT_NO_TOOLBAR
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     case PE_IndicatorProgressChunk:
         {
             bool vertical = false;
@@ -303,7 +303,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
+#endif // QT_CONFIG(progressbar)
     case PE_IndicatorBranch: {
         static const int decoration_size = 9;
         int mid_h = opt->rect.x() + opt->rect.width() / 2;
@@ -1414,7 +1414,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->eraseRect(opt->rect);
         break;
 #endif // QT_NO_MENUBAR
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     case CE_ProgressBar:
         if (const QStyleOptionProgressBar *pb
                 = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
@@ -1551,7 +1551,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
+#endif // QT_CONFIG(progressbar)
     case CE_HeaderLabel:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             QRect rect = header->rect;
@@ -2487,7 +2487,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_SLIDER
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     case SE_ProgressBarGroove:
     case SE_ProgressBarContents:
     case SE_ProgressBarLabel:
@@ -2512,7 +2512,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = visualRect(pb->direction, pb->rect, r);
         }
         break;
-#endif // QT_NO_PROGRESSBAR
+#endif // QT_CONFIG(progressbar)
 #if QT_CONFIG(combobox)
     case SE_ComboBoxFocusRect:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {

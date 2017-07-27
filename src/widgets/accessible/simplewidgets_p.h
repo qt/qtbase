@@ -190,7 +190,7 @@ protected:
 };
 #endif // QT_NO_LINEEDIT
 
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
 class QAccessibleProgressBar : public QAccessibleDisplay, public QAccessibleValueInterface
 {
 public:

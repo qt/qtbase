@@ -22,7 +22,6 @@ HEADERS += \
         widgets/qmenu_p.h \
         widgets/qmenubar.h \
         widgets/qmenubar_p.h \
-        widgets/qprogressbar.h \
         widgets/qscrollbar.h \
         widgets/qscrollbar_p.h \
         widgets/qscrollarea_p.h \
@@ -67,7 +66,6 @@ SOURCES += \
         widgets/qmdisubwindow.cpp \
         widgets/qmenu.cpp \
         widgets/qmenubar.cpp \
-        widgets/qprogressbar.cpp \
         widgets/qscrollbar.cpp \
         widgets/qsizegrip.cpp \
         widgets/qslider.cpp \
@@ -182,6 +180,11 @@ qtConfig(lcdnumber) {
 
     SOURCES += \
         widgets/qlcdnumber.cpp
+}
+
+qtConfig(progressbar) {
+    HEADERS += widgets/qprogressbar.h
+    SOURCES += widgets/qprogressbar.cpp
 }
 
 qtConfig(pushbutton) {

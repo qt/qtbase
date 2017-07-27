@@ -76,7 +76,9 @@
 #include <qcombobox.h>
 #endif
 #include <qscrollbar.h>
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
 #endif

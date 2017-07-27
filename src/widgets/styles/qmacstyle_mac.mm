@@ -81,7 +81,9 @@
 #include <qpainter.h>
 #include <qpixmapcache.h>
 #include <qpointer.h>
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
@@ -659,7 +661,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
 #endif
         else if (qobject_cast<const QSlider *>(widg))
             ct = QStyle::CT_Slider;
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
         else if (qobject_cast<const QProgressBar *>(widg))
             ct = QStyle::CT_ProgressBar;
 #endif
@@ -875,7 +877,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             ret.setWidth(w);
         break;
     }
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     case QStyle::CT_ProgressBar: {
         int finalValue = -1;
         Qt::Orientation orient = Qt::Horizontal;

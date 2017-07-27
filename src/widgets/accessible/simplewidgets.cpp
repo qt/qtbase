@@ -48,7 +48,9 @@
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(statusbar)
 #include <qstatusbar.h>
 #endif
@@ -430,7 +432,7 @@ QAccessible::Role QAccessibleDisplay::role() const
         if (l->movie())
             return QAccessible::Animation;
 #endif
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     } else if (qobject_cast<QProgressBar*>(object())) {
         return QAccessible::ProgressBar;
 #endif
@@ -484,7 +486,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
         }
         break;
     case QAccessible::Value:
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
         if (qobject_cast<QProgressBar*>(object()))
             str = QString::number(qobject_cast<QProgressBar*>(object())->value());
 #endif
@@ -891,7 +893,7 @@ void QAccessibleLineEdit::replaceText(int startOffset, int endOffset, const QStr
 
 #endif // QT_NO_LINEEDIT
 
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
 QAccessibleProgressBar::QAccessibleProgressBar(QWidget *o)
     : QAccessibleDisplay(o)
 {

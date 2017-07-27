@@ -49,7 +49,9 @@
 #include <QPixmapCache>
 #include <QStyleOption>
 #include <QString>
+#if QT_CONFIG(progressbar)
 #include <QProgressBar>
+#endif
 #include <QSlider>
 #include <QEvent>
 #if QT_CONFIG(combobox)

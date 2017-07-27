@@ -66,7 +66,9 @@
 #endif
 #include <qslider.h>
 #include <qsplitter.h>
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(wizard)
 #include <qwizard.h>
 #endif
