@@ -24,3 +24,19 @@ osx
 # QTQAINFRA-1292
 [testPushButtonPressRelease]
 osx-10.11 ci
+osx-10.12 ci
+# QTQAINFRA-1292
+[testKeyPressOnToplevel]
+osx-10.12 ci
+# QTQAINFRA-1292
+[testModifierShift]
+osx-10.12 ci
+# QTQAINFRA-1292
+[testModifierAlt]
+osx-10.12 ci
+# QTQAINFRA-1292
+[testModifierCtrl]
+osx-10.12 ci
+# QTQAINFRA-1292
+[testModifierCtrlWithDontSwapCtrlAndMeta]
+osx-10.12 ci
