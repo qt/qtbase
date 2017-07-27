@@ -72,12 +72,12 @@ namespace QStyleHelper
 {
     QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size);
     qreal dpiScaled(qreal value);
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
     qreal angle(const QPointF &p1, const QPointF &p2);
     QPolygonF calcLines(const QStyleOptionSlider *dial);
     int calcBigLineSize(int radius);
     void drawDial(const QStyleOptionSlider *dial, QPainter *painter);
-#endif //QT_NO_DIAL
+#endif //QT_CONFIG(dial)
     void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rect,
                      int left = 0, int top = 0, int right = 0,
                      int bottom = 0);

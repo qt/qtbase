@@ -5,7 +5,6 @@ HEADERS += \
         widgets/qbuttongroup_p.h \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
-        widgets/qdial.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
         widgets/qgroupbox.h \
@@ -58,7 +57,6 @@ HEADERS += \
 SOURCES += \
         widgets/qbuttongroup.cpp \
         widgets/qabstractspinbox.cpp \
-        widgets/qdial.cpp \
         widgets/qeffects.cpp \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
@@ -150,6 +148,11 @@ qtConfig(datetimeedit) {
 
     SOURCES += \
          widgets/qdatetimeedit.cpp
+}
+
+qtConfig(dial) {
+    HEADERS += widgets/qdial.h
+    SOURCES += widgets/qdial.cpp
 }
 
 qtConfig(dockwidget) {

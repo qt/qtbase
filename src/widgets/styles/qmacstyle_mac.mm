@@ -6101,7 +6101,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 #endif
         }
         break;
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt))
             QStyleHelper::drawDial(dial, p);

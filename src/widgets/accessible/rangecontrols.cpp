@@ -40,7 +40,9 @@
 #include "rangecontrols_p.h"
 
 #include <qslider.h>
+#if QT_CONFIG(dial)
 #include <qdial.h>
+#endif
 #include <qspinbox.h>
 #include <qscrollbar.h>
 #include <qstyle.h>
@@ -48,7 +50,6 @@
 #include <qdebug.h>
 #include <qglobal.h>
 #include <QDoubleSpinBox>
-#include <QDial>
 #include <QtWidgets/qlineedit.h>
 #include <qmath.h>
 #include <private/qmath_p.h>
@@ -398,7 +399,7 @@ QAbstractSlider *QAccessibleAbstractSlider::abstractSlider() const
 
 #endif // QT_NO_SLIDER
 
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
 // ======================================= QAccessibleDial ======================================
 QAccessibleDial::QAccessibleDial(QWidget *widget)
     : QAccessibleAbstractSlider(widget, QAccessible::Dial)
@@ -419,7 +420,7 @@ QDial *QAccessibleDial::dial() const
 {
     return static_cast<QDial*>(object());
 }
-#endif // QT_NO_DIAL
+#endif // QT_CONFIG(dial)
 
 #endif // QT_NO_ACCESSIBILITY
 

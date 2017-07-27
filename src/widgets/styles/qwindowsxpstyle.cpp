@@ -3225,12 +3225,12 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 #endif //QT_NO_MDIAREA
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
             QStyleHelper::drawDial(dial, p);
         break;
-#endif // QT_NO_DIAL
+#endif // QT_CONFIG(dial)
     default:
         QWindowsStyle::drawComplexControl(cc, option, p, widget);
         break;

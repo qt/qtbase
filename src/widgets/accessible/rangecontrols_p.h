@@ -186,7 +186,7 @@ protected:
 };
 #endif // QT_NO_SLIDER
 
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
 class QAccessibleDial : public QAccessibleAbstractSlider
 {
 public:
@@ -197,7 +197,7 @@ public:
 protected:
     QDial *dial() const;
 };
-#endif // QT_NO_DIAL
+#endif // QT_CONFIG(dial)
 
 #endif // QT_NO_ACCESSIBILITY
 

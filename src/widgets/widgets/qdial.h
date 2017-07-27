@@ -43,12 +43,11 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 
-#if QT_CONFIG(dial)
-
 #include <QtWidgets/qabstractslider.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(dial);
 
+QT_BEGIN_NAMESPACE
 
 class QDialPrivate;
 class QStyleOptionSlider;
@@ -100,7 +99,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_CONFIG(dial)
 
 #endif // QDIAL_H

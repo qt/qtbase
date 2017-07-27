@@ -3084,7 +3084,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 #endif
 }
 
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
 
 // in lieu of std::array, minimal API
 template <int N>
@@ -3132,7 +3132,7 @@ static StaticPolygonF<3> calcArrow(const QStyleOptionSlider *dial, qreal &a)
     return arrow;
 }
 
-#endif // QT_NO_DIAL
+#endif // QT_CONFIG(dial)
 
 /*!
   \reimp
@@ -3590,7 +3590,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             // OK, this is more a port of things over
@@ -3683,7 +3683,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             p->restore();
         }
         break;
-#endif // QT_NO_DIAL
+#endif // QT_CONFIG(dial)
 #ifndef QT_NO_GROUPBOX
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
