@@ -170,10 +170,22 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
       decoder(HPack::FieldLookupTable::DefaultSize),
       encoder(HPack::FieldLookupTable::DefaultSize, true)
 {
+    Q_ASSERT(channel);
     continuedFrames.reserve(20);
-    bool ok = false;
-    const int env = qEnvironmentVariableIntValue("QT_HTTP2_ENABLE_PUSH_PROMISE", &ok);
-    pushPromiseEnabled = ok && env;
+    pushPromiseEnabled = is_PUSH_PROMISE_enabled();
+
+    if (!channel->ssl) {
+        // We upgraded from HTTP/1.1 to HTTP/2. channel->request was already sent
+        // as HTTP/1.1 request. The response with status code 101 triggered
+        // protocol switch and now we are waiting for the real response, sent
+        // as HTTP/2 frames.
+        Q_ASSERT(channel->reply);
+        const quint32 initialStreamID = createNewStream(HttpMessagePair(channel->request, channel->reply),
+                                                        true /* uploaded by HTTP/1.1 */);
+        Q_ASSERT(initialStreamID == 1);
+        Stream &stream = activeStreams[initialStreamID];
+        stream.state = Stream::halfClosedLocal;
+    }
 }
 
 void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
@@ -356,12 +368,8 @@ bool QHttp2ProtocolHandler::sendClientPreface()
         return false;
 
     // 6.5 SETTINGS
-    frameWriter.start(FrameType::SETTINGS, FrameFlag::EMPTY, Http2::connectionStreamID);
-    // MAX frame size (16 kb), enable/disable PUSH
-    frameWriter.append(Settings::MAX_FRAME_SIZE_ID);
-    frameWriter.append(quint32(Http2::maxFrameSize));
-    frameWriter.append(Settings::ENABLE_PUSH_ID);
-    frameWriter.append(quint32(pushPromiseEnabled));
+    frameWriter.setOutboundFrame(default_SETTINGS_frame());
+    Q_ASSERT(frameWriter.outboundFrame().payloadSize());
 
     if (!frameWriter.write(*m_socket))
         return false;
@@ -1157,7 +1165,7 @@ void QHttp2ProtocolHandler::finishStreamWithError(Stream &stream, QNetworkReply:
                         << "finished with error:" << message;
 }
 
-quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message)
+quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, bool uploadDone)
 {
     const qint32 newStreamID = allocateStreamID();
     if (!newStreamID)
@@ -1178,10 +1186,12 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message)
                            streamInitialSendWindowSize,
                            streamInitialRecvWindowSize);
 
-    if (auto src = newStream.data()) {
-        connect(src, SIGNAL(readyRead()), this,
-                SLOT(_q_uploadDataReadyRead()), Qt::QueuedConnection);
-        src->setProperty("HTTP2StreamID", newStreamID);
+    if (!uploadDone) {
+        if (auto src = newStream.data()) {
+            connect(src, SIGNAL(readyRead()), this,
+                    SLOT(_q_uploadDataReadyRead()), Qt::QueuedConnection);
+            src->setProperty("HTTP2StreamID", newStreamID);
+        }
     }
 
     activeStreams.insert(newStreamID, newStream);

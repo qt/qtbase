@@ -627,7 +627,8 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     if (request.isPreConnect())
         preConnectRequests++;
 
-    if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP) {
+    if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP
+        || (!encrypt && connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2 && !channels[0].switchedToHttp2)) {
         switch (request.priority()) {
         case QHttpNetworkRequest::HighPriority:
             highPriorityQueue.prepend(pair);
@@ -638,7 +639,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
             break;
         }
     }
-    else { // SPDY, HTTP/2
+    else { // SPDY, HTTP/2 ('h2' mode)
         if (!pair.second->d_func()->requestIsPrepared)
             prepareRequest(pair);
         channels[0].spdyRequestsToSend.insertMulti(request.priority(), pair);
@@ -670,6 +671,25 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
         _q_startNextRequest();
     }
     return reply;
+}
+
+void QHttpNetworkConnectionPrivate::fillHttp2Queue()
+{
+    for (auto &pair : highPriorityQueue) {
+        if (!pair.second->d_func()->requestIsPrepared)
+            prepareRequest(pair);
+        channels[0].spdyRequestsToSend.insertMulti(QHttpNetworkRequest::HighPriority, pair);
+    }
+
+    highPriorityQueue.clear();
+
+    for (auto &pair : lowPriorityQueue) {
+        if (!pair.second->d_func()->requestIsPrepared)
+            prepareRequest(pair);
+        channels[0].spdyRequestsToSend.insertMulti(pair.first.priority(), pair);
+    }
+
+    lowPriorityQueue.clear();
 }
 
 void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
@@ -1047,8 +1067,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     }
     case QHttpNetworkConnection::ConnectionTypeHTTP2:
     case QHttpNetworkConnection::ConnectionTypeSPDY: {
-
-        if (channels[0].spdyRequestsToSend.isEmpty())
+        if (channels[0].spdyRequestsToSend.isEmpty() && channels[0].switchedToHttp2)
             return;
 
         if (networkLayerState == IPv4)
@@ -1057,7 +1076,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
             channels[0].networkLayerPreference = QAbstractSocket::IPv6Protocol;
         channels[0].ensureConnection();
         if (channels[0].socket && channels[0].socket->state() == QAbstractSocket::ConnectedState
-                && !channels[0].pendingEncrypt)
+                && !channels[0].pendingEncrypt && channels[0].spdyRequestsToSend.size())
             channels[0].sendRequest();
         break;
     }
@@ -1353,6 +1372,12 @@ QHttpNetworkReply* QHttpNetworkConnection::sendRequest(const QHttpNetworkRequest
 {
     Q_D(QHttpNetworkConnection);
     return d->queueRequest(request);
+}
+
+void QHttpNetworkConnection::fillHttp2Queue()
+{
+    Q_D(QHttpNetworkConnection);
+    d->fillHttp2Queue();
 }
 
 bool QHttpNetworkConnection::isSsl() const

@@ -98,7 +98,7 @@ private:
     using Stream = Http2::Stream;
 
     void _q_readyRead() override;
-    void _q_receiveReply() override;
+    Q_INVOKABLE void _q_receiveReply() override;
     Q_INVOKABLE bool sendRequest() override;
 
     bool sendClientPreface();
@@ -136,7 +136,7 @@ private:
                                const QString &message);
 
     // Stream's lifecycle management:
-    quint32 createNewStream(const HttpMessagePair &message);
+    quint32 createNewStream(const HttpMessagePair &message, bool uploadDone = false);
     void addToSuspended(Stream &stream);
     void markAsReset(quint32 streamID);
     quint32 popStreamToResume();

@@ -127,6 +127,7 @@ public:
     // HTTP/2 can be cleartext also, that's why it's
     // outside of QT_NO_SSL section. Sorted by priority:
     QMultiMap<int, HttpMessagePair> spdyRequestsToSend;
+    bool switchedToHttp2 = false;
 #ifndef QT_NO_SSL
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;

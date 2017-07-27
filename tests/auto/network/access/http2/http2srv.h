@@ -29,11 +29,14 @@
 #ifndef HTTP2SRV_H
 #define HTTP2SRV_H
 
+#include <QtNetwork/private/qhttpnetworkrequest_p.h>
+#include <QtNetwork/private/qhttpnetworkreply_p.h>
 #include <QtNetwork/private/http2protocol_p.h>
 #include <QtNetwork/private/http2frames_p.h>
 #include <QtNetwork/private/hpack_p.h>
 
 #include <QtNetwork/qabstractsocket.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtCore/qbytearray.h>
@@ -58,6 +61,19 @@ struct Http2Setting
 
 using Http2Settings = std::vector<Http2Setting>;
 
+// At the moment we do not have any public API parsing HTTP headers. Even worse -
+// the code that can do this exists only in QHttpNetworkReplyPrivate class.
+// To be able to access reply's d_func() we have these classes:
+class Http11ReplyPrivate : public QHttpNetworkReplyPrivate
+{
+};
+
+class Http11Reply : public QHttpNetworkReply
+{
+public:
+    Q_DECLARE_PRIVATE(Http11Reply)
+};
+
 class Http2Server : public QTcpServer
 {
     Q_OBJECT
@@ -75,6 +91,7 @@ public:
     // Invokables, since we can call them from the main thread,
     // but server (can) work on its own thread.
     Q_INVOKABLE void startServer();
+    bool sendProtocolSwitchReply();
     Q_INVOKABLE void sendServerSettings();
     Q_INVOKABLE void sendGOAWAY(quint32 streamID, quint32 error,
                                 quint32 lastStreamID);
@@ -82,6 +99,7 @@ public:
     Q_INVOKABLE void sendDATA(quint32 streamID, quint32 windowSize);
     Q_INVOKABLE void sendWINDOW_UPDATE(quint32 streamID, quint32 delta);
 
+    Q_INVOKABLE void handleProtocolUpgrade();
     Q_INVOKABLE void handleConnectionPreface();
     Q_INVOKABLE void handleIncomingFrame();
     Q_INVOKABLE void handleSETTINGS();
@@ -114,6 +132,9 @@ private:
     void incomingConnection(qintptr socketDescriptor) Q_DECL_OVERRIDE;
 
     quint32 clientSetting(Http2::Settings identifier, quint32 defaultValue);
+    bool readMethodLine();
+    bool verifyProtocolUpgradeRequest();
+    void triggerGOAWAYEmulation();
 
     QScopedPointer<QAbstractSocket> socket;
 
@@ -166,6 +187,18 @@ private:
     bool testingGOAWAY = false;
     int goawayTimeout = 0;
 
+    // Clear text HTTP/2, we have to deal with the protocol upgrade request
+    // from the initial HTTP/1.1 request.
+    bool upgradeProtocol = false;
+    QByteArray requestLine;
+    QHttpNetworkRequest::Operation requestType;
+    // We need QHttpNetworkReply (actually its private d-object) to handle the
+    // first HTTP/1.1 request. QHttpNetworkReplyPrivate does parsing + in case
+    // of POST it is also reading the body for us.
+    QScopedPointer<Http11Reply> protocolUpgradeHandler;
+    // We need it for PUSH_PROMISE, with the correct port number appended,
+    // when replying to essentially 1.1 request.
+    QByteArray authority;
 protected slots:
     void ignoreErrorSlot();
 };

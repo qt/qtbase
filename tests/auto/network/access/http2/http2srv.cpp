@@ -132,8 +132,23 @@ void Http2Server::startServer()
     if (!clearTextHTTP2)
         return;
 #endif
-    if (listen())
+    if (listen()) {
+        if (clearTextHTTP2)
+            authority = QStringLiteral("127.0.0.1:%1").arg(serverPort()).toLatin1();
         emit serverStarted(serverPort());
+    }
+}
+
+bool Http2Server::sendProtocolSwitchReply()
+{
+    Q_ASSERT(socket);
+    Q_ASSERT(clearTextHTTP2 && upgradeProtocol);
+    // The first and the last HTTP/1.1 response we send:
+    const char response[] = "HTTP/1.1 101 Switching Protocols\r\n"
+                            "Connection: Upgrade\r\n"
+                            "Upgrade: h2c\r\n\r\n";
+    const qint64 size = sizeof response - 1;
+    return socket->write(response, size) == size;
 }
 
 void Http2Server::sendServerSettings()
@@ -232,6 +247,7 @@ void Http2Server::incomingConnection(qintptr socketDescriptor)
         Q_ASSERT(set);
         // Stop listening:
         close();
+        upgradeProtocol = true;
         QMetaObject::invokeMethod(this, "connectionEstablished",
                                   Qt::QueuedConnection);
     } else {
@@ -275,19 +291,77 @@ quint32 Http2Server::clientSetting(Http2::Settings identifier, quint32 defaultVa
     return defaultValue;
 }
 
+bool Http2Server::readMethodLine()
+{
+    // We know for sure that Qt did the right thing sending us the correct
+    // Request-line with CRLF at the end ...
+    // We're overly simplistic here but all we need to know - the method.
+    while (socket->bytesAvailable()) {
+        char c = 0;
+        if (socket->read(&c, 1) != 1)
+            return false;
+        if (c == '\n' && requestLine.endsWith('\r')) {
+            if (requestLine.startsWith("GET"))
+                requestType = QHttpNetworkRequest::Get;
+            else if (requestLine.startsWith("POST"))
+                requestType = QHttpNetworkRequest::Post;
+            else
+                requestType = QHttpNetworkRequest::Custom; // 'invalid'.
+            requestLine.clear();
+
+            return true;
+        } else {
+            requestLine.append(c);
+        }
+    }
+
+    return false;
+}
+
+bool Http2Server::verifyProtocolUpgradeRequest()
+{
+    Q_ASSERT(protocolUpgradeHandler.data());
+
+    bool connectionOk = false;
+    bool upgradeOk = false;
+    bool settingsOk = false;
+
+    QHttpNetworkReplyPrivate *firstRequestReader = protocolUpgradeHandler->d_func();
+
+    // That's how we append them, that's what I expect to find:
+    for (const auto &header : firstRequestReader->fields) {
+        if (header.first == "Connection")
+            connectionOk = header.second.contains("Upgrade, HTTP2-Settings");
+        else if (header.first == "Upgrade")
+            upgradeOk = header.second.contains("h2c");
+        else if (header.first == "HTTP2-Settings")
+            settingsOk = true;
+    }
+
+    return connectionOk && upgradeOk && settingsOk;
+}
+
+void Http2Server::triggerGOAWAYEmulation()
+{
+    Q_ASSERT(testingGOAWAY);
+    auto timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, [this]() {
+        sendGOAWAY(quint32(connectionStreamID), quint32(INTERNAL_ERROR), 0);
+    });
+    timer->start(goawayTimeout);
+}
+
 void Http2Server::connectionEstablished()
 {
     using namespace Http2;
 
-    if (testingGOAWAY) {
-        auto timer = new QTimer(this);
-        timer->setSingleShot(true);
-        connect(timer, &QTimer::timeout, [this]() {
-            sendGOAWAY(quint32(connectionStreamID), quint32(INTERNAL_ERROR), 0);
-        });
-        timer->start(goawayTimeout);
-        return;
-    }
+    if (testingGOAWAY && !clearTextHTTP2)
+        return triggerGOAWAYEmulation();
+
+    // For clearTextHTTP2 we first have to respond with 'protocol switch'
+    // and then continue with whatever logic we have (testingGOAWAY or not),
+    // otherwise our 'peer' cannot process HTTP/2 frames yet.
 
     connect(socket.data(), SIGNAL(readyRead()),
             this, SLOT(readReady()));
@@ -296,9 +370,17 @@ void Http2Server::connectionEstablished()
     waitingClientAck = false;
     waitingClientSettings = false;
     settingsSent = false;
-    // We immediately send our settings so that our client
-    // can use flow control correctly.
-    sendServerSettings();
+
+    if (clearTextHTTP2) {
+        requestLine.clear();
+        // Now we have to handle HTTP/1.1 request. We use Get/Post in our test,
+        // so set requestType to something unsupported:
+        requestType = QHttpNetworkRequest::Options;
+    } else {
+        // We immediately send our settings so that our client
+        // can use flow control correctly.
+        sendServerSettings();
+    }
 
     if (socket->bytesAvailable())
         readReady();
@@ -328,7 +410,9 @@ void Http2Server::readReady()
     if (connectionError)
         return;
 
-    if (waitingClientPreface) {
+    if (upgradeProtocol) {
+        handleProtocolUpgrade();
+    } else if (waitingClientPreface) {
         handleConnectionPreface();
     } else {
         const auto status = reader.read(*socket);
@@ -346,6 +430,79 @@ void Http2Server::readReady()
 
     if (socket->bytesAvailable())
         QMetaObject::invokeMethod(this, "readReady", Qt::QueuedConnection);
+}
+
+void Http2Server::handleProtocolUpgrade()
+{
+    using ReplyPrivate = QHttpNetworkReplyPrivate;
+    Q_ASSERT(upgradeProtocol);
+
+    if (!protocolUpgradeHandler.data())
+        protocolUpgradeHandler.reset(new Http11Reply);
+
+    QHttpNetworkReplyPrivate *firstRequestReader = protocolUpgradeHandler->d_func();
+
+    // QHttpNetworkReplyPrivate parses ... reply. It will, unfortunately, fail
+    // on the first line ... which is a part of request. So we read this line
+    // and extract the method first.
+    if (firstRequestReader->state == ReplyPrivate::NothingDoneState) {
+        if (!readMethodLine())
+            return;
+
+        if (requestType != QHttpNetworkRequest::Get && requestType != QHttpNetworkRequest::Post) {
+            emit invalidRequest(1);
+            return;
+        }
+
+        firstRequestReader->state = ReplyPrivate::ReadingHeaderState;
+    }
+
+    if (!socket->bytesAvailable())
+        return;
+
+    if (firstRequestReader->state == ReplyPrivate::ReadingHeaderState)
+        firstRequestReader->readHeader(socket.data());
+    else if (firstRequestReader->state == ReplyPrivate::ReadingDataState)
+        firstRequestReader->readBodyFast(socket.data(), &firstRequestReader->responseData);
+
+    switch (firstRequestReader->state) {
+    case ReplyPrivate::ReadingHeaderState:
+        return;
+    case ReplyPrivate::ReadingDataState:
+        if (requestType == QHttpNetworkRequest::Post)
+            return;
+        break;
+    case ReplyPrivate::AllDoneState:
+        break;
+    default:
+        socket->close();
+        return;
+    }
+
+    if (!verifyProtocolUpgradeRequest() || !sendProtocolSwitchReply()) {
+        socket->close();
+        return;
+    }
+
+    upgradeProtocol = false;
+    protocolUpgradeHandler.reset(nullptr);
+
+    if (testingGOAWAY)
+        return triggerGOAWAYEmulation();
+
+    // HTTP/1.1 'fields' we have in firstRequestRead are useless (they are not
+    // even allowed in HTTP/2 header). Let's pretend we have received
+    // valid HTTP/2 headers and can extract fields we need:
+    HttpHeader h2header;
+    h2header.push_back(HeaderField(":scheme", "http")); // we are in clearTextHTTP2 mode.
+    h2header.push_back(HeaderField(":authority", authority));
+    activeRequests[1] = std::move(h2header);
+    // After protocol switch we immediately send our SETTINGS.
+    sendServerSettings();
+    if (requestType == QHttpNetworkRequest::Get)
+        emit receivedRequest(1);
+    else
+        emit receivedData(1);
 }
 
 void Http2Server::handleConnectionPreface()
@@ -381,6 +538,16 @@ void Http2Server::handleIncomingFrame()
     // 6. PING
     // 7. RST_STREAM
     // 8. GOAWAY
+
+    if (testingGOAWAY) {
+        // GOAWAY test is simplistic for now: after HTTP/2 was
+        // negotiated (via ALPN/NPN or a protocol switch), send
+        // a GOAWAY frame after some (probably non-zero) timeout.
+        // We do not handle any frames, but timeout gives QNAM
+        // more time to initiate more streams and thus make the
+        // test more interesting/complex (on a client side).
+        return;
+    }
 
     inboundFrame = std::move(reader.inboundFrame());
 

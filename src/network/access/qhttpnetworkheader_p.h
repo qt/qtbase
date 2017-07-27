@@ -78,7 +78,7 @@ public:
     virtual void setHeaderField(const QByteArray &name, const QByteArray &data) = 0;
 };
 
-class QHttpNetworkHeaderPrivate : public QSharedData
+class Q_AUTOTEST_EXPORT QHttpNetworkHeaderPrivate : public QSharedData
 {
 public:
     QUrl url;
