@@ -61,7 +61,9 @@
 #if QT_CONFIG(rubberband)
 #include <QRubberBand>
 #endif
+#if QT_CONFIG(textbrowser)
 #include <QTextBrowser>
+#endif
 #if QT_CONFIG(calendarwidget)
 #include <QCalendarWidget>
 #endif
@@ -499,7 +501,7 @@ QAccessibleDialogButtonBox::QAccessibleDialogButtonBox(QWidget *widget)
 
 #endif // QT_CONFIG(dialogbuttonbox)
 
-#if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(textbrowser) && !defined(QT_NO_CURSOR)
 QAccessibleTextBrowser::QAccessibleTextBrowser(QWidget *widget)
     : QAccessibleTextEdit(widget)
 {
@@ -510,7 +512,7 @@ QAccessible::Role QAccessibleTextBrowser::role() const
 {
     return QAccessible::StaticText;
 }
-#endif // QT_NO_TEXTBROWSER && QT_NO_CURSOR
+#endif // QT_CONFIG(textbrowser) && QT_NO_CURSOR
 
 #if QT_CONFIG(calendarwidget)
 // ===================== QAccessibleCalendarWidget ========================

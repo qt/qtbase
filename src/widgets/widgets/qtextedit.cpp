@@ -39,7 +39,9 @@
 
 #include "qtextedit_p.h"
 #include "qlineedit.h"
+#if QT_CONFIG(textbrowser)
 #include "qtextbrowser.h"
+#endif
 
 #ifndef QT_NO_TEXTEDIT
 #include <qfont.h>
@@ -2134,7 +2136,7 @@ void QTextEdit::setReadOnly(bool ro)
     Qt::TextInteractionFlags flags = Qt::NoTextInteraction;
     if (ro) {
         flags = Qt::TextSelectableByMouse;
-#ifndef QT_NO_TEXTBROWSER
+#if QT_CONFIG(textbrowser)
         if (qobject_cast<QTextBrowser *>(this))
             flags |= Qt::TextBrowserInteraction;
 #endif

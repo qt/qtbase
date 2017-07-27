@@ -34,7 +34,6 @@ HEADERS += \
         widgets/qstackedwidget.h \
         widgets/qtextedit.h \
         widgets/qtextedit_p.h \
-        widgets/qtextbrowser.h \
         widgets/qtoolbar.h \
         widgets/qtoolbar_p.h \
         widgets/qtoolbarlayout_p.h \
@@ -76,7 +75,6 @@ SOURCES += \
         widgets/qsplitter.cpp \
         widgets/qstackedwidget.cpp \
         widgets/qtextedit.cpp \
-        widgets/qtextbrowser.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
         widgets/qtoolbarextension.cpp \
@@ -235,6 +233,11 @@ qtConfig(tabbar) {
         widgets/qtabbar_p.h
 
     SOURCES += widgets/qtabbar.cpp
+}
+
+qtConfig(textbrowser) {
+    HEADERS += widgets/qtextbrowser.h
+    SOURCES += widgets/qtextbrowser.cpp
 }
 
 qtConfig(tabwidget) {

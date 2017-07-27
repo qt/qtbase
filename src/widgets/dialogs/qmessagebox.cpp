@@ -55,7 +55,6 @@
 #include <QtGui/qtextdocument.h>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qtextedit.h>
-#include <QtWidgets/qtextbrowser.h>
 #include <QtWidgets/qmenu.h>
 #include "qdialog_p.h"
 #include <QtGui/qfont.h>

@@ -40,8 +40,6 @@
 #include "qtextbrowser.h"
 #include "qtextedit_p.h"
 
-#ifndef QT_NO_TEXTBROWSER
-
 #include <qstack.h>
 #include <qapplication.h>
 #include <qevent.h>
@@ -1270,5 +1268,3 @@ bool QTextBrowser::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qtextbrowser.cpp"
-
-#endif // QT_NO_TEXTBROWSER
