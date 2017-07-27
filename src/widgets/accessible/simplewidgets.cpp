@@ -49,7 +49,9 @@
 #include <qpushbutton.h>
 #endif
 #include <qprogressbar.h>
+#if QT_CONFIG(statusbar)
 #include <qstatusbar.h>
+#endif
 #if QT_CONFIG(radiobutton)
 #include <qradiobutton.h>
 #endif
@@ -432,7 +434,7 @@ QAccessible::Role QAccessibleDisplay::role() const
     } else if (qobject_cast<QProgressBar*>(object())) {
         return QAccessible::ProgressBar;
 #endif
-#ifndef QT_NO_STATUSBAR
+#if QT_CONFIG(statusbar)
     } else if (qobject_cast<QStatusBar*>(object())) {
         return QAccessible::StatusBar;
 #endif
@@ -474,7 +476,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
                 else
                     str = QString::number(l->intValue());
 #endif
-#ifndef QT_NO_STATUSBAR
+#if QT_CONFIG(statusbar)
             } else if (qobject_cast<QStatusBar*>(object())) {
                 return qobject_cast<QStatusBar*>(object())->currentMessage();
 #endif

@@ -70,7 +70,6 @@
 #if QT_CONFIG(checkbox)
 #include <qcheckbox.h>
 #endif
-#include <qstatusbar.h>
 #if QT_CONFIG(itemviews)
 #include <qheaderview.h>
 #endif

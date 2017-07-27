@@ -192,7 +192,7 @@ public:
 
     QLayoutItem *statusbar;
 
-#ifndef QT_NO_STATUSBAR
+#if QT_CONFIG(statusbar)
     QStatusBar *statusBar() const;
     void setStatusBar(QStatusBar *sb);
 #endif
