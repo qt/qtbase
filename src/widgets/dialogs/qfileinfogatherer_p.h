@@ -84,7 +84,8 @@ public:
     bool operator ==(const QExtendedInformation &fileInfo) const {
        return mFileInfo == fileInfo.mFileInfo
        && displayType == fileInfo.displayType
-       && permissions() == fileInfo.permissions();
+       && permissions() == fileInfo.permissions()
+       && lastModified() == fileInfo.lastModified();
     }
 
 #ifndef QT_NO_FSFILEENGINE
