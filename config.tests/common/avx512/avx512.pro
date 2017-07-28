@@ -1,6 +1,4 @@
 SOURCES = avx512.cpp
-CONFIG -= qt dylib release debug_and_release
-CONFIG += debug console
 
 !defined(AVX512, "var"): error("You must set the AVX512 variable!")
 
