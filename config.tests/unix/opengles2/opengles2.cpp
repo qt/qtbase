@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#ifdef BUILD_ON_MAC
+#ifdef __APPLE__
   #include <OpenGLES/ES2/gl.h>
 #else
   #define GL_GLEXT_PROTOTYPES

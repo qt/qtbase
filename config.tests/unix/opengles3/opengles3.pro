@@ -5,7 +5,3 @@
 SOURCES = opengles3.cpp
 
 CONFIG -= qt
-
-mac {
-    DEFINES += BUILD_ON_MAC
-}
