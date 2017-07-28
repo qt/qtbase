@@ -34,6 +34,18 @@ defineTest(qtConfFatalError) {
     error()
 }
 
+# Return a string list for the specified JSON path, which may be either a
+# single string or an array of strings.
+# Note that this returns a variable name, so it can be directly iterated over.
+defineReplace(qtConfScalarOrList) {
+    defined($$1, var): return($$1)
+    vals = $$list()
+    for (i, $${1}._KEYS_): \
+        $$vals += $$eval($${1}.$$i)
+    export($$vals)
+    return($$vals)
+}
+
 defineTest(qtConfCommandlineSetInput) {
     arg = $${1}
     val = $${2}
@@ -1340,17 +1352,10 @@ defineTest(qtConfCheckFeature) {
         # feature not auto-detected and not explicitly enabled
         result = false
     } else {
-        condition = $$eval($${fpfx}.condition)
-        !isEmpty(condition) {
+        result = true
+        for (condition, $$qtConfScalarOrList($${fpfx}.condition)) {
             result = $$qtConfCheckSingleCondition($$1, $$condition, $$enabled)
-        } else {
-            result = true
-            # check whether we have an array of conditions
-            for (i, $${fpfx}.condition._KEYS_) {
-                condition = $$eval($${fpfx}.condition.$$i)
-                result = $$qtConfCheckSingleCondition($$1, $$condition, $$enabled)
-                !$$result: break()
-            }
+            !$$result: break()
         }
     }
     $${fpfx}.available = $$result
