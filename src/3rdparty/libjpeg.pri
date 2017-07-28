@@ -1,58 +1,69 @@
 winrt: DEFINES += NO_GETENV
 
+DEFINES += \
+    C_ARITH_CODING_SUPPORTED=1 \
+    D_ARITH_CODING_SUPPORTED=1 \
+    BITS_IN_JSAMPLE=8 \
+    JPEG_LIB_VERSION=80 \
+    SIZEOF_SIZE_T=__SIZEOF_SIZE_T__
+
 #Disable warnings in 3rdparty code due to unused arguments
 contains(QMAKE_CC, gcc): {
     QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
 }
 
 
-INCLUDEPATH += $$PWD/libjpeg
+INCLUDEPATH += $$PWD/libjpeg/src
 SOURCES += \
-    $$PWD/libjpeg/jaricom.c \
-    $$PWD/libjpeg/jcapimin.c \
-    $$PWD/libjpeg/jcapistd.c \
-    $$PWD/libjpeg/jcarith.c \
-    $$PWD/libjpeg/jccoefct.c \
-    $$PWD/libjpeg/jccolor.c \
-    $$PWD/libjpeg/jcdctmgr.c \
-    $$PWD/libjpeg/jchuff.c \
-    $$PWD/libjpeg/jcinit.c \
-    $$PWD/libjpeg/jcmainct.c \
-    $$PWD/libjpeg/jcmarker.c \
-    $$PWD/libjpeg/jcmaster.c \
-    $$PWD/libjpeg/jcomapi.c \
-    $$PWD/libjpeg/jcparam.c \
-    $$PWD/libjpeg/jcprepct.c \
-    $$PWD/libjpeg/jcsample.c \
-    $$PWD/libjpeg/jctrans.c \
-    $$PWD/libjpeg/jdapimin.c \
-    $$PWD/libjpeg/jdapistd.c \
-    $$PWD/libjpeg/jdarith.c \
-    $$PWD/libjpeg/jdatadst.c \
-    $$PWD/libjpeg/jdatasrc.c \
-    $$PWD/libjpeg/jdcoefct.c \
-    $$PWD/libjpeg/jdcolor.c \
-    $$PWD/libjpeg/jddctmgr.c \
-    $$PWD/libjpeg/jdhuff.c \
-    $$PWD/libjpeg/jdinput.c \
-    $$PWD/libjpeg/jdmainct.c \
-    $$PWD/libjpeg/jdmarker.c \
-    $$PWD/libjpeg/jdmaster.c \
-    $$PWD/libjpeg/jdmerge.c \
-    $$PWD/libjpeg/jdpostct.c \
-    $$PWD/libjpeg/jdsample.c \
-    $$PWD/libjpeg/jdtrans.c \
-    $$PWD/libjpeg/jerror.c \
-    $$PWD/libjpeg/jfdctflt.c \
-    $$PWD/libjpeg/jfdctfst.c \
-    $$PWD/libjpeg/jfdctint.c \
-    $$PWD/libjpeg/jidctflt.c \
-    $$PWD/libjpeg/jidctfst.c \
-    $$PWD/libjpeg/jidctint.c \
-    $$PWD/libjpeg/jquant1.c \
-    $$PWD/libjpeg/jquant2.c \
-    $$PWD/libjpeg/jutils.c \
-    $$PWD/libjpeg/jmemmgr.c \
-    $$PWD/libjpeg/jmemnobs.c
+    $$PWD/libjpeg/src/jaricom.c \
+    $$PWD/libjpeg/src/jcapimin.c \
+    $$PWD/libjpeg/src/jcapistd.c \
+    $$PWD/libjpeg/src/jcarith.c \
+    $$PWD/libjpeg/src/jccoefct.c \
+    $$PWD/libjpeg/src/jccolor.c \
+    $$PWD/libjpeg/src/jcdctmgr.c \
+    $$PWD/libjpeg/src/jchuff.c \
+    $$PWD/libjpeg/src/jcinit.c \
+    $$PWD/libjpeg/src/jcmainct.c \
+    $$PWD/libjpeg/src/jcmarker.c \
+    $$PWD/libjpeg/src/jcmaster.c \
+    $$PWD/libjpeg/src/jcomapi.c \
+    $$PWD/libjpeg/src/jcparam.c \
+    $$PWD/libjpeg/src/jcprepct.c \
+    $$PWD/libjpeg/src/jcsample.c \
+    $$PWD/libjpeg/src/jctrans.c \
+    $$PWD/libjpeg/src/jdapimin.c \
+    $$PWD/libjpeg/src/jdapistd.c \
+    $$PWD/libjpeg/src/jdarith.c \
+    $$PWD/libjpeg/src/jdatadst.c \
+    $$PWD/libjpeg/src/jdatasrc.c \
+    $$PWD/libjpeg/src/jdcoefct.c \
+    $$PWD/libjpeg/src/jdcolor.c \
+    $$PWD/libjpeg/src/jddctmgr.c \
+    $$PWD/libjpeg/src/jdhuff.c \
+    $$PWD/libjpeg/src/jdinput.c \
+    $$PWD/libjpeg/src/jdmainct.c \
+    $$PWD/libjpeg/src/jdmarker.c \
+    $$PWD/libjpeg/src/jdmaster.c \
+    $$PWD/libjpeg/src/jdmerge.c \
+    $$PWD/libjpeg/src/jdpostct.c \
+    $$PWD/libjpeg/src/jdsample.c \
+    $$PWD/libjpeg/src/jdtrans.c \
+    $$PWD/libjpeg/src/jerror.c \
+    $$PWD/libjpeg/src/jfdctflt.c \
+    $$PWD/libjpeg/src/jfdctfst.c \
+    $$PWD/libjpeg/src/jfdctint.c \
+    $$PWD/libjpeg/src/jidctflt.c \
+    $$PWD/libjpeg/src/jidctfst.c \
+    $$PWD/libjpeg/src/jidctint.c \
+    $$PWD/libjpeg/src/jquant1.c \
+    $$PWD/libjpeg/src/jquant2.c \
+    $$PWD/libjpeg/src/jutils.c \
+    $$PWD/libjpeg/src/jmemmgr.c \
+    $$PWD/libjpeg/src/jsimd_none.c \
+    $$PWD/libjpeg/src/jcphuff.c \
+    $$PWD/libjpeg/src/jidctred.c \
+    $$PWD/libjpeg/src/jdphuff.c \
+    $$PWD/libjpeg/src/jmemnobs.c
 
 TR_EXCLUDE += $$PWD/*
