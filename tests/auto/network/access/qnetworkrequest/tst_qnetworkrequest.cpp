@@ -236,6 +236,46 @@ void tst_QNetworkRequest::setHeader_data()
                                             << true << "Last-Modified"
                                             << "Thu, 01 Nov 2007 18:08:30 GMT";
 
+    QTest::newRow("If-Modified-Since-Date") << QNetworkRequest::IfModifiedSinceHeader
+                                        << QVariant(QDate(2017, 7, 01))
+                                        << true << "If-Modified-Since"
+                                        << "Sat, 01 Jul 2017 00:00:00 GMT";
+    QTest::newRow("If-Modified-Since-DateTime") << QNetworkRequest::IfModifiedSinceHeader
+                                            << QVariant(QDateTime(QDate(2017, 7, 01),
+                                                                  QTime(3, 14, 15),
+                                                                  Qt::UTC))
+                                            << true << "If-Modified-Since"
+                                            << "Sat, 01 Jul 2017 03:14:15 GMT";
+
+    QTest::newRow("Etag-strong") << QNetworkRequest::ETagHeader << QVariant(R"("xyzzy")")
+                                            << true << "ETag" << R"("xyzzy")";
+    QTest::newRow("Etag-weak") << QNetworkRequest::ETagHeader << QVariant(R"(W/"xyzzy")")
+                                            << true << "ETag" << R"(W/"xyzzy")";
+    QTest::newRow("Etag-empty") << QNetworkRequest::ETagHeader << QVariant(R"("")")
+                                            << true << "ETag" << R"("")";
+
+    QTest::newRow("If-Match-empty") << QNetworkRequest::IfMatchHeader << QVariant(R"("")")
+                                            << true << "If-Match" << R"("")";
+    QTest::newRow("If-Match-any") << QNetworkRequest::IfMatchHeader << QVariant(R"("*")")
+                                            << true << "If-Match" << R"("*")";
+    QTest::newRow("If-Match-single") << QNetworkRequest::IfMatchHeader << QVariant(R"("xyzzy")")
+                                            << true << "If-Match" << R"("xyzzy")";
+    QTest::newRow("If-Match-multiple") << QNetworkRequest::IfMatchHeader
+                                            << QVariant(R"("xyzzy", "r2d2xxxx", "c3piozzzz")")
+                                            << true << "If-Match"
+                                            << R"("xyzzy", "r2d2xxxx", "c3piozzzz")";
+
+    QTest::newRow("If-None-Match-empty") << QNetworkRequest::IfNoneMatchHeader << QVariant(R"("")")
+                                            << true << "If-None-Match" << R"("")";
+    QTest::newRow("If-None-Match-any") << QNetworkRequest::IfNoneMatchHeader << QVariant(R"("*")")
+                                            << true << "If-None-Match" << R"("*")";
+    QTest::newRow("If-None-Match-single") << QNetworkRequest::IfNoneMatchHeader << QVariant(R"("xyzzy")")
+                                            << true << "If-None-Match" << R"("xyzzy")";
+    QTest::newRow("If-None-Match-multiple") << QNetworkRequest::IfNoneMatchHeader
+                                            << QVariant(R"("xyzzy", W/"r2d2xxxx", "c3piozzzz")")
+                                            << true << "If-None-Match"
+                                            << R"("xyzzy", W/"r2d2xxxx", "c3piozzzz")";
+
     QNetworkCookie cookie;
     cookie.setName("a");
     cookie.setValue("b");
@@ -326,6 +366,62 @@ void tst_QNetworkRequest::rawHeaderParsing_data()
                                                                  Qt::UTC))
                                            << true << "Last-Modified"
                                            << "Sun Nov  6 08:49:37 1994";
+
+    QTest::newRow("If-Modified-Since-RFC1123") << QNetworkRequest::IfModifiedSinceHeader
+                                           << QVariant(QDateTime(QDate(1994, 8, 06),
+                                                                 QTime(8, 49, 37),
+                                                                 Qt::UTC))
+                                           << true << "If-Modified-Since"
+                                           << "Sun, 06 Aug 1994 08:49:37 GMT";
+    QTest::newRow("If-Modified-Since-RFC850") << QNetworkRequest::IfModifiedSinceHeader
+                                           << QVariant(QDateTime(QDate(1994, 8, 06),
+                                                                 QTime(8, 49, 37),
+                                                                 Qt::UTC))
+                                           << true << "If-Modified-Since"
+                                           << "Sunday, 06-Aug-94 08:49:37 GMT";
+    QTest::newRow("If-Modified-Since-asctime") << QNetworkRequest::IfModifiedSinceHeader
+                                           << QVariant(QDateTime(QDate(1994, 8, 06),
+                                                                 QTime(8, 49, 37),
+                                                                 Qt::UTC))
+                                           << true << "If-Modified-Since"
+                                           << "Sun Aug  6 08:49:37 1994";
+
+    QTest::newRow("Etag-strong") << QNetworkRequest::ETagHeader << QVariant(R"("xyzzy")")
+                                            << true << "ETag" << R"("xyzzy")";
+    QTest::newRow("Etag-weak") << QNetworkRequest::ETagHeader << QVariant(R"(W/"xyzzy")")
+                                            << true << "ETag" << R"(W/"xyzzy")";
+    QTest::newRow("Etag-empty") << QNetworkRequest::ETagHeader << QVariant(R"("")")
+                                            << true << "ETag" << R"("")";
+
+    QTest::newRow("If-Match-empty") << QNetworkRequest::IfMatchHeader << QVariant(QStringList(R"("")"))
+                                            << true << "If-Match" << R"("")";
+    QTest::newRow("If-Match-any") << QNetworkRequest::IfMatchHeader << QVariant(QStringList(R"("*")"))
+                                            << true << "If-Match" << R"("*")";
+    QTest::newRow("If-Match-single") << QNetworkRequest::IfMatchHeader
+                                            << QVariant(QStringList(R"("xyzzy")"))
+                                            << true << "If-Match" << R"("xyzzy")";
+    QTest::newRow("If-Match-multiple") << QNetworkRequest::IfMatchHeader
+                                            << QVariant(QStringList({R"("xyzzy")",
+                                                                     R"("r2d2xxxx")",
+                                                                     R"("c3piozzzz")"}))
+                                           << true << "If-Match"
+                                           << R"("xyzzy", "r2d2xxxx", "c3piozzzz")";
+
+    QTest::newRow("If-None-Match-empty") << QNetworkRequest::IfNoneMatchHeader
+                                            << QVariant(QStringList(R"("")"))
+                                            << true << "If-None-Match" << R"("")";
+    QTest::newRow("If-None-Match-any") << QNetworkRequest::IfNoneMatchHeader
+                                            << QVariant(QStringList(R"("*")"))
+                                            << true << "If-None-Match" << R"("*")";
+    QTest::newRow("If-None-Match-single") << QNetworkRequest::IfNoneMatchHeader
+                                            << QVariant(QStringList(R"("xyzzy")"))
+                                            << true << "If-None-Match" << R"("xyzzy")";
+    QTest::newRow("If-None-Match-multiple") << QNetworkRequest::IfNoneMatchHeader
+                                            << QVariant(QStringList({R"("xyzzy")",
+                                                                     R"(W/"r2d2xxxx")",
+                                                                     R"("c3piozzzz")"}))
+                                            << true << "If-None-Match"
+                                            << R"("xyzzy", W/"r2d2xxxx", "c3piozzzz")";
 
     QTest::newRow("Content-Length-invalid1") << QNetworkRequest::ContentLengthHeader << QVariant()
                                              << false << "Content-Length" << "1a";

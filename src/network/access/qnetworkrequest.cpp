@@ -98,6 +98,25 @@ QT_BEGIN_NAMESPACE
     header and contains a QDateTime representing the last modification
     date of the contents.
 
+    \value IfModifiedSinceHeader   Corresponds to the HTTP If-Modified-Since
+    header and contains a QDateTime. It is usually added to a
+    QNetworkRequest. The server shall send a 304 (Not Modified) response
+    if the resource has not changed since this time.
+
+    \value ETagHeader              Corresponds to the HTTP ETag
+    header and contains a QString representing the last modification
+    state of the contents.
+
+    \value IfMatchHeader           Corresponds to the HTTP If-Match
+    header and contains a QStringList. It is usually added to a
+    QNetworkRequest. The server shall send a 412 (Precondition Failed)
+    response if the resource does not match.
+
+    \value IfNoneMatchHeader       Corresponds to the HTTP If-None-Match
+    header and contains a QStringList. It is usually added to a
+    QNetworkRequest. The server shall send a 304 (Not Modified) response
+    if the resource does match.
+
     \value CookieHeader         Corresponds to the HTTP Cookie header
     and contains a QList<QNetworkCookie> representing the cookies to
     be sent back to the server.
@@ -788,6 +807,18 @@ static QByteArray headerName(QNetworkRequest::KnownHeaders header)
     case QNetworkRequest::LastModifiedHeader:
         return "Last-Modified";
 
+    case QNetworkRequest::IfModifiedSinceHeader:
+        return "If-Modified-Since";
+
+    case QNetworkRequest::ETagHeader:
+        return "ETag";
+
+    case QNetworkRequest::IfMatchHeader:
+        return "If-Match";
+
+    case QNetworkRequest::IfNoneMatchHeader:
+        return "If-None-Match";
+
     case QNetworkRequest::CookieHeader:
         return "Cookie";
 
@@ -818,6 +849,9 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
     case QNetworkRequest::ContentDispositionHeader:
     case QNetworkRequest::UserAgentHeader:
     case QNetworkRequest::ServerHeader:
+    case QNetworkRequest::ETagHeader:
+    case QNetworkRequest::IfMatchHeader:
+    case QNetworkRequest::IfNoneMatchHeader:
         return value.toByteArray();
 
     case QNetworkRequest::LocationHeader:
@@ -830,6 +864,7 @@ static QByteArray headerValue(QNetworkRequest::KnownHeaders header, const QVaria
         }
 
     case QNetworkRequest::LastModifiedHeader:
+    case QNetworkRequest::IfModifiedSinceHeader:
         switch (value.userType()) {
         case QMetaType::QDate:
         case QMetaType::QDateTime:
@@ -891,6 +926,20 @@ static int parseHeaderName(const QByteArray &headerName)
             return QNetworkRequest::CookieHeader;
         break;
 
+    case 'e':
+        if (qstricmp(headerName.constData(), "etag") == 0)
+            return QNetworkRequest::ETagHeader;
+        break;
+
+    case 'i':
+        if (qstricmp(headerName.constData(), "if-modified-since") == 0)
+            return QNetworkRequest::IfModifiedSinceHeader;
+        if (qstricmp(headerName.constData(), "if-match") == 0)
+            return QNetworkRequest::IfMatchHeader;
+        if (qstricmp(headerName.constData(), "if-none-match") == 0)
+            return QNetworkRequest::IfNoneMatchHeader;
+        break;
+
     case 'l':
         if (qstricmp(headerName.constData(), "location") == 0)
             return QNetworkRequest::LocationHeader;
@@ -937,6 +986,61 @@ static QVariant parseCookieHeader(const QByteArray &raw)
     return QVariant::fromValue(result);
 }
 
+static QVariant parseETag(const QByteArray &raw)
+{
+    const QByteArray trimmed = raw.trimmed();
+    if (!trimmed.startsWith('"') && !trimmed.startsWith(R"(W/")"))
+        return QVariant();
+
+    if (!trimmed.endsWith('"'))
+        return QVariant();
+
+    return QString::fromLatin1(trimmed);
+}
+
+static QVariant parseIfMatch(const QByteArray &raw)
+{
+    const QByteArray trimmedRaw = raw.trimmed();
+    if (trimmedRaw == "*")
+        return QStringList(QStringLiteral("*"));
+
+    QStringList tags;
+    const QList<QByteArray> split = trimmedRaw.split(',');
+    for (const QByteArray &element : split) {
+        const QByteArray trimmed = element.trimmed();
+        if (!trimmed.startsWith('"'))
+            continue;
+
+        if (!trimmed.endsWith('"'))
+            continue;
+
+        tags += QString::fromLatin1(trimmed);
+    }
+    return tags;
+}
+
+static QVariant parseIfNoneMatch(const QByteArray &raw)
+{
+    const QByteArray trimmedRaw = raw.trimmed();
+    if (trimmedRaw == "*")
+        return QStringList(QStringLiteral("*"));
+
+    QStringList tags;
+    const QList<QByteArray> split = trimmedRaw.split(',');
+    for (const QByteArray &element : split) {
+        const QByteArray trimmed = element.trimmed();
+        if (!trimmed.startsWith('"') && !trimmed.startsWith(R"(W/")"))
+            continue;
+
+        if (!trimmed.endsWith('"'))
+            continue;
+
+        tags += QString::fromLatin1(trimmed);
+    }
+    return tags;
+}
+
+
 static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QByteArray &value)
 {
     // header is always a valid value
@@ -963,7 +1067,17 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
     }
 
     case QNetworkRequest::LastModifiedHeader:
+    case QNetworkRequest::IfModifiedSinceHeader:
         return parseHttpDate(value);
+
+    case QNetworkRequest::ETagHeader:
+        return parseETag(value);
+
+    case QNetworkRequest::IfMatchHeader:
+        return parseIfMatch(value);
+
+    case QNetworkRequest::IfNoneMatchHeader:
+        return parseIfNoneMatch(value);
 
     case QNetworkRequest::CookieHeader:
         return parseCookieHeader(value);
