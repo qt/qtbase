@@ -53,6 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_CC_MINGW
+QT_WARNING_DISABLE_GCC("-Wunused-function") // MinGW 7.X claims it is unused
 // MinGW's __uuidof operator does not work for the Accessible2 interfaces
 template <>
 IID qUuidOf<IAccessibleComponent>() { return IID_IAccessibleComponent; }
