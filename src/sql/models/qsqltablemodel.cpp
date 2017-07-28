@@ -477,9 +477,9 @@ QVariant QSqlTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || (role != Qt::DisplayRole && role != Qt::EditRole))
         return QVariant();
 
-    const QSqlTableModelPrivate::ModifiedRow mrow = d->cache.value(index.row());
-    if (mrow.op() != QSqlTableModelPrivate::None)
-        return mrow.rec().value(index.column());
+    const auto it = d->cache.constFind(index.row());
+    if (it != d->cache.constEnd() && it->op() != QSqlTableModelPrivate::None)
+        return it->rec().value(index.column());
 
     return QSqlQueryModel::data(index, role);
 }
@@ -532,7 +532,10 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
     if (!index.isValid())
         return false;
 
-    const QSqlTableModelPrivate::ModifiedRow row = d->cache.value(index.row());
+    const auto it = d->cache.constFind(index.row());
+    if (it == d->cache.constEnd())
+        return false;
+    const QSqlTableModelPrivate::ModifiedRow &row = *it;
     if (row.submitted())
         return false;
 
@@ -1231,7 +1234,8 @@ int QSqlTableModel::rowCount(const QModelIndex &parent) const
 QModelIndex QSqlTableModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlTableModel);
-    if (d->cache.value(item.row()).insert())
+    const auto it = d->cache.constFind(item.row());
+    if (it != d->cache.constEnd() && it->insert())
         return QModelIndex();
 
     const int rowOffset = d->insertCount(item.row());

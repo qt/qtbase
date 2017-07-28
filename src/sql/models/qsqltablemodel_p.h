@@ -117,7 +117,7 @@ public:
             m_rec = m_db_values;
             setGenerated(m_rec, m_op == Delete);
         }
-        inline QSqlRecord rec() const { return m_rec; }
+        inline const QSqlRecord &rec() const { return m_rec; }
         inline QSqlRecord& recRef() { return m_rec; }
         inline void setValue(int c, const QVariant &v)
         {
