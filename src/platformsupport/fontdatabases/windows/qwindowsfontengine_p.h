@@ -138,8 +138,6 @@ private:
                                       QImage::Format mask_format);
     bool hasCFFTable() const;
     bool hasCMapTable() const;
-    bool hasGlyfTable() const;
-    bool hasEbdtTable() const;
 
     const QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
 

@@ -130,20 +130,6 @@ bool QWindowsFontEngine::hasCMapTable() const
     return GetFontData(hdc, MAKE_LITTLE_ENDIAN_TAG('c', 'm', 'a', 'p'), 0, 0, 0) != GDI_ERROR;
 }
 
-bool QWindowsFontEngine::hasGlyfTable() const
-{
-    HDC hdc = m_fontEngineData->hdc;
-    SelectObject(hdc, hfont);
-    return GetFontData(hdc, MAKE_LITTLE_ENDIAN_TAG('g', 'l', 'y', 'f'), 0, 0, 0) != GDI_ERROR;
-}
-
-bool QWindowsFontEngine::hasEbdtTable() const
-{
-    HDC hdc = m_fontEngineData->hdc;
-    SelectObject(hdc, hfont);
-    return GetFontData(hdc, MAKE_LITTLE_ENDIAN_TAG('E', 'B', 'D', 'T'), 0, 0, 0) != GDI_ERROR;
-}
-
 static inline QString stringFromOutLineTextMetric(const OUTLINETEXTMETRIC *otm, PSTR offset)
 {
     const uchar *p = reinterpret_cast<const uchar *>(otm) + quintptr(offset);
@@ -274,7 +260,7 @@ QWindowsFontEngine::QWindowsFontEngine(const QString &name,
     userData.insert(QStringLiteral("trueType"), QVariant(bool(ttf)));
     setUserData(userData);
 
-    hasUnreliableOutline = hasGlyfTable() && hasEbdtTable();
+    hasUnreliableOutline = (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR)) == 0;
 }
 
 QWindowsFontEngine::~QWindowsFontEngine()
