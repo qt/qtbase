@@ -47,8 +47,6 @@ int main(int, char **)
     clock_gettime(CLOCK_REALTIME, &ts);
 #else
 #  error "Feature _POSIX_TIMERS not available"
-    // MIPSpro doesn't understand #error, so force a compiler error
-    force_compiler_error = true;
 #endif
     return 0;
 }

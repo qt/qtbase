@@ -37,9 +37,6 @@
 **
 ****************************************************************************/
 
-#if defined(__sgi)
-#error "iconv not supported on IRIX"
-#else
 #include <iconv.h>
 
 int main(int, char **)
@@ -55,4 +52,3 @@ int main(int, char **)
 
     return 0;
 }
-#endif

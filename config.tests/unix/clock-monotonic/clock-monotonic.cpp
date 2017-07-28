@@ -47,8 +47,6 @@ int main(int, char **)
     clock_gettime(CLOCK_MONOTONIC, &ts);
 #else
 #  error "Feature _POSIX_MONOTONIC_CLOCK not available"
-    // MIPSpro doesn't understand #error, so force a compiler error
-    force_compiler_error = true;
 #endif
     return 0;
 }
