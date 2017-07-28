@@ -640,7 +640,7 @@ QWindowsWindowData
 
     // Capture events before CreateWindowEx() returns. The context is cleared in
     // the QWindowsWindow constructor.
-    const QWindowCreationContextPtr context(new QWindowCreationContext(w, rect, data.customMargins, style, exStyle));
+    const QWindowCreationContextPtr context(new QWindowCreationContext(w, data.geometry, rect, data.customMargins, style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
     qCDebug(lcQpaWindows).nospace()
@@ -1004,10 +1004,11 @@ void QWindowsForeignWindow::setVisible(bool visible)
 */
 
 QWindowCreationContext::QWindowCreationContext(const QWindow *w,
-                                               const QRect &geometry,
+                                               const QRect &geometryIn, const QRect &geometry,
                                                const QMargins &cm,
                                                DWORD style_, DWORD exStyle_) :
     geometryHint(w, cm), window(w), style(style_), exStyle(exStyle_),
+    requestedGeometryIn(geometryIn),
     requestedGeometry(geometry), obtainedGeometry(geometry),
     margins(QWindowsGeometryHint::frame(style, exStyle)), customMargins(cm)
 {
@@ -1122,7 +1123,7 @@ void QWindowsWindow::initialize()
     if (w->type() != Qt::Desktop) {
         const Qt::WindowState state = w->windowState();
         if (state != Qt::WindowMaximized && state != Qt::WindowFullScreen
-            && creationContext->requestedGeometry != creationContext->obtainedGeometry) {
+            && creationContext->requestedGeometryIn != creationContext->obtainedGeometry) {
             QWindowSystemInterface::handleGeometryChange(w, creationContext->obtainedGeometry);
         }
         QPlatformScreen *obtainedScreen = screenForGeometry(creationContext->obtainedGeometry);

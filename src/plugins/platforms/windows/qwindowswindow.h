@@ -81,9 +81,10 @@ struct QWindowsGeometryHint
 
 struct QWindowCreationContext
 {
-    QWindowCreationContext(const QWindow *w, const QRect &r,
-                           const QMargins &customMargins,
-                           DWORD style, DWORD exStyle);
+    explicit QWindowCreationContext(const QWindow *w,
+                                    const QRect &geometryIn, const QRect &geometry,
+                                    const QMargins &customMargins,
+                                    DWORD style, DWORD exStyle);
     void applyToMinMaxInfo(MINMAXINFO *mmi) const
         { geometryHint.applyToMinMaxInfo(style, exStyle, mmi); }
 
@@ -91,7 +92,8 @@ struct QWindowCreationContext
     const QWindow *window;
     DWORD style;
     DWORD exStyle;
-    QRect requestedGeometry;
+    QRect requestedGeometryIn; // QWindow scaled
+    QRect requestedGeometry; // after QPlatformWindow::initialGeometry()
     QRect obtainedGeometry;
     QMargins margins;
     QMargins customMargins;  // User-defined, additional frame for WM_NCCALCSIZE
