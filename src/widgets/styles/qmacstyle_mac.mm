@@ -3290,7 +3290,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 HIThemeGroupBoxDrawInfo gdi;
                 gdi.version = qt_mac_hitheme_version;
                 gdi.state = tds;
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
                 if (w && qobject_cast<QGroupBox *>(w->parentWidget()))
                     gdi.kind = kHIThemeGroupBoxKindSecondary;
                 else

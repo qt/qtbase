@@ -126,7 +126,7 @@ public:
     QPoint imagePosition() const Q_DECL_OVERRIDE;
 };
 
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
 class QAccessibleGroupBox : public QAccessibleWidget
 {
 public:

@@ -124,7 +124,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
     } else if (classname == QLatin1String("QLabel") || classname == QLatin1String("QLCDNumber")) {
         iface = new QAccessibleDisplay(widget);
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     } else if (classname == QLatin1String("QGroupBox")) {
         iface = new QAccessibleGroupBox(widget);
 #endif

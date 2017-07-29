@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qgroupbox.h"
-#ifndef QT_NO_GROUPBOX
+
 #include "qapplication.h"
 #include "qbitmap.h"
 #include "qdrawutil.h"
@@ -751,9 +751,6 @@ void QGroupBox::mouseReleaseEvent(QMouseEvent *event)
         update(style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this));
 }
 
-
 QT_END_NAMESPACE
 
 #include "moc_qgroupbox.cpp"
-
-#endif //QT_NO_GROUPBOX

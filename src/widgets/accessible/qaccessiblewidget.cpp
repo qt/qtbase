@@ -43,7 +43,9 @@
 
 #include "qaction.h"
 #include "qapplication.h"
+#if QT_CONFIG(groupbox)
 #include "qgroupbox.h"
+#endif
 #if QT_CONFIG(label)
 #include "qlabel.h"
 #endif
@@ -95,7 +97,7 @@ static QString buddyString(const QWidget *widget)
     }
 #endif
 
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     QGroupBox *groupbox = qobject_cast<QGroupBox*>(parent);
     if (groupbox)
         return groupbox->title();
@@ -331,7 +333,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
                 }
             }
 #endif
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
             QGroupBox *groupbox = qobject_cast<QGroupBox*>(parent);
             if (groupbox && !groupbox->title().isEmpty()) {
                 QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupbox);

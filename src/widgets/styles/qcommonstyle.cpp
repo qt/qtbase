@@ -61,7 +61,9 @@
 #else
 #include <qlayout.h>
 #endif
+#if QT_CONFIG(groupbox)
 #include <qgroupbox.h>
+#endif
 #include <qmath.h>
 #include <qmenu.h>
 #include <qpainter.h>
@@ -441,7 +443,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_FrameLineEdit:
         proxy()->drawPrimitive(PE_Frame, opt, p, widget);
         break;
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case PE_FrameGroupBox:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (frame->features & QStyleOptionFrame::Flat) {
@@ -457,7 +459,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             }
         }
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
 #if QT_CONFIG(dockwidget)
     case PE_FrameDockWidget:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
@@ -3684,7 +3686,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
         }
         break;
 #endif // QT_CONFIG(dial)
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             // Draw frame
@@ -3745,7 +3747,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
 #ifndef QT_NO_MDIAREA
     case CC_MdiControls:
         {
@@ -3916,7 +3918,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
         }
         break;
 #endif // QT_CONFIG(combobox)
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             QRect r;
@@ -3931,7 +3933,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
             }
         }
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
     case CC_MdiControls:
         {
             QRect r;
@@ -4263,7 +4265,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             ret = visualRect(tb->direction, tb->rect, ret);
         }
         break;
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case CC_GroupBox: {
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             switch (sc) {
@@ -4339,7 +4341,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         }
         break;
     }
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
 #ifndef QT_NO_MDIAREA
     case CC_MdiControls:
     {
@@ -4883,12 +4885,12 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
             sz += QSize(2*f->lineWidth, 2*f->lineWidth);
         break;
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case CT_GroupBox:
         if (const QGroupBox *grb = static_cast<const QGroupBox *>(widget))
             sz += QSize(!grb->isFlat() ? 16 : 0, 0);
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
     case CT_MdiControls:
         if (const QStyleOptionComplex *styleOpt = qstyleoption_cast<const QStyleOptionComplex *>(opt)) {
             const int buttonSize = proxy()->pixelMetric(PM_TitleBarButtonSize, styleOpt, widget);
@@ -4968,7 +4970,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = QDialogButtonBox::AcceptRole;
         break;
 #endif
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case SH_GroupBox_TextLabelVerticalAlignment:
         ret = Qt::AlignVCenter;
         break;
@@ -4976,7 +4978,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_GroupBox_TextLabelColor:
         ret = opt ? int(opt->palette.color(QPalette::Text).rgba()) : 0;
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
 
     case SH_ListViewExpand_SelectMouseType:
     case SH_TabBar_SelectMouseType:

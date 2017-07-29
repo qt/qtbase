@@ -68,7 +68,9 @@
 #include <qevent.h>
 #include <qfocusframe.h>
 #include <qformlayout.h>
+#if QT_CONFIG(groupbox)
 #include <qgroupbox.h>
+#endif
 #include <qhash.h>
 #include <qheaderview.h>
 #include <qlayout.h>

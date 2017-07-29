@@ -62,7 +62,9 @@
 #if QT_CONFIG(label)
 #include <qlabel.h>
 #endif
+#if QT_CONFIG(groupbox)
 #include <qgroupbox.h>
+#endif
 #if QT_CONFIG(lcdnumber)
 #include <qlcdnumber.h>
 #endif
@@ -566,7 +568,7 @@ QPoint QAccessibleDisplay::imagePosition() const
 #endif
 }
 
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
 QAccessibleGroupBox::QAccessibleGroupBox(QWidget *w)
 : QAccessibleWidget(w)
 {

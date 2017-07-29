@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 
+QT_REQUIRE_CONFIG(groupbox);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_GROUPBOX
 
 class QGroupBoxPrivate;
 class QStyleOptionGroupBox;
@@ -103,8 +102,6 @@ private:
     Q_DECLARE_PRIVATE(QGroupBox)
     Q_PRIVATE_SLOT(d_func(), void _q_setChildrenEnabled(bool b))
 };
-
-#endif // QT_NO_GROUPBOX
 
 QT_END_NAMESPACE
 

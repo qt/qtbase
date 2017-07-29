@@ -57,7 +57,9 @@
 #include <qapplication.h>
 #include <qmainwindow.h>
 #include <qfont.h>
+#if QT_CONFIG(groupbox)
 #include <qgroupbox.h>
+#endif
 #include <qpixmapcache.h>
 #if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>

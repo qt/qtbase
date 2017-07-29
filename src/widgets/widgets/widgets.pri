@@ -7,7 +7,6 @@ HEADERS += \
         widgets/qabstractspinbox_p.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
-        widgets/qgroupbox.h \
         widgets/qkeysequenceedit.h \
         widgets/qkeysequenceedit_p.h \
         widgets/qlineedit.h \
@@ -53,7 +52,6 @@ SOURCES += \
         widgets/qabstractspinbox.cpp \
         widgets/qeffects.cpp \
         widgets/qframe.cpp \
-        widgets/qgroupbox.cpp \
         widgets/qkeysequenceedit.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
@@ -158,6 +156,11 @@ qtConfig(dockwidget) {
 qtConfig(fontcombobox) {
     HEADERS += widgets/qfontcombobox.h
     SOURCES += widgets/qfontcombobox.cpp
+}
+
+qtConfig(groupbox) {
+    HEADERS += widgets/qgroupbox.h
+    SOURCES += widgets/qgroupbox.cpp
 }
 
 qtConfig(label) {
