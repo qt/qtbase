@@ -38,14 +38,8 @@
 ****************************************************************************/
 
 #if defined(__GNUC__)
-#   if (__GNUC__ < 4)
-#      error "GCC3 with backported visibility patch is known to miscompile Qt"
-#   endif
 __attribute((visibility("default"))) void blah();
 #elif defined(__SUNPRO_CC)
-#   if (__SUNPRO_CC < 0x0550)
-#      error "SunStudio 8 or later is required for ELF visibility"
-#   endif
 __global void blah();
 #else
 #   error "GCC4+ or SunStudio 8+ are required to support ELF visibility"
