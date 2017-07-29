@@ -97,7 +97,9 @@
 #endif
 #include <qsizegrip.h>
 #include <qspinbox.h>
+#if QT_CONFIG(splitter)
 #include <qsplitter.h>
+#endif
 #include <qstyleoption.h>
 #include <qtextedit.h>
 #include <qtextstream.h>

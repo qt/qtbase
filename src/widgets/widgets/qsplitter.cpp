@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qsplitter.h"
-#ifndef QT_NO_SPLITTER
 
 #include "qapplication.h"
 #include "qcursor.h"
@@ -1820,5 +1819,3 @@ QTextStream& operator>>(QTextStream& ts, QSplitter& splitter)
 QT_END_NAMESPACE
 
 #include "moc_qsplitter.cpp"
-
-#endif // QT_NO_SPLITTER

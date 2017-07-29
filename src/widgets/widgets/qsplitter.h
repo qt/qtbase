@@ -44,10 +44,9 @@
 #include <QtWidgets/qframe.h>
 #include <QtWidgets/qsizepolicy.h>
 
+QT_REQUIRE_CONFIG(splitter);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_SPLITTER
 
 class QSplitterPrivate;
 class QTextStream;
@@ -163,8 +162,6 @@ private:
     Q_DISABLE_COPY(QSplitterHandle)
     Q_DECLARE_PRIVATE(QSplitterHandle)
 };
-
-#endif // QT_NO_SPLITTER
 
 QT_END_NAMESPACE
 

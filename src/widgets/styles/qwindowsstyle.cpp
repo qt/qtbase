@@ -1494,11 +1494,11 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                         opt->state & (State_Sunken | State_On), 1,
                         &opt->palette.brush(QPalette::Button));
         break;
-#ifndef QT_NO_SPLITTER
+#if QT_CONFIG(splitter)
     case CE_Splitter:
         p->eraseRect(opt->rect);
         break;
-#endif // QT_NO_SPLITTER
+#endif // QT_CONFIG(splitter)
 #if QT_CONFIG(scrollbar)
     case CE_ScrollBarSubLine:
     case CE_ScrollBarAddLine: {

@@ -69,7 +69,9 @@
 #include <qabstractslider.h>
 #endif
 #include <qslider.h>
+#if QT_CONFIG(splitter)
 #include <qsplitter.h>
+#endif
 #if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
 #endif

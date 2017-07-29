@@ -159,7 +159,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
     } else if (classname == QLatin1String("QSizeGrip")) {
         iface = new QAccessibleWidget(widget, QAccessible::Grip);
-#ifndef QT_NO_SPLITTER
+#if QT_CONFIG(splitter)
     } else if (classname == QLatin1String("QSplitter")) {
         iface = new QAccessibleWidget(widget, QAccessible::Splitter);
     } else if (classname == QLatin1String("QSplitterHandle")) {
