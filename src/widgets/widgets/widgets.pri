@@ -31,9 +31,7 @@ HEADERS += \
         widgets/qtoolbar.h \
         widgets/qtoolbar_p.h \
         widgets/qtoolbarlayout_p.h \
-        widgets/qtoolbarextension_p.h \
         widgets/qtoolbarseparator_p.h \
-        widgets/qtoolbutton.h \
         widgets/qabstractscrollarea.h \
         widgets/qabstractscrollarea_p.h \
         widgets/qwidgetresizehandler_p.h \
@@ -66,9 +64,7 @@ SOURCES += \
         widgets/qtextedit.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
-        widgets/qtoolbarextension.cpp \
         widgets/qtoolbarseparator.cpp \
-        widgets/qtoolbutton.cpp \
         widgets/qabstractscrollarea.cpp \
         widgets/qwidgetresizehandler.cpp \
         widgets/qfocusframe.cpp \
@@ -262,6 +258,16 @@ qtConfig(tabwidget) {
 qtConfig(toolbox) {
     HEADERS += widgets/qtoolbox.h
     SOURCES += widgets/qtoolbox.cpp
+}
+
+qtConfig(toolbutton) {
+    HEADERS += \
+        widgets/qtoolbutton.h \
+        widgets/qtoolbarextension_p.h
+
+    SOURCES += \
+        widgets/qtoolbutton.cpp \
+        widgets/qtoolbarextension.cpp
 }
 
 qtConfig(widgettextcontrol) {

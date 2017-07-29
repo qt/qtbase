@@ -86,7 +86,7 @@ protected:
 };
 #endif
 
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
 class QAccessibleToolButton : public QAccessibleButton
 {
 public:
@@ -107,7 +107,7 @@ protected:
 
     bool isSplitButton() const;
 };
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 
 class QAccessibleDisplay : public QAccessibleWidget, public QAccessibleImageInterface
 {

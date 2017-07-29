@@ -57,7 +57,9 @@
 #if QT_CONFIG(radiobutton)
 #include <qradiobutton.h>
 #endif
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #include <qmenu.h>
 #if QT_CONFIG(label)
 #include <qlabel.h>
@@ -280,7 +282,7 @@ QStringList QAccessibleButton::keyBindingsForAction(const QString &actionName) c
 }
 #endif // QT_CONFIG(abstractbutton)
 
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
 /*!
   \class QAccessibleToolButton
   \brief The QAccessibleToolButton class implements the QAccessibleInterface for tool buttons.
@@ -400,7 +402,7 @@ void QAccessibleToolButton::doAction(const QString &actionName)
 
 }
 
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 
 /*!
   \class QAccessibleDisplay

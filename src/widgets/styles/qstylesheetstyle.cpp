@@ -60,7 +60,9 @@
 #include "private/qabstractscrollarea_p.h"
 #include <qtooltip.h>
 #include <qshareddata.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
 #endif
@@ -4638,7 +4640,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
 
     switch (m) {
     case PM_MenuButtonIndicator:
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
         // QToolButton adds this directly to the width
         if (qobject_cast<const QToolButton *>(w) && (rule.hasBox() || !rule.hasNativeBorder()))
             return 0;

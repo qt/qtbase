@@ -43,8 +43,6 @@
 #include <qstylepainter.h>
 #include <qstyleoption.h>
 
-#ifndef QT_NO_TOOLBUTTON
-
 QT_BEGIN_NAMESPACE
 
 QToolBarExtension::QToolBarExtension(QWidget *parent)
@@ -88,5 +86,3 @@ QSize QToolBarExtension::sizeHint() const
 QT_END_NAMESPACE
 
 #include "moc_qtoolbarextension_p.cpp"
-
-#endif // QT_NO_TOOLBUTTON

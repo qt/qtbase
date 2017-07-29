@@ -78,7 +78,9 @@
 #include <qtabwidget.h>
 #endif
 #include <qtoolbar.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
@@ -807,7 +809,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     }
 }
 
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
 static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbutton,
                       const QRect &rect, QPainter *painter, const QWidget *widget = 0)
 {
@@ -832,7 +834,7 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
     arrowOpt.rect = rect;
     style->drawPrimitive(pe, &arrowOpt, painter, widget);
 }
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 
 #if QT_CONFIG(itemviews)
 
@@ -1584,7 +1586,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                          (header->state & State_Enabled), header->text, QPalette::ButtonText);
         }
         break;
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *toolbutton
                 = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
@@ -1668,7 +1670,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
         }
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #if QT_CONFIG(toolbox)
     case CE_ToolBoxTab:
         if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
@@ -3353,7 +3355,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
         }
         break;
 #endif // QT_NO_SPINBOX
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolbutton
             = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
@@ -3414,7 +3416,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
     case CC_TitleBar:
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
             QRect ir;
@@ -3855,7 +3857,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
         }
         break;
 #endif // QT_CONFIG(scrollbar)
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QRect r;
@@ -3870,7 +3872,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
             }
         }
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
@@ -4125,7 +4127,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         }
         break;
 #endif // Qt_NO_SPINBOX
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CC_ToolButton:
         if (const QStyleOptionToolButton *tb = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, tb, widget);
@@ -4149,7 +4151,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             ret = visualRect(tb->direction, tb->rect, ret);
         }
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
@@ -4844,11 +4846,11 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_MENU
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CT_ToolButton:
         sz = QSize(sz.width() + 6, sz.height() + 5);
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #if QT_CONFIG(combobox)
     case CT_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {

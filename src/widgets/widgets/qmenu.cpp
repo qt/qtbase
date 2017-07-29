@@ -66,7 +66,9 @@
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
 #include "qwidgetaction.h"
+#if QT_CONFIG(toolbutton)
 #include "qtoolbutton.h"
+#endif
 #include "qpushbutton.h"
 #include "qtooltip.h"
 #include <private/qpushbutton_p.h>

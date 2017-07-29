@@ -69,7 +69,9 @@
 #include <qradiobutton.h>
 #include <qlineedit.h>
 #include <qgroupbox.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #include <qspinbox.h>
 #include <qtoolbar.h>
 #if QT_CONFIG(combobox)

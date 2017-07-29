@@ -97,7 +97,9 @@
 #include <qsizegrip.h>
 #include <qstyleoption.h>
 #include <qtoolbar.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #endif
@@ -657,7 +659,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         else if (qobject_cast<const QComboBox *>(widg))
             ct = QStyle::CT_ComboBox;
 #endif
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
         else if (qobject_cast<const QToolButton *>(widg))
             ct = QStyle::CT_ToolButton;
 #endif
@@ -792,7 +794,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         if (sz == QAquaSizeSmall) {
             int width = 0, height = 0;
             if (szHint == QSize(-1, -1)) { //just 'guess'..
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
                 const QToolButton *bt = qobject_cast<const QToolButton *>(widg);
                 // If this conversion fails then the widget was not what it claimed to be.
                 if(bt) {

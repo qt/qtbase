@@ -47,7 +47,9 @@
 #include "itemviews_p.h"
 #endif
 
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #endif
@@ -103,10 +105,10 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QSlider")) {
         iface = new QAccessibleSlider(widget);
 #endif
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     } else if (classname == QLatin1String("QToolButton")) {
         iface = new QAccessibleToolButton(widget);
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #if QT_CONFIG(abstractbutton)
     } else if (classname == QLatin1String("QCheckBox")
             || classname == QLatin1String("QRadioButton")

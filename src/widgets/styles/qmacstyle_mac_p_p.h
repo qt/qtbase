@@ -104,7 +104,9 @@
 #include <qtextedit.h>
 #include <qtextstream.h>
 #include <qtoolbar.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #endif
