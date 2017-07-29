@@ -1982,7 +1982,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                 extraClass |= PseudoClass_OnlyOne;
         }
 #endif // QT_NO_TOOLBAR
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
         else if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
             if (tb->position == QStyleOptionToolBox::OnlyOneTab)
                 extraClass |= PseudoClass_OnlyOne;
@@ -1998,7 +1998,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             else if (tb->selectedPosition == QStyleOptionToolBox::PreviousIsSelected)
                 extraClass |= PseudoClass_PreviousSelected;
         }
-#endif // QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbox)
 #if QT_CONFIG(dockwidget)
         else if (const QStyleOptionDockWidget *dw = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
             if (dw->verticalTitleBar)

@@ -179,7 +179,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QStackedWidget")) {
         iface = new QAccessibleStackedWidget(widget);
 #endif
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
     } else if (classname == QLatin1String("QToolBox")) {
         iface = new QAccessibleToolBox(widget);
 #endif

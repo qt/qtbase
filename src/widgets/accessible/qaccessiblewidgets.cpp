@@ -51,7 +51,9 @@
 #include "qdebug.h"
 #include <QApplication>
 #include <QStackedWidget>
+#if QT_CONFIG(toolbox)
 #include <QToolBox>
+#endif
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #if QT_CONFIG(dialogbuttonbox)
@@ -354,7 +356,7 @@ QStackedWidget *QAccessibleStackedWidget::stackedWidget() const
 }
 #endif // QT_NO_STACKEDWIDGET
 
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
 // ======================= QAccessibleToolBox ======================
 QAccessibleToolBox::QAccessibleToolBox(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::LayeredPane)
@@ -366,7 +368,7 @@ QToolBox * QAccessibleToolBox::toolBox() const
 {
     return static_cast<QToolBox *>(object());
 }
-#endif // QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbox)
 
 // ======================= QAccessibleMdiArea ======================
 #ifndef QT_NO_MDIAREA

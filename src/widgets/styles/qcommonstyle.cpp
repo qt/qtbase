@@ -1667,7 +1667,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_TOOLBUTTON
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
     case CE_ToolBoxTab:
         if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
             proxy()->drawControl(CE_ToolBoxTabShape, tb, p, widget);
@@ -1719,7 +1719,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->setBrush(Qt::NoBrush);
         }
         break;
-#endif // QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbox)
 #if QT_CONFIG(tabbar)
     case CE_TabBarTab:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
@@ -2523,12 +2523,12 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
 #endif // QT_CONFIG(combobox)
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
     case SE_ToolBoxTabContents:
         r = opt->rect;
         r.adjust(0, 0, -30, 0);
         break;
-#endif // QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbox)
     case SE_HeaderLabel: {
         int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
         r.setRect(opt->rect.x() + margin, opt->rect.y() + margin,
