@@ -59,7 +59,9 @@
 #include <qfont.h>
 #include <qgroupbox.h>
 #include <qpixmapcache.h>
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qspinbox.h>
 #if QT_CONFIG(abstractslider)
 #include <qabstractslider.h>

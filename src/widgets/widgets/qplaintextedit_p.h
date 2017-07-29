@@ -54,7 +54,9 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractscrollarea_p.h"
 #include "QtGui/qtextdocumentfragment.h"
+#if QT_CONFIG(scrollbar)
 #include "QtWidgets/qscrollbar.h"
+#endif
 #include "QtGui/qtextcursor.h"
 #include "QtGui/qtextformat.h"
 #include "QtWidgets/qmenu.h"

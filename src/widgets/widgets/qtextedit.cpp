@@ -245,7 +245,7 @@ void QTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCursor::Mo
     control->setTextCursor(cursor);
 }
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
 static QSize documentSize(QWidgetTextControl *control)
 {
     QTextDocument *doc = control->document();

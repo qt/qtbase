@@ -47,7 +47,9 @@
 #include "qtextobject.h"
 #include "qplaintextedit.h"
 #include "qtextboundaryfinder.h"
+#if QT_CONFIG(scrollbar)
 #include "qscrollbar.h"
+#endif
 #include "qdebug.h"
 #include <QApplication>
 #include <QStackedWidget>

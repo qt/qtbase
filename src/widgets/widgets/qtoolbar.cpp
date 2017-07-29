@@ -55,6 +55,7 @@
 #endif
 #include <qsignalmapper.h>
 #include <qstylepainter.h>
+#include <qstyleoption.h>
 #include <qtoolbutton.h>
 #include <qwidgetaction.h>
 #include <qtimer.h>

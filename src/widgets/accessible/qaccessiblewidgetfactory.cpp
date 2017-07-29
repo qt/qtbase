@@ -93,7 +93,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QDoubleSpinBox")) {
         iface = new QAccessibleDoubleSpinBox(widget);
 #endif
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     } else if (classname == QLatin1String("QScrollBar")) {
         iface = new QAccessibleScrollBar(widget);
 #endif

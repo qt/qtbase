@@ -61,7 +61,9 @@
 #include <qtooltip.h>
 #include <qshareddata.h>
 #include <qtoolbutton.h>
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #if QT_CONFIG(abstractslider)
 #include <qabstractslider.h>
 #endif
@@ -3198,7 +3200,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         }
         break;
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QStyleOptionSlider sbOpt(*sb);
@@ -3213,7 +3215,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             return;
         }
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
 #ifndef QT_NO_SLIDER
     case CC_Slider:
@@ -4760,7 +4762,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
             return subRule.box()->spacing;
         break;
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case PM_ScrollBarExtent:
         if (rule.hasContentsSize()) {
             QSize sz = rule.size();
@@ -4784,7 +4786,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         if(!rule.hasNativeBorder() || rule.hasBox())
             return 0;
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
     case PM_ProgressBarChunkWidth:
         subRule = renderRule(w, opt, PseudoElement_ProgressBarChunk);
@@ -5525,7 +5527,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
             }
             break;
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QStyleOptionSlider styleOptionSlider(*sb);
@@ -5607,7 +5609,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                                            : QWindowsStyle::subControlRect(cc, &styleOptionSlider, sc, w);
         }
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
 #ifndef QT_NO_SLIDER
     case CC_Slider:

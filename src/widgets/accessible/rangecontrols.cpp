@@ -44,7 +44,9 @@
 #include <qdial.h>
 #endif
 #include <qspinbox.h>
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qdebug.h>
@@ -285,7 +287,7 @@ QString QAccessibleDoubleSpinBox::text(QAccessible::Text textType) const
 
 #endif // QT_NO_SPINBOX
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
 /*!
   \class QAccessibleScrollBar
   \brief The QAccessibleScrollBar class implements the QAccessibleInterface for scroll bars.
@@ -318,7 +320,7 @@ QString QAccessibleScrollBar::text(QAccessible::Text t) const
     return QAccessibleAbstractSlider::text(t);
 }
 
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
 #ifndef QT_NO_SLIDER
 /*!

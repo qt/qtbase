@@ -61,7 +61,9 @@
 #endif
 #include <QAbstractScrollArea>
 #include <QScrollArea>
+#if QT_CONFIG(scrollbar)
 #include <QScrollBar>
+#endif
 #include <QDebug>
 
 #ifndef QT_NO_ACCESSIBILITY

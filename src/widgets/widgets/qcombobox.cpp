@@ -478,7 +478,7 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
 
 void QComboBoxPrivateContainer::scrollItemView(int action)
 {
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     if (view->verticalScrollBar())
         view->verticalScrollBar()->triggerAction(static_cast<QAbstractSlider::SliderAction>(action));
 #endif
@@ -489,7 +489,7 @@ void QComboBoxPrivateContainer::scrollItemView(int action)
 */
 void QComboBoxPrivateContainer::updateScrollers()
 {
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     if (!top || !bottom)
         return;
 
@@ -516,7 +516,7 @@ void QComboBoxPrivateContainer::updateScrollers()
         top->hide();
         bottom->hide();
     }
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 }
 
 /*
@@ -547,7 +547,7 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     if (view) {
         view->removeEventFilter(this);
         view->viewport()->removeEventFilter(this);
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
         disconnect(view->verticalScrollBar(), SIGNAL(valueChanged(int)),
                    this, SLOT(updateScrollers()));
         disconnect(view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)),
@@ -572,7 +572,7 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QStyleOptionComboBox opt = comboStyleOption();
     const bool usePopup = combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo);
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     if (usePopup)
         view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #endif
@@ -584,7 +584,7 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     view->setFrameStyle(QFrame::NoFrame);
     view->setLineWidth(0);
     view->setEditTriggers(QAbstractItemView::NoEditTriggers);
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     connect(view->verticalScrollBar(), SIGNAL(valueChanged(int)),
             this, SLOT(updateScrollers()));
     connect(view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)),

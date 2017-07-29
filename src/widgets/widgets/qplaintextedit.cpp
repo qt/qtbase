@@ -947,7 +947,7 @@ void QPlainTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCurso
     }
 }
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
 
 void QPlainTextEditPrivate::_q_adjustScrollbars()
 {

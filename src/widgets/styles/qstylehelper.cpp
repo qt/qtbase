@@ -43,7 +43,9 @@
 #include <private/qmath_p.h>
 #include <private/qstyle_p.h>
 #include <qmath.h>
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qabstractscrollarea.h>
 #include <qwindow.h>
 

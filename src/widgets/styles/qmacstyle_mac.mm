@@ -91,7 +91,9 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qsizegrip.h>
 #include <qstyleoption.h>
 #include <qtoolbar.h>

@@ -162,7 +162,7 @@ protected:
 };
 #endif // QT_CONFIG(slider)
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
 class QAccessibleScrollBar : public QAccessibleAbstractSlider
 {
 public:
@@ -172,7 +172,7 @@ public:
 protected:
     QScrollBar *scrollBar() const;
 };
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
 #ifndef QT_NO_SLIDER
 class QAccessibleSlider : public QAccessibleAbstractSlider

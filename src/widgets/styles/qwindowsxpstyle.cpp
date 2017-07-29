@@ -64,7 +64,9 @@
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qheaderview.h>
 #include <qspinbox.h>
 #if QT_CONFIG(listview)
