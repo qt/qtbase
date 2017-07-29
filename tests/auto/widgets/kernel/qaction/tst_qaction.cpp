@@ -26,7 +26,8 @@
 **
 ****************************************************************************/
 
-
+#include <QDialog>
+#include <QMainWindow>
 #include <QtTest/QtTest>
 
 #include <qapplication.h>
@@ -63,6 +64,8 @@ private slots:
     void task229128TriggeredSignalWhenInActiongroup();
     void repeat();
     void setData();
+    void disableShortcutsWithBlockedWidgets_data();
+    void disableShortcutsWithBlockedWidgets();
 
 private:
     int m_lastEventType;
@@ -422,6 +425,53 @@ void tst_QAction::setData() // QTBUG-62006
     QCOMPARE(spy.count(), 1);
     act.setData(-1);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QAction::disableShortcutsWithBlockedWidgets_data()
+{
+    QTest::addColumn<Qt::ShortcutContext>("shortcutContext");
+    QTest::addColumn<Qt::WindowModality>("windowModality");
+
+    QTest::newRow("application modal dialog should block window shortcut.")
+        << Qt::WindowShortcut << Qt::ApplicationModal;
+
+    QTest::newRow("application modal dialog should block application shortcut.")
+        << Qt::ApplicationShortcut << Qt::ApplicationModal;
+
+    QTest::newRow("window modal dialog should block application shortcut.")
+        << Qt::ApplicationShortcut << Qt::WindowModal;
+
+    QTest::newRow("window modal dialog should block window shortcut.")
+        << Qt::WindowShortcut << Qt::WindowModal;
+}
+
+
+void tst_QAction::disableShortcutsWithBlockedWidgets()
+{
+    QMainWindow window;
+
+    QFETCH(Qt::ShortcutContext, shortcutContext);
+    QAction action(&window);
+    window.addAction(&action);
+    action.setShortcut(QKeySequence(Qt::Key_1));
+    action.setShortcutContext(shortcutContext);
+
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QDialog dialog(&window);
+    QFETCH(Qt::WindowModality, windowModality);
+    dialog.setWindowModality(windowModality);
+
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+
+    QSignalSpy spy(&action, &QAction::triggered);
+    QTest::keyPress(&window, Qt::Key_1);
+    QCOMPARE(spy.count(), 0);
 }
 
 QTEST_MAIN(tst_QAction)
