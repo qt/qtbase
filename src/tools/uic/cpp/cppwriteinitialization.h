@@ -139,6 +139,8 @@ struct WriteInitialization : public TreeWalker
 private:
     static QString domColor2QString(const DomColor *c);
 
+    QString writeString(const QString &s, const QString &indent) const;
+
     QString iconCall(const DomProperty *prop);
     QString pixCall(const DomProperty *prop) const;
     QString pixCall(const QString &type, const QString &text) const;
@@ -228,6 +230,7 @@ private:
 
 private:
     QString writeFontProperties(const DomFont *f);
+    void writeResourceIcon(QTextStream &output, const QString &iconName, const QString &indent, const DomResourceIcon *i) const;
     QString writeIconProperties(const DomResourceIcon *i);
     QString writeSizePolicy(const DomSizePolicy *sp);
     QString writeBrushInitialization(const DomBrush *brush);

@@ -51,6 +51,7 @@ struct Option
     unsigned int limitXPM_LineLength : 1;
     unsigned int implicitIncludes: 1;
     unsigned int idBased: 1;
+    unsigned int stringLiteral: 1;
     Generator generator;
 
     QString inputFile;
@@ -76,6 +77,7 @@ struct Option
           limitXPM_LineLength(0),
           implicitIncludes(1),
           idBased(0),
+          stringLiteral(1),
           generator(CppGenerator),
           prefix(QLatin1String("Ui_"))
     { indent.fill(QLatin1Char(' '), 4); }

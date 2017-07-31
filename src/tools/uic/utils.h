@@ -107,19 +107,6 @@ inline QString fixString(const QString &str, const QString &indent,
     return rc;
 }
 
-inline QString writeString(const QString &s, const QString &indent)
-{
-    unsigned flags = 0;
-    const QString ret = fixString(s, indent, &flags);
-    if (flags & Utf8String)
-        return QLatin1String("QString::fromUtf8(") + ret + QLatin1Char(')');
-    // MSVC cannot concat L"foo" "bar" (C2308: concatenating mismatched strings),
-    // use QLatin1String instead (all platforms to avoid cross-compiling issues).
-    if (flags & MultiLineString)
-        return QLatin1String("QLatin1String(") + ret + QLatin1Char(')');
-    return QLatin1String("QStringLiteral(") + ret + QLatin1Char(')');
-}
-
 inline QHash<QString, DomProperty *> propertyMap(const QList<DomProperty *> &properties)
 {
     QHash<QString, DomProperty *> map;

@@ -75,6 +75,10 @@ int runUic(int argc, char *argv[])
     noImplicitIncludesOption.setDescription(QStringLiteral("Disable generation of #include-directives."));
     parser.addOption(noImplicitIncludesOption);
 
+    QCommandLineOption noStringLiteralOption(QStringList() << QStringLiteral("s") << QStringLiteral("no-stringliteral"));
+    noStringLiteralOption.setDescription(QStringLiteral("Use QLatin1String instead of QStringLiteral in generated code."));
+    parser.addOption(noStringLiteralOption);
+
     QCommandLineOption postfixOption(QStringLiteral("postfix"));
     postfixOption.setDescription(QStringLiteral("Postfix to add to all generated classnames."));
     postfixOption.setValueName(QStringLiteral("postfix"));
@@ -107,6 +111,7 @@ int runUic(int argc, char *argv[])
     driver.option().outputFile = parser.value(outputOption);
     driver.option().headerProtection = !parser.isSet(noProtOption);
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
+    driver.option().stringLiteral = !parser.isSet(noStringLiteralOption);
     driver.option().idBased = parser.isSet(idBasedOption);
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);

@@ -475,6 +475,21 @@ WriteInitialization::WriteInitialization(Uic *uic) :
 {
 }
 
+QString WriteInitialization::writeString(const QString &s, const QString &indent) const
+{
+    unsigned flags = 0;
+    const QString ret = fixString(s, indent, &flags);
+    if (flags & Utf8String)
+        return QLatin1String("QString::fromUtf8(") + ret + QLatin1Char(')');
+    // MSVC cannot concat L"foo" "bar" (C2308: concatenating mismatched strings),
+    // use QLatin1String instead (all platforms to avoid cross-compiling issues).
+    if (flags & MultiLineString)
+        return QLatin1String("QLatin1String(") + ret + QLatin1Char(')');
+    const QLatin1String stringWrapper = m_uic->option().stringLiteral ?
+        QLatin1String("QStringLiteral(") : QLatin1String("QLatin1String(");
+    return stringWrapper + ret + QLatin1Char(')');
+}
+
 void WriteInitialization::acceptUI(DomUI *node)
 {
     m_actionGroupChain.push(0);
@@ -1601,10 +1616,10 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
 }
 
 // Post 4.4 write resource icon
-static void writeResourceIcon(QTextStream &output,
-                              const QString &iconName,
-                              const QString &indent,
-                              const DomResourceIcon *i)
+void WriteInitialization::writeResourceIcon(QTextStream &output,
+                                            const QString &iconName,
+                                            const QString &indent,
+                                            const DomResourceIcon *i) const
 {
     if (i->hasElementNormalOff())
         output << indent << iconName << ".addFile(" << writeString(i->elementNormalOff()->text(), indent) << ", QSize(), QIcon::Normal, QIcon::Off);\n";
