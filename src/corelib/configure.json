@@ -69,9 +69,10 @@
             ]
         },
         "libatomic": {
-            "label": "64 bit atomics in libatomic",
+            "label": "64 bit atomics",
             "test": "common/atomic64",
             "sources": [
+                "",
                 "-latomic"
             ]
         },
@@ -116,11 +117,6 @@
     },
 
     "tests": {
-        "atomic64": {
-            "label": "64 bit atomics",
-            "type": "compile",
-            "test": "common/atomic64"
-        },
         "atomicfptr": {
             "label": "working std::atomic for function pointers",
             "type": "compile",
@@ -284,13 +280,8 @@
         },
         "std-atomic64": {
             "label": "64 bit atomic operations",
-            "condition": "tests.atomic64 || libs.libatomic",
-            "output": [ { "type": "define", "negative": true, "name": "QT_NO_STD_ATOMIC64" } ]
-        },
-        "libatomic": {
-            "label": "64 bit atomic operations in libatomic",
-            "condition": "!tests.atomic64 && libs.libatomic",
-            "output": [ "privateFeature" ]
+            "condition": "libs.libatomic",
+            "output": [ "publicFeature" ]
         },
         "mimetype": {
             "label": "Mimetype handling",
