@@ -108,7 +108,7 @@ CGAffineTransform qt_mac_convert_transform_to_cg(const QTransform &t) {
     return CGAffineTransformMake(t.m11(), t.m12(), t.m21(), t.m22(), t.dx(),  t.dy());
 }
 
-inline static QCFType<CGColorRef> cgColorForQColor(const QColor &col, QPaintDevice *pdev)
+inline static QCFType<CGColorRef> cgColorForQColor(const QColor &col)
 {
     CGFloat components[] = {
         qt_mac_convert_color_to_cg(col.red()),
@@ -116,7 +116,8 @@ inline static QCFType<CGColorRef> cgColorForQColor(const QColor &col, QPaintDevi
         qt_mac_convert_color_to_cg(col.blue()),
         qt_mac_convert_color_to_cg(col.alpha())
     };
-    return CGColorCreate(qt_mac_colorSpaceForDeviceType(pdev), components);
+    QCFType<CGColorSpaceRef> colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+    return CGColorCreate(colorSpace, components);
 }
 
 // There's architectural problems with using native gradients
@@ -239,81 +240,6 @@ static CGMutablePathRef qt_mac_compose_path(const QPainterPath &p, float off=0)
     return ret;
 }
 
-CGColorSpaceRef QCoreGraphicsPaintEngine::m_genericColorSpace = 0;
-QHash<CGDirectDisplayID, CGColorSpaceRef> QCoreGraphicsPaintEngine::m_displayColorSpaceHash;
-bool QCoreGraphicsPaintEngine::m_postRoutineRegistered = false;
-
-CGColorSpaceRef QCoreGraphicsPaintEngine::macGenericColorSpace()
-{
-#if 0
-    if (!m_genericColorSpace) {
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
-            m_genericColorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-        } else
-        {
-            m_genericColorSpace = CGColorSpaceCreateDeviceRGB();
-        }
-        if (!m_postRoutineRegistered) {
-            m_postRoutineRegistered = true;
-            qAddPostRoutine(QCoreGraphicsPaintEngine::cleanUpMacColorSpaces);
-        }
-    }
-    return m_genericColorSpace;
-#else
-    // Just return the main display colorspace for the moment.
-    return macDisplayColorSpace();
-#endif
-}
-
-/*
-    Ideally, we should pass the widget in here, and use CGGetDisplaysWithRect() etc.
-    to support multiple displays correctly.
-*/
-CGColorSpaceRef QCoreGraphicsPaintEngine::macDisplayColorSpace(const QWidget *widget)
-{
-    CGColorSpaceRef colorSpace;
-
-    CGDirectDisplayID displayID;
-    if (widget == 0) {
-        displayID = CGMainDisplayID();
-    } else {
-        const QRect &qrect = widget->window()->geometry();
-        CGRect rect = CGRectMake(qrect.x(), qrect.y(), qrect.width(), qrect.height());
-        CGDisplayCount throwAway;
-        CGDisplayErr dErr = CGGetDisplaysWithRect(rect, 1, &displayID, &throwAway);
-        if (dErr != kCGErrorSuccess)
-            return macDisplayColorSpace(0); // fall back on main display
-    }
-    if ((colorSpace = m_displayColorSpaceHash.value(displayID)))
-        return colorSpace;
-
-    colorSpace = CGDisplayCopyColorSpace(displayID);
-    if (colorSpace == 0)
-        colorSpace = CGColorSpaceCreateDeviceRGB();
-
-    m_displayColorSpaceHash.insert(displayID, colorSpace);
-    if (!m_postRoutineRegistered) {
-        m_postRoutineRegistered = true;
-        qAddPostRoutine(QCoreGraphicsPaintEngine::cleanUpMacColorSpaces);
-    }
-    return colorSpace;
-}
-
-void QCoreGraphicsPaintEngine::cleanUpMacColorSpaces()
-{
-    if (m_genericColorSpace) {
-        CFRelease(m_genericColorSpace);
-        m_genericColorSpace = 0;
-    }
-    QHash<CGDirectDisplayID, CGColorSpaceRef>::const_iterator it = m_displayColorSpaceHash.constBegin();
-    while (it != m_displayColorSpaceHash.constEnd()) {
-        if (it.value())
-            CFRelease(it.value());
-        ++it;
-    }
-    m_displayColorSpaceHash.clear();
-}
-
 //pattern handling (tiling)
 #if 1
 #  define QMACPATTERN_MASK_MULTIPLIER 32
@@ -377,7 +303,7 @@ static void qt_mac_draw_pattern(void *info, CGContextRef c)
             QPixmap pm(w*QMACPATTERN_MASK_MULTIPLIER, h*QMACPATTERN_MASK_MULTIPLIER);
             pm.fill(c0);
             QMacCGContext pm_ctx(&pm);
-            CGContextSetFillColorWithColor(c, cgColorForQColor(c1, pat->pdev));
+            CGContextSetFillColorWithColor(c, cgColorForQColor(c1));
             CGRect rect = CGRectMake(0, 0, w, h);
             for (int x = 0; x < QMACPATTERN_MASK_MULTIPLIER; ++x) {
                 rect.origin.x = x * w;
@@ -409,7 +335,7 @@ static void qt_mac_draw_pattern(void *info, CGContextRef c)
     bool needRestore = false;
     if (CGImageIsMask(pat->image)) {
         CGContextSaveGState(c);
-        CGContextSetFillColorWithColor(c, cgColorForQColor(pat->foreground, pat->pdev));
+        CGContextSetFillColorWithColor(c, cgColorForQColor(pat->foreground));
     }
     CGRect rect = CGRectMake(0, 0, w, h);
     qt_mac_drawCGImage(c, &rect, pat->image);
@@ -871,7 +797,7 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
         d->saveGraphicsState();
 
         const QColor &col = d->current.pen.color();
-        CGContextSetFillColorWithColor(d->hd, cgColorForQColor(col, d->pdev));
+        CGContextSetFillColorWithColor(d->hd, cgColorForQColor(col));
         image = qt_mac_create_imagemask(pm, sr);
     } else if (differentSize) {
         QCFType<CGImageRef> img = qt_mac_toCGImage(pm.toImage());
@@ -1233,7 +1159,7 @@ QCoreGraphicsPaintEnginePrivate::setStrokePen(const QPen &pen)
     CGContextSetLineDash(hd, pen.dashOffset() * cglinewidth, linedashes.data(), linedashes.size());
 
     // color
-    CGContextSetStrokeColorWithColor(hd, cgColorForQColor(pen.color(), pdev));
+    CGContextSetStrokeColorWithColor(hd, cgColorForQColor(pen.color()));
 }
 
 // Add our own patterns here to deal with the fact that the coordinate system
@@ -1276,7 +1202,7 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
             CGFunctionRef fill_func = CGFunctionCreate(reinterpret_cast<void *>(&current.brush),
                     1, domain, 4, 0, &callbacks);
 
-            CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
+            CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
             if (bs == Qt::LinearGradientPattern) {
                 const QLinearGradient *linearGrad = static_cast<const QLinearGradient *>(grad);
                 const QPointF start(linearGrad->start());
@@ -1315,7 +1241,7 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
                 components[0] = qt_mac_convert_color_to_cg(col.red());
                 components[1] = qt_mac_convert_color_to_cg(col.green());
                 components[2] = qt_mac_convert_color_to_cg(col.blue());
-                base_colorspace = QCoreGraphicsPaintEngine::macGenericColorSpace();
+                base_colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
             }
         } else {
             qpattern->as_mask = true;
@@ -1325,7 +1251,7 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
             components[0] = qt_mac_convert_color_to_cg(col.red());
             components[1] = qt_mac_convert_color_to_cg(col.green());
             components[2] = qt_mac_convert_color_to_cg(col.blue());
-            base_colorspace = QCoreGraphicsPaintEngine::macGenericColorSpace();
+            base_colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
         }
         int width = qpattern->width(), height = qpattern->height();
         qpattern->foreground = current.brush.color();
@@ -1346,10 +1272,12 @@ void QCoreGraphicsPaintEnginePrivate::setFillBrush(const QPointF &offset)
                 !base_colorspace, &callbks);
         CGContextSetFillPattern(hd, fill_pattern, components);
 
+
         CGPatternRelease(fill_pattern);
+        CGColorSpaceRelease(base_colorspace);
         CGColorSpaceRelease(fill_colorspace);
     } else if (bs != Qt::NoBrush) {
-        CGContextSetFillColorWithColor(hd, cgColorForQColor(current.brush.color(), pdev));
+        CGContextSetFillColorWithColor(hd, cgColorForQColor(current.brush.color()));
     }
 }
 

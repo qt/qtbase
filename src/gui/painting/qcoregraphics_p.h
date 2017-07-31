@@ -73,9 +73,6 @@ Q_GUI_EXPORT QImage qt_mac_toQImage(CGImageRef image);
 
 Q_GUI_EXPORT void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
 
-Q_GUI_EXPORT CGColorSpaceRef qt_mac_genericColorSpace();
-Q_GUI_EXPORT CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
-
 Q_GUI_EXPORT void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform);
 
 #ifdef Q_OS_MACOS
