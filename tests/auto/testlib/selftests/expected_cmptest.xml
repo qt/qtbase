@@ -225,6 +225,30 @@
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
+<TestFunction name="compareQVector2D">
+<Incident type="fail" file="tst_cmptest.cpp" line="0">
+    <Description><![CDATA[Compared values are not the same
+   Actual   (v2a): QVector2D(1, 2)
+   Expected (v2b): QVector2D(1, 3)]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="compareQVector3D">
+<Incident type="fail" file="tst_cmptest.cpp" line="0">
+    <Description><![CDATA[Compared values are not the same
+   Actual   (v3a): QVector3D(1, 2, 3)
+   Expected (v3b): QVector3D(1, 3, 3)]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="compareQVector4D">
+<Incident type="fail" file="tst_cmptest.cpp" line="0">
+    <Description><![CDATA[Compared values are not the same
+   Actual   (v4a): QVector4D(1, 2, 3, 4)
+   Expected (v4b): QVector4D(1, 3, 3, 4)]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
 <TestFunction name="verify">
 <Incident type="fail" file="tst_cmptest.cpp" line="467">
     <Description><![CDATA['opaqueFunc() < 2' returned FALSE. ()]]></Description>

@@ -111,6 +111,18 @@ FAIL!  : tst_Cmptest::compareQRegion(different lists) Compared values are not th
    Actual   (rA): QRegion(200x50+10+10)
    Expected (rB): QRegion(2 rectangles, 50x200+100+200, 200x50+10+10)
    Loc: [tst_cmptest.cpp(455)]
+FAIL!  : tst_Cmptest::compareQVector2D() Compared values are not the same
+   Actual   (v2a): QVector2D(1, 2)
+   Expected (v2b): QVector2D(1, 3)
+   Loc: [tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQVector3D() Compared values are not the same
+   Actual   (v3a): QVector3D(1, 2, 3)
+   Expected (v3b): QVector3D(1, 3, 3)
+   Loc: [tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQVector4D() Compared values are not the same
+   Actual   (v4a): QVector4D(1, 2, 3, 4)
+   Expected (v4b): QVector4D(1, 3, 3, 4)
+   Loc: [tst_cmptest.cpp(0)]
 FAIL!  : tst_Cmptest::verify() 'opaqueFunc() < 2' returned FALSE. ()
    Loc: [tst_cmptest.cpp(467)]
 FAIL!  : tst_Cmptest::verify2() 'opaqueFunc() < 2' returned FALSE. (42)
@@ -121,5 +133,5 @@ FAIL!  : tst_Cmptest::tryVerify2() 'opaqueFunc() < 2' returned FALSE. (42)
    Loc: [tst_cmptest.cpp(485)]
 PASS   : tst_Cmptest::verifyExplicitOperatorBool()
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 15 passed, 30 failed, 0 skipped, 0 blacklisted, 244ms
+Totals: 15 passed, 33 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Cmptest *********
