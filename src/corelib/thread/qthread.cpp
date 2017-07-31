@@ -291,7 +291,7 @@ QThreadPrivate::~QThreadPrivate()
     \fn int QThread::idealThreadCount()
 
     Returns the ideal number of threads that can be run on the system. This is done querying
-    the number of processor cores, both real and logical, in the system. This function returns -1
+    the number of processor cores, both real and logical, in the system. This function returns 1
     if the number of processor cores could not be detected.
 */
 
