@@ -167,11 +167,6 @@
             "type": "compile",
             "test": "unix/ipc_posix"
         },
-        "journald": {
-            "label": "journald",
-            "type": "compile",
-            "test": "unix/journald"
-        },
         "ppoll": {
             "label": "ppoll()",
             "type": "compile",
