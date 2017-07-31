@@ -25,7 +25,7 @@
         "corewlan": {
             "label": "CoreWLan",
             "export": "",
-            "test": "mac/corewlan",
+            "test": "corewlan",
             "sources": [
                 "-framework CoreWLAN -framework Foundation"
             ]
@@ -53,7 +53,7 @@
         "openssl_headers": {
             "label": "OpenSSL Headers",
             "export": "openssl",
-            "test": "unix/openssl",
+            "test": "openssl",
             "sources": [
                 {
                     "comment": "placeholder for OPENSSL_PATH",
@@ -63,7 +63,7 @@
         },
         "openssl": {
             "label": "OpenSSL",
-            "test": "unix/openssl",
+            "test": "openssl",
             "sources": [
                 { "type": "openssl" },
                 {

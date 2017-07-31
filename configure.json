@@ -229,7 +229,7 @@
         "verifyspec": {
             "label": "valid makespec",
             "type": "verifySpec",
-            "test": "common/verifyspec"
+            "test": "verifyspec"
         },
         "architecture": {
             "label": "target architecture",
@@ -256,7 +256,7 @@
         "stl": {
             "label": "STL compatibility",
             "type": "compile",
-            "test": "unix/stl"
+            "test": "stl"
         },
         "c++14": {
             "label": "C++14 support",
@@ -497,55 +497,55 @@
         "avx512f": {
             "label": "AVX512 F instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=F"
         },
         "avx512er": {
             "label": "AVX512 ER instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=ER"
         },
         "avx512cd": {
             "label": "AVX512 CD instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=CD"
         },
         "avx512pf": {
             "label": "AVX512 PF instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=PF"
         },
         "avx512dq": {
             "label": "AVX512 DQ instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=DQ"
         },
         "avx512bw": {
             "label": "AVX512 BW instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=BW"
         },
         "avx512vl": {
             "label": "AVX512 VL instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=VL"
         },
         "avx512ifma": {
             "label": "AVX512 IFMA instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=IFMA"
         },
         "avx512vbmi": {
             "label": "AVX512 VBMI instructions",
             "type": "compile",
-            "test": "common/avx512",
+            "test": "avx512",
             "args": "AVX512=VBMI"
         },
         "mips_dsp": {

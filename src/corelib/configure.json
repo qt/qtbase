@@ -49,7 +49,7 @@
         "gnu_iconv": {
             "label": "GNU libiconv",
             "export": "iconv",
-            "test": "unix/gnu-libiconv",
+            "test": "gnu-libiconv",
             "sources": [
                 "-liconv"
             ]
@@ -267,12 +267,12 @@
         "posix-iconv": {
             "label": "POSIX iconv",
             "type": "compile",
-            "test": "unix/iconv"
+            "test": "iconv"
         },
         "sun-iconv": {
             "label": "SUN libiconv",
             "type": "compile",
-            "test": "unix/sun-libiconv"
+            "test": "sun-libiconv"
         },
         "inotify": {
             "label": "inotify",
@@ -364,7 +364,7 @@
         "xlocalescanprint": {
             "label": "xlocale.h (or equivalents)",
             "type": "compile",
-            "test": "common/xlocalescanprint"
+            "test": "xlocalescanprint"
         }
     },
 
@@ -774,7 +774,7 @@ You need to use libdouble-conversion for double/string conversion."
             "condition": "!tests.atomicfptr",
             "message": "detected a std::atomic implementation that fails for function pointers.
 Please apply the patch corresponding to your Standard Library vendor, found in
-  qtbase/config.tests/common/atomicfptr"
+  qtbase/config.tests/atomicfptr"
         }
     ],
 
