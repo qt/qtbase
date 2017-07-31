@@ -83,10 +83,11 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
   networkLayerState(Unknown),
   hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true)
   , activeChannelCount(type == QHttpNetworkConnection::ConnectionTypeHTTP2
+                       || type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
 #ifndef QT_NO_SSL
-                        || type == QHttpNetworkConnection::ConnectionTypeSPDY
+                       || type == QHttpNetworkConnection::ConnectionTypeSPDY
 #endif
-                        ? 1 : defaultHttpChannelCount)
+                       ? 1 : defaultHttpChannelCount)
   , channelCount(defaultHttpChannelCount)
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
@@ -1065,6 +1066,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         }
         break;
     }
+    case QHttpNetworkConnection::ConnectionTypeHTTP2Direct:
     case QHttpNetworkConnection::ConnectionTypeHTTP2:
     case QHttpNetworkConnection::ConnectionTypeSPDY: {
         if (channels[0].spdyRequestsToSend.isEmpty() && channels[0].switchedToHttp2)

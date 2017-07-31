@@ -121,6 +121,9 @@ public:
     bool isHTTP2Allowed() const;
     void setHTTP2Allowed(bool b);
 
+    bool isHTTP2Direct() const;
+    void setHTTP2Direct(bool b);
+
     bool withCredentials() const;
     void setWithCredentials(bool b);
 
@@ -172,6 +175,7 @@ public:
     bool pipeliningAllowed;
     bool spdyAllowed;
     bool http2Allowed;
+    bool http2Direct;
     bool withCredentials;
     bool ssl;
     bool preConnect;

@@ -292,12 +292,17 @@ void QHttpThreadDelegate::startRequest()
     QHttpNetworkConnection::ConnectionType connectionType
         = httpRequest.isHTTP2Allowed() ? QHttpNetworkConnection::ConnectionTypeHTTP2
                                        : QHttpNetworkConnection::ConnectionTypeHTTP;
+    if (httpRequest.isHTTP2Direct()) {
+        Q_ASSERT(!httpRequest.isHTTP2Allowed());
+        connectionType = QHttpNetworkConnection::ConnectionTypeHTTP2Direct;
+    }
 
 #ifndef QT_NO_SSL
     if (ssl && !incomingSslConfiguration.data())
         incomingSslConfiguration.reset(new QSslConfiguration);
 
     if (httpRequest.isHTTP2Allowed() && ssl) {
+        // With HTTP2Direct we do not try any protocol negotiation.
         QList<QByteArray> protocols;
         protocols << QSslConfiguration::ALPNProtocolHTTP2
                   << QSslConfiguration::NextProtocolHttp1_1;

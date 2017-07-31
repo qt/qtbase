@@ -92,6 +92,7 @@ public:
         HTTP2WasUsedAttribute,
         OriginalContentLengthAttribute,
         RedirectPolicyAttribute,
+        Http2DirectAttribute,
 
         User = 1000,
         UserMax = 32767

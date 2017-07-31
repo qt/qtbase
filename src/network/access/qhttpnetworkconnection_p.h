@@ -93,7 +93,8 @@ public:
     enum ConnectionType {
         ConnectionTypeHTTP,
         ConnectionTypeSPDY,
-        ConnectionTypeHTTP2
+        ConnectionTypeHTTP2,
+        ConnectionTypeHTTP2Direct
     };
 
 #ifndef QT_NO_BEARERMANAGEMENT

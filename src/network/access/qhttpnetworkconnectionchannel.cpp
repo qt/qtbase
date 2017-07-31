@@ -438,6 +438,10 @@ void QHttpNetworkConnectionChannel::allDone()
         return;
     }
 
+    // For clear text HTTP/2 we tried to upgrade from HTTP/1.1 to HTTP/2; for
+    // ConnectionTypeHTTP2Direct we can never be here in case of failure
+    // (after an attempt to read HTTP/1.1 as HTTP/2 frames) or we have a normal
+    // HTTP/2 response and thus can skip this test:
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
         && !ssl && !switchedToHttp2) {
         if (Http2::is_protocol_upgraded(*reply)) {
@@ -884,6 +888,14 @@ void QHttpNetworkConnectionChannel::_q_connected()
                 connection->setSslContext(socketSslContext);
         }
 #endif
+    } else if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
+        state = QHttpNetworkConnectionChannel::IdleState;
+        protocolHandler.reset(new QHttp2ProtocolHandler(this));
+        if (spdyRequestsToSend.count() > 0) {
+            // In case our peer has sent us its settings (window size, max concurrent streams etc.)
+            // let's give _q_receiveReply a chance to read them first ('invokeMethod', QueuedConnection).
+            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+        }
     } else {
         state = QHttpNetworkConnectionChannel::IdleState;
         const bool tryProtocolUpgrade = connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2;
@@ -1116,7 +1128,10 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
     QSslSocket *sslSocket = qobject_cast<QSslSocket *>(socket);
     Q_ASSERT(sslSocket);
 
-    if (!protocolHandler) {
+    if (!protocolHandler && connection->connectionType() != QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
+        // ConnectionTypeHTTP2Direct does not rely on ALPN/NPN to negotiate HTTP/2,
+        // after establishing a secure connection we immediately start sending
+        // HTTP/2 frames.
         switch (sslSocket->sslConfiguration().nextProtocolNegotiationStatus()) {
         case QSslConfiguration::NextProtocolNegotiationNegotiated:
         case QSslConfiguration::NextProtocolNegotiationUnsupported: {
@@ -1182,7 +1197,8 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
             emitFinishedWithError(QNetworkReply::SslHandshakeFailedError,
                                   "detected unknown Next Protocol Negotiation protocol");
         }
-    } else if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+    } else if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
+               || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // We have to reset QHttp2ProtocolHandler's state machine, it's a new
         // connection and the handler's state is unique per connection.
         protocolHandler.reset(new QHttp2ProtocolHandler(this));
@@ -1194,10 +1210,12 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
     pendingEncrypt = false;
 
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY ||
-        connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+        connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2 ||
+        connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // we call setSpdyWasUsed(true) on the replies in the SPDY handler when the request is sent
         if (spdyRequestsToSend.count() > 0) {
-            // wait for data from the server first (e.g. initial window, max concurrent requests)
+            // In case our peer has sent us its settings (window size, max concurrent streams etc.)
+            // let's give _q_receiveReply a chance to read them first ('invokeMethod', QueuedConnection).
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
         }
     } else { // HTTP
