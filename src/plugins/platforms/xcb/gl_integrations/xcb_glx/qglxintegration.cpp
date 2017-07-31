@@ -221,17 +221,17 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
 
             QVector<int> glVersions;
             if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
-                if (requestedVersion > 45)
+                if (requestedVersion > 46)
                     glVersions << requestedVersion;
 
                 // Don't bother with versions below 2.0
-                glVersions << 45 << 44 << 43 << 42 << 41 << 40 << 33 << 32 << 31 << 30 << 21 << 20;
+                glVersions << 46 << 45 << 44 << 43 << 42 << 41 << 40 << 33 << 32 << 31 << 30 << 21 << 20;
             } else if (m_format.renderableType() == QSurfaceFormat::OpenGLES) {
-                if (requestedVersion > 31)
+                if (requestedVersion > 32)
                     glVersions << requestedVersion;
 
                 // Don't bother with versions below ES 2.0
-                glVersions << 31 << 30 << 20;
+                glVersions << 32 << 31 << 30 << 20;
                 // ES does not support any format option
                 m_format.setOptions(QSurfaceFormat::FormatOptions());
             }
