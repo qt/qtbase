@@ -485,51 +485,30 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
 
 NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
 {
-    Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
-    NSInteger styleMask = NSBorderlessWindowMask;
-    if (flags & Qt::FramelessWindowHint)
-        return styleMask;
-    if ((type & Qt::Popup) == Qt::Popup) {
-        if (!windowIsPopupType(type)) {
-            styleMask = NSUtilityWindowMask | NSResizableWindowMask;
-            if (!(flags & Qt::CustomizeWindowHint)) {
-                styleMask |= NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask;
-            } else {
-                if (flags & Qt::WindowTitleHint)
-                    styleMask |= NSTitledWindowMask;
-                if (flags & Qt::WindowCloseButtonHint)
-                    styleMask |= NSClosableWindowMask;
-                if (flags & Qt::WindowMinimizeButtonHint)
-                    styleMask |= NSMiniaturizableWindowMask;
-            }
-        }
+    const Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
+    const bool frameless = (flags & Qt::FramelessWindowHint) || windowIsPopupType(type);
+
+    // Select base window type.
+    NSUInteger styleMask = frameless ? NSBorderlessWindowMask : NSResizableWindowMask;
+
+    if (frameless) {
+        // No further customizations for frameless since there are no window decorations.
+    } else if (flags & Qt::CustomizeWindowHint) {
+        if (flags & Qt::WindowTitleHint)
+            styleMask |= NSTitledWindowMask;
+        if (flags & Qt::WindowCloseButtonHint)
+            styleMask |= NSClosableWindowMask;
+        if (flags & Qt::WindowMinimizeButtonHint)
+            styleMask |= NSMiniaturizableWindowMask;
     } else {
-        if (type == Qt::Window && !(flags & Qt::CustomizeWindowHint)) {
-            styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
-        } else if (type == Qt::Dialog) {
-            if (flags & Qt::CustomizeWindowHint) {
-                if (flags & Qt::WindowMaximizeButtonHint)
-                    styleMask = NSResizableWindowMask;
-                if (flags & Qt::WindowTitleHint)
-                    styleMask |= NSTitledWindowMask;
-                if (flags & Qt::WindowCloseButtonHint)
-                    styleMask |= NSClosableWindowMask;
-                if (flags & Qt::WindowMinimizeButtonHint)
-                    styleMask |= NSMiniaturizableWindowMask;
-            } else {
-                styleMask = NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask;
-            }
-        } else {
-            if (flags & Qt::WindowMaximizeButtonHint)
-                styleMask |= NSResizableWindowMask;
-            if (flags & Qt::WindowTitleHint)
-                styleMask |= NSTitledWindowMask;
-            if (flags & Qt::WindowCloseButtonHint)
-                styleMask |= NSClosableWindowMask;
-            if (flags & Qt::WindowMinimizeButtonHint)
-                styleMask |= NSMiniaturizableWindowMask;
-        }
+        styleMask |= NSClosableWindowMask | NSTitledWindowMask;
+
+        if (type != Qt::Dialog)
+            styleMask |= NSMiniaturizableWindowMask;
     }
+
+    if (type == Qt::Tool)
+        styleMask |= NSUtilityWindowMask;
 
     if (m_drawContentBorderGradient)
         styleMask |= NSTexturedBackgroundWindowMask;
