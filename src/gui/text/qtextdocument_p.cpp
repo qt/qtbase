@@ -203,7 +203,7 @@ QTextDocumentPrivate::QTextDocumentPrivate()
     inContentsChange = false;
     blockCursorAdjustment = false;
 
-    defaultTextOption.setTabStop(80); // same as in qtextengine.cpp
+    defaultTextOption.setTabStopDistance(80); // same as in qtextengine.cpp
     defaultTextOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
     defaultCursorMoveStyle = Qt::LogicalMoveStyle;
 

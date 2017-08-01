@@ -2453,28 +2453,50 @@ void QPlainTextEdit::setOverwriteMode(bool overwrite)
     d->control->setOverwriteMode(overwrite);
 }
 
+#if QT_DEPRECATED_SINCE(5, 10)
 /*!
     \property QPlainTextEdit::tabStopWidth
     \brief the tab stop width in pixels
+    \deprecated in Qt 5.10. Use tabStopDistance instead.
 
     By default, this property contains a value of 80.
 */
 
 int QPlainTextEdit::tabStopWidth() const
 {
-    Q_D(const QPlainTextEdit);
-    return qRound(d->control->document()->defaultTextOption().tabStop());
+    return qRound(tabStopDistance());
 }
 
 void QPlainTextEdit::setTabStopWidth(int width)
 {
+    setTabStopDistance(width);
+}
+#endif
+
+/*!
+    \property QPlainTextEdit::tabStopDistance
+    \brief the tab stop distance in pixels
+    \since 5.10
+
+    By default, this property contains a value of 80.
+*/
+
+qreal QPlainTextEdit::tabStopDistance() const
+{
+    Q_D(const QPlainTextEdit);
+    return d->control->document()->defaultTextOption().tabStopDistance();
+}
+
+void QPlainTextEdit::setTabStopDistance(qreal distance)
+{
     Q_D(QPlainTextEdit);
     QTextOption opt = d->control->document()->defaultTextOption();
-    if (opt.tabStop() == width || width < 0)
+    if (opt.tabStopDistance() == distance || distance < 0)
         return;
-    opt.setTabStop(width);
+    opt.setTabStopDistance(distance);
     d->control->document()->setDefaultTextOption(opt);
 }
+
 
 /*!
     \property QPlainTextEdit::cursorWidth

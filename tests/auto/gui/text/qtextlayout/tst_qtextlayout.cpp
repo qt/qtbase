@@ -1312,7 +1312,7 @@ void tst_QTextLayout::testDefaultTabs()
     QCOMPARE(line.cursorToX(31), 480.);
 
     QTextOption option = layout.textOption();
-    option.setTabStop(90);
+    option.setTabStopDistance(90);
     layout.setTextOption(option);
     layout.beginLayout();
     line = layout.createLine();
@@ -1351,7 +1351,7 @@ void tst_QTextLayout::testTabs()
 
     layout.setCacheEnabled(true);
     QTextOption option = layout.textOption();
-    option.setTabStop(150);
+    option.setTabStopDistance(150);
     layout.setTextOption(option);
 
     layout.beginLayout();

@@ -3043,7 +3043,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
             }
         }
     }
-    QFixed tab = QFixed::fromReal(option.tabStop());
+    QFixed tab = QFixed::fromReal(option.tabStopDistance());
     if (tab <= 0)
         tab = 80; // default
     tab *= dpiScale;

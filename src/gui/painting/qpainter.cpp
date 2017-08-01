@@ -7419,7 +7419,7 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
         if (option->flags() & QTextOption::IncludeTrailingSpaces)
             tf |= Qt::TextIncludeTrailingSpaces;
 
-        if (option->tabStop() >= 0 || !option->tabArray().isEmpty())
+        if (option->tabStopDistance() >= 0 || !option->tabArray().isEmpty())
             tf |= Qt::TextExpandTabs;
     }
 
@@ -7536,8 +7536,8 @@ start_lengthVariant:
         engine.option = *option;
     }
 
-    if (engine.option.tabStop() < 0 && tabstops > 0)
-        engine.option.setTabStop(tabstops);
+    if (engine.option.tabStopDistance() < 0 && tabstops > 0)
+        engine.option.setTabStopDistance(tabstops);
 
     if (engine.option.tabs().isEmpty() && ta) {
         QList<qreal> tabs;
