@@ -4763,25 +4763,35 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
         if (size < 10)
             return QDateTime();
 
-        QStringRef isoString(&string);
-        Qt::TimeSpec spec = Qt::LocalTime;
-
         QDate date = QDate::fromString(string.left(10), Qt::ISODate);
         if (!date.isValid())
             return QDateTime();
         if (size == 10)
             return QDateTime(date);
 
-        isoString = isoString.right(isoString.length() - 11);
+        Qt::TimeSpec spec = Qt::LocalTime;
+        QStringRef isoString(&string);
+        isoString = isoString.mid(10); // trim "yyyy-MM-dd"
+
+        // Must be left with T and at least one digit for the hour:
+        if (isoString.size() < 2
+            || !(isoString.startsWith(QLatin1Char('T'))
+                 // FIXME: QSql relies on QVariant::toDateTime() accepting a space here:
+                 || isoString.startsWith(QLatin1Char(' ')))) {
+            return QDateTime();
+        }
+        isoString = isoString.mid(1); // trim 'T' (or space)
+
         int offset = 0;
         // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:mm for Offset
         if (isoString.endsWith(QLatin1Char('Z'))) {
             spec = Qt::UTC;
-            isoString = isoString.left(isoString.size() - 1);
+            isoString.chop(1); // trim 'Z'
         } else {
             // the loop below is faster but functionally equal to:
             // const int signIndex = isoString.indexOf(QRegExp(QStringLiteral("[+-]")));
             int signIndex = isoString.size() - 1;
+            Q_ASSERT(signIndex >= 0);
             bool found = false;
             {
                 const QChar plus = QLatin1Char('+');
@@ -4789,8 +4799,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
                 do {
                     QChar character(isoString.at(signIndex));
                     found = character == plus || character == minus;
-                } while (--signIndex >= 0 && !found);
-                ++signIndex;
+                } while (!found && --signIndex >= 0);
             }
 
             if (found) {

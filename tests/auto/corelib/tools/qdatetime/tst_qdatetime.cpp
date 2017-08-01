@@ -2283,6 +2283,9 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::newRow("ISO .99999 of a minute (comma)") << QString::fromLatin1("2012-01-01T08:00,99999")
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 59, 999), Qt::LocalTime);
     QTest::newRow("ISO empty") << QString::fromLatin1("") << Qt::ISODate << invalidDateTime();
+    QTest::newRow("ISO short") << QString::fromLatin1("2017-07-01T") << Qt::ISODate << invalidDateTime();
+    QTest::newRow("ISO zoned date") << QString::fromLatin1("2017-07-01Z") << Qt::ISODate << invalidDateTime();
+    QTest::newRow("ISO zoned empty time") << QString::fromLatin1("2017-07-01TZ") << Qt::ISODate << invalidDateTime();
 
     // Test Qt::RFC2822Date format (RFC 2822).
     QTest::newRow("RFC 2822 +0100") << QString::fromLatin1("13 Feb 1987 13:24:51 +0100")
