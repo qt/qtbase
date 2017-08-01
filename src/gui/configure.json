@@ -1217,7 +1217,7 @@
         "xcb-native-painting": {
             "label": "Native painting (experimental)",
             "emitIf": "features.xcb",
-            "condition": "features.xcb-xlib && libs.xrender",
+            "condition": "features.xcb-xlib && features.fontconfig && libs.xrender",
             "output": [ "privateFeature" ]
         },
         "xrender": {
