@@ -22,14 +22,26 @@
     "libraries": {
         "doubleconversion": {
             "label": "DoubleConversion",
-            "test": "unix/doubleconversion",
+            "test": {
+                "include": "double-conversion/double-conversion.h",
+                "main": "(void) double_conversion::StringToDoubleConverter::NO_FLAGS;"
+            },
             "sources": [
                 "-ldouble-conversion"
             ]
         },
         "glib": {
             "label": "GLib",
-            "test": "unix/glib",
+            "test": {
+                "head": "typedef struct _GMainContext GMainContext;",
+                "include": "glib.h",
+                "main": [
+                    "g_thread_init(NULL);",
+                    "(void) g_main_context_default();",
+                    "(void) g_source_new(0, 0);",
+                    "g_source_add_poll(NULL, NULL);"
+                ]
+            },
             "sources": [
                 { "type": "pkgConfig", "args": "glib-2.0 gthread-2.0" }
             ]
@@ -44,7 +56,22 @@
         },
         "icu": {
             "label": "ICU",
-            "test": "unix/icu",
+            "test": {
+                "include": [ "unicode/utypes.h", "unicode/ucol.h", "unicode/ustring.h" ],
+                "main": [
+                    "UErrorCode status = U_ZERO_ERROR;",
+                    "UCollator *collator = ucol_open(\"ru_RU\", &status);",
+                    "if (!U_FAILURE(status))",
+                    "    ucol_close(collator);"
+                ],
+                "qmake": [
+                    "CONFIG += build_all",
+                    "CONFIG(debug, debug|release): \\",
+                    "    LIBS += $$LIBS_DEBUG",
+                    "else: \\",
+                    "    LIBS += $$LIBS_RELEASE"
+                ]
+            },
             "sources": [
                 {
                     "builds": {
@@ -62,7 +89,10 @@
         },
         "journald": {
             "label": "journald",
-            "test": "unix/journald",
+            "test": {
+                "include": [ "systemd/sd-journal.h", "syslog.h" ],
+                "main": "sd_journal_send(\"PRIORITY=%i\", LOG_INFO, NULL);"
+            },
             "sources": [
                 { "type": "pkgConfig", "args": "libsystemd" },
                 { "type": "pkgConfig", "args": "libsystemd-journal" }
@@ -70,7 +100,26 @@
         },
         "libatomic": {
             "label": "64 bit atomics",
-            "test": "common/atomic64",
+            "test": {
+                "include": [ "atomic", "cstdint" ],
+                "tail": [
+                    "void test(volatile std::atomic<std::int64_t> &a)",
+                    "{",
+                    "    std::int64_t v = a.load(std::memory_order_acquire);",
+                    "    while (!a.compare_exchange_strong(v, v + 1,",
+                    "                                      std::memory_order_acq_rel,",
+                    "                                      std::memory_order_acquire)) {",
+                    "        v = a.exchange(v - 1);",
+                    "    }",
+                    "    a.store(v + 1, std::memory_order_release);",
+                    "}"
+                ],
+                "main": [
+                    "void *ptr = (void*)0xffffffc0; // any random pointer",
+                    "test(*reinterpret_cast<std::atomic<std::int64_t> *>(ptr));"
+                ],
+                "qmake": "CONFIG += c++11"
+            },
             "sources": [
                 "",
                 "-latomic"
@@ -78,7 +127,10 @@
         },
         "libdl": {
             "label": "dlopen()",
-            "test": "unix/dlopen",
+            "test": {
+                "include": "dlfcn.h",
+                "main": "dlopen(0, 0);"
+            },
             "sources": [
                 "",
                 "-ldl"
@@ -86,7 +138,10 @@
         },
         "librt": {
             "label": "clock_gettime()",
-            "test": "unix/clock-gettime",
+            "test": {
+                "include": [ "unistd.h", "time.h" ],
+                "main": "timespec ts; clock_gettime(CLOCK_REALTIME, &ts);"
+            },
             "sources": [
                 "",
                 "-lrt"
@@ -94,21 +149,38 @@
         },
         "pcre2": {
             "label": "PCRE2",
-            "test": "unix/pcre2",
+            "test": {
+                "head": "#define PCRE2_CODE_UNIT_WIDTH 16",
+                "include": "pcre2.h",
+                "tail": [
+                    "#if (PCRE2_MAJOR < 10) || ((PCRE2_MAJOR == 10) && (PCRE2_MINOR < 20))",
+                    "#  error This PCRE version is not supported",
+                    "#endif"
+                ]
+            },
             "sources": [
                 "-lpcre2-16"
             ]
         },
         "pps": {
             "label": "PPS",
-            "test": "unix/pps",
+            "test": {
+                "include": "sys/pps.h",
+                "main": [
+                    "pps_decoder_t decoder;",
+                    "pps_decoder_initialize(&decoder, NULL);"
+                ]
+            },
             "sources": [
                 "-lpps"
             ]
         },
         "slog2": {
             "label": "slog2",
-            "test": "unix/slog2",
+            "test": {
+                "include": "slog2.h",
+                "main": "slog2_set_default_buffer((slog2_buffer_t)-1);"
+            },
             "export": "",
             "sources": [
                 "-lslog2"
@@ -120,23 +192,77 @@
         "atomicfptr": {
             "label": "working std::atomic for function pointers",
             "type": "compile",
-            "test": "common/atomicfptr"
+            "test": {
+                "include": "atomic",
+                "tail": [
+                    "typedef void (*fptr)(int);",
+                    "typedef std::atomic<fptr> atomicfptr;",
+                    "void testfunction(int) { }",
+                    "void test(volatile atomicfptr &a)",
+                    "{",
+                    "    fptr v = a.load(std::memory_order_acquire);",
+                    "    while (!a.compare_exchange_strong(v, &testfunction,",
+                    "                                      std::memory_order_acq_rel,",
+                    "                                      std::memory_order_acquire)) {",
+                    "        v = a.exchange(&testfunction);",
+                    "    }",
+                    "    a.store(&testfunction, std::memory_order_release);",
+                    "}"
+                ],
+                "main": [
+                    "atomicfptr fptr(testfunction);",
+                    "test(fptr);"
+                ],
+                "qmake": "CONFIG += c++11"
+            }
         },
         "clock-monotonic": {
             "label": "POSIX monotonic clock",
             "type": "compile",
-            "test": "unix/clock-monotonic",
+            "test": {
+                "include": [ "unistd.h", "time.h" ],
+                "main": [
+                    "#if defined(_POSIX_MONOTONIC_CLOCK) && (_POSIX_MONOTONIC_CLOCK-0 >= 0)",
+                    "timespec ts;",
+                    "clock_gettime(CLOCK_MONOTONIC, &ts);",
+                    "#else",
+                    "#  error Feature _POSIX_MONOTONIC_CLOCK not available",
+                    "#endif"
+                ]
+            },
             "use": "librt"
         },
         "cloexec": {
             "label": "O_CLOEXEC",
             "type": "compile",
-            "test": "unix/cloexec"
+            "test": {
+                "head": "#define _GNU_SOURCE 1",
+                "include": [ "sys/types.h", "sys/socket.h", "fcntl.h", "unistd.h" ],
+                "main": [
+                    "int pipes[2];",
+                    "(void) pipe2(pipes, O_CLOEXEC | O_NONBLOCK);",
+                    "(void) fcntl(0, F_DUPFD_CLOEXEC, 0);",
+                    "(void) dup3(0, 3, O_CLOEXEC);",
+                    "#if defined(__NetBSD__)",
+                    "(void) paccept(0, 0, 0, NULL, SOCK_CLOEXEC | SOCK_NONBLOCK);",
+                    "#else",
+                    "(void) accept4(0, 0, 0, SOCK_CLOEXEC | SOCK_NONBLOCK);",
+                    "#endif"
+                ]
+            }
         },
         "eventfd": {
             "label": "eventfd",
             "type": "compile",
-            "test": "unix/eventfd"
+            "test": {
+                "include": "sys/eventfd.h",
+                "main": [
+                    "eventfd_t value;",
+                    "int fd = eventfd(0, EFD_CLOEXEC);",
+                    "eventfd_read(fd, &value);",
+                    "eventfd_write(fd, value);"
+                ]
+            }
         },
         "posix-iconv": {
             "label": "POSIX iconv",
@@ -151,37 +277,89 @@
         "inotify": {
             "label": "inotify",
             "type": "compile",
-            "test": "unix/inotify"
+            "test": {
+                "include": "sys/inotify.h",
+                "main": [
+                    "inotify_init();",
+                    "inotify_add_watch(0, \"foobar\", IN_ACCESS);",
+                    "inotify_rm_watch(0, 1);"
+                ]
+            }
         },
         "ipc_sysv": {
             "label": "SysV IPC",
             "type": "compile",
-            "test": "unix/ipc_sysv"
+            "test": {
+                "include": [ "sys/types.h", "sys/ipc.h", "sys/sem.h", "sys/shm.h", "fcntl.h" ],
+                "main": [
+                    "key_t unix_key = ftok(\"test\", 'Q');",
+                    "semctl(semget(unix_key, 1, 0666 | IPC_CREAT | IPC_EXCL), 0, IPC_RMID, 0);",
+                    "shmget(unix_key, 0, 0666 | IPC_CREAT | IPC_EXCL);",
+                    "shmctl(0, 0, (struct shmid_ds *)(0));"
+                ]
+            }
         },
         "ipc_posix": {
             "label": "POSIX IPC",
             "type": "compile",
-            "test": "unix/ipc_posix"
+            "test": {
+                "include": [ "sys/types.h", "sys/mman.h", "semaphore.h", "fcntl.h" ],
+                "main": [
+                    "sem_close(sem_open(\"test\", O_CREAT | O_EXCL, 0666, 0));",
+                    "shm_open(\"test\", O_RDWR | O_CREAT | O_EXCL, 0666);",
+                    "shm_unlink(\"test\");"
+                ],
+                "qmake": "linux: LIBS += -lpthread -lrt"
+            }
         },
         "ppoll": {
             "label": "ppoll()",
             "type": "compile",
-            "test": "unix/ppoll"
+            "test": {
+                "include": [ "signal.h", "poll.h" ],
+                "main": [
+                    "struct pollfd pfd;",
+                    "struct timespec ts;",
+                    "sigset_t sig;",
+                    "ppoll(&pfd, 1, &ts, &sig);"
+                ]
+            }
         },
         "pollts": {
             "label": "pollts()",
             "type": "compile",
-            "test": "unix/pollts"
+            "test": {
+                "include": [ "poll.h", "signal.h", "time.h" ],
+                "main": [
+                    "struct pollfd pfd;",
+                    "struct timespec ts;",
+                    "sigset_t sig;",
+                    "pollts(&pfd, 1, &ts, &sig);"
+                ]
+            }
         },
         "poll": {
             "label": "poll()",
             "type": "compile",
-            "test": "unix/poll"
+            "test": {
+                "include": "poll.h",
+                "main": [
+                    "struct pollfd pfd;",
+                    "poll(&pfd, 1, 0);"
+                ]
+            }
         },
         "syslog": {
             "label": "syslog",
             "type": "compile",
-            "test": "unix/syslog"
+            "test": {
+                "include": "syslog.h",
+                "main": [
+                    "openlog(\"qt\", 0, LOG_USER);",
+                    "syslog(LOG_INFO, \"configure\");",
+                    "closelog();"
+                ]
+            }
         },
         "xlocalescanprint": {
             "label": "xlocale.h (or equivalents)",

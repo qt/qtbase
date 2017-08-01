@@ -147,7 +147,14 @@
     "libraries": {
         "zlib": {
             "label": "zlib",
-            "test": "unix/zlib",
+            "test": {
+                "include": "zlib.h",
+                "main": [
+                    "z_streamp stream = 0;",
+                    "(void) zlibVersion();",
+                    "(void) compress2(0, 0, 0, 0, 1);  // compress2 was added in zlib version 1.0.8"
+                ]
+            },
             "sources": [
                 { "libs": "-lzdll", "condition": "config.msvc" },
                 { "libs": "-lz", "condition": "!config.msvc" }
@@ -155,7 +162,17 @@
         },
         "dbus": {
             "label": "D-Bus >= 1.2",
-            "test": "unix/dbus",
+            "test": {
+                "include": "dbus/dbus.h",
+                "main": "(void) dbus_bus_get_private(DBUS_BUS_SYSTEM, (DBusError *)NULL);",
+                "qmake": [
+                    "CONFIG += build_all",
+                    "CONFIG(debug, debug|release): \\",
+                    "    LIBS += $$LIBS_DEBUG",
+                    "else: \\",
+                    "    LIBS += $$LIBS_RELEASE"
+                ]
+            },
             "sources": [
                 { "type": "pkgConfig", "args": "dbus-1 >= 1.2" },
                 {
@@ -179,7 +196,10 @@
         },
         "libudev": {
             "label": "udev",
-            "test": "unix/libudev",
+            "test": {
+                "include": "libudev.h",
+                "main": "udev_unref(udev_new());"
+            },
             "sources": [
                 { "type": "pkgConfig", "args": "libudev" },
                 "-ludev"
@@ -241,12 +261,31 @@
         "c++14": {
             "label": "C++14 support",
             "type": "compile",
-            "test": "common/c++14"
+            "test": {
+                "head": [
+                    "#if __cplusplus > 201103L",
+                    "// Compiler claims to support C++14, trust it",
+                    "#else",
+                    "#  error __cplusplus must be > 201103L (the value of C++11)",
+                    "#endif"
+                ],
+                "qmake": "CONFIG += c++11 c++14"
+            }
         },
         "c++1z": {
             "label": "C++1z support",
             "type": "compile",
-            "test": "common/c++1z"
+            "test": {
+                "head": [
+                    "#if __cplusplus > 201402L",
+                    "// Compiler claims to support experimental C++1z, trust it",
+                    "#else",
+                    "#  error __cplusplus must be > 201402L (the value for C++14)",
+                    "#endif",
+                    "#include <map>  // https://bugs.llvm.org//show_bug.cgi?id=33117"
+                ],
+                "qmake": "CONFIG += c++11 c++14 c++1z"
+            }
         },
         "precompile_header": {
             "label": "precompiled header support",
@@ -271,12 +310,38 @@
         "reduce_exports": {
             "label": "symbol visibility support",
             "type": "compile",
-            "test": "unix/reduce_exports"
+            "test": {
+                "head": [
+                    "#if defined(__GNUC__)",
+                    "__attribute((visibility(\"default\")))",
+                    "#elif defined(__SUNPRO_CC)",
+                    "__global",
+                    "#else",
+                    "#  error GCC4+ or SunStudio 8+ are required to support ELF visibility",
+                    "#endif"
+                ],
+                "qmake": [
+                    "TEMPLATE = lib",
+                    "CONFIG += dll hide_symbols",
+                    "isEmpty(QMAKE_CFLAGS_HIDESYMS): error(\"Nope\")"
+                ]
+            }
         },
         "reduce_relocations": {
             "label": "-Bsymbolic-functions support",
             "type": "compile",
-            "test": "unix/reduce_relocs"
+            "test": {
+                "head": [
+                    "#if !(defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64))",
+                    "#  error Symbolic function binding on this architecture may be broken, disabling it (see QTBUG-36129).",
+                    "#endif"
+                ],
+                "qmake": [
+                    "TEMPLATE = lib",
+                    "CONFIG += dll bsymbolic_functions",
+                    "isEmpty(QMAKE_LFLAGS_BSYMBOLIC_FUNC): error(\"Nope\")"
+                ]
+            }
         },
         "build_parts": {
             "type": "buildParts"
@@ -284,47 +349,150 @@
         "separate_debug_info": {
             "label": "separate debug information support",
             "type": "compile",
-            "test": "unix/objcopy"
+            "test": {
+                "qmake": [
+                    "TARGET = objcopytest",
+                    "load(resolve_target)",
+                    "QMAKE_POST_LINK += \\",
+                    "    $$QMAKE_OBJCOPY --only-keep-debug $$QMAKE_RESOLVED_TARGET objcopytest.debug && \\",
+                    "    $$QMAKE_OBJCOPY --strip-debug $$QMAKE_RESOLVED_TARGET && \\",
+                    "    $$QMAKE_OBJCOPY --add-gnu-debuglink=objcopytest.debug $$QMAKE_RESOLVED_TARGET"
+                ]
+            }
         },
         "sse2": {
             "label": "SSE2 instructions",
             "type": "compile",
-            "test": "common/sse2"
+            "test": {
+                "include": "emmintrin.h",
+                "main": [
+                    "__m128i a = _mm_setzero_si128();",
+                    "_mm_maskmoveu_si128(a, _mm_setzero_si128(), 0);"
+                ],
+                "qmake": [
+                    "!defined(QMAKE_CFLAGS_SSE2, var): error(\"This compiler does not support SSE2\")",
+                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE2"
+                ]
+            }
         },
         "sse3": {
             "label": "SSE3 instructions",
             "type": "compile",
-            "test": "common/sse3"
+            "test": {
+                "include": "pmmintrin.h",
+                "main": [
+                    "__m128d a = _mm_set1_pd(6.28);",
+                    "__m128d b = _mm_set1_pd(3.14);",
+                    "__m128d result = _mm_addsub_pd(a, b);",
+                    "(void) _mm_movedup_pd(result);"
+                ],
+                "qmake": [
+                    "!defined(QMAKE_CFLAGS_SSE3, var): error(\"This compiler does not support SSE3\")",
+                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE3"
+                ]
+            }
         },
         "ssse3": {
             "label": "SSSE3 instructions",
             "type": "compile",
-            "test": "common/ssse3"
+            "test": {
+                "include": "tmmintrin.h",
+                "main": [
+                    "__m128i a = _mm_set1_epi32(42);",
+                    "_mm_abs_epi8(a);",
+                    "(void) _mm_sign_epi16(a, _mm_set1_epi32(64));"
+                ],
+                "qmake": [
+                    "!defined(QMAKE_CFLAGS_SSSE3, var): error(\"This compiler does not support SSSE3\")",
+                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSSE3"
+                ]
+            }
         },
         "sse4_1": {
             "label": "SSE4.1 instructions",
             "type": "compile",
-            "test": "common/sse4_1"
+            "test": {
+                "include": "smmintrin.h",
+                "main": [
+                    "__m128 a = _mm_setzero_ps();",
+                    "_mm_ceil_ps(a);",
+                    "__m128i result = _mm_mullo_epi32(_mm_set1_epi32(42), _mm_set1_epi32(64));",
+                    "(void)result;"
+                ],
+                "qmake": [
+                    "!defined(QMAKE_CFLAGS_SSE4_1, var): error(\"This compiler does not support SSE4.1\")",
+                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE4_1"
+                ]
+            }
         },
         "sse4_2": {
             "label": "SSE4.2 instructions",
             "type": "compile",
-            "test": "common/sse4_2"
+            "test": {
+                "include": "nmmintrin.h",
+                "main": [
+                    "__m128i a = _mm_setzero_si128();",
+                    "__m128i b = _mm_set1_epi32(42);",
+                    "(void) _mm_cmpestrm(a, 16, b, 16, 0);"
+                ],
+                "qmake": [
+                    "!defined(QMAKE_CFLAGS_SSE4_2, var): error(\"This compiler does not support SSE4.2\")",
+                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE4_2"
+                ]
+            }
         },
         "f16c": {
             "label": "F16C instructions",
             "type": "compile",
-            "test": "common/f16c"
+            "test": {
+                "include": "immintrin.h",
+                "main": [
+                    "__m128i a = _mm_setzero_si128();",
+                    "__m128 b = _mm_cvtph_ps(a);",
+                    "__m256 b256 = _mm256_cvtph_ps(a);",
+                    "(void) _mm_cvtps_ph(b, 0);",
+                    "(void) _mm256_cvtps_ph(b256, 0);"
+                ],
+                "qmake": [
+                    "!defined(QMAKE_CFLAGS_F16C, var): error(\"This compiler does not support F16C\")",
+                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_F16C"
+                ]
+            }
         },
         "avx": {
             "label": "AVX instructions",
             "type": "compile",
-            "test": "common/avx"
+            "test": {
+                "include": "immintrin.h",
+                "main": [
+                    "__m256d a = _mm256_setzero_pd();",
+                    "__m256d b = _mm256_set1_pd(42.42);",
+                    "(void) _mm256_add_pd(a, b);"
+                ],
+                "qmake": [
+                    "!defined(QMAKE_CFLAGS_AVX, var): error(\"This compiler does not support AVX\")",
+                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX"
+                ]
+            }
         },
         "avx2": {
             "label": "AVX2 instructions",
             "type": "compile",
-            "test": "common/avx2"
+            "test": {
+                "include": "immintrin.h",
+                "main": [
+                    "// AVX",
+                    "_mm256_zeroall();",
+                    "__m256i a = _mm256_setzero_si256();",
+                    "// AVX2",
+                    "__m256i b = _mm256_and_si256(a, a);",
+                    "(void) _mm256_add_epi8(a, b);"
+                ],
+                "qmake": [
+                    "!defined(QMAKE_CFLAGS_AVX2, var): error(\"This compiler does not support AVX2\")",
+                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX2"
+                ]
+            }
         },
         "avx512f": {
             "label": "AVX512 F instructions",
@@ -395,33 +563,58 @@
             "type": "subarch",
             "subarch": "neon"
         },
-
         "posix_fallocate": {
             "label": "POSIX fallocate()",
             "type": "compile",
-            "test": "unix/posix_fallocate"
+            "test": {
+                "include": [ "fcntl.h", "unistd.h" ],
+                "main": "(void) posix_fallocate(0, 0, 0);"
+            }
         },
         "alloca_stdlib_h": {
             "label": "alloca() in stdlib.h",
             "type": "compile",
-            "test": "common/alloca"
+            "test": {
+                "include": "stdlib.h",
+                "main": "alloca(1);"
+            }
         },
         "alloca_h": {
             "label": "alloca() in alloca.h",
             "type": "compile",
-            "test": "common/alloca",
-            "args": "DEFINES+=USE_ALLOCA_H"
+            "test": {
+                "include": "alloca.h",
+                "tail": [
+                    "#ifdef __QNXNTO__",
+                    "// extra include needed in QNX7 to define NULL for the alloca() macro",
+                    "#  include <stddef.h>",
+                    "#endif"
+                ],
+                "main": "alloca(1);"
+            }
         },
         "alloca_malloc_h": {
             "label": "alloca() in malloc.h",
             "type": "compile",
-            "test": "common/alloca",
-            "args": "DEFINES+=USE_MALLOC_H"
+            "test": {
+                "include": "malloc.h",
+                "main": "alloca(1);"
+            }
         },
         "stack_protector": {
             "label": "stack protection",
             "type": "compile",
-            "test": "unix/stack-protector"
+            "test": {
+                "head": [
+                    "#ifdef __QNXNTO__",
+                    "#  include <sys/neutrino.h>",
+                    "#  if _NTO_VERSION < 700",
+                    "#    error stack-protector not used (by default) before QNX 7.0.0.",
+                    "#  endif",
+                    "#endif"
+                ],
+                "qmake": "QMAKE_CXXFLAGS += -fstack-protector-strong"
+            }
         },
         "incredibuild_xge": {
             "label": "IncrediBuild",

@@ -16,7 +16,10 @@
     "libraries": {
         "cups": {
             "label": "CUPS",
-            "test": "unix/cups",
+            "test": {
+                "include": "cups/cups.h",
+                "main": "cupsGetNamedDest(CUPS_HTTP_DEFAULT, NULL, NULL);  // CUPS 1.4 test"
+            },
             "sources": [
                 "-lcups"
             ]

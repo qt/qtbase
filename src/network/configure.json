@@ -38,7 +38,14 @@
         },
         "libproxy": {
             "label": "libproxy",
-            "test": "common/libproxy",
+            "test": {
+                "include": [ "proxy.h" ],
+                "main": [
+                    "pxProxyFactory *factory = px_proxy_factory_new();",
+                    "px_proxy_factory_get_proxies(factory, \"http://qt-project.org\");",
+                    "px_proxy_factory_free(factory);"
+                ]
+            },
             "sources": [
                 "-lproxy"
             ]
@@ -85,25 +92,66 @@
         "getaddrinfo": {
             "label": "getaddrinfo()",
             "type": "compile",
-            "test": "unix/getaddrinfo",
+            "test": {
+                "head": [
+                    "#include <stdio.h>",
+                    "#include <stdlib.h>",
+                    "#ifdef __MINGW32__",
+                    "#  include <winsock2.h>",
+                    "#  include <ws2tcpip.h>",
+                    "#else",
+                    "#  include <sys/types.h>",
+                    "#  include <sys/socket.h>",
+                    "#  include <netdb.h>",
+                    "#endif"
+                ],
+                "main": [
+                    "addrinfo *res = 0;",
+                    "(void) getaddrinfo(\"foo\", 0, 0, &res);",
+                    "freeaddrinfo(res);",
+                    "gai_strerror(0);"
+                ]
+            },
             "use": "network"
         },
         "getifaddrs": {
             "label": "getifaddrs()",
             "type": "compile",
-            "test": "unix/getifaddrs",
+            "test": {
+                "include": [ "sys/types.h", "sys/socket.h", "net/if.h", "ifaddrs.h" ],
+                "main": [
+                    "ifaddrs *list;",
+                    "getifaddrs(&list);",
+                    "freeifaddrs(list);"
+                ]
+            },
             "use": "network"
         },
         "ipv6ifname": {
             "label": "IPv6 ifname",
             "type": "compile",
-            "test": "unix/ipv6ifname",
+            "test": {
+                "include": [ "sys/types.h", "sys/socket.h", "net/if.h" ],
+                "main": [
+                    "char buf[IFNAMSIZ];",
+                    "if_nametoindex(\"eth0\");",
+                    "if_indextoname(1, buf);"
+                ]
+            },
             "use": "network"
         },
         "sctp": {
             "label": "SCTP support",
             "type": "compile",
-            "test": "unix/sctp",
+            "test": {
+                "include": [ "sys/types.h", "sys/socket.h", "netinet/in.h", "netinet/sctp.h" ],
+                "main": [
+                    "sctp_initmsg sctpInitMsg;",
+                    "socklen_t sctpInitMsgSize = sizeof(sctpInitMsg);",
+                    "(void) socket(PF_INET, SOCK_STREAM, IPPROTO_SCTP);",
+                    "(void) getsockopt(-1, SOL_SCTP, SCTP_INITMSG, &sctpInitMsg, &sctpInitMsgSize);"
+                ]
+            },
             "use": "network"
         }
     },
