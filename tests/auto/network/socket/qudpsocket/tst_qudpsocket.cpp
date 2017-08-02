@@ -213,7 +213,7 @@ void tst_QUdpSocket::initTestCase_data()
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
     networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession = QSharedPointer<QNetworkSession>(new QNetworkSession(networkConfiguration));
+    networkSession = QSharedPointer<QNetworkSession>::create(networkConfiguration);
     if (!networkSession->isOpen()) {
         networkSession->open();
         QVERIFY(networkSession->waitForOpened(30000));

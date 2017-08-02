@@ -138,7 +138,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_enterInteractiveMode())
     Q_PRIVATE_SLOT(d_func(), void _q_processFocusChanged(QWidget *, QWidget *))
     friend class QMdiAreaPrivate;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     friend class QMdiAreaTabBar;
 #endif
     friend class QMdi::ControlContainer;

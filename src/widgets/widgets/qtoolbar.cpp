@@ -42,7 +42,9 @@
 #ifndef QT_NO_TOOLBAR
 
 #include <qapplication.h>
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
+#endif
 #include <qevent.h>
 #include <qlayout.h>
 #include <qmainwindow.h>

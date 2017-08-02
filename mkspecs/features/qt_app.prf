@@ -14,6 +14,10 @@ TEMPLATE = app
 load(qt_build_paths)
 DESTDIR = $$MODULE_BASE_OUTDIR/bin
 
+isEmpty(VERSION): VERSION = $$MODULE_VERSION
+isEmpty(QMAKE_TARGET_DESCRIPTION): \
+    QMAKE_TARGET_DESCRIPTION = "Qt $$title($$TARGET)"
+
 isEmpty(QMAKE_INFO_PLIST): CONFIG -= app_bundle
 
 # This decreases the binary size for tools if statically linked

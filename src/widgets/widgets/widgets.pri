@@ -5,13 +5,7 @@ HEADERS += \
         widgets/qbuttongroup_p.h \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
-        widgets/qcalendarwidget.h \
-        widgets/qcombobox.h \
-        widgets/qcombobox_p.h \
         widgets/qdial.h \
-        widgets/qdockwidget.h \
-        widgets/qdockwidget_p.h \
-        widgets/qdockarealayout_p.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
         widgets/qgroupbox.h \
@@ -40,9 +34,6 @@ HEADERS += \
         widgets/qsplitter_p.h \
         widgets/qstackedwidget.h \
         widgets/qstatusbar.h \
-        widgets/qtabbar.h \
-        widgets/qtabbar_p.h \
-        widgets/qtabwidget.h \
         widgets/qtextedit.h \
         widgets/qtextedit_p.h \
         widgets/qtextbrowser.h \
@@ -67,11 +58,7 @@ HEADERS += \
 SOURCES += \
         widgets/qbuttongroup.cpp \
         widgets/qabstractspinbox.cpp \
-        widgets/qcalendarwidget.cpp \
-        widgets/qcombobox.cpp \
         widgets/qdial.cpp \
-        widgets/qdockwidget.cpp \
-        widgets/qdockarealayout.cpp \
         widgets/qeffects.cpp \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
@@ -92,8 +79,6 @@ SOURCES += \
         widgets/qsplitter.cpp \
         widgets/qstackedwidget.cpp \
         widgets/qstatusbar.cpp \
-        widgets/qtabbar.cpp \
-        widgets/qtabwidget.cpp \
         widgets/qtextedit.cpp \
         widgets/qtextbrowser.cpp \
         widgets/qtoolbar.cpp \
@@ -129,12 +114,25 @@ qtConfig(abstractslider) {
         widgets/qabstractslider.cpp
 }
 
+qtConfig(calendarwidget) {
+    HEADERS += widgets/qcalendarwidget.h
+    SOURCES += widgets/qcalendarwidget.cpp
+}
+
 qtConfig(checkbox) {
     HEADERS += \
         widgets/qcheckbox.h
 
     SOURCES += \
         widgets/qcheckbox.cpp
+}
+
+qtConfig(combobox) {
+    HEADERS += \
+        widgets/qcombobox.h \
+        widgets/qcombobox_p.h
+
+    SOURCES += widgets/qcombobox.cpp
 }
 
 qtConfig(commandlinkbutton) {
@@ -152,6 +150,17 @@ qtConfig(datetimeedit) {
 
     SOURCES += \
          widgets/qdatetimeedit.cpp
+}
+
+qtConfig(dockwidget) {
+    HEADERS += \
+        widgets/qdockwidget.h \
+        widgets/qdockwidget_p.h \
+        widgets/qdockarealayout_p.h
+
+    SOURCES += \
+        widgets/qdockwidget.cpp \
+        widgets/qdockarealayout.cpp
 }
 
 qtConfig(fontcombobox) {
@@ -212,6 +221,19 @@ qtConfig(splashscreen) {
 
     SOURCES += \
         widgets/qsplashscreen.cpp
+}
+
+qtConfig(tabbar) {
+    HEADERS += \
+        widgets/qtabbar.h \
+        widgets/qtabbar_p.h
+
+    SOURCES += widgets/qtabbar.cpp
+}
+
+qtConfig(tabwidget) {
+    HEADERS += widgets/qtabwidget.h
+    SOURCES += widgets/qtabwidget.cpp
 }
 
 qtConfig(widgettextcontrol) {

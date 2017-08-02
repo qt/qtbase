@@ -54,7 +54,9 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qpointer.h>
 #include <QtWidgets/qaccessiblewidget.h>
+#if QT_CONFIG(itemviews)
 #include <QtWidgets/qabstractitemview.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -105,7 +107,7 @@ public:
 };
 #endif // QT_NO_SCROLLAREA
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 class QAccessibleTabBar : public QAccessibleWidget
 {
 public:
@@ -122,9 +124,9 @@ protected:
     QTabBar *tabBar() const;
     mutable QHash<int, QAccessible::Id> m_childInterfaces;
 };
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
 class QAccessibleComboBox : public QAccessibleWidget
 {
 public:
@@ -146,7 +148,7 @@ public:
 protected:
     QComboBox *comboBox() const;
 };
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
 
 #endif // QT_NO_ACCESSIBILITY
 

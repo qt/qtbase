@@ -75,7 +75,7 @@
     // window.screen.visibleFrame directly, as that ensures we have the same
     // behavior for both use-cases/APIs.
     Q_ASSERT(window == m_cocoaWindow->nativeWindow());
-    return m_cocoaWindow->screen()->availableGeometry().toCGRect();
+    return NSRectFromCGRect(m_cocoaWindow->screen()->availableGeometry().toCGRect());
 }
 
 #if QT_MACOS_DEPLOYMENT_TARGET_BELOW(__MAC_10_11)
@@ -90,7 +90,7 @@
 {
     Q_UNUSED(proposedSize);
     Q_ASSERT(window == m_cocoaWindow->nativeWindow());
-    return m_cocoaWindow->screen()->geometry().size().toCGSize();
+    return NSSizeFromCGSize(m_cocoaWindow->screen()->geometry().size().toCGSize());
 }
 #endif
 

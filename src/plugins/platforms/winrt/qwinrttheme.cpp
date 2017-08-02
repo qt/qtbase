@@ -61,6 +61,26 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaTheme, "qt.qpa.theme")
 
+class QWinRTApiInformationHandler {
+public:
+    QWinRTApiInformationHandler()
+    {
+        HRESULT hr;
+        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Foundation_Metadata_ApiInformation).Get(),
+                                    IID_PPV_ARGS(&m_apiInformationStatics));
+        Q_ASSERT_SUCCEEDED(hr);
+    }
+
+    ComPtr<IApiInformationStatics> apiInformationStatics() const
+    {
+        return m_apiInformationStatics;
+    }
+
+private:
+    ComPtr<IApiInformationStatics> m_apiInformationStatics;
+};
+Q_GLOBAL_STATIC(QWinRTApiInformationHandler, gApiHandler);
+
 static IUISettings *uiSettings()
 {
     static ComPtr<IUISettings> settings;
@@ -86,17 +106,16 @@ static inline QColor fromColor(const Color &color)
 
 static bool uiColorSettings(const wchar_t *value, UIElementType type, Color *color)
 {
-    static ComPtr<IApiInformationStatics> apiInformationStatics;
-    HRESULT hr;
+    ComPtr<IApiInformationStatics> apiInformationStatics = gApiHandler->apiInformationStatics();
     if (!apiInformationStatics) {
-        hr = RoGetActivationFactory(HString::MakeReference(RuntimeClass_Windows_Foundation_Metadata_ApiInformation).Get(),
-                                    IID_PPV_ARGS(&apiInformationStatics));
-        RETURN_FALSE_IF_FAILED("Could not get ApiInformationStatics");
+        qErrnoWarning("Could not get ApiInformationStatics");
+        return false;
     }
 
     static const HStringReference enumRef(L"Windows.UI.ViewManagement.UIElementType");
     HStringReference valueRef(value);
 
+    HRESULT hr;
     boolean exists;
     hr = apiInformationStatics->IsEnumNamedValuePresent(enumRef.Get(), valueRef.Get(), &exists);
 
@@ -149,6 +168,14 @@ static void nativeColorSettings(QPalette &p)
     // Starting with SDK 15063 those have been removed.
 #ifndef QT_WINRT_DISABLE_PHONE_COLORS
     //Phone related
+    ComPtr<IApiInformationStatics> apiInformationStatics = gApiHandler->apiInformationStatics();
+    boolean phoneApiPresent = false;
+    HRESULT hr;
+    HStringReference phoneRef(L"Windows.Phone.PhoneContract");
+    hr = apiInformationStatics.Get()->IsApiContractPresentByMajor(phoneRef.Get(), 1, &phoneApiPresent);
+    if (FAILED(hr) || !phoneApiPresent)
+        return;
+
     if (uiColorSettings(L"PopupBackground", UIElementType_PopupBackground, &color)) {
         p.setColor(QPalette::ToolTipBase, fromColor(color));
         p.setColor(QPalette::AlternateBase, fromColor(color));

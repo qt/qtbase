@@ -56,7 +56,7 @@ class tst_QDBusAbstractInterface: public QObject
             return Pinger();
         if (service.isEmpty() && !service.isNull())
             service = con.baseService();
-        return Pinger(new org::qtproject::QtDBus::Pinger(service, path, con));
+        return Pinger::create(service, path, con);
     }
 
     Pinger getPingerPeer(const QString &path = "/", const QString &service = "")
@@ -64,7 +64,7 @@ class tst_QDBusAbstractInterface: public QObject
         QDBusConnection con = QDBusConnection("peer");
         if (!con.isConnected())
             return Pinger();
-        return Pinger(new org::qtproject::QtDBus::Pinger(service, path, con));
+        return Pinger::create(service, path, con);
     }
 
     void resetServer()

@@ -133,7 +133,7 @@ QIBusPlatformInputContext::~QIBusPlatformInputContext (void)
 
 bool QIBusPlatformInputContext::isValid() const
 {
-    return d->valid;
+    return d->valid && d->busConnected;
 }
 
 void QIBusPlatformInputContext::invokeAction(QInputMethod::Action a, int)

@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractitemview.h>
 
+QT_REQUIRE_CONFIG(listview);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_LISTVIEW
 
 class QListViewPrivate;
 
@@ -194,8 +193,6 @@ private:
     Q_DECLARE_PRIVATE(QListView)
     Q_DISABLE_COPY(QListView)
 };
-
-#endif // QT_NO_LISTVIEW
 
 QT_END_NAMESPACE
 

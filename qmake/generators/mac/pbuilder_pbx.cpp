@@ -576,13 +576,13 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                            FileFixifyFromOutdir | FileFixifyAbsolute));
 
     //DUMP SOURCES
+    QSet<QString> processedSources;
     QMap<QString, ProStringList> groups;
     QList<ProjectBuilderSources> sources;
     sources.append(ProjectBuilderSources("SOURCES", true));
     sources.append(ProjectBuilderSources("GENERATED_SOURCES", true));
     sources.append(ProjectBuilderSources("GENERATED_FILES"));
     sources.append(ProjectBuilderSources("HEADERS"));
-    sources.append(ProjectBuilderSources("QMAKE_INTERNAL_INCLUDED_FILES"));
     if(!project->isEmpty("QMAKE_EXTRA_COMPILERS")) {
         const ProStringList &quc = project->values("QMAKE_EXTRA_COMPILERS");
         for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
@@ -626,6 +626,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             }
         }
     }
+    sources.append(ProjectBuilderSources("QMAKE_INTERNAL_INCLUDED_FILES"));
     for(int source = 0; source < sources.size(); ++source) {
         ProStringList &src_list = project->values(ProKey("QMAKE_PBX_" + sources.at(source).keyName()));
         ProStringList &root_group_list = project->values("QMAKE_PBX_GROUPS");
@@ -639,6 +640,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 continue;
             if(file.endsWith(Option::prl_ext))
                 continue;
+            if (processedSources.contains(file))
+                continue;
+            processedSources.insert(file);
 
             bool in_root = true;
             QString src_key = keyFor(file);

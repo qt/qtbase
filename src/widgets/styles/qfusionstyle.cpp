@@ -42,7 +42,9 @@
 
 #if QT_CONFIG(style_fusion) || defined(QT_PLUGIN)
 #include "qcommonstyle_p.h"
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
+#endif
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif

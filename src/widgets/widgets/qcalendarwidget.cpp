@@ -39,8 +39,6 @@
 
 #include "qcalendarwidget.h"
 
-#ifndef QT_NO_CALENDARWIDGET
-
 #include <qabstractitemmodel.h>
 #include <qitemdelegate.h>
 #include <qdatetime.h>
@@ -3129,5 +3127,3 @@ QT_END_NAMESPACE
 
 #include "qcalendarwidget.moc"
 #include "moc_qcalendarwidget.cpp"
-
-#endif //QT_NO_CALENDARWIDGET

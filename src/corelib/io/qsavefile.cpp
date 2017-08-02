@@ -232,7 +232,11 @@ bool QSaveFile::open(OpenMode mode)
     }
 
     d->fileEngine = new QTemporaryFileEngine;
-    static_cast<QTemporaryFileEngine *>(d->fileEngine)->initialize(d->finalFileName, 0666);
+    // if the target file exists, we'll copy its permissions below,
+    // but until then, let's ensure the temporary file is not accessible
+    // to a third party
+    int perm = (existingFile.exists() ? 0600 : 0666);
+    static_cast<QTemporaryFileEngine *>(d->fileEngine)->initialize(d->finalFileName, perm);
     // Same as in QFile: QIODevice provides the buffering, so there's no need to request it from the file engine.
     if (!d->fileEngine->open(mode | QIODevice::Unbuffered)) {
         QFileDevice::FileError err = d->fileEngine->error();

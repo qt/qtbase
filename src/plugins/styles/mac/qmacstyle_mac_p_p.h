@@ -48,7 +48,9 @@
 #include <QtWidgets/private/qcommonstyle_p.h>
 #include "qmacstyle_mac_p.h"
 #include <private/qapplication_p.h>
+#if QT_CONFIG(combobox)
 #include <private/qcombobox_p.h>
+#endif
 #include <private/qpainter_p.h>
 #include <private/qstylehelper_p.h>
 #include <qapplication.h>
@@ -60,7 +62,9 @@
 #if QT_CONFIG(dialogbuttonbox)
 #include <qdialogbuttonbox.h>
 #endif
+#if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
+#endif
 #include <qevent.h>
 #include <qfocusframe.h>
 #include <qformlayout.h>
@@ -69,7 +73,9 @@
 #include <qheaderview.h>
 #include <qlayout.h>
 #include <qlineedit.h>
+#if QT_CONFIG(listview)
 #include <qlistview.h>
+#endif
 #include <qmainwindow.h>
 #include <qmap.h>
 #include <qmenubar.h>
@@ -249,7 +255,7 @@ public:
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;
 #endif
 

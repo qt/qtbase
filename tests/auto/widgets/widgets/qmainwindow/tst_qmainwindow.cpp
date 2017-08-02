@@ -29,8 +29,10 @@
 
 #include <QtTest/QtTest>
 
-
+#include <QtWidgets/qtwidgetsglobal.h>
+#if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
+#endif
 #include <qlayout.h>
 #include <qmainwindow.h>
 #include <qmenubar.h>
@@ -45,7 +47,7 @@
 #include <private/qmainwindowlayout_p.h>
 #include <private/qdockarealayout_p.h>
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 #include <qtabbar.h>
 #endif
 
@@ -148,7 +150,7 @@ private slots:
     void QTBUG21378_animationFinished();
     void resizeDocks();
     void resizeDocks_data();
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_TABBAR)
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
     void QTBUG52175_tabifiedDockWidgetActivated();
 #endif
 };
@@ -2044,7 +2046,7 @@ void tst_QMainWindow::resizeDocks()
     }
 }
 
-#if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_TABBAR)
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabbar)
 void tst_QMainWindow::QTBUG52175_tabifiedDockWidgetActivated()
 {
     QMainWindow w;

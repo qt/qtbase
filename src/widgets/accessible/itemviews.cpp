@@ -43,7 +43,9 @@
 #if QT_CONFIG(tableview)
 #include <qtableview.h>
 #endif
+#if QT_CONFIG(listview)
 #include <qlistview.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #include <private/qtreeview_p.h>
@@ -54,7 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ITEMVIEWS
 /*
 Implementation of the IAccessible2 table2 interface. Much simpler than
 the other table interfaces since there is only the main table and cells:
@@ -96,7 +97,7 @@ QAccessibleTable::QAccessibleTable(QWidget *w)
         m_role = QAccessible::Tree;
     } else
 #endif
-#ifndef QT_NO_LISTVIEW
+#if QT_CONFIG(listview)
     if (qobject_cast<const QListView*>(view())) {
         m_role = QAccessible::List;
     } else
@@ -1212,8 +1213,6 @@ QHeaderView *QAccessibleTableHeaderCell::headerView() const
     }
     return header;
 }
-
-#endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
 

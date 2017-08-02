@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(tabbar);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TABBAR
 
 class QIcon;
 class QTabBarPrivate;
@@ -220,8 +219,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_scrollTabs())
     Q_PRIVATE_SLOT(d_func(), void _q_closeTab())
 };
-
-#endif // QT_NO_TABBAR
 
 QT_END_NAMESPACE
 

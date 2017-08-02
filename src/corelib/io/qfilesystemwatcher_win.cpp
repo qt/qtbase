@@ -113,7 +113,8 @@ public:
 
 signals:
     void driveAdded();
-    void driveRemoved(const QString &);
+    void driveRemoved(); // Some drive removed
+    void driveRemoved(const QString &); // Watched/known drive removed
     void driveLockForRemoval(const QString &);
     void driveLockForRemovalFailed(const QString &);
 
@@ -252,7 +253,8 @@ inline void QWindowsRemovableDriveListener::handleDbtDriveArrivalRemoval(const M
         case DBT_DEVICEARRIVAL:
             emit driveAdded();
             break;
-        case DBT_DEVICEREMOVECOMPLETE: // handled by DBT_DEVTYP_HANDLE above
+        case DBT_DEVICEREMOVECOMPLETE: // See above for handling of drives registered with watchers
+            emit driveRemoved();
             break;
         }
     }
@@ -348,7 +350,8 @@ QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine(QObject *parent
                      this, &QWindowsFileSystemWatcherEngine::driveLockForRemoval);
     QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveLockForRemovalFailed,
                      this, &QWindowsFileSystemWatcherEngine::driveLockForRemovalFailed);
-    QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveRemoved,
+    QObject::connect(m_driveListener,
+                     QOverload<const QString &>::of(&QWindowsRemovableDriveListener::driveRemoved),
                      this, &QWindowsFileSystemWatcherEngine::driveRemoved);
 #endif // !Q_OS_WINRT
 }

@@ -39,7 +39,6 @@
 
 #include "qitemdelegate.h"
 
-#ifndef QT_NO_ITEMVIEWS
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
 #include <qbrush.h>
@@ -1199,5 +1198,3 @@ QStyleOptionViewItem QItemDelegate::setOptions(const QModelIndex &index,
 QT_END_NAMESPACE
 
 #include "moc_qitemdelegate.cpp"
-
-#endif // QT_NO_ITEMVIEWS

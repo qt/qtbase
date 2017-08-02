@@ -6,7 +6,6 @@ osx
 windows
 osx
 [asyncReadDatagram]
-windows
 osx
 [multicastLeaveAfterClose]
 osx

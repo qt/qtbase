@@ -55,7 +55,6 @@
 #include <QtGui/qpainter.h>
 #include <QtWidgets/qstyleoption.h>
 #include <QtWidgets/qgraphicsview.h>
-#include <QtWidgets/qlistview.h>
 #include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qtextedit.h>
 

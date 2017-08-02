@@ -3344,7 +3344,7 @@ void tst_QAccessibility::tableTest()
 
 void tst_QAccessibility::calendarWidgetTest()
 {
-#ifndef QT_NO_CALENDARWIDGET
+#if QT_CONFIG(calendarwidget)
     {
     QCalendarWidget calendarWidget;
 
@@ -3420,12 +3420,12 @@ void tst_QAccessibility::calendarWidgetTest()
 
     }
     QTestAccessibility::clearEvents();
-#endif // QT_NO_CALENDARWIDGET
+#endif // QT_CONFIG(calendarwidget)
 }
 
 void tst_QAccessibility::dockWidgetTest()
 {
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     // Set up a proper main window with two dock widgets
     QMainWindow *mw = new QMainWindow();
     QFrame *central = new QFrame(mw);
@@ -3558,7 +3558,7 @@ void tst_QAccessibility::dockWidgetTest()
 
     delete mw;
     QTestAccessibility::clearEvents();
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 }
 
 void tst_QAccessibility::comboBoxTest()

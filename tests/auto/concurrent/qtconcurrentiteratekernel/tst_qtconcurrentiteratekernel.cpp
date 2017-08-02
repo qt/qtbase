@@ -81,7 +81,6 @@ private slots:
     void stresstest();
     void noIterations();
     void throttling();
-    void blockSize();
     void multipleResults();
 };
 
@@ -238,50 +237,6 @@ void tst_QtConcurrentIterateKernel::throttling()
 
 
     QCOMPARE(threads.count(), 1);
-}
-
-class BlockSizeRecorder : public IterateKernel<TestIterator, void>
-{
-public:
-    BlockSizeRecorder(TestIterator begin, TestIterator end)
-        : IterateKernel<TestIterator, void>(begin, end)
-        , peakBlockSize(0)
-        , peakBegin(0)
-    {}
-
-    inline bool runIterations(TestIterator, int begin, int end, void *)
-    {
-        const int blockSize = end - begin;
-        if (blockSize > peakBlockSize) {
-            peakBlockSize = blockSize;
-            peakBegin = begin;
-        }
-        return false;
-    }
-    int peakBlockSize;
-    int peakBegin;
-};
-
-static QByteArray msgBlockSize(const BlockSizeRecorder &recorder, int expectedMinimumBlockSize)
-{
-    return QByteArrayLiteral("peakBlockSize=") + QByteArray::number(recorder.peakBlockSize)
-        + QByteArrayLiteral(" is less than expectedMinimumBlockSize=")
-        + QByteArray::number(expectedMinimumBlockSize)
-        + QByteArrayLiteral(", reached at: ") + QByteArray::number(recorder.peakBegin)
-        + QByteArrayLiteral(" (ideal thread count: ") + QByteArray::number(QThread::idealThreadCount())
-        + ')';
-}
-
-void tst_QtConcurrentIterateKernel::blockSize()
-{
-    const int expectedMinimumBlockSize = 1024 / QThread::idealThreadCount();
-    BlockSizeRecorder recorder(0, 10000);
-    recorder.startBlocking();
-#ifdef Q_OS_WIN
-    if (recorder.peakBlockSize < expectedMinimumBlockSize)
-        QEXPECT_FAIL("", msgBlockSize(recorder, expectedMinimumBlockSize).constData(), Abort);
-#endif // Q_OS_WIN
-    QVERIFY2(recorder.peakBlockSize >= expectedMinimumBlockSize, msgBlockSize(recorder, expectedMinimumBlockSize));
 }
 
 class MultipleResultsFor : public IterateKernel<TestIterator, int>

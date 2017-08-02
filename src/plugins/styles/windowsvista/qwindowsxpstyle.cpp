@@ -56,12 +56,18 @@
 
 #include <qdesktopwidget.h>
 #include <qtoolbutton.h>
+#if QT_CONFIG(tabbar)
 #include <qtabbar.h>
+#endif
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
+#endif
 #include <qscrollbar.h>
 #include <qheaderview.h>
 #include <qspinbox.h>
+#if QT_CONFIG(listview)
 #include <qlistview.h>
+#endif
 #include <qstackedwidget.h>
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
@@ -1151,9 +1157,9 @@ void QWindowsXPStyle::polish(QWidget *widget)
 #endif
         || qobject_cast<QToolButton*>(widget)
         || qobject_cast<QTabBar*>(widget)
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
         || qobject_cast<QComboBox*>(widget)
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
         || qobject_cast<QScrollBar*>(widget)
         || qobject_cast<QSlider*>(widget)
         || qobject_cast<QHeaderView*>(widget)
@@ -1226,9 +1232,9 @@ void QWindowsXPStyle::unpolish(QWidget *widget)
 #endif
         || qobject_cast<QToolButton*>(widget)
         || qobject_cast<QTabBar*>(widget)
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
         || qobject_cast<QComboBox*>(widget)
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
         || qobject_cast<QScrollBar*>(widget)
         || qobject_cast<QSlider*>(widget)
         || qobject_cast<QHeaderView*>(widget)
@@ -2292,7 +2298,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 drawItemText(p, mbi->rect, alignment, mbi->palette, mbi->state & State_Enabled, mbi->text, textRole);
         }
         return;
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     case CE_DockWidgetTitle:
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option))
         {
@@ -2417,7 +2423,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             return;
         }
         break;
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 #if QT_CONFIG(rubberband)
     case CE_RubberBand:
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(option)) {
@@ -2554,7 +2560,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 #endif // QT_NO_SPINBOX
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option))
         {
@@ -2605,7 +2611,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             }
         }
         break;
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(option))
         {

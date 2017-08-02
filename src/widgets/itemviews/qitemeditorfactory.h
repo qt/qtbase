@@ -46,10 +46,9 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qvariant.h>
 
+QT_REQUIRE_CONFIG(itemviews);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ITEMVIEWS
 
 class QWidget;
 
@@ -110,8 +109,6 @@ public:
 private:
     QHash<int, QItemEditorCreatorBase *> creatorMap;
 };
-
-#endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
 

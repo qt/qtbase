@@ -158,12 +158,12 @@ public:
     QMdiArea::WindowOrder activationOrder;
     QMdiArea::AreaOptions options;
     QMdiArea::ViewMode viewMode;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     bool documentMode;
     bool tabsClosable;
     bool tabsMovable;
 #endif
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     QTabWidget::TabShape tabShape;
     QTabWidget::TabPosition tabPosition;
 #endif
@@ -213,7 +213,7 @@ public:
     QList<QMdiSubWindow *> subWindowList(QMdiArea::WindowOrder, bool reversed = false) const;
     void disconnectSubWindow(QObject *subWindow);
     void setViewMode(QMdiArea::ViewMode mode);
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     void updateTabBarGeometry();
     void refreshTabBar();
 #endif

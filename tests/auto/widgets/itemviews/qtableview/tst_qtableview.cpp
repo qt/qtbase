@@ -3442,7 +3442,7 @@ void tst_QTableView::editSpanFromDirections_data()
        +---+---+ */
     keyPresses.clear();
     keyPresses << Qt::Key_Right << Qt::Key_Down;
-    model.reset(new QStandardItemModel(4, 2));
+    model = QSharedPointer<QStandardItemModel>::create(4, 2);
     QTest::newRow("row span, top down")
         << keyPresses << model << 1 << 1 << 2 << 1 << model->index(1, 1) << model->index(1, 1);
 
@@ -3455,7 +3455,7 @@ void tst_QTableView::editSpanFromDirections_data()
        +---+---+---+ */
     keyPresses.clear();
     keyPresses << Qt::Key_End << Qt::Key_Down << Qt::Key_Left;
-    model.reset(new QStandardItemModel(3, 3));
+    model = QSharedPointer<QStandardItemModel>::create(3, 3);
     QTest::newRow("row span, right to left")
         << keyPresses << model << 1 << 1 << 2 << 1 << model->index(1, 1) << model->index(1, 1);
 
@@ -3468,7 +3468,7 @@ void tst_QTableView::editSpanFromDirections_data()
        +---+---+---+ */
     keyPresses.clear();
     keyPresses << Qt::Key_PageDown << Qt::Key_Right;
-    model.reset(new QStandardItemModel(3, 3));
+    model = QSharedPointer<QStandardItemModel>::create(3, 3);
     QTest::newRow("row span, left to right")
         << keyPresses << model << 1 << 1 << 2 << 1 << model->index(2, 1) << model->index(1, 1);
 
@@ -3481,7 +3481,7 @@ void tst_QTableView::editSpanFromDirections_data()
        +---+---+---+ */
     keyPresses.clear();
     keyPresses << Qt::Key_PageDown << Qt::Key_Up;
-    model.reset(new QStandardItemModel(3, 3));
+    model = QSharedPointer<QStandardItemModel>::create(3, 3);
     QTest::newRow("col span, bottom up")
         << keyPresses << model << 1 << 0 << 1 << 3 << model->index(1, 0) << model->index(1, 0);
 
@@ -3494,7 +3494,7 @@ void tst_QTableView::editSpanFromDirections_data()
        +---+---+---+ */
     keyPresses.clear();
     keyPresses << Qt::Key_PageDown << Qt::Key_Right << Qt::Key_Up;
-    model.reset(new QStandardItemModel(3, 3));
+    model = QSharedPointer<QStandardItemModel>::create(3, 3);
     QTest::newRow("col span, bottom up #2")
         << keyPresses << model << 1 << 0 << 1 << 3 << model->index(1, 1) << model->index(1, 0);
 
@@ -3507,7 +3507,7 @@ void tst_QTableView::editSpanFromDirections_data()
        +---+---+---+ */
     keyPresses.clear();
     keyPresses << Qt::Key_End << Qt::Key_Down;
-    model.reset(new QStandardItemModel(3, 3));
+    model = QSharedPointer<QStandardItemModel>::create(3, 3);
     QTest::newRow("col span, top down")
         << keyPresses << model << 1 << 0 << 1 << 3 << model->index(1, 2) << model->index(1, 0);
 }

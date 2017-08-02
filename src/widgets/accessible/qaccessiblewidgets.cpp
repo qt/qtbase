@@ -62,11 +62,17 @@
 #include <QRubberBand>
 #endif
 #include <QTextBrowser>
+#if QT_CONFIG(calendarwidget)
 #include <QCalendarWidget>
+#endif
+#if QT_CONFIG(itemviews)
 #include <QAbstractItemView>
+#endif
+#if QT_CONFIG(dockwidget)
 #include <QDockWidget>
-#include <QMainWindow>
 #include <private/qdockwidget_p.h>
+#endif
+#include <QMainWindow>
 #include <QFocusFrame>
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -506,7 +512,7 @@ QAccessible::Role QAccessibleTextBrowser::role() const
 }
 #endif // QT_NO_TEXTBROWSER && QT_NO_CURSOR
 
-#ifndef QT_NO_CALENDARWIDGET
+#if QT_CONFIG(calendarwidget)
 // ===================== QAccessibleCalendarWidget ========================
 QAccessibleCalendarWidget::QAccessibleCalendarWidget(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Table)
@@ -561,9 +567,9 @@ QWidget *QAccessibleCalendarWidget::navigationBar() const
     }
     return 0;
 }
-#endif // QT_NO_CALENDARWIDGET
+#endif // QT_CONFIG(calendarwidget)
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
 
 // Dock Widget - order of children:
 // - Content widget
@@ -644,7 +650,7 @@ QString QAccessibleDockWidget::text(QAccessible::Text t) const
     }
     return QString();
 }
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 
 #ifndef QT_NO_CURSOR
 

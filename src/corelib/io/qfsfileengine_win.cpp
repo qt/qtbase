@@ -141,20 +141,6 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
 {
     Q_Q(QFSFileEngine);
 
-    // Check if the file name is valid:
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#naming_conventions
-    const QString fileName = fileEntry.fileName();
-    for (QString::const_iterator it = fileName.constBegin(), end = fileName.constEnd();
-         it != end; ++it) {
-        const QChar c = *it;
-        if (c == QLatin1Char('<') || c == QLatin1Char('>') || c == QLatin1Char(':') ||
-            c == QLatin1Char('\"') || c == QLatin1Char('/') || c == QLatin1Char('\\') ||
-            c == QLatin1Char('|') || c == QLatin1Char('?') || c == QLatin1Char('*')) {
-            q->setError(QFile::OpenError, QStringLiteral("Invalid file name"));
-            return false;
-        }
-    }
-
     // All files are opened in share mode (both read and write).
     DWORD shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 

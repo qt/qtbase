@@ -68,7 +68,7 @@ class Q_WIDGETS_EXPORT QCommonStylePrivate : public QStylePrivate
     Q_DECLARE_PUBLIC(QCommonStyle)
 public:
     inline QCommonStylePrivate() :
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     cachedOption(0),
 #endif
     animationFps(30)
@@ -79,12 +79,12 @@ public:
 #ifndef QT_NO_ANIMATION
         qDeleteAll(animations);
 #endif
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
         delete cachedOption;
 #endif
     }
 
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     void viewItemDrawText(QPainter *p, const QStyleOptionViewItem *option, const QRect &rect) const;
     void viewItemLayout(const QStyleOptionViewItem *opt,  QRect *checkRect,
                         QRect *pixmapRect, QRect *textRect, bool sizehint) const;
@@ -110,7 +110,7 @@ public:
     }
 #endif
     mutable QIcon tabBarcloseButtonIcon;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
 #endif
 

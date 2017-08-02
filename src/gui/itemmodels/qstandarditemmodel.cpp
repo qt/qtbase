@@ -148,8 +148,14 @@ void QStandardItemPrivate::setChild(int row, int column, QStandardItem *item,
     if (model && emitChanged)
         emit model->layoutChanged();
 
-    if (emitChanged && model)
-        model->d_func()->itemChanged(item);
+    if (emitChanged && model) {
+        if (item) {
+            model->d_func()->itemChanged(item);
+        } else {
+            const QModelIndex idx = model->index(row, column, q->index());
+            emit model->dataChanged(idx, idx);
+        }
+    }
 }
 
 
@@ -174,7 +180,9 @@ void QStandardItemPrivate::childDeleted(QStandardItem *child)
 {
     int index = childIndex(child);
     Q_ASSERT(index != -1);
+    const auto modelIndex = child->index();
     children.replace(index, 0);
+    emit model->dataChanged(modelIndex, modelIndex);
 }
 
 /*!
@@ -476,6 +484,7 @@ bool QStandardItemPrivate::insertColumns(int column, int count, const QList<QSta
 void QStandardItemModelPrivate::itemChanged(QStandardItem *item)
 {
     Q_Q(QStandardItemModel);
+    Q_ASSERT(item);
     if (item->d_func()->parent == 0) {
         // Header item
         int idx = columnHeaderItems.indexOf(item);
@@ -1720,6 +1729,8 @@ bool QStandardItem::hasChildren() const
     Sets the child item at (\a row, \a column) to \a item. This item (the parent
     item) takes ownership of \a item. If necessary, the row count and column
     count are increased to fit the item.
+
+    \note Passing a null pointer as \a item removes the item.
 
     \sa child()
 */

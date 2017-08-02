@@ -79,6 +79,7 @@ void QXcbConnection::initializeXInput2()
             qCDebug(lcQpaXInput, "Using XInput version %d.%d", xiMajor, m_xi2Minor);
             m_xi2Enabled = true;
             xi2SetupDevices();
+            xi2SelectStateEvents();
             break;
         case BadRequest: // Must be an X server with XInput 1
             qCDebug(lcQpaXInput, "X server does not support XInput 2");
@@ -88,6 +89,22 @@ void QXcbConnection::initializeXInput2()
             break;
         }
     }
+}
+
+void QXcbConnection::xi2SelectStateEvents()
+{
+    // These state events do not depend on a specific X window, but are global
+    // for the X client's (application's) state.
+    unsigned int bitMask = 0;
+    unsigned char *xiBitMask = reinterpret_cast<unsigned char *>(&bitMask);
+    XIEventMask xiEventMask;
+    bitMask = XI_HierarchyChangedMask;
+    bitMask |= XI_DeviceChangedMask;
+    xiEventMask.deviceid = XIAllDevices;
+    xiEventMask.mask_len = sizeof(bitMask);
+    xiEventMask.mask = xiBitMask;
+    Display *dpy = static_cast<Display *>(m_xlib_display);
+    XISelectEvents(dpy, DefaultRootWindow(dpy), &xiEventMask, 1);
 }
 
 void QXcbConnection::xi2SetupDevice(void *info, bool removeExisting)
@@ -373,17 +390,6 @@ void QXcbConnection::xi2Select(xcb_window_t window)
 #else
     Q_UNUSED(xiBitMask);
 #endif
-
-    {
-        // Listen for hotplug events
-        XIEventMask xiEventMask;
-        bitMask = XI_HierarchyChangedMask;
-        bitMask |= XI_DeviceChangedMask;
-        xiEventMask.deviceid = XIAllDevices;
-        xiEventMask.mask_len = sizeof(bitMask);
-        xiEventMask.mask = xiBitMask;
-        XISelectEvents(xDisplay, window, &xiEventMask, 1);
-    }
 }
 
 QXcbConnection::TouchDeviceData *QXcbConnection::touchDeviceForId(int id)

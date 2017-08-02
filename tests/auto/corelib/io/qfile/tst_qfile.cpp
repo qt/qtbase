@@ -1155,7 +1155,6 @@ void tst_QFile::invalidFile_data()
 #else
 #if !defined(Q_OS_WINRT)
     QTest::newRow( "colon2" ) << invalidDriveLetter() + QString::fromLatin1(":ail:invalid");
-    QTest::newRow( "date" ) << QString( "testLog-03:20.803Z.txt" );
 #endif
     QTest::newRow( "colon3" ) << QString( ":failinvalid" );
     QTest::newRow( "forwardslash" ) << QString( "fail/invalid" );

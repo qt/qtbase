@@ -167,7 +167,12 @@ QT_END_NAMESPACE
 - (void)onCancelClicked;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSPanelContentsWrapper) : NSView
+@interface QT_MANGLE_NAMESPACE(QNSPanelContentsWrapper) : NSView {
+    NSButton *_okButton;
+    NSButton *_cancelButton;
+    NSView *_panelContents;
+    NSEdgeInsets _panelContentsMargins;
+}
 
 @property (nonatomic, readonly) NSButton *okButton;
 @property (nonatomic, readonly) NSButton *cancelButton;

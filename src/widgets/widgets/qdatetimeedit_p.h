@@ -52,7 +52,6 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include "QtWidgets/qcombobox.h"
 #include "QtWidgets/qcalendarwidget.h"
 #include "QtWidgets/qspinbox.h"
 #include "QtWidgets/qtoolbutton.h"

@@ -68,7 +68,9 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
+#if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
+#endif
 #include "private/qstylesheetstyle_p.h"
 
 #ifndef QT_NO_SHORTCUT

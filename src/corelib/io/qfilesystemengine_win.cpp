@@ -541,13 +541,20 @@ QByteArray fileIdWin8(HANDLE handle)
 QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 {
     QByteArray result;
-    const HANDLE handle =
+
 #ifndef Q_OS_WINRT
+    const HANDLE handle =
         CreateFile((wchar_t*)entry.nativeFilePath().utf16(), 0,
-                   FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+                   FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                   FILE_FLAG_BACKUP_SEMANTICS, NULL);
 #else // !Q_OS_WINRT
+    CREATEFILE2_EXTENDED_PARAMETERS params;
+    params.dwSize = sizeof(params);
+    params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+    params.dwFileFlags = FILE_FLAG_BACKUP_SEMANTICS;
+    const HANDLE handle =
         CreateFile2((const wchar_t*)entry.nativeFilePath().utf16(), 0,
-                    FILE_SHARE_READ, OPEN_EXISTING, NULL);
+                    FILE_SHARE_READ, OPEN_EXISTING, &params);
 #endif // Q_OS_WINRT
     if (handle != INVALID_HANDLE_VALUE) {
         result = id(handle);

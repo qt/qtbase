@@ -139,6 +139,7 @@ private slots:
 
     void formattedDataSize_data();
     void formattedDataSize();
+    void bcp47Name();
 
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -2607,6 +2608,27 @@ void tst_QLocale::formattedDataSize()
     QFETCH(int, bytes);
     QFETCH(QString, output);
     QCOMPARE(QLocale(language).formattedDataSize(bytes, decimalPlaces, units), output);
+}
+
+void tst_QLocale::bcp47Name()
+{
+    QCOMPARE(QLocale("C").bcp47Name(), QStringLiteral("en"));
+    QCOMPARE(QLocale("en").bcp47Name(), QStringLiteral("en"));
+    QCOMPARE(QLocale("en_US").bcp47Name(), QStringLiteral("en"));
+    QCOMPARE(QLocale("en_GB").bcp47Name(), QStringLiteral("en-GB"));
+    QCOMPARE(QLocale("en_DE").bcp47Name(), QStringLiteral("en-DE"));
+    QCOMPARE(QLocale("de_DE").bcp47Name(), QStringLiteral("de"));
+    QCOMPARE(QLocale("sr_RS").bcp47Name(), QStringLiteral("sr"));
+    QCOMPARE(QLocale("sr_Cyrl_RS").bcp47Name(), QStringLiteral("sr"));
+    QCOMPARE(QLocale("sr_Latn_RS").bcp47Name(), QStringLiteral("sr-Latn"));
+    QCOMPARE(QLocale("sr_ME").bcp47Name(), QStringLiteral("sr-ME"));
+    QCOMPARE(QLocale("sr_Cyrl_ME").bcp47Name(), QStringLiteral("sr-Cyrl-ME"));
+    QCOMPARE(QLocale("sr_Latn_ME").bcp47Name(), QStringLiteral("sr-ME"));
+
+    // Fall back to defaults when country isn't in CLDR for this language:
+    QCOMPARE(QLocale("sr_HR").bcp47Name(), QStringLiteral("sr"));
+    QCOMPARE(QLocale("sr_Cyrl_HR").bcp47Name(), QStringLiteral("sr"));
+    QCOMPARE(QLocale("sr_Latn_HR").bcp47Name(), QStringLiteral("sr-Latn"));
 }
 
 QTEST_MAIN(tst_QLocale)

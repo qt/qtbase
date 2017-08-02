@@ -40,7 +40,6 @@
 
 #include "qlistview.h"
 
-#ifndef QT_NO_LISTVIEW
 #include <qabstractitemdelegate.h>
 #include <qapplication.h>
 #include <qpainter.h>
@@ -2814,11 +2813,17 @@ bool QIconModeViewBase::filterDragLeaveEvent(QDragLeaveEvent *e)
 
 bool QIconModeViewBase::filterDragMoveEvent(QDragMoveEvent *e)
 {
-    if (e->source() != qq || !dd->canDrop(e))
-        return false;
+    const bool wasAccepted = e->isAccepted();
 
     // ignore by default
     e->ignore();
+
+    if (e->source() != qq || !dd->canDrop(e)) {
+        // restore previous acceptance on failure
+        e->setAccepted(wasAccepted);
+        return false;
+    }
+
     // get old dragged items rect
     QRect itemsRect = this->itemsRect(draggedItems);
     viewport()->update(itemsRect.translated(draggedItemsDelta()));
@@ -3297,5 +3302,3 @@ QSize QListView::viewportSizeHint() const
 QT_END_NAMESPACE
 
 #include "moc_qlistview.cpp"
-
-#endif // QT_NO_LISTVIEW

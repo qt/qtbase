@@ -1,0 +1,32 @@
+From 640361e72369d612270c6e59126019c917e33c9a Mon Sep 17 00:00:00 2001
+From: Oliver Wolff <oliver.wolff@qt.io>
+Date: Fri, 28 Jul 2017 09:02:50 +0200
+Subject: [PATCH] ANGLE: Use ANGLE_D3D11_QDTD_AVAILABLE to check struct's
+ availability
+
+Checking mingw when defining the structure is not enough, as it is
+available in recent versions of MinGW. The define that is used is set
+depending on a configure test which works independently of the used
+toolchain.
+
+Change-Id: Ia9cb48f3e673841101a93cbc8ea23aff9547f639
+---
+ src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
+index 972c289..97c65e1 100644
+--- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
++++ b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Query11.cpp
+@@ -20,7 +20,7 @@ typedef struct D3D11_QUERY_DATA_SO_STATISTICS {
+ } D3D11_QUERY_DATA_SO_STATISTICS;
+ #endif // ANGLE_MINGW32_COMPAT
+ 
+-#ifdef __MINGW32__
++#ifndef ANGLE_D3D11_QDTD_AVAILABLE
+ typedef struct D3D11_QUERY_DATA_TIMESTAMP_DISJOINT {
+   UINT64 Frequency;
+   BOOL   Disjoint;
+-- 
+2.10.2.windows.1
+

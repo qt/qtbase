@@ -216,12 +216,11 @@ void tst_QEventLoop::processEvents()
     awakeSpy.clear();
     QVERIFY(eventLoop.processEvents(QEventLoop::WaitForMoreEvents));
 
-    // Verify that the eventloop has blocked and woken up. Some eventloops
-    // may block and wake up multiple times.
-    QVERIFY(aboutToBlockSpy.count() > 0);
-    QVERIFY(awakeSpy.count() > 0);
     // We should get one awake for each aboutToBlock, plus one awake when
-    // processEvents is entered.
+    // processEvents is entered. There is no guarantee that that the
+    // processEvents call actually blocked, since the OS may introduce
+    // native events at any time.
+    QVERIFY(awakeSpy.count() > 0);
     QVERIFY(awakeSpy.count() >= aboutToBlockSpy.count());
 
     killTimer(timerId);

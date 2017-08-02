@@ -43,7 +43,9 @@
 #ifndef QT_NO_LINEEDIT
 
 #include "qvariant.h"
+#if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
+#endif
 #include "qdrag.h"
 #include "qwidgetaction.h"
 #include "qclipboard.h"

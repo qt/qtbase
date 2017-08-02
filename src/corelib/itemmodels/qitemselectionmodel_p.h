@@ -55,7 +55,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ITEMVIEWS
 class QItemSelectionModelPrivate: public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QItemSelectionModel)
@@ -105,8 +104,6 @@ public:
     QPersistentModelIndex tableParent;
     int tableColCount, tableRowCount;
 };
-
-#endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
 
