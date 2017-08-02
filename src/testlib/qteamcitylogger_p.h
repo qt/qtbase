@@ -79,6 +79,7 @@ public:
 private:
     QString currTestFuncName;
     QString pendingMessages;
+    QString flowID;
 
     QString tcEscapedString(const QString &str) const;
     QString escapedTestFuncName() const;
