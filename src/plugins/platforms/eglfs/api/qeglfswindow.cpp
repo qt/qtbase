@@ -235,18 +235,15 @@ void QEglFSWindow::setVisible(bool visible)
 
 void QEglFSWindow::setGeometry(const QRect &r)
 {
-    // Persist the requested rect, like a normal setGeometry call
-    QPlatformWindow::setGeometry(r);
-
-    // Take care of WM behavior, constrain/modify geometry
     QRect rect = r;
     if (m_flags.testFlag(HasNativeWindow))
         rect = screen()->availableGeometry();
 
-    // React to the setGeometry, as if from a WM callback
-    QRect lastReportedGeometry = qt_window_private(window())->geometry;
+    QPlatformWindow::setGeometry(rect);
+
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 
+    const QRect lastReportedGeometry = qt_window_private(window())->geometry;
     if (rect != lastReportedGeometry)
         QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
 }
