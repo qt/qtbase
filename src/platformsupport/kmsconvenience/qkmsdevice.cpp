@@ -329,17 +329,17 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         connector->connector_id,
         crtc_id,
         physSize,
+        preferred >= 0 ? preferred : selected_mode,
         selected_mode,
-        selected_mode,
-        false,
-        drmModeGetCrtc(m_dri_fd, crtc_id),
+        false, // mode_set
+        drmModeGetCrtc(m_dri_fd, crtc_id), // saved_crtc
         modes,
         connector->subpixel,
         connectorProperty(connector, QByteArrayLiteral("DPMS")),
         connectorPropertyBlob(connector, QByteArrayLiteral("EDID")),
-        false,
-        0,
-        false
+        false, // wants_plane
+        0, // plane_id
+        false // plane_set
     };
 
     bool ok;
