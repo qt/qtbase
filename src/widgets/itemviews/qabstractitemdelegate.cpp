@@ -39,7 +39,6 @@
 
 #include "qabstractitemdelegate.h"
 
-#ifndef QT_NO_ITEMVIEWS
 #include <qabstractitemmodel.h>
 #include <qabstractitemview.h>
 #include <qfontmetrics.h>
@@ -606,5 +605,3 @@ void QAbstractItemDelegatePrivate::_q_commitDataAndCloseEditor(QWidget *editor)
 QT_END_NAMESPACE
 
 #include "moc_qabstractitemdelegate.cpp"
-
-#endif // QT_NO_ITEMVIEWS

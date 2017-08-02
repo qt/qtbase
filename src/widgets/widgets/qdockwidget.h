@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(dockwidget);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_DOCKWIDGET
 
 class QDockAreaLayout;
 class QDockWidgetPrivate;
@@ -133,8 +132,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDockWidget::DockWidgetFeatures)
-
-#endif // QT_NO_DOCKWIDGET
 
 QT_END_NAMESPACE
 

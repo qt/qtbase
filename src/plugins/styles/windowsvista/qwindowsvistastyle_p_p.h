@@ -70,11 +70,17 @@
 #include <qtoolbutton.h>
 #include <qspinbox.h>
 #include <qtoolbar.h>
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
+#endif
 #include <qscrollbar.h>
 #include <qprogressbar.h>
+#if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
+#endif
+#if QT_CONFIG(listview)
 #include <qlistview.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #endif

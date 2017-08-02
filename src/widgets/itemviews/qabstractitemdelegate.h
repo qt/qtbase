@@ -44,10 +44,9 @@
 #include <QtCore/qobject.h>
 #include <QtWidgets/qstyleoption.h>
 
+QT_REQUIRE_CONFIG(itemviews);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ITEMVIEWS
 
 class QPainter;
 class QModelIndex;
@@ -126,8 +125,6 @@ private:
     Q_DISABLE_COPY(QAbstractItemDelegate)
     Q_PRIVATE_SLOT(d_func(), void _q_commitDataAndCloseEditor(QWidget*))
 };
-
-#endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
 

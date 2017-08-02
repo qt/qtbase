@@ -111,13 +111,12 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
             continue;
         }
         if (fd >= (int)FD_SETSIZE / 2 && fd < (int)FD_SETSIZE) {
-            int fddup = fcntl(fd, F_DUPFD, FD_SETSIZE);
+            int fddup = qt_safe_dup(fd, FD_SETSIZE);
             if (fddup != -1) {
                 ::close(fd);
                 fd = fddup;
             }
         }
-        fcntl(fd, F_SETFD, FD_CLOEXEC);
 
         QT_STATBUF st;
         if (QT_FSTAT(fd, &st) == -1) {

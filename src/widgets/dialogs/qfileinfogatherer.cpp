@@ -98,7 +98,7 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
     if (listener.canConvert<QObject *>()) {
         if (QObject *driveListener = listener.value<QObject *>()) {
             connect(driveListener, SIGNAL(driveAdded()), this, SLOT(driveAdded()));
-            connect(driveListener, SIGNAL(driveRemoved(QString)), this, SLOT(driveRemoved()));
+            connect(driveListener, SIGNAL(driveRemoved()), this, SLOT(driveRemoved()));
         }
     }
 #  endif // Q_OS_WIN && !Q_OS_WINRT

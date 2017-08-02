@@ -228,7 +228,7 @@ QByteArray const &tst_LargeFile::getDataBlock(int index, qint64 position)
 void tst_LargeFile::initTestCase()
 {
     m_previousCurrent = QDir::currentPath();
-    m_tempDir = QSharedPointer<QTemporaryDir>(new QTemporaryDir);
+    m_tempDir = QSharedPointer<QTemporaryDir>::create();
     QVERIFY2(!m_tempDir.isNull(), qPrintable("Could not create temporary directory."));
     QVERIFY2(QDir::setCurrent(m_tempDir->path()), qPrintable("Could not switch current directory"));
 

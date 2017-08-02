@@ -54,13 +54,13 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qabstractitemview_p.h"
 
-#ifndef QT_NO_ITEMVIEWS
-
 #include "QtCore/qbitarray.h"
 #include "QtWidgets/qapplication.h"
 #if QT_CONFIG(label)
 #include "QtWidgets/qlabel.h"
 #endif
+
+QT_REQUIRE_CONFIG(itemviews);
 
 QT_BEGIN_NAMESPACE
 
@@ -390,7 +390,5 @@ public:
 Q_DECLARE_TYPEINFO(QHeaderViewPrivate::SectionItem, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_ITEMVIEWS
 
 #endif // QHEADERVIEW_P_H

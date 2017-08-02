@@ -58,7 +58,7 @@
 #include "QtCore/qvector.h"
 #include "QtWidgets/qlayout.h"
 
-#ifndef QT_NO_DOCKWIDGET
+QT_REQUIRE_CONFIG(dockwidget);
 
 QT_BEGIN_NAMESPACE
 
@@ -197,12 +197,10 @@ public:
     QRect rect;
     QMainWindow *mainWindow;
     QList<QDockAreaLayoutItem> item_list;
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     void updateSeparatorWidgets() const;
     QSet<QWidget*> usedSeparatorWidgets() const;
-#endif //QT_NO_TABBAR
 
-#ifndef QT_NO_TABBAR
     quintptr currentTabId() const;
     void setCurrentTab(QWidget *widget);
     void setCurrentTabId(quintptr id);
@@ -221,7 +219,7 @@ public:
 
     int tabIndexToListIndex(int) const;
     void moveTab(int from, int to);
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 };
 
 class Q_AUTOTEST_EXPORT QDockAreaLayout
@@ -286,9 +284,9 @@ public:
                             const QPoint &mouse) const;
     QRegion separatorRegion() const;
     int separatorMove(const QList<int> &separator, const QPoint &origin, const QPoint &dest);
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     void updateSeparatorWidgets() const;
-#endif //QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
     QLayoutItem *itemAt(int *x, int index) const;
     QLayoutItem *takeAt(int *x, int index);
@@ -302,15 +300,13 @@ public:
     QRect gapRect(const QList<int> &path) const;
 
     void keepSize(QDockWidget *w);
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     QSet<QTabBar*> usedTabBars() const;
     QSet<QWidget*> usedSeparatorWidgets() const;
-#endif //QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
     void styleChangedEvent();
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_QDOCKWIDGET
 
 #endif // QDOCKAREALAYOUT_P_H

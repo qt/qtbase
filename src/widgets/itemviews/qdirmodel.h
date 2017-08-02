@@ -45,10 +45,9 @@
 #include <QtCore/qdir.h>
 #include <QtWidgets/qfileiconprovider.h>
 
+QT_REQUIRE_CONFIG(dirmodel);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_DIRMODEL
 
 class QDirModelPrivate;
 
@@ -142,8 +141,6 @@ private:
     Q_DISABLE_COPY(QDirModel)
     Q_PRIVATE_SLOT(d_func(), void _q_refresh())
 };
-
-#endif // QT_NO_DIRMODEL
 
 QT_END_NAMESPACE
 

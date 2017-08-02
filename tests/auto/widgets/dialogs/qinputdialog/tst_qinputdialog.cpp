@@ -260,6 +260,14 @@ void tst_QInputDialog::getInt()
     QFETCH(int, min);
     QFETCH(int, max);
     QVERIFY(min < max);
+
+#if defined(Q_OS_MACOS)
+    if (QSysInfo::productVersion() == QLatin1String("10.12")) {
+        QSKIP("Test hangs  on macOS 10.12 -- QTQAINFRA-1356");
+        return;
+    }
+#endif
+
     parent = new QWidget;
     doneCode = QDialog::Accepted;
     testFunc = &tst_QInputDialog::testFuncGetInt;
@@ -300,6 +308,14 @@ void tst_QInputDialog::getDouble()
     QFETCH(double, max);
     QFETCH(int, decimals);
     QVERIFY(min < max && decimals >= 0 && decimals <= 13);
+
+#if defined(Q_OS_MACOS)
+    if (QSysInfo::productVersion() == QLatin1String("10.12")) {
+        QSKIP("Test hangs  on macOS 10.12 -- QTQAINFRA-1356");
+        return;
+    }
+#endif
+
     parent = new QWidget;
     doneCode = QDialog::Accepted;
     testFunc = &tst_QInputDialog::testFuncGetDouble;

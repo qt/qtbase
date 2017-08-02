@@ -42,8 +42,6 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_ITEMVIEWS
-
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qlist.h>
@@ -272,7 +270,5 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QItemSelectionRange)
 Q_DECLARE_METATYPE(QItemSelection)
-
-#endif // QT_NO_ITEMVIEWS
 
 #endif // QITEMSELECTIONMODEL_H

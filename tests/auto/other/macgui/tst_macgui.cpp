@@ -190,7 +190,6 @@ void tst_MacGui::nonModalOrder()
     primary.resize(400, 400);
     primary.move(100, 100);
     primary.exec();
-    QEXPECT_FAIL("", "Non-modal child windows show behind the modal dialig", Abort);
     QCOMPARE(primary.frontWidget, primary.secondaryWindow);
 }
 

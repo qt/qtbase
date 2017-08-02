@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "private/qlayoutengine_p.h"
+#if QT_CONFIG(itemviews)
 #include "qabstractitemdelegate.h"
+#endif
 #include "qapplication.h"
 #include "qbitmap.h"
 #include "qcursor.h"
@@ -47,7 +49,9 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qstylepainter.h"
+#if QT_CONFIG(tabwidget)
 #include "qtabwidget.h"
+#endif
 #include "qtooltip.h"
 #if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
@@ -62,8 +66,6 @@
 
 #include "qdebug.h"
 #include "private/qtabbar_p.h"
-
-#ifndef QT_NO_TABBAR
 
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
 #include <private/qt_mac_p.h>
@@ -205,7 +207,7 @@ void QTabBarPrivate::initBasicStyleOption(QStyleOptionTab *option, int tabIndex)
         option->position = QStyleOptionTab::Middle;
     }
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     if (const QTabWidget *tw = qobject_cast<const QTabWidget *>(q->parentWidget())) {
         option->features |= QStyleOptionTab::HasFrame;
         if (tw->cornerWidget(Qt::TopLeftCorner) || tw->cornerWidget(Qt::BottomLeftCorner))
@@ -2689,7 +2691,5 @@ void QTabBarPrivate::Tab::TabBarAnimation::updateState(QAbstractAnimation::State
 QT_END_NAMESPACE
 
 #include "moc_qtabbar.cpp"
-
-#endif // QT_NO_TABBAR
 
 #include "moc_qtabbar_p.cpp"

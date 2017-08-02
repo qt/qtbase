@@ -449,7 +449,9 @@ QStringList QWindowsPrintDevice::availablePrintDeviceIds()
 QString QWindowsPrintDevice::defaultPrintDeviceId()
 {
     DWORD size = 0;
-    GetDefaultPrinter(NULL, &size);
+    if (GetDefaultPrinter(NULL, &size) == ERROR_FILE_NOT_FOUND)
+       return QString();
+
     QScopedArrayPointer<wchar_t> name(new wchar_t[size]);
     GetDefaultPrinter(name.data(), &size);
     return QString::fromWCharArray(name.data());

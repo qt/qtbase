@@ -39,7 +39,6 @@
 
 #include "qtabwidget.h"
 
-#ifndef QT_NO_TABWIDGET
 #include "private/qwidget_p.h"
 #include "private/qtabbar_p.h"
 #include "qapplication.h"
@@ -1375,5 +1374,3 @@ void QTabWidget::clear()
 QT_END_NAMESPACE
 
 #include "moc_qtabwidget.cpp"
-
-#endif //QT_NO_TABWIDGET

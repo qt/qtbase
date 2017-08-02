@@ -42,7 +42,9 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
+#if QT_CONFIG(tabwidget)
 #include <QtWidgets/qtabwidget.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -62,16 +64,16 @@ class Q_WIDGETS_EXPORT QMainWindow : public QWidget
 
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
     Q_PROPERTY(Qt::ToolButtonStyle toolButtonStyle READ toolButtonStyle WRITE setToolButtonStyle)
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     Q_PROPERTY(bool animated READ isAnimated WRITE setAnimated)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
-#endif // QT_NO_TABBAR
-#ifndef QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabbar)
+#if QT_CONFIG(tabwidget)
     Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
     Q_PROPERTY(bool dockNestingEnabled READ isDockNestingEnabled WRITE setDockNestingEnabled)
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
     Q_PROPERTY(DockOptions dockOptions READ dockOptions WRITE setDockOptions)
 #ifndef QT_NO_TOOLBAR
     Q_PROPERTY(bool unifiedTitleAndToolBarOnMac READ unifiedTitleAndToolBarOnMac WRITE setUnifiedTitleAndToolBarOnMac)
@@ -99,22 +101,22 @@ public:
     Qt::ToolButtonStyle toolButtonStyle() const;
     void setToolButtonStyle(Qt::ToolButtonStyle toolButtonStyle);
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     bool isAnimated() const;
     bool isDockNestingEnabled() const;
 #endif
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     bool documentMode() const;
     void setDocumentMode(bool enabled);
 #endif
 
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     QTabWidget::TabShape tabShape() const;
     void setTabShape(QTabWidget::TabShape tabShape);
     QTabWidget::TabPosition tabPosition(Qt::DockWidgetArea area) const;
     void setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::TabPosition tabPosition);
-#endif // QT_NO_TABWIDGET
+#endif // QT_CONFIG(tabwidget)
 
     void setDockOptions(DockOptions options);
     DockOptions dockOptions() const;
@@ -139,7 +141,7 @@ public:
 
     QWidget *takeCentralWidget();
 
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     void setCorner(Qt::Corner corner, Qt::DockWidgetArea area);
     Qt::DockWidgetArea corner(Qt::Corner corner) const;
 #endif
@@ -160,7 +162,7 @@ public:
     Qt::ToolBarArea toolBarArea(QToolBar *toolbar) const;
     bool toolBarBreak(QToolBar *toolbar) const;
 #endif
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     void addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget);
     void addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget,
                        Qt::Orientation orientation);
@@ -175,7 +177,7 @@ public:
 
     void resizeDocks(const QList<QDockWidget *> &docks,
                      const QList<int> &sizes, Qt::Orientation orientation);
-#endif // QT_NO_DOCKWIDGET
+#endif // QT_CONFIG(dockwidget)
 
     QByteArray saveState(int version = 0) const;
     bool restoreState(const QByteArray &state, int version = 0);
@@ -185,7 +187,7 @@ public:
 #endif
 
 public Q_SLOTS:
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     void setAnimated(bool enabled);
     void setDockNestingEnabled(bool enabled);
 #endif
@@ -196,7 +198,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void iconSizeChanged(const QSize &iconSize);
     void toolButtonStyleChanged(Qt::ToolButtonStyle toolButtonStyle);
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     void tabifiedDockWidgetActivated(QDockWidget *dockWidget);
 #endif
 

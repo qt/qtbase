@@ -104,11 +104,17 @@ cmake_umbrella_config_version_file.output = $$DESTDIR/cmake/Qt5/Qt5ConfigVersion
 
 load(cmake_functions)
 
+defineTest(pathIsAbsolute) {
+    p = $$clean_path($$1)
+    !isEmpty(p):isEqual(p, $$absolute_path($$p)): return(true)
+    return(false)
+}
+
 ##### This requires fixing, so that the feature system works with cmake as well
 CMAKE_DISABLED_FEATURES = $$join(QT_DISABLED_FEATURES, "$$escape_expand(\\n)    ")
 
 CMAKE_HOST_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA/src], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_HOST_DATA_DIR, "^\\.\\./.*"):!isEmpty(CMAKE_HOST_DATA_DIR) {
+pathIsAbsolute($$CMAKE_HOST_DATA_DIR) {
     CMAKE_HOST_DATA_DIR = $$[QT_HOST_DATA/src]/
     CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = True
 }
@@ -117,7 +123,7 @@ cmake_extras_mkspec_dir.input = $$PWD/Qt5CoreConfigExtrasMkspecDir.cmake.in
 cmake_extras_mkspec_dir.output = $$DESTDIR/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake
 
 CMAKE_INSTALL_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_INSTALL_DATA_DIR, "^\\.\\./.*"):!isEmpty(CMAKE_INSTALL_DATA_DIR) {
+pathIsAbsolute($$CMAKE_INSTALL_DATA_DIR) {
     CMAKE_INSTALL_DATA_DIR = $$[QT_HOST_DATA]/
     CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = True
 }

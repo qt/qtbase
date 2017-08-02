@@ -535,8 +535,8 @@ QNativeSocketEngine::QNativeSocketEngine(QObject *parent)
 {
     qRegisterMetaType<WinRtDatagram>();
     qRegisterMetaType<WinRTSocketEngine::ErrorString>();
-#ifndef QT_NO_SSL
     Q_D(QNativeSocketEngine);
+#ifndef QT_NO_SSL
     if (parent)
         d->sslSocket = qobject_cast<QSslSocket *>(parent->parent());
 #endif

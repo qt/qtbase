@@ -4954,8 +4954,7 @@ static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
 {
     QScreen *screen = window->screen();
     Q_ASSERT(screen);
-    QPixmap result = screen->grabWindow(window->winId(), x, y, width, height);
-    return result.devicePixelRatio() > 1 ? result.scaled(width, height) : result;
+    return screen->grabWindow(window->winId(), x, y, width, height);
 }
 
 #define VERIFY_COLOR(child, region, color) verifyColor(child, region, color, __LINE__)
@@ -4973,7 +4972,8 @@ bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, uns
             const QPixmap pixmap = grabBackingStore
                 ? child.grab(rect)
                 : grabWindow(window, rect.left(), rect.top(), rect.width(), rect.height());
-            if (!QTest::qCompare(pixmap.size(), rect.size(), "pixmap.size()", "rect.size()", __FILE__, callerLine))
+            const QSize actualSize = pixmap.size() / pixmap.devicePixelRatioF();
+            if (!QTest::qCompare(actualSize, rect.size(), "pixmap.size()", "rect.size()", __FILE__, callerLine))
                 return false;
             QPixmap expectedPixmap(pixmap); /* ensure equal formats */
             expectedPixmap.detach();
@@ -5718,6 +5718,8 @@ void tst_QWidget::setToolTip()
             QTest::qWait(2200);     // delay is 2000
         QTest::mouseMove(popupWindow);
     }
+
+    QTRY_COMPARE(QApplication::topLevelWidgets().size(), 1);
 }
 
 void tst_QWidget::testWindowIconChangeEventPropagation()
@@ -5755,14 +5757,14 @@ void tst_QWidget::testWindowIconChangeEventPropagation()
     QList <EventSpyPtr> applicationEventSpies;
     QList <EventSpyPtr> widgetEventSpies;
     foreach (QWidget *widget, widgets) {
-        applicationEventSpies.append(EventSpyPtr(new EventSpy<QWidget>(widget, QEvent::ApplicationWindowIconChange)));
-        widgetEventSpies.append(EventSpyPtr(new EventSpy<QWidget>(widget, QEvent::WindowIconChange)));
+        applicationEventSpies.append(EventSpyPtr::create(widget, QEvent::ApplicationWindowIconChange));
+        widgetEventSpies.append(EventSpyPtr::create(widget, QEvent::WindowIconChange));
     }
     QList <WindowEventSpyPtr> appWindowEventSpies;
     QList <WindowEventSpyPtr> windowEventSpies;
     foreach (QWindow *window, windows) {
-        appWindowEventSpies.append(WindowEventSpyPtr(new EventSpy<QWindow>(window, QEvent::ApplicationWindowIconChange)));
-        windowEventSpies.append(WindowEventSpyPtr(new EventSpy<QWindow>(window, QEvent::WindowIconChange)));
+        appWindowEventSpies.append(WindowEventSpyPtr::create(window, QEvent::ApplicationWindowIconChange));
+        windowEventSpies.append(WindowEventSpyPtr::create(window, QEvent::WindowIconChange));
     }
 
     // QApplication::setWindowIcon
@@ -10341,7 +10343,8 @@ public slots:
         QPoint point2(15, 20);
         QPoint point3(20, 20);
         QWindow *window = modal->windowHandle();
-        QWindowSystemInterface::handleEnterEvent(window, point1, window->mapToGlobal(point1));
+        const QPoint nativePoint1 = QHighDpi::toNativePixels(point1, window->screen());
+        QWindowSystemInterface::handleEnterEvent(window, nativePoint1);
         QTest::mouseMove(window, point1);
         QTest::mouseMove(window, point2);
         QTest::mouseMove(window, point3);

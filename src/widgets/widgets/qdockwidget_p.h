@@ -57,7 +57,7 @@
 #include "QtWidgets/qboxlayout.h"
 #include "QtWidgets/qdockwidget.h"
 
-#ifndef QT_NO_DOCKWIDGET
+QT_REQUIRE_CONFIG(dockwidget);
 
 QT_BEGIN_NAMESPACE
 
@@ -203,7 +203,5 @@ inline QDockWidgetLayout *QDockWidgetItem::dockWidgetLayout() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_DOCKWIDGET
 
 #endif // QDYNAMICDOCKWIDGET_P_H

@@ -948,7 +948,8 @@ QFontEngine *loadSingleEngine(int script,
             if (engine) {
                 // Also check for OpenType tables when using complex scripts
                 if (Q_UNLIKELY(!engine->supportsScript(QChar::Script(script)))) {
-                    qWarning("  OpenType support missing for script %d", script);
+                    qWarning("  OpenType support missing for \"%s\", script %d",
+                             qPrintable(def.family), script);
                     return 0;
                 }
 
@@ -972,7 +973,8 @@ QFontEngine *loadSingleEngine(int script,
         if (engine) {
             // Also check for OpenType tables when using complex scripts
             if (!engine->supportsScript(QChar::Script(script))) {
-                qWarning("  OpenType support missing for script %d", script);
+                qWarning("  OpenType support missing for \"%s\", script %d",
++                        qPrintable(def.family), script);
                 if (engine->ref.load() == 0)
                     delete engine;
                 return 0;

@@ -58,12 +58,11 @@
 #include <QtWidgets/qabstractitemview.h>
 #include <QtWidgets/qheaderview.h>
 
+QT_REQUIRE_CONFIG(itemviews);
 
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
-
-#ifndef QT_NO_ITEMVIEWS
 
 class QAccessibleTableCell;
 class QAccessibleTableHeaderCell;
@@ -298,8 +297,6 @@ private:
     QPointer<QAbstractItemView> view;
 };
 
-
-#endif
 
 #endif // QT_NO_ACCESSIBILITY
 

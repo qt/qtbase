@@ -205,7 +205,7 @@ void tst_QFtp::initTestCase()
     QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager manager;
-    networkSessionImplicit = QSharedPointer<QNetworkSession>(new QNetworkSession(manager.defaultConfiguration()));
+    networkSessionImplicit = QSharedPointer<QNetworkSession>::create(manager.defaultConfiguration());
     networkSessionImplicit->open();
     QVERIFY(networkSessionImplicit->waitForOpened(60000)); //there may be user prompt on 1st connect
 #endif

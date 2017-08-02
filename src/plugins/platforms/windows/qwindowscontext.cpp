@@ -988,8 +988,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             d->m_creationContext->obtainedGeometry.moveTo(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::NonClientCreate:
-            if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10 && d->m_creationContext->window->isTopLevel())
+            if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10 && d->m_creationContext->window->isTopLevel()
+                && !d->m_creationContext->window->property(QWindowsWindow::embeddedNativeParentHandleProperty).isValid()) {
                 enableNonClientDpiScaling(msg.hwnd);
+            }
             return false;
         case QtWindows::CalculateSize:
             return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->customMargins, msg, result);

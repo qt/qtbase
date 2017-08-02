@@ -428,6 +428,7 @@ public:
 
 #if QT_CONFIG(xinput2)
     void xi2Select(xcb_window_t window);
+    void xi2SelectStateEvents();
     bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
     bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
 #endif

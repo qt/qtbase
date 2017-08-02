@@ -44,8 +44,6 @@
 #include <algorithm>
 #include <functional>
 
-#ifndef QT_NO_ITEMVIEWS
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -1917,5 +1915,3 @@ QDebug operator<<(QDebug dbg, const QItemSelectionRange &range)
 QT_END_NAMESPACE
 
 #include "moc_qitemselectionmodel.cpp"
-
-#endif // QT_NO_ITEMVIEWS

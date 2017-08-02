@@ -39,7 +39,9 @@
     "libraries": {
         "db2": {
             "label": "DB2 (IBM)",
-            "test": "unix/db2",
+            "test": {
+                "include": [ "sqlcli.h", "sqlcli1.h" ]
+            },
             "sources": [
                 { "libs": "-ldb2cli", "condition": "config.win32" },
                 { "libs": "-ldb2", "condition": "!config.win32" }
@@ -47,7 +49,9 @@
         },
         "ibase": {
             "label": "InterBase",
-            "test": "unix/ibase",
+            "test": {
+                "include": "ibase.h"
+            },
             "sources": [
                 { "libs": "-lgds32_ms", "condition": "config.win32" },
                 { "libs": "-lgds", "condition": "!config.win32" }
@@ -55,7 +59,15 @@
         },
         "mysql": {
             "label": "MySQL",
-            "test": "unix/mysql",
+            "test": {
+                "head": [
+                    "#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(WIN64) || defined(_WIN64) || defined(__WIN64__)",
+                    "#  include <windows.h>",
+                    "#endif"
+                ],
+                "include": "mysql.h",
+                "main": "mysql_get_client_version();"
+            },
             "sources": [
                 { "type": "mysqlConfig", "query": "--libs_r", "cleanlibs": true },
                 { "type": "mysqlConfig", "query": "--libs", "cleanlibs": true },
@@ -68,7 +80,13 @@
         },
         "psql": {
             "label": "PostgreSQL",
-            "test": "unix/psql",
+            "test": {
+                "include": "libpq-fe.h",
+                "main": [
+                    "PQescapeBytea(0, 0, 0);",
+                    "PQunescapeBytea(0, 0);"
+                ]
+            },
             "sources": [
                 { "type": "pkgConfig", "args": "libpq" },
                 { "type": "psqlConfig" },
@@ -78,7 +96,9 @@
         },
         "tds": {
             "label": "TDS (Sybase)",
-            "test": "unix/tds",
+            "test": {
+                "include": [ "sybfront.h", "sybdb.h" ]
+            },
             "sources": [
                 { "type": "sybaseEnv", "libs": "-lNTWDBLIB", "condition": "config.win32" },
                 { "type": "sybaseEnv", "libs": "-lsybdb", "condition": "!config.win32" }
@@ -86,7 +106,9 @@
         },
         "oci": {
             "label": "OCI (Oracle)",
-            "test": "unix/oci",
+            "test": {
+                "include": "oci.h"
+            },
             "sources": [
                 { "libs": "-loci", "condition": "config.win32" },
                 { "libs": "-lclntsh", "condition": "!config.win32" }
@@ -94,7 +116,18 @@
         },
         "odbc": {
             "label": "ODBC",
-            "test": "unix/odbc",
+            "test": {
+                "head": [
+                    "#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(WIN64) || defined(_WIN64) || defined(__WIN64__)",
+                    "#  include <windows.h>",
+                    "#endif"
+                ],
+                "include": [ "sql.h", "sqlext.h" ],
+                "main": [
+                    "SQLHANDLE env;",
+                    "SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);"
+                ]
+            },
             "sources": [
                 { "libs": "-lodbc32", "condition": "config.win32" },
                 { "libs": "-liodbc", "condition": "config.darwin" },
@@ -103,7 +136,9 @@
         },
         "sqlite2": {
             "label": "SQLite (version 2)",
-            "test": "unix/sqlite2",
+            "test": {
+                "include": "sqlite.h"
+            },
             "sources": [
                 "-lsqlite"
             ]
@@ -111,7 +146,10 @@
         "sqlite3": {
             "label": "SQLite (version 3)",
             "export": "sqlite",
-            "test": "unix/sqlite",
+            "test": {
+                "include": "sqlite3.h",
+                "main": "sqlite3_open_v2(0, 0, 0, 0);"
+            },
             "sources": [
                 { "type": "pkgConfig", "args": "sqlite3" },
                 "-lsqlite3"

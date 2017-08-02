@@ -383,8 +383,9 @@ bool QPMCache::remove(const QString &key)
     //The key was not in the cache
     if (cacheKey == cacheKeys.constEnd())
         return false;
+    const bool result = QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(cacheKey.value());
     cacheKeys.erase(cacheKey);
-    return QCache<QPixmapCache::Key, QPixmapCacheEntry>::remove(cacheKey.value());
+    return result;
 }
 
 bool QPMCache::remove(const QPixmapCache::Key &key)

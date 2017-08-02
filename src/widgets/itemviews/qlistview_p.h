@@ -58,7 +58,7 @@
 #include <limits.h>
 #include <qscrollbar.h>
 
-#ifndef QT_NO_LISTVIEW
+QT_REQUIRE_CONFIG(listview);
 
 QT_BEGIN_NAMESPACE
 
@@ -473,7 +473,5 @@ inline int QCommonListViewBase::hiddenCount() const { return dd->hiddenRows.coun
 inline bool QCommonListViewBase::isRightToLeft() const { return qq->isRightToLeft(); }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LISTVIEW
 
 #endif // QLISTVIEW_P_H

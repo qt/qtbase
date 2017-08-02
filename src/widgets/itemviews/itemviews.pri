@@ -6,29 +6,22 @@ HEADERS += \
     itemviews/qabstractitemview_p.h \
 	itemviews/qheaderview.h \
 	itemviews/qheaderview_p.h \
-	itemviews/qlistview.h \
-	itemviews/qlistview_p.h \
 	itemviews/qbsptree_p.h \
 	itemviews/qabstractitemdelegate.h \
         itemviews/qabstractitemdelegate_p.h \
         itemviews/qitemdelegate.h \
-	itemviews/qdirmodel.h \
 	itemviews/qwidgetitemdata_p.h \
 	itemviews/qitemeditorfactory.h \
 	itemviews/qitemeditorfactory_p.h \
-    itemviews/qdatawidgetmapper.h \
     itemviews/qstyleditemdelegate.h
 
 SOURCES += \
 	itemviews/qabstractitemview.cpp \
 	itemviews/qheaderview.cpp \
-	itemviews/qlistview.cpp \
 	itemviews/qbsptree.cpp \
 	itemviews/qabstractitemdelegate.cpp \
         itemviews/qitemdelegate.cpp \
-	itemviews/qdirmodel.cpp \
 	itemviews/qitemeditorfactory.cpp \
-    itemviews/qdatawidgetmapper.cpp \
     itemviews/qstyleditemdelegate.cpp
 }
 
@@ -41,6 +34,24 @@ qtConfig(columnview) {
     SOURCES += \
         itemviews/qcolumnview.cpp \
         itemviews/qcolumnviewgrip.cpp
+}
+
+qtConfig(datawidgetmapper) {
+    HEADERS += itemviews/qdatawidgetmapper.h
+    SOURCES += itemviews/qdatawidgetmapper.cpp
+}
+
+qtConfig(dirmodel) {
+    HEADERS += itemviews/qdirmodel.h
+    SOURCES += itemviews/qdirmodel.cpp
+}
+
+qtConfig(listview) {
+    HEADERS += \
+        itemviews/qlistview.h \
+        itemviews/qlistview_p.h
+
+    SOURCES += itemviews/qlistview.cpp
 }
 
 qtConfig(listwidget) {

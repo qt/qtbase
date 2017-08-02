@@ -43,7 +43,9 @@
 #include "simplewidgets_p.h"
 #include "rangecontrols_p.h"
 #include "complexwidgets_p.h"
+#if QT_CONFIG(itemviews)
 #include "itemviews_p.h"
+#endif
 
 #include <qtoolbutton.h>
 #if QT_CONFIG(treeview)
@@ -79,7 +81,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         else
             iface = new QAccessibleLineEdit(widget);
 #endif
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
     } else if (classname == QLatin1String("QComboBox")) {
         iface = new QAccessibleComboBox(widget);
 #endif
@@ -146,12 +148,12 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QTreeView")) {
         iface = new QAccessibleTree(widget);
 #endif // QT_CONFIG(treeview)
-#ifndef QT_NO_ITEMVIEWS
+#if QT_CONFIG(itemviews)
     } else if (classname == QLatin1String("QTableView") || classname == QLatin1String("QListView")) {
         iface = new QAccessibleTable(widget);
     // ### This should be cleaned up. We return the parent for the scrollarea to hide it.
-#endif // QT_NO_ITEMVIEWS
-#ifndef QT_NO_TABBAR
+#endif // QT_CONFIG(itemviews)
+#if QT_CONFIG(tabbar)
     } else if (classname == QLatin1String("QTabBar")) {
         iface = new QAccessibleTabBar(widget);
 #endif
@@ -209,11 +211,11 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QScrollArea")) {
         iface = new QAccessibleScrollArea(widget);
 #endif
-#ifndef QT_NO_CALENDARWIDGET
+#if QT_CONFIG(calendarwidget)
     } else if (classname == QLatin1String("QCalendarWidget")) {
         iface = new QAccessibleCalendarWidget(widget);
 #endif
-#ifndef QT_NO_DOCKWIDGET
+#if QT_CONFIG(dockwidget)
     } else if (classname == QLatin1String("QDockWidget")) {
         iface = new QAccessibleDockWidget(widget);
 #endif

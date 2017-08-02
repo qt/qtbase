@@ -42,10 +42,16 @@
 #include <qaccessible.h>
 #include <qapplication.h>
 #include <qevent.h>
+#if QT_CONFIG(itemviews)
 #include <qheaderview.h>
+#endif
+#if QT_CONFIG(tabbar)
 #include <qtabbar.h>
+#include <private/qtabbar_p.h>
+#endif
+#if QT_CONFIG(combobox)
 #include <qcombobox.h>
-#include <qlistview.h>
+#endif
 #include <qlineedit.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
@@ -53,7 +59,6 @@
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif
-#include <private/qtabbar_p.h>
 #include <QAbstractScrollArea>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -66,7 +71,7 @@ QT_BEGIN_NAMESPACE
 QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
 /*!
   \class QAccessibleTabBar
   \brief The QAccessibleTabBar class implements the QAccessibleInterface for tab bars.
@@ -259,9 +264,9 @@ QString QAccessibleTabBar::text(QAccessible::Text t) const
     return QString();
 }
 
-#endif // QT_NO_TABBAR
+#endif // QT_CONFIG(tabbar)
 
-#ifndef QT_NO_COMBOBOX
+#if QT_CONFIG(combobox)
 /*!
   \class QAccessibleComboBox
   \brief The QAccessibleComboBox class implements the QAccessibleInterface for editable and read-only combo boxes.
@@ -379,7 +384,7 @@ QStringList QAccessibleComboBox::keyBindingsForAction(const QString &/*actionNam
     return QStringList();
 }
 
-#endif // QT_NO_COMBOBOX
+#endif // QT_CONFIG(combobox)
 
 #ifndef QT_NO_SCROLLAREA
 // ======================= QAccessibleAbstractScrollArea =======================

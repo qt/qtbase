@@ -41,7 +41,9 @@
 
 #ifndef QT_NO_LINEEDIT
 
+#if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
+#endif
 #include "qclipboard.h"
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
@@ -548,9 +550,9 @@ void QWidgetLineControl::processInputMethodEvent(QInputMethodEvent *event)
     if (!event->commitString().isEmpty()) {
         internalInsert(event->commitString());
         cursorPositionChanged = true;
+    } else {
+        m_cursor = qBound(0, c, m_text.length());
     }
-
-    m_cursor = qBound(0, c, m_text.length());
 
     for (int i = 0; i < event->attributes().size(); ++i) {
         const QInputMethodEvent::Attribute &a = event->attributes().at(i);

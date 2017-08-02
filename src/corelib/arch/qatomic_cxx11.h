@@ -187,7 +187,7 @@ template <> Q_DECL_CONSTEXPR inline bool QAtomicTraits<2>::isLockFree()
 { return false; }
 #endif
 
-#ifndef QT_NO_STD_ATOMIC64
+#if QT_CONFIG(std_atomic64)
 template<> struct QAtomicOpsSupport<8> { enum { IsSupported = 1 }; };
 #  define Q_ATOMIC_INT64_IS_SUPPORTED
 #  if ATOMIC_LLONG_LOCK_FREE == 2

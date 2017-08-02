@@ -48,6 +48,7 @@ osx
 [showMinimizedKeepsFocus]
 osx-10.10
 osx-10.11 ci
+osx-10.12 ci
 [moveWindowInShowEvent:1]
 osx
 [moveWindowInShowEvent:2]
@@ -75,3 +76,5 @@ osx
 ubuntu-14.04
 [moveChild:right]
 osx
+[activateWindow]
+osx-10.12 ci

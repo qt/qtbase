@@ -46,10 +46,9 @@
 #include <QtGui/qpixmap.h>
 #include <QtCore/qvariant.h>
 
+QT_REQUIRE_CONFIG(itemviews);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ITEMVIEWS
 
 class QStyledItemDelegatePrivate;
 class QItemEditorFactory;
@@ -100,8 +99,6 @@ private:
     Q_DECLARE_PRIVATE(QStyledItemDelegate)
     Q_DISABLE_COPY(QStyledItemDelegate)
 };
-
-#endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
 

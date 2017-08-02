@@ -300,7 +300,7 @@ void tst_QDataStream::getSetCheck()
 void tst_QDataStream::initTestCase()
 {
     m_previousCurrent = QDir::currentPath();
-    m_tempDir = QSharedPointer<QTemporaryDir>(new QTemporaryDir);
+    m_tempDir = QSharedPointer<QTemporaryDir>::create();
     QVERIFY2(!m_tempDir.isNull(), qPrintable("Could not create temporary directory."));
     QVERIFY2(QDir::setCurrent(m_tempDir->path()), qPrintable("Could not switch current directory"));
 }

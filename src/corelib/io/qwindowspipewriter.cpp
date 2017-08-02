@@ -197,7 +197,15 @@ bool QWindowsPipeWriter::write(const QByteArray &ba)
                      overlapped, &writeFileCompleted)) {
         writeSequenceStarted = false;
         buffer.clear();
-        qErrnoWarning("QWindowsPipeWriter::write failed.");
+
+        const DWORD errorCode = GetLastError();
+        switch (errorCode) {
+        case ERROR_NO_DATA:     // "The pipe is being closed."
+            // The other end has closed the pipe. This can happen in QLocalSocket. Do not warn.
+            break;
+        default:
+            qErrnoWarning(errorCode, "QWindowsPipeWriter::write failed.");
+        }
         return false;
     }
 

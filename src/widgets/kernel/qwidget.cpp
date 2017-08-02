@@ -107,7 +107,9 @@
 #include "private/qgesturemanager_p.h"
 
 #ifdef QT_KEYPAD_NAVIGATION
+#if QT_CONFIG(tabwidget)
 #include "qtabwidget.h" // Needed in inTabWidget()
+#endif
 #endif // QT_KEYPAD_NAVIGATION
 
 #include "qwindowcontainer_p.h"

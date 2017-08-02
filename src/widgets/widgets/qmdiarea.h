@@ -42,7 +42,9 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractscrollarea.h>
+#if QT_CONFIG(tabwidget)
 #include <QtWidgets/qtabwidget.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -58,12 +60,12 @@ class Q_WIDGETS_EXPORT QMdiArea : public QAbstractScrollArea
     Q_PROPERTY(QBrush background READ background WRITE setBackground)
     Q_PROPERTY(WindowOrder activationOrder READ activationOrder WRITE setActivationOrder)
     Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode)
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     Q_PROPERTY(bool documentMode READ documentMode WRITE setDocumentMode)
     Q_PROPERTY(bool tabsClosable READ tabsClosable WRITE setTabsClosable)
     Q_PROPERTY(bool tabsMovable READ tabsMovable WRITE setTabsMovable)
 #endif
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     Q_PROPERTY(QTabWidget::TabShape tabShape READ tabShape WRITE setTabShape)
     Q_PROPERTY(QTabWidget::TabPosition tabPosition READ tabPosition WRITE setTabPosition)
 #endif
@@ -111,7 +113,7 @@ public:
     void setViewMode(ViewMode mode);
     ViewMode viewMode() const;
 
-#ifndef QT_NO_TABBAR
+#if QT_CONFIG(tabbar)
     bool documentMode() const;
     void setDocumentMode(bool enabled);
 
@@ -121,7 +123,7 @@ public:
     void setTabsMovable(bool movable);
     bool tabsMovable() const;
 #endif
-#ifndef QT_NO_TABWIDGET
+#if QT_CONFIG(tabwidget)
     void setTabShape(QTabWidget::TabShape shape);
     QTabWidget::TabShape tabShape() const;
 

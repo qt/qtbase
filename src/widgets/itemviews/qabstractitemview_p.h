@@ -64,7 +64,7 @@
 #include "QtCore/qbasictimer.h"
 #include "QtCore/qelapsedtimer.h"
 
-#ifndef QT_NO_ITEMVIEWS
+QT_REQUIRE_CONFIG(itemviews);
 
 QT_BEGIN_NAMESPACE
 
@@ -476,7 +476,5 @@ inline int qBinarySearch(const QVector<T> &vec, const T &item, int start, int en
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_ITEMVIEWS
 
 #endif // QABSTRACTITEMVIEW_P_H
