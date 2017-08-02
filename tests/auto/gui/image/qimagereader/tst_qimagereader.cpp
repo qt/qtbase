@@ -1386,10 +1386,10 @@ void tst_QImageReader::readFromResources_data()
                                         << QByteArray("jpg") << QSize(240, 180)
                                         << QString("");
     QTest::newRow("rect.svg") << QString("rect.svg")
-                                     << QByteArray("svg") << QSize(105, 137)
+                                     << QByteArray("svg") << QSize(128, 128)
                                      << QString("");
     QTest::newRow("rect.svgz") << QString("rect.svgz")
-                                     << QByteArray("svgz") << QSize(105, 137)
+                                     << QByteArray("svgz") << QSize(128, 128)
                                      << QString("");
     QTest::newRow("corrupt.svg") << QString("corrupt.svg")
                                      << QByteArray("svg") << QSize(0, 0)
