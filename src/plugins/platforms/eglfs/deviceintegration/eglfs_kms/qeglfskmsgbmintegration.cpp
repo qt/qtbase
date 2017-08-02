@@ -105,7 +105,6 @@ EGLNativeWindowType QEglFSKmsGbmIntegration::createNativeOffscreenWindow(const Q
     Q_UNUSED(format);
     Q_ASSERT(device());
 
-    qCDebug(qLcEglfsKmsDebug) << "Creating native off screen window";
     gbm_surface *surface = gbm_surface_create(static_cast<QEglFSKmsGbmDevice *>(device())->gbmDevice(),
                                               1, 1,
                                               GBM_FORMAT_XRGB8888,
