@@ -2144,7 +2144,7 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
     \warning If the image is not detached, this will cause the data to be
     copied.
 
-    \sa isDetached(), hasAlphaChannel(), convertToFormat()
+    \sa hasAlphaChannel(), convertToFormat()
 */
 
 bool QImage::reinterpretAsFormat(Format format)
