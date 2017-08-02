@@ -71,7 +71,7 @@ Q_GUI_EXPORT CGImageRef qt_mac_toCGImage(const QImage &qImage);
 Q_GUI_EXPORT CGImageRef qt_mac_toCGImageMask(const QImage &qImage);
 Q_GUI_EXPORT QImage qt_mac_toQImage(CGImageRef image);
 
-Q_GUI_EXPORT OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
+Q_GUI_EXPORT void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
 
 Q_GUI_EXPORT CGColorSpaceRef qt_mac_genericColorSpace();
 Q_GUI_EXPORT CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
