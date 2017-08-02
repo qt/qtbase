@@ -59,8 +59,8 @@ public:
 
     QPlatformCursor *cursor() const override;
 
-    gbm_surface *surface() const { return m_gbm_surface; }
     gbm_surface *createSurface();
+    void resetSurface();
 
     void waitForFlip() override;
     void flip() override;

@@ -132,14 +132,19 @@ QPlatformCursor *QEglFSKmsGbmScreen::cursor() const
 gbm_surface *QEglFSKmsGbmScreen::createSurface()
 {
     if (!m_gbm_surface) {
-        qCDebug(qLcEglfsKmsDebug) << "Creating window for screen" << name();
+        qCDebug(qLcEglfsKmsDebug) << "Creating gbm_surface for screen" << name();
         m_gbm_surface = gbm_surface_create(static_cast<QEglFSKmsGbmDevice *>(device())->gbmDevice(),
                                            rawGeometry().width(),
                                            rawGeometry().height(),
                                            GBM_FORMAT_XRGB8888,
                                            GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
     }
-    return m_gbm_surface; // not owned, gets destroyed in QEglFSKmsGbmIntegration::destroyNativeWindow()
+    return m_gbm_surface; // not owned, gets destroyed in QEglFSKmsGbmIntegration::destroyNativeWindow() via QEglFSKmsGbmWindow::invalidateSurface()
+}
+
+void QEglFSKmsGbmScreen::resetSurface()
+{
+    m_gbm_surface = nullptr;
 }
 
 void QEglFSKmsGbmScreen::waitForFlip()

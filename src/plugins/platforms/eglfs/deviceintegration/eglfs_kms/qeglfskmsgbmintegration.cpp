@@ -167,21 +167,18 @@ public:
         , m_integration(integration)
     {}
     void resetSurface() override;
+    void invalidateSurface() override;
     const QEglFSKmsGbmIntegration *m_integration;
 };
 
 void QEglFSKmsGbmWindow::resetSurface()
 {
     QEglFSKmsGbmScreen *gbmScreen = static_cast<QEglFSKmsGbmScreen *>(screen());
-    if (gbmScreen->surface()) {
-        qWarning("Only single window per screen supported!");
-        return;
-    }
-
     EGLDisplay display = gbmScreen->display();
     QSurfaceFormat platformFormat = m_integration->surfaceFormatFor(window()->requestedFormat());
     m_config = QEglFSDeviceIntegration::chooseConfig(display, platformFormat);
     m_format = q_glFormatFromConfig(display, m_config, platformFormat);
+    // One fullscreen window per screen -> the native window is simply the gbm_surface the screen created.
     m_window = reinterpret_cast<EGLNativeWindowType>(gbmScreen->createSurface());
 
     PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC createPlatformWindowSurface = nullptr;
@@ -197,6 +194,13 @@ void QEglFSKmsGbmWindow::resetSurface()
         qCDebug(qLcEglfsKmsDebug, "No eglCreatePlatformWindowSurface for GBM, falling back to eglCreateWindowSurface");
         m_surface = eglCreateWindowSurface(display, m_config, m_window, nullptr);
     }
+}
+
+void QEglFSKmsGbmWindow::invalidateSurface()
+{
+    QEglFSKmsGbmScreen *gbmScreen = static_cast<QEglFSKmsGbmScreen *>(screen());
+    QEglFSWindow::invalidateSurface();
+    gbmScreen->resetSurface();
 }
 
 QEglFSWindow *QEglFSKmsGbmIntegration::createWindow(QWindow *window) const
