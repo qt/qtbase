@@ -132,7 +132,7 @@ QPlatformCursor *QEglFSKmsGbmScreen::cursor() const
 gbm_surface *QEglFSKmsGbmScreen::createSurface()
 {
     if (!m_gbm_surface) {
-        qCDebug(qLcEglfsKmsDebug) << "Creating gbm_surface for screen" << name();
+        qCDebug(qLcEglfsKmsDebug, "Creating gbm_surface for screen %s", qPrintable(name()));
         m_gbm_surface = gbm_surface_create(static_cast<QEglFSKmsGbmDevice *>(device())->gbmDevice(),
                                            rawGeometry().width(),
                                            rawGeometry().height(),
@@ -179,30 +179,47 @@ void QEglFSKmsGbmScreen::flip()
     const uint32_t h = op.modes[op.mode].vdisplay;
 
     if (!op.mode_set) {
-        int ret = drmModeSetCrtc(fd,
-                                 op.crtc_id,
-                                 fb->fb,
-                                 0, 0,
-                                 &op.connector_id, 1,
-                                 &op.modes[op.mode]);
+        op.mode_set = true;
 
-        if (ret == -1) {
-            qErrnoWarning(errno, "Could not set DRM mode!");
-        } else {
-            op.mode_set = true;
-            setPowerState(PowerStateOn);
-
-            if (!op.plane_set) {
-                op.plane_set = true;
-                if (op.wants_plane) {
-                    int ret = drmModeSetPlane(fd, op.plane_id, op.crtc_id,
-                                              uint32_t(-1), 0,
-                                              0, 0, w, h,
-                                              0 << 16, 0 << 16, w << 16, h << 16);
-                    if (ret == -1)
-                        qErrnoWarning(errno, "drmModeSetPlane failed");
-                }
+        bool doModeSet = true;
+        drmModeCrtcPtr currentMode = drmModeGetCrtc(fd, op.crtc_id);
+        const bool alreadySet = currentMode && !memcmp(&currentMode->mode, &op.modes[op.mode], sizeof(drmModeModeInfo));
+        if (currentMode)
+            drmModeFreeCrtc(currentMode);
+        if (alreadySet) {
+            static bool alwaysDoSet = qEnvironmentVariableIntValue("QT_QPA_EGLFS_ALWAYS_SET_MODE");
+            if (!alwaysDoSet) {
+                qCDebug(qLcEglfsKmsDebug, "Mode already set, skipping modesetting for screen %s", qPrintable(name()));
+                doModeSet = false;
             }
+        }
+
+        if (doModeSet) {
+            qCDebug(qLcEglfsKmsDebug, "Setting mode for screen %s", qPrintable(name()));
+            int ret = drmModeSetCrtc(fd,
+                                     op.crtc_id,
+                                     fb->fb,
+                                     0, 0,
+                                     &op.connector_id, 1,
+                                     &op.modes[op.mode]);
+
+            if (ret == 0)
+                setPowerState(PowerStateOn);
+            else
+                qErrnoWarning(errno, "Could not set DRM mode for screen %s", qPrintable(name()));
+        }
+    }
+
+    if (!op.plane_set) {
+        op.plane_set = true;
+        if (op.wants_plane) {
+            qCDebug(qLcEglfsKmsDebug, "Setting plane %u", op.plane_id);
+            int ret = drmModeSetPlane(fd, op.plane_id, op.crtc_id,
+                                      uint32_t(-1), 0,
+                                      0, 0, w, h,
+                                      0 << 16, 0 << 16, w << 16, h << 16);
+            if (ret)
+                qErrnoWarning(errno, "drmModeSetPlane failed");
         }
     }
 
@@ -212,7 +229,7 @@ void QEglFSKmsGbmScreen::flip()
                               DRM_MODE_PAGE_FLIP_EVENT,
                               this);
     if (ret) {
-        qErrnoWarning("Could not queue DRM page flip!");
+        qErrnoWarning("Could not queue DRM page flip on screen %s", qPrintable(name()));
         gbm_surface_release_buffer(m_gbm_surface, m_gbm_bo_next);
         m_gbm_bo_next = Q_NULLPTR;
     }
