@@ -139,25 +139,7 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface()
                                            GBM_FORMAT_XRGB8888,
                                            GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
     }
-    return m_gbm_surface;
-}
-
-void QEglFSKmsGbmScreen::destroySurface()
-{
-    if (m_gbm_bo_current) {
-        gbm_bo_destroy(m_gbm_bo_current);
-        m_gbm_bo_current = Q_NULLPTR;
-    }
-
-    if (m_gbm_bo_next) {
-        gbm_bo_destroy(m_gbm_bo_next);
-        m_gbm_bo_next = Q_NULLPTR;
-    }
-
-    if (m_gbm_surface) {
-        gbm_surface_destroy(m_gbm_surface);
-        m_gbm_surface = Q_NULLPTR;
-    }
+    return m_gbm_surface; // not owned, gets destroyed in QEglFSKmsGbmIntegration::destroyNativeWindow()
 }
 
 void QEglFSKmsGbmScreen::waitForFlip()

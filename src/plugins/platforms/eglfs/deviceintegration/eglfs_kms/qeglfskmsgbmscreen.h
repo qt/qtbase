@@ -61,7 +61,6 @@ public:
 
     gbm_surface *surface() const { return m_gbm_surface; }
     gbm_surface *createSurface();
-    void destroySurface();
 
     void waitForFlip() override;
     void flip() override;

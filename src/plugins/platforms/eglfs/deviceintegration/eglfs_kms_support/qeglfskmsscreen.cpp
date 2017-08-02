@@ -177,10 +177,6 @@ QString QEglFSKmsScreen::serialNumber() const
     return m_edid.serialNumber;
 }
 
-void QEglFSKmsScreen::destroySurface()
-{
-}
-
 void QEglFSKmsScreen::waitForFlip()
 {
 }

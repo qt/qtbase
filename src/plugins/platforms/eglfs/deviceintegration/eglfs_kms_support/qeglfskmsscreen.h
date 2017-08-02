@@ -89,8 +89,6 @@ public:
 
     QKmsDevice *device() const { return m_device; }
 
-    void destroySurface();
-
     virtual void waitForFlip();
     virtual void flip();
     virtual void flipFinished();
