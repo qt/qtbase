@@ -975,7 +975,7 @@ QList<QByteArray> QMovie::supportedFormats()
 
     const auto doesntSupportAnimation =
             [&buffer](const QByteArray &format) {
-                return !QImageReader(&buffer, format).supportsAnimation();
+                return !QImageReader(&buffer, format).supportsOption(QImageIOHandler::Animation);
             };
 
     list.erase(std::remove_if(list.begin(), list.end(), doesntSupportAnimation), list.end());
