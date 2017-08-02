@@ -243,7 +243,7 @@ public:
         // size of a multi-variant string.
         TextLongestVariant = 0x80000
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_DEPRECATED_SINCE(5, 11) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         , TextBypassShaping = 0x100000
 #endif
     };

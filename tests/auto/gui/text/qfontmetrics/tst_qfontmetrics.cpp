@@ -48,7 +48,7 @@ private slots:
     void veryNarrowElidedText();
     void averageCharWidth();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_DEPRECATED_SINCE(5, 11) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void bypassShaping();
 #endif
 
@@ -191,7 +191,7 @@ void tst_QFontMetrics::averageCharWidth()
     QVERIFY(fmf.averageCharWidth() != 0);
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_DEPRECATED_SINCE(5, 11) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void tst_QFontMetrics::bypassShaping()
 {
     QFont f;
