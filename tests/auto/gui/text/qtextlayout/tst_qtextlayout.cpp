@@ -203,7 +203,7 @@ void tst_QTextLayout::init()
     testFont.setPixelSize(TESTFONT_SIZE);
     testFont.setWeight(QFont::Normal);
 #ifdef QT_BUILD_INTERNAL
-    QCOMPARE(QFontMetrics(testFont).width('a'), testFont.pixelSize());
+    QCOMPARE(QFontMetrics(testFont).horizontalAdvance('a'), testFont.pixelSize());
 #endif
 }
 

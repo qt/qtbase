@@ -98,7 +98,7 @@ void Window::paintEvent(QPaintEvent * /* event */)
     QFontMetrics metrics(font());
     QPainter painter(this);
     int fontHeight = metrics.height();
-    int fontWidth = metrics.width('X');
+    int fontWidth = metrics.horizontalAdvance('X');
     int yPos = fontHeight;
     int xPos;
 
@@ -177,7 +177,7 @@ QSize Window::sizeHint() const
 {
     QFontMetrics metrics(font());
 
-    return QSize(metrics.width('X') * WIDTH, metrics.height() * (HEIGHT + 1));
+    return QSize(metrics.horizontalAdvance('X') * WIDTH, metrics.height() * (HEIGHT + 1));
 }
 
 //![2]

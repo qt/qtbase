@@ -108,7 +108,7 @@ void FadeMessage::setupScene()
     int fh = fontMetrics.height();
 
     QString sceneText = "Qt Everywhere!";
-    int sceneTextWidth = fontMetrics.width(sceneText);
+    int sceneTextWidth = fontMetrics.horizontalAdvance(sceneText);
 
     QGraphicsRectItem *block = m_scene.addRect(50, 300, sceneTextWidth, fh + 3);
     block->setPen(Qt::NoPen);

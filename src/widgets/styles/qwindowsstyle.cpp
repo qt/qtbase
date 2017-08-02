@@ -2388,7 +2388,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 QFont fontBold = mi->font;
                 fontBold.setBold(true);
                 QFontMetrics fmBold(fontBold);
-                w += fmBold.width(mi->text) - fm.width(mi->text);
+                w += fmBold.horizontalAdvance(mi->text) - fm.horizontalAdvance(mi->text);
             }
 
             int checkcol = qMax<int>(maxpmw, QWindowsStylePrivate::windowsCheckMarkWidth); // Windows always shows a check column

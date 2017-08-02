@@ -544,13 +544,13 @@ public:
             m_staticTexts.append(staticText);
 
             QFontMetrics fm(p->font());
-            m_size = QSize(fm.width(m_text, m_text.length()), fm.height());
+            m_size = QSize(fm.horizontalAdvance(m_text, m_text.length()), fm.height());
 
             break;
         }
         case PainterQPointMode: {
             QFontMetrics fm(p->font());
-            m_size = QSize(fm.width(m_text, m_text.length()), fm.height());
+            m_size = QSize(fm.horizontalAdvance(m_text, m_text.length()), fm.height());
             break;
         }
 

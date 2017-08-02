@@ -3436,8 +3436,8 @@ void tst_QLineEdit::textMargin_data()
 
     // Different styles generate different offsets, so
     // calculate the width rather than hardcode it.
-    const int pixelWidthOfM = metrics.width(s, 1);
-    const int pixelWidthOfMMM_MM = metrics.width(s, 6);
+    const int pixelWidthOfM = metrics.horizontalAdvance(s, 1);
+    const int pixelWidthOfMMM_MM = metrics.horizontalAdvance(s, 6);
 
     QTest::newRow("default-0") << 0 << 0 << 0 << 0 << QPoint(pixelWidthOfMMM_MM, 0) << 6;
     QTest::newRow("default-1") << 0 << 0 << 0 << 0 << QPoint(1, 1) << 0;

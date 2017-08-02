@@ -364,7 +364,7 @@ void PathDeformRenderer::setText(const QString &text)
             path.addText(advance, f, text.mid(i, 1));
             m_pathBounds |= path.boundingRect();
             m_paths << path;
-            advance += QPointF(fm.width(text.mid(i, 1)), 0);
+            advance += QPointF(fm.horizontalAdvance(text.mid(i, 1)), 0);
         }
     } else {
         QPainterPath path;

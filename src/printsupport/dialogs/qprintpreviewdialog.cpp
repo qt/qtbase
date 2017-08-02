@@ -484,7 +484,7 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
     int numPages = preview->pageCount();
     int maxChars = QString::number(numPages).length();
     pageNumLabel->setText(QString::fromLatin1("/ %1").arg(numPages));
-    int cyphersWidth = q->fontMetrics().width(QString().fill(QLatin1Char('8'), maxChars));
+    int cyphersWidth = q->fontMetrics().horizontalAdvance(QString().fill(QLatin1Char('8'), maxChars));
     int maxWidth = pageNumEdit->minimumSizeHint().width() + cyphersWidth;
     pageNumEdit->setMinimumWidth(maxWidth);
     pageNumEdit->setMaximumWidth(maxWidth);

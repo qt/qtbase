@@ -143,10 +143,10 @@
     position on the wiggly line based on \c step. In addition, \c x
     is incremented by the character's width.
 
-    For simplicity, we assume that QFontMetrics::width(\c text)
-    returns the sum of the individual character widths
-    (QFontMetrics::width(\c text[i])). In practice, this is not
-    always the case because QFontMetrics::width(\c text) also takes
+    For simplicity, we assume that QFontMetrics::horizontalAdvance(\c text)
+    returns the sum of the individual character advances
+    (QFontMetrics::horizontalAdvance(\c text[i])). In practice, this is not
+    always the case because QFontMetrics::horizontalAdvance(\c text) also takes
     into account the kerning between certain letters (e.g., 'A' and
     'V'). The result is that the text isn't perfectly centered. You
     can verify this by typing "AVAVAVAVAVAV" in the line edit.

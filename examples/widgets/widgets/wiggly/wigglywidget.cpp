@@ -77,7 +77,7 @@ void WigglyWidget::paintEvent(QPaintEvent * /* event */)
     };
 
     QFontMetrics metrics(font());
-    int x = (width() - metrics.width(text)) / 2;
+    int x = (width() - metrics.horizontalAdvance(text)) / 2;
     int y = (height() + metrics.ascent() - metrics.descent()) / 2;
     QColor color;
 //! [2]
@@ -91,7 +91,7 @@ void WigglyWidget::paintEvent(QPaintEvent * /* event */)
         painter.setPen(color);
         painter.drawText(x, y - ((sineTable[index] * metrics.height()) / 400),
                          QString(text[i]));
-        x += metrics.width(text[i]);
+        x += metrics.horizontalAdvance(text[i]);
     }
 }
 //! [4]

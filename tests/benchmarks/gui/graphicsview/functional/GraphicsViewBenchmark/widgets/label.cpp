@@ -73,7 +73,7 @@ QSizeF Label::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
         // fall thru
     case Qt::PreferredSize: {
         QFontMetricsF fm(m_textItem->font());
-        return QSizeF(fm.width(m_textItem->text()), fm.height());
+        return QSizeF(fm.horizontalAdvance(m_textItem->text()), fm.height());
     }
     default:
         return GvbWidget::sizeHint(which, constraint);

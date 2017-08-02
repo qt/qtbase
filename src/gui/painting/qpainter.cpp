@@ -7478,7 +7478,7 @@ start_lengthVariant:
             if (!expandtabs) {
                 text[offset] = QLatin1Char(' ');
             } else if (!tabarraylen && !tabstops) {
-                tabstops = qRound(fm.width(QLatin1Char('x'))*8);
+                tabstops = qRound(fm.horizontalAdvance(QLatin1Char('x'))*8);
             }
         } else if (chr == QChar(ushort(0x9c))) {
             // string with multiple length variants

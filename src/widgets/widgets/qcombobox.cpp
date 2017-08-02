@@ -312,7 +312,7 @@ int QComboBoxPrivate::computeWidthHint() const
     const QFontMetrics &fontMetrics = q->fontMetrics();
 
     for (int i = 0; i < count; ++i) {
-        const int textWidth = fontMetrics.width(q->itemText(i));
+        const int textWidth = fontMetrics.horizontalAdvance(q->itemText(i));
         if (q->itemIcon(i).isNull())
             width = (qMax(width, textWidth));
         else
@@ -341,7 +341,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
             case QComboBox::AdjustToContents:
             case QComboBox::AdjustToContentsOnFirstShow:
                 if (count == 0) {
-                    sh.rwidth() = 7 * fm.width(QLatin1Char('x'));
+                    sh.rwidth() = 7 * fm.horizontalAdvance(QLatin1Char('x'));
                 } else {
                     for (int i = 0; i < count; ++i) {
                         if (!q->itemIcon(i).isNull()) {
@@ -364,7 +364,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
                 hasIcon = !q->itemIcon(i).isNull();
         }
         if (minimumContentsLength > 0)
-            sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.width(QLatin1Char('X')) + (hasIcon ? iconSize.width() + 4 : 0)));
+            sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.horizontalAdvance(QLatin1Char('X')) + (hasIcon ? iconSize.width() + 4 : 0)));
 
 
         // height

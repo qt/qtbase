@@ -716,7 +716,7 @@ QRect QAccessibleTextWidget::characterRect(int offset) const
         QFontMetrics fm(format.font());
         const QString ch = text(offset, offset + 1);
         if (!ch.isEmpty()) {
-            int w = fm.width(ch);
+            int w = fm.horizontalAdvance(ch);
             int h = fm.height();
             r = QRect(layoutPosition.x() + x, layoutPosition.y() + line.y() + line.ascent() + fm.descent() - h,
                       w, h);

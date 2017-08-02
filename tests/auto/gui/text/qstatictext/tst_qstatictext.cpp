@@ -639,7 +639,7 @@ void tst_QStaticText::setPenPlainText()
     font.setStyleStrategy(QFont::NoAntialias);
 
     QFontMetricsF fm(font);
-    QImage image(qCeil(fm.width("XXXXX")), qCeil(fm.height()), format);
+    QImage image(qCeil(fm.horizontalAdvance("XXXXX")), qCeil(fm.height()), format);
     image.fill(Qt::white);
     {
         QPainter p(&image);
@@ -662,7 +662,7 @@ void tst_QStaticText::setPenRichText()
     font.setStyleStrategy(QFont::NoAntialias);
 
     QFontMetricsF fm(font);
-    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    QPixmap image(qCeil(fm.horizontalAdvance("XXXXX")), qCeil(fm.height()));
     image.fill(Qt::white);
     {
         QPainter p(&image);
@@ -686,7 +686,7 @@ void tst_QStaticText::richTextOverridesPen()
     font.setStyleStrategy(QFont::NoAntialias);
 
     QFontMetricsF fm(font);
-    QPixmap image(qCeil(fm.width("XXXXX")), qCeil(fm.height()));
+    QPixmap image(qCeil(fm.horizontalAdvance("XXXXX")), qCeil(fm.height()));
     image.fill(Qt::white);
     {
         QPainter p(&image);

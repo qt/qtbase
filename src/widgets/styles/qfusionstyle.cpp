@@ -1536,7 +1536,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                     proxy()->drawItemText(painter, menuItem->rect.adjusted(margin, 0, -margin, 0), Qt::AlignLeft | Qt::AlignVCenter,
                                           menuItem->palette, menuItem->state & State_Enabled, menuItem->text,
                                           QPalette::Text);
-                    w = menuItem->fontMetrics.width(menuItem->text) + margin;
+                    w = menuItem->fontMetrics.horizontalAdvance(menuItem->text) + margin;
                 }
                 painter->setPen(shadow.lighter(106));
                 bool reverse = menuItem->direction == Qt::RightToLeft;
@@ -3216,7 +3216,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
                 QFont fontBold = menuItem->font;
                 fontBold.setBold(true);
                 QFontMetrics fmBold(fontBold);
-                w += fmBold.width(menuItem->text) - fm.width(menuItem->text);
+                w += fmBold.width(menuItem->text) - fm.horizontalAdvance(menuItem->text);
             }
             const int checkcol = qMax<int>(maxpmw, QStyleHelper::dpiScaled(QFusionStylePrivate::menuCheckMarkWidth)); // Windows always shows a check column
             w += checkcol;

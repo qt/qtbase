@@ -833,7 +833,7 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
                 continue;
             }
             if (info.element == PseudoElement_TitleBar) {
-                info.width = tb->fontMetrics.width(tb->text) + 6;
+                info.width = tb->fontMetrics.horizontalAdvance(tb->text) + 6;
                 subRule.geo = new QStyleSheetGeometryData(info.width, tb->fontMetrics.height(), -1, -1, -1, -1);
             } else {
                 subRule = renderRule(w, tb, info.element);
@@ -5485,7 +5485,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                     groupBox.rect = rule.borderRect(opt->rect);
                     return baseStyle()->subControlRect(cc, &groupBox, sc, w);
                 }
-                int tw = opt->fontMetrics.width(gb->text);
+                int tw = opt->fontMetrics.horizontalAdvance(gb->text);
                 int th = opt->fontMetrics.height();
                 int spacing = pixelMetric(QStyle::PM_CheckBoxLabelSpacing, opt, w);
                 int iw = pixelMetric(QStyle::PM_IndicatorWidth, opt, w);

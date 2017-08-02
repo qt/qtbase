@@ -2453,7 +2453,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
 
             const qreal lineHeight = line.height().toReal();
             QRectF r(pos.x() + line.x.toReal(), pos.y() + line.y.toReal(),
-                     lineHeight / 2, QFontMetrics(eng->font()).width(QLatin1Char(' ')));
+                     lineHeight / 2, QFontMetrics(eng->font()).horizontalAdvance(QLatin1Char(' ')));
             setPenAndDrawBackground(p, QPen(), selection->format, r);
             p->setPen(pen);
         }
@@ -2540,7 +2540,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                     QPainterPrivate::get(p)->drawTextItem(QPointF(iterator.x.toReal(), y.toReal()), gf, eng);
                     if (eng->option.flags() & QTextOption::ShowTabsAndSpaces) {
                         QChar visualTab(0x2192);
-                        int w = QFontMetrics(f).width(visualTab);
+                        int w = QFontMetrics(f).horizontalAdvance(visualTab);
                         qreal x = iterator.itemWidth.toReal() - w; // Right-aligned
                         if (x < 0)
                              p->setClipRect(QRectF(iterator.x.toReal(), line.y.toReal(),

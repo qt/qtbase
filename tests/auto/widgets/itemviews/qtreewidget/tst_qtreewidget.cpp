@@ -3278,7 +3278,7 @@ void tst_QTreeWidget::task239150_editorWidth()
         QVERIFY(tree.itemWidget(&item, 0) == 0);
         tree.editItem(&item);
         QVERIFY(tree.itemWidget(&item, 0));
-        QVERIFY(tree.itemWidget(&item, 0)->width() >= minWidth + tree.fontMetrics().width(item.text(0)));
+        QVERIFY(tree.itemWidget(&item, 0)->width() >= minWidth + tree.fontMetrics().horizontalAdvance(item.text(0)));
     }
 }
 

@@ -966,12 +966,12 @@ QSize QDateTimeEdit::sizeHint() const
         int w = 0;
         QString s;
         s = d->textFromValue(d->minimum) + QLatin1Char(' ');
-        w = qMax<int>(w, fm.width(s));
+        w = qMax<int>(w, fm.horizontalAdvance(s));
         s = d->textFromValue(d->maximum) + QLatin1Char(' ');
-        w = qMax<int>(w, fm.width(s));
+        w = qMax<int>(w, fm.horizontalAdvance(s));
         if (d->specialValueText.size()) {
             s = d->specialValueText;
-            w = qMax<int>(w, fm.width(s));
+            w = qMax<int>(w, fm.horizontalAdvance(s));
         }
         w += 2; // cursor blinking space
 

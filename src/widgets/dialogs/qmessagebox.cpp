@@ -415,7 +415,7 @@ void QMessageBoxPrivate::updateSize()
     }
 
     QFontMetrics fm(QApplication::font("QMdiSubWindowTitleBar"));
-    int windowTitleWidth = qMin(fm.width(q->windowTitle()) + 50, hardLimit);
+    int windowTitleWidth = qMin(fm.horizontalAdvance(q->windowTitle()) + 50, hardLimit);
     if (windowTitleWidth > width)
         width = windowTitleWidth;
 

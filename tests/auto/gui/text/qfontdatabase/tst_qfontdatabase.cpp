@@ -312,7 +312,7 @@ void tst_QFontDatabase::condensedFontWidth()
     QFont testFontCondensed("QtBidiTestFontCondensed");
     QFontMetrics fmTF(testFont);
     QFontMetrics fmTFC(testFontCondensed);
-    QVERIFY(fmTF.width(testString()) > fmTFC.width(testString()));
+    QVERIFY(fmTF.horizontalAdvance(testString()) > fmTFC.horizontalAdvance(testString()));
 
 }
 
@@ -335,15 +335,15 @@ void tst_QFontDatabase::condensedFontMatching()
     QEXPECT_FAIL("","No matching of sub-family by stretch on Windows", Continue);
 #endif
 
-    QCOMPARE(QFontMetrics(tfcByStretch).width(testString()),
-             QFontMetrics(tfcByStyleName).width(testString()));
+    QCOMPARE(QFontMetrics(tfcByStretch).horizontalAdvance(testString()),
+             QFontMetrics(tfcByStyleName).horizontalAdvance(testString()));
 
     if (!db.hasFamily("QtBidiTestFontCondensed"))
         QSKIP("This platform doesn't support font sub-family names (QTBUG-55625)");
 
     QFont tfcBySubfamilyName("QtBidiTestFontCondensed");
-    QCOMPARE(QFontMetrics(tfcByStyleName).width(testString()),
-             QFontMetrics(tfcBySubfamilyName).width(testString()));
+    QCOMPARE(QFontMetrics(tfcByStyleName).horizontalAdvance(testString()),
+             QFontMetrics(tfcBySubfamilyName).horizontalAdvance(testString()));
 }
 
 void tst_QFontDatabase::rasterFonts()

@@ -4270,7 +4270,7 @@ void tst_QTableView::changeHeaderData()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QString text = "long long long text";
-    const int textWidth = view.verticalHeader()->fontMetrics().width(text);
+    const int textWidth = view.verticalHeader()->fontMetrics().horizontalAdvance(text);
     QVERIFY(view.verticalHeader()->width() < textWidth);
 
     model.setHeaderData(2, Qt::Vertical, text);

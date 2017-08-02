@@ -777,7 +777,7 @@ QRect QAccessibleLineEdit::characterRect(int offset) const
     const QString ch = text(offset, offset + 1);
     if (ch.isEmpty())
         return QRect();
-    int w = fm.width(ch);
+    int w = fm.horizontalAdvance(ch);
     int h = fm.height();
     QRect r(x, y, w, h);
     r.moveTo(lineEdit()->mapToGlobal(r.topLeft()));

@@ -870,15 +870,15 @@ QSize QAbstractSpinBox::sizeHint() const
         s = d->textFromValue(d->minimum);
         s.truncate(18);
         s += fixedContent;
-        w = qMax(w, fm.width(s));
+        w = qMax(w, fm.horizontalAdvance(s));
         s = d->textFromValue(d->maximum);
         s.truncate(18);
         s += fixedContent;
-        w = qMax(w, fm.width(s));
+        w = qMax(w, fm.horizontalAdvance(s));
 
         if (d->specialValueText.size()) {
             s = d->specialValueText;
-            w = qMax(w, fm.width(s));
+            w = qMax(w, fm.horizontalAdvance(s));
         }
         w += 2; // cursor blinking space
 
@@ -911,15 +911,15 @@ QSize QAbstractSpinBox::minimumSizeHint() const
         s = d->textFromValue(d->minimum);
         s.truncate(18);
         s += fixedContent;
-        w = qMax(w, fm.width(s));
+        w = qMax(w, fm.horizontalAdvance(s));
         s = d->textFromValue(d->maximum);
         s.truncate(18);
         s += fixedContent;
-        w = qMax(w, fm.width(s));
+        w = qMax(w, fm.horizontalAdvance(s));
 
         if (d->specialValueText.size()) {
             s = d->specialValueText;
-            w = qMax(w, fm.width(s));
+            w = qMax(w, fm.horizontalAdvance(s));
         }
         w += 2; // cursor blinking space
 

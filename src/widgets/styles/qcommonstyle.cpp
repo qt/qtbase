@@ -2499,7 +2499,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             const bool vertical = pb->orientation == Qt::Vertical;
             if (!vertical) {
                 if (pb->textVisible)
-                    textw = qMax(pb->fontMetrics.width(pb->text), pb->fontMetrics.width(QLatin1String("100%"))) + 6;
+                    textw = qMax(pb->fontMetrics.horizontalAdvance(pb->text), pb->fontMetrics.horizontalAdvance(QLatin1String("100%"))) + 6;
             }
 
             if ((pb->textAlignment & Qt::AlignCenter) == 0) {

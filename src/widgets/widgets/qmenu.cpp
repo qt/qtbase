@@ -435,13 +435,13 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
                 QString s = action->text();
                 int t = s.indexOf(QLatin1Char('\t'));
                 if (t != -1) {
-                    tabWidth = qMax(int(tabWidth), qfm.width(s.mid(t+1)));
+                    tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(s.mid(t+1)));
                     s = s.left(t);
     #ifndef QT_NO_SHORTCUT
                 } else if (action->isShortcutVisibleInContextMenu() || !contextMenu) {
                     QKeySequence seq = action->shortcut();
                     if (!seq.isEmpty())
-                        tabWidth = qMax(int(tabWidth), qfm.width(seq.toString(QKeySequence::NativeText)));
+                        tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(seq.toString(QKeySequence::NativeText)));
     #endif
                 }
                 sz.setWidth(fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, s).width());

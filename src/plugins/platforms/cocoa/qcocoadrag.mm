@@ -188,7 +188,7 @@ QPixmap QCocoaDrag::dragPixmap(QDrag *drag, QPoint &hotSpot) const
             if (s.length() > dragImageMaxChars)
                 s = s.left(dragImageMaxChars -3) + QChar(0x2026);
             if (!s.isEmpty()) {
-                const int width = fm.width(s);
+                const int width = fm.horizontalAdvance(s);
                 const int height = fm.height();
                 if (width > 0 && height > 0) {
                     qreal dpr = 1.0;

@@ -2196,7 +2196,7 @@ QSize QCalendarWidget::minimumSizeHint() const
     } else {
         for (int i = 1; i <= 7; i++) {
             QFontMetrics fm(d->m_model->formatForCell(0, i).font());
-            w = qMax(w, fm.width(d->m_model->dayName(d->m_model->dayOfWeekForColumn(i))) + marginH);
+            w = qMax(w, fm.horizontalAdvance(d->m_model->dayName(d->m_model->dayOfWeekForColumn(i))) + marginH);
             h = qMax(h, fm.height());
         }
     }
@@ -2207,14 +2207,14 @@ QSize QCalendarWidget::minimumSizeHint() const
         for (int i = 1; i <= 6; i++) {
             QFontMetrics fm(d->m_model->formatForCell(i, 0).font());
             for (int j = 1; j < end; j++)
-                w = qMax(w, fm.width(QString::number(j)) + marginH);
+                w = qMax(w, fm.horizontalAdvance(QString::number(j)) + marginH);
             h = qMax(h, fm.height());
         }
     }
 
     QFontMetrics fm(d->m_model->formatForCell(1, 1).font());
     for (int i = 1; i <= end; i++) {
-        w = qMax(w, fm.width(QString::number(i)) + marginH);
+        w = qMax(w, fm.horizontalAdvance(QString::number(i)) + marginH);
         h = qMax(h, fm.height());
     }
 

@@ -4498,7 +4498,7 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 {
     QFontMetricsF fm(qApp->font());
 
-    QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
+    QImage baseLine(fm.horizontalAdvance(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
     baseLine.fill(Qt::white);
     {
         QPainter p(&baseLine);

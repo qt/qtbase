@@ -921,7 +921,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
                         height = qMax(height, qMax(iconSize.height(), pmSize.height()));
                     }
                     if (!bt->text().isNull() && bt->toolButtonStyle() != Qt::ToolButtonIconOnly) {
-                        int text_width = bt->fontMetrics().width(bt->text()),
+                        int text_width = bt->fontMetrics().horizontalAdvance(bt->text()),
                            text_height = bt->fontMetrics().height();
                         if (bt->toolButtonStyle() == Qt::ToolButtonTextUnderIcon) {
                             width = qMax(width, text_width);
@@ -5516,10 +5516,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     QRect br = p->clipRegion().boundingRect();
                     int x = br.x(),
                     y = br.y() + (titlebar->rect.height() / 2 - p->fontMetrics().height() / 2);
-                    if (br.width() <= (p->fontMetrics().width(titlebar->text) + iw * 2))
+                    if (br.width() <= (p->fontMetrics().horizontalAdvance(titlebar->text) + iw * 2))
                         x += iw;
                     else
-                        x += br.width() / 2 - p->fontMetrics().width(titlebar->text) / 2;
+                        x += br.width() / 2 - p->fontMetrics().horizontalAdvance(titlebar->text) / 2;
                     if (iw) {
                         int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
                         p->drawPixmap(x - iw, y,

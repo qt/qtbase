@@ -181,7 +181,7 @@ void CharacterWidget::paintEvent(QPaintEvent *event)
             if (key == lastKey)
                 painter.fillRect(column*squareSize + 1, row*squareSize + 1, squareSize, squareSize, QBrush(Qt::red));
 
-            painter.drawText(column*squareSize + (squareSize / 2) - fontMetrics.width(QChar(key))/2,
+            painter.drawText(column*squareSize + (squareSize / 2) - fontMetrics.horizontalAdvance(QChar(key))/2,
                              row*squareSize + 4 + fontMetrics.ascent(),
                              QString(QChar(key)));
         }

@@ -809,7 +809,7 @@ void QTextDocument::adjustSize()
     // Pull this private function in from qglobal.cpp
     QFont f = defaultFont();
     QFontMetrics fm(f);
-    int mw =  fm.width(QLatin1Char('x')) * 80;
+    int mw =  fm.horizontalAdvance(QLatin1Char('x')) * 80;
     int w = mw;
     setTextWidth(w);
     QSizeF size = documentLayout()->documentSize();
@@ -1902,7 +1902,7 @@ static void printPage(int index, QPainter *painter, const QTextDocument *doc, co
         painter->setFont(QFont(doc->defaultFont()));
         const QString pageString = QString::number(index);
 
-        painter->drawText(qRound(pageNumberPos.x() - painter->fontMetrics().width(pageString)),
+        painter->drawText(qRound(pageNumberPos.x() - painter->fontMetrics().horizontalAdvance(pageString)),
                           qRound(pageNumberPos.y() + view.top()),
                           pageString);
     }

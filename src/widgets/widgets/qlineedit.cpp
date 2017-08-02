@@ -682,7 +682,7 @@ QSize QLineEdit::sizeHint() const
     int h = qMax(fm.height(), 14) + 2*d->verticalMargin
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
-    int w = fm.width(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
+    int w = fm.horizontalAdvance(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
             + d->effectiveLeftTextMargin() + d->effectiveRightTextMargin()
             + d->leftmargin + d->rightmargin; // "some"
     QStyleOptionFrame opt;
