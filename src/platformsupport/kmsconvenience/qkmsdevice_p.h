@@ -59,6 +59,7 @@
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <drm_fourcc.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -111,6 +112,7 @@ struct QKmsOutput
     bool wants_plane;
     uint32_t plane_id;
     bool plane_set;
+    uint32_t drm_format;
 
     void restoreMode(QKmsDevice *device);
     void cleanup(QKmsDevice *device);

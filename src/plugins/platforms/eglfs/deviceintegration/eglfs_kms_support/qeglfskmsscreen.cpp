@@ -1,7 +1,7 @@
 /****************************************************************************
 **
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2017 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
-** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
@@ -117,12 +117,30 @@ QRect QEglFSKmsScreen::rawGeometry() const
 
 int QEglFSKmsScreen::depth() const
 {
-    return 32;
+    return format() == QImage::Format_RGB16 ? 16 : 32;
 }
 
 QImage::Format QEglFSKmsScreen::format() const
 {
-    return QImage::Format_RGB32;
+    // the result can be slightly incorrect, it won't matter in practice
+    switch (m_output.drm_format) {
+    case DRM_FORMAT_ARGB8888:
+    case DRM_FORMAT_ABGR8888:
+        return QImage::Format_ARGB32;
+    case DRM_FORMAT_RGB565:
+    case DRM_FORMAT_BGR565:
+        return QImage::Format_RGB16;
+    case DRM_FORMAT_XRGB2101010:
+        return QImage::Format_RGB30;
+    case DRM_FORMAT_XBGR2101010:
+        return QImage::Format_BGR30;
+    case DRM_FORMAT_ARGB2101010:
+        return QImage::Format_A2RGB30_Premultiplied;
+    case DRM_FORMAT_ABGR2101010:
+        return QImage::Format_A2BGR30_Premultiplied;
+    default:
+        return QImage::Format_RGB32;
+    }
 }
 
 QSizeF QEglFSKmsScreen::physicalSize() const

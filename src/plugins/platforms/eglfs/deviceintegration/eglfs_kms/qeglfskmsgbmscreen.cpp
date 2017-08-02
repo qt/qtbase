@@ -1,7 +1,7 @@
 /****************************************************************************
 **
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
-** Copyright (C) 2016 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Contact: https://www.qt.io/licensing/
 **
@@ -55,6 +55,18 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
+static inline uint32_t drmFormatToGbmFormat(uint32_t drmFormat)
+{
+    Q_ASSERT(DRM_FORMAT_XRGB8888 == GBM_FORMAT_XRGB8888);
+    return drmFormat;
+}
+
+static inline uint32_t gbmFormatToDrmFormat(uint32_t gbmFormat)
+{
+    Q_ASSERT(DRM_FORMAT_XRGB8888 == GBM_FORMAT_XRGB8888);
+    return gbmFormat;
+}
+
 void QEglFSKmsGbmScreen::bufferDestroyedHandler(gbm_bo *bo, void *data)
 {
     FrameBuffer *fb = static_cast<FrameBuffer *>(data);
@@ -77,13 +89,16 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
 
     uint32_t width = gbm_bo_get_width(bo);
     uint32_t height = gbm_bo_get_height(bo);
-    uint32_t stride = gbm_bo_get_stride(bo);
-    uint32_t handle = gbm_bo_get_handle(bo).u32;
+    uint32_t handles[4] = { gbm_bo_get_handle(bo).u32 };
+    uint32_t strides[4] = { gbm_bo_get_stride(bo) };
+    uint32_t offsets[4] = { 0 };
+    uint32_t pixelFormat = gbmFormatToDrmFormat(gbm_bo_get_format(bo));
 
     QScopedPointer<FrameBuffer> fb(new FrameBuffer);
+    qCDebug(qLcEglfsKmsDebug, "Adding FB, size %ux%u, DRM format 0x%x", width, height, pixelFormat);
 
-    int ret = drmModeAddFB(device()->fd(), width, height, 24, 32,
-                           stride, handle, &fb->fb);
+    int ret = drmModeAddFB2(device()->fd(), width, height, pixelFormat,
+                            handles, strides, offsets, &fb->fb, 0);
 
     if (ret) {
         qWarning("Failed to create KMS FB!");
@@ -132,11 +147,12 @@ QPlatformCursor *QEglFSKmsGbmScreen::cursor() const
 gbm_surface *QEglFSKmsGbmScreen::createSurface()
 {
     if (!m_gbm_surface) {
-        qCDebug(qLcEglfsKmsDebug, "Creating gbm_surface for screen %s", qPrintable(name()));
+        uint32_t gbmFormat = drmFormatToGbmFormat(m_output.drm_format);
+        qCDebug(qLcEglfsKmsDebug, "Creating gbm_surface for screen %s with format 0x%x", qPrintable(name()), gbmFormat);
         m_gbm_surface = gbm_surface_create(static_cast<QEglFSKmsGbmDevice *>(device())->gbmDevice(),
                                            rawGeometry().width(),
                                            rawGeometry().height(),
-                                           GBM_FORMAT_XRGB8888,
+                                           gbmFormat,
                                            GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
     }
     return m_gbm_surface; // not owned, gets destroyed in QEglFSKmsGbmIntegration::destroyNativeWindow() via QEglFSKmsGbmWindow::invalidateSurface()

@@ -324,6 +324,34 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     }
     qCDebug(qLcKmsDebug) << "Physical size is" << physSize << "mm" << "for output" << connectorName;
 
+    const QByteArray formatStr = userConnectorConfig.value(QStringLiteral("format"), QStringLiteral("xrgb8888"))
+            .toByteArray().toLower();
+    uint32_t drmFormat;
+    if (formatStr == "xrgb8888") {
+        drmFormat = DRM_FORMAT_XRGB8888;
+    } else if (formatStr == "xbgr8888") {
+        drmFormat = DRM_FORMAT_XBGR8888;
+    } else if (formatStr == "argb8888") {
+        drmFormat = DRM_FORMAT_ARGB8888;
+    } else if (formatStr == "abgr8888") {
+        drmFormat = DRM_FORMAT_ABGR8888;
+    } else if (formatStr == "rgb565") {
+        drmFormat = DRM_FORMAT_RGB565;
+    } else if (formatStr == "bgr565") {
+        drmFormat = DRM_FORMAT_BGR565;
+    } else if (formatStr == "xrgb2101010") {
+        drmFormat = DRM_FORMAT_XRGB2101010;
+    } else if (formatStr == "xbgr2101010") {
+        drmFormat = DRM_FORMAT_XBGR2101010;
+    } else if (formatStr == "argb2101010") {
+        drmFormat = DRM_FORMAT_ARGB2101010;
+    } else if (formatStr == "abgr2101010") {
+        drmFormat = DRM_FORMAT_ABGR2101010;
+    } else {
+        qWarning("Invalid pixel format \"%s\" for output %s", formatStr.constData(), connectorName.constData());
+        drmFormat = DRM_FORMAT_XRGB8888;
+    }
+
     QKmsOutput output = {
         QString::fromUtf8(connectorName),
         connector->connector_id,
@@ -339,7 +367,8 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         connectorPropertyBlob(connector, QByteArrayLiteral("EDID")),
         false, // wants_plane
         0, // plane_id
-        false // plane_set
+        false, // plane_set
+        drmFormat
     };
 
     bool ok;
