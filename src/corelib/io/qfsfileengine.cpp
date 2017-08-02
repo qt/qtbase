@@ -923,10 +923,6 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
-/*! \fn QDateTime QFSFileEngine::fileTime(FileTime time) const
-  \reimp
-*/
-
 /*! \fn QString QFSFileEngine::homePath()
   Returns the home path of the current user.
 

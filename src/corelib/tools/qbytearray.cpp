@@ -686,14 +686,6 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
     \sa qCompress()
 */
 
-/*! \relates QByteArray
-
-    \overload
-
-    Uncompresses the first \a nbytes of \a data and returns a new byte
-    array with the uncompressed data.
-*/
-
 #ifndef QT_NO_COMPRESS
 namespace {
 struct QByteArrayDataDeleter
@@ -709,6 +701,13 @@ static QByteArray invalidCompressedData()
     return QByteArray();
 }
 
+/*! \relates QByteArray
+
+    \overload
+
+    Uncompresses the first \a nbytes of \a data and returns a new byte
+    array with the uncompressed data.
+*/
 QByteArray qUncompress(const uchar* data, int nbytes)
 {
     if (!data) {
