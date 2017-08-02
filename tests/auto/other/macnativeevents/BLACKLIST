@@ -21,6 +21,7 @@ osx
 osx
 [testMouseDragToNonClientArea]
 osx
+osx-10.12 ci
 # The following key tests fail after switching to synchronous
 # expose events, and we don't know why yet. QTBUG-62042
 [testKeyPressOnToplevel]
@@ -34,6 +35,8 @@ osx
 # QTQAINFRA-1292
 [testPushButtonPressRelease]
 osx-10.11 ci
+osx-10.12 ci
+
 # QTQAINFRA-1292
 [testModifierCtrlWithDontSwapCtrlAndMeta]
 osx-10.12 ci

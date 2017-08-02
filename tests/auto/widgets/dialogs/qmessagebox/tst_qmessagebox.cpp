@@ -185,6 +185,12 @@ void tst_QMessageBox::cleanup()
 
 void tst_QMessageBox::sanityTest()
 {
+#if defined(Q_OS_MACOS)
+    if (QSysInfo::productVersion() == QLatin1String("10.12")) {
+        QSKIP("Test hangs on macOS 10.12 -- QTQAINFRA-1362");
+        return;
+    }
+#endif
     QMessageBox msgBox;
     msgBox.setText("This is insane");
     for (int i = 0; i < 10; i++)

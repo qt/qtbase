@@ -19,3 +19,7 @@ ubuntu-16.04
 osx
 [modalWindowModallity]
 osx
+[visibility]
+osx-10.11 ci
+osx-10.12 ci
+
