@@ -174,6 +174,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
 
     OutputConfiguration configuration;
     QSize configurationSize;
+    int configurationRefresh = 0;
     drmModeModeInfo configurationModeline;
 
     auto userConfig = m_screenConfig->outputSettings();
@@ -187,6 +188,10 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         configuration = OutputConfigPreferred;
     } else if (mode == "current") {
         configuration = OutputConfigCurrent;
+    } else if (sscanf(mode.constData(), "%dx%d@%d", &configurationSize.rwidth(), &configurationSize.rheight(),
+                      &configurationRefresh) == 3)
+    {
+        configuration = OutputConfigMode;
     } else if (sscanf(mode.constData(), "%dx%d", &configurationSize.rwidth(), &configurationSize.rheight()) == 2) {
         configuration = OutputConfigMode;
     } else if (parseModeline(mode, &configurationModeline)) {
@@ -256,9 +261,11 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     for (int i = modes.size() - 1; i >= 0; i--) {
         const drmModeModeInfo &m = modes.at(i);
 
-        if (configuration == OutputConfigMode &&
-                m.hdisplay == configurationSize.width() &&
-                m.vdisplay == configurationSize.height()) {
+        if (configuration == OutputConfigMode
+                && m.hdisplay == configurationSize.width()
+                && m.vdisplay == configurationSize.height()
+                && (!configurationRefresh || m.vrefresh == uint32_t(configurationRefresh)))
+        {
             configured = i;
         }
 
