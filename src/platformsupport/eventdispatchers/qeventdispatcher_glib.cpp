@@ -48,78 +48,26 @@
 
 QT_BEGIN_NAMESPACE
 
-struct GUserEventSource
-{
-    GSource source;
-    QPAEventDispatcherGlib *q;
-};
-
-static gboolean userEventSourcePrepare(GSource *source, gint *timeout)
-{
-    Q_UNUSED(timeout)
-    GUserEventSource *userEventSource = reinterpret_cast<GUserEventSource *>(source);
-    QPAEventDispatcherGlib *dispatcher = userEventSource->q;
-    if (dispatcher->m_flags & QEventLoop::ExcludeUserInputEvents)
-        return QWindowSystemInterface::nonUserInputEventsQueued();
-    else
-        return QWindowSystemInterface::windowSystemEventsQueued() > 0;
-}
-
-static gboolean userEventSourceCheck(GSource *source)
-{
-    return userEventSourcePrepare(source, 0);
-}
-
-static gboolean userEventSourceDispatch(GSource *source, GSourceFunc, gpointer)
-{
-    GUserEventSource *userEventSource = reinterpret_cast<GUserEventSource *>(source);
-    QPAEventDispatcherGlib *dispatcher = userEventSource->q;
-    QWindowSystemInterface::sendWindowSystemEvents(dispatcher->m_flags);
-    return true;
-}
-
-static GSourceFuncs userEventSourceFuncs = {
-    userEventSourcePrepare,
-    userEventSourceCheck,
-    userEventSourceDispatch,
-    NULL,
-    NULL,
-    NULL
-};
-
 QPAEventDispatcherGlibPrivate::QPAEventDispatcherGlibPrivate(GMainContext *context)
     : QEventDispatcherGlibPrivate(context)
 {
-    Q_Q(QPAEventDispatcherGlib);
-    userEventSource = reinterpret_cast<GUserEventSource *>(g_source_new(&userEventSourceFuncs,
-                                                                       sizeof(GUserEventSource)));
-    userEventSource->q = q;
-    g_source_set_can_recurse(&userEventSource->source, true);
-    g_source_attach(&userEventSource->source, mainContext);
 }
-
 
 QPAEventDispatcherGlib::QPAEventDispatcherGlib(QObject *parent)
     : QEventDispatcherGlib(*new QPAEventDispatcherGlibPrivate, parent)
     , m_flags(QEventLoop::AllEvents)
 {
-    Q_D(QPAEventDispatcherGlib);
-    d->userEventSource->q = this;
 }
 
 QPAEventDispatcherGlib::~QPAEventDispatcherGlib()
 {
-    Q_D(QPAEventDispatcherGlib);
-
-    g_source_destroy(&d->userEventSource->source);
-    g_source_unref(&d->userEventSource->source);
-    d->userEventSource = 0;
 }
 
 bool QPAEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     m_flags = flags;
-    return QEventDispatcherGlib::processEvents(m_flags);
+    const bool didSendEvents = QEventDispatcherGlib::processEvents(m_flags);
+    return QWindowSystemInterface::sendWindowSystemEvents(m_flags) || didSendEvents;
 }
 
 QT_END_NAMESPACE

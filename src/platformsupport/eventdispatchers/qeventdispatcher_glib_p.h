@@ -71,14 +71,11 @@ public:
     QEventLoop::ProcessEventsFlags m_flags;
 };
 
-struct GUserEventSource;
-
 class QPAEventDispatcherGlibPrivate : public QEventDispatcherGlibPrivate
 {
     Q_DECLARE_PUBLIC(QPAEventDispatcherGlib)
 public:
     QPAEventDispatcherGlibPrivate(GMainContext *context = 0);
-    GUserEventSource *userEventSource;
 };
 
 
