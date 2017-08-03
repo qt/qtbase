@@ -456,7 +456,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
                 m_edid.serialNumber.toLatin1().constData(),
                 m_edid.physicalSize.width(), m_edid.physicalSize.height());
     else
-        qCWarning(lcQpaScreen) << "Failed to parse EDID data for output" << name();
+        qCDebug(lcQpaScreen) << "Failed to parse EDID data for output" << name(); // keep this debug, not warning
 }
 
 QXcbScreen::~QXcbScreen()

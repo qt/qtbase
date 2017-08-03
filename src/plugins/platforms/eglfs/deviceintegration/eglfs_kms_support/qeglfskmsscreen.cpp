@@ -88,9 +88,9 @@ QEglFSKmsScreen::QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output)
                     m_edid.serialNumber.toLatin1().constData(),
                     m_edid.physicalSize.width(), m_edid.physicalSize.height());
         else
-            qCWarning(qLcEglfsKmsDebug) << "Failed to parse EDID data for output" << name();
+            qCDebug(qLcEglfsKmsDebug) << "Failed to parse EDID data for output" << name(); // keep this debug, not warning
     } else {
-        qCWarning(qLcEglfsKmsDebug) << "No EDID data for output" << name();
+        qCDebug(qLcEglfsKmsDebug) << "No EDID data for output" << name();
     }
 }
 
