@@ -1088,8 +1088,18 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         setWindowZoomButton(flags);
     }
 
-    if (m_nsWindow)
-        m_nsWindow.ignoresMouseEvents = flags & Qt::WindowTransparentForInput;
+    // Make window ignore mouse events if WindowTransparentForInput is set.
+    // Note that ignoresMouseEvents has a special initial state where events
+    // are ignored (passed through) based on window transparency, and that
+    // setting the property to false does not return us to that state. Instead,
+    // this makes the window capture all mouse events. Take care to only
+    // set the property if needed. FIXME: recreate window if needed or find
+    // some other way to implement WindowTransparentForInput.
+    if (m_nsWindow) {
+        bool ignoreMouse = flags & Qt::WindowTransparentForInput;
+        if (m_nsWindow.ignoresMouseEvents != ignoreMouse)
+            m_nsWindow.ignoresMouseEvents = ignoreMouse;
+    }
 
     m_windowFlags = flags;
 }
