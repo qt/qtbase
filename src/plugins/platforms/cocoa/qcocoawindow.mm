@@ -1456,8 +1456,18 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         [m_contentView setHidden: YES];
     }
 
-    m_nsWindow.ignoresMouseEvents =
-        (window()->flags() & Qt::WindowTransparentForInput) == Qt::WindowTransparentForInput;
+    // Make window ignore mouse events if WindowTransparentForInput is set.
+    // Note that ignoresMouseEvents has a special initial state where events
+    // are ignored (passed through) based on window transparency, and that
+    // setting the property to false does not return us to that state. Instead,
+    // this makes the window capture all mouse events. Take care to only
+    // set the property if needed. FIXME: recreate window if needed or find
+    // some other way to implement WindowTransparentForInput.
+    if (m_nsWindow) {
+        bool ignoreMouse = window()->flags() & Qt::WindowTransparentForInput;
+        if (m_nsWindow.ignoresMouseEvents != ignoreMouse)
+            m_nsWindow.ignoresMouseEvents = ignoreMouse;
+    }
 
     const qreal opacity = qt_window_private(window())->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
