@@ -68,13 +68,13 @@
 */
 
 /*!
-    \fn QFutureSynchronizer::QFutureSynchronizer()
+    \fn template <typename T> QFutureSynchronizer<T>::QFutureSynchronizer()
 
     Constructs a QFutureSynchronizer.
 */
 
 /*!
-    \fn QFutureSynchronizer::QFutureSynchronizer(const QFuture<T> &future)
+    \fn template <typename T> QFutureSynchronizer<T>::QFutureSynchronizer(const QFuture<T> &future)
 
     Constructs a QFutureSynchronizer and begins watching \a future by calling
     addFuture().
@@ -83,7 +83,7 @@
 */
 
 /*!
-    \fn QFutureSynchronizer::~QFutureSynchronizer()
+    \fn template <typename T> QFutureSynchronizer<T>::~QFutureSynchronizer()
 
     Calls waitForFinished() function to ensure that all futures have finished
     before destroying this QFutureSynchronizer.
@@ -92,7 +92,7 @@
 */
 
 /*!
-    \fn void QFutureSynchronizer::setFuture(const QFuture<T> &future)
+    \fn template <typename T> void QFutureSynchronizer<T>::setFuture(const QFuture<T> &future)
 
     Sets \a future to be the only future managed by this QFutureSynchronizer.
     This is a convenience function that calls waitForFinished(),
@@ -102,7 +102,7 @@
 */
 
 /*!
-    \fn void QFutureSynchronizer::addFuture(const QFuture<T> &future)
+    \fn template <typename T> void QFutureSynchronizer<T>::addFuture(const QFuture<T> &future)
 
     Adds \a future to the list of managed futures.
 
@@ -110,7 +110,7 @@
 */
 
 /*!
-    \fn void QFutureSynchronizer::waitForFinished()
+    \fn template <typename T> void QFutureSynchronizer<T>::waitForFinished()
 
     Waits for all futures to finish. If cancelOnWait() returns \c true, each
     future is canceled before waiting for them to finish.
@@ -119,7 +119,7 @@
 */
 
 /*!
-    \fn void QFutureSynchronizer::clearFutures()
+    \fn template <typename T> void QFutureSynchronizer<T>::clearFutures()
 
     Removes all managed futures from this QFutureSynchronizer.
 
@@ -127,7 +127,7 @@
 */
 
 /*!
-    \fn QList<QFuture<T> > QFutureSynchronizer::futures() const
+    \fn template <typename T> QList<QFuture<T> > QFutureSynchronizer<T>::futures() const
 
     Returns a list of all managed futures.
 
@@ -135,7 +135,7 @@
 */
 
 /*!
-    \fn void QFutureSynchronizer::setCancelOnWait(bool enabled)
+    \fn template <typename T> void QFutureSynchronizer<T>::setCancelOnWait(bool enabled)
 
     Enables or disables the cancel-on-wait feature based on the \a enabled
     argument. If \a enabled is true, the waitForFinished() function will cancel
@@ -145,7 +145,7 @@
 */
 
 /*!
-    \fn bool QFutureSynchronizer::cancelOnWait() const
+    \fn template <typename T> bool QFutureSynchronizer<T>::cancelOnWait() const
 
     Returns \c true if the cancel-on-wait feature is enabled; otherwise returns
     false. If cancel-on-wait is enabled, the waitForFinished() function will
