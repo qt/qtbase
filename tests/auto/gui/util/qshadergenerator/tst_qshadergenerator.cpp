@@ -220,7 +220,7 @@ void tst_QShaderGenerator::shouldGenerateShaderCode_data()
     const auto openGL32 = createFormat(QShaderFormat::OpenGLCoreProfile, 3, 2);
     const auto openGL4 = createFormat(QShaderFormat::OpenGLCoreProfile, 4, 0);
 
-    const auto versionGLES2 = QByteArrayList() << "#version 100 es" << "";
+    const auto versionGLES2 = QByteArrayList() << "#version 100" << "";
     const auto versionGL3 = QByteArrayList() << "#version 130" << "";
     const auto versionGL32 = QByteArrayList() << "#version 150 core" << "";
     const auto versionGL4 = QByteArrayList() << "#version 400 core" << "";
@@ -298,7 +298,7 @@ void tst_QShaderGenerator::shouldGenerateVersionCommands_data()
     QTest::addColumn<QShaderFormat>("format");
     QTest::addColumn<QByteArray>("version");
 
-    QTest::newRow("GLES2") << createFormat(QShaderFormat::OpenGLES, 2, 0) << QByteArrayLiteral("#version 100 es");
+    QTest::newRow("GLES2") << createFormat(QShaderFormat::OpenGLES, 2, 0) << QByteArrayLiteral("#version 100");
     QTest::newRow("GLES3") << createFormat(QShaderFormat::OpenGLES, 3, 0) << QByteArrayLiteral("#version 300 es");
 
     QTest::newRow("GL20") << createFormat(QShaderFormat::OpenGLNoProfile, 2, 0) << QByteArrayLiteral("#version 110");
@@ -659,7 +659,7 @@ void tst_QShaderGenerator::shouldProcessLanguageQualifierAndTypeEnums_data()
                                                    << "    fragColor = v0;"
                                                    << "}"
                                                    << "").join("\n");
-            const auto es2Code = (QByteArrayList() << "#version 100 es"
+            const auto es2Code = (QByteArrayList() << "#version 100"
                                                    << ""
                                                    << QStringLiteral("%1 highp %2 worldPosition;").arg(toGlsl(qualifierValue, es2))
                                                                                                   .arg(toGlsl(typeValue))

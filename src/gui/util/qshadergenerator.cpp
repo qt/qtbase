@@ -294,7 +294,7 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
                            : major == 3 && minor <= 2 ? 100 + 10 * (minor + 3)
                            : major * 100 + minor * 10;
 
-        const auto profile = isGLES ? QByteArrayLiteral(" es")
+        const auto profile = isGLES && version > 100 ? QByteArrayLiteral(" es")
                            : version >= 150 && format.api() == QShaderFormat::OpenGLCoreProfile ? QByteArrayLiteral(" core")
                            : version >= 150 && format.api() == QShaderFormat::OpenGLCompatibilityProfile ? QByteArrayLiteral(" compatibility")
                            : QByteArray();
