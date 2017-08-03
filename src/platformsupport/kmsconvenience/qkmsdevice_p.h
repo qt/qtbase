@@ -113,6 +113,7 @@ struct QKmsOutput
     uint32_t plane_id;
     bool plane_set;
     uint32_t drm_format;
+    QString clone_source;
 
     void restoreMode(QKmsDevice *device);
     void cleanup(QKmsDevice *device);
@@ -123,11 +124,11 @@ struct QKmsOutput
 class QKmsDevice
 {
 public:
-    struct VirtualDesktopInfo {
-    VirtualDesktopInfo() : virtualIndex(0), isPrimary(false) { }
-        int virtualIndex;
+    struct ScreenInfo {
+        int virtualIndex = 0;
         QPoint virtualPos;
-        bool isPrimary;
+        bool isPrimary = false;
+        QKmsOutput output;
     };
 
     QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path = QString());
@@ -146,6 +147,9 @@ public:
 
 protected:
     virtual QPlatformScreen *createScreen(const QKmsOutput &output) = 0;
+    virtual void registerScreenCloning(QPlatformScreen *screen,
+                                       QPlatformScreen *screenThisScreenClones,
+                                       const QVector<QPlatformScreen *> &screensCloningThisScreen);
     virtual void registerScreen(QPlatformScreen *screen,
                                 bool isPrimary,
                                 const QPoint &virtualPos,
@@ -155,7 +159,7 @@ protected:
     int crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector);
     QPlatformScreen *createScreenForConnector(drmModeResPtr resources,
                                               drmModeConnectorPtr connector,
-                                              VirtualDesktopInfo *vinfo);
+                                              ScreenInfo *vinfo);
     drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
     drmModePropertyBlobPtr connectorPropertyBlob(drmModeConnectorPtr connector, const QByteArray &name);
 

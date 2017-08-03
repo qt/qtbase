@@ -62,24 +62,38 @@ public:
     gbm_surface *createSurface();
     void resetSurface();
 
+    void initCloning(QPlatformScreen *screenThisScreenClones,
+                     const QVector<QPlatformScreen *> &screensCloningThisScreen);
+
     void waitForFlip() override;
     void flip() override;
     void flipFinished() override;
 
 private:
+    void ensureModeSet(uint32_t fb);
+    void cloneDestFlipFinished(QEglFSKmsGbmScreen *cloneDestScreen);
+    void updateFlipStatus();
+
     gbm_surface *m_gbm_surface;
 
     gbm_bo *m_gbm_bo_current;
     gbm_bo *m_gbm_bo_next;
+    bool m_flipPending;
 
     QScopedPointer<QEglFSKmsGbmCursor> m_cursor;
 
     struct FrameBuffer {
-        FrameBuffer() : fb(0) {}
-        uint32_t fb;
+        uint32_t fb = 0;
     };
     static void bufferDestroyedHandler(gbm_bo *bo, void *data);
     FrameBuffer *framebufferForBufferObject(gbm_bo *bo);
+
+    QEglFSKmsGbmScreen *m_cloneSource;
+    struct CloneDestination {
+        QEglFSKmsGbmScreen *screen = nullptr;
+        bool cloneFlipPending = false;
+    };
+    QVector<CloneDestination> m_cloneDests;
 
     static QMutex m_waitForFlipMutex;
 };

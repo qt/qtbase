@@ -161,4 +161,15 @@ QPlatformScreen *QEglFSKmsGbmDevice::createScreen(const QKmsOutput &output)
     return screen;
 }
 
+void QEglFSKmsGbmDevice::registerScreenCloning(QPlatformScreen *screen,
+                                               QPlatformScreen *screenThisScreenClones,
+                                               const QVector<QPlatformScreen *> &screensCloningThisScreen)
+{
+    if (!screenThisScreenClones && screensCloningThisScreen.isEmpty())
+        return;
+
+    QEglFSKmsGbmScreen *gbmScreen = static_cast<QEglFSKmsGbmScreen *>(screen);
+    gbmScreen->initCloning(screenThisScreenClones, screensCloningThisScreen);
+}
+
 QT_END_NAMESPACE

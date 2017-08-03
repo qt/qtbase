@@ -114,7 +114,9 @@ QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QKmsDevice *device, const QKmsOutput &out
     , m_gbm_surface(Q_NULLPTR)
     , m_gbm_bo_current(Q_NULLPTR)
     , m_gbm_bo_next(Q_NULLPTR)
+    , m_flipPending(false)
     , m_cursor(Q_NULLPTR)
+    , m_cloneSource(Q_NULLPTR)
 {
 }
 
@@ -163,32 +165,28 @@ void QEglFSKmsGbmScreen::resetSurface()
     m_gbm_surface = nullptr;
 }
 
-void QEglFSKmsGbmScreen::waitForFlip()
+void QEglFSKmsGbmScreen::initCloning(QPlatformScreen *screenThisScreenClones,
+                                     const QVector<QPlatformScreen *> &screensCloningThisScreen)
 {
-    // Don't lock the mutex unless we actually need to
-    if (!m_gbm_bo_next)
+    // clone destinations need to know the clone source
+    const bool clonesAnother = screenThisScreenClones != nullptr;
+    if (clonesAnother && !screensCloningThisScreen.isEmpty()) {
+        qWarning("QEglFSKmsGbmScreen %s cannot be clone source and destination at the same time", qPrintable(name()));
         return;
+    }
+    if (clonesAnother)
+        m_cloneSource = static_cast<QEglFSKmsGbmScreen *>(screenThisScreenClones);
 
-    QMutexLocker lock(&m_waitForFlipMutex);
-    while (m_gbm_bo_next)
-        static_cast<QEglFSKmsGbmDevice *>(device())->handleDrmEvent();
+    // clone sources need to know their additional destinations
+    for (QPlatformScreen *s : screensCloningThisScreen) {
+        CloneDestination d;
+        d.screen = static_cast<QEglFSKmsGbmScreen *>(s);
+        m_cloneDests.append(d);
+    }
 }
 
-void QEglFSKmsGbmScreen::flip()
+void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
 {
-    if (!m_gbm_surface) {
-        qWarning("Cannot sync before platform init!");
-        return;
-    }
-
-    m_gbm_bo_next = gbm_surface_lock_front_buffer(m_gbm_surface);
-    if (!m_gbm_bo_next) {
-        qWarning("Could not lock GBM surface front buffer!");
-        return;
-    }
-
-    FrameBuffer *fb = framebufferForBufferObject(m_gbm_bo_next);
-
     QKmsOutput &op(output());
     const int fd = device()->fd();
     const uint32_t w = op.modes[op.mode].hdisplay;
@@ -214,7 +212,7 @@ void QEglFSKmsGbmScreen::flip()
             qCDebug(qLcEglfsKmsDebug, "Setting mode for screen %s", qPrintable(name()));
             int ret = drmModeSetCrtc(fd,
                                      op.crtc_id,
-                                     fb->fb,
+                                     fb,
                                      0, 0,
                                      &op.connector_id, 1,
                                      &op.modes[op.mode]);
@@ -238,7 +236,48 @@ void QEglFSKmsGbmScreen::flip()
                 qErrnoWarning(errno, "drmModeSetPlane failed");
         }
     }
+}
 
+void QEglFSKmsGbmScreen::waitForFlip()
+{
+    if (m_cloneSource) {
+        qWarning("Screen %s clones another screen. swapBuffers() not allowed.", qPrintable(name()));
+        return;
+    }
+
+    // Don't lock the mutex unless we actually need to
+    if (!m_gbm_bo_next)
+        return;
+
+    QMutexLocker lock(&m_waitForFlipMutex);
+    while (m_gbm_bo_next)
+        static_cast<QEglFSKmsGbmDevice *>(device())->handleDrmEvent();
+}
+
+void QEglFSKmsGbmScreen::flip()
+{
+    if (m_cloneSource) {
+        qWarning("Screen %s clones another screen. swapBuffers() not allowed.", qPrintable(name()));
+        return;
+    }
+
+    if (!m_gbm_surface) {
+        qWarning("Cannot sync before platform init!");
+        return;
+    }
+
+    m_gbm_bo_next = gbm_surface_lock_front_buffer(m_gbm_surface);
+    if (!m_gbm_bo_next) {
+        qWarning("Could not lock GBM surface front buffer!");
+        return;
+    }
+
+    FrameBuffer *fb = framebufferForBufferObject(m_gbm_bo_next);
+    ensureModeSet(fb->fb);
+
+    QKmsOutput &op(output());
+    const int fd = device()->fd();
+    m_flipPending = true;
     int ret = drmModePageFlip(fd,
                               op.crtc_id,
                               fb->fb,
@@ -246,13 +285,63 @@ void QEglFSKmsGbmScreen::flip()
                               this);
     if (ret) {
         qErrnoWarning("Could not queue DRM page flip on screen %s", qPrintable(name()));
+        m_flipPending = false;
         gbm_surface_release_buffer(m_gbm_surface, m_gbm_bo_next);
         m_gbm_bo_next = Q_NULLPTR;
+        return;
+    }
+
+    for (CloneDestination &d : m_cloneDests) {
+        if (d.screen != this) {
+            d.screen->ensureModeSet(fb->fb);
+            d.cloneFlipPending = true;
+            int ret = drmModePageFlip(fd,
+                                      d.screen->output().crtc_id,
+                                      fb->fb,
+                                      DRM_MODE_PAGE_FLIP_EVENT,
+                                      d.screen);
+            if (ret) {
+                qErrnoWarning("Could not queue DRM page flip for clone screen %s", qPrintable(name()));
+                d.cloneFlipPending = false;
+            }
+        }
     }
 }
 
 void QEglFSKmsGbmScreen::flipFinished()
 {
+    if (m_cloneSource) {
+        m_cloneSource->cloneDestFlipFinished(this);
+        return;
+    }
+
+    m_flipPending = false;
+    updateFlipStatus();
+}
+
+void QEglFSKmsGbmScreen::cloneDestFlipFinished(QEglFSKmsGbmScreen *cloneDestScreen)
+{
+    for (CloneDestination &d : m_cloneDests) {
+        if (d.screen == cloneDestScreen) {
+            d.cloneFlipPending = false;
+            break;
+        }
+    }
+    updateFlipStatus();
+}
+
+void QEglFSKmsGbmScreen::updateFlipStatus()
+{
+    Q_ASSERT(!m_cloneSource);
+
+    if (m_flipPending)
+        return;
+
+    for (const CloneDestination &d : m_cloneDests) {
+        if (d.cloneFlipPending)
+            return;
+    }
+
     if (m_gbm_bo_current)
         gbm_surface_release_buffer(m_gbm_surface,
                                    m_gbm_bo_current);
