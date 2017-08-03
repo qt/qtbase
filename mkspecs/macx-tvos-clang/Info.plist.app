@@ -4,33 +4,33 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleGetInfoString</key>
-	<string>Created by Qt/QMake</string>
-	<key>CFBundleSignature</key>
-	<string>@TYPEINFO@</string>
-	<key>CFBundleExecutable</key>
-	<string>@EXECUTABLE@</string>
-	<key>CFBundleIdentifier</key>
-	<string>@BUNDLEIDENTIFIER@</string>
 	<key>CFBundleDisplayName</key>
 	<string>${PRODUCT_NAME}</string>
-	<key>CFBundleName</key>
-	<string>${PRODUCT_NAME}</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<key>CFBundleExecutable</key>
+	<string>@EXECUTABLE@</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Created by Qt/QMake</string>
 	<key>CFBundleIcons</key>
 	<dict>
 		<key>CFBundlePrimaryIcon</key>
 		<string>App Icon - Small</string>
 	</dict>
+	<key>CFBundleIdentifier</key>
+	<string>@BUNDLEIDENTIFIER@</string>
+	<key>CFBundleName</key>
+	<string>${PRODUCT_NAME}</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleSignature</key>
+	<string>@TYPEINFO@</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>AppleTVOS</string>
 	</array>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MinimumOSVersion</key>
