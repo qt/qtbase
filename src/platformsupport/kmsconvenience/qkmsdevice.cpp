@@ -403,7 +403,6 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     }
 
     m_crtc_allocator |= (1 << output.crtc_id);
-    m_connector_allocator |= (1 << output.connector_id);
 
     vinfo->output = output;
 
@@ -448,7 +447,6 @@ QKmsDevice::QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path)
     , m_path(path)
     , m_dri_fd(-1)
     , m_crtc_allocator(0)
-    , m_connector_allocator(0)
 {
     if (m_path.isEmpty()) {
         m_path = m_screenConfig->devicePath();

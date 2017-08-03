@@ -168,7 +168,6 @@ protected:
     int m_dri_fd;
 
     quint32 m_crtc_allocator;
-    quint32 m_connector_allocator;
 
 private:
     Q_DISABLE_COPY(QKmsDevice)
