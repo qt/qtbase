@@ -170,6 +170,8 @@ private slots:
     void blobsPreparedQuery();
     void emptyTableNavigate_data() { generic_data(); }
     void emptyTableNavigate();
+    void timeStampParsing_data() { generic_data(); }
+    void timeStampParsing();
 
 #ifdef NOT_READY_YET
     void task_229811();
@@ -2885,6 +2887,25 @@ void tst_QSqlQuery::emptyTableNavigate()
         QVERIFY( !q.next() );
         QCOMPARE( q.lastError().isValid(), false );
     }
+}
+
+void tst_QSqlQuery::timeStampParsing()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec(
+                    "CREATE TABLE \"main\".\"datetest\" ("
+                    "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT,"
+                    "\"datefield\" timestamp);"
+                    ));
+    QVERIFY_SQL(q, exec(
+                    "INSERT INTO datetest (datefield) VALUES (current_timestamp);"
+                    ));
+    QVERIFY_SQL(q, exec("SELECT * FROM datetest;"));
+    while (q.next())
+        QVERIFY(q.value(1).toDateTime().isValid());
 }
 
 void tst_QSqlQuery::task_217003()
