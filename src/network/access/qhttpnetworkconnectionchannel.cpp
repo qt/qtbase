@@ -970,8 +970,11 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 
     // emit error for all waiting replies
     do {
-        // Need to dequeu the request so that we can emit the error.
-        if (!reply)
+        // First requeue the already pipelined requests for the current failed reply,
+        // then dequeue pending requests so we can also mark them as finished with error
+        if (reply)
+            requeueCurrentlyPipelinedRequests();
+        else
             connection->d_func()->dequeueRequest(socket);
 
         if (reply) {
