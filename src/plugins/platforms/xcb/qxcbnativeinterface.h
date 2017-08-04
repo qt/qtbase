@@ -46,12 +46,11 @@
 #include <QtCore/QRect>
 
 #include "qxcbexport.h"
+#include "qxcbconnection.h"
 
 QT_BEGIN_NAMESPACE
 
-class QWidget;
 class QXcbScreen;
-class QXcbConnection;
 class QXcbNativeInterfaceHandler;
 
 class Q_XCB_EXPORT QXcbNativeInterface : public QPlatformNativeInterface
@@ -74,7 +73,10 @@ public:
         ScreenAntialiasingEnabled,
         AtspiBus,
         CompositingEnabled,
-        VkSurface
+        VkSurface,
+        GeneratePeekerId,
+        RemovePeekerId,
+        PeekEventQueue
     };
 
     QXcbNativeInterface();
@@ -113,6 +115,12 @@ public:
     static void setStartupId(const char *);
     static void setAppTime(QScreen *screen, xcb_timestamp_t time);
     static void setAppUserTime(QScreen *screen, xcb_timestamp_t time);
+
+    static qint32 generatePeekerId();
+    static bool removePeekerId(qint32 peekerId);
+    static bool peekEventQueue(QXcbConnection::PeekerCallback peeker, void *peekerData = nullptr,
+                               QXcbConnection::PeekOptions option = QXcbConnection::PeekDefault,
+                               qint32 peekerId = -1);
 
     Q_INVOKABLE bool systemTrayAvailable(const QScreen *screen) const;
     Q_INVOKABLE void setParentRelativeBackPixmap(QWindow *window);

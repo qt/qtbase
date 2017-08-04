@@ -90,6 +90,8 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputDevices)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputEvents)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaEvents)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaXcb)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaPeeker)
 
 class QXcbVirtualDesktop;
 class QXcbScreen;
@@ -444,6 +446,15 @@ public:
     typedef bool (*PeekFunc)(QXcbConnection *, xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
 
+    // Peek at all queued events
+    qint32 generatePeekerId();
+    bool removePeekerId(qint32 peekerId);
+    enum PeekOption { PeekDefault = 0, PeekFromCachedIndex = 1 }; // see qx11info_x11.h
+    Q_DECLARE_FLAGS(PeekOptions, PeekOption)
+    typedef bool (*PeekerCallback)(xcb_generic_event_t *event, void *peekerData);
+    bool peekEventQueue(PeekerCallback peeker, void *peekerData = nullptr,
+                        PeekOptions option = PeekDefault, qint32 peekerId = -1);
+
     inline xcb_timestamp_t time() const { return m_time; }
     inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
 
@@ -692,6 +703,10 @@ private:
 
     xcb_window_t m_qtSelectionOwner = 0;
 
+    bool m_mainEventLoopFlushedQueue = false;
+    qint32 m_peekerIdSource = 0;
+    bool m_peekerIndexCacheDirty = false;
+    QHash<qint32, qint32> m_peekerToCachedIndex;
     friend class QXcbEventReader;
 };
 #if QT_CONFIG(xinput2)

@@ -110,6 +110,8 @@ Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.input.devices")
 Q_LOGGING_CATEGORY(lcQpaXInputEvents, "qt.qpa.input.events")
 Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
 Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
+Q_LOGGING_CATEGORY(lcQpaXcb, "qt.qpa.xcb") // for general (uncategorized) XCB logging
+Q_LOGGING_CATEGORY(lcQpaPeeker, "qt.qpa.peeker")
 
 // this event type was added in libxcb 1.10,
 // but we support also older version
@@ -1227,6 +1229,95 @@ void QXcbConnection::addPeekFunc(PeekFunc f)
     m_peekFuncs.append(f);
 }
 
+qint32 QXcbConnection::generatePeekerId()
+{
+    qint32 peekerId = m_peekerIdSource++;
+    m_peekerToCachedIndex.insert(peekerId, 0);
+    return peekerId;
+}
+
+bool QXcbConnection::removePeekerId(qint32 peekerId)
+{
+    if (!m_peekerToCachedIndex.contains(peekerId)) {
+        qCWarning(lcQpaXcb, "failed to remove unknown peeker id: %d", peekerId);
+        return false;
+    }
+    m_peekerToCachedIndex.remove(peekerId);
+    if (m_peekerToCachedIndex.isEmpty()) {
+        m_peekerIdSource = 0; // Once the hash becomes empty, we can start reusing IDs
+        m_peekerIndexCacheDirty = false;
+    }
+    return true;
+}
+
+bool QXcbConnection::peekEventQueue(PeekerCallback peeker, void *peekerData,
+                                    PeekOptions option, qint32 peekerId)
+{
+    bool peekerIdProvided = peekerId != -1;
+    if (peekerIdProvided && !m_peekerToCachedIndex.contains(peekerId)) {
+        qCWarning(lcQpaXcb, "failed to find index for unknown peeker id: %d", peekerId);
+        return false;
+    }
+
+    bool peekFromCachedIndex = option.testFlag(PeekOption::PeekFromCachedIndex);
+    if (peekFromCachedIndex && !peekerIdProvided) {
+        qCWarning(lcQpaXcb, "PeekOption::PeekFromCachedIndex requires peeker id");
+        return false;
+    }
+
+    if (peekerIdProvided && m_peekerIndexCacheDirty) {
+        // When the main event loop has flushed the buffered XCB events into the window
+        // system event queue, the cached indices are not valid anymore and need reset.
+        auto it = m_peekerToCachedIndex.begin();
+        while (it != m_peekerToCachedIndex.constEnd()) {
+            (*it) = 0;
+            ++it;
+        }
+        m_peekerIndexCacheDirty = false;
+    }
+
+    qint32 peekerIndex = peekFromCachedIndex ? m_peekerToCachedIndex.value(peekerId) : 0;
+    qint32 startingIndex = peekerIndex;
+    bool result = false;
+    m_mainEventLoopFlushedQueue = false;
+
+    QXcbEventArray *eventqueue = m_reader->lock();
+
+    if (Q_UNLIKELY(lcQpaPeeker().isDebugEnabled())) {
+        qCDebug(lcQpaPeeker, "[%d] peeker index: %d | mode: %s | queue size: %d", peekerId,
+                peekerIndex, peekFromCachedIndex ? "cache" : "start", eventqueue->size());
+    }
+    while (peekerIndex < eventqueue->size() && !result && !m_mainEventLoopFlushedQueue) {
+        xcb_generic_event_t *event = eventqueue->at(peekerIndex++);
+        if (!event)
+            continue;
+        if (Q_UNLIKELY(lcQpaPeeker().isDebugEnabled())) {
+            QString debug = QString((QLatin1String("[%1] peeking at index: %2")))
+                            .arg(peekerId).arg(peekerIndex - 1);
+            printXcbEvent(lcQpaPeeker(), debug.toLatin1(), event);
+        }
+        // A peeker may call QCoreApplication::processEvents(), which has two implications:
+        // 1) We need to make the lock available for QXcbConnection::processXcbEvents(),
+        //    otherwise we will deadlock;
+        // 2) QXcbConnection::processXcbEvents() will flush the queue we are currently
+        //    looping through;
+        m_reader->unlock();
+        result = peeker(event, peekerData);
+        m_reader->lock();
+    }
+
+    m_reader->unlock();
+
+    if (peekerIdProvided && peekerIndex != startingIndex && !m_mainEventLoopFlushedQueue) {
+        auto it = m_peekerToCachedIndex.find(peekerId);
+        // Make sure that a peeker callback did not remove the peeker id
+        if (it != m_peekerToCachedIndex.constEnd())
+            (*it) = peekerIndex;
+    }
+
+    return result;
+}
+
 QXcbEventReader::QXcbEventReader(QXcbConnection *connection)
     : m_connection(connection)
 {
@@ -1672,6 +1763,8 @@ void QXcbConnection::processXcbEvents()
     eventqueue->clear();
 
     m_reader->unlock();
+
+    m_peekerIndexCacheDirty = m_mainEventLoopFlushedQueue = true;
 
     // Indicate with a null event that the event the callbacks are waiting for
     // is not in the queue currently.

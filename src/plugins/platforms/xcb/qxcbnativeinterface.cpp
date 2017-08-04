@@ -83,7 +83,10 @@ static int resourceType(const QByteArray &key)
         QByteArrayLiteral("subpixeltype"), QByteArrayLiteral("antialiasingenabled"),
         QByteArrayLiteral("atspibus"),
         QByteArrayLiteral("compositingenabled"),
-        QByteArrayLiteral("vksurface")
+        QByteArrayLiteral("vksurface"),
+        QByteArrayLiteral("generatepeekerid"),
+        QByteArrayLiteral("removepeekerid"),
+        QByteArrayLiteral("peekeventqueue")
     };
     const QByteArray *end = names + sizeof(names) / sizeof(names[0]);
     const QByteArray *result = std::find(names, end, key);
@@ -304,6 +307,13 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfa
 
     if (lowerCaseResource == "setstartupid")
         return NativeResourceForIntegrationFunction(setStartupId);
+    if (lowerCaseResource == "generatepeekerid")
+        return NativeResourceForIntegrationFunction(generatePeekerId);
+    if (lowerCaseResource == "removepeekerid")
+            return NativeResourceForIntegrationFunction(removePeekerId);
+    if (lowerCaseResource == "peekeventqueue")
+            return NativeResourceForIntegrationFunction(peekEventQueue);
+
     return 0;
 }
 
@@ -480,6 +490,25 @@ void QXcbNativeInterface::setAppUserTime(QScreen* screen, xcb_timestamp_t time)
     if (screen) {
         static_cast<QXcbScreen *>(screen->handle())->connection()->setNetWmUserTime(time);
     }
+}
+
+qint32 QXcbNativeInterface::generatePeekerId()
+{
+    QXcbIntegration *integration = QXcbIntegration::instance();
+    return integration->defaultConnection()->generatePeekerId();
+}
+
+bool QXcbNativeInterface::removePeekerId(qint32 peekerId)
+{
+    QXcbIntegration *integration = QXcbIntegration::instance();
+    return integration->defaultConnection()->removePeekerId(peekerId);
+}
+
+bool QXcbNativeInterface::peekEventQueue(QXcbConnection::PeekerCallback peeker, void *peekerData,
+                                         QXcbConnection::PeekOptions option, qint32 peekerId)
+{
+    QXcbIntegration *integration = QXcbIntegration::instance();
+    return integration->defaultConnection()->peekEventQueue(peeker, peekerData, option, peekerId);
 }
 
 void QXcbNativeInterface::setStartupId(const char *data)
