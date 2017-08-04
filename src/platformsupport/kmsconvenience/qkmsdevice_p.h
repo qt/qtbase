@@ -77,6 +77,8 @@ public:
 
     QString devicePath() const { return m_devicePath; }
 
+    bool headless() const { return m_headless; }
+    QSize headlessSize() const { return m_headlessSize; }
     bool hwCursor() const { return m_hwCursor; }
     bool separateScreens() const { return m_separateScreens; }
     bool supportsPBuffers() const { return m_pbuffers; }
@@ -88,6 +90,8 @@ private:
     void loadConfig();
 
     QString m_devicePath;
+    bool m_headless;
+    QSize m_headlessSize;
     bool m_hwCursor;
     bool m_separateScreens;
     bool m_pbuffers;
@@ -98,21 +102,21 @@ private:
 struct QKmsOutput
 {
     QString name;
-    uint32_t connector_id;
-    uint32_t crtc_id;
+    uint32_t connector_id = 0;
+    uint32_t crtc_id = 0;
     QSizeF physical_size;
-    int preferred_mode; // index of preferred mode in list below
-    int mode; // index of selected mode in list below
-    bool mode_set;
-    drmModeCrtcPtr saved_crtc;
+    int preferred_mode = -1; // index of preferred mode in list below
+    int mode = -1; // index of selected mode in list below
+    bool mode_set = false;
+    drmModeCrtcPtr saved_crtc = nullptr;
     QList<drmModeModeInfo> modes;
-    int subpixel;
-    drmModePropertyPtr dpms_prop;
-    drmModePropertyBlobPtr edid_blob;
-    bool wants_plane;
-    uint32_t plane_id;
-    bool plane_set;
-    uint32_t drm_format;
+    int subpixel = DRM_MODE_SUBPIXEL_UNKNOWN;
+    drmModePropertyPtr dpms_prop = nullptr;
+    drmModePropertyBlobPtr edid_blob = nullptr;
+    bool wants_plane = false;
+    uint32_t plane_id = 0;
+    bool plane_set = false;
+    uint32_t drm_format = DRM_FORMAT_XRGB8888;
     QString clone_source;
 
     void restoreMode(QKmsDevice *device);
@@ -147,6 +151,7 @@ public:
 
 protected:
     virtual QPlatformScreen *createScreen(const QKmsOutput &output) = 0;
+    virtual QPlatformScreen *createHeadlessScreen();
     virtual void registerScreenCloning(QPlatformScreen *screen,
                                        QPlatformScreen *screenThisScreenClones,
                                        const QVector<QPlatformScreen *> &screensCloningThisScreen);

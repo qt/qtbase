@@ -56,7 +56,7 @@ class QEglFSKmsInterruptHandler;
 class Q_EGLFS_EXPORT QEglFSKmsScreen : public QEglFSScreen
 {
 public:
-    QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output);
+    QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output, bool headless = false);
     ~QEglFSKmsScreen();
 
     void setVirtualPosition(const QPoint &pos);
@@ -113,6 +113,8 @@ protected:
     PowerState m_powerState;
 
     QEglFSKmsInterruptHandler *m_interruptHandler;
+
+    bool m_headless;
 };
 
 QT_END_NAMESPACE

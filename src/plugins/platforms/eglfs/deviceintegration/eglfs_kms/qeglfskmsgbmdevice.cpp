@@ -151,7 +151,7 @@ void QEglFSKmsGbmDevice::handleDrmEvent()
 
 QPlatformScreen *QEglFSKmsGbmDevice::createScreen(const QKmsOutput &output)
 {
-    QEglFSKmsGbmScreen *screen = new QEglFSKmsGbmScreen(this, output);
+    QEglFSKmsGbmScreen *screen = new QEglFSKmsGbmScreen(this, output, false);
 
     if (!m_globalCursor && screenConfig()->hwCursor()) {
         qCDebug(qLcEglfsKmsDebug, "Creating new global GBM mouse cursor");
@@ -159,6 +159,11 @@ QPlatformScreen *QEglFSKmsGbmDevice::createScreen(const QKmsOutput &output)
     }
 
     return screen;
+}
+
+QPlatformScreen *QEglFSKmsGbmDevice::createHeadlessScreen()
+{
+    return new QEglFSKmsGbmScreen(this, QKmsOutput(), true);
 }
 
 void QEglFSKmsGbmDevice::registerScreenCloning(QPlatformScreen *screen,

@@ -109,8 +109,8 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
     return fb.take();
 }
 
-QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QKmsDevice *device, const QKmsOutput &output)
-    : QEglFSKmsScreen(device, output)
+QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QKmsDevice *device, const QKmsOutput &output, bool headless)
+    : QEglFSKmsScreen(device, output, headless)
     , m_gbm_surface(Q_NULLPTR)
     , m_gbm_bo_current(Q_NULLPTR)
     , m_gbm_bo_next(Q_NULLPTR)
@@ -131,6 +131,8 @@ QEglFSKmsGbmScreen::~QEglFSKmsGbmScreen()
 QPlatformCursor *QEglFSKmsGbmScreen::cursor() const
 {
     QKmsScreenConfig *config = device()->screenConfig();
+    if (config->headless())
+        return nullptr;
     if (config->hwCursor()) {
         if (!config->separateScreens())
             return static_cast<QEglFSKmsGbmDevice *>(device())->globalCursor();
@@ -240,10 +242,8 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
 
 void QEglFSKmsGbmScreen::waitForFlip()
 {
-    if (m_cloneSource) {
-        qWarning("Screen %s clones another screen. swapBuffers() not allowed.", qPrintable(name()));
+    if (m_headless || m_cloneSource)
         return;
-    }
 
     // Don't lock the mutex unless we actually need to
     if (!m_gbm_bo_next)
@@ -256,6 +256,11 @@ void QEglFSKmsGbmScreen::waitForFlip()
 
 void QEglFSKmsGbmScreen::flip()
 {
+    // For headless screen just return silently. It is not necessarily an error
+    // to end up here, so show no warnings.
+    if (m_headless)
+        return;
+
     if (m_cloneSource) {
         qWarning("Screen %s clones another screen. swapBuffers() not allowed.", qPrintable(name()));
         return;

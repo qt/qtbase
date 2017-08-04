@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Pelagicore AG
 ** Copyright (C) 2015 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 ** Contact: https://www.qt.io/licensing/
@@ -179,7 +179,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     drmModeModeInfo configurationModeline;
 
     auto userConfig = m_screenConfig->outputSettings();
-    auto userConnectorConfig = userConfig.value(QString::fromUtf8(connectorName));
+    QVariantMap userConnectorConfig = userConfig.value(QString::fromUtf8(connectorName));
     // default to the preferred mode unless overridden in the config
     const QByteArray mode = userConnectorConfig.value(QStringLiteral("mode"), QStringLiteral("preferred"))
         .toByteArray().toLower();
@@ -489,9 +489,22 @@ static bool orderedScreenLessThan(const OrderedScreen &a, const OrderedScreen &b
 
 void QKmsDevice::createScreens()
 {
+    // Headless mode using a render node: cannot do any output related DRM
+    // stuff. Skip it all and register a dummy screen.
+    if (m_screenConfig->headless()) {
+        QPlatformScreen *screen = createHeadlessScreen();
+        if (screen) {
+            qCDebug(qLcKmsDebug, "Headless mode enabled");
+            registerScreen(screen, true, QPoint(0, 0), QList<QPlatformScreen *>());
+            return;
+        } else {
+            qWarning("QKmsDevice: Requested headless mode without support in the backend. Request is ignored.");
+        }
+    }
+
     drmModeResPtr resources = drmModeGetResources(m_dri_fd);
     if (!resources) {
-        qWarning("drmModeGetResources failed");
+        qErrnoWarning(errno, "drmModeGetResources failed");
         return;
     }
 
@@ -597,6 +610,12 @@ void QKmsDevice::createScreens()
     }
 }
 
+QPlatformScreen *QKmsDevice::createHeadlessScreen()
+{
+    // headless mode not supported by default
+    return nullptr;
+}
+
 // not all subclasses support screen cloning
 void QKmsDevice::registerScreenCloning(QPlatformScreen *screen,
                                        QPlatformScreen *screenThisScreenClones,
@@ -628,7 +647,8 @@ QKmsScreenConfig *QKmsDevice::screenConfig() const
 }
 
 QKmsScreenConfig::QKmsScreenConfig()
-    : m_hwCursor(true)
+    : m_headless(false)
+    , m_hwCursor(true)
     , m_separateScreens(false)
     , m_pbuffers(false)
     , m_virtualDesktopLayout(VirtualDesktopLayoutHorizontal)
@@ -663,6 +683,16 @@ void QKmsScreenConfig::loadConfig()
 
     const QJsonObject object = doc.object();
 
+    const QString headlessStr = object.value(QLatin1String("headless")).toString();
+    const QByteArray headless = headlessStr.toUtf8();
+    QSize headlessSize;
+    if (sscanf(headless.constData(), "%dx%d", &headlessSize.rwidth(), &headlessSize.rheight()) == 2) {
+        m_headless = true;
+        m_headlessSize = headlessSize;
+    } else {
+        m_headless = false;
+    }
+
     m_hwCursor = object.value(QLatin1String("hwcursor")).toBool(m_hwCursor);
     m_pbuffers = object.value(QLatin1String("pbuffers")).toBool(m_pbuffers);
     m_devicePath = object.value(QLatin1String("device")).toString();
@@ -694,6 +724,7 @@ void QKmsScreenConfig::loadConfig()
     }
 
     qCDebug(qLcKmsDebug) << "Requested configuration (some settings may be ignored):\n"
+                         << "\theadless:" << m_headless << "\n"
                          << "\thwcursor:" << m_hwCursor << "\n"
                          << "\tpbuffers:" << m_pbuffers << "\n"
                          << "\tseparateScreens:" << m_separateScreens << "\n"

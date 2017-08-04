@@ -68,6 +68,7 @@ public:
     void handleDrmEvent();
 
     QPlatformScreen *createScreen(const QKmsOutput &output) override;
+    QPlatformScreen *createHeadlessScreen() override;
     void registerScreenCloning(QPlatformScreen *screen,
                                QPlatformScreen *screenThisScreenClones,
                                const QVector<QPlatformScreen *> &screensCloningThisScreen) override;

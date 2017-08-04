@@ -68,12 +68,13 @@ private:
     QEglFSKmsScreen *m_screen;
 };
 
-QEglFSKmsScreen::QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output)
+QEglFSKmsScreen::QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output, bool headless)
     : QEglFSScreen(static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration())->display())
     , m_device(device)
     , m_output(output)
     , m_powerState(PowerStateOn)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
+    , m_headless(headless)
 {
     m_siblings << this; // gets overridden later
 
@@ -109,6 +110,9 @@ void QEglFSKmsScreen::setVirtualPosition(const QPoint &pos)
 // geometry() calls rawGeometry() and may apply additional transforms.
 QRect QEglFSKmsScreen::rawGeometry() const
 {
+    if (m_headless)
+        return QRect(QPoint(0, 0), m_device->screenConfig()->headlessSize());
+
     const int mode = m_output.mode;
     return QRect(m_pos.x(), m_pos.y(),
                  m_output.modes[mode].hdisplay,
@@ -177,7 +181,7 @@ Qt::ScreenOrientation QEglFSKmsScreen::orientation() const
 
 QString QEglFSKmsScreen::name() const
 {
-    return m_output.name;
+    return !m_headless ? m_output.name : QStringLiteral("qt_Headless");
 }
 
 QString QEglFSKmsScreen::manufacturer() const
@@ -214,6 +218,9 @@ void QEglFSKmsScreen::restoreMode()
 
 qreal QEglFSKmsScreen::refreshRate() const
 {
+    if (m_headless)
+        return 60;
+
     quint32 refresh = m_output.modes[m_output.mode].vrefresh;
     return refresh > 0 ? refresh : 60;
 }
