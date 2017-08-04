@@ -64,13 +64,13 @@ class Q_GUI_EXPORT QPlatformOffscreenSurface : public QPlatformSurface
     Q_DECLARE_PRIVATE(QPlatformOffscreenSurface)
 public:
     explicit QPlatformOffscreenSurface(QOffscreenSurface *offscreenSurface);
-    virtual ~QPlatformOffscreenSurface();
+    ~QPlatformOffscreenSurface() override;
 
     QOffscreenSurface *offscreenSurface() const;
 
     QPlatformScreen *screen() const;
 
-    virtual QSurfaceFormat format() const Q_DECL_OVERRIDE;
+    virtual QSurfaceFormat format() const override;
     virtual bool isValid() const;
 
 protected:

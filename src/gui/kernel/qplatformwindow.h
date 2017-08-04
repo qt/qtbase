@@ -72,7 +72,7 @@ class Q_GUI_EXPORT QPlatformWindow : public QPlatformSurface
     Q_DECLARE_PRIVATE(QPlatformWindow)
 public:
     explicit QPlatformWindow(QWindow *window);
-    virtual ~QPlatformWindow();
+    ~QPlatformWindow() override;
 
     virtual void initialize();
 
@@ -81,7 +81,7 @@ public:
 
     QPlatformScreen *screen() const;
 
-    virtual QSurfaceFormat format() const Q_DECL_OVERRIDE;
+    virtual QSurfaceFormat format() const override;
 
     virtual void setGeometry(const QRect &rect);
     virtual QRect geometry() const;
