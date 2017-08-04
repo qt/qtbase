@@ -136,6 +136,7 @@ public:
 
     qint64 peek(char *data, qint64 maxlen);
     QByteArray peek(qint64 maxlen);
+    qint64 skip(qint64 maxSize);
 
     virtual bool waitForReadyRead(int msecs);
     virtual bool waitForBytesWritten(int msecs);

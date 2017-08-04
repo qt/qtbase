@@ -55,6 +55,10 @@ private slots:
 
     void readAllKeepPosition();
     void writeInTextMode();
+    void skip_data();
+    void skip();
+    void skipAfterPeek_data();
+    void skipAfterPeek();
 
     void transaction_data();
     void transaction();
@@ -626,6 +630,93 @@ void tst_QIODevice::writeInTextMode()
     QCOMPARE(buffer.write("two\n"), 4);
     QCOMPARE(buffer.readLine(), QByteArray("three\n"));
 #endif
+}
+
+void tst_QIODevice::skip_data()
+{
+    QTest::addColumn<bool>("sequential");
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<int>("read");
+    QTest::addColumn<int>("skip");
+    QTest::addColumn<int>("skipped");
+    QTest::addColumn<char>("expect");
+
+    QByteArray bigData;
+    bigData.fill('a', 20000);
+    bigData[10001] = 'x';
+
+    bool sequential = true;
+    do {
+        QByteArray devName(sequential ? "sequential" : "random-access");
+
+        QTest::newRow(qPrintable(devName + "-small_data")) << true  << QByteArray("abcdefghij")
+                                                           << 3 << 6 << 6 << 'j';
+        QTest::newRow(qPrintable(devName + "-big_data")) << true  << bigData
+                                                         << 1 << 10000 << 10000 << 'x';
+        QTest::newRow(qPrintable(devName + "-beyond_the_end")) << true  << bigData
+                                                               << 1 << 20000 << 19999 << '\0';
+
+        sequential = !sequential;
+    } while (!sequential);
+}
+
+void tst_QIODevice::skip()
+{
+    QFETCH(bool, sequential);
+    QFETCH(QByteArray, data);
+    QFETCH(int, read);
+    QFETCH(int, skip);
+    QFETCH(int, skipped);
+    QFETCH(char, expect);
+    char lastChar = 0;
+
+    QScopedPointer<QIODevice> dev(sequential ? (QIODevice *) new SequentialReadBuffer(&data)
+                                             : (QIODevice *) new QBuffer(&data));
+    dev->open(QIODevice::ReadOnly);
+
+    for (int i = 0; i < read; ++i)
+        dev->getChar(nullptr);
+
+    QCOMPARE(dev->skip(skip), skipped);
+    dev->getChar(&lastChar);
+    QCOMPARE(lastChar, expect);
+}
+
+void tst_QIODevice::skipAfterPeek_data()
+{
+    QTest::addColumn<bool>("sequential");
+    QTest::addColumn<QByteArray>("data");
+
+    QByteArray bigData;
+    for (int i = 0; i < 1000; ++i)
+        bigData += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    QTest::newRow("sequential") << true  << bigData;
+    QTest::newRow("random-access") << false << bigData;
+}
+
+void tst_QIODevice::skipAfterPeek()
+{
+    QFETCH(bool, sequential);
+    QFETCH(QByteArray, data);
+
+    QScopedPointer<QIODevice> dev(sequential ? (QIODevice *) new SequentialReadBuffer(&data)
+                                             : (QIODevice *) new QBuffer(&data));
+    int readSoFar = 0;
+    qint64 bytesToSkip = 1;
+
+    dev->open(QIODevice::ReadOnly);
+    forever {
+        QByteArray chunk = dev->peek(bytesToSkip);
+        if (chunk.isEmpty())
+            break;
+
+        QCOMPARE(dev->skip(bytesToSkip), qint64(chunk.size()));
+        QCOMPARE(chunk, data.mid(readSoFar, chunk.size()));
+        readSoFar += chunk.size();
+        bytesToSkip <<= 1;
+    }
+    QCOMPARE(readSoFar, data.size());
 }
 
 void tst_QIODevice::transaction_data()
