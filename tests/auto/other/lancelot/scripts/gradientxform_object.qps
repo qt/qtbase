@@ -62,7 +62,22 @@ repeat_block row
 restore
 end_block block
 
+save
 translate 400 0
 brushRotate 30.0
 brushScale 1.5 .5
+repeat_block block
+restore
+
+drawText 80 400 "BRUSH XFORM, OBJECT BOUNDING MODE"
+drawText 500 400 "BRUSH XFORM, OBJECT MODE"
+
+translate 0 400
+brushTranslate 0.5 0.5
+brushRotate 180.0
+brushTranslate -0.5 -0.5
+repeat_block block
+
+translate 400 0
+gradient_setCoordinateMode ObjectMode
 repeat_block block

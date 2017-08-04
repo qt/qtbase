@@ -106,7 +106,8 @@ const char *PaintCommands::spreadMethodTable[] = {
 const char *PaintCommands::coordinateMethodTable[] = {
     "LogicalMode",
     "StretchToDeviceMode",
-    "ObjectBoundingMode"
+    "ObjectBoundingMode",
+    "ObjectMode"
 };
 
 const char *PaintCommands::sizeModeTable[] = {
@@ -2394,7 +2395,7 @@ void PaintCommands::command_gradient_setSpread(QRegularExpressionMatch re)
 
 void PaintCommands::command_gradient_setCoordinateMode(QRegularExpressionMatch re)
 {
-    int coord = translateEnum(coordinateMethodTable, re.captured(1), 3);
+    int coord = translateEnum(coordinateMethodTable, re.captured(1), 4);
 
     if (m_verboseMode)
         printf(" -(lance) gradient_setCoordinateMode %d=[%s]\n", coord,

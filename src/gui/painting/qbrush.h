@@ -194,7 +194,8 @@ public:
     enum CoordinateMode {
         LogicalMode,
         StretchToDeviceMode,
-        ObjectBoundingMode
+        ObjectBoundingMode,
+        ObjectMode
     };
     Q_ENUM(CoordinateMode)
 

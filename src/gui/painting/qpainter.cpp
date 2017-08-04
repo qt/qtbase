@@ -530,7 +530,10 @@ static inline QBrush stretchGradientToUserSpace(const QBrush &brush, const QRect
     g.setCoordinateMode(QGradient::LogicalMode);
 
     QBrush b(g);
-    b.setTransform(gradientToUser * b.transform());
+    if (brush.gradient()->coordinateMode() == QGradient::ObjectMode)
+        b.setTransform(b.transform() * gradientToUser);
+    else
+        b.setTransform(gradientToUser * b.transform());
     return b;
 }
 
@@ -569,7 +572,7 @@ void QPainterPrivate::drawStretchedGradient(const QPainterPath &path, DrawOperat
         } else {
             needsFill = true;
 
-            if (brushMode == QGradient::ObjectBoundingMode) {
+            if (brushMode == QGradient::ObjectBoundingMode || brushMode == QGradient::ObjectMode) {
                 Q_ASSERT(engine->hasFeature(QPaintEngine::PatternTransform));
                 boundingRect = path.boundingRect();
                 q->setBrush(stretchGradientToUserSpace(brush, boundingRect));
@@ -613,11 +616,11 @@ void QPainterPrivate::drawStretchedGradient(const QPainterPath &path, DrawOperat
                 changedBrush = true;
             }
 
-            if (penMode == QGradient::ObjectBoundingMode) {
+            if (penMode == QGradient::ObjectBoundingMode || penMode == QGradient::ObjectMode) {
                 Q_ASSERT(engine->hasFeature(QPaintEngine::PatternTransform));
 
                 // avoid computing the bounding rect twice
-                if (!needsFill || brushMode != QGradient::ObjectBoundingMode)
+                if (!needsFill || (brushMode != QGradient::ObjectBoundingMode && brushMode != QGradient::ObjectMode))
                     boundingRect = path.boundingRect();
 
                 QPen p = pen;
@@ -849,8 +852,8 @@ void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
         gradientStretch |= (brushMode == QGradient::StretchToDeviceMode);
         gradientStretch |= (penMode == QGradient::StretchToDeviceMode);
 
-        objectBoundingMode |= (brushMode == QGradient::ObjectBoundingMode);
-        objectBoundingMode |= (penMode == QGradient::ObjectBoundingMode);
+        objectBoundingMode |= (brushMode == QGradient::ObjectBoundingMode || brushMode == QGradient::ObjectMode);
+        objectBoundingMode |= (penMode == QGradient::ObjectBoundingMode || penMode == QGradient::ObjectMode);
     }
     if (gradientStretch)
         s->emulationSpecifier |= QGradient_StretchToDevice;
@@ -6857,7 +6860,8 @@ static inline bool needsResolving(const QBrush &brush)
     Qt::BrushStyle s = brush.style();
     return ((s == Qt::LinearGradientPattern || s == Qt::RadialGradientPattern ||
              s == Qt::ConicalGradientPattern) &&
-            brush.gradient()->coordinateMode() == QGradient::ObjectBoundingMode);
+            (brush.gradient()->coordinateMode() == QGradient::ObjectBoundingMode ||
+             brush.gradient()->coordinateMode() == QGradient::ObjectMode));
 }
 
 /*!

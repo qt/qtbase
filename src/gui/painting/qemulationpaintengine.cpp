@@ -74,10 +74,11 @@ QPainterState *QEmulationPaintEngine::createState(QPainterState *orig) const
 
 static inline void combineXForm(QBrush *brush, const QRectF &r)
 {
-    QTransform t = brush->transform();
-    t.translate(r.x(), r.y());
-    t.scale(r.width(), r.height());
-    brush->setTransform(t);
+    QTransform t(r.width(), 0, 0, r.height(), r.x(), r.y());
+    if (brush->gradient()->coordinateMode() == QGradient::ObjectMode)
+        brush->setTransform(brush->transform() * t);
+    else
+        brush->setTransform(t * brush->transform());
 }
 
 void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
@@ -96,7 +97,7 @@ void QEmulationPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         if (coMode > QGradient::LogicalMode) {
             QBrush copy = brush;
             const QPaintDevice *d = real_engine->painter()->device();
-            QRectF r = (coMode == QGradient::ObjectBoundingMode) ? path.controlPointRect() : QRectF(0, 0, d->width(), d->height());
+            QRectF r = (coMode == QGradient::StretchToDeviceMode) ? QRectF(0, 0, d->width(), d->height()) : path.controlPointRect();
             combineXForm(&copy, r);
             real_engine->fill(path, copy);
             return;
@@ -132,7 +133,7 @@ void QEmulationPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         QGradient::CoordinateMode coMode = brush.gradient()->coordinateMode();
         if (coMode > QGradient::LogicalMode) {
             const QPaintDevice *d = real_engine->painter()->device();
-            QRectF r = (coMode == QGradient::ObjectBoundingMode) ? path.controlPointRect() : QRectF(0, 0, d->width(), d->height());
+            QRectF r = (coMode == QGradient::StretchToDeviceMode) ? QRectF(0, 0, d->width(), d->height()) : path.controlPointRect();
             combineXForm(&brush, r);
             copy.setBrush(brush);
             real_engine->stroke(path, copy);
@@ -174,9 +175,9 @@ void QEmulationPaintEngine::drawTextItem(const QPointF &p, const QTextItem &text
             QBrush copy = s->pen.brush();
             const QPaintDevice *d = real_engine->painter()->device();
             const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
-            QRectF r = (g.coordinateMode() == QGradient::ObjectBoundingMode) ?
-                        QRectF(p.x(), p.y() - ti.ascent.toReal(), ti.width.toReal(), (ti.ascent + ti.descent + 1).toReal()) :
-                        QRectF(0, 0, d->width(), d->height());
+            QRectF r = (g.coordinateMode() == QGradient::StretchToDeviceMode) ?
+                        QRectF(0, 0, d->width(), d->height()) :
+                        QRectF(p.x(), p.y() - ti.ascent.toReal(), ti.width.toReal(), (ti.ascent + ti.descent + 1).toReal());
             combineXForm(&copy, r);
             g.setCoordinateMode(QGradient::LogicalMode);
             QBrush brush(g);

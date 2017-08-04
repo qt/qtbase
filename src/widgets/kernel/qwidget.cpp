@@ -2403,7 +2403,8 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrus
 #endif
 
     } else if (brush.gradient()
-               && brush.gradient()->coordinateMode() == QGradient::ObjectBoundingMode) {
+               && (brush.gradient()->coordinateMode() == QGradient::ObjectBoundingMode
+                   || brush.gradient()->coordinateMode() == QGradient::ObjectMode)) {
         painter->save();
         painter->setClipRegion(rgn);
         painter->fillRect(0, 0, painter->device()->width(), painter->device()->height(), brush);
