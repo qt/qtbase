@@ -538,7 +538,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     , m_defaultVisualId(defaultVisualId)
     , m_displayName(displayName ? QByteArray(displayName) : qgetenv("DISPLAY"))
     , m_nativeInterface(nativeInterface)
-    , has_render_extension(false)
 {
 #if QT_CONFIG(xcb_xlib)
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -1150,7 +1149,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     }
 
     if (!handled) {
-        if (response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
+        if (has_xfixes && response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
             xcb_xfixes_selection_notify_event_t *notify_event = reinterpret_cast<xcb_xfixes_selection_notify_event_t *>(event);
             setTime(notify_event->timestamp);
 #ifndef QT_NO_CLIPBOARD
@@ -1971,14 +1970,15 @@ void QXcbConnection::initializeXFixes()
     if (!reply || !reply->present)
         return;
 
-    xfixes_first_event = reply->first_event;
     auto xfixes_query = Q_XCB_REPLY(xcb_xfixes_query_version, m_connection,
                                     XCB_XFIXES_MAJOR_VERSION,
                                     XCB_XFIXES_MINOR_VERSION);
     if (!xfixes_query || xfixes_query->major_version < 2) {
         qWarning("QXcbConnection: Failed to initialize XFixes");
-        xfixes_first_event = 0;
+        return;
     }
+    xfixes_first_event = reply->first_event;
+    has_xfixes = true;
 }
 
 void QXcbConnection::initializeXRender()
@@ -1988,14 +1988,14 @@ void QXcbConnection::initializeXRender()
     if (!reply || !reply->present)
         return;
 
-    has_render_extension = true;
     auto xrender_query = Q_XCB_REPLY(xcb_render_query_version, m_connection,
                                      XCB_RENDER_MAJOR_VERSION,
                                      XCB_RENDER_MINOR_VERSION);
     if (!xrender_query || (xrender_query->major_version == 0 && xrender_query->minor_version < 5)) {
         qWarning("QXcbConnection: Failed to initialize XRender");
-        has_render_extension = false;
+        return;
     }
+    has_render_extension = true;
 #endif
 }
 

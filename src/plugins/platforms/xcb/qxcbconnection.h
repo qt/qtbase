@@ -455,7 +455,7 @@ public:
     inline xcb_timestamp_t netWmUserTime() const { return m_netWmUserTime; }
     inline void setNetWmUserTime(xcb_timestamp_t t) { if (t > m_netWmUserTime) m_netWmUserTime = t; }
 
-    bool hasXFixes() const { return xfixes_first_event > 0; }
+    bool hasXFixes() const { return has_xfixes; }
     bool hasXShape() const { return has_shape_extension; }
     bool hasXRandr() const { return has_randr_extension; }
     bool hasInputShape() const { return has_input_shape; }
@@ -669,12 +669,13 @@ private:
     uint32_t xrandr_first_event = 0;
     uint32_t xkb_first_event = 0;
 
+    bool has_xfixes = false;
     bool has_xinerama_extension = false;
     bool has_shape_extension = false;
     bool has_randr_extension = false;
     bool has_input_shape;
     bool has_xkb = false;
-    bool has_render_extension;
+    bool has_render_extension = false;
 
     Qt::MouseButtons m_buttonState = 0;
 
