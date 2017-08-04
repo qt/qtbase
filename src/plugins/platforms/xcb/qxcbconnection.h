@@ -89,6 +89,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaXInput)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputDevices)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaXInputEvents)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaEvents)
 
 class QXcbVirtualDesktop;
 class QXcbScreen;
@@ -429,6 +430,8 @@ public:
 
     void handleXcbError(xcb_generic_error_t *error);
     void handleXcbEvent(xcb_generic_event_t *event);
+    void printXcbEvent(const QLoggingCategory &log, const char *message,
+                       xcb_generic_event_t *event) const;
 
     void addWindowEventListener(xcb_window_t id, QXcbWindowEventListener *eventListener);
     void removeWindowEventListener(xcb_window_t id);

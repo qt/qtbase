@@ -109,6 +109,7 @@ Q_LOGGING_CATEGORY(lcQpaXInput, "qt.qpa.input")
 Q_LOGGING_CATEGORY(lcQpaXInputDevices, "qt.qpa.input.devices")
 Q_LOGGING_CATEGORY(lcQpaXInputEvents, "qt.qpa.input.events")
 Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen")
+Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events")
 
 // this event type was added in libxcb 1.10,
 // but we support also older version
@@ -726,58 +727,73 @@ break;
 } \
 break;
 
-//#define XCB_EVENT_DEBUG
-
-void printXcbEvent(const char *message, xcb_generic_event_t *event)
+void QXcbConnection::printXcbEvent(const QLoggingCategory &log, const char *message,
+                                   xcb_generic_event_t *event) const
 {
-#ifdef XCB_EVENT_DEBUG
-#define PRINT_XCB_EVENT(ev) \
-    case ev: \
-        qDebug("QXcbConnection: %s: %d - %s - sequence: %d", message, int(ev), #ev, event->sequence); \
-        break;
+    quint8 response_type = event->response_type & ~0x80;
+    quint16 sequence = event->sequence;
 
-    switch (event->response_type & ~0x80) {
-    PRINT_XCB_EVENT(XCB_KEY_PRESS);
-    PRINT_XCB_EVENT(XCB_KEY_RELEASE);
-    PRINT_XCB_EVENT(XCB_BUTTON_PRESS);
-    PRINT_XCB_EVENT(XCB_BUTTON_RELEASE);
-    PRINT_XCB_EVENT(XCB_MOTION_NOTIFY);
-    PRINT_XCB_EVENT(XCB_ENTER_NOTIFY);
-    PRINT_XCB_EVENT(XCB_LEAVE_NOTIFY);
-    PRINT_XCB_EVENT(XCB_FOCUS_IN);
-    PRINT_XCB_EVENT(XCB_FOCUS_OUT);
-    PRINT_XCB_EVENT(XCB_KEYMAP_NOTIFY);
-    PRINT_XCB_EVENT(XCB_EXPOSE);
-    PRINT_XCB_EVENT(XCB_GRAPHICS_EXPOSURE);
-    PRINT_XCB_EVENT(XCB_NO_EXPOSURE);
-    PRINT_XCB_EVENT(XCB_VISIBILITY_NOTIFY);
-    PRINT_XCB_EVENT(XCB_CREATE_NOTIFY);
-    PRINT_XCB_EVENT(XCB_DESTROY_NOTIFY);
-    PRINT_XCB_EVENT(XCB_UNMAP_NOTIFY);
-    PRINT_XCB_EVENT(XCB_MAP_NOTIFY);
-    PRINT_XCB_EVENT(XCB_MAP_REQUEST);
-    PRINT_XCB_EVENT(XCB_REPARENT_NOTIFY);
-    PRINT_XCB_EVENT(XCB_CONFIGURE_NOTIFY);
-    PRINT_XCB_EVENT(XCB_CONFIGURE_REQUEST);
-    PRINT_XCB_EVENT(XCB_GRAVITY_NOTIFY);
-    PRINT_XCB_EVENT(XCB_RESIZE_REQUEST);
-    PRINT_XCB_EVENT(XCB_CIRCULATE_NOTIFY);
-    PRINT_XCB_EVENT(XCB_CIRCULATE_REQUEST);
-    PRINT_XCB_EVENT(XCB_PROPERTY_NOTIFY);
-    PRINT_XCB_EVENT(XCB_SELECTION_CLEAR);
-    PRINT_XCB_EVENT(XCB_SELECTION_REQUEST);
-    PRINT_XCB_EVENT(XCB_SELECTION_NOTIFY);
-    PRINT_XCB_EVENT(XCB_COLORMAP_NOTIFY);
-    PRINT_XCB_EVENT(XCB_CLIENT_MESSAGE);
-    PRINT_XCB_EVENT(XCB_MAPPING_NOTIFY);
-    PRINT_XCB_EVENT(XCB_GE_GENERIC);
-    default:
-        qDebug("QXcbConnection: %s: unknown event - response_type: %d - sequence: %d", message, int(event->response_type & ~0x80), int(event->sequence));
+#define PRINT_AND_RETURN(name) { \
+    qCDebug(log, "%s | %s(%d) | sequence: %d", message, name, response_type, sequence); \
+    return; \
+}
+#define CASE_PRINT_AND_RETURN(name) case name : PRINT_AND_RETURN(#name);
+
+    switch (response_type) {
+    CASE_PRINT_AND_RETURN( XCB_KEY_PRESS );
+    CASE_PRINT_AND_RETURN( XCB_KEY_RELEASE );
+    CASE_PRINT_AND_RETURN( XCB_BUTTON_PRESS );
+    CASE_PRINT_AND_RETURN( XCB_BUTTON_RELEASE );
+    CASE_PRINT_AND_RETURN( XCB_MOTION_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_ENTER_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_LEAVE_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_FOCUS_IN );
+    CASE_PRINT_AND_RETURN( XCB_FOCUS_OUT );
+    CASE_PRINT_AND_RETURN( XCB_KEYMAP_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_EXPOSE );
+    CASE_PRINT_AND_RETURN( XCB_GRAPHICS_EXPOSURE );
+    CASE_PRINT_AND_RETURN( XCB_NO_EXPOSURE );
+    CASE_PRINT_AND_RETURN( XCB_VISIBILITY_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_CREATE_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_DESTROY_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_UNMAP_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_MAP_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_MAP_REQUEST );
+    CASE_PRINT_AND_RETURN( XCB_REPARENT_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_CONFIGURE_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_CONFIGURE_REQUEST );
+    CASE_PRINT_AND_RETURN( XCB_GRAVITY_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_RESIZE_REQUEST );
+    CASE_PRINT_AND_RETURN( XCB_CIRCULATE_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_CIRCULATE_REQUEST );
+    CASE_PRINT_AND_RETURN( XCB_PROPERTY_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_SELECTION_CLEAR );
+    CASE_PRINT_AND_RETURN( XCB_SELECTION_REQUEST );
+    CASE_PRINT_AND_RETURN( XCB_SELECTION_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_COLORMAP_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_CLIENT_MESSAGE );
+    CASE_PRINT_AND_RETURN( XCB_MAPPING_NOTIFY );
+    CASE_PRINT_AND_RETURN( XCB_GE_GENERIC );
     }
-#else
-    Q_UNUSED(message);
-    Q_UNUSED(event);
-#endif
+    // XFixes
+    if (has_xfixes && response_type == xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY)
+          PRINT_AND_RETURN("XCB_XFIXES_SELECTION_NOTIFY");
+    // XRandR
+    if (has_randr_extension) {
+        if (response_type == xrandr_first_event + XCB_RANDR_NOTIFY)
+            PRINT_AND_RETURN("XCB_RANDR_NOTIFY");
+        if (response_type == xrandr_first_event + XCB_RANDR_SCREEN_CHANGE_NOTIFY)
+            PRINT_AND_RETURN("XCB_RANDR_SCREEN_CHANGE_NOTIFY");
+    }
+    // XKB
+    if (response_type == xkb_first_event)
+        PRINT_AND_RETURN("XCB_XKB_* event");
+
+    // UNKNOWN
+    qCDebug(log, "%s | unknown(%d) | sequence: %d", message, response_type, sequence);
+
+#undef PRINT_AND_RETURN
+#undef CASE_PRINT_AND_RETURN
 }
 
 const char *xcb_errors[] =
@@ -1200,10 +1216,10 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
     if (!handled && m_glIntegration)
         handled = m_glIntegration->handleXcbEvent(event, response_type);
 
-    if (handled)
-        printXcbEvent("Handled XCB event", event);
-    else
-        printXcbEvent("Unhandled XCB event", event);
+#if 0
+    if (Q_UNLIKELY(lcQpaEvents().isDebugEnabled()))
+        printXcbEvent(lcQpaEvents(), handled ? "Handled" : "Unhandled", event);
+#endif
 }
 
 void QXcbConnection::addPeekFunc(PeekFunc f)
