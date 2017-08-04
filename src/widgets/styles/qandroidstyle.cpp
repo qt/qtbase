@@ -333,41 +333,52 @@ void QAndroidStyle::drawControl(QStyle::ControlElement element,
                                              : m_androidControlsHash.end();
     if (it != m_androidControlsHash.end()) {
         AndroidControl *androidControl = it.value();
-        androidControl->drawControl(opt, p, w);
 
-        switch (itemType) {
-        case QC_Button:
-            if (const QStyleOptionButton *buttonOption =
-                qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-                QMargins padding = androidControl->padding();
-                QStyleOptionButton copy(*buttonOption);
-                copy.rect.adjust(padding.left(), padding.top(), -padding.right(), -padding.bottom());
-                QFusionStyle::drawControl(CE_PushButtonLabel, &copy, p, w);
+        if (element != QStyle::CE_CheckBoxLabel
+                && element != QStyle::CE_PushButtonLabel
+                && element != QStyle::CE_RadioButtonLabel
+                && element != QStyle::CE_TabBarTabLabel
+                && element != QStyle::CE_ProgressBarLabel) {
+            androidControl->drawControl(opt, p, w);
+        }
+
+        if (element != QStyle::CE_PushButtonBevel
+                && element != QStyle::CE_TabBarTabShape
+                && element != QStyle::CE_ProgressBarGroove) {
+            switch (itemType) {
+            case QC_Button:
+                if (const QStyleOptionButton *buttonOption =
+                    qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+                    QMargins padding = androidControl->padding();
+                    QStyleOptionButton copy(*buttonOption);
+                    copy.rect.adjust(padding.left(), padding.top(), -padding.right(), -padding.bottom());
+                    QFusionStyle::drawControl(CE_PushButtonLabel, &copy, p, w);
+                }
+                break;
+            case QC_Checkbox:
+            case QC_RadioButton:
+                if (const QStyleOptionButton *btn =
+                    qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+                    const bool isRadio = (element == CE_RadioButton);
+                    QStyleOptionButton subopt(*btn);
+                    subopt.rect = subElementRect(isRadio ? SE_RadioButtonContents
+                                                 : SE_CheckBoxContents, btn, w);
+                    QFusionStyle::drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, p, w);
+                }
+                break;
+            case QC_Combobox:
+                if (const QStyleOptionComboBox *comboboxOption =
+                    qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
+                    QMargins padding = androidControl->padding();
+                    QStyleOptionComboBox copy (*comboboxOption);
+                    copy.rect.adjust(padding.left(), padding.top(), -padding.right(), -padding.bottom());
+                    QFusionStyle::drawControl(CE_ComboBoxLabel, comboboxOption, p, w);
+                }
+                break;
+            default:
+                QFusionStyle::drawControl(element, opt, p, w);
+                break;
             }
-            break;
-        case QC_Checkbox:
-        case QC_RadioButton:
-            if (const QStyleOptionButton *btn =
-                qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-                const bool isRadio = (element == CE_RadioButton);
-                QStyleOptionButton subopt(*btn);
-                subopt.rect = subElementRect(isRadio ? SE_RadioButtonContents
-                                             : SE_CheckBoxContents, btn, w);
-                QFusionStyle::drawControl(isRadio ? CE_RadioButtonLabel : CE_CheckBoxLabel, &subopt, p, w);
-            }
-            break;
-        case QC_Combobox:
-            if (const QStyleOptionComboBox *comboboxOption =
-                qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
-                QMargins padding = androidControl->padding();
-                QStyleOptionComboBox copy (*comboboxOption);
-                copy.rect.adjust(padding.left(), padding.top(), -padding.right(), -padding.bottom());
-                QFusionStyle::drawControl(CE_ComboBoxLabel, comboboxOption, p, w);
-            }
-            break;
-        default:
-            QFusionStyle::drawControl(element, opt, p, w);
-            break;
         }
     } else {
         QFusionStyle::drawControl(element, opt, p, w);
