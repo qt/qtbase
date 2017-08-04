@@ -191,12 +191,14 @@ public:
     }
 };
 
+//! [qtconcurrentmapkernel-1]
 template <typename Iterator, typename Functor>
 inline ThreadEngineStarter<void> startMap(Iterator begin, Iterator end, Functor functor)
 {
     return startThreadEngine(new MapKernel<Iterator, Functor>(begin, end, functor));
 }
 
+//! [qtconcurrentmapkernel-2]
 template <typename T, typename Iterator, typename Functor>
 inline ThreadEngineStarter<T> startMapped(Iterator begin, Iterator end, Functor functor)
 {
@@ -225,6 +227,7 @@ struct SequenceHolder1 : public Base
     }
 };
 
+//! [qtconcurrentmapkernel-3]
 template <typename T, typename Sequence, typename Functor>
 inline ThreadEngineStarter<T> startMapped(const Sequence &sequence, Functor functor)
 {
@@ -235,6 +238,7 @@ inline ThreadEngineStarter<T> startMapped(const Sequence &sequence, Functor func
     return startThreadEngine(new SequenceHolderType(sequence, functor));
 }
 
+//! [qtconcurrentmapkernel-4]
 template <typename IntermediateType, typename ResultType, typename Sequence, typename MapFunctor, typename ReduceFunctor>
 inline ThreadEngineStarter<ResultType> startMappedReduced(const Sequence & sequence,
                                                            MapFunctor mapFunctor, ReduceFunctor reduceFunctor,
@@ -247,6 +251,7 @@ inline ThreadEngineStarter<ResultType> startMappedReduced(const Sequence & seque
     return startThreadEngine(new SequenceHolderType(sequence, mapFunctor, reduceFunctor, options));
 }
 
+//! [qtconcurrentmapkernel-5]
 template <typename IntermediateType, typename ResultType, typename Iterator, typename MapFunctor, typename ReduceFunctor>
 inline ThreadEngineStarter<ResultType> startMappedReduced(Iterator begin, Iterator end,
                                                            MapFunctor mapFunctor, ReduceFunctor reduceFunctor,

@@ -98,6 +98,7 @@ namespace QtConcurrent {
 
 namespace QtConcurrent {
 
+//! [QtConcurrent-1]
 template <typename Sequence, typename KeepFunctor, typename ReduceFunctor>
 ThreadEngineStarter<void> filterInternal(Sequence &sequence, KeepFunctor keep, ReduceFunctor reduce)
 {

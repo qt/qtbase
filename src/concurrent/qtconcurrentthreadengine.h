@@ -259,6 +259,7 @@ public:
     }
 };
 
+//! [qtconcurrentthreadengine-1]
 template <typename ThreadEngine>
 inline ThreadEngineStarter<typename ThreadEngine::ResultType> startThreadEngine(ThreadEngine *threadEngine)
 {
