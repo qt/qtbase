@@ -62,10 +62,11 @@
 
 - (id)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window
 {
-    if (self = [self initWithFrame:window->geometry().toCGRect()])
+    if (self = [self initWithFrame:window->geometry().toCGRect()]) {
         m_qioswindow = window;
+        m_accessibleElements = [[NSMutableArray alloc] init];
+    }
 
-    m_accessibleElements = [[NSMutableArray alloc] init];
     return self;
 }
 
@@ -102,6 +103,13 @@
     }
 
     return self;
+}
+
+- (void)dealloc
+{
+    [m_accessibleElements release];
+
+    [super dealloc];
 }
 
 - (void)willMoveToWindow:(UIWindow *)newWindow

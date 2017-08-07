@@ -50,7 +50,7 @@
         return;
     QAccessible::Id accessibleId = QAccessible::uniqueId(iface);
     UIAccessibilityElement *elem = [[QMacAccessibilityElement alloc] initWithId: accessibleId withAccessibilityContainer: self];
-    [m_accessibleElements addObject: elem];
+    [m_accessibleElements addObject:[elem autorelease]];
 }
 
 - (void)createAccessibleContainer:(QAccessibleInterface *)iface
