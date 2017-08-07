@@ -197,12 +197,8 @@ void QGLWidgetGLPaintDevice::endPaint()
 
 QSize QGLWidgetGLPaintDevice::size() const
 {
-#ifdef Q_OS_MAC
     return glWidget->size() * (glWidget->windowHandle() ?
                                glWidget->windowHandle()->devicePixelRatio() : qApp->devicePixelRatio());
-#else
-    return glWidget->size();
-#endif
 }
 
 QGLContext* QGLWidgetGLPaintDevice::context() const

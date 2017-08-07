@@ -615,6 +615,8 @@ qint64 QFileDevice::size() const
     currently is, the new bytes will be set to 0; if \a sz is smaller, the
     file is simply truncated.
 
+    \warning This function can fail if the file doesn't exist.
+
     \sa size()
 */
 bool QFileDevice::resize(qint64 sz)

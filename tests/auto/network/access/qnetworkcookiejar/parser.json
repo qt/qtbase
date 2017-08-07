@@ -11,7 +11,7 @@
   {
     "test": "0002",
     "received": [
-      "foo=bar; Expires=Fri, 07 Aug 2019 08:04:19 GMT"
+      "foo=bar; Expires=Fri, 07 Aug 2119 08:04:19 GMT"
     ],
     "sent": [
       { "name": "foo", "value": "bar" }
@@ -21,7 +21,7 @@
     "test": "0003",
     "received": [
       "foo=bar; Expires=Fri, 07 Aug 2007 08:04:19 GMT",
-      "foo2=bar2; Expires=Fri, 07 Aug 2017 08:04:19 GMT"
+      "foo2=bar2; Expires=Fri, 07 Aug 2117 08:04:19 GMT"
     ],
     "sent": [
       { "name": "foo2", "value": "bar2" }
@@ -710,7 +710,7 @@
   {
     "test": "COMMA0006",
     "received": [
-      "foo=bar; Expires=Fri, 07 Aug 2019 08:04:19 GMT"
+      "foo=bar; Expires=Fri, 07 Aug 2119 08:04:19 GMT"
     ],
     "sent": [
       { "name": "foo", "value": "bar" }
@@ -719,7 +719,7 @@
   {
     "test": "COMMA0007",
     "received": [
-      "foo=bar; Expires=Fri 07 Aug 2019 08:04:19 GMT, baz=qux"
+      "foo=bar; Expires=Fri 07 Aug 2119 08:04:19 GMT, baz=qux"
     ],
     "sent": [
       { "name": "foo", "value": "bar" }

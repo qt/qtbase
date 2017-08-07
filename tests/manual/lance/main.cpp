@@ -353,7 +353,7 @@ int main(int argc, char **argv)
     scaledWidth = width * scalefactor;
     scaledHeight = height * scalefactor;
 
-    PaintCommands pcmd(QStringList(), 800, 800);
+    PaintCommands pcmd(QStringList(), 800, 800, imageFormat);
     pcmd.setVerboseMode(verboseMode);
     pcmd.setType(type);
     pcmd.setCheckersBackground(checkers_background);
@@ -601,7 +601,7 @@ int main(int argc, char **argv)
             case PrinterType:
             {
 #ifndef QT_NO_PRINTER
-                PaintCommands pcmd(QStringList(), 800, 800);
+                PaintCommands pcmd(QStringList(), 800, 800, imageFormat);
                 pcmd.setVerboseMode(verboseMode);
                 pcmd.setType(type);
                 pcmd.setCheckersBackground(checkers_background);
@@ -635,7 +635,7 @@ int main(int argc, char **argv)
             case PdfType:
             {
 #ifndef QT_NO_PRINTER
-                PaintCommands pcmd(QStringList(), 800, 800);
+                PaintCommands pcmd(QStringList(), 800, 800, QImage::Format_ARGB32_Premultiplied);
                 pcmd.setVerboseMode(verboseMode);
                 pcmd.setType(type);
                 pcmd.setCheckersBackground(checkers_background);

@@ -1861,9 +1861,6 @@ static inline uint interpolate_4_pixels_16(uint tl, uint tr, uint bl, uint br, u
 #if defined(__SSE2__)
 static inline QRgba64 interpolate_4_pixels_rgb64(QRgba64 t[], QRgba64 b[], uint distx, uint disty)
 {
-    const __m128i vdistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(distx), _MM_SHUFFLE(0, 0, 0, 0));
-    const __m128i vidistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(0x10000 - distx), _MM_SHUFFLE(0, 0, 0, 0));
-
     __m128i vt = _mm_loadu_si128((const __m128i*)t);
     if (disty) {
        __m128i vb = _mm_loadu_si128((const __m128i*)b);
@@ -1871,8 +1868,12 @@ static inline QRgba64 interpolate_4_pixels_rgb64(QRgba64 t[], QRgba64 b[], uint 
         vb = _mm_mulhi_epu16(vb, _mm_set1_epi16(disty));
         vt = _mm_add_epi16(vt, vb);
     }
-    vt = _mm_mulhi_epu16(vt, _mm_unpacklo_epi64(vidistx, vdistx));
-    vt = _mm_add_epi16(vt, _mm_srli_si128(vt, 8));
+    if (distx) {
+        const __m128i vdistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(distx), _MM_SHUFFLE(0, 0, 0, 0));
+        const __m128i vidistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(0x10000 - distx), _MM_SHUFFLE(0, 0, 0, 0));
+        vt = _mm_mulhi_epu16(vt, _mm_unpacklo_epi64(vidistx, vdistx));
+        vt = _mm_add_epi16(vt, _mm_srli_si128(vt, 8));
+    }
 #ifdef Q_PROCESSOR_X86_64
     return QRgba64::fromRgba64(_mm_cvtsi128_si64(vt));
 #else
@@ -3119,8 +3120,6 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                 for (int i = 0; i < len; ++i) {
                     int distx = (fx & 0x0000ffff);
 #if defined(__SSE2__)
-                    const __m128i vdistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(distx), _MM_SHUFFLE(0, 0, 0, 0));
-                    const __m128i vidistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(0x10000 - distx), _MM_SHUFFLE(0, 0, 0, 0));
                     __m128i vt = _mm_loadu_si128((const __m128i*)(buf1 + i*2));
                     if (disty) {
                         __m128i vb = _mm_loadu_si128((const __m128i*)(buf2 + i*2));
@@ -3128,8 +3127,12 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64(QRgba64 *buffer, co
                         vb = _mm_mulhi_epu16(vb, vdy);
                         vt = _mm_add_epi16(vt, vb);
                     }
-                    vt = _mm_mulhi_epu16(vt, _mm_unpacklo_epi64(vidistx, vdistx));
-                    vt = _mm_add_epi16(vt, _mm_srli_si128(vt, 8));
+                    if (distx) {
+                        const __m128i vdistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(distx), _MM_SHUFFLE(0, 0, 0, 0));
+                        const __m128i vidistx = _mm_shufflelo_epi16(_mm_cvtsi32_si128(0x10000 - distx), _MM_SHUFFLE(0, 0, 0, 0));
+                        vt = _mm_mulhi_epu16(vt, _mm_unpacklo_epi64(vidistx, vdistx));
+                        vt = _mm_add_epi16(vt, _mm_srli_si128(vt, 8));
+                    }
                     _mm_storel_epi64((__m128i*)(b+i), vt);
 #else
                     b[i] = interpolate_4_pixels_rgb64((QRgba64 *)buf1 + i*2, (QRgba64 *)buf2 + i*2, distx, disty);

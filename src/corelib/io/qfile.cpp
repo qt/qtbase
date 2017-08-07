@@ -1054,10 +1054,12 @@ bool QFile::resize(qint64 sz)
 /*!
     \overload
 
-    Sets \a fileName to size (in bytes) \a sz. Returns \c true if the file if
+    Sets \a fileName to size (in bytes) \a sz. Returns \c true if
     the resize succeeds; false otherwise. If \a sz is larger than \a
     fileName currently is the new bytes will be set to 0, if \a sz is
     smaller the file is simply truncated.
+
+    \warning This function can fail if the file doesn't exist.
 
     \sa resize()
 */

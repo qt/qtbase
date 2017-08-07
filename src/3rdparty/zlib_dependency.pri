@@ -2,7 +2,7 @@
 qtConfig(system-zlib) {
     QMAKE_USE_PRIVATE += zlib
 } else {
-    INCLUDEPATH +=  $$PWD/zlib
+    INCLUDEPATH +=  $$PWD/zlib/src
     !no_core_dep {
         CONFIG += qt
         QT_PRIVATE += core

@@ -121,11 +121,6 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
     if (!connection.isConnected()) {
         lastError = QDBusError(QDBusError::Disconnected,
                                QDBusUtil::disconnectedErrorMessage());
-    } else if (!service.isEmpty()) {
-        currentOwner = connectionPrivate()->getNameOwner(service); // verify the name owner
-        if (currentOwner.isEmpty()) {
-            lastError = connectionPrivate()->lastError;
-        }
     }
 }
 
@@ -133,9 +128,14 @@ void QDBusAbstractInterfacePrivate::initOwnerTracking()
 {
     if (!isValid || !connection.isConnected() || !connectionPrivate()->shouldWatchService(service))
         return;
+
     QObject::connect(new QDBusServiceWatcher(service, connection, QDBusServiceWatcher::WatchForOwnerChange, q_func()),
                      SIGNAL(serviceOwnerChanged(QString,QString,QString)),
                      q_func(), SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+
+    currentOwner = connectionPrivate()->getNameOwner(service);
+    if (currentOwner.isEmpty())
+        lastError = connectionPrivate()->lastError;
 }
 
 bool QDBusAbstractInterfacePrivate::canMakeCalls() const

@@ -178,7 +178,7 @@ public:
 
         pt.begin(dev);
 
-        PaintCommands paintCommands(m_commands, 800, 800);
+        PaintCommands paintCommands(m_commands, 800, 800, QImage::Format_ARGB32_Premultiplied);
         paintCommands.setVerboseMode(m_verboseMode);
         paintCommands.setCheckersBackground(m_checkersBackground);
         paintCommands.setType(m_deviceType);

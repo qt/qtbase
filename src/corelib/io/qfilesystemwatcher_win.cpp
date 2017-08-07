@@ -127,16 +127,10 @@ private:
     quintptr m_lastMessageHash;
 };
 
-static inline QEventDispatcherWin32 *winEventDispatcher()
-{
-    return static_cast<QEventDispatcherWin32 *>(QCoreApplication::instance()->eventDispatcher());
-}
-
 QWindowsRemovableDriveListener::QWindowsRemovableDriveListener(QObject *parent)
     : QObject(parent)
     , m_lastMessageHash(0)
 {
-    winEventDispatcher()->installNativeEventFilter(this);
 }
 
 static void stopDeviceNotification(QWindowsRemovableDriveListener::RemovableDriveEntry &e)
@@ -314,7 +308,8 @@ void QWindowsRemovableDriveListener::addPath(const QString &p)
     notify.dbch_size = sizeof(notify);
     notify.dbch_devicetype = DBT_DEVTYP_HANDLE;
     notify.dbch_handle = volumeHandle;
-    re.devNotify = RegisterDeviceNotification(winEventDispatcher()->internalHwnd(),
+    QEventDispatcherWin32 *winEventDispatcher = static_cast<QEventDispatcherWin32 *>(QCoreApplication::eventDispatcher());
+    re.devNotify = RegisterDeviceNotification(winEventDispatcher->internalHwnd(),
                                               &notify, DEVICE_NOTIFY_WINDOW_HANDLE);
     // Empirically found: The notifications also work when the handle is immediately
     // closed. Do it here to avoid having to close/reopen in lock message handling.
@@ -339,20 +334,24 @@ QWindowsFileSystemWatcherEngine::Handle::Handle()
 
 QWindowsFileSystemWatcherEngine::QWindowsFileSystemWatcherEngine(QObject *parent)
     : QFileSystemWatcherEngine(parent)
-#ifndef Q_OS_WINRT
-    , m_driveListener(new QWindowsRemovableDriveListener(this))
-#endif
 {
 #ifndef Q_OS_WINRT
-    parent->setProperty("_q_driveListener",
-                        QVariant::fromValue(static_cast<QObject *>(m_driveListener)));
-    QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveLockForRemoval,
-                     this, &QWindowsFileSystemWatcherEngine::driveLockForRemoval);
-    QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveLockForRemovalFailed,
-                     this, &QWindowsFileSystemWatcherEngine::driveLockForRemovalFailed);
-    QObject::connect(m_driveListener,
-                     QOverload<const QString &>::of(&QWindowsRemovableDriveListener::driveRemoved),
-                     this, &QWindowsFileSystemWatcherEngine::driveRemoved);
+    if (QAbstractEventDispatcher *eventDispatcher = QCoreApplication::eventDispatcher()) {
+        m_driveListener = new QWindowsRemovableDriveListener(this);
+        eventDispatcher->installNativeEventFilter(m_driveListener);
+        parent->setProperty("_q_driveListener",
+                            QVariant::fromValue(static_cast<QObject *>(m_driveListener)));
+        QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveLockForRemoval,
+                         this, &QWindowsFileSystemWatcherEngine::driveLockForRemoval);
+        QObject::connect(m_driveListener, &QWindowsRemovableDriveListener::driveLockForRemovalFailed,
+                         this, &QWindowsFileSystemWatcherEngine::driveLockForRemovalFailed);
+        QObject::connect(m_driveListener,
+                         QOverload<const QString &>::of(&QWindowsRemovableDriveListener::driveRemoved),
+                         this, &QWindowsFileSystemWatcherEngine::driveRemoved);
+    } else {
+        qWarning("QFileSystemWatcher: Removable drive notification will not work"
+                 " if there is no QCoreApplication instance.");
+    }
 #endif // !Q_OS_WINRT
 }
 
@@ -518,9 +517,11 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
     }
 
 #ifndef Q_OS_WINRT
-    for (const QString &path : paths) {
-        if (!p.contains(path))
-            m_driveListener->addPath(path);
+    if (Q_LIKELY(m_driveListener)) {
+        for (const QString &path : paths) {
+            if (!p.contains(path))
+                m_driveListener->addPath(path);
+        }
     }
 #endif // !Q_OS_WINRT
     return p;

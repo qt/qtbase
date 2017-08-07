@@ -107,17 +107,15 @@ void QTeamCityLogger::startLogging()
 {
     QAbstractTestLogger::startLogging();
 
-    QString testSuiteName = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
+    flowID = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
 
-    QString str = QString(QLatin1String("##teamcity[testSuiteStarted name='%1']\n")).arg(testSuiteName);
+    QString str = QString(QLatin1String("##teamcity[testSuiteStarted name='%1' flowId='%1']\n")).arg(flowID);
     outputString(qPrintable(str));
 }
 
 void QTeamCityLogger::stopLogging()
 {
-    QString testSuiteName = tcEscapedString(QString::fromUtf8(QTestResult::currentTestObjectName()));
-
-    QString str = QString(QLatin1String("##teamcity[testSuiteFinished name='%1']\n")).arg(testSuiteName);
+    QString str = QString(QLatin1String("##teamcity[testSuiteFinished name='%1' flowId='%1']\n")).arg(flowID);
     outputString(qPrintable(str));
 
     QAbstractTestLogger::stopLogging();
@@ -145,7 +143,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
     QString tmpFuncName = escapedTestFuncName();
 
     if (tmpFuncName != currTestFuncName) {
-        buf = QString(QLatin1String("##teamcity[testStarted name='%1']\n")).arg(tmpFuncName);
+        buf = QString(QLatin1String("##teamcity[testStarted name='%1' flowId='%2']\n")).arg(tmpFuncName, flowID);
         outputString(qPrintable(buf));
     }
 
@@ -166,24 +164,25 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
         if (file)
             messageText += QString(QLatin1String(" |[Loc: %1(%2)|]")).arg(QString::fromUtf8(file)).arg(line);
 
-        buf = QString(QLatin1String("##teamcity[testFailed name='%1' message='%2' details='%3']\n"))
+        buf = QString(QLatin1String("##teamcity[testFailed name='%1' message='%2' details='%3' flowId='%4']\n"))
                         .arg(tmpFuncName,
                              messageText,
-                             detailedText);
+                             detailedText,
+                             flowID);
 
         outputString(qPrintable(buf));
     }
 
     if (!pendingMessages.isEmpty()) {
-        buf = QString(QLatin1String("##teamcity[testStdOut name='%1' out='%2']\n"))
-                .arg(tmpFuncName, pendingMessages);
+        buf = QString(QLatin1String("##teamcity[testStdOut name='%1' out='%2' flowId='%3']\n"))
+                .arg(tmpFuncName, pendingMessages, flowID);
 
         outputString(qPrintable(buf));
 
         pendingMessages.clear();
     }
 
-    buf = QString(QLatin1String("##teamcity[testFinished name='%1']\n")).arg(tmpFuncName);
+    buf = QString(QLatin1String("##teamcity[testFinished name='%1' flowId='%2']\n")).arg(tmpFuncName, flowID);
     outputString(qPrintable(buf));
 }
 
@@ -207,8 +206,8 @@ void QTeamCityLogger::addMessage(MessageTypes type, const QString &message,
         if (file)
             escapedMessage.append(QString(QLatin1String(" |[Loc: %1(%2)|]")).arg(QString::fromUtf8(file)).arg(line));
 
-        buf = QString(QLatin1String("##teamcity[testIgnored name='%1' message='%2']\n"))
-                .arg(escapedTestFuncName(), escapedMessage);
+        buf = QString(QLatin1String("##teamcity[testIgnored name='%1' message='%2' flowId='%3']\n"))
+                .arg(escapedTestFuncName(), escapedMessage, flowID);
 
         outputString(qPrintable(buf));
     }

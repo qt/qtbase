@@ -5211,6 +5211,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     // Restore system clip, viewport and transform.
     enginePriv->baseSystemClip = oldBaseClip;
     enginePriv->setSystemTransformAndViewport(oldTransform, oldSystemViewport);
+    enginePriv->systemStateChanged();
 
     // Restore shared painter.
     d->setSharedPainter(oldPainter);

@@ -31,11 +31,16 @@
 #include <QEvent>
 #include <QtCore/qthread.h>
 #include <QtGui/qguiapplication.h>
+#include <QtGui/qpainter.h>
+#include <QtGui/qrasterwindow.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
 #include <QtCore/qelapsedtimer.h>
 
 #include <QtCore/qt_windows.h>
+
+static const int topVerticalMargin = 50;
+static const int margin = 10;
 
 class tst_NoQtEventLoop : public QObject
 {
@@ -47,10 +52,10 @@ private slots:
 
 };
 
-class Window : public QWindow
+class Window : public QRasterWindow
 {
 public:
-    Window(QWindow *parentWindow = 0) : QWindow(parentWindow)
+    explicit Window(QWindow *parentWindow = nullptr) : QRasterWindow(parentWindow)
     {
     }
 
@@ -72,6 +77,13 @@ public:
 
 
     QHash<QEvent::Type, int> m_received;
+
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter p(this);
+        p.fillRect(QRect(QPoint(0, 0), size()), Qt::yellow);
+    }
 };
 
 bool g_exit = false;
@@ -174,7 +186,8 @@ public:
         QTRY_COMPARE(m_childWindow->received(QEvent::MouseButtonPress) + m_childWindow->received(QEvent::MouseButtonRelease), 0);
 
         // Now click in the QWindow. The QWindow should receive those events.
-        m_windowPos.ry() += 50;
+        m_windowPos.rx() += margin;
+        m_windowPos.ry() += topVerticalMargin;
         mouseMove(m_windowPos);
         ::Sleep(150);
         mouseClick();
@@ -204,6 +217,8 @@ void tst_NoQtEventLoop::consumeMouseEvents()
 {
     int argc = 1;
     char *argv[] = {const_cast<char*>("test")};
+    // ensure scaling is off since the child window is positioned using QWindow API.
+    QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
     QGuiApplication app(argc, argv);
     QString clsName(QStringLiteral("tst_NoQtEventLoop_WINDOW"));
     const HINSTANCE appInstance = (HINSTANCE)GetModuleHandle(0);
@@ -225,16 +240,28 @@ void tst_NoQtEventLoop::consumeMouseEvents()
     QVERIFY2(atom, "RegisterClassEx failed");
 
     DWORD dwExStyle = WS_EX_APPWINDOW;
-    DWORD dwStyle = WS_CAPTION | WS_HSCROLL | WS_TABSTOP | WS_VISIBLE;
+    DWORD dwStyle = WS_CAPTION | WS_TABSTOP | WS_VISIBLE;
 
-    HWND mainWnd = ::CreateWindowEx(dwExStyle, (wchar_t*)clsName.utf16(), TEXT("tst_NoQtEventLoop"), dwStyle, 100, 100, 300, 300, 0, NULL, appInstance, NULL);
+    const int screenWidth = ::GetSystemMetrics(SM_CXSCREEN);
+    const int screenHeight = ::GetSystemMetrics(SM_CYSCREEN);
+    const int width = screenWidth / 4;
+    const int height = screenHeight / 4;
+
+    HWND mainWnd =
+        ::CreateWindowEx(dwExStyle, reinterpret_cast<const wchar_t*>(clsName.utf16()),
+                         TEXT("tst_NoQtEventLoop"), dwStyle,
+                         (screenWidth - width) / 2, (screenHeight - height) / 2 , width, height,
+                         0, NULL, appInstance, NULL);
     QVERIFY2(mainWnd, "CreateWindowEx failed");
 
     ::ShowWindow(mainWnd, SW_SHOW);
 
+    ::SetWindowPos(mainWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
     Window *childWindow = new Window;
     childWindow->setParent(QWindow::fromWinId((WId)mainWnd));
-    childWindow->setGeometry(0, 50, 200, 200);
+    childWindow->setGeometry(margin, topVerticalMargin,
+                             width - 2 * margin, height - margin - topVerticalMargin);
     childWindow->show();
 
     TestThread *testThread = new TestThread(mainWnd, childWindow);
