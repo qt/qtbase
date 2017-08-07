@@ -760,9 +760,12 @@ void tst_QTemporaryFile::QTBUG_4796_data()
     QTest::newRow("blaXXXXXX") << QString("bla") << QString() << true;
     QTest::newRow("XXXXXXbla") << QString() << QString("bla") << true;
     QTest::newRow("does-not-exist/qt_temp.XXXXXX") << QString("does-not-exist/qt_temp") << QString() << false;
-    QTest::newRow("XXXXXX<unicode>") << QString() << unicode << true;
-    QTest::newRow("<unicode>XXXXXX") << unicode << QString() << true;
-    QTest::newRow("<unicode>XXXXXX<unicode>") << unicode << unicode << true;
+
+    if (canHandleUnicodeFileNames()) {
+        QTest::newRow("XXXXXX<unicode>") << QString() << unicode << true;
+        QTest::newRow("<unicode>XXXXXX") << unicode << QString() << true;
+        QTest::newRow("<unicode>XXXXXX<unicode>") << unicode << unicode << true;
+    }
 }
 
 void tst_QTemporaryFile::QTBUG_4796()
