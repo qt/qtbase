@@ -246,7 +246,7 @@ bool QEvdevTabletHandler::queryLimits()
 
 void QEvdevTabletHandler::readData()
 {
-    static input_event buffer[32];
+    input_event buffer[32];
     int n = 0;
     for (; ;) {
         int result = QT_READ(m_fd, reinterpret_cast<char*>(buffer) + n, sizeof(buffer) - n);
