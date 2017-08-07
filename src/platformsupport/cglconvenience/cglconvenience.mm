@@ -81,13 +81,17 @@ void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format)
     else if (format.swapBehavior() == QSurfaceFormat::TripleBuffer)
         attrs.append(NSOpenGLPFATripleBuffer);
 
-    if (format.profile() == QSurfaceFormat::CoreProfile
-            && ((format.majorVersion() == 3 && format.minorVersion() >= 2)
-                || format.majorVersion() > 3)) {
-        attrs << NSOpenGLPFAOpenGLProfile;
-        attrs << NSOpenGLProfileVersion3_2Core;
+
+    // Select OpenGL profile
+    attrs << NSOpenGLPFAOpenGLProfile;
+    if (format.profile() == QSurfaceFormat::CoreProfile) {
+        if (format.version() >= qMakePair(4, 1))
+            attrs << NSOpenGLProfileVersion4_1Core;
+        else if (format.version() >= qMakePair(3, 2))
+            attrs << NSOpenGLProfileVersion3_2Core;
+        else
+            attrs << NSOpenGLProfileVersionLegacy;
     } else {
-        attrs << NSOpenGLPFAOpenGLProfile;
         attrs << NSOpenGLProfileVersionLegacy;
     }
 
