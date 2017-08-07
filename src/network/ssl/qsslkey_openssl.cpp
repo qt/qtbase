@@ -84,6 +84,9 @@ void QSslKeyPrivate::clear(bool deep)
 
 bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
 {
+    if (pkey == nullptr)
+        return false;
+
     if (pkey->type == EVP_PKEY_RSA) {
         isNull = false;
         algorithm = QSsl::Rsa;

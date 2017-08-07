@@ -1805,7 +1805,7 @@ bool QSslSocketBackendPrivate::importPkcs12(QIODevice *device,
     }
 
     // Extract the data
-    EVP_PKEY *pkey;
+    EVP_PKEY *pkey = nullptr;
     X509 *x509;
     STACK_OF(X509) *ca = 0;
 
