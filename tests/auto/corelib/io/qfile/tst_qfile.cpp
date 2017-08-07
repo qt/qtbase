@@ -3185,22 +3185,39 @@ static qint64 streamExpectedSize(int fd)
     QT_STATBUF sb;
     if (QT_FSTAT(fd, &sb) != -1)
         return sb.st_size;
+    qErrnoWarning("Could not fstat fd %d", fd);
     return 0;
 }
 
 static qint64 streamCurrentPosition(int fd)
 {
-    QT_OFF_T pos = QT_LSEEK(fd, 0, SEEK_CUR);
-    if (pos != -1)
-        return pos;
+    QT_STATBUF sb;
+    if (QT_FSTAT(fd, &sb) != -1) {
+        QT_OFF_T pos = -1;
+        if ((sb.st_mode & QT_STAT_MASK) == QT_STAT_REG)
+            pos = QT_LSEEK(fd, 0, SEEK_CUR);
+        if (pos != -1)
+            return pos;
+        // failure to lseek() is not a problem
+    } else {
+        qErrnoWarning("Could not fstat fd %d", fd);
+    }
     return 0;
 }
 
 static qint64 streamCurrentPosition(FILE *f)
 {
-    QT_OFF_T pos = QT_FTELL(f);
-    if (pos != -1)
-        return pos;
+    QT_STATBUF sb;
+    if (QT_FSTAT(QT_FILENO(f), &sb) != -1) {
+        QT_OFF_T pos = -1;
+        if ((sb.st_mode & QT_STAT_MASK) == QT_STAT_REG)
+            pos = QT_FTELL(f);
+        if (pos != -1)
+            return pos;
+        // failure to ftell() is not a problem
+    } else {
+        qErrnoWarning("Could not fstat fd %d", QT_FILENO(f));
+    }
     return 0;
 }
 

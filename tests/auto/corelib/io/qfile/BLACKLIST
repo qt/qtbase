@@ -5,7 +5,3 @@ msvc-2017 ci
 [readLineStdin_lineByLine]
 msvc-2015 ci
 msvc-2017 ci
-[openStandardStreamsFileDescriptors]
-osx
-[openStandardStreamsBufferedStreams]
-osx
