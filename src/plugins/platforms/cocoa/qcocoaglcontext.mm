@@ -121,7 +121,8 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
                                  const QVariant &nativeHandle)
     : m_context(nil),
       m_shareContext(nil),
-      m_format(format)
+      m_format(format),
+      m_didCheckForSoftwareContext(false)
 {
     if (!nativeHandle.isNull()) {
         if (!nativeHandle.canConvert<QCocoaNativeContext>()) {
@@ -262,6 +263,22 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
 
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
+
+    // Disable high-resolution surfaces when using the software renderer, which has the
+    // problem that the system silently falls back to a to using a low-resolution buffer
+    // when a high-resolution buffer is requested. This is not detectable using the NSWindow
+    // convertSizeToBacking and backingScaleFactor APIs. A typical result of this is that Qt
+    // will display a quarter of the window content when running in a virtual machine.
+    if (!m_didCheckForSoftwareContext) {
+        m_didCheckForSoftwareContext = true;
+
+        const GLubyte* renderer = glGetString(GL_RENDERER);
+        if (qstrcmp((const char *)renderer, "Apple Software Renderer") == 0) {
+            NSView *view = static_cast<QCocoaWindow *>(surface)->m_view;
+            [view setWantsBestResolutionOpenGLSurface:NO];
+        }
+    }
+
     update();
     return true;
 }
