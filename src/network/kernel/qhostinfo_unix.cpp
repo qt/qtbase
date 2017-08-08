@@ -66,10 +66,6 @@
 #  include <gnu/lib-names.h>
 #endif
 
-#if defined (QT_NO_GETADDRINFO)
-static QBasicMutex getHostByNameMutex;
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // Almost always the same. If not, specify in qplatformdefs.h.
@@ -150,7 +146,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     QHostAddress address;
     if (address.setAddress(hostName)) {
         // Reverse lookup
-#if !defined (QT_NO_GETADDRINFO)
         sockaddr_in sa4;
         sockaddr_in6 sa6;
         sockaddr *sa = 0;
@@ -173,12 +168,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         char hbuf[NI_MAXHOST];
         if (sa && getnameinfo(sa, saSize, hbuf, sizeof(hbuf), 0, 0, 0) == 0)
             results.setHostName(QString::fromLatin1(hbuf));
-#else
-        in_addr_t inetaddr = qt_safe_inet_addr(hostName.toLatin1().constData());
-        struct hostent *ent = gethostbyaddr((const char *)&inetaddr, sizeof(inetaddr), AF_INET);
-        if (ent)
-            results.setHostName(QString::fromLatin1(ent->h_name));
-#endif
 
         if (results.hostName().isEmpty())
             results.setHostName(address.toString());
@@ -197,7 +186,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         return results;
     }
 
-#if !defined (QT_NO_GETADDRINFO)
     // Call getaddrinfo, and place all IPv4 addresses at the start and
     // the IPv6 addresses at the end of the address list in results.
     addrinfo *res = 0;
@@ -264,39 +252,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         results.setErrorString(QString::fromLocal8Bit(gai_strerror(result)));
     }
 
-#else
-    // Fall back to gethostbyname for platforms that don't define
-    // getaddrinfo. gethostbyname does not support IPv6, and it's not
-    // reentrant on all platforms. For now this is okay since we only
-    // use one QHostInfoAgent, but if more agents are introduced, locking
-    // must be provided.
-    QMutexLocker locker(&getHostByNameMutex);
-    hostent *result = gethostbyname(aceHostname.constData());
-    if (result) {
-        if (result->h_addrtype == AF_INET) {
-            QList<QHostAddress> addresses;
-            for (char **p = result->h_addr_list; *p != 0; p++) {
-                QHostAddress addr;
-                addr.setAddress(ntohl(*((quint32 *)*p)));
-                if (!addresses.contains(addr))
-                    addresses.prepend(addr);
-            }
-            results.setAddresses(addresses);
-        } else {
-            results.setError(QHostInfo::UnknownError);
-            results.setErrorString(tr("Unknown address type"));
-        }
-#if !defined(Q_OS_VXWORKS)
-    } else if (h_errno == HOST_NOT_FOUND || h_errno == NO_DATA
-               || h_errno == NO_ADDRESS) {
-        results.setError(QHostInfo::HostNotFound);
-        results.setErrorString(tr("Host not found"));
-#endif
-    } else {
-        results.setError(QHostInfo::UnknownError);
-        results.setErrorString(tr("Unknown error"));
-    }
-#endif //  !defined (QT_NO_GETADDRINFO)
 
 #if defined(QHOSTINFO_DEBUG)
     if (results.error() != QHostInfo::NoError) {
@@ -339,11 +294,6 @@ QString QHostInfo::localDomainName()
     if (local_res_init && local_res) {
         // using thread-unsafe version
 
-#if defined(QT_NO_GETADDRINFO)
-        // We have to call res_init to be sure that _res was initialized
-        // So, for systems without getaddrinfo (which is thread-safe), we lock the mutex too
-        QMutexLocker locker(&getHostByNameMutex);
-#endif
         local_res_init();
         QString domainName = QUrl::fromAce(local_res->defdname);
         if (domainName.isEmpty())
