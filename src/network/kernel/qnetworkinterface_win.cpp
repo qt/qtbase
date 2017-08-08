@@ -142,7 +142,7 @@ static QHash<QHostAddress, QHostAddress> ipv4Netmasks()
 
 }
 
-static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
+static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
     QList<QNetworkInterfacePrivate *> interfaces;
     IP_ADAPTER_ADDRESSES staticBuf[2]; // 2 is arbitrary
@@ -171,11 +171,18 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
 
     // iterate over the list and add the entries to our listing
     for (PIP_ADAPTER_ADDRESSES ptr = pAdapter; ptr; ptr = ptr->Next) {
+        // the structure grows over time, so let's make sure the fields
+        // introduced in Windows Vista are present (Luid is the furthest
+        // field we access from IP_ADAPTER_ADDRESSES_LH)
+        Q_ASSERT(ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Luid));
+        Q_ASSERT(ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Ipv6IfIndex));
+        Q_ASSERT(ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, FirstPrefix));
+
         QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
         interfaces << iface;
 
         iface->index = 0;
-        if (ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Ipv6IfIndex) && ptr->Ipv6IfIndex != 0)
+        if (ptr->Ipv6IfIndex != 0)
             iface->index = ptr->Ipv6IfIndex;
         else if (ptr->IfIndex != 0)
             iface->index = ptr->IfIndex;
@@ -188,13 +195,11 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
         if (ptr->IfType == IF_TYPE_PPP)
             iface->flags |= QNetworkInterface::IsPointToPoint;
 
-        if (ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Luid)) {
-            // use ConvertInterfaceLuidToNameW because that returns a friendlier name, though not
-            // as friendly as FriendlyName below
-            WCHAR buf[IF_MAX_STRING_SIZE + 1];
-            if (ConvertInterfaceLuidToNameW(&ptr->Luid, buf, sizeof(buf)/sizeof(buf[0])) == NO_ERROR)
-                iface->name = QString::fromWCharArray(buf);
-        }
+        // use ConvertInterfaceLuidToNameW because that returns a friendlier name, though not
+        // as "friendly" as FriendlyName below
+        WCHAR buf[IF_MAX_STRING_SIZE + 1];
+        if (ConvertInterfaceLuidToNameW(&ptr->Luid, buf, sizeof(buf)/sizeof(buf[0])) == NO_ERROR)
+            iface->name = QString::fromWCharArray(buf);
         if (iface->name.isEmpty())
             iface->name = QString::fromLocal8Bit(ptr->AdapterName);
 
@@ -213,8 +218,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
         // the iteration at the last Prefix entry and assume that it applies to all addresses
         // from that point on.
         PIP_ADAPTER_PREFIX pprefix = 0;
-        if (ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, FirstPrefix))
-            pprefix = ptr->FirstPrefix;
+        pprefix = ptr->FirstPrefix;
         for (PIP_ADAPTER_UNICAST_ADDRESS addr = ptr->FirstUnicastAddress; addr; addr = addr->Next) {
             QNetworkAddressEntry entry;
             entry.setIp(addressFromSockaddr(addr->Address.lpSockaddr));
@@ -240,7 +244,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
 
 QList<QNetworkInterfacePrivate *> QNetworkInterfaceManager::scan()
 {
-    return interfaceListingWinXP();
+    return interfaceListing();
 }
 
 QString QHostInfo::localDomainName()
