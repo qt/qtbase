@@ -103,45 +103,6 @@ QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
     return QString::number(index);
 }
 
-static QHash<QHostAddress, QHostAddress> ipv4Netmasks()
-{
-    //Retrieve all the IPV4 addresses & netmasks
-    IP_ADAPTER_INFO staticBuf[2]; // 2 is arbitrary
-    PIP_ADAPTER_INFO pAdapter = staticBuf;
-    ULONG bufSize = sizeof staticBuf;
-    QHash<QHostAddress, QHostAddress> ipv4netmasks;
-
-    DWORD retval = GetAdaptersInfo(pAdapter, &bufSize);
-    if (retval == ERROR_BUFFER_OVERFLOW) {
-        // need more memory
-        pAdapter = (IP_ADAPTER_INFO *)malloc(bufSize);
-        if (!pAdapter)
-            return ipv4netmasks;
-        // try again
-        if (GetAdaptersInfo(pAdapter, &bufSize) != ERROR_SUCCESS) {
-            free(pAdapter);
-            return ipv4netmasks;
-        }
-    } else if (retval != ERROR_SUCCESS) {
-        // error
-        return ipv4netmasks;
-    }
-
-    // iterate over the list and add the entries to our listing
-    for (PIP_ADAPTER_INFO ptr = pAdapter; ptr; ptr = ptr->Next) {
-        for (PIP_ADDR_STRING addr = &ptr->IpAddressList; addr; addr = addr->Next) {
-            QHostAddress address(QLatin1String(addr->IpAddress.String));
-            QHostAddress mask(QLatin1String(addr->IpMask.String));
-            ipv4netmasks[address] = mask;
-        }
-    }
-    if (pAdapter != staticBuf)
-        free(pAdapter);
-
-    return ipv4netmasks;
-
-}
-
 static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
     QList<QNetworkInterfacePrivate *> interfaces;
@@ -149,7 +110,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     PIP_ADAPTER_ADDRESSES pAdapter = staticBuf;
     ULONG bufSize = sizeof staticBuf;
 
-    const QHash<QHostAddress, QHostAddress> &ipv4netmasks = ipv4Netmasks();
     ULONG flags = GAA_FLAG_INCLUDE_PREFIX |
                   GAA_FLAG_SKIP_DNS_SERVER |
                   GAA_FLAG_SKIP_MULTICAST;
@@ -176,7 +136,6 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         // field we access from IP_ADAPTER_ADDRESSES_LH)
         Q_ASSERT(ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Luid));
         Q_ASSERT(ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, Ipv6IfIndex));
-        Q_ASSERT(ptr->Length >= offsetof(IP_ADAPTER_ADDRESSES, FirstPrefix));
 
         QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
         interfaces << iface;
@@ -211,27 +170,17 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             // loopback if it has no address
             iface->flags |= QNetworkInterface::IsLoopBack;
 
-        // The GetAdaptersAddresses call has an interesting semantic:
-        // It can return a number N of addresses and a number M of prefixes.
-        // But if you have IPv6 addresses, generally N > M.
-        // I cannot find a way to relate the Address to the Prefix, aside from stopping
-        // the iteration at the last Prefix entry and assume that it applies to all addresses
-        // from that point on.
-        PIP_ADAPTER_PREFIX pprefix = 0;
-        pprefix = ptr->FirstPrefix;
+        // parse the IP (unicast) addresses
         for (PIP_ADAPTER_UNICAST_ADDRESS addr = ptr->FirstUnicastAddress; addr; addr = addr->Next) {
+            Q_ASSERT(addr->Length >= offsetof(IP_ADAPTER_UNICAST_ADDRESS, OnLinkPrefixLength));
+
+            // skip addresses in invalid state
+            if (addr->DadState == IpDadStateInvalid)
+                continue;
+
             QNetworkAddressEntry entry;
             entry.setIp(addressFromSockaddr(addr->Address.lpSockaddr));
-            if (pprefix) {
-                if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol) {
-                    entry.setNetmask(ipv4netmasks[entry.ip()]);
-
-                    // broadcast address is set on postProcess()
-                } else { //IPV6
-                    entry.setPrefixLength(pprefix->PrefixLength);
-                }
-                pprefix = pprefix->Next ? pprefix->Next : pprefix;
-            }
+            entry.setPrefixLength(addr->OnLinkPrefixLength);
             iface->addressEntries << entry;
         }
     }
