@@ -335,6 +335,122 @@ void QNetworkAddressEntry::setBroadcast(const QHostAddress &newBroadcast)
 }
 
 /*!
+    \since 5.11
+
+    Returns \c true if the address lifetime is known, \c false if not. If the
+    lifetime is not known, both preferredLifetime() and validityLifetime() will
+    return QDeadlineTimer::Forever.
+
+    \sa preferredLifetime(), validityLifetime(), setAddressLifetime(), clearAddressLifetime()
+*/
+bool QNetworkAddressEntry::isLifetimeKnown() const
+{
+    return d->lifetimeKnown;
+}
+
+/*!
+    \since 5.11
+
+    Returns the deadline when this address becomes deprecated (no longer
+    preferred), if known. If the address lifetime is not known (see
+    isLifetimeKnown()), this function always returns QDeadlineTimer::Forever.
+
+    While an address is preferred, it may be used by the operating system as
+    the source address for new, outgoing packets. After it becomes deprecated,
+    it will remain valid for incoming packets for a while longer until finally
+    removed (see validityLifetime()).
+
+    \sa validityLifetime(), isLifetimeKnown(), setAddressLifetime(), clearAddressLifetime()
+*/
+QDeadlineTimer QNetworkAddressEntry::preferredLifetime() const
+{
+    return d->preferredLifetime;
+}
+
+/*!
+    \since 5.11
+
+    Returns the deadline when this address becomes invalid and will be removed
+    from the networking stack, if known. If the address lifetime is not known
+    (see isLifetimeKnown()), this function always returns
+    QDeadlineTimer::Forever.
+
+    While an address is valid, it will be accepted by the operating system as a
+    valid destination address for this machine. Whether it is used as a source
+    address for new, outgoing packets is controlled by, among other rules, the
+    preferred lifetime (see preferredLifetime()).
+
+    \sa preferredLifetime(), isLifetimeKnown(), setAddressLifetime(), clearAddressLifetime()
+*/
+QDeadlineTimer QNetworkAddressEntry::validityLifetime() const
+{
+    return d->validityLifetime;
+}
+
+/*!
+    \since 5.11
+
+    Sets both the preferred and valid lifetimes for this address to the \a
+    preferred and \a validity deadlines, respectively. After this call,
+    isLifetimeKnown() will return \c true, even if both parameters are
+    QDeadlineTimer::Forever.
+
+    \sa preferredLifetime(), validityLifetime(), isLifetimeKnown(), clearAddressLifetime()
+*/
+void QNetworkAddressEntry::setAddressLifetime(QDeadlineTimer preferred, QDeadlineTimer validity)
+{
+    d->preferredLifetime = preferred;
+    d->validityLifetime = validity;
+    d->lifetimeKnown = true;
+}
+
+/*!
+    \since 5.11
+
+    Resets both the preferred and valid lifetimes for this address. After this
+    call, isLifetimeKnown() will return \c false.
+
+    \sa preferredLifetime(), validityLifetime(), isLifetimeKnown(), setAddressLifetime()
+*/
+void QNetworkAddressEntry::clearAddressLifetime()
+{
+    d->preferredLifetime = QDeadlineTimer::Forever;
+    d->validityLifetime = QDeadlineTimer::Forever;
+    d->lifetimeKnown = false;
+}
+
+/*!
+    \since 5.11
+
+    Returns \c true if this address is permanent on this interface, \c false if
+    it's temporary. A permenant address is one which has no expiration time and
+    is often static (manually configured).
+
+    If this information could not be determined, this function returns \c true.
+
+    \note Depending on the operating system and the networking configuration
+    tool, it is possible for a temporary address to be interpreted as
+    permanent, if the tool did not inform the details correctly to the
+    operating system.
+
+    \sa isLifetimeKnown(), validityLifetime(), isTemporary()
+*/
+bool QNetworkAddressEntry::isPermanent() const
+{
+    return d->validityLifetime.isForever();
+}
+
+/*!
+    \fn bool QNetworkAddressEntry::isTemporary() const
+    \since 5.11
+
+    Returns \c true if this address is temporary on this interface, \c false if
+    it's permanent.
+
+    \sa isLifetimeKnown(), validityLifetime(), isPermanent()
+*/
+
+/*!
     \class QNetworkInterface
     \brief The QNetworkInterface class provides a listing of the host's IP
     addresses and network interfaces.

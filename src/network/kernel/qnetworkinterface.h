@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class QDeadlineTimer;
 template<typename T> class QList;
 
 class QNetworkAddressEntryPrivate;
@@ -80,6 +80,14 @@ public:
 
     QHostAddress broadcast() const;
     void setBroadcast(const QHostAddress &newBroadcast);
+
+    bool isLifetimeKnown() const;
+    QDeadlineTimer preferredLifetime() const;
+    QDeadlineTimer validityLifetime() const;
+    void setAddressLifetime(QDeadlineTimer preferred, QDeadlineTimer validity);
+    void clearAddressLifetime();
+    bool isPermanent() const;
+    bool isTemporary() const { return !isPermanent(); }
 
 private:
     QScopedPointer<QNetworkAddressEntryPrivate> d;

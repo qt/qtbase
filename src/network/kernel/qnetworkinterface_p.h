@@ -54,6 +54,7 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QtNetwork/qnetworkinterface.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qreadwritelock.h>
 #include <QtCore/qstring.h>
@@ -70,7 +71,11 @@ class QNetworkAddressEntryPrivate
 public:
     QHostAddress address;
     QHostAddress broadcast;
+    QDeadlineTimer preferredLifetime = QDeadlineTimer::Forever;
+    QDeadlineTimer validityLifetime = QDeadlineTimer::Forever;
+
     QNetmask netmask;
+    bool lifetimeKnown = false;
 };
 
 class QNetworkInterfacePrivate: public QSharedData

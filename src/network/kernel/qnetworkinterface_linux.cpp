@@ -386,6 +386,18 @@ static void getAddresses(int sock, char *buf, QList<QNetworkInterfacePrivate *> 
                 entry.setBroadcast(makeAddress(payloadPtr, payloadLen));
                 break;
 
+            case IFA_CACHEINFO:
+                if (size_t(payloadLen) >= sizeof(ifa_cacheinfo)) {
+                    auto cacheinfo = reinterpret_cast<ifa_cacheinfo *>(payloadPtr);
+                    auto toDeadline = [](quint32 lifetime) -> QDeadlineTimer {
+                        if (lifetime == quint32(-1))
+                            return QDeadlineTimer::Forever;
+                        return QDeadlineTimer(lifetime * 1000);
+                    };
+                    entry.setAddressLifetime(toDeadline(cacheinfo->ifa_prefered), toDeadline(cacheinfo->ifa_valid));
+                }
+                break;
+
             case IFA_FLAGS:
                 Q_ASSERT(payloadLen == 4);
                 flags = qFromUnaligned<quint32>(payloadPtr);

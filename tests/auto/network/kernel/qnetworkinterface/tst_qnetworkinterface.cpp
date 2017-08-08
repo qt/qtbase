@@ -152,6 +152,12 @@ void tst_QNetworkInterface::dump()
                             << " (" << qPrintable(e.netmask().toString()) << ')';
             if (!e.broadcast().isNull())
                 s.nospace() << " broadcast " << qPrintable(e.broadcast().toString());
+            if (e.isLifetimeKnown()) {
+#define printable(l) qPrintable(l.isForever() ? "forever" : QString::fromLatin1("%1ms").arg(l.remainingTime()))
+                s.nospace() << " preferred:" << printable(e.preferredLifetime())
+                            << " valid:" << printable(e.validityLifetime());
+#undef printable
+            }
         }
     }
 }
@@ -163,6 +169,7 @@ void tst_QNetworkInterface::consistencyCheck()
     QVector<int> interfaceIndexes;
 
     foreach (const QNetworkInterface &iface, ifaces) {
+        QVERIFY(iface.isValid());
         QVERIFY2(!interfaceNames.contains(iface.name()),
                  "duplicate name = " + iface.name().toLocal8Bit());
         interfaceNames << iface.name();
@@ -171,6 +178,15 @@ void tst_QNetworkInterface::consistencyCheck()
                  "duplicate index = " + QByteArray::number(iface.index()));
         if (iface.index())
             interfaceIndexes << iface.index();
+
+        const QList<QNetworkAddressEntry> addresses = iface.addressEntries();
+        for (auto entry : addresses) {
+            QVERIFY(entry.ip().protocol() != QAbstractSocket::UnknownNetworkLayerProtocol);
+            if (!entry.preferredLifetime().isForever() || !entry.validityLifetime().isForever())
+                QVERIFY(entry.isLifetimeKnown());
+            if (!entry.validityLifetime().isForever())
+                QVERIFY(entry.isTemporary());
+        }
     }
 }
 

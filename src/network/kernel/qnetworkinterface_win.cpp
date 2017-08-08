@@ -222,6 +222,14 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             QNetworkAddressEntry entry;
             entry.setIp(addressFromSockaddr(addr->Address.lpSockaddr));
             entry.setPrefixLength(addr->OnLinkPrefixLength);
+
+            auto toDeadline = [](ULONG lifetime) -> QDeadlineTimer {
+                if (lifetime == 0xffffffffUL)
+                    return QDeadlineTimer::Forever;
+                return QDeadlineTimer(lifetime * 1000);
+            };
+            entry.setAddressLifetime(toDeadline(addr->ValidLifetime), toDeadline(addr->PreferredLifetime));
+
             iface->addressEntries << entry;
         }
     }

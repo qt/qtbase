@@ -46,6 +46,10 @@
 
 #ifndef QT_NO_NETWORKINTERFACE
 
+#if defined(QT_NO_CLOCK_MONOTONIC)
+#  include "qdatetime.h"
+#endif
+
 #if defined(QT_LINUXBASE)
 #  define QT_NO_GETIFADDRS
 #endif
@@ -381,11 +385,19 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     return interfaces;
 }
 
+static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa, const char *ifname)
+{
+    Q_UNUSED(entry);
+    Q_UNUSED(sa);
+    Q_UNUSED(ifname)
+}
+
 # elif defined(Q_OS_BSD4)
 QT_BEGIN_INCLUDE_NAMESPACE
 #  include <net/if_dl.h>
 #  include <net/if_media.h>
 #  include <net/if_types.h>
+#  include <netinet/in_var.h>
 QT_END_INCLUDE_NAMESPACE
 
 static int openSocket(int &socket)
@@ -471,6 +483,46 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     return interfaces;
 }
 
+static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa, const char *ifname)
+{
+    // get IPv6 address lifetimes
+    if (sa->sa_family != AF_INET6)
+        return;
+
+    struct in6_ifreq ifr;
+
+    int s6 = qt_safe_socket(AF_INET6, SOCK_DGRAM, 0);
+    if (Q_UNLIKELY(s6 < 0)) {
+        qErrnoWarning("QNetworkInterface: could not create IPv6 socket");
+        return;
+    }
+
+    strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+
+    // get lifetimes
+    ifr.ifr_addr = *reinterpret_cast<struct sockaddr_in6 *>(sa);
+    if (qt_safe_ioctl(s6, SIOCGIFALIFETIME_IN6, &ifr) < 0) {
+        qt_safe_close(s6);
+        return;
+    }
+    qt_safe_close(s6);
+
+    auto toDeadline = [](time_t when) {
+        QDeadlineTimer deadline = QDeadlineTimer::Forever;
+        if (when) {
+#if defined(QT_NO_CLOCK_MONOTONIC)
+            // no monotonic clock
+            deadline.setPreciseRemainingTime(when - QDateTime::currentSecsSinceEpoch());
+#else
+            deadline.setPreciseDeadline(when);
+#endif
+        }
+        return deadline;
+    };
+    entry->setAddressLifetime(toDeadline(ifr.ifr_ifru.ifru_lifetime.ia6t_preferred),
+                              toDeadline(ifr.ifr_ifru.ifru_lifetime.ia6t_expire));
+}
+
 # else  // Generic version
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
@@ -502,8 +554,13 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
     return interfaces;
 }
 
+static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa, const char *ifname)
+{
+    Q_UNUSED(entry);
+    Q_UNUSED(sa);
+    Q_UNUSED(ifname)
+}
 # endif
-
 
 static QList<QNetworkInterfacePrivate *> interfaceListing()
 {
@@ -553,6 +610,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         entry.setNetmask(addressFromSockaddr(ptr->ifa_netmask, iface->index, iface->name));
         if (iface->flags & QNetworkInterface::CanBroadcast)
             entry.setBroadcast(addressFromSockaddr(ptr->ifa_broadaddr, iface->index, iface->name));
+        getAddressExtraInfo(&entry, ptr->ifa_addr, name.latin1());
 
         iface->addressEntries << entry;
     }
