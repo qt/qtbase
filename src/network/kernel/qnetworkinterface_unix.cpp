@@ -41,32 +41,13 @@
 #include "qset.h"
 #include "qnetworkinterface.h"
 #include "qnetworkinterface_p.h"
+#include "qnetworkinterface_unix_p.h"
 #include "qalgorithms.h"
-#include "private/qnet_unix_p.h"
 
 #ifndef QT_NO_NETWORKINTERFACE
 
-#define IP_MULTICAST    // make AIX happy and define IFF_MULTICAST
-
-#include <sys/types.h>
-#include <sys/socket.h>
-
-#ifdef Q_OS_SOLARIS
-# include <sys/sockio.h>
-#endif
-#include <net/if.h>
-
-#ifndef QT_NO_IPV6IFNAME
-#include <net/if.h>
-#endif
-
 #if defined(QT_LINUXBASE)
 #  define QT_NO_GETIFADDRS
-#endif
-
-#ifdef Q_OS_HAIKU
-# include <sys/sockio.h>
-# define IFF_RUNNING 0x0001
 #endif
 
 #ifndef QT_NO_GETIFADDRS
@@ -105,23 +86,6 @@ static QHostAddress addressFromSockaddr(sockaddr *sa, int ifindex = 0, const QSt
     }
     return address;
 
-}
-
-static QNetworkInterface::InterfaceFlags convertFlags(uint rawFlags)
-{
-    QNetworkInterface::InterfaceFlags flags = 0;
-    flags |= (rawFlags & IFF_UP) ? QNetworkInterface::IsUp : QNetworkInterface::InterfaceFlag(0);
-    flags |= (rawFlags & IFF_RUNNING) ? QNetworkInterface::IsRunning : QNetworkInterface::InterfaceFlag(0);
-    flags |= (rawFlags & IFF_BROADCAST) ? QNetworkInterface::CanBroadcast : QNetworkInterface::InterfaceFlag(0);
-    flags |= (rawFlags & IFF_LOOPBACK) ? QNetworkInterface::IsLoopBack : QNetworkInterface::InterfaceFlag(0);
-#ifdef IFF_POINTOPOINT //cygwin doesn't define IFF_POINTOPOINT
-    flags |= (rawFlags & IFF_POINTOPOINT) ? QNetworkInterface::IsPointToPoint : QNetworkInterface::InterfaceFlag(0);
-#endif
-
-#ifdef IFF_MULTICAST
-    flags |= (rawFlags & IFF_MULTICAST) ? QNetworkInterface::CanMulticast : QNetworkInterface::InterfaceFlag(0);
-#endif
-    return flags;
 }
 
 uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)

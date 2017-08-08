@@ -116,6 +116,24 @@
             },
             "use": "network"
         },
+        "linux-netlink": {
+            "label": "Linux AF_NETLINK sockets",
+            "type": "compile",
+            "test": {
+                "include": [ "asm/types.h", "linux/netlink.h", "linux/rtnetlink.h", "sys/socket.h" ],
+                "main": [
+                    "struct rtattr rta = { };",
+                    "struct ifinfomsg ifi = {};",
+                    "struct ifaddrmsg ifa = {};",
+                    "struct ifa_cacheinfo ci;",
+                    "ci.ifa_prefered = ci.ifa_valid = 0;",
+                    "(void)RTM_NEWLINK; (void)RTM_NEWADDR;",
+                    "(void)IFLA_ADDRESS; (void)IFLA_IFNAME;",
+                    "(void)IFA_ADDRESS; (void)IFA_LABEL; (void)IFA_CACHEINFO;",
+                    "(void)(IFA_F_SECONDARY | IFA_F_DEPRECATED | IFA_F_PERMANENT | IFA_F_MANAGETEMPADDR);"
+                ]
+            }
+        },
         "sctp": {
             "label": "SCTP support",
             "type": "compile",
@@ -159,6 +177,11 @@
             "label": "libproxy",
             "autoDetect": false,
             "condition": "libs.libproxy",
+            "output": [ "privateFeature" ]
+        },
+        "linux-netlink": {
+            "label": "Linux AF_NETLINK",
+            "condition": "config.linux && tests.linux-netlink",
             "output": [ "privateFeature" ]
         },
         "openssl": {
@@ -308,6 +331,11 @@ For example:
                     "condition": "config.darwin"
                 },
                 "getifaddrs", "ipv6ifname", "libproxy",
+                {
+                    "type": "feature",
+                    "args": "linux-netlink",
+                    "condition": "config.linux"
+                },
                 {
                     "type": "feature",
                     "args": "securetransport",

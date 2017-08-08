@@ -17,6 +17,7 @@ HEADERS += kernel/qtnetworkglobal.h \
            kernel/qnetworkdatagram_p.h \
            kernel/qnetworkinterface.h \
            kernel/qnetworkinterface_p.h \
+           kernel/qnetworkinterface_unix_p.h \
            kernel/qnetworkproxy.h
 
 SOURCES += kernel/qauthenticator.cpp \
@@ -34,7 +35,10 @@ qtConfig(ftp) {
 
 unix {
     !integrity: SOURCES += kernel/qdnslookup_unix.cpp
-    SOURCES += kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
+    SOURCES += kernel/qhostinfo_unix.cpp
+
+    qtConfig(linux-netlink): SOURCES += kernel/qnetworkinterface_linux.cpp
+    else: SOURCES += kernel/qnetworkinterface_unix.cpp
 }
 
 android {
