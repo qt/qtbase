@@ -27,9 +27,10 @@
 **
 ****************************************************************************/
 
+#include <qhostaddress.h>
+#include <private/qhostaddress_p.h>
 #include <qcoreapplication.h>
 #include <QtTest/QtTest>
-#include <qhostaddress.h>
 #include <qplatformdefs.h>
 #include <qdebug.h>
 #include <qhash.h>
@@ -46,6 +47,7 @@
 #  include <netinet/in.h>
 #endif
 
+Q_DECLARE_METATYPE(AddressClassification)
 Q_DECLARE_METATYPE(QHostAddress::SpecialAddress)
 
 class tst_QHostAddress : public QObject
@@ -75,10 +77,8 @@ private slots:
     void parseSubnet();
     void isInSubnet_data();
     void isInSubnet();
-    void isLoopback_data();
-    void isLoopback();
-    void isMulticast_data();
-    void isMulticast();
+    void classification_data();
+    void classification();
     void convertv4v6_data();
     void convertv4v6();
 };
@@ -667,90 +667,88 @@ void tst_QHostAddress::isInSubnet()
     QTEST(address.isInSubnet(prefix, prefixLength), "result");
 }
 
-void tst_QHostAddress::isLoopback_data()
+void tst_QHostAddress::classification_data()
 {
     QTest::addColumn<QHostAddress>("address");
-    QTest::addColumn<bool>("result");
+    QTest::addColumn<AddressClassification>("result");
 
-    QTest::newRow("default") << QHostAddress() << false;
-    QTest::newRow("invalid") << QHostAddress("&&&") << false;
+    QTest::newRow("default") << QHostAddress() << UnknownAddress;
+    QTest::newRow("invalid") << QHostAddress("&&&") << UnknownAddress;
 
-    QTest::newRow("ipv6_loop") << QHostAddress(QHostAddress::LocalHostIPv6) << true;
-    QTest::newRow("::1") << QHostAddress("::1") << true;
+    QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << LocalNetAddress;
+    QTest::newRow("Null") << QHostAddress(QHostAddress::Null) << UnknownAddress;
 
-    QTest::newRow("ipv4_loop") << QHostAddress(QHostAddress::LocalHost) << true;
-    QTest::newRow("127.0.0.1") << QHostAddress("127.0.0.1") << true;
-    QTest::newRow("127.0.0.2") << QHostAddress("127.0.0.2") << true;
-    QTest::newRow("127.3.2.1") << QHostAddress("127.3.2.1") << true;
+    // IPv6 address space
+    auto addV6 = [](const char *str, AddressClassification cl) {
+        QTest::newRow(str) << QHostAddress(str) << cl;
+    };
+    QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << LocalNetAddress;
+    QTest::newRow("ipv6_loop") << QHostAddress(QHostAddress::LocalHostIPv6) << LoopbackAddress;
+    addV6("::", LocalNetAddress);
+    addV6("::1", LoopbackAddress);
+    addV6("::2", GlobalAddress);
+    addV6("2000::", GlobalAddress);
+    addV6("3fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", GlobalAddress);
+    addV6("fbff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", GlobalAddress);
+    addV6("fc00::", UniqueLocalAddress);
+    addV6("fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", UniqueLocalAddress);
+    addV6("fe00::", UnknownAddress);
+    addV6("fe7f:ffff:ffff:ffff:ffff:ffff:ffff:ffff", UnknownAddress);
+    addV6("fe80::", LinkLocalAddress);
+    addV6("febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff", LinkLocalAddress);
+    addV6("fec0::", SiteLocalAddress);
+    addV6("feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", SiteLocalAddress);
+    addV6("ff00::", MulticastAddress);
+    addV6("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", MulticastAddress);
 
-    QTest::newRow("1.2.3.4") << QHostAddress("1.2.3.4") << false;
-    QTest::newRow("10.0.0.4") << QHostAddress("10.0.0.4") << false;
-    QTest::newRow("192.168.3.4") << QHostAddress("192.168.3.4") << false;
-
-    QTest::newRow("::") << QHostAddress("::") << false;
-    QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << false;
-    QTest::newRow("AnyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << false;
-    QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << false;
-    QTest::newRow("Broadcast") << QHostAddress(QHostAddress::Broadcast) << false;
-    QTest::newRow("Null") << QHostAddress(QHostAddress::Null) << false;
-    QTest::newRow("ipv6-all-ffff") << QHostAddress("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff") << false;
-
-    QTest::newRow("::ffff:127.0.0.1") << QHostAddress("::ffff:127.0.0.1") << true;
-    QTest::newRow("::ffff:127.0.0.2") << QHostAddress("::ffff:127.0.0.2") << true;
-    QTest::newRow("::ffff:127.3.2.1") << QHostAddress("::ffff:127.3.2.1") << true;
-
+    // IPv4 address space
+    auto addV4 = [](const char *str, AddressClassification cl) {
+        QTest::newRow(str) << QHostAddress(str) << cl;
+        QByteArray v6 = "::ffff:";
+        v6 += str;
+        QTest::newRow(v6.constData()) << QHostAddress(QString::fromLatin1(v6)) << cl;
+    };
+    QTest::newRow("AnyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << LocalNetAddress;
+    QTest::newRow("ipv4_loop") << QHostAddress(QHostAddress::LocalHost) << LoopbackAddress;
+    QTest::newRow("Broadcast") << QHostAddress(QHostAddress::Broadcast) << BroadcastAddress;
+    addV4("0.0.0.0", LocalNetAddress);
+    addV4("0.0.0.1", LocalNetAddress);
+    addV4("0.255.255.255", LocalNetAddress);
+    addV4("1.0.0.0", GlobalAddress);
+    addV4("1.2.3.4", GlobalAddress);
+    addV4("10.0.0.4", PrivateNetworkAddress);
+    addV4("127.0.0.1", LoopbackAddress);
+    addV4("127.0.0.2", LoopbackAddress);
+    addV4("127.255.255.255", LoopbackAddress);
+    addV4("192.168.3.4", PrivateNetworkAddress);
+    addV4("223.255.255.255", GlobalAddress);
+    addV4("224.0.0.0", MulticastAddress);
+    addV4("239.255.255.255", MulticastAddress);
+    addV4("240.0.0.0", UnknownAddress);
+    addV4("255.255.255.254", UnknownAddress);
+    addV4("255.255.255.255", BroadcastAddress);
 }
 
-void tst_QHostAddress::isLoopback()
+void tst_QHostAddress::classification()
 {
     QFETCH(QHostAddress, address);
-    QFETCH(bool, result);
+    QFETCH(AddressClassification, result);
 
-    QCOMPARE(address.isLoopback(), result);
-}
+    bool isLoopback = (result == LoopbackAddress);
+    bool isGlobal = (result & GlobalAddress);    // GlobalAddress is a bit
+    bool isLinkLocal = (result == LinkLocalAddress);
+    bool isSiteLocal = (result == SiteLocalAddress);
+    bool isUniqueLocalAddress = (result == UniqueLocalAddress);
+    bool isMulticast = (result == MulticastAddress);
+    bool isBroadcast = (result == BroadcastAddress);
 
-void tst_QHostAddress::isMulticast_data()
-{
-    QTest::addColumn<QHostAddress>("address");
-    QTest::addColumn<bool>("result");
-
-    QTest::newRow("default") << QHostAddress() << false;
-    QTest::newRow("invalid") << QHostAddress("&&&") << false;
-
-    QTest::newRow("ipv6_loop") << QHostAddress(QHostAddress::LocalHostIPv6) << false;
-    QTest::newRow("::1") << QHostAddress("::1") << false;
-    QTest::newRow("ipv4_loop") << QHostAddress(QHostAddress::LocalHost) << false;
-    QTest::newRow("127.0.0.1") << QHostAddress("127.0.0.1") << false;
-    QTest::newRow("::") << QHostAddress("::") << false;
-    QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << false;
-    QTest::newRow("AnyIPv4") << QHostAddress(QHostAddress::AnyIPv4) << false;
-    QTest::newRow("AnyIPv6") << QHostAddress(QHostAddress::AnyIPv6) << false;
-    QTest::newRow("Broadcast") << QHostAddress(QHostAddress::Broadcast) << false;
-    QTest::newRow("Null") << QHostAddress(QHostAddress::Null) << false;
-
-    QTest::newRow("223.255.255.255") << QHostAddress("223.255.255.255") << false;
-    QTest::newRow("224.0.0.0") << QHostAddress("224.0.0.0") << true;
-    QTest::newRow("239.255.255.255") << QHostAddress("239.255.255.255") << true;
-    QTest::newRow("240.0.0.0") << QHostAddress("240.0.0.0") << false;
-
-    QTest::newRow("::ffff:223.255.255.255") << QHostAddress("::ffff:223.255.255.255") << false;
-    QTest::newRow("::ffff:224.0.0.0") << QHostAddress("::ffff:224.0.0.0") << true;
-    QTest::newRow("::ffff:239.255.255.255") << QHostAddress("::ffff:239.255.255.255") << true;
-    QTest::newRow("::ffff:240.0.0.0") << QHostAddress("::ffff:240.0.0.0") << false;
-
-    QTest::newRow("fc00::") << QHostAddress("fc00::") << false;
-    QTest::newRow("fe80::") << QHostAddress("fe80::") << false;
-    QTest::newRow("fec0::") << QHostAddress("fec0::") << false;
-    QTest::newRow("ff00::") << QHostAddress("ff00::") << true;
-    QTest::newRow("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff") << QHostAddress("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff") << true;
-}
-
-void tst_QHostAddress::isMulticast()
-{
-    QFETCH(QHostAddress, address);
-    QFETCH(bool, result);
-
-    QCOMPARE(address.isMulticast(), result);
+    QCOMPARE(address.isLoopback(), isLoopback);
+    QCOMPARE(address.isGlobal(), isGlobal);
+    QCOMPARE(address.isLinkLocal(), isLinkLocal);
+    QCOMPARE(address.isSiteLocal(), isSiteLocal);
+    QCOMPARE(address.isUniqueLocalUnicast(), isUniqueLocalAddress);
+    QCOMPARE(address.isMulticast(), isMulticast);
+    QCOMPARE(address.isBroadcast(), isBroadcast);
 }
 
 void tst_QHostAddress::convertv4v6_data()

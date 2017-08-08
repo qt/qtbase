@@ -148,7 +148,12 @@ public:
     bool isInSubnet(const QPair<QHostAddress, int> &subnet) const;
 
     bool isLoopback() const;
+    bool isGlobal() const;
+    bool isLinkLocal() const;
+    bool isSiteLocal() const;
+    bool isUniqueLocalUnicast() const;
     bool isMulticast() const;
+    bool isBroadcast() const;
 
     static QPair<QHostAddress, int> parseSubnet(const QString &subnet);
 
