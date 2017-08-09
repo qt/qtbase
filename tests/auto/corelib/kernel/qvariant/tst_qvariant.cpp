@@ -45,7 +45,9 @@
 #include <limits.h>
 #include <float.h>
 #include <cmath>
-
+#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#include <variant>
+#endif
 #include <QLinkedList>
 #include <QRegularExpression>
 #include <QDir>
@@ -280,6 +282,8 @@ private slots:
     void nullConvert();
 
     void accessSequentialContainerKey();
+
+    void fromStdVariant();
 
 private:
     void dataStream_data(QDataStream::Version version);
@@ -4942,6 +4946,42 @@ void tst_QVariant::accessSequentialContainerKey()
     // of the string key.
 
     QCOMPARE(nameResult, QStringLiteral("Seven"));
+}
+
+void tst_QVariant::fromStdVariant()
+{
+#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+    {
+        typedef std::variant<int, bool> intorbool_t;
+        intorbool_t stdvar = 5;
+        QVariant qvar = QVariant::fromStdVariant(stdvar);
+        QVERIFY(!qvar.isNull());
+        QCOMPARE(qvar.type(), QVariant::Int);
+        QCOMPARE(qvar.value<int>(), std::get<int>(stdvar));
+        stdvar = true;
+        qvar = QVariant::fromStdVariant(stdvar);
+        QVERIFY(!qvar.isNull());
+        QCOMPARE(qvar.type(), QVariant::Bool);
+        QCOMPARE(qvar.value<bool>(), std::get<bool>(stdvar));
+    }
+    {
+        std::variant<std::monostate, int> stdvar;
+        QVariant qvar = QVariant::fromStdVariant(stdvar);
+        QVERIFY(!qvar.isValid());
+        stdvar = -4;
+        qvar = QVariant::fromStdVariant(stdvar);
+        QVERIFY(!qvar.isNull());
+        QCOMPARE(qvar.type(), QVariant::Int);
+        QCOMPARE(qvar.value<int>(), std::get<int>(stdvar));
+    }
+    {
+        std::variant<int, bool, QChar> stdvar = QChar::fromLatin1(' ');
+        QVariant qvar = QVariant::fromStdVariant(stdvar);
+        QVERIFY(!qvar.isNull());
+        QCOMPARE(qvar.type(), QVariant::Char);
+        QCOMPARE(qvar.value<QChar>(), std::get<QChar>(stdvar));
+    }
+#endif
 }
 
 QTEST_MAIN(tst_QVariant)
