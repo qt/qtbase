@@ -2230,7 +2230,7 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
     QAbstractScrollArea::focusInEvent(event);
 
     const QItemSelectionModel* model = selectionModel();
-    const bool currentIndexValid = currentIndex().isValid();
+    bool currentIndexValid = currentIndex().isValid();
 
     if (model
         && !d->currentIndexSet
@@ -2238,19 +2238,16 @@ void QAbstractItemView::focusInEvent(QFocusEvent *event)
         bool autoScroll = d->autoScroll;
         d->autoScroll = false;
         QModelIndex index = moveCursor(MoveNext, Qt::NoModifier); // first visible index
-        if (index.isValid() && d->isIndexEnabled(index) && event->reason() != Qt::MouseFocusReason)
+        if (index.isValid() && d->isIndexEnabled(index) && event->reason() != Qt::MouseFocusReason) {
             selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+            currentIndexValid = true;
+        }
         d->autoScroll = autoScroll;
     }
 
-    if (model && currentIndexValid) {
-        if (currentIndex().flags() != Qt::ItemIsEditable)
-            setAttribute(Qt::WA_InputMethodEnabled, false);
-        else
-            setAttribute(Qt::WA_InputMethodEnabled);
-    }
-
-    if (!currentIndexValid)
+    if (model && currentIndexValid)
+        setAttribute(Qt::WA_InputMethodEnabled, (currentIndex().flags() & Qt::ItemIsEditable));
+    else if (!currentIndexValid)
         setAttribute(Qt::WA_InputMethodEnabled, false);
 
     d->viewport->update();
@@ -3652,6 +3649,7 @@ void QAbstractItemView::currentChanged(const QModelIndex &current, const QModelI
             d->shouldScrollToCurrentOnShow = d->autoScroll;
         }
     }
+    setAttribute(Qt::WA_InputMethodEnabled, (current.isValid() && (current.flags() & Qt::ItemIsEditable)));
 }
 
 #ifndef QT_NO_DRAGANDDROP
