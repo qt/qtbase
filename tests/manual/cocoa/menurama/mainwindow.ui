@@ -6,50 +6,60 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>429</width>
-    <height>251</height>
+    <width>486</width>
+    <height>288</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>24</number>
-      </property>
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>The &quot;Help&quot; menu should NOT be visible.
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>The &quot;Help&quot; menu should NOT be visible.
 
 Click on &quot;Dynamic Stuff&quot; then move left and right to other menus. Disabled items should remain that way.</string>
-        </property>
-        <property name="scaledContents">
-         <bool>false</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox">
+      <property name="text">
+       <string>Enable &quot;Stuff&quot; Menu</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Populate Dynamic Submenu</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QCheckBox" name="checkBox">
-        <property name="text">
-         <string>Enable &quot;Stuff&quot; Menu</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="addManyButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -57,7 +67,17 @@ Click on &quot;Dynamic Stuff&quot; then move left and right to other menus. Disa
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Populate Dynamic Submenu</string>
+         <string>Add Many Items</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Adding hundreds of items should not block the UI for noticeable periods of time. Odd numbered items should be disabled, those with 2nd LSB on should be hidden.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -70,7 +90,7 @@ Click on &quot;Dynamic Stuff&quot; then move left and right to other menus. Disa
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>429</width>
+     <width>486</width>
      <height>22</height>
     </rect>
    </property>

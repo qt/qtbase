@@ -260,6 +260,7 @@ QT_BEGIN_NAMESPACE
 QCocoaMenu::QCocoaMenu() :
     m_attachedItem(0),
     m_tag(0),
+    m_updateTimer(0),
     m_enabled(true),
     m_parentEnabled(true),
     m_visible(true),
@@ -410,6 +411,20 @@ QCocoaMenuItem *QCocoaMenu::itemOrNull(int index) const
     return m_menuItems.at(index);
 }
 
+void QCocoaMenu::scheduleUpdate()
+{
+    if (!m_updateTimer)
+        m_updateTimer = startTimer(0);
+}
+
+void QCocoaMenu::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == m_updateTimer) {
+        m_updateTimer = 0;
+        [m_nativeMenu update];
+    }
+}
+
 void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 {
     QMacAutoReleasePool pool;
@@ -436,9 +451,9 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
         QCocoaMenuItem* beforeItem = itemOrNull(m_menuItems.indexOf(cocoaItem) + 1);
         insertNative(cocoaItem, beforeItem);
     } else {
-        // Force NSMenuValidation to kick in. This is needed e.g.
+        // Schedule NSMenuValidation to kick in. This is needed e.g.
         // when an item's enabled state changes after menuWillOpen:
-        [m_nativeMenu update];
+        scheduleUpdate();
     }
 }
 

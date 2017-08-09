@@ -96,14 +96,18 @@ public:
     bool isOpen() const;
     void setIsOpen(bool isOpen);
 
+    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
+
 private:
     QCocoaMenuItem *itemOrNull(int index) const;
     void insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem);
+    void scheduleUpdate();
 
     QList<QCocoaMenuItem *> m_menuItems;
     NSMenu *m_nativeMenu;
     NSMenuItem *m_attachedItem;
     quintptr m_tag;
+    int m_updateTimer;
     bool m_enabled:1;
     bool m_parentEnabled:1;
     bool m_visible:1;
