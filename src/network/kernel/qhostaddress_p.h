@@ -101,6 +101,35 @@ public:
     { return n1.length == n2.length; }
 };
 
+class QHostAddressPrivate : public QSharedData
+{
+public:
+    QHostAddressPrivate();
+
+    void setAddress(quint32 a_ = 0);
+    void setAddress(const quint8 *a_);
+    void setAddress(const Q_IPV6ADDR &a_);
+
+    bool parse(const QString &ipString);
+    void clear();
+
+    QString scopeId;
+
+    union {
+        Q_IPV6ADDR a6; // IPv6 address
+        struct { quint64 c[2]; } a6_64;
+        struct { quint32 c[4]; } a6_32;
+    };
+    quint32 a;    // IPv4 address
+    qint8 protocol;
+
+    AddressClassification classify() const;
+    static AddressClassification classify(const QHostAddress &address)
+    { return address.d->classify(); }
+
+    friend class QHostAddress;
+};
+
 QT_END_NAMESPACE
 
 #endif

@@ -229,6 +229,9 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
                 return QDeadlineTimer(lifetime * 1000);
             };
             entry.setAddressLifetime(toDeadline(addr->ValidLifetime), toDeadline(addr->PreferredLifetime));
+            entry.setDnsEligibility(addr->Flags & IP_ADAPTER_ADDRESS_DNS_ELIGIBLE ?
+                                        QNetworkAddressEntry::DnsEligible :
+                                        QNetworkAddressEntry::DnsIneligible);
 
             iface->addressEntries << entry;
         }

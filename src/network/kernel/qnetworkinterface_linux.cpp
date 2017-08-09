@@ -406,7 +406,10 @@ static void getAddresses(int sock, char *buf, QList<QNetworkInterfacePrivate *> 
         }
 
         // now handle flags
-        Q_UNUSED(flags);
+        QNetworkInterfacePrivate::calculateDnsEligibility(&entry,
+                                                          flags & IFA_F_TEMPORARY,
+                                                          flags & IFA_F_DEPRECATED);
+
 
         if (!entry.ip().isNull()) {
             entry.setPrefixLength(ifa->ifa_prefixlen);

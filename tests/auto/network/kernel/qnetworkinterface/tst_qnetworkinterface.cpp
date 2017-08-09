@@ -152,6 +152,10 @@ void tst_QNetworkInterface::dump()
                             << " (" << qPrintable(e.netmask().toString()) << ')';
             if (!e.broadcast().isNull())
                 s.nospace() << " broadcast " << qPrintable(e.broadcast().toString());
+            if (e.dnsEligibility() == QNetworkAddressEntry::DnsEligible)
+                s.nospace() << " dns-eligible";
+            else if (e.dnsEligibility() == QNetworkAddressEntry::DnsIneligible)
+                s.nospace() << " dns-ineligible";
             if (e.isLifetimeKnown()) {
 #define printable(l) qPrintable(l.isForever() ? "forever" : QString::fromLatin1("%1ms").arg(l.remainingTime()))
                 s.nospace() << " preferred:" << printable(e.preferredLifetime())

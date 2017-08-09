@@ -56,6 +56,12 @@ class QNetworkAddressEntryPrivate;
 class Q_NETWORK_EXPORT QNetworkAddressEntry
 {
 public:
+    enum DnsEligibilityStatus : qint8 {
+        DnsEligibilityUnknown = -1,
+        DnsIneligible = 0,
+        DnsEligible = 1
+    };
+
     QNetworkAddressEntry();
     QNetworkAddressEntry(const QNetworkAddressEntry &other);
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -69,6 +75,9 @@ public:
     bool operator==(const QNetworkAddressEntry &other) const;
     inline bool operator!=(const QNetworkAddressEntry &other) const
     { return !(*this == other); }
+
+    DnsEligibilityStatus dnsEligibility() const;
+    void setDnsEligibility(DnsEligibilityStatus status);
 
     QHostAddress ip() const;
     void setIp(const QHostAddress &newIp);

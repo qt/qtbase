@@ -119,8 +119,15 @@ QList<QSharedDataPointer<QNetworkInterfacePrivate> > QNetworkInterfaceManager::a
     QList<QSharedDataPointer<QNetworkInterfacePrivate> > result;
     result.reserve(list.size());
 
-    for (QNetworkInterfacePrivate *ptr : list)
+    for (QNetworkInterfacePrivate *ptr : list) {
+        if ((ptr->flags & QNetworkInterface::IsUp) == 0) {
+            // if the network interface isn't UP, the addresses are ineligible for DNS
+            for (auto &addr : ptr->addressEntries)
+                addr.setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
+        }
+
         result << QSharedDataPointer<QNetworkInterfacePrivate>(ptr);
+    }
 
     return result;
 }
@@ -156,6 +163,32 @@ QString QNetworkInterfacePrivate::makeHwAddress(int len, uchar *data)
     address (depending on support from the operating system).
 
     This class represents one such group.
+*/
+
+/*!
+    \enum QNetworkAddressEntry::DnsEligilibilityStatus
+    \since 5.11
+
+    This enum indicates whether a given host address is eligible to be
+    published in the Domain Name System (DNS) or other similar name resolution
+    mechanisms. In general, an address is suitable for publication if it is an
+    address this machine will be reached at for an indeterminate amount of
+    time, though it need not be permanent. For example, addresses obtained via
+    DHCP are often eligible, but cryptographically-generated temporary IPv6
+    addresses are not.
+
+    \value DnsEligibilityUnknown    Qt and the operating system could not determine
+                                    whether this address should be published or not.
+                                    The application may need to apply further
+                                    heuristics if it cannot find any eligible
+                                    addresses.
+    \value DnsEligible              This address is eligible for publication in DNS.
+    \value DnsIneligible            This address should not be published in DNS and
+                                    should not be transmitted to other parties,
+                                    except maybe as the source address of an outgoing
+                                    packet.
+
+    \sa dnsEligibility(), setDnsEligibility()
 */
 
 /*!
@@ -210,6 +243,39 @@ bool QNetworkAddressEntry::operator==(const QNetworkAddressEntry &other) const
     return d->address == other.d->address &&
         d->netmask == other.d->netmask &&
         d->broadcast == other.d->broadcast;
+}
+
+/*!
+    \since 5.11
+
+    Returns whether this address is eligible for publication in the Domain Name
+    System (DNS) or similar name resolution mechanisms.
+
+    In general, an address is suitable for publication if it is an address this
+    machine will be reached at for an indeterminate amount of time, though it
+    need not be permanent. For example, addresses obtained via DHCP are often
+    eligible, but cryptographically-generated temporary IPv6 addresses are not.
+
+    On some systems, QNetworkInterface will need to heuristically determine
+    which addresses are eligible.
+
+    \sa isLifetimeKnown(), isPermanent(), setDnsEligibility()
+*/
+QNetworkAddressEntry::DnsEligibilityStatus QNetworkAddressEntry::dnsEligibility() const
+{
+    return d->dnsEligibility;
+}
+
+/*!
+    \since 5.11
+
+    Sets the DNS eligibility flag for this address to \a status.
+
+    \sa dnsEligibility()
+*/
+void QNetworkAddressEntry::setDnsEligibility(DnsEligibilityStatus status)
+{
+    d->dnsEligibility = status;
 }
 
 /*!

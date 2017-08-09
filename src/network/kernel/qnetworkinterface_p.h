@@ -76,6 +76,7 @@ public:
 
     QNetmask netmask;
     bool lifetimeKnown = false;
+    QNetworkAddressEntry::DnsEligibilityStatus dnsEligibility = QNetworkAddressEntry::DnsEligibilityUnknown;
 };
 
 class QNetworkInterfacePrivate: public QSharedData
@@ -97,6 +98,20 @@ public:
     QList<QNetworkAddressEntry> addressEntries;
 
     static QString makeHwAddress(int len, uchar *data);
+    static void calculateDnsEligibility(QNetworkAddressEntry *entry, bool isTemporary,
+                                        bool isDeprecated)
+    {
+        // this implements an algorithm that yields the same results as Windows
+        // produces, for the same input (as far as I can test)
+        if (isTemporary || isDeprecated)
+            entry->setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
+
+        AddressClassification cl = QHostAddressPrivate::classify(entry->ip());
+        if (cl == LoopbackAddress || cl == LinkLocalAddress)
+            entry->setDnsEligibility(QNetworkAddressEntry::DnsIneligible);
+        else
+            entry->setDnsEligibility(QNetworkAddressEntry::DnsEligible);
+    }
 
 private:
     // disallow copying -- avoid detaching

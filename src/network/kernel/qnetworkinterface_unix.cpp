@@ -499,6 +499,17 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
 
     strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
 
+    // get flags
+    ifr.ifr_addr = *reinterpret_cast<struct sockaddr_in6 *>(sa);
+    if (qt_safe_ioctl(s6, SIOCGIFAFLAG_IN6, &ifr) < 0) {
+        qt_safe_close(s6);
+        return;
+    }
+    int flags = ifr.ifr_ifru.ifru_flags6;
+    QNetworkInterfacePrivate::calculateDnsEligibility(entry,
+                                                      flags & IN6_IFF_TEMPORARY,
+                                                      flags & IN6_IFF_DEPRECATED);
+
     // get lifetimes
     ifr.ifr_addr = *reinterpret_cast<struct sockaddr_in6 *>(sa);
     if (qt_safe_ioctl(s6, SIOCGIFALIFETIME_IN6, &ifr) < 0) {

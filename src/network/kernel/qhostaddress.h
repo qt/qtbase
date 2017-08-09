@@ -159,6 +159,7 @@ public:
 
     friend Q_NETWORK_EXPORT uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW;
 protected:
+    friend class QHostAddressPrivate;
     QExplicitlySharedDataPointer<QHostAddressPrivate> d;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QHostAddress::ConversionMode)
