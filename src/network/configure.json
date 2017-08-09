@@ -135,7 +135,8 @@
                 "main": [
                     "char buf[IFNAMSIZ];",
                     "if_nametoindex(\"eth0\");",
-                    "if_indextoname(1, buf);"
+                    "if_indextoname(1, buf);",
+                    "if_freenameindex(if_nameindex());"
                 ]
             },
             "use": "network"
