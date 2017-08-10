@@ -328,6 +328,13 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
     }
 
     insertNative(cocoaItem, beforeItem);
+
+    // Empty menus on a menubar are hidden by default. If the menu gets
+    // added to the menubar before it contains any item, we need to sync.
+    if (isVisible() && attachedItem().hidden) {
+        if (auto *mb = qobject_cast<QCocoaMenuBar *>(menuParent()))
+            mb->syncMenu(this);
+    }
 }
 
 void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
