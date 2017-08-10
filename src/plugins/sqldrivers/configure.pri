@@ -37,7 +37,7 @@ defineTest(qtConfLibrary_psqlEnv) {
         $${1}.libs = $$PSQL_LIBS
         export($${1}.libs)
     } else {
-        !qtConfLibrary_inline($$1): \
+        !qtConfLibrary_inline($$1, $$2): \
             return(false)
     }
     return(true)
