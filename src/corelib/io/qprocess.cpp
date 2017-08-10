@@ -1029,7 +1029,8 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
     if (readBytes == -1) {
         setErrorAndEmit(QProcess::ReadError);
 #if defined QPROCESS_DEBUG
-        qDebug("QProcessPrivate::tryReadFromChannel(%d), failed to read from the process", channel - &stdinChannel);
+        qDebug("QProcessPrivate::tryReadFromChannel(%d), failed to read from the process",
+               int(channel - &stdinChannel));
 #endif
         return false;
     }
@@ -1039,13 +1040,14 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
             channel->notifier->setEnabled(false);
         closeChannel(channel);
 #if defined QPROCESS_DEBUG
-        qDebug("QProcessPrivate::tryReadFromChannel(%d), 0 bytes available", channel - &stdinChannel);
+        qDebug("QProcessPrivate::tryReadFromChannel(%d), 0 bytes available",
+               int(channel - &stdinChannel));
 #endif
         return false;
     }
 #if defined QPROCESS_DEBUG
-    qDebug("QProcessPrivate::tryReadFromChannel(%d), read %d bytes from the process' output", channel - &stdinChannel
-            int(readBytes));
+    qDebug("QProcessPrivate::tryReadFromChannel(%d), read %d bytes from the process' output",
+           int(channel - &stdinChannel), int(readBytes));
 #endif
 
     if (channel->closed) {
