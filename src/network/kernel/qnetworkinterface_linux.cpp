@@ -293,6 +293,11 @@ static QList<QNetworkInterfacePrivate *> getInterfaces(int sock, char *buf)
                 iface->name = QString::fromLatin1(payloadPtr, payloadLen - 1);
                 break;
 
+            case IFLA_MTU:
+                Q_ASSERT(payloadLen == sizeof(int));
+                iface->mtu = *reinterpret_cast<int *>(payloadPtr);
+                break;
+
             case IFLA_OPERSTATE:    // operational state
                 if (*payloadPtr != IF_OPER_UNKNOWN) {
                     // override the flag

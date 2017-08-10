@@ -88,6 +88,7 @@ public:
     { }
 
     int index;                  // interface index, if know
+    int mtu = 0;
     QNetworkInterface::InterfaceFlags flags;
     QNetworkInterface::InterfaceType type = QNetworkInterface::Unknown;
 

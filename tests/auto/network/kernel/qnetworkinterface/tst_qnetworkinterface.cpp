@@ -140,6 +140,7 @@ void tst_QNetworkInterface::dump()
         qDebug() << "    flags:     " << qPrintable(flags);
         qDebug() << "    type:      " << i.type();
         qDebug() << "    hw address:" << qPrintable(i.hardwareAddress());
+        qDebug() << "    MTU:       " << i.maxTransmissionUnit();
 
         int count = 0;
         foreach (const QNetworkAddressEntry &e, i.addressEntries()) {

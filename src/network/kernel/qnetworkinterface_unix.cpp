@@ -139,6 +139,15 @@ QString QNetworkInterfaceManager::interfaceNameFromIndex(uint index)
     return QString::number(uint(index));
 }
 
+static int getMtu(int socket, struct ifreq *req)
+{
+#ifdef SIOCGIFMTU
+    if (qt_safe_ioctl(socket, SIOCGIFMTU, req) == 0)
+        return req->ifr_mtu;
+#endif
+    return 0;
+}
+
 #ifdef QT_NO_GETIFADDRS
 // getifaddrs not available
 
@@ -278,6 +287,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         if (qt_safe_ioctl(socket, SIOCGIFFLAGS, &req) >= 0) {
             iface->flags = convertFlags(req.ifr_flags);
         }
+        iface->mtu = getMtu(socket, &req);
 
 #ifdef SIOCGIFHWADDR
         // Get the HW address
@@ -458,8 +468,15 @@ static QNetworkInterface::InterfaceType probeIfType(int socket, int iftype, stru
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
     QList<QNetworkInterfacePrivate *> interfaces;
-    struct ifmediareq mediareq;
+    union {
+        struct ifmediareq mediareq;
+        struct ifreq req;
+    };
     int socket = -1;
+
+    // ensure both structs start with the name field, of size IFNAMESIZ
+    Q_STATIC_ASSERT(sizeof(mediareq.ifm_name) == sizeof(req.ifr_name));
+    Q_ASSERT(&mediareq.ifm_name == &req.ifr_name);
 
     // on NetBSD we use AF_LINK and sockaddr_dl
     // scan the list for that family
@@ -476,6 +493,7 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 
             strlcpy(mediareq.ifm_name, ptr->ifa_name, sizeof(mediareq.ifm_name));
             iface->type = probeIfType(openSocket(socket), sdl->sdl_type, &mediareq);
+            iface->mtu = getMtu(socket, &req);
         }
 
     if (socket != -1)
