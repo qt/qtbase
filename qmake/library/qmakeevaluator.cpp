@@ -1628,9 +1628,7 @@ bool QMakeEvaluator::isActiveConfig(const QStringRef &config, bool regex)
         return m_hostBuild;
 
     if (regex && (config.contains(QLatin1Char('*')) || config.contains(QLatin1Char('?')))) {
-        QString cfg = config.toString();
-        cfg.detach(); // Keep m_tmp out of QRegExp's cache
-        QRegExp re(cfg, Qt::CaseSensitive, QRegExp::Wildcard);
+        QRegExp re(config.toString(), Qt::CaseSensitive, QRegExp::Wildcard);
 
         // mkspecs
         if (re.exactMatch(m_qmakespecName))
