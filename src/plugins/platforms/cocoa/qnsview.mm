@@ -71,12 +71,6 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 static QTouchDevice *touchDevice = 0;
 
-@interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
-  - (CGFloat)deviceDeltaX;
-  - (CGFloat)deviceDeltaY;
-  - (CGFloat)deviceDeltaZ;
-@end
-
 @interface QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) : NSObject
 {
     QNSView *view;
