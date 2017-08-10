@@ -68,6 +68,7 @@ public:
     ProString();
     ProString(const ProString &other);
     PROITEM_EXPLICIT ProString(const QString &str);
+    PROITEM_EXPLICIT ProString(const QStringRef &str);
     PROITEM_EXPLICIT ProString(const char *str);
     ProString(const QString &str, int offset, int length);
     void setValue(const QString &str);
@@ -94,6 +95,7 @@ public:
 
     bool operator==(const ProString &other) const { return toQStringRef() == other.toQStringRef(); }
     bool operator==(const QString &other) const { return toQStringRef() == other; }
+    bool operator==(const QStringRef &other) const { return toQStringRef() == other; }
     bool operator==(QLatin1String other) const  { return toQStringRef() == other; }
     bool operator==(const char *other) const { return toQStringRef() == QLatin1String(other); }
     bool operator!=(const ProString &other) const { return !(*this == other); }
@@ -203,9 +205,9 @@ Q_DECLARE_TYPEINFO(ProKey, Q_MOVABLE_TYPE);
 uint qHash(const ProString &str);
 QString operator+(const ProString &one, const ProString &two);
 inline QString operator+(const ProString &one, const QString &two)
-    { return one + ProString(two); }
+    { return one.toQStringRef() + two; }
 inline QString operator+(const QString &one, const ProString &two)
-    { return ProString(one) + two; }
+    { return one + two.toQStringRef(); }
 
 inline QString operator+(const ProString &one, const char *two)
     { QString ret = one.toQStringRef() + QLatin1String(two); ret.detach(); return ret; }

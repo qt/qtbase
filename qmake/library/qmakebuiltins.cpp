@@ -731,9 +731,9 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
             const QString &sep = (args.count() == 2) ? args.at(1).toQString(m_tmp1) : statics.field_sep;
             const auto vars = values(map(args.at(0)));
             for (const ProString &var : vars) {
-                const auto splits = var.toQString(m_tmp2).split(sep);
-                for (const QString &splt : splits)
-                    ret << (splt.isSharedWith(m_tmp2) ? var : ProString(splt).setSource(var));
+                const auto splits = var.toQStringRef().split(sep);
+                for (const auto &splt : splits)
+                    ret << ProString(splt).setSource(var);
             }
         }
         break;
@@ -1431,7 +1431,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         }
         if (args.count() == 1)
             return returnBool(isActiveConfig(args.at(0).toQStringRef()));
-        const QStringList &mutuals = args.at(1).toQString(m_tmp2).split(QLatin1Char('|'));
+        const auto &mutuals = args.at(1).toQStringRef().split(QLatin1Char('|'));
         const ProStringList &configs = values(statics.strCONFIG);
 
         for (int i = configs.size() - 1; i >= 0; i--) {
@@ -1465,7 +1465,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 t ^= 1;
             }
         } else {
-            const QStringList &mutuals = args.at(2).toQString(m_tmp3).split(QLatin1Char('|'));
+            const auto &mutuals = args.at(2).toQStringRef().split(QLatin1Char('|'));
             for (int i = l.size() - 1; i >= 0; i--) {
                 const ProString val = l[i];
                 for (int mut = 0; mut < mutuals.count(); mut++) {
@@ -1536,7 +1536,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             return ReturnFalse;
         }
         return returnBool(values(map(args.at(0))).join(statics.field_sep)
-                          == args.at(1).toQString(m_tmp1));
+                          == args.at(1).toQStringRef());
     case T_CLEAR: {
         if (args.count() != 1) {
             evalError(fL1S("%1(variable) requires one argument.")
