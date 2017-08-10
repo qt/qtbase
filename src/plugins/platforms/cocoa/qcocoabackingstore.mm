@@ -104,7 +104,7 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
             QDebug targetDebug(&targetViewDescription);
             targetDebug << "onto" << topLevelView << "at" << offset;
         }
-        qCDebug(lcCocoaBackingStore) << "Flushing" << region << "of" << view << targetViewDescription;
+        qCDebug(lcCocoaBackingStore) << "Flushing" << region << "of" << view << qPrintable(targetViewDescription);
     }
 
     // Normally a NSView is drawn via drawRect, as part of the display cycle in the
