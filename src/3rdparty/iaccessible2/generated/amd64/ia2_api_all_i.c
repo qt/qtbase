@@ -18,8 +18,9 @@
 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
-
+#ifdef _MSC_VER
+#    pragma warning( disable: 4049 )  /* more than 64k source lines */
+#endif
 
 #ifdef __cplusplus
 extern "C"{
@@ -65,7 +66,7 @@ typedef IID CLSID;
 #define MIDL_DEFINE_GUID(type,name,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) \
         const type name = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
 
-#endif !_MIDL_USE_GUIDDEF_
+#endif // !_MIDL_USE_GUIDDEF_
 
 MIDL_DEFINE_GUID(IID, IID_IAccessibleRelation,0x7CDF86EE,0xC3DA,0x496a,0xBD,0xA4,0x28,0x1B,0x33,0x6E,0x1F,0xDC);
 
