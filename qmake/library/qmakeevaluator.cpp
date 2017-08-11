@@ -1762,12 +1762,13 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBoolFunction(
 QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateConditionalFunction(
         const ProKey &func, const ushort *&tokPtr)
 {
-    if (int func_t = statics.functions.value(func)) {
+    auto adef = statics.functions.constFind(func);
+    if (adef != statics.functions.constEnd()) {
         //why don't the builtin functions just use args_list? --Sam
         ProStringList args;
         if (expandVariableReferences(tokPtr, 5, &args, true) == ReturnError)
             return ReturnError;
-        return evaluateBuiltinConditional(func_t, func, args);
+        return evaluateBuiltinConditional(*adef, func, args);
     }
 
     QHash<ProKey, ProFunctionDef>::ConstIterator it =
@@ -1788,12 +1789,13 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateConditionalFunction(
 QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateExpandFunction(
         const ProKey &func, const ushort *&tokPtr, ProStringList *ret)
 {
-    if (int func_t = statics.expands.value(func)) {
+    auto adef = statics.expands.constFind(func);
+    if (adef != statics.expands.constEnd()) {
         //why don't the builtin functions just use args_list? --Sam
         ProStringList args;
         if (expandVariableReferences(tokPtr, 5, &args, true) == ReturnError)
             return ReturnError;
-        return evaluateBuiltinExpand(func_t, func, args, *ret);
+        return evaluateBuiltinExpand(*adef, func, args, *ret);
     }
 
     QHash<ProKey, ProFunctionDef>::ConstIterator it =

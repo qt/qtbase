@@ -105,6 +105,8 @@ public:
     const ProValueMap &top() const { return last(); }
 };
 
+namespace QMakeInternal { struct QMakeBuiltin; }
+
 class QMAKE_EXPORT QMakeEvaluator
 {
 public:
@@ -214,8 +216,10 @@ public:
     VisitReturn evaluateExpandFunction(const ProKey &function, const ushort *&tokPtr, ProStringList *ret);
     VisitReturn evaluateConditionalFunction(const ProKey &function, const ushort *&tokPtr);
 
-    VisitReturn evaluateBuiltinExpand(int func_t, const ProKey &function, const ProStringList &args, ProStringList &ret);
-    VisitReturn evaluateBuiltinConditional(int func_t, const ProKey &function, const ProStringList &args);
+    VisitReturn evaluateBuiltinExpand(const QMakeInternal::QMakeBuiltin &adef,
+                                      const ProKey &function, const ProStringList &args, ProStringList &ret);
+    VisitReturn evaluateBuiltinConditional(const QMakeInternal::QMakeBuiltin &adef,
+                                           const ProKey &function, const ProStringList &args);
 
     VisitReturn evaluateConditional(const QStringRef &cond, const QString &where, int line = -1);
 #ifdef PROEVALUATOR_FULL
