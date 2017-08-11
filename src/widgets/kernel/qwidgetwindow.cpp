@@ -527,12 +527,15 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 }
             }
 #endif
+            if ((event->type() != QEvent::MouseButtonPress)
+                    || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
 
-            QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(),
-                          event->button(), event->buttons(), event->modifiers(), event->source());
-            e.setTimestamp(event->timestamp());
-            QApplicationPrivate::sendMouseEvent(receiver, &e, receiver, receiver->window(), &qt_button_down, qt_last_mouse_receiver);
-            qt_last_mouse_receiver = receiver;
+                QMouseEvent e(event->type(), widgetPos, event->windowPos(), event->screenPos(),
+                              event->button(), event->buttons(), event->modifiers(), event->source());
+                e.setTimestamp(event->timestamp());
+                QApplicationPrivate::sendMouseEvent(receiver, &e, receiver, receiver->window(), &qt_button_down, qt_last_mouse_receiver);
+                qt_last_mouse_receiver = receiver;
+            }
         } else {
             // close disabled popups when a mouse button is pressed or released
             switch (event->type()) {
