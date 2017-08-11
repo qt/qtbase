@@ -68,8 +68,8 @@ class QNetworkAddressEntryPrivate
 {
 public:
     QHostAddress address;
-    QNetmaskAddress netmask;
     QHostAddress broadcast;
+    QNetmask netmask;
 };
 
 class QNetworkInterfacePrivate: public QSharedData

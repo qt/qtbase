@@ -206,18 +206,8 @@ void QHostAddressPrivate::clear()
 }
 
 
-bool QNetmaskAddress::setAddress(const QString &address)
+bool QNetmask::setAddress(const QHostAddress &address)
 {
-    d.detach();
-    length = -1;
-    QHostAddress other;
-    return other.setAddress(address) && setAddress(other);
-}
-
-bool QNetmaskAddress::setAddress(const QHostAddress &address)
-{
-    d.detach();
-
     static const quint8 zeroes[16] = { 0 };
     union {
         quint32 v4;
@@ -229,16 +219,13 @@ bool QNetmaskAddress::setAddress(const QHostAddress &address)
     quint8 *end;
     length = -1;
 
-    QHostAddress::operator=(address);
-
-    if (d->protocol == QAbstractSocket::IPv4Protocol) {
-        ip.v4 = qToBigEndian(d->a);
+    if (address.protocol() == QAbstractSocket::IPv4Protocol) {
+        ip.v4 = qToBigEndian(address.toIPv4Address());
         end = ptr + 4;
-    } else if (d->protocol == QAbstractSocket::IPv6Protocol) {
-        memcpy(ip.v6, d->a6.c, 16);
+    } else if (address.protocol() == QAbstractSocket::IPv6Protocol) {
+        memcpy(ip.v6, address.toIPv6Address().c, 16);
         end = ptr + 16;
     } else {
-        d->clear();
         return false;
     }
 
@@ -250,7 +237,6 @@ bool QNetmaskAddress::setAddress(const QHostAddress &address)
             continue;
 
         default:
-            d->clear();
             return false;       // invalid IP-style netmask
 
         case 254:
@@ -281,10 +267,8 @@ bool QNetmaskAddress::setAddress(const QHostAddress &address)
     }
 
     // confirm that the rest is only zeroes
-    if (ptr < end && memcmp(ptr + 1, zeroes, end - ptr - 1) != 0) {
-        d->clear();
+    if (ptr < end && memcmp(ptr + 1, zeroes, end - ptr - 1) != 0)
         return false;
-    }
 
     length = netmask;
     return true;
@@ -304,35 +288,25 @@ static void clearBits(quint8 *where, int start, int end)
     memset(where + (start + 7) / 8, 0, end / 8 - (start + 7) / 8);
 }
 
-int QNetmaskAddress::prefixLength() const
+QHostAddress QNetmask::address(QAbstractSocket::NetworkLayerProtocol protocol) const
 {
-    return length;
-}
-
-void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol proto, int newLength)
-{
-    d.detach();
-    length = newLength;
-    if (length < 0 || length > (proto == QAbstractSocket::IPv4Protocol ? 32 :
-                                proto == QAbstractSocket::IPv6Protocol ? 128 : -1)) {
-        // invalid information, reject
-        d->protocol = QAbstractSocket::UnknownNetworkLayerProtocol;
-        length = -1;
-        return;
-    }
-
-    d->protocol = proto;
-    if (d->protocol == QAbstractSocket::IPv4Protocol) {
-        if (length == 0) {
-            d->a = 0;
-        } else if (length == 32) {
-            d->a = quint32(0xffffffff);
-        } else {
-            d->a = quint32(0xffffffff) >> (32 - length) << (32 - length);
-        }
+    if (length == 255 || protocol == QAbstractSocket::AnyIPProtocol ||
+            protocol == QAbstractSocket::UnknownNetworkLayerProtocol) {
+        return QHostAddress();
+    } else if (protocol == QAbstractSocket::IPv4Protocol) {
+        quint32 a;
+        if (length == 0)
+            a = 0;
+        else if (length == 32)
+            a = quint32(0xffffffff);
+        else
+            a = quint32(0xffffffff) >> (32 - length) << (32 - length);
+        return QHostAddress(a);
     } else {
-        memset(d->a6.c, 0xFF, sizeof(d->a6));
-        clearBits(d->a6.c, length, 128);
+        Q_IPV6ADDR a6;
+        memset(a6.c, 0xFF, sizeof(a6));
+        clearBits(a6.c, length, 128);
+        return QHostAddress(a6);
     }
 }
 
@@ -1104,8 +1078,11 @@ QPair<QHostAddress, int> QHostAddress::parseSubnet(const QString &subnet)
         // is the netmask given in IP-form or in bit-count form?
         if (!isIpv6 && subnet.indexOf(QLatin1Char('.'), slash + 1) != -1) {
             // IP-style, convert it to bit-count form
-            QNetmaskAddress parser;
-            if (!parser.setAddress(subnet.mid(slash + 1)))
+            QHostAddress mask;
+            QNetmask parser;
+            if (!mask.setAddress(subnet.mid(slash + 1)))
+                return invalid;
+            if (!parser.setAddress(mask))
                 return invalid;
             netmask = parser.prefixLength();
         } else {
