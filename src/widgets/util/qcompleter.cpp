@@ -160,6 +160,7 @@
 #include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
 #include "QtWidgets/qdesktopwidget.h"
+#include <private/qdesktopwidget_p.h>
 #include "QtWidgets/qlineedit.h"
 
 QT_BEGIN_NAMESPACE
@@ -922,7 +923,7 @@ void QCompleterPrivate::_q_autoResizePopup()
 
 void QCompleterPrivate::showPopup(const QRect& rect)
 {
-    const QRect screen = QApplication::desktop()->availableGeometry(widget);
+    const QRect screen = QDesktopWidgetPrivate::availableGeometry(widget);
     Qt::LayoutDirection dir = widget->layoutDirection();
     QPoint pos;
     int rh, w;

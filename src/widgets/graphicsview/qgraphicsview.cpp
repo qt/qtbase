@@ -284,6 +284,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtCore/qscopedvaluerollback.h>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qdesktopwidget.h>
+#include <private/qdesktopwidget_p.h>
 #include <QtGui/qevent.h>
 #include <QtWidgets/qlayout.h>
 #include <QtGui/qtransform.h>
@@ -1248,7 +1249,7 @@ QSize QGraphicsView::sizeHint() const
     if (d->scene) {
         QSizeF baseSize = d->matrix.mapRect(sceneRect()).size();
         baseSize += QSizeF(d->frameWidth * 2, d->frameWidth * 2);
-        return baseSize.boundedTo((3 * QApplication::desktop()->size()) / 4).toSize();
+        return baseSize.boundedTo((3 * QDesktopWidgetPrivate::size()) / 4).toSize();
     }
     return QAbstractScrollArea::sizeHint();
 }

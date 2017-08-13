@@ -40,6 +40,7 @@
 #include "qapplication.h"
 #include "qbitmap.h"
 #include "qdesktopwidget.h"
+#include <private/qdesktopwidget_p.h>
 #if QT_CONFIG(dialog)
 #include <private/qdialog_p.h>
 #endif
@@ -607,7 +608,7 @@ QPoint QPushButtonPrivate::adjustedMenuPosition()
     QPoint globalPos = q->mapToGlobal(rect.topLeft());
     int x = globalPos.x();
     int y = globalPos.y();
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(q);
+    const QRect availableGeometry = QDesktopWidgetPrivate::availableGeometry(q);
     if (horizontal) {
         if (globalPos.y() + rect.height() + menuSize.height() <= availableGeometry.bottom()) {
             y += rect.height();

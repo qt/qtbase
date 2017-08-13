@@ -87,6 +87,29 @@ public:
     void _q_availableGeometryChanged();
     QDesktopScreenWidget *widgetForScreen(QScreen *qScreen) const;
 
+    static bool isVirtualDesktop();
+
+    static QRect geometry();
+    static QSize size();
+    static int width();
+    static int height();
+
+    static int numScreens();
+    static int primaryScreen();
+
+    static int screenNumber(const QWidget *widget = nullptr);
+    static int screenNumber(const QPoint &);
+
+    static const QRect screenGeometry(int screen = -1);
+    static const QRect screenGeometry(const QWidget *widget);
+    static const QRect screenGeometry(const QPoint &point)
+    { return screenGeometry(screenNumber(point)); }
+
+    static const QRect availableGeometry(int screen = -1);
+    static const QRect availableGeometry(const QWidget *widget);
+    static const QRect availableGeometry(const QPoint &point)
+    { return availableGeometry(screenNumber(point)); }
+
     QList<QDesktopScreenWidget *> screens;
 };
 

@@ -42,6 +42,7 @@
 
 #include <qapplication.h>
 #include <qdesktopwidget.h>
+#include <private/qdesktopwidget_p.h>
 #include <qevent.h>
 #include <qpointer.h>
 #include <qstyle.h>
@@ -362,10 +363,10 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
 
 int QTipLabel::getTipScreen(const QPoint &pos, QWidget *w)
 {
-    if (QApplication::desktop()->isVirtualDesktop())
-        return QApplication::desktop()->screenNumber(pos);
+    if (QDesktopWidgetPrivate::isVirtualDesktop())
+        return QDesktopWidgetPrivate::screenNumber(pos);
     else
-        return QApplication::desktop()->screenNumber(w);
+        return QDesktopWidgetPrivate::screenNumber(w);
 }
 
 void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
@@ -395,11 +396,11 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
     extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
     QRect screen;
     if(qt_mac_app_fullscreen)
-        screen = QApplication::desktop()->screenGeometry(getTipScreen(pos, w));
+        screen = QDesktopWidgetPrivate::screenGeometry(getTipScreen(pos, w));
     else
-        screen = QApplication::desktop()->availableGeometry(getTipScreen(pos, w));
+        screen = QDesktopWidgetPrivate::availableGeometry(getTipScreen(pos, w));
 #else
-    QRect screen = QApplication::desktop()->screenGeometry(getTipScreen(pos, w));
+    QRect screen = QDesktopWidgetPrivate::screenGeometry(getTipScreen(pos, w));
 #endif
 
     QPoint p = pos;

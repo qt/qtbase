@@ -73,6 +73,11 @@ int QDesktopScreenWidget::screenNumber() const
 
 const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 {
+    return QDesktopWidgetPrivate::screenGeometry(widget);
+}
+
+const QRect QDesktopWidgetPrivate::screenGeometry(const QWidget *widget)
+{
     if (Q_UNLIKELY(!widget)) {
         qWarning("QDesktopWidget::screenGeometry(): Attempt "
                  "to get the screen geometry of a null widget");
@@ -85,6 +90,11 @@ const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 }
 
 const QRect QDesktopWidget::availableGeometry(const QWidget *widget) const
+{
+    return QDesktopWidgetPrivate::availableGeometry(widget);
+}
+
+const QRect QDesktopWidgetPrivate::availableGeometry(const QWidget *widget)
 {
     if (Q_UNLIKELY(!widget)) {
         qWarning("QDesktopWidget::availableGeometry(): Attempt "
@@ -195,15 +205,50 @@ QDesktopWidget::~QDesktopWidget()
 
 bool QDesktopWidget::isVirtualDesktop() const
 {
+    return QDesktopWidgetPrivate::isVirtualDesktop();
+}
+
+bool QDesktopWidgetPrivate::isVirtualDesktop()
+{
     return QGuiApplication::primaryScreen()->virtualSiblings().size() > 1;
 }
 
+QRect QDesktopWidgetPrivate::geometry()
+{
+    return QGuiApplication::primaryScreen()->virtualGeometry();
+}
+
+QSize QDesktopWidgetPrivate::size()
+{
+    return geometry().size();
+}
+
+int QDesktopWidgetPrivate::width()
+{
+    return geometry().width();
+}
+
+int QDesktopWidgetPrivate::height()
+{
+    return geometry().height();
+}
+
 int QDesktopWidget::primaryScreen() const
+{
+    return QDesktopWidgetPrivate::primaryScreen();
+}
+
+int QDesktopWidgetPrivate::primaryScreen()
 {
     return 0;
 }
 
 int QDesktopWidget::numScreens() const
+{
+    return QDesktopWidgetPrivate::numScreens();
+}
+
+int QDesktopWidgetPrivate::numScreens()
 {
     return qMax(QGuiApplication::screens().size(), 1);
 }
@@ -218,6 +263,11 @@ QWidget *QDesktopWidget::screen(int screen)
 
 const QRect QDesktopWidget::availableGeometry(int screenNo) const
 {
+    return QDesktopWidgetPrivate::availableGeometry(screenNo);
+}
+
+const QRect QDesktopWidgetPrivate::availableGeometry(int screenNo)
+{
     QList<QScreen *> screens = QGuiApplication::screens();
     if (screenNo == -1)
         screenNo = 0;
@@ -229,6 +279,11 @@ const QRect QDesktopWidget::availableGeometry(int screenNo) const
 
 const QRect QDesktopWidget::screenGeometry(int screenNo) const
 {
+    return QDesktopWidgetPrivate::screenGeometry(screenNo);
+}
+
+const QRect QDesktopWidgetPrivate::screenGeometry(int screenNo)
+{
     QList<QScreen *> screens = QGuiApplication::screens();
     if (screenNo == -1)
         screenNo = 0;
@@ -239,6 +294,11 @@ const QRect QDesktopWidget::screenGeometry(int screenNo) const
 }
 
 int QDesktopWidget::screenNumber(const QWidget *w) const
+{
+    return QDesktopWidgetPrivate::screenNumber(w);
+}
+
+int QDesktopWidgetPrivate::screenNumber(const QWidget *w)
 {
     if (!w)
         return primaryScreen();
@@ -286,6 +346,11 @@ int QDesktopWidget::screenNumber(const QWidget *w) const
 }
 
 int QDesktopWidget::screenNumber(const QPoint &p) const
+{
+    return QDesktopWidgetPrivate::screenNumber(p);
+}
+
+int QDesktopWidgetPrivate::screenNumber(const QPoint &p)
 {
     const QList<QScreen *> screens = QGuiApplication::screens();
     if (!screens.isEmpty()) {

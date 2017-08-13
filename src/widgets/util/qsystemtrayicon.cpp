@@ -59,6 +59,7 @@
 #include "qgridlayout.h"
 #include "qapplication.h"
 #include "qdesktopwidget.h"
+#include <private/qdesktopwidget_p.h>
 #include "qbitmap.h"
 
 #include <private/qhighdpiscaling_p.h>
@@ -535,7 +536,7 @@ QBalloonTip::QBalloonTip(const QIcon &icon, const QString &title,
     msgLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
     // smart size for the message label
-    int limit = QApplication::desktop()->availableGeometry(msgLabel).size().width() / 3;
+    int limit = QDesktopWidgetPrivate::availableGeometry(msgLabel).size().width() / 3;
     if (msgLabel->sizeHint().width() > limit) {
         msgLabel->setWordWrap(true);
         if (msgLabel->sizeHint().width() > limit) {
@@ -602,7 +603,7 @@ void QBalloonTip::resizeEvent(QResizeEvent *ev)
 void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
 {
     this->showArrow = showArrow;
-    QRect scr = QApplication::desktop()->screenGeometry(pos);
+    QRect scr = QDesktopWidgetPrivate::screenGeometry(pos);
     QSize sh = sizeHint();
     const int border = 1;
     const int ah = 18, ao = 18, aw = 18, rc = 7;

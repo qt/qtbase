@@ -50,6 +50,7 @@
 
 #include "qevent.h"
 #include "qdesktopwidget.h"
+#include <private/qdesktopwidget_p.h>
 #include "qapplication.h"
 #include "qlayout.h"
 #include "qsizegrip.h"
@@ -811,13 +812,13 @@ void QDialog::adjustPosition(QWidget* w)
         w = w->window();
     QRect desk;
     if (w) {
-        scrn = QApplication::desktop()->screenNumber(w);
-    } else if (QApplication::desktop()->isVirtualDesktop()) {
-        scrn = QApplication::desktop()->screenNumber(QCursor::pos());
+        scrn = QDesktopWidgetPrivate::screenNumber(w);
+    } else if (QDesktopWidgetPrivate::isVirtualDesktop()) {
+        scrn = QDesktopWidgetPrivate::screenNumber(QCursor::pos());
     } else {
-        scrn = QApplication::desktop()->screenNumber(this);
+        scrn = QDesktopWidgetPrivate::screenNumber(this);
     }
-    desk = QApplication::desktop()->availableGeometry(scrn);
+    desk = QDesktopWidgetPrivate::availableGeometry(scrn);
 
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i = 0; (extraw == 0 || extrah == 0) && i < list.size(); ++i) {

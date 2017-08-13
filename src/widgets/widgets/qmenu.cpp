@@ -75,6 +75,7 @@
 #include <private/qaction_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
+#include <private/qdesktopwidget_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -100,7 +101,7 @@ class QTornOffMenu : public QMenu
             Q_Q(QTornOffMenu);
             QSize size = menuSize;
             const QPoint p = (!initialized) ? causedMenu->pos() : q->pos();
-            QRect screen = popupGeometry(QApplication::desktop()->screenNumber(p));
+            QRect screen = popupGeometry(QDesktopWidgetPrivate::screenNumber(p));
             const int desktopFrame = q->style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, q);
             const int titleBarHeight = q->style()->pixelMetric(QStyle::PM_TitleBarHeight, 0, q);
             if (scroll && (size.height() > screen.height() - titleBarHeight || size.width() > screen.width())) {
@@ -267,9 +268,9 @@ QRect QMenuPrivate::popupGeometry(const QWidget *widget) const
 {
     if (QGuiApplicationPrivate::platformTheme() &&
             QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
-        return QApplication::desktop()->screenGeometry(widget);
+        return QDesktopWidgetPrivate::screenGeometry(widget);
     } else {
-        return QApplication::desktop()->availableGeometry(widget);
+        return QDesktopWidgetPrivate::availableGeometry(widget);
     }
 }
 
@@ -278,9 +279,9 @@ QRect QMenuPrivate::popupGeometry(int screen) const
 {
     if (QGuiApplicationPrivate::platformTheme() &&
             QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
-        return QApplication::desktop()->screenGeometry(screen);
+        return QDesktopWidgetPrivate::screenGeometry(screen);
     } else {
-        return QApplication::desktop()->availableGeometry(screen);
+        return QDesktopWidgetPrivate::availableGeometry(screen);
     }
 }
 
@@ -2332,7 +2333,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
         screen = d->popupGeometry(this);
     else
 #endif
-    screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
+    screen = d->popupGeometry(QDesktopWidgetPrivate::screenNumber(p));
     d->updateActionRects(screen);
 
     QPoint pos;
@@ -3601,7 +3602,7 @@ void QMenu::internalDelayedPopup()
         screen = d->popupGeometry(this);
     else
 #endif
-    screen = d->popupGeometry(QApplication::desktop()->screenNumber(pos()));
+    screen = d->popupGeometry(QDesktopWidgetPrivate::screenNumber(pos()));
 
     int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, this);
     const QRect actionRect(d->actionRect(d->currentAction));

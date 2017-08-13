@@ -57,6 +57,7 @@
 #endif
 
 #include <private/qwidget_p.h>
+#include <private/qdesktopwidget_p.h>
 #include <QtWidgets/qabstractscrollarea.h>
 
 QT_BEGIN_NAMESPACE
@@ -314,7 +315,7 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
     bool hasVerticalSizeConstraint = true;
     bool hasHorizontalSizeConstraint = true;
     if (tlw->isWindow())
-        availableGeometry = QApplication::desktop()->availableGeometry(tlw);
+        availableGeometry = QDesktopWidgetPrivate::availableGeometry(tlw);
     else {
         const QWidget *tlwParent = tlw->parentWidget();
         // Check if tlw is inside QAbstractScrollArea/QScrollArea.

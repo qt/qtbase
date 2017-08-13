@@ -168,6 +168,7 @@
 #include <QFontMetrics>
 #include <QStyleOption>
 #include <QDesktopWidget>
+#include <private/qdesktopwidget_p.h>
 #include <QDebug>
 #include <qmath.h>
 #include <private/qlayoutengine_p.h>
@@ -1746,7 +1747,7 @@ QSize QMdiArea::sizeHint() const
     }
     const int scaleFactor = 3 * (nestedCount + 1);
 
-    QSize desktopSize = QApplication::desktop()->size();
+    QSize desktopSize = QDesktopWidgetPrivate::size();
     QSize size(desktopSize.width() * 2 / scaleFactor, desktopSize.height() * 2 / scaleFactor);
     for (QMdiSubWindow *child : d_func()->childWindows) {
         if (!sanityCheck(child, "QMdiArea::sizeHint"))

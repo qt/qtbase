@@ -1454,7 +1454,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         topData()->initialScreenIndex = -1;
         if (screenNumber < 0) {
             screenNumber = q->windowType() != Qt::Desktop
-                ? QApplication::desktop()->screenNumber(q) : 0;
+                ? QDesktopWidgetPrivate::screenNumber(q) : 0;
         }
         win->setScreen(QGuiApplication::screens().value(screenNumber, Q_NULLPTR));
     }
@@ -7162,7 +7162,7 @@ void QWidgetPrivate::fixPosIncludesFrame()
             if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
                 te->posIncludesFrame = 0;
             } else {
-                if (q->windowHandle()) {
+                if (q->windowHandle() && q->windowHandle()->handle()) {
                     updateFrameStrut();
                     if (!q->data->fstrut_dirty) {
                         data.crect.translate(te->frameStrut.x(), te->frameStrut.y());
@@ -7358,7 +7358,7 @@ QByteArray QWidget::saveGeometry() const
     // - Qt 4.8.6 - today, 5.4 - today: Version 2.0, save screen width in addition to check for high DPI scaling.
     quint16 majorVersion = 2;
     quint16 minorVersion = 0;
-    const int screenNumber = QApplication::desktop()->screenNumber(this);
+    const int screenNumber = QDesktopWidgetPrivate::screenNumber(this);
     stream << magicNumber
            << majorVersion
            << minorVersion
@@ -7372,7 +7372,7 @@ QByteArray QWidget::saveGeometry() const
            << qint32(screenNumber)
            << quint8(windowState() & Qt::WindowMaximized)
            << quint8(windowState() & Qt::WindowFullScreen)
-           << qint32(QApplication::desktop()->screenGeometry(screenNumber).width()); // 1.1 onwards
+           << qint32(QDesktopWidgetPrivate::screenGeometry(screenNumber).width()); // 1.1 onwards
     return array;
 }
 
@@ -7438,10 +7438,9 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     if (majorVersion > 1)
         stream >> restoredScreenWidth;
 
-    const QDesktopWidget * const desktop = QApplication::desktop();
-    if (restoredScreenNumber >= desktop->numScreens())
-        restoredScreenNumber = desktop->primaryScreen();
-    const qreal screenWidthF = qreal(desktop->screenGeometry(restoredScreenNumber).width());
+    if (restoredScreenNumber >= QDesktopWidgetPrivate::numScreens())
+        restoredScreenNumber = QDesktopWidgetPrivate::primaryScreen();
+    const qreal screenWidthF = qreal(QDesktopWidgetPrivate::screenGeometry(restoredScreenNumber).width());
     // Sanity check bailing out when large variations of screen sizes occur due to
     // high DPI scaling or different levels of DPI awareness.
     if (restoredScreenWidth) {
@@ -7468,7 +7467,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
                                        .expandedTo(d_func()->adjustedSize()));
     }
 
-    const QRect availableGeometry = desktop->availableGeometry(restoredScreenNumber);
+    const QRect availableGeometry = QDesktopWidgetPrivate::availableGeometry(restoredScreenNumber);
 
     // Modify the restored geometry if we are about to restore to coordinates
     // that would make the window "lost". This happens if:
@@ -7509,7 +7508,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
             // Setting a geometry on an already maximized window causes this to be
             // restored into a broken, half-maximized state, non-resizable state (QTBUG-4397).
             // Move the window in normal state if needed.
-            if (restoredScreenNumber != desktop->screenNumber(this)) {
+            if (restoredScreenNumber != QDesktopWidgetPrivate::screenNumber(this)) {
                 setWindowState(Qt::WindowNoState);
                 setGeometry(restoredNormalGeometry);
             }
@@ -8573,9 +8572,9 @@ QSize QWidgetPrivate::adjustedSize() const
         if (exp & Qt::Vertical)
             s.setHeight(qMax(s.height(), 100));
 #if 0 // Used to be included in Qt4 for Q_WS_X11
-        QRect screen = QApplication::desktop()->screenGeometry(q->x11Info().screen());
+        QRect screen = QDesktopWidgetPrivate::screenGeometry(q->x11Info().screen());
 #else // all others
-        QRect screen = QApplication::desktop()->screenGeometry(q->pos());
+        QRect screen = QDesktopWidgetPrivate::screenGeometry(q->pos());
 #endif
         s.setWidth(qMin(s.width(), screen.width()*2/3));
         s.setHeight(qMin(s.height(), screen.height()*2/3));
@@ -10719,7 +10718,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
         f |= Qt::Window;
         if (targetScreen == -1) {
             if (parent)
-                targetScreen = QApplication::desktop()->screenNumber(q->parentWidget()->window());
+                targetScreen = QDesktopWidgetPrivate::screenNumber(q->parentWidget()->window());
         }
     }
 

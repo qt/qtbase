@@ -41,6 +41,7 @@
 
 #include <qapplication.h>
 #include <qdesktopwidget.h>
+#include <private/qdesktopwidget_p.h>
 #include <qdrawutil.h>
 #include <qevent.h>
 #include <qicon.h>
@@ -745,7 +746,7 @@ void QToolButtonPrivate::popupTimerDone()
 #endif
     QPoint p;
     const QRect rect = q->rect(); // Find screen via point in case of QGraphicsProxyWidget.
-    QRect screen = QApplication::desktop()->availableGeometry(q->mapToGlobal(rect.center()));
+    QRect screen = QDesktopWidgetPrivate::availableGeometry(q->mapToGlobal(rect.center()));
     QSize sh = ((QToolButton*)(QMenu*)actualMenu)->receivers(SIGNAL(aboutToShow()))? QSize() : actualMenu->sizeHint();
     if (horizontal) {
         if (q->isRightToLeft()) {

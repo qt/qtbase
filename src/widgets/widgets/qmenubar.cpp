@@ -60,6 +60,7 @@
 #include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
 #include "qpa/qplatformintegration.h"
+#include <private/qdesktopwidget_p.h>
 
 #ifndef QT_NO_MENUBAR
 
@@ -322,7 +323,7 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
         QSize popup_size = activeMenu->sizeHint();
 
         //we put the popup menu on the screen containing the bottom-center of the action rect
-        QRect screenRect = QApplication::desktop()->screenGeometry(pos + QPoint(adjustedActionRect.width() / 2, 0));
+        QRect screenRect = QDesktopWidgetPrivate::screenGeometry(pos + QPoint(adjustedActionRect.width() / 2, 0));
         pos = QPoint(qMax(pos.x(), screenRect.x()), qMax(pos.y(), screenRect.y()));
 
         const bool fitUp = (q->mapToGlobal(adjustedActionRect.topLeft()).y() >= popup_size.height());
@@ -1566,7 +1567,7 @@ QSize QMenuBar::minimumSizeHint() const
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
     int spaceBelowMenuBar = style()->styleHint(QStyle::SH_MainWindow_SpaceBelowMenuBar, 0, this);
     if(as_gui_menubar) {
-        int w = parentWidget() ? parentWidget()->width() : QApplication::desktop()->width();
+        int w = parentWidget() ? parentWidget()->width() : QDesktopWidgetPrivate::width();
         d->calcActionRects(w - (2 * fw), 0);
         for (int i = 0; ret.isNull() && i < d->actions.count(); ++i)
             ret = d->actionRects.at(i).size();
@@ -1618,7 +1619,7 @@ QSize QMenuBar::sizeHint() const
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
     int spaceBelowMenuBar = style()->styleHint(QStyle::SH_MainWindow_SpaceBelowMenuBar, 0, this);
     if(as_gui_menubar) {
-        const int w = parentWidget() ? parentWidget()->width() : QApplication::desktop()->width();
+        const int w = parentWidget() ? parentWidget()->width() : QDesktopWidgetPrivate::width();
         d->calcActionRects(w - (2 * fw), 0);
         for (int i = 0; i < d->actionRects.count(); ++i) {
             const QRect &actionRect = d->actionRects.at(i);

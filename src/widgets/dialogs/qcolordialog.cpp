@@ -41,6 +41,7 @@
 
 #include "qapplication.h"
 #include "qdesktopwidget.h"
+#include <private/qdesktopwidget_p.h>
 #include "qdrawutil.h"
 #include "qevent.h"
 #include "qimage.h"
@@ -1698,7 +1699,7 @@ void QColorDialogPrivate::initWidgets()
 #else
     // small displays (e.g. PDAs) cannot fit the full color dialog,
     // so just use the color picker.
-    smallDisplay = (QApplication::desktop()->width() < 480 || QApplication::desktop()->height() < 350);
+    smallDisplay = (QDesktopWidgetPrivate::width() < 480 || QDesktopWidgetPrivate::height() < 350);
     const int lumSpace = topLay->spacing() / 2;
 #endif
 
@@ -1744,7 +1745,7 @@ void QColorDialogPrivate::initWidgets()
     } else {
         // better color picker size for small displays
 #if defined(QT_SMALL_COLORDIALOG)
-        QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
+        QSize screenSize = QDesktopWidgetPrivate::availableGeometry(QCursor::pos()).size();
         pWidth = pHeight = qMin(screenSize.width(), screenSize.height());
         pHeight -= 20;
         if(screenSize.height() > screenSize.width())

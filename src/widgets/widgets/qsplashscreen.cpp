@@ -41,6 +41,7 @@
 
 #include "qapplication.h"
 #include "qdesktopwidget.h"
+#include <private/qdesktopwidget_p.h>
 #include "qpainter.h"
 #include "qpixmap.h"
 #include "qtextdocument.h"
@@ -282,7 +283,7 @@ void QSplashScreen::setPixmap(const QPixmap &pixmap)
 
     QRect r(QPoint(), d->pixmap.size()  / d->pixmap.devicePixelRatio());
     resize(r.size());
-    move(QApplication::desktop()->screenGeometry().center() - r.center());
+    move(QDesktopWidgetPrivate::screenGeometry().center() - r.center());
     if (isVisible())
         repaint();
 }

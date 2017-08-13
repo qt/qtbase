@@ -51,6 +51,8 @@
 #include "qelapsedtimer.h"
 #include "qdebug.h"
 
+#include <private/qdesktopwidget_p.h>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -98,7 +100,7 @@ static QAlphaWidget* q_blend = 0;
   Constructs a QAlphaWidget.
 */
 QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
-    : QWidget(QApplication::desktop()->screen(QApplication::desktop()->screenNumber(w)), f)
+    : QWidget(QApplication::desktop()->screen(QDesktopWidgetPrivate::screenNumber(w)), f)
 {
 #ifndef Q_OS_WIN
     setEnabled(false);
