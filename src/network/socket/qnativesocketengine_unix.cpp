@@ -829,18 +829,10 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
 
 bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
 {
-    // Create a sockaddr struct and reset its port number.
-    qt_sockaddr storage;
-    QT_SOCKLEN_T storageSize = sizeof(storage);
-    memset(&storage, 0, storageSize);
-
-    // Peek 1 bytes into the next message. The size of the message may
-    // well be 0, so we can't check recvfrom's return value.
+    // Peek 1 bytes into the next message.
     ssize_t readBytes;
-    do {
-        char c;
-        readBytes = ::recvfrom(socketDescriptor, &c, 1, MSG_PEEK, &storage.a, &storageSize);
-    } while (readBytes == -1 && errno == EINTR);
+    char c;
+    EINTR_LOOP(readBytes, ::recv(socketDescriptor, &c, 1, MSG_PEEK));
 
     // If there's no error, or if our buffer was too small, there must be a
     // pending datagram.
