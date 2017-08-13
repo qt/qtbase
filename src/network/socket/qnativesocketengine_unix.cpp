@@ -834,7 +834,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     QT_SOCKLEN_T storageSize = sizeof(storage);
     memset(&storage, 0, storageSize);
 
-    // Peek 0 bytes into the next message. The size of the message may
+    // Peek 1 bytes into the next message. The size of the message may
     // well be 0, so we can't check recvfrom's return value.
     ssize_t readBytes;
     do {
@@ -855,8 +855,20 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
 
 qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 {
-    QVarLengthArray<char, 8192> udpMessagePeekBuffer(8192);
     ssize_t recvResult = -1;
+#ifdef Q_OS_LINUX
+    // Linux can return the actual datagram size if we use MSG_TRUNC
+    char c;
+    EINTR_LOOP(recvResult, ::recv(socketDescriptor, &c, 1, MSG_PEEK | MSG_TRUNC));
+#elif defined(SO_NREAD)
+    // macOS can return the actual datagram size if we use SO_NREAD
+    int value;
+    socklen_t valuelen = sizeof(value);
+    recvResult = getsockopt(socketDescriptor, SOL_SOCKET, SO_NREAD, &value, &valuelen);
+    if (recvResult != -1)
+        recvResult = value;
+#else
+    QVarLengthArray<char, 8192> udpMessagePeekBuffer(8192);
 
     for (;;) {
         // the data written to udpMessagePeekBuffer is discarded, so
@@ -872,6 +884,7 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 
         udpMessagePeekBuffer.resize(udpMessagePeekBuffer.size() * 2);
     }
+#endif
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativePendingDatagramSize() == %zd", recvResult);
