@@ -337,7 +337,8 @@ static void replaceInList(ProStringList *varlist,
         const QRegExp &regexp, const QString &replace, bool global, QString &tmp)
 {
     for (ProStringList::Iterator varit = varlist->begin(); varit != varlist->end(); ) {
-        QString val = varit->toQString(tmp);
+        ProStringRoUser u1(*varit, tmp);
+        QString val = u1.str();
         QString copy = val; // Force detach and have a reference value
         val.replace(regexp, replace);
         if (!val.isSharedWith(copy) && val != copy) {
@@ -1336,7 +1337,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateConfigFeatures()
         bool finished = true;
         ProStringList configs = values(statics.strCONFIG);
         for (int i = configs.size() - 1; i >= 0; --i) {
-            QString config = configs.at(i).toQString(m_tmp1).toLower();
+            ProStringRoUser u1(configs.at(i), m_tmp1);
+            QString config = u1.str().toLower();
             if (!processed.contains(config)) {
                 config.detach();
                 processed.insert(config);
@@ -1640,7 +1642,8 @@ bool QMakeEvaluator::isActiveConfig(const QStringRef &config, bool regex)
         // CONFIG variable
         const auto configValues = values(statics.strCONFIG);
         for (const ProString &configValue : configValues) {
-            if (re.exactMatch(configValue.toQString(m_tmp[m_toggle ^= 1])))
+            ProStringRoUser u1(configValue, m_tmp[m_toggle ^= 1]);
+            if (re.exactMatch(u1.str()))
                 return true;
         }
     } else {
@@ -1749,9 +1752,9 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBoolFunction(
                 if (val)
                     return ReturnTrue;
             } else {
+                ProStringRoUser u1(function, m_tmp1);
                 evalError(fL1S("Unexpected return value from test '%1': %2.")
-                          .arg(function.toQString(m_tmp1))
-                          .arg(ret.join(QLatin1String(" :: "))));
+                          .arg(u1.str(), ret.join(QLatin1String(" :: "))));
             }
         }
         return ReturnFalse;

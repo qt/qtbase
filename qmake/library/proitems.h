@@ -229,6 +229,55 @@ inline bool operator!=(const QString &that, const ProString &other)
 
 QTextStream &operator<<(QTextStream &t, const ProString &str);
 
+// This class manages read-only access to a ProString via a raw data QString
+// temporary, ensuring that the latter is accessed exclusively.
+class ProStringRoUser
+{
+public:
+    ProStringRoUser(QString &rs)
+    {
+        Q_ASSERT(rs.isDetached() || rs.isEmpty());
+        m_rs = &rs;
+    }
+    ProStringRoUser(const ProString &ps, QString &rs)
+        : ProStringRoUser(rs)
+    {
+        ps.toQString(rs);
+    }
+    // No destructor, as a RAII pattern cannot be used: references to the
+    // temporary string can legitimately outlive instances of this class
+    // (if they are held by Qt, e.g. in QRegExp).
+    QString &set(const ProString &ps) { return ps.toQString(*m_rs); }
+    QString &str() { return *m_rs; }
+
+protected:
+    QString *m_rs;
+};
+
+// This class manages read-write access to a ProString via a raw data QString
+// temporary, ensuring that the latter is accessed exclusively, and that raw
+// data does not leak outside its source's refcounting.
+class ProStringRwUser : public ProStringRoUser
+{
+public:
+    ProStringRwUser(QString &rs)
+        : ProStringRoUser(rs), m_ps(0) {}
+    ProStringRwUser(const ProString &ps, QString &rs)
+        : ProStringRoUser(ps, rs), m_ps(&ps) {}
+    QString &set(const ProString &ps) { m_ps = &ps; return ProStringRoUser::set(ps); }
+    ProString extract(const QString &s) const
+        { return s.isSharedWith(*m_rs) ? *m_ps : ProString(s).setSource(*m_ps); }
+    ProString extract(const QString &s, const ProStringRwUser &other) const
+    {
+        if (other.m_ps && s.isSharedWith(*other.m_rs))
+            return *other.m_ps;
+        return extract(s);
+    }
+
+private:
+    const ProString *m_ps;
+};
+
 class ProStringList : public QVector<ProString> {
 public:
     ProStringList() {}
