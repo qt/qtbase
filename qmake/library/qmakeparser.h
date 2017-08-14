@@ -78,7 +78,6 @@ public:
     enum ParseFlag {
         ParseDefault = 0,
         ParseUseCache = 1,
-        ParseOnlyCached = 2,
         ParseReportMissing = 4
     };
     Q_DECLARE_FLAGS(ParseFlags, ParseFlag)
@@ -90,6 +89,8 @@ public:
     ProFile *parsedProFile(const QString &fileName, ParseFlags flags = ParseDefault);
     ProFile *parsedProBlock(const QStringRef &contents, const QString &name, int line = 0,
                             SubGrammar grammar = FullGrammar);
+
+    int idForFileName(const QString &fileName);
 
     void discardFileFromCache(const QString &fileName);
 
@@ -180,6 +181,12 @@ private:
     enum { NoOperator, AndOperator, OrOperator } m_operator; // Pending conditional is ORed/ANDed
 
     QString m_tmp; // Temporary for efficient toQString
+
+    QHash<QString, int> fileIdMap;
+#ifdef PROEVALUATOR_THREAD_SAFE
+    QMutex fileIdMutex;
+#endif
+    int fileIdCounter = 0;
 
     ProFileCache *m_cache;
     QMakeParserHandler *m_handler;

@@ -713,9 +713,9 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
                 after = args[3];
             const ProStringList &var = values(map(args.at(0)));
             if (!var.isEmpty()) {
-                const ProFile *src = currentProFile();
+                int src = currentFileId();
                 for (const ProString &v : var)
-                    if (const ProFile *s = v.sourceFile()) {
+                    if (int s = v.sourceFile()) {
                         src = s;
                         break;
                     }
@@ -1064,7 +1064,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
                             dirs.append(fname + QLatin1Char('/'));
                     }
                     if (regex.exactMatch(qdir[i]))
-                        ret += ProString(fname).setSource(currentProFile());
+                        ret += ProString(fname).setSource(currentFileId());
                 }
             }
         }
@@ -1331,7 +1331,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             return ReturnFalse;
         }
         QString fn = resolvePath(args.at(0).toQString(m_tmp1));
-        ProFile *pro = m_parser->parsedProFile(fn, QMakeParser::ParseOnlyCached);
+        int pro = m_parser->idForFileName(fn);
         if (!pro)
             return ReturnFalse;
         ProValueMap &vmap = m_valuemapStack.first();
@@ -1351,18 +1351,17 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             ++vit;
         }
         for (auto fit = m_functionDefs.testFunctions.begin(); fit != m_functionDefs.testFunctions.end(); ) {
-            if (fit->pro() == pro)
+            if (fit->pro()->id() == pro)
                 fit = m_functionDefs.testFunctions.erase(fit);
             else
                 ++fit;
         }
         for (auto fit = m_functionDefs.replaceFunctions.begin(); fit != m_functionDefs.replaceFunctions.end(); ) {
-            if (fit->pro() == pro)
+            if (fit->pro()->id() == pro)
                 fit = m_functionDefs.replaceFunctions.erase(fit);
             else
                 ++fit;
         }
-        pro->deref();
         ProStringList &iif = m_valuemapStack.first()[ProKey("QMAKE_INTERNAL_INCLUDED_FILES")];
         int idx = iif.indexOf(ProString(fn));
         if (idx >= 0)

@@ -477,9 +477,10 @@ bool ProStringList::contains(const char *str, Qt::CaseSensitivity cs) const
     return false;
 }
 
-ProFile::ProFile(const QString &fileName)
+ProFile::ProFile(int id, const QString &fileName)
     : m_refCount(1),
       m_fileName(fileName),
+      m_id(id),
       m_ok(true),
       m_hostBuild(false)
 {
@@ -496,7 +497,7 @@ ProString ProFile::getStr(const ushort *&tPtr)
 {
     uint len = *tPtr++;
     ProString ret(items(), tPtr - tokPtr(), len);
-    ret.setSource(this);
+    ret.setSource(m_id);
     tPtr += len;
     return ret;
 }
