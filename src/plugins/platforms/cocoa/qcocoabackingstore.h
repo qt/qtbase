@@ -55,6 +55,7 @@ public:
 private:
     bool windowHasUnifiedToolbar() const;
     QImage::Format format() const Q_DECL_OVERRIDE;
+    void redrawRoundedBottomCorners(CGRect) const;
 };
 
 QT_END_NAMESPACE

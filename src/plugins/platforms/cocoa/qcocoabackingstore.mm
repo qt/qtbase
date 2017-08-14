@@ -199,11 +199,62 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     if (shouldHandleViewLockManually)
         [view unlockFocus];
 
-    if (drawingOutsideOfDisplayCycle)
+    if (drawingOutsideOfDisplayCycle) {
+        redrawRoundedBottomCorners([view convertRect:region.boundingRect().toCGRect() toView:nil]);
         [view.window flushWindow];
+    }
 
     // FIXME: Tie to changing window flags and/or mask instead
     [view invalidateWindowShadowIfNeeded];
+}
+
+/*
+    When drawing outside of the display cycle, which Qt Widget does a lot,
+    we end up drawing over the NSThemeFrame, losing the rounded corners of
+    windows in the process.
+
+    To work around this, until we've enabled updates via setNeedsDisplay and/or
+    enabled layer-backed views, we ask the NSWindow to redraw the bottom corners
+    if they intersect with the flushed region.
+
+    This is the same logic used internally by e.g [NSView displayIfNeeded],
+    [NSRulerView _scrollToMatchContentView], and [NSClipView _immediateScrollToPoint:],
+    as well as the workaround used by WebKit to fix a similar bug:
+
+    https://trac.webkit.org/changeset/85376/webkit
+*/
+void QCocoaBackingStore::redrawRoundedBottomCorners(CGRect windowRect) const
+{
+#if !defined(QT_APPLE_NO_PRIVATE_APIS)
+    Q_ASSERT(this->window()->handle());
+    NSWindow *window = static_cast<QCocoaWindow *>(this->window()->handle())->nativeWindow();
+
+    static SEL intersectBottomCornersWithRect = NSSelectorFromString(
+        [NSString stringWithFormat:@"_%s%s:", "intersectBottomCorners", "WithRect"]);
+    if (NSMethodSignature *signature = [window methodSignatureForSelector:intersectBottomCornersWithRect]) {
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+        invocation.target = window;
+        invocation.selector = intersectBottomCornersWithRect;
+        [invocation setArgument:&windowRect atIndex:2];
+        [invocation invoke];
+
+        NSRect cornerOverlap = NSZeroRect;
+        [invocation getReturnValue:&cornerOverlap];
+        if (!NSIsEmptyRect(cornerOverlap)) {
+            static SEL maskRoundedBottomCorners = NSSelectorFromString(
+                [NSString stringWithFormat:@"_%s%s:", "maskRounded", "BottomCorners"]);
+            if ((signature = [window methodSignatureForSelector:maskRoundedBottomCorners])) {
+                invocation = [NSInvocation invocationWithMethodSignature:signature];
+                invocation.target = window;
+                invocation.selector = maskRoundedBottomCorners;
+                [invocation setArgument:&cornerOverlap atIndex:2];
+                [invocation invoke];
+            }
+        }
+    }
+#else
+    Q_UNUSED(windowRect);
+#endif
 }
 
 QT_END_NAMESPACE
