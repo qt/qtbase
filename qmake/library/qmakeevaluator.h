@@ -188,6 +188,8 @@ public:
     int currentFileId() const;
     QString resolvePath(const QString &fileName) const
         { return QMakeInternal::IoUtils::resolvePath(currentDirectory(), fileName); }
+    QString filePathArg0(const ProStringList &args);
+    QString filePathEnvArg0(const ProStringList &args);
 
     VisitReturn evaluateFile(const QString &fileName, QMakeHandler::EvalFileType type,
                              LoadFlags flags);

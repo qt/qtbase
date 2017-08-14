@@ -579,6 +579,20 @@ void QMakeEvaluator::populateDeps(
         }
 }
 
+QString QMakeEvaluator::filePathArg0(const ProStringList &args)
+{
+    QString fn = resolvePath(args.at(0).toQString(m_tmp1));
+    fn.detach();
+    return fn;
+}
+
+QString QMakeEvaluator::filePathEnvArg0(const ProStringList &args)
+{
+    QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
+    fn.detach();
+    return fn;
+}
+
 QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         const QMakeBuiltin &adef, const ProKey &func, const ProStringList &args, ProStringList &ret)
 {
@@ -815,9 +829,6 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         ret.append(ProString(QString::number(args.at(0).size())));
         break;
     case E_CAT: {
-        QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
-        fn.detach();
-
         bool blob = false;
         bool lines = false;
         bool singleLine = true;
@@ -829,7 +840,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
             else if (!args.at(1).compare(QLatin1String("lines"), Qt::CaseInsensitive))
                 lines = true;
         }
-
+        QString fn = filePathEnvArg0(args);
         QFile qfile(fn);
         if (qfile.open(QIODevice::ReadOnly)) {
             QTextStream stream(&qfile);
@@ -852,8 +863,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
     }
     case E_FROMFILE: {
         ProValueMap vars;
-        QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
-        fn.detach();
+        QString fn = filePathEnvArg0(args);
         if (evaluateFileInto(fn, &vars, LoadProOnly) == ReturnTrue)
             ret = vars.value(map(args.at(1)));
         break;
@@ -1301,8 +1311,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
     }
     case T_INFILE: {
         ProValueMap vars;
-        QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
-        fn.detach();
+        QString fn = filePathEnvArg0(args);
         VisitReturn ok = evaluateFileInto(fn, &vars, LoadProOnly);
         if (ok != ReturnTrue)
             return ok;
@@ -1488,8 +1497,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             if (args.count() >= 3 && isTrue(args.at(2)))
                 flags = LoadSilent;
         }
-        QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
-        fn.detach();
+        QString fn = filePathEnvArg0(args);
         VisitReturn ok;
         if (parseInto.isEmpty()) {
             ok = evaluateFileChecked(fn, QMakeHandler::EvalIncludeFile, LoadProOnly | flags);
@@ -1583,8 +1591,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         return returnBool(values(map(args.at(0))).isEmpty());
     }
     case T_EXISTS: {
-        const QString &file = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
-
+        QString file = filePathEnvArg0(args);
         // Don't use VFS here:
         // - it supports neither listing nor even directories
         // - it's unlikely that somebody would test for files they created themselves
@@ -1592,7 +1599,6 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             return ReturnTrue;
         int slsh = file.lastIndexOf(QLatin1Char('/'));
         QString fn = file.mid(slsh+1);
-        fn.detach();
         if (fn.contains(QLatin1Char('*')) || fn.contains(QLatin1Char('?'))) {
             QString dirstr = file.left(slsh+1);
             dirstr.detach();
@@ -1604,8 +1610,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
     }
     case T_MKPATH: {
 #ifdef PROEVALUATOR_FULL
-        QString fn = resolvePath(args.at(0).toQString(m_tmp1));
-        fn.detach();
+        QString fn = filePathArg0(args);
         if (!QDir::current().mkpath(fn)) {
             evalError(fL1S("Cannot create directory %1.").arg(QDir::toNativeSeparators(fn)));
             return ReturnFalse;
@@ -1635,8 +1640,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 }
             }
         }
-        QString path = resolvePath(args.at(0).toQString(m_tmp1));
-        path.detach(); // make sure to not leak m_tmp1 into the map of written files.
+        QString path = filePathArg0(args);
         return writeFile(QString(), path, mode, flags, contents);
     }
     case T_TOUCH: {
