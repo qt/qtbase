@@ -54,6 +54,33 @@ namespace QTestPrivate {
     void disableWindowRestore() {
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"ApplePersistenceIgnoreState"];
     }
+
+    /*! \internal
+        \class AppNapDisabler
+        \brief Disables App Nap by registereing a bacground activity.
+
+        App Nap remains disabled as long as the AppNapDisabler instance
+        exists.
+    */
+
+    /*! \internal
+        Creates an AppNapDisabler instance and starts a NSActivityBackground activity.
+    */
+    AppNapDisabler::AppNapDisabler()
+    {
+        m_activity = [[NSProcessInfo processInfo] beginActivityWithOptions:NSActivityBackground
+                                                                    reason:@"Qt Auto Test"];
+        [m_activity retain];
+    }
+
+    /*! \internal
+        Destroys the AppNapDisabler instance and ends the NSActivityBackground activity.
+    */
+    AppNapDisabler::~AppNapDisabler()
+    {
+        [[NSProcessInfo processInfo] endActivity:m_activity];
+        [m_activity release];
+    }
 }
 
 QT_END_NAMESPACE

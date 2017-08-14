@@ -1728,6 +1728,9 @@ void QTest::qInit(QObject *testObject, int argc, char **argv)
 
     // Don't restore saved window state for auto tests.
     QTestPrivate::disableWindowRestore();
+
+    // Disable App Nap which may cause tests to stall.
+    QTestPrivate::AppNapDisabler appNapDisabler;
 #endif
 
 #if defined(Q_OS_MACX)

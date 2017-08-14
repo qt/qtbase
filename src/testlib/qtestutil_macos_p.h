@@ -58,6 +58,17 @@ QT_BEGIN_NAMESPACE
 
 namespace QTestPrivate {
     void disableWindowRestore();
+
+    class AppNapDisabler
+    {
+    public:
+        AppNapDisabler();
+        ~AppNapDisabler();
+        AppNapDisabler(const AppNapDisabler&) = delete;
+        AppNapDisabler& operator=(const AppNapDisabler&) = delete;
+    private:
+        id m_activity;
+    };
 }
 
 QT_END_NAMESPACE
