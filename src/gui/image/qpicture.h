@@ -90,13 +90,13 @@ public:
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &in, const QPicture &p);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QPicture &p);
 
-#if QT_DEPRECATED_SINCE(5, 0)
+#if QT_DEPRECATED_SINCE(5, 10)
     static QT_DEPRECATED const char* pictureFormat(const QString &fileName);
     static QT_DEPRECATED QList<QByteArray> inputFormats();
     static QT_DEPRECATED QList<QByteArray> outputFormats();
     static QT_DEPRECATED QStringList inputFormatList();
     static QT_DEPRECATED QStringList outputFormatList();
-#endif // QT_DEPRECATED_SINCE(5, 0)
+#endif // QT_DEPRECATED_SINCE(5, 10)
 
     QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
 
