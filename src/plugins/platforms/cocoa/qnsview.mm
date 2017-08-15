@@ -384,6 +384,22 @@ static QTouchDevice *touchDevice = 0;
     m_platformWindow->handleExposeEvent(exposedRegion);
 }
 
+- (BOOL)wantsUpdateLayer
+{
+    return YES;
+}
+
+- (void)updateLayer
+{
+    if (!m_platformWindow)
+        return;
+
+    qCDebug(lcQpaCocoaWindow) << "[QNSView updateLayer]" << m_platformWindow->window();
+
+    // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
+    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
+}
+
 - (BOOL)isFlipped
 {
     return YES;

@@ -48,6 +48,7 @@ Q_LOGGING_CATEGORY(lcCocoaBackingStore, "qt.qpa.cocoa.backingstore");
 
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QRasterBackingStore(window)
+    , m_cgImage(nullptr)
 {
 }
 
@@ -67,6 +68,18 @@ QImage::Format QCocoaBackingStore::format() const
         return QImage::Format_ARGB32_Premultiplied;
 
     return QRasterBackingStore::format();
+}
+
+void QCocoaBackingStore::beginPaint(const QRegion &region)
+{
+    m_cgImage = nullptr;
+    QRasterBackingStore::beginPaint(region);
+}
+
+void QCocoaBackingStore::endPaint()
+{
+    QRasterBackingStore::endPaint();
+    m_cgImage = m_image.toCGImage();
 }
 
 #if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
@@ -105,6 +118,25 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
             targetDebug << "onto" << topLevelView << "at" << offset;
         }
         qCDebug(lcCocoaBackingStore) << "Flushing" << region << "of" << view << qPrintable(targetViewDescription);
+    }
+
+    if (view.layer) {
+        // In layer-backed mode, locking focus on a view does not give the right
+        // view transformation, and doesn't give us a graphics context to render
+        // via when drawing outside of the display cycle. Instead we tell AppKit
+        // that we want to update the layer's content, via [NSView wantsUpdateLayer],
+        // which result in AppKit not creating a backingstore for each layer, and
+        // we then directly set the layer's backingstore (content) to our backingstore,
+        // masked to the part of the subview that is relevant.
+        // FIXME: Figure out if there's a way to do partial updates
+        view.layer.contents = (__bridge id)static_cast<CGImageRef>(m_cgImage);
+        if (view != topLevelView) {
+            view.layer.contentsRect = CGRectApplyAffineTransform(
+                [view convertRect:view.bounds toView:topLevelView],
+                // The contentsRect is in unit coordinate system
+                CGAffineTransformMakeScale(1.0 / m_image.width(), 1.0 / m_image.height()));
+        }
+        return;
     }
 
     // Normally a NSView is drawn via drawRect, as part of the display cycle in the
@@ -156,8 +188,7 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
         "Focusing the view should give us a current graphics context");
 
     // Create temporary image to use for blitting, without copying image data
-    NSImage *backingStoreImage = [[[NSImage alloc]
-        initWithCGImage:QCFType<CGImageRef>(m_image.toCGImage()) size:NSZeroSize] autorelease];
+    NSImage *backingStoreImage = [[[NSImage alloc] initWithCGImage:m_cgImage size:NSZeroSize] autorelease];
 
     if ([topLevelView hasMask]) {
         // FIXME: Implement via NSBezierPath and addClip
