@@ -166,11 +166,13 @@ public:
     qint64 writeDatagram(const char *data, qint64 len, const QIpPacketHeader &) Q_DECL_OVERRIDE;
     qint64 bytesToWrite() const Q_DECL_OVERRIDE;
 
+#if 0   // currently unused
     qint64 receiveBufferSize() const;
     void setReceiveBufferSize(qint64 bufferSize);
 
     qint64 sendBufferSize() const;
     void setSendBufferSize(qint64 bufferSize);
+#endif
 
     int option(SocketOption option) const Q_DECL_OVERRIDE;
     bool setOption(SocketOption option, int value) Q_DECL_OVERRIDE;
