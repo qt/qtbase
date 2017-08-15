@@ -263,20 +263,23 @@ int QMenuPrivate::scrollerHeight() const
 }
 
 //Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
-QRect QMenuPrivate::popupGeometry(const QWidget *widget) const
+QRect QMenuPrivate::popupGeometry() const
 {
-    if (QGuiApplicationPrivate::platformTheme() &&
+    Q_Q(const QMenu);
+    if (!tornoff && // Torn-off menus are different
+            QGuiApplicationPrivate::platformTheme() &&
             QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
-        return QApplication::desktop()->screenGeometry(widget);
+        return QApplication::desktop()->screenGeometry(q);
     } else {
-        return QApplication::desktop()->availableGeometry(widget);
+        return QApplication::desktop()->availableGeometry(q);
     }
 }
 
 //Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QMenuPrivate::popupGeometry(int screen) const
 {
-    if (QGuiApplicationPrivate::platformTheme() &&
+    if (!tornoff && // Torn-off menus are different
+            QGuiApplicationPrivate::platformTheme() &&
             QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
         return QApplication::desktop()->screenGeometry(screen);
     } else {
@@ -301,8 +304,7 @@ QVector<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
 
 void QMenuPrivate::updateActionRects() const
 {
-    Q_Q(const QMenu);
-    updateActionRects(popupGeometry(q));
+    updateActionRects(popupGeometry());
 }
 
 void QMenuPrivate::updateActionRects(const QRect &screen) const
@@ -1069,7 +1071,7 @@ void QMenuPrivate::scrollMenu(QAction *action, QMenuScroller::ScrollLocation loc
     if (newScrollFlags & QMenuScroller::ScrollUp)
         newOffset -= vmargin;
 
-    QRect screen = popupGeometry(q);
+    QRect screen = popupGeometry();
     const int desktopFrame = q->style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, q);
     if (q->height() < screen.height()-(desktopFrame*2)-1) {
         QRect geom = q->geometry();
@@ -2322,7 +2324,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 #if QT_CONFIG(graphicsview)
     bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
     if (isEmbedded)
-        screen = d->popupGeometry(this);
+        screen = d->popupGeometry();
     else
 #endif
     screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
@@ -3592,7 +3594,7 @@ void QMenu::internalDelayedPopup()
 #if QT_CONFIG(graphicsview)
     bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
     if (isEmbedded)
-        screen = d->popupGeometry(this);
+        screen = d->popupGeometry();
     else
 #endif
     screen = d->popupGeometry(QApplication::desktop()->screenNumber(pos()));

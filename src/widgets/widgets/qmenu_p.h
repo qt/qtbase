@@ -316,8 +316,8 @@ public:
     mutable QHash<QAction *, QWidget *> widgetItems;
     void updateActionRects() const;
     void updateActionRects(const QRect &screen) const;
-    QRect popupGeometry(const QWidget *widget) const;
-    QRect popupGeometry(int screen = -1) const;
+    QRect popupGeometry() const;
+    QRect popupGeometry(int screen) const;
     mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
     uint toolTipsVisible : 1;
