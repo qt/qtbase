@@ -576,6 +576,8 @@ void QWindow::setVisible(bool visible)
             QGuiApplicationPrivate::showModalWindow(this);
         else
             QGuiApplicationPrivate::hideModalWindow(this);
+    } else if (visible && QGuiApplication::modalWindow()) {
+        QGuiApplicationPrivate::updateBlockedStatus(this);
     }
 
 #ifndef QT_NO_CURSOR
