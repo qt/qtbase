@@ -59,7 +59,9 @@
 #include "qgraphicsanchorlayout.h"
 #include "qgraph_p.h"
 #include "qsimplex_p.h"
-#ifndef QT_NO_GRAPHICSVIEW
+
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -591,6 +593,5 @@ public:
 };
 
 QT_END_NAMESPACE
-#endif //QT_NO_GRAPHICSVIEW
 
 #endif

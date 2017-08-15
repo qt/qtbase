@@ -56,6 +56,7 @@
 #include "qinputmethod.h"
 #include "qlist.h"
 #endif
+#include <qpainter.h>
 #include <qpropertyanimation.h>
 
 QT_BEGIN_NAMESPACE

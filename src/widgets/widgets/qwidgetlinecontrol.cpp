@@ -53,7 +53,7 @@
 #endif
 
 #include "qapplication.h"
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
 #include "qgraphicssceneevent.h"
 #endif
 

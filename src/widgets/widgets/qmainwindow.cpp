@@ -51,7 +51,9 @@
 
 #include <qapplication.h>
 #include <qmenubar.h>
+#if QT_CONFIG(statusbar)
 #include <qstatusbar.h>
+#endif
 #include <qevent.h>
 #include <qstyle.h>
 #include <qdebug.h>
@@ -578,7 +580,7 @@ void QMainWindow::setMenuWidget(QWidget *menuBar)
 }
 #endif // QT_NO_MENUBAR
 
-#ifndef QT_NO_STATUSBAR
+#if QT_CONFIG(statusbar)
 /*!
     Returns the status bar for the main window. This function creates
     and returns an empty status bar if the status bar does not exist.
@@ -615,7 +617,7 @@ void QMainWindow::setStatusBar(QStatusBar *statusbar)
     }
     d->layout->setStatusBar(statusbar);
 }
-#endif // QT_NO_STATUSBAR
+#endif // QT_CONFIG(statusbar)
 
 /*!
     Returns the central widget for the main window. This function
@@ -1315,7 +1317,7 @@ bool QMainWindow::event(QEvent *event)
 
 #if QT_CONFIG(statustip)
         case QEvent::StatusTip:
-#ifndef QT_NO_STATUSBAR
+#if QT_CONFIG(statusbar)
             if (QStatusBar *sb = d->layout->statusBar())
                 sb->showMessage(static_cast<QStatusTipEvent*>(event)->tip());
             else

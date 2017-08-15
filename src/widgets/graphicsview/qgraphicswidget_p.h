@@ -60,12 +60,12 @@
 #include <QtWidgets/qsizepolicy.h>
 #include <QtWidgets/qstyle.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
 
 class QGraphicsLayout;
 class QStyleOptionTitleBar;
-
-#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QGraphicsWidgetPrivate : public QGraphicsItemPrivate
 {
@@ -200,8 +200,6 @@ public:
     QList<QAction *> actions;
 #endif
 };
-
-#endif
 
 QT_END_NAMESPACE
 

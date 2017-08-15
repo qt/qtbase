@@ -55,14 +55,18 @@
 #include <qpa/qplatformnativeinterface.h>
 
 #include <qdesktopwidget.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(tabbar)
 #include <qtabbar.h>
 #endif
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qheaderview.h>
 #include <qspinbox.h>
 #if QT_CONFIG(listview)
@@ -2857,7 +2861,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 #endif
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolbutton
             = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
@@ -2971,7 +2975,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             }
         }
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 
     case CC_TitleBar:
         {
@@ -3231,12 +3235,12 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 #endif //QT_NO_MDIAREA
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
             QStyleHelper::drawDial(dial, p);
         break;
-#endif // QT_NO_DIAL
+#endif // QT_CONFIG(dial)
     default:
         QWindowsStyle::drawComplexControl(cc, option, p, widget);
         break;

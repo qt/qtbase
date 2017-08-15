@@ -54,6 +54,8 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qframe_p.h"
 
+QT_REQUIRE_CONFIG(splitter);
+
 QT_BEGIN_NAMESPACE
 
 static const uint Default = 2;

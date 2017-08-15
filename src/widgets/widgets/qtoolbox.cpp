@@ -39,8 +39,6 @@
 
 #include "qtoolbox.h"
 
-#ifndef QT_NO_TOOLBOX
-
 #include <qapplication.h>
 #include <qeventloop.h>
 #include <qlayout.h>
@@ -734,5 +732,3 @@ QT_END_NAMESPACE
 
 #include "moc_qtoolbox.cpp"
 #include "qtoolbox.moc"
-
-#endif //QT_NO_TOOLBOX

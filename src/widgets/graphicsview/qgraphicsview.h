@@ -46,10 +46,9 @@
 #include <QtWidgets/qscrollarea.h>
 #include <QtWidgets/qgraphicsscene.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
-
-
-#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QGraphicsItem;
 class QPainterPath;
@@ -312,8 +311,6 @@ inline QPoint QGraphicsView::mapFromScene(qreal ax, qreal ay) const
 { return mapFromScene(QPointF(ax, ay)); }
 inline QPolygon QGraphicsView::mapFromScene(qreal ax, qreal ay, qreal w, qreal h) const
 { return mapFromScene(QRectF(ax, ay, w, h)); }
-
-#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
 

@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qtoolbutton.h"
-#ifndef QT_NO_TOOLBUTTON
 
 #include <qapplication.h>
 #include <qdesktopwidget.h>
@@ -985,5 +984,3 @@ bool QToolButton::event(QEvent *event)
 QT_END_NAMESPACE
 
 #include "moc_qtoolbutton.cpp"
-
-#endif

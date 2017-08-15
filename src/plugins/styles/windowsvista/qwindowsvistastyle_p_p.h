@@ -67,14 +67,20 @@
 #include <qradiobutton.h>
 #include <qlineedit.h>
 #include <qgroupbox.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #include <qspinbox.h>
 #include <qtoolbar.h>
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
 #endif

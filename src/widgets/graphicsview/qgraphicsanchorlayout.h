@@ -44,11 +44,9 @@
 #include <QtWidgets/qgraphicsitem.h>
 #include <QtWidgets/qgraphicslayout.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
-
-
-#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QGraphicsAnchorPrivate;
 class QGraphicsAnchorLayout;
@@ -114,8 +112,6 @@ private:
 
     friend class QGraphicsAnchor;
 };
-
-#endif
 
 QT_END_NAMESPACE
 

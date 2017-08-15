@@ -1494,12 +1494,12 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                         opt->state & (State_Sunken | State_On), 1,
                         &opt->palette.brush(QPalette::Button));
         break;
-#ifndef QT_NO_SPLITTER
+#if QT_CONFIG(splitter)
     case CE_Splitter:
         p->eraseRect(opt->rect);
         break;
-#endif // QT_NO_SPLITTER
-#ifndef QT_NO_SCROLLBAR
+#endif // QT_CONFIG(splitter)
+#if QT_CONFIG(scrollbar)
     case CE_ScrollBarSubLine:
     case CE_ScrollBarAddLine: {
         if ((opt->state & State_Sunken)) {
@@ -1586,7 +1586,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             qDrawWinButton(p, opt->rect, pal, false, &opt->palette.brush(QPalette::Button));
         }
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
     case CE_HeaderSection: {
         QBrush fill;
         if (opt->state & State_On)
@@ -2143,7 +2143,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
         }
         break;
 #endif // QT_NO_SLIDER
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QStyleOptionSlider newScrollbar = *scrollbar;
@@ -2152,7 +2152,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
             QCommonStyle::drawComplexControl(cc, &newScrollbar, p, widget);
         }
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {

@@ -51,7 +51,9 @@
 #include <qevent.h>
 #include <qmainwindow.h>
 #include <qtoolbar.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif

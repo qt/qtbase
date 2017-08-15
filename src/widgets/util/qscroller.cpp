@@ -52,9 +52,11 @@
 #include <QMap>
 #include <QApplication>
 #include <QAbstractScrollArea>
+#if QT_CONFIG(graphicsview)
 #include <QGraphicsObject>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#endif
 #include <QDesktopWidget>
 #include <QVector2D>
 #include <QtCore/qmath.h>
@@ -429,12 +431,12 @@ Qt::GestureType QScroller::grabGesture(QObject *target, ScrollerGestureType scro
         widget->grabGesture(sp->recognizerType);
         if (scrollGestureType == TouchGesture)
             widget->setAttribute(Qt::WA_AcceptTouchEvents);
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target)) {
         if (scrollGestureType == TouchGesture)
             go->setAcceptTouchEvents(true);
         go->grabGesture(sp->recognizerType);
-#endif // QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
     }
     return sp->recognizerType;
 }
@@ -473,7 +475,7 @@ void QScroller::ungrabGesture(QObject *target)
     if (target->isWidgetType()) {
         QWidget *widget = static_cast<QWidget *>(target);
         widget->ungrabGesture(sp->recognizerType);
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     } else if (QGraphicsObject *go = qobject_cast<QGraphicsObject*>(target)) {
         go->ungrabGesture(sp->recognizerType);
 #endif
@@ -571,7 +573,7 @@ QPointF QScroller::pixelPerMeter() const
     Q_D(const QScroller);
     QPointF ppm = d->pixelPerMeter;
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(d->target)) {
         QTransform viewtr;
         //TODO: the first view isn't really correct - maybe use an additional field in the prepare event?
@@ -589,7 +591,7 @@ QPointF QScroller::pixelPerMeter() const
             ppm.ry() /= QLineF(p0, py).length();
         }
     }
-#endif // QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
     return ppm;
 }
 
@@ -1466,7 +1468,7 @@ bool QScrollerPrivate::prepareScrolling(const QPointF &position)
 
         if (QWidget *w = qobject_cast<QWidget *>(target))
             setDpiFromWidget(w);
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(target)) {
             //TODO: the first view isn't really correct - maybe use an additional field in the prepare event?
             if (const auto *scene = go->scene()) {

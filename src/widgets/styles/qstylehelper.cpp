@@ -43,7 +43,9 @@
 #include <private/qmath_p.h>
 #include <private/qstyle_p.h>
 #include <qmath.h>
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qabstractscrollarea.h>
 #include <qwindow.h>
 
@@ -131,7 +133,7 @@ bool hasAncestor(QObject *obj, QAccessible::Role role)
 #endif // QT_NO_ACCESSIBILITY
 
 
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
 
 int calcBigLineSize(int radius)
 {
@@ -350,7 +352,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
     painter->drawEllipse(dialRect);
     painter->restore();
 }
-#endif //QT_NO_DIAL
+#endif //QT_CONFIG(dial)
 
 void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rect,
                      int left, int top, int right,

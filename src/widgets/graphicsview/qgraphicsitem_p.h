@@ -61,7 +61,7 @@
 
 #include <QtCore/qpoint.h>
 
-#if !defined(QT_NO_GRAPHICSVIEW)
+QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
 
@@ -814,7 +814,5 @@ inline void QGraphicsItemPrivate::markParentDirty(bool updateBoundingRect)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_GRAPHICSVIEW
 
 #endif

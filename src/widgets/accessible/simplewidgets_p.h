@@ -86,7 +86,7 @@ protected:
 };
 #endif
 
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
 class QAccessibleToolButton : public QAccessibleButton
 {
 public:
@@ -107,7 +107,7 @@ protected:
 
     bool isSplitButton() const;
 };
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 
 class QAccessibleDisplay : public QAccessibleWidget, public QAccessibleImageInterface
 {
@@ -126,7 +126,7 @@ public:
     QPoint imagePosition() const Q_DECL_OVERRIDE;
 };
 
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
 class QAccessibleGroupBox : public QAccessibleWidget
 {
 public:
@@ -190,7 +190,7 @@ protected:
 };
 #endif // QT_NO_LINEEDIT
 
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
 class QAccessibleProgressBar : public QAccessibleDisplay, public QAccessibleValueInterface
 {
 public:

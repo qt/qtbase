@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qprogressbar.h"
-#ifndef QT_NO_PROGRESSBAR
+
 #include <qlocale.h>
 #include <qevent.h>
 #include <qpainter.h>
@@ -623,5 +623,3 @@ QString QProgressBar::format() const
 QT_END_NAMESPACE
 
 #include "moc_qprogressbar.cpp"
-
-#endif // QT_NO_PROGRESSBAR

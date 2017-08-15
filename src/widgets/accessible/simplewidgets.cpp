@@ -48,17 +48,25 @@
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
+#if QT_CONFIG(statusbar)
 #include <qstatusbar.h>
+#endif
 #if QT_CONFIG(radiobutton)
 #include <qradiobutton.h>
 #endif
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #include <qmenu.h>
 #if QT_CONFIG(label)
 #include <qlabel.h>
 #endif
+#if QT_CONFIG(groupbox)
 #include <qgroupbox.h>
+#endif
 #if QT_CONFIG(lcdnumber)
 #include <qlcdnumber.h>
 #endif
@@ -274,7 +282,7 @@ QStringList QAccessibleButton::keyBindingsForAction(const QString &actionName) c
 }
 #endif // QT_CONFIG(abstractbutton)
 
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
 /*!
   \class QAccessibleToolButton
   \brief The QAccessibleToolButton class implements the QAccessibleInterface for tool buttons.
@@ -394,7 +402,7 @@ void QAccessibleToolButton::doAction(const QString &actionName)
 
 }
 
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 
 /*!
   \class QAccessibleDisplay
@@ -428,11 +436,11 @@ QAccessible::Role QAccessibleDisplay::role() const
         if (l->movie())
             return QAccessible::Animation;
 #endif
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     } else if (qobject_cast<QProgressBar*>(object())) {
         return QAccessible::ProgressBar;
 #endif
-#ifndef QT_NO_STATUSBAR
+#if QT_CONFIG(statusbar)
     } else if (qobject_cast<QStatusBar*>(object())) {
         return QAccessible::StatusBar;
 #endif
@@ -474,7 +482,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
                 else
                     str = QString::number(l->intValue());
 #endif
-#ifndef QT_NO_STATUSBAR
+#if QT_CONFIG(statusbar)
             } else if (qobject_cast<QStatusBar*>(object())) {
                 return qobject_cast<QStatusBar*>(object())->currentMessage();
 #endif
@@ -482,7 +490,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
         }
         break;
     case QAccessible::Value:
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
         if (qobject_cast<QProgressBar*>(object()))
             str = QString::number(qobject_cast<QProgressBar*>(object())->value());
 #endif
@@ -562,7 +570,7 @@ QPoint QAccessibleDisplay::imagePosition() const
 #endif
 }
 
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
 QAccessibleGroupBox::QAccessibleGroupBox(QWidget *w)
 : QAccessibleWidget(w)
 {
@@ -889,7 +897,7 @@ void QAccessibleLineEdit::replaceText(int startOffset, int endOffset, const QStr
 
 #endif // QT_NO_LINEEDIT
 
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
 QAccessibleProgressBar::QAccessibleProgressBar(QWidget *o)
     : QAccessibleDisplay(o)
 {

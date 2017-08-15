@@ -53,15 +53,14 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#if !defined(QT_NO_GRAPHICSVIEW)
-
 #include <QtCore/qrect.h>
 #include <QtCore/qlist.h>
 #include <QtWidgets/qgraphicsitem.h>
 #include <private/qgraphicssceneindex_p.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(graphicsview);
 
+QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
 {
@@ -115,7 +114,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_GRAPHICSVIEW
 
 #endif // QGRAPHICSSCENELINEARINDEX_H

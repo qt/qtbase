@@ -39,7 +39,6 @@
 
 #include "qapplication.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
 #include "qgraphicslayout.h"
 #include "qgraphicslayout_p.h"
 #include "qgraphicslayoutitem.h"
@@ -521,5 +520,3 @@ bool QGraphicsLayout::instantInvalidatePropagation()
 }
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW

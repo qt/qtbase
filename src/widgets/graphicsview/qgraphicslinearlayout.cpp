@@ -113,8 +113,6 @@
 
 #include "qapplication.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qwidget.h"
 #include "qgraphicslayout_p.h"
 #include "qgraphicslayoutitem.h"
@@ -566,5 +564,3 @@ void QGraphicsLinearLayout::dump(int indent) const
 }
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW

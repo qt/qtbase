@@ -259,8 +259,6 @@
 
 #include "qgraphicssceneevent.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #ifndef QT_NO_DEBUG
 #include <QtCore/qdebug.h>
 #endif
@@ -1733,5 +1731,3 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_GRAPHICSVIEW

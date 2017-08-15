@@ -102,6 +102,15 @@ QGtk3Theme::QGtk3Theme()
     g_log_set_handler("Gtk", G_LOG_LEVEL_MESSAGE, gtkMessageHandler, NULL);
 }
 
+static inline QVariant gtkGetLongPressTime()
+{
+    const char *gtk_long_press_time = "gtk-long-press-time";
+    static bool found = g_object_class_find_property(G_OBJECT_GET_CLASS(gtk_settings_get_default()), gtk_long_press_time);
+    if (!found)
+        return QVariant();
+    return QVariant(gtkSetting<guint>(gtk_long_press_time));  // Since 3.14, apparently we support >= 3.6
+}
+
 QVariant QGtk3Theme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
@@ -111,8 +120,12 @@ QVariant QGtk3Theme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(gtkSetting<gint>("gtk-double-click-distance"));
     case QPlatformTheme::MouseDoubleClickInterval:
         return QVariant(gtkSetting<gint>("gtk-double-click-time"));
-    case QPlatformTheme::MousePressAndHoldInterval:
-        return QVariant(gtkSetting<guint>("gtk-long-press-time"));
+    case QPlatformTheme::MousePressAndHoldInterval: {
+        QVariant v = gtkGetLongPressTime();
+        if (!v.isValid())
+            v = QGnomeTheme::themeHint(hint);
+        return v;
+    }
     case QPlatformTheme::PasswordMaskDelay:
         return QVariant(gtkSetting<guint>("gtk-entry-password-hint-timeout"));
     case QPlatformTheme::StartDragDistance:

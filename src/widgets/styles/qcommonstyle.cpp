@@ -61,7 +61,9 @@
 #else
 #include <qlayout.h>
 #endif
+#if QT_CONFIG(groupbox)
 #include <qgroupbox.h>
+#endif
 #include <qmath.h>
 #include <qmenu.h>
 #include <qpainter.h>
@@ -76,7 +78,9 @@
 #include <qtabwidget.h>
 #endif
 #include <qtoolbar.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
@@ -288,7 +292,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_PanelToolBar:
        break;
 #endif // QT_NO_TOOLBAR
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     case PE_IndicatorProgressChunk:
         {
             bool vertical = false;
@@ -303,7 +307,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
+#endif // QT_CONFIG(progressbar)
     case PE_IndicatorBranch: {
         static const int decoration_size = 9;
         int mid_h = opt->rect.x() + opt->rect.width() / 2;
@@ -441,7 +445,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_FrameLineEdit:
         proxy()->drawPrimitive(PE_Frame, opt, p, widget);
         break;
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case PE_FrameGroupBox:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (frame->features & QStyleOptionFrame::Flat) {
@@ -457,7 +461,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             }
         }
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
 #if QT_CONFIG(dockwidget)
     case PE_FrameDockWidget:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
@@ -805,7 +809,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     }
 }
 
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
 static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbutton,
                       const QRect &rect, QPainter *painter, const QWidget *widget = 0)
 {
@@ -830,7 +834,7 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
     arrowOpt.rect = rect;
     style->drawPrimitive(pe, &arrowOpt, painter, widget);
 }
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 
 #if QT_CONFIG(itemviews)
 
@@ -1414,7 +1418,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->eraseRect(opt->rect);
         break;
 #endif // QT_NO_MENUBAR
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     case CE_ProgressBar:
         if (const QStyleOptionProgressBar *pb
                 = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
@@ -1551,7 +1555,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
+#endif // QT_CONFIG(progressbar)
     case CE_HeaderLabel:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             QRect rect = header->rect;
@@ -1582,7 +1586,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                          (header->state & State_Enabled), header->text, QPalette::ButtonText);
         }
         break;
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *toolbutton
                 = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
@@ -1666,8 +1670,8 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
         }
         break;
-#endif // QT_NO_TOOLBUTTON
-#ifndef QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbutton)
+#if QT_CONFIG(toolbox)
     case CE_ToolBoxTab:
         if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
             proxy()->drawControl(CE_ToolBoxTabShape, tb, p, widget);
@@ -1719,7 +1723,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->setBrush(Qt::NoBrush);
         }
         break;
-#endif // QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbox)
 #if QT_CONFIG(tabbar)
     case CE_TabBarTab:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
@@ -2487,7 +2491,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_SLIDER
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     case SE_ProgressBarGroove:
     case SE_ProgressBarContents:
     case SE_ProgressBarLabel:
@@ -2512,7 +2516,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = visualRect(pb->direction, pb->rect, r);
         }
         break;
-#endif // QT_NO_PROGRESSBAR
+#endif // QT_CONFIG(progressbar)
 #if QT_CONFIG(combobox)
     case SE_ComboBoxFocusRect:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
@@ -2523,12 +2527,12 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
 #endif // QT_CONFIG(combobox)
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
     case SE_ToolBoxTabContents:
         r = opt->rect;
         r.adjust(0, 0, -30, 0);
         break;
-#endif // QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbox)
     case SE_HeaderLabel: {
         int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
         r.setRect(opt->rect.x() + margin, opt->rect.y() + margin,
@@ -3084,7 +3088,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 #endif
 }
 
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
 
 // in lieu of std::array, minimal API
 template <int N>
@@ -3132,7 +3136,7 @@ static StaticPolygonF<3> calcArrow(const QStyleOptionSlider *dial, qreal &a)
     return arrow;
 }
 
-#endif // QT_NO_DIAL
+#endif // QT_CONFIG(dial)
 
 /*!
   \reimp
@@ -3198,7 +3202,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
         }
         break;
 #endif // QT_NO_SLIDER
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             // Make a copy here and reset it for each primitive.
@@ -3285,7 +3289,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
@@ -3351,7 +3355,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
         }
         break;
 #endif // QT_NO_SPINBOX
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolbutton
             = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
@@ -3412,7 +3416,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
     case CC_TitleBar:
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
             QRect ir;
@@ -3590,7 +3594,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             // OK, this is more a port of things over
@@ -3683,8 +3687,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             p->restore();
         }
         break;
-#endif // QT_NO_DIAL
-#ifndef QT_NO_GROUPBOX
+#endif // QT_CONFIG(dial)
+#if QT_CONFIG(groupbox)
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             // Draw frame
@@ -3745,7 +3749,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
 #ifndef QT_NO_MDIAREA
     case CC_MdiControls:
         {
@@ -3837,7 +3841,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
         }
         break;
 #endif // QT_NO_SLIDER
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QRect r;
@@ -3852,8 +3856,8 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
             }
         }
         break;
-#endif // QT_NO_SCROLLBAR
-#ifndef QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(scrollbar)
+#if QT_CONFIG(toolbutton)
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QRect r;
@@ -3868,7 +3872,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
             }
         }
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
@@ -3916,7 +3920,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
         }
         break;
 #endif // QT_CONFIG(combobox)
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             QRect r;
@@ -3931,7 +3935,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
             }
         }
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
     case CC_MdiControls:
         {
             QRect r;
@@ -3996,7 +4000,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         }
         break;
 #endif // QT_NO_SLIDER
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             const QRect scrollBarRect = scrollbar->rect;
@@ -4080,7 +4084,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             ret = visualRect(scrollbar->direction, scrollBarRect, ret);
         }
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 #ifndef QT_NO_SPINBOX
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
@@ -4123,7 +4127,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         }
         break;
 #endif // Qt_NO_SPINBOX
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CC_ToolButton:
         if (const QStyleOptionToolButton *tb = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, tb, widget);
@@ -4147,7 +4151,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             ret = visualRect(tb->direction, tb->rect, ret);
         }
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
@@ -4263,7 +4267,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             ret = visualRect(tb->direction, tb->rect, ret);
         }
         break;
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case CC_GroupBox: {
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             switch (sc) {
@@ -4339,7 +4343,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         }
         break;
     }
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
 #ifndef QT_NO_MDIAREA
     case CC_MdiControls:
     {
@@ -4482,7 +4486,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = int(QStyleHelper::dpiScaled(196.));
         break;
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case PM_ScrollBarExtent:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             int s = sb->orientation == Qt::Horizontal ?
@@ -4842,11 +4846,11 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_MENU
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     case CT_ToolButton:
         sz = QSize(sz.width() + 6, sz.height() + 5);
         break;
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #if QT_CONFIG(combobox)
     case CT_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
@@ -4883,12 +4887,12 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
             sz += QSize(2*f->lineWidth, 2*f->lineWidth);
         break;
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case CT_GroupBox:
         if (const QGroupBox *grb = static_cast<const QGroupBox *>(widget))
             sz += QSize(!grb->isFlat() ? 16 : 0, 0);
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
     case CT_MdiControls:
         if (const QStyleOptionComplex *styleOpt = qstyleoption_cast<const QStyleOptionComplex *>(opt)) {
             const int buttonSize = proxy()->pixelMetric(PM_TitleBarButtonSize, styleOpt, widget);
@@ -4968,7 +4972,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = QDialogButtonBox::AcceptRole;
         break;
 #endif
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     case SH_GroupBox_TextLabelVerticalAlignment:
         ret = Qt::AlignVCenter;
         break;
@@ -4976,7 +4980,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_GroupBox_TextLabelColor:
         ret = opt ? int(opt->palette.color(QPalette::Text).rgba()) : 0;
         break;
-#endif // QT_NO_GROUPBOX
+#endif // QT_CONFIG(groupbox)
 
     case SH_ListViewExpand_SelectMouseType:
     case SH_TabBar_SelectMouseType:

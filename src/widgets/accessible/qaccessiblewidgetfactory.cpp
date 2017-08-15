@@ -47,7 +47,9 @@
 #include "itemviews_p.h"
 #endif
 
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #endif
@@ -93,7 +95,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QDoubleSpinBox")) {
         iface = new QAccessibleDoubleSpinBox(widget);
 #endif
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     } else if (classname == QLatin1String("QScrollBar")) {
         iface = new QAccessibleScrollBar(widget);
 #endif
@@ -103,10 +105,10 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QSlider")) {
         iface = new QAccessibleSlider(widget);
 #endif
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
     } else if (classname == QLatin1String("QToolButton")) {
         iface = new QAccessibleToolButton(widget);
-#endif // QT_NO_TOOLBUTTON
+#endif // QT_CONFIG(toolbutton)
 #if QT_CONFIG(abstractbutton)
     } else if (classname == QLatin1String("QCheckBox")
             || classname == QLatin1String("QRadioButton")
@@ -124,13 +126,13 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
     } else if (classname == QLatin1String("QLabel") || classname == QLatin1String("QLCDNumber")) {
         iface = new QAccessibleDisplay(widget);
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
     } else if (classname == QLatin1String("QGroupBox")) {
         iface = new QAccessibleGroupBox(widget);
 #endif
     } else if (classname == QLatin1String("QStatusBar")) {
         iface = new QAccessibleDisplay(widget);
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     } else if (classname == QLatin1String("QProgressBar")) {
         iface = new QAccessibleProgressBar(widget);
 #endif
@@ -159,7 +161,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
     } else if (classname == QLatin1String("QSizeGrip")) {
         iface = new QAccessibleWidget(widget, QAccessible::Grip);
-#ifndef QT_NO_SPLITTER
+#if QT_CONFIG(splitter)
     } else if (classname == QLatin1String("QSplitter")) {
         iface = new QAccessibleWidget(widget, QAccessible::Splitter);
     } else if (classname == QLatin1String("QSplitterHandle")) {
@@ -179,7 +181,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QStackedWidget")) {
         iface = new QAccessibleStackedWidget(widget);
 #endif
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
     } else if (classname == QLatin1String("QToolBox")) {
         iface = new QAccessibleToolBox(widget);
 #endif
@@ -193,7 +195,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QDialogButtonBox")) {
         iface = new QAccessibleDialogButtonBox(widget);
 #endif
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
     } else if (classname == QLatin1String("QDial")) {
         iface = new QAccessibleDial(widget);
 #endif
@@ -201,7 +203,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QRubberBand")) {
         iface = new QAccessibleWidget(widget, QAccessible::Border);
 #endif
-#if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(textbrowser) && !defined(QT_NO_CURSOR)
     } else if (classname == QLatin1String("QTextBrowser")) {
         iface = new QAccessibleTextBrowser(widget);
 #endif

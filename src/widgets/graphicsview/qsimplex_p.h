@@ -56,6 +56,8 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qstring.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
 
 struct QSimplexVariable

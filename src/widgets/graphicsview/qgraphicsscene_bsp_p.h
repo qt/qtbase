@@ -54,11 +54,11 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qlist.h>
 
-#if !defined(QT_NO_GRAPHICSVIEW)
-
 #include <QtCore/qrect.h>
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
+
+QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
 
@@ -125,7 +125,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_GRAPHICSVIEW
 
 #endif // QGRAPHICSSCENEBSPTREE_P_H

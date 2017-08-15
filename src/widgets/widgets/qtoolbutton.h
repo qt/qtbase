@@ -42,12 +42,11 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 
-#if QT_CONFIG(toolbutton)
-
 #include <QtWidgets/qabstractbutton.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(toolbutton);
 
+QT_BEGIN_NAMESPACE
 
 class QToolButtonPrivate;
 class QMenu;
@@ -136,7 +135,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_CONFIG(toolbutton)
 
 #endif // QTOOLBUTTON_H

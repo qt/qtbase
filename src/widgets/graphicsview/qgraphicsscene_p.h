@@ -54,8 +54,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qgraphicsscene.h"
 
-#if !defined(QT_NO_GRAPHICSVIEW)
-
 #include "qgraphicssceneevent.h"
 #include "qgraphicsview.h"
 #include "qgraphicsview_p.h"
@@ -70,6 +68,8 @@
 #include <QtGui/qpalette.h>
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qstyleoption.h>
+
+QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
 
@@ -355,7 +355,5 @@ static inline QRectF adjustedItemEffectiveBoundingRect(const QGraphicsItem *item
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_GRAPHICSVIEW
 
 #endif

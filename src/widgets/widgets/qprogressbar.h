@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qframe.h>
 
+QT_REQUIRE_CONFIG(progressbar);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_PROGRESSBAR
 
 class QProgressBarPrivate;
 class QStyleOptionProgressBar;
@@ -118,8 +117,6 @@ private:
     Q_DECLARE_PRIVATE(QProgressBar)
     Q_DISABLE_COPY(QProgressBar)
 };
-
-#endif // QT_NO_PROGRESSBAR
 
 QT_END_NAMESPACE
 

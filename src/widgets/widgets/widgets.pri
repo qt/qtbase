@@ -5,10 +5,8 @@ HEADERS += \
         widgets/qbuttongroup_p.h \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
-        widgets/qdial.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
-        widgets/qgroupbox.h \
         widgets/qkeysequenceedit.h \
         widgets/qkeysequenceedit_p.h \
         widgets/qlineedit.h \
@@ -23,27 +21,17 @@ HEADERS += \
         widgets/qmenu_p.h \
         widgets/qmenubar.h \
         widgets/qmenubar_p.h \
-        widgets/qprogressbar.h \
-        widgets/qscrollbar.h \
-        widgets/qscrollbar_p.h \
         widgets/qscrollarea_p.h \
         widgets/qsizegrip.h \
         widgets/qslider.h \
         widgets/qspinbox.h \
-        widgets/qsplitter.h \
-        widgets/qsplitter_p.h \
         widgets/qstackedwidget.h \
-        widgets/qstatusbar.h \
         widgets/qtextedit.h \
         widgets/qtextedit_p.h \
-        widgets/qtextbrowser.h \
         widgets/qtoolbar.h \
         widgets/qtoolbar_p.h \
         widgets/qtoolbarlayout_p.h \
-        widgets/qtoolbarextension_p.h \
         widgets/qtoolbarseparator_p.h \
-        widgets/qtoolbox.h \
-        widgets/qtoolbutton.h \
         widgets/qabstractscrollarea.h \
         widgets/qabstractscrollarea_p.h \
         widgets/qwidgetresizehandler_p.h \
@@ -58,10 +46,8 @@ HEADERS += \
 SOURCES += \
         widgets/qbuttongroup.cpp \
         widgets/qabstractspinbox.cpp \
-        widgets/qdial.cpp \
         widgets/qeffects.cpp \
         widgets/qframe.cpp \
-        widgets/qgroupbox.cpp \
         widgets/qkeysequenceedit.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
@@ -71,22 +57,14 @@ SOURCES += \
         widgets/qmdisubwindow.cpp \
         widgets/qmenu.cpp \
         widgets/qmenubar.cpp \
-        widgets/qprogressbar.cpp \
-        widgets/qscrollbar.cpp \
         widgets/qsizegrip.cpp \
         widgets/qslider.cpp \
         widgets/qspinbox.cpp \
-        widgets/qsplitter.cpp \
         widgets/qstackedwidget.cpp \
-        widgets/qstatusbar.cpp \
         widgets/qtextedit.cpp \
-        widgets/qtextbrowser.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
-        widgets/qtoolbarextension.cpp \
         widgets/qtoolbarseparator.cpp \
-        widgets/qtoolbox.cpp \
-        widgets/qtoolbutton.cpp \
         widgets/qabstractscrollarea.cpp \
         widgets/qwidgetresizehandler.cpp \
         widgets/qfocusframe.cpp \
@@ -152,6 +130,11 @@ qtConfig(datetimeedit) {
          widgets/qdatetimeedit.cpp
 }
 
+qtConfig(dial) {
+    HEADERS += widgets/qdial.h
+    SOURCES += widgets/qdial.cpp
+}
+
 qtConfig(dockwidget) {
     HEADERS += \
         widgets/qdockwidget.h \
@@ -166,6 +149,11 @@ qtConfig(dockwidget) {
 qtConfig(fontcombobox) {
     HEADERS += widgets/qfontcombobox.h
     SOURCES += widgets/qfontcombobox.cpp
+}
+
+qtConfig(groupbox) {
+    HEADERS += widgets/qgroupbox.h
+    SOURCES += widgets/qgroupbox.cpp
 }
 
 qtConfig(label) {
@@ -183,6 +171,11 @@ qtConfig(lcdnumber) {
 
     SOURCES += \
         widgets/qlcdnumber.cpp
+}
+
+qtConfig(progressbar) {
+    HEADERS += widgets/qprogressbar.h
+    SOURCES += widgets/qprogressbar.cpp
 }
 
 qtConfig(pushbutton) {
@@ -215,12 +208,33 @@ qtConfig(rubberband) {
     SOURCES += widgets/qrubberband.cpp
 }
 
+qtConfig(scrollbar) {
+    HEADERS += \
+        widgets/qscrollbar.h \
+        widgets/qscrollbar_p.h
+
+    SOURCES += widgets/qscrollbar.cpp
+}
+
 qtConfig(splashscreen) {
     HEADERS += \
         widgets/qsplashscreen.h
 
     SOURCES += \
         widgets/qsplashscreen.cpp
+}
+
+qtConfig(splitter) {
+    HEADERS += \
+        widgets/qsplitter.h \
+        widgets/qsplitter_p.h
+
+    SOURCES += widgets/qsplitter.cpp
+}
+
+qtConfig(statusbar) {
+    HEADERS += widgets/qstatusbar.h
+    SOURCES += widgets/qstatusbar.cpp
 }
 
 qtConfig(tabbar) {
@@ -231,9 +245,29 @@ qtConfig(tabbar) {
     SOURCES += widgets/qtabbar.cpp
 }
 
+qtConfig(textbrowser) {
+    HEADERS += widgets/qtextbrowser.h
+    SOURCES += widgets/qtextbrowser.cpp
+}
+
 qtConfig(tabwidget) {
     HEADERS += widgets/qtabwidget.h
     SOURCES += widgets/qtabwidget.cpp
+}
+
+qtConfig(toolbox) {
+    HEADERS += widgets/qtoolbox.h
+    SOURCES += widgets/qtoolbox.cpp
+}
+
+qtConfig(toolbutton) {
+    HEADERS += \
+        widgets/qtoolbutton.h \
+        widgets/qtoolbarextension_p.h
+
+    SOURCES += \
+        widgets/qtoolbutton.cpp \
+        widgets/qtoolbarextension.cpp
 }
 
 qtConfig(widgettextcontrol) {

@@ -82,7 +82,9 @@
 #include <qpainter.h>
 #include <qpixmapcache.h>
 #include <qpointer.h>
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
@@ -90,11 +92,15 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qsizegrip.h>
 #include <qstyleoption.h>
 #include <qtoolbar.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #endif
@@ -112,7 +118,9 @@
 #endif
 #include <qmath.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
+#if QT_CONFIG(graphicsview)
 #include <QtWidgets/qgraphicsview.h>
+#endif
 #include <QtCore/qvariant.h>
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
@@ -781,13 +789,13 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         else if (qobject_cast<const QComboBox *>(widg))
             ct = QStyle::CT_ComboBox;
 #endif
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
         else if (qobject_cast<const QToolButton *>(widg))
             ct = QStyle::CT_ToolButton;
 #endif
         else if (qobject_cast<const QSlider *>(widg))
             ct = QStyle::CT_Slider;
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
         else if (qobject_cast<const QProgressBar *>(widg))
             ct = QStyle::CT_ProgressBar;
 #endif
@@ -916,7 +924,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         if (sz == QStyleHelper::SizeSmall) {
             int width = 0, height = 0;
             if (szHint == QSize(-1, -1)) { //just 'guess'..
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
                 const QToolButton *bt = qobject_cast<const QToolButton *>(widg);
                 // If this conversion fails then the widget was not what it claimed to be.
                 if(bt) {
@@ -1003,7 +1011,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             ret.setWidth(w);
         break;
     }
-#ifndef QT_NO_PROGRESSBAR
+#if QT_CONFIG(progressbar)
     case QStyle::CT_ProgressBar: {
         int finalValue = -1;
         Qt::Orientation orient = Qt::Horizontal;
@@ -3336,7 +3344,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 HIThemeGroupBoxDrawInfo gdi;
                 gdi.version = qt_mac_hitheme_version;
                 gdi.state = tds;
-#ifndef QT_NO_GROUPBOX
+#if QT_CONFIG(groupbox)
                 if (w && qobject_cast<QGroupBox *>(w->parentWidget()))
                     gdi.kind = kHIThemeGroupBoxKindSecondary;
                 else
@@ -5901,7 +5909,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 #endif
         }
         break;
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt))
             QStyleHelper::drawDial(dial, p);
@@ -6721,7 +6729,7 @@ bool QMacStyle::event(QEvent *e)
     if(e->type() == QEvent::FocusIn) {
         QWidget *f = 0;
         QWidget *focusWidget = QApplication::focusWidget();
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         if (QGraphicsView *graphicsView = qobject_cast<QGraphicsView *>(focusWidget)) {
             QGraphicsItem *focusItem = graphicsView->scene() ? graphicsView->scene()->focusItem() : 0;
             if (focusItem && focusItem->type() == QGraphicsProxyWidget::Type) {

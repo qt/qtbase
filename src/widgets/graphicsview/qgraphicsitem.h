@@ -50,10 +50,9 @@
 
 class tst_QGraphicsItem;
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
-
-
-#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QBrush;
 class QCursor;
@@ -1049,8 +1048,6 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QGraphicsItem *)
 
 QT_BEGIN_NAMESPACE
-
-#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
 

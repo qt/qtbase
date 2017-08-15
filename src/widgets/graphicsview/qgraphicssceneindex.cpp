@@ -61,8 +61,6 @@
 #include "qgraphicssceneindex_p.h"
 #include "qgraphicsscenebsptreeindex_p.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate { // just to keep indentation of the following functions at the same level
@@ -627,5 +625,3 @@ void QGraphicsSceneIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 QT_END_NAMESPACE
 
 #include "moc_qgraphicssceneindex_p.cpp"
-
-#endif // QT_NO_GRAPHICSVIEW

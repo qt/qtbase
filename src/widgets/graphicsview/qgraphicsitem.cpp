@@ -732,8 +732,6 @@
 
 #include "qgraphicsitem.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicsscene.h"
 #include "qgraphicsscene_p.h"
 #include "qgraphicssceneevent.h"
@@ -11635,5 +11633,3 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags)
 QT_END_NAMESPACE
 
 #include "moc_qgraphicsitem.cpp"
-
-#endif // QT_NO_GRAPHICSVIEW

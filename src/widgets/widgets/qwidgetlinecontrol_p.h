@@ -250,6 +250,11 @@ public:
 
     QString displayText() const { return m_textLayout.text(); }
 
+    QString surroundingText() const
+    {
+        return m_text.isNull() ? QString::fromLatin1("") : m_text;
+    }
+
     void backspace();
     void del();
     void deselect() { internalDeselect(); finishChange(); }

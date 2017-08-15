@@ -48,7 +48,9 @@
 #include <QtGui/qevent.h>
 #include <QtWidgets/qapplication.h>
 #include <QtGui/qpaintengine.h>
+#if QT_CONFIG(graphicsview)
 #include <QtWidgets/qgraphicsproxywidget.h>
+#endif
 
 #include <private/qwidget_p.h>
 #include <private/qapplication_p.h>
@@ -821,7 +823,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     const bool nativeWithTextureChild = textureChildSeen && q->internalWinId();
 
     bool accelerateMove = accelEnv && isOpaque && !nativeWithTextureChild
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
                           // No accelerate move for proxy widgets.
                           && !tlw->d_func()->extra->proxyWidget
 #endif
@@ -1235,7 +1237,7 @@ void QWidgetBackingStore::doSync()
                                            : wd->dirty);
         toClean += widgetDirty;
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         if (tlw->d_func()->extra->proxyWidget) {
             resetWidget(w);
             continue;
@@ -1320,7 +1322,7 @@ void QWidgetBackingStore::doSync()
     dirtyRenderToTextureWidgets.clear();
 #endif
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (tlw->d_func()->extra->proxyWidget) {
         updateStaticContentsSize();
         dirty = QRegion();

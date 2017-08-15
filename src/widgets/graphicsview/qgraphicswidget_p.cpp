@@ -39,8 +39,6 @@
 
 #include "qglobal.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include <QtCore/qdebug.h>
 #include <QtCore/qnumeric.h>
 #include "qgraphicswidget_p.h"
@@ -897,5 +895,3 @@ void QGraphicsWidgetPrivate::setGeometryFromSetPos()
 }
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW

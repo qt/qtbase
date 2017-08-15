@@ -97,9 +97,11 @@
 #include <QtGui/private/qwindow_p.h>
 #include "qaction_p.h"
 #include "qlayout_p.h"
+#if QT_CONFIG(graphicsview)
 #include "QtWidgets/qgraphicsproxywidget.h"
 #include "QtWidgets/qgraphicsscene.h"
 #include "private/qgraphicsproxywidget_p.h"
+#endif
 #include "QtWidgets/qabstractscrollarea.h"
 #include "private/qabstractscrollarea_p.h"
 #include "private/qevent_p.h"
@@ -1614,7 +1616,7 @@ QWidget::~QWidget()
 
 
     QT_TRY {
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         const QWidget* w = this;
         while (w->d_func()->extra && w->d_func()->extra->focus_proxy)
             w = w->d_func()->extra->focus_proxy;
@@ -1801,7 +1803,7 @@ void QWidgetPrivate::createExtra()
         extra = new QWExtra;
         extra->glContext = 0;
         extra->topextra = 0;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         extra->proxyWidget = 0;
 #endif
 #ifndef QT_NO_CURSOR
@@ -2017,12 +2019,12 @@ void QWidgetPrivate::propagatePaletteChange()
 {
     Q_Q(QWidget);
     // Propagate a new inherited mask to all children.
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedPaletteResolveMask = p->d_func()->inheritedPaletteResolveMask | p->palette().resolve();
     } else
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
         if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedPaletteResolveMask = 0;
     }
@@ -4025,7 +4027,7 @@ void QWidget::setMinimumSize(int minw, int minh)
         if (maximized)
             data->window_state = data->window_state | Qt::WindowMaximized;
     }
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (d->extra) {
         if (d->extra->proxyWidget)
             d->extra->proxyWidget->setMinimumSize(minw, minh);
@@ -4083,7 +4085,7 @@ void QWidget::setMaximumSize(int maxw, int maxh)
         setAttribute(Qt::WA_Resized, resized); //not a user resize
     }
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (d->extra) {
         if (d->extra->proxyWidget)
             d->extra->proxyWidget->setMaximumSize(maxw, maxh);
@@ -4601,9 +4603,9 @@ QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
     QPalette naturalPalette = QApplication::palette(q);
     if ((!q->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles)
         && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation)
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
             || (extra && extra->proxyWidget)
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
             )) {
         if (QWidget *p = q->parentWidget()) {
             if (!p->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles) {
@@ -4616,13 +4618,13 @@ QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
                 }
             }
         }
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         else if (extra && extra->proxyWidget) {
             QPalette inheritedPalette = extra->proxyWidget->palette();
             inheritedPalette.resolve(inheritedMask);
             naturalPalette = inheritedPalette.resolve(naturalPalette);
         }
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
     }
     naturalPalette.resolve(0);
     return naturalPalette;
@@ -4749,9 +4751,9 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
     QFont naturalFont = QApplication::font(q);
     if ((!q->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles)
         && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation)
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
             || (extra && extra->proxyWidget)
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
             )) {
         if (QWidget *p = q->parentWidget()) {
             if (!p->testAttribute(Qt::WA_StyleSheet) || useStyleSheetPropagationInWidgetStyles) {
@@ -4766,7 +4768,7 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
                 }
             }
         }
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         else if (extra && extra->proxyWidget) {
             if (inheritedMask != 0) {
                 QFont inheritedFont = extra->proxyWidget->font();
@@ -4774,7 +4776,7 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
                 naturalFont = inheritedFont.resolve(naturalFont);
             } // else nothing to do (naturalFont = naturalFont)
         }
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
     }
     naturalFont.resolve(0);
     return naturalFont;
@@ -4820,12 +4822,12 @@ void QWidgetPrivate::updateFont(const QFont &font)
     data.fnt.x11SetScreen(xinfo.screen());
 #endif
     // Combine new mask with natural mask and propagate to children.
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
     } else
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
     if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
     }
@@ -5825,9 +5827,9 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
     }
 
     if (w->updatesEnabled()
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
             && (!w->d_func()->extra || !w->d_func()->extra->proxyWidget)
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
        ) {
         QRegion wRegion(rgn);
         wRegion &= wd->effectiveRectFor(w->data->crect);
@@ -5915,7 +5917,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 }
 #endif // QT_CONFIG(graphicseffect)
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
 /*!
     \internal
 
@@ -6466,13 +6468,13 @@ bool QWidget::hasFocus() const
     const QWidget* w = this;
     while (w->d_func()->extra && w->d_func()->extra->focus_proxy)
         w = w->d_func()->extra->focus_proxy;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QWidget *window = w->window()) {
         QWExtra *e = window->d_func()->extra;
         if (e && e->proxyWidget && e->proxyWidget->hasFocus() && window->focusWidget() == w)
             return true;
     }
-#endif // !QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
     return (QApplication::focusWidget() == w);
 }
 
@@ -6527,7 +6529,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
        )
         return;
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     QWidget *previousProxyFocus = 0;
     if (QWExtra *topData = window()->d_func()->extra) {
         if (topData->proxyWidget && topData->proxyWidget->hasFocus()) {
@@ -6540,7 +6542,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
     }
 #endif
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     // Update proxy state
     if (QWExtra *topData = window()->d_func()->extra) {
         if (topData->proxyWidget && !topData->proxyWidget->hasFocus()) {
@@ -6582,7 +6584,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
             QAccessible::updateAccessibility(&event);
         }
 #endif
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         if (QWExtra *topData = window()->d_func()->extra) {
             if (topData->proxyWidget) {
                 if (previousProxyFocus && previousProxyFocus != f) {
@@ -6594,7 +6596,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
                         QApplication::sendEvent(that->style(), &event);
                 }
                 if (!isHidden()) {
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
                     // Update proxy state
                     if (QWExtra *topData = window()->d_func()->extra)
                         if (topData->proxyWidget && topData->proxyWidget->hasFocus())
@@ -6703,7 +6705,7 @@ void QWidget::clearFocus()
             emit extra->window->focusObjectChanged(extra->window->focusObject());
     }
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     QWExtra *topData = d_func()->extra;
     if (topData && topData->proxyWidget)
         topData->proxyWidget->clearFocus();
@@ -6775,7 +6777,7 @@ bool QWidget::focusNextPrevChild(bool next)
     bool isSubWindow = (windowType() == Qt::SubWindow);
     if (!isWindow() && !isSubWindow && p)
         return p->focusNextPrevChild(next);
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     Q_D(QWidget);
     if (d->extra && d->extra->proxyWidget)
         return d->extra->proxyWidget->focusNextPrevChild(next);
@@ -6869,7 +6871,7 @@ bool QWidget::isActiveWindow() const
     if(tlw == QApplication::activeWindow() || (isVisible() && (tlw->windowType() == Qt::Popup)))
         return true;
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QWExtra *tlwExtra = tlw->d_func()->extra) {
         if (isVisible() && tlwExtra->proxyWidget)
             return tlwExtra->proxyWidget->isActiveWindow();
@@ -7880,7 +7882,7 @@ void QWidgetPrivate::show_helper()
 
 
     const bool isWindow = q->isWindow();
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     bool isEmbedded = isWindow && q->graphicsProxyWidget() != Q_NULLPTR;
 #else
     bool isEmbedded = false;
@@ -7904,7 +7906,7 @@ void QWidgetPrivate::show_helper()
 
     // Automatic embedding of child windows of widgets already embedded into
     // QGraphicsProxyWidget when they are shown the first time.
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (isWindow) {
         if (!isEmbedded && !bypassGraphicsProxyWidget(q)) {
             QGraphicsProxyWidget *ancestorProxy = nearestGraphicsProxyWidget(q->parentWidget());
@@ -7967,7 +7969,7 @@ void QWidgetPrivate::show_sys()
         q->setAttribute(Qt::WA_Mapped);
         // add our window the modal window list (native dialogs)
         if (window && q->isWindow()
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
             && (!extra || !extra->proxyWidget)
 #endif
             && q->windowModality() != Qt::NonModal) {
@@ -8041,7 +8043,7 @@ void QWidgetPrivate::hide_helper()
     Q_Q(QWidget);
 
     bool isEmbedded = false;
-#if !defined QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     isEmbedded = q->isWindow() && !bypassGraphicsProxyWidget(q) && nearestGraphicsProxyWidget(q->parentWidget()) != 0;
 #else
     Q_UNUSED(isEmbedded);
@@ -8105,7 +8107,7 @@ void QWidgetPrivate::hide_sys()
         q->setAttribute(Qt::WA_Mapped, false);
         // remove our window from the modal window list (native dialogs)
         if (window && q->isWindow()
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
             && (!extra || !extra->proxyWidget)
 #endif
             && q->windowModality() != Qt::NonModal) {
@@ -10224,7 +10226,7 @@ void QWidget::setSizePolicy(QSizePolicy policy)
 
     d->size_policy = policy;
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QWExtra *extra = d->extra) {
         if (extra->proxyWidget)
             extra->proxyWidget->setSizePolicy(policy);
@@ -10655,7 +10657,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     d->updateIsOpaque();
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     // Embed the widget into a proxy if the parent is embedded.
     // ### Doesn't handle reparenting out of an embedded widget.
     if (oldtlw->graphicsProxyWidget()) {
@@ -10797,7 +10799,7 @@ void QWidget::scroll(int dx, int dy)
     if (dx == 0 && dy == 0)
         return;
     Q_D(QWidget);
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
         // Graphics View maintains its own dirty region as a list of rects;
         // until we can connect item updates directly to the view, we must
@@ -10837,7 +10839,7 @@ void QWidget::scroll(int dx, int dy, const QRect &r)
     if (dx == 0 && dy == 0)
         return;
     Q_D(QWidget);
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QGraphicsProxyWidget *proxy = QWidgetPrivate::nearestGraphicsProxyWidget(this)) {
         // Graphics View maintains its own dirty region as a list of rects;
         // until we can connect item updates directly to the view, we must
@@ -11416,7 +11418,7 @@ void QWidget::setWindowOpacity(qreal opacity)
     if (!testAttribute(Qt::WA_WState_Created))
         return;
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QGraphicsProxyWidget *proxy = graphicsProxyWidget()) {
         // Avoid invalidating the cache if set.
         if (proxy->cacheMode() == QGraphicsItem::NoCache)
@@ -12283,7 +12285,7 @@ Q_WIDGETS_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
 }
 
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
 /*!
    \since 4.5
 
@@ -12433,7 +12435,7 @@ static inline bool canMapPosition(QWindow *window)
     return window->handle() && !qt_window_private(window)->resizeEventPending;
 }
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
 static inline QGraphicsProxyWidget *graphicsProxyWidget(const QWidget *w)
 {
     QGraphicsProxyWidget *result = Q_NULLPTR;
@@ -12442,7 +12444,7 @@ static inline QGraphicsProxyWidget *graphicsProxyWidget(const QWidget *w)
         result = d->extra->proxyWidget;
     return result;
 }
-#endif // !QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
 
 struct MapToGlobalTransformResult {
     QTransform transform;
@@ -12454,7 +12456,7 @@ static MapToGlobalTransformResult mapToGlobalTransform(const QWidget *w)
     MapToGlobalTransformResult result;
     result.window = Q_NULLPTR;
     for ( ; w ; w = w->parentWidget()) {
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         if (QGraphicsProxyWidget *qgpw = graphicsProxyWidget(w)) {
             if (const QGraphicsScene *scene = qgpw->scene()) {
                 const QList <QGraphicsView *> views = scene->views();
@@ -12465,7 +12467,7 @@ static MapToGlobalTransformResult mapToGlobalTransform(const QWidget *w)
                 }
             }
         }
-#endif // !QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
         QWindow *window = w->windowHandle();
         if (window && canMapPosition(window)) {
             result.window = window;

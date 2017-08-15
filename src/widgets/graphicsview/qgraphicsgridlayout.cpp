@@ -79,8 +79,6 @@
 
 #include "qglobal.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qapplication.h"
 #include "qwidget.h"
 #include "qgraphicslayout_p.h"
@@ -694,5 +692,3 @@ QSizePolicy::ControlTypes QGraphicsGridLayout::controlTypes(LayoutSide side) con
 #endif
 
 QT_END_NAMESPACE
-
-#endif //QT_NO_GRAPHICSVIEW

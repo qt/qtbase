@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 
 static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window);
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
 static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window);
 #endif
 #ifndef QT_NO_ACTION
@@ -110,7 +110,7 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
         return correctActionContext(context, a, active_window);
 #endif
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QGraphicsWidget *gw = qobject_cast<QGraphicsWidget *>(object))
         return correctGraphicsWidgetContext(context, gw, active_window);
 #endif
@@ -168,7 +168,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 
     // Below is Qt::WindowShortcut context
     QWidget *tlw = w->window();
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     if (QWExtra *topData = static_cast<QWidgetPrivate *>(QObjectPrivate::get(tlw))->extra) {
         if (topData->proxyWidget) {
             bool res = correctGraphicsWidgetContext(context, (QGraphicsWidget *)topData->proxyWidget, active_window);
@@ -204,7 +204,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
     return true;
 }
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
 static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
@@ -298,7 +298,7 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
                 return true;
     }
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     const QList<QGraphicsWidget *> &graphicsWidgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->graphicsWidgets;
 #if defined(DEBUG_QSHORTCUTMAP)
     if (graphicsWidgets.isEmpty())

@@ -56,7 +56,9 @@
 #ifndef QT_NO_LINEEDIT
 #include "private/qwidget_p.h"
 #include "QtWidgets/qlineedit.h"
+#if QT_CONFIG(toolbutton)
 #include "QtWidgets/qtoolbutton.h"
+#endif
 #include "QtGui/qtextlayout.h"
 #include "QtGui/qicon.h"
 #include "QtWidgets/qstyleoption.h"

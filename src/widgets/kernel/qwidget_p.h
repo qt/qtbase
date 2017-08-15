@@ -67,9 +67,11 @@
 #if QT_CONFIG(graphicseffect)
 #include <private/qgraphicseffect_p.h>
 #endif
+#if QT_CONFIG(graphicsview)
 #include "QtWidgets/qgraphicsproxywidget.h"
 #include "QtWidgets/qgraphicsscene.h"
 #include "QtWidgets/qgraphicsview.h"
+#endif
 #include <private/qgesture_p.h>
 #include <qpa/qplatformbackingstore.h>
 
@@ -233,7 +235,7 @@ struct QWExtra {
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     void *glContext; // if the widget is hijacked by QGLWindowSurface
     QTLWExtra *topextra; // only useful for TLWs
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     QGraphicsProxyWidget *proxyWidget; // if the widget is embedded
 #endif
 #ifndef QT_NO_CURSOR
@@ -406,7 +408,7 @@ public:
                                 const QRegion &rgn, const QPoint &offset, int flags,
                                 QPainter *sharedPainter, QWidgetBackingStore *backingStore);
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     static QGraphicsProxyWidget * nearestGraphicsProxyWidget(const QWidget *origin);
 #endif
     void repaint_sys(const QRegion &rgn);
@@ -534,7 +536,7 @@ public:
     static QRect screenGeometry(const QWidget *widget)
     {
         QRect screen;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
         QGraphicsProxyWidget *ancestorProxy = widget->d_func()->nearestGraphicsProxyWidget(widget);
         //It's embedded if it has an ancestor
         if (ancestorProxy) {

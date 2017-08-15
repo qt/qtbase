@@ -47,11 +47,15 @@
 #include "qtextobject.h"
 #include "qplaintextedit.h"
 #include "qtextboundaryfinder.h"
+#if QT_CONFIG(scrollbar)
 #include "qscrollbar.h"
+#endif
 #include "qdebug.h"
 #include <QApplication>
 #include <QStackedWidget>
+#if QT_CONFIG(toolbox)
 #include <QToolBox>
+#endif
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #if QT_CONFIG(dialogbuttonbox)
@@ -61,7 +65,9 @@
 #if QT_CONFIG(rubberband)
 #include <QRubberBand>
 #endif
+#if QT_CONFIG(textbrowser)
 #include <QTextBrowser>
+#endif
 #if QT_CONFIG(calendarwidget)
 #include <QCalendarWidget>
 #endif
@@ -352,7 +358,7 @@ QStackedWidget *QAccessibleStackedWidget::stackedWidget() const
 }
 #endif // QT_NO_STACKEDWIDGET
 
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
 // ======================= QAccessibleToolBox ======================
 QAccessibleToolBox::QAccessibleToolBox(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::LayeredPane)
@@ -364,7 +370,7 @@ QToolBox * QAccessibleToolBox::toolBox() const
 {
     return static_cast<QToolBox *>(object());
 }
-#endif // QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbox)
 
 // ======================= QAccessibleMdiArea ======================
 #ifndef QT_NO_MDIAREA
@@ -499,7 +505,7 @@ QAccessibleDialogButtonBox::QAccessibleDialogButtonBox(QWidget *widget)
 
 #endif // QT_CONFIG(dialogbuttonbox)
 
-#if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(textbrowser) && !defined(QT_NO_CURSOR)
 QAccessibleTextBrowser::QAccessibleTextBrowser(QWidget *widget)
     : QAccessibleTextEdit(widget)
 {
@@ -510,7 +516,7 @@ QAccessible::Role QAccessibleTextBrowser::role() const
 {
     return QAccessible::StaticText;
 }
-#endif // QT_NO_TEXTBROWSER && QT_NO_CURSOR
+#endif // QT_CONFIG(textbrowser) && QT_NO_CURSOR
 
 #if QT_CONFIG(calendarwidget)
 // ===================== QAccessibleCalendarWidget ========================

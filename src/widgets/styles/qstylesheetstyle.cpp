@@ -60,8 +60,12 @@
 #include "private/qabstractscrollarea_p.h"
 #include <qtooltip.h>
 #include <qshareddata.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #if QT_CONFIG(abstractslider)
 #include <qabstractslider.h>
 #endif
@@ -70,7 +74,6 @@
 #if QT_CONFIG(checkbox)
 #include <qcheckbox.h>
 #endif
-#include <qstatusbar.h>
 #if QT_CONFIG(itemviews)
 #include <qheaderview.h>
 #endif
@@ -1985,7 +1988,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                 extraClass |= PseudoClass_OnlyOne;
         }
 #endif // QT_NO_TOOLBAR
-#ifndef QT_NO_TOOLBOX
+#if QT_CONFIG(toolbox)
         else if (const QStyleOptionToolBox *tb = qstyleoption_cast<const QStyleOptionToolBox *>(opt)) {
             if (tb->position == QStyleOptionToolBox::OnlyOneTab)
                 extraClass |= PseudoClass_OnlyOne;
@@ -2001,7 +2004,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
             else if (tb->selectedPosition == QStyleOptionToolBox::PreviousIsSelected)
                 extraClass |= PseudoClass_PreviousSelected;
         }
-#endif // QT_NO_TOOLBOX
+#endif // QT_CONFIG(toolbox)
 #if QT_CONFIG(dockwidget)
         else if (const QStyleOptionDockWidget *dw = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
             if (dw->verticalTitleBar)
@@ -3201,7 +3204,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         }
         break;
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QStyleOptionSlider sbOpt(*sb);
@@ -3216,7 +3219,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             return;
         }
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
 #ifndef QT_NO_SLIDER
     case CC_Slider:
@@ -4639,7 +4642,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
 
     switch (m) {
     case PM_MenuButtonIndicator:
-#ifndef QT_NO_TOOLBUTTON
+#if QT_CONFIG(toolbutton)
         // QToolButton adds this directly to the width
         if (qobject_cast<const QToolButton *>(w) && (rule.hasBox() || !rule.hasNativeBorder()))
             return 0;
@@ -4763,7 +4766,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
             return subRule.box()->spacing;
         break;
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case PM_ScrollBarExtent:
         if (rule.hasContentsSize()) {
             QSize sz = rule.size();
@@ -4787,7 +4790,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         if(!rule.hasNativeBorder() || rule.hasBox())
             return 0;
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
     case PM_ProgressBarChunkWidth:
         subRule = renderRule(w, opt, PseudoElement_ProgressBarChunk);
@@ -5530,7 +5533,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
             }
             break;
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QStyleOptionSlider styleOptionSlider(*sb);
@@ -5612,7 +5615,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                                            : QWindowsStyle::subControlRect(cc, &styleOptionSlider, sc, w);
         }
         break;
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
 #ifndef QT_NO_SLIDER
     case CC_Slider:

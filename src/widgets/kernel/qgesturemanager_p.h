@@ -75,9 +75,9 @@ public:
 
     bool filterEvent(QWidget *receiver, QEvent *event);
     bool filterEvent(QObject *receiver, QEvent *event);
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     bool filterEvent(QGraphicsObject *receiver, QEvent *event);
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
 
     static QGestureManager* instance(); // declared in qapplication.cpp
     static bool gesturePending(QObject *o);

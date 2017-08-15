@@ -40,7 +40,9 @@
 #include "qgesture.h"
 #include "private/qgesture_p.h"
 #include "private/qstandardgestures_p.h"
+#if QT_CONFIG(graphicsview)
 #include "qgraphicsview.h"
+#endif
 
 #include <private/qdebug_p.h>
 #ifndef QT_NO_GESTURES
@@ -1067,7 +1069,7 @@ QWidget *QGestureEvent::widget() const
     return m_widget;
 }
 
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
 /*!
     Returns the scene-local coordinates if the \a gesturePoint is inside a
     graphics view.
@@ -1089,7 +1091,7 @@ QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
     }
     return QPointF();
 }
-#endif //QT_NO_GRAPHICSVIEW
+#endif // QT_CONFIG(graphicsview)
 
 #ifndef QT_NO_DEBUG_STREAM
 

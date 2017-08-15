@@ -39,8 +39,6 @@
 
 #include "qgraphicsscene_bsp_p.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include <QtCore/qstring.h>
 #include <private/qgraphicsitem_p.h>
 
@@ -290,5 +288,3 @@ QRectF QGraphicsSceneBspTree::rectForIndex(int index) const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_GRAPHICSVIEW

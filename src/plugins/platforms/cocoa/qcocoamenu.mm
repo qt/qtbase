@@ -259,6 +259,7 @@ QT_BEGIN_NAMESPACE
 
 QCocoaMenu::QCocoaMenu() :
     m_attachedItem(0),
+    m_updateTimer(0),
     m_enabled(true),
     m_parentEnabled(true),
     m_visible(true),
@@ -326,6 +327,13 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
     }
 
     insertNative(cocoaItem, beforeItem);
+
+    // Empty menus on a menubar are hidden by default. If the menu gets
+    // added to the menubar before it contains any item, we need to sync.
+    if (isVisible() && attachedItem().hidden) {
+        if (auto *mb = qobject_cast<QCocoaMenuBar *>(menuParent()))
+            mb->syncMenu(this);
+    }
 }
 
 void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
@@ -409,6 +417,20 @@ QCocoaMenuItem *QCocoaMenu::itemOrNull(int index) const
     return m_menuItems.at(index);
 }
 
+void QCocoaMenu::scheduleUpdate()
+{
+    if (!m_updateTimer)
+        m_updateTimer = startTimer(0);
+}
+
+void QCocoaMenu::timerEvent(QTimerEvent *e)
+{
+    if (e->timerId() == m_updateTimer) {
+        m_updateTimer = 0;
+        [m_nativeMenu update];
+    }
+}
+
 void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 {
     QMacAutoReleasePool pool;
@@ -435,9 +457,9 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
         QCocoaMenuItem* beforeItem = itemOrNull(m_menuItems.indexOf(cocoaItem) + 1);
         insertNative(cocoaItem, beforeItem);
     } else {
-        // Force NSMenuValidation to kick in. This is needed e.g.
+        // Schedule NSMenuValidation to kick in. This is needed e.g.
         // when an item's enabled state changes after menuWillOpen:
-        [m_nativeMenu update];
+        scheduleUpdate();
     }
 }
 

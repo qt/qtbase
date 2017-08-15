@@ -47,8 +47,6 @@
 #include "qmenu.h"
 #include <QtCore/qelapsedtimer.h>
 
-#ifndef QT_NO_SCROLLBAR
-
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
@@ -728,5 +726,3 @@ Q_WIDGETS_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollb
 QT_END_NAMESPACE
 
 #include "moc_qscrollbar.cpp"
-
-#endif // QT_NO_SCROLLBAR

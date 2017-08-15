@@ -44,10 +44,9 @@
 #include <QtWidgets/qframe.h>
 #include <QtGui/qicon.h>
 
+QT_REQUIRE_CONFIG(toolbox);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TOOLBOX
 
 class QToolBoxPrivate;
 
@@ -118,8 +117,6 @@ inline int QToolBox::addItem(QWidget *item, const QIcon &iconSet,
 { return insertItem(-1, item, iconSet, text); }
 inline int QToolBox::insertItem(int index, QWidget *item, const QString &text)
 { return insertItem(index, item, QIcon(), text); }
-
-#endif // QT_NO_TOOLBOX
 
 QT_END_NAMESPACE
 

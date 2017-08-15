@@ -59,7 +59,9 @@
 #endif
 
 #include <qapplication.h>
+#if QT_CONFIG(statusbar)
 #include <qstatusbar.h>
+#endif
 #include <qstring.h>
 #include <qstyle.h>
 #include <qstylepainter.h>
@@ -2310,7 +2312,7 @@ void QMainWindowLayout::setDockOptions(QMainWindow::DockOptions opts)
     invalidate();
 }
 
-#ifndef QT_NO_STATUSBAR
+#if QT_CONFIG(statusbar)
 QStatusBar *QMainWindowLayout::statusBar() const
 { return statusbar ? qobject_cast<QStatusBar *>(statusbar->widget()) : 0; }
 
@@ -2322,7 +2324,7 @@ void QMainWindowLayout::setStatusBar(QStatusBar *sb)
     statusbar = sb ? new QWidgetItemV2(sb) : 0;
     invalidate();
 }
-#endif // QT_NO_STATUSBAR
+#endif // QT_CONFIG(statusbar)
 
 QWidget *QMainWindowLayout::centralWidget() const
 {

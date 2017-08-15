@@ -50,10 +50,9 @@
 #include <QtGui/qmatrix.h>
 #include <QtGui/qpen.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
-
-
-#if !defined(QT_NO_GRAPHICSVIEW)
 
 template<typename T> class QList;
 class QFocusEvent;
@@ -327,8 +326,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsScene::SceneLayers)
-
-#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
 

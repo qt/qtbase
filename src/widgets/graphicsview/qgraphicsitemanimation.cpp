@@ -81,8 +81,6 @@
 
 #include "qgraphicsitemanimation.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicsitem.h"
 
 #include <QtCore/qtimeline.h>
@@ -595,5 +593,3 @@ void QGraphicsItemAnimation::afterAnimationStep(qreal step)
 QT_END_NAMESPACE
 
 #include "moc_qgraphicsitemanimation.cpp"
-
-#endif // QT_NO_GRAPHICSVIEW

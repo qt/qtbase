@@ -66,7 +66,9 @@
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
 #include "qwidgetaction.h"
+#if QT_CONFIG(toolbutton)
 #include "qtoolbutton.h"
+#endif
 #include "qpushbutton.h"
 #include "qtooltip.h"
 #include <private/qpushbutton_p.h>
@@ -2324,7 +2326,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     const bool actionListChanged = d->itemsDirty;
 
     QRect screen;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
     if (isEmbedded)
         screen = d->popupGeometry(this);
@@ -3593,7 +3595,7 @@ void QMenu::internalDelayedPopup()
     d->activeMenu->d_func()->causedPopup.action = d->currentAction;
 
     QRect screen;
-#ifndef QT_NO_GRAPHICSVIEW
+#if QT_CONFIG(graphicsview)
     bool isEmbedded = !bypassGraphicsProxyWidget(this) && d->nearestGraphicsProxyWidget(this);
     if (isEmbedded)
         screen = d->popupGeometry(this);

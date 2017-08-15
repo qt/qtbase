@@ -42,7 +42,9 @@
 #include <qwidgetaction.h>
 #include <qtoolbar.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #include <qmenu.h>
 #include <qdebug.h>
 #include <qmath.h>
@@ -51,7 +53,9 @@
 #endif
 
 #include "qmainwindowlayout_p.h"
+#if QT_CONFIG(toolbutton)
 #include "qtoolbarextension_p.h"
+#endif
 #include "qtoolbarlayout_p.h"
 #include "qtoolbarseparator_p.h"
 

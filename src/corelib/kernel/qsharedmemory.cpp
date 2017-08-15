@@ -362,6 +362,9 @@ bool QSharedMemory::create(int size, AccessMode mode)
   Returns the size of the attached shared memory segment. If no shared
   memory segment is attached, 0 is returned.
 
+  \note The size of the segment may be larger than the requested size that was
+  passed to create().
+
   \sa create(), attach()
  */
 int QSharedMemory::size() const

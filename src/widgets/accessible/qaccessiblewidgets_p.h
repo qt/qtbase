@@ -256,7 +256,7 @@ public:
 };
 #endif
 
-#if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(textbrowser) && !defined(QT_NO_CURSOR)
 class QAccessibleTextBrowser : public QAccessibleTextEdit
 {
 public:
@@ -264,7 +264,7 @@ public:
 
     QAccessible::Role role() const Q_DECL_OVERRIDE;
 };
-#endif // QT_NO_TEXTBROWSER && QT_NO_CURSOR
+#endif // QT_CONFIG(textbrowser) && QT_NO_CURSOR
 
 #if QT_CONFIG(calendarwidget)
 class QAccessibleCalendarWidget : public QAccessibleWidget

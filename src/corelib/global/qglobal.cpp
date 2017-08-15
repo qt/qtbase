@@ -94,6 +94,19 @@
 #include <sys/sysctl.h>
 #endif
 
+#if defined(Q_OS_INTEGRITY)
+extern "C" {
+    // Function mmap resides in libshm_client.a. To be able to link with it one needs
+    // to define symbols 'shm_area_password' and 'shm_area_name', because the library
+    // is meant to allow the application that links to it to use POSIX shared memory
+    // without full system POSIX.
+#  pragma weak shm_area_password
+#  pragma weak shm_area_name
+    char *shm_area_password = "dummy";
+    char *shm_area_name = "dummy";
+}
+#endif
+
 #include "archdetect.cpp"
 
 #ifdef qFatal

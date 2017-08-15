@@ -57,16 +57,24 @@
 #include <qapplication.h>
 #include <qmainwindow.h>
 #include <qfont.h>
+#if QT_CONFIG(groupbox)
 #include <qgroupbox.h>
+#endif
 #include <qpixmapcache.h>
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qspinbox.h>
 #if QT_CONFIG(abstractslider)
 #include <qabstractslider.h>
 #endif
 #include <qslider.h>
+#if QT_CONFIG(splitter)
 #include <qsplitter.h>
+#endif
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(wizard)
 #include <qwizard.h>
 #endif

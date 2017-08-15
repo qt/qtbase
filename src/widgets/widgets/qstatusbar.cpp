@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qstatusbar.h"
-#ifndef QT_NO_STATUSBAR
 
 #include "qlist.h"
 #include "qdebug.h"
@@ -787,5 +786,3 @@ bool QStatusBar::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qstatusbar.cpp"
-
-#endif

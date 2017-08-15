@@ -370,7 +370,7 @@ void QCocoaMenuBar::updateMenuBarImmediately()
     QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
     [loader ensureAppMenuInMenu:mb->nsMenu()];
 
-    NSMutableSet *mergedItems = [[NSMutableSet setWithCapacity:0] retain];
+    NSMutableSet *mergedItems = [[NSMutableSet setWithCapacity:mb->merged().count()] retain];
     foreach (QCocoaMenuItem *m, mb->merged()) {
         [mergedItems addObject:m->nsItem()];
         m->syncMerged();

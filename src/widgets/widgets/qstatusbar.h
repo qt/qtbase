@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(statusbar);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_STATUSBAR
 
 class QStatusBarPrivate;
 
@@ -93,8 +92,6 @@ private:
     Q_DISABLE_COPY(QStatusBar)
     Q_DECLARE_PRIVATE(QStatusBar)
 };
-
-#endif // QT_NO_STATUSBAR
 
 QT_END_NAMESPACE
 

@@ -68,7 +68,9 @@
 #include <qevent.h>
 #include <qfocusframe.h>
 #include <qformlayout.h>
+#if QT_CONFIG(groupbox)
 #include <qgroupbox.h>
+#endif
 #include <qhash.h>
 #include <qheaderview.h>
 #include <qlayout.h>
@@ -83,7 +85,9 @@
 #include <qpainter.h>
 #include <qpixmapcache.h>
 #include <qpointer.h>
+#if QT_CONFIG(progressbar)
 #include <qprogressbar.h>
+#endif
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
@@ -93,12 +97,16 @@
 #endif
 #include <qsizegrip.h>
 #include <qspinbox.h>
+#if QT_CONFIG(splitter)
 #include <qsplitter.h>
+#endif
 #include <qstyleoption.h>
 #include <qtextedit.h>
 #include <qtextstream.h>
 #include <qtoolbar.h>
+#if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
+#endif
 #if QT_CONFIG(treeview)
 #include <qtreeview.h>
 #endif

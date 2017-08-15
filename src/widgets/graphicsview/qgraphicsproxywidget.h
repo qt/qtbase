@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qgraphicswidget.h>
 
+QT_REQUIRE_CONFIG(graphicsview);
+
 QT_BEGIN_NAMESPACE
-
-
-#if !defined(QT_NO_GRAPHICSVIEW)
 
 class QGraphicsProxyWidgetPrivate;
 
@@ -133,9 +132,6 @@ private:
     friend class QGraphicsItem;
 };
 
-#endif
-
 QT_END_NAMESPACE
 
 #endif
-

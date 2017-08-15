@@ -271,8 +271,6 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include "qgraphicsview.h"
 #include "qgraphicsview_p.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include "qgraphicsitem.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene.h"
@@ -3935,5 +3933,3 @@ QRectF QGraphicsViewPrivate::mapToScene(const QRectF &rect) const
 QT_END_NAMESPACE
 
 #include "moc_qgraphicsview.cpp"
-
-#endif // QT_NO_GRAPHICSVIEW

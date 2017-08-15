@@ -285,7 +285,8 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
 
 void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
 {
-    if (project->values("OBJECTS").count() < var("QMAKE_LINK_OBJECT_MAX").toInt()) {
+    const ProString &objmax = project->first("QMAKE_LINK_OBJECT_MAX");
+    if (objmax.isEmpty() || project->values("OBJECTS").count() < objmax.toInt()) {
         objectsLinkLine = "$(OBJECTS)";
     } else if (project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
         QString ar_script_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");

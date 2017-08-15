@@ -39,8 +39,6 @@
 
 #include "qdial.h"
 
-#ifndef QT_NO_DIAL
-
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qcolor.h>
@@ -480,5 +478,3 @@ bool QDial::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qdial.cpp"
-
-#endif // QT_NO_DIAL

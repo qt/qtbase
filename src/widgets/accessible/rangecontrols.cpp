@@ -40,15 +40,18 @@
 #include "rangecontrols_p.h"
 
 #include <qslider.h>
+#if QT_CONFIG(dial)
 #include <qdial.h>
+#endif
 #include <qspinbox.h>
+#if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
+#endif
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qdebug.h>
 #include <qglobal.h>
 #include <QDoubleSpinBox>
-#include <QDial>
 #include <QtWidgets/qlineedit.h>
 #include <qmath.h>
 #include <private/qmath_p.h>
@@ -284,7 +287,7 @@ QString QAccessibleDoubleSpinBox::text(QAccessible::Text textType) const
 
 #endif // QT_NO_SPINBOX
 
-#ifndef QT_NO_SCROLLBAR
+#if QT_CONFIG(scrollbar)
 /*!
   \class QAccessibleScrollBar
   \brief The QAccessibleScrollBar class implements the QAccessibleInterface for scroll bars.
@@ -317,7 +320,7 @@ QString QAccessibleScrollBar::text(QAccessible::Text t) const
     return QAccessibleAbstractSlider::text(t);
 }
 
-#endif // QT_NO_SCROLLBAR
+#endif // QT_CONFIG(scrollbar)
 
 #ifndef QT_NO_SLIDER
 /*!
@@ -398,7 +401,7 @@ QAbstractSlider *QAccessibleAbstractSlider::abstractSlider() const
 
 #endif // QT_NO_SLIDER
 
-#ifndef QT_NO_DIAL
+#if QT_CONFIG(dial)
 // ======================================= QAccessibleDial ======================================
 QAccessibleDial::QAccessibleDial(QWidget *widget)
     : QAccessibleAbstractSlider(widget, QAccessible::Dial)
@@ -419,7 +422,7 @@ QDial *QAccessibleDial::dial() const
 {
     return static_cast<QDial*>(object());
 }
-#endif // QT_NO_DIAL
+#endif // QT_CONFIG(dial)
 
 #endif // QT_NO_ACCESSIBILITY
 
