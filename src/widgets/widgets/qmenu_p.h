@@ -92,18 +92,18 @@ class QMenuSloppyState
 public:
     QMenuSloppyState()
         : m_menu(Q_NULLPTR)
-        , m_enabled(false)
-        , m_uni_directional(false)
-        , m_select_other_actions(false)
-        , m_first_mouse(true)
-        , m_init_guard(false)
-        , m_use_reset_action(true)
-        , m_uni_dir_discarded_count(0)
-        , m_uni_dir_fail_at_count(0)
-        , m_timeout(0)
         , m_reset_action(Q_NULLPTR)
         , m_origin_action(Q_NULLPTR)
         , m_parent(Q_NULLPTR)
+        , m_uni_dir_discarded_count(0)
+        , m_uni_dir_fail_at_count(0)
+        , m_timeout(0)
+        , m_init_guard(false)
+        , m_first_mouse(true)
+        , m_enabled(false)
+        , m_uni_directional(false)
+        , m_select_other_actions(false)
+        , m_use_reset_action(true)
     { }
 
     ~QMenuSloppyState() { reset(); }
@@ -253,43 +253,59 @@ public:
 
 private:
     QMenu *m_menu;
-    bool m_enabled;
-    bool m_uni_directional;
-    bool m_select_other_actions;
-    bool m_first_mouse;
-    bool m_init_guard;
-    bool m_discard_state_when_entering_parent;
-    bool m_dont_start_time_on_leave;
-    bool m_use_reset_action;
-    short m_uni_dir_discarded_count;
-    short m_uni_dir_fail_at_count;
-    short m_timeout;
-    QBasicTimer m_time;
     QAction *m_reset_action;
     QAction *m_origin_action;
     QRectF m_action_rect;
     QPointF m_previous_point;
     QPointer<QMenu> m_sub_menu;
     QMenuSloppyState *m_parent;
+    QBasicTimer m_time;
+    short m_uni_dir_discarded_count;
+    short m_uni_dir_fail_at_count;
+    short m_timeout;
+    bool m_init_guard;
+    bool m_first_mouse;
+
+    bool m_enabled : 1;
+    bool m_uni_directional : 1;
+    bool m_select_other_actions : 1;
+    bool m_discard_state_when_entering_parent : 1;
+    bool m_dont_start_time_on_leave : 1;
+    bool m_use_reset_action : 1;
 };
 
 class QMenuPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QMenu)
 public:
-    QMenuPrivate() : itemsDirty(0), maxIconWidth(0), tabWidth(0), ncols(0),
-                      collapsibleSeparators(true), toolTipsVisible(false),
-                      activationRecursionGuard(false), delayedPopupGuard(false),
-                      hasReceievedEnter(false),
-                      hasHadMouse(0), aboutToHide(0), motions(0),
-                      currentAction(0),
+    QMenuPrivate() :
+        currentAction(nullptr),
 #ifdef QT_KEYPAD_NAVIGATION
-                      selectAction(0),
-                      cancelAction(0),
+        selectAction(nullptr),
+        cancelAction(nullptr),
 #endif
-                      scroll(0), eventLoop(0), tearoff(0), tornoff(0), tearoffHighlighted(0),
-                      hasCheckableItems(0), doChildEffects(false), platformMenu(0),
-                      scrollUpTearOffItem(nullptr), scrollDownItem(nullptr)
+        scroll(nullptr),
+        eventLoop(nullptr),
+        platformMenu(nullptr),
+        scrollUpTearOffItem(nullptr),
+        scrollDownItem(nullptr),
+        maxIconWidth(0),
+        tabWidth(0),
+        motions(0),
+        activationRecursionGuard(false),
+        ncols(0),
+        itemsDirty(false),
+        hasCheckableItems(false),
+        collapsibleSeparators(true),
+        toolTipsVisible(false),
+        delayedPopupGuard(false),
+        hasReceievedEnter(false),
+        hasHadMouse(false),
+        aboutToHide(false),
+        tearoff(false),
+        tornoff(false),
+        tearoffHighlighted(false),
+        doChildEffects(false)
     { }
 
     ~QMenuPrivate()
@@ -310,8 +326,6 @@ public:
     int scrollerHeight() const;
 
     //item calculations
-    mutable uint itemsDirty : 1;
-    mutable uint maxIconWidth, tabWidth;
     QRect actionRect(QAction *) const;
 
     mutable QVector<QRect> actionRects;
@@ -320,22 +334,12 @@ public:
     void updateActionRects(const QRect &screen) const;
     QRect popupGeometry() const;
     QRect popupGeometry(int screen) const;
-    mutable uint ncols : 4; //4 bits is probably plenty
-    uint collapsibleSeparators : 1;
-    uint toolTipsVisible : 1;
     int getLastVisibleAction() const;
-
-    bool activationRecursionGuard;
-    bool delayedPopupGuard;
-    bool hasReceievedEnter;
 
     //selection
     static QMenu *mouseDown;
     QPoint mousePopupPos;
-    uint hasHadMouse : 1;
-    uint aboutToHide : 1;
-    int motions;
-    int mousePopupDelay;
+
     QAction *currentAction;
 #ifdef QT_KEYPAD_NAVIGATION
     QAction *selectAction;
@@ -365,8 +369,8 @@ public:
         }
 
         QMenu *parent;
-        QBasicTimer timer;
         QAction *action;
+        QBasicTimer timer;
     } delayState;
     enum SelectionReason {
         SelectedFromKeyboard,
@@ -383,11 +387,12 @@ public:
     struct QMenuScroller {
         enum ScrollLocation { ScrollStay, ScrollBottom, ScrollTop, ScrollCenter };
         enum ScrollDirection { ScrollNone=0, ScrollUp=0x01, ScrollDown=0x02 };
-        uint scrollFlags : 2, scrollDirection : 2;
         int scrollOffset;
         QBasicTimer scrollTimer;
+        quint8 scrollFlags;
+        quint8 scrollDirection;
 
-        QMenuScroller() : scrollFlags(ScrollNone), scrollDirection(ScrollNone), scrollOffset(0) { }
+        QMenuScroller() : scrollOffset(0), scrollFlags(ScrollNone), scrollDirection(ScrollNone) { }
         ~QMenuScroller() { }
     } *scroll;
     void scrollMenu(QMenuScroller::ScrollLocation location, bool active=false);
@@ -421,10 +426,7 @@ public:
     inline int indexOf(QAction *act) const { return q_func()->actions().indexOf(act); }
 
     //tear off support
-    uint tearoff : 1, tornoff : 1, tearoffHighlighted : 1;
     QPointer<QTornOffMenu> tornPopup;
-
-    mutable bool hasCheckableItems;
 
     QMenuSloppyState sloppyState;
 
@@ -450,9 +452,6 @@ public:
     void adjustMenuScreen(const QPoint &p);
     void updateLayoutDirection();
 
-    //menu fading/scrolling effects
-    bool doChildEffects;
-
     QPointer<QPlatformMenu> platformMenu;
 
     QPointer<QAction> actionAboutToTrigger;
@@ -477,6 +476,30 @@ public:
     void drawScroller(QPainter *painter, ScrollerTearOffItem::Type type, const QRect &rect);
     void drawTearOff(QPainter *painter, const QRect &rect);
     QRect rect() const;
+
+    mutable uint maxIconWidth, tabWidth;
+    int motions;
+    int mousePopupDelay;
+
+    bool activationRecursionGuard;
+
+    mutable quint8 ncols; // "255cols ought to be enough for anybody."
+
+    mutable bool itemsDirty : 1;
+    mutable bool hasCheckableItems : 1;
+    bool collapsibleSeparators : 1;
+    bool toolTipsVisible : 1;
+    bool delayedPopupGuard : 1;
+    bool hasReceievedEnter : 1;
+    // Selection
+    bool hasHadMouse : 1;
+    bool aboutToHide : 1;
+    // Tear-off menus
+    bool tearoff : 1;
+    bool tornoff : 1;
+    bool tearoffHighlighted : 1;
+    //menu fading/scrolling effects
+    bool doChildEffects : 1;
 };
 
 QT_END_NAMESPACE
