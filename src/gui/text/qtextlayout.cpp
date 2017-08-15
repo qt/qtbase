@@ -2610,12 +2610,13 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
             QPainterPrivate::get(p)->drawTextItem(pos, gf, eng);
         }
 
-        if (si.analysis.flags == QScriptAnalysis::Space
+        if ((si.analysis.flags == QScriptAnalysis::Space
+             || si.analysis.flags == QScriptAnalysis::Nbsp)
             && (eng->option.flags() & QTextOption::ShowTabsAndSpaces)) {
             QBrush c = format.foreground();
             if (c.style() != Qt::NoBrush)
                 p->setPen(c.color());
-            QChar visualSpace((ushort)0xb7);
+            QChar visualSpace(si.analysis.flags == QScriptAnalysis::Space ? (ushort)0xb7 : (ushort)0xb0);
             p->drawText(QPointF(iterator.x.toReal(), itemBaseLine.toReal()), visualSpace);
             p->setPen(pen);
         }

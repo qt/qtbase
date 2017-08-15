@@ -143,9 +143,10 @@ struct Q_AUTOTEST_EXPORT QScriptAnalysis
         LineOrParagraphSeparator = 4,
         Space = 5,
         SpaceTabOrObject = Space,
-        Tab = 6,
+        Nbsp = 6,
+        Tab = 7,
         TabOrObject = Tab,
-        Object = 7
+        Object = 8
     };
     enum BidiFlags {
         BidiBN = 1,

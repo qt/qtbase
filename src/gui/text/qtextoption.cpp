@@ -307,7 +307,8 @@ QList<QTextOption::Tab> QTextOption::tabs() const
   \value IncludeTrailingSpaces When this option is set, QTextLine::naturalTextWidth() and naturalTextRect() will
                                return a value that includes the width of trailing spaces in the text; otherwise
                                this width is excluded.
-  \value ShowTabsAndSpaces Visualize spaces with little dots, and tabs with little arrows.
+  \value ShowTabsAndSpaces Visualize spaces with little dots, and tabs with little arrows. Non-breaking spaces are
+            shown differently to breaking spaces.
   \value ShowLineAndParagraphSeparators Visualize line and paragraph separators with appropriate symbol characters.
   \value ShowDocumentTerminator Visualize the end of the document with a section sign. This enum value was added
             in Qt 5.7.

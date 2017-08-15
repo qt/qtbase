@@ -2064,7 +2064,7 @@ void QTextEngine::itemize() const
         case QChar::Space:
         case QChar::Nbsp:
             if (option.flags() & QTextOption::ShowTabsAndSpaces) {
-                analysis->flags = QScriptAnalysis::Space;
+                analysis->flags = (*uc == QChar::Space) ? QScriptAnalysis::Space : QScriptAnalysis::Nbsp;
                 analysis->bidiLevel = bidi.baseLevel;
                 break;
             }
