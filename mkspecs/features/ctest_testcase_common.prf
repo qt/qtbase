@@ -1,11 +1,15 @@
 
 win32 {
-    CMAKE_VERSION = $$system(cmake --version 2>NUL, lines)
+    cmake_version_output = $$system(cmake --version 2>NUL, lines)
 } else {
-    CMAKE_VERSION = $$system(cmake --version 2>/dev/null, lines)
+    cmake_version_output = $$system(cmake --version 2>/dev/null, lines)
 }
 
-CMAKE_VERSION = $$member(CMAKE_VERSION, 0, 0)
+# First line
+cmake_version_output = $$first(cmake_version_output)
+# Format is "cmake version X.Y.Z"
+cmake_version_output = $$split(cmake_version_output)
+CMAKE_VERSION = $$last(cmake_version_output)
 
 check.commands =
 QMAKE_EXTRA_TARGETS *= check
@@ -25,8 +29,6 @@ isEmpty(CTEST_VERSION) {
     message("ctest executable not found. Not running CMake unit tests")
     return()
 }
-
-CMAKE_VERSION = $$last(CMAKE_VERSION)
 
 !versionAtLeast(CMAKE_VERSION, 2.8.3) {
     message("cmake $$CMAKE_VERSION is too old for this test.")
