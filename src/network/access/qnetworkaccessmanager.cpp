@@ -691,7 +691,7 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
         if (d->cookieJar && d->cookieJar->parent() == this)
             delete d->cookieJar;
         d->cookieJar = cookieJar;
-        if (thread() == cookieJar->thread())
+        if (cookieJar && thread() == cookieJar->thread())
             d->cookieJar->setParent(this);
     }
 }
