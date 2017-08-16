@@ -611,6 +611,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 if (generateManifest) {
                     manifest = escapeFilePath(manifest);
                     QString manifest_bak = escapeFilePath(target +  "_manifest.bak");
+                    project->values("QMAKE_CLEAN") << manifest_bak;
                     t << "\n\tif not exist $(DESTDIR_TARGET) if exist " << manifest
                       << " del " << manifest;
                     t << "\n\tif exist " << manifest << " copy /Y " << manifest << ' ' << manifest_bak;
