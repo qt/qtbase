@@ -110,9 +110,9 @@ public:
     {
         m_menu = menu;
         m_uni_directional = menu->style()->styleHint(QStyle::SH_Menu_SubMenuUniDirection, 0, menu);
-        m_uni_dir_fail_at_count = menu->style()->styleHint(QStyle::SH_Menu_SubMenuUniDirectionFailCount, 0, menu);
+        m_uni_dir_fail_at_count = short(menu->style()->styleHint(QStyle::SH_Menu_SubMenuUniDirectionFailCount, 0, menu));
         m_select_other_actions = menu->style()->styleHint(QStyle::SH_Menu_SubMenuSloppySelectOtherActions, 0 , menu);
-        m_timeout = menu->style()->styleHint(QStyle::SH_Menu_SubMenuSloppyCloseTimeout);
+        m_timeout = short(menu->style()->styleHint(QStyle::SH_Menu_SubMenuSloppyCloseTimeout));
         m_discard_state_when_entering_parent = menu->style()->styleHint(QStyle::SH_Menu_SubMenuResetWhenReenteringParent);
         m_dont_start_time_on_leave = menu->style()->styleHint(QStyle::SH_Menu_SubMenuDontStartSloppyOnLeave);
         reset();
@@ -150,12 +150,12 @@ public:
     void leave();
     void childLeave();
 
-    static float slope(const QPointF &p1, const QPointF &p2)
+    static qreal slope(const QPointF &p1, const QPointF &p2)
     {
         const QPointF slope = p2 - p1;
-        if (slope.x()== 0)
+        if (qFuzzyIsNull(slope.x()))
             return 9999;
-        return slope.y()/slope.x();
+        return slope.y() / slope.x();
     }
 
     bool checkSlope(qreal oldS, qreal newS, bool wantSteeper)
@@ -218,7 +218,7 @@ public:
             bool slopeTop = checkSlope(prev_slope_top, current_slope_top, sub_menu_top.y() < mousePos.y());
             bool slopeBottom = checkSlope(prev_slope_bottom, current_slope_bottom, sub_menu_bottom.y() > mousePos.y());
             bool rightDirection = false;
-            int mouseDir = m_previous_point.y() - mousePos.y();
+            int mouseDir = int(m_previous_point.y() - mousePos.y());
             if (mouseDir >= 0) {
                 rightDirection = rightDirection || slopeTop;
             }
