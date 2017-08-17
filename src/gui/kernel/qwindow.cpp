@@ -343,15 +343,8 @@ void QWindowPrivate::setVisible(bool visible)
             return;
 
         // We only need to create the window if it's being shown
-        if (visible) {
-            // FIXME: At this point we've already updated the visible state of
-            // the QWindow, so any platform pulling out the visible state during
-            // creation to set on the native window will create a visible window,
-            // which may result in resize and expose events before the show event
-            // sent below. This code assumes that the platform will set the window
-            // to be hidden, until receiving a setVisible call below.
+        if (visible)
             q->create();
-        }
     }
 
     if (visible) {

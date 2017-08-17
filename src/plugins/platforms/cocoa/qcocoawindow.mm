@@ -178,11 +178,6 @@ void QCocoaWindow::initialize()
 
     if (!m_view) {
         m_view = [[QNSView alloc] initWithCocoaWindow:this];
-
-        // NSViews are visible by default, as opposed to QWindows which are not,
-        // so make the view hidden until we receive an explicit setVisible.
-        m_view.hidden = YES;
-
         // Enable high-dpi OpenGL for retina displays. Enabling has the side
         // effect that Cocoa will start calling glViewport(0, 0, width, height),
         // overriding any glViewport calls in application code. This is usually not a
@@ -348,10 +343,8 @@ void QCocoaWindow::setVisible(bool visible)
                     && !(nativeParentWindow.styleMask & NSFullScreenWindowMask))
                     nativeParentWindow.styleMask &= ~NSResizableWindowMask;
             }
-        }
 
-        // Make the NSView visible first, before showing the NSWindow (in case of top level windows)
-        m_view.hidden = NO;
+        }
 
         if (isContentView()) {
             QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
@@ -402,6 +395,11 @@ void QCocoaWindow::setVisible(bool visible)
                 }
             }
         }
+        // In some cases, e.g. QDockWidget, the content view is hidden before moving to its own
+        // Cocoa window, and then shown again. Therefore, we test for the view being hidden even
+        // if it's attached to an NSWindow.
+        if ([m_view isHidden])
+            [m_view setHidden:NO];
     } else {
         // qDebug() << "close" << this;
 #ifndef QT_NO_OPENGL
@@ -437,7 +435,7 @@ void QCocoaWindow::setVisible(bool visible)
                     [mainWindow makeKeyWindow];
             }
         } else {
-            m_view.hidden = YES;
+            [m_view setHidden:YES];
         }
         removeMonitor();
 
@@ -1246,6 +1244,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
             rect.setSize(QSize(1, 1));
         NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
         [m_view setFrame:frame];
+        [m_view setHidden:!window()->isVisible()];
     }
 
     const qreal opacity = qt_window_private(window())->opacity;
