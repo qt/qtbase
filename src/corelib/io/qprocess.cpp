@@ -1051,10 +1051,7 @@ bool QProcessPrivate::tryReadFromChannel(Channel *channel)
     readBuffer.chop(available - readBytes);
 
     bool didRead = false;
-    if (readBytes == 0) {
-        if (channel->notifier)
-            channel->notifier->setEnabled(false);
-    } else if (currentReadChannel == channelIdx) {
+    if (currentReadChannel == channelIdx) {
         didRead = true;
         if (!emittedReadyRead) {
             emittedReadyRead = true;
