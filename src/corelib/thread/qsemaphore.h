@@ -66,7 +66,10 @@ public:
 private:
     Q_DISABLE_COPY(QSemaphore)
 
-    QSemaphorePrivate *d;
+    union {
+        QSemaphorePrivate *d;
+        QBasicAtomicInteger<quint32> u;
+    };
 };
 
 class QSemaphoreReleaser

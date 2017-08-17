@@ -73,14 +73,12 @@ QT_END_NAMESPACE
 QT_BEGIN_NAMESPACE
 namespace QtLinuxFutex {
     constexpr inline bool futexAvailable() { return true; }
-    inline int _q_futex(int *addr, int op, int val, const struct timespec *timeout) Q_DECL_NOTHROW
+    inline int _q_futex(int *addr, int op, int val, quintptr val2 = 0,
+                        int *addr2 = nullptr, int val3 = 0) Q_DECL_NOTHROW
     {
-        int *addr2 = 0;
-        int val2 = 0;
-
         // we use __NR_futex because some libcs (like Android's bionic) don't
         // provide SYS_futex etc.
-        return syscall(__NR_futex, addr, op | FUTEX_PRIVATE_FLAG, val, timeout, addr2, val2);
+        return syscall(__NR_futex, addr, op | FUTEX_PRIVATE_FLAG, val, val2, addr2, val3);
     }
     template <typename T> int *addr(T *ptr)
     {
@@ -95,7 +93,7 @@ namespace QtLinuxFutex {
     template <typename Atomic>
     inline void futexWait(Atomic &futex, typename Atomic::Type expectedValue)
     {
-        _q_futex(addr(&futex), FUTEX_WAIT, qintptr(expectedValue), nullptr);
+        _q_futex(addr(&futex), FUTEX_WAIT, qintptr(expectedValue));
     }
     template <typename Atomic>
     inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, qint64 nstimeout)
@@ -103,16 +101,21 @@ namespace QtLinuxFutex {
         struct timespec ts;
         ts.tv_sec = nstimeout / 1000 / 1000 / 1000;
         ts.tv_nsec = nstimeout % (1000 * 1000 * 1000);
-        int r = _q_futex(addr(&futex), FUTEX_WAIT, qintptr(expectedValue), &ts);
+        int r = _q_futex(addr(&futex), FUTEX_WAIT, qintptr(expectedValue), quintptr(&ts));
         return r == 0 || errno != ETIMEDOUT;
     }
     template <typename Atomic> inline void futexWakeOne(Atomic &futex)
     {
-        _q_futex(addr(&futex), FUTEX_WAKE, 1, nullptr);
+        _q_futex(addr(&futex), FUTEX_WAKE, 1);
     }
     template <typename Atomic> inline void futexWakeAll(Atomic &futex)
     {
-        _q_futex(addr(&futex), FUTEX_WAKE, INT_MAX, nullptr);
+        _q_futex(addr(&futex), FUTEX_WAKE, INT_MAX);
+    }
+    template <typename Atomic> inline
+    void futexWakeOp(Atomic &futex1, int wake1, int wake2, Atomic &futex2, quint32 op)
+    {
+        _q_futex(addr(&futex1), FUTEX_WAKE_OP, wake1, wake2, addr(&futex2), op);
     }
 }
 namespace QtFutex = QtLinuxFutex;
