@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -59,7 +59,7 @@ class QTimeZone;
 class Q_CORE_EXPORT QDate
 {
 public:
-    enum MonthNameType {
+    enum MonthNameType { // ### Qt 6: remove, along with methods using it
         DateFormat = 0,
         StandaloneFormat
     };
@@ -81,12 +81,16 @@ public:
     int daysInYear() const;
     int weekNumber(int *yearNum = Q_NULLPTR) const;
 
-#ifndef QT_NO_TEXTDATE
-    static QString shortMonthName(int month, MonthNameType type = DateFormat);
-    static QString shortDayName(int weekday, MonthNameType type = DateFormat);
-    static QString longMonthName(int month, MonthNameType type = DateFormat);
-    static QString longDayName(int weekday, MonthNameType type = DateFormat);
-#endif // QT_NO_TEXTDATE
+#if QT_DEPRECATED_SINCE(5, 11) && !defined QT_NO_TEXTDATE
+    QT_DEPRECATED_X("Use QLocale::monthName or QLocale::standaloneMonthName")
+        static QString shortMonthName(int month, MonthNameType type = DateFormat);
+    QT_DEPRECATED_X("Use QLocale::dayName or QLocale::standaloneDayName")
+        static QString shortDayName(int weekday, MonthNameType type = DateFormat);
+    QT_DEPRECATED_X("Use QLocale::monthName or QLocale::standaloneMonthName")
+        static QString longMonthName(int month, MonthNameType type = DateFormat);
+    QT_DEPRECATED_X("Use QLocale::dayName or QLocale::standaloneDayName")
+        static QString longDayName(int weekday, MonthNameType type = DateFormat);
+#endif // QT_NO_TEXTDATE && deprecated
 #ifndef QT_NO_DATESTRING
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
 #if QT_STRINGVIEW_LEVEL < 2

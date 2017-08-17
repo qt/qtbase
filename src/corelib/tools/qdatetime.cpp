@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -193,7 +193,7 @@ static int fromShortMonthName(const QStringRef &monthName)
         return month;
     // If English names can't be found, search the localized ones
     for (int i = 1; i <= 12; ++i) {
-        if (monthName == QDate::shortMonthName(i))
+        if (monthName == QLocale::system().monthName(i, QLocale::ShortFormat))
             return i;
     }
     return -1;
@@ -611,9 +611,10 @@ int QDate::weekNumber(int *yearNumber) const
     return week;
 }
 
-#ifndef QT_NO_TEXTDATE
+#if QT_DEPRECATED_SINCE(5, 11) && !defined(QT_NO_TEXTDATE)
 /*!
     \since 4.5
+    \deprecated
 
     Returns the short name of the \a month for the representation specified
     by \a type.
@@ -656,6 +657,7 @@ QString QDate::shortMonthName(int month, QDate::MonthNameType type)
 
 /*!
     \since 4.5
+    \deprecated
 
     Returns the long name of the \a month for the representation specified
     by \a type.
@@ -698,6 +700,7 @@ QString QDate::longMonthName(int month, MonthNameType type)
 
 /*!
     \since 4.5
+    \deprecated
 
     Returns the short name of the \a weekday for the representation specified
     by \a type.
@@ -735,6 +738,7 @@ QString QDate::shortDayName(int weekday, MonthNameType type)
 
 /*!
     \since 4.5
+    \deprecated
 
     Returns the long name of the \a weekday for the representation specified
     by \a type.
@@ -769,7 +773,7 @@ QString QDate::longDayName(int weekday, MonthNameType type)
     }
     return QString();
 }
-#endif //QT_NO_TEXTDATE
+#endif // QT_NO_TEXTDATE && deprecated
 
 #ifndef QT_NO_DATESTRING
 
@@ -778,8 +782,8 @@ static QString toStringTextDate(QDate date)
 {
     const ParsedDate pd = getDateFromJulianDay(date.toJulianDay());
     static const QLatin1Char sp(' ');
-    return date.shortDayName(date.dayOfWeek()) + sp
-         + date.shortMonthName(pd.month) + sp
+    return QLocale::system().dayName(date.dayOfWeek(), QLocale::ShortFormat) + sp
+         + QLocale::system().monthName(pd.month, QLocale::ShortFormat) + sp
          + QString::number(pd.day) + sp
          + QString::number(pd.year);
 }
