@@ -1142,7 +1142,12 @@ void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widg
                     tabIconSize.width(), tabIconSize.height());
         if (!verticalTabs)
             *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
-        tr.setLeft(tr.left() + tabIconSize.width() + 4);
+
+        int stylePadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
+        stylePadding -= hpadding;
+
+        tr.setLeft(tr.left() + stylePadding + tabIconSize.width() + 4);
+        tr.setRight(tr.right() - stylePadding - tabIconSize.width() - 4);
     }
 
     if (!verticalTabs)
