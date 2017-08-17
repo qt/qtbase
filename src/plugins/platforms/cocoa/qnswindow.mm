@@ -88,32 +88,72 @@ static bool isMouseEvent(NSEvent *ev)
 }
 @end
 
-@implementation QNSWindowHelper
+#define super USE_qt_objcDynamicSuper_INSTEAD
+
+@implementation QNSWindow
+
++ (void)load
+{
+    const Class windowClass = [self class];
+    const Class panelClass = [QNSPanel class];
+
+    unsigned int methodDescriptionsCount;
+    objc_method_description *methods = protocol_copyMethodDescriptionList(
+        objc_getProtocol("QNSWindowProtocol"), NO, YES, &methodDescriptionsCount);
+
+    for (unsigned int i = 0; i < methodDescriptionsCount; ++i) {
+        objc_method_description method = methods[i];
+        class_addMethod(panelClass, method.name,
+            class_getMethodImplementation(windowClass, method.name),
+            method.types);
+    }
+
+    free(methods);
+}
 
 - (QCocoaWindow *)platformWindow
 {
-    return _platformWindow.data();
+    return qnsview_cast(self.contentView).platformWindow;
 }
 
-- (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow
+- (BOOL)canBecomeKeyWindow
 {
-    if (self = [super init]) {
-        _window = window;
-        _platformWindow = platformWindow;
+    QCocoaWindow *pw = self.platformWindow;
+    if (!pw)
+        return NO;
 
-        _window.delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:_platformWindow];
+    if (pw->shouldRefuseKeyWindowAndFirstResponder())
+        return NO;
 
-        // Prevent Cocoa from releasing the window on close. Qt
-        // handles the close event asynchronously and we want to
-        // make sure that NSWindow stays valid until the
-        // QCocoaWindow is deleted by Qt.
-        [_window setReleasedWhenClosed:NO];
+    if ([self isKindOfClass:[QNSPanel class]]) {
+        // Only tool or dialog windows should become key:
+        Qt::WindowType type = pw->window()->type();
+        if (type == Qt::Tool || type == Qt::Dialog)
+            return YES;
+
+        return NO;
+    } else {
+        // The default implementation returns NO for title-bar less windows,
+        // override and return yes here to make sure popup windows such as
+        // the combobox popup can become the key window.
+        return YES;
     }
-
-    return self;
 }
 
-- (void)handleWindowEvent:(NSEvent *)theEvent
+- (BOOL)canBecomeMainWindow
+{
+    BOOL canBecomeMain = YES; // By default, windows can become the main window
+
+    // Windows with a transient parent (such as combobox popup windows)
+    // cannot become the main window:
+    QCocoaWindow *pw = self.platformWindow;
+    if (!pw || pw->window()->transientParent())
+        canBecomeMain = NO;
+
+    return canBecomeMain;
+}
+
+- (void)sendEvent:(NSEvent*)theEvent
 {
     // We might get events for a NSWindow after the corresponding platform
     // window has been deleted, as the NSWindow can outlive the QCocoaWindow
@@ -129,7 +169,7 @@ static bool isMouseEvent(NSEvent *ev)
         return;
     }
 
-    [self.window superSendEvent:theEvent];
+    qt_objcDynamicSuper(theEvent);
 
     if (!self.platformWindow)
         return; // Platform window went away while processing event
@@ -137,108 +177,31 @@ static bool isMouseEvent(NSEvent *ev)
     QCocoaWindow *pw = self.platformWindow;
     if (pw->frameStrutEventsEnabled() && isMouseEvent(theEvent)) {
         NSPoint loc = [theEvent locationInWindow];
-        NSRect windowFrame = [self.window convertRectFromScreen:[self.window frame]];
-        NSRect contentFrame = [[self.window contentView] frame];
+        NSRect windowFrame = [self convertRectFromScreen:self.frame];
+        NSRect contentFrame = self.contentView.frame;
         if (NSMouseInRect(loc, windowFrame, NO) && !NSMouseInRect(loc, contentFrame, NO))
             [qnsview_cast(pw->view()) handleFrameStrutMouseEvent:theEvent];
     }
-}
-
-- (void)detachFromPlatformWindow
-{
-    _platformWindow.clear();
-    [self.window.delegate release];
-    self.window.delegate = nil;
-}
-
-- (void)dealloc
-{
-    _window = nil;
-    _platformWindow.clear();
-    [super dealloc];
-}
-
-@end
-
-// Deferring window creation breaks OpenGL (the GL context is
-// set up before the window is shown and needs a proper window)
-static const bool kNoDefer = NO;
-
-@implementation QNSWindow
-
-@synthesize helper = _helper;
-
-- (id)initWithContentRect:(NSRect)contentRect
-      screen:(NSScreen*)screen
-      styleMask:(NSUInteger)windowStyle
-      qPlatformWindow:(QCocoaWindow *)qpw
-{
-    if (self = [super initWithContentRect:contentRect styleMask:windowStyle
-                      backing:NSBackingStoreBuffered defer:kNoDefer screen:screen]) {
-        _helper = [[QNSWindowHelper alloc] initWithNSWindow:self platformWindow:qpw];
-    }
-    return self;
-}
-
-- (BOOL)canBecomeKeyWindow
-{
-    QCocoaWindow *pw = self.helper.platformWindow;
-    if (!pw)
-        return NO;
-
-    if (pw->shouldRefuseKeyWindowAndFirstResponder())
-        return NO;
-
-    // The default implementation returns NO for title-bar less windows,
-    // override and return yes here to make sure popup windows such as
-    // the combobox popup can become the key window.
-    return YES;
-}
-
-- (BOOL)canBecomeMainWindow
-{
-    BOOL canBecomeMain = YES; // By default, windows can become the main window
-
-    // Windows with a transient parent (such as combobox popup windows)
-    // cannot become the main window:
-    QCocoaWindow *pw = self.helper.platformWindow;
-    if (!pw || pw->window()->transientParent())
-        canBecomeMain = NO;
-
-    return canBecomeMain;
-}
-
-- (void)sendEvent:(NSEvent*)theEvent
-{
-    [self.helper handleWindowEvent:theEvent];
-}
-
-- (void)superSendEvent:(NSEvent *)theEvent
-{
-    [super sendEvent:theEvent];
 }
 
 - (void)closeAndRelease
 {
     qCDebug(lcQpaCocoaWindow) << "closeAndRelease" << self;
 
-    [self.helper detachFromPlatformWindow];
+    [self.delegate release];
+    self.delegate = nil;
+
     [self close];
     [self release];
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-missing-super-calls"
 - (void)dealloc
 {
-    [_helper release];
-    _helper = nil;
-    [super dealloc];
+    qt_objcDynamicSuper();
 }
-
-@end
-
-@implementation QNSPanel
-
-@synthesize helper = _helper;
+#pragma clang diagnostic pop
 
 + (void)applicationActivationChanged:(NSNotification*)notification
 {
@@ -284,7 +247,7 @@ static const bool kNoDefer = NO;
             continue;
 
         if ([window conformsToProtocol:@protocol(QNSWindowProtocol)]) {
-            QCocoaWindow *cocoaWindow = static_cast<id<QNSWindowProtocol>>(window).helper.platformWindow;
+            QCocoaWindow *cocoaWindow = static_cast<QCocoaNSWindow *>(window).platformWindow;
             window.level = notification.name == NSApplicationWillResignActiveNotification ?
                 NSNormalWindowLevel : cocoaWindow->windowLevel(cocoaWindow->window()->flags());
         }
@@ -305,70 +268,10 @@ static const bool kNoDefer = NO;
     }
 }
 
-- (id)initWithContentRect:(NSRect)contentRect
-      screen:(NSScreen*)screen
-      styleMask:(NSUInteger)windowStyle
-      qPlatformWindow:(QCocoaWindow *)qpw
-{
-    if (self = [super initWithContentRect:contentRect styleMask:windowStyle
-                      backing:NSBackingStoreBuffered defer:kNoDefer screen:screen]) {
-        _helper = [[QNSWindowHelper alloc] initWithNSWindow:self platformWindow:qpw];
-
-        if (qpw->alwaysShowToolWindow()) {
-            static dispatch_once_t onceToken;
-            dispatch_once(&onceToken, ^{
-                NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-                [center addObserver:[self class] selector:@selector(applicationActivationChanged:)
-                    name:NSApplicationWillResignActiveNotification object:nil];
-                [center addObserver:[self class] selector:@selector(applicationActivationChanged:)
-                    name:NSApplicationWillBecomeActiveNotification object:nil];
-            });
-        }
-    }
-    return self;
-}
-
-- (BOOL)canBecomeKeyWindow
-{
-    QCocoaWindow *pw = self.helper.platformWindow;
-    if (!pw)
-        return NO;
-
-    if (pw->shouldRefuseKeyWindowAndFirstResponder())
-        return NO;
-
-    // Only tool or dialog windows should become key:
-    Qt::WindowType type = pw->window()->type();
-    if (type == Qt::Tool || type == Qt::Dialog)
-        return YES;
-
-    return NO;
-}
-
-- (void)sendEvent:(NSEvent*)theEvent
-{
-    [self.helper handleWindowEvent:theEvent];
-}
-
-- (void)superSendEvent:(NSEvent *)theEvent
-{
-    [super sendEvent:theEvent];
-}
-
-- (void)closeAndRelease
-{
-    qCDebug(lcQpaCocoaWindow) << "closeAndRelease" << self;
-
-    [self.helper detachFromPlatformWindow];
-    [self close];
-    [self release];
-}
-
-- (void)dealloc
-{
-    [_helper release];
-    _helper = nil;
-    [super dealloc];
-}
-
 @end
+
+@implementation QNSPanel
+// Implementation shared with QNSWindow, see +[QNSWindow load] above
+@end
+
+#undef super

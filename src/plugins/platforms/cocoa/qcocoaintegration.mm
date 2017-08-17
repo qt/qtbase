@@ -218,7 +218,7 @@ QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
             continue;
 
         id<QNSWindowProtocol> proto = static_cast<id<QNSWindowProtocol> >(nsWindow);
-        QCocoaWindow *cocoaWindow = proto.helper.platformWindow;
+        QCocoaWindow *cocoaWindow = proto.platformWindow;
         if (!cocoaWindow)
             continue;
         window = cocoaWindow->window();

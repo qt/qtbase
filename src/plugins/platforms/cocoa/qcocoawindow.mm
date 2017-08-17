@@ -210,7 +210,6 @@ QCocoaWindow::~QCocoaWindow()
     QMacAutoReleasePool pool;
     [m_nsWindow makeFirstResponder:nil];
     [m_nsWindow setContentView:nil];
-    [m_nsWindow.helper detachFromPlatformWindow];
     if ([m_view superview])
         [m_view removeFromSuperview];
 
@@ -1279,9 +1278,33 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     // Create NSWindow
     Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
     QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:frame
-        screen:cocoaScreen->nativeScreen() styleMask:windowStyleMask(flags) qPlatformWindow:this];
+        styleMask:windowStyleMask(flags)
+        // Deferring window creation breaks OpenGL (the GL context is
+        // set up before the window is shown and needs a proper window)
+        backing:NSBackingStoreBuffered defer:NO
+        screen:cocoaScreen->nativeScreen()];
+
     Q_ASSERT_X(nsWindow.screen == cocoaScreen->nativeScreen(), "QCocoaWindow",
         "Resulting NSScreen should match the requested NSScreen");
+
+    nsWindow.delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
+
+    // Prevent Cocoa from releasing the window on close. Qt
+    // handles the close event asynchronously and we want to
+    // make sure that NSWindow stays valid until the
+    // QCocoaWindow is deleted by Qt.
+    [nsWindow setReleasedWhenClosed:NO];
+
+    if (alwaysShowToolWindow()) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+            [center addObserver:[QNSWindow class] selector:@selector(applicationActivationChanged:)
+                name:NSApplicationWillResignActiveNotification object:nil];
+            [center addObserver:[QNSWindow class] selector:@selector(applicationActivationChanged:)
+                name:NSApplicationWillBecomeActiveNotification object:nil];
+        });
+    }
 
     if (targetScreen != window()->screen())
         QWindowSystemInterface::handleWindowScreenChanged(window(), targetScreen);
