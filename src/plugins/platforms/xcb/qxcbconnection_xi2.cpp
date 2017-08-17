@@ -1028,12 +1028,14 @@ Qt::MouseButton QXcbConnection::xiToQtMouseButton(uint32_t b)
     return Qt::NoButton;
 }
 
+#ifdef XCB_USE_XINPUT22
 bool QXcbConnection::isTouchScreen(int id) const
 {
     auto device = m_touchDevices.value(id);
     return device && device->qtTouchDevice
         && device->qtTouchDevice->type() == QTouchDevice::TouchScreen;
 }
+#endif
 
 #if QT_CONFIG(tabletevent)
 static QTabletEvent::TabletDevice toolIdToTabletDevice(quint32 toolId) {
