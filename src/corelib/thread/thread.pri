@@ -22,6 +22,7 @@ HEADERS += thread/qmutex.h \
 # private headers
 HEADERS += thread/qmutex_p.h \
            thread/qmutexpool_p.h \
+           thread/qfutex_p.h \
            thread/qfutureinterface_p.h \
            thread/qfuturewatcher_p.h \
            thread/qorderedmutexlocker_p.h \

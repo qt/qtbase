@@ -44,15 +44,9 @@
 #ifndef QT_NO_THREAD
 #include "qatomic.h"
 #include "qmutex_p.h"
-#include "qelapsedtimer.h"
+#include "qfutex_p.h"
 
-#include <linux/futex.h>
-#include <sys/syscall.h>
-#include <unistd.h>
-#include <errno.h>
-#include <asm/unistd.h>
-
-#ifndef QT_LINUX_FUTEX
+#ifndef QT_ALWAYS_USE_FUTEX
 # error "Qt build is broken: qmutex_linux.cpp is being built but futex support is not wanted"
 #endif
 
@@ -62,6 +56,8 @@
 
 
 QT_BEGIN_NAMESPACE
+
+using namespace QtFutex;
 
 /*
  * QBasicMutex implementation on Linux with futexes
@@ -107,20 +103,6 @@ QT_BEGIN_NAMESPACE
  * waiting in the past. We then set the mutex to 0x0 and perform a FUTEX_WAKE.
  */
 
-static inline int _q_futex(void *addr, int op, int val, const struct timespec *timeout) Q_DECL_NOTHROW
-{
-    volatile int *int_addr = reinterpret_cast<volatile int *>(addr);
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN && QT_POINTER_SIZE == 8
-    int_addr++; //We want a pointer to the 32 least significant bit of QMutex::d
-#endif
-    int *addr2 = 0;
-    int val2 = 0;
-
-    // we use __NR_futex because some libcs (like Android's bionic) don't
-    // provide SYS_futex etc.
-    return syscall(__NR_futex, int_addr, op | FUTEX_PRIVATE_FLAG, val, timeout, addr2, val2);
-}
-
 static inline QMutexData *dummyFutexValue()
 {
     return reinterpret_cast<QMutexData *>(quintptr(3));
@@ -136,36 +118,38 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
     if (timeout == 0)
         return false;
 
-    struct timespec ts, *pts = 0;
-    if (IsTimed && timeout > 0) {
-        ts.tv_sec = timeout / 1000;
-        ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
-    }
-
     // the mutex is locked already, set a bit indicating we're waiting
-    while (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) != 0) {
-        if (IsTimed && pts == &ts) {
-            // recalculate the timeout
-            qint64 xtimeout = qint64(timeout) * 1000 * 1000;
-            xtimeout -= elapsedTimer->nsecsElapsed();
-            if (xtimeout <= 0) {
-                // timer expired after we returned
-                return false;
-            }
-            ts.tv_sec = xtimeout / Q_INT64_C(1000) / 1000 / 1000;
-            ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
-        }
-        if (IsTimed && timeout > 0)
-            pts = &ts;
+    if (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) == nullptr)
+        return true;
 
+    qint64 nstimeout = timeout * Q_INT64_C(1000) * 1000;
+    qint64 remainingTime = nstimeout;
+    forever {
         // successfully set the waiting bit, now sleep
-        int r = _q_futex(&d_ptr, FUTEX_WAIT, quintptr(dummyFutexValue()), pts);
-        if (IsTimed && r != 0 && errno == ETIMEDOUT)
-            return false;
+        if (IsTimed && nstimeout >= 0) {
+            bool r = futexWait(d_ptr, dummyFutexValue(), remainingTime);
+            if (!r)
+                return false;
 
-        // we got woken up, so try to acquire the mutex
-        // note we must set to dummyFutexValue because there could be other threads
-        // also waiting
+            // we got woken up, so try to acquire the mutex
+            // note we must set to dummyFutexValue because there could be other threads
+            // also waiting
+            if (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) == nullptr)
+                return true;
+
+            // recalculate the timeout
+            remainingTime = nstimeout - elapsedTimer->nsecsElapsed();
+            if (remainingTime <= 0)
+                return false;
+        } else {
+            futexWait(d_ptr, dummyFutexValue());
+
+            // we got woken up, so try to acquire the mutex
+            // note we must set to dummyFutexValue because there could be other threads
+            // also waiting
+            if (d_ptr.fetchAndStoreAcquire(dummyFutexValue()) == nullptr)
+                return true;
+        }
     }
 
     Q_ASSERT(d_ptr.load());
@@ -195,9 +179,8 @@ void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
     Q_ASSERT(!isRecursive());
 
     d_ptr.storeRelease(0);
-    _q_futex(&d_ptr, FUTEX_WAKE, 1, 0);
+    futexWakeOne(d_ptr);
 }
-
 
 QT_END_NAMESPACE
 
