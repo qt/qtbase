@@ -50,6 +50,7 @@
 
 #include <QGuiApplication>
 #include <QDebug>
+#include <math.h>
 
 QT_BEGIN_NAMESPACE
 
