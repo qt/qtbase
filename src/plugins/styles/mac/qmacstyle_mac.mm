@@ -327,6 +327,40 @@ static bool setupScroller(NSScroller *scroller, const QStyleOptionSlider *sb)
     return true;
 }
 
+static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
+{
+    if (sl->minimum >= sl->maximum)
+        return false;
+
+    slider.frame = sl->rect.toCGRect();
+    slider.minValue = sl->minimum;
+    slider.maxValue = sl->maximum;
+    slider.intValue = sl->sliderPosition;
+    slider.enabled = sl->state & QStyle::State_Enabled;
+    if (sl->tickPosition != QSlider::NoTicks) {
+        // Set numberOfTickMarks, but TicksBothSides will be treated differently
+        int interval = sl->tickInterval;
+        if (interval == 0) {
+            interval = sl->pageStep;
+            if (interval == 0)
+                interval = sl->singleStep;
+            if (interval == 0)
+                interval = 1; // return false?
+        }
+        slider.numberOfTickMarks = 1 + ((sl->maximum - sl->minimum) / interval);
+
+        const bool ticksAbove = sl->tickPosition == QSlider::TicksAbove;
+        if (sl->orientation == Qt::Horizontal)
+            slider.tickMarkPosition = ticksAbove ? NSTickMarkAbove : NSTickMarkBelow;
+        else
+            slider.tickMarkPosition = ticksAbove ? NSTickMarkLeft : NSTickMarkRight;
+    } else {
+        slider.numberOfTickMarks = 0;
+    }
+
+    return true;
+}
+
 static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
 {
     QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
@@ -1788,69 +1822,6 @@ void QMacStylePrivate::drawTableHeader(const CGRect &outerBounds,
     p->translate(-outerBounds.origin.x, -outerBounds.origin.y);
 }
 
-void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,
-                          HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe) const
-{
-    Q_UNUSED(cc);
-    memset(tdi, 0, sizeof(HIThemeTrackDrawInfo)); // We don't get it all for some reason or another...
-    tdi->version = qt_mac_hitheme_version;
-    tdi->reserved = 0;
-    tdi->filler1 = 0;
-    switch (aquaSizeConstrain(slider, needToRemoveMe)) {
-    case QStyleHelper::SizeDefault:
-    case QStyleHelper::SizeLarge:
-        tdi->kind = kThemeMediumSlider;
-        break;
-    case QStyleHelper::SizeMini:
-        tdi->kind = kThemeMiniSlider;
-        break;
-    case QStyleHelper::SizeSmall:
-        tdi->kind = kThemeSmallSlider;
-        break;
-    }
-
-    bool usePlainKnob = slider->tickPosition == QSlider::NoTicks
-            || slider->tickPosition == QSlider::TicksBothSides;
-
-    tdi->bounds = slider->rect.toCGRect();
-    // Fix min and max positions. HITheme seems confused when it comes to rendering
-    // a slider at those positions. We give it a hand by extending and offsetting
-    // the slider range accordingly. See also comment for CC_Slider in drawComplexControl()
-    tdi->min = 0;
-    if (slider->orientation == Qt::Horizontal)
-        tdi->max = 10 * slider->rect.width();
-    else
-        tdi->max = 10 * slider->rect.height();
-
-    int range = slider->maximum - slider->minimum;
-    if (range == 0) {
-        tdi->value = 0;
-    } else if (usePlainKnob || slider->orientation == Qt::Horizontal) {
-        int endsCorrection = usePlainKnob ? 25 : 10;
-        tdi->value = (tdi->max + 2 * endsCorrection) * (slider->sliderPosition - slider->minimum) / range - endsCorrection;
-    } else {
-        tdi->value = (tdi->max + 30) * (slider->sliderPosition - slider->minimum) / range - 20;
-    }
-
-    tdi->attributes = kThemeTrackShowThumb;
-    if (slider->upsideDown)
-        tdi->attributes |= kThemeTrackRightToLeft;
-    if (slider->orientation == Qt::Horizontal) {
-        tdi->attributes |= kThemeTrackHorizontal;
-    }
-
-    tdi->enableState = (slider->state & QStyle::State_Enabled) ? kThemeTrackActive
-                                                             : kThemeTrackDisabled;
-    if (slider->state & QStyle::QStyle::State_HasFocus)
-        tdi->attributes |= kThemeTrackHasFocus;
-    if (usePlainKnob)
-        tdi->trackInfo.slider.thumbDir = kThemeThumbPlain;
-    else if (slider->tickPosition == QSlider::TicksAbove)
-        tdi->trackInfo.slider.thumbDir = kThemeThumbUpward;
-    else
-        tdi->trackInfo.slider.thumbDir = kThemeThumbDownward;
-}
-
 QMacStylePrivate::QMacStylePrivate()
     : backingStoreNSView(nil)
 {
@@ -1963,11 +1934,11 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
             // at construction time, and it cannot be changed later.
             bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
         else if (widget.first == QCocoaHorizontalSlider)
-            bv = [[NSSlider alloc] init];
+            bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
         else if (widget.first == QCocoaVerticalSlider)
             // Cocoa sets the orientation from the view's frame
             // at construction time, and it cannot be changed later.
-            bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 10, 100)];
+            bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
         else
             bv = [[NSButton alloc] init];
 
@@ -5443,145 +5414,117 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         }
         break;
     case CC_Slider:
-        if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            const bool isHorizontal = slider->orientation == Qt::Horizontal;
+        if (const QStyleOptionSlider *sl = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            const bool isHorizontal = sl->orientation == Qt::Horizontal;
+            const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
+            const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider, cs);
+            auto *slider = static_cast<NSSlider *>(d->cocoaControl(cw));
+            if (!setupSlider(slider, sl))
+                break;
 
+            const bool hasTicks = sl->tickPosition != QSlider::NoTicks;
+            const bool hasDoubleTicks = sl->tickPosition == QSlider::TicksBothSides;
+            const bool drawKnob = sl->subControls & SC_SliderHandle;
+            const bool drawBar = sl->subControls & SC_SliderGroove;
+            const bool drawTicks = sl->subControls & SC_SliderTickmarks;
+            const bool isPressed = sl->state & State_Sunken;
 
-            HIThemeTrackDrawInfo tdi;
-            d->getSliderInfo(cc, slider, &tdi, widget);
-            if (slider->state & State_Sunken) {
-                if (cc == CC_Slider) {
-                    if (slider->activeSubControls == SC_SliderHandle)
-                        tdi.trackInfo.slider.pressState = kThemeThumbPressed;
-                    else if (slider->activeSubControls == SC_SliderGroove)
-                        tdi.trackInfo.slider.pressState = kThemeLeftTrackPressed;
-                }
-            }
-            CGRect macRect;
-            bool tracking = slider->sliderPosition == slider->sliderValue;
-            if (!tracking) {
-                // Small optimization, the same as q->subControlRect
-                QCFType<HIShapeRef> shape;
-                HIThemeGetTrackThumbShape(&tdi, &shape);
-                HIShapeGetBounds(shape, &macRect);
-                tdi.value = slider->sliderValue;
-            }
-
-            if (!(slider->subControls & SC_SliderHandle))
-                tdi.attributes &= ~kThemeTrackShowThumb;
-            if (!(slider->subControls & SC_SliderGroove))
-                tdi.attributes |= kThemeTrackHideTrack;
-
-            // Fix min and max positions. (See also getSliderInfo()
-            // for the slider values adjustments.)
-            // HITheme seems to have forgotten how to render
-            // a slide at those positions, leaving a gap between
-            // the knob and the ends of the track.
-            // We fix this by rendering the track first, and then
-            // the knob on top. However, in order to not clip the
-            // knob, we reduce the the drawing rect for the track.
-            CGRect bounds = tdi.bounds;
-            if (isHorizontal) {
-                tdi.bounds.size.width -= 2;
-                tdi.bounds.origin.x += 1;
-                if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward)
-                    tdi.bounds.origin.y -= 2;
-                else if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward)
-                    tdi.bounds.origin.y += 3;
-            } else {
-                tdi.bounds.size.height -= 2;
-                tdi.bounds.origin.y += 1;
-                if (tdi.trackInfo.slider.thumbDir == kThemeThumbDownward) // pointing right
-                    tdi.bounds.origin.x -= 4;
-                else if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward) // pointing left
-                    tdi.bounds.origin.x += 2;
+            CGPoint pressPoint;
+            if (isPressed) {
+                const CGRect knobRect = [slider.cell knobRectFlipped:NO];
+                pressPoint.x = CGRectGetMidX(knobRect);
+                pressPoint.y = CGRectGetMidY(knobRect);
+                [slider.cell startTrackingAt:pressPoint inView:slider];
             }
 
-            // Yosemite demands its blue progress track when no tickmarks are present
-            if (!(slider->subControls & SC_SliderTickmarks)) {
-                QCocoaWidgetKind sliderKind = slider->orientation == Qt::Horizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider;
-                QCocoaWidget cw = QCocoaWidget(sliderKind, QStyleHelper::SizeLarge);
-                NSSlider *sl = (NSSlider *)d->cocoaControl(cw);
-                sl.minValue = slider->minimum;
-                sl.maxValue = slider->maximum;
-                sl.intValue = slider->sliderValue;
-                sl.enabled = slider->state & QStyle::State_Enabled;
-                d->drawNSViewInRect(cw, sl, opt->rect, p, widget != 0, ^(CGContextRef ctx, const CGRect &rect) {
-                                        const bool isSierraOrLater = QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra;
-                                        if (slider->upsideDown) {
-                                            if (isHorizontal) {
-                                                CGContextTranslateCTM(ctx, rect.size.width, 0);
-                                                CGContextScaleCTM(ctx, -1, 1);
-                                            }
-                                        } else if (!isHorizontal && !isSierraOrLater) {
-                                            CGContextTranslateCTM(ctx, 0, rect.size.height);
-                                            CGContextScaleCTM(ctx, 1, -1);
-                                        }
-                                        const bool shouldFlip = isHorizontal || (slider->upsideDown && isSierraOrLater);
-                                        [sl.cell drawBarInside:NSRectFromCGRect(tdi.bounds) flipped:shouldFlip];
-                                        // No need to restore the CTM later, the context has been saved
-                                        // and will be restored at the end of drawNSViewInRect()
-                                    });
-                tdi.attributes |= kThemeTrackHideTrack;
-
-                tdi.bounds = bounds;
-            }
-
-            if (slider->subControls & SC_SliderTickmarks) {
-
-                CGRect bounds;
-                // As part of fixing the min and max positions,
-                // we need to adjust the tickmarks as well
-                bounds = tdi.bounds;
-                if (slider->orientation == Qt::Horizontal) {
-                    tdi.bounds.size.width += 2;
-                    tdi.bounds.origin.x -= 1;
-                    if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward)
-                        tdi.bounds.origin.y -= 2;
-                } else {
-                    tdi.bounds.size.height += 3;
-                    tdi.bounds.origin.y -= 3;
-                    tdi.bounds.origin.y += 1;
-                    if (tdi.trackInfo.slider.thumbDir == kThemeThumbUpward) // pointing left
-                        tdi.bounds.origin.x -= 2;
+            d->drawNSViewInRect(cw, slider, opt->rect, p, widget != 0, ^(CGContextRef ctx, const CGRect &rect) {
+                if (isHorizontal && sl->upsideDown) {
+                    CGContextTranslateCTM(ctx, rect.size.width, 0);
+                    CGContextScaleCTM(ctx, -1, 1);
                 }
 
-                int interval = slider->tickInterval;
-                if (interval == 0) {
-                    interval = slider->pageStep;
-                    if (interval == 0)
-                        interval = slider->singleStep;
-                    if (interval == 0)
-                        interval = 1;
-                }
-                int numMarks = 1 + ((slider->maximum - slider->minimum) / interval);
-
-                if (tdi.trackInfo.slider.thumbDir == kThemeThumbPlain) {
-                    // They asked for both, so we'll give it to them.
-                    tdi.trackInfo.slider.thumbDir = kThemeThumbDownward;
-                    HIThemeDrawTrackTickMarks(&tdi, numMarks,
-                                              cg,
-                                              kHIThemeOrientationNormal);
-                    tdi.trackInfo.slider.thumbDir = kThemeThumbUpward;
-                    // 10.10 and above need a slight shift
-                    if (slider->orientation == Qt::Vertical)
-                        tdi.bounds.origin.x -= 2;
-                    HIThemeDrawTrackTickMarks(&tdi, numMarks,
-                                              cg,
-                                              kHIThemeOrientationNormal);
-                    // Reset to plain thumb to be drawn further down
-                    tdi.trackInfo.slider.thumbDir = kThemeThumbPlain;
-                } else {
-                    HIThemeDrawTrackTickMarks(&tdi, numMarks,
-                                              cg,
-                                              kHIThemeOrientationNormal);
+                if (hasDoubleTicks) {
+                    // This ain't HIG kosher: eye-proved constants
+                    if (isHorizontal)
+                        CGContextTranslateCTM(ctx, 0, 4);
+                    else
+                        CGContextTranslateCTM(ctx, 1, 0);
                 }
 
-                tdi.bounds = bounds;
-            }
+                // Since the GC is flipped, upsideDown means *not* inverted when vertical.
+                const bool verticalFlip = !isHorizontal && !sl->upsideDown; // FIXME: && !isSierraOrLater
 
-            HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,
-                             kHIThemeOrientationNormal);
+#if 0
+                // FIXME: Sadly, this part doesn't work. It seems to somehow polute the
+                // NSSlider's internal state and, when we need to use the "else" part,
+                // the slider's frame is not in sync with its cell dimensions.
+                const bool drawAllParts = drawKnob && drawBar && (!hasTicks || drawTicks);
+                if (drawAllParts && !hasDoubleTicks && (!verticalFlip || drawTicks)) {
+                    // Draw eveything at once if we're going to, except for inverted vertical
+                    // sliders which need to be drawn part by part because of the shadow below
+                    // the knob. Same for two-sided tickmarks.
+                    if (verticalFlip && drawTicks) {
+                        // Since tickmarks are always rendered symmetrically, a vertically
+                        // flipped slider with tickmarks only needs to get its value flipped.
+                        slider.intValue = slider.maxValue - slider.intValue + slider.minValue;
+                    }
+                    [slider drawRect:CGRectZero];
+                } else
+#endif
+                {
+                    [slider calcSize];
+                    NSSliderCell *cell = slider.cell;
+
+                    const int numberOfTickMarks = slider.numberOfTickMarks;
+                    // This ain't HIG kosher: force tick-less bar position.
+                    if (hasDoubleTicks)
+                        slider.numberOfTickMarks = 0;
+
+                    const CGRect barRect = [cell barRectFlipped:hasTicks];
+                    if (drawBar) {
+                        // This ain't HIG kosher: force unfilled bar look.
+                        if (hasDoubleTicks)
+                            slider.numberOfTickMarks = numberOfTickMarks;
+                        [cell drawBarInside:barRect flipped:!verticalFlip];
+                    }
+
+                    if (hasTicks && drawTicks) {
+                        if (!drawBar && hasDoubleTicks)
+                            slider.numberOfTickMarks = numberOfTickMarks;
+
+                        [cell drawTickMarks];
+
+                        if (hasDoubleTicks) {
+                            // This ain't HIG kosher: just slap a set of tickmarks on each side, like we used to.
+                            CGAffineTransform tickMarksFlip;
+                            const CGRect tickMarkRect = [cell rectOfTickMarkAtIndex:0];
+                            if (isHorizontal) {
+                                tickMarksFlip = CGAffineTransformMakeTranslation(0, rect.size.height - tickMarkRect.size.height - 3);
+                                tickMarksFlip = CGAffineTransformScale(tickMarksFlip, 1, -1);
+                            } else {
+                                tickMarksFlip = CGAffineTransformMakeTranslation(rect.size.width - tickMarkRect.size.width / 2, 0);
+                                tickMarksFlip = CGAffineTransformScale(tickMarksFlip, -1, 1);
+                            }
+                            CGContextConcatCTM(ctx, tickMarksFlip);
+                            [cell drawTickMarks];
+                            CGContextConcatCTM(ctx, CGAffineTransformInvert(tickMarksFlip));
+                        }
+                    }
+
+                    if (drawKnob) {
+                        // This ain't HIG kosher: force round knob look.
+                        if (hasDoubleTicks)
+                            slider.numberOfTickMarks = 0;
+                        // Draw the knob in the symmetrical position instead of flipping.
+                        if (verticalFlip)
+                            slider.intValue = slider.maxValue - slider.intValue + slider.minValue;
+                        [cell drawKnob];
+                    }
+                }
+            });
+
+            if (isPressed)
+                [slider.cell stopTracking:pressPoint at:pressPoint inView:slider mouseIsUp:NO];
         }
         break;
 #ifndef QT_NO_SPINBOX
@@ -5618,15 +5561,16 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 const bool downPressed = sb->activeSubControls == SC_SpinBoxDown && (sb->state & State_Sunken);
                 const CGFloat x = CGRectGetMidX(newRect);
                 const CGFloat y = upPressed ? -3 : 3; // FIXME Weird coordinate shift going on
+                const CGPoint pressPoint = CGPointMake(x, y);
                 // Pretend we're pressing the mouse on the right button. Unfortunately, NSStepperCell has no
                 // API to highlight a specific button. The highlighted property works only on the down button.
                 if (upPressed || downPressed)
-                    [cell startTrackingAt:CGPointMake(x, y) inView:d->backingStoreNSView];
+                    [cell startTrackingAt:pressPoint inView:d->backingStoreNSView];
 
                 [cell drawWithFrame:newRect inView:d->backingStoreNSView];
 
                 if (upPressed || downPressed)
-                    [cell stopTracking:CGPointMake(x, y) at:CGPointMake(x, y) inView:d->backingStoreNSView mouseIsUp:NO];
+                    [cell stopTracking:pressPoint at:pressPoint inView:d->backingStoreNSView mouseIsUp:NO];
 
                 d->restoreNSGraphicsContext(cg);
             }
@@ -5941,16 +5885,28 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
         }
         break;
     case CC_Slider:
-        if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            HIThemeTrackDrawInfo tdi;
-            d->getSliderInfo(cc, slider, &tdi, widget);
-            ControlPartCode part;
-            CGPoint pos = CGPointMake(pt.x(), pt.y());
-            if (HIThemeHitTestTrack(&tdi, &pos, &part)) {
-                if (part == kControlPageUpPart || part == kControlPageDownPart)
-                    sc = SC_SliderGroove;
-                else
-                    sc = SC_SliderHandle;
+        if (const QStyleOptionSlider *sl = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            if (!sl->rect.contains(pt))
+                break;
+
+            const bool hasTicks = sl->tickPosition != QSlider::NoTicks;
+            const bool isHorizontal = sl->orientation == Qt::Horizontal;
+            const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
+            const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider, cs);
+            auto *slider = static_cast<NSSlider *>(d->cocoaControl(cw));
+            if (!setupSlider(slider, sl))
+                break;
+
+            [slider calcSize];
+            NSSliderCell *cell = slider.cell;
+            const auto barRect = QRectF::fromCGRect([cell barRectFlipped:hasTicks]);
+            const auto knobRect = QRectF::fromCGRect([cell knobRectFlipped:NO]);
+            if (knobRect.contains(pt)) {
+                sc = SC_SliderHandle;
+            } else if (barRect.contains(pt)) {
+                sc = SC_SliderGroove;
+            } else if (hasTicks) {
+                sc = SC_SliderTickmarks;
             }
         }
         break;
@@ -6078,30 +6034,51 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
         }
         break;
     case CC_Slider:
-        if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            HIThemeTrackDrawInfo tdi;
-            d->getSliderInfo(cc, slider, &tdi, widget);
-            CGRect macRect;
-            QCFType<HIShapeRef> shape;
-            if (sc == SC_SliderHandle) {
-                HIThemeGetTrackThumbShape(&tdi, &shape);
-                HIShapeGetBounds(shape, &macRect);
-            } else if (sc == SC_SliderGroove) {
-                HIThemeGetTrackBounds(&tdi, &macRect);
-            }
-            // FIXME No SC_SliderTickmarks?
-            ret = QRectF::fromCGRect(macRect).toRect();
+        if (const QStyleOptionSlider *sl = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            const bool hasTicks = sl->tickPosition != QSlider::NoTicks;
+            const bool isHorizontal = sl->orientation == Qt::Horizontal;
+            const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
+            const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider, cs);
+            auto *slider = static_cast<NSSlider *>(d->cocoaControl(cw));
+            if (!setupSlider(slider, sl))
+                break;
 
-            // Tweak: the dark line between the sub/add line buttons belong to only one of the buttons
-            // when doing hit-testing, but both of them have to repaint it. Extend the rect to cover
-            // the line in the cases where HIThemeGetTrackPartBounds returns a rect that doesn't.
-            if (slider->orientation == Qt::Horizontal) {
-                if (slider->direction == Qt::LeftToRight && sc == SC_ScrollBarSubLine)
-                    ret.adjust(0, 0, 1, 0);
-                else if (slider->direction == Qt::RightToLeft && sc == SC_ScrollBarAddLine)
-                    ret.adjust(-1, 0, 1, 0);
-            } else if (sc == SC_ScrollBarAddLine) {
-                ret.adjust(0, -1, 0, 1);
+            [slider calcSize];
+            NSSliderCell *cell = slider.cell;
+            if (sc == SC_SliderHandle) {
+                ret = QRectF::fromCGRect([cell knobRectFlipped:NO]).toRect();
+                if (isHorizontal) {
+                    ret.setTop(sl->rect.top());
+                    ret.setBottom(sl->rect.bottom());
+                } else {
+                    ret.setLeft(sl->rect.left());
+                    ret.setRight(sl->rect.right());
+                }
+            } else if (sc == SC_SliderGroove) {
+                ret = QRectF::fromCGRect([cell barRectFlipped:hasTicks]).toRect();
+            } else if (hasTicks && sc == SC_SliderTickmarks) {
+                const auto tickMarkRect = QRectF::fromCGRect([cell rectOfTickMarkAtIndex:0]);
+                if (isHorizontal)
+                    ret = QRect(sl->rect.left(), tickMarkRect.top(), sl->rect.width(), tickMarkRect.height());
+                else
+                    ret = QRect(tickMarkRect.left(), sl->rect.top(), tickMarkRect.width(), sl->rect.height());
+            }
+
+            // Invert if needed and extend to the actual bounds of the slider
+            if (isHorizontal) {
+                if (sl->upsideDown) {
+                    ret = QRect(sl->rect.right() - ret.right(), sl->rect.top(), ret.width(), sl->rect.height());
+                } else {
+                    ret.setTop(sl->rect.top());
+                    ret.setBottom(sl->rect.bottom());
+                }
+            } else {
+                if (!sl->upsideDown) {
+                    ret = QRect(sl->rect.left(), sl->rect.bottom() - ret.bottom(), sl->rect.width(), ret.height());
+                } else {
+                    ret.setLeft(sl->rect.left());
+                    ret.setRight(sl->rect.right());
+                }
             }
         }
         break;
