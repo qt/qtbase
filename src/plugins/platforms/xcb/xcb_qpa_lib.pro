@@ -85,4 +85,6 @@ include(gl_integrations/gl_integrations.pri)
     QMAKE_USE += xkbcommon
 }
 
+qtConfig(dlopen): QMAKE_USE += libdl
+
 load(qt_module)
