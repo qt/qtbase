@@ -3207,7 +3207,7 @@ void QRasterPaintEnginePrivate::rasterizeLine_dashed(QLineF line,
         QLineF l = line;
 
         if (dash >= length) {
-            dash = length;
+            dash = line.length();  // Avoid accumulated precision error in 'length'
             *dashOffset += dash / width;
             length = 0;
         } else {
