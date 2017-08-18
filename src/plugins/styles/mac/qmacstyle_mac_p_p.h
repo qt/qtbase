@@ -146,11 +146,11 @@ QT_BEGIN_NAMESPACE
 
 /*
     AHIG:
-        Apple Human Interface Guidelines
-        http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/
+        macOS Human Interface Guidelines
+        https://developer.apple.com/macos/human-interface-guidelines/overview/themes/
 
     Builder:
-        Apple Interface Builder v. 3.1.1
+        Interface Builder in Xcode 8 or later
 */
 
 // this works as long as we have at most 16 different control types
