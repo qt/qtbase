@@ -123,15 +123,13 @@
     \value AA_PluginApplication Indicates that Qt is used to author a plugin. Depending
            on the operating system, it suppresses specific initializations that do not
            necessarily make sense in the plugin case.
-           For example on OS X, this includes avoiding loading our nib for the main
+           For example on \macos, this includes avoiding loading our nib for the main
            menu and not taking possession of the native menu bar. Setting this
            attribute to true will also set the AA_DontUseNativeMenuBar attribute
            to true. It also disables native event filters.
            This attribute has been added in Qt 5.7. It must be set before
-           \l {QGuiApplication}{Q(Gui)Application} is constructed.
+           \l {QGuiApplication}{Q\(Gui\)Application} is constructed.
 
-    \value AA_MacPluginApplication This attribute has been deprecated.
-           Use AA_PluginApplication instead.
 
     \value AA_DontUseNativeMenuBar All menubars created while this attribute is
            set to true won't be used as a native menubar (e.g, the menubar at
@@ -149,8 +147,6 @@
            than using the OS-provided resolution. This will cause font rendering
            to be consistent in pixels-per-point across devices rather than
            defining 1 point as 1/72 inch.
-
-    \value AA_X11InitThreads This value is obsolete and has no effect.
 
     \value AA_SynthesizeTouchForUnhandledMouseEvents All mouse events
            that are not accepted by the application will be translated
@@ -174,12 +170,13 @@
     \value AA_UseDesktopOpenGL Forces the usage of desktop OpenGL (for example,
            \e opengl32.dll or \e libGL.so) on platforms that use dynamic loading
            of the OpenGL implementation. This value has been added in Qt 5.3.
-           This attribute must be set before Q(Gui)Application is constructed.
+           This attribute must be set before \l {QGuiApplication}
+           {Q\(Gui\)Application} is constructed.
 
     \value AA_UseOpenGLES Forces the usage of OpenGL ES 2.0 or higher on
            platforms that use dynamic loading of the OpenGL implementation.
            This value has been added in Qt 5.3. This attribute must be set
-           before Q(Gui)Application is constructed.
+           before \l {QGuiApplication}{Q\(Gui\)Application} is constructed.
 
     \value AA_UseSoftwareOpenGL Forces the usage of a software based OpenGL
            implementation on platforms that use dynamic loading of the OpenGL
@@ -191,24 +188,25 @@
            variable \e QT_OPENGL_DLL. See the platform-specific pages, for
            instance \l{Qt for Windows}, for more information.  This value has
            been added in Qt 5.4. This attribute must be set before
-           Q(Gui)Application is constructed.
+           \l {QGuiApplication}{Q\(Gui\)Application} is constructed.
 
     \value AA_ShareOpenGLContexts Enables resource sharing between the OpenGL
            contexts used by classes like QOpenGLWidget and QQuickWidget. This
            allows sharing OpenGL resources, like textures, between QOpenGLWidget
            instances that belong to different top-level windows. This value has
            been added in Qt 5.4. This attribute must be set before
-           Q(Gui)Application is constructed.
+           \l {QGuiApplication}{Q\(Gui\)Application} is constructed.
 
     \value AA_SetPalette Indicates whether a palette was explicitly set on the
-           QApplication/QGuiApplication. This value has been added in Qt 5.5.
+           \l {QGuiApplication}{Q\(Gui\)Application}. This value has been added
+           in Qt 5.5.
 
     \value AA_EnableHighDpiScaling Enables high-DPI scaling in Qt on supported
            platforms (see also \l{High DPI Displays}). Supported platforms are
            X11, Windows and Android. Enabling makes Qt scale the main (device
            independent) coordinate system according to display scale factors
            provided by the operating system. This corresponds to setting the
-           QT_AUTO_SCREEN_SCALE_FACTOR environment variable to 1. This value
+           QT_AUTO_SCREEN\unicode{0x200b}_SCALE_FACTOR environment variable to 1. This value
            has been added in Qt 5.6. This attribute must be set before
            Q(Gui)Application is constructed.
 
@@ -216,8 +214,9 @@
            system coordinates. Note that the window system may do its own scaling,
            so this does not guarantee that QPaintDevice::devicePixelRatio() will
            be equal to 1. In addition, scale factors set by QT_SCALE_FACTOR will not
-           be affected. This corresponds to setting the QT_AUTO_SCREEN_SCALE_FACTOR
-           environment variable to 0. This value has been added in Qt 5.6. This
+           be affected. This corresponds to setting the
+           QT_AUTO_SCREEN\unicode{0x200b}_SCALE_FACTOR environment variable to 0.
+           This value has been added in Qt 5.6. This
            attribute must be set before Q(Gui)Application is constructed.
 
     \value AA_UseStyleSheetPropagationInWidgetStyles By default, Qt Style Sheets
@@ -263,7 +262,7 @@
            \e glProgramBinary(). In the unlikely event of this being problematic,
            set this attribute to disable all disk-based caching of shaders.
 
-    The following values are obsolete:
+    The following values are deprecated or obsolete:
 
     \value AA_ImmediateWidgetCreation This attribute is no longer fully
            supported in Qt 5. It ensures that widgets are created
@@ -275,8 +274,13 @@
            Therefore, if it is important to minimize resource
            consumption, do not set this attribute.
 
+    \value AA_MacPluginApplication This attribute has been deprecated.
+           Use AA_PluginApplication instead.
+
     \value AA_MSWindowsUseDirect3DByDefault This value is obsolete and
            has no effect.
+
+    \value AA_X11InitThreads This value is obsolete and has no effect.
 
     \omitvalue AA_AttributeCount
 */
