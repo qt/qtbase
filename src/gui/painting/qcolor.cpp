@@ -853,7 +853,7 @@ QString QColor::name(NameFormat format) const
         return QLatin1Char('#') + QString::number(rgba() | 0x1000000, 16).rightRef(6);
     case HexArgb:
         // it's called rgba() but it does return AARRGGBB
-        return QLatin1Char('#') + QString::number(rgba() | 0x100000000, 16).rightRef(8);
+        return QLatin1Char('#') + QString::number(rgba() | Q_INT64_C(0x100000000), 16).rightRef(8);
     }
     return QString();
 }
