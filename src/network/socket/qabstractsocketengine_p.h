@@ -105,7 +105,8 @@ public:
         TypeOfServiceOption,
         ReceivePacketInformation,
         ReceiveHopLimit,
-        MaxStreamsSocketOption
+        MaxStreamsSocketOption,
+        PathMtuInformation
     };
 
     enum PacketHeaderOption {

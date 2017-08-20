@@ -40,6 +40,8 @@
 #include "../../../network-settings.h"
 #include "emulationdetector.h"
 
+Q_DECLARE_METATYPE(QHostAddress)
+
 class tst_QNetworkInterface : public QObject
 {
     Q_OBJECT
@@ -57,6 +59,7 @@ private slots:
     void consistencyCheck();
     void loopbackIPv4();
     void loopbackIPv6();
+    void localAddress_data();
     void localAddress();
     void interfaceFromXXX_data();
     void interfaceFromXXX();
@@ -210,18 +213,69 @@ void tst_QNetworkInterface::loopbackIPv6()
     QList<QHostAddress> all = QNetworkInterface::allAddresses();
     QVERIFY(all.contains(QHostAddress(QHostAddress::LocalHostIPv6)));
 }
+void tst_QNetworkInterface::localAddress_data()
+{
+    QTest::addColumn<QHostAddress>("target");
+
+    QTest::newRow("localhost-ipv4") << QHostAddress(QHostAddress::LocalHost);
+    if (isIPv6Working())
+        QTest::newRow("localhost-ipv6") << QHostAddress(QHostAddress::LocalHostIPv6);
+
+    QTest::newRow("test-server") << QtNetworkSettings::serverIP();
+
+    // Since we don't actually transmit anything, we can list any IPv4 address
+    // and it should work. But we're using a linklocal address so that this
+    // test can pass even machines that failed to reach a DHCP server.
+    QTest::newRow("linklocal-ipv4") << QHostAddress("169.254.0.1");
+
+    if (isIPv6Working()) {
+        // On the other hand, we can't list just any IPv6 here. It's very
+        // likely that this machine has not received a route via ICMPv6-RA or
+        // DHCPv6, so it won't have a global route. On some OSes, IPv6 may be
+        // enabled per interface, so we need to know which ones work.
+        const QList<QHostAddress> addrs = QNetworkInterface::allAddresses();
+        for (const QHostAddress &addr : addrs) {
+            QString scope = addr.scopeId();
+            if (scope.isEmpty())
+                continue;
+            QTest::addRow("linklocal-ipv6-%s", qPrintable(scope))
+                    << QHostAddress("fe80::1234%" + scope);
+        }
+    }
+}
 
 void tst_QNetworkInterface::localAddress()
 {
+    QFETCH(QHostAddress, target);
     QUdpSocket socket;
-    socket.connectToHost(QtNetworkSettings::serverName(), 80);
+    socket.connectToHost(target, 80);
     QVERIFY(socket.waitForConnected(5000));
 
     QHostAddress local = socket.localAddress();
 
-    // test that we can find the address that QUdpSocket reported
-    QList<QHostAddress> all = QNetworkInterface::allAddresses();
-    QVERIFY(all.contains(local));
+    // find the interface that contains the address QUdpSocket reported
+    QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+    const QNetworkInterface *outgoingIface = nullptr;
+    for (const QNetworkInterface &iface : ifaces) {
+        QList<QNetworkAddressEntry> addrs = iface.addressEntries();
+        for (const QNetworkAddressEntry &entry : addrs) {
+            if (entry.ip() == local) {
+                outgoingIface = &iface;
+                break;
+            }
+        }
+        if (outgoingIface)
+            break;
+    }
+    QVERIFY(outgoingIface);
+
+    // we get QVariant() if the QNativeSocketEngine doesn't know how to get the PMTU
+    int pmtu = socket.socketOption(QAbstractSocket::PathMtuSocketOption).toInt();
+    qDebug() << "Connected to" << target.toString() << "via interface" << outgoingIface->name()
+             << "pmtu" << pmtu;
+
+    // check that the Path MTU is less than or equal the interface's MTU
+    QVERIFY(pmtu <= outgoingIface->maxTransmissionUnit());
 }
 
 void tst_QNetworkInterface::interfaceFromXXX_data()

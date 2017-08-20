@@ -387,6 +387,11 @@
     (see \l{QAbstractSocket::}{setReadBufferSize()}).
     This enum value has been introduced in Qt 5.3.
 
+    \value PathMtuSocketOption Retrieves the Path Maximum Transmission Unit
+    (PMTU) value currently known by the IP stack, if any. Some IP stacks also
+    allow setting the MTU for transmission.
+    This enum value was introduced in Qt 5.11.
+
     Possible values for \e{TypeOfServiceOption} are:
 
     \table
@@ -2023,6 +2028,10 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, cons
         case ReceiveBufferSizeSocketOption:
             d_func()->socketEngine->setOption(QAbstractSocketEngine::ReceiveBufferSocketOption, value.toInt());
             break;
+
+        case PathMtuSocketOption:
+            d_func()->socketEngine->setOption(QAbstractSocketEngine::PathMtuInformation, value.toInt());
+            break;
     }
 }
 
@@ -2064,6 +2073,10 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 
         case ReceiveBufferSizeSocketOption:
                 ret = d_func()->socketEngine->option(QAbstractSocketEngine::ReceiveBufferSocketOption);
+                break;
+
+        case PathMtuSocketOption:
+                ret = d_func()->socketEngine->option(QAbstractSocketEngine::PathMtuInformation);
                 break;
     }
     if (ret == -1)
