@@ -136,6 +136,7 @@ class tst_QStringView : public QObject
 private Q_SLOTS:
     void constExpr() const;
     void basics() const;
+    void literals() const;
     void at() const;
 
     void fromQString() const;
@@ -305,6 +306,12 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(!sv2.isNull());
         Q_STATIC_ASSERT(!sv2.empty());
         Q_STATIC_ASSERT(sv2.size() == 5);
+
+        constexpr char16_t *null = nullptr;
+        constexpr QStringView sv3(null);
+        Q_STATIC_ASSERT(sv3.isNull());
+        Q_STATIC_ASSERT(sv3.isEmpty());
+        Q_STATIC_ASSERT(sv3.size() == 0);
     }
 #else // storage_type is wchar_t
     {
@@ -328,6 +335,12 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(!sv2.isNull());
         Q_STATIC_ASSERT(!sv2.empty());
         Q_STATIC_ASSERT(sv2.size() == 5);
+
+        constexpr wchar_t *null = nullptr;
+        constexpr QStringView sv3(null);
+        Q_STATIC_ASSERT(sv3.isNull());
+        Q_STATIC_ASSERT(sv3.isEmpty());
+        Q_STATIC_ASSERT(sv3.size() == 0);
     }
 #endif
 #endif
@@ -346,6 +359,37 @@ void tst_QStringView::basics() const
 
     QVERIFY(sv2 == sv1);
     QVERIFY(!(sv2 != sv1));
+}
+
+void tst_QStringView::literals() const
+{
+#if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
+    // the + ensures it's a pointer, not an array
+    QCOMPARE(QStringView(+u"Hello").size(), 5);
+    QStringView sv = u"Hello";
+#else // storage_type is wchar_t
+    // the + ensures it's a pointer, not an array
+    QCOMPARE(QStringView(+L"Hello").size(), 5);
+    QStringView sv = L"Hello";
+#endif
+    QCOMPARE(sv.size(), 5);
+    QVERIFY(!sv.empty());
+    QVERIFY(!sv.isEmpty());
+    QVERIFY(!sv.isNull());
+    QCOMPARE(*sv.utf16(), 'H');
+    QCOMPARE(sv[0],      QLatin1Char('H'));
+    QCOMPARE(sv.at(0),   QLatin1Char('H'));
+    QCOMPARE(sv.front(), QLatin1Char('H'));
+    QCOMPARE(sv.first(), QLatin1Char('H'));
+    QCOMPARE(sv[4],      QLatin1Char('o'));
+    QCOMPARE(sv.at(4),   QLatin1Char('o'));
+    QCOMPARE(sv.back(),  QLatin1Char('o'));
+    QCOMPARE(sv.last(),  QLatin1Char('o'));
+
+    QStringView sv2(sv.utf16(), sv.utf16() + sv.size());
+    QVERIFY(!sv2.isNull());
+    QVERIFY(!sv2.empty());
+    QCOMPARE(sv2.size(), 5);
 }
 
 void tst_QStringView::at() const

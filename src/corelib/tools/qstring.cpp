@@ -72,6 +72,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <wchar.h>
 
 #include "qchar.cpp"
 #include "qstringmatcher.cpp"
@@ -158,6 +159,43 @@ static inline bool qt_starts_with(QStringView haystack, QChar needle, Qt::CaseSe
 static inline bool qt_ends_with(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
+
+qssize_t qustrlen(const ushort *str) Q_DECL_NOTHROW
+{
+    qssize_t result = 0;
+
+#ifdef __SSE2__
+    // progress until we get an aligned pointer
+    const ushort *ptr = str;
+    while (*ptr && quintptr(ptr) % 16)
+        ++ptr;
+    if (*ptr == 0)
+        return ptr - str;
+
+    // load 16 bytes and see if we have a null
+    // (aligned loads can never segfault)
+    int mask;
+    const __m128i zeroes = _mm_setzero_si128();
+    do {
+        __m128i data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
+        ptr += 8;
+
+        __m128i comparison = _mm_cmpeq_epi16(data, zeroes);
+        mask = _mm_movemask_epi8(comparison);
+    } while (mask == 0);
+
+    // found a null
+    uint idx = qCountTrailingZeroBits(quint32(mask));
+    return ptr - str - 8 + idx / 2;
+#endif
+
+    if (sizeof(wchar_t) == sizeof(ushort))
+        return wcslen(reinterpret_cast<const wchar_t *>(str));
+
+    while (*str++)
+        ++result;
+    return result;
+}
 
 #if defined(Q_COMPILER_LAMBDA) && !defined(__OPTIMIZE_SIZE__)
 namespace {

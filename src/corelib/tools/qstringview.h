@@ -143,20 +143,22 @@ private:
     {
         return qssize_t(N - 1);
     }
+
     template <typename Char>
-    static Q_DECL_RELAXED_CONSTEXPR qssize_t lengthHelperPointer(const Char *str) Q_DECL_NOTHROW
+    static qssize_t lengthHelperPointer(const Char *str) Q_DECL_NOTHROW
     {
-        qssize_t result = 0;
-        while (*str++)
-            ++result;
-        return result;
+#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+        if (__builtin_constant_p(*str)) {
+            qssize_t result = 0;
+            while (*str++)
+                ++result;
+        }
+#endif
+        return qustrlen(reinterpret_cast<const ushort *>(str));
     }
-    static Q_DECL_RELAXED_CONSTEXPR qssize_t lengthHelperPointer(const QChar *str) Q_DECL_NOTHROW
+    static qssize_t lengthHelperPointer(const QChar *str) Q_DECL_NOTHROW
     {
-        qssize_t result = 0;
-        while (!str++->isNull())
-            ++result;
-        return result;
+        return qustrlen(reinterpret_cast<const ushort *>(str));
     }
 
     template <typename Char>
