@@ -1468,8 +1468,8 @@ void QWizardPrivate::updateButtonTexts()
     // even in RTL mode, so do the same, even if it might be counter-intuitive.
     // The shortcut for 'back' is set in class QVistaBackButton.
 #if QT_CONFIG(shortcut)
-    if (btns[QWizard::NextButton])
-        btns[QWizard::NextButton]->setShortcut(isVistaThemeEnabled() ? QKeySequence(Qt::ALT | Qt::Key_Right) : QKeySequence());
+    if (btns[QWizard::NextButton] && isVistaThemeEnabled())
+        btns[QWizard::NextButton]->setShortcut(QKeySequence(Qt::ALT | Qt::Key_Right));
 #endif
 }
 
