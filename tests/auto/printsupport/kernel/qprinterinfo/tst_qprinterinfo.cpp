@@ -136,7 +136,7 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
 #ifdef Q_OS_UNIX
 // This function does roughly the same as the `command substitution` in
 // the shell.
-QString tst_QPrinterInfo::getOutputFromCommand(const QStringList& command)
+QString getOutputFromCommandInternal(const QStringList &command)
 {
 // The command execution does nothing on non-unix systems.
     int pid;
@@ -193,6 +193,16 @@ QString tst_QPrinterInfo::getOutputFromCommand(const QStringList& command)
         wait(&status);
         return QString(array);
     }
+}
+
+QString tst_QPrinterInfo::getOutputFromCommand(const QStringList &command)
+{
+    // Forces the ouptut from the command to be in English
+    const QByteArray origSoftwareEnv = qgetenv("SOFTWARE");
+    qputenv("SOFTWARE", QByteArray());
+    QString output = getOutputFromCommandInternal(command);
+    qputenv("SOFTWARE", origSoftwareEnv);
+    return output;
 }
 #endif
 
