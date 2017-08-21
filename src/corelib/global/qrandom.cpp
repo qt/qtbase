@@ -138,11 +138,13 @@ public:
             // getentropy can't fail under normal circumstances
             int ret = getentropy(reinterpret_cast<uchar *>(buffer) + read, 256);
             Q_ASSERT(ret == 0);
+            Q_UNUSED(ret);
             read += 256;
         }
 
         int ret = getentropy(reinterpret_cast<uchar *>(buffer) + read, count - read);
         Q_ASSERT(ret == 0);
+        Q_UNUSED(ret);
         return count;
     }
 };
