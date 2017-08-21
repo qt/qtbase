@@ -5242,6 +5242,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
 
+            const bool drawTrack = sb->subControls & SC_ScrollBarGroove;
+            const bool drawKnob = sb->subControls & SC_ScrollBarSlider;
+            if (!drawTrack && !drawKnob)
+                break;
+
             const bool isHorizontal = sb->orientation == Qt::Horizontal;
 
             if (opt && opt->styleObject && !QMacStylePrivate::scrollBars.contains(opt->styleObject))
@@ -5361,49 +5366,53 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 CGContextSetAlpha(cg, opacity);
             }
 
-            // Draw the track when hovering. Expand by shifting the track rect.
-            if (!isTransient || opt->activeSubControls || wasActive) {
-                CGRect trackRect = scroller.bounds;
-                if (isHorizontal)
-                    trackRect.origin.y += expandOffset;
-                else
-                    trackRect.origin.x += expandOffset;
-                [scroller drawKnobSlotInRect:trackRect highlight:NO];
+            if (drawTrack) {
+                // Draw the track when hovering. Expand by shifting the track rect.
+                if (!isTransient || opt->activeSubControls || wasActive) {
+                    CGRect trackRect = scroller.bounds;
+                    if (isHorizontal)
+                        trackRect.origin.y += expandOffset;
+                    else
+                        trackRect.origin.x += expandOffset;
+                    [scroller drawKnobSlotInRect:trackRect highlight:NO];
+                }
             }
 
-            if (shouldExpand) {
-                // -[NSScroller drawKnob] is not useful here because any scaling applied
-                // will only be used to draw the hi-DPI artwork. And even if did scale,
-                // the stretched knob would look wrong, actually. So we need to draw the
-                // scroller manually when it's being hovered.
-                const CGFloat scrollerWidth = [NSScroller scrollerWidthForControlSize:scroller.controlSize scrollerStyle:scroller.scrollerStyle];
-                const CGFloat knobWidth = knobWidths[cocoaSize] * expandScale;
-                // Cocoa can help get the exact knob length in the current orientation
-                const CGRect scrollerKnobRect = CGRectInset([scroller rectForPart:NSScrollerKnob], 1, 1);
-                const CGFloat knobLength = isHorizontal ? scrollerKnobRect.size.width : scrollerKnobRect.size.height;
-                const CGFloat knobPos = isHorizontal ? scrollerKnobRect.origin.x : scrollerKnobRect.origin.y;
-                const CGFloat knobOffset = qRound((scrollerWidth + expandOffset - knobWidth) / 2.0);
-                const CGFloat knobRadius = knobWidth / 2.0;
-                CGRect knobRect;
-                if (isHorizontal)
-                    knobRect = CGRectMake(knobPos, knobOffset, knobLength, knobWidth);
-                else
-                    knobRect = CGRectMake(knobOffset, knobPos, knobWidth, knobLength);
-                QCFType<CGPathRef> knobPath = CGPathCreateWithRoundedRect(knobRect, knobRadius, knobRadius, nullptr);
-                CGContextAddPath(cg, knobPath);
-                CGContextSetAlpha(cg, 0.5);
-                CGContextSetFillColorWithColor(cg, NSColor.blackColor.CGColor);
-                CGContextFillPath(cg);
-            } else {
-                [scroller drawKnob];
-
-                if (!isTransient && opt->activeSubControls) {
-                    // The knob should appear darker (going from 0.76 down to 0.49).
-                    // But no blending mode can help darken enough in a single pass,
-                    // so we resort to drawing the knob twice with a small help from
-                    // blending. This brings the gray level to a close enough 0.53.
-                    CGContextSetBlendMode(cg, kCGBlendModePlusDarker);
+            if (drawKnob) {
+                if (shouldExpand) {
+                    // -[NSScroller drawKnob] is not useful here because any scaling applied
+                    // will only be used to draw the hi-DPI artwork. And even if did scale,
+                    // the stretched knob would look wrong, actually. So we need to draw the
+                    // scroller manually when it's being hovered.
+                    const CGFloat scrollerWidth = [NSScroller scrollerWidthForControlSize:scroller.controlSize scrollerStyle:scroller.scrollerStyle];
+                    const CGFloat knobWidth = knobWidths[cocoaSize] * expandScale;
+                    // Cocoa can help get the exact knob length in the current orientation
+                    const CGRect scrollerKnobRect = CGRectInset([scroller rectForPart:NSScrollerKnob], 1, 1);
+                    const CGFloat knobLength = isHorizontal ? scrollerKnobRect.size.width : scrollerKnobRect.size.height;
+                    const CGFloat knobPos = isHorizontal ? scrollerKnobRect.origin.x : scrollerKnobRect.origin.y;
+                    const CGFloat knobOffset = qRound((scrollerWidth + expandOffset - knobWidth) / 2.0);
+                    const CGFloat knobRadius = knobWidth / 2.0;
+                    CGRect knobRect;
+                    if (isHorizontal)
+                        knobRect = CGRectMake(knobPos, knobOffset, knobLength, knobWidth);
+                    else
+                        knobRect = CGRectMake(knobOffset, knobPos, knobWidth, knobLength);
+                    QCFType<CGPathRef> knobPath = CGPathCreateWithRoundedRect(knobRect, knobRadius, knobRadius, nullptr);
+                    CGContextAddPath(cg, knobPath);
+                    CGContextSetAlpha(cg, 0.5);
+                    CGContextSetFillColorWithColor(cg, NSColor.blackColor.CGColor);
+                    CGContextFillPath(cg);
+                } else {
                     [scroller drawKnob];
+
+                    if (!isTransient && opt->activeSubControls) {
+                        // The knob should appear darker (going from 0.76 down to 0.49).
+                        // But no blending mode can help darken enough in a single pass,
+                        // so we resort to drawing the knob twice with a small help from
+                        // blending. This brings the gray level to a close enough 0.53.
+                        CGContextSetBlendMode(cg, kCGBlendModePlusDarker);
+                        [scroller drawKnob];
+                    }
                 }
             }
 
