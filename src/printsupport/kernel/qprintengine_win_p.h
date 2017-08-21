@@ -73,7 +73,7 @@ class Q_PRINTSUPPORT_EXPORT QWin32PrintEngine : public QAlphaPaintEngine, public
 {
     Q_DECLARE_PRIVATE(QWin32PrintEngine)
 public:
-    QWin32PrintEngine(QPrinter::PrinterMode mode);
+    QWin32PrintEngine(QPrinter::PrinterMode mode, const QString &deviceId);
 
     // override QWin32PaintEngine
     bool begin(QPaintDevice *dev);

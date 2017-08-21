@@ -68,7 +68,7 @@ QPlatformPrinterSupport::~QPlatformPrinterSupport()
 {
 }
 
-QPrintEngine *QPlatformPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode)
+QPrintEngine *QPlatformPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode, const QString &)
 {
     return 0;
 }

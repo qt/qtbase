@@ -55,9 +55,9 @@ QWindowsPrinterSupport::~QWindowsPrinterSupport()
 {
 }
 
-QPrintEngine *QWindowsPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode)
+QPrintEngine *QWindowsPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId)
 {
-        return new QWin32PrintEngine(printerMode);
+    return new QWin32PrintEngine(printerMode, deviceId);
 }
 
 QPaintEngine *QWindowsPrinterSupport::createPaintEngine(QPrintEngine *engine, QPrinter::PrinterMode printerMode)

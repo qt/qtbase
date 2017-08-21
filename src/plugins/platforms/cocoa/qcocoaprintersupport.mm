@@ -54,9 +54,9 @@ QCocoaPrinterSupport::QCocoaPrinterSupport()
 QCocoaPrinterSupport::~QCocoaPrinterSupport()
 { }
 
-QPrintEngine *QCocoaPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode)
+QPrintEngine *QCocoaPrinterSupport::createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId)
 {
-    return new QMacPrintEngine(printerMode);
+    return new QMacPrintEngine(printerMode, deviceId);
 }
 
 QPaintEngine *QCocoaPrinterSupport::createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode printerMode)

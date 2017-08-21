@@ -146,7 +146,7 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
     }
 
     if (outputFormat == QPrinter::NativeFormat) {
-        printEngine = ps->createNativePrintEngine(printerMode);
+        printEngine = ps->createNativePrintEngine(printerMode, printerName);
         paintEngine = ps->createPaintEngine(printEngine, printerMode);
     } else {
         QPdfPrintEngine *pdfEngine = new QPdfPrintEngine(printerMode);
@@ -156,7 +156,6 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
 
     use_default_engine = true;
     had_default_engines = true;
-    setProperty(QPrintEngine::PPK_PrinterName, printerName);
     validPrinter = true;
 }
 
