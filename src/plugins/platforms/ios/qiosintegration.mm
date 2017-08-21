@@ -97,11 +97,6 @@ QIOSIntegration::QIOSIntegration()
     // The backingstore needs a global share context in order to support composition in
     // QPlatformBackingStore.
     qApp->setAttribute(Qt::AA_ShareOpenGLContexts, true);
-    // And that context must match the format used for the backingstore's context.
-    QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
-    fmt.setDepthBufferSize(16);
-    fmt.setStencilBufferSize(8);
-    QSurfaceFormat::setDefaultFormat(fmt);
 
     // Set current directory to app bundle folder
     QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
