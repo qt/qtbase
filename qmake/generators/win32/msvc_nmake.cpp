@@ -302,6 +302,13 @@ QStringList &NmakeMakefileGenerator::findDependencies(const QString &file)
             break;
         }
     }
+    for (QStringList::Iterator it = Option::c_ext.begin(); it != Option::c_ext.end(); ++it) {
+        if (file.endsWith(*it)) {
+            if (!precompObjC.isEmpty() && !aList.contains(precompObjC))
+                aList += precompObjC;
+            break;
+        }
+    }
     return aList;
 }
 
@@ -317,19 +324,29 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
           << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
           << "\n\t$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP "
           << escapeFilePath(precompH) << endl << endl;
+        QString precompRuleC = QString("-c -Yc -Fp%1 -Fo%2")
+                .arg(escapeFilePath(precompPchC), escapeFilePath(precompObjC));
+        t << escapeDependencyPath(precompObjC) << ": " << escapeDependencyPath(precompH) << ' '
+          << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
+          << "\n\t$(CC) " + precompRuleC +" $(CFLAGS) $(INCPATH) -TC "
+          << escapeFilePath(precompH) << endl << endl;
     }
 }
 
 QString NmakeMakefileGenerator::var(const ProKey &value) const
 {
     if (usePCH) {
-        if ((value == "QMAKE_RUN_CXX_IMP_BATCH"
+        const bool isRunC = (value == "QMAKE_RUN_CC_IMP_BATCH"
+                             || value == "QMAKE_RUN_CC_IMP"
+                             || value == "QMAKE_RUN_CC");
+        if (isRunC
+            || value == "QMAKE_RUN_CXX_IMP_BATCH"
             || value == "QMAKE_RUN_CXX_IMP"
-            || value == "QMAKE_RUN_CXX")) {
+            || value == "QMAKE_RUN_CXX") {
             QFileInfo precompHInfo(fileInfo(precompH));
             QString precompH_f = escapeFilePath(precompHInfo.fileName());
             QString precompRule = QString("-c -FI%1 -Yu%2 -Fp%3")
-                    .arg(precompH_f, precompH_f, escapeFilePath(precompPch));
+                    .arg(precompH_f, precompH_f, escapeFilePath(isRunC ? precompPchC : precompPch));
             QString p = MakefileGenerator::var(value);
             p.replace(QLatin1String("-c"), precompRule);
             // Cannot use -Gm with -FI & -Yu, as this gives an
@@ -397,13 +414,19 @@ void NmakeMakefileGenerator::init()
         // Created files
         precompObj = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch" + Option::obj_ext;
         precompPch = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch.pch";
+        precompObjC = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch_c" + Option::obj_ext;
+        precompPchC = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch_c.pch";
         // Add linking of precompObj (required for whole precompiled classes)
         project->values("OBJECTS")                  += precompObj;
+        project->values("OBJECTS")                  += precompObjC;
         // Add pch file to cleanup
         project->values("QMAKE_CLEAN")          += precompPch;
+        project->values("QMAKE_CLEAN")          += precompPchC;
         // Return to variable pool
         project->values("PRECOMPILED_OBJECT") = ProStringList(precompObj);
         project->values("PRECOMPILED_PCH")    = ProStringList(precompPch);
+        project->values("PRECOMPILED_OBJECT_C") = ProStringList(precompObjC);
+        project->values("PRECOMPILED_PCH_C")    = ProStringList(precompPchC);
     }
 
     ProString tgt = project->first("DESTDIR")

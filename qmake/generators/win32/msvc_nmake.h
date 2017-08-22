@@ -52,6 +52,7 @@ protected:
     virtual QStringList &findDependencies(const QString &file);
     QString var(const ProKey &value) const;
     QString precompH, precompObj, precompPch;
+    QString precompObjC, precompPchC;
     bool usePCH;
 
 public:
