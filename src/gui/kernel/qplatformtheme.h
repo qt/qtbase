@@ -303,6 +303,7 @@ public:
 
     static QVariant defaultThemeHint(ThemeHint hint);
     static QString defaultStandardButtonText(int button);
+    static QString removeMnemonics(const QString &original);
 
 protected:
     explicit QPlatformTheme(QPlatformThemePrivate *priv);
