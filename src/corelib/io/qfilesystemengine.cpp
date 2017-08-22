@@ -53,6 +53,10 @@ QString QFileSystemEngine::slowCanonicalized(const QString &path)
     if (path.isEmpty())
         return path;
 
+    QFileInfo tmpInfo(path);
+    if (!tmpInfo.isSymLink())
+        return path;
+
     QFileInfo fi;
     const QChar slash(QLatin1Char('/'));
     QString tmpPath = path;

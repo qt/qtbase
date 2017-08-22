@@ -130,6 +130,8 @@ public:
     bool caching() const;
     void setCaching(bool on);
 
+    bool getAllMetadata() const;
+
 protected:
     QSharedDataPointer<QFileInfoPrivate> d_ptr;
 

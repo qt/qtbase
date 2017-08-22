@@ -236,6 +236,8 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 {
     QExtendedInformation info(fileInfo);
     info.icon = m_iconProvider->icon(fileInfo);
+    // get metadata for all supported types at once to improve performance
+    fileInfo.getAllMetadata();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
     const QFileInfoPrivate *priv = QFileInfoPrivate::get(&fileInfo);
     if (priv->mappedDrive)
@@ -260,10 +262,12 @@ QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 #endif
 
 #ifdef Q_OS_WIN
-    if (m_resolveSymlinks && info.isSymLink(/* ignoreNtfsSymLinks = */ true)) {
+    if (fileInfo.exists() && m_resolveSymlinks && info.isSymLink(/* ignoreNtfsSymLinks = */ true)) {
         QFileInfo resolvedInfo(fileInfo.symLinkTarget());
-        resolvedInfo = resolvedInfo.canonicalFilePath();
-        if (resolvedInfo.exists()) {
+        resolvedInfo.getAllMetadata();
+        QString canonicalFilePath = resolvedInfo.canonicalFilePath();
+        if (!canonicalFilePath.isEmpty()) {
+            resolvedInfo = canonicalFilePath;
             emit nameResolved(fileInfo.filePath(), resolvedInfo.fileName());
         }
     }

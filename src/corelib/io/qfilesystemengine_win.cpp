@@ -1056,6 +1056,8 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 #ifndef Q_OS_WINRT
                     SetErrorMode(oldmode);
 #endif
+                    data.knownFlagsMask |= what;
+                    clearWinStatData(data);
                     return false;
                 }
         }

@@ -136,6 +136,10 @@ public:
 
     QString displayFileType() const;
 
+    bool getAllMetadata() const {
+        return mFileInfo.getAllMetadata();
+    }
+
     QString displayType;
     QIcon icon;
 
