@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2017 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -91,13 +91,13 @@ static const unsigned char compile_error_texts[] =
   "failed to allocate heap memory\0"
   "unmatched closing parenthesis\0"
   "internal error: code overflow\0"
-  "letter or underscore expected after (?< or (?'\0"
+  "missing closing parenthesis for condition\0"
   /* 25 */
   "lookbehind assertion is not fixed length\0"
-  "malformed number or name after (?(\0"
+  "a relative value of zero is not allowed\0"
   "conditional group contains more than two branches\0"
   "assertion expected after (?( or (?(?C)\0"
-  "(?R or (?[+-]digits must be followed by )\0"
+  "digit expected after (?+ or (?-\0"
   /* 30 */
   "unknown POSIX class name\0"
   "internal error in pcre2_study(): should not occur\0"
@@ -105,7 +105,7 @@ static const unsigned char compile_error_texts[] =
   "parentheses are too deeply nested (stack check)\0"
   "character code point value in \\x{} or \\o{} is too large\0"
   /* 35 */
-  "invalid condition (?(0)\0"
+  "lookbehind is too complicated\0"
   "\\C is not allowed in a lookbehind assertion in UTF-" XSTRING(PCRE2_CODE_UNIT_WIDTH) " mode\0"
   "PCRE does not support \\L, \\l, \\N{name}, \\U, or \\u\0"
   "number after (?C is greater than 255\0"
@@ -132,13 +132,13 @@ static const unsigned char compile_error_texts[] =
   "missing opening brace after \\o\0"
   "internal error: unknown newline setting\0"
   "\\g is not followed by a braced, angle-bracketed, or quoted name/number or by a plain number\0"
-  "a numbered reference must not be zero\0"
+  "(?R (recursive pattern call) must be followed by a closing parenthesis\0"
   "an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT)\0"
   /* 60 */
   "(*VERB) not recognized or malformed\0"
-  "number is too big\0"
+  "group number is too big\0"
   "subpattern name expected\0"
-  "digit expected after (?+\0"
+  "internal error: parsed pattern overflow\0"
   "non-octal character in \\o{} (closing brace missing?)\0"
   /* 65 */
   "different names for subpatterns of the same number are not allowed\0"
@@ -151,9 +151,9 @@ static const unsigned char compile_error_texts[] =
 #endif
   "\\k is not followed by a braced, angle-bracketed, or quoted name\0"
   /* 70 */
-  "internal error: unknown opcode in find_fixedlength()\0"
+  "internal error: unknown meta code in check_lookbehinds()\0"
   "\\N is not supported in a class\0"
-  "SPARE ERROR\0"
+  "callout string is too long\0"
   "disallowed Unicode code point (>= 0xd800 && <= 0xdfff)\0"
   "using UTF is disabled by the application\0"
   /* 75 */
@@ -161,7 +161,7 @@ static const unsigned char compile_error_texts[] =
   "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)\0"
   "character code point value in \\u.... sequence is too large\0"
   "digits missing in \\x{} or \\o{}\0"
-  "syntax error in (?(VERSION condition\0"
+  "syntax error or number too big in (?(VERSION condition\0"
   /* 80 */
   "internal error: unknown opcode in auto_possessify()\0"
   "missing terminating delimiter for callout with string argument\0"
@@ -173,6 +173,11 @@ static const unsigned char compile_error_texts[] =
   "regular expression is too complicated\0"
   "lookbehind assertion is too long\0"
   "pattern string is longer than the limit set by the application\0"
+  "internal error: unknown code in parsed pattern\0"
+  /* 90 */
+  "internal error: bad code value in parsed_skip()\0"
+  "PCRE2_EXTRA_ALLOW_SURROGATE_ESCAPES is not allowed in UTF-16 mode\0"
+  "invalid option bits with PCRE2_LITERAL\0"
   ;
 
 /* Match-time and UTF error texts are in the same format. */
@@ -241,7 +246,7 @@ static const unsigned char match_error_texts[] =
   "non-unique substring name\0"
   "NULL argument passed\0"
   "nested recursion at the same subject position\0"
-  "recursion limit exceeded\0"
+  "matching depth limit exceeded\0"
   "requested value is not available\0"
   /* 55 */
   "requested value is not set\0"
@@ -253,6 +258,8 @@ static const unsigned char match_error_texts[] =
   "match with end before start is not supported\0"
   "too many replacements (more than INT_MAX)\0"
   "bad serialized data\0"
+  "heap limit exceeded\0"
+  "invalid syntax\0"
   ;
 
 
@@ -268,17 +275,17 @@ distinct.
 Arguments:
   enumber       error number
   buffer        where to put the message (zero terminated)
-  size          size of the buffer
+  size          size of the buffer in code units
 
 Returns:        length of message if all is well
                 negative on error
 */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
-pcre2_get_error_message(int enumber, PCRE2_UCHAR *buffer, size_t size)
+pcre2_get_error_message(int enumber, PCRE2_UCHAR *buffer, PCRE2_SIZE size)
 {
 const unsigned char *message;
-size_t i;
+PCRE2_SIZE i;
 int n;
 
 if (size == 0) return PCRE2_ERROR_NOMEMORY;
@@ -301,8 +308,8 @@ else                                /* Invalid error number */
 
 for (; n > 0; n--)
   {
-  while (*message++ != CHAR_NULL) {};
-  if (*message == CHAR_NULL) return PCRE2_ERROR_BADDATA;
+  while (*message++ != CHAR_NUL) {};
+  if (*message == CHAR_NUL) return PCRE2_ERROR_BADDATA;
   }
 
 for (i = 0; *message != 0; i++)

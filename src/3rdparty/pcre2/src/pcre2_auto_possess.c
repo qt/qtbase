@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2017 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -588,7 +588,7 @@ for(;;)
       case OP_ASSERTBACK:
       case OP_ASSERTBACK_NOT:
       case OP_ONCE:
-      case OP_ONCE_NC:
+
       /* Atomic sub-patterns and assertions can always auto-possessify their
       last iterator. However, if the group was entered as a result of checking
       a previous iterator, this is not possible. */
@@ -600,11 +600,13 @@ for(;;)
     continue;
 
     case OP_ONCE:
-    case OP_ONCE_NC:
     case OP_BRA:
     case OP_CBRA:
     next_code = code + GET(code, 1);
     code += PRIV(OP_lengths)[c];
+
+    /* Check each branch. We have to recurse a level for all but the last
+    branch. */
 
     while (*next_code == OP_ALT)
       {
@@ -621,8 +623,8 @@ for(;;)
     case OP_BRAMINZERO:
 
     next_code = code + 1;
-    if (*next_code != OP_BRA && *next_code != OP_CBRA
-        && *next_code != OP_ONCE && *next_code != OP_ONCE_NC) return FALSE;
+    if (*next_code != OP_BRA && *next_code != OP_CBRA &&
+        *next_code != OP_ONCE) return FALSE;
 
     do next_code += GET(next_code, 1); while (*next_code == OP_ALT);
 
@@ -1046,8 +1048,10 @@ but some compilers complain about an unreachable statement. */
 
 /* Replaces single character iterations with their possessive alternatives
 if appropriate. This function modifies the compiled opcode! Hitting a
-non-existant opcode may indicate a bug in PCRE2, but it can also be caused if a
-bad UTF string was compiled with PCRE2_NO_UTF_CHECK.
+non-existent opcode may indicate a bug in PCRE2, but it can also be caused if a
+bad UTF string was compiled with PCRE2_NO_UTF_CHECK. The rec_limit catches
+overly complicated or large patterns. In these cases, the check just stops,
+leaving the remainder of the pattern unpossessified.
 
 Arguments:
   code        points to start of the byte code
@@ -1061,17 +1065,17 @@ Returns:      0 for success
 int
 PRIV(auto_possessify)(PCRE2_UCHAR *code, BOOL utf, const compile_block *cb)
 {
-register PCRE2_UCHAR c;
+PCRE2_UCHAR c;
 PCRE2_SPTR end;
 PCRE2_UCHAR *repeat_opcode;
 uint32_t list[8];
-int rec_limit;
+int rec_limit = 1000;  /* Was 10,000 but clang+ASAN uses a lot of stack. */
 
 for (;;)
   {
   c = *code;
 
-  if (c > OP_TABLE_LENGTH) return -1;   /* Something gone wrong */
+  if (c >= OP_TABLE_LENGTH) return -1;   /* Something gone wrong */
 
   if (c >= OP_STAR && c <= OP_TYPEPOSUPTO)
     {
@@ -1080,7 +1084,6 @@ for (;;)
       get_chr_property_list(code, utf, cb->fcc, list) : NULL;
     list[1] = c == OP_STAR || c == OP_PLUS || c == OP_QUERY || c == OP_UPTO;
 
-    rec_limit = 1000;
     if (end != NULL && compare_opcodes(end, utf, cb, list, end, &rec_limit))
       {
       switch(c)
@@ -1137,7 +1140,6 @@ for (;;)
 
       list[1] = (c & 1) == 0;
 
-      rec_limit = 1000;
       if (compare_opcodes(end, utf, cb, list, end, &rec_limit))
         {
         switch (c)

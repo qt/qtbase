@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2017 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -206,7 +206,7 @@ print_custring(FILE *f, PCRE2_SPTR ptr)
 {
 while (*ptr != '\0')
   {
-  register uint32_t c = *ptr++;
+  uint32_t c = *ptr++;
   if (PRINTABLE(c)) fprintf(f, "%c", c); else fprintf(f, "\\x{%x}", c);
   }
 }
@@ -216,7 +216,7 @@ print_custring_bylen(FILE *f, PCRE2_SPTR ptr, PCRE2_UCHAR len)
 {
 for (; len > 0; len--)
   {
-  register uint32_t c = *ptr++;
+  uint32_t c = *ptr++;
   if (PRINTABLE(c)) fprintf(f, "%c", c); else fprintf(f, "\\x{%x}", c);
   }
 }
@@ -340,7 +340,7 @@ for(;;)
       case OP_TABLE_LENGTH +
         ((sizeof(OP_names)/sizeof(const char *) == OP_TABLE_LENGTH) &&
         (sizeof(OP_lengths) == OP_TABLE_LENGTH)):
-      break;
+      return;
 /* ========================================================================== */
 
     case OP_END:
@@ -393,7 +393,6 @@ for(;;)
     case OP_ASSERTBACK:
     case OP_ASSERTBACK_NOT:
     case OP_ONCE:
-    case OP_ONCE_NC:
     case OP_COND:
     case OP_SCOND:
     case OP_REVERSE:

@@ -114,7 +114,7 @@ for (; ptr < ptrend; ptr++)
   else if (*ptr == CHAR_BACKSLASH)
     {
     int erc;
-    int errorcode = 0;
+    int errorcode;
     uint32_t ch;
 
     if (ptr < ptrend - 1) switch (ptr[1])
@@ -127,8 +127,10 @@ for (; ptr < ptrend; ptr++)
       continue;
       }
 
+    ptr += 1;  /* Must point after \ */
     erc = PRIV(check_escape)(&ptr, ptrend, &ch, &errorcode,
       code->overall_options, FALSE, NULL);
+    ptr -= 1;  /* Back to last code unit of escape */
     if (errorcode != 0)
       {
       rc = errorcode;
@@ -287,6 +289,12 @@ options &= ~SUBSTITUTE_OPTIONS;
 
 /* Copy up to the start offset */
 
+if (start_offset > length)
+  {
+  match_data->leftchar = 0;
+  rc = PCRE2_ERROR_BADOFFSET;
+  goto EXIT;
+  }
 CHECKMEMCPY(subject, start_offset);
 
 /* Loop for global substituting. */
@@ -698,7 +706,7 @@ do
     else if ((suboptions & PCRE2_SUBSTITUTE_EXTENDED) != 0 &&
               *ptr == CHAR_BACKSLASH)
       {
-      int errorcode = 0;
+      int errorcode;
 
       if (ptr < repend - 1) switch (ptr[1])
         {
@@ -728,10 +736,10 @@ do
         break;
         }
 
+      ptr++;  /* Point after \ */
       rc = PRIV(check_escape)(&ptr, repend, &ch, &errorcode,
         code->overall_options, FALSE, NULL);
       if (errorcode != 0) goto BADESCAPE;
-      ptr++;
 
       switch(rc)
         {

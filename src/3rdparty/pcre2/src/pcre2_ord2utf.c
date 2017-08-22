@@ -83,7 +83,7 @@ PRIV(ord2utf)(uint32_t cvalue, PCRE2_UCHAR *buffer)
 /* Convert to UTF-8 */
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
-register int i, j;
+int i, j;
 for (i = 0; i < PRIV(utf8_table1_size); i++)
   if ((int)cvalue <= PRIV(utf8_table1)[i]) break;
 buffer += i;

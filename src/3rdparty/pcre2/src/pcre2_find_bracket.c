@@ -71,7 +71,7 @@ PRIV(find_bracket)(PCRE2_SPTR code, BOOL utf, int number)
 {
 for (;;)
   {
-  register PCRE2_UCHAR c = *code;
+  PCRE2_UCHAR c = *code;
 
   if (c == OP_END) return NULL;
 
