@@ -52,15 +52,19 @@
 #define CHARACTER_H
 
 #include <QJsonObject>
+#include <QObject>
 #include <QString>
 
 //! [0]
 class Character
 {
+    Q_GADGET;
+
 public:
     enum ClassType {
         Warrior, Mage, Archer
     };
+    Q_ENUM(ClassType)
 
     Character();
     Character(const QString &name, int level, ClassType classType);
@@ -76,6 +80,8 @@ public:
 
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
+
+    void print(int indentation = 0) const;
 private:
     QString mName;
     int mLevel;
