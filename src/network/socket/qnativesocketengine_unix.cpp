@@ -868,22 +868,42 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
     if (recvResult != -1)
         recvResult = value;
 #else
-    QVarLengthArray<char, 8192> udpMessagePeekBuffer(8192);
+    // We need to grow the buffer to fit the entire datagram.
+    // We start at 1500 bytes (the MTU for Ethernet V2), which should catch
+    // almost all uses (effective MTU for UDP under IPv4 is 1468), except
+    // for localhost datagrams and those reassembled by the IP layer.
+    char udpMessagePeekBuffer[1500];
+    struct msghdr msg;
+    struct iovec vec;
+
+    memset(&msg, 0, sizeof(msg));
+    msg.msg_iov = &vec;
+    msg.msg_iovlen = 1;
+    vec.iov_base = udpMessagePeekBuffer;
+    vec.iov_len = sizeof(udpMessagePeekBuffer);
 
     for (;;) {
         // the data written to udpMessagePeekBuffer is discarded, so
         // this function is still reentrant although it might not look
         // so.
-        recvResult = ::recv(socketDescriptor, udpMessagePeekBuffer.data(),
-            udpMessagePeekBuffer.size(), MSG_PEEK);
+        recvResult = ::recvmsg(socketDescriptor, &msg, MSG_PEEK);
         if (recvResult == -1 && errno == EINTR)
             continue;
 
-        if (recvResult != (ssize_t) udpMessagePeekBuffer.size())
+        // was the result truncated?
+        if ((msg.msg_flags & MSG_TRUNC) == 0)
             break;
 
-        udpMessagePeekBuffer.resize(udpMessagePeekBuffer.size() * 2);
+        // grow by 16 times
+        msg.msg_iovlen *= 16;
+        if (msg.msg_iov != &vec)
+            delete[] msg.msg_iov;
+        msg.msg_iov = new struct iovec[msg.msg_iovlen];
+        std::fill_n(msg.msg_iov, msg.msg_iovlen, vec);
     }
+
+    if (msg.msg_iov != &vec)
+        delete[] msg.msg_iov;
 #endif
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)

@@ -1146,10 +1146,10 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
     DWORD bufferCount = 5;
     WSABUF * buf = 0;
     for (;;) {
-        // the data written to udpMessagePeekBuffer is discarded, so
-        // this function is still reentrant although it might not look
-        // so.
-        static char udpMessagePeekBuffer[8192];
+        // We start at 1500 bytes (the MTU for Ethernet V2), which should catch
+        // almost all uses (effective MTU for UDP under IPv4 is 1468), except
+        // for localhost datagrams and those reassembled by the IP layer.
+        char udpMessagePeekBuffer[1500];
 
         buf = new WSABUF[bufferCount];
         for (DWORD i=0; i<bufferCount; i++) {
