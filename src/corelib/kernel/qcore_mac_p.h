@@ -111,7 +111,8 @@ public:
     template <typename X> X as() const { return reinterpret_cast<X>(type); }
     static QCFType constructFromGet(const T &t)
     {
-        CFRetain(t);
+        if (t)
+            CFRetain(t);
         return QCFType<T>(t);
     }
 protected:
