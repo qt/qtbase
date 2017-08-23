@@ -288,7 +288,7 @@ void QMenuBarPrivate::setKeyboardMode(bool b)
     keyboardState = b;
     if(b) {
         QWidget *fw = QApplication::focusWidget();
-        if (fw != q)
+        if (fw && fw != q && fw->window() != QApplication::activePopupWidget())
             keyboardFocusWidget = fw;
         focusFirstAction();
         q->setFocus(Qt::MenuBarFocusReason);
@@ -1706,6 +1706,7 @@ void QMenuBarPrivate::_q_internalShortcutActivated(int id)
         }
     }
 
+    keyboardFocusWidget = QApplication::focusWidget();
     setCurrentAction(act, true, true);
     if (act && !act->menu()) {
         activateAction(act, QAction::Trigger);
