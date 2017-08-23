@@ -1349,7 +1349,7 @@ QTextCursor QTextDocument::find(const QString &subString, int from, FindFlags op
     If the given \a cursor has a selection, the search begins after the
     selection; otherwise it begins at the cursor's position.
 
-    By default the search is case-sensitive, and can match text anywhere in the
+    By default the search is case insensitive, and can match text anywhere in the
     document.
 */
 QTextCursor QTextDocument::find(const QString &subString, const QTextCursor &cursor, FindFlags options) const
@@ -1472,7 +1472,7 @@ QTextCursor QTextDocument::find(const QRegExp & expr, int from, FindFlags option
     If the given \a cursor has a selection, the search begins after the
     selection; otherwise it begins at the cursor's position.
 
-    By default the search is case-sensitive, and can match text anywhere in the
+    By default the search is case insensitive, and can match text anywhere in the
     document.
 */
 QTextCursor QTextDocument::find(const QRegExp &expr, const QTextCursor &cursor, FindFlags options) const
@@ -1599,7 +1599,7 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, int from, FindFl
     If the given \a cursor has a selection, the search begins after the
     selection; otherwise it begins at the cursor's position.
 
-    By default the search is case-sensitive, and can match text anywhere in the
+    By default the search is case insensitive, and can match text anywhere in the
     document.
 */
 QTextCursor QTextDocument::find(const QRegularExpression &expr, const QTextCursor &cursor, FindFlags options) const
