@@ -150,8 +150,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     QHostAddress address;
     if (address.setAddress(hostName)) {
         // Reverse lookup
-// Reverse lookups using getnameinfo are broken on darwin, use gethostbyaddr instead.
-#if !defined (QT_NO_GETADDRINFO) && !defined (Q_OS_DARWIN)
+#if !defined (QT_NO_GETADDRINFO)
         sockaddr_in sa4;
         sockaddr_in6 sa6;
         sockaddr *sa = 0;
