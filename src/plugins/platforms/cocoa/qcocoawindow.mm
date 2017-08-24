@@ -749,17 +749,13 @@ void QCocoaWindow::setOpacity(qreal level)
         return;
 
     m_view.window.alphaValue = level;
-    m_view.window.opaque = isOpaque();
 }
 
 void QCocoaWindow::setMask(const QRegion &region)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setMask" << window() << region;
-    if (isContentView())
-        m_view.window.backgroundColor = !region.isEmpty() ? [NSColor clearColor] : nil;
 
     [qnsview_cast(m_view) setMaskRegion:&region];
-    m_view.window.opaque = isOpaque();
 }
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
@@ -1317,11 +1313,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     nsWindow.restorable = NO;
     nsWindow.level = windowLevel(flags);
-
-    if (!isOpaque()) {
-        nsWindow.backgroundColor = [NSColor clearColor];
-        nsWindow.opaque = NO;
-    }
 
     if (shouldBePanel) {
         // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set
