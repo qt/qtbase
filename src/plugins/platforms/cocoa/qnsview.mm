@@ -128,8 +128,6 @@ static QTouchDevice *touchDevice = 0;
 - (id) init
 {
     if (self = [super initWithFrame:NSZeroRect]) {
-        m_maskImage = 0;
-        m_shouldInvalidateWindowShadow = false;
         m_buttons = Qt::NoButton;
         m_acceptedMouseDowns = Qt::NoButton;
         m_frameStrutButtons = Qt::NoButton;
@@ -163,12 +161,10 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)dealloc
 {
-    CGImageRelease(m_maskImage);
     if (m_trackingArea) {
         [self removeTrackingArea:m_trackingArea];
         [m_trackingArea release];
     }
-    m_maskImage = 0;
     [m_inputSource release];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [m_mouseMoveHelper release];
@@ -304,58 +300,11 @@ static QTouchDevice *touchDevice = 0;
     [super removeFromSuperview];
 }
 
-- (BOOL) hasMask
-{
-    return !m_maskRegion.isEmpty();
-}
-
 - (BOOL) isOpaque
 {
     if (!m_platformWindow)
         return true;
     return m_platformWindow->isOpaque();
-}
-
-- (void) setMaskRegion:(const QRegion *)region
-{
-    m_shouldInvalidateWindowShadow = true;
-    m_maskRegion = *region;
-    if (m_maskImage)
-        CGImageRelease(m_maskImage);
-    if (region->isEmpty()) {
-        m_maskImage = 0;
-        return;
-    }
-
-    const QRect &rect = region->boundingRect();
-    QImage tmp(rect.size(), QImage::Format_RGB32);
-    tmp.fill(Qt::white);
-    QPainter p(&tmp);
-    p.setClipRegion(*region);
-    p.fillRect(rect, Qt::black);
-    p.end();
-    QImage maskImage = QImage(rect.size(), QImage::Format_Indexed8);
-    for (int y=0; y<rect.height(); ++y) {
-        const uint *src = (const uint *) tmp.constScanLine(y);
-        uchar *dst = maskImage.scanLine(y);
-        for (int x=0; x<rect.width(); ++x) {
-            dst[x] = src[x] & 0xff;
-        }
-    }
-    m_maskImage = qt_mac_toCGImageMask(maskImage);
-}
-
-- (CGImageRef)maskImage
-{
-    return m_maskImage;
-}
-
-- (void)invalidateWindowShadowIfNeeded
-{
-    if (m_shouldInvalidateWindowShadow && m_platformWindow->isContentView()) {
-        [m_platformWindow->nativeWindow() invalidateShadow];
-        m_shouldInvalidateWindowShadow = false;
-    }
 }
 
 - (void)drawRect:(NSRect)dirtyRect
@@ -612,7 +561,8 @@ static QTouchDevice *touchDevice = 0;
     Q_UNUSED(qtScreenPoint);
 
     // Maintain masked state for the button for use by MouseDragged and MouseUp.
-    const bool masked = [self hasMask] && !m_maskRegion.contains(qtWindowPoint.toPoint());
+    QRegion mask = m_platformWindow->window()->mask();
+    const bool masked = !mask.isEmpty() && !mask.contains(qtWindowPoint.toPoint());
     if (masked)
         m_acceptedMouseDowns &= ~button;
     else
@@ -710,8 +660,8 @@ static QTouchDevice *touchDevice = 0;
     [self convertFromScreen:[self screenMousePoint:theEvent] toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     Q_UNUSED(qtScreenPoint);
 
-    const bool masked = [self hasMask] && !m_maskRegion.contains(qtWindowPoint.toPoint());
-
+    QRegion mask = m_platformWindow->window()->mask();
+    const bool masked = !mask.isEmpty() && !mask.contains(qtWindowPoint.toPoint());
     // Maintain masked state for the button for use by MouseDragged and Up.
     if (masked)
         m_acceptedMouseDowns &= ~Qt::LeftButton;

@@ -57,9 +57,6 @@ QT_END_NAMESPACE
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
 @interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
-    QRegion m_maskRegion;
-    CGImageRef m_maskImage;
-    bool m_shouldInvalidateWindowShadow;
     QPointer<QCocoaWindow> m_platformWindow;
     NSTrackingArea *m_trackingArea;
     Qt::MouseButtons m_buttons;
@@ -90,9 +87,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif
-- (void)setMaskRegion:(const QRegion *)region;
-- (CGImageRef)maskImage;
-- (void)invalidateWindowShadowIfNeeded;
 - (void)drawRect:(NSRect)dirtyRect;
 - (void)textInputContextKeyboardSelectionDidChangeNotification : (NSNotification *) textInputContextKeyboardSelectionDidChangeNotification;
 - (void)viewDidHide;
@@ -101,7 +95,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (BOOL)isFlipped;
 - (BOOL)acceptsFirstResponder;
 - (BOOL)becomeFirstResponder;
-- (BOOL)hasMask;
 - (BOOL)isOpaque;
 
 - (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;

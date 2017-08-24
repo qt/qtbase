@@ -57,6 +57,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <AppKit/AppKit.h>
+#include <QuartzCore/QuartzCore.h>
 
 #include <QDebug>
 
@@ -150,6 +151,7 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
 #endif
     , m_menubar(0)
     , m_windowCursor(0)
+    , m_needsInvalidateShadow(false)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
     , m_isExposed(false)
@@ -699,7 +701,7 @@ bool QCocoaWindow::isOpaque() const
 
     bool translucent = window()->format().alphaBufferSize() > 0
                         || window()->opacity() < 1
-                        || [qnsview_cast(m_view) hasMask]
+                        || !window()->mask().isEmpty()
                         || (surface()->supportsOpenGL() && openglSourfaceOrder == -1);
     return !translucent;
 }
@@ -755,7 +757,34 @@ void QCocoaWindow::setMask(const QRegion &region)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setMask" << window() << region;
 
-    [qnsview_cast(m_view) setMaskRegion:&region];
+    if (m_view.layer) {
+        if (!region.isEmpty()) {
+            QCFType<CGMutablePathRef> maskPath = CGPathCreateMutable();
+            for (const QRect &r : region)
+                CGPathAddRect(maskPath, nullptr, r.toCGRect());
+            CAShapeLayer *maskLayer = [CAShapeLayer layer];
+            maskLayer.path = maskPath;
+            m_view.layer.mask = maskLayer;
+        } else {
+            m_view.layer.mask = nil;
+        }
+    }
+
+    if (isContentView()) {
+        // Setting the mask requires invalidating the NSWindow shadow, but that needs
+        // to happen after the backingstore has been redrawn, so that AppKit can pick
+        // up the new window shape based on the backingstore content. Doing a display
+        // directly here is not an option, as the window might not be exposed at this
+        // time, and so would not result in an updated backingstore.
+        m_needsInvalidateShadow = true;
+        [m_view setNeedsDisplay:YES];
+
+        // FIXME: [NSWindow invalidateShadow] has no effect when in layer-backed mode,
+        // so if the mask is changed after the initial mask is applied, it will not
+        // result in any visual change to the shadow. This is an Apple bug, and there
+        // may be ways to work around it, such as calling setFrame on the window to
+        // trigger some internal invalidation, but that needs more research.
+    }
 }
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)

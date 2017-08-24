@@ -260,6 +260,8 @@ public: // for QNSView
     QCocoaMenuBar *m_menubar;
     NSCursor *m_windowCursor;
 
+    bool m_needsInvalidateShadow;
+
     bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;
     bool m_isExposed;
