@@ -42,7 +42,6 @@
 #include "qcocoahelpers.h"
 #include <qdebug.h>
 #include <QtCore/private/qcore_mac_p.h>
-#include <QtCglSupport/private/cglconvenience_p.h>
 #include <QtPlatformHeaders/qcocoanativecontext.h>
 #include <dlfcn.h>
 
@@ -154,7 +153,7 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
     QMacAutoReleasePool pool; // For the SG Canvas render thread
 
     // create native context for the requested pixel format and share
-    NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(m_format));
+    NSOpenGLPixelFormat *pixelFormat = createNSOpenGLPixelFormat(m_format);
     m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
     m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:m_shareContext];
 
@@ -202,7 +201,6 @@ QVariant QCocoaGLContext::nativeHandle() const
     return QVariant::fromValue<QCocoaNativeContext>(QCocoaNativeContext(m_context));
 }
 
-// Match up with createNSOpenGLPixelFormat!
 QSurfaceFormat QCocoaGLContext::format() const
 {
     return m_format;
@@ -362,7 +360,64 @@ void QCocoaGLContext::update()
 
 NSOpenGLPixelFormat *QCocoaGLContext::createNSOpenGLPixelFormat(const QSurfaceFormat &format)
 {
-    return static_cast<NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(format));
+    QVector<NSOpenGLPixelFormatAttribute> attrs;
+
+    if (format.swapBehavior() == QSurfaceFormat::DoubleBuffer
+        || format.swapBehavior() == QSurfaceFormat::DefaultSwapBehavior)
+        attrs.append(NSOpenGLPFADoubleBuffer);
+    else if (format.swapBehavior() == QSurfaceFormat::TripleBuffer)
+        attrs.append(NSOpenGLPFATripleBuffer);
+
+
+    // Select OpenGL profile
+    attrs << NSOpenGLPFAOpenGLProfile;
+    if (format.profile() == QSurfaceFormat::CoreProfile) {
+        if (format.version() >= qMakePair(4, 1))
+            attrs << NSOpenGLProfileVersion4_1Core;
+        else if (format.version() >= qMakePair(3, 2))
+            attrs << NSOpenGLProfileVersion3_2Core;
+        else
+            attrs << NSOpenGLProfileVersionLegacy;
+    } else {
+        attrs << NSOpenGLProfileVersionLegacy;
+    }
+
+    if (format.depthBufferSize() > 0)
+        attrs <<  NSOpenGLPFADepthSize << format.depthBufferSize();
+    if (format.stencilBufferSize() > 0)
+        attrs << NSOpenGLPFAStencilSize << format.stencilBufferSize();
+    if (format.alphaBufferSize() > 0)
+        attrs << NSOpenGLPFAAlphaSize << format.alphaBufferSize();
+    if ((format.redBufferSize() > 0) &&
+        (format.greenBufferSize() > 0) &&
+        (format.blueBufferSize() > 0)) {
+        const int colorSize = format.redBufferSize() +
+                              format.greenBufferSize() +
+                              format.blueBufferSize();
+        attrs << NSOpenGLPFAColorSize << colorSize << NSOpenGLPFAMinimumPolicy;
+    }
+
+    if (format.samples() > 0) {
+        attrs << NSOpenGLPFAMultisample
+              << NSOpenGLPFASampleBuffers << (NSOpenGLPixelFormatAttribute) 1
+              << NSOpenGLPFASamples << (NSOpenGLPixelFormatAttribute) format.samples();
+    }
+
+    if (format.stereo())
+        attrs << NSOpenGLPFAStereo;
+
+    attrs << NSOpenGLPFAAllowOfflineRenderers;
+
+    QByteArray useLayer = qgetenv("QT_MAC_WANTS_LAYER");
+    if (!useLayer.isEmpty() && useLayer.toInt() > 0) {
+        // Disable the software rendering fallback. This makes compositing
+        // OpenGL and raster NSViews using Core Animation layers possible.
+        attrs << NSOpenGLPFANoRecovery;
+    }
+
+    attrs << 0;
+
+    return [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs.constData()];
 }
 
 NSOpenGLContext *QCocoaGLContext::nsOpenGLContext() const
