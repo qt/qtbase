@@ -38,9 +38,9 @@ class ModelTest : public QObject
     Q_OBJECT
 
 public:
-    ModelTest(QAbstractItemModel *model, QObject *parent = 0);
+    ModelTest(QAbstractItemModel *model, QObject *parent = nullptr);
 
-private Q_SLOTS:
+private:
     void nonDestructiveBasicTest();
     void rowCount();
     void columnCount();
@@ -49,7 +49,6 @@ private Q_SLOTS:
     void parent();
     void data();
 
-protected Q_SLOTS:
     void runAllTests();
     void layoutAboutToBeChanged();
     void layoutChanged();
@@ -60,7 +59,6 @@ protected Q_SLOTS:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void headerDataChanged(Qt::Orientation orientation, int start, int end);
 
-private:
     void checkChildren(const QModelIndex &parent, int currentDepth = 0);
 
     QAbstractItemModel *model;
