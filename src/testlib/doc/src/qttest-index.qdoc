@@ -31,7 +31,9 @@
 
     Qt Test provides classes for unit testing Qt applications and libraries.
     All public methods are in the \l QTest namespace. In addition, the
-    \l QSignalSpy class provides easy introspection for Qt's signals and slots.
+    \l QSignalSpy class provides easy introspection for Qt's signals and slots,
+    and the \l QAbstractItemModelTester allows for non-destructive testing
+    of item models.
 
     \section1 Getting Started
 

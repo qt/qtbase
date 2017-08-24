@@ -11,7 +11,9 @@ unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
 
 QMAKE_DOCS = $$PWD/doc/qttestlib.qdocconf
 
-HEADERS = qbenchmark.h \
+HEADERS = \
+    qabstractitemmodeltester.h \
+    qbenchmark.h \
     qbenchmark_p.h \
     qbenchmarkmeasurement_p.h \
     qbenchmarktimemeasurers_p.h \
@@ -40,7 +42,9 @@ HEADERS = qbenchmark.h \
     qtestblacklist_p.h \
     qtesthelpers_p.h
 
-SOURCES = qtestcase.cpp \
+SOURCES = \
+    qabstractitemmodeltester.cpp \
+    qtestcase.cpp \
     qtestlog.cpp \
     qtesttable.cpp \
     qtestdata.cpp \
