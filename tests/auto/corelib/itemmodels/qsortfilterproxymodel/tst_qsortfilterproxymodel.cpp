@@ -28,7 +28,6 @@
 
 #include <QtTest/QtTest>
 #include "dynamictreemodel.h"
-#include "modeltest.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtGui/QStandardItem>
@@ -3312,7 +3311,7 @@ void tst_QSortFilterProxyModel::filteredColumns()
     FilteredColumnProxyModel *proxy = new FilteredColumnProxyModel(this);
     proxy->setSourceModel(model);
 
-    new ModelTest(proxy, this);
+    new QAbstractItemModelTester(proxy, this);
 
     ModelInsertCommand *insertCommand = new ModelInsertCommand(model, this);
     insertCommand->setNumCols(2);
@@ -3351,7 +3350,7 @@ void tst_QSortFilterProxyModel::headerDataChanged()
     QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
     proxy->setSourceModel(model);
 
-    new ModelTest(proxy, this);
+    new QAbstractItemModelTester(proxy, this);
 
     model->emitHeaderDataChanged();
 }
@@ -4129,7 +4128,7 @@ void tst_QSortFilterProxyModel::resortingDoesNotBreakTreeModels()
     proxy.sort(0);
     proxy.setSourceModel(treeModel);
 
-    ModelTest modelTest(&proxy);
+    QAbstractItemModelTester modelTester(&proxy);
 
     QCOMPARE(proxy.rowCount(), 2);
     e1->setText("entry1");

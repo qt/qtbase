@@ -3,3 +3,4 @@ SUBDIRS=\
    qsignalspy \
    selftests \
 
+qtHaveModule(widgets):SUBDIRS += qabstractitemmodeltester

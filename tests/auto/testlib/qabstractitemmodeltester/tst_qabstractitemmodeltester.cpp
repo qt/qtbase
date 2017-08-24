@@ -30,10 +30,9 @@
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 
-#include "modeltest.h"
 #include "dynamictreemodel.h"
 
-class tst_ModelTest : public QObject
+class tst_QAbstractItemModelTester : public QObject
 {
     Q_OBJECT
 
@@ -50,13 +49,13 @@ private slots:
   tests
 */
 
-void tst_ModelTest::stringListModel()
+void tst_QAbstractItemModelTester::stringListModel()
 {
     QStringListModel model;
     QSortFilterProxyModel proxy;
 
-    ModelTest t1(&model);
-    ModelTest t2(&proxy);
+    QAbstractItemModelTester t1(&model);
+    QAbstractItemModelTester t2(&proxy);
 
     proxy.setSourceModel(&model);
 
@@ -67,11 +66,11 @@ void tst_ModelTest::stringListModel()
     proxy.setFilterRegExp(QRegExp("[^b]"));
 }
 
-void tst_ModelTest::treeWidgetModel()
+void tst_QAbstractItemModelTester::treeWidgetModel()
 {
     QTreeWidget widget;
 
-    ModelTest t1(widget.model());
+    QAbstractItemModelTester t1(widget.model());
 
     QTreeWidgetItem *root = new QTreeWidgetItem(&widget, QStringList("root"));
     for (int i = 0; i < 20; ++i)
@@ -85,13 +84,13 @@ void tst_ModelTest::treeWidgetModel()
     widget.sortByColumn(0);
 }
 
-void tst_ModelTest::standardItemModel()
+void tst_QAbstractItemModelTester::standardItemModel()
 {
     QStandardItemModel model(10, 10);
     QSortFilterProxyModel proxy;
 
-    ModelTest t1(&model);
-    ModelTest t2(&proxy);
+    QAbstractItemModelTester t1(&model);
+    QAbstractItemModelTester t2(&proxy);
 
     proxy.setSourceModel(&model);
 
@@ -105,14 +104,14 @@ void tst_ModelTest::standardItemModel()
     model.insertColumns(0, 5, model.index(1, 3));
 }
 
-void tst_ModelTest::testInsertThroughProxy()
+void tst_QAbstractItemModelTester::testInsertThroughProxy()
 {
     DynamicTreeModel *model = new DynamicTreeModel(this);
 
     QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
     proxy->setSourceModel(model);
 
-    new ModelTest(proxy, this);
+    new QAbstractItemModelTester(proxy, this);
 
     ModelInsertCommand *insertCommand = new ModelInsertCommand(model, this);
     insertCommand->setNumCols(4);
@@ -241,7 +240,7 @@ public:
     int checkPersistentFailureCount;
 };
 
-void tst_ModelTest::moveSourceItems()
+void tst_QAbstractItemModelTester::moveSourceItems()
 {
     DynamicTreeModel *model = new DynamicTreeModel(this);
     AccessibleProxyModel *proxy = new AccessibleProxyModel(this);
@@ -271,7 +270,7 @@ void tst_ModelTest::moveSourceItems()
     QCOMPARE(observer.checkPersistentFailureCount, 0);
 }
 
-void tst_ModelTest::testResetThroughProxy()
+void tst_QAbstractItemModelTester::testResetThroughProxy()
 {
     DynamicTreeModel *model = new DynamicTreeModel(this);
 
@@ -296,5 +295,5 @@ void tst_ModelTest::testResetThroughProxy()
     QCOMPARE(observer.checkPersistentFailureCount, 0);
 }
 
-QTEST_MAIN(tst_ModelTest)
-#include "tst_modeltest.moc"
+QTEST_MAIN(tst_QAbstractItemModelTester)
+#include "tst_qabstractitemmodeltester.moc"

@@ -9,7 +9,6 @@ SUBDIRS=\
    macgui \
    macnativeevents \
    macplist \
-   modeltest \
    networkselftest \
    qaccessibility \
    # qaccessibilitylinux \ # QTBUG-44434
@@ -32,7 +31,6 @@ SUBDIRS=\
    gestures \
    lancelot \
    languagechange \
-   modeltest \
    qaccessibility \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \
