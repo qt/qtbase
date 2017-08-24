@@ -62,7 +62,7 @@ QT_END_NAMESPACE
 class DragWidget : public QFrame
 {
 public:
-    DragWidget(QWidget *parent = 0);
+    explicit DragWidget(QWidget *parent = nullptr);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;

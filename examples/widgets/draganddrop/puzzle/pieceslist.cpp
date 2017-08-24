@@ -101,7 +101,7 @@ void PiecesList::dropEvent(QDropEvent *event)
     }
 }
 
-void PiecesList::addPiece(QPixmap pixmap, QPoint location)
+void PiecesList::addPiece(const QPixmap &pixmap, const QPoint &location)
 {
     QListWidgetItem *pieceItem = new QListWidgetItem(this);
     pieceItem->setIcon(QIcon(pixmap));
