@@ -323,6 +323,12 @@ void QCocoaWindow::setVisible(bool visible)
         // We need to recreate if the modality has changed as the style mask will need updating
         recreateWindowIfNeeded();
 
+        // We didn't send geometry changes during creation, as that would have confused
+        // Qt, which expects a show-event to be sent before any resize events. But now
+        // that the window is made visible, we know that the show-event has been sent
+        // so we can send the geometry change. FIXME: Get rid of this workaround.
+        handleGeometryChange();
+
         // Register popup windows. The Cocoa platform plugin will forward mouse events
         // to them and close them when needed.
         if (window()->type() == Qt::Popup || window()->type() == Qt::ToolTip)
