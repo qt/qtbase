@@ -44,6 +44,7 @@
 #endif
 #include "qclipboard.h"
 #include <private/qguiapplication_p.h>
+#include <private/qcompleter_p.h>
 #include <qpa/qplatformtheme.h>
 #include <qstylehints.h>
 #ifndef QT_NO_ACCESSIBILITY
@@ -1484,7 +1485,8 @@ void QWidgetLineControl::complete(int key)
     } else {
 #ifndef QT_KEYPAD_NAVIGATION
         if (text.isEmpty()) {
-            m_completer->popup()->hide();
+            if (auto *popup = QCompleterPrivate::get(m_completer)->popup)
+                popup->hide();
             return;
         }
 #endif
@@ -1630,10 +1632,10 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
 #if QT_CONFIG(completer)
     if (m_completer) {
         QCompleter::CompletionMode completionMode = m_completer->completionMode();
+        auto *popup = QCompleterPrivate::get(m_completer)->popup;
         if ((completionMode == QCompleter::PopupCompletion
              || completionMode == QCompleter::UnfilteredPopupCompletion)
-            && m_completer->popup()
-            && m_completer->popup()->isVisible()) {
+            && popup && popup->isVisible()) {
             // The following keys are forwarded by the completer to the widget
             // Ignoring the events lets the completer provide suitable default behavior
             switch (event->key()) {
@@ -1648,7 +1650,8 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
                 if (!QApplication::keypadNavigationEnabled())
                     break;
 #endif
-                m_completer->popup()->hide(); // just hide. will end up propagating to parent
+                popup->hide(); // just hide. will end up propagating to parent
+                break;
             default:
                 break; // normal key processing
             }

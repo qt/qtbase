@@ -71,6 +71,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <private/qlineedit_p.h>
+#include <private/qcompleter_p.h>
 #include <qdebug.h>
 #if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && QT_CONFIG(effetcts) && QT_CONFIG(style_mac)
 #include <private/qcore_mac_p.h>
@@ -3140,13 +3141,13 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
     Q_D(QComboBox);
 
 #if QT_CONFIG(completer)
-    if (d->lineEdit
-        && d->lineEdit->completer()
-        && d->lineEdit->completer()->popup()
-        && d->lineEdit->completer()->popup()->isVisible()) {
-        // provide same autocompletion support as line edit
-        d->lineEdit->event(e);
-        return;
+    if (const auto *cmpltr = completer()) {
+        const auto *popup = QCompleterPrivate::get(cmpltr)->popup;
+        if (popup && popup->isVisible()) {
+            // provide same autocompletion support as line edit
+            d->lineEdit->event(e);
+            return;
+        }
     }
 #endif
 
