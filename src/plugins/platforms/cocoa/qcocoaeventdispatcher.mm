@@ -401,8 +401,18 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             // [NSApp run], which is the normal code path for cocoa applications.
             if (NSModalSession session = d->currentModalSession()) {
                 QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
-                while ([NSApp runModalSession:session] == NSModalResponseContinue && !d->interrupt)
+                while ([NSApp runModalSession:session] == NSModalResponseContinue && !d->interrupt) {
                     qt_mac_waitForMoreEvents(NSModalPanelRunLoopMode);
+                    if (session != d->currentModalSessionCached) {
+                        // It's possible to release the current modal session
+                        // while we are in this loop, for example, by closing all
+                        // windows from a slot via QApplication::closeAllWindows.
+                        // In this case we cannot use 'session' anymore. A warning
+                        // from Cocoa is: "Use of freed session detected. Do not
+                        // call runModalSession: after calling endModalSesion:."
+                        break;
+                    }
+                }
 
                 if (!d->interrupt && session == d->currentModalSessionCached) {
                     // Someone called [NSApp stopModal:] from outside the event
