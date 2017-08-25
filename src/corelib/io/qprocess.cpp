@@ -2121,8 +2121,12 @@ void QProcess::start(OpenMode mode)
     \note On QNX, this may cause all application threads to
     temporarily freeze.
 
-    If the function is successful then *\a pid is set to the process
-    identifier of the started process.
+    If the function is successful then *\a pid is set to the process identifier
+    of the started process. Note that the child process may exit and the PID
+    may become invalid without notice. Furthermore, after the child process
+    exits, the same PID may be recycled and used by a completely different
+    process. User code should be careful when using this variable, especially
+    if one intends to forcibly terminate the process by operating system means.
 
     Only the following property setters are supported by startDetached():
     \list
