@@ -237,6 +237,7 @@ private slots:
     void ephemeralServerKey();
     void allowedProtocolNegotiation();
     void pskServer();
+    void forwardReadChannelFinished();
 #endif
 
     void setEmptyDefaultConfiguration(); // this test should be last
@@ -3769,6 +3770,28 @@ void tst_QSslSocket::pskServer()
 
     QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
     QCOMPARE(disconnectedSpy.count(), 1);
+}
+
+void tst_QSslSocket::forwardReadChannelFinished()
+{
+    if (!QSslSocket::supportsSsl())
+        QSKIP("Needs SSL");
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("This test doesn't work via a proxy");
+
+    QSslSocket socket;
+    QSignalSpy readChannelFinishedSpy(&socket, &QAbstractSocket::readChannelFinished);
+    connect(&socket, &QSslSocket::encrypted, [&socket]() {
+        const auto data = QString("GET /ip HTTP/1.0\r\nHost: %1\r\n\r\nAccept: */*\r\n\r\n")
+                .arg(QtNetworkSettings::serverLocalName()).toUtf8();
+        socket.write(data);
+    });
+    connect(&socket, &QSslSocket::readChannelFinished,
+            &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
+    socket.connectToHostEncrypted(QtNetworkSettings::serverLocalName(), 443);
+    enterLoop(10);
+    QVERIFY(readChannelFinishedSpy.count());
 }
 
 #endif // QT_NO_OPENSSL
