@@ -447,6 +447,7 @@ public:
 
     bool hasMouseMoved(const QPoint &globalPos);
 
+    void adjustMenuScreen(const QPoint &p);
     void updateLayoutDirection();
 
     //menu fading/scrolling effects
