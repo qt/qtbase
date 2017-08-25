@@ -1013,11 +1013,15 @@ QCompleter::~QCompleter()
 void QCompleter::setWidget(QWidget *widget)
 {
     Q_D(QCompleter);
+    if (widget == d->widget)
+        return;
+
     if (d->widget)
         d->widget->removeEventFilter(this);
     d->widget = widget;
     if (d->widget)
         d->widget->installEventFilter(this);
+
     if (d->popup) {
         d->popup->hide();
         d->popup->setFocusProxy(d->widget);
