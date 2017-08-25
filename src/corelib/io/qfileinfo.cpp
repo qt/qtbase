@@ -1117,7 +1117,7 @@ bool QFileInfo::isRoot() const
     \since 4.2
 
     Returns the absolute path to the file or directory a symlink (or shortcut
-    on Windows) points to, or a an empty string if the object isn't a symbolic
+    on Windows) points to, or an empty string if the object isn't a symbolic
     link.
 
     This name may not represent an existing file; it is only a string.
