@@ -901,6 +901,10 @@ void TestMethods::invokeTestOnData(int index) const
             if (m_cleanupMethod.isValid())
                 m_cleanupMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
 
+            // Process any deleteLater(), like event-loop based apps would do. Fixes memleak reports.
+            if (QCoreApplication::instance())
+                QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+
             // If the test isn't a benchmark, finalize the result after cleanup() has finished.
             if (!isBenchmark)
                 QTestResult::finishedCurrentTestDataCleanup();

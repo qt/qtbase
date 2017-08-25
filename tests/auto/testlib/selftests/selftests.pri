@@ -15,6 +15,8 @@ SUBPROGRAMS = \
      crashes \
      datatable \
      datetime \
+     deleteLater \
+     deleteLater_noApp \
      differentexec \
      exceptionthrow \
      expectfail \
