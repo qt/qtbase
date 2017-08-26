@@ -91,16 +91,7 @@ class QMenuSloppyState
     Q_DISABLE_COPY(QMenuSloppyState)
 public:
     QMenuSloppyState()
-        : m_menu(Q_NULLPTR)
-        , m_reset_action(Q_NULLPTR)
-        , m_origin_action(Q_NULLPTR)
-        , m_parent(Q_NULLPTR)
-        , m_uni_dir_discarded_count(0)
-        , m_uni_dir_fail_at_count(0)
-        , m_timeout(0)
-        , m_init_guard(false)
-        , m_first_mouse(true)
-        , m_enabled(false)
+        : m_enabled(false)
         , m_uni_directional(false)
         , m_select_other_actions(false)
         , m_use_reset_action(true)
@@ -252,19 +243,19 @@ public:
     QMenu *subMenu() const { return m_sub_menu; }
 
 private:
-    QMenu *m_menu;
-    QAction *m_reset_action;
-    QAction *m_origin_action;
+    QMenu *m_menu = nullptr;
+    QAction *m_reset_action = nullptr;
+    QAction *m_origin_action = nullptr;
     QRectF m_action_rect;
     QPointF m_previous_point;
     QPointer<QMenu> m_sub_menu;
-    QMenuSloppyState *m_parent;
+    QMenuSloppyState *m_parent = nullptr;
     QBasicTimer m_time;
-    short m_uni_dir_discarded_count;
-    short m_uni_dir_fail_at_count;
-    short m_timeout;
-    bool m_init_guard;
-    bool m_first_mouse;
+    short m_uni_dir_discarded_count = 0;
+    short m_uni_dir_fail_at_count = 0;
+    short m_timeout = 0;
+    bool m_init_guard = false;
+    bool m_first_mouse = true;
 
     bool m_enabled : 1;
     bool m_uni_directional : 1;
@@ -279,21 +270,6 @@ class QMenuPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QMenu)
 public:
     QMenuPrivate() :
-        currentAction(nullptr),
-#ifdef QT_KEYPAD_NAVIGATION
-        selectAction(nullptr),
-        cancelAction(nullptr),
-#endif
-        scroll(nullptr),
-        eventLoop(nullptr),
-        platformMenu(nullptr),
-        scrollUpTearOffItem(nullptr),
-        scrollDownItem(nullptr),
-        maxIconWidth(0),
-        tabWidth(0),
-        motions(0),
-        activationRecursionGuard(false),
-        ncols(0),
         itemsDirty(false),
         hasCheckableItems(false),
         collapsibleSeparators(true),
@@ -340,15 +316,13 @@ public:
     static QMenu *mouseDown;
     QPoint mousePopupPos;
 
-    QAction *currentAction;
+    QAction *currentAction = nullptr;
 #ifdef QT_KEYPAD_NAVIGATION
-    QAction *selectAction;
-    QAction *cancelAction;
+    QAction *selectAction = nullptr;
+    QAction *cancelAction = nullptr;
 #endif
     struct DelayState {
         DelayState()
-            : parent(0)
-            , action(0)
         { }
         void initialize(QMenu *parent)
         {
@@ -368,8 +342,8 @@ public:
             timer.stop();
         }
 
-        QMenu *parent;
-        QAction *action;
+        QMenu *parent = nullptr;
+        QAction *action = nullptr;
         QBasicTimer timer;
     } delayState;
     enum SelectionReason {
@@ -387,20 +361,20 @@ public:
     struct QMenuScroller {
         enum ScrollLocation { ScrollStay, ScrollBottom, ScrollTop, ScrollCenter };
         enum ScrollDirection { ScrollNone=0, ScrollUp=0x01, ScrollDown=0x02 };
-        int scrollOffset;
+        int scrollOffset = 0;
         QBasicTimer scrollTimer;
-        quint8 scrollFlags;
-        quint8 scrollDirection;
+        quint8 scrollFlags = ScrollNone;
+        quint8 scrollDirection = ScrollNone;
 
-        QMenuScroller() : scrollOffset(0), scrollFlags(ScrollNone), scrollDirection(ScrollNone) { }
+        QMenuScroller() { }
         ~QMenuScroller() { }
-    } *scroll;
+    } *scroll = nullptr;
     void scrollMenu(QMenuScroller::ScrollLocation location, bool active=false);
     void scrollMenu(QMenuScroller::ScrollDirection direction, bool page=false, bool active=false);
     void scrollMenu(QAction *action, QMenuScroller::ScrollLocation location, bool active=false);
 
     //synchronous operation (ie exec())
-    QEventLoop *eventLoop;
+    QEventLoop *eventLoop = nullptr;
     QPointer<QAction> syncAction;
 
     //search buffer
@@ -433,8 +407,8 @@ public:
     //default action
     QPointer<QAction> defaultAction;
 
-    QAction *menuAction;
-    QAction *defaultMenuAction;
+    QAction *menuAction = nullptr;
+    QAction *defaultMenuAction = nullptr;
 
     void setOverrideMenuAction(QAction *);
     void _q_overrideMenuActionDestroyed();
@@ -470,20 +444,21 @@ public:
         QMenuPrivate *menuPrivate;
         Type scrollType;
     };
-    ScrollerTearOffItem *scrollUpTearOffItem;
-    ScrollerTearOffItem *scrollDownItem;
+    ScrollerTearOffItem *scrollUpTearOffItem = nullptr;
+    ScrollerTearOffItem *scrollDownItem = nullptr;
 
     void drawScroller(QPainter *painter, ScrollerTearOffItem::Type type, const QRect &rect);
     void drawTearOff(QPainter *painter, const QRect &rect);
     QRect rect() const;
 
-    mutable uint maxIconWidth, tabWidth;
-    int motions;
-    int mousePopupDelay;
+    mutable uint maxIconWidth = 0;
+    mutable uint tabWidth = 0;
+    int motions = 0;
+    int mousePopupDelay = 0;
 
-    bool activationRecursionGuard;
+    bool activationRecursionGuard = false;
 
-    mutable quint8 ncols; // "255cols ought to be enough for anybody."
+    mutable quint8 ncols = 0; // "255cols ought to be enough for anybody."
 
     mutable bool itemsDirty : 1;
     mutable bool hasCheckableItems : 1;
