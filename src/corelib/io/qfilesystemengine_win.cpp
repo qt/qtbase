@@ -473,12 +473,17 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
    if (data.missingFlags(QFileSystemMetaData::LinkType))
        QFileSystemEngine::fillMetaData(link, data, QFileSystemMetaData::LinkType);
 
-    QString ret;
+    QString target;
     if (data.isLnkFile())
-        ret = readLink(link);
+        target = readLink(link);
     else if (data.isLink())
-        ret = readSymLink(link);
-    return QFileSystemEntry(ret);
+        target = readSymLink(link);
+    QFileSystemEntry ret(target);
+    if (!target.isEmpty() && ret.isRelative()) {
+        target.prepend(absoluteName(link).path() + QLatin1Char('/'));
+        ret = QFileSystemEntry(QDir::cleanPath(target));
+    }
+    return ret;
 }
 
 //static
