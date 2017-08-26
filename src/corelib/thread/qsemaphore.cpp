@@ -117,25 +117,63 @@ using namespace QtFutex;
     that high bit was set. If it was, then we clear that bit and perform a
     futex-wake on the semaphore to indicate the waiting threads can wake up and
     acquire tokens. Which ones get woken up is unspecified.
+
+    If the system has the ability to wake up a precise number of threads, has
+    Linux's FUTEX_WAKE_OP functionality, and is 64-bit, we'll use the high word
+    as a copy of the low word, but the sign bit indicating the presence of a
+    thread waiting for multiple tokens. So when releasing n tokens on those
+    systems, we tell the kernel to wake up n single-token threads and all of
+    the multi-token ones, then clear that wait bit. Which threads get woken up
+    is unspecified, but it's likely single-token threads will get woken up
+    first.
  */
 static const quint32 futexContendedBit = 1U << 31;
 
-static int futexAvailCounter(quint32 v)
+static int futexAvailCounter(quintptr v)
 {
     // the low 31 bits
-    return int(v) & (futexContendedBit - 1);
+    return int(v & (futexContendedBit - 1));
 }
 
-template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quint32> &u, int n, int timeout)
+static quintptr futexCounterParcel(int n)
+{
+    // replicate the 31 bits if we're on 64-bit
+    quint64 nn = quint32(n);
+    nn |= (nn << 32);
+    return quintptr(nn);
+}
+
+static QBasicAtomicInteger<quint32> *futexLow32(QBasicAtomicInteger<quintptr> *ptr)
+{
+    auto result = reinterpret_cast<QBasicAtomicInteger<quint32> *>(ptr);
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN && QT_POINTER_SIZE > 4
+    ++result;
+#endif
+    return result;
+}
+
+#ifdef FUTEX_OP
+static const quintptr futexMultiWaiterBit = Q_UINT64_C(1) << 63;
+static QBasicAtomicInteger<quint32> *futexHigh32(QBasicAtomicInteger<quintptr> *ptr)
+{
+    auto result = reinterpret_cast<QBasicAtomicInteger<quint32> *>(ptr);
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN && QT_POINTER_SIZE > 4
+    ++result;
+#endif
+    return result;
+}
+#endif
+
+template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintptr> &u, int n, int timeout)
 {
     QDeadlineTimer timer(IsTimed ? QDeadlineTimer(timeout) : QDeadlineTimer());
-    quint32 curValue = u.loadAcquire();
+    quintptr curValue = u.loadAcquire();
     qint64 remainingTime = timeout * Q_INT64_C(1000) * 1000;
     forever {
         int available = futexAvailCounter(curValue);
         if (available >= n) {
             // try to acquire
-            quint32 newValue = curValue - n;
+            quintptr newValue = curValue - futexCounterParcel(n);
             if (u.testAndSetOrdered(curValue, newValue, curValue))
                 return true;        // succeeded!
             continue;
@@ -145,16 +183,26 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quint3
         if (remainingTime == 0)
             return false;
 
-        // set the contended bit
-        u.fetchAndOrRelaxed(futexContendedBit);
-        curValue |= futexContendedBit;
+        // set the contended and multi-wait bits
+        quintptr bitsToSet = futexContendedBit;
+        auto ptr = futexLow32(&u);
+#ifdef FUTEX_OP
+        if (n > 1 && sizeof(curValue) >= sizeof(int)) {
+            bitsToSet |= futexMultiWaiterBit;
+            ptr = futexHigh32(&u);
+        }
+#endif
+
+        // the value is the same for either branch
+        u.fetchAndOrRelaxed(bitsToSet);
+        curValue |= bitsToSet;
 
         if (IsTimed && remainingTime > 0) {
-            bool timedout = !futexWait(u, curValue, remainingTime);
+            bool timedout = !futexWait(*ptr, curValue, remainingTime);
             if (timedout)
                 return false;
         } else {
-            futexWait(u, curValue);
+            futexWait(*ptr, curValue);
         }
 
         curValue = u.loadAcquire();
@@ -240,25 +288,52 @@ void QSemaphore::release(int n)
     Q_ASSERT_X(n >= 0, "QSemaphore::release", "parameter 'n' must be non-negative");
 
     if (futexAvailable()) {
-        quint32 prevValue = u.fetchAndAddRelease(n);
+        quintptr prevValue = u.fetchAndAddRelease(futexCounterParcel(n));
         if (prevValue & futexContendedBit) {
 #ifdef FUTEX_OP
-            /*
-               We'll ask the kernel to wake up and clear the bit for us.
+            if (sizeof(u) == sizeof(int)) {
+                /*
+                   On 32-bit systems, all waiters are waiting on the same address,
+                   so we'll wake them all and ask the kernel to clear the high bit.
 
-               atomic {
-                  int oldval = u;
-                  u = oldval & ~(1 << 31);
-                  futexWake(u, INT_MAX);
-                  if (oldval == 0)       // impossible condition
+                   atomic {
+                      int oldval = u;
+                      u = oldval & ~(1 << 31);
                       futexWake(u, INT_MAX);
-               }
-            */
-            quint32 op = FUTEX_OP_ANDN | FUTEX_OP_OPARG_SHIFT;
-            quint32 oparg = 31;
-            quint32 cmp = FUTEX_OP_CMP_EQ;
-            quint32 cmparg = 0;
-            futexWakeOp(u, INT_MAX, INT_MAX, u, FUTEX_OP(op, oparg, cmp, cmparg));
+                      if (oldval == 0)       // impossible condition
+                          futexWake(u, INT_MAX);
+                   }
+                */
+                quint32 op = FUTEX_OP_ANDN | FUTEX_OP_OPARG_SHIFT;
+                quint32 oparg = 31;
+                quint32 cmp = FUTEX_OP_CMP_EQ;
+                quint32 cmparg = 0;
+                futexWakeOp(u, INT_MAX, INT_MAX, u, FUTEX_OP(op, oparg, cmp, cmparg));
+            } else {
+                /*
+                   On 64-bit systems, the single-token waiters wait on the low half
+                   and the multi-token waiters wait on the upper half. So we ask
+                   the kernel to wake up n single-token waiters and all multi-token
+                   waiters (if any), then clear the multi-token wait bit.
+
+                   That means we must clear the contention bit ourselves. See
+                   below for handling the race.
+
+                   atomic {
+                      int oldval = *upper;
+                      *upper = oldval & ~(1 << 31);
+                      futexWake(lower, n);
+                      if (oldval < 0)   // sign bit set
+                          futexWake(upper, INT_MAX);
+                   }
+                */
+                quint32 op = FUTEX_OP_ANDN | FUTEX_OP_OPARG_SHIFT;
+                quint32 oparg = 31;
+                quint32 cmp = FUTEX_OP_CMP_LT;
+                quint32 cmparg = 0;
+                futexLow32(&u)->fetchAndAndRelease(futexContendedBit - 1);
+                futexWakeOp(*futexLow32(&u), n, INT_MAX, *futexHigh32(&u), FUTEX_OP(op, oparg, cmp, cmparg));
+            }
 #else
             // Unset the bit and wake everyone. There are two possibibilies
             // under which a thread can set the bit between the AND and the
