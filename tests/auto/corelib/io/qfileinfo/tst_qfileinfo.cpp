@@ -1261,6 +1261,7 @@ void tst_QFileInfo::isSymLink_data()
     QFile::remove("link.lnk");
     QFile::remove("brokenlink.lnk");
     QFile::remove("dummyfile");
+    QFile::remove("relative/link.lnk");
 
     QFile file1(m_sourceFile);
     QVERIFY(file1.link("link.lnk"));
@@ -1277,6 +1278,12 @@ void tst_QFileInfo::isSymLink_data()
     QTest::newRow("existent file") << m_sourceFile << false << "";
     QTest::newRow("link") << "link.lnk" << true << QFileInfo(m_sourceFile).absoluteFilePath();
     QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
+
+#ifndef Q_OS_WIN
+    QDir::current().mkdir("relative");
+    QFile::link("../dummyfile", "relative/link.lnk");
+    QTest::newRow("relative link") << "relative/link.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
+#endif
 #endif
 }
 
