@@ -25,7 +25,6 @@ HEADERS += \
         widgets/qsizegrip.h \
         widgets/qslider.h \
         widgets/qspinbox.h \
-        widgets/qstackedwidget.h \
         widgets/qtextedit.h \
         widgets/qtextedit_p.h \
         widgets/qtoolbar.h \
@@ -60,7 +59,6 @@ SOURCES += \
         widgets/qsizegrip.cpp \
         widgets/qslider.cpp \
         widgets/qspinbox.cpp \
-        widgets/qstackedwidget.cpp \
         widgets/qtextedit.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
@@ -230,6 +228,11 @@ qtConfig(splitter) {
         widgets/qsplitter_p.h
 
     SOURCES += widgets/qsplitter.cpp
+}
+
+qtConfig(stackedwidget) {
+    HEADERS += widgets/qstackedwidget.h
+    SOURCES += widgets/qstackedwidget.cpp
 }
 
 qtConfig(statusbar) {

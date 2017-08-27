@@ -52,7 +52,9 @@
 #endif
 #include "qdebug.h"
 #include <QApplication>
+#if QT_CONFIG(stackedwidget)
 #include <QStackedWidget>
+#endif
 #if QT_CONFIG(toolbox)
 #include <QToolBox>
 #endif
@@ -310,7 +312,7 @@ void QAccessibleTextEdit::scrollToSubstring(int startIndex, int endIndex)
 
 #endif // QT_NO_TEXTEDIT && QT_NO_CURSOR
 
-#ifndef QT_NO_STACKEDWIDGET
+#if QT_CONFIG(stackedwidget)
 // ======================= QAccessibleStackedWidget ======================
 QAccessibleStackedWidget::QAccessibleStackedWidget(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::LayeredPane)
@@ -356,7 +358,7 @@ QStackedWidget *QAccessibleStackedWidget::stackedWidget() const
 {
     return static_cast<QStackedWidget *>(object());
 }
-#endif // QT_NO_STACKEDWIDGET
+#endif // QT_CONFIG(stackedwidget)
 
 #if QT_CONFIG(toolbox)
 // ======================= QAccessibleToolBox ======================

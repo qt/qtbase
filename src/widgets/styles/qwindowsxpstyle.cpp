@@ -74,7 +74,9 @@
 #if QT_CONFIG(listview)
 #include <qlistview.h>
 #endif
+#if QT_CONFIG(stackedwidget)
 #include <qstackedwidget.h>
+#endif
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
