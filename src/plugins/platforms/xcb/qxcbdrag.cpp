@@ -170,6 +170,9 @@ void QXcbDrag::init()
 
     QXcbCursor::queryPointer(connection(), &current_virtual_desktop, 0);
     drag_types.clear();
+
+    dropped = false;
+    canceled = false;
 }
 
 QMimeData *QXcbDrag::platformDropData()
@@ -225,6 +228,10 @@ void QXcbDrag::startDrag()
 void QXcbDrag::endDrag()
 {
     QBasicDrag::endDrag();
+    if (!dropped && !canceled && canDrop()) {
+        // Set executed drop action when dropping outside application.
+        setExecutedDropAction(accepted_drop_action);
+    }
     initiatorWindow.clear();
 }
 
@@ -1026,6 +1033,8 @@ void QXcbDrag::handleDrop(QPlatformWindow *, const xcb_client_message_event_t *e
 
     // reset
     target_time = XCB_CURRENT_TIME;
+
+    dropped = true;
 }
 
 
@@ -1124,6 +1133,8 @@ void QXcbDrag::cancel()
 
     // remove canceled object
     currentDrag()->deleteLater();
+
+    canceled = true;
 }
 
 // find an ancestor with XdndAware on it
