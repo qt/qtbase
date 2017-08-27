@@ -638,13 +638,8 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
         }
         ret += QFile::decodeName(s);
 
-        if (!ret.startsWith(QLatin1Char('/'))) {
-            const QString linkPath = link.path();
-            if (linkPath.startsWith(QLatin1Char('/')))
-                ret.prepend(linkPath + QLatin1Char('/'));
-            else
-                ret.prepend(QDir::currentPath() + QLatin1Char('/') + linkPath + QLatin1Char('/'));
-        }
+        if (!ret.startsWith(QLatin1Char('/')))
+            ret.prepend(absoluteName(link).path() + QLatin1Char('/'));
         ret = QDir::cleanPath(ret);
         if (ret.size() > 1 && ret.endsWith(QLatin1Char('/')))
             ret.chop(1);
