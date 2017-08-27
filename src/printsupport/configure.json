@@ -38,6 +38,7 @@
             "label": "CUPS job control widget",
             "section": "Widgets",
             "condition": [
+                "features.buttongroup",
                 "features.calendarwidget",
                 "features.checkbox",
                 "features.combobox",

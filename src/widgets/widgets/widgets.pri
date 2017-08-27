@@ -1,8 +1,6 @@
 # Qt widgets module
 
 HEADERS += \
-        widgets/qbuttongroup.h \
-        widgets/qbuttongroup_p.h \
         widgets/qabstractspinbox.h \
         widgets/qabstractspinbox_p.h \
         widgets/qframe.h \
@@ -36,7 +34,6 @@ HEADERS += \
         widgets/qplaintextedit_p.h
 
 SOURCES += \
-        widgets/qbuttongroup.cpp \
         widgets/qabstractspinbox.cpp \
         widgets/qframe.cpp \
         widgets/qlineedit_p.cpp \
@@ -76,6 +73,14 @@ qtConfig(abstractslider) {
 
     SOURCES += \
         widgets/qabstractslider.cpp
+}
+
+qtConfig(buttongroup) {
+    HEADERS += \
+        widgets/qbuttongroup.h \
+        widgets/qbuttongroup_p.h
+
+    SOURCES += widgets/qbuttongroup.cpp
 }
 
 qtConfig(calendarwidget) {
