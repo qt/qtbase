@@ -28,7 +28,6 @@ HEADERS += \
         widgets/qtoolbarseparator_p.h \
         widgets/qabstractscrollarea.h \
         widgets/qabstractscrollarea_p.h \
-        widgets/qwidgetresizehandler_p.h \
         widgets/qfocusframe.h \
         widgets/qwidgetanimator_p.h \
         widgets/qwidgetlinecontrol_p.h \
@@ -56,7 +55,6 @@ SOURCES += \
         widgets/qtoolbarlayout.cpp \
         widgets/qtoolbarseparator.cpp \
         widgets/qabstractscrollarea.cpp \
-        widgets/qwidgetresizehandler.cpp \
         widgets/qfocusframe.cpp \
         widgets/qwidgetanimator.cpp \
         widgets/qwidgetlinecontrol.cpp \
@@ -198,6 +196,11 @@ qtConfig(radiobutton) {
 
     SOURCES += \
         widgets/qradiobutton.cpp
+}
+
+qtConfig(resizehandler) {
+    HEADERS += widgets/qwidgetresizehandler_p.h
+    SOURCES += widgets/qwidgetresizehandler.cpp
 }
 
 qtConfig(dialogbuttonbox) {

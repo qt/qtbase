@@ -39,7 +39,6 @@
 
 #include "qwidgetresizehandler_p.h"
 
-#ifndef QT_NO_RESIZEHANDLER
 #include "qframe.h"
 #include "qapplication.h"
 #include "qdesktopwidget.h"
@@ -543,5 +542,3 @@ void QWidgetResizeHandler::doMove()
 QT_END_NAMESPACE
 
 #include "moc_qwidgetresizehandler_p.cpp"
-
-#endif //QT_NO_RESIZEHANDLER
