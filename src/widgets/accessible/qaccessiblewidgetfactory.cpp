@@ -207,7 +207,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QTextBrowser")) {
         iface = new QAccessibleTextBrowser(widget);
 #endif
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     } else if (classname == QLatin1String("QAbstractScrollArea")) {
         iface = new QAccessibleAbstractScrollArea(widget);
     } else if (classname == QLatin1String("QScrollArea")) {

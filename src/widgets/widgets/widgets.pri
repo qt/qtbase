@@ -17,7 +17,6 @@ HEADERS += \
         widgets/qmdisubwindow_p.h \
         widgets/qmenu.h \
         widgets/qmenu_p.h \
-        widgets/qscrollarea_p.h \
         widgets/qsizegrip.h \
         widgets/qslider.h \
         widgets/qspinbox.h \
@@ -31,7 +30,6 @@ HEADERS += \
         widgets/qabstractscrollarea_p.h \
         widgets/qwidgetresizehandler_p.h \
         widgets/qfocusframe.h \
-        widgets/qscrollarea.h \
         widgets/qwidgetanimator_p.h \
         widgets/qwidgetlinecontrol_p.h \
         widgets/qtoolbararealayout_p.h \
@@ -60,7 +58,6 @@ SOURCES += \
         widgets/qabstractscrollarea.cpp \
         widgets/qwidgetresizehandler.cpp \
         widgets/qfocusframe.cpp \
-        widgets/qscrollarea.cpp \
         widgets/qwidgetanimator.cpp \
         widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
@@ -214,6 +211,14 @@ qtConfig(dialogbuttonbox) {
 qtConfig(rubberband) {
     HEADERS += widgets/qrubberband.h
     SOURCES += widgets/qrubberband.cpp
+}
+
+qtConfig(scrollarea) {
+    HEADERS += \
+        widgets/qscrollarea.h \
+        widgets/qscrollarea_p.h
+
+    SOURCES += widgets/qscrollarea.cpp
 }
 
 qtConfig(scrollbar) {
