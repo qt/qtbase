@@ -110,7 +110,9 @@
 #include <qstyleoption.h>
 #include <qtextedit.h>
 #include <qtextstream.h>
+#if QT_CONFIG(toolbar)
 #include <qtoolbar.h>
+#endif
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
 #endif

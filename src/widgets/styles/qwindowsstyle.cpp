@@ -661,7 +661,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
     bool doRestore = false;
 
     switch (pe) {
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
   case PE_IndicatorToolBarSeparator:
         {
             QRect rect = opt->rect;
@@ -721,7 +721,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         p->restore();
         break;
 
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
     case PE_FrameButtonTool:
     case PE_PanelButtonTool: {
         QPen oldPen = p->pen();
@@ -1572,7 +1572,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             p->fillRect(opt->rect, fill);
         }
         break; }
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
     case CE_ToolBar:
         if (const QStyleOptionToolBar *toolbar = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
             // Reserve the beveled appearance only for mainwindow toolbars
@@ -1673,7 +1673,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         break;
 
 
-#endif // QT_NO_TOOLBAR
+#endif // QT_CONFIG(toolbar)
 
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {

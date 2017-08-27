@@ -1040,7 +1040,7 @@ QStyleOptionButton::QStyleOptionButton(int version)
 */
 
 
-#ifndef QT_NO_TOOLBAR
+#if QT_CONFIG(toolbar)
 /*!
     \class QStyleOptionToolBar
     \brief The QStyleOptionToolBar class is used to describe the

@@ -39,8 +39,6 @@
 
 #include "qtoolbarseparator_p.h"
 
-#ifndef QT_NO_TOOLBAR
-
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qtoolbar.h>
@@ -87,5 +85,3 @@ void QToolBarSeparator::paintEvent(QPaintEvent *)
 QT_END_NAMESPACE
 
 #include "moc_qtoolbarseparator_p.cpp"
-
-#endif // QT_NO_TOOLBAR
