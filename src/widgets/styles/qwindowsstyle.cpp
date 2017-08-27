@@ -47,8 +47,10 @@
 #include "qdrawutil.h" // for now
 #include "qevent.h"
 #include "qmenu.h"
+#if QT_CONFIG(menubar)
 #include "qmenubar.h"
 #include <private/qmenubar_p.h>
+#endif
 #include "qpaintengine.h"
 #include "qpainter.h"
 #if QT_CONFIG(rubberband)
@@ -166,7 +168,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
 
             // Update state and repaint the menu bars.
             d->alt_down = false;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
             QList<QMenuBar *> l = widget->findChildren<QMenuBar *>();
             for (int i = 0; i < l.size(); ++i)
                 l.at(i)->update();
@@ -574,7 +576,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         // Do nothing if we always paint underlines
         Q_D(const QWindowsStyle);
         if (!ret && widget && d) {
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
             const QMenuBar *menuBar = qobject_cast<const QMenuBar *>(widget);
             if (!menuBar && qobject_cast<const QMenu *>(widget)) {
                 QWidget *w = QApplication::activeWindow();
@@ -587,7 +589,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
                     ret = 1;
                 // Otherwise draw underlines if the toplevel widget has seen an alt-press
             } else
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
             if (d->hasSeenAlt(widget)) {
                 ret = 1;
             }
@@ -1260,7 +1262,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         }
         break;
 #endif // QT_NO_MENU
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     case CE_MenuBarItem:
         if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             bool active = mbi->state & State_Selected;
@@ -1284,7 +1286,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             QCommonStyle::drawControl(ce, &newMbi, p, widget);
         }
         break;
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
 #if QT_CONFIG(tabbar)
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
@@ -2392,7 +2394,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
         break;
 #endif // QT_NO_MENU
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     case CT_MenuBarItem:
         if (!sz.isEmpty())
             sz += QSize(QWindowsStylePrivate::windowsItemHMargin * 4, QWindowsStylePrivate::windowsItemVMargin * 2);

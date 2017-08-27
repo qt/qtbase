@@ -49,7 +49,9 @@
 #include <qlayout.h>
 #include <qmainwindow.h>
 #include <qmenu.h>
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif

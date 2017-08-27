@@ -46,7 +46,9 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qmenu.h>
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #include <qpainter.h>
 #include <qstyleoption.h>
 #include <qlineedit.h>
@@ -1660,7 +1662,7 @@ int QStyleSheetStyle::nativeFrameWidth(const QWidget *w)
         return base->pixelMetric(QStyle::PM_MenuPanelWidth, 0, w);
 #endif
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     if (qobject_cast<const QMenuBar *>(w))
         return base->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, w);
 #endif
@@ -2829,7 +2831,7 @@ void QStyleSheetStyle::polish(QWidget *w)
 #ifndef QT_NO_MDIAREA
               || qobject_cast<QMdiSubWindow *>(w)
 #endif
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
               || qobject_cast<QMenuBar *>(w)
 #endif
 #if QT_CONFIG(dialog)

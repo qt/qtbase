@@ -1392,7 +1392,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     opt->rect.x() + opt->rect.width() - 4, opt->rect.y() + opt->rect.height() / 2);
         break;
 #endif // QT_NO_MENU
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     case CE_MenuBarItem:
         if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip
@@ -1412,7 +1412,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         if (widget && !widget->testAttribute(Qt::WA_NoSystemBackground))
             p->eraseRect(opt->rect);
         break;
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
 #if QT_CONFIG(progressbar)
     case CE_ProgressBar:
         if (const QStyleOptionProgressBar *pb

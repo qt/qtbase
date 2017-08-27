@@ -41,8 +41,10 @@
 #import <AppKit/AppKit.h>
 
 #include "qmenu.h"
+#if QT_CONFIG(menubar)
 #include "qmenubar.h"
 #include "qmenubar_p.h"
+#endif
 #include "qmacnativewidget_mac.h"
 
 #include <QtCore/QDebug>
@@ -139,7 +141,7 @@ void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* 
 
 #endif //QT_NO_MENU
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
 
 /*!
     \since 5.2
@@ -159,7 +161,7 @@ NSMenu *QMenuBar::toNSMenu()
     }
     return nil;
 }
-#endif //QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
 
 QT_END_NAMESPACE
 

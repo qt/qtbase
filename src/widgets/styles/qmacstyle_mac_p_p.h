@@ -80,7 +80,9 @@
 #endif
 #include <qmainwindow.h>
 #include <qmap.h>
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #include <qpaintdevice.h>
 #include <qpainter.h>
 #include <qpixmapcache.h>

@@ -58,7 +58,9 @@
 
 #include <QStyle>
 #include <QStyleOptionTitleBar>
+#if QT_CONFIG(menubar)
 #include <QMenuBar>
+#endif
 #include <QSizeGrip>
 #include <QPointer>
 #include <QDebug>
@@ -96,7 +98,7 @@ public:
     ControlContainer(QMdiSubWindow *mdiChild);
     ~ControlContainer();
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     void showButtonsInMenuBar(QMenuBar *menuBar);
     void removeButtonsFromMenuBar(QMenuBar *menuBar = 0);
     QMenuBar *menuBar() const { return m_menuBar; }
@@ -108,7 +110,7 @@ public:
 private:
     QPointer<QWidget> previousLeft;
     QPointer<QWidget> previousRight;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     QPointer<QMenuBar> m_menuBar;
 #endif
     QPointer<QWidget> m_controllerWidget;
@@ -252,7 +254,7 @@ public:
     int titleBarHeight(const QStyleOptionTitleBar &options) const;
     void sizeParameters(int *margin, int *minWidth) const;
     bool drawTitleBarWhenMaximized() const;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     QMenuBar *menuBar() const;
     void showButtonsInMenuBar(QMenuBar *menuBar);
     void removeButtonsFromMenuBar();

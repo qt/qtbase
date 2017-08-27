@@ -41,7 +41,9 @@
 
 #include "qapplication.h"
 #include "qlayoutengine_p.h"
+#if QT_CONFIG(menubar)
 #include "qmenubar.h"
+#endif
 #include "qtoolbar.h"
 #include "qevent.h"
 #include "qstyle.h"

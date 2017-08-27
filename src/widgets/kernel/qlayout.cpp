@@ -41,7 +41,9 @@
 
 #include "qapplication.h"
 #include "qlayoutengine_p.h"
+#if QT_CONFIG(menubar)
 #include "qmenubar.h"
+#endif
 #include "qtoolbar.h"
 #include "qsizegrip.h"
 #include "qevent.h"
@@ -583,7 +585,7 @@ void QLayoutPrivate::doResize(const QSize &r)
     const int mbTop = rect.top();
     rect.setTop(mbTop + mbh);
     q->setGeometry(rect);
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     if (menubar)
         menubar->setGeometry(rect.left(), mbTop, r.width(), mbh);
 #endif
@@ -615,7 +617,7 @@ void QLayout::widgetEvent(QEvent *e)
         {
             QChildEvent *c = (QChildEvent *)e;
             if (c->child()->isWidgetType()) {
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
                 if (c->child() == d->menubar)
                     d->menubar = 0;
 #endif
@@ -664,7 +666,7 @@ int QLayout::totalHeightForWidth(int w) const
         top += wd->topmargin + wd->bottommargin;
     }
     int h = heightForWidth(w - side) + top;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     h += menuBarHeightForWidth(d->menubar, w);
 #endif
     return h;
@@ -687,7 +689,7 @@ QSize QLayout::totalMinimumSize() const
     }
 
     QSize s = minimumSize();
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     top += menuBarHeightForWidth(d->menubar, s.width() + side);
 #endif
     return s + QSize(side, top);
@@ -712,7 +714,7 @@ QSize QLayout::totalSizeHint() const
     QSize s = sizeHint();
     if (hasHeightForWidth())
         s.setHeight(heightForWidth(s.width() + side));
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     top += menuBarHeightForWidth(d->menubar, s.width());
 #endif
     return s + QSize(side, top);
@@ -735,7 +737,7 @@ QSize QLayout::totalMaximumSize() const
     }
 
     QSize s = maximumSize();
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     top += menuBarHeightForWidth(d->menubar, s.width());
 #endif
 
@@ -813,7 +815,7 @@ void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
     Q_Q(QLayout);
     int n =  q->count();
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     if (menubar && menubar->parentWidget() != mw) {
         menubar->setParent(mw);
     }

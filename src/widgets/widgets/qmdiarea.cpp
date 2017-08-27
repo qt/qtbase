@@ -173,6 +173,7 @@
 #include <QDesktopWidget>
 #include <QDebug>
 #include <qmath.h>
+#include <qmenu.h>
 #include <private/qlayoutengine_p.h>
 
 #include <algorithm>

@@ -1871,7 +1871,7 @@ QSize QWindowsVistaStyle::sizeFromContents(ContentsType type, const QStyleOption
                 sz.setHeight(minimumHeight);
         }
         return sz;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     case CT_MenuBarItem:
         if (!sz.isEmpty())
             sz += QSize(windowsItemHMargin * 5 + 1, 5);

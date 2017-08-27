@@ -138,7 +138,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
     } else if (classname == QLatin1String("QToolBar")) {
         iface = new QAccessibleWidget(widget, QAccessible::ToolBar, widget->windowTitle());
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     } else if (classname == QLatin1String("QMenuBar")) {
         iface = new QAccessibleMenuBar(widget);
 #endif

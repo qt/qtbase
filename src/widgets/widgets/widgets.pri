@@ -19,8 +19,6 @@ HEADERS += \
         widgets/qmdisubwindow_p.h \
         widgets/qmenu.h \
         widgets/qmenu_p.h \
-        widgets/qmenubar.h \
-        widgets/qmenubar_p.h \
         widgets/qscrollarea_p.h \
         widgets/qsizegrip.h \
         widgets/qslider.h \
@@ -55,7 +53,6 @@ SOURCES += \
         widgets/qmdiarea.cpp \
         widgets/qmdisubwindow.cpp \
         widgets/qmenu.cpp \
-        widgets/qmenubar.cpp \
         widgets/qsizegrip.cpp \
         widgets/qslider.cpp \
         widgets/qspinbox.cpp \
@@ -169,6 +166,14 @@ qtConfig(lcdnumber) {
 
     SOURCES += \
         widgets/qlcdnumber.cpp
+}
+
+qtConfig(menubar) {
+    HEADERS += \
+        widgets/qmenubar.h \
+        widgets/qmenubar_p.h
+
+    SOURCES += widgets/qmenubar.cpp
 }
 
 qtConfig(progressbar) {
