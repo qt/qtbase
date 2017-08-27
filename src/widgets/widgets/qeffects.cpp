@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qapplication.h"
-#ifndef QT_NO_EFFECTS
 #include "qdesktopwidget.h"
 #include "qeffects_p.h"
 #include "qevent.h"
@@ -605,5 +604,3 @@ QT_END_NAMESPACE
 */
 
 #include "qeffects.moc"
-
-#endif //QT_NO_EFFECTS

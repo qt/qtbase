@@ -70,12 +70,12 @@
 #include <private/qabstractscrollarea_p.h>
 #include <private/qlineedit_p.h>
 #include <qdebug.h>
-#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && !defined(QT_NO_EFFECTS) && QT_CONFIG(style_mac)
+#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && QT_CONFIG(effetcts) && QT_CONFIG(style_mac)
 #include <private/qcore_mac_p.h>
 #include <private/qmacstyle_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
-#ifndef QT_NO_EFFECTS
+#if QT_CONFIG(effects)
 # include <private/qeffects_p.h>
 #endif
 #ifndef QT_NO_ACCESSIBILITY
@@ -2731,7 +2731,7 @@ void QComboBox::showPopup()
     const bool updatesEnabled = container->updatesEnabled();
 #endif
 
-#if !defined(QT_NO_EFFECTS)
+#if QT_CONFIG(effects)
     bool scrollDown = (listRect.topLeft() == below);
     if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo)
         && !style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this) && !window()->testAttribute(Qt::WA_DontShowOnScreen))
@@ -2803,7 +2803,7 @@ void QComboBox::hidePopup()
 {
     Q_D(QComboBox);
     if (d->container && d->container->isVisible()) {
-#if !defined(QT_NO_EFFECTS)
+#if QT_CONFIG(effects)
         QSignalBlocker modelBlocker(d->model);
         QSignalBlocker viewBlocker(d->container->itemView());
         QSignalBlocker containerBlocker(d->container);
@@ -2847,7 +2847,7 @@ void QComboBox::hidePopup()
         modelBlocker.unblock();
 
         if (!didFade)
-#endif // QT_NO_EFFECTS
+#endif // QT_CONFIG(effects)
             // Fade should implicitly hide as well ;-)
             d->container->hide();
     }

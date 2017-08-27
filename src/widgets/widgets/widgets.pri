@@ -38,7 +38,6 @@ HEADERS += \
 SOURCES += \
         widgets/qbuttongroup.cpp \
         widgets/qabstractspinbox.cpp \
-        widgets/qeffects.cpp \
         widgets/qframe.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
@@ -131,6 +130,11 @@ qtConfig(dockwidget) {
     SOURCES += \
         widgets/qdockwidget.cpp \
         widgets/qdockarealayout.cpp
+}
+
+qtConfig(effects) {
+    HEADERS += widgets/qeffects_p.h
+    SOURCES += widgets/qeffects.cpp
 }
 
 qtConfig(fontcombobox) {

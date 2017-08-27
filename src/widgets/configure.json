@@ -80,7 +80,8 @@
         "effects": {
             "label": "Effects",
             "purpose": "Provides special widget effects (e.g. fading and scrolling).",
-            "section": "Kernel"
+            "section": "Kernel",
+            "output": [ "privateFeature" ]
         },
         "filesystemmodel": {
             "label": "QFileSystemModel",

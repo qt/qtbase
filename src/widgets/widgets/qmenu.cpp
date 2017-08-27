@@ -41,6 +41,8 @@
 
 #ifndef QT_NO_MENU
 
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
+
 #include "qdebug.h"
 #include "qstyle.h"
 #include "qevent.h"
@@ -56,7 +58,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 # include "qaccessible.h"
 #endif
-#ifndef QT_NO_EFFECTS
+#if QT_CONFIG(effects)
 # include <private/qeffects_p.h>
 #endif
 #if QT_CONFIG(whatsthis)
@@ -517,7 +519,7 @@ void QMenuPrivate::hideMenu(QMenu *menu)
 {
     if (!menu)
         return;
-#if !defined(QT_NO_EFFECTS)
+#if QT_CONFIG(effects)
     QSignalBlocker blocker(menu);
     aboutToHide = true;
     // Flash item which is about to trigger (if any).
@@ -539,7 +541,7 @@ void QMenuPrivate::hideMenu(QMenu *menu)
 
     aboutToHide = false;
     blocker.unblock();
-#endif // QT_NO_EFFECTS
+#endif // QT_CONFIG(effects)
     if (activeMenu == menu)
         activeMenu = 0;
     menu->d_func()->causedPopup.action = 0;
@@ -670,7 +672,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
     }
     if (hideActiveMenu && previousAction != currentAction) {
         if (popup == -1) {
-#ifndef QT_NO_EFFECTS
+#if QT_CONFIG(effects)
             // kill any running effect
             qFadeEffect(0);
             qScrollEffect(0);
@@ -2475,7 +2477,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
         }
     }
     setGeometry(QRect(pos, size));
-#ifndef QT_NO_EFFECTS
+#if QT_CONFIG(effects)
     int hGuess = isRightToLeft() ? QEffects::LeftScroll : QEffects::RightScroll;
     int vGuess = QEffects::DownScroll;
     if (isRightToLeft()) {
