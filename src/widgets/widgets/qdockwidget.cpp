@@ -851,7 +851,7 @@ bool QDockWidgetPrivate::isAnimating() const
 
 bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
 {
-#if !defined(QT_NO_MAINWINDOW)
+#if QT_CONFIG(mainwindow)
     Q_Q(QDockWidget);
 
     QDockWidgetLayout *dwLayout
@@ -880,7 +880,7 @@ bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
         return true;
     }
 
-#endif // !defined(QT_NO_MAINWINDOW)
+#endif // QT_CONFIG(mainwindow)
     return false;
 }
 
@@ -903,7 +903,7 @@ bool QDockWidgetPrivate::mouseDoubleClickEvent(QMouseEvent *event)
 bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
 {
     bool ret = false;
-#if !defined(QT_NO_MAINWINDOW)
+#if QT_CONFIG(mainwindow)
     Q_Q(QDockWidget);
 
     if (!state)
@@ -944,20 +944,20 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
         ret = true;
     }
 
-#endif // !defined(QT_NO_MAINWINDOW)
+#endif // QT_CONFIG(mainwindow)
     return ret;
 }
 
 bool QDockWidgetPrivate::mouseReleaseEvent(QMouseEvent *event)
 {
-#if !defined(QT_NO_MAINWINDOW)
+#if QT_CONFIG(mainwindow)
 
     if (event->button() == Qt::LeftButton && state && !state->nca) {
         endDrag();
         return true; //filter out the event
     }
 
-#endif // !defined(QT_NO_MAINWINDOW)
+#endif // QT_CONFIG(mainwindow)
     return false;
 }
 

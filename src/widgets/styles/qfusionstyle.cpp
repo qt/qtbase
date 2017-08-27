@@ -55,7 +55,9 @@
 #include <qdir.h>
 #include <qstyleoption.h>
 #include <qapplication.h>
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #include <qfont.h>
 #if QT_CONFIG(groupbox)
 #include <qgroupbox.h>

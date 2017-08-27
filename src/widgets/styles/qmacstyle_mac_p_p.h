@@ -78,7 +78,9 @@
 #if QT_CONFIG(listview)
 #include <qlistview.h>
 #endif
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #include <qmap.h>
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>

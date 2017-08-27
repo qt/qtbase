@@ -304,7 +304,7 @@ protected:
 
 #endif // QT_CONFIG(dockwidget)
 
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
 class QAccessibleMainWindow : public QAccessibleWidget
 {
 public:
@@ -317,7 +317,7 @@ public:
     QMainWindow *mainWindow() const;
 
 };
-#endif //QT_NO_MAINWINDOW
+#endif // QT_CONFIG(mainwindow)
 
 #endif // QT_NO_ACCESSIBILITY
 

@@ -85,7 +85,9 @@
 #include <qtabbar.h>
 #endif
 #include <QMetaProperty>
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
 #endif
@@ -2825,7 +2827,7 @@ void QStyleSheetStyle::polish(QWidget *w)
 #ifndef QT_NO_FRAME
               || qobject_cast<QFrame *>(w)
 #endif
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
               || qobject_cast<QMainWindow *>(w)
 #endif
 #ifndef QT_NO_MDIAREA

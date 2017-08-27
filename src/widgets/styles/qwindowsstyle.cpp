@@ -62,7 +62,9 @@
 #endif
 #include "qwidget.h"
 #include "qdebug.h"
+#if QT_CONFIG(mainwindow)
 #include "qmainwindow.h"
+#endif
 #include "qfile.h"
 #include "qtextstream.h"
 #include "qpixmapcache.h"
@@ -1113,7 +1115,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         break;
 #endif // QT_CONFIG(rubberband)
 
-#if !defined(QT_NO_MENU) && !defined(QT_NO_MAINWINDOW)
+#if !defined(QT_NO_MENU) && QT_CONFIG(mainwindow)
     case CE_MenuBarEmptyArea:
         if (widget && qobject_cast<const QMainWindow *>(widget->parentWidget())) {
             p->fillRect(opt->rect, opt->palette.button());

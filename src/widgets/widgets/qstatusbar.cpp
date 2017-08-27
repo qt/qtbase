@@ -48,7 +48,9 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include "qsizegrip.h"
+#if QT_CONFIG(mainwindow)
 #include "qmainwindow.h"
+#endif
 
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"

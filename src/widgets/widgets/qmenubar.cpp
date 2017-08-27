@@ -49,7 +49,9 @@
 #include <qpainter.h>
 #include <qstylepainter.h>
 #include <qevent.h>
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #include <qtoolbar.h>
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>

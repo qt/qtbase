@@ -80,7 +80,9 @@
 #include <QDockWidget>
 #include <private/qdockwidget_p.h>
 #endif
+#if QT_CONFIG(mainwindow)
 #include <QMainWindow>
+#endif
 #include <QFocusFrame>
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -1090,7 +1092,7 @@ void QAccessibleTextWidget::replaceText(int startOffset, int endOffset, const QS
 #endif // QT_NO_CURSOR
 
 
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
 QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Window) { }
 
@@ -1139,7 +1141,7 @@ QMainWindow *QAccessibleMainWindow::mainWindow() const
     return qobject_cast<QMainWindow *>(object());
 }
 
-#endif //QT_NO_MAINWINDOW
+#endif // QT_CONFIG(mainwindow)
 
 QT_END_NAMESPACE
 

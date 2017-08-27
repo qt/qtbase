@@ -120,7 +120,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         iface = new QAccessibleWidget(widget, QAccessible::Dialog);
     } else if (classname == QLatin1String("QMessageBox")) {
         iface = new QAccessibleWidget(widget, QAccessible::AlertMessage);
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
     } else if (classname == QLatin1String("QMainWindow")) {
         iface = new QAccessibleMainWindow(widget);
 #endif

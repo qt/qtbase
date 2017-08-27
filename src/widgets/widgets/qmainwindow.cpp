@@ -42,8 +42,6 @@
 #include "qmainwindow.h"
 #include "qmainwindowlayout_p.h"
 
-#ifndef QT_NO_MAINWINDOW
-
 #if QT_CONFIG(dockwidget)
 #include "qdockwidget.h"
 #endif
@@ -1778,5 +1776,3 @@ QMenu *QMainWindow::createPopupMenu()
 QT_END_NAMESPACE
 
 #include "moc_qmainwindow.cpp"
-
-#endif // QT_NO_MAINWINDOW

@@ -74,7 +74,9 @@
 #include <qhash.h>
 #include <qheaderview.h>
 #include <qlineedit.h>
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #include <qmdisubwindow.h>
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>
@@ -959,7 +961,7 @@ static QAquaWidgetSize qt_aqua_guess_size(const QWidget *widg, QSize large, QSiz
         return QAquaSizeLarge;
     }
 
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
     if (qEnvironmentVariableIsSet("QWIDGET_ALL_SMALL")) {
         //if (small.width() != -1 || small.height() != -1)
         return QAquaSizeSmall;
@@ -2457,7 +2459,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 #endif
         break;
     case PM_DefaultFrameWidth:
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
         if (widget && (widget->isWindow() || !widget->parentWidget()
                 || (qobject_cast<const QMainWindow*>(widget->parentWidget())
                    && static_cast<QMainWindow *>(widget->parentWidget())->centralWidget() == widget))
@@ -4801,7 +4803,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         // the title bar. The following code fills the toolBar area with transparent pixels
         // to make that gradient visible.
         if (w)  {
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
             if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window())) {
                 if (toolBar && toolBar->toolBarArea == Qt::TopToolBarArea && mainWindow->unifiedTitleAndToolBarOnMac()) {
 
@@ -6986,7 +6988,7 @@ bool QMacStyle::event(QEvent *e)
             QWidget *top = f->parentWidget();
             while (top && !top->isWindow() && !(top->windowType() == Qt::SubWindow))
                 top = top->parentWidget();
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
             if (qobject_cast<QMainWindow *>(top)) {
                 QWidget *central = static_cast<QMainWindow *>(top)->centralWidget();
                 for (const QWidget *par = f; par; par = par->parentWidget()) {

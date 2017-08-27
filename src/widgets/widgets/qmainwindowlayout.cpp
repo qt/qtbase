@@ -40,7 +40,6 @@
 
 #include "qmainwindowlayout_p.h"
 
-#ifndef QT_NO_MAINWINDOW
 #if QT_CONFIG(dockwidget)
 #include "qdockarealayout_p.h"
 #include "qdockwidget.h"
@@ -2724,9 +2723,6 @@ void QMainWindowLayout::timerEvent(QTimerEvent *e)
     QLayout::timerEvent(e);
 }
 
-
 QT_END_NAMESPACE
 
 #include "moc_qmainwindowlayout_p.cpp"
-
-#endif // QT_NO_MAINWINDOW

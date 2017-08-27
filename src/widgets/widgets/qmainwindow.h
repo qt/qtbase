@@ -46,10 +46,9 @@
 #include <QtWidgets/qtabwidget.h>
 #endif
 
+QT_REQUIRE_CONFIG(mainwindow);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_MAINWINDOW
 
 class QDockWidget;
 class QMainWindowPrivate;
@@ -214,8 +213,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMainWindow::DockOptions)
-
-#endif // QT_NO_MAINWINDOW
 
 QT_END_NAMESPACE
 

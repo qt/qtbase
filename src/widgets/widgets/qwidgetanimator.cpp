@@ -40,7 +40,9 @@
 #include <QtCore/qpropertyanimation.h>
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qstyle.h>
+#if QT_CONFIG(mainwindow)
 #include <private/qmainwindowlayout_p.h>
+#endif
 
 #include "qwidgetanimator_p.h"
 
@@ -61,7 +63,7 @@ void QWidgetAnimator::abort(QWidget *w)
     if (anim) {
         anim->stop();
     }
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
     m_mainWindowLayout->animationFinished(w);
 #endif
 #else
@@ -108,9 +110,9 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
     {
     //we do it in one shot
     widget->setGeometry(final_geometry);
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
     m_mainWindowLayout->animationFinished(widget);
-#endif //QT_NO_MAINWINDOW
+#endif // QT_CONFIG(mainwindow)
     }
 }
 

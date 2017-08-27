@@ -50,7 +50,9 @@
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qtooltip.h>
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #include <qtoolbar.h>
 #include <qvariant.h>
 #include <qstylepainter.h>

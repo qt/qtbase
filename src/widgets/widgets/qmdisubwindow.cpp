@@ -157,7 +157,9 @@
 #include <QWhatsThis>
 #endif
 #include <QToolTip>
+#if QT_CONFIG(mainwindow)
 #include <QMainWindow>
+#endif
 #include <QScrollBar>
 #include <QDebug>
 #if QT_CONFIG(style_mac)
@@ -741,7 +743,7 @@ ControlContainer::~ControlContainer()
 */
 QMenuBar *QMdiSubWindowPrivate::menuBar() const
 {
-#if defined(QT_NO_MAINWINDOW)
+#if !QT_CONFIG(mainwindow)
     return 0;
 #else
     Q_Q(const QMdiSubWindow);
@@ -1784,7 +1786,7 @@ bool QMdiSubWindowPrivate::drawTitleBarWhenMaximized() const
 #else
     if (q->style()->styleHint(QStyle::SH_Workspace_FillSpaceOnMaximize, 0, q))
         return true;
-#if !QT_CONFIG(menubar) || defined(QT_NO_MAINWINDOW)
+#if !QT_CONFIG(menubar) || !QT_CONFIG(mainwindow)
     Q_UNUSED(isChildOfQMdiSubWindow);
     return true;
 #else
@@ -1850,7 +1852,7 @@ void QMdiSubWindowPrivate::removeButtonsFromMenuBar()
         return;
 
     QMenuBar *currentMenuBar = 0;
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
     if (QMainWindow *mainWindow = qobject_cast<QMainWindow *>(q->window())) {
         // NB! We can't use menuBar() here because that one will actually create
         // a menubar for us if not set. That's not what we want :-)

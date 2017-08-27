@@ -7,8 +7,6 @@ HEADERS += \
         widgets/qframe_p.h \
         widgets/qlineedit.h \
         widgets/qlineedit_p.h \
-        widgets/qmainwindow.h \
-        widgets/qmainwindowlayout_p.h \
         widgets/qmdiarea.h \
         widgets/qmdiarea_p.h \
         widgets/qmdisubwindow.h \
@@ -38,8 +36,6 @@ SOURCES += \
         widgets/qframe.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
-        widgets/qmainwindow.cpp \
-        widgets/qmainwindowlayout.cpp \
         widgets/qmdiarea.cpp \
         widgets/qmdisubwindow.cpp \
         widgets/qmenu.cpp \
@@ -175,6 +171,16 @@ qtConfig(lcdnumber) {
 
     SOURCES += \
         widgets/qlcdnumber.cpp
+}
+
+qtConfig(mainwindow) {
+    HEADERS += \
+        widgets/qmainwindow.h \
+        widgets/qmainwindowlayout_p.h
+
+    SOURCES += \
+        widgets/qmainwindow.cpp \
+        widgets/qmainwindowlayout.cpp
 }
 
 qtConfig(menubar) {
