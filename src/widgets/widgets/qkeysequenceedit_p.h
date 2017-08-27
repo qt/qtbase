@@ -58,9 +58,9 @@
 #include <private/qwidget_p.h>
 #include <private/qkeysequence_p.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(keysequenceedit);
 
-#ifndef QT_NO_KEYSEQUENCEEDIT
+QT_BEGIN_NAMESPACE
 
 class QLineEdit;
 
@@ -80,8 +80,6 @@ public:
     int prevKey;
     int releaseTimer;
 };
-
-#endif // QT_NO_KEYSEQUENCEEDIT
 
 QT_END_NAMESPACE
 

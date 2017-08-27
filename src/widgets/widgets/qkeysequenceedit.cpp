@@ -47,8 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_KEYSEQUENCEEDIT
-
 Q_STATIC_ASSERT(QKeySequencePrivate::MaxKeyCount == 4); // assumed by the code around here
 
 void QKeySequenceEditPrivate::init()
@@ -331,8 +329,6 @@ void QKeySequenceEdit::timerEvent(QTimerEvent *e)
 
     QWidget::timerEvent(e);
 }
-
-#endif // QT_NO_KEYSEQUENCEEDIT
 
 QT_END_NAMESPACE
 
