@@ -55,7 +55,7 @@
 #include "qmdiarea.h"
 #include "qmdisubwindow.h"
 
-#ifndef QT_NO_MDIAREA
+QT_REQUIRE_CONFIG(mdiarea);
 
 #include <QList>
 #include <QVector>
@@ -265,8 +265,6 @@ public:
     }
 #endif // QT_CONFIG(rubberband)
 };
-
-#endif // QT_NO_MDIAREA
 
 QT_END_NAMESPACE
 

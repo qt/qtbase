@@ -7,10 +7,6 @@ HEADERS += \
         widgets/qframe_p.h \
         widgets/qlineedit.h \
         widgets/qlineedit_p.h \
-        widgets/qmdiarea.h \
-        widgets/qmdiarea_p.h \
-        widgets/qmdisubwindow.h \
-        widgets/qmdisubwindow_p.h \
         widgets/qmenu.h \
         widgets/qmenu_p.h \
         widgets/qsizegrip.h \
@@ -36,8 +32,6 @@ SOURCES += \
         widgets/qframe.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
-        widgets/qmdiarea.cpp \
-        widgets/qmdisubwindow.cpp \
         widgets/qmenu.cpp \
         widgets/qsizegrip.cpp \
         widgets/qslider.cpp \
@@ -181,6 +175,18 @@ qtConfig(mainwindow) {
     SOURCES += \
         widgets/qmainwindow.cpp \
         widgets/qmainwindowlayout.cpp
+}
+
+qtConfig(mdiarea) {
+    HEADERS += \
+        widgets/qmdiarea.h \
+        widgets/qmdiarea_p.h \
+        widgets/qmdisubwindow.h \
+        widgets/qmdisubwindow_p.h
+
+    SOURCES += \
+        widgets/qmdiarea.cpp \
+        widgets/qmdisubwindow.cpp
 }
 
 qtConfig(menubar) {

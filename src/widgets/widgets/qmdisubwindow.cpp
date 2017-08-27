@@ -147,8 +147,6 @@
 
 #include "qmdisubwindow_p.h"
 
-#ifndef QT_NO_MDIAREA
-
 #include <QApplication>
 #include <QStylePainter>
 #include <QVBoxLayout>
@@ -3562,5 +3560,3 @@ QT_END_NAMESPACE
 
 #include "moc_qmdisubwindow.cpp"
 #include "qmdisubwindow.moc"
-
-#endif //QT_NO_MDIAREA

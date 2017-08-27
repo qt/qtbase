@@ -156,8 +156,6 @@
 
 #include "qmdiarea_p.h"
 
-#ifndef QT_NO_MDIAREA
-
 #include <QApplication>
 #include <QStyle>
 #if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && QT_CONFIG(style_mac)
@@ -2700,5 +2698,3 @@ void QMdiArea::setupViewport(QWidget *viewport)
 QT_END_NAMESPACE
 
 #include "moc_qmdiarea.cpp"
-
-#endif // QT_NO_MDIAREA

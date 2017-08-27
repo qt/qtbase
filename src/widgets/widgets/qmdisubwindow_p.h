@@ -54,8 +54,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qmdisubwindow.h"
 
-#ifndef QT_NO_MDIAREA
-
 #include <QStyle>
 #include <QStyleOptionTitleBar>
 #if QT_CONFIG(menubar)
@@ -65,6 +63,8 @@
 #include <QPointer>
 #include <QDebug>
 #include <private/qwidget_p.h>
+
+QT_REQUIRE_CONFIG(mdiarea);
 
 QT_BEGIN_NAMESPACE
 
@@ -342,8 +342,6 @@ public:
         return currentOperation == Move;
     }
 };
-
-#endif // QT_NO_MDIAREA
 
 QT_END_NAMESPACE
 

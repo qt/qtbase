@@ -3745,7 +3745,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
         }
         break;
 #endif // QT_CONFIG(groupbox)
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
     case CC_MdiControls:
         {
             QStyleOptionButton btnOpt;
@@ -3808,7 +3808,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#endif // QT_NO_MDIAREA
+#endif // QT_CONFIG(mdiarea)
     default:
         qWarning("QCommonStyle::drawComplexControl: Control %d not handled", cc);
     }
@@ -4339,7 +4339,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         break;
     }
 #endif // QT_CONFIG(groupbox)
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
     case CC_MdiControls:
     {
         int numSubControls = 0;
@@ -4382,7 +4382,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
         ret = QRect(offset, 0, buttonWidth, opt->rect.height());
         break;
     }
-#endif // QT_NO_MDIAREA
+#endif // QT_CONFIG(mdiarea)
      default:
         qWarning("QCommonStyle::subControlRect: Case %d not handled", cc);
     }

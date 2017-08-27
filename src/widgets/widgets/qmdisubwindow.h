@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(mdiarea);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_MDIAREA
 
 class QMenu;
 class QMdiArea;
@@ -147,7 +146,5 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMdiSubWindow::SubWindowOptions)
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MDIAREA
 
 #endif // QMDISUBWINDOW_H

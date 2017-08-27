@@ -77,7 +77,9 @@
 #if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
 #endif
+#if QT_CONFIG(mdiarea)
 #include <qmdisubwindow.h>
+#endif
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>
 #endif
@@ -773,7 +775,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
             gbi.size = sz == QAquaSizeSmall ? kHIThemeGrowBoxSizeSmall : kHIThemeGrowBoxSizeNormal;
             if (HIThemeGetGrowBoxBounds(&p, &gbi, &r) == noErr) {
                 int width = 0;
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
             if (widg && qobject_cast<QMdiSubWindow *>(widg->parentWidget()))
                 width = r.size.width;
 #endif

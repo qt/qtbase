@@ -216,7 +216,7 @@ protected:
     QToolBox *toolBox() const;
 };
 
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
 class QAccessibleMdiArea : public QAccessibleWidget
 {
 public:
@@ -246,7 +246,7 @@ public:
 protected:
     QMdiSubWindow *mdiSubWindow() const;
 };
-#endif // QT_NO_MDIAREA
+#endif // QT_CONFIG(mdiarea)
 
 #if QT_CONFIG(dialogbuttonbox)
 class QAccessibleDialogButtonBox : public QAccessibleWidget

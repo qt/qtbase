@@ -44,7 +44,9 @@
 #include <qpa/qplatformintegration.h>
 #include <QDebug>
 
+#if QT_CONFIG(mdiarea)
 #include <QMdiSubWindow>
+#endif
 #include <QAbstractScrollArea>
 
 QT_BEGIN_NAMESPACE
@@ -98,7 +100,7 @@ public:
         QWidget *p = q->parentWidget();
         while (p) {
             if (false
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
                 || qobject_cast<QMdiSubWindow *>(p) != 0
 #endif
 #if QT_CONFIG(scrollarea)

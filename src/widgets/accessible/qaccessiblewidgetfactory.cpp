@@ -185,7 +185,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QToolBox")) {
         iface = new QAccessibleToolBox(widget);
 #endif
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
     } else if (classname == QLatin1String("QMdiArea")) {
         iface = new QAccessibleMdiArea(widget);
     } else if (classname == QLatin1String("QMdiSubWindow")) {

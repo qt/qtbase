@@ -3174,7 +3174,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
     case CC_MdiControls:
         {
             QRect buttonRect;
@@ -3230,7 +3230,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             }
         }
         break;
-#endif //QT_NO_MDIAREA
+#endif // QT_CONFIG(mdiarea)
 #if QT_CONFIG(dial)
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
@@ -3570,7 +3570,7 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
     case CC_MdiControls:
     {
         int numSubControls = 0;
@@ -3607,7 +3607,7 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
         rect = QRect(offset, 0, buttonWidth, option->rect.height());
         break;
     }
-#endif // QT_NO_MDIAREA
+#endif // QT_CONFIG(mdiarea)
 
     default:
         rect = visualRect(option->direction, option->rect,

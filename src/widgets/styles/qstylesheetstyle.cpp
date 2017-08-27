@@ -91,7 +91,9 @@
 #if QT_CONFIG(dockwidget)
 #include <qdockwidget.h>
 #endif
+#if QT_CONFIG(mdiarea)
 #include <qmdisubwindow.h>
+#endif
 #if QT_CONFIG(dialog)
 #include <qdialog.h>
 #endif
@@ -2830,7 +2832,7 @@ void QStyleSheetStyle::polish(QWidget *w)
 #if QT_CONFIG(mainwindow)
               || qobject_cast<QMainWindow *>(w)
 #endif
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
               || qobject_cast<QMdiSubWindow *>(w)
 #endif
 #if QT_CONFIG(menubar)

@@ -58,8 +58,10 @@
 #if QT_CONFIG(toolbox)
 #include <QToolBox>
 #endif
+#if QT_CONFIG(mdiarea)
 #include <QMdiArea>
 #include <QMdiSubWindow>
+#endif
 #if QT_CONFIG(dialogbuttonbox)
 #include <QDialogButtonBox>
 #endif
@@ -377,7 +379,7 @@ QToolBox * QAccessibleToolBox::toolBox() const
 #endif // QT_CONFIG(toolbox)
 
 // ======================= QAccessibleMdiArea ======================
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
 QAccessibleMdiArea::QAccessibleMdiArea(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::LayeredPane)
 {
@@ -497,7 +499,7 @@ QMdiSubWindow *QAccessibleMdiSubWindow::mdiSubWindow() const
 {
     return static_cast<QMdiSubWindow *>(object());
 }
-#endif // QT_NO_MDIAREA
+#endif // QT_CONFIG(mdiarea)
 
 #if QT_CONFIG(dialogbuttonbox)
 // ======================= QAccessibleDialogButtonBox ======================
