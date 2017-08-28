@@ -3814,8 +3814,6 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
     1000.  DataSizeIecFormat uses the new IEC standard quantifiers Ki, Mi and so
     on, whereas DataSizeSIFormat uses and DataSizeTraditionalFormat abuses the
     older SI quantifiers k, M, etc.
-
-    \sa refresh(), caching()
 */
 QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats format)
 {
