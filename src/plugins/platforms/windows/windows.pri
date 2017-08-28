@@ -19,6 +19,7 @@ SOURCES += \
     $$PWD/qwindowskeymapper.cpp \
     $$PWD/qwindowsmousehandler.cpp \
     $$PWD/qwindowsole.cpp \
+    $$PWD/qwindowsdropdataobject.cpp \
     $$PWD/qwindowsmime.cpp \
     $$PWD/qwindowsinternalmimedata.cpp \
     $$PWD/qwindowscursor.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     $$PWD/qwindowsmousehandler.h \
     $$PWD/qtwindowsglobal.h \
     $$PWD/qwindowsole.h \
+    $$PWD/qwindowsdropdataobject.h \
     $$PWD/qwindowsmime.h \
     $$PWD/qwindowsinternalmimedata.h \
     $$PWD/qwindowscursor.h \
