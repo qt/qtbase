@@ -606,17 +606,19 @@ void QThreadPool::reserveThread()
     ++d->reservedThreads;
 }
 
-/*! \property QThreadPool::stacksize
+/*! \property QThreadPool::stackSize
 
     This property contains the stack size for the thread pool worker
     threads.
 
-    The value of the property is uses when the thread pool creates
-    new threads only. Changing it has no effect for already created
+    The value of the property is only used when the thread pool creates
+    new threads. Changing it has no effect for already created
     or running threads.
 
     The default value is 0, which makes QThread use the operating
-    system default stack stize.
+    system default stack size.
+
+    \since 5.10
 */
 void QThreadPool::setStackSize(uint stackSize)
 {
