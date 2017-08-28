@@ -113,7 +113,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    [self cursorUpdate:theEvent];
+    [view cursorUpdate:theEvent];
 }
 
 @end
