@@ -427,6 +427,7 @@ void QCocoaMenu::scheduleUpdate()
 void QCocoaMenu::timerEvent(QTimerEvent *e)
 {
     if (e->timerId() == m_updateTimer) {
+        killTimer(m_updateTimer);
         m_updateTimer = 0;
         [m_nativeMenu update];
     }
