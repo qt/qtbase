@@ -150,15 +150,15 @@ public:
 
     void retranslateUi(QWidget *TetrixWindow)
     {
-        TetrixWindow->setWindowTitle(QApplication::translate("TetrixWindow", "Tetrix", Q_NULLPTR));
-        startButton->setText(QApplication::translate("TetrixWindow", "&Start", Q_NULLPTR));
-        linesRemovedLabel->setText(QApplication::translate("TetrixWindow", "LINES REMOVED", Q_NULLPTR));
-        pauseButton->setText(QApplication::translate("TetrixWindow", "&Pause", Q_NULLPTR));
-        levelLabel->setText(QApplication::translate("TetrixWindow", "LEVEL", Q_NULLPTR));
-        nextLabel->setText(QApplication::translate("TetrixWindow", "NEXT", Q_NULLPTR));
-        scoreLabel->setText(QApplication::translate("TetrixWindow", "SCORE", Q_NULLPTR));
+        TetrixWindow->setWindowTitle(QApplication::translate("TetrixWindow", "Tetrix", nullptr));
+        startButton->setText(QApplication::translate("TetrixWindow", "&Start", nullptr));
+        linesRemovedLabel->setText(QApplication::translate("TetrixWindow", "LINES REMOVED", nullptr));
+        pauseButton->setText(QApplication::translate("TetrixWindow", "&Pause", nullptr));
+        levelLabel->setText(QApplication::translate("TetrixWindow", "LEVEL", nullptr));
+        nextLabel->setText(QApplication::translate("TetrixWindow", "NEXT", nullptr));
+        scoreLabel->setText(QApplication::translate("TetrixWindow", "SCORE", nullptr));
         nextPieceLabel->setText(QString());
-        quitButton->setText(QApplication::translate("TetrixWindow", "&Quit", Q_NULLPTR));
+        quitButton->setText(QApplication::translate("TetrixWindow", "&Quit", nullptr));
     } // retranslateUi
 
 };

@@ -61,10 +61,10 @@ public:
 
     void retranslateUi(QDialog *Dialog)
     {
-        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", Q_NULLPTR));
-        loadFromFileButton->setText(QApplication::translate("Dialog", "Load Image From File...", Q_NULLPTR));
-        label->setText(QApplication::translate("Dialog", "Launch two of these dialogs.  In the first, press the top button and load an image from a file.  In the second, press the bottom button and display the loaded image from shared memory.", Q_NULLPTR));
-        loadFromSharedMemoryButton->setText(QApplication::translate("Dialog", "Display Image From Shared Memory", Q_NULLPTR));
+        Dialog->setWindowTitle(QApplication::translate("Dialog", "Dialog", nullptr));
+        loadFromFileButton->setText(QApplication::translate("Dialog", "Load Image From File...", nullptr));
+        label->setText(QApplication::translate("Dialog", "Launch two of these dialogs.  In the first, press the top button and load an image from a file.  In the second, press the bottom button and display the loaded image from shared memory.", nullptr));
+        loadFromSharedMemoryButton->setText(QApplication::translate("Dialog", "Display Image From Shared Memory", nullptr));
     } // retranslateUi
 
 };

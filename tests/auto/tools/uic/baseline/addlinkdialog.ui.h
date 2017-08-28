@@ -100,9 +100,9 @@ public:
 
     void retranslateUi(QDialog *AddLinkDialog)
     {
-        AddLinkDialog->setWindowTitle(QApplication::translate("AddLinkDialog", "Insert Link", Q_NULLPTR));
-        label->setText(QApplication::translate("AddLinkDialog", "Title:", Q_NULLPTR));
-        label_2->setText(QApplication::translate("AddLinkDialog", "URL:", Q_NULLPTR));
+        AddLinkDialog->setWindowTitle(QApplication::translate("AddLinkDialog", "Insert Link", nullptr));
+        label->setText(QApplication::translate("AddLinkDialog", "Title:", nullptr));
+        label_2->setText(QApplication::translate("AddLinkDialog", "URL:", nullptr));
     } // retranslateUi
 
 };

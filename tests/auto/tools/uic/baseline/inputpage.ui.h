@@ -84,9 +84,9 @@ public:
 
     void retranslateUi(QWidget *InputPage)
     {
-        InputPage->setWindowTitle(QApplication::translate("InputPage", "Form", Q_NULLPTR));
-        label->setText(QApplication::translate("InputPage", "File name:", Q_NULLPTR));
-        browseButton->setText(QApplication::translate("InputPage", "...", Q_NULLPTR));
+        InputPage->setWindowTitle(QApplication::translate("InputPage", "Form", nullptr));
+        label->setText(QApplication::translate("InputPage", "File name:", nullptr));
+        browseButton->setText(QApplication::translate("InputPage", "...", nullptr));
     } // retranslateUi
 
 };

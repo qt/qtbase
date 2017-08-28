@@ -92,7 +92,7 @@ public:
 
     void retranslateUi(QDialog *QtGradientViewDialog)
     {
-        QtGradientViewDialog->setWindowTitle(QApplication::translate("QtGradientViewDialog", "Select Gradient", Q_NULLPTR));
+        QtGradientViewDialog->setWindowTitle(QApplication::translate("QtGradientViewDialog", "Select Gradient", nullptr));
     } // retranslateUi
 
 };

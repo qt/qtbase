@@ -123,13 +123,13 @@ public:
 
     void retranslateUi(QDialog *InstallDialog)
     {
-        InstallDialog->setWindowTitle(QApplication::translate("InstallDialog", "Install Documentation", Q_NULLPTR));
-        label->setText(QApplication::translate("InstallDialog", "Available Documentation:", Q_NULLPTR));
-        installButton->setText(QApplication::translate("InstallDialog", "Install", Q_NULLPTR));
-        cancelButton->setText(QApplication::translate("InstallDialog", "Cancel", Q_NULLPTR));
-        closeButton->setText(QApplication::translate("InstallDialog", "Close", Q_NULLPTR));
-        label_4->setText(QApplication::translate("InstallDialog", "Installation Path:", Q_NULLPTR));
-        browseButton->setText(QApplication::translate("InstallDialog", "...", Q_NULLPTR));
+        InstallDialog->setWindowTitle(QApplication::translate("InstallDialog", "Install Documentation", nullptr));
+        label->setText(QApplication::translate("InstallDialog", "Available Documentation:", nullptr));
+        installButton->setText(QApplication::translate("InstallDialog", "Install", nullptr));
+        cancelButton->setText(QApplication::translate("InstallDialog", "Cancel", nullptr));
+        closeButton->setText(QApplication::translate("InstallDialog", "Close", nullptr));
+        label_4->setText(QApplication::translate("InstallDialog", "Installation Path:", nullptr));
+        browseButton->setText(QApplication::translate("InstallDialog", "...", nullptr));
     } // retranslateUi
 
 };

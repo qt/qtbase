@@ -2267,7 +2267,7 @@ QString WriteInitialization::trCall(const QString &str, const QString &commentHi
         return QLatin1String("QString()");
 
     QString result;
-    const QString comment = commentHint.isEmpty() ? QString(QLatin1String("Q_NULLPTR")) : fixString(commentHint, m_dindent);
+    const QString comment = commentHint.isEmpty() ? QString(QLatin1String("nullptr")) : fixString(commentHint, m_dindent);
 
     if (m_option.translateFunction.isEmpty()) {
         if (m_option.idBased) {

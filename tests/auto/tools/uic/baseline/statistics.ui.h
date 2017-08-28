@@ -182,19 +182,19 @@ public:
 
     void retranslateUi(QDialog *Statistics)
     {
-        Statistics->setWindowTitle(QApplication::translate("Statistics", "Statistics", Q_NULLPTR));
-        closeBtn->setText(QApplication::translate("Statistics", "&Close", Q_NULLPTR));
-        textLabel4->setText(QApplication::translate("Statistics", "Translation", Q_NULLPTR));
-        textLabel5->setText(QApplication::translate("Statistics", "Source", Q_NULLPTR));
-        untrWords->setText(QApplication::translate("Statistics", "0", Q_NULLPTR));
-        trWords->setText(QApplication::translate("Statistics", "0", Q_NULLPTR));
-        textLabel1->setText(QApplication::translate("Statistics", "Words:", Q_NULLPTR));
-        trChars->setText(QApplication::translate("Statistics", "0", Q_NULLPTR));
-        untrChars->setText(QApplication::translate("Statistics", "0", Q_NULLPTR));
-        textLabel3->setText(QApplication::translate("Statistics", "Characters:", Q_NULLPTR));
-        textLabel6->setText(QApplication::translate("Statistics", "Characters (with spaces):", Q_NULLPTR));
-        trCharsSpc->setText(QApplication::translate("Statistics", "0", Q_NULLPTR));
-        untrCharsSpc->setText(QApplication::translate("Statistics", "0", Q_NULLPTR));
+        Statistics->setWindowTitle(QApplication::translate("Statistics", "Statistics", nullptr));
+        closeBtn->setText(QApplication::translate("Statistics", "&Close", nullptr));
+        textLabel4->setText(QApplication::translate("Statistics", "Translation", nullptr));
+        textLabel5->setText(QApplication::translate("Statistics", "Source", nullptr));
+        untrWords->setText(QApplication::translate("Statistics", "0", nullptr));
+        trWords->setText(QApplication::translate("Statistics", "0", nullptr));
+        textLabel1->setText(QApplication::translate("Statistics", "Words:", nullptr));
+        trChars->setText(QApplication::translate("Statistics", "0", nullptr));
+        untrChars->setText(QApplication::translate("Statistics", "0", nullptr));
+        textLabel3->setText(QApplication::translate("Statistics", "Characters:", nullptr));
+        textLabel6->setText(QApplication::translate("Statistics", "Characters (with spaces):", nullptr));
+        trCharsSpc->setText(QApplication::translate("Statistics", "0", nullptr));
+        untrCharsSpc->setText(QApplication::translate("Statistics", "0", nullptr));
     } // retranslateUi
 
 };

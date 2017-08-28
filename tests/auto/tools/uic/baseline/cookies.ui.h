@@ -93,9 +93,9 @@ public:
 
     void retranslateUi(QDialog *CookiesDialog)
     {
-        CookiesDialog->setWindowTitle(QApplication::translate("CookiesDialog", "Cookies", Q_NULLPTR));
-        removeButton->setText(QApplication::translate("CookiesDialog", "&Remove", Q_NULLPTR));
-        removeAllButton->setText(QApplication::translate("CookiesDialog", "Remove &All Cookies", Q_NULLPTR));
+        CookiesDialog->setWindowTitle(QApplication::translate("CookiesDialog", "Cookies", nullptr));
+        removeButton->setText(QApplication::translate("CookiesDialog", "&Remove", nullptr));
+        removeAllButton->setText(QApplication::translate("CookiesDialog", "Remove &All Cookies", nullptr));
     } // retranslateUi
 
 };

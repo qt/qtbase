@@ -164,21 +164,21 @@ public:
 
     void retranslateUi(QMainWindow *TrPreviewToolClass)
     {
-        TrPreviewToolClass->setWindowTitle(QApplication::translate("TrPreviewToolClass", "Qt Translation Preview Tool", Q_NULLPTR));
-        actionOpenForm->setText(QApplication::translate("TrPreviewToolClass", "&Open Form...", Q_NULLPTR));
-        actionLoadTranslation->setText(QApplication::translate("TrPreviewToolClass", "&Load Translation...", Q_NULLPTR));
-        actionReloadTranslations->setText(QApplication::translate("TrPreviewToolClass", "&Reload Translations", Q_NULLPTR));
+        TrPreviewToolClass->setWindowTitle(QApplication::translate("TrPreviewToolClass", "Qt Translation Preview Tool", nullptr));
+        actionOpenForm->setText(QApplication::translate("TrPreviewToolClass", "&Open Form...", nullptr));
+        actionLoadTranslation->setText(QApplication::translate("TrPreviewToolClass", "&Load Translation...", nullptr));
+        actionReloadTranslations->setText(QApplication::translate("TrPreviewToolClass", "&Reload Translations", nullptr));
 #ifndef QT_NO_SHORTCUT
-        actionReloadTranslations->setShortcut(QApplication::translate("TrPreviewToolClass", "F5", Q_NULLPTR));
+        actionReloadTranslations->setShortcut(QApplication::translate("TrPreviewToolClass", "F5", nullptr));
 #endif // QT_NO_SHORTCUT
-        actionClose->setText(QApplication::translate("TrPreviewToolClass", "&Close", Q_NULLPTR));
-        actionAbout->setText(QApplication::translate("TrPreviewToolClass", "About", Q_NULLPTR));
-        actionAbout_Qt->setText(QApplication::translate("TrPreviewToolClass", "About Qt", Q_NULLPTR));
-        menuView->setTitle(QApplication::translate("TrPreviewToolClass", "&View", Q_NULLPTR));
-        menuViewViews->setTitle(QApplication::translate("TrPreviewToolClass", "&Views", Q_NULLPTR));
-        menuHelp->setTitle(QApplication::translate("TrPreviewToolClass", "&Help", Q_NULLPTR));
-        menuFile->setTitle(QApplication::translate("TrPreviewToolClass", "&File", Q_NULLPTR));
-        dwForms->setWindowTitle(QApplication::translate("TrPreviewToolClass", "Forms", Q_NULLPTR));
+        actionClose->setText(QApplication::translate("TrPreviewToolClass", "&Close", nullptr));
+        actionAbout->setText(QApplication::translate("TrPreviewToolClass", "About", nullptr));
+        actionAbout_Qt->setText(QApplication::translate("TrPreviewToolClass", "About Qt", nullptr));
+        menuView->setTitle(QApplication::translate("TrPreviewToolClass", "&View", nullptr));
+        menuViewViews->setTitle(QApplication::translate("TrPreviewToolClass", "&Views", nullptr));
+        menuHelp->setTitle(QApplication::translate("TrPreviewToolClass", "&Help", nullptr));
+        menuFile->setTitle(QApplication::translate("TrPreviewToolClass", "&File", nullptr));
+        dwForms->setWindowTitle(QApplication::translate("TrPreviewToolClass", "Forms", nullptr));
     } // retranslateUi
 
 };

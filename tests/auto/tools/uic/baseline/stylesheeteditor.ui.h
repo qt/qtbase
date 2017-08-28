@@ -133,14 +133,14 @@ public:
 
     void retranslateUi(QWidget *StyleSheetEditor)
     {
-        StyleSheetEditor->setWindowTitle(QApplication::translate("StyleSheetEditor", "Style Editor", Q_NULLPTR));
-        styleSheetCombo->setItemText(0, QApplication::translate("StyleSheetEditor", "Default", Q_NULLPTR));
-        styleSheetCombo->setItemText(1, QApplication::translate("StyleSheetEditor", "Coffee", Q_NULLPTR));
-        styleSheetCombo->setItemText(2, QApplication::translate("StyleSheetEditor", "Pagefold", Q_NULLPTR));
+        StyleSheetEditor->setWindowTitle(QApplication::translate("StyleSheetEditor", "Style Editor", nullptr));
+        styleSheetCombo->setItemText(0, QApplication::translate("StyleSheetEditor", "Default", nullptr));
+        styleSheetCombo->setItemText(1, QApplication::translate("StyleSheetEditor", "Coffee", nullptr));
+        styleSheetCombo->setItemText(2, QApplication::translate("StyleSheetEditor", "Pagefold", nullptr));
 
-        label_7->setText(QApplication::translate("StyleSheetEditor", "Style:", Q_NULLPTR));
-        applyButton->setText(QApplication::translate("StyleSheetEditor", "&Apply", Q_NULLPTR));
-        label_8->setText(QApplication::translate("StyleSheetEditor", "Style Sheet:", Q_NULLPTR));
+        label_7->setText(QApplication::translate("StyleSheetEditor", "Style:", nullptr));
+        applyButton->setText(QApplication::translate("StyleSheetEditor", "&Apply", nullptr));
+        label_8->setText(QApplication::translate("StyleSheetEditor", "Style Sheet:", nullptr));
     } // retranslateUi
 
 };

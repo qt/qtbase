@@ -274,17 +274,17 @@ public:
 
     void retranslateUi(QDialog *FormWindowSettings)
     {
-        FormWindowSettings->setWindowTitle(QApplication::translate("FormWindowSettings", "Form Settings", Q_NULLPTR));
-        layoutDefaultGroupBox->setTitle(QApplication::translate("FormWindowSettings", "Layout &Default", Q_NULLPTR));
-        label_2->setText(QApplication::translate("FormWindowSettings", "&Spacing:", Q_NULLPTR));
-        label->setText(QApplication::translate("FormWindowSettings", "&Margin:", Q_NULLPTR));
-        layoutFunctionGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Layout Function", Q_NULLPTR));
-        label_3->setText(QApplication::translate("FormWindowSettings", "Ma&rgin:", Q_NULLPTR));
-        label_3_2->setText(QApplication::translate("FormWindowSettings", "Spa&cing:", Q_NULLPTR));
-        pixmapFunctionGroupBox_2->setTitle(QApplication::translate("FormWindowSettings", "&Author", Q_NULLPTR));
-        includeHintsGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Include Hints", Q_NULLPTR));
-        pixmapFunctionGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Pixmap Function", Q_NULLPTR));
-        gridPanel->setTitle(QApplication::translate("FormWindowSettings", "Grid", Q_NULLPTR));
+        FormWindowSettings->setWindowTitle(QApplication::translate("FormWindowSettings", "Form Settings", nullptr));
+        layoutDefaultGroupBox->setTitle(QApplication::translate("FormWindowSettings", "Layout &Default", nullptr));
+        label_2->setText(QApplication::translate("FormWindowSettings", "&Spacing:", nullptr));
+        label->setText(QApplication::translate("FormWindowSettings", "&Margin:", nullptr));
+        layoutFunctionGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Layout Function", nullptr));
+        label_3->setText(QApplication::translate("FormWindowSettings", "Ma&rgin:", nullptr));
+        label_3_2->setText(QApplication::translate("FormWindowSettings", "Spa&cing:", nullptr));
+        pixmapFunctionGroupBox_2->setTitle(QApplication::translate("FormWindowSettings", "&Author", nullptr));
+        includeHintsGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Include Hints", nullptr));
+        pixmapFunctionGroupBox->setTitle(QApplication::translate("FormWindowSettings", "&Pixmap Function", nullptr));
+        gridPanel->setTitle(QApplication::translate("FormWindowSettings", "Grid", nullptr));
     } // retranslateUi
 
 };

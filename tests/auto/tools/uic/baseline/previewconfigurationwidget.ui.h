@@ -111,14 +111,14 @@ public:
 
     void retranslateUi(QGroupBox *PreviewConfigurationWidget)
     {
-        PreviewConfigurationWidget->setWindowTitle(QApplication::translate("PreviewConfigurationWidget", "Form", Q_NULLPTR));
-        PreviewConfigurationWidget->setTitle(QApplication::translate("PreviewConfigurationWidget", "Print/Preview Configuration", Q_NULLPTR));
-        m_styleLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style", Q_NULLPTR));
-        m_appStyleSheetLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style sheet", Q_NULLPTR));
-        m_appStyleSheetChangeButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", Q_NULLPTR));
-        m_appStyleSheetClearButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", Q_NULLPTR));
-        m_skinLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Device skin", Q_NULLPTR));
-        m_skinRemoveButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", Q_NULLPTR));
+        PreviewConfigurationWidget->setWindowTitle(QApplication::translate("PreviewConfigurationWidget", "Form", nullptr));
+        PreviewConfigurationWidget->setTitle(QApplication::translate("PreviewConfigurationWidget", "Print/Preview Configuration", nullptr));
+        m_styleLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style", nullptr));
+        m_appStyleSheetLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Style sheet", nullptr));
+        m_appStyleSheetChangeButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", nullptr));
+        m_appStyleSheetClearButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", nullptr));
+        m_skinLabel->setText(QApplication::translate("PreviewConfigurationWidget", "Device skin", nullptr));
+        m_skinRemoveButton->setText(QApplication::translate("PreviewConfigurationWidget", "...", nullptr));
     } // retranslateUi
 
 };

@@ -100,14 +100,14 @@ public:
 
     void retranslateUi(QDialog *embeddedDialog)
     {
-        embeddedDialog->setWindowTitle(QApplication::translate("embeddedDialog", "Embedded Dialog", Q_NULLPTR));
-        label->setText(QApplication::translate("embeddedDialog", "Layout Direction:", Q_NULLPTR));
-        layoutDirection->setItemText(0, QApplication::translate("embeddedDialog", "Left to Right", Q_NULLPTR));
-        layoutDirection->setItemText(1, QApplication::translate("embeddedDialog", "Right to Left", Q_NULLPTR));
+        embeddedDialog->setWindowTitle(QApplication::translate("embeddedDialog", "Embedded Dialog", nullptr));
+        label->setText(QApplication::translate("embeddedDialog", "Layout Direction:", nullptr));
+        layoutDirection->setItemText(0, QApplication::translate("embeddedDialog", "Left to Right", nullptr));
+        layoutDirection->setItemText(1, QApplication::translate("embeddedDialog", "Right to Left", nullptr));
 
-        label_2->setText(QApplication::translate("embeddedDialog", "Select Font:", Q_NULLPTR));
-        label_3->setText(QApplication::translate("embeddedDialog", "Style:", Q_NULLPTR));
-        label_4->setText(QApplication::translate("embeddedDialog", "Layout spacing:", Q_NULLPTR));
+        label_2->setText(QApplication::translate("embeddedDialog", "Select Font:", nullptr));
+        label_3->setText(QApplication::translate("embeddedDialog", "Style:", nullptr));
+        label_4->setText(QApplication::translate("embeddedDialog", "Layout spacing:", nullptr));
     } // retranslateUi
 
 };
