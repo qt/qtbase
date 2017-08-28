@@ -44,6 +44,7 @@
 #include "qdebug.h"
 #if defined(Q_OS_WIN)
 # include <winsock2.h>
+# include <ws2tcpip.h>
 #else
 # include <netinet/in.h>
 #endif
@@ -62,36 +63,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-#ifdef Q_OS_WIN
-// sockaddr_in6 size changed between old and new SDK
-// Only the new version is the correct one, so always
-// use this structure.
-#if defined(Q_OS_WINRT)
-#  if !defined(u_char)
-#    define u_char unsigned char
-#  endif
-#  if !defined(u_short)
-#    define u_short unsigned short
-#  endif
-#  if !defined(u_long)
-#    define u_long unsigned long
-#  endif
-#endif
-struct qt_in6_addr {
-    u_char qt_s6_addr[16];
-};
-typedef struct {
-    short   sin6_family;            /* AF_INET6 */
-    u_short sin6_port;              /* Transport level port number */
-    u_long  sin6_flowinfo;          /* IPv6 flow information */
-    struct  qt_in6_addr sin6_addr;  /* IPv6 address */
-    u_long  sin6_scope_id;          /* set of interfaces for a scope */
-} qt_sockaddr_in6;
-#else
-#define qt_sockaddr_in6 sockaddr_in6
-#define qt_s6_addr s6_addr
-#endif
 
 
 class QHostAddressPrivate : public QSharedData
@@ -495,7 +466,7 @@ QHostAddress::QHostAddress(const struct sockaddr *sockaddr)
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((const sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
-        setAddress(((const qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
+        setAddress(((const sockaddr_in6 *)sockaddr)->sin6_addr.s6_addr);
 #else
     Q_UNUSED(sockaddr)
 #endif
@@ -718,7 +689,7 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
     if (sockaddr->sa_family == AF_INET)
         setAddress(htonl(((const sockaddr_in *)sockaddr)->sin_addr.s_addr));
     else if (sockaddr->sa_family == AF_INET6)
-        setAddress(((const qt_sockaddr_in6 *)sockaddr)->sin6_addr.qt_s6_addr);
+        setAddress(((const sockaddr_in6 *)sockaddr)->sin6_addr.s6_addr);
 #else
     Q_UNUSED(sockaddr)
 #endif
