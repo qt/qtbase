@@ -1056,12 +1056,16 @@ bool QFileInfo::isBundle() const
 }
 
 /*!
-    Returns \c true if this object points to a symbolic link (or to a
-    shortcut on Windows); otherwise returns \c false.
+    Returns \c true if this object points to a symbolic link;
+    otherwise returns \c false.
 
-    On Unix (including \macos and iOS), opening a symlink effectively opens
-    the \l{symLinkTarget()}{link's target}. On Windows, it opens the \c
-    .lnk file itself.
+    Symbolic links exist on Unix (including \macos and iOS) and Windows
+    and are typically created by the \c{ln -s} or \c{mklink} commands,
+    respectively. Opening a symbolic link effectively opens
+    the \l{symLinkTarget()}{link's target}.
+
+    In addition, true will be returned for shortcuts (\c *.lnk files) on
+    Windows. Opening those will open the \c .lnk file itself.
 
     Example:
 
@@ -1116,8 +1120,8 @@ bool QFileInfo::isRoot() const
     \fn QString QFileInfo::symLinkTarget() const
     \since 4.2
 
-    Returns the absolute path to the file or directory a symlink (or shortcut
-    on Windows) points to, or an empty string if the object isn't a symbolic
+    Returns the absolute path to the file or directory a symbolic link
+    points to, or an empty string if the object isn't a symbolic
     link.
 
     This name may not represent an existing file; it is only a string.
