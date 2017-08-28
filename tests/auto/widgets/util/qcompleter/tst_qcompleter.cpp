@@ -143,6 +143,8 @@ private slots:
     void task253125_lineEditCompletion();
     void task247560_keyboardNavigation();
     void QTBUG_14292_filesystem();
+    void QTBUG_52028_tabAutoCompletes();
+    void QTBUG_51889_activatedSentTwice();
 
 private:
     void filter(bool assync = false);
@@ -1740,6 +1742,109 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     //there is no reason creating a file should open a popup, it did in Qt 4.7.0
     QTest::qWait(60);
     QVERIFY(!comp.popup()->isVisible());
+}
+
+void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
+{
+    QStringList words;
+    words << "foobar1" << "foobar2" << "hux";
+
+    QWidget w;
+    w.setLayout(new QVBoxLayout);
+
+    QComboBox cbox;
+    cbox.setEditable(true);
+    cbox.setInsertPolicy(QComboBox::NoInsert);
+    cbox.addItems(words);
+
+    cbox.completer()->setCaseSensitivity(Qt::CaseInsensitive);
+    cbox.completer()->setCompletionMode(QCompleter::PopupCompletion);
+
+    w.layout()->addWidget(&cbox);
+
+    // Adding a line edit is a good reason for tab to do something unrelated
+    QLineEdit le;
+    w.layout()->addWidget(&le);
+
+    const auto pos = QApplication::desktop()->availableGeometry(&w).topLeft() + QPoint(200,200);
+    w.move(pos);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+
+    QSignalSpy activatedSpy(&cbox, QOverload<int>::of(&QComboBox::activated));
+
+    // Tab key will complete but not activate
+    cbox.lineEdit()->clear();
+    QTest::keyClick(&cbox, Qt::Key_H);
+    QVERIFY(cbox.completer()->popup());
+    QTRY_VERIFY(cbox.completer()->popup()->isVisible());
+    QTest::keyClick(cbox.completer()->popup(), Qt::Key_Tab);
+    QCOMPARE(cbox.completer()->currentCompletion(), QLatin1String("hux"));
+    QCOMPARE(activatedSpy.count(), 0);
+    QEXPECT_FAIL("", "QTBUG-52028 will not be fixed today.", Abort);
+    QCOMPARE(cbox.currentText(), QLatin1String("hux"));
+    QCOMPARE(activatedSpy.count(), 0);
+    QVERIFY(!le.hasFocus());
+}
+
+void tst_QCompleter::QTBUG_51889_activatedSentTwice()
+{
+    QStringList words;
+    words << "foobar1" << "foobar2" << "bar" <<"hux";
+
+    QWidget w;
+    w.setLayout(new QVBoxLayout);
+
+    QComboBox cbox;
+    setFrameless(&cbox);
+    cbox.setEditable(true);
+    cbox.setInsertPolicy(QComboBox::NoInsert);
+    cbox.addItems(words);
+
+    cbox.completer()->setCaseSensitivity(Qt::CaseInsensitive);
+    cbox.completer()->setCompletionMode(QCompleter::PopupCompletion);
+
+    w.layout()->addWidget(&cbox);
+
+    QLineEdit le;
+    w.layout()->addWidget(&le);
+
+    const auto pos = QApplication::desktop()->availableGeometry(&w).topLeft() + QPoint(200,200);
+    w.move(pos);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+
+    QSignalSpy activatedSpy(&cbox, QOverload<int>::of(&QComboBox::activated));
+
+    // Navigate + enter activates only once (first item)
+    cbox.lineEdit()->clear();
+    QTest::keyClick(&cbox, Qt::Key_F);
+    QVERIFY(cbox.completer()->popup());
+    QTRY_VERIFY(cbox.completer()->popup()->isVisible());
+    QTest::keyClick(cbox.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(cbox.completer()->popup(), Qt::Key_Return);
+    QTRY_COMPARE(activatedSpy.count(), 1);
+
+    // Navigate + enter activates only once (non-first item)
+    cbox.lineEdit()->clear();
+    activatedSpy.clear();
+    QTest::keyClick(&cbox, Qt::Key_H);
+    QVERIFY(cbox.completer()->popup());
+    QTRY_VERIFY(cbox.completer()->popup()->isVisible());
+    QTest::keyClick(cbox.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(cbox.completer()->popup(), Qt::Key_Return);
+    QTRY_COMPARE(activatedSpy.count(), 1);
+
+    // Full text + enter activates only once
+    cbox.lineEdit()->clear();
+    activatedSpy.clear();
+    QTest::keyClicks(&cbox, "foobar1");
+    QVERIFY(cbox.completer()->popup());
+    QTRY_VERIFY(cbox.completer()->popup()->isVisible());
+    QTest::keyClick(&cbox, Qt::Key_Return);
+    QTRY_COMPARE(activatedSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QCompleter)

@@ -1642,16 +1642,6 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
             case Qt::Key_Escape:
                 event->ignore();
                 return;
-            case Qt::Key_Enter:
-            case Qt::Key_Return:
-            case Qt::Key_F4:
-#ifdef QT_KEYPAD_NAVIGATION
-            case Qt::Key_Select:
-                if (!QApplication::keypadNavigationEnabled())
-                    break;
-#endif
-                popup->hide(); // just hide. will end up propagating to parent
-                break;
             default:
                 break; // normal key processing
             }
