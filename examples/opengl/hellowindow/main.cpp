@@ -52,6 +52,8 @@
 
 #include <qpa/qplatformintegration.h>
 
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 #include <QGuiApplication>
 #include <QScreen>
 #include <QThread>
@@ -60,9 +62,26 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    QCoreApplication::setApplicationName("Qt HelloWindow GL Example");
+    QCoreApplication::setOrganizationName("QtProject");
+    QCoreApplication::setApplicationVersion(QT_VERSION_STR);
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QCoreApplication::applicationName());
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QCommandLineOption multipleOption("multiple", "Create multiple windows");
+    parser.addOption(multipleOption);
+    QCommandLineOption multipleSampleOption("multisample", "Multisampling");
+    parser.addOption(multipleSampleOption);
+    QCommandLineOption multipleScreenOption("multiscreen", "Run on multiple screens");
+    parser.addOption(multipleScreenOption);
+    QCommandLineOption timeoutOption("timeout", "Close after 10s");
+    parser.addOption(timeoutOption);
+    parser.process(app);
+
     // Some platforms can only have one window per screen. Therefore we need to differentiate.
-    const bool multipleWindows = QGuiApplication::arguments().contains(QStringLiteral("--multiple"));
-    const bool multipleScreens = QGuiApplication::arguments().contains(QStringLiteral("--multiscreen"));
+    const bool multipleWindows = parser.isSet(multipleOption);
+    const bool multipleScreens = parser.isSet(multipleScreenOption);
 
     QScreen *screen = QGuiApplication::primaryScreen();
 
@@ -70,7 +89,7 @@ int main(int argc, char *argv[])
 
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
-    if (QGuiApplication::arguments().contains(QStringLiteral("--multisample")))
+    if (parser.isSet(multipleSampleOption))
         format.setSamples(4);
 
     QPoint center = QPoint(screenGeometry.center().x(), screenGeometry.top() + 80);
@@ -136,7 +155,7 @@ int main(int argc, char *argv[])
     }
 
     // Quit after 10 seconds. For platforms that do not have windows that are closeable.
-    if (QCoreApplication::arguments().contains(QStringLiteral("--timeout")))
+    if (parser.isSet(timeoutOption))
         QTimer::singleShot(10000, qGuiApp, &QCoreApplication::quit);
 
     const int exitValue = app.exec();
