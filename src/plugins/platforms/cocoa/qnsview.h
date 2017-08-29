@@ -70,6 +70,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     Qt::MouseButtons m_acceptedMouseDowns;
     Qt::MouseButtons m_frameStrutButtons;
     QString m_composingText;
+    QPointer<QObject> m_composingFocusObject;
     bool m_sendKeyEvent;
     QStringList *currentCustomDragTypes;
     bool m_sendUpAsRightButton;
@@ -104,6 +105,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)viewDidHide;
 - (void)viewDidUnhide;
 - (void)removeFromSuperview;
+- (void)cancelComposingText;
 
 - (BOOL)isFlipped;
 - (BOOL)acceptsFirstResponder;
