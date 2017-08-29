@@ -46,7 +46,6 @@
 #include <qcommonstyle.h>
 #include <qstylefactory.h>
 #include <qscreen.h>
-#include <QSysInfo>
 
 #include "../../../qtest-config.h"
 
@@ -1810,15 +1809,9 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("", "QTBUG-23699", Continue);
 #endif
-#ifdef Q_OS_WIN
-    if (QSysInfo::kernelVersion() == "10.0.15063") {
-        QEXPECT_FAIL("", "This fails on Windows 10 Creators Update (10.0.15063)", Continue);
-    }
-#endif
     QTRY_COMPARE(qApp->activeWindow(), static_cast<QWidget *>(&view));
     QTRY_COMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(w));
 }
-
 
 void tst_QGraphicsWidget::sizeHint_data()
 {
