@@ -5627,7 +5627,7 @@ static void qt_alphamapblit_generic(QRasterBuffer *rasterBuffer,
 
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
-                Q_ASSERT(clip.len <= buffer_size);
+                Q_ASSERT(end - start <= buffer_size);
                 QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, end - start);
 
                 for (int xp=start; xp<end; ++xp) {
@@ -5900,7 +5900,7 @@ static void qt_alphargbblit_generic(QRasterBuffer *rasterBuffer,
 
                 int start = qMax<int>(x, clip.x);
                 int end = qMin<int>(x + mapWidth, clip.x + clip.len);
-                Q_ASSERT(clip.len <= buffer_size);
+                Q_ASSERT(end - start <= buffer_size);
                 QRgba64 *dest = destFetch64((QRgba64*)buffer, rasterBuffer, start, clip.y, end - start);
 
                 for (int xp=start; xp<end; ++xp) {
