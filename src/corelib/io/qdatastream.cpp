@@ -1385,32 +1385,13 @@ int QDataStream::writeRawData(const char *s, int len)
 int QDataStream::skipRawData(int len)
 {
     CHECK_STREAM_PRECOND(-1)
+    if (q_status != Ok && dev->isTransactionStarted())
+        return -1;
 
-    if (dev->isSequential()) {
-        char buf[4096];
-        int sumRead = 0;
-
-        while (len > 0) {
-            int blockSize = qMin(len, (int)sizeof(buf));
-            int n = readBlock(buf, blockSize);
-            if (n == -1)
-                return -1;
-            if (n == 0)
-                return sumRead;
-
-            sumRead += n;
-            len -= blockSize;
-        }
-        return sumRead;
-    } else {
-        qint64 pos = dev->pos();
-        qint64 size = dev->size();
-        if (pos + len > size)
-            len = size - pos;
-        if (!dev->seek(pos + len))
-            return -1;
-        return len;
-    }
+    const int skipResult = dev->skip(len);
+    if (skipResult != len)
+        setStatus(ReadPastEnd);
+    return skipResult;
 }
 
 QT_END_NAMESPACE
