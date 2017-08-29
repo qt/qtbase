@@ -32,7 +32,7 @@
 
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>
-#include <qtcpsocket.h>
+#include <qudpsocket.h>
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QNetworkConfigurationManager>
 #include <QNetworkSession>
@@ -189,16 +189,11 @@ void tst_QNetworkInterface::loopbackIPv6()
 
 void tst_QNetworkInterface::localAddress()
 {
-    QTcpSocket socket;
+    QUdpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 80);
     QVERIFY(socket.waitForConnected(5000));
 
     QHostAddress local = socket.localAddress();
-
-    // make Apache happy on fluke
-    socket.write("GET / HTTP/1.0\r\n\r\n");
-    socket.waitForBytesWritten(1000);
-    socket.close();
 
     // test that we can find the address that QTcpSocket reported
     QList<QHostAddress> all = QNetworkInterface::allAddresses();
