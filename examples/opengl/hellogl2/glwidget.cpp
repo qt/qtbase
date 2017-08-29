@@ -128,6 +128,8 @@ void GLWidget::setZRotation(int angle)
 
 void GLWidget::cleanup()
 {
+    if (m_program == nullptr)
+        return;
     makeCurrent();
     m_logoVbo.destroy();
     delete m_program;
