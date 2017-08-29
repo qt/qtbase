@@ -260,7 +260,10 @@ QModelIndex QFileSystemModel::index(int row, int column, const QModelIndex &pare
     Q_ASSERT(parentNode);
 
     // now get the internal pointer for the index
-    const QString &childName = parentNode->visibleChildren.at(d->translateVisibleLocation(parentNode, row));
+    const int i = d->translateVisibleLocation(parentNode, row);
+    if (i >= parentNode->visibleChildren.size())
+        return QModelIndex();
+    const QString &childName = parentNode->visibleChildren.at(i);
     const QFileSystemModelPrivate::QFileSystemNode *indexNode = parentNode->children.value(childName);
     Q_ASSERT(indexNode);
 
