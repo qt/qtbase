@@ -48,6 +48,8 @@ public:
     tst_QNetworkInterface();
     virtual ~tst_QNetworkInterface();
 
+    bool isIPv6Working();
+
 private slots:
     void initTestCase();
     void cleanupTestCase();
@@ -74,6 +76,13 @@ tst_QNetworkInterface::tst_QNetworkInterface()
 
 tst_QNetworkInterface::~tst_QNetworkInterface()
 {
+}
+
+bool tst_QNetworkInterface::isIPv6Working()
+{
+    QUdpSocket socket;
+    socket.connectToHost(QHostAddress::LocalHostIPv6, 1234);
+    return socket.state() == QAbstractSocket::ConnectedState || socket.waitForConnected(100);
 }
 
 void tst_QNetworkInterface::initTestCase()
@@ -172,19 +181,10 @@ void tst_QNetworkInterface::loopbackIPv4()
 
 void tst_QNetworkInterface::loopbackIPv6()
 {
+    if (!isIPv6Working())
+        QSKIP("IPv6 not active on this machine");
     QList<QHostAddress> all = QNetworkInterface::allAddresses();
-
-    bool loopbackfound = false;
-    bool anyIPv6 = false;
-    foreach (QHostAddress addr, all)
-        if (addr == QHostAddress::LocalHostIPv6) {
-            loopbackfound = true;
-            anyIPv6 = true;
-            break;
-        } else if (addr.protocol() == QAbstractSocket::IPv6Protocol)
-            anyIPv6 = true;
-
-    QVERIFY(!anyIPv6 || loopbackfound);
+    QVERIFY(all.contains(QHostAddress(QHostAddress::LocalHostIPv6)));
 }
 
 void tst_QNetworkInterface::localAddress()
