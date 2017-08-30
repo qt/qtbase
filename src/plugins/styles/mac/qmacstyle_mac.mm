@@ -690,7 +690,6 @@ const int macItemFrame         = 2;    // menu item frame width
 const int macItemHMargin       = 3;    // menu item hor text margin
 const int macRightBorder       = 12;   // right border on mac
 const ThemeWindowType QtWinType = kThemeDocumentWindow; // Window type we use for QTitleBar.
-QPixmap *qt_mac_backgroundPattern = 0; // stores the standard widget background.
 
 /*****************************************************************************
   QMacCGStyle utility functions
@@ -2260,72 +2259,10 @@ QMacStyle::~QMacStyle()
 
     [[NSNotificationCenter defaultCenter] removeObserver:d->receiver];
     [d->receiver release];
-
-    delete qt_mac_backgroundPattern;
-    qt_mac_backgroundPattern = 0;
-}
-
-/*! \internal
-    Generates the standard widget background pattern.
-*/
-QPixmap QMacStylePrivate::generateBackgroundPattern() const
-{
-    QMacAutoReleasePool pool;
-    QPixmap px(4, 4);
-    QMacCGContext cg(&px);
-    HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationNormal);
-    const CGRect cgRect = CGRectMake(0, 0, px.width(), px.height());
-    CGContextFillRect(cg, cgRect);
-    return px;
-}
-
-/*! \internal
-    Fills the given \a rect with the pattern stored in \a brush. As an optimization,
-    HIThemeSetFill us used directly if we are filling with the standard background.
-*/
-void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
-{
-#if 0
-    QPoint dummy;
-    const QPaintDevice *target = painter->device();
-    const QPaintDevice *redirected = QPainter::redirected(target, &dummy);
-    //const bool usePainter = redirected && redirected != target;
-
-    if (!usePainter && qt_mac_backgroundPattern
-        && qt_mac_backgroundPattern->cacheKey() == brush.texture().cacheKey()) {
-
-        painter->setClipRegion(rgn);
-
-        QMacCGContext cg(target);
-        CGContextSaveGState(cg);
-        HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationInverted);
-
-        for (const QRect &rect : rgn) {
-            // Anchor the pattern to the top so it stays put when the window is resized.
-            CGContextSetPatternPhase(cg, CGSizeMake(rect.width(), rect.height()));
-            CGRect mac_rect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
-            CGContextFillRect(cg, mac_rect);
-        }
-
-        CGContextRestoreGState(cg);
-    } else {
-#endif
-        const QRect rect(rgn.boundingRect());
-        painter->setClipRegion(rgn);
-        painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
-//    }
 }
 
 void QMacStyle::polish(QPalette &pal)
 {
-    Q_D(QMacStyle);
-    if (!qt_mac_backgroundPattern) {
-        if (!qApp)
-            return;
-        qt_mac_backgroundPattern = new QPixmap(d->generateBackgroundPattern());
-    }
-
-
     QCFString theme;
     const OSErr err = CopyThemeIdentifier(&theme);
     if (err == noErr && CFStringCompare(theme, kThemeAppearanceAquaGraphite, 0) == kCFCompareEqualTo) {

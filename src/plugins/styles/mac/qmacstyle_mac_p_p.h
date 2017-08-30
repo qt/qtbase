@@ -246,7 +246,6 @@ public:
     void initHIThemePushButton(const QStyleOptionButton *btn, const QWidget *widget,
                                const ThemeDrawState tds,
                                HIThemeButtonDrawInfo *bdi) const;
-    QPixmap generateBackgroundPattern() const;
 
     void setAutoDefaultButton(QObject *button) const;
 
