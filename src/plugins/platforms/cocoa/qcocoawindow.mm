@@ -150,7 +150,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_glContext(0)
 #endif
     , m_menubar(0)
-    , m_windowCursor(0)
     , m_needsInvalidateShadow(false)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
@@ -230,7 +229,6 @@ QCocoaWindow::~QCocoaWindow()
 
     [m_view release];
     [m_nsWindow release];
-    [m_windowCursor release];
 }
 
 QSurfaceFormat QCocoaWindow::format() const
@@ -1556,51 +1554,19 @@ QCocoaMenuBar *QCocoaWindow::menubar() const
     return m_menubar;
 }
 
-// Finds the effective cursor for this window by walking up the
-// ancestor chain (including this window) until a set cursor is
-// found. Returns nil if there is not set cursor.
-NSCursor *QCocoaWindow::effectiveWindowCursor() const
-{
-
-    if (m_windowCursor)
-        return m_windowCursor;
-    if (!QPlatformWindow::parent())
-        return nil;
-    return static_cast<QCocoaWindow *>(QPlatformWindow::parent())->effectiveWindowCursor();
-}
-
-// Applies the cursor as returned by effectiveWindowCursor(), handles
-// the special no-cursor-set case by setting the arrow cursor.
-void QCocoaWindow::applyEffectiveWindowCursor()
-{
-    NSCursor *effectiveCursor = effectiveWindowCursor();
-    if (effectiveCursor) {
-        [effectiveCursor set];
-    } else {
-        // We wold like to _unset_ the cursor here; but there is no such
-        // API. Fall back to setting the default arrow cursor.
-        [[NSCursor arrowCursor] set];
-    }
-}
-
 void QCocoaWindow::setWindowCursor(NSCursor *cursor)
 {
-    if (m_windowCursor == cursor)
-        return;
-
-    // Setting a cursor in a foregin view is not supported.
+    // Setting a cursor in a foreign view is not supported
     if (isForeignWindow())
         return;
 
-    [m_windowCursor release];
-    m_windowCursor = cursor;
-    [m_windowCursor retain];
+    QNSView *view = qnsview_cast(m_view);
+    if (cursor == view.cursor)
+        return;
 
-    // The installed view tracking area (see QNSView updateTrackingAreas) will
-    // handle cursor updates on mouse enter/leave. Handle the case where the
-    // mouse is on the this window by changing the cursor immediately.
-    if (m_windowUnderMouse)
-        applyEffectiveWindowCursor();
+    view.cursor = cursor;
+
+    [m_view.window invalidateCursorRectsForView:m_view];
 }
 
 void QCocoaWindow::registerTouch(bool enable)

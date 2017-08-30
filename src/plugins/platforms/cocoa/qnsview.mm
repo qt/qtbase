@@ -155,6 +155,7 @@ static QTouchDevice *touchDevice = 0;
 
         m_isMenuView = false;
         self.focusRingType = NSFocusRingTypeNone;
+        self.cursor = nil;
     }
     return self;
 }
@@ -774,8 +775,16 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    Q_UNUSED(theEvent);
-    m_platformWindow->applyEffectiveWindowCursor();
+    qCDebug(lcQpaCocoaWindow) << "[QNSView cursorUpdate:]" << self.cursor;
+
+    // Note: We do not get this callback when moving from a subview that
+    // uses the legacy cursorRect API, so the cursor is reset to the arrow
+    // cursor. See rdar://34183708
+
+    if (self.cursor)
+        [self.cursor set];
+    else
+        [super cursorUpdate:theEvent];
 }
 
 - (void)mouseMovedImpl:(NSEvent *)theEvent

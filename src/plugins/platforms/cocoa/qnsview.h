@@ -82,6 +82,8 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     QSet<quint32> m_acceptedKeyDowns;
 }
 
+@property (nonatomic, retain) NSCursor *cursor;
+
 - (id)init;
 - (id)initWithCocoaWindow:(QCocoaWindow *)platformWindow;
 #ifndef QT_NO_OPENGL

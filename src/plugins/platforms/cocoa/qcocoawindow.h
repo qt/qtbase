@@ -175,8 +175,6 @@ public:
     void setMenubar(QCocoaMenuBar *mb);
     QCocoaMenuBar *menubar() const;
 
-    NSCursor *effectiveWindowCursor() const;
-    void applyEffectiveWindowCursor();
     void setWindowCursor(NSCursor *cursor);
 
     void registerTouch(bool enable);
@@ -258,7 +256,6 @@ public: // for QNSView
     QCocoaGLContext *m_glContext;
 #endif
     QCocoaMenuBar *m_menubar;
-    NSCursor *m_windowCursor;
 
     bool m_needsInvalidateShadow;
 

@@ -64,6 +64,7 @@ void RasterWindow::initialize()
 void RasterWindow::mousePressEvent(QMouseEvent *event)
 {
     m_lastPos = event->pos();
+    unsetCursor();
 }
 
 void RasterWindow::mouseMoveEvent(QMouseEvent *event)
