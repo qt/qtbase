@@ -66,12 +66,11 @@ public:
     static QEvdevMouseHandler *create(const QString &device, const QString &specification);
     ~QEvdevMouseHandler();
 
+    void readMouseData();
+
 signals:
     void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons);
     void handleWheelEvent(QPoint delta);
-
-private slots:
-    void readMouseData();
 
 private:
     QEvdevMouseHandler(const QString &device, int fd, bool abs, bool compression, int jitterLimit);

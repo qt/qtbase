@@ -62,12 +62,10 @@ class QEvdevTabletHandlerThread;
 
 class QEvdevTabletManager : public QObject
 {
-    Q_OBJECT
 public:
     QEvdevTabletManager(const QString &key, const QString &spec, QObject *parent = 0);
     ~QEvdevTabletManager();
 
-private slots:
     void addDevice(const QString &deviceNode);
     void removeDevice(const QString &deviceNode);
 

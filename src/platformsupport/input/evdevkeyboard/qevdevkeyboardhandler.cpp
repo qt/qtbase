@@ -87,7 +87,7 @@ QEvdevKeyboardHandler::QEvdevKeyboardHandler(const QString &device, QFdContainer
 
     // socket notifier for events on the keyboard device
     m_notify = new QSocketNotifier(m_fd.get(), QSocketNotifier::Read, this);
-    connect(m_notify, SIGNAL(activated(int)), this, SLOT(readKeycode()));
+    connect(m_notify, &QSocketNotifier::activated, this, &QEvdevKeyboardHandler::readKeycode);
 }
 
 QEvdevKeyboardHandler::~QEvdevKeyboardHandler()

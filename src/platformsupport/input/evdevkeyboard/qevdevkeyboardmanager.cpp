@@ -88,8 +88,10 @@ QEvdevKeyboardManager::QEvdevKeyboardManager(const QString &key, const QString &
             for (const QString &device : devices)
                 addKeyboard(device);
 
-            connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addKeyboard(QString)));
-            connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeKeyboard(QString)));
+            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceDetected,
+                    this, &QEvdevKeyboardManager::addKeyboard);
+            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
+                    this, &QEvdevKeyboardManager::removeKeyboard);
         }
     }
 }

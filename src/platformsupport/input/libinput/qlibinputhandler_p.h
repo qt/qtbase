@@ -74,13 +74,11 @@ public:
     QLibInputHandler(const QString &key, const QString &spec);
     ~QLibInputHandler();
 
+    void onReadyRead();
+
 signals:
     void deviceAdded(const QString &sysname, const QString &name);
     void deviceRemoved(const QString &sysname, const QString &name);
-
-private slots:
-    void onReadyRead();
-    void onCursorPositionChangeRequested(const QPoint &pos);
 
 private:
     void processEvent(libinput_event *ev);

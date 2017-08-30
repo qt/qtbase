@@ -145,7 +145,6 @@ public:
 
 class QEvdevKeyboardHandler : public QObject
 {
-    Q_OBJECT
 public:
     QEvdevKeyboardHandler(const QString &device, QFdContainer &fd, bool disableZap, bool enableCompose, const QString &keymapFile);
     ~QEvdevKeyboardHandler();
@@ -190,7 +189,6 @@ public:
     bool loadKeymap(const QString &file);
     void unloadKeymap();
 
-private slots:
     void readKeycode();
     KeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);
 

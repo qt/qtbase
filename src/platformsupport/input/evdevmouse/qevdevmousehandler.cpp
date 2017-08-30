@@ -116,7 +116,8 @@ QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool abs, 
 
     // socket notifier for events on the mouse device
     m_notify = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
-    connect(m_notify, SIGNAL(activated(int)), this, SLOT(readMouseData()));
+    connect(m_notify, &QSocketNotifier::activated,
+            this, &QEvdevMouseHandler::readMouseData);
 }
 
 QEvdevMouseHandler::~QEvdevMouseHandler()

@@ -64,8 +64,6 @@ QT_BEGIN_NAMESPACE
 
 class QLibInputKeyboard : public QObject
 {
-    Q_OBJECT
-
 public:
     QLibInputKeyboard();
     ~QLibInputKeyboard();
@@ -73,7 +71,6 @@ public:
     void processKey(libinput_event_keyboard *e);
 
 #ifndef QT_NO_XKBCOMMON_EVDEV
-private slots:
     void handleRepeat();
 
 private:
