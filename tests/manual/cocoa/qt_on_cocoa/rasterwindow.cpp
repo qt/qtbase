@@ -52,17 +52,6 @@ RasterWindow::RasterWindow(QRasterWindow *parent)
 
 void RasterWindow::initialize()
 {
-    if (parent())
-        setGeometry(QRect(160, 120, 320, 240));
-    else {
-        setGeometry(QRect(10, 10, 640, 480));
-
-        setSizeIncrement(QSize(10, 10));
-        setBaseSize(QSize(640, 480));
-        setMinimumSize(QSize(240, 160));
-        setMaximumSize(QSize(800, 600));
-    }
-
     create();
     m_backingStore = new QBackingStore(this);
 
@@ -70,7 +59,6 @@ void RasterWindow::initialize()
     m_image.fill(colorTable[m_backgroundColorIndex % (sizeof(colorTable) / sizeof(colorTable[0]))].rgba());
 
     m_lastPos = QPoint(-1, -1);
-    m_renderTimer = 0;
 }
 
 void RasterWindow::mousePressEvent(QMouseEvent *event)
@@ -104,7 +92,7 @@ void RasterWindow::mouseReleaseEvent(QMouseEvent *event)
 
 void RasterWindow::exposeEvent(QExposeEvent *)
 {
-    scheduleRender();
+    render();
 }
 
 void RasterWindow::resizeEvent(QResizeEvent *)
@@ -146,15 +134,15 @@ void RasterWindow::keyPressEvent(QKeyEvent *event)
 
 void RasterWindow::scheduleRender()
 {
-    if (!m_renderTimer)
-        m_renderTimer = startTimer(1);
+    requestUpdate();
 }
 
-void RasterWindow::timerEvent(QTimerEvent *)
+bool RasterWindow::event(QEvent *e)
 {
-    render();
-    killTimer(m_renderTimer);
-    m_renderTimer = 0;
+    if (e->type() == QEvent::UpdateRequest)
+        render();
+
+    return QWindow::event(e);
 }
 
 void RasterWindow::render()

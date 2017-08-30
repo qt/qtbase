@@ -33,6 +33,17 @@
 
 #include <AppKit/AppKit.h>
 
+
+@interface ContentView : NSView
+@end
+
+@implementation ContentView
+- (void)drawRect:(NSRect)dirtyRect {
+    [[NSColor whiteColor] setFill];
+    NSRectFill(dirtyRect);
+}
+@end
+
 @interface AppDelegate : NSObject <NSApplicationDelegate> {
     QGuiApplication *m_app;
     QWindow *m_window;
@@ -65,9 +76,19 @@
     [window setTitle:title];
     [window setBackgroundColor:[NSColor blueColor]];
 
-    // Create the QWindow, use its NSView as the content view
-    m_window = new RasterWindow();
-    [window setContentView:reinterpret_cast<NSView *>(m_window->winId())];
+    window.contentView = [[[ContentView alloc] initWithFrame:frame] autorelease];
+
+    // Create the QWindow, add its NSView to the content view
+    m_window = new RasterWindow;
+    m_window->setObjectName("RasterWindow");
+    m_window->setGeometry(QRect(0, 0, 300, 300));
+
+    QWindow *childWindow = new RasterWindow;
+    childWindow->setObjectName("RasterWindowChild");
+    childWindow->setParent(m_window);
+    childWindow->setGeometry(50, 50, 100, 100);
+
+    [window.contentView addSubview:reinterpret_cast<NSView *>(m_window->winId())];
 
     // Show the NSWindow
     [window makeKeyAndOrderFront:NSApp];
