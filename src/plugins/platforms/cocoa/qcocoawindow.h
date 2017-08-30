@@ -123,6 +123,7 @@ public:
 
     bool isForeignWindow() const Q_DECL_OVERRIDE;
 
+    void requestUpdate() override;
     void requestActivateWindow() Q_DECL_OVERRIDE;
 
     WId winId() const Q_DECL_OVERRIDE;

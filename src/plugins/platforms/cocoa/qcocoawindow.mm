@@ -1069,6 +1069,15 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
         && !region.isEmpty()
         && !m_view.hiddenOrHasHiddenAncestor;
 
+
+    QWindowPrivate *windowPrivate = qt_window_private(window());
+    if (m_isExposed && windowPrivate->updateRequestPending) {
+        // FIXME: Should this logic for expose events be in QGuiApplication?
+        qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
+        windowPrivate->deliverUpdateRequest();
+        return;
+    }
+
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), region);
 }
@@ -1237,6 +1246,12 @@ void QCocoaWindow::recreateWindowIfNeeded()
     // update function which will attach to the NSWindow.
     if (!parentWindow)
         updateNSToolbar();
+}
+
+void QCocoaWindow::requestUpdate()
+{
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::requestUpdate" << window();
+    [m_view setNeedsDisplay:YES];
 }
 
 void QCocoaWindow::requestActivateWindow()
