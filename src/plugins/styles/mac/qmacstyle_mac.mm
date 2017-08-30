@@ -2261,15 +2261,8 @@ QMacStyle::~QMacStyle()
     [d->receiver release];
 }
 
-void QMacStyle::polish(QPalette &pal)
+void QMacStyle::polish(QPalette &)
 {
-    QCFString theme;
-    const OSErr err = CopyThemeIdentifier(&theme);
-    if (err == noErr && CFStringCompare(theme, kThemeAppearanceAquaGraphite, 0) == kCFCompareEqualTo) {
-        pal.setBrush(QPalette::All, QPalette::AlternateBase, QColor(240, 240, 240));
-    } else {
-        pal.setBrush(QPalette::All, QPalette::AlternateBase, QColor(237, 243, 254));
-    }
 }
 
 void QMacStyle::polish(QApplication *)
