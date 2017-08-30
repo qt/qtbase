@@ -928,24 +928,15 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         break;
     }
     case QStyle::CT_SizeGrip:
+        // Not HIG kosher: mimic what we were doing earlier until we support 4-edge resizing in MDI subwindows
         if (sz == QStyleHelper::SizeLarge || sz == QStyleHelper::SizeSmall) {
-            CGRect r;
-            CGPoint p = { 0, 0 };
-            HIThemeGrowBoxDrawInfo gbi;
-            gbi.version = 0;
-            gbi.state = kThemeStateActive;
-            gbi.kind = kHIThemeGrowBoxKindNormal;
-            gbi.direction = QApplication::isRightToLeft() ? kThemeGrowLeft | kThemeGrowDown
-                                                          : kThemeGrowRight | kThemeGrowDown;
-            gbi.size = sz == QStyleHelper::SizeSmall ? kHIThemeGrowBoxSizeSmall : kHIThemeGrowBoxSizeNormal;
-            if (HIThemeGetGrowBoxBounds(&p, &gbi, &r) == noErr) {
-                int width = 0;
+            int s = sz == QStyleHelper::SizeSmall ? 16 : 22; // large: pixel measured from HITheme, small: from my hat
+            int width = 0;
 #if QT_CONFIG(mdiarea)
             if (widg && qobject_cast<QMdiSubWindow *>(widg->parentWidget()))
-                width = r.size.width;
+                width = s;
 #endif
-                ret = QSize(width, r.size.height);
-            }
+            ret = QSize(width, s);
         }
         break;
     case QStyle::CT_ComboBox:
@@ -4510,39 +4501,35 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_SizeGrip: {
-        if (w && w->testAttribute(Qt::WA_MacOpaqueSizeGrip)) {
-            HIThemeGrowBoxDrawInfo gdi;
-            gdi.version = qt_mac_hitheme_version;
-            gdi.state = tds;
-            gdi.kind = kHIThemeGrowBoxKindNormal;
-            gdi.direction = kThemeGrowRight | kThemeGrowDown;
-            gdi.size = kHIThemeGrowBoxSizeNormal;
-            CGPoint pt = CGPointMake(opt->rect.x(), opt->rect.y());
-            HIThemeDrawGrowBox(&pt, &gdi, cg, kHIThemeOrientationNormal);
-        } else {
-            // It isn't possible to draw a transparent size grip with the
-            // native API, so we do it ourselves here.
-            QPen lineColor = QColor(82, 82, 82, 192);
-            lineColor.setWidth(1);
-            p->save();
-            p->setRenderHint(QPainter::Antialiasing);
-            p->setPen(lineColor);
-            const Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : qApp->layoutDirection();
-            const int NumLines = 3;
-            for (int l = 0; l < NumLines; ++l) {
-                const int offset = (l * 4 + 3);
-                QPoint start, end;
-                if (layoutDirection == Qt::LeftToRight) {
-                    start = QPoint(opt->rect.width() - offset, opt->rect.height() - 1);
-                    end = QPoint(opt->rect.width() - 1, opt->rect.height() - offset);
-                } else {
-                    start = QPoint(offset, opt->rect.height() - 1);
-                    end = QPoint(1, opt->rect.height() - offset);
-                }
-                p->drawLine(start, end);
+        // This is not HIG kosher: Fall back to the old stuff until we decide what to do.
+#ifndef QT_NO_MDIAREA
+        if (!w || !qobject_cast<QMdiSubWindow *>(w->parentWidget()))
+#endif
+            break;
+
+        if (w->testAttribute(Qt::WA_MacOpaqueSizeGrip))
+            p->fillRect(opt->rect, opt->palette.window());
+
+        QPen lineColor = QColor(82, 82, 82, 192);
+        lineColor.setWidth(1);
+        p->save();
+        p->setRenderHint(QPainter::Antialiasing);
+        p->setPen(lineColor);
+        const Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : qApp->layoutDirection();
+        const int NumLines = 3;
+        for (int l = 0; l < NumLines; ++l) {
+            const int offset = (l * 4 + 3);
+            QPoint start, end;
+            if (layoutDirection == Qt::LeftToRight) {
+                start = QPoint(opt->rect.width() - offset, opt->rect.height() - 1);
+                end = QPoint(opt->rect.width() - 1, opt->rect.height() - offset);
+            } else {
+                start = QPoint(offset, opt->rect.height() - 1);
+                end = QPoint(1, opt->rect.height() - offset);
             }
-            p->restore();
+            p->drawLine(start, end);
         }
+        p->restore();
         break;
         }
     case CE_Splitter:
