@@ -223,7 +223,7 @@ ReturnType qt_msgSendSuper(id receiver, SEL selector, Args... args)
 
     typedef ReturnType (*SuperFn)(objc_super *, SEL, Args...);
     SuperFn superFn = reinterpret_cast<SuperFn>(objc_msgSendSuper);
-    objc_super sup = { receiver, class_getSuperclass(object_getClass(receiver)) };
+    objc_super sup = { receiver, [receiver superclass] };
     return superFn(&sup, selector, args...);
 }
 
@@ -236,7 +236,7 @@ ReturnType qt_msgSendSuper_stret(id receiver, SEL selector, Args... args)
     typedef void (*SuperStretFn)(ReturnType *, objc_super *, SEL, Args...);
     SuperStretFn superStretFn = reinterpret_cast<SuperStretFn>(objc_msgSendSuper_stret);
 
-    objc_super sup = { receiver, class_getSuperclass(object_getClass(receiver)) };
+    objc_super sup = { receiver, [receiver superclass] };
     ReturnType ret;
     superStretFn(&ret, &sup, selector, args...);
     return ret;
