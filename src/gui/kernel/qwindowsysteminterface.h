@@ -76,20 +76,47 @@ public:
     struct AsynchronousDelivery {};
     struct DefaultDelivery {};
 
+#if QT_DEPRECATED_SINCE(5, 11)
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
+    QT_DEPRECATED static void handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
+    QT_DEPRECATED static void handleMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                  Qt::KeyboardModifiers mods = Qt::NoModifier,
                                  Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
-    static void handleFrameStrutMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
+
+    QT_DEPRECATED static void handleFrameStrutMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
-    static void handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
+    QT_DEPRECATED static void handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                            Qt::KeyboardModifiers mods = Qt::NoModifier,
                                            Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+#endif
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static void handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global,
+                                 Qt::MouseButtons state, Qt::MouseButton button, QEvent::Type type,
+                                 Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static void handleMouseEvent(QWindow *window, ulong timestamp, const QPointF &local,
+                                 const QPointF &global, Qt::MouseButtons state,
+                                 Qt::MouseButton button, QEvent::Type type,
+                                 Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                 Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+
+    static void handleFrameStrutMouseEvent(QWindow *window, const QPointF &local,
+                                           const QPointF &global, Qt::MouseButtons state,
+                                           Qt::MouseButton button, QEvent::Type type,
+                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                           Qt::MouseEventSource source =
+                                           Qt::MouseEventNotSynthesized);
+    static void handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF &local,
+                                           const QPointF &global, Qt::MouseButtons state,
+                                           Qt::MouseButton button, QEvent::Type type,
+                                           Qt::KeyboardModifiers mods = Qt::NoModifier,
+                                           Qt::MouseEventSource source =
+                                           Qt::MouseEventNotSynthesized);
 
     static bool handleShortcutEvent(QWindow *window, ulong timestamp, int k, Qt::KeyboardModifiers mods, quint32 nativeScanCode,
                                       quint32 nativeVirtualKey, quint32 nativeModifiers, const QString & text = QString(), bool autorep = false, ushort count = 1);

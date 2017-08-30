@@ -983,6 +983,12 @@ static Qt::MouseButtons translateMouseButtons(int s)
     return ret;
 }
 
+void QXcbConnection::setButtonState(Qt::MouseButton button, bool down)
+{
+    m_buttonState.setFlag(button, down);
+    m_button = button;
+}
+
 Qt::MouseButton QXcbConnection::translateMouseButton(xcb_button_t s)
 {
     switch (s) {
@@ -1055,7 +1061,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             // the event explicitly contains the state of the three first buttons,
             // the rest we need to manage ourselves
             m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
-            m_buttonState |= translateMouseButton(ev->detail);
+            setButtonState(translateMouseButton(ev->detail), true);
             if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
                 qCDebug(lcQpaXInputEvents, "legacy mouse press, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttonState));
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
@@ -1064,7 +1070,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             xcb_button_release_event_t *ev = (xcb_button_release_event_t *)event;
             m_keyboard->updateXKBStateFromCore(ev->state);
             m_buttonState = (m_buttonState & ~0x7) | translateMouseButtons(ev->state);
-            m_buttonState &= ~translateMouseButton(ev->detail);
+            setButtonState(translateMouseButton(ev->detail), false);
             if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
                 qCDebug(lcQpaXInputEvents, "legacy mouse release, button %d state %X", ev->detail, static_cast<unsigned int>(m_buttonState));
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);

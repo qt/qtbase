@@ -184,7 +184,7 @@ void QEvdevMouseHandler::sendMouseEvent()
         m_prevInvalid = false;
     }
 
-    emit handleMouseEvent(x, y, m_abs, m_buttons);
+    emit handleMouseEvent(x, y, m_abs, m_buttons, m_button, m_eventType);
 
     m_prevx = m_x;
     m_prevy = m_y;
@@ -286,6 +286,8 @@ void QEvdevMouseHandler::readMouseData()
             case 0x11f: button = Qt::ExtraButton13; break;
             }
             m_buttons.setFlag(button, data->value);
+            m_button = button;
+            m_eventType = data->value == 0 ? QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
             btnChanged = true;
         } else if (data->type == EV_SYN && data->code == SYN_REPORT) {
             if (btnChanged) {
@@ -293,6 +295,7 @@ void QEvdevMouseHandler::readMouseData()
                 sendMouseEvent();
                 pendingMouseEvent = false;
             } else if (posChanged) {
+                m_eventType = QEvent::MouseMove;
                 posChanged = false;
                 if (m_compression) {
                     pendingMouseEvent = true;

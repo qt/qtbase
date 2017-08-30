@@ -1842,29 +1842,111 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     }
 }
 
+/*! \internal
+
+    History is silent on why Qt splits mouse events that change position and
+    button state at the same time. We believe that this was done to emulate mouse
+    behavior on touch screens. If mouse tracking is enabled, we will get move
+    events before the button is pressed. A touch panel does not generally give
+    move events when not pressed, so without event splitting code path we would
+    only see a press in a new location without any intervening moves. This could
+    confuse code that is written for a real mouse. The same is true for mouse
+    release events that change position, see tst_QWidget::touchEventSynthesizedMouseEvent()
+    auto test.
+*/
 void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e)
 {
-    QEvent::Type type;
-    Qt::MouseButtons stateChange = e->buttons ^ mouse_buttons;
-    if (e->globalPos != QGuiApplicationPrivate::lastCursorPosition && (stateChange != Qt::NoButton)) {
-        // A mouse event should not change both position and buttons at the same time. Instead we
-        // should first send a move event followed by a button changed event. Since this is not the case
-        // with the current event, we split it in two.
-        QWindowSystemInterfacePrivate::MouseEvent mouseButtonEvent(e->window.data(), e->timestamp,
-                    e->localPos, e->globalPos, e->buttons, e->modifiers, e->source, e->nonClientArea);
-        if (e->flags & QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic)
-            mouseButtonEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
-        e->buttons = mouse_buttons;
-        processMouseEvent(e);
-        processMouseEvent(&mouseButtonEvent);
-        return;
+    QEvent::Type type = QEvent::None;
+    Qt::MouseButton button = Qt::NoButton;
+    QWindow *window = e->window.data();
+    bool positionChanged = QGuiApplicationPrivate::lastCursorPosition != e->globalPos;
+    bool mouseMove = false;
+    bool mousePress = false;
+
+    if (e->enhancedMouseEvent()) {
+        type = e->buttonType;
+        button = e->button;
+
+        if (type == QEvent::NonClientAreaMouseMove || type == QEvent::MouseMove)
+            mouseMove = true;
+        else if (type == QEvent::NonClientAreaMouseButtonPress || type == QEvent::MouseButtonPress)
+            mousePress = true;
+
+        if (!mouseMove && positionChanged) {
+            QWindowSystemInterfacePrivate::MouseEvent moveEvent(window, e->timestamp,
+                e->localPos, e->globalPos, e->buttons & ~button, e->modifiers, Qt::NoButton,
+                e->nonClientArea ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove,
+                e->source, e->nonClientArea);
+            if (e->synthetic())
+                moveEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
+            processMouseEvent(&moveEvent); // mouse move excluding state change
+            processMouseEvent(e); // the original mouse event
+            return;
+        }
+    } else {
+        Qt::MouseButtons stateChange = e->buttons ^ mouse_buttons;
+        if (positionChanged && (stateChange != Qt::NoButton)) {
+            QWindowSystemInterfacePrivate::MouseEvent moveEvent(window, e->timestamp, e->localPos,
+                e->globalPos, mouse_buttons, e->modifiers, Qt::NoButton, QEvent::None, e->source,
+                e->nonClientArea);
+            if (e->synthetic())
+                moveEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
+            processMouseEvent(&moveEvent); // mouse move excluding state change
+            processMouseEvent(e); // the original mouse event
+            return;
+        }
+
+        // In the compatibility path we deduce event type and button that caused the event
+        if (positionChanged) {
+            mouseMove = true;
+            type = e->nonClientArea ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove;
+        } else {
+            // Check to see if a new button has been pressed/released.
+            for (uint mask = Qt::LeftButton; mask <= Qt::MaxMouseButton; mask <<= 1) {
+                if (stateChange & mask) {
+                    button = Qt::MouseButton(mask);
+                    break;
+                }
+            }
+            if (button == Qt::NoButton) {
+                // Ignore mouse events that don't change the current state. This shouldn't
+                // really happen, getting here can only mean that the stored button state
+                // is out of sync with the actual physical button state.
+                return;
+            }
+            if (button & e->buttons) {
+                mousePress = true;
+                type = e->nonClientArea ? QEvent::NonClientAreaMouseButtonPress
+                                        : QEvent::MouseButtonPress;
+             } else {
+                type = e->nonClientArea ? QEvent::NonClientAreaMouseButtonRelease
+                                        : QEvent::MouseButtonRelease;
+            }
+        }
     }
 
-    QWindow *window = e->window.data();
     modifier_buttons = e->modifiers;
-
     QPointF localPoint = e->localPos;
     QPointF globalPoint = e->globalPos;
+    bool doubleClick = false;
+
+    if (mouseMove) {
+        QGuiApplicationPrivate::lastCursorPosition = globalPoint;
+        if (qAbs(globalPoint.x() - mousePressX) > mouse_double_click_distance||
+            qAbs(globalPoint.y() - mousePressY) > mouse_double_click_distance)
+            mousePressButton = Qt::NoButton;
+    } else {
+        mouse_buttons = e->buttons;
+        if (mousePress) {
+            ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
+            doubleClick = e->timestamp - mousePressTime < doubleClickInterval && button == mousePressButton;
+            mousePressTime = e->timestamp;
+            mousePressButton = button;
+            const QPoint point = QGuiApplicationPrivate::lastCursorPosition.toPoint();
+            mousePressX = point.x();
+            mousePressY = point.y();
+        }
+    }
 
     if (e->nullWindow()) {
         window = QGuiApplication::topLevelAt(globalPoint.toPoint());
@@ -1882,43 +1964,6 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             }
             QPointF delta = globalPoint - globalPoint.toPoint();
             localPoint = window->mapFromGlobal(globalPoint.toPoint()) + delta;
-        }
-    }
-
-    Qt::MouseButton button = Qt::NoButton;
-    bool doubleClick = false;
-
-    if (QGuiApplicationPrivate::lastCursorPosition != globalPoint) {
-        type = e->nonClientArea ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove;
-        QGuiApplicationPrivate::lastCursorPosition = globalPoint;
-        if (qAbs(globalPoint.x() - mousePressX) > mouse_double_click_distance||
-            qAbs(globalPoint.y() - mousePressY) > mouse_double_click_distance)
-            mousePressButton = Qt::NoButton;
-    } else { // Check to see if a new button has been pressed/released.
-        for (int check = Qt::LeftButton;
-            check <= int(Qt::MaxMouseButton);
-             check = check << 1) {
-            if (check & stateChange) {
-                button = Qt::MouseButton(check);
-                break;
-            }
-        }
-        if (button == Qt::NoButton) {
-            // Ignore mouse events that don't change the current state.
-            return;
-        }
-        mouse_buttons = e->buttons;
-        if (button & e->buttons) {
-            ulong doubleClickInterval = static_cast<ulong>(QGuiApplication::styleHints()->mouseDoubleClickInterval());
-            doubleClick = e->timestamp - mousePressTime < doubleClickInterval && button == mousePressButton;
-            type = e->nonClientArea ? QEvent::NonClientAreaMouseButtonPress : QEvent::MouseButtonPress;
-            mousePressTime = e->timestamp;
-            mousePressButton = button;
-            const QPoint point = QGuiApplicationPrivate::lastCursorPosition.toPoint();
-            mousePressX = point.x();
-            mousePressY = point.y();
-        } else {
-            type = e->nonClientArea ? QEvent::NonClientAreaMouseButtonRelease : QEvent::MouseButtonRelease;
         }
     }
 

@@ -64,7 +64,9 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp);
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global,
+                                      Qt::MouseButtons state, Qt::MouseButton button,
+                                      QEvent::Type type, Qt::KeyboardModifiers mods, int timestamp);
 
 namespace QTest
 {
@@ -120,23 +122,28 @@ namespace QTest
         switch (action)
         {
         case MouseDClick:
-            qt_handleMouseEvent(w, pos, global, button, stateKey, ++lastMouseTimestamp);
-            qt_handleMouseEvent(w, pos, global, Qt::NoButton, stateKey, ++lastMouseTimestamp);
+            qt_handleMouseEvent(w, pos, global, button, button, QEvent::MouseButtonPress,
+                                stateKey, ++lastMouseTimestamp);
+            qt_handleMouseEvent(w, pos, global, Qt::NoButton, button, QEvent::MouseButtonRelease,
+                                stateKey, ++lastMouseTimestamp);
             Q_FALLTHROUGH();
         case MousePress:
         case MouseClick:
-            qt_handleMouseEvent(w, pos, global, button, stateKey, ++lastMouseTimestamp);
+            qt_handleMouseEvent(w, pos, global, button, button, QEvent::MouseButtonPress,
+                                stateKey, ++lastMouseTimestamp);
             lastMouseButton = button;
             if (action == MousePress)
                 break;
             Q_FALLTHROUGH();
         case MouseRelease:
-            qt_handleMouseEvent(w, pos, global, Qt::NoButton, stateKey, ++lastMouseTimestamp);
+            qt_handleMouseEvent(w, pos, global, Qt::NoButton, button, QEvent::MouseButtonRelease,
+                                stateKey, ++lastMouseTimestamp);
             lastMouseTimestamp += mouseDoubleClickInterval; // avoid double clicks being generated
             lastMouseButton = Qt::NoButton;
             break;
         case MouseMove:
-            qt_handleMouseEvent(w, pos, global, lastMouseButton, stateKey, ++lastMouseTimestamp);
+            qt_handleMouseEvent(w, pos, global, lastMouseButton, Qt::NoButton, QEvent::MouseMove,
+                                stateKey, ++lastMouseTimestamp);
             // No QCursor::setPos() call here. That could potentially result in mouse events sent by the windowing system
             // which is highly undesired here. Tests must avoid relying on QCursor.
             break;

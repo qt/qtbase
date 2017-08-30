@@ -146,7 +146,7 @@ public:
     QXcbWindow *toWindow() override;
 
     void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global,
-                          Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);
+                          Qt::KeyboardModifiers modifiers, QEvent::Type type, Qt::MouseEventSource source);
 
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
 
@@ -221,13 +221,16 @@ protected:
     bool compressExposeEvent(QRegion &exposeRegion);
 
     void handleButtonPressEvent(int event_x, int event_y, int root_x, int root_y,
-                                int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+                                int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp,
+                                QEvent::Type type, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     void handleButtonReleaseEvent(int event_x, int event_y, int root_x, int root_y,
-                                  int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+                                  int detail, Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp,
+                                  QEvent::Type type, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     void handleMotionNotifyEvent(int event_x, int event_y, int root_x, int root_y,
-                                 Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
+                                 Qt::KeyboardModifiers modifiers, xcb_timestamp_t timestamp,
+                                 QEvent::Type type, Qt::MouseEventSource source = Qt::MouseEventNotSynthesized);
 
     void handleEnterNotifyEvent(int event_x, int event_y, int root_x, int root_y,
                                 quint8 mode, quint8 detail, xcb_timestamp_t timestamp);

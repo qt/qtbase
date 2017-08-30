@@ -54,6 +54,7 @@
 #include <QObject>
 #include <QString>
 #include <QPoint>
+#include <QEvent>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,7 +70,8 @@ public:
     void readMouseData();
 
 signals:
-    void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons);
+    void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons,
+                          Qt::MouseButton button, QEvent::Type type);
     void handleWheelEvent(QPoint delta);
 
 private:
@@ -86,6 +88,8 @@ private:
     bool m_abs;
     bool m_compression;
     Qt::MouseButtons m_buttons;
+    Qt::MouseButton m_button;
+    QEvent::Type m_eventType;
     int m_jitterLimitSquared;
     bool m_prevInvalid;
     int m_hardwareWidth;

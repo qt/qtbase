@@ -341,36 +341,79 @@ void QWindowSystemInterface::handleCloseEvent(QWindow *window, bool *accepted)
 \a w == 0 means that the event is in global coords only, \a local will be ignored in this case
 
 */
+#if QT_DEPRECATED_SINCE(5, 11)
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
-    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleMouseEvent<Delivery>(window, time, local, global, b, mods, source);
+    handleMouseEvent<Delivery>(window, local, global, b, Qt::NoButton, QEvent::None, mods, source);
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                               Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
-    QWindowSystemInterfacePrivate::MouseEvent * e =
-        new QWindowSystemInterfacePrivate::MouseEvent(window, timestamp, QHighDpi::fromNativeLocalPosition(local, window), QHighDpi::fromNativePixels(global, window), b, mods, source);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
+    handleMouseEvent<Delivery>(window, timestamp, local, global, b, Qt::NoButton, QEvent::None, mods, source);
 }
 
 void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                                         Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
-    const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
-    handleFrameStrutMouseEvent(window, time, local, global, b, mods, source);
+    handleFrameStrutMouseEvent(window, local, global, b, Qt::NoButton, QEvent::None, mods, source);
 }
 
 void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp, const QPointF &local, const QPointF &global, Qt::MouseButtons b,
                                                         Qt::KeyboardModifiers mods, Qt::MouseEventSource source)
 {
-    QWindowSystemInterfacePrivate::MouseEvent * e =
-            new QWindowSystemInterfacePrivate::MouseEvent(window, timestamp,
-                                                          QHighDpi::fromNativeLocalPosition(local, window),
-                                                          QHighDpi::fromNativePixels(global, window),
-                                                          b, mods, source, true);
+    handleFrameStrutMouseEvent(window, timestamp, local, global, b, Qt::NoButton, QEvent::None, mods, source);
+}
+#endif // QT_DEPRECATED_SINCE(5, 11)
+
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window,
+                            const QPointF &local, const QPointF &global, Qt::MouseButtons state,
+                            Qt::MouseButton button, QEvent::Type type, Qt::KeyboardModifiers mods,
+                            Qt::MouseEventSource source)
+{
+    unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleMouseEvent<Delivery>(window, time, local, global, state, button, type, mods, source);
+}
+
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleMouseEvent, QWindow *window, ulong timestamp,
+                            const QPointF &local, const QPointF &global, Qt::MouseButtons state,
+                            Qt::MouseButton button, QEvent::Type type, Qt::KeyboardModifiers mods,
+                            Qt::MouseEventSource source)
+{
+    auto localPos = QHighDpi::fromNativeLocalPosition(local, window);
+    auto globalPos = QHighDpi::fromNativePixels(global, window);
+
+    QWindowSystemInterfacePrivate::MouseEvent *e =
+        new QWindowSystemInterfacePrivate::MouseEvent(window, timestamp, localPos, globalPos,
+                                                      state, mods, button, type, source);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
+}
+
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window,
+                                                        const QPointF &local, const QPointF &global,
+                                                        Qt::MouseButtons state,
+                                                        Qt::MouseButton button, QEvent::Type type,
+                                                        Qt::KeyboardModifiers mods,
+                                                        Qt::MouseEventSource source)
+{
+    const unsigned long time = QWindowSystemInterfacePrivate::eventTime.elapsed();
+    handleFrameStrutMouseEvent(window, time, local, global, state, button, type, mods, source);
+}
+
+void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong timestamp,
+                                                        const QPointF &local, const QPointF &global,
+                                                        Qt::MouseButtons state,
+                                                        Qt::MouseButton button, QEvent::Type type,
+                                                        Qt::KeyboardModifiers mods,
+                                                        Qt::MouseEventSource source)
+{
+    auto localPos = QHighDpi::fromNativeLocalPosition(local, window);
+    auto globalPos = QHighDpi::fromNativePixels(global, window);
+
+    QWindowSystemInterfacePrivate::MouseEvent *e =
+            new QWindowSystemInterfacePrivate::MouseEvent(window, timestamp, localPos, globalPos,
+                                                          state, mods, button, type, source, true);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -1008,11 +1051,26 @@ bool QWindowSystemInterface::nonUserInputEventsQueued()
 
 // The following functions are used by testlib, and need to be synchronous to avoid
 // race conditions with plugins delivering native events from secondary threads.
+// FIXME: It seems unnecessary to export these wrapper functions, when qtestlib could access
+// QWindowSystemInterface directly (by adding dependency to gui-private), see QTBUG-63146.
 
-Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global, Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp)
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global,
+                                      Qt::MouseButtons state, Qt::MouseButton button,
+                                      QEvent::Type type, Qt::KeyboardModifiers mods, int timestamp)
 {
     const qreal factor = QHighDpiScaling::factor(window);
-    QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(window, timestamp, local * factor, global * factor, b, mods);
+    QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(window,
+                timestamp, local * factor, global * factor, state, button, type, mods);
+}
+
+// Wrapper for compatibility with Qt < 5.11
+// ### Qt6: Remove
+Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *window, const QPointF &local, const QPointF &global,
+                                      Qt::MouseButtons b, Qt::KeyboardModifiers mods, int timestamp)
+{
+    const qreal factor = QHighDpiScaling::factor(window);
+    QWindowSystemInterface::handleMouseEvent<QWindowSystemInterface::SynchronousDelivery>(window,
+                timestamp, local * factor, global * factor, b, Qt::NoButton, QEvent::None, mods);
 }
 
 // Wrapper for compatibility with Qt < 5.6

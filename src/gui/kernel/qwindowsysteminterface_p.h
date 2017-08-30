@@ -225,16 +225,34 @@ public:
 
     class MouseEvent : public InputEvent {
     public:
+        // TODO - remove this ctor when all usages of it in QGuiApplication are cleaned out
         MouseEvent(QWindow * w, ulong time, const QPointF &local, const QPointF &global,
                    Qt::MouseButtons b, Qt::KeyboardModifiers mods,
                    Qt::MouseEventSource src = Qt::MouseEventNotSynthesized, bool frame = false)
             : InputEvent(w, time, Mouse, mods), localPos(local), globalPos(global), buttons(b),
-              source(src), nonClientArea(frame) { }
+              source(src), nonClientArea(frame), button(Qt::NoButton), buttonType(QEvent::None) { }
+
+        MouseEvent(QWindow *w, ulong time, const QPointF &local, const QPointF &global,
+                   Qt::MouseButtons state, Qt::KeyboardModifiers mods,
+                   Qt::MouseButton b, QEvent::Type type,
+                   Qt::MouseEventSource src = Qt::MouseEventNotSynthesized, bool frame = false)
+            : InputEvent(w, time, Mouse, mods), localPos(local), globalPos(global), buttons(state),
+              source(src), nonClientArea(frame), button(b), buttonType(type) { }
+
+        // ### In Qt6 this method can be removed as there won't be need for compatibility code path
+        bool enhancedMouseEvent() const
+        {
+            static const bool disableEnhanced = qEnvironmentVariableIsSet("QT_QPA_DISABLE_ENHANCED_MOUSE");
+            return !disableEnhanced && buttonType != QEvent::None;
+        }
+
         QPointF localPos;
         QPointF globalPos;
         Qt::MouseButtons buttons;
         Qt::MouseEventSource source;
         bool nonClientArea;
+        Qt::MouseButton button;
+        QEvent::Type buttonType;
     };
 
     class WheelEvent : public InputEvent {

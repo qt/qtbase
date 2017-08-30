@@ -131,7 +131,8 @@ void QEvdevMouseManager::clampPosition()
         m_y = g.bottom() - m_yoffset;
 }
 
-void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons)
+void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons,
+                                          Qt::MouseButton button, QEvent::Type type)
 {
     // update current absolute coordinates
     if (!abs) {
@@ -147,7 +148,8 @@ void QEvdevMouseManager::handleMouseEvent(int x, int y, bool abs, Qt::MouseButto
     QPoint pos(m_x + m_xoffset, m_y + m_yoffset);
     // Cannot track the keyboard modifiers ourselves here. Instead, report the
     // modifiers from the last key event that has been seen by QGuiApplication.
-    QWindowSystemInterface::handleMouseEvent(0, pos, pos, buttons, QGuiApplication::keyboardModifiers());
+    Qt::KeyboardModifiers mods = QGuiApplication::keyboardModifiers();
+    QWindowSystemInterface::handleMouseEvent(0, pos, pos, buttons, button, type, mods);
 }
 
 void QEvdevMouseManager::handleWheelEvent(QPoint delta)

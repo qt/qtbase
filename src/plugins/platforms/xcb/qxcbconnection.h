@@ -485,8 +485,9 @@ public:
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
     xcb_window_t getQtSelectionOwner();
 
-    void setButtonState(Qt::MouseButton button, bool down) { m_buttonState.setFlag(button, down); }
+    void setButtonState(Qt::MouseButton button, bool down);
     Qt::MouseButtons buttonState() const { return m_buttonState; }
+    Qt::MouseButton button() const { return m_button; }
     Qt::MouseButton translateMouseButton(xcb_button_t s);
 
     QXcbWindow *focusWindow() const { return m_focusWindow; }
@@ -700,6 +701,7 @@ private:
     bool has_render_extension = false;
 
     Qt::MouseButtons m_buttonState = 0;
+    Qt::MouseButton m_button = Qt::NoButton;
 
     QXcbWindow *m_focusWindow = nullptr;
     QXcbWindow *m_mouseGrabber = nullptr;

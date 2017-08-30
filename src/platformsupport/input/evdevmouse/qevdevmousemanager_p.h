@@ -68,7 +68,8 @@ public:
     QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = 0);
     ~QEvdevMouseManager();
 
-    void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons);
+    void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons,
+                          Qt::MouseButton button, QEvent::Type type);
     void handleWheelEvent(QPoint delta);
 
     void addMouse(const QString &deviceNode = QString());
