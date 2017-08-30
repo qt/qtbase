@@ -149,9 +149,11 @@ void QEvdevTabletData::report()
     qreal pressure = pressureRange ? (state.p - minValues.p) / qreal(pressureRange) : qreal(1);
 
     if (state.down || state.lastReportDown) {
-        QWindowSystemInterface::handleTabletEvent(0, state.down, QPointF(), globalPos,
+        QWindowSystemInterface::handleTabletEvent(0, QPointF(), globalPos,
                                                   QTabletEvent::Stylus, pointer,
-                                                  pressure, 0, 0, 0, 0, 0, q->deviceId(), qGuiApp->keyboardModifiers());
+                                                  state.down ? Qt::LeftButton : Qt::NoButton,
+                                                  pressure, 0, 0, 0, 0, 0, q->deviceId(),
+                                                  qGuiApp->keyboardModifiers());
     }
 
     if (state.lastReportTool && !state.tool)
