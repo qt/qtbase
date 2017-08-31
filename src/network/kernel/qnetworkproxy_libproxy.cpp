@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -42,55 +43,147 @@
 #ifndef QT_NO_NETWORKPROXY
 
 #include <QtCore/QByteArray>
+#include <QtCore/QMutex>
+#include <QtCore/QSemaphore>
 #include <QtCore/QUrl>
+#include <QtCore/private/qeventdispatcher_unix_p.h>
+#include <QtCore/private/qthread_p.h>
 
 #include <proxy.h>
+#include <dlfcn.h>
 
 QT_BEGIN_NAMESPACE
 
-class QLibProxyWrapper
+static bool isThreadingNeeded()
 {
-public:
-    QLibProxyWrapper()
-        : factory(px_proxy_factory_new())
-    {
-        if (!factory)
-            qWarning("libproxy initialization failed.");
-    }
+    // Try to guess if the libproxy we linked to is from the libproxy project
+    // or if it is from pacrunner. Neither library is thread-safe, but the one
+    // from libproxy is worse, since it may launch JS engines that don't take
+    // kindly to being executed from multiple threads (even if at different
+    // times). The pacrunner implementation doesn't suffer from this because
+    // the JS execution is out of process, in the pacrunner daemon.
 
-    ~QLibProxyWrapper()
-    {
-        px_proxy_factory_free(factory);
-    }
+    void *sym;
+
+#ifdef Q_CC_GNU
+    // Search for the mangled name of the virtual table of the pacrunner
+    // extension. Even if libproxy begins using -fvisibility=hidden, this
+    // symbol can't be hidden.
+    sym = dlsym(RTLD_DEFAULT, "_ZTVN8libproxy19pacrunner_extensionE");
+#else
+    // The default libproxy one uses libmodman for its module management and
+    // leaks symbols because it doesn't use -fvisibility=hidden (as of
+    // v0.4.15).
+    sym = dlsym(RTLD_DEFAULT, "mm_info_ignore_hostname");
+#endif
+
+    return sym != nullptr;
+}
+
+class QLibProxyWrapper : public QDaemonThread
+{
+    Q_OBJECT
+public:
+    QLibProxyWrapper();
+    ~QLibProxyWrapper();
 
     QList<QUrl> getProxies(const QUrl &url);
 
 private:
-    pxProxyFactory *factory;
+    struct Data {
+        // we leave the conversion to/from QUrl to the calling thread
+        const char *url;
+        char **proxies;
+        QSemaphore replyReady;
+    };
+
+    void run() override;
+
+    pxProxyFactory *factory;    // not subject to the mutex
+
+    QMutex mutex;
+    QSemaphore requestReady;
+    Data *request;
 };
 
 Q_GLOBAL_STATIC(QLibProxyWrapper, libProxyWrapper);
 
+QLibProxyWrapper::QLibProxyWrapper()
+{
+    if (isThreadingNeeded()) {
+        setEventDispatcher(new QEventDispatcherUNIX);   // don't allow the Glib one
+        start();
+    } else {
+        factory = px_proxy_factory_new();
+        Q_CHECK_PTR(factory);
+    }
+}
+
+QLibProxyWrapper::~QLibProxyWrapper()
+{
+    if (isRunning()) {
+        requestInterruption();
+        requestReady.release();
+        wait();
+    } else {
+        px_proxy_factory_free(factory);
+    }
+}
+
 /*
-    Gets the list of proxies from libproxy, converted to QUrl list.
-    Thread safe, according to libproxy documentation.
+    Gets the list of proxies from libproxy, converted to QUrl list. Apply
+    thread-safety, though its documentation says otherwise, libproxy isn't
+    thread-safe.
 */
 QList<QUrl> QLibProxyWrapper::getProxies(const QUrl &url)
 {
-    QList<QUrl> ret;
+    QByteArray encodedUrl = url.toEncoded();
+    Data data;
+    data.url = encodedUrl.constData();
 
-    if (factory) {
-        char **proxies = px_proxy_factory_get_proxies(factory, url.toEncoded());
-        if (proxies) {
-            for (int i = 0; proxies[i]; i++) {
-                ret.append(QUrl::fromEncoded(proxies[i]));
-                free(proxies[i]);
-            }
-            free(proxies);
+    {
+        QMutexLocker locker(&mutex);
+        if (isRunning()) {
+            // threaded mode
+            // it's safe to write to request because we hold the mutex:
+            // our aux thread is blocked waiting for work and no other thread
+            // could have got here
+            request = &data;
+            requestReady.release();
+
+            // wait for the reply
+            data.replyReady.acquire();
+        } else {
+            // non-threaded mode
+            data.proxies = px_proxy_factory_get_proxies(factory, data.url);
         }
     }
 
+    QList<QUrl> ret;
+    if (data.proxies) {
+        for (int i = 0; data.proxies[i]; i++) {
+            ret.append(QUrl::fromEncoded(data.proxies[i]));
+            free(data.proxies[i]);
+        }
+        free(data.proxies);
+    }
     return ret;
+}
+
+void QLibProxyWrapper::run()
+{
+    factory = px_proxy_factory_new();
+    Q_CHECK_PTR(factory);
+
+    forever {
+        requestReady.acquire();
+        if (isInterruptionRequested())
+            break;
+        request->proxies = px_proxy_factory_get_proxies(factory, request->url);
+        request->replyReady.release();
+    }
+
+    px_proxy_factory_free(factory);
 }
 
 QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)
@@ -160,5 +253,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
 }
 
 QT_END_NAMESPACE
+
+#include "qnetworkproxy_libproxy.moc"
 
 #endif

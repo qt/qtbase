@@ -103,6 +103,9 @@ int main(int argc, char *argv[])
     // right
 //    tabBar.setShape(QTabBar::RoundedEast);
 
+    const auto shortLabel = QStringLiteral("Tab %1");
+    const auto longLabel = QStringLiteral("An Extremely Long Tab Label %1");
+
     QMap<int, QWidget*> tabs;
     for (int i = 0; i < TabCount; i++) {
         QString tabNumberString = QString::number(i);
@@ -110,7 +113,7 @@ int main(int argc, char *argv[])
         tabs[i] = label;
         label->setAlignment(Qt::AlignCenter);
         stackedWidget.addWidget(label);
-        tabBar.addTab(QStringLiteral("Tab %1").arg(tabNumberString));
+        tabBar.addTab(shortLabel.arg(tabNumberString));
     }
 
     QObject::connect(&tabBar, &QTabBar::tabMoved, [&tabs](int from, int to) {
@@ -203,6 +206,13 @@ int main(int argc, char *argv[])
                           tabBar.style()->standardIcon(QStyle::SP_ComputerIcon) : QIcon();
         for (int i = 0; i < tabBar.count(); i++)
             tabBar.setTabIcon(i, icon);
+    });
+
+    form.ui->longLabelButton->setChecked(false);
+    QObject::connect(form.ui->longLabelButton, &QCheckBox::toggled, [&] {
+        const auto &label = form.ui->longLabelButton->isChecked() ? longLabel : shortLabel;
+        for (int i = 0; i < tabBar.count(); i++)
+            tabBar.setTabText(i, label.arg(i));
     });
 
     QObject::connect(form.ui->shapeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {

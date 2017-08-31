@@ -303,7 +303,7 @@ static jboolean paste(JNIEnv */*env*/, jobject /*thiz*/)
         return JNI_FALSE;
 
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
-    qDebug("@@@");
+    qDebug("@@@ PASTE");
 #endif
     return m_androidInputContext->paste();
 }
@@ -1138,6 +1138,7 @@ jboolean QAndroidInputContext::copyURL()
 
 jboolean QAndroidInputContext::paste()
 {
+    finishComposingText();
     m_cursorHandleShown = CursorHandleNotShown;
     sendShortcut(QKeySequence::Paste);
     return JNI_TRUE;

@@ -1902,7 +1902,7 @@ int
 ProjectBuilderMakefileGenerator::pbuilderVersion() const
 {
     if (!project->isEmpty("QMAKE_PBUILDER_VERSION"))
-        return project->first("QMAKE_PBUILDER_VERSION").toQString().toInt();
+        return project->first("QMAKE_PBUILDER_VERSION").toInt();
     return 46; // Xcode 3.2-compatible; default format since that version
 }
 

@@ -1774,12 +1774,6 @@ void tst_QWidget::activation()
     QCOMPARE(QApplication::activeWindow(), &widget2);
     widget2.hide();
     QTest::qWait(waitTime);
-#ifdef Q_OS_WIN
-    if (QSysInfo::kernelVersion() == "10.0.15063") {
-        QEXPECT_FAIL("", "This fails on Windows 10 Creators Update (10.0.15063)", Continue);
-        // This happens in automated Windows 10 Creators Update (10.0.15063) CI builds!
-    }
-#endif
     QCOMPARE(QApplication::activeWindow(), &widget1);
 }
 #endif // Q_OS_WIN

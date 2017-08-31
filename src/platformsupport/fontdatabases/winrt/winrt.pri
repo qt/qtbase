@@ -8,4 +8,4 @@ HEADERS += \
 
 DEFINES += __WRL_NO_DEFAULT_LIB__
 
-LIBS += $$QMAKE_LIBS_CORE -ldwrite
+LIBS += -lws2_32 -ldwrite

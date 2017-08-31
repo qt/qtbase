@@ -50,7 +50,7 @@ public:
     QWindowsPrinterSupport();
     ~QWindowsPrinterSupport();
 
-    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode) Q_DECL_OVERRIDE;
+    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) Q_DECL_OVERRIDE;
     QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode) Q_DECL_OVERRIDE;
 
     QPrintDevice createPrintDevice(const QString &id) Q_DECL_OVERRIDE;
