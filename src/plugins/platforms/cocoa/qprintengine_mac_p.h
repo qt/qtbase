@@ -78,7 +78,7 @@ class QMacPrintEngine : public QPaintEngine, public QPrintEngine
 {
     Q_DECLARE_PRIVATE(QMacPrintEngine)
 public:
-    QMacPrintEngine(QPrinter::PrinterMode mode);
+    QMacPrintEngine(QPrinter::PrinterMode mode, const QString &deviceId);
 
     Qt::HANDLE handle() const;
 

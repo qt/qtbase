@@ -112,25 +112,32 @@ bool QCoreTextFontEngine::ct_getSfntTable(void *user_data, uint tag, uchar *buff
 
 QFont::Weight QCoreTextFontEngine::qtWeightFromCFWeight(float value)
 {
-    if (value >= kCTFontWeightBlack)
-        return QFont::Black;
-    if (value >= kCTFontWeightHeavy)
-        return QFont::ExtraBold;
-    if (value >= kCTFontWeightBold)
-        return QFont::Bold;
-    if (value >= kCTFontWeightSemibold)
-        return QFont::DemiBold;
-    if (value >= kCTFontWeightMedium)
-        return QFont::Medium;
-    if (value == kCTFontWeightRegular)
-        return QFont::Normal;
-    if (value <= kCTFontWeightUltraLight)
-        return QFont::Thin;
-    if (value <= kCTFontWeightThin)
-        return QFont::ExtraLight;
-    if (value <= kCTFontWeightLight)
-        return QFont::Light;
-    return QFont::Normal;
+#define COMPARE_WEIGHT_DISTANCE(ct_weight, qt_weight) \
+    { \
+        float d; \
+        if ((d = qAbs(value - ct_weight)) < distance) { \
+            distance = d; \
+            ret = qt_weight; \
+        } \
+    }
+
+    float distance = qAbs(value - kCTFontWeightBlack);
+    QFont::Weight ret = QFont::Black;
+
+    // Compare distance to system weight to find the closest match.
+    // (Note: Must go from high to low, so that midpoints are rounded up)
+    COMPARE_WEIGHT_DISTANCE(kCTFontWeightHeavy, QFont::ExtraBold);
+    COMPARE_WEIGHT_DISTANCE(kCTFontWeightBold, QFont::Bold);
+    COMPARE_WEIGHT_DISTANCE(kCTFontWeightSemibold, QFont::DemiBold);
+    COMPARE_WEIGHT_DISTANCE(kCTFontWeightMedium, QFont::Medium);
+    COMPARE_WEIGHT_DISTANCE(kCTFontWeightRegular, QFont::Normal);
+    COMPARE_WEIGHT_DISTANCE(kCTFontWeightLight, QFont::Light);
+    COMPARE_WEIGHT_DISTANCE(kCTFontWeightThin, QFont::ExtraLight);
+    COMPARE_WEIGHT_DISTANCE(kCTFontWeightUltraLight, QFont::Thin);
+
+#undef COMPARE_WEIGHT_DISTANCE
+
+    return ret;
 }
 
 static void loadAdvancesForGlyphs(CTFontRef ctfont,

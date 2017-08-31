@@ -1308,6 +1308,7 @@ void tst_QSslCertificate::version()
 
 void tst_QSslCertificate::pkcs12()
 {
+    // See pkcs12/README for how to generate the PKCS12 files used here.
     if (!QSslSocket::supportsSsl()) {
         qWarning("SSL not supported, skipping test");
         return;
@@ -1349,6 +1350,15 @@ void tst_QSslCertificate::pkcs12()
     QVERIFY(!caCerts.isEmpty());
     QCOMPARE(caCerts.first(), caCert.first());
     QCOMPARE(caCerts, caCert);
+
+    // QTBUG-62335 - Fail (found no private key) but don't crash:
+    QFile nocert(testDataDir + QLatin1String("/pkcs12/leaf-nokey.p12"));
+    ok = nocert.open(QIODevice::ReadOnly);
+    QVERIFY(ok);
+    QTest::ignoreMessage(QtWarningMsg, "Unable to convert private key");
+    ok = QSslCertificate::importPkcs12(&nocert, &key, &cert, &caCerts);
+    QVERIFY(!ok);
+    nocert.close();
 }
 
 #endif // QT_NO_SSL

@@ -62,6 +62,7 @@ contains(TEMPLATE, ".*app"):!build_pass: {
     isEmpty(QML_ROOT_PATH): \
         QML_ROOT_PATH = $$_PRO_FILE_PWD_
     FILE_CONTENT += "   \"qml-root-path\": $$emitString($$QML_ROOT_PATH),"
+    FILE_CONTENT += "   \"stdcpp-path\": $$emitString($$ANDROID_STDCPP_PATH),"
 
     FILE_CONTENT += "   \"application-binary\": $$emitString($$absolute_path($$DESTDIR, $$OUT_PWD)/$$TARGET)"
     FILE_CONTENT += "}"

@@ -141,7 +141,7 @@ inline qfloat16::operator float() const Q_DECL_NOTHROW
 #elif defined (__ARM_FP16_FORMAT_IEEE)
     __fp16 f16;
     memcpy(&f16, &b16, sizeof(quint16));
-    return f16;
+    return float(f16);
 #else
     quint32 u = mantissatable[offsettable[b16 >> 10] + (b16 & 0x3ff)]
                 + exponenttable[b16 >> 10];

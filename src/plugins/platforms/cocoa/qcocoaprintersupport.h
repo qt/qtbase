@@ -53,7 +53,7 @@ public:
     QCocoaPrinterSupport();
     ~QCocoaPrinterSupport();
 
-    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode) Q_DECL_OVERRIDE;
+    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) Q_DECL_OVERRIDE;
     QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode) Q_DECL_OVERRIDE;
 
     QPrintDevice createPrintDevice(const QString &id) Q_DECL_OVERRIDE;

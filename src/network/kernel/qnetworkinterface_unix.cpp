@@ -60,11 +60,6 @@
 #  define QT_NO_GETIFADDRS
 #endif
 
-#ifdef Q_OS_ANDROID
-// android lacks if_nameindex
-# define QT_NO_IPV6IFNAME
-#endif
-
 #ifdef Q_OS_HAIKU
 # include <sys/sockio.h>
 # define IFF_RUNNING 0x0001

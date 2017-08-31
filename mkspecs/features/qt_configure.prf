@@ -926,6 +926,9 @@ defineTest(qtConfTest_compile) {
     use_gold_linker: \
         qmake_configs += "use_gold_linker"
 
+    # disable warnings from the builds, since they're just noise at this point.
+    qmake_configs += "warn_off"
+
     # add console to the CONFIG variable when running the tests, so that they
     # can work with a regular main() entry point on Windows.
     qmake_configs += "console"

@@ -51,11 +51,15 @@ QT_BEGIN_NAMESPACE
 
 extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
 
-QMacPrintEngine::QMacPrintEngine(QPrinter::PrinterMode mode) : QPaintEngine(*(new QMacPrintEnginePrivate))
+QMacPrintEngine::QMacPrintEngine(QPrinter::PrinterMode mode, const QString &deviceId)
+    : QPaintEngine(*(new QMacPrintEnginePrivate))
 {
     Q_D(QMacPrintEngine);
     d->mode = mode;
-    d->m_printDevice.reset(new QCocoaPrintDevice(QCocoaPrinterSupport().defaultPrintDeviceId()));
+    QString id = deviceId;
+    if (id.isEmpty())
+        id = QCocoaPrinterSupport().defaultPrintDeviceId();
+    d->m_printDevice.reset(new QCocoaPrintDevice(id));
     d->m_pageLayout.setPageSize(d->m_printDevice->defaultPageSize());
     d->initialize();
 }

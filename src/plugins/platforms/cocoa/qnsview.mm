@@ -511,10 +511,12 @@ static QTouchDevice *touchDevice = 0;
     if (!m_platformWindow)
         return;
 
+#ifndef QT_NO_TABLETEVENT
     // Tablet events may come in via the mouse event handlers,
     // check if this is a valid tablet event first.
     if ([self handleTabletEvent: theEvent])
         return;
+#endif
 
     QPointF qtWindowPoint;
     QPointF qtScreenPoint;
@@ -902,6 +904,7 @@ static QTouchDevice *touchDevice = 0;
     m_platformWindow->m_enterLeaveTargetWindow = 0;
 }
 
+#ifndef QT_NO_TABLETEVENT
 struct QCocoaTabletDeviceData
 {
     QTabletEvent::TabletDevice device;
@@ -1072,6 +1075,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         QWindowSystemInterface::handleTabletLeaveProximityEvent(timestamp, deviceData.device, deviceData.pointerType, deviceData.uid);
     }
 }
+#endif
 
 - (bool)shouldSendSingleTouch
 {

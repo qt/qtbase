@@ -1,8 +1,19 @@
-The PKCS#12 bundle was created by running the following on
-in the qsslsocket/certs directory:
+The PKCS#12 bundle was created by running the following in an
+interactive shell in ../../qsslsocket/certs/:
 
-openssl pkcs12 -export -in leaf.crt -inkey leaf.key \
-               -out leaf.p12 \
+openssl pkcs12 -export -in leaf.crt \
+               -inkey leaf.key -out leaf.p12 \
                -certfile inter.crt -CAfile ca.crt
 
-No password was provided.
+An empty password was provided (twice).  The pkcs.crt and pkcs.key
+files were then copied here and leaf.p12 was moved here.
+
+
+The test-case with no private key (in a valid PKCS12 file) was created
+similarly but with the command adjusted to:
+
+openssl pkcs12 -export -in leaf.crt \
+               -nokeys -out leaf-nokey.p12 \
+               -certfile inter.crt -CAfile ca.crt
+
+The file leaf-nokey.p12 was then moved here.
