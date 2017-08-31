@@ -1271,7 +1271,7 @@ void Generator::generateStaticMetacall()
                 continue;
             anythingUsed = true;
             fprintf(out, "        {\n");
-            fprintf(out, "            typedef %s (%s::*_t)(",f.type.rawName.constData() , cdef->classname.constData());
+            fprintf(out, "            using _t = %s (%s::*)(",f.type.rawName.constData() , cdef->classname.constData());
 
             int argsCount = f.arguments.count();
             for (int j = 0; j < argsCount; ++j) {
