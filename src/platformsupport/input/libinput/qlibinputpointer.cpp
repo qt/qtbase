@@ -96,21 +96,28 @@ void QLibInputPointer::processMotion(libinput_event_pointer *e)
 
 void QLibInputPointer::processAxis(libinput_event_pointer *e)
 {
+    double value; // default axis value is 15 degrees per wheel click
+    QPoint angleDelta;
 #if !QT_CONFIG(libinput_axis_api)
-    const double v = libinput_event_pointer_get_axis_value(e) * 120;
-    const Qt::Orientation ori = libinput_event_pointer_get_axis(e) == LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL
-        ? Qt::Vertical : Qt::Horizontal;
-    QWindowSystemInterface::handleWheelEvent(Q_NULLPTR, m_pos, m_pos, qRound(-v), ori, QGuiApplication::keyboardModifiers());
+    value = libinput_event_pointer_get_axis_value(e);
+    if (libinput_event_pointer_get_axis(e) == LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL)
+        angleDelta.setY(qRound(value));
+    else
+        angleDelta.setX(qRound(value));
 #else
     if (libinput_event_pointer_has_axis(e, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL)) {
-        const double v = libinput_event_pointer_get_axis_value(e, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL) * 120;
-        QWindowSystemInterface::handleWheelEvent(Q_NULLPTR, m_pos, m_pos, qRound(-v), Qt::Vertical, QGuiApplication::keyboardModifiers());
+        value = libinput_event_pointer_get_axis_value(e, LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+        angleDelta.setY(qRound(value));
     }
     if (libinput_event_pointer_has_axis(e, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL)) {
-        const double v = libinput_event_pointer_get_axis_value(e, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL) * 120;
-        QWindowSystemInterface::handleWheelEvent(Q_NULLPTR, m_pos, m_pos, qRound(-v), Qt::Horizontal, QGuiApplication::keyboardModifiers());
+        value = libinput_event_pointer_get_axis_value(e, LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+        angleDelta.setX(qRound(value));
     }
 #endif
+    const int factor = 8;
+    angleDelta *= -factor;
+    Qt::KeyboardModifiers mods = QGuiApplication::keyboardModifiers();
+    QWindowSystemInterface::handleWheelEvent(nullptr, m_pos, m_pos, QPoint(), angleDelta, mods);
 }
 
 void QLibInputPointer::setPos(const QPoint &pos)
