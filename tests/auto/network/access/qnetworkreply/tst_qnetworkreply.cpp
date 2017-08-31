@@ -30,6 +30,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QCryptographicHash>
 #include <QtCore/QDataStream>
+#include <QtCore/QTextStream>
 #include <QtCore/QUrl>
 #include <QtCore/QEventLoop>
 #include <QtCore/QFile>
@@ -527,7 +528,9 @@ static void setupSslServer(QSslSocket* serverSocket)
 }
 #endif
 
-// Does not work for POST/PUT!
+// NOTE: MiniHttpServer has a very limited support of PUT/POST requests! Make
+// sure you understand the server's code before PUTting/POSTing data (and
+// probably you'll have to update the logic).
 class MiniHttpServer: public QTcpServer
 {
     Q_OBJECT
@@ -541,6 +544,7 @@ public:
     bool ipv6;
     bool multiple;
     int totalConnections;
+    bool parseHeaders = false;
 
     MiniHttpServer(const QByteArray &data, bool ssl = false, QThread *thread = 0, bool useipv6 = false)
         : dataToTransmit(data), doClose(true), doSsl(ssl), ipv6(useipv6),
@@ -564,6 +568,12 @@ public:
     void setDataToTransmit(const QByteArray &data)
     {
         dataToTransmit = data;
+    }
+
+    void clearHeaderParserState()
+    {
+        expectPayload = false;
+        receivedData.clear();
     }
 
 protected:
@@ -635,13 +645,29 @@ private slots:
     }
 
 public slots:
+
     void readyReadSlot()
     {
         Q_ASSERT(!client.isNull());
+        if (expectPayload) {
+            // NOTE: this works only for the test using POST/PUT requests to this
+            // local HTTP server, fortunately we know that data is very small
+            // (7 bytes) and we can safely read/discard it here:
+            client->readAll();
+            return reply();
+        }
+
         receivedData += client->readAll();
         int doubleEndlPos = receivedData.indexOf("\r\n\r\n");
 
         if (doubleEndlPos != -1) {
+            if (parseHeaders) {
+                parseRequest();
+                if (expectPayload && doubleEndlPos + 4 == receivedData.size()) {
+                    // Wait for more incoming (POST/PUT) data.
+                    return;
+                }
+            }
             // multiple requests incoming. remove the bytes of the current one
             if (multiple)
                 receivedData.remove(0, doubleEndlPos+4);
@@ -664,6 +690,18 @@ public slots:
     {
         ready.release();
     }
+
+private:
+    void parseRequest()
+    {
+        Q_ASSERT(parseHeaders);
+        QTextStream parser(receivedData, QIODevice::ReadOnly);
+        const QString line(parser.readLine());
+        expectPayload = line.startsWith(QLatin1Literal("POST"))
+                        || line.startsWith(QLatin1Literal("PUT"));
+    }
+
+    bool expectPayload = false;
 };
 
 class MyCookieJar: public QNetworkCookieJar
@@ -7219,6 +7257,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     manager.setCache(diskCache);
 
     MiniHttpServer server(getReply);
+    server.parseHeaders = true;
 
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     QNetworkReplyPtr reply(manager.get(request));
@@ -7230,6 +7269,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->readAll(), QByteArray("GET"));
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
 
+    server.clearHeaderParserState();
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
@@ -7239,6 +7279,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->readAll(), QByteArray("GET"));
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), true);
 
+    server.clearHeaderParserState();
     server.setDataToTransmit(postReply);
     request.setRawHeader("Content-Type", "text/plain");
     reply.reset(manager.post(request, postData));
@@ -7251,6 +7292,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->readAll(), QByteArray("POST"));
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
 
+    server.clearHeaderParserState();
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
 
@@ -7261,6 +7303,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->readAll(), QByteArray("GET"));
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
 
+    server.clearHeaderParserState();
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
 
@@ -7271,6 +7314,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->readAll(), QByteArray("GET"));
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), true);
 
+    server.clearHeaderParserState();
     server.setDataToTransmit(putReply);
     reply.reset(manager.put(request, postData));
 
@@ -7280,6 +7324,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
 
+    server.clearHeaderParserState();
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
 
@@ -7290,6 +7335,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->readAll(), QByteArray("GET"));
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
 
+    server.clearHeaderParserState();
     server.setDataToTransmit(getReply);
     reply.reset(manager.get(request));
 
