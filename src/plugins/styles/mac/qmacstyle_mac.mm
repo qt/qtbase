@@ -1922,85 +1922,85 @@ static QCocoaWidget cocoaWidgetFromHIThemeButtonKind(ThemeButtonKind kind)
     return w;
 }
 
+static NSButton *makeButton(NSButtonType type, NSBezelStyle style)
+{
+    NSButton *b = [[NSButton alloc] init];
+    b.title = @"";
+    b.buttonType = type;
+    b.bezelStyle = style;
+    return b;
+}
+
 NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
 {
-    NSView *bv = cocoaControls[widget];
-    if (!bv) {
+    NSView *bv = cocoaControls.value(widget, nil);
 
-        if (widget.first == QCocoaPopupButton
-            || widget.first == QCocoaPullDownButton)
-            bv = [[NSPopUpButton alloc] init];
-        else if (widget.first == QCocoaComboBox)
+    if (!bv) {
+        switch (widget.first) {
+        case QCocoaCheckBox:
+            bv = makeButton(NSSwitchButton, NSRegularSquareBezelStyle);
+            break;
+        case QCocoaDisclosureButton:
+            bv = makeButton(NSOnOffButton, NSDisclosureBezelStyle);
+            break;
+        case QCocoaPopupButton:
+        case QCocoaPullDownButton: {
+            NSPopUpButton *bc = [[NSPopUpButton alloc] init];
+            bc.title = @"";
+            if (widget.first == QCocoaPullDownButton)
+                bc.pullsDown = YES;
+            bv = bc;
+            break;
+        }
+        case QCocoaPushButton:
+            bv = makeButton(NSMomentaryLightButton, NSRoundedBezelStyle);
+            break;
+        case QCocoaRadioButton:
+            bv = makeButton(NSRadioButton, NSRegularSquareBezelStyle);
+            break;
+        case QCocoaComboBox:
             bv = [[NSComboBox alloc] init];
-        else if (widget.first == QCocoaProgressIndicator)
+            break;
+        case QCocoaProgressIndicator:
             bv = [[NSProgressIndicator alloc] init];
-        else if (widget.first == QCocoaIndeterminateProgressIndicator)
+            break;
+        case QCocoaIndeterminateProgressIndicator:
             bv = [[QIndeterminateProgressIndicator alloc] init];
-        else if (widget.first == QCocoaHorizontalScroller)
+            break;
+        case QCocoaHorizontalScroller:
             bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
-        else if (widget.first == QCocoaVerticalScroller)
+            break;
+        case QCocoaVerticalScroller:
             // Cocoa sets the orientation from the view's frame
             // at construction time, and it cannot be changed later.
             bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
-        else if (widget.first == QCocoaHorizontalSlider)
+            break;
+        case QCocoaHorizontalSlider:
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
-        else if (widget.first == QCocoaVerticalSlider)
+            break;
+        case QCocoaVerticalSlider:
             // Cocoa sets the orientation from the view's frame
             // at construction time, and it cannot be changed later.
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
-        else
-            bv = [[NSButton alloc] init];
-
-        switch (widget.first) {
-        case QCocoaDisclosureButton: {
-            NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSOnOffButton;
-            bc.bezelStyle = NSDisclosureBezelStyle;
             break;
-        }
-        case QCocoaCheckBox: {
-            NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSSwitchButton;
-            break;
-        }
-        case QCocoaRadioButton: {
-            NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSRadioButton;
-            break;
-        }
-        case QCocoaPushButton: {
-            NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSMomentaryLightButton;
-            bc.bezelStyle = NSRoundedBezelStyle;
-            break;
-        }
-        case QCocoaPullDownButton: {
-            NSPopUpButton *bc = (NSPopUpButton *)bv;
-            bc.pullsDown = YES;
-            break;
-        }
         default:
             break;
         }
 
-        if ([bv isKindOfClass:[NSButton class]]) {
-            NSButton *bc = (NSButton *)bv;
-            bc.title = @"";
-        }
-
         if ([bv isKindOfClass:[NSControl class]]) {
-            NSCell *bcell = [(NSControl *)bv cell];
+            auto *ctrl = static_cast<NSControl *>(bv);
             switch (widget.second) {
             case QStyleHelper::SizeSmall:
-                bcell.controlSize = NSSmallControlSize;
+                ctrl.controlSize = NSSmallControlSize;
                 break;
             case QStyleHelper::SizeMini:
-                bcell.controlSize = NSMiniControlSize;
+                ctrl.controlSize = NSMiniControlSize;
                 break;
             default:
                 break;
             }
-        } else if ([bv isKindOfClass:[NSProgressIndicator class]]) {
+        } else if (widget.first == QCocoaProgressIndicator ||
+                   widget.first == QCocoaIndeterminateProgressIndicator) {
             auto *pi = static_cast<NSProgressIndicator *>(bv);
             pi.indeterminate = (widget.first == QCocoaIndeterminateProgressIndicator);
             switch (widget.second) {
@@ -2015,7 +2015,7 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
             }
         }
 
-        const_cast<QMacStylePrivate *>(this)->cocoaControls.insert(widget, bv);
+        cocoaControls.insert(widget, bv);
     }
 
     return bv;
@@ -2051,7 +2051,7 @@ NSCell *QMacStylePrivate::cocoaCell(QCocoaWidget widget) const
             break;
         }
 
-        const_cast<QMacStylePrivate *>(this)->cocoaCells.insert(widget, cell);
+        cocoaCells.insert(widget, cell);
     }
 
     return cell;

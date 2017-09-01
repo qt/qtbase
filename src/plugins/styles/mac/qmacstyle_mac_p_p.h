@@ -283,8 +283,8 @@ public:
     mutable QPointer<QFocusFrame> focusWidget;
     QT_MANGLE_NAMESPACE(NotificationReceiver) *receiver;
     NSView *backingStoreNSView;
-    QHash<QCocoaWidget, NSView *> cocoaControls;
-    QHash<QCocoaWidget, NSCell *> cocoaCells;
+    mutable QHash<QCocoaWidget, NSView *> cocoaControls;
+    mutable QHash<QCocoaWidget, NSCell *> cocoaCells;
 
     QFont smallSystemFont;
     QFont miniSystemFont;
