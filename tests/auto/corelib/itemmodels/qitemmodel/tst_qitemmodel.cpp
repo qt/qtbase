@@ -533,9 +533,6 @@ void tst_QItemModel::data()
     // A valid index should have a valid qvariant data
     QVERIFY(currentModel->index(0,0).isValid());
 
-    // shouldn't be able to set data on an invalid index
-    QCOMPARE(currentModel->setData(QModelIndex(), "foo", Qt::DisplayRole), false);
-
     // General Purpose roles
     QVariant variant = currentModel->data(currentModel->index(0,0), Qt::ToolTipRole);
     if (variant.isValid()) {
@@ -605,7 +602,6 @@ void tst_QItemModel::setData()
     QVERIFY(currentModel);
     QSignalSpy spy(currentModel, &QAbstractItemModel::dataChanged);
     QVERIFY(spy.isValid());
-    QCOMPARE(currentModel->setData(QModelIndex(), QVariant()), false);
     QCOMPARE(spy.count(), 0);
 
     QFETCH(bool, isEmpty);
