@@ -250,6 +250,17 @@ public:
     };
     Q_ENUM(LayoutChangeHint)
 
+    enum class CheckIndexOption {
+        NoOption         = 0x0000,
+        IndexIsValid     = 0x0001,
+        DoNotUseParent   = 0x0002,
+        ParentIsInvalid  = 0x0004,
+    };
+    Q_ENUM(CheckIndexOption)
+    Q_DECLARE_FLAGS(CheckIndexOptions, CheckIndexOption)
+
+    Q_REQUIRED_RESULT bool checkIndex(const QModelIndex &index, CheckIndexOptions options = CheckIndexOption::NoOption) const;
+
 Q_SIGNALS:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
     void headerDataChanged(Qt::Orientation orientation, int first, int last);
@@ -342,6 +353,8 @@ private:
     Q_DECLARE_PRIVATE(QAbstractItemModel)
     Q_DISABLE_COPY(QAbstractItemModel)
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemModel::CheckIndexOptions)
 
 inline bool QAbstractItemModel::insertRow(int arow, const QModelIndex &aparent)
 { return insertRows(arow, 1, aparent); }

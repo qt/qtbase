@@ -48,10 +48,13 @@
 #include <qstack.h>
 #include <qbitarray.h>
 #include <qdatetime.h>
+#include <qloggingcategory.h>
 
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcCheckIndex, "qt.core.qabstractitemmodel.checkindex")
 
 QPersistentModelIndexData *QPersistentModelIndexData::create(const QModelIndex &index)
 {
@@ -3320,6 +3323,140 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
     return result;
 }
 
+/*!
+    \enum QAbstractItemModel::CheckIndexOption
+    \since 5.11
+
+    This enum can be used to control the checks performed by
+    QAbstractItemModel::checkIndex().
+
+    \value CheckIndexOption::NoOption No check options are specified.
+
+    \value CheckIndexOption::IndexIsValid The model index passed to
+    QAbstractItemModel::checkIndex() is checked to be a valid model index.
+
+    \value CheckIndexOption::DoNotUseParent Does not perform any check
+    involving the usage of the parent of the index passed to
+    QAbstractItemModel::checkIndex().
+
+    \value CheckIndexOption::ParentIsInvalid The parent of the model index
+    passed to QAbstractItemModel::checkIndex() is checked to be an invalid
+    model index. If both this option and CheckIndexOption::DoNotUseParent
+    are specified, then this option is ignored.
+*/
+
+/*!
+    \since 5.11
+
+    This function checks whether \a index is a legal model index for
+    this model. A legal model index is either an invalid model index, or a
+    valid model index for which all the following holds:
+
+    \list
+
+    \li the index' model is \c{this};
+    \li the index' row is greater or equal than zero;
+    \li the index' row is less than the row count for the index' parent;
+    \li the index' column is greater or equal than zero;
+    \li the index' column is less than the column count for the index' parent.
+
+    \endlist
+
+    The \a options argument may change some of these checks. If \a options
+    contains \c{CheckIndexOption::IndexIsValid}, then \a index must be a valid
+    index; this is useful when reimplementing functions such as \l{data()} or
+    \l{setData()}, which expect valid indexes.
+
+    If \a options contains \c{CheckIndexOption::DoNotUseParent}, then the
+    checks that would call \l{parent()} are omitted; this allows calling this
+    function from a \l{parent()} reimplementation (otherwise, this would result
+    in endless recursion and a crash).
+
+    If \a options does not contain \c{CheckIndexOption::DoNotUseParent}, and it
+    contains \c{CheckIndexOption::ParentIsInvalid}, then an additional check is
+    performed: the parent index is checked for not being valid. This is useful
+    when implementing flat models such as lists or tables, where no model index
+    should have a valid parent index.
+
+    This function returns true if all the checks succeeded, and false otherwise.
+    This allows to use the function in \l{Q_ASSERT} and similar other debugging
+    mechanisms. If some check failed, a warning message will be printed in the
+    \c{qt.core.qabstractitemmodel.checkindex} logging category, containing
+    some information that may be useful for debugging the failure.
+
+    \note This function is a debugging helper for implementing your own item
+    models. When developing complex models, as well as when building
+    complicated model hierarchies (e.g. using proxy models), it is useful to
+    call this function in order to catch bugs relative to illegal model indices
+    (as defined above) accidentally passed to some QAbstractItemModel API.
+
+    \warning Note that it's undefined behavior to pass illegal indices to item
+    models, so applications must refrain from doing so, and not rely on any
+    "defensive" programming that item models could employ to handle illegal
+    indexes gracefully.
+
+    \sa QModelIndex
+*/
+bool QAbstractItemModel::checkIndex(const QModelIndex &index, CheckIndexOptions options) const
+{
+    if (!index.isValid()) {
+        if (options & CheckIndexOption::IndexIsValid) {
+            qCWarning(lcCheckIndex) << "Index" << index << "is not valid (expected valid)";
+            return false;
+        }
+        return true;
+    }
+
+    if (index.model() != this) {
+        qCWarning(lcCheckIndex) << "Index" << index
+                                << "is for model" << index.model()
+                                << "which is different from this model" << this;
+        return false;
+    }
+
+    if (index.row() < 0) {
+        qCWarning(lcCheckIndex) << "Index" << index
+                                << "has negative row" << index.row();
+        return false;
+    }
+
+    if (index.column() < 0) {
+        qCWarning(lcCheckIndex) << "Index" << index
+                                << "has negative column" << index.column();
+        return false;
+    }
+
+    if (!(options & CheckIndexOption::DoNotUseParent)) {
+        const QModelIndex parentIndex = index.parent();
+        if (options & CheckIndexOption::ParentIsInvalid) {
+            if (parentIndex.isValid()) {
+                qCWarning(lcCheckIndex) << "Index" << index
+                                        << "has valid parent" << parentIndex
+                                        << "(expected an invalid parent)";
+                return false;
+            }
+        }
+
+        const int rc = rowCount(parentIndex);
+        if (index.row() >= rc) {
+            qCWarning(lcCheckIndex) << "Index" << index
+                                    << "has out of range row" << index.row()
+                                    << "rowCount() is" << rc;
+            return false;
+        }
+
+        const int cc = columnCount(parentIndex);
+        if (index.column() >= cc) {
+            qCWarning(lcCheckIndex) << "Index" << index
+                                    << "has out of range column" << index.column()
+                                    << "columnCount() is" << cc;
+            return false;
+
+        }
+    }
+
+    return true;
+}
 
 /*!
     \class QAbstractTableModel
