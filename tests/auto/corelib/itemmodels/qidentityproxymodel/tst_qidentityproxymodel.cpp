@@ -360,7 +360,7 @@ class AppendStringProxy : public QIdentityProxyModel
 public:
     QVariant data(const QModelIndex &index, int role) const
     {
-        const QVariant result = sourceModel()->data(index, role);
+        const QVariant result = QIdentityProxyModel::data(index, role);
         if (role != Qt::DisplayRole)
             return result;
         return result.toString() + "_appended";
