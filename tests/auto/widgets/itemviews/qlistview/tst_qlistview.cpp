@@ -38,6 +38,8 @@
 #include <QTimer>
 #include <QtMath>
 #include <QProxyStyle>
+#include <QVBoxLayout>
+#include <QDialog>
 
 #include <QtTest/private/qtesthelpers_p.h>
 #include <QtWidgets/private/qlistview_p.h>
@@ -166,6 +168,7 @@ private slots:
     void taskQTBUG_39902_mutualScrollBars();
     void horizontalScrollingByVerticalWheelEvents();
     void taskQTBUG_7232_AllowUserToControlSingleStep();
+    void taskQTBUG_58749_adjustToContent();
     void taskQTBUG_51086_skippingIndexesInSelectedIndexes();
     void taskQTBUG_47694_indexOutOfBoundBatchLayout();
     void itemAlignment();
@@ -2525,6 +2528,45 @@ void tst_QListView::taskQTBUG_7232_AllowUserToControlSingleStep()
     lv.horizontalScrollBar()->setSingleStep(-1);
     QCOMPARE(vStep1, lv.verticalScrollBar()->singleStep());
     QCOMPARE(hStep1, lv.horizontalScrollBar()->singleStep());
+}
+
+void tst_QListView::taskQTBUG_58749_adjustToContent()
+{
+    QStandardItemModel model;
+    model.setRowCount(20);
+    model.setColumnCount(1);
+    const QString rowStr = QStringLiteral("Row number txt:");
+    for (int u = 0; u < model.rowCount(); ++u)
+      model.setData(model.index(u, 0), rowStr + QString::number(u));
+
+    QDialog w; // It really should work for QWidget, too, but sometimes an event (like move)
+               // is needed to get the resize triggered.
+    QVBoxLayout *l = new QVBoxLayout(&w);
+    l->setSizeConstraint(QLayout::SetFixedSize);
+    auto *view = new QListView;
+    view->setModel(&model);
+    view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    l->addWidget(view);
+    l->setSizeConstraint(QLayout::SetFixedSize);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    const QString longText = "Here we have a row text that is somewhat longer ...";
+
+    QFontMetrics fm(w.font(), &w);
+    QRect r = fm.boundingRect(model.data(model.index(0, 0)).toString());
+    const int longTextWidth = fm.horizontalAdvance(longText);
+    QVERIFY(w.height() > r.height() * model.rowCount());
+    // We have a width longer than the width for the given index data.
+    QVERIFY(w.width() > r.width());
+    // but ... the width should not have a width matching the much longer text.
+    QVERIFY(w.width() < longTextWidth);
+
+    // use the long text and make sure the width is adjusted.
+    model.setData(model.index(0, 0), longText);
+    QApplication::processEvents();
+    QVERIFY(w.width() > longTextWidth);
+    QVERIFY(view->width() >= longTextWidth);
 }
 
 void tst_QListView::taskQTBUG_51086_skippingIndexesInSelectedIndexes()

@@ -3487,7 +3487,47 @@ int QListView::visualIndex(const QModelIndex &index) const
 */
 QSize QListView::viewportSizeHint() const
 {
-    return QAbstractItemView::viewportSizeHint();
+    Q_D(const QListView);
+    // We don't have a nice simple size hint for invalid or wrapping list views.
+    if (!d->model)
+        return QAbstractItemView::viewportSizeHint();
+    const int rc = d->model->rowCount();
+    if (rc == 0 || isWrapping())
+        return QAbstractItemView::viewportSizeHint();
+
+    QStyleOptionViewItem option;
+    initViewItemOption(&option);
+
+    if (uniformItemSizes()) {
+        QSize sz = d->cachedItemSize;
+        if (!sz.isValid()) {
+            QModelIndex idx = d->model->index(0, d->column, d->root);
+            sz = d->itemSize(option, idx);
+        }
+        sz.setHeight(rc * sz.height());
+        return sz;
+    }
+
+    // Using AdjustToContents with a high number of rows will normally not make sense, so we limit
+    // this to default 1000 (that is btw the default for QHeaderView::resizeContentsPrecision())
+    // (By setting the property _q_resizeContentPrecision the user can however override this).
+    int maximumRows = 1000;
+    const QVariant userOverrideValue = property("_q_resizeContentPrecision");
+    if (userOverrideValue.isValid() && userOverrideValue.toInt() > 0) {
+      maximumRows = userOverrideValue.toInt();
+    }
+    const int rowCount = qMin(rc, maximumRows);
+
+    int h = 0;
+    int w = 0;
+
+    for (int row = 0; row < rowCount; ++row) {
+        QModelIndex idx = d->model->index(row, d->column, d->root);
+        QSize itemSize = d->itemSize(option, idx);
+        h += itemSize.height();
+        w = qMax(w, itemSize.width());
+    }
+    return QSize(w, h);
 }
 
 QT_END_NAMESPACE
