@@ -83,6 +83,11 @@ void QLocalSocketPrivate::setSocket(QLocalUnixSocket* socket)
     tcpSocket->setParent(q);
 }
 
+qint64 QLocalSocketPrivate::skip(qint64 maxSize)
+{
+    return tcpSocket->skip(maxSize);
+}
+
 void QLocalSocketPrivate::_q_error(QAbstractSocket::SocketError socketError)
 {
     Q_Q(QLocalSocket);
