@@ -73,7 +73,9 @@
 #include <qgroupbox.h>
 #include <qhash.h>
 #include <qheaderview.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
 #endif
@@ -679,7 +681,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         else if (qobject_cast<const QProgressBar *>(widg))
             ct = QStyle::CT_ProgressBar;
 #endif
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
         else if (qobject_cast<const QLineEdit *>(widg))
             ct = QStyle::CT_LineEdit;
 #endif
@@ -3573,7 +3575,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         // Draw the focus frame for widgets other than QLineEdit (e.g. for line edits in Webkit).
         // Focus frame is drawn outside the rectangle passed in the option-rect.
         if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
             if ((opt->state & State_HasFocus) && !qobject_cast<const QLineEdit*>(w)) {
                 int vmargin = pixelMetric(QStyle::PM_FocusFrameVMargin);
                 int hmargin = pixelMetric(QStyle::PM_FocusFrameHMargin);

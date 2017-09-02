@@ -53,7 +53,9 @@
 #include <qstyleoption.h>
 #include <qdebug.h>
 #include <qglobal.h>
+#if QT_CONFIG(lineedit)
 #include <QtWidgets/qlineedit.h>
+#endif
 #include <qmath.h>
 #include <private/qmath_p.h>
 

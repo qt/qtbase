@@ -158,7 +158,9 @@
 #include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
 #include "QtWidgets/qdesktopwidget.h"
+#if QT_CONFIG(lineedit)
 #include "QtWidgets/qlineedit.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

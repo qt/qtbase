@@ -40,8 +40,6 @@
 #include "qlineedit.h"
 #include "qlineedit_p.h"
 
-#ifndef QT_NO_LINEEDIT
-
 #include "qvariant.h"
 #if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
@@ -625,5 +623,3 @@ int QLineEditPrivate::effectiveRightTextMargin() const
 QT_END_NAMESPACE
 
 #include "moc_qlineedit_p.cpp"
-
-#endif

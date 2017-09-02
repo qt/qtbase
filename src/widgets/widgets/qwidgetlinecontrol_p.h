@@ -53,7 +53,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#ifndef QT_NO_LINEEDIT
 #include "private/qwidget_p.h"
 #include "QtWidgets/qlineedit.h"
 #include "QtGui/qtextlayout.h"
@@ -76,8 +75,9 @@
 #  undef DrawText
 #endif
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(lineedit);
 
+QT_BEGIN_NAMESPACE
 
 class Q_WIDGETS_EXPORT QWidgetLineControl : public QInputControl
 {
@@ -563,7 +563,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LINEEDIT
 
 #endif // QWIDGETLINECONTROL_P_H

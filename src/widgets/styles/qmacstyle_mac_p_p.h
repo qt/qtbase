@@ -74,7 +74,9 @@
 #include <qhash.h>
 #include <qheaderview.h>
 #include <qlayout.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #if QT_CONFIG(listview)
 #include <qlistview.h>
 #endif

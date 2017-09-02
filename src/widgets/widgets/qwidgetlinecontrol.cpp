@@ -39,8 +39,6 @@
 
 #include "qwidgetlinecontrol_p.h"
 
-#ifndef QT_NO_LINEEDIT
-
 #if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
 #endif
@@ -1975,5 +1973,3 @@ bool QWidgetLineControl::isRedoAvailable() const
 QT_END_NAMESPACE
 
 #include "moc_qwidgetlinecontrol_p.cpp"
-
-#endif

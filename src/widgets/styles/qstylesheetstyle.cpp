@@ -51,7 +51,9 @@
 #endif
 #include <qpainter.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #include <private/qwindowsstyle_p.h>
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
@@ -2040,7 +2042,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
 
         }
 #endif
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
         // LineEdit sets Sunken flag to indicate Sunken frame (argh)
         if (const QLineEdit *lineEdit = qobject_cast<const QLineEdit *>(obj)) {
             state &= ~QStyle::State_Sunken;
@@ -2388,7 +2390,7 @@ static QWidget *embeddedWidget(QWidget *w)
 */
 static QWidget *containerWidget(const QWidget *w)
 {
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     if (qobject_cast<const QLineEdit *>(w)) {
         //if the QLineEdit is an embeddedWidget, we need the rule of the real widget
 #if QT_CONFIG(combobox)
@@ -2400,7 +2402,7 @@ static QWidget *containerWidget(const QWidget *w)
             return w->parentWidget();
 #endif
     }
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
 
 #if QT_CONFIG(scrollarea)
     if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w->parentWidget())) {
@@ -2461,7 +2463,7 @@ static quint64 extendedPseudoClass(const QWidget *w)
         pc |= (combo->isEditable() ? PseudoClass_Editable : PseudoClass_ReadOnly);
     } else
 #endif
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     if (const QLineEdit *edit = qobject_cast<const QLineEdit *>(w)) {
         pc |= (edit->isReadOnly() ? PseudoClass_ReadOnly : PseudoClass_Editable);
     } else

@@ -49,7 +49,9 @@
 #include <qevent.h>
 #include <qstring.h>
 #include <qdebug.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #include <qtextedit.h>
 #include <qplaintextedit.h>
 #include <qapplication.h>
@@ -536,7 +538,7 @@ bool QAbstractItemDelegatePrivate::editorEventFilter(QObject *object, QEvent *ev
 
 bool QAbstractItemDelegatePrivate::tryFixup(QWidget *editor)
 {
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     if (QLineEdit *e = qobject_cast<QLineEdit*>(editor)) {
         if (!e->hasAcceptableInput()) {
 #if QT_CONFIG(validator)
@@ -551,7 +553,7 @@ bool QAbstractItemDelegatePrivate::tryFixup(QWidget *editor)
     }
 #else
     Q_UNUSED(editor)
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
 
     return true;
 }

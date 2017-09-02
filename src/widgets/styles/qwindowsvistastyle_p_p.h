@@ -67,7 +67,9 @@
 #include <qpushbutton.h>
 #endif
 #include <qradiobutton.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #include <qgroupbox.h>
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>

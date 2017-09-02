@@ -42,7 +42,9 @@
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
 #include <qbrush.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #include <qtextedit.h>
 #include <qplaintextedit.h>
 #include <qpainter.h>
@@ -501,7 +503,7 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
     // let the editor take up all available space
     //if the editor is not a QLineEdit
     //or it is in a QTableView
-#if QT_CONFIG(tableview) && !defined(QT_NO_LINEEDIT)
+#if QT_CONFIG(tableview) && QT_CONFIG(lineedit)
     if (qobject_cast<QExpandingLineEdit*>(editor) && !qobject_cast<const QTableView*>(widget))
         opt.showDecorationSelected = editor->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, editor);
     else

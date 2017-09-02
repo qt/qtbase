@@ -2292,11 +2292,11 @@ void QWindowsVistaStyle::polish(QApplication *app)
 void QWindowsVistaStyle::polish(QWidget *widget)
 {
     QWindowsXPStyle::polish(widget);
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     if (qobject_cast<QLineEdit*>(widget))
         widget->setAttribute(Qt::WA_Hover);
     else
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
     if (qobject_cast<QGroupBox*>(widget))
         widget->setAttribute(Qt::WA_Hover);
     else if (qobject_cast<QCommandLinkButton*>(widget)) {
@@ -2353,11 +2353,11 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
 
     d->stopAnimation(widget);
 
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     if (qobject_cast<QLineEdit*>(widget))
         widget->setAttribute(Qt::WA_Hover, false);
     else
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
     if (qobject_cast<QGroupBox*>(widget))
         widget->setAttribute(Qt::WA_Hover, false);
     else if (qobject_cast<QMessageBox *> (widget)) {

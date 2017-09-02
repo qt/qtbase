@@ -76,7 +76,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         return iface;
 
     if (false) {
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     } else if (classname == QLatin1String("QLineEdit")) {
         if (widget->objectName() == QLatin1String("qt_spinbox_lineedit"))
             iface = 0;

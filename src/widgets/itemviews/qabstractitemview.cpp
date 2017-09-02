@@ -49,7 +49,9 @@
 #include <qscrollbar.h>
 #include <qtooltip.h>
 #include <qdatetime.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #if QT_CONFIG(spinbox)
 #include <qspinbox.h>
 #endif
@@ -4217,7 +4219,7 @@ QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
             QWidget *focusWidget = w;
             while (QWidget *fp = focusWidget->focusProxy())
                 focusWidget = fp;
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
             if (QLineEdit *le = qobject_cast<QLineEdit*>(focusWidget))
                 le->selectAll();
 #endif

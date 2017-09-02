@@ -3,8 +3,6 @@
 HEADERS += \
         widgets/qframe.h \
         widgets/qframe_p.h \
-        widgets/qlineedit.h \
-        widgets/qlineedit_p.h \
         widgets/qmenu.h \
         widgets/qmenu_p.h \
         widgets/qslider.h \
@@ -18,15 +16,12 @@ HEADERS += \
         widgets/qabstractscrollarea_p.h \
         widgets/qfocusframe.h \
         widgets/qwidgetanimator_p.h \
-        widgets/qwidgetlinecontrol_p.h \
         widgets/qtoolbararealayout_p.h \
         widgets/qplaintextedit.h \
         widgets/qplaintextedit_p.h
 
 SOURCES += \
         widgets/qframe.cpp \
-        widgets/qlineedit_p.cpp \
-        widgets/qlineedit.cpp \
         widgets/qmenu.cpp \
         widgets/qslider.cpp \
         widgets/qtextedit.cpp \
@@ -36,7 +31,6 @@ SOURCES += \
         widgets/qabstractscrollarea.cpp \
         widgets/qfocusframe.cpp \
         widgets/qwidgetanimator.cpp \
-        widgets/qwidgetlinecontrol.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp
 
@@ -158,6 +152,18 @@ qtConfig(lcdnumber) {
 
     SOURCES += \
         widgets/qlcdnumber.cpp
+}
+
+qtConfig(lineedit) {
+    HEADERS += \
+        widgets/qlineedit.h \
+        widgets/qlineedit_p.h \
+        widgets/qwidgetlinecontrol_p.h
+
+    SOURCES += \
+        widgets/qlineedit_p.cpp \
+        widgets/qlineedit.cpp \
+        widgets/qwidgetlinecontrol.cpp
 }
 
 qtConfig(mainwindow) {

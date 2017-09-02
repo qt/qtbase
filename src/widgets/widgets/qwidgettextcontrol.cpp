@@ -79,7 +79,9 @@
 #include <qinputmethod.h>
 #include <qtooltip.h>
 #include <qstyleoption.h>
+#if QT_CONFIG(lineedit)
 #include <QtWidgets/qlineedit.h>
+#endif
 #include <QtGui/qaccessible.h>
 #include <QtCore/qmetaobject.h>
 
@@ -3302,7 +3304,7 @@ void QUnicodeControlCharacterMenu::menuActionTriggered()
     if (QWidgetTextControl *control = qobject_cast<QWidgetTextControl *>(editWidget)) {
         control->insertPlainText(str);
     }
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     if (QLineEdit *edit = qobject_cast<QLineEdit *>(editWidget)) {
         edit->insert(str);
         return;

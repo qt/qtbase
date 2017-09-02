@@ -50,7 +50,9 @@
 #if QT_CONFIG(label)
 #include <qlabel.h>
 #endif
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #if QT_CONFIG(spinbox)
 #include <qspinbox.h>
 #endif
@@ -284,7 +286,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         sb->setMaximum(DBL_MAX);
         return sb; }
 #endif
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     case QVariant::String:
     default: {
         // the default editor is a lineedit
@@ -537,7 +539,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     \reimp
 */
 
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
 
 QExpandingLineEdit::QExpandingLineEdit(QWidget *parent)
     : QLineEdit(parent), originalWidth(-1), widgetOwnsGeometry(false)
@@ -597,7 +599,7 @@ void QExpandingLineEdit::resizeToContents()
     }
 }
 
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
 
 #if QT_CONFIG(combobox)
 
@@ -622,7 +624,7 @@ bool QBooleanComboBox::value() const
 
 QT_END_NAMESPACE
 
-#if !defined(QT_NO_LINEEDIT) || QT_CONFIG(combobox)
+#if QT_CONFIG(lineedit) || QT_CONFIG(combobox)
 #include "qitemeditorfactory.moc"
 #endif
 

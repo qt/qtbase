@@ -38,7 +38,9 @@
 ****************************************************************************/
 
 #include "qtextedit_p.h"
+#if QT_CONFIG(lineedit)
 #include "qlineedit.h"
+#endif
 #if QT_CONFIG(textbrowser)
 #include "qtextbrowser.h"
 #endif
