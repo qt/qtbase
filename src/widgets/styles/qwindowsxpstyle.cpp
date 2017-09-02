@@ -70,7 +70,9 @@
 #include <qscrollbar.h>
 #endif
 #include <qheaderview.h>
+#if QT_CONFIG(spinbox)
 #include <qspinbox.h>
+#endif
 #if QT_CONFIG(listview)
 #include <qlistview.h>
 #endif
@@ -383,10 +385,10 @@ bool QWindowsXPStylePrivate::isLineEditBaseColorSet(const QStyleOption *option, 
         // Since spin box includes a line edit we need to resolve the palette mask also from
         // the parent, as while the color is always correct on the palette supplied by panel,
         // the mask can still be empty. If either mask specifies custom base color, use that.
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
         if (const QAbstractSpinBox *spinbox = qobject_cast<QAbstractSpinBox*>(widget->parentWidget()))
             resolveMask |= spinbox->palette().resolve();
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
     }
     return (resolveMask & (1 << QPalette::Base)) != 0;
 }
@@ -1163,10 +1165,10 @@ void QWindowsXPStyle::polish(QWidget *widget)
         || qobject_cast<QScrollBar*>(widget)
         || qobject_cast<QSlider*>(widget)
         || qobject_cast<QHeaderView*>(widget)
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
         || qobject_cast<QAbstractSpinBox*>(widget)
         || qobject_cast<QSpinBox*>(widget)
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
         ) {
         widget->setAttribute(Qt::WA_Hover);
     }
@@ -1238,10 +1240,10 @@ void QWindowsXPStyle::unpolish(QWidget *widget)
         || qobject_cast<QScrollBar*>(widget)
         || qobject_cast<QSlider*>(widget)
         || qobject_cast<QHeaderView*>(widget)
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
         || qobject_cast<QAbstractSpinBox*>(widget)
         || qobject_cast<QSpinBox*>(widget)
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
         ) {
         widget->setAttribute(Qt::WA_Hover, false);
     }
@@ -2507,7 +2509,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         flags |= State_MouseOver;
 
     switch (cc) {
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(option))
         {
@@ -2559,7 +2561,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             }
         }
         break;
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option))

@@ -1774,7 +1774,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
             }
         }
         break;
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(option))
         {
@@ -1832,7 +1832,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
             }
         }
         break;
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
     default:
         QWindowsXPStyle::drawComplexControl(control, option, painter, widget);
         break;

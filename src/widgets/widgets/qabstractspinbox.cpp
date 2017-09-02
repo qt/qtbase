@@ -43,8 +43,6 @@
 #include <private/qlineedit_p.h>
 #include <qabstractspinbox.h>
 
-#ifndef QT_NO_SPINBOX
-
 #include <qapplication.h>
 #include <qstylehints.h>
 #include <qclipboard.h>
@@ -2145,5 +2143,3 @@ QVariant QAbstractSpinBoxPrivate::variantBound(const QVariant &min,
 QT_END_NAMESPACE
 
 #include "moc_qabstractspinbox.cpp"
-
-#endif // QT_NO_SPINBOX

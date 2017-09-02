@@ -58,6 +58,7 @@
 #endif
 #include <qpainter.h>
 #include <qpropertyanimation.h>
+#include <qvalidator.h>
 
 QT_BEGIN_NAMESPACE
 

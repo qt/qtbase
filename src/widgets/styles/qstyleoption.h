@@ -41,8 +41,11 @@
 #define QSTYLEOPTION_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
+#include <QtCore/qlocale.h>
 #include <QtCore/qvariant.h>
+#if QT_CONFIG(spinbox)
 #include <QtWidgets/qabstractspinbox.h>
+#endif
 #include <QtGui/qicon.h>
 #include <QtGui/qmatrix.h>
 #include <QtWidgets/qslider.h>
@@ -533,7 +536,7 @@ protected:
 };
 #endif // QT_NO_SLIDER
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
 class Q_WIDGETS_EXPORT QStyleOptionSpinBox : public QStyleOptionComplex
 {
 public:
@@ -550,7 +553,7 @@ public:
 protected:
     QStyleOptionSpinBox(int version);
 };
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
 class Q_WIDGETS_EXPORT QStyleOptionToolButton : public QStyleOptionComplex
 {

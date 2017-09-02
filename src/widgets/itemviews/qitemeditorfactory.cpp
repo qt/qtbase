@@ -51,7 +51,9 @@
 #include <qlabel.h>
 #endif
 #include <qlineedit.h>
+#if QT_CONFIG(spinbox)
 #include <qspinbox.h>
+#endif
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <limits.h>
@@ -80,7 +82,7 @@ public:
 #endif // QT_CONFIG(combobox)
 
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
 
 class QUIntSpinBox : public QSpinBox
 {
@@ -107,7 +109,7 @@ Q_SIGNALS:
     void uintValueChanged();
 };
 
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
 /*!
     \class QItemEditorFactory
@@ -242,7 +244,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         cb->setFrame(false);
         return cb; }
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case QVariant::UInt: {
         QSpinBox *sb = new QUIntSpinBox(parent);
         sb->setFrame(false);
@@ -274,7 +276,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
     case QVariant::Pixmap:
         return new QLabel(parent);
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case QVariant::Double: {
         QDoubleSpinBox *sb = new QDoubleSpinBox(parent);
         sb->setFrame(false);
@@ -306,7 +308,7 @@ QByteArray QDefaultItemEditorFactory::valuePropertyName(int userType) const
     case QVariant::Bool:
         return "currentIndex";
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case QVariant::UInt:
     case QVariant::Int:
     case QVariant::Double:

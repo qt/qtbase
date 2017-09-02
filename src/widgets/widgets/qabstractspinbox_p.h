@@ -54,14 +54,14 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qabstractspinbox.h"
 
-#ifndef QT_NO_SPINBOX
-
 #include "QtWidgets/qlineedit.h"
 #include "QtWidgets/qstyleoption.h"
 #include "QtGui/qvalidator.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qvariant.h"
 #include "private/qwidget_p.h"
+
+QT_REQUIRE_CONFIG(spinbox);
 
 QT_BEGIN_NAMESPACE
 
@@ -164,7 +164,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SPINBOX
 
 #endif // QABSTRACTSPINBOX_P_H

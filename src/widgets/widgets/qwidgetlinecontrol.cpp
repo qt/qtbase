@@ -57,6 +57,8 @@
 #include "qgraphicssceneevent.h"
 #endif
 
+#include "qvalidator.h"
+
 QT_BEGIN_NAMESPACE
 
 

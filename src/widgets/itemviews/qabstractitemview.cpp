@@ -50,7 +50,9 @@
 #include <qtooltip.h>
 #include <qdatetime.h>
 #include <qlineedit.h>
+#if QT_CONFIG(spinbox)
 #include <qspinbox.h>
+#endif
 #include <qheaderview.h>
 #include <qstyleditemdelegate.h>
 #include <private/qabstractitemview_p.h>
@@ -4219,7 +4221,7 @@ QWidget *QAbstractItemViewPrivate::editor(const QModelIndex &index,
             if (QLineEdit *le = qobject_cast<QLineEdit*>(focusWidget))
                 le->selectAll();
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
             if (QSpinBox *sb = qobject_cast<QSpinBox*>(focusWidget))
                 sb->selectAll();
             else if (QDoubleSpinBox *dsb = qobject_cast<QDoubleSpinBox*>(focusWidget))

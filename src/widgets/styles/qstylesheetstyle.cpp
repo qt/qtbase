@@ -98,7 +98,9 @@
 #include <qdialog.h>
 #endif
 #include <private/qwidget_p.h>
+#if QT_CONFIG(spinbox)
 #include <QAbstractSpinBox>
+#endif
 #if QT_CONFIG(label)
 #include <QLabel>
 #endif
@@ -1651,7 +1653,7 @@ int QStyleSheetStyle::nativeFrameWidth(const QWidget *w)
 {
     QStyle *base = baseStyle();
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     if (qobject_cast<const QAbstractSpinBox *>(w))
         return base->pixelMetric(QStyle::PM_SpinBoxFrameWidth, 0, w);
 #endif
@@ -1809,7 +1811,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
         case PseudoElement_SpinBoxDownButton:
         case PseudoElement_SpinBoxUpArrow:
         case PseudoElement_SpinBoxDownArrow:
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
             if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
                 bool on = false;
                 bool up = pseudoElement == PseudoElement_SpinBoxUpButton
@@ -1820,7 +1822,7 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                     on = true;
                 state |= (on ? QStyle::State_On : QStyle::State_Off);
             }
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
             break;
         case PseudoElement_GroupBoxTitle:
             state |= (complex->state & (QStyle::State_MouseOver | QStyle::State_Sunken));
@@ -1855,11 +1857,11 @@ QRenderRule QStyleSheetStyle::renderRule(const QObject *obj, const QStyleOption 
                 extraClass |= PseudoClass_ReadOnly;
             else
                 extraClass |= PseudoClass_Editable;
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
         } else if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             if (!spin->frame)
                 extraClass |= PseudoClass_Frameless;
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
         } else if (const QStyleOptionGroupBox *gb = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
             if (gb->features & QStyleOptionFrame::Flat)
                 extraClass |= PseudoClass_Flat;
@@ -2364,7 +2366,7 @@ static QWidget *embeddedWidget(QWidget *w)
     }
 #endif
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     if (QAbstractSpinBox *sb = qobject_cast<QAbstractSpinBox *>(w))
         return sb->findChild<QLineEdit *>();
 #endif
@@ -2393,7 +2395,7 @@ static QWidget *containerWidget(const QWidget *w)
         if (qobject_cast<const QComboBox *>(w->parentWidget()))
             return w->parentWidget();
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
         if (qobject_cast<const QAbstractSpinBox *>(w->parentWidget()))
             return w->parentWidget();
 #endif
@@ -2985,7 +2987,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         }
         break;
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             QStyleOptionSpinBox spinOpt(*spin);
@@ -3048,7 +3050,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             return;
         }
         break;
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *gb = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
@@ -4341,7 +4343,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 
     case PE_PanelLineEdit:
         if (const QStyleOptionFrame *frm = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
             if (w && qobject_cast<const QAbstractSpinBox *>(w->parentWidget())) {
                 QRenderRule spinboxRule = renderRule(w->parentWidget(), opt);
                 if (!spinboxRule.hasNativeBorder() || !spinboxRule.baseStyleCanDraw())
@@ -4994,7 +4996,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
         break;
     case CT_GroupBox:
     case CT_LineEdit:
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
         if (qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : 0))
             return csz; // we only care about the size hint of the line edit
 #endif
@@ -5390,7 +5392,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
         }
         break;
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             QRenderRule upRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
@@ -5449,7 +5451,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                                            : QWindowsStyle::subControlRect(cc, &spinBox, sc, w);
         }
         break;
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *gb = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {

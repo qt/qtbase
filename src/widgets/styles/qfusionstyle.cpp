@@ -66,7 +66,9 @@
 #if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
 #endif
+#if QT_CONFIG(spinbox)
 #include <qspinbox.h>
+#endif
 #if QT_CONFIG(abstractslider)
 #include <qabstractslider.h>
 #endif

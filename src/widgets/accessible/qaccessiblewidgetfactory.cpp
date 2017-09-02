@@ -87,7 +87,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QComboBox")) {
         iface = new QAccessibleComboBox(widget);
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     } else if (classname == QLatin1String("QAbstractSpinBox")) {
         iface = new QAccessibleAbstractSpinBox(widget);
     } else if (classname == QLatin1String("QSpinBox")) {

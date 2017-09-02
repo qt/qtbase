@@ -1,8 +1,6 @@
 # Qt widgets module
 
 HEADERS += \
-        widgets/qabstractspinbox.h \
-        widgets/qabstractspinbox_p.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
         widgets/qlineedit.h \
@@ -10,7 +8,6 @@ HEADERS += \
         widgets/qmenu.h \
         widgets/qmenu_p.h \
         widgets/qslider.h \
-        widgets/qspinbox.h \
         widgets/qtextedit.h \
         widgets/qtextedit_p.h \
         widgets/qtoolbar.h \
@@ -27,13 +24,11 @@ HEADERS += \
         widgets/qplaintextedit_p.h
 
 SOURCES += \
-        widgets/qabstractspinbox.cpp \
         widgets/qframe.cpp \
         widgets/qlineedit_p.cpp \
         widgets/qlineedit.cpp \
         widgets/qmenu.cpp \
         widgets/qslider.cpp \
-        widgets/qspinbox.cpp \
         widgets/qtextedit.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
@@ -254,6 +249,17 @@ qtConfig(scrollbar) {
 qtConfig(sizegrip) {
     HEADERS += widgets/qsizegrip.h
     SOURCES += widgets/qsizegrip.cpp
+}
+
+qtConfig(spinbox) {
+    HEADERS += \
+        widgets/qabstractspinbox.h \
+        widgets/qabstractspinbox_p.h \
+        widgets/qspinbox.h
+
+    SOURCES += \
+        widgets/qabstractspinbox.cpp \
+        widgets/qspinbox.cpp
 }
 
 qtConfig(splashscreen) {

@@ -102,7 +102,9 @@
 #if QT_CONFIG(sizegrip)
 #include <qsizegrip.h>
 #endif
+#if QT_CONFIG(spinbox)
 #include <qspinbox.h>
+#endif
 #if QT_CONFIG(splitter)
 #include <qsplitter.h>
 #endif

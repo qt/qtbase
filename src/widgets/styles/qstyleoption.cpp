@@ -2152,7 +2152,7 @@ QStyleOptionSlider::QStyleOptionSlider(int version)
 */
 #endif // QT_NO_SLIDER
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
 /*!
     \class QStyleOptionSpinBox
     \brief The QStyleOptionSpinBox class is used to describe the
@@ -2256,7 +2256,7 @@ QStyleOptionSpinBox::QStyleOptionSpinBox(int version)
 
     The default value is false, i.e. the spin box has no frame.
 */
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
 /*!
     \class QStyleOptionDockWidget

@@ -40,7 +40,9 @@
 #include "qwizard.h"
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
+#if QT_CONFIG(spinbox)
 #include "qabstractspinbox.h"
+#endif
 #include "qalgorithms.h"
 #include "qapplication.h"
 #include "qboxlayout.h"
@@ -3686,7 +3688,7 @@ bool QWizardPage::isComplete() const
                     return false;
             }
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
             if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(field.object)) {
                 if (!spinBox->hasAcceptableInput())
                     return false;

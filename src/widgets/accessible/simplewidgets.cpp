@@ -78,6 +78,7 @@
 #include <qwindow.h>
 #include <private/qwindowcontainer_p.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtGui/qvalidator.h>
 
 #ifdef Q_OS_MAC
 #include <qfocusframe.h>

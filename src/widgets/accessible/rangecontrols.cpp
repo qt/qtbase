@@ -43,7 +43,9 @@
 #if QT_CONFIG(dial)
 #include <qdial.h>
 #endif
+#if QT_CONFIG(spinbox)
 #include <qspinbox.h>
+#endif
 #if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
 #endif
@@ -51,7 +53,6 @@
 #include <qstyleoption.h>
 #include <qdebug.h>
 #include <qglobal.h>
-#include <QDoubleSpinBox>
 #include <QtWidgets/qlineedit.h>
 #include <qmath.h>
 #include <private/qmath_p.h>
@@ -62,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
 QAccessibleAbstractSpinBox::QAccessibleAbstractSpinBox(QWidget *w)
 : QAccessibleWidget(w, QAccessible::SpinBox), lineEdit(Q_NULLPTR)
 {
@@ -285,7 +286,7 @@ QString QAccessibleDoubleSpinBox::text(QAccessible::Text textType) const
     return QAccessibleWidget::text(textType);
 }
 
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
 #if QT_CONFIG(scrollbar)
 /*!

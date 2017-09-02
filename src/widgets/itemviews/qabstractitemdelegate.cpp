@@ -53,6 +53,7 @@
 #include <qtextedit.h>
 #include <qplaintextedit.h>
 #include <qapplication.h>
+#include <qvalidator.h>
 #include <private/qtextengine_p.h>
 #include <private/qabstractitemdelegate_p.h>
 
