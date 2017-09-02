@@ -52,7 +52,7 @@
 #define LEVEL_H
 
 #include <QJsonObject>
-#include <QList>
+#include <QVector>
 
 #include "character.h"
 
@@ -60,15 +60,21 @@
 class Level
 {
 public:
-    Level();
+    Level() = default;
+    Level(const QString &name);
 
-    const QList<Character> &npcs() const;
-    void setNpcs(const QList<Character> &npcs);
+    QString name() const;
+
+    QVector<Character> npcs() const;
+    void setNpcs(const QVector<Character> &npcs);
 
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
+
+    void print(int indentation = 0) const;
 private:
-    QList<Character> mNpcs;
+    QString mName;
+    QVector<Character> mNpcs;
 };
 //! [0]
 

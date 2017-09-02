@@ -146,40 +146,40 @@ public:
 
     void retranslateUi(QWidget *BackSide)
     {
-        BackSide->setWindowTitle(QApplication::translate("BackSide", "BackSide", Q_NULLPTR));
-        groupBox->setTitle(QApplication::translate("BackSide", "Settings", Q_NULLPTR));
-        label->setText(QApplication::translate("BackSide", "Title:", Q_NULLPTR));
-        hostName->setText(QApplication::translate("BackSide", "Pad Navigator Example", Q_NULLPTR));
-        label_2->setText(QApplication::translate("BackSide", "Modified:", Q_NULLPTR));
-        label_3->setText(QApplication::translate("BackSide", "Extent", Q_NULLPTR));
-        groupBox_2->setTitle(QApplication::translate("BackSide", "Other input", Q_NULLPTR));
+        BackSide->setWindowTitle(QApplication::translate("BackSide", "BackSide", nullptr));
+        groupBox->setTitle(QApplication::translate("BackSide", "Settings", nullptr));
+        label->setText(QApplication::translate("BackSide", "Title:", nullptr));
+        hostName->setText(QApplication::translate("BackSide", "Pad Navigator Example", nullptr));
+        label_2->setText(QApplication::translate("BackSide", "Modified:", nullptr));
+        label_3->setText(QApplication::translate("BackSide", "Extent", nullptr));
+        groupBox_2->setTitle(QApplication::translate("BackSide", "Other input", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
-        ___qtreewidgetitem->setText(0, QApplication::translate("BackSide", "Widgets On Graphics View", Q_NULLPTR));
+        ___qtreewidgetitem->setText(0, QApplication::translate("BackSide", "Widgets On Graphics View", nullptr));
 
         const bool __sortingEnabled = treeWidget->isSortingEnabled();
         treeWidget->setSortingEnabled(false);
         QTreeWidgetItem *___qtreewidgetitem1 = treeWidget->topLevelItem(0);
-        ___qtreewidgetitem1->setText(0, QApplication::translate("BackSide", "QGraphicsProxyWidget", Q_NULLPTR));
+        ___qtreewidgetitem1->setText(0, QApplication::translate("BackSide", "QGraphicsProxyWidget", nullptr));
         QTreeWidgetItem *___qtreewidgetitem2 = ___qtreewidgetitem1->child(0);
-        ___qtreewidgetitem2->setText(0, QApplication::translate("BackSide", "QGraphicsWidget", Q_NULLPTR));
+        ___qtreewidgetitem2->setText(0, QApplication::translate("BackSide", "QGraphicsWidget", nullptr));
         QTreeWidgetItem *___qtreewidgetitem3 = ___qtreewidgetitem2->child(0);
-        ___qtreewidgetitem3->setText(0, QApplication::translate("BackSide", "QObject", Q_NULLPTR));
+        ___qtreewidgetitem3->setText(0, QApplication::translate("BackSide", "QObject", nullptr));
         QTreeWidgetItem *___qtreewidgetitem4 = ___qtreewidgetitem2->child(1);
-        ___qtreewidgetitem4->setText(0, QApplication::translate("BackSide", "QGraphicsItem", Q_NULLPTR));
+        ___qtreewidgetitem4->setText(0, QApplication::translate("BackSide", "QGraphicsItem", nullptr));
         QTreeWidgetItem *___qtreewidgetitem5 = ___qtreewidgetitem2->child(2);
-        ___qtreewidgetitem5->setText(0, QApplication::translate("BackSide", "QGraphicsLayoutItem", Q_NULLPTR));
+        ___qtreewidgetitem5->setText(0, QApplication::translate("BackSide", "QGraphicsLayoutItem", nullptr));
         QTreeWidgetItem *___qtreewidgetitem6 = treeWidget->topLevelItem(1);
-        ___qtreewidgetitem6->setText(0, QApplication::translate("BackSide", "QGraphicsGridLayout", Q_NULLPTR));
+        ___qtreewidgetitem6->setText(0, QApplication::translate("BackSide", "QGraphicsGridLayout", nullptr));
         QTreeWidgetItem *___qtreewidgetitem7 = ___qtreewidgetitem6->child(0);
-        ___qtreewidgetitem7->setText(0, QApplication::translate("BackSide", "QGraphicsLayout", Q_NULLPTR));
+        ___qtreewidgetitem7->setText(0, QApplication::translate("BackSide", "QGraphicsLayout", nullptr));
         QTreeWidgetItem *___qtreewidgetitem8 = ___qtreewidgetitem7->child(0);
-        ___qtreewidgetitem8->setText(0, QApplication::translate("BackSide", "QGraphicsLayoutItem", Q_NULLPTR));
+        ___qtreewidgetitem8->setText(0, QApplication::translate("BackSide", "QGraphicsLayoutItem", nullptr));
         QTreeWidgetItem *___qtreewidgetitem9 = treeWidget->topLevelItem(2);
-        ___qtreewidgetitem9->setText(0, QApplication::translate("BackSide", "QGraphicsLinearLayout", Q_NULLPTR));
+        ___qtreewidgetitem9->setText(0, QApplication::translate("BackSide", "QGraphicsLinearLayout", nullptr));
         QTreeWidgetItem *___qtreewidgetitem10 = ___qtreewidgetitem9->child(0);
-        ___qtreewidgetitem10->setText(0, QApplication::translate("BackSide", "QGraphicsLayout", Q_NULLPTR));
+        ___qtreewidgetitem10->setText(0, QApplication::translate("BackSide", "QGraphicsLayout", nullptr));
         QTreeWidgetItem *___qtreewidgetitem11 = ___qtreewidgetitem10->child(0);
-        ___qtreewidgetitem11->setText(0, QApplication::translate("BackSide", "QGraphicsLayoutItem", Q_NULLPTR));
+        ___qtreewidgetitem11->setText(0, QApplication::translate("BackSide", "QGraphicsLayoutItem", nullptr));
         treeWidget->setSortingEnabled(__sortingEnabled);
 
     } // retranslateUi

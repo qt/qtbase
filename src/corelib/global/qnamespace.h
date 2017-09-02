@@ -513,6 +513,7 @@ public:
         AA_DisableShaderDiskCache = 27,
         AA_DontShowShortcutsInContextMenus = 28,
         AA_CompressTabletEvents = 29,
+        AA_DisableWindowContextHelpButton = 30, // ### Qt 6: remove me
 
         // Add new attributes before this line
         AA_AttributeCount

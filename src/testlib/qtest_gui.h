@@ -59,6 +59,9 @@
 #include <QtGui/qpixmap.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qregion.h>
+#include <QtGui/qvector2d.h>
+#include <QtGui/qvector3d.h>
+#include <QtGui/qvector4d.h>
 
 #ifdef QT_WIDGETS_LIB
 #include <QtGui/qicon.h>
@@ -115,6 +118,32 @@ template<> inline char *toString(const QRegion &region)
     result += ')';
     return qstrdup(result.constData());
 }
+
+#ifndef QT_NO_VECTOR2D
+template<> inline char *toString(const QVector2D &v)
+{
+    QByteArray result = "QVector2D(" + QByteArray::number(v.x()) + ", "
+        + QByteArray::number(v.y()) + ')';
+    return qstrdup(result.constData());
+}
+#endif // !QT_NO_VECTOR2D
+#ifndef QT_NO_VECTOR3D
+template<> inline char *toString(const QVector3D &v)
+{
+    QByteArray result = "QVector3D(" + QByteArray::number(v.x()) + ", "
+        + QByteArray::number(v.y()) + ", " + QByteArray::number(v.z()) + ')';
+    return qstrdup(result.constData());
+}
+#endif // !QT_NO_VECTOR3D
+#ifndef QT_NO_VECTOR4D
+template<> inline char *toString(const QVector4D &v)
+{
+    QByteArray result = "QVector4D(" + QByteArray::number(v.x()) + ", "
+        + QByteArray::number(v.y()) + ", " + QByteArray::number(v.z())
+        + ", " + QByteArray::number(v.w()) + ')';
+    return qstrdup(result.constData());
+}
+#endif // !QT_NO_VECTOR4D
 
 inline bool qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const char *expected,
                     const char *file, int line)

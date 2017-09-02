@@ -57,11 +57,11 @@ QT_BEGIN_NAMESPACE
 
 extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
 
-QCupsPrintEngine::QCupsPrintEngine(QPrinter::PrinterMode m)
+QCupsPrintEngine::QCupsPrintEngine(QPrinter::PrinterMode m, const QString &deviceId)
     : QPdfPrintEngine(*new QCupsPrintEnginePrivate(m))
 {
     Q_D(QCupsPrintEngine);
-    d->setupDefaultPrinter();
+    d->changePrinter(deviceId);
     state = QPrinter::Idle;
 }
 

@@ -61,8 +61,8 @@
     QJsonObject argument. You can use either \l QJsonObject::operator[]() or
     QJsonObject::value() to access values within the JSON object; both are
     const functions and return QJsonValue::Undefined if the key is invalid. We
-    could check if the keys are valid before attempting to read them with
-    QJsonObject::contains(), but we assume that they are.
+    check if the keys are valid before attempting to read them with
+    QJsonObject::contains().
 
     \snippet json/savegame/character.cpp 1
 
@@ -77,7 +77,7 @@
     \snippet json/savegame/level.h 0
 
     We want to have several levels in our game, each with several NPCs, so we
-    keep a QList of Character objects. We also provide the familiar read() and
+    keep a QVector of Character objects. We also provide the familiar read() and
     write() functions.
 
     \snippet json/savegame/level.cpp 0
@@ -86,7 +86,7 @@
     case, we construct a QJsonArray from the value associated with the key
     \c "npcs". Then, for each QJsonValue element in the array, we call
     toObject() to get the Character's JSON object. The Character object can then
-    read their JSON and be appended to our NPC list.
+    read their JSON and be appended to our NPC array.
 
     \note \l{Container Classes}{Associate containers} can be written by storing
     the key in each value object (if it's not already). With this approach, the
@@ -120,10 +120,10 @@
     \snippet json/savegame/game.cpp 1
 
     The first thing we do in the read() function is tell the player to read
-    itself. We then clear the levels list so that calling loadGame() on the same
-    Game object twice doesn't result in old levels hanging around.
+    itself. We then clear the level array so that calling loadGame() on the
+    same Game object twice doesn't result in old levels hanging around.
 
-    We then populate the level list by reading each Level from a QJsonArray.
+    We then populate the level array by reading each Level from a QJsonArray.
 
     \snippet json/savegame/game.cpp 2
 
@@ -159,20 +159,23 @@
 
     Since we're only interested in demonstrating \e serialization of a game with
     JSON, our game is not actually playable. Therefore, we only need
-    QCoreApplication and have no event loop. We create our game and assume that
-    the player had a great time and made lots of progress, altering the internal
-    state of our Character, Level and Game objects.
+    QCoreApplication and have no event loop. On application start-up we parse
+    the command-line arguments to decide how to start the game. For the first
+    argument the options "new" (default) and "load" are available. When "new"
+    is specified a new game will be generated, and when "load" is specified a
+    previously saved game will be loaded in. For the second argument
+    "json" (default) and "binary" are available as options. This argument will
+    decide which file is saved to and/or loaded from. We then move ahead and
+    assume that the player had a great time and made lots of progress, altering
+    the internal state of our Character, Level and Game objects.
 
     \snippet json/savegame/main.cpp 1
 
     When the player has finished, we save their game. For demonstration
-    purposes, we serialize to both JSON and binary. You can examine the contents
-    of the files in the same directory as the executable, although the binary
-    save file will contain some garbage characters (which is normal).
-
-    To show that the saved files can be loaded again, we call loadGame() for
-    each format, returning \c 1 on failure. Assuming everything went well, we
-    return \c 0 to indicate success.
+    purposes, we can serialize to either JSON or binary. You can examine the
+    contents of the files in the same directory as the executable (or re-run
+    the example, making sure to also specify the "load" option), although the
+    binary save file will contain some garbage characters (which is normal).
 
     That concludes our example. As you can see, serialization with Qt's JSON
     classes is very simple and convenient. The advantages of using QJsonDocument

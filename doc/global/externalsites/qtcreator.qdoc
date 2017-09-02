@@ -118,10 +118,6 @@
     \title Qt Creator: Creating Screens
 */
 /*!
-    \externalpage http://doc.qt.io/qtcreator/creator-qtquick-designer-extensions.html
-    \title Qt Creator: Using Qt Quick Designer Extensions
-*/
-/*!
     \externalpage http://doc.qt.io/qtcreator/qmldesigner-pathview-editor.html
     \title Qt Creator: Editing PathView Properties
 */
@@ -295,7 +291,7 @@
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-connecting-mobile.html
-    \title Qt Creator: Connecting Mobile Devices
+    \title Qt Creator: Connecting Devices
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-usability.html
@@ -323,7 +319,7 @@
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-deployment.html
-    \title Qt Creator: Deploying to Mobile Devices
+    \title Qt Creator: Deploying to Devices
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-tutorials.html
@@ -405,7 +401,7 @@
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-project-cmake.html
-    \title Qt Creator: Setting Up a CMake Project
+    \title Qt Creator: Setting Up CMake
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-targets.html
@@ -417,7 +413,7 @@
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-project-qbs.html
-    \title Qt Creator: Setting Up a Qbs Project
+    \title Qt Creator: Setting Up Qbs
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-project-creating.html
@@ -523,22 +519,16 @@
     \externalpage http://doc.qt.io/qtcreator/creator-beautifier.html
     \title Qt Creator: Beautifying Source Code
 */
-/*!
-    \externalpage http://doc.qt.io/qtcreator/creator-developing-winrt.html
-    \title Qt Creator: Connecting Windows Runtime Devices
-*/
+
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-clang-codemodel.html
-    \title Qt Creator: Parsing C++ Files
+    \title Qt Creator: Parsing C++ Files with the Clang Code Model
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-quick-ui-forms.html
     \title Qt Creator: Qt Quick UI Forms
 */
-/*!
-    \externalpage http://doc.qt.io/qtcreator/qtcreator-uiforms-example.html
-    \title Qt Creator: Using Qt Quick UI Forms
-*/
+
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-clang-static-analyzer.html
     \title Qt Creator: Using Clang Static Analyzer

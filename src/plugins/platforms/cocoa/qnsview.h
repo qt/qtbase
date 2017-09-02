@@ -121,9 +121,11 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)otherMouseUp:(NSEvent *)theEvent;
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent;
 
+#ifndef QT_NO_TABLETEVENT
 - (bool)handleTabletEvent: (NSEvent *)theEvent;
 - (void)tabletPoint: (NSEvent *)theEvent;
 - (void)tabletProximity: (NSEvent *)theEvent;
+#endif
 
 - (int) convertKeyCode : (QChar)keyCode;
 + (Qt::KeyboardModifiers) convertKeyModifiers : (ulong)modifierFlags;

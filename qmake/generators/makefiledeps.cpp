@@ -422,25 +422,53 @@ static bool matchWhileUnsplitting(const char *buffer, int buffer_len, int start,
 /* Advance from an opening quote at buffer[offset] to the matching close quote. */
 static int scanPastString(char *buffer, int buffer_len, int offset, int *lines)
 {
+    // http://en.cppreference.com/w/cpp/language/string_literal
     // It might be a C++11 raw string.
     bool israw = false;
     if (buffer[offset] == '"' && offset > 0) {
         int explore = offset - 1;
-        while (explore > 0 && buffer[explore] != 'R') {
-            if (buffer[explore] == '8' || buffer[explore] == 'u' || buffer[explore] == 'U') {
-                explore--;
-            } else if (explore > 1 && qmake_endOfLine(buffer[explore])
-                       && buffer[explore - 1] == '\\') {
+        bool prefix = false; // One of L, U, u or u8 may appear before R
+        bool saw8 = false; // Partial scan of u8
+        while (explore >= 0) {
+            // Cope with backslash-newline interruptions of the prefix:
+            if (explore > 0
+                && qmake_endOfLine(buffer[explore])
+                && buffer[explore - 1] == '\\') {
                 explore -= 2;
-            } else if (explore > 2 && buffer[explore] == '\n'
+            } else if (explore > 1
+                       && buffer[explore] == '\n'
                        && buffer[explore - 1] == '\r'
                        && buffer[explore - 2] == '\\') {
                 explore -= 3;
+                // Remaining cases can only decrement explore by one at a time:
+            } else if (saw8 && buffer[explore] == 'u') {
+                explore--;
+                saw8 = false;
+                prefix = true;
+            } else if (saw8 || prefix) {
+                break;
+            } else if (explore > 1 && buffer[explore] == '8') {
+                explore--;
+                saw8 = true;
+            } else if (buffer[explore] == 'L'
+                       || buffer[explore] == 'U'
+                       || buffer[explore] == 'u') {
+                explore--;
+                prefix = true;
+            } else if (buffer[explore] == 'R') {
+                if (israw)
+                    break;
+                explore--;
+                israw = true;
             } else {
                 break;
             }
         }
-        israw = (buffer[explore] == 'R');
+        // Check the R (with possible prefix) isn't just part of an identifier:
+        if (israw && explore >= 0
+            && (isalnum(buffer[explore]) || buffer[explore] == '_')) {
+            israw = false;
+        }
     }
 
     if (israw) {

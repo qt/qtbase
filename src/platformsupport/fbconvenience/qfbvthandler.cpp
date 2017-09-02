@@ -50,7 +50,6 @@
 #include <signal.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/signalfd.h>
 #include <sys/ioctl.h>
 #include <linux/kd.h>
 

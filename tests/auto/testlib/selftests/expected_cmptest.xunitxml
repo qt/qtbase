@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="30" tests="21" name="tst_Cmptest">
+<testsuite errors="0" failures="33" tests="24" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -102,6 +102,21 @@
     <failure tag="different lists" message="Compared values are not the same
    Actual   (rA): QRegion(200x50+10+10)
    Expected (rB): QRegion(2 rectangles, 50x200+100+200, 200x50+10+10)" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQVector2D">
+    <failure message="Compared values are not the same
+   Actual   (v2a): QVector2D(1, 2)
+   Expected (v2b): QVector2D(1, 3)" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQVector3D">
+    <failure message="Compared values are not the same
+   Actual   (v3a): QVector3D(1, 2, 3)
+   Expected (v3b): QVector3D(1, 3, 3)" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQVector4D">
+    <failure message="Compared values are not the same
+   Actual   (v4a): QVector4D(1, 2, 3, 4)
+   Expected (v4b): QVector4D(1, 3, 3, 4)" result="fail"/>
   </testcase>
   <testcase result="fail" name="verify">
     <failure message="&apos;opaqueFunc() &lt; 2&apos; returned FALSE. ()" result="fail"/>

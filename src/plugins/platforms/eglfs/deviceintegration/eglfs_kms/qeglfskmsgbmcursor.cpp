@@ -240,6 +240,8 @@ void QEglFSKmsGbmCursor::setPos(const QPoint &pos)
             m_pos = pos;
         else
             qWarning("Failed to move cursor on screen %s: %d", kmsScreen->name().toLatin1().constData(), ret);
+
+        kmsScreen->handleCursorMove(pos);
     }
 }
 

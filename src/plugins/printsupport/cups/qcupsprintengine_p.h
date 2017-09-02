@@ -68,7 +68,7 @@ class QCupsPrintEngine : public QPdfPrintEngine
 {
     Q_DECLARE_PRIVATE(QCupsPrintEngine)
 public:
-    QCupsPrintEngine(QPrinter::PrinterMode m);
+    QCupsPrintEngine(QPrinter::PrinterMode m, const QString &deviceId);
     virtual ~QCupsPrintEngine();
 
     // reimplementations QPdfPrintEngine

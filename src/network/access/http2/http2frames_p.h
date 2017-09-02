@@ -129,6 +129,8 @@ public:
         return frame;
     }
 
+    void setOutboundFrame(Frame &&newFrame);
+
     // Frame 'builders':
     void start(FrameType type, FrameFlags flags, quint32 streamID);
     void setPayloadSize(quint32 size);

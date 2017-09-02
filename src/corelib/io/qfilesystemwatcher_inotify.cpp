@@ -222,6 +222,14 @@ QT_END_NAMESPACE
 
 #include <sys/inotify.h>
 
+// see https://github.com/android-ndk/ndk/issues/394
+# if defined(Q_OS_ANDROID) && (__ANDROID_API__ < 21)
+static inline int inotify_init1(int flags)
+{
+    return syscall(__NR_inotify_init1, flags);
+}
+# endif
+
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -229,7 +237,7 @@ QT_BEGIN_NAMESPACE
 QInotifyFileSystemWatcherEngine *QInotifyFileSystemWatcherEngine::create(QObject *parent)
 {
     int fd = -1;
-#ifdef IN_CLOEXEC
+#if defined(IN_CLOEXEC)
     fd = inotify_init1(IN_CLOEXEC);
 #endif
     if (fd == -1) {

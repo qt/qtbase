@@ -71,6 +71,8 @@
 
 #include "qthread.h"
 
+#include <QHostInfo>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
@@ -689,7 +691,7 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
         if (d->cookieJar && d->cookieJar->parent() == this)
             delete d->cookieJar;
         d->cookieJar = cookieJar;
-        if (thread() == cookieJar->thread())
+        if (cookieJar && thread() == cookieJar->thread())
             d->cookieJar->setParent(this);
     }
 }
@@ -1366,10 +1368,16 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     }
 
 #ifndef QT_NO_BEARERMANAGEMENT
+
     // Return a disabled network reply if network access is disabled.
-    // Except if the scheme is empty or file://.
+    // Except if the scheme is empty or file:// or if the host resolves to a loopback address.
     if (d->networkAccessible == NotAccessible && !isLocalFile) {
-        return new QDisabledNetworkReply(this, req, op);
+        QHostAddress dest;
+        QString host = req.url().host().toLower();
+        if (!(dest.setAddress(host) && dest.isLoopback()) && host != QLatin1String("localhost")
+                && host != QHostInfo::localHostName().toLower()) {
+            return new QDisabledNetworkReply(this, req, op);
+        }
     }
 
     if (!d->networkSessionStrongRef && (d->initializeSession || !d->networkConfiguration.identifier().isEmpty())) {

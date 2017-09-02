@@ -204,6 +204,7 @@ QOperatingSystemVersion QOperatingSystemVersion::current()
         { 6, 0 }, // API level 23
         { 7, 0 }, // API level 24
         { 7, 1 }, // API level 25
+        { 8, 0 }, // API level 26
     };
 
     // This will give us at least the first 2 version components
@@ -500,5 +501,13 @@ const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat =
  */
 const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat_MR1 =
     QOperatingSystemVersion(QOperatingSystemVersion::Android, 7, 1);
+
+/*!
+    \variable QOperatingSystemVersion::AndroidOreo
+    \brief a version corresponding to Android Oreo (version 8.0, API level 26).
+    \since 5.9.2
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::AndroidOreo =
+    QOperatingSystemVersion(QOperatingSystemVersion::Android, 8, 0);
 
 QT_END_NAMESPACE

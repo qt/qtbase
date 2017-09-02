@@ -53,41 +53,54 @@
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QRandomGenerator>
+#include <QTextStream>
 
-Game::Game()
-{
-}
-
-const Character &Game::player() const
+Character Game::player() const
 {
     return mPlayer;
 }
 
-const QList<Level> &Game::levels() const {
+QVector<Level> Game::levels() const
+{
     return mLevels;
 }
 
 //! [0]
-void Game::newGame() {
+void Game::newGame()
+{
     mPlayer = Character();
     mPlayer.setName(QStringLiteral("Hero"));
     mPlayer.setClassType(Character::Archer);
-    mPlayer.setLevel(15);
+    mPlayer.setLevel(QRandomGenerator::bounded(15, 21));
 
     mLevels.clear();
+    mLevels.reserve(2);
 
-    Level village;
-    QList<Character> villageNpcs;
-    villageNpcs.append(Character(QStringLiteral("Barry the Blacksmith"), 10, Character::Warrior));
-    villageNpcs.append(Character(QStringLiteral("Terry the Trader"), 10, Character::Warrior));
+    Level village(QStringLiteral("Village"));
+    QVector<Character> villageNpcs;
+    villageNpcs.reserve(2);
+    villageNpcs.append(Character(QStringLiteral("Barry the Blacksmith"),
+                                 QRandomGenerator::bounded(8, 11),
+                                 Character::Warrior));
+    villageNpcs.append(Character(QStringLiteral("Terry the Trader"),
+                                 QRandomGenerator::bounded(6, 8),
+                                 Character::Warrior));
     village.setNpcs(villageNpcs);
     mLevels.append(village);
 
-    Level dungeon;
-    QList<Character> dungeonNpcs;
-    dungeonNpcs.append(Character(QStringLiteral("Eric the Evil"), 20, Character::Mage));
-    dungeonNpcs.append(Character(QStringLiteral("Eric's Sidekick #1"), 5, Character::Warrior));
-    dungeonNpcs.append(Character(QStringLiteral("Eric's Sidekick #2"), 5, Character::Warrior));
+    Level dungeon(QStringLiteral("Dungeon"));
+    QVector<Character> dungeonNpcs;
+    dungeonNpcs.reserve(3);
+    dungeonNpcs.append(Character(QStringLiteral("Eric the Evil"),
+                                 QRandomGenerator::bounded(18, 26),
+                                 Character::Mage));
+    dungeonNpcs.append(Character(QStringLiteral("Eric's Left Minion"),
+                                 QRandomGenerator::bounded(5, 7),
+                                 Character::Warrior));
+    dungeonNpcs.append(Character(QStringLiteral("Eric's Right Minion"),
+                                 QRandomGenerator::bounded(4, 9),
+                                 Character::Warrior));
     dungeon.setNpcs(dungeonNpcs);
     mLevels.append(dungeon);
 }
@@ -113,6 +126,10 @@ bool Game::loadGame(Game::SaveFormat saveFormat)
 
     read(loadDoc.object());
 
+    QTextStream(stdout) << "Loaded save for "
+                        << loadDoc["player"]["name"].toString()
+                        << " using "
+                        << (saveFormat != Json ? "binary " : "") << "JSON...\n";
     return true;
 }
 //! [3]
@@ -143,15 +160,19 @@ bool Game::saveGame(Game::SaveFormat saveFormat) const
 //! [1]
 void Game::read(const QJsonObject &json)
 {
-    mPlayer.read(json["player"].toObject());
+    if (json.contains("player") && json["player"].isObject())
+        mPlayer.read(json["player"].toObject());
 
-    mLevels.clear();
-    QJsonArray levelArray = json["levels"].toArray();
-    for (int levelIndex = 0; levelIndex < levelArray.size(); ++levelIndex) {
-        QJsonObject levelObject = levelArray[levelIndex].toObject();
-        Level level;
-        level.read(levelObject);
-        mLevels.append(level);
+    if (json.contains("levels") && json["levels"].isArray()) {
+        QJsonArray levelArray = json["levels"].toArray();
+        mLevels.clear();
+        mLevels.reserve(levelArray.size());
+        for (int levelIndex = 0; levelIndex < levelArray.size(); ++levelIndex) {
+            QJsonObject levelObject = levelArray[levelIndex].toObject();
+            Level level;
+            level.read(levelObject);
+            mLevels.append(level);
+        }
     }
 }
 //! [1]
@@ -172,3 +193,14 @@ void Game::write(QJsonObject &json) const
     json["levels"] = levelArray;
 }
 //! [2]
+
+void Game::print(int indentation) const
+{
+    const QString indent(indentation * 2, ' ');
+    QTextStream(stdout) << indent << "Player\n";
+    mPlayer.print(indentation + 1);
+
+    QTextStream(stdout) << indent << "Levels\n";
+    for (Level level : mLevels)
+        level.print(indentation + 1);
+}

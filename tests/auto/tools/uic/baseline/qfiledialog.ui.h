@@ -273,26 +273,26 @@ public:
 
     void retranslateUi(QDialog *QFileDialog)
     {
-        lookInLabel->setText(QApplication::translate("QFileDialog", "Look in:", Q_NULLPTR));
+        lookInLabel->setText(QApplication::translate("QFileDialog", "Look in:", nullptr));
 #ifndef QT_NO_TOOLTIP
-        backButton->setToolTip(QApplication::translate("QFileDialog", "Back", Q_NULLPTR));
+        backButton->setToolTip(QApplication::translate("QFileDialog", "Back", nullptr));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        forwardButton->setToolTip(QApplication::translate("QFileDialog", "Forward", Q_NULLPTR));
+        forwardButton->setToolTip(QApplication::translate("QFileDialog", "Forward", nullptr));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        toParentButton->setToolTip(QApplication::translate("QFileDialog", "Parent Directory", Q_NULLPTR));
+        toParentButton->setToolTip(QApplication::translate("QFileDialog", "Parent Directory", nullptr));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        newFolderButton->setToolTip(QApplication::translate("QFileDialog", "Create New Folder", Q_NULLPTR));
+        newFolderButton->setToolTip(QApplication::translate("QFileDialog", "Create New Folder", nullptr));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        listModeButton->setToolTip(QApplication::translate("QFileDialog", "List View", Q_NULLPTR));
+        listModeButton->setToolTip(QApplication::translate("QFileDialog", "List View", nullptr));
 #endif // QT_NO_TOOLTIP
 #ifndef QT_NO_TOOLTIP
-        detailModeButton->setToolTip(QApplication::translate("QFileDialog", "Detail View", Q_NULLPTR));
+        detailModeButton->setToolTip(QApplication::translate("QFileDialog", "Detail View", nullptr));
 #endif // QT_NO_TOOLTIP
-        fileTypeLabel->setText(QApplication::translate("QFileDialog", "Files of type:", Q_NULLPTR));
+        fileTypeLabel->setText(QApplication::translate("QFileDialog", "Files of type:", nullptr));
         Q_UNUSED(QFileDialog);
     } // retranslateUi
 

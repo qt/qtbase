@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -101,7 +101,7 @@ QOpenGLCompositorBackingStore::~QOpenGLCompositorBackingStore()
             ctx->makeCurrent(tempSurface.data());
         }
 
-        if (ctx && m_bsTextureContext && ctx->shareGroup() == m_bsTextureContext->shareGroup())
+        if (m_bsTextureContext && ctx->shareGroup() == m_bsTextureContext->shareGroup())
             glDeleteTextures(1, &m_bsTexture);
         else
             qWarning("QOpenGLCompositorBackingStore: Texture is not valid in the current context");

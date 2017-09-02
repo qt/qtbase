@@ -520,7 +520,7 @@ static inline int fromBase8(const char *s, const char *end)
 {
     int result = 0;
     while (*s && s != end) {
-        if (*s <= '0' && *s >= '7')
+        if (*s <= '0' || *s >= '7')
             return 0;
         result *= 8;
         result += *s - '0';

@@ -37,9 +37,14 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qstring.h>
-
 #include "http2protocol_p.h"
+#include "http2frames_p.h"
+
+#include "private/qhttpnetworkrequest_p.h"
+#include "private/qhttpnetworkreply_p.h"
+
+#include <QtCore/qbytearray.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,6 +62,38 @@ const char Http2clientPreface[clientPrefaceLength] =
      0x2e, 0x30, 0x0d, 0x0a, 0x0d, 0x0a,
      0x53, 0x4d, 0x0d, 0x0a, 0x0d, 0x0a};
 
+QByteArray default_SETTINGS_to_Base64()
+{
+    Frame frame(default_SETTINGS_frame());
+    // SETTINGS frame's payload consists of pairs:
+    // 2-byte-identifier | 4-byte-value == multiple of 6.
+    Q_ASSERT(frame.payloadSize() && !(frame.payloadSize() % 6));
+    const char *src = reinterpret_cast<const char *>(frame.dataBegin());
+    const QByteArray wrapper(QByteArray::fromRawData(src, int(frame.dataSize())));
+    // 3.2.1
+    // The content of the HTTP2-Settings header field is the payload
+    // of a SETTINGS frame (Section 6.5), encoded as a base64url string
+    // (that is, the URL- and filename-safe Base64 encoding described in
+    // Section 5 of [RFC4648], with any trailing '=' characters omitted).
+    return wrapper.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+}
+
+void prepare_for_protocol_upgrade(QHttpNetworkRequest &request)
+{
+    // RFC 2616, 14.10
+    // RFC 7540, 3.2
+    QByteArray value(request.headerField("Connection"));
+    // We _append_ 'Upgrade':
+    if (value.size())
+        value += ", ";
+
+    value += "Upgrade, HTTP2-Settings";
+    request.setHeaderField("Connection", value);
+    // This we just (re)write.
+    request.setHeaderField("Upgrade", "h2c");
+    // This we just (re)write.
+    request.setHeaderField("HTTP2-Settings", default_SETTINGS_to_Base64());
+}
 
 void qt_error(quint32 errorCode, QNetworkReply::NetworkError &error,
               QString &errorMessage)
@@ -151,6 +188,40 @@ QNetworkReply::NetworkError qt_error(quint32 errorCode)
     return error;
 }
 
+bool is_PUSH_PROMISE_enabled()
+{
+    bool ok = false;
+    const int env = qEnvironmentVariableIntValue("QT_HTTP2_ENABLE_PUSH_PROMISE", &ok);
+    return ok && env;
 }
+
+bool is_protocol_upgraded(const QHttpNetworkReply &reply)
+{
+    if (reply.statusCode() == 101) {
+        // Do some minimal checks here - we expect 'Upgrade: h2c' to be found.
+        const auto &header = reply.header();
+        for (const QPair<QByteArray, QByteArray> &field : header) {
+            if (field.first.toLower() == "upgrade" && field.second.toLower() == "h2c")
+                return true;
+        }
+    }
+
+    return false;
+}
+
+Frame default_SETTINGS_frame()
+{
+    // 6.5 SETTINGS
+    FrameWriter builder(FrameType::SETTINGS, FrameFlag::EMPTY, connectionStreamID);
+    // MAX frame size (16 kb), disable/enable PUSH_PROMISE
+    builder.append(Settings::MAX_FRAME_SIZE_ID);
+    builder.append(quint32(maxFrameSize));
+    builder.append(Settings::ENABLE_PUSH_ID);
+    builder.append(quint32(is_PUSH_PROMISE_enabled()));
+
+    return builder.outboundFrame();
+}
+
+} // namespace Http2
 
 QT_END_NAMESPACE

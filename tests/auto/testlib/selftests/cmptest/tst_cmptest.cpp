@@ -33,6 +33,9 @@
 #include <QtGui/QColor>
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
+#include <QtGui/QVector2D>
+#include <QtGui/QVector3D>
+#include <QtGui/QVector4D>
 #endif
 
 /* XPM test data for QPixmap, QImage tests (use drag cursors as example) */
@@ -144,6 +147,9 @@ private slots:
     void compareQImages_data();
     void compareQRegion_data();
     void compareQRegion();
+    void compareQVector2D();
+    void compareQVector3D();
+    void compareQVector4D();
 #endif
     void verify();
     void verify2();
@@ -453,6 +459,33 @@ void tst_Cmptest::compareQRegion()
     QFETCH(QRegion, rB);
 
     QCOMPARE(rA, rB);
+}
+
+void tst_Cmptest::compareQVector2D()
+{
+    QVector2D v2a{1, 2};
+    QVector2D v2b = v2a;
+    QCOMPARE(v2a, v2b);
+    v2b.setY(3);
+    QCOMPARE(v2a, v2b);
+}
+
+void tst_Cmptest::compareQVector3D()
+{
+    QVector3D v3a{1, 2, 3};
+    QVector3D v3b = v3a;
+    QCOMPARE(v3a, v3b);
+    v3b.setY(3);
+    QCOMPARE(v3a, v3b);
+}
+
+void tst_Cmptest::compareQVector4D()
+{
+    QVector4D v4a{1, 2, 3, 4};
+    QVector4D v4b = v4a;
+    QCOMPARE(v4a, v4b);
+    v4b.setY(3);
+    QCOMPARE(v4a, v4b);
 }
 #endif // QT_GUI_LIB
 

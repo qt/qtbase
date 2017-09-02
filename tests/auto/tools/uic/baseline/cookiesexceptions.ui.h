@@ -160,15 +160,15 @@ public:
 
     void retranslateUi(QDialog *CookiesExceptionsDialog)
     {
-        CookiesExceptionsDialog->setWindowTitle(QApplication::translate("CookiesExceptionsDialog", "Cookie Exceptions", Q_NULLPTR));
-        newExceptionGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "New Exception", Q_NULLPTR));
-        label->setText(QApplication::translate("CookiesExceptionsDialog", "Domain:", Q_NULLPTR));
-        blockButton->setText(QApplication::translate("CookiesExceptionsDialog", "Block", Q_NULLPTR));
-        allowForSessionButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow For Session", Q_NULLPTR));
-        allowButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow", Q_NULLPTR));
-        ExceptionsGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "Exceptions", Q_NULLPTR));
-        removeButton->setText(QApplication::translate("CookiesExceptionsDialog", "&Remove", Q_NULLPTR));
-        removeAllButton->setText(QApplication::translate("CookiesExceptionsDialog", "Remove &All", Q_NULLPTR));
+        CookiesExceptionsDialog->setWindowTitle(QApplication::translate("CookiesExceptionsDialog", "Cookie Exceptions", nullptr));
+        newExceptionGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "New Exception", nullptr));
+        label->setText(QApplication::translate("CookiesExceptionsDialog", "Domain:", nullptr));
+        blockButton->setText(QApplication::translate("CookiesExceptionsDialog", "Block", nullptr));
+        allowForSessionButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow For Session", nullptr));
+        allowButton->setText(QApplication::translate("CookiesExceptionsDialog", "Allow", nullptr));
+        ExceptionsGroupBox->setTitle(QApplication::translate("CookiesExceptionsDialog", "Exceptions", nullptr));
+        removeButton->setText(QApplication::translate("CookiesExceptionsDialog", "&Remove", nullptr));
+        removeAllButton->setText(QApplication::translate("CookiesExceptionsDialog", "Remove &All", nullptr));
     } // retranslateUi
 
 };

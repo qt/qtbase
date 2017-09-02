@@ -209,18 +209,18 @@ public:
 
     void retranslateUi(QDialog *QSqlConnectionDialogUi)
     {
-        QSqlConnectionDialogUi->setWindowTitle(QApplication::translate("QSqlConnectionDialogUi", "Connect...", Q_NULLPTR));
-        connGroupBox->setTitle(QApplication::translate("QSqlConnectionDialogUi", "Connection settings", Q_NULLPTR));
-        textLabel4->setText(QApplication::translate("QSqlConnectionDialogUi", "&Username:", Q_NULLPTR));
-        textLabel2->setText(QApplication::translate("QSqlConnectionDialogUi", "D&river", Q_NULLPTR));
-        portSpinBox->setSpecialValueText(QApplication::translate("QSqlConnectionDialogUi", "Default", Q_NULLPTR));
-        textLabel3->setText(QApplication::translate("QSqlConnectionDialogUi", "Database Name:", Q_NULLPTR));
-        textLabel5->setText(QApplication::translate("QSqlConnectionDialogUi", "&Hostname:", Q_NULLPTR));
-        textLabel5_2->setText(QApplication::translate("QSqlConnectionDialogUi", "P&ort:", Q_NULLPTR));
-        textLabel4_2->setText(QApplication::translate("QSqlConnectionDialogUi", "&Password:", Q_NULLPTR));
-        dbCheckBox->setText(QApplication::translate("QSqlConnectionDialogUi", "Us&e predefined in-memory database", Q_NULLPTR));
-        okButton->setText(QApplication::translate("QSqlConnectionDialogUi", "&OK", Q_NULLPTR));
-        cancelButton->setText(QApplication::translate("QSqlConnectionDialogUi", "&Cancel", Q_NULLPTR));
+        QSqlConnectionDialogUi->setWindowTitle(QApplication::translate("QSqlConnectionDialogUi", "Connect...", nullptr));
+        connGroupBox->setTitle(QApplication::translate("QSqlConnectionDialogUi", "Connection settings", nullptr));
+        textLabel4->setText(QApplication::translate("QSqlConnectionDialogUi", "&Username:", nullptr));
+        textLabel2->setText(QApplication::translate("QSqlConnectionDialogUi", "D&river", nullptr));
+        portSpinBox->setSpecialValueText(QApplication::translate("QSqlConnectionDialogUi", "Default", nullptr));
+        textLabel3->setText(QApplication::translate("QSqlConnectionDialogUi", "Database Name:", nullptr));
+        textLabel5->setText(QApplication::translate("QSqlConnectionDialogUi", "&Hostname:", nullptr));
+        textLabel5_2->setText(QApplication::translate("QSqlConnectionDialogUi", "P&ort:", nullptr));
+        textLabel4_2->setText(QApplication::translate("QSqlConnectionDialogUi", "&Password:", nullptr));
+        dbCheckBox->setText(QApplication::translate("QSqlConnectionDialogUi", "Us&e predefined in-memory database", nullptr));
+        okButton->setText(QApplication::translate("QSqlConnectionDialogUi", "&OK", nullptr));
+        cancelButton->setText(QApplication::translate("QSqlConnectionDialogUi", "&Cancel", nullptr));
     } // retranslateUi
 
 };

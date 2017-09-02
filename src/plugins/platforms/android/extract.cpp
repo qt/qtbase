@@ -43,6 +43,7 @@
 #include <android/log.h>
 #include <extract.h>
 #include <alloca.h>
+#include <stdlib.h>
 
 #define LOG_TAG    "extractSyleInfo"
 #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)

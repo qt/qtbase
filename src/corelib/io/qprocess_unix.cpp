@@ -762,6 +762,10 @@ bool QProcessPrivate::waitForReadyRead(int msecs)
         if (qt_pollfd_check(poller.stdinPipe(), POLLOUT))
             _q_canWrite();
 
+        // Signals triggered by I/O may have stopped this process:
+        if (processState == QProcess::NotRunning)
+            return false;
+
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
             if (_q_processDied())
                 return false;
@@ -808,6 +812,10 @@ bool QProcessPrivate::waitForBytesWritten(int msecs)
         if (qt_pollfd_check(poller.stderrPipe(), POLLIN))
             _q_canReadStandardError();
 
+        // Signals triggered by I/O may have stopped this process:
+        if (processState == QProcess::NotRunning)
+            return false;
+
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
             if (_q_processDied())
                 return false;
@@ -852,6 +860,10 @@ bool QProcessPrivate::waitForFinished(int msecs)
 
         if (qt_pollfd_check(poller.stderrPipe(), POLLIN))
             _q_canReadStandardError();
+
+        // Signals triggered by I/O may have stopped this process:
+        if (processState == QProcess::NotRunning)
+            return true;
 
         if (qt_pollfd_check(poller.forkfd(), POLLIN)) {
             if (_q_processDied())

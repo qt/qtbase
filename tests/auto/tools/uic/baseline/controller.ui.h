@@ -78,12 +78,12 @@ public:
 
     void retranslateUi(QWidget *Controller)
     {
-        Controller->setWindowTitle(QApplication::translate("Controller", "Controller", Q_NULLPTR));
-        label->setText(QApplication::translate("Controller", "Controller", Q_NULLPTR));
-        decelerate->setText(QApplication::translate("Controller", "Decelerate", Q_NULLPTR));
-        accelerate->setText(QApplication::translate("Controller", "Accelerate", Q_NULLPTR));
-        right->setText(QApplication::translate("Controller", "Right", Q_NULLPTR));
-        left->setText(QApplication::translate("Controller", "Left", Q_NULLPTR));
+        Controller->setWindowTitle(QApplication::translate("Controller", "Controller", nullptr));
+        label->setText(QApplication::translate("Controller", "Controller", nullptr));
+        decelerate->setText(QApplication::translate("Controller", "Decelerate", nullptr));
+        accelerate->setText(QApplication::translate("Controller", "Accelerate", nullptr));
+        right->setText(QApplication::translate("Controller", "Right", nullptr));
+        left->setText(QApplication::translate("Controller", "Left", nullptr));
     } // retranslateUi
 
 };

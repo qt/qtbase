@@ -378,6 +378,8 @@ void QWindowPrivate::setVisible(bool visible)
             QGuiApplicationPrivate::showModalWindow(q);
         else
             QGuiApplicationPrivate::hideModalWindow(q);
+    } else if (visible && QGuiApplication::modalWindow()) {
+        QGuiApplicationPrivate::updateBlockedStatus(q);
     }
 
 #ifndef QT_NO_CURSOR
@@ -1807,6 +1809,7 @@ void QWindow::resize(int w, int h)
 void QWindow::resize(const QSize &newSize)
 {
     Q_D(QWindow);
+    d->positionPolicy = QWindowPrivate::WindowFrameExclusive;
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QHighDpi::toNativePixels(QRect(position(), newSize), this));
     } else {

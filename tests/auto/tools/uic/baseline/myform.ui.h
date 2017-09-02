@@ -123,17 +123,17 @@ public:
 
     void retranslateUi(QWidget *Form)
     {
-        Form->setWindowTitle(QApplication::translate("Form", "Export Document", Q_NULLPTR));
-        groupBox->setTitle(QApplication::translate("Form", "Export Options", Q_NULLPTR));
-        radioButton_2->setText(QApplication::translate("Form", "&DocBook", Q_NULLPTR));
-        radioButton->setText(QApplication::translate("Form", "&LaTeX", Q_NULLPTR));
-        checkBox_2->setText(QApplication::translate("Form", "Include p&ictures", Q_NULLPTR));
-        checkBox->setText(QApplication::translate("Form", "&Compress", Q_NULLPTR));
-        radioButton_2_2->setText(QApplication::translate("Form", "&HTML", Q_NULLPTR));
-        radioButton_3->setText(QApplication::translate("Form", "&PostScript", Q_NULLPTR));
-        radioButton_4->setText(QApplication::translate("Form", "PD&F", Q_NULLPTR));
-        checkBox_3->setText(QApplication::translate("Form", "Include &metadata", Q_NULLPTR));
-        checkBox_4->setText(QApplication::translate("Form", "Create inde&x", Q_NULLPTR));
+        Form->setWindowTitle(QApplication::translate("Form", "Export Document", nullptr));
+        groupBox->setTitle(QApplication::translate("Form", "Export Options", nullptr));
+        radioButton_2->setText(QApplication::translate("Form", "&DocBook", nullptr));
+        radioButton->setText(QApplication::translate("Form", "&LaTeX", nullptr));
+        checkBox_2->setText(QApplication::translate("Form", "Include p&ictures", nullptr));
+        checkBox->setText(QApplication::translate("Form", "&Compress", nullptr));
+        radioButton_2_2->setText(QApplication::translate("Form", "&HTML", nullptr));
+        radioButton_3->setText(QApplication::translate("Form", "&PostScript", nullptr));
+        radioButton_4->setText(QApplication::translate("Form", "PD&F", nullptr));
+        checkBox_3->setText(QApplication::translate("Form", "Include &metadata", nullptr));
+        checkBox_4->setText(QApplication::translate("Form", "Create inde&x", nullptr));
     } // retranslateUi
 
 };

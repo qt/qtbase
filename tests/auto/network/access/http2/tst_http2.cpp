@@ -47,10 +47,12 @@
 #include <cstdlib>
 #include <string>
 
-// At the moment our HTTP/2 imlpementation requires ALPN and this means OpenSSL.
 #if !defined(QT_NO_OPENSSL) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
+// HTTP/2 over TLS requires ALPN/NPN to negotiate the protocol version.
 const bool clearTextHTTP2 = false;
 #else
+// No ALPN/NPN support to negotiate HTTP/2, we'll use cleartext 'h2c' with
+// a protocol upgrade procedure.
 const bool clearTextHTTP2 = true;
 #endif
 
@@ -507,6 +509,7 @@ void tst_Http2::sendRequest(int streamNumber,
 
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
     request.setPriority(priority);
 
     QNetworkReply *reply = nullptr;

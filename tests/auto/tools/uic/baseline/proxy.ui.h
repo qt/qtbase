@@ -90,11 +90,11 @@ public:
 
     void retranslateUi(QDialog *ProxyDialog)
     {
-        ProxyDialog->setWindowTitle(QApplication::translate("ProxyDialog", "Proxy Authentication", Q_NULLPTR));
-        iconLabel->setText(QApplication::translate("ProxyDialog", "ICON", Q_NULLPTR));
-        introLabel->setText(QApplication::translate("ProxyDialog", "Connect to proxy", Q_NULLPTR));
-        usernameLabel->setText(QApplication::translate("ProxyDialog", "Username:", Q_NULLPTR));
-        passwordLabel->setText(QApplication::translate("ProxyDialog", "Password:", Q_NULLPTR));
+        ProxyDialog->setWindowTitle(QApplication::translate("ProxyDialog", "Proxy Authentication", nullptr));
+        iconLabel->setText(QApplication::translate("ProxyDialog", "ICON", nullptr));
+        introLabel->setText(QApplication::translate("ProxyDialog", "Connect to proxy", nullptr));
+        usernameLabel->setText(QApplication::translate("ProxyDialog", "Username:", nullptr));
+        passwordLabel->setText(QApplication::translate("ProxyDialog", "Password:", nullptr));
     } // retranslateUi
 
 };

@@ -556,9 +556,10 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
     m_connection = xcb_connect(m_displayName.constData(), &m_primaryScreenNumber);
 #endif // QT_CONFIG(xcb_xlib)
 
-    if (Q_UNLIKELY(!m_connection || xcb_connection_has_error(m_connection)))
-        qFatal("QXcbConnection: Could not connect to display %s", m_displayName.constData());
-
+    if (Q_UNLIKELY(!m_connection || xcb_connection_has_error(m_connection))) {
+        qCWarning(lcQpaScreen, "QXcbConnection: Could not connect to display %s", m_displayName.constData());
+        return;
+    }
 
     m_reader = new QXcbEventReader(this);
     m_reader->start();
@@ -648,7 +649,7 @@ QXcbConnection::~QXcbConnection()
 #ifndef QT_NO_DRAGANDDROP
     delete m_drag;
 #endif
-    if (m_reader->isRunning()) {
+    if (m_reader && m_reader->isRunning()) {
         sendConnectionEvent(QXcbAtom::_QT_CLOSE_CONNECTION);
         m_reader->wait();
     }
@@ -665,13 +666,20 @@ QXcbConnection::~QXcbConnection()
 
     delete m_glIntegration;
 
+    if (isConnected()) {
 #if QT_CONFIG(xcb_xlib)
-    XCloseDisplay(static_cast<Display *>(m_xlib_display));
+        XCloseDisplay(static_cast<Display *>(m_xlib_display));
 #else
-    xcb_disconnect(xcb_connection());
+        xcb_disconnect(xcb_connection());
 #endif
+    }
 
     delete m_keyboard;
+}
+
+bool QXcbConnection::isConnected() const
+{
+    return m_connection && !xcb_connection_has_error(m_connection);
 }
 
 QXcbScreen *QXcbConnection::primaryScreen() const

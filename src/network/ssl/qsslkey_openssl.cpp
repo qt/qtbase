@@ -85,6 +85,9 @@ void QSslKeyPrivate::clear(bool deep)
 
 bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
 {
+    if (pkey == nullptr)
+        return false;
+
 #if QT_CONFIG(opensslv11)
     const int keyType = q_EVP_PKEY_type(q_EVP_PKEY_base_id(pkey));
 #else

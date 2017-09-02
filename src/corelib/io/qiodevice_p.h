@@ -174,6 +174,9 @@ public:
     qint64 read(char *data, qint64 maxSize, bool peeking = false);
     virtual qint64 peek(char *data, qint64 maxSize);
     virtual QByteArray peek(qint64 maxSize);
+    qint64 skipByReading(qint64 maxSize);
+    // ### Qt6: consider replacing with a protected virtual QIODevice::skipData().
+    virtual qint64 skip(qint64 maxSize);
 
 #ifdef QT_NO_QOBJECT
     QIODevice *q_ptr;

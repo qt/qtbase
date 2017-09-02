@@ -80,6 +80,7 @@ public:
     static const QOperatingSystemVersion AndroidMarshmallow;
     static const QOperatingSystemVersion AndroidNougat;
     static const QOperatingSystemVersion AndroidNougat_MR1;
+    static const QOperatingSystemVersion AndroidOreo;
 
     Q_DECL_CONSTEXPR QOperatingSystemVersion(OSType osType,
                                              int vmajor, int vminor = -1, int vmicro = -1)

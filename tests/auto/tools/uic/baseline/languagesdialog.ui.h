@@ -109,39 +109,39 @@ public:
 
     void retranslateUi(QDialog *LanguagesDialog)
     {
-        LanguagesDialog->setWindowTitle(QApplication::translate("LanguagesDialog", "Auxiliary Languages", Q_NULLPTR));
+        LanguagesDialog->setWindowTitle(QApplication::translate("LanguagesDialog", "Auxiliary Languages", nullptr));
         QTreeWidgetItem *___qtreewidgetitem = languagesList->headerItem();
-        ___qtreewidgetitem->setText(1, QApplication::translate("LanguagesDialog", "File", Q_NULLPTR));
-        ___qtreewidgetitem->setText(0, QApplication::translate("LanguagesDialog", "Locale", Q_NULLPTR));
+        ___qtreewidgetitem->setText(1, QApplication::translate("LanguagesDialog", "File", nullptr));
+        ___qtreewidgetitem->setText(0, QApplication::translate("LanguagesDialog", "Locale", nullptr));
 #ifndef QT_NO_TOOLTIP
         upButton->setToolTip(QApplication::translate("LanguagesDialog", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Move selected language up</p></body></html>", Q_NULLPTR));
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Move selected language up</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
-        upButton->setText(QApplication::translate("LanguagesDialog", "up", Q_NULLPTR));
+        upButton->setText(QApplication::translate("LanguagesDialog", "up", nullptr));
 #ifndef QT_NO_TOOLTIP
         downButton->setToolTip(QApplication::translate("LanguagesDialog", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\">Move selected language down</p></body></html>", Q_NULLPTR));
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\">Move selected language down</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
-        downButton->setText(QApplication::translate("LanguagesDialog", "down", Q_NULLPTR));
+        downButton->setText(QApplication::translate("LanguagesDialog", "down", nullptr));
 #ifndef QT_NO_TOOLTIP
         removeButton->setToolTip(QApplication::translate("LanguagesDialog", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Remove selected language</p></body></html>", Q_NULLPTR));
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Remove selected language</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
-        removeButton->setText(QApplication::translate("LanguagesDialog", "remove", Q_NULLPTR));
+        removeButton->setText(QApplication::translate("LanguagesDialog", "remove", nullptr));
 #ifndef QT_NO_TOOLTIP
         openFileButton->setToolTip(QApplication::translate("LanguagesDialog", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Open auxiliary language files</p></body></html>", Q_NULLPTR));
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Open auxiliary language files</p></body></html>", nullptr));
 #endif // QT_NO_TOOLTIP
-        openFileButton->setText(QApplication::translate("LanguagesDialog", "...", Q_NULLPTR));
-        okButton->setText(QApplication::translate("LanguagesDialog", "OK", Q_NULLPTR));
+        openFileButton->setText(QApplication::translate("LanguagesDialog", "...", nullptr));
+        okButton->setText(QApplication::translate("LanguagesDialog", "OK", nullptr));
     } // retranslateUi
 
 };

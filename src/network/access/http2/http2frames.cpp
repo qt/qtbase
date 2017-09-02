@@ -361,6 +361,12 @@ FrameWriter::FrameWriter(FrameType type, FrameFlags flags, quint32 streamID)
     start(type, flags, streamID);
 }
 
+void FrameWriter::setOutboundFrame(Frame &&newFrame)
+{
+    frame = std::move(newFrame);
+    updatePayloadSize();
+}
+
 void FrameWriter::start(FrameType type, FrameFlags flags, quint32 streamID)
 {
     auto &buffer = frame.buffer;

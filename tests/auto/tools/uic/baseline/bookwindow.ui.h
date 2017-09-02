@@ -159,15 +159,15 @@ public:
 
     void retranslateUi(QMainWindow *BookWindow)
     {
-        BookWindow->setWindowTitle(QApplication::translate("BookWindow", "Books", Q_NULLPTR));
-        groupBox->setTitle(QApplication::translate("BookWindow", "Books", Q_NULLPTR));
-        groupBox_2->setTitle(QApplication::translate("BookWindow", "Details", Q_NULLPTR));
-        label_5->setText(QApplication::translate("BookWindow", "<b>Title:</b>", Q_NULLPTR));
-        label_2_2_2_2->setText(QApplication::translate("BookWindow", "<b>Author: </b>", Q_NULLPTR));
-        label_3->setText(QApplication::translate("BookWindow", "<b>Genre:</b>", Q_NULLPTR));
-        label_4->setText(QApplication::translate("BookWindow", "<b>Year:</b>", Q_NULLPTR));
+        BookWindow->setWindowTitle(QApplication::translate("BookWindow", "Books", nullptr));
+        groupBox->setTitle(QApplication::translate("BookWindow", "Books", nullptr));
+        groupBox_2->setTitle(QApplication::translate("BookWindow", "Details", nullptr));
+        label_5->setText(QApplication::translate("BookWindow", "<b>Title:</b>", nullptr));
+        label_2_2_2_2->setText(QApplication::translate("BookWindow", "<b>Author: </b>", nullptr));
+        label_3->setText(QApplication::translate("BookWindow", "<b>Genre:</b>", nullptr));
+        label_4->setText(QApplication::translate("BookWindow", "<b>Year:</b>", nullptr));
         yearEdit->setPrefix(QString());
-        label->setText(QApplication::translate("BookWindow", "<b>Rating:</b>", Q_NULLPTR));
+        label->setText(QApplication::translate("BookWindow", "<b>Rating:</b>", nullptr));
     } // retranslateUi
 
 };

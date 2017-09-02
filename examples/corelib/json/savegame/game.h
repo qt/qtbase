@@ -52,7 +52,7 @@
 #define GAME_H
 
 #include <QJsonObject>
-#include <QList>
+#include <QVector>
 
 #include "character.h"
 #include "level.h"
@@ -61,14 +61,12 @@
 class Game
 {
 public:
-    Game();
-
     enum SaveFormat {
         Json, Binary
     };
 
-    const Character &player() const;
-    const QList<Level> &levels() const;
+    Character player() const;
+    QVector<Level> levels() const;
 
     void newGame();
     bool loadGame(SaveFormat saveFormat);
@@ -76,9 +74,11 @@ public:
 
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
+
+    void print(int indentation = 0) const;
 private:
     Character mPlayer;
-    QList<Level> mLevels;
+    QVector<Level> mLevels;
 };
 //! [0]
 
