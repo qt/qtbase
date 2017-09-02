@@ -143,8 +143,6 @@
 
 #include "qcompleter_p.h"
 
-#ifndef QT_NO_COMPLETER
-
 #include "QtWidgets/qscrollbar.h"
 #include "QtCore/qstringlistmodel.h"
 #if QT_CONFIG(dirmodel)
@@ -1902,5 +1900,3 @@ QT_END_NAMESPACE
 #include "moc_qcompleter.cpp"
 
 #include "moc_qcompleter_p.cpp"
-
-#endif // QT_NO_COMPLETER

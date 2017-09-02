@@ -55,14 +55,14 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qobject_p.h"
 
-#ifndef QT_NO_COMPLETER
-
 #include "QtWidgets/qabstractitemview.h"
 #include "QtCore/qabstractproxymodel.h"
 #include "qcompleter.h"
 #include "QtWidgets/qitemdelegate.h"
 #include "QtGui/qpainter.h"
 #include "private/qabstractproxymodel_p.h"
+
+QT_REQUIRE_CONFIG(completer);
 
 QT_BEGIN_NAMESPACE
 
@@ -257,7 +257,5 @@ class QCompletionModelPrivate : public QAbstractProxyModelPrivate
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_COMPLETER
 
 #endif // QCOMPLETER_P_H

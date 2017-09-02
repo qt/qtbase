@@ -3,14 +3,19 @@
 HEADERS += \
         util/qsystemtrayicon.h \
         util/qcolormap.h \
-        util/qcompleter.h \
-        util/qcompleter_p.h \
         util/qsystemtrayicon_p.h
 
 SOURCES += \
         util/qsystemtrayicon.cpp \
-        util/qcolormap.cpp \
-        util/qcompleter.cpp
+        util/qcolormap.cpp
+
+qtConfig(completer) {
+    HEADERS += \
+        util/qcompleter.h \
+        util/qcompleter_p.h
+
+    SOURCES += util/qcompleter.cpp
+}
 
 qtConfig(scroller) {
     HEADERS += \

@@ -261,7 +261,7 @@ private slots:
     // task-specific tests:
     void task180999_focus();
     void task174640_editingFinished();
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     void task198789_currentCompletion();
     void task210502_caseInsensitiveInlineCompletion();
 #endif
@@ -3630,7 +3630,7 @@ void tst_QLineEdit::task174640_editingFinished()
     QCOMPARE(editingFinishedSpy.count(), 1);
 }
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
 class task198789_Widget : public QWidget
 {
     Q_OBJECT
@@ -3689,7 +3689,7 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     QCOMPARE(lineEdit.text(), completion);
 }
 
-#endif // QT_NO_COMPLETER
+#endif // QT_CONFIG(completer)
 
 
 void tst_QLineEdit::task229938_dontEmitChangedWhenTextIsNotChanged()
