@@ -52,7 +52,9 @@
 #if QT_CONFIG(progressbar)
 #include <QProgressBar>
 #endif
+#if QT_CONFIG(slider)
 #include <QSlider>
+#endif
 #include <QEvent>
 #if QT_CONFIG(combobox)
 #include <QComboBox>

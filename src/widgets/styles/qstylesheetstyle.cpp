@@ -3229,7 +3229,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         break;
 #endif // QT_CONFIG(scrollbar)
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             rule.drawRule(p, opt->rect);
@@ -3283,7 +3283,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             return;
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
     case CC_MdiControls:
         if (hasStyleRule(w, PseudoElement_MdiCloseButton)
@@ -5623,7 +5623,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
         break;
 #endif // QT_CONFIG(scrollbar)
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_SliderGroove);
@@ -5656,7 +5656,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
             }
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
     case CC_MdiControls:
         if (hasStyleRule(w, PseudoElement_MdiCloseButton)

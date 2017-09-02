@@ -99,7 +99,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QScrollBar")) {
         iface = new QAccessibleScrollBar(widget);
 #endif
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     } else if (classname == QLatin1String("QAbstractSlider")) {
         iface = new QAccessibleAbstractSlider(widget);
     } else if (classname == QLatin1String("QSlider")) {

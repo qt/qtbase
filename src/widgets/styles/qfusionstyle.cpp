@@ -72,7 +72,9 @@
 #if QT_CONFIG(abstractslider)
 #include <qabstractslider.h>
 #endif
+#if QT_CONFIG(slider)
 #include <qslider.h>
+#endif
 #if QT_CONFIG(splitter)
 #include <qsplitter.h>
 #endif

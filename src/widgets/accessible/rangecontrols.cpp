@@ -39,7 +39,9 @@
 
 #include "rangecontrols_p.h"
 
+#if QT_CONFIG(slider)
 #include <qslider.h>
+#endif
 #if QT_CONFIG(dial)
 #include <qdial.h>
 #endif
@@ -325,7 +327,7 @@ QString QAccessibleScrollBar::text(QAccessible::Text t) const
 
 #endif // QT_CONFIG(scrollbar)
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
 /*!
   \class QAccessibleSlider
   \brief The QAccessibleSlider class implements the QAccessibleInterface for sliders.
@@ -402,7 +404,7 @@ QAbstractSlider *QAccessibleAbstractSlider::abstractSlider() const
     return static_cast<QAbstractSlider *>(object());
 }
 
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
 #if QT_CONFIG(dial)
 // ======================================= QAccessibleDial ======================================

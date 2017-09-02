@@ -5,7 +5,6 @@ HEADERS += \
         widgets/qframe_p.h \
         widgets/qmenu.h \
         widgets/qmenu_p.h \
-        widgets/qslider.h \
         widgets/qtextedit.h \
         widgets/qtextedit_p.h \
         widgets/qtoolbar.h \
@@ -23,7 +22,6 @@ HEADERS += \
 SOURCES += \
         widgets/qframe.cpp \
         widgets/qmenu.cpp \
-        widgets/qslider.cpp \
         widgets/qtextedit.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
@@ -255,6 +253,11 @@ qtConfig(scrollbar) {
 qtConfig(sizegrip) {
     HEADERS += widgets/qsizegrip.h
     SOURCES += widgets/qsizegrip.cpp
+}
+
+qtConfig(slider) {
+    HEADERS += widgets/qslider.h
+    SOURCES += widgets/qslider.cpp
 }
 
 qtConfig(spinbox) {

@@ -347,10 +347,10 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
         return 2;
 #endif
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case QStyle::PM_SliderLength:
         return 11;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
 #ifndef QT_NO_MENU
     case QStyle::PM_MenuBarHMargin:
@@ -439,7 +439,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
             ret = 60;
         break;
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
         // Returns the number of pixels to use for the business part of the
         // slider (i.e., the non-tickmark portion). The remaining space is shared
         // equally between the tickmark regions.
@@ -467,7 +467,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
             ret = thick;
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
     case PM_IconViewIconSize:
         ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
@@ -1926,7 +1926,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                                        QPainter *p, const QWidget *widget) const
 {
     switch (cc) {
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             int thickness  = proxy()->pixelMetric(PM_SliderControlThickness, slider, widget);
@@ -2146,7 +2146,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
             }
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 #if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {

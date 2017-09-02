@@ -1953,7 +1953,7 @@ QStyleOptionComplex::QStyleOptionComplex(int version, int type)
     \sa QStyle::SubControl
 */
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
 /*!
     \class QStyleOptionSlider
     \brief The QStyleOptionSlider class is used to describe the
@@ -2150,7 +2150,7 @@ QStyleOptionSlider::QStyleOptionSlider(int version)
 
     \sa QAbstractSlider::pageStep
 */
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
 #if QT_CONFIG(spinbox)
 /*!

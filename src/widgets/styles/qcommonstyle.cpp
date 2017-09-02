@@ -69,7 +69,9 @@
 #include <qpainter.h>
 #include <qpaintengine.h>
 #include <qpainterpath.h>
+#if QT_CONFIG(slider)
 #include <qslider.h>
+#endif
 #include <qstyleoption.h>
 #if QT_CONFIG(tabbar)
 #include <qtabbar.h>
@@ -2472,7 +2474,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = visualRect(btn->direction, btn->rect, r);
         }
         break;
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case SE_SliderFocusRect:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             int tickOffset = proxy()->pixelMetric(PM_SliderTickmarkOffset, slider, widget);
@@ -2485,7 +2487,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             r = visualRect(opt->direction, opt->rect, r);
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 #if QT_CONFIG(progressbar)
     case SE_ProgressBarGroove:
     case SE_ProgressBarContents:
@@ -3140,7 +3142,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                                       QPainter *p, const QWidget *widget) const
 {
     switch (cc) {
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             if (slider->subControls == SC_SliderTickmarks) {
@@ -3196,7 +3198,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
             }
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 #if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
@@ -3822,7 +3824,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
 {
     SubControl sc = SC_None;
     switch (cc) {
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QRect r = proxy()->subControlRect(cc, slider, SC_SliderHandle, widget);
@@ -3835,7 +3837,7 @@ QStyle::SubControl QCommonStyle::hitTestComplexControl(ComplexControl cc, const 
             }
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 #if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
@@ -3959,7 +3961,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
 {
     QRect ret;
     switch (cc) {
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             int tickOffset = proxy()->pixelMetric(PM_SliderTickmarkOffset, slider, widget);
@@ -3994,7 +3996,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
             ret = visualRect(slider->direction, slider->rect, ret);
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 #if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
@@ -4497,7 +4499,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::MaximumScrollBarDragDistance).toInt();
         break;
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case PM_SliderThickness:
         ret = int(QStyleHelper::dpiScaled(16.));
         break;
@@ -4530,7 +4532,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
             ret = 0;
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 #if QT_CONFIG(dockwidget)
     case PM_DockWidgetSeparatorExtent:
         ret = int(QStyleHelper::dpiScaled(6.));
