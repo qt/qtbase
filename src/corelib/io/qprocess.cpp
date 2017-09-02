@@ -1090,10 +1090,9 @@ bool QProcessPrivate::_q_canReadStandardError()
 */
 bool QProcessPrivate::_q_canWrite()
 {
-    if (stdinChannel.notifier)
-        stdinChannel.notifier->setEnabled(false);
-
     if (writeBuffer.isEmpty()) {
+        if (stdinChannel.notifier)
+            stdinChannel.notifier->setEnabled(false);
 #if defined QPROCESS_DEBUG
         qDebug("QProcessPrivate::canWrite(), not writing anything (empty write buffer).");
 #endif
@@ -1102,10 +1101,10 @@ bool QProcessPrivate::_q_canWrite()
 
     const bool writeSucceeded = writeToStdin();
 
-    if (stdinChannel.notifier && !writeBuffer.isEmpty())
-        stdinChannel.notifier->setEnabled(true);
     if (writeBuffer.isEmpty() && stdinChannel.closed)
         closeWriteChannel();
+    else if (stdinChannel.notifier)
+        stdinChannel.notifier->setEnabled(!writeBuffer.isEmpty());
     return writeSucceeded;
 }
 
