@@ -862,7 +862,7 @@ QMdiSubWindowPrivate::QMdiSubWindowPrivate()
     : baseWidget(0),
       restoreFocusWidget(0),
       controlContainer(0),
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
       sizeGrip(0),
 #endif
 #if QT_CONFIG(rubberband)
@@ -1303,7 +1303,7 @@ void QMdiSubWindowPrivate::setNormalMode()
     restoreSize.setWidth(-1);
     restoreSize.setHeight(-1);
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     setSizeGripVisible(true);
 #endif
 
@@ -1350,7 +1350,7 @@ void QMdiSubWindowPrivate::setMaximizeMode()
 
     storeFocusWidget();
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     setSizeGripVisible(false);
 #endif
 
@@ -2118,7 +2118,7 @@ void QMdiSubWindowPrivate::setWindowFlags(Qt::WindowFlags windowFlags)
     }
 #endif
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     if ((windowFlags & Qt::FramelessWindowHint) && sizeGrip)
         delete sizeGrip;
 #endif
@@ -2179,7 +2179,7 @@ QSize QMdiSubWindowPrivate::iconSize() const
     return QSize(q->style()->pixelMetric(QStyle::PM_MdiSubWindowMinimizedWidth, 0, q), titleBarHeight());
 }
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
 
 /*!
     \internal
@@ -2223,7 +2223,7 @@ void QMdiSubWindowPrivate::setSizeGripVisible(bool visible) const
         grip->setVisible(visible);
 }
 
-#endif // QT_NO_SIZEGRIP
+#endif // QT_CONFIG(sizegrip)
 
 /*!
     \internal
@@ -2334,7 +2334,7 @@ void QMdiSubWindow::setWidget(QWidget *widget)
     else
         widget->setParent(this);
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QSizeGrip *sizeGrip = widget->findChild<QSizeGrip *>();
     if (sizeGrip)
         sizeGrip->installEventFilter(this);
@@ -2639,7 +2639,7 @@ void QMdiSubWindow::showShaded()
     if (hasFocus() || isAncestorOf(QApplication::focusWidget()))
         d->ensureWindowState(Qt::WindowActive);
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     d->setSizeGripVisible(false);
 #endif
 
@@ -2715,7 +2715,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
     }
 #endif
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     if (object != d->baseWidget && parent() && qobject_cast<QSizeGrip *>(object)) {
         if (event->type() != QEvent::MouseButtonPress || !testOption(QMdiSubWindow::RubberBandResize))
             return QWidget::eventFilter(object, event);
@@ -2846,7 +2846,7 @@ bool QMdiSubWindow::event(QEvent *event)
         d->isMaximizeMode = false;
         d->isWidgetHiddenByUs = false;
         if (!parent()) {
-#if !defined(QT_NO_SIZEGRIP) && QT_CONFIG(style_mac)
+#if QT_CONFIG(sizegrip) && QT_CONFIG(style_mac)
             if (qobject_cast<QMacStyle *>(style()))
                 delete d->sizeGrip;
 #endif
@@ -2941,7 +2941,7 @@ void QMdiSubWindow::showEvent(QShowEvent *showEvent)
         return;
     }
 
-#if !defined(QT_NO_SIZEGRIP) && QT_CONFIG(style_mac)
+#if QT_CONFIG(sizegrip) && QT_CONFIG(style_mac)
     if (qobject_cast<QMacStyle *>(style()) && !d->sizeGrip
             && !(windowFlags() & Qt::FramelessWindowHint)) {
         d->setSizeGrip(new QSizeGrip(this));
@@ -3079,7 +3079,7 @@ void QMdiSubWindow::leaveEvent(QEvent * /*leaveEvent*/)
 void QMdiSubWindow::resizeEvent(QResizeEvent *resizeEvent)
 {
     Q_D(QMdiSubWindow);
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     if (d->sizeGrip) {
         d->sizeGrip->move(isLeftToRight() ? width() - d->sizeGrip->width() : 0,
                           height() - d->sizeGrip->height());
@@ -3483,7 +3483,7 @@ void QMdiSubWindow::childEvent(QChildEvent *childEvent)
 {
     if (childEvent->type() != QEvent::ChildPolished)
         return;
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     if (QSizeGrip *sizeGrip = qobject_cast<QSizeGrip *>(childEvent->child()))
         d_func()->setSizeGrip(sizeGrip);
 #endif
@@ -3541,7 +3541,7 @@ QSize QMdiSubWindow::minimumSizeHint() const
         }
     }
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     // SizeGrip
     int sizeGripHeight = 0;
     if (d->sizeGrip && d->sizeGrip->isVisibleTo(const_cast<QMdiSubWindow *>(this)))

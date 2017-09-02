@@ -59,7 +59,9 @@
 #if QT_CONFIG(menubar)
 #include <QMenuBar>
 #endif
+#if QT_CONFIG(sizegrip)
 #include <QSizeGrip>
+#endif
 #include <QPointer>
 #include <QDebug>
 #include <private/qwidget_p.h>
@@ -178,7 +180,7 @@ public:
     QPointer<QWidget> baseWidget;
     QPointer<QWidget> restoreFocusWidget;
     QPointer<QMdi::ControlContainer> controlContainer;
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QPointer<QSizeGrip> sizeGrip;
 #endif
 #if QT_CONFIG(rubberband)
@@ -278,7 +280,7 @@ public:
 #endif
 #endif // QT_NO_ACTION
     QSize iconSize() const;
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     void setSizeGrip(QSizeGrip *sizeGrip);
     void setSizeGripVisible(bool visible = true) const;
 #endif

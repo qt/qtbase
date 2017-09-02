@@ -99,7 +99,9 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#if QT_CONFIG(sizegrip)
 #include <qsizegrip.h>
+#endif
 #include <qspinbox.h>
 #if QT_CONFIG(splitter)
 #include <qsplitter.h>

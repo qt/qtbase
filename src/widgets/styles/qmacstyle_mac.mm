@@ -100,7 +100,9 @@
 #if QT_CONFIG(scrollbar)
 #include <qscrollbar.h>
 #endif
+#if QT_CONFIG(sizegrip)
 #include <qsizegrip.h>
+#endif
 #include <qstyleoption.h>
 #include <qtoolbar.h>
 #if QT_CONFIG(toolbutton)
@@ -687,7 +689,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         else if (qobject_cast<const QMenuBar *>(widg))
             ct = QStyle::CT_MenuBar;
 #endif
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
         else if (qobject_cast<const QSizeGrip *>(widg))
             ct = QStyle::CT_SizeGrip;
 #endif

@@ -3558,7 +3558,7 @@ QStyleOptionTabBarBase::QStyleOptionTabBarBase(int version)
 
 #endif // QT_CONFIG(tabbar)
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
 /*!
     \class QStyleOptionSizeGrip
     \brief The QStyleOptionSizeGrip class is used to describe the
@@ -3638,7 +3638,7 @@ QStyleOptionSizeGrip::QStyleOptionSizeGrip(int version)
 
     \sa StyleOptionType
 */
-#endif // QT_NO_SIZEGRIP
+#endif // QT_CONFIG(sizegrip)
 
 /*!
     \class QStyleOptionGraphicsItem

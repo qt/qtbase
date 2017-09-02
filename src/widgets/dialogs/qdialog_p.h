@@ -78,7 +78,7 @@ public:
           mainDef(0),
 #endif
           orientation(Qt::Horizontal),extension(0), doShowExtension(false),
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
           resizer(0),
           sizeGripEnabled(false),
 #endif
@@ -99,7 +99,7 @@ public:
     QWidget *extension;
     bool doShowExtension;
     QSize size, min, max;
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QSizeGrip *resizer;
     bool sizeGripEnabled;
 #endif

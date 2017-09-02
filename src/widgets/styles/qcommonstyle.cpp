@@ -1940,7 +1940,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         break;
 #endif // QT_CONFIG(tabbar)
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     case CE_SizeGrip: {
         p->save();
         int x, y, w, h;
@@ -2013,7 +2013,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         }
         p->restore();
         break; }
-#endif // QT_NO_SIZEGRIP
+#endif // QT_CONFIG(sizegrip)
 #if QT_CONFIG(rubberband)
     case CE_RubberBand: {
         if (const QStyleOptionRubberBand *rbOpt = qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
