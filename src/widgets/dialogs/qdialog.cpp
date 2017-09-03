@@ -58,7 +58,9 @@
 #if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
 #endif
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #include "qcursor.h"
 #if QT_CONFIG(messagebox)
 #include "qmessagebox.h"
@@ -622,7 +624,7 @@ bool QDialog::eventFilter(QObject *o, QEvent *e)
 /*! \reimp */
 void QDialog::contextMenuEvent(QContextMenuEvent *e)
 {
-#if !QT_CONFIG(whatsthis) || defined(QT_NO_MENU)
+#if !QT_CONFIG(whatsthis) || !QT_CONFIG(menu)
     Q_UNUSED(e);
 #else
     QWidget *w = childAt(e->pos());

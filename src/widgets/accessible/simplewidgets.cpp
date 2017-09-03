@@ -60,7 +60,9 @@
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
 #endif
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #if QT_CONFIG(label)
 #include <qlabel.h>
 #endif
@@ -178,7 +180,7 @@ QAccessible::State QAccessibleButton::state() const
     if (pb) {
         if (pb->isDefault())
             state.defaultButton = true;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
         if (pb->menu())
             state.hasPopup = true;
 #endif
@@ -217,7 +219,7 @@ QAccessible::Role QAccessibleButton::role() const
 {
     QAbstractButton *ab = button();
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (QPushButton *pb = qobject_cast<QPushButton*>(ab)) {
         if (pb->menu())
             return QAccessible::ButtonMenu;
@@ -260,7 +262,7 @@ void QAccessibleButton::doAction(const QString &actionName)
         return;
     if (actionName == pressAction() ||
         actionName == showMenuAction()) {
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
         QPushButton *pb = qobject_cast<QPushButton*>(object());
         if (pb && pb->menu())
             pb->showMenu();
@@ -314,7 +316,7 @@ QToolButton *QAccessibleToolButton::toolButton() const
 */
 bool QAccessibleToolButton::isSplitButton() const
 {
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     return toolButton()->menu() && toolButton()->popupMode() == QToolButton::MenuButtonPopup;
 #else
     return false;
@@ -326,7 +328,7 @@ QAccessible::State QAccessibleToolButton::state() const
     QAccessible::State st = QAccessibleButton::state();
     if (toolButton()->autoRaise())
         st.hotTracked = true;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (toolButton()->menu())
         st.hasPopup = true;
 #endif
@@ -340,7 +342,7 @@ int QAccessibleToolButton::childCount() const
 
 QAccessible::Role QAccessibleToolButton::role() const
 {
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     QAbstractButton *ab = button();
     QToolButton *tb = qobject_cast<QToolButton*>(ab);
     if (!tb->menu())
@@ -354,7 +356,7 @@ QAccessible::Role QAccessibleToolButton::role() const
 
 QAccessibleInterface *QAccessibleToolButton::child(int index) const
 {
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (index == 0 && toolButton()->menu())
     {
         return QAccessible::queryAccessibleInterface(toolButton()->menu());

@@ -46,7 +46,9 @@
 #include "qbitmap.h"
 #include "qdrawutil.h" // for now
 #include "qevent.h"
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #if QT_CONFIG(menubar)
 #include "qmenubar.h"
 #include <private/qmenubar_p.h>
@@ -352,7 +354,7 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
         return 11;
 #endif // QT_CONFIG(slider)
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case QStyle::PM_MenuBarHMargin:
     case QStyle::PM_MenuBarVMargin:
     case QStyle::PM_MenuBarPanelWidth:
@@ -367,7 +369,7 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
     case QStyle::PM_DockWidgetFrameWidth:
         return 4;
 
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
     case QStyle::PM_ToolBarHandleExtent:
         return 10;
     default:
@@ -1115,7 +1117,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         break;
 #endif // QT_CONFIG(rubberband)
 
-#if !defined(QT_NO_MENU) && QT_CONFIG(mainwindow)
+#if QT_CONFIG(menu) && QT_CONFIG(mainwindow)
     case CE_MenuBarEmptyArea:
         if (widget && qobject_cast<const QMainWindow *>(widget->parentWidget())) {
             p->fillRect(opt->rect, opt->palette.button());
@@ -1126,7 +1128,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         }
         break;
 #endif
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             int x, y, w, h;
@@ -1263,7 +1265,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
         }
         break;
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 #if QT_CONFIG(menubar)
     case CE_MenuBarItem:
         if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
@@ -2353,7 +2355,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QSize(w, h);
         }
         break;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             int w = sz.width();
@@ -2395,7 +2397,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz.setWidth(w);
         }
         break;
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 #if QT_CONFIG(menubar)
     case CT_MenuBarItem:
         if (!sz.isEmpty())

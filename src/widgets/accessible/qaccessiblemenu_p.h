@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 class QMenu;
 class QMenuBar;
 class QAction;
@@ -136,7 +136,7 @@ private:
     QPointer<QWidget> m_owner; // can hold either QMenu or the QMenuBar that contains the action
 };
 
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 QT_END_NAMESPACE
 #endif // QT_NO_ACCESSIBILITY

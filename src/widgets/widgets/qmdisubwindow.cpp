@@ -165,7 +165,10 @@
 #endif
 #include <QMdiArea>
 #include <QScopedValueRollback>
+#include <QAction>
+#if QT_CONFIG(menu)
 #include <QMenu>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -718,7 +721,7 @@ ControlContainer::ControlContainer(QMdiSubWindow *mdiChild)
 
     m_menuLabel = new ControlElement<ControlLabel>(mdiChild);
     m_menuLabel->setWindowIcon(mdiChild->windowIcon());
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     connect(m_menuLabel, SIGNAL(_q_clicked()), mdiChild, SLOT(showSystemMenu()));
 #endif
     connect(m_menuLabel, SIGNAL(_q_doubleClicked()), mdiChild, SLOT(close()));
@@ -1038,7 +1041,7 @@ void QMdiSubWindowPrivate::initOperationMap()
     operationMap.insert(BottomRightResize, OperationInfo(HResize | VResize, Qt::SizeFDiagCursor));
 }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 
 /*!
     \internal
@@ -2157,7 +2160,7 @@ void QMdiSubWindowPrivate::setEnabled(WindowStateAction action, bool enable)
         actions[action]->setEnabled(enable);
 }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 void QMdiSubWindowPrivate::addToSystemMenu(WindowStateAction action, const QString &text,
                                            const char *slot)
 {
@@ -2262,7 +2265,7 @@ QMdiSubWindow::QMdiSubWindow(QWidget *parent, Qt::WindowFlags flags)
     : QWidget(*new QMdiSubWindowPrivate, parent, 0)
 {
     Q_D(QMdiSubWindow);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     d->createSystemMenu();
     addActions(d->systemMenu->actions());
 #endif
@@ -2495,7 +2498,7 @@ void QMdiSubWindow::setKeyboardPageStep(int step)
     d_func()->keyboardPageStep = step;
 }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 /*!
     Sets \a systemMenu as the current system menu for this subwindow.
 
@@ -2575,7 +2578,7 @@ void QMdiSubWindow::showSystemMenu()
         globalPopupPos -= QPoint(d->systemMenu->sizeHint().width(), 0);
     d->systemMenu->popup(globalPopupPos);
 }
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 /*!
     \since 4.4
@@ -2696,7 +2699,7 @@ bool QMdiSubWindow::eventFilter(QObject *object, QEvent *event)
     if (!object)
         return QWidget::eventFilter(object, event);
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     // System menu events.
     if (d->systemMenu && d->systemMenu == object) {
         if (event->type() == QEvent::MouseButtonDblClick) {
@@ -3222,7 +3225,7 @@ void QMdiSubWindow::mousePressEvent(QMouseEvent *mouseEvent)
     }
 
     d->activeSubControl = d->hoveredSubControl;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (d->activeSubControl == QStyle::SC_TitleBarSysMenu)
         showSystemMenu();
     else
@@ -3247,7 +3250,7 @@ void QMdiSubWindow::mouseDoubleClickEvent(QMouseEvent *mouseEvent)
 
     Q_D(QMdiSubWindow);
     if (!d->isMoveOperation()) {
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
         if (d->hoveredSubControl == QStyle::SC_TitleBarSysMenu)
             close();
 #endif

@@ -181,7 +181,7 @@ public:
     QByteArray saveState(int version = 0) const;
     bool restoreState(const QByteArray &state, int version = 0);
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     virtual QMenu *createPopupMenu();
 #endif
 

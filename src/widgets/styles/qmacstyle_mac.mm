@@ -2291,7 +2291,7 @@ void QMacStyle::polish(QWidget* w)
         w->setAttribute(Qt::WA_SetPalette, false);
     }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (qobject_cast<QMenu*>(w)
 #if QT_CONFIG(combobox)
             || qobject_cast<QComboBoxPrivateContainer *>(w)
@@ -2350,7 +2350,7 @@ void QMacStyle::polish(QWidget* w)
 void QMacStyle::unpolish(QWidget* w)
 {
     if ((
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
             qobject_cast<QMenu*>(w) ||
 #endif
             qt_mac_is_metal(w)
@@ -3089,7 +3089,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
                                              opt->rect.width(), opt->rect.height() - 8);
                 HIThemeMenuDrawInfo mdi;
                 mdi.version = 0;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
                 if (w && qobject_cast<QMenu *>(w->parentWidget()))
                     mdi.menuType = kThemeMenuTypeHierarchical;
                 else

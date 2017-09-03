@@ -51,7 +51,9 @@
 #include <qdatetimeedit.h>
 #endif
 #include <qevent.h>
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #include <qpainter.h>
 #include <qpalette.h>
 #include <qstylepainter.h>

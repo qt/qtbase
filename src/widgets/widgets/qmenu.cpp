@@ -39,8 +39,6 @@
 
 #include "qmenu.h"
 
-#ifndef QT_NO_MENU
-
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
 #include "qdebug.h"
@@ -3778,5 +3776,3 @@ QT_END_NAMESPACE
 // for private slots
 #include "moc_qmenu.cpp"
 #include "qmenu.moc"
-
-#endif // QT_NO_MENU

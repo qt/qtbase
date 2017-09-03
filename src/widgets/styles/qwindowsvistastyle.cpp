@@ -1175,7 +1175,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         }
     }
     break;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             // windows always has a check column, regardless whether we have an icon or not
@@ -1333,7 +1333,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
         }
         break;
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
     case CE_HeaderSection:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             partId = HP_HEADERITEM;

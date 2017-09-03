@@ -3,8 +3,6 @@
 HEADERS += \
         widgets/qframe.h \
         widgets/qframe_p.h \
-        widgets/qmenu.h \
-        widgets/qmenu_p.h \
         widgets/qtoolbar.h \
         widgets/qtoolbar_p.h \
         widgets/qtoolbarlayout_p.h \
@@ -17,7 +15,6 @@ HEADERS += \
 
 SOURCES += \
         widgets/qframe.cpp \
-        widgets/qmenu.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
         widgets/qtoolbarseparator.cpp \
@@ -178,6 +175,14 @@ qtConfig(mdiarea) {
     SOURCES += \
         widgets/qmdiarea.cpp \
         widgets/qmdisubwindow.cpp
+}
+
+qtConfig(menu) {
+    HEADERS += \
+        widgets/qmenu.h \
+        widgets/qmenu_p.h
+
+    SOURCES += widgets/qmenu.cpp
 }
 
 qtConfig(menubar) {
@@ -351,7 +356,10 @@ macx {
         widgets/qmaccocoaviewcontainer_mac.h
 
     OBJECTIVE_SOURCES += \
-        widgets/qmenu_mac.mm \
         widgets/qmacnativewidget_mac.mm \
         widgets/qmaccocoaviewcontainer_mac.mm
+
+    qtConfig(menu)|qtConfig(menubar) {
+        SOURCES += widgets/qmenu_mac.mm
+    }
 }

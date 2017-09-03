@@ -39,7 +39,9 @@
 
 #include "qaccessiblemenu_p.h"
 
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>
 #endif
@@ -50,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 
 QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
@@ -389,7 +391,7 @@ QWidget *QAccessibleMenuItem::owner() const
     return m_owner;
 }
 
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 QT_END_NAMESPACE
 

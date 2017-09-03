@@ -236,7 +236,7 @@ public:
     void leaveInteractiveMode();
     void removeBaseWidget();
     void initOperationMap();
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void createSystemMenu();
 #endif
     void updateCursor();
@@ -275,7 +275,7 @@ public:
     void setVisible(WindowStateAction, bool visible = true);
 #ifndef QT_NO_ACTION
     void setEnabled(WindowStateAction, bool enable = true);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void addToSystemMenu(WindowStateAction, const QString &text, const char *slot);
 #endif
 #endif // QT_NO_ACTION

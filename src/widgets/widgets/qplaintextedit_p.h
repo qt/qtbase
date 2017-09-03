@@ -59,7 +59,9 @@
 #endif
 #include "QtGui/qtextcursor.h"
 #include "QtGui/qtextformat.h"
+#if QT_CONFIG(menu)
 #include "QtWidgets/qmenu.h"
+#endif
 #include "QtGui/qabstracttextdocumentlayout.h"
 #include "QtCore/qbasictimer.h"
 #include "qplaintextedit.h"

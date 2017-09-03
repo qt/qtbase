@@ -48,7 +48,9 @@
 #include "qevent.h"
 #include "qfontmetrics.h"
 #include "qstylehints.h"
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #include "qpainter.h"
 #include "qpixmap.h"
 #include "qpointer.h"

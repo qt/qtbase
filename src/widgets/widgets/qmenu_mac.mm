@@ -54,7 +54,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 
 namespace {
 // TODO use QtMacExtras copy of this function when available.
@@ -139,7 +139,7 @@ void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* 
     container->show();
 }
 
-#endif //QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 #if QT_CONFIG(menubar)
 

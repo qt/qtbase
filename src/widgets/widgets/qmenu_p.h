@@ -64,9 +64,9 @@
 
 #include <qpa/qplatformmenu.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(menu);
 
-#ifndef QT_NO_MENU
+QT_BEGIN_NAMESPACE
 
 class QTornOffMenu;
 class QEventLoop;
@@ -478,8 +478,6 @@ public:
     void drawTearOff(QPainter *painter, const QRect &rect);
     QRect rect() const;
 };
-
-#endif // QT_NO_MENU
 
 QT_END_NAMESPACE
 

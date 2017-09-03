@@ -65,7 +65,9 @@
 #include <qgroupbox.h>
 #endif
 #include <qmath.h>
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #include <qpainter.h>
 #include <qpaintengine.h>
 #include <qpainterpath.h>
@@ -1373,7 +1375,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
         }
         break;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case CE_MenuScroller: {
         QStyleOption arrowOpt = *opt;
         arrowOpt.state |= State_Enabled;
@@ -1393,7 +1395,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         p->drawLine(opt->rect.x() + 2, opt->rect.y() + opt->rect.height() / 2,
                     opt->rect.x() + opt->rect.width() - 4, opt->rect.y() + opt->rect.height() / 2);
         break;
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 #if QT_CONFIG(menubar)
     case CE_MenuBarItem:
         if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
@@ -4814,7 +4816,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz.setHeight(qMax(sz.height(), h));
         }
         break;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             bool checkable = mi->menuHasCheckableItems;
@@ -4842,7 +4844,7 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QSize(w, h);
         }
         break;
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 #if QT_CONFIG(toolbutton)
     case CT_ToolButton:
         sz = QSize(sz.width() + 6, sz.height() + 5);

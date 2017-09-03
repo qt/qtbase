@@ -57,7 +57,9 @@
 #if QT_CONFIG(textedit)
 #include <QtWidgets/qtextedit.h>
 #endif
+#if QT_CONFIG(menu)
 #include <QtWidgets/qmenu.h>
+#endif
 #include "qdialog_p.h"
 #include <QtGui/qfont.h>
 #include <QtGui/qfontmetrics.h>

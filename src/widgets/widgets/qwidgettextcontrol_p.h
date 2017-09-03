@@ -59,7 +59,9 @@
 #if QT_CONFIG(textedit)
 #include <QtWidgets/qtextedit.h>
 #endif
+#if QT_CONFIG(menu)
 #include <QtWidgets/qmenu.h>
+#endif
 #include <QtCore/qrect.h>
 #include <QtGui/qabstracttextdocumentlayout.h>
 #include <QtGui/qtextdocumentfragment.h>

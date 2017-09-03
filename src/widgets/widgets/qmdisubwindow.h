@@ -89,7 +89,7 @@ public:
     void setKeyboardPageStep(int step);
     int keyboardPageStep() const;
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void setSystemMenu(QMenu *systemMenu);
     QMenu *systemMenu() const;
 #endif
@@ -101,7 +101,7 @@ Q_SIGNALS:
     void aboutToActivate();
 
 public Q_SLOTS:
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void showSystemMenu();
 #endif
     void showShaded();

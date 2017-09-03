@@ -53,7 +53,9 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "QtWidgets/qaction.h"
+#if QT_CONFIG(menu)
 #include "QtWidgets/qmenu.h"
+#endif
 #if QT_CONFIG(graphicsview)
 #include "private/qgraphicswidget_p.h"
 #endif

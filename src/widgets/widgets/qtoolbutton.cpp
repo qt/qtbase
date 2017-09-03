@@ -44,7 +44,6 @@
 #include <qdrawutil.h>
 #include <qevent.h>
 #include <qicon.h>
-#include <qmenu.h>
 #include <qpainter.h>
 #include <qpointer.h>
 #include <qstyle.h>
@@ -58,7 +57,10 @@
 #include <qstylepainter.h>
 #include <private/qabstractbutton_p.h>
 #include <private/qaction_p.h>
+#if QT_CONFIG(menu)
+#include <qmenu.h>
 #include <private/qmenu_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +69,7 @@ class QToolButtonPrivate : public QAbstractButtonPrivate
     Q_DECLARE_PUBLIC(QToolButton)
 public:
     void init();
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void _q_buttonPressed();
     void _q_buttonReleased();
     void popupTimerDone();
@@ -91,14 +93,14 @@ public:
     uint autoRaise             : 1;
     uint repeat                : 1;
     QAction *defaultAction;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     bool hasMenu() const;
     //workaround for task 177850
     QList<QAction *> actionsCopy;
 #endif
 };
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 bool QToolButtonPrivate::hasMenu() const
 {
     return ((defaultAction && defaultAction->menu())
@@ -216,7 +218,7 @@ void QToolButtonPrivate::init()
     q->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed,
                                  QSizePolicy::ToolButton));
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     QObject::connect(q, SIGNAL(pressed()), q, SLOT(_q_buttonPressed()));
     QObject::connect(q, SIGNAL(released()), q, SLOT(_q_buttonReleased()));
 #endif
@@ -288,7 +290,7 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
         option->features |= QStyleOptionToolButton::Arrow;
     if (d->popupMode == QToolButton::DelayedPopup)
         option->features |= QStyleOptionToolButton::PopupDelay;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (d->hasMenu())
         option->features |= QStyleOptionToolButton::HasMenu;
 #endif
@@ -473,7 +475,7 @@ void QToolButton::actionEvent(QActionEvent *event)
     case QEvent::ActionRemoved:
         if (d->defaultAction == action)
             d->defaultAction = 0;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
         if (action == d->menuAction)
             d->menuAction = 0;
 #endif
@@ -552,7 +554,7 @@ void QToolButton::leaveEvent(QEvent * e)
  */
 void QToolButton::timerEvent(QTimerEvent *e)
 {
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     Q_D(QToolButton);
     if (e->timerId() == d->popupTimer.timerId()) {
         d->popupTimerDone();
@@ -591,7 +593,7 @@ void QToolButton::changeEvent(QEvent *e)
 void QToolButton::mousePressEvent(QMouseEvent *e)
 {
     Q_D(QToolButton);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     QStyleOptionToolButton opt;
     initStyleOption(&opt);
     if (e->button() == Qt::LeftButton && (d->popupMode == MenuButtonPopup)) {
@@ -630,7 +632,7 @@ bool QToolButton::hitButton(const QPoint &pos) const
 }
 
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 /*!
     Associates the given \a menu with this tool button.
 
@@ -823,10 +825,7 @@ void QToolButtonPrivate::_q_menuTriggered(QAction *action)
     if (action && !actionsCopy.contains(action))
         emit q->triggered(action);
 }
-#endif // QT_NO_MENU
 
-
-#ifndef QT_NO_MENU
 /*! \enum QToolButton::ToolButtonPopupMode
 
     Describes how a menu should be popped up for tool buttons that has
@@ -901,7 +900,7 @@ bool QToolButton::autoRaise() const
 void QToolButton::setDefaultAction(QAction *action)
 {
     Q_D(QToolButton);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     bool hadMenu = false;
     hadMenu = d->hasMenu();
 #endif
@@ -926,7 +925,7 @@ void QToolButton::setDefaultAction(QAction *action)
 #if QT_CONFIG(whatsthis)
     setWhatsThis(action->whatsThis());
 #endif
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (action->menu() && !hadMenu) {
         // new 'default' popup mode defined introduced by tool bar. We
         // should have changed QToolButton's default instead. Do that

@@ -171,7 +171,9 @@
 #include <QDesktopWidget>
 #include <QDebug>
 #include <qmath.h>
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #include <private/qlayoutengine_p.h>
 
 #include <algorithm>
@@ -610,7 +612,7 @@ void QMdiAreaTabBar::contextMenuEvent(QContextMenuEvent *event)
         return;
     }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     QMdiSubWindowPrivate *subWindowPrivate = subWindow->d_func();
     if (!subWindowPrivate->systemMenu) {
         event->ignore();
@@ -638,7 +640,7 @@ void QMdiAreaTabBar::contextMenuEvent(QContextMenuEvent *event)
 
     // Restore action visibility.
     subWindowPrivate->updateActions();
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 }
 #endif // QT_NO_CONTEXTMENU
 

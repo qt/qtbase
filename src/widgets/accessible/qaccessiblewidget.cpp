@@ -60,7 +60,9 @@
 #include <QRubberBand>
 #endif
 #include <QFocusFrame>
+#if QT_CONFIG(menu)
 #include <QMenu>
+#endif
 #include <QtWidgets/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -72,7 +74,7 @@ static QList<QWidget*> childWidgets(const QWidget *widget)
         QWidget *w = qobject_cast<QWidget *>(o);
         if (w && !w->isWindow()
             && !qobject_cast<QFocusFrame*>(w)
-#if !defined(QT_NO_MENU)
+#if QT_CONFIG(menu)
             && !qobject_cast<QMenu*>(w)
 #endif
             && w->objectName() != QLatin1String("qt_rubberband")

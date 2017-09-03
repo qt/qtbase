@@ -45,7 +45,9 @@
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>
 #endif
@@ -276,7 +278,7 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
 #endif
     for (int i = 0; i < widgets.size(); ++i) {
         QWidget *w = widgets.at(i);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
         if (QMenu *menu = qobject_cast<QMenu *>(w)) {
 #ifdef Q_OS_DARWIN
             // On Mac, menu item shortcuts are processed before reaching any window.

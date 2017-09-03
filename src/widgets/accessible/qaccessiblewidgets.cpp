@@ -88,7 +88,9 @@
 #include <QMainWindow>
 #endif
 #include <QFocusFrame>
+#if QT_CONFIG(menu)
 #include <QMenu>
+#endif
 
 #ifndef QT_NO_ACCESSIBILITY
 
