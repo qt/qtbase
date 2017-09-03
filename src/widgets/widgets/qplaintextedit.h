@@ -50,10 +50,9 @@
 #include <QtGui/qtextformat.h>
 #include <QtGui/qabstracttextdocumentlayout.h>
 
-#ifndef QT_NO_TEXTEDIT
+QT_REQUIRE_CONFIG(textedit);
 
 QT_BEGIN_NAMESPACE
-
 
 class QStyleSheet;
 class QTextDocument;
@@ -328,8 +327,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-
-#endif // QT_NO_TEXTEDIT
 
 #endif // QPLAINTEXTEDIT_H

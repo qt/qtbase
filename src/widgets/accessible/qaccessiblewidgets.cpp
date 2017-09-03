@@ -41,11 +41,13 @@
 #include "qabstracttextdocumentlayout.h"
 #include "qapplication.h"
 #include "qclipboard.h"
-#include "qtextedit.h"
-#include "private/qtextedit_p.h"
 #include "qtextdocument.h"
 #include "qtextobject.h"
+#if QT_CONFIG(textedit)
 #include "qplaintextedit.h"
+#include "qtextedit.h"
+#include "private/qtextedit_p.h"
+#endif
 #include "qtextboundaryfinder.h"
 #if QT_CONFIG(scrollbar)
 #include "qscrollbar.h"
@@ -86,6 +88,7 @@
 #include <QMainWindow>
 #endif
 #include <QFocusFrame>
+#include <QMenu>
 
 #ifndef QT_NO_ACCESSIBILITY
 
@@ -117,7 +120,7 @@ QList<QWidget*> childWidgets(const QWidget *widget)
     return widgets;
 }
 
-#if !defined(QT_NO_TEXTEDIT) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(textedit) && !defined(QT_NO_CURSOR)
 
 QAccessiblePlainTextEdit::QAccessiblePlainTextEdit(QWidget* o)
   :QAccessibleTextWidget(o)
@@ -314,7 +317,7 @@ void QAccessibleTextEdit::scrollToSubstring(int startIndex, int endIndex)
         qWarning("AccessibleTextEdit::scrollToSubstring failed!");
 }
 
-#endif // QT_NO_TEXTEDIT && QT_NO_CURSOR
+#endif // QT_CONFIG(textedit) && QT_NO_CURSOR
 
 #if QT_CONFIG(stackedwidget)
 // ======================= QAccessibleStackedWidget ======================

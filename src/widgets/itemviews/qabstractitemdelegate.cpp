@@ -52,8 +52,10 @@
 #if QT_CONFIG(lineedit)
 #include <qlineedit.h>
 #endif
+#if QT_CONFIG(textedit)
 #include <qtextedit.h>
 #include <qplaintextedit.h>
+#endif
 #include <qapplication.h>
 #include <qvalidator.h>
 #include <private/qtextengine_p.h>
@@ -435,7 +437,7 @@ QAbstractItemDelegatePrivate::QAbstractItemDelegatePrivate()
 
 static bool editorHandlesKeyEvent(QWidget *editor, const QKeyEvent *event)
 {
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
     // do not filter enter / return / tab / backtab for QTextEdit or QPlainTextEdit
     if (qobject_cast<QTextEdit *>(editor) || qobject_cast<QPlainTextEdit *>(editor)) {
         switch (event->key()) {
@@ -449,7 +451,7 @@ static bool editorHandlesKeyEvent(QWidget *editor, const QKeyEvent *event)
             break;
         }
     }
-#endif // QT_NO_TEXTEDIT
+#endif // QT_CONFIG(textedit)
 
     Q_UNUSED(editor);
     Q_UNUSED(event);

@@ -5,8 +5,6 @@ HEADERS += \
         widgets/qframe_p.h \
         widgets/qmenu.h \
         widgets/qmenu_p.h \
-        widgets/qtextedit.h \
-        widgets/qtextedit_p.h \
         widgets/qtoolbar.h \
         widgets/qtoolbar_p.h \
         widgets/qtoolbarlayout_p.h \
@@ -15,22 +13,18 @@ HEADERS += \
         widgets/qabstractscrollarea_p.h \
         widgets/qfocusframe.h \
         widgets/qwidgetanimator_p.h \
-        widgets/qtoolbararealayout_p.h \
-        widgets/qplaintextedit.h \
-        widgets/qplaintextedit_p.h
+        widgets/qtoolbararealayout_p.h
 
 SOURCES += \
         widgets/qframe.cpp \
         widgets/qmenu.cpp \
-        widgets/qtextedit.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
         widgets/qtoolbarseparator.cpp \
         widgets/qabstractscrollarea.cpp \
         widgets/qfocusframe.cpp \
         widgets/qwidgetanimator.cpp \
-        widgets/qtoolbararealayout.cpp \
-        widgets/qplaintextedit.cpp
+        widgets/qtoolbararealayout.cpp
 
 qtConfig(abstractbutton) {
     HEADERS += \
@@ -303,6 +297,18 @@ qtConfig(tabbar) {
         widgets/qtabbar_p.h
 
     SOURCES += widgets/qtabbar.cpp
+}
+
+qtConfig(textedit) {
+    HEADERS += \
+        widgets/qplaintextedit.h \
+        widgets/qplaintextedit_p.h \
+        widgets/qtextedit.h \
+        widgets/qtextedit_p.h
+
+    SOURCES += \
+        widgets/qplaintextedit.cpp \
+        widgets/qtextedit.cpp
 }
 
 qtConfig(textbrowser) {

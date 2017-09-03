@@ -132,7 +132,7 @@ protected:
     virtual QWidget *viewport() const = 0;
 };
 
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
 class QAccessiblePlainTextEdit : public QAccessibleTextWidget
 {
 public:
@@ -184,7 +184,7 @@ protected:
     QTextDocument *textDocument() const Q_DECL_OVERRIDE;
     QWidget *viewport() const Q_DECL_OVERRIDE;
 };
-#endif // QT_NO_TEXTEDIT
+#endif // QT_CONFIG(textedit)
 #endif  //QT_NO_CURSOR
 
 class QAccessibleStackedWidget : public QAccessibleWidget

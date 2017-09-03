@@ -56,7 +56,9 @@
 #include <QtGui/qtextoption.h>
 #include <QtGui/qtextcursor.h>
 #include <QtGui/qtextformat.h>
+#if QT_CONFIG(textedit)
 #include <QtWidgets/qtextedit.h>
+#endif
 #include <QtWidgets/qmenu.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qabstracttextdocumentlayout.h>
@@ -148,7 +150,7 @@ public:
     bool acceptRichText() const;
     void setAcceptRichText(bool accept);
 
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
     void setExtraSelections(const QList<QTextEdit::ExtraSelection> &selections);
     QList<QTextEdit::ExtraSelection> extraSelections() const;
 #endif

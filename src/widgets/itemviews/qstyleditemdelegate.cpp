@@ -45,8 +45,10 @@
 #if QT_CONFIG(lineedit)
 #include <qlineedit.h>
 #endif
+#if QT_CONFIG(textedit)
 #include <qtextedit.h>
 #include <qplaintextedit.h>
+#endif
 #include <qpainter.h>
 #include <qpalette.h>
 #include <qpoint.h>

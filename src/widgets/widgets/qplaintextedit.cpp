@@ -63,8 +63,6 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
-#ifndef QT_NO_TEXTEDIT
-
 QT_BEGIN_NAMESPACE
 
 static inline bool shouldEnableInputMethod(QPlainTextEdit *plaintextedit)
@@ -3194,5 +3192,3 @@ QT_END_NAMESPACE
 
 #include "moc_qplaintextedit.cpp"
 #include "moc_qplaintextedit_p.cpp"
-
-#endif // QT_NO_TEXTEDIT

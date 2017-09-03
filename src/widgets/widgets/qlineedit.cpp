@@ -60,8 +60,10 @@
 #include "qvariant.h"
 #include "qvector.h"
 #include "qdebug.h"
+#if QT_CONFIG(textedit)
 #include "qtextedit.h"
 #include <private/qtextedit_p.h>
+#endif
 #include <private/qwidgettextcontrol_p.h>
 
 #ifndef QT_NO_ACCESSIBILITY
