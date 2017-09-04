@@ -84,6 +84,16 @@ make_versioned_symbol(SYM, QT_VERSION_MAJOR, 8, "@");
 make_versioned_symbol(SYM, QT_VERSION_MAJOR, 9, "@");
 #endif
 #if QT_VERSION_MINOR > 10
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 10, "@");
+#endif
+#if QT_VERSION_MINOR > 11
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 11, "@");
+#endif
+#if QT_VERSION_MINOR > 12
+make_versioned_symbol(SYM, QT_VERSION_MAJOR, 12, "@");
+#endif
+#if QT_VERSION_MINOR > 13
+// We don't expect there will be a Qt 5.13
 #  error "Please update this file with more Qt versions."
 #endif
 
