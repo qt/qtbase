@@ -79,7 +79,15 @@ void QCocoaBackingStore::beginPaint(const QRegion &region)
 void QCocoaBackingStore::endPaint()
 {
     QRasterBackingStore::endPaint();
-    m_cgImage = m_image.toCGImage();
+
+    // Prevent potentially costly color conversion by assiging the display
+    // color space to the backingstore image.
+    NSView *view = static_cast<QCocoaWindow *>(window()->handle())->view();
+    CGColorSpaceRef displayColorSpace = view.window.screen.colorSpace.CGColorSpace;
+    QCFType<CGImageRef> displayColorSpaceImage =
+        CGImageCreateCopyWithColorSpace(m_image.toCGImage(), displayColorSpace);
+
+    m_cgImage = displayColorSpaceImage;
 }
 
 #if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
