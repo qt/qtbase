@@ -15,7 +15,7 @@ load(qt_helper_lib)
 DEFINES += HAVE_CONFIG_H
 
 # platform/compiler specific definitions
-ios|qnx|winrt: DEFINES += PCRE2_DISABLE_JIT
+uikit|qnx|winrt: DEFINES += PCRE2_DISABLE_JIT
 
 SOURCES += \
     $$PWD/src/pcre2_auto_possess.c \
