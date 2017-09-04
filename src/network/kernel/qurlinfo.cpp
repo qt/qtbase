@@ -39,8 +39,6 @@
 
 #include "qurlinfo_p.h"
 
-#ifndef QT_NO_FTP
-
 #include "qurl.h"
 #include "qdir.h"
 #include <limits.h>
@@ -727,5 +725,3 @@ bool QUrlInfo::isValid() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_FTP

@@ -60,7 +60,7 @@
 
 #include "QtCore/qpointer.h"
 
-#ifndef QT_NO_FTP
+QT_REQUIRE_CONFIG(ftp);
 
 QT_BEGIN_NAMESPACE
 
@@ -121,7 +121,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_FTP
 
 #endif

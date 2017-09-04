@@ -17,8 +17,7 @@ HEADERS += kernel/qtnetworkglobal.h \
            kernel/qnetworkdatagram_p.h \
            kernel/qnetworkinterface.h \
            kernel/qnetworkinterface_p.h \
-           kernel/qnetworkproxy.h \
-           kernel/qurlinfo_p.h
+           kernel/qnetworkproxy.h
 
 SOURCES += kernel/qauthenticator.cpp \
            kernel/qdnslookup.cpp \
@@ -26,8 +25,12 @@ SOURCES += kernel/qauthenticator.cpp \
            kernel/qhostinfo.cpp \
            kernel/qnetworkdatagram.cpp \
            kernel/qnetworkinterface.cpp \
-           kernel/qnetworkproxy.cpp \
-           kernel/qurlinfo.cpp
+           kernel/qnetworkproxy.cpp
+
+qtConfig(ftp) {
+    HEADERS += kernel/qurlinfo_p.h
+    SOURCES += kernel/qurlinfo.cpp
+}
 
 unix {
     !integrity: SOURCES += kernel/qdnslookup_unix.cpp

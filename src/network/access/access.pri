@@ -1,7 +1,6 @@
 # Qt network access module
 
 HEADERS += \
-    access/qftp_p.h \
     access/qhttpnetworkheader_p.h \
     access/qhttpnetworkrequest_p.h \
     access/qhttpnetworkreply_p.h \
@@ -18,7 +17,6 @@ HEADERS += \
     access/qnetworkaccessdebugpipebackend_p.h \
     access/qnetworkaccessfilebackend_p.h \
     access/qnetworkaccesscachebackend_p.h \
-    access/qnetworkaccessftpbackend_p.h \
     access/qnetworkcookie.h \
     access/qnetworkcookie_p.h \
     access/qnetworkcookiejar.h \
@@ -44,7 +42,6 @@ HEADERS += \
     access/qhstspolicy.h
 
 SOURCES += \
-    access/qftp.cpp \
     access/qhttpnetworkheader.cpp \
     access/qhttpnetworkrequest.cpp \
     access/qhttpnetworkreply.cpp \
@@ -60,7 +57,6 @@ SOURCES += \
     access/qnetworkaccessdebugpipebackend.cpp \
     access/qnetworkaccessfilebackend.cpp \
     access/qnetworkaccesscachebackend.cpp \
-    access/qnetworkaccessftpbackend.cpp \
     access/qnetworkcookie.cpp \
     access/qnetworkcookiejar.cpp \
     access/qnetworkrequest.cpp \
@@ -77,6 +73,16 @@ SOURCES += \
     access/qhttp2protocolhandler.cpp \
     access/qhsts.cpp \
     access/qhstspolicy.cpp
+
+qtConfig(ftp) {
+    HEADERS += \
+        access/qftp_p.h \
+        access/qnetworkaccessftpbackend_p.h
+
+    SOURCES += \
+        access/qftp.cpp \
+        access/qnetworkaccessftpbackend.cpp
+}
 
 mac: LIBS_PRIVATE += -framework Security
 
