@@ -112,12 +112,6 @@ void tst_QStringListModel::rowsAboutToBeRemoved_rowsRemoved_data()
     QStringList res3;
     QTest::newRow( "data3" )   << strings3 << 0 << 5 << aboutto3 << res3;
 
-    /* Not sure if this is a valid test */
-    QStringList strings4;   strings4    << "One" << "Two" << "Three" << "Four" << "Five";
-    QStringList aboutto4;   aboutto4    << "Five" << "";
-    QStringList res4;       res4        << "One" << "Two" << "Three" << "Four";
-    QTest::newRow( "data4" )   << strings4 << 4 << 2 << aboutto4 << res4;
-
     /*
      * Keep this, template to add more data
     QStringList strings2;   strings2    << "One" << "Two" << "Three" << "Four" << "Five";
