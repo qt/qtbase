@@ -31,8 +31,6 @@ HEADERS += \
     access/qnetworkreplyfileimpl_p.h \
     access/qabstractnetworkcache_p.h \
     access/qabstractnetworkcache.h \
-    access/qnetworkdiskcache_p.h \
-    access/qnetworkdiskcache.h \
     access/qhttpthreaddelegate_p.h \
     access/qhttpmultipart.h \
     access/qhttpmultipart_p.h \
@@ -66,7 +64,6 @@ SOURCES += \
     access/qnetworkreplyhttpimpl.cpp \
     access/qnetworkreplyfileimpl.cpp \
     access/qabstractnetworkcache.cpp \
-    access/qnetworkdiskcache.cpp \
     access/qhttpthreaddelegate.cpp \
     access/qhttpmultipart.cpp \
     access/qnetworkfile.cpp \
@@ -82,6 +79,14 @@ qtConfig(ftp) {
     SOURCES += \
         access/qftp.cpp \
         access/qnetworkaccessftpbackend.cpp
+}
+
+qtConfig(networkdiskcache) {
+    HEADERS += \
+        access/qnetworkdiskcache_p.h \
+        access/qnetworkdiskcache.h
+
+    SOURCES += access/qnetworkdiskcache.cpp
 }
 
 mac: LIBS_PRIVATE += -framework Security

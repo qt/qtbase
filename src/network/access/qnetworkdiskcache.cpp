@@ -60,8 +60,6 @@
 
 #define MAX_COMPRESSION_SIZE (1024 * 1024 * 3)
 
-#ifndef QT_NO_NETWORKDISKCACHE
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -737,5 +735,3 @@ bool QCacheItem::read(QFile *device, bool readData)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_NETWORKDISKCACHE
