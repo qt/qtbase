@@ -60,6 +60,7 @@ osx
 [maskedUpdate]
 osx
 opensuse-42.1
+opensuse-42.3
 [hideWhenFocusWidgetIsChild]
 osx-10.10
 [hideOpaqueChildWhileHidden]
