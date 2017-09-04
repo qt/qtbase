@@ -53,6 +53,7 @@
 #include <QtCore/qsysinfo.h>
 #include <private/qguiapplication_p.h>
 #include <private/qcoregraphics_p.h>
+#include <private/qwindow_p.h>
 #include "qcocoabackingstore.h"
 #ifndef QT_NO_OPENGL
 #include "qcocoaglcontext.h"
@@ -332,6 +333,17 @@ static QTouchDevice *touchDevice = 0;
 #endif
 
     m_platformWindow->handleExposeEvent(exposedRegion);
+
+    // A call to QWindow::requestUpdate was issued during the expose event, but
+    // AppKit will reset the needsDisplay state of the view after completing the
+    // current display cycle, so we need to defer the request to redisplay.
+    // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
+    if (qt_window_private(m_platformWindow->window())->updateRequestPending) {
+        qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:] deferring setNeedsDisplay";
+        dispatch_async(dispatch_get_main_queue (), ^{
+            [self setNeedsDisplay:YES];
+        });
+    }
 }
 
 - (BOOL)wantsUpdateLayer
