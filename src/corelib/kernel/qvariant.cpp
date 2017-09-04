@@ -3517,29 +3517,36 @@ static int numericCompare(const QVariant::Private *d1, const QVariant::Private *
  */
 bool QVariant::cmp(const QVariant &v) const
 {
+    auto cmp_helper = [] (const QVariant::Private &d1, const QVariant::Private &d2)
+    {
+        Q_ASSERT(d1.type == d2.type);
+        if (d1.type >= QMetaType::User) {
+            int result;
+            if (QMetaType::equals(QT_PREPEND_NAMESPACE(constData(d1)), QT_PREPEND_NAMESPACE(constData(d2)), d1.type, &result))
+                return result == 0;
+        }
+        return handlerManager[d1.type]->compare(&d1, &d2);
+    };
+
     // try numerics first, with C++ type promotion rules (no conversion)
     if (qIsNumericType(d.type) && qIsNumericType(v.d.type))
         return numericCompare(&d, &v.d) == 0;
 
+    if (d.type == v.d.type)
+        return cmp_helper(d, v.d);
+
     QVariant v1 = *this;
     QVariant v2 = v;
-    if (d.type != v2.d.type) {
-        if (v2.canConvert(v1.d.type)) {
-            if (!v2.convert(v1.d.type))
-                return false;
-        } else {
-            // try the opposite conversion, it might work
-            qSwap(v1, v2);
-            if (!v2.convert(v1.d.type))
-                return false;
-        }
+    if (v2.canConvert(v1.d.type)) {
+        if (!v2.convert(v1.d.type))
+            return false;
+    } else {
+        // try the opposite conversion, it might work
+        qSwap(v1, v2);
+        if (!v2.convert(v1.d.type))
+            return false;
     }
-    if (v1.d.type >= QMetaType::User) {
-        int result;
-        if (QMetaType::equals(QT_PREPEND_NAMESPACE(constData(v1.d)), QT_PREPEND_NAMESPACE(constData(v2.d)), v1.d.type, &result))
-            return result == 0;
-    }
-    return handlerManager[v1.d.type]->compare(&v1.d, &v2.d);
+    return cmp_helper(v1.d, v2.d);
 }
 
 /*!
@@ -3555,51 +3562,53 @@ int QVariant::compare(const QVariant &v) const
     if (cmp(v))
         return 0;
 
-    QVariant v1 = *this;
-    QVariant v2 = v;
+    const QVariant *v1 = this;
+    const QVariant *v2 = &v;
+    QVariant converted1;
+    QVariant converted2;
 
-    if (v1.d.type != v2.d.type) {
+    if (d.type != v.d.type) {
         // if both types differ, try to convert
-        if (v2.canConvert(v1.d.type)) {
-            QVariant temp = v2;
-            if (temp.convert(v1.d.type))
-                v2 = temp;
+        if (v2->canConvert(v1->d.type)) {
+            converted2 = *v2;
+            if (converted2.convert(v1->d.type))
+                v2 = &converted2;
         }
-        if (v1.d.type != v2.d.type && v1.canConvert(v2.d.type)) {
-            QVariant temp = v1;
-            if (temp.convert(v2.d.type))
-                v1 = temp;
+        if (v1->d.type != v2->d.type && v1->canConvert(v2->d.type)) {
+            converted1 = *v1;
+            if (converted1.convert(v2->d.type))
+                v1 = &converted1;
         }
-        if (v1.d.type != v2.d.type) {
+        if (v1->d.type != v2->d.type) {
             // if conversion fails, default to toString
-            int r = v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
+            int r = v1->toString().compare(v2->toString(), Qt::CaseInsensitive);
             if (r == 0) {
                 // cmp(v) returned false, so we should try to agree with it.
-                return (v1.d.type < v2.d.type) ? -1 : 1;
+                return (v1->d.type < v2->d.type) ? -1 : 1;
             }
             return r;
         }
 
         // did we end up with two numerics? If so, restart
-        if (qIsNumericType(v1.d.type) && qIsNumericType(v2.d.type))
-            return v1.compare(v2);
+        if (qIsNumericType(v1->d.type) && qIsNumericType(v2->d.type))
+            return v1->compare(*v2);
     }
-    if (v1.d.type >= QMetaType::User) {
+    if (v1->d.type >= QMetaType::User) {
         int result;
-        if (QMetaType::compare(QT_PREPEND_NAMESPACE(constData(d)), QT_PREPEND_NAMESPACE(constData(v2.d)), d.type, &result))
+        if (QMetaType::compare(QT_PREPEND_NAMESPACE(constData(d)), QT_PREPEND_NAMESPACE(constData(v2->d)), d.type, &result))
             return result;
     }
-    switch (v1.d.type) {
+    switch (v1->d.type) {
     case QVariant::Date:
-        return v1.toDate() < v2.toDate() ? -1 : 1;
+        return v1->toDate() < v2->toDate() ? -1 : 1;
     case QVariant::Time:
-        return v1.toTime() < v2.toTime() ? -1 : 1;
+        return v1->toTime() < v2->toTime() ? -1 : 1;
     case QVariant::DateTime:
-        return v1.toDateTime() < v2.toDateTime() ? -1 : 1;
+        return v1->toDateTime() < v2->toDateTime() ? -1 : 1;
     case QVariant::StringList:
-        return v1.toStringList() < v2.toStringList() ? -1 : 1;
+        return v1->toStringList() < v2->toStringList() ? -1 : 1;
     }
-    int r = v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
+    int r = v1->toString().compare(v2->toString(), Qt::CaseInsensitive);
     if (r == 0) {
         // cmp(v) returned false, so we should try to agree with it.
         return (d.type < v.d.type) ? -1 : 1;
