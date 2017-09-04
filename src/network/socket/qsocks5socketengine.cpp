@@ -39,8 +39,6 @@
 
 #include "qsocks5socketengine_p.h"
 
-#ifndef QT_NO_SOCKS5
-
 #include "qtcpsocket.h"
 #include "qudpsocket.h"
 #include "qtcpserver.h"
@@ -1937,7 +1935,5 @@ QAbstractSocketEngine *QSocks5SocketEngineHandler::createSocketEngine(qintptr so
     }
     return 0;
 }
-
-#endif // QT_NO_SOCKS5
 
 QT_END_NAMESPACE
