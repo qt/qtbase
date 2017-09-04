@@ -516,7 +516,13 @@ static bool _q_dontOverrideCtrlLMB = false;
         dirtyBackingRect.size.height
     );
     CGImageRef bsCGImage = qt_mac_toCGImage(m_backingStore->toImage());
-    CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
+
+    // Prevent potentially costly color conversion by assiging the display
+    // color space to the backingstore image.
+    CGImageRef displayColorSpaceImage = CGImageCreateCopyWithColorSpace(bsCGImage,
+        self.window.screen.colorSpace.CGColorSpace);
+
+    CGImageRef cleanImg = CGImageCreateWithImageInRect(displayColorSpaceImage, backingStoreRect);
 
     // Optimization: Copy frame buffer content instead of blending for
     // top-level windows where Qt fills the entire window content area.
@@ -531,6 +537,7 @@ static bool _q_dontOverrideCtrlLMB = false;
     CGImageRelease(cleanImg);
     CGImageRelease(subMask);
     CGImageRelease(bsCGImage);
+    CGImageRelease(displayColorSpaceImage);
 }
 
 - (BOOL) isFlipped
