@@ -62,6 +62,87 @@
 
 QT_BEGIN_NAMESPACE
 
+class QueuePage {
+public:
+    enum {
+        MaxPageSize = 256
+    };
+
+    QueuePage(QRunnable *runnable, int pri)
+        : m_priority(pri)
+    {
+        push(runnable);
+    }
+
+    bool isFull() {
+        return m_lastIndex >= MaxPageSize - 1;
+    }
+
+    bool isFinished() {
+        return m_firstIndex > m_lastIndex;
+    }
+
+    void push(QRunnable *runnable) {
+        Q_ASSERT(runnable != nullptr);
+        Q_ASSERT(!isFull());
+        m_lastIndex += 1;
+        m_entries[m_lastIndex] = runnable;
+    }
+
+    void skipToNextOrEnd() {
+        while (!isFinished() && m_entries[m_firstIndex] == nullptr) {
+            m_firstIndex += 1;
+        }
+    }
+
+    QRunnable *first() {
+        Q_ASSERT(!isFinished());
+        QRunnable *runnable = m_entries[m_firstIndex];
+        Q_ASSERT(runnable);
+        return runnable;
+    }
+
+    QRunnable *pop() {
+        Q_ASSERT(!isFinished());
+        QRunnable *runnable = first();
+        Q_ASSERT(runnable);
+
+        // clear the entry although this should not be necessary
+        m_entries[m_firstIndex] = nullptr;
+        m_firstIndex += 1;
+
+        // make sure the next runnable returned by first() is not a nullptr
+        skipToNextOrEnd();
+
+        return runnable;
+    }
+
+    bool tryTake(QRunnable *runnable) {
+        Q_ASSERT(!isFinished());
+        for (int i = m_firstIndex; i <= m_lastIndex; i++) {
+            if (m_entries[i] == runnable) {
+                m_entries[i] = nullptr;
+                if (i == m_firstIndex) {
+                    // make sure first() does not return a nullptr
+                    skipToNextOrEnd();
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int priority() const {
+        return m_priority;
+    }
+
+private:
+    int m_priority = 0;
+    int m_firstIndex = 0;
+    int m_lastIndex = -1;
+    QRunnable *m_entries[MaxPageSize];
+};
+
 class QThreadPoolThread;
 class Q_CORE_EXPORT QThreadPoolPrivate : public QObjectPrivate
 {
@@ -83,12 +164,13 @@ public:
     bool waitForDone(int msecs);
     void clear();
     void stealAndRunRunnable(QRunnable *runnable);
+    void deletePageIfFinished(QueuePage *page);
 
     mutable QMutex mutex;
     QList<QThreadPoolThread *> allThreads;
     QQueue<QThreadPoolThread *> waitingThreads;
     QQueue<QThreadPoolThread *> expiredThreads;
-    QVector<QPair<QRunnable *, int> > queue;
+    QVector<QueuePage*> queue;
     QWaitCondition noActiveThreads;
 
     bool isExiting;

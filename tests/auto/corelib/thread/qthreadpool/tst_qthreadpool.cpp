@@ -93,6 +93,7 @@ private slots:
     void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
     void stressTest();
+    void takeAllAndIncreaseMaxThreadCount();
 
 private:
     QMutex m_functionTestMutex;
@@ -1197,6 +1198,69 @@ void tst_QThreadPool::stressTest()
         t.start();
         t.wait();
     }
+}
+
+void tst_QThreadPool::takeAllAndIncreaseMaxThreadCount() {
+    class Task : public QRunnable
+    {
+    public:
+        Task(QSemaphore *mainBarrier, QSemaphore *threadBarrier)
+            : m_mainBarrier(mainBarrier)
+            , m_threadBarrier(threadBarrier)
+        {
+            setAutoDelete(false);
+        }
+
+        void run() {
+            m_mainBarrier->release();
+            m_threadBarrier->acquire();
+        }
+    private:
+        QSemaphore *m_mainBarrier;
+        QSemaphore *m_threadBarrier;
+    };
+
+    QSemaphore mainBarrier;
+    QSemaphore taskBarrier;
+
+    QThreadPool threadPool;
+    threadPool.setMaxThreadCount(1);
+
+    Task *task1 = new Task(&mainBarrier, &taskBarrier);
+    Task *task2 = new Task(&mainBarrier, &taskBarrier);
+    Task *task3 = new Task(&mainBarrier, &taskBarrier);
+
+    threadPool.start(task1);
+    threadPool.start(task2);
+    threadPool.start(task3);
+
+    mainBarrier.acquire(1);
+
+    QCOMPARE(threadPool.activeThreadCount(), 1);
+
+    QVERIFY(!threadPool.tryTake(task1));
+    QVERIFY(threadPool.tryTake(task2));
+    QVERIFY(threadPool.tryTake(task3));
+
+    // A bad queue implementation can segfault here because two consecutive items in the queue
+    // have been taken
+    threadPool.setMaxThreadCount(4);
+
+    // Even though we increase the max thread count, there should only be one job to run
+    QCOMPARE(threadPool.activeThreadCount(), 1);
+
+    // Make sure jobs 2 and 3 never started
+    QCOMPARE(mainBarrier.available(), 0);
+
+    taskBarrier.release(1);
+
+    threadPool.waitForDone();
+
+    QCOMPARE(threadPool.activeThreadCount(), 0);
+
+    delete task1;
+    delete task2;
+    delete task3;
 }
 
 QTEST_MAIN(tst_QThreadPool);

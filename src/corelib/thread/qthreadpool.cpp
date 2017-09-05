@@ -73,7 +73,7 @@ public:
     \internal
 */
 QThreadPoolThread::QThreadPoolThread(QThreadPoolPrivate *manager)
-    :manager(manager), runnable(0)
+    :manager(manager), runnable(nullptr)
 { }
 
 /*
@@ -84,7 +84,7 @@ void QThreadPoolThread::run()
     QMutexLocker locker(&manager->mutex);
     for(;;) {
         QRunnable *r = runnable;
-        runnable = 0;
+        runnable = nullptr;
 
         do {
             if (r) {
@@ -116,8 +116,19 @@ void QThreadPoolThread::run()
             if (manager->tooManyThreadsActive())
                 break;
 
-            r = !manager->queue.isEmpty() ? manager->queue.takeFirst().first : 0;
-        } while (r != 0);
+            if (manager->queue.isEmpty()) {
+                r = nullptr;
+                break;
+            }
+
+            QueuePage *page = manager->queue.first();
+            r = page->pop();
+
+            if (page->isFinished()) {
+                manager->queue.removeFirst();
+                delete page;
+            }
+        } while (true);
 
         if (manager->isExiting) {
             registerThreadInactive();
@@ -163,6 +174,7 @@ QThreadPoolPrivate:: QThreadPoolPrivate()
 
 bool QThreadPoolPrivate::tryStart(QRunnable *task)
 {
+    Q_ASSERT(task != nullptr);
     if (allThreads.isEmpty()) {
         // always create at least one thread
         startThread(task);
@@ -183,7 +195,7 @@ bool QThreadPoolPrivate::tryStart(QRunnable *task)
     if (!expiredThreads.isEmpty()) {
         // restart an expired thread
         QThreadPoolThread *thread = expiredThreads.dequeue();
-        Q_ASSERT(thread->runnable == 0);
+        Q_ASSERT(thread->runnable == nullptr);
 
         ++activeThreads;
 
@@ -199,22 +211,25 @@ bool QThreadPoolPrivate::tryStart(QRunnable *task)
     return true;
 }
 
-inline bool operator<(int priority, const QPair<QRunnable *, int> &p)
-{ return p.second < priority; }
-inline bool operator<(const QPair<QRunnable *, int> &p, int priority)
-{ return priority < p.second; }
+inline bool comparePriority(int priority, const QueuePage *p)
+{
+    return p->priority() < priority;
+}
 
 void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
 {
+    Q_ASSERT(runnable != nullptr);
     if (runnable->autoDelete())
         ++runnable->ref;
 
-    // put it on the queue
-    QVector<QPair<QRunnable *, int> >::const_iterator begin = queue.constBegin();
-    QVector<QPair<QRunnable *, int> >::const_iterator it = queue.constEnd();
-    if (it != begin && priority > (*(it - 1)).second)
-        it = std::upper_bound(begin, --it, priority);
-    queue.insert(it - begin, qMakePair(runnable, priority));
+    for (QueuePage *page : qAsConst(queue)) {
+        if (page->priority() == priority && !page->isFull()) {
+            page->push(runnable);
+            return;
+        }
+    }
+    auto it = std::upper_bound(queue.constBegin(), queue.constEnd(), priority, comparePriority);
+    queue.insert(std::distance(queue.constBegin(), it), new QueuePage(runnable, priority));
 }
 
 int QThreadPoolPrivate::activeThreadCount() const
@@ -228,8 +243,18 @@ int QThreadPoolPrivate::activeThreadCount() const
 void QThreadPoolPrivate::tryToStartMoreThreads()
 {
     // try to push tasks on the queue to any available threads
-    while (!queue.isEmpty() && tryStart(queue.constFirst().first))
-        queue.removeFirst();
+    while (!queue.isEmpty()) {
+        QueuePage *page = queue.first();
+        if (!tryStart(page->first()))
+            break;
+
+        page->pop();
+
+        if (page->isFinished()) {
+            queue.removeFirst();
+            delete page;
+        }
+    }
 }
 
 bool QThreadPoolPrivate::tooManyThreadsActive() const
@@ -243,6 +268,7 @@ bool QThreadPoolPrivate::tooManyThreadsActive() const
 */
 void QThreadPoolPrivate::startThread(QRunnable *runnable)
 {
+    Q_ASSERT(runnable != nullptr);
     QScopedPointer <QThreadPoolThread> thread(new QThreadPoolThread(this));
     thread->setObjectName(QLatin1String("Thread (pooled)"));
     Q_ASSERT(!allThreads.contains(thread.data())); // if this assert hits, we have an ABA problem (deleted threads don't get removed here)
@@ -306,12 +332,14 @@ bool QThreadPoolPrivate::waitForDone(int msecs)
 void QThreadPoolPrivate::clear()
 {
     QMutexLocker locker(&mutex);
-    for (QVector<QPair<QRunnable *, int> >::const_iterator it = queue.constBegin();
-         it != queue.constEnd(); ++it) {
-        QRunnable* r = it->first;
-        if (r->autoDelete() && !--r->ref)
-            delete r;
+    for (QueuePage *page : qAsConst(queue)) {
+        while (!page->isFinished()) {
+            QRunnable *r = page->pop();
+            if (r && r->autoDelete() && !--r->ref)
+                delete r;
+        }
     }
+    qDeleteAll(queue);
     queue.clear();
 }
 
@@ -336,22 +364,21 @@ bool QThreadPool::tryTake(QRunnable *runnable)
 {
     Q_D(QThreadPool);
 
-    if (runnable == 0)
+    if (runnable == nullptr)
         return false;
     {
         QMutexLocker locker(&d->mutex);
 
-        auto it = d->queue.begin();
-        auto end = d->queue.end();
-
-        while (it != end) {
-            if (it->first == runnable) {
-                d->queue.erase(it);
+        for (QueuePage *page : qAsConst(d->queue)) {
+            if (page->tryTake(runnable)) {
+                if (page->isFinished()) {
+                    d->queue.removeOne(page);
+                    delete page;
+                }
                 if (runnable->autoDelete())
                     --runnable->ref; // undo ++ref in start()
                 return true;
             }
-            ++it;
         }
     }
 
