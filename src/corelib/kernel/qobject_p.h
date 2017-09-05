@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -145,7 +145,7 @@ public:
         ushort connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         ushort isSlotObject : 1;
         ushort ownArgumentTypes : 1;
-        Connection() : nextConnectionList(0), ref_(2), ownArgumentTypes(true) {
+        Connection() : nextConnectionList(nullptr), ref_(2), ownArgumentTypes(true) {
             //ref_ is 2 for the use in the internal lists, and for the use in QMetaObject::Connection
         }
         ~Connection();
@@ -160,7 +160,7 @@ public:
     };
     // ConnectionList is a singly-linked list
     struct ConnectionList {
-        ConnectionList() : first(0), last(0) {}
+        ConnectionList() : first(nullptr), last(nullptr) {}
         Connection *first;
         Connection *last;
     };
@@ -200,7 +200,7 @@ public:
     }
     static const QObjectPrivate *get(const QObject *o) { return o->d_func(); }
 
-    int signalIndex(const char *signalName, const QMetaObject **meta = 0) const;
+    int signalIndex(const char *signalName, const QMetaObject **meta = nullptr) const;
     inline bool isSignalConnected(uint signalIdx, bool checkDeclarative = true) const;
     inline bool isDeclarativeSignalConnected(uint signalIdx) const;
 
@@ -376,12 +376,12 @@ class Q_CORE_EXPORT QMetaCallEvent : public QEvent
 {
 public:
     QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
-                   int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
+                   int nargs = 0, int *types = nullptr, void **args = nullptr, QSemaphore *semaphore = nullptr);
     /*! \internal
         \a signalId is in the signal index range (see QObjectPrivate::signalIndex()).
     */
     QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender, int signalId,
-                   int nargs = 0, int *types = 0, void **args = 0, QSemaphore *semaphore = 0);
+                   int nargs = 0, int *types = nullptr, void **args = nullptr, QSemaphore *semaphore = nullptr);
 
     ~QMetaCallEvent();
 

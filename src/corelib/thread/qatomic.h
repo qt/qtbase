@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -168,9 +168,9 @@ class QAtomicPointer : public QBasicAtomicPointer<T>
 {
 public:
 #ifdef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
-    constexpr QAtomicPointer(T *value = 0) Q_DECL_NOTHROW : QBasicAtomicPointer<T>(value) {}
+    constexpr QAtomicPointer(T *value = nullptr) Q_DECL_NOTHROW : QBasicAtomicPointer<T>(value) {}
 #else
-    inline QAtomicPointer(T *value = 0) Q_DECL_NOTHROW
+    inline QAtomicPointer(T *value = nullptr) Q_DECL_NOTHROW
     {
         this->store(value);
     }
