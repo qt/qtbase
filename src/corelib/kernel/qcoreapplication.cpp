@@ -277,13 +277,15 @@ void qAddPreRoutine(QtStartUpFunction p)
     QStartUpFuncList *list = preRList();
     if (!list)
         return;
+
+    if (QCoreApplication::instance())
+        p();
+
     // Due to C++11 parallel dynamic initialization, this can be called
     // from multiple threads.
 #ifndef QT_NO_THREAD
     QMutexLocker locker(&globalRoutinesMutex);
 #endif
-    if (QCoreApplication::instance())
-        p();
     list->prepend(p); // in case QCoreApplication is re-created, see qt_call_pre_routines
 }
 
@@ -314,15 +316,18 @@ static void qt_call_pre_routines()
     if (!preRList.exists())
         return;
 
+    QVFuncList list;
+    {
 #ifndef QT_NO_THREAD
-    QMutexLocker locker(&globalRoutinesMutex);
+        QMutexLocker locker(&globalRoutinesMutex);
 #endif
-    QVFuncList *list = &(*preRList);
-    // Unlike qt_call_post_routines, we don't empty the list, because
-    // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
-    // the function to be executed every time QCoreApplication is created.
-    for (int i = 0; i < list->count(); ++i)
-        list->at(i)();
+        // Unlike qt_call_post_routines, we don't empty the list, because
+        // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
+        // the function to be executed every time QCoreApplication is created.
+        list = *preRList;
+    }
+    for (int i = 0; i < list.count(); ++i)
+        list.at(i)();
 }
 
 void Q_CORE_EXPORT qt_call_post_routines()
