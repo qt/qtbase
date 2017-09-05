@@ -248,6 +248,9 @@ private slots:
     void QTBUG_57138_data() { generic_data("QSQLITE"); }
     void QTBUG_57138();
 
+    void dateTime_data();
+    void dateTime();
+
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
@@ -724,6 +727,30 @@ void tst_QSqlQuery::oraOutValues()
     q.addBindValue( out, QSql::Out );
     QVERIFY_SQL( q, exec() );
     QCOMPARE( q.boundValue( 1 ).toString(), QString( "fifibubulalakikikokololo" ) );
+
+    /*** in/outvalue date ***/
+    QVERIFY_SQL(q, exec("create or replace procedure " + tst_outValues + "(x in date, y out date) is\n"
+        "begin\n"
+        "    y := x;\n"
+        "end;\n"));
+    QVERIFY(q.prepare("call " + tst_outValues + "(?, ?)"));
+    const QDate date = QDate::currentDate();
+    q.addBindValue(date, QSql::In);
+    q.addBindValue(QVariant(QDate()), QSql::Out);
+    QVERIFY_SQL(q, exec());
+    QCOMPARE(q.boundValue(1).toDate(), date);
+
+    /*** in/outvalue timestamp ***/
+    QVERIFY_SQL(q, exec("create or replace procedure " + tst_outValues + "(x in timestamp, y out timestamp) is\n"
+        "begin\n"
+        "    y := x;\n"
+        "end;\n"));
+    QVERIFY(q.prepare("call " + tst_outValues + "(?, ?)"));
+    const QDateTime dt = QDateTime::currentDateTime();
+    q.addBindValue(dt, QSql::In);
+    q.addBindValue(QVariant(QVariant::DateTime), QSql::Out);
+    QVERIFY_SQL(q, exec());
+    QCOMPARE(q.boundValue(1).toDateTime(), dt);
 }
 
 void tst_QSqlQuery::oraClob()
@@ -2138,8 +2165,8 @@ void tst_QSqlQuery::batchExec()
     QSqlQuery q( db );
     const QString tableName = qTableName("qtest_batch", __FILE__, db);
 
-    QVERIFY_SQL( q, exec( "create table " + tableName + " (id int, name varchar(20), dt date, num numeric(8, 4))" ) );
-    QVERIFY_SQL( q, prepare( "insert into " + tableName + " (id, name, dt, num) values (?, ?, ?, ?)" ) );
+    QVERIFY_SQL(q, exec("create table " + tableName + " (id int, name varchar(20), dt date, num numeric(8, 4), dtstamp TIMESTAMP(3))"));
+    QVERIFY_SQL(q, prepare("insert into " + tableName + " (id, name, dt, num, dtstamp) values (?, ?, ?, ?, ?)"));
 
     QVariantList intCol;
     intCol << 1 << 2 << QVariant( QVariant::Int );
@@ -2154,31 +2181,54 @@ void tst_QSqlQuery::batchExec()
     QVariantList numCol;
     numCol << 2.3 << 3.4 << QVariant( QVariant::Double );
 
-    q.addBindValue( intCol );
+    QVariantList timeStampCol;
+    const QDateTime dtStamp = QDateTime(QDate::currentDate(), QTime(1, 2, 3, 4));
+    timeStampCol << dtStamp << dtStamp.addDays(-1) << QVariant(QVariant::DateTime);
+
+    q.addBindValue(intCol);
     q.addBindValue( charCol );
     q.addBindValue( dateCol );
     q.addBindValue( numCol );
+    q.addBindValue(timeStampCol);
 
     QVERIFY_SQL( q, execBatch() );
-    QVERIFY_SQL( q, exec( "select id, name, dt, num from " + tableName + " order by id" ) );
+    QVERIFY_SQL(q, exec("select id, name, dt, num, dtstamp from " + tableName + " order by id"));
 
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toInt(), 1 );
     QCOMPARE( q.value( 1 ).toString(), QString( "harald" ) );
     QCOMPARE( q.value( 2 ).toDateTime(), dt );
     QCOMPARE( q.value( 3 ).toDouble(), 2.3 );
+    QCOMPARE(q.value(4).toDateTime(), dtStamp);
 
     QVERIFY( q.next() );
     QCOMPARE( q.value( 0 ).toInt(), 2 );
     QCOMPARE( q.value( 1 ).toString(), QString( "boris" ) );
     QCOMPARE( q.value( 2 ).toDateTime(), dt.addDays( -1 ) );
     QCOMPARE( q.value( 3 ).toDouble(), 3.4 );
+    QCOMPARE(q.value(4).toDateTime(), dtStamp.addDays(-1));
 
     QVERIFY( q.next() );
     QVERIFY( q.value( 0 ).isNull() );
     QVERIFY( q.value( 1 ).isNull() );
     QVERIFY( q.value( 2 ).isNull() );
     QVERIFY( q.value( 3 ).isNull() );
+    QVERIFY(q.value(4).isNull());
+
+    const QString procName = qTableName("qtest_batch_proc", __FILE__, db);
+    QVERIFY_SQL(q, exec("create or replace procedure " + procName + " (x in timestamp, y out timestamp) is\n"
+        "begin\n"
+        "    y := x;\n"
+        "end;\n"));
+    QVERIFY(q.prepare("call " + procName + "(?, ?)"));
+    q.addBindValue(timeStampCol, QSql::In);
+    QVariantList emptyDateTimes;
+    emptyDateTimes.reserve(timeStampCol.size());
+    for (int i = 0; i < timeStampCol.size(); i++)
+        emptyDateTimes << QVariant(QDateTime());
+    q.addBindValue(emptyDateTimes, QSql::Out);
+    QVERIFY_SQL(q, execBatch());
+    QCOMPARE(q.boundValue(1).toList(), timeStampCol);
 }
 
 void tst_QSqlQuery::QTBUG_43874()
@@ -2894,16 +2944,14 @@ void tst_QSqlQuery::timeStampParsing()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    const QString tableName(qTableName("timeStampParsing", __FILE__, db));
+    tst_Databases::safeDropTable(db, tableName);
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec(
-                    "CREATE TABLE \"main\".\"datetest\" ("
-                    "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT,"
-                    "\"datefield\" timestamp);"
-                    ));
-    QVERIFY_SQL(q, exec(
-                    "INSERT INTO datetest (datefield) VALUES (current_timestamp);"
-                    ));
-    QVERIFY_SQL(q, exec("SELECT * FROM datetest;"));
+    QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName
+                        + QStringLiteral(" (id integer, datefield timestamp)")));
+    QVERIFY_SQL(q, exec(QStringLiteral("INSERT INTO ") + tableName
+                        + QStringLiteral(" (datefield) VALUES (current_timestamp)")));
+    QVERIFY_SQL(q, exec(QStringLiteral("SELECT * FROM ") + tableName));
     while (q.next())
         QVERIFY(q.value(1).toDateTime().isValid());
 }
@@ -4140,6 +4188,89 @@ void tst_QSqlQuery::QTBUG_57138()
     QCOMPARE(q.value(0).toDateTime(), utc);
     QCOMPARE(q.value(1).toDateTime(), localtime);
     QCOMPARE(q.value(2).toDateTime(), tzoffset);
+}
+
+void tst_QSqlQuery::dateTime_data()
+{
+    QTest::addColumn<QString>("dbName");
+    QTest::addColumn<QString>("tableName");
+    QTest::addColumn<QString>("createTableString");
+    QTest::addColumn<QList<QDateTime> >("initialDateTimes");
+    QTest::addColumn<QList<QDateTime> >("expectedDateTimes");
+
+    // Using time zones which are highly unlikely to be the same as the testing machine's one
+    // as it could pass as a result despite it.
+    // +8.5 hours from UTC to North Korea
+    const QTimeZone afterUTCTimeZone(30600);
+    // -8 hours from UTC to Belize
+    const QTimeZone beforeUTCTimeZone(-28800);
+    const QTimeZone utcTimeZone("UTC");
+    const QDateTime dt(QDate(2015, 5, 18), QTime(4, 26, 30));
+    const QDateTime dtWithMS(QDate(2015, 5, 18), QTime(4, 26, 30, 500));
+    const QDateTime dtWithAfterTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), afterUTCTimeZone);
+    const QDateTime dtWithBeforeTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), beforeUTCTimeZone);
+    const QDateTime dtWithUTCTZ(QDate(2015, 5, 18), QTime(4, 26, 30, 500), utcTimeZone);
+    const QList<QDateTime> dateTimes = { dt, dtWithMS, dtWithAfterTZ, dtWithBeforeTZ, dtWithUTCTZ };
+    const QList<QDateTime> expectedDateTimesLocalTZ = { dt, dtWithMS, dtWithAfterTZ.toLocalTime(),
+                                                        dtWithBeforeTZ.toLocalTime(),
+                                                        dtWithUTCTZ.toLocalTime() };
+    const QList<QDateTime> expectedTimeStampDateTimes = { dt, dtWithMS, dtWithMS, dtWithMS, dtWithMS };
+    const QList<QDateTime> expectedDateTimes = { dt, dt, dt, dt, dt };
+
+    for (const QString &dbName : qAsConst(dbs.dbNames)) {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        if (!db.isValid())
+            continue;
+        const QString tableNameTSWithTimeZone(qTableName("dateTimeTSWithTimeZone", __FILE__, db));
+        const QString tableNameTSWithLocalTimeZone(qTableName("dateTimeTSWithLocalTimeZone", __FILE__, db));
+        const QString tableNameTS(qTableName("dateTimeTS", __FILE__, db));
+        const QString tableNameDate(qTableName("dateTimeDate", __FILE__, db));
+        QTest::newRow(QString(dbName + " timestamp with time zone").toLatin1())
+                        << dbName << tableNameTSWithTimeZone
+                        << QStringLiteral(" (dt TIMESTAMP WITH TIME ZONE)")
+                        << dateTimes << dateTimes;
+        QTest::newRow(QString(dbName + " timestamp with local time zone").toLatin1())
+                        << dbName << tableNameTSWithTimeZone
+                        << QStringLiteral(" (dt TIMESTAMP WITH LOCAL TIME ZONE)")
+                        << dateTimes << expectedDateTimesLocalTZ;
+        QTest::newRow(QString(dbName + "timestamp").toLatin1())
+                        << dbName << tableNameTS << QStringLiteral(" (dt TIMESTAMP(3))")
+                        << dateTimes << expectedTimeStampDateTimes;
+        QTest::newRow(QString(dbName + "date").toLatin1())
+                        << dbName << tableNameDate << QStringLiteral(" (dt DATE)")
+                        << dateTimes << expectedDateTimes;
+    }
+}
+
+void tst_QSqlQuery::dateTime()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType != QSqlDriver::Oracle)
+        QSKIP("Implemented only for Oracle");
+
+    QFETCH(QString, tableName);
+    QFETCH(QString, createTableString);
+    QFETCH(QList<QDateTime>, initialDateTimes);
+    QFETCH(QList<QDateTime>, expectedDateTimes);
+
+    tst_Databases::safeDropTable(db, tableName);
+
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + createTableString));
+    for (const QDateTime &dt : qAsConst(initialDateTimes)) {
+        QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " values(:dt)"));
+        q.bindValue(":dt", dt);
+        QVERIFY_SQL(q, exec());
+    }
+    QVERIFY_SQL(q, exec("SELECT * FROM " + tableName));
+    for (const QDateTime &dt : qAsConst(expectedDateTimes)) {
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDateTime(), dt);
+    }
 }
 
 QTEST_MAIN( tst_QSqlQuery )

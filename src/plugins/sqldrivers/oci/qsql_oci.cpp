@@ -55,6 +55,7 @@
 #include <qvarlengtharray.h>
 #include <qvector.h>
 #include <qdebug.h>
+#include <qtimezone.h>
 
 // This is needed for oracle oci when compiling with mingw-w64 headers
 #if defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
@@ -112,9 +113,6 @@ static const ub2 qOraCharset = OCI_UCS2ID;
 typedef QVarLengthArray<sb2, 32> IndicatorArray;
 typedef QVarLengthArray<ub2, 32> SizeArray;
 
-static QByteArray qMakeOraDate(const QDateTime& dt);
-static QDateTime qMakeDate(const char* oraDate);
-
 static QByteArray qMakeOCINumber(const qlonglong &ll, OCIError *err);
 static QByteArray qMakeOCINumber(const qulonglong& ull, OCIError* err);
 
@@ -155,6 +153,60 @@ QOCIRowId::~QOCIRowId()
     if (id)
         OCIDescriptorFree(id, OCI_DTYPE_ROWID);
 }
+
+class QOCIDateTime
+{
+public:
+    QOCIDateTime(OCIEnv *env, OCIError *err, const QDateTime &dt = QDateTime());
+    ~QOCIDateTime();
+    OCIDateTime *dateTime;
+    static QDateTime fromOCIDateTime(OCIEnv *env, OCIError *err, OCIDateTime *dt);
+};
+
+QOCIDateTime::QOCIDateTime(OCIEnv *env, OCIError *err, const QDateTime &dt)
+    : dateTime(nullptr)
+{
+    OCIDescriptorAlloc(env, reinterpret_cast<void**>(&dateTime), OCI_DTYPE_TIMESTAMP_TZ, 0, 0);
+    if (dt.isValid()) {
+        const QDate date = dt.date();
+        const QTime time = dt.time();
+        // Zone in +hh:mm format (stripping UTC prefix from OffsetName)
+        QString timeZone = dt.timeZone().displayName(dt, QTimeZone::OffsetName).mid(3);
+        const OraText *tz = reinterpret_cast<const OraText *>(timeZone.utf16());
+        OCIDateTimeConstruct(env, err, dateTime, date.year(), date.month(), date.day(), time.hour(),
+                             time.minute(), time.second(), time.msec() * 1000000,
+                             const_cast<OraText *>(tz), timeZone.length() * sizeof(QChar));
+    }
+}
+
+QOCIDateTime::~QOCIDateTime()
+{
+    if (dateTime != nullptr)
+        OCIDescriptorFree(dateTime, OCI_DTYPE_TIMESTAMP_TZ);
+}
+
+QDateTime QOCIDateTime::fromOCIDateTime(OCIEnv *env, OCIError *err, OCIDateTime *dateTime)
+{
+    sb2 year;
+    ub1 month, day, hour, minute, second;
+    ub4 nsec;
+    sb1 tzHour, tzMinute;
+
+    OCIDateTimeGetDate(env, err, dateTime, &year, &month, &day);
+    OCIDateTimeGetTime(env, err, dateTime, &hour, &minute, &second, &nsec);
+    OCIDateTimeGetTimeZoneOffset(env, err, dateTime, &tzHour, &tzMinute);
+    int secondsOffset = (qAbs(tzHour) * 60 + tzMinute) * 60;
+    if (tzHour < 0)
+        secondsOffset = -secondsOffset;
+    // OCIDateTimeGetTime gives "fractions of second" as nanoseconds
+    return QDateTime(QDate(year, month, day), QTime(hour, minute, second, nsec / 1000000),
+                     Qt::OffsetFromUTC, secondsOffset);
+}
+
+struct TempStorage {
+    QList<QByteArray> rawData;
+    QList<QOCIDateTime *> dateTimes;
+};
 
 typedef QSharedDataPointer<QOCIRowId> QOCIRowIdPointer;
 QT_BEGIN_INCLUDE_NAMESPACE
@@ -227,11 +279,11 @@ public:
 
     void setStatementAttributes();
     int bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, int pos,
-                  const QVariant &val, dvoid *indPtr, ub2 *tmpSize, QList<QByteArray> &tmpStorage);
+                  const QVariant &val, dvoid *indPtr, ub2 *tmpSize, TempStorage &tmpStorage);
     int bindValues(QVector<QVariant> &values, IndicatorArray &indicators, SizeArray &tmpSizes,
-                   QList<QByteArray> &tmpStorage);
+                   TempStorage &tmpStorage);
     void outValues(QVector<QVariant> &values, IndicatorArray &indicators,
-                   QList<QByteArray> &tmpStorage);
+                   TempStorage &tmpStorage);
     inline bool isOutValue(int i) const
     { Q_Q(const QOCIResult); return q->bindValueType(i) & QSql::Out; }
     inline bool isBinaryValue(int i) const
@@ -304,7 +356,7 @@ void QOCIResultPrivate::setStatementAttributes()
 }
 
 int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, int pos,
-                   const QVariant &val, dvoid *indPtr, ub2 *tmpSize, QList<QByteArray> &tmpStorage)
+                                 const QVariant &val, dvoid *indPtr, ub2 *tmpSize, TempStorage &tmpStorage)
 {
     int r = OCI_SUCCESS;
     void *data = const_cast<void *>(val.constData());
@@ -322,14 +374,15 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
     case QVariant::Time:
     case QVariant::Date:
     case QVariant::DateTime: {
-        QByteArray ba = qMakeOraDate(val.toDateTime());
+        QOCIDateTime *ptr = new QOCIDateTime(env, err, val.toDateTime());
         r = OCIBindByPos(sql, hbnd, err,
                          pos + 1,
-                         ba.data(),
-                         ba.size(),
-                         SQLT_DAT, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
-        tmpStorage.append(ba);
-        break; }
+                         &ptr->dateTime,
+                         sizeof(OCIDateTime *),
+                         SQLT_TIMESTAMP_TZ, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+        tmpStorage.dateTimes.append(ptr);
+        break;
+    }
     case QVariant::Int:
         r = OCIBindByPos(sql, hbnd, err,
                          pos + 1,
@@ -356,7 +409,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                            ba.data(),
                            ba.size(),
                            SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
-        tmpStorage.append(ba);
+        tmpStorage.rawData.append(ba);
         break;
     }
     case QVariant::ULongLong:
@@ -367,7 +420,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                            ba.data(),
                            ba.size(),
                            SQLT_VNU, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
-        tmpStorage.append(ba);
+        tmpStorage.rawData.append(ba);
         break;
     }
     case QVariant::Double:
@@ -437,7 +490,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
         }
         if (r == OCI_SUCCESS)
             setCharset(*hbnd, OCI_HTYPE_BIND);
-        tmpStorage.append(ba);
+        tmpStorage.rawData.append(ba);
         break;
     } // default case
     } // switch
@@ -447,7 +500,7 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
 }
 
 int QOCIResultPrivate::bindValues(QVector<QVariant> &values, IndicatorArray &indicators,
-                            SizeArray &tmpSizes, QList<QByteArray> &tmpStorage)
+                                  SizeArray &tmpSizes, TempStorage &tmpStorage)
 {
     int r = OCI_SUCCESS;
     for (int i = 0; i < values.count(); ++i) {
@@ -465,27 +518,30 @@ int QOCIResultPrivate::bindValues(QVector<QVariant> &values, IndicatorArray &ind
 }
 
 // will assign out value and remove its temp storage.
-static void qOraOutValue(QVariant &value, QList<QByteArray> &storage, OCIError* err)
+static void qOraOutValue(QVariant &value, TempStorage &tmpStorage, OCIEnv *env, OCIError* err)
 {
     switch (value.type()) {
     case QVariant::Time:
-        value = qMakeDate(storage.takeFirst()).time();
+        value = QOCIDateTime::fromOCIDateTime(env, err,
+                                              tmpStorage.dateTimes.takeFirst()->dateTime).time();
         break;
     case QVariant::Date:
-        value = qMakeDate(storage.takeFirst()).date();
+        value = QOCIDateTime::fromOCIDateTime(env, err,
+                                              tmpStorage.dateTimes.takeFirst()->dateTime).date();
         break;
     case QVariant::DateTime:
-        value = qMakeDate(storage.takeFirst());
+        value = QOCIDateTime::fromOCIDateTime(env, err,
+                                              tmpStorage.dateTimes.takeFirst()->dateTime);
         break;
     case QVariant::LongLong:
-        value = qMakeLongLong(storage.takeFirst(), err);
+        value = qMakeLongLong(tmpStorage.rawData.takeFirst(), err);
         break;
     case QVariant::ULongLong:
-        value = qMakeULongLong(storage.takeFirst(), err);
+        value = qMakeULongLong(tmpStorage.rawData.takeFirst(), err);
         break;
     case QVariant::String:
         value = QString(
-                reinterpret_cast<const QChar *>(storage.takeFirst().constData()));
+                reinterpret_cast<const QChar *>(tmpStorage.rawData.takeFirst().constData()));
         break;
     default:
         break; //nothing
@@ -493,14 +549,14 @@ static void qOraOutValue(QVariant &value, QList<QByteArray> &storage, OCIError* 
 }
 
 void QOCIResultPrivate::outValues(QVector<QVariant> &values, IndicatorArray &indicators,
-                            QList<QByteArray> &tmpStorage)
+                                  TempStorage &tmpStorage)
 {
     for (int i = 0; i < values.count(); ++i) {
 
         if (!isOutValue(i))
             continue;
 
-        qOraOutValue(values[i], tmpStorage, err);
+        qOraOutValue(values[i], tmpStorage, env, err);
 
         QVariant::Type typ = values.at(i).type();
         if (indicators[i] == -1) // NULL
@@ -692,11 +748,9 @@ QVariant::Type qDecodeOCIType(int ocitype, QSql::NumericalPrecisionPolicy precis
         break;
     case SQLT_DAT:
     case SQLT_ODT:
-#ifdef SQLT_TIMESTAMP
     case SQLT_TIMESTAMP:
     case SQLT_TIMESTAMP_TZ:
     case SQLT_TIMESTAMP_LTZ:
-#endif
         type = QVariant::DateTime;
         break;
     default:
@@ -720,27 +774,6 @@ static QSqlField qFromOraInf(const OraFieldInfo &ofi)
     f.setPrecision(ofi.oraScale);
     f.setSqlType(int(ofi.oraType));
     return f;
-}
-
-/*!
-    \internal
-
-    Convert QDateTime to the internal Oracle DATE format NB!
-    It does not handle BCE dates.
-*/
-QByteArray qMakeOraDate(const QDateTime& dt)
-{
-    QByteArray ba;
-    ba.resize(7);
-    int year = dt.date().year();
-    ba[0]= (year / 100) + 100; // century
-    ba[1]= (year % 100) + 100; // year
-    ba[2]= dt.date().month();
-    ba[3]= dt.date().day();
-    ba[4]= dt.time().hour() + 1;
-    ba[5]= dt.time().minute() + 1;
-    ba[6]= dt.time().second() + 1;
-    return ba;
 }
 
 /*!
@@ -793,22 +826,6 @@ qulonglong qMakeULongLong(const char* ociNumber, OCIError* err)
     return qull;
 }
 
-QDateTime qMakeDate(const char* oraDate)
-{
-    int century = uchar(oraDate[0]);
-    if(century >= 100){
-        int year    = uchar(oraDate[1]);
-        year = ((century-100)*100) + (year-100);
-        int month = oraDate[2];
-        int day   = oraDate[3];
-        int hour  = oraDate[4] - 1;
-        int min   = oraDate[5] - 1;
-        int sec   = oraDate[6] - 1;
-        return QDateTime(QDate(year,month,day), QTime(hour,min,sec));
-    }
-    return QDateTime();
-}
-
 class QOCICols
 {
 public:
@@ -831,7 +848,7 @@ private:
     class OraFieldInf
     {
     public:
-        OraFieldInf(): data(0), len(0), ind(0), typ(QVariant::Invalid), oraType(0), def(0), lob(0)
+        OraFieldInf() : data(0), len(0), ind(0), typ(QVariant::Invalid), oraType(0), def(0), lob(0), dataPtr(nullptr)
         {}
         ~OraFieldInf();
         char *data;
@@ -841,6 +858,7 @@ private:
         ub4 oraType;
         OCIDefine *def;
         OCILobLocator *lob;
+        void *dataPtr;
     };
 
     QVector<OraFieldInf> fieldInf;
@@ -854,6 +872,20 @@ QOCICols::OraFieldInf::~OraFieldInf()
         int r = OCIDescriptorFree(lob, OCI_DTYPE_LOB);
         if (r != 0)
             qWarning("QOCICols: Cannot free LOB descriptor");
+    }
+    if (dataPtr) {
+        switch (typ) {
+        case QVariant::Date:
+        case QVariant::Time:
+        case QVariant::DateTime: {
+            int r = OCIDescriptorFree(dataPtr, OCI_DTYPE_TIMESTAMP_TZ);
+            if (r != OCI_SUCCESS)
+                qWarning("QOCICols: Cannot free OCIDateTime descriptor");
+            break;
+        }
+        default:
+            break;
+        }
     }
 }
 
@@ -901,13 +933,18 @@ QOCICols::QOCICols(int size, QOCIResultPrivate* dp)
 
         switch (ofi.type) {
         case QVariant::DateTime:
+            r = OCIDescriptorAlloc(d->env, (void **)&fieldInf[idx].dataPtr, OCI_DTYPE_TIMESTAMP_TZ, 0, 0);
+            if (r != OCI_SUCCESS) {
+                qWarning("QOCICols: Unable to allocate the OCIDateTime descriptor");
+                break;
+            }
             r = OCIDefineByPos(d->sql,
                                &dfn,
                                d->err,
                                count,
-                               create(idx, dataSize+1),
-                               dataSize+1,
-                               SQLT_DAT,
+                               &fieldInf[idx].dataPtr,
+                               sizeof(OCIDateTime *),
+                               SQLT_TIMESTAMP_TZ,
                                &(fieldInf[idx].ind),
                                0, 0, OCI_DEFAULT);
             break;
@@ -1322,11 +1359,10 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
         fieldTypes.append(tp == QVariant::List ? boundValues.at(i).toList().value(0).type()
                                                : tp);
     }
-
-    QList<QByteArray> tmpStorage;
     SizeArray tmpSizes(columnCount);
     QVector<QOCIBatchColumn> columns(columnCount);
     QOCIBatchCleanupHandler cleaner(columns);
+    TempStorage tmpStorage;
 
     // figuring out buffer sizes
     for (i = 0; i < columnCount; ++i) {
@@ -1363,8 +1399,8 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
             case QVariant::Time:
             case QVariant::Date:
             case QVariant::DateTime:
-                col.bindAs = SQLT_DAT;
-                col.maxLen = 7;
+                col.bindAs = SQLT_TIMESTAMP_TZ;
+                col.maxLen = sizeof(OCIDateTime *);
                 break;
 
             case QVariant::Int:
@@ -1432,7 +1468,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
         for (uint row = 0; row < col.recordCount; ++row) {
             const QVariant &val = boundValues.at(i).toList().at(row);
 
-            if (val.isNull()){
+            if (val.isNull() && !d->isOutValue(i)) {
                 columns[i].indicators[row] = -1;
                 columns[i].lengths[row] = 0;
             } else {
@@ -1443,9 +1479,8 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
                     case QVariant::Date:
                     case QVariant::DateTime:{
                         columns[i].lengths[row] = columns[i].maxLen;
-                        const QByteArray ba = qMakeOraDate(val.toDateTime());
-                        Q_ASSERT(ba.size() == int(columns[i].maxLen));
-                        memcpy(dataPtr, ba.constData(), columns[i].maxLen);
+                        QOCIDateTime *date = new QOCIDateTime(d->env, d->err, val.toDateTime());
+                        *reinterpret_cast<OCIDateTime**>(dataPtr) = date->dateTime;
                         break;
                     }
                     case QVariant::Int:
@@ -1581,7 +1616,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
 
         QVariant::Type tp = boundValues.at(i).type();
         if (tp != QVariant::List) {
-            qOraOutValue(boundValues[i], tmpStorage, d->err);
+            qOraOutValue(boundValues[i], tmpStorage, d->env, d->err);
             if (*columns[i].indicators == -1)
                 boundValues[i] = QVariant(tp);
             continue;
@@ -1593,16 +1628,16 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
         for (uint r = 0; r < columns[i].recordCount; ++r){
 
             if (columns[i].indicators[r] == -1) {
-                (*list)[r] = QVariant();
+                (*list)[r] = QVariant(fieldTypes[i]);
                 continue;
             }
 
             switch(columns[i].bindAs) {
 
-                case SQLT_DAT:
-                    (*list)[r] =  qMakeDate(data + r * columns[i].maxLen);
+                case SQLT_TIMESTAMP_TZ:
+                    (*list)[r] = QOCIDateTime::fromOCIDateTime(d->env, d->err,
+                                    *reinterpret_cast<OCIDateTime **>(data + r * columns[i].maxLen));
                     break;
-
                 case SQLT_INT:
                     (*list)[r] =  *reinterpret_cast<int*>(data + r * columns[i].maxLen);
                     break;
@@ -1646,6 +1681,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
     d->q_func()->setAt(QSql::BeforeFirstRow);
     d->q_func()->setActive(true);
 
+    qDeleteAll(tmpStorage.dateTimes);
     return true;
 }
 
@@ -1754,7 +1790,8 @@ void QOCICols::getValues(QVector<QVariant> &v, int index)
 
         switch (fld.typ) {
         case QVariant::DateTime:
-            v[index + i] = QVariant(qMakeDate(fld.data));
+            v[index + i] = QVariant(QOCIDateTime::fromOCIDateTime(d->env, d->err,
+                                        reinterpret_cast<OCIDateTime *>(fld.dataPtr)));
             break;
         case QVariant::Double:
         case QVariant::Int:
@@ -1984,7 +2021,7 @@ bool QOCIResult::exec()
     ub2 stmtType=0;
     ub4 iters;
     ub4 mode;
-    QList<QByteArray> tmpStorage;
+    TempStorage tmpStorage;
     IndicatorArray indicators(boundValueCount());
     SizeArray tmpSizes(boundValueCount());
 
@@ -2055,7 +2092,7 @@ bool QOCIResult::exec()
 
     if (hasOutValues())
         d->outValues(boundValues(), indicators, tmpStorage);
-
+    qDeleteAll(tmpStorage.dateTimes);
     return true;
 }
 
