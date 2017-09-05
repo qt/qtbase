@@ -157,10 +157,6 @@ void QLibInputHandler::processEvent(libinput_event *ev)
         // This is not just for hotplugging, it is also called for each input
         // device libinput reads from on startup. Hence it is suitable for doing
         // touch device registration.
-        const char *sysname = libinput_device_get_sysname(dev); // node name without path
-        const char *name = libinput_device_get_name(dev);
-        emit deviceAdded(QString::fromUtf8(sysname), QString::fromUtf8(name));
-
         QInputDeviceManagerPrivate *inputManagerPriv = QInputDeviceManagerPrivate::get(
             QGuiApplicationPrivate::inputDeviceManager());
         if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_TOUCH)) {
@@ -183,10 +179,6 @@ void QLibInputHandler::processEvent(libinput_event *ev)
     }
     case LIBINPUT_EVENT_DEVICE_REMOVED:
     {
-        const char *sysname = libinput_device_get_sysname(dev);
-        const char *name = libinput_device_get_name(dev);
-        emit deviceRemoved(QString::fromUtf8(sysname), QString::fromUtf8(name));
-
         QInputDeviceManagerPrivate *inputManagerPriv = QInputDeviceManagerPrivate::get(
             QGuiApplicationPrivate::inputDeviceManager());
         if (libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_TOUCH)) {

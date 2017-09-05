@@ -68,17 +68,11 @@ class QLibInputTouch;
 
 class QLibInputHandler : public QObject
 {
-    Q_OBJECT
-
 public:
     QLibInputHandler(const QString &key, const QString &spec);
     ~QLibInputHandler();
 
     void onReadyRead();
-
-signals:
-    void deviceAdded(const QString &sysname, const QString &name);
-    void deviceRemoved(const QString &sysname, const QString &name);
 
 private:
     void processEvent(libinput_event *ev);
