@@ -64,6 +64,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QOpenGLContext>
 
 #include <QtCore/QSet>
 #include <QtCore/QHash>
@@ -845,6 +846,18 @@ static inline bool resizeOnDpiChanged(const QWindow *w)
     return result;
 }
 
+static bool shouldHaveNonClientDpiScaling(const QWindow *window)
+{
+    return QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10
+        && window->isTopLevel()
+        && !window->property(QWindowsWindow::embeddedNativeParentHandleProperty).isValid()
+#if QT_CONFIG(opengl) // /QTBUG-62901, EnableNonClientDpiScaling has problems with GL
+        && (window->surfaceType() != QSurface::OpenGLSurface
+            || QOpenGLContext::openGLModuleType() != QOpenGLContext::LibGL)
+#endif
+       ;
+}
+
 /*!
      \brief Main windows procedure registered for windows.
 
@@ -970,10 +983,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             d->m_creationContext->obtainedGeometry.moveTo(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::NonClientCreate:
-            if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10 && d->m_creationContext->window->isTopLevel()
-                && !d->m_creationContext->window->property(QWindowsWindow::embeddedNativeParentHandleProperty).isValid()) {
+            if (shouldHaveNonClientDpiScaling(d->m_creationContext->window))
                 enableNonClientDpiScaling(msg.hwnd);
-            }
             return false;
         case QtWindows::CalculateSize:
             return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->customMargins, msg, result);
