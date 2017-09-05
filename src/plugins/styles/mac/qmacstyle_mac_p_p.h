@@ -168,6 +168,7 @@ QT_BEGIN_NAMESPACE
 #define CT2(c1, c2) ((uint(c1) << 16) | uint(c2))
 
 enum QCocoaWidgetKind {
+    QCocoaBox,          // QGroupBox
     QCocoaCheckBox,
     QCocoaComboBox,     // Editable QComboBox
     QCocoaDisclosureButton,  // Disclosure triangle, like in QTreeView

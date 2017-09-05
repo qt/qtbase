@@ -1937,6 +1937,15 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
 
     if (!bv) {
         switch (widget.first) {
+        case QCocoaBox: {
+            NSBox *bc = [[NSBox alloc] init];
+            bc.title = @"";
+            bc.titlePosition = NSNoTitle;
+            bc.boxType = NSBoxPrimary;
+            bc.borderType = NSBezelBorder;
+            bv = bc;
+            break;
+        }
         case QCocoaCheckBox:
             bv = makeButton(NSSwitchButton, NSRegularSquareBezelStyle);
             break;
@@ -2089,7 +2098,7 @@ void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const
 
     CGContextTranslateCTM(ctx, offset.x(), offset.y());
 
-    const CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
+    const CGRect rect = CGRectMake(qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
 
     [backingStoreNSView addSubview:view];
     view.frame = rect;
@@ -3257,17 +3266,13 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             if (groupBox->features & QStyleOptionFrame::Flat) {
                 QCommonStyle::drawPrimitive(pe, groupBox, p, w);
             } else {
-                HIThemeGroupBoxDrawInfo gdi;
-                gdi.version = qt_mac_hitheme_version;
-                gdi.state = tds;
-#if QT_CONFIG(groupbox)
-                if (w && qobject_cast<QGroupBox *>(w->parentWidget()))
-                    gdi.kind = kHIThemeGroupBoxKindSecondary;
-                else
-#endif
-                    gdi.kind = kHIThemeGroupBoxKindPrimary;
-                CGRect cgRect = opt->rect.toCGRect();
-                HIThemeDrawGroupBox(&cgRect, &gdi, cg, kHIThemeOrientationNormal);
+                const auto cw = QCocoaWidget(QCocoaBox, QStyleHelper::SizeDefault);
+                auto *box = static_cast<NSBox *>(d->cocoaControl(cw));
+                d->drawNSViewInRect(cw, box, groupBox->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+                    CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
+                    CGContextScaleCTM(ctx, 1, -1);
+                    [box drawRect:rect];
+                });
             }
         }
         break;
