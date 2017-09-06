@@ -54,6 +54,8 @@
 #include <QCoreApplication>
 #include <math.h>
 
+bool GLWidget::m_transparent = false;
+
 GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent),
       m_xRot(0),
@@ -61,10 +63,9 @@ GLWidget::GLWidget(QWidget *parent)
       m_zRot(0),
       m_program(0)
 {
-    m_core = QCoreApplication::arguments().contains(QStringLiteral("--coreprofile"));
+    m_core = QSurfaceFormat::defaultFormat().profile() == QSurfaceFormat::CoreProfile;
     // --transparent causes the clear color to be transparent. Therefore, on systems that
     // support it, the widget will become transparent apart from the logo.
-    m_transparent = QCoreApplication::arguments().contains(QStringLiteral("--transparent"));
     if (m_transparent) {
         QSurfaceFormat fmt = format();
         fmt.setAlphaBufferSize(8);
@@ -127,6 +128,8 @@ void GLWidget::setZRotation(int angle)
 
 void GLWidget::cleanup()
 {
+    if (m_program == nullptr)
+        return;
     makeCurrent();
     m_logoVbo.destroy();
     delete m_program;

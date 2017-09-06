@@ -50,7 +50,10 @@
 #include "qtoolbar.h"
 
 #include <qapplication.h>
+#include <qmenu.h>
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #if QT_CONFIG(statusbar)
 #include <qstatusbar.h>
 #endif
@@ -491,7 +494,7 @@ void QMainWindow::setToolButtonStyle(Qt::ToolButtonStyle toolButtonStyle)
     emit toolButtonStyleChanged(d->toolButtonStyle);
 }
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
 /*!
     Returns the menu bar for the main window. This function creates
     and returns an empty menu bar if the menu bar does not exist.
@@ -578,7 +581,7 @@ void QMainWindow::setMenuWidget(QWidget *menuBar)
     }
     d->layout->setMenuBar(menuBar);
 }
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
 
 #if QT_CONFIG(statusbar)
 /*!
@@ -1412,7 +1415,7 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
     // children and for the menu bar as well
     QWidget *child = childAt(event->pos());
     while (child && child != this) {
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
         if (QMenuBar *mb = qobject_cast<QMenuBar *>(child)) {
             if (mb->parentWidget() != this)
                 return;

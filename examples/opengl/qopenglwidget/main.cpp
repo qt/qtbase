@@ -51,6 +51,8 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QSurfaceFormat>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 #include "mainwindow.h"
 
 int main( int argc, char ** argv )
@@ -58,12 +60,25 @@ int main( int argc, char ** argv )
     Q_INIT_RESOURCE(texture);
     QApplication a( argc, argv );
 
+    QCoreApplication::setApplicationName("Qt QOpenGLWidget Example");
+    QCoreApplication::setOrganizationName("QtProject");
+    QCoreApplication::setApplicationVersion(QT_VERSION_STR);
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QCoreApplication::applicationName());
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QCommandLineOption multipleSampleOption("multisample", "Multisampling");
+    parser.addOption(multipleSampleOption);
+    QCommandLineOption srgbOption("srgb", "Use sRGB Color Space");
+    parser.addOption(srgbOption);
+    parser.process(a);
+
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
-    if (QCoreApplication::arguments().contains(QStringLiteral("--srgb")))
+    if (parser.isSet(srgbOption))
         format.setColorSpace(QSurfaceFormat::sRGBColorSpace);
-    if (QCoreApplication::arguments().contains(QStringLiteral("--multisample")))
+    if (parser.isSet(multipleSampleOption))
         format.setSamples(4);
     QSurfaceFormat::setDefaultFormat(format);
 

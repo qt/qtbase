@@ -227,7 +227,9 @@
 #ifndef QT_NO_NETWORKPROXY
 
 #include "private/qnetworkrequest_p.h"
+#if QT_CONFIG(socks5)
 #include "private/qsocks5socketengine_p.h"
+#endif
 #include "private/qhttpsocketengine_p.h"
 #include "qauthenticator.h"
 #include "qdebug.h"
@@ -251,7 +253,7 @@ public:
         : mutex(QMutex::Recursive)
         , applicationLevelProxy(0)
         , applicationLevelProxyFactory(0)
-#ifndef QT_NO_SOCKS5
+#if QT_CONFIG(socks5)
         , socks5SocketEngineHandler(0)
 #endif
 #ifndef QT_NO_HTTP
@@ -263,7 +265,7 @@ public:
         , useSystemProxies(false)
 #endif
     {
-#ifndef QT_NO_SOCKS5
+#if QT_CONFIG(socks5)
         socks5SocketEngineHandler = new QSocks5SocketEngineHandler();
 #endif
 #ifndef QT_NO_HTTP
@@ -275,7 +277,7 @@ public:
     {
         delete applicationLevelProxy;
         delete applicationLevelProxyFactory;
-#ifndef QT_NO_SOCKS5
+#if QT_CONFIG(socks5)
         delete socks5SocketEngineHandler;
 #endif
 #ifndef QT_NO_HTTP
@@ -335,7 +337,7 @@ private:
     QMutex mutex;
     QNetworkProxy *applicationLevelProxy;
     QNetworkProxyFactory *applicationLevelProxyFactory;
-#ifndef QT_NO_SOCKS5
+#if QT_CONFIG(socks5)
     QSocks5SocketEngineHandler *socks5SocketEngineHandler;
 #endif
 #ifndef QT_NO_HTTP

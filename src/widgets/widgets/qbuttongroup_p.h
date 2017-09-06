@@ -54,13 +54,13 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtWidgets/qbuttongroup.h>
 
-#ifndef QT_NO_BUTTONGROUP
-
 #include <QtCore/private/qobject_p.h>
 
 #include <QtCore/qlist.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qhash.h>
+
+QT_REQUIRE_CONFIG(buttongroup);
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +80,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_BUTTONGROUP
 
 #endif // QBUTTONGROUP_P_H

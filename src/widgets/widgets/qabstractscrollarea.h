@@ -46,7 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
 
 class QMargins;
 class QScrollBar;
@@ -146,7 +146,7 @@ private:
     friend class QWidgetPrivate;
 };
 
-#endif // QT_NO_SCROLLAREA
+#endif // QT_CONFIG(scrollarea)
 
 QT_END_NAMESPACE
 

@@ -4130,7 +4130,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
     return parts;
 }
 
-#endif // QT_NO_COMPLETER
+#endif // QT_CONFIG(completer)
 
 
 QT_END_NAMESPACE

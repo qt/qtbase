@@ -101,7 +101,7 @@ public:
 #ifndef QT_NO_MDIAREA
                 || qobject_cast<QMdiSubWindow *>(p) != 0
 #endif
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
                 || qobject_cast<QAbstractScrollArea *>(p) != 0
 #endif
                     ) {

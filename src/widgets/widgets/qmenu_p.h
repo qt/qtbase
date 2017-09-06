@@ -52,7 +52,9 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#if QT_CONFIG(menubar)
 #include "QtWidgets/qmenubar.h"
+#endif
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qmap.h"

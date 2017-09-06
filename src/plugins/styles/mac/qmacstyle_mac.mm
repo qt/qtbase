@@ -77,7 +77,9 @@
 #include <qlineedit.h>
 #include <qmainwindow.h>
 #include <qmdisubwindow.h>
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #include <qpaintdevice.h>
 #include <qpainter.h>
 #include <qpixmapcache.h>
@@ -838,7 +840,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
 #endif
         else if (qobject_cast<const QHeaderView *>(widg))
             ct = QStyle::CT_HeaderSection;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
         else if (qobject_cast<const QMenuBar *>(widg))
             ct = QStyle::CT_MenuBar;
 #endif

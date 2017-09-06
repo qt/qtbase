@@ -39,7 +39,7 @@
 
 #include "qabstractscrollarea.h"
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
 
 #include "qscrollbar.h"
 #include "qapplication.h"
@@ -1662,4 +1662,4 @@ QT_END_NAMESPACE
 #include "moc_qabstractscrollarea.cpp"
 #include "moc_qabstractscrollarea_p.cpp"
 
-#endif // QT_NO_SCROLLAREA
+#endif // QT_CONFIG(scrollarea)

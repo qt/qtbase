@@ -205,7 +205,7 @@ void tst_QUdpSocket::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifndef QT_NO_SOCKS5
+#if QT_CONFIG(socks5)
     if (!newTestServer)
         QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
 #endif
@@ -233,14 +233,14 @@ void tst_QUdpSocket::init()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
-#ifndef QT_NO_SOCKS5
+#if QT_CONFIG(socks5)
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
             QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
         }
 #else
         QSKIP("No proxy support");
-#endif // !QT_NO_SOCKS5
+#endif // QT_CONFIG(socks5)
     }
 }
 

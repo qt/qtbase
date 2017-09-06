@@ -94,8 +94,10 @@ namespace QTest
         extern int Q_TESTLIB_EXPORT defaultMouseDelay();
 
         // pos is in window local coordinates
-        if (window->geometry().width() <= pos.x() || window->geometry().height() <= pos.y()) {
-            QTest::qWarn("Mouse event occurs outside of target window.");
+        const QSize windowSize = window->geometry().size();
+        if (windowSize.width() <= pos.x() || windowSize.height() <= pos.y()) {
+            QTest::qWarn(qPrintable(QString::fromLatin1("Mouse event at %1, %2 occurs outside of target window (%3x%4).")
+                .arg(pos.x()).arg(pos.y()).arg(windowSize.width()).arg(windowSize.height())));
         }
 
         if (delay == -1 || delay < defaultMouseDelay())

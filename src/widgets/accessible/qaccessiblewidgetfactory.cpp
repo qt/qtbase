@@ -138,7 +138,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
     } else if (classname == QLatin1String("QToolBar")) {
         iface = new QAccessibleWidget(widget, QAccessible::ToolBar, widget->windowTitle());
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     } else if (classname == QLatin1String("QMenuBar")) {
         iface = new QAccessibleMenuBar(widget);
 #endif
@@ -177,7 +177,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         iface = new QAccessibleDisplay(widget, QAccessible::ToolTip);
     } else if (classname == QLatin1String("QFrame")) {
         iface = new QAccessibleWidget(widget, QAccessible::Border);
-#ifndef QT_NO_STACKEDWIDGET
+#if QT_CONFIG(stackedwidget)
     } else if (classname == QLatin1String("QStackedWidget")) {
         iface = new QAccessibleStackedWidget(widget);
 #endif
@@ -207,7 +207,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QTextBrowser")) {
         iface = new QAccessibleTextBrowser(widget);
 #endif
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     } else if (classname == QLatin1String("QAbstractScrollArea")) {
         iface = new QAccessibleAbstractScrollArea(widget);
     } else if (classname == QLatin1String("QScrollArea")) {

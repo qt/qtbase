@@ -39,8 +39,6 @@
 
 #include "qstackedwidget.h"
 
-#ifndef QT_NO_STACKEDWIDGET
-
 #include <qstackedlayout.h>
 #include <qevent.h>
 #include <private/qframe_p.h>
@@ -294,5 +292,3 @@ bool QStackedWidget::event(QEvent *e)
 QT_END_NAMESPACE
 
 #include "moc_qstackedwidget.cpp"
-
-#endif // QT_NO_STACKEDWIDGET

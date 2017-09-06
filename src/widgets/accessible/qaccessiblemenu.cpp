@@ -40,7 +40,9 @@
 #include "qaccessiblemenu_p.h"
 
 #include <qmenu.h>
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #include <QtWidgets/QAction>
 #include <qstyle.h>
 
@@ -139,7 +141,7 @@ int QAccessibleMenu::indexOfChild( const QAccessibleInterface *child) const
     return -1;
 }
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
 QAccessibleMenuBar::QAccessibleMenuBar(QWidget *w)
     : QAccessibleWidget(w, QAccessible::MenuBar)
 {
@@ -173,7 +175,7 @@ int QAccessibleMenuBar::indexOfChild(const QAccessibleInterface *child) const
     return -1;
 }
 
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
 
 QAccessibleMenuItem::QAccessibleMenuItem(QWidget *owner, QAction *action)
 : m_action(action), m_owner(owner)
@@ -253,13 +255,13 @@ QRect QAccessibleMenuItem::rect() const
 {
     QRect rect;
     QWidget *own = owner();
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     if (QMenuBar *menuBar = qobject_cast<QMenuBar*>(own)) {
         rect = menuBar->actionGeometry(m_action);
         QPoint globalPos = menuBar->mapToGlobal(QPoint(0,0));
         rect = rect.translated(globalPos);
     } else
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
     if (QMenu *menu = qobject_cast<QMenu*>(own)) {
         rect = menu->actionGeometry(m_action);
         QPoint globalPos = menu->mapToGlobal(QPoint(0,0));
@@ -289,7 +291,7 @@ QAccessible::State QAccessibleMenuItem::state() const
     if (QMenu *menu = qobject_cast<QMenu*>(own)) {
         if (menu->activeAction() == m_action)
             s.focused = true;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     } else if (QMenuBar *menuBar = qobject_cast<QMenuBar*>(own)) {
         if (menuBar->activeAction() == m_action)
             s.focused = true;
