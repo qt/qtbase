@@ -134,6 +134,7 @@ public:
     const WindowsScreenList &screens() const { return m_screens; }
 
     const QWindowsScreen *screenAtDp(const QPoint &p) const;
+    const QWindowsScreen *screenForHwnd(HWND hwnd) const;
 
 private:
     void removeScreen(int index);
