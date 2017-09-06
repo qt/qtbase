@@ -86,6 +86,7 @@ QCocoaMenuBar::~QCocoaMenuBar()
         // the menu bar was updated
         qDeleteAll(children());
         updateMenuBarImmediately();
+        resetKnownMenuItemsToQt();
     }
 }
 
@@ -306,16 +307,9 @@ void QCocoaMenuBar::resetKnownMenuItemsToQt()
     foreach (QCocoaMenuBar *mb, static_menubars) {
         foreach (QCocoaMenu *m, mb->m_menus) {
             foreach (QCocoaMenuItem *i, m->items()) {
-                switch (i->effectiveRole()) {
-                case QPlatformMenuItem::CutRole:
-                case QPlatformMenuItem::CopyRole:
-                case QPlatformMenuItem::PasteRole:
-                case QPlatformMenuItem::SelectAllRole:
+                if (i->effectiveRole() >= QPlatformMenuItem::ApplicationSpecificRole) {
                    [i->nsItem() setTarget:m->nsMenu().delegate];
                    [i->nsItem() setAction:@selector(itemFired:)];
-                   break;
-                default:
-                   break;
                 }
             }
         }
