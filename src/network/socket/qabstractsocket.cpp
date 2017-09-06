@@ -565,7 +565,6 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       isBuffered(false),
       hasPendingData(false),
       connectTimer(0),
-      disconnectTimer(0),
       hostLookupId(-1),
       socketType(QAbstractSocket::UnknownSocketType),
       state(QAbstractSocket::UnconnectedState),
@@ -604,8 +603,6 @@ void QAbstractSocketPrivate::resetSocketLayer()
     }
     if (connectTimer)
         connectTimer->stop();
-    if (disconnectTimer)
-        disconnectTimer->stop();
 }
 
 /*! \internal
@@ -1219,15 +1216,6 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
         emit q->error(socketError);
     } else {
         _q_connectToNextAddress();
-    }
-}
-
-void QAbstractSocketPrivate::_q_forceDisconnect()
-{
-    Q_Q(QAbstractSocket);
-    if (socketEngine && socketEngine->isValid() && state == QAbstractSocket::ClosingState) {
-        socketEngine->close();
-        q->disconnectFromHost();
     }
 }
 
@@ -2753,20 +2741,6 @@ void QAbstractSocket::disconnectFromHost()
         // Wait for pending data to be written.
         if (d->socketEngine && d->socketEngine->isValid() && (!d->allWriteBuffersEmpty()
             || d->socketEngine->bytesToWrite() > 0)) {
-            // hack: when we are waiting for the socket engine to write bytes (only
-            // possible when using Socks5 or HTTP socket engine), then close
-            // anyway after 2 seconds. This is to prevent a timeout on Mac, where we
-            // sometimes just did not get the write notifier from the underlying
-            // CFSocket and no progress was made.
-            if (d->allWriteBuffersEmpty() && d->socketEngine->bytesToWrite() > 0) {
-                if (!d->disconnectTimer) {
-                    d->disconnectTimer = new QTimer(this);
-                    connect(d->disconnectTimer, SIGNAL(timeout()), this,
-                            SLOT(_q_forceDisconnect()), Qt::DirectConnection);
-                }
-                if (!d->disconnectTimer->isActive())
-                    d->disconnectTimer->start(2000);
-            }
             d->socketEngine->setWriteNotificationEnabled(true);
 
 #if defined(QABSTRACTSOCKET_DEBUG)
