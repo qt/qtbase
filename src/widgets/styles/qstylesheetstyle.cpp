@@ -46,7 +46,9 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qmenu.h>
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #include <qpainter.h>
 #include <qstyleoption.h>
 #include <qlineedit.h>
@@ -1662,7 +1664,7 @@ int QStyleSheetStyle::nativeFrameWidth(const QWidget *w)
         return base->pixelMetric(QStyle::PM_MenuPanelWidth, 0, w);
 #endif
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     if (qobject_cast<const QMenuBar *>(w))
         return base->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, w);
 #endif
@@ -2365,7 +2367,7 @@ static QWidget *embeddedWidget(QWidget *w)
         return sb->findChild<QLineEdit *>();
 #endif
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     if (QAbstractScrollArea *sa = qobject_cast<QAbstractScrollArea *>(w))
         return sa->viewport();
 #endif
@@ -2396,7 +2398,7 @@ static QWidget *containerWidget(const QWidget *w)
     }
 #endif // QT_NO_LINEEDIT
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w->parentWidget())) {
         if (sa->viewport() == w)
             return w->parentWidget();
@@ -2800,7 +2802,7 @@ void QStyleSheetStyle::polish(QWidget *w)
     }
 
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     if (QAbstractScrollArea *sa = qobject_cast<QAbstractScrollArea *>(w)) {
         QRenderRule rule = renderRule(sa, PseudoElement_None, PseudoClass_Enabled);
         if ((rule.hasBorder() && rule.border()->hasBorderImage())
@@ -2831,7 +2833,7 @@ void QStyleSheetStyle::polish(QWidget *w)
 #ifndef QT_NO_MDIAREA
               || qobject_cast<QMdiSubWindow *>(w)
 #endif
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
               || qobject_cast<QMenuBar *>(w)
 #endif
 #if QT_CONFIG(dialog)
@@ -2902,7 +2904,7 @@ void QStyleSheetStyle::unpolish(QWidget *w)
     w->setProperty("_q_stylesheet_maxh", QVariant());
     w->setAttribute(Qt::WA_StyleSheet, false);
     QObject::disconnect(w, 0, this, 0);
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     if (QAbstractScrollArea *sa = qobject_cast<QAbstractScrollArea *>(w)) {
         QObject::disconnect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
                             sa, SLOT(update()));
@@ -4374,7 +4376,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             }
             break;
         }
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
         if (const QAbstractScrollArea *sa = qobject_cast<const QAbstractScrollArea *>(w)) {
             const QAbstractScrollAreaPrivate *sap = sa->d_func();
             rule.drawBackground(p, opt->rect, sap->contentsOffset());

@@ -43,8 +43,6 @@
 #include "private/qftp_p.h"
 #include "qabstractsocket.h"
 
-#ifndef QT_NO_FTP
-
 #include "qcoreapplication.h"
 #include "qtcpsocket.h"
 #include "qurlinfo_p.h"
@@ -2453,5 +2451,3 @@ QT_END_NAMESPACE
 #include "qftp.moc"
 
 #include "moc_qftp_p.cpp"
-
-#endif // QT_NO_FTP

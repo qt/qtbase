@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qmenu.h>
 
+QT_REQUIRE_CONFIG(menubar);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_MENUBAR
 
 class QMenuBarPrivate;
 class QStyleOptionMenuItem;
@@ -139,8 +138,6 @@ private:
     friend class QMenuPrivate;
     friend class QWindowsStyle;
 };
-
-#endif // QT_NO_MENUBAR
 
 QT_END_NAMESPACE
 

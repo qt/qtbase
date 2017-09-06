@@ -56,10 +56,9 @@
 #include <private/qurlinfo_p.h>
 #include <QtCore/qobject.h>
 
+QT_REQUIRE_CONFIG(ftp);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_FTP
 
 class QFtpPrivate;
 
@@ -168,8 +167,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_piConnectState(int))
     Q_PRIVATE_SLOT(d_func(), void _q_piFtpReply(int, const QString&))
 };
-
-#endif // QT_NO_FTP
 
 QT_END_NAMESPACE
 

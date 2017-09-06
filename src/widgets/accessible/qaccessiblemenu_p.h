@@ -82,7 +82,7 @@ protected:
     QMenu *menu() const;
 };
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
 class QAccessibleMenuBar : public QAccessibleWidget
 {
 public:
@@ -96,7 +96,7 @@ public:
 protected:
     QMenuBar *menuBar() const;
 };
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
 
 
 class QAccessibleMenuItem : public QAccessibleInterface, public QAccessibleActionInterface

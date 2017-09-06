@@ -72,7 +72,9 @@
 #if QT_CONFIG(listview)
 #include <qlistview.h>
 #endif
+#if QT_CONFIG(stackedwidget)
 #include <qstackedwidget.h>
+#endif
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
 #endif
@@ -3665,7 +3667,7 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
     case CT_Menu:
         sz += QSize(1, 0);
         break;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     case CT_MenuBarItem:
         if (!sz.isEmpty())
             sz += QSize(windowsItemHMargin * 5 + 1, 6);

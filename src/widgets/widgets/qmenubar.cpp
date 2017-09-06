@@ -62,9 +62,6 @@
 #include "qpa/qplatformintegration.h"
 #include <private/qdesktopwidget_p.h>
 
-#ifndef QT_NO_MENUBAR
-
-
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
 #include "qdebug.h"
@@ -1875,9 +1872,6 @@ QPlatformMenuBar *QMenuBar::platformMenuBar()
 
 // for private slots
 
-
 QT_END_NAMESPACE
 
 #include <moc_qmenubar.cpp>
-
-#endif // QT_NO_MENUBAR

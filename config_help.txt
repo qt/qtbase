@@ -144,6 +144,7 @@ Build options:
   -ltcg ................ Use Link Time Code Generation [no]
   -use-gold-linker ..... Use the GNU gold linker [auto]
   -incredibuild-xge .... Use the IncrediBuild XGE [no] (Windows only)
+  -ccache .............. Use the ccache compiler cache [no] (Unix only)
   -make-tool <tool> .... Use <tool> to build qmake [nmake] (Windows only)
   -mp .................. Use multiple processors for compilation (MSVC only)
 

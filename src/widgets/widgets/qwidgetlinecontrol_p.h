@@ -62,7 +62,9 @@
 #include "QtGui/qclipboard.h"
 #include "QtGui/qinputmethod.h"
 #include "QtCore/qpoint.h"
+#if QT_CONFIG(completer)
 #include "QtWidgets/qcompleter.h"
+#endif
 #include "QtCore/qthread.h"
 #include "QtGui/private/qinputcontrol_p.h"
 
@@ -289,7 +291,7 @@ public:
     void setValidator(const QValidator *v) { m_validator = const_cast<QValidator*>(v); }
 #endif
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     QCompleter *completer() const { return m_completer; }
     /* Note that you must set the widget for the completer separately */
     void setCompleter(const QCompleter *c) { m_completer = const_cast<QCompleter*>(c); }
@@ -461,7 +463,7 @@ private:
     QPointer<QValidator> m_validator;
 #endif
     QPointer<QCompleter> m_completer;
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     bool advanceToEnabledItem(int dir);
 #endif
 

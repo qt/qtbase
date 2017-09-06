@@ -1544,6 +1544,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     }
 
     m_composingText.clear();
+    m_composingFocusObject = nullptr;
 }
 
 - (void) setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
@@ -1598,6 +1599,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     m_composingText = preeditString;
 
     if (QObject *fo = m_platformWindow->window()->focusObject()) {
+        m_composingFocusObject = fo;
         QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
         if (QCoreApplication::sendEvent(fo, &queryEvent)) {
             if (queryEvent.value(Qt::ImEnabled).toBool()) {
@@ -1608,6 +1610,25 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
             }
         }
     }
+}
+
+- (void)cancelComposingText
+{
+    if (m_composingText.isEmpty())
+        return;
+
+    if (m_composingFocusObject) {
+        QInputMethodQueryEvent queryEvent(Qt::ImEnabled);
+        if (QCoreApplication::sendEvent(m_composingFocusObject, &queryEvent)) {
+            if (queryEvent.value(Qt::ImEnabled).toBool()) {
+                QInputMethodEvent e;
+                QCoreApplication::sendEvent(m_composingFocusObject, &e);
+            }
+        }
+    }
+
+    m_composingText.clear();
+    m_composingFocusObject = nullptr;
 }
 
 - (void) unmarkText
@@ -1625,6 +1646,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         }
     }
     m_composingText.clear();
+    m_composingFocusObject = nullptr;
 }
 
 - (BOOL) hasMarkedText

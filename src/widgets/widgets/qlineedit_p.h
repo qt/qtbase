@@ -63,7 +63,9 @@
 #include "QtGui/qicon.h"
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qbasictimer.h"
+#if QT_CONFIG(completer)
 #include "QtWidgets/qcompleter.h"
+#endif
 #include "QtCore/qpointer.h"
 #include "QtCore/qmimedata.h"
 
@@ -203,7 +205,7 @@ public:
 #endif
     void _q_selectionChanged();
     void _q_updateNeeded(const QRect &);
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     void _q_completionHighlighted(const QString &);
 #endif
     QPoint mousePressPos;

@@ -149,7 +149,7 @@ void tst_QTcpServer::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
-#ifndef QT_NO_SOCKS5
+#if QT_CONFIG(socks5)
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
 #endif
 

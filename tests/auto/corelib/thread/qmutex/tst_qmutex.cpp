@@ -99,6 +99,9 @@ void tst_QMutex::convertToMilliseconds_data()
     QTest::addColumn<qint64>("intValue");
     QTest::addColumn<qint64>("expected");
 
+#if !QT_HAS_INCLUDE(<chrono>)
+    QSKIP("This test requires <chrono>");
+#endif
 
     auto add = [](TimeUnit unit, double d, long long i, qint64 expected) {
         const QScopedArrayPointer<char> enumName(QTest::toString(unit));

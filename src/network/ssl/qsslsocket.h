@@ -224,6 +224,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_channelReadyReadSlot(int))
     Q_PRIVATE_SLOT(d_func(), void _q_bytesWrittenSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void _q_channelBytesWrittenSlot(int, qint64))
+    Q_PRIVATE_SLOT(d_func(), void _q_readChannelFinishedSlot())
     Q_PRIVATE_SLOT(d_func(), void _q_flushWriteBuffer())
     Q_PRIVATE_SLOT(d_func(), void _q_flushReadBuffer())
     Q_PRIVATE_SLOT(d_func(), void _q_resumeImplementation())

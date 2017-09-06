@@ -83,7 +83,7 @@ private slots:
     void customPaperSizeAndMargins();
     void customPaperNameSettingBySize();
     void customPaperNameSettingByName();
-#if !defined(QT_NO_COMPLETER) && QT_CONFIG(filedialog)
+#if QT_CONFIG(completer) && QT_CONFIG(filedialog)
     void printDialogCompleter();
 #endif
     void testCurrentPage();
@@ -587,7 +587,7 @@ void tst_QPrinter::customPaperSizeAndMargins()
     }
 }
 
-#if !defined(QT_NO_COMPLETER) && QT_CONFIG(filedialog)
+#if QT_CONFIG(completer) && QT_CONFIG(filedialog)
 void tst_QPrinter::printDialogCompleter()
 {
     QPrintDialog dialog;

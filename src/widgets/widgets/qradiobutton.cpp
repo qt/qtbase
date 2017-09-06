@@ -40,7 +40,9 @@
 #include "qradiobutton.h"
 #include "qapplication.h"
 #include "qbitmap.h"
+#if QT_CONFIG(buttongroup)
 #include "qbuttongroup.h"
+#endif
 #include "qstylepainter.h"
 #include "qstyle.h"
 #include "qstyleoption.h"

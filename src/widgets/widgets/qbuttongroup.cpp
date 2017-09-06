@@ -39,8 +39,6 @@
 
 #include "private/qbuttongroup_p.h"
 
-#ifndef QT_NO_BUTTONGROUP
-
 #include "private/qabstractbutton_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -362,5 +360,3 @@ int QButtonGroup::checkedId() const
 QT_END_NAMESPACE
 
 #include "moc_qbuttongroup.cpp"
-
-#endif // QT_NO_BUTTONGROUP
