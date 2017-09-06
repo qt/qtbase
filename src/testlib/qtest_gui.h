@@ -122,25 +122,25 @@ template<> inline char *toString(const QRegion &region)
 #ifndef QT_NO_VECTOR2D
 template<> inline char *toString(const QVector2D &v)
 {
-    QByteArray result = "QVector2D(" + QByteArray::number(v.x()) + ", "
-        + QByteArray::number(v.y()) + ')';
+    QByteArray result = "QVector2D(" + QByteArray::number(double(v.x())) + ", "
+        + QByteArray::number(double(v.y())) + ')';
     return qstrdup(result.constData());
 }
 #endif // !QT_NO_VECTOR2D
 #ifndef QT_NO_VECTOR3D
 template<> inline char *toString(const QVector3D &v)
 {
-    QByteArray result = "QVector3D(" + QByteArray::number(v.x()) + ", "
-        + QByteArray::number(v.y()) + ", " + QByteArray::number(v.z()) + ')';
+    QByteArray result = "QVector3D(" + QByteArray::number(double(v.x())) + ", "
+        + QByteArray::number(double(v.y())) + ", " + QByteArray::number(double(v.z())) + ')';
     return qstrdup(result.constData());
 }
 #endif // !QT_NO_VECTOR3D
 #ifndef QT_NO_VECTOR4D
 template<> inline char *toString(const QVector4D &v)
 {
-    QByteArray result = "QVector4D(" + QByteArray::number(v.x()) + ", "
-        + QByteArray::number(v.y()) + ", " + QByteArray::number(v.z())
-        + ", " + QByteArray::number(v.w()) + ')';
+    QByteArray result = "QVector4D(" + QByteArray::number(double(v.x())) + ", "
+        + QByteArray::number(double(v.y())) + ", " + QByteArray::number(double(v.z()))
+        + ", " + QByteArray::number(double(v.w())) + ')';
     return qstrdup(result.constData());
 }
 #endif // !QT_NO_VECTOR4D
