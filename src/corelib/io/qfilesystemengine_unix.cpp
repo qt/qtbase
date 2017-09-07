@@ -202,6 +202,8 @@ static inline typename QtPrivate::QEnableIf<(&T::st_atimespec, &T::st_mtimespec,
     modification->tv_usec = p->st_mtimespec.tv_nsec / 1000;
 }
 
+#  ifndef st_atimensec
+// if "st_atimensec" is defined, this would expand to invalid C++
 template <typename T>
 static inline typename QtPrivate::QEnableIf<(&T::st_atimensec, &T::st_mtimensec, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
 {
@@ -211,6 +213,7 @@ static inline typename QtPrivate::QEnableIf<(&T::st_atimensec, &T::st_mtimensec,
     modification->tv_sec = p->st_mtime;
     modification->tv_usec = p->st_mtimensec / 1000;
 }
+#  endif
 #endif
 
 qint64 timespecToMSecs(const timespec &spec)
@@ -268,6 +271,7 @@ mtime(const T &statBuffer, int)
 { return timespecToMSecs(statBuffer.st_mtimespec); }
 #endif
 
+#ifndef st_mtimensec
 // Xtimensec
 template <typename T>
 Q_DECL_UNUSED static typename std::enable_if<(&T::st_atimensec, true), qint64>::type
@@ -288,8 +292,9 @@ template <typename T>
 Q_DECL_UNUSED static typename std::enable_if<(&T::st_mtimensec, true), qint64>::type
 mtime(const T &statBuffer, int)
 { return statBuffer.st_mtime * Q_INT64_C(1000) + statBuffer.st_mtimensec / 1000000; }
-}
-}
+#endif
+} // namespace GetFileTimes
+} // unnamed namespace
 
 #ifdef STATX_BASIC_STATS
 static int qt_real_statx(int fd, const char *pathname, int flags, struct statx *statxBuffer)
