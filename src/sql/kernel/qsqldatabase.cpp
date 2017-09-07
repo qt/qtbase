@@ -365,6 +365,14 @@ void QSqlDatabasePrivate::disable()
     cloneDatabase() to create an independent database connection based
     on an existing one.
 
+    \warning It is highly recommended that you do not keep a copy of the
+    QSqlDatabase around as a member of a class, as this will prevent the
+    instance from being correctly cleaned up on shutdown. If you need to
+    access an existing QSqlDatabase, it should be accessed with database().
+    If you chose to have a QSqlDatabase member variable, this needs to be
+    deleted before the QCoreApplication instance is deleted, otherwise it
+    may lead to undefined behavior.
+
     If you create multiple database connections, specify a unique
     connection name for each one, when you call addDatabase(). Use
     database() with a connection name to get that connection. Use
