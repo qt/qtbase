@@ -384,6 +384,20 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     output.drm_format = drmFormat;
     output.clone_source = cloneSource;
 
+    QString planeListStr;
+    for (const QKmsPlane &plane : qAsConst(m_planes)) {
+        if (plane.possibleCrtcs & (1 << output.crtc_index)) {
+            output.available_planes.append(plane);
+            planeListStr.append(QString::number(plane.id));
+            planeListStr.append(QLatin1Char(' '));
+        }
+    }
+    qCDebug(qLcKmsDebug, "Output %s can use %d planes: %s",
+            connectorName.constData(), output.available_planes.count(), qPrintable(planeListStr));
+
+    // This is for the EGLDevice/EGLStream backend. On some of those devices one
+    // may want to target a pre-configured plane. It is probably useless for
+    // eglfs_kms and others. Do not confuse with generic plane support (available_planes).
     bool ok;
     int idx = qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_PLANE_INDEX", &ok);
     if (ok) {
@@ -504,11 +518,15 @@ void QKmsDevice::createScreens()
         }
     }
 
+    drmSetClientCap(m_dri_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+
     drmModeResPtr resources = drmModeGetResources(m_dri_fd);
     if (!resources) {
         qErrnoWarning(errno, "drmModeGetResources failed");
         return;
     }
+
+    discoverPlanes();
 
     QVector<OrderedScreen> screens;
 
@@ -626,6 +644,116 @@ void QKmsDevice::registerScreenCloning(QPlatformScreen *screen,
     Q_UNUSED(screen);
     Q_UNUSED(screenThisScreenClones);
     Q_UNUSED(screensCloningThisScreen);
+}
+
+// drm_property_type_is is not available in old headers
+static inline bool propTypeIs(drmModePropertyPtr prop, uint32_t type)
+{
+    if (prop->flags & DRM_MODE_PROP_EXTENDED_TYPE)
+        return (prop->flags & DRM_MODE_PROP_EXTENDED_TYPE) == type;
+    return prop->flags & type;
+}
+
+void QKmsDevice::enumerateProperties(drmModeObjectPropertiesPtr objProps, PropCallback callback)
+{
+    for (uint32_t propIdx = 0; propIdx < objProps->count_props; ++propIdx) {
+        drmModePropertyPtr prop = drmModeGetProperty(m_dri_fd, objProps->props[propIdx]);
+        if (!prop)
+            continue;
+
+        const quint64 value = objProps->prop_values[propIdx];
+        qCDebug(qLcKmsDebug, "  property %d: id = %u name = '%s'", propIdx, prop->prop_id, prop->name);
+
+        if (propTypeIs(prop, DRM_MODE_PROP_SIGNED_RANGE)) {
+            qCDebug(qLcKmsDebug, "  type is SIGNED_RANGE, value is %lld, possible values are:", qint64(value));
+            for (int i = 0; i < prop->count_values; ++i)
+                qCDebug(qLcKmsDebug, "    %lld", qint64(prop->values[i]));
+        } else if (propTypeIs(prop, DRM_MODE_PROP_RANGE)) {
+            qCDebug(qLcKmsDebug, "  type is RANGE, value is %llu, possible values are:", value);
+            for (int i = 0; i < prop->count_values; ++i)
+                qCDebug(qLcKmsDebug, "    %llu", quint64(prop->values[i]));
+        } else if (propTypeIs(prop, DRM_MODE_PROP_ENUM)) {
+            qCDebug(qLcKmsDebug, "  type is ENUM, value is %llu, possible values are:", value);
+            for (int i = 0; i < prop->count_enums; ++i)
+                qCDebug(qLcKmsDebug, "    enum %d: %s - %llu", i, prop->enums[i].name, prop->enums[i].value);
+        } else if (propTypeIs(prop, DRM_MODE_PROP_BITMASK)) {
+            qCDebug(qLcKmsDebug, "  type is BITMASK, value is %llu, possible bits are:", value);
+            for (int i = 0; i < prop->count_enums; ++i)
+                qCDebug(qLcKmsDebug, "    bitmask %d: %s - %u", i, prop->enums[i].name, 1 << prop->enums[i].value);
+        } else if (propTypeIs(prop, DRM_MODE_PROP_BLOB)) {
+            qCDebug(qLcKmsDebug, "  type is BLOB");
+        } else if (propTypeIs(prop, DRM_MODE_PROP_OBJECT)) {
+            qCDebug(qLcKmsDebug, "  type is OBJECT");
+        }
+
+        callback(prop, value);
+
+        drmModeFreeProperty(prop);
+    }
+}
+
+void QKmsDevice::discoverPlanes()
+{
+    m_planes.clear();
+
+    drmModePlaneResPtr planeResources = drmModeGetPlaneResources(m_dri_fd);
+    if (!planeResources)
+        return;
+
+    const int countPlanes = planeResources->count_planes;
+    qCDebug(qLcKmsDebug, "Found %d planes", countPlanes);
+    for (int planeIdx = 0; planeIdx < countPlanes; ++planeIdx) {
+        drmModePlanePtr drmplane = drmModeGetPlane(m_dri_fd, planeResources->planes[planeIdx]);
+        if (!drmplane) {
+            qCDebug(qLcKmsDebug, "Failed to query plane %d, ignoring", planeIdx);
+            continue;
+        }
+
+        QKmsPlane plane;
+        plane.id = drmplane->plane_id;
+        plane.possibleCrtcs = drmplane->possible_crtcs;
+
+        const int countFormats = drmplane->count_formats;
+        QString formatStr;
+        for (int i = 0; i < countFormats; ++i) {
+            uint32_t f = drmplane->formats[i];
+            plane.supportedFormats.append(f);
+            QString s;
+            s.sprintf("%c%c%c%c ", f, f >> 8, f >> 16, f >> 24);
+            formatStr += s;
+        }
+
+        qCDebug(qLcKmsDebug, "plane %d: id = %u countFormats = %d possibleCrtcs = 0x%x supported formats = %s",
+                planeIdx, plane.id, countFormats, plane.possibleCrtcs, qPrintable(formatStr));
+
+        drmModeFreePlane(drmplane);
+
+        drmModeObjectPropertiesPtr objProps = drmModeObjectGetProperties(m_dri_fd, plane.id, DRM_MODE_OBJECT_PLANE);
+        if (!objProps) {
+            qCDebug(qLcKmsDebug, "Failed to query plane %d object properties, ignoring", planeIdx);
+            continue;
+        }
+
+        enumerateProperties(objProps, [this, &plane](drmModePropertyPtr prop, quint64 value) {
+            if (!strcmp(prop->name, "type")) {
+                plane.type = QKmsPlane::Type(value);
+            } else if (!strcmp(prop->name, "rotation")) {
+                plane.initialRotation = QKmsPlane::Rotations(int(value));
+                plane.availableRotations = 0;
+                if (propTypeIs(prop, DRM_MODE_PROP_BITMASK)) {
+                    for (int i = 0; i < prop->count_enums; ++i)
+                        plane.availableRotations |= QKmsPlane::Rotation(1 << prop->enums[i].value);
+                }
+                plane.rotationPropertyId = prop->prop_id;
+            }
+        });
+
+        m_planes.append(plane);
+
+        drmModeFreeObjectProperties(objProps);
+    }
+
+    drmModeFreePlaneResources(planeResources);
 }
 
 int QKmsDevice::fd() const

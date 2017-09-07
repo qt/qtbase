@@ -61,6 +61,41 @@
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
 
+#include <functional>
+
+// In less fortunate cases one may need to build on a system with dev headers
+// from the dark ages. Let's pull a GL and define the missing stuff outselves.
+
+#ifndef DRM_PLANE_TYPE_OVERLAY
+#define DRM_PLANE_TYPE_OVERLAY 0
+#endif
+#ifndef DRM_PLANE_TYPE_PRIMARY
+#define DRM_PLANE_TYPE_PRIMARY 1
+#endif
+#ifndef DRM_PLANE_TYPE_CURSOR
+#define DRM_PLANE_TYPE_CURSOR 2
+#endif
+
+#ifndef DRM_CLIENT_CAP_UNIVERSAL_PLANES
+#define DRM_CLIENT_CAP_UNIVERSAL_PLANES 2
+#endif
+#ifndef DRM_CLIENT_CAP_ATOMIC
+#define DRM_CLIENT_CAP_ATOMIC 3
+#endif
+
+#ifndef DRM_MODE_PROP_EXTENDED_TYPE
+#define DRM_MODE_PROP_EXTENDED_TYPE 0x0000ffc0
+#endif
+#ifndef DRM_MODE_PROP_TYPE
+#define DRM_MODE_PROP_TYPE(n) ((n) << 6)
+#endif
+#ifndef DRM_MODE_PROP_OBJECT
+#define DRM_MODE_PROP_OBJECT DRM_MODE_PROP_TYPE(1)
+#endif
+#ifndef DRM_MODE_PROP_SIGNED_RANGE
+#define DRM_MODE_PROP_SIGNED_RANGE DRM_MODE_PROP_TYPE(2)
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QKmsDevice;
@@ -99,6 +134,42 @@ private:
     QMap<QString, QVariantMap> m_outputSettings;
 };
 
+// NB! QKmsPlane does not store the current state and offers no functions to
+// change object properties. Any such functionality belongs to subclasses since
+// in some cases atomic operations will be desired where a mere
+// drmModeObjectSetProperty would not be acceptable.
+struct QKmsPlane
+{
+    enum Type {
+        OverlayPlane = DRM_PLANE_TYPE_OVERLAY,
+        PrimaryPlane = DRM_PLANE_TYPE_PRIMARY,
+        CursorPlane = DRM_PLANE_TYPE_CURSOR
+    };
+
+    enum Rotation {
+        Rotation0 = 1 << 0,
+        Rotation90 = 1 << 1,
+        Rotation180 = 1 << 2,
+        Rotation270 = 1 << 3,
+        RotationReflectX = 1 << 4,
+        RotationReflectY = 1 << 5
+    };
+    Q_DECLARE_FLAGS(Rotations, Rotation)
+
+    uint32_t id = 0;
+    Type type = OverlayPlane;
+
+    int possibleCrtcs = 0;
+
+    QVector<uint32_t> supportedFormats;
+
+    Rotations initialRotation = Rotation0;
+    Rotations availableRotations = Rotation0;
+    uint32_t rotationPropertyId = 0;
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QKmsPlane::Rotations)
+
 struct QKmsOutput
 {
     QString name;
@@ -119,6 +190,7 @@ struct QKmsOutput
     bool forced_plane_set = false;
     uint32_t drm_format = DRM_FORMAT_XRGB8888;
     QString clone_source;
+    QVector<QKmsPlane> available_planes;
 
     void restoreMode(QKmsDevice *device);
     void cleanup(QKmsDevice *device);
@@ -168,12 +240,17 @@ protected:
                                               ScreenInfo *vinfo);
     drmModePropertyPtr connectorProperty(drmModeConnectorPtr connector, const QByteArray &name);
     drmModePropertyBlobPtr connectorPropertyBlob(drmModeConnectorPtr connector, const QByteArray &name);
+    typedef std::function<void(drmModePropertyPtr, quint64)> PropCallback;
+    void enumerateProperties(drmModeObjectPropertiesPtr objProps, PropCallback callback);
+    void discoverPlanes();
 
     QKmsScreenConfig *m_screenConfig;
     QString m_path;
     int m_dri_fd;
 
     quint32 m_crtc_allocator;
+
+    QVector<QKmsPlane> m_planes;
 
 private:
     Q_DISABLE_COPY(QKmsDevice)
