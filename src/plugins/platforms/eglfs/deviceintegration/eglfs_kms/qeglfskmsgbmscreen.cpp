@@ -191,8 +191,6 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
 {
     QKmsOutput &op(output());
     const int fd = device()->fd();
-    const uint32_t w = op.modes[op.mode].hdisplay;
-    const uint32_t h = op.modes[op.mode].vdisplay;
 
     if (!op.mode_set) {
         op.mode_set = true;
@@ -223,19 +221,6 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
                 setPowerState(PowerStateOn);
             else
                 qErrnoWarning(errno, "Could not set DRM mode for screen %s", qPrintable(name()));
-        }
-    }
-
-    if (!op.plane_set) {
-        op.plane_set = true;
-        if (op.wants_plane) {
-            qCDebug(qLcEglfsKmsDebug, "Setting plane %u", op.plane_id);
-            int ret = drmModeSetPlane(fd, op.plane_id, op.crtc_id,
-                                      uint32_t(-1), 0,
-                                      0, 0, w, h,
-                                      0 << 16, 0 << 16, w << 16, h << 16);
-            if (ret)
-                qErrnoWarning(errno, "drmModeSetPlane failed");
         }
     }
 }

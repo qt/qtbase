@@ -376,9 +376,9 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     output.subpixel = connector->subpixel;
     output.dpms_prop = connectorProperty(connector, QByteArrayLiteral("DPMS"));
     output.edid_blob = connectorPropertyBlob(connector, QByteArrayLiteral("EDID"));
-    output.wants_plane = false;
-    output.plane_id = 0;
-    output.plane_set = false;
+    output.wants_forced_plane = false;
+    output.forced_plane_id = 0;
+    output.forced_plane_set = false;
     output.drm_format = drmFormat;
     output.clone_source = cloneSource;
 
@@ -390,8 +390,8 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
             if (idx >= 0 && idx < int(planeResources->count_planes)) {
                 drmModePlane *plane = drmModeGetPlane(m_dri_fd, planeResources->planes[idx]);
                 if (plane) {
-                    output.wants_plane = true;
-                    output.plane_id = plane->plane_id;
+                    output.wants_forced_plane = true;
+                    output.forced_plane_id = plane->plane_id;
                     qCDebug(qLcKmsDebug, "Forcing plane index %d, plane id %u (belongs to crtc id %u)",
                             idx, plane->plane_id, plane->crtc_id);
                     drmModeFreePlane(plane);

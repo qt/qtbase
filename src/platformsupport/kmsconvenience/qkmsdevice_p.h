@@ -113,9 +113,9 @@ struct QKmsOutput
     int subpixel = DRM_MODE_SUBPIXEL_UNKNOWN;
     drmModePropertyPtr dpms_prop = nullptr;
     drmModePropertyBlobPtr edid_blob = nullptr;
-    bool wants_plane = false;
-    uint32_t plane_id = 0;
-    bool plane_set = false;
+    bool wants_forced_plane = false;
+    uint32_t forced_plane_id = 0;
+    bool forced_plane_set = false;
     uint32_t drm_format = DRM_FORMAT_XRGB8888;
     QString clone_source;
 

@@ -105,12 +105,12 @@ void QEglFSKmsEglDeviceScreen::waitForFlip()
             qErrnoWarning(errno, "drmModeSetCrtc failed");
     }
 
-    if (!op.plane_set) {
-        op.plane_set = true;
+    if (!op.forced_plane_set) {
+        op.forced_plane_set = true;
 
-        if (op.wants_plane) {
-            qCDebug(qLcEglfsKmsDebug, "Setting plane %u", op.plane_id);
-            int ret = drmModeSetPlane(fd, op.plane_id, op.crtc_id, uint32_t(-1), 0,
+        if (op.wants_forced_plane) {
+            qCDebug(qLcEglfsKmsDebug, "Setting plane %u", op.forced_plane_id);
+            int ret = drmModeSetPlane(fd, op.forced_plane_id, op.crtc_id, uint32_t(-1), 0,
                                       0, 0, w, h,
                                       0 << 16, 0 << 16, w << 16, h << 16);
             if (ret == -1)

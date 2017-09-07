@@ -180,7 +180,7 @@ void QEglFSKmsEglDeviceWindow::resetSurface()
     QEglFSKmsEglDeviceScreen *cur_screen = static_cast<QEglFSKmsEglDeviceScreen *>(screen());
     Q_ASSERT(cur_screen);
     QKmsOutput &output(cur_screen->output());
-    const uint32_t wantedId = !output.wants_plane ? output.crtc_id : output.plane_id;
+    const uint32_t wantedId = !output.wants_forced_plane ? output.crtc_id : output.forced_plane_id;
     qCDebug(qLcEglfsKmsDebug, "Searching for id: %d", wantedId);
 
     EGLOutputLayerEXT layer = EGL_NO_OUTPUT_LAYER_EXT;
