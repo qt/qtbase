@@ -75,7 +75,7 @@ int QKmsDevice::crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr co
 
         for (int j = 0; j < resources->count_crtcs; j++) {
             bool isPossible = possibleCrtcs & (1 << j);
-            bool isAvailable = !(m_crtc_allocator & 1 << resources->crtcs[j]);
+            bool isAvailable = !(m_crtc_allocator & (1 << j));
 
             if (isPossible && isAvailable)
                 return j;
@@ -245,7 +245,8 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
 
     QList<drmModeModeInfo> modes;
     modes.reserve(connector->count_modes);
-    qCDebug(qLcKmsDebug) << connectorName << "mode count:" << connector->count_modes;
+    qCDebug(qLcKmsDebug) << connectorName << "mode count:" << connector->count_modes
+                         << "crtc index:" << crtc << "crtc id:" << crtc_id;
     for (int i = 0; i < connector->count_modes; i++) {
         const drmModeModeInfo &mode = connector->modes[i];
         qCDebug(qLcKmsDebug) << "mode" << i << mode.hdisplay << "x" << mode.vdisplay
@@ -366,6 +367,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     QKmsOutput output;
     output.name = QString::fromUtf8(connectorName);
     output.connector_id = connector->connector_id;
+    output.crtc_index = crtc;
     output.crtc_id = crtc_id;
     output.physical_size = physSize;
     output.preferred_mode = preferred >= 0 ? preferred : selected_mode;
@@ -402,7 +404,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         }
     }
 
-    m_crtc_allocator |= (1 << output.crtc_id);
+    m_crtc_allocator |= (1 << output.crtc_index);
 
     vinfo->output = output;
 
