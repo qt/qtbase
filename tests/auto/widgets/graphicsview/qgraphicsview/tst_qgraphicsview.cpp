@@ -4777,8 +4777,6 @@ class GraphicsItemWithHover : public QGraphicsRectItem
 {
 public:
     GraphicsItemWithHover()
-        : receivedEnterEvent(false), receivedLeaveEvent(false),
-          enterWidget(0), leaveWidget(0)
     {
         setRect(0, 0, 100, 100);
         setAcceptHoverEvents(true);
@@ -4786,6 +4784,9 @@ public:
 
     bool sceneEvent(QEvent *event)
     {
+        if (!checkEvents) // ensures that we don't look at stray events before we are ready
+            return QGraphicsRectItem::sceneEvent(event);
+
         if (event->type() == QEvent::GraphicsSceneHoverEnter) {
             receivedEnterEvent = true;
             enterWidget = static_cast<QGraphicsSceneHoverEvent *>(event)->widget();
@@ -4796,50 +4797,39 @@ public:
         return QGraphicsRectItem::sceneEvent(event);
     }
 
-    bool receivedEnterEvent;
-    bool receivedLeaveEvent;
-    QWidget *enterWidget;
-    QWidget *leaveWidget;
+    bool receivedEnterEvent = false;
+    bool receivedLeaveEvent = false;
+    QWidget *enterWidget = nullptr;
+    QWidget *leaveWidget = nullptr;
+    bool checkEvents = false;
 };
 
 void tst_QGraphicsView::hoverLeave()
 {
-    if (platformName == QStringLiteral("cocoa")) {
-        QSKIP("Insignificant on OSX");
-    } else if (platformName == QStringLiteral("minimal")
-        || (platformName == QStringLiteral("offscreen"))) {
-        QSKIP("Fails in minimal/offscreen platforms if forwardMouseDoubleClick has been run");
-    }
-    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.resize(160, 160);
-    view.move(availableGeometry.center() - QPoint(80, 80));
     GraphicsItemWithHover *item = new GraphicsItemWithHover;
     scene.addItem(item);
 
-    // move the cursor out of the way
-    const QPoint outOfWindow = view.geometry().topRight() + QPoint(50, 0);
-    QCursor::setPos(outOfWindow);
-
     view.showNormal();
     qApp->setActiveWindow(&view);
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QPoint pos = view.viewport()->mapToGlobal(view.mapFromScene(item->mapToScene(10, 10)));
-    QCursor::setPos(pos);
+    QWindow *viewWindow = view.window()->windowHandle();
+    QPoint posOutsideItem = view.mapFromScene(item->mapToScene(0, 0)) - QPoint(5, 0);
+    QPoint posOutsideItemGlobal = view.mapToGlobal(posOutsideItem);
+    QPoint posOutsideItemInWindow = viewWindow->mapFromGlobal(posOutsideItemGlobal);
+    QTest::mouseMove(viewWindow, posOutsideItemInWindow);
 
-#if defined(Q_OS_QNX)
-    QEXPECT_FAIL("", "QCursor does not set native cursor on QNX", Abort);
-#endif
-
+    item->checkEvents = true;
+    QPoint posInItemGlobal = view.mapToGlobal(view.mapFromScene(item->mapToScene(10, 10)));
+    QTest::mouseMove(viewWindow, viewWindow->mapFromGlobal(posInItemGlobal));
     QTRY_VERIFY(item->receivedEnterEvent);
     QCOMPARE(item->enterWidget, view.viewport());
 
-    QCursor::setPos(outOfWindow);
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-26274 - behaviour regression", Abort);
-#endif
+    QTest::mouseMove(viewWindow, posOutsideItemInWindow);
+
     QTRY_VERIFY(item->receivedLeaveEvent);
     QCOMPARE(item->leaveWidget, view.viewport());
 }
