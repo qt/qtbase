@@ -1560,8 +1560,7 @@ bool QColorDialogPrivate::selectColor(const QColor &col)
 QColor QColorDialogPrivate::grabScreenColor(const QPoint &p)
 {
     const QDesktopWidget *desktop = QApplication::desktop();
-    const QPixmap pixmap = QGuiApplication::screens().at(desktop->screenNumber())->grabWindow(desktop->winId(),
-                                                                                              p.x(), p.y(), 1, 1);
+    const QPixmap pixmap = QGuiApplication::primaryScreen()->grabWindow(desktop->winId(), p.x(), p.y(), 1, 1);
     QImage i = pixmap.toImage();
     return i.pixel(0, 0);
 }

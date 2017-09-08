@@ -59,32 +59,45 @@ public:
     QDesktopWidget();
     ~QDesktopWidget();
 
-    bool isVirtualDesktop() const;
-
-    int numScreens() const;
-    int screenCount() const;
-    int primaryScreen() const;
-
     int screenNumber(const QWidget *widget = nullptr) const;
-    int screenNumber(const QPoint &) const;
-
-    QWidget *screen(int screen = -1);
-
-    const QRect screenGeometry(int screen = -1) const;
     const QRect screenGeometry(const QWidget *widget) const;
-    const QRect screenGeometry(const QPoint &point) const
-    { return screenGeometry(screenNumber(point)); }
-
-    const QRect availableGeometry(int screen = -1) const;
     const QRect availableGeometry(const QWidget *widget) const;
-    const QRect availableGeometry(const QPoint &point) const
-    { return availableGeometry(screenNumber(point)); }
+
+#if QT_DEPRECATED_SINCE(5, 11)
+    QT_DEPRECATED_X("Use QScreen::virtualSiblings() of primary screen")  bool isVirtualDesktop() const;
+
+    QT_DEPRECATED_X("Use QGuiApplication::screens()") int numScreens() const;
+    QT_DEPRECATED_X("Use QGuiApplication::screens()") int screenCount() const;
+    QT_DEPRECATED_X("Use QGuiApplication::primaryScreen()") int primaryScreen() const;
+
+    QT_DEPRECATED_X("Use QGuiApplication::screenAt()") int screenNumber(const QPoint &) const;
+
+    QT_DEPRECATED_X("Use QScreen") QWidget *screen(int screen = -1);
+
+    QT_DEPRECATED_X("Use QGuiApplication::screens()") const QRect screenGeometry(int screen = -1) const;
+    QT_DEPRECATED_X("Use QGuiApplication::screenAt()") const QRect screenGeometry(const QPoint &point) const
+    {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+        return screenGeometry(screenNumber(point));
+QT_WARNING_POP
+    }
+
+    QT_DEPRECATED_X("Use QGuiApplication::screens()") const QRect availableGeometry(int screen = -1) const;
+    QT_DEPRECATED_X("Use QGuiApplication::screenAt()") const QRect availableGeometry(const QPoint &point) const
+    {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    return availableGeometry(screenNumber(point));
+QT_WARNING_POP
+    }
 
 Q_SIGNALS:
-    void resized(int);
-    void workAreaResized(int);
-    void screenCountChanged(int);
-    void primaryScreenChanged();
+    QT_DEPRECATED_X("Use QScreen::geometryChanged()") void resized(int);
+    QT_DEPRECATED_X("Use QScreen::availableGeometryChanged()") void workAreaResized(int);
+    QT_DEPRECATED_X("Use QGuiApplication::screenAdded/Removed()") void screenCountChanged(int);
+    QT_DEPRECATED_X("Use QGuiApplication::primaryScreenChanged()") void primaryScreenChanged();
+#endif
 
 protected:
     void resizeEvent(QResizeEvent *e) override;
@@ -100,7 +113,12 @@ private:
 };
 
 inline int QDesktopWidget::screenCount() const
-{ return numScreens(); }
+{
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    return numScreens();
+QT_WARNING_POP
+}
 
 QT_END_NAMESPACE
 
