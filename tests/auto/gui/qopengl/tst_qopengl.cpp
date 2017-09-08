@@ -1413,7 +1413,7 @@ void tst_QOpenGL::glxContextWrap()
     window->setSurfaceType(QWindow::OpenGLSurface);
     window->setGeometry(0, 0, 10, 10);
     window->show();
-    QTest::qWaitForWindowExposed(window);
+    QVERIFY(QTest::qWaitForWindowExposed(window));
 
     QPlatformNativeInterface *nativeIf = QGuiApplicationPrivate::instance()->platformIntegration()->nativeInterface();
     QVERIFY(nativeIf);
@@ -1457,7 +1457,7 @@ void tst_QOpenGL::wglContextWrap()
     window->setSurfaceType(QWindow::OpenGLSurface);
     window->setGeometry(0, 0, 256, 256);
     window->show();
-    QTest::qWaitForWindowExposed(window.data());
+    QVERIFY(QTest::qWaitForWindowExposed(window.data()));
 
     QVariant v = ctx->nativeHandle();
     QVERIFY(!v.isNull());

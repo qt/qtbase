@@ -523,7 +523,7 @@ public:
     GLWidgetWrapper() {
         widget.resize(150, 150);
         widget.show();
-        QTest::qWaitForWindowExposed(&widget);
+        QVERIFY(QTest::qWaitForWindowExposed(&widget));
         widget.doneCurrent();
     }
     QPaintDevice *realPaintDevice() { return &widget; }

@@ -110,7 +110,7 @@ void tst_QGraphicsLayout::invalidate()
 
     view->show();
 
-    QTest::qWaitForWindowShown(view);
+    QVERIFY(QTest::qWaitForWindowShown(view));
 
     // ...then measure...
 

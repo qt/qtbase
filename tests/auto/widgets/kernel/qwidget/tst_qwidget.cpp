@@ -2299,7 +2299,7 @@ void tst_QWidget::resizeEvent()
         wParent.resize(200, 200);
         ResizeWidget wChild(&wParent);
         wParent.show();
-        QTest::qWaitForWindowExposed(&wParent);
+        QVERIFY(QTest::qWaitForWindowExposed(&wParent));
         QCOMPARE (wChild.m_resizeEventCount, 1); // initial resize event before paint
         wParent.hide();
         QSize safeSize(640,480);
@@ -2315,7 +2315,7 @@ void tst_QWidget::resizeEvent()
         ResizeWidget wTopLevel;
         wTopLevel.resize(200, 200);
         wTopLevel.show();
-        QTest::qWaitForWindowExposed(&wTopLevel);
+        QVERIFY(QTest::qWaitForWindowExposed(&wTopLevel));
         QCOMPARE (wTopLevel.m_resizeEventCount, 1); // initial resize event before paint for toplevels
         wTopLevel.hide();
         QSize safeSize(640,480);
@@ -2324,7 +2324,7 @@ void tst_QWidget::resizeEvent()
         wTopLevel.resize(safeSize);
         QCOMPARE (wTopLevel.m_resizeEventCount, 1);
         wTopLevel.show();
-        QTest::qWaitForWindowExposed(&wTopLevel);
+        QVERIFY(QTest::qWaitForWindowExposed(&wTopLevel));
         QCOMPARE (wTopLevel.m_resizeEventCount, 2);
     }
 }

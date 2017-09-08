@@ -2261,7 +2261,7 @@ void tst_QComboBox::task190351_layout()
     listCombo.setCurrentIndex(70);
     listCombo.showPopup();
     QTRY_VERIFY(listCombo.view());
-    QTest::qWaitForWindowExposed(listCombo.view());
+    QVERIFY(QTest::qWaitForWindowExposed(listCombo.view()));
     QTRY_VERIFY(listCombo.view()->isVisible());
     QApplication::processEvents();
 
@@ -2408,7 +2408,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
     QTRY_VERIFY(comboBox.isVisible());
     comboBox.showPopup();
     QTRY_VERIFY(comboBox.view());
-    QTest::qWaitForWindowExposed(comboBox.view());
+    QVERIFY(QTest::qWaitForWindowExposed(comboBox.view()));
     QTRY_VERIFY(comboBox.view()->isVisible());
 
 #if defined QT_BUILD_INTERNAL
@@ -3254,12 +3254,12 @@ void tst_QComboBox::task_QTBUG_49831_scrollerNotActivated()
     box.setModel(&model);
     box.setCurrentIndex(500);
     box.show();
-    QTest::qWaitForWindowExposed(&box);
+    QVERIFY(QTest::qWaitForWindowExposed(&box));
     QTest::mouseMove(&box, QPoint(5, 5), 100);
     box.showPopup();
     QFrame *container = box.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
-    QTest::qWaitForWindowExposed(container);
+    QVERIFY(QTest::qWaitForWindowExposed(container));
 
     QList<QComboBoxPrivateScroller *> scrollers = container->findChildren<QComboBoxPrivateScroller *>();
     // Not all styles support scrollers. We rely only on those platforms that do to catch any regression.
@@ -3335,11 +3335,11 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
         box.addItem(QLatin1String("Item ") + QString::number(i));
 
     box.show();
-    QTest::qWaitForWindowExposed(&box);
+    QVERIFY(QTest::qWaitForWindowExposed(&box));
     box.showPopup();
     QFrame *container = box.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
-    QTest::qWaitForWindowExposed(container);
+    QVERIFY(QTest::qWaitForWindowExposed(container));
 
     QCOMPARE(proxyStyle->italicItemsNo, 5);
 

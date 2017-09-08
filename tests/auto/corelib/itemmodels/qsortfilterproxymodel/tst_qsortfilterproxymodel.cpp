@@ -3893,7 +3893,7 @@ void tst_QSortFilterProxyModel::hierarchyFilterInvalidation()
     view.setCurrentIndex(proxy.index(2, 0).child(0, 0));
 
     view.show();
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     proxy.setMode(true);
 }
@@ -3950,7 +3950,7 @@ void tst_QSortFilterProxyModel::simpleFilterInvalidation()
     view.setModel(&proxy);
 
     view.show();
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     proxy.setMode(true);
     model.insertRow(0, new QStandardItem("extra"));

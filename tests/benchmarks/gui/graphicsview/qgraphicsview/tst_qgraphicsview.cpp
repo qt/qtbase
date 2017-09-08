@@ -160,7 +160,7 @@ void tst_QGraphicsView::initTestCase()
     mView.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mView.tryResize(100, 100);
     mView.show();
-    QTest::qWaitForWindowExposed(&mView);
+    QVERIFY(QTest::qWaitForWindowExposed(&mView));
     QTest::qWait(300);
     processEvents();
 }
@@ -409,7 +409,7 @@ void tst_QGraphicsView::chipTester()
     tester.setOpenGL(opengl);
     tester.setOperation(ChipTester::Operation(operation));
     tester.show();
-    QTest::qWaitForWindowExposed(&tester);
+    QVERIFY(QTest::qWaitForWindowExposed(&tester));
     QTest::qWait(250);
     processEvents();
 

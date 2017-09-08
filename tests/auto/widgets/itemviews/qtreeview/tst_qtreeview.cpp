@@ -4238,7 +4238,7 @@ void tst_QTreeView::testInitialFocus()
     treeWidget.header()->hideSection(0);      // make sure we skip hidden section(s)
     treeWidget.header()->swapSections(1, 2);  // make sure that we look for first visual index (and not first logical)
     treeWidget.show();
-    QTest::qWaitForWindowExposed(&treeWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(&treeWidget));
     QApplication::processEvents();
     QCOMPARE(treeWidget.currentIndex().column(), 2);
 }
@@ -4261,7 +4261,7 @@ void tst_QTreeView::quickExpandCollapse()
     QVERIFY(rootIndex.isValid());
 
     tree.show();
-    QTest::qWaitForWindowExposed(&tree);
+    QVERIFY(QTest::qWaitForWindowExposed(&tree));
 
     const QAbstractItemView::State initialState = tree.state();
 
@@ -4455,7 +4455,7 @@ void tst_QTreeView::statusTip()
                                 QSize(500, 500)));
     mw.show();
     qApp->setActiveWindow(&mw);
-    QTest::qWaitForWindowActive(&mw);
+    QVERIFY(QTest::qWaitForWindowActive(&mw));
     // Ensure it is moved away first and then moved to the relevant section
     QTest::mouseMove(mw.windowHandle(), view->mapTo(&mw, view->rect().bottomLeft() + QPoint(20, 20)));
     QPoint centerPoint = view->viewport()->mapTo(&mw, view->visualRect(model.index(0, 0)).center());

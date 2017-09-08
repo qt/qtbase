@@ -80,7 +80,7 @@ void tst_QOpenGLWidget::create()
     QVERIFY(w->textureFormat() == 0);
     QSignalSpy frameSwappedSpy(w.data(), SIGNAL(frameSwapped()));
     w->show();
-    QTest::qWaitForWindowExposed(w.data());
+    QVERIFY(QTest::qWaitForWindowExposed(w.data()));
     QVERIFY(frameSwappedSpy.count() > 0);
 
     QVERIFY(w->isValid());
@@ -131,7 +131,7 @@ void tst_QOpenGLWidget::clearAndGrab()
     QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
     w->resize(800, 600);
     w->show();
-    QTest::qWaitForWindowExposed(w.data());
+    QVERIFY(QTest::qWaitForWindowExposed(w.data()));
     QVERIFY(w->m_initCalled);
     QVERIFY(w->m_resizeCalled);
     QVERIFY(w->m_resizeOk);
@@ -149,7 +149,7 @@ void tst_QOpenGLWidget::clearAndResizeAndGrab()
     QScopedPointer<QOpenGLWidget> w(new ClearWidget(0, 640, 480));
     w->resize(640, 480);
     w->show();
-    QTest::qWaitForWindowExposed(w.data());
+    QVERIFY(QTest::qWaitForWindowExposed(w.data()));
 
     QImage image = w->grabFramebuffer();
     QVERIFY(!image.isNull());
@@ -172,7 +172,7 @@ void tst_QOpenGLWidget::createNonTopLevel()
     QSignalSpy frameSwappedSpy(glw, SIGNAL(frameSwapped()));
     w.resize(400, 400);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QVERIFY(frameSwappedSpy.count() > 0);
 
     QVERIFY(glw->m_resizeCalled);
@@ -228,7 +228,7 @@ void tst_QOpenGLWidget::painter()
     w.resize(640, 480);
     glw->resize(320, 200);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     QImage image = glw->grabFramebuffer();
     QCOMPARE(image.width(), glw->width());
@@ -249,11 +249,11 @@ void tst_QOpenGLWidget::reparentToAlreadyCreated()
     w1.resize(640, 480);
     glw->resize(320, 200);
     w1.show();
-    QTest::qWaitForWindowExposed(&w1);
+    QVERIFY(QTest::qWaitForWindowExposed(&w1));
 
     QWidget w2;
     w2.show();
-    QTest::qWaitForWindowExposed(&w2);
+    QVERIFY(QTest::qWaitForWindowExposed(&w2));
 
     glw->setParent(&w2);
     glw->show();
@@ -271,12 +271,12 @@ void tst_QOpenGLWidget::reparentToNotYetCreated()
     w1.resize(640, 480);
     glw->resize(320, 200);
     w1.show();
-    QTest::qWaitForWindowExposed(&w1);
+    QVERIFY(QTest::qWaitForWindowExposed(&w1));
 
     QWidget w2;
     glw->setParent(&w2);
     w2.show();
-    QTest::qWaitForWindowExposed(&w2);
+    QVERIFY(QTest::qWaitForWindowExposed(&w2));
 
     QImage image = glw->grabFramebuffer();
     QCOMPARE(image.width(), 320);
@@ -297,12 +297,12 @@ void tst_QOpenGLWidget::reparentHidden()
 
     glw->hide(); // Explicitly hidden
 
-    QTest::qWaitForWindowExposed(&topLevel1);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel1));
 
     QWidget topLevel2;
     topLevel2.resize(640, 480);
     topLevel2.show();
-    QTest::qWaitForWindowExposed(&topLevel2);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel2));
 
     QOpenGLContext *originalContext = glw->context();
     QVERIFY(originalContext);
@@ -353,7 +353,7 @@ void tst_QOpenGLWidget::asViewport()
     layout->addWidget(btn);
     widget.setLayout(layout);
     widget.show();
-    QTest::qWaitForWindowExposed(&widget);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     QVERIFY(view->paintCount() > 0);
     view->resetPaintCount();
@@ -381,7 +381,7 @@ void tst_QOpenGLWidget::requestUpdate()
     PaintCountWidget w;
     w.resize(640, 480);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     w.reset();
     QCOMPARE(w.m_count, 0);
@@ -405,7 +405,7 @@ void tst_QOpenGLWidget::fboRedirect()
     FboCheckWidget w;
     w.resize(640, 480);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     // Unlike in paintGL(), the default fbo reported by the context is not affected by the widget,
     // so we get the real default fbo: either 0 or (on iOS) the fbo associated with the window.
@@ -420,7 +420,7 @@ void tst_QOpenGLWidget::showHide()
     QScopedPointer<ClearWidget> w(new ClearWidget(0, 800, 600));
     w->resize(800, 600);
     w->show();
-    QTest::qWaitForWindowExposed(w.data());
+    QVERIFY(QTest::qWaitForWindowExposed(w.data()));
 
     w->hide();
 
@@ -432,7 +432,7 @@ void tst_QOpenGLWidget::showHide()
 
     w->setClearColor(0, 0, 1);
     w->show();
-    QTest::qWaitForWindowExposed(w.data());
+    QVERIFY(QTest::qWaitForWindowExposed(w.data()));
 
     image = w->grabFramebuffer();
     QVERIFY(!image.isNull());
@@ -447,7 +447,7 @@ void tst_QOpenGLWidget::nativeWindow()
     w->resize(800, 600);
     w->show();
     w->winId();
-    QTest::qWaitForWindowExposed(w.data());
+    QVERIFY(QTest::qWaitForWindowExposed(w.data()));
 
     QImage image = w->grabFramebuffer();
     QVERIFY(!image.isNull());
@@ -466,7 +466,7 @@ void tst_QOpenGLWidget::nativeWindow()
     child->resize(400, 400);
     child->move(23, 34);
     nativeParent.show();
-    QTest::qWaitForWindowExposed(&nativeParent);
+    QVERIFY(QTest::qWaitForWindowExposed(&nativeParent));
 
     QVERIFY(nativeParent.internalWinId());
     QVERIFY(!child->internalWinId());
@@ -586,8 +586,8 @@ void tst_QOpenGLWidget::stackWidgetOpaqueChildIsVisible()
     stack.setCurrentIndex(0);
     stack.resize(dimensionSize, dimensionSize);
     stack.show();
-    QTest::qWaitForWindowExposed(&stack);
-    QTest::qWaitForWindowActive(&stack);
+    QVERIFY(QTest::qWaitForWindowExposed(&stack));
+    QVERIFY(QTest::qWaitForWindowActive(&stack));
 
     // Switch to the QOpenGLWidget.
     stack.setCurrentIndex(1);
@@ -666,7 +666,7 @@ void tst_QOpenGLWidget::offscreenThenOnscreen()
     // now let's make things more challenging: show. Internally this needs
     // recreating the context.
     w->show();
-    QTest::qWaitForWindowExposed(w.data());
+    QVERIFY(QTest::qWaitForWindowExposed(w.data()));
 
     image = w->grabFramebuffer();
     QVERIFY(!image.isNull());

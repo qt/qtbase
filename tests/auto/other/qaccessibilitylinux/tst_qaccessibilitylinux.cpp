@@ -63,7 +63,7 @@ public:
     {
         layout()->addWidget(widget);
         widget->show();
-        QTest::qWaitForWindowExposed(widget);
+        QVERIFY(QTest::qWaitForWindowExposed(widget));
     }
 
     void clearChildren()
@@ -182,7 +182,7 @@ void tst_QAccessibilityLinux::initTestCase()
     m_window = new AccessibleTestWindow();
     m_window->show();
 
-    QTest::qWaitForWindowExposed(m_window);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
     registerDbus();
 }
 

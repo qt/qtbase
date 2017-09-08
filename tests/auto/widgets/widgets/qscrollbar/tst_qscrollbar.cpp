@@ -78,7 +78,7 @@ void tst_QScrollBar::scrollSingleStep()
     testWidget.resize(100, testWidget.height());
     centerOnScreen(&testWidget);
     testWidget.show();
-    QTest::qWaitForWindowExposed(&testWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
 
     testWidget.setValue(testWidget.minimum());
     QCOMPARE(testWidget.value(), testWidget.minimum());
@@ -117,7 +117,7 @@ void tst_QScrollBar::task_209492()
     verticalScrollBar->setRange(0, 1000);
     centerOnScreen(&scrollArea);
     scrollArea.show();
-    QTest::qWaitForWindowExposed(&scrollArea);
+    QVERIFY(QTest::qWaitForWindowExposed(&scrollArea));
 
     QSignalSpy spy(verticalScrollBar, SIGNAL(actionTriggered(int)));
     QCOMPARE(scrollArea.scrollCount, 0);
@@ -154,7 +154,7 @@ void tst_QScrollBar::QTBUG_27308()
     testWidget.resize(100, testWidget.height());
     centerOnScreen(&testWidget);
     testWidget.show();
-    QTest::qWaitForWindowExposed(&testWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
 
     testWidget.setValue(testWidget.minimum());
     testWidget.setEnabled(false);
@@ -183,7 +183,7 @@ void tst_QScrollBar::QTBUG_42871()
     scrollBarWidget.resize(100, scrollBarWidget.height());
     centerOnScreen(&scrollBarWidget);
     scrollBarWidget.show();
-    QTest::qWaitForWindowExposed(&scrollBarWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(&scrollBarWidget));
     QSignalSpy spy(&scrollBarWidget, SIGNAL(actionTriggered(int)));
     QVERIFY(spy.isValid());
     QCOMPARE(myHandler.updatesCount, 0);

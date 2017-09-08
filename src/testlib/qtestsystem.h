@@ -110,7 +110,7 @@ namespace QTest
     }
 
 #ifdef QT_GUI_LIB
-    inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
+    Q_REQUIRED_RESULT inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
     {
         bool becameActive = qWaitFor([&]() { return window->isActive(); }, timeout);
 
@@ -131,21 +131,21 @@ namespace QTest
         return window->isActive();
     }
 
-    inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)
+    Q_REQUIRED_RESULT inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)
     {
         return qWaitFor([&]() { return window->isExposed(); }, timeout);
     }
 #endif
 
 #ifdef QT_WIDGETS_LIB
-    inline static bool qWaitForWindowActive(QWidget *widget, int timeout = 5000)
+    Q_REQUIRED_RESULT inline static bool qWaitForWindowActive(QWidget *widget, int timeout = 5000)
     {
         if (QWindow *window = widget->window()->windowHandle())
             return qWaitForWindowActive(window, timeout);
         return false;
     }
 
-    inline static bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000)
+    Q_REQUIRED_RESULT inline static bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000)
     {
         if (QWindow *window = widget->window()->windowHandle())
             return qWaitForWindowExposed(window, timeout);
@@ -155,7 +155,8 @@ namespace QTest
 
 #if QT_DEPRECATED_SINCE(5, 0)
 #  ifdef QT_WIDGETS_LIB
-    QT_DEPRECATED inline static bool qWaitForWindowShown(QWidget *widget, int timeout = 5000)
+
+    QT_DEPRECATED Q_REQUIRED_RESULT inline static bool qWaitForWindowShown(QWidget *widget, int timeout = 5000)
     {
         return qWaitForWindowExposed(widget, timeout);
     }

@@ -2013,7 +2013,7 @@ void tst_QMainWindow::resizeDocks()
     mw.setCentralWidget(new QTextEdit);
 
     mw.show();
-    QTest::qWaitForWindowExposed(&mw);
+    QVERIFY(QTest::qWaitForWindowExposed(&mw));
 
     QFETCH(Qt::Orientation, orientation);
     QFETCH(QStringList, docks);

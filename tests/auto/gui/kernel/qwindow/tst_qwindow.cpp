@@ -490,7 +490,7 @@ void tst_QWindow::positioning()
     window.showNormal();
     QCoreApplication::processEvents();
 
-    QTest::qWaitForWindowExposed(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QMargins originalMargins = window.frameMargins();
 
@@ -1483,7 +1483,7 @@ void tst_QWindow::activateAndClose()
        window.showNormal();
 #if defined(Q_OS_QNX) // We either need to create a eglSurface or a create a backing store
                       // and then post the window in order for screen to show the window
-       QTest::qWaitForWindowExposed(&window);
+       QVERIFY(QTest::qWaitForWindowExposed(&window));
        QOpenGLContext context;
        context.create();
        context.makeCurrent(&window);

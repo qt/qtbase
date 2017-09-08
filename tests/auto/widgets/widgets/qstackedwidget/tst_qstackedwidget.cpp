@@ -180,7 +180,7 @@ void tst_QStackedWidget::dynamicPages()
     sw->resize(200, 200);
     sw->show();
     qApp->setActiveWindow(sw);
-    QTest::qWaitForWindowActive(sw);
+    QVERIFY(QTest::qWaitForWindowActive(sw));
     QTRY_COMPARE(QApplication::focusWidget(), le11);
 
     sw->setCurrentIndex(1);

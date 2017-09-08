@@ -122,7 +122,7 @@ private:
 void tst_QWidget::initTestCase()
 {
     widget.show();
-    QTest::qWaitForWindowExposed(&widget);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTest::qWait(300);
     processEvents();
 }

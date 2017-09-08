@@ -367,7 +367,7 @@ void tst_QFileDialog2::task143519_deleteAndRenameActionBehavior()
     fd.selectFile(ctx.file.fileName());
     fd.show();
 
-    QTest::qWaitForWindowActive(&fd);
+    QVERIFY(QTest::qWaitForWindowActive(&fd));
 
     // grab some internals:
     QAction *rm = fd.findChild<QAction*>("qt_delete_action");
