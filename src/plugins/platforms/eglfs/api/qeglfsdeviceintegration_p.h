@@ -104,6 +104,7 @@ public:
     virtual bool supportsPBuffers() const;
     virtual bool supportsSurfacelessContexts() const;
     virtual QFunctionPointer platformFunction(const QByteArray &function) const;
+    virtual void *nativeResourceForIntegration(const QByteArray &name);
 
     virtual void *wlDisplay() const;
 

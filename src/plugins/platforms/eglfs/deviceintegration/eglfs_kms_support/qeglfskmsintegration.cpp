@@ -133,6 +133,14 @@ bool QEglFSKmsIntegration::supportsPBuffers() const
     return m_screenConfig->supportsPBuffers();
 }
 
+void *QEglFSKmsIntegration::nativeResourceForIntegration(const QByteArray &name)
+{
+    if (name == QByteArrayLiteral("dri_fd") && m_device)
+        return (void *) (qintptr) m_device->fd();
+
+    return nullptr;
+}
+
 QKmsDevice *QEglFSKmsIntegration::device() const
 {
     return m_device;

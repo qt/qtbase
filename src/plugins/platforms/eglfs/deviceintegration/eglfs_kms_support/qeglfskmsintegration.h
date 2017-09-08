@@ -69,6 +69,7 @@ public:
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
     void waitForVSync(QPlatformSurface *surface) const override;
     bool supportsPBuffers() const override;
+    void *nativeResourceForIntegration(const QByteArray &name) override;
 
     QKmsDevice *device() const;
     QKmsScreenConfig *screenConfig() const;

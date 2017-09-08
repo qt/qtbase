@@ -357,6 +357,12 @@ QFunctionPointer QEglFSDeviceIntegration::platformFunction(const QByteArray &fun
     return nullptr;
 }
 
+void *QEglFSDeviceIntegration::nativeResourceForIntegration(const QByteArray &name)
+{
+    Q_UNUSED(name);
+    return nullptr;
+}
+
 void *QEglFSDeviceIntegration::wlDisplay() const
 {
     return Q_NULLPTR;

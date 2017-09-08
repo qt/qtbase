@@ -324,6 +324,7 @@ void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource
         result = qt_egl_device_integration()->wlDisplay();
         break;
     default:
+        result = qt_egl_device_integration()->nativeResourceForIntegration(resource);
         break;
     }
 
