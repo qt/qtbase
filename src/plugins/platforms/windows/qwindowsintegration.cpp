@@ -60,7 +60,7 @@
 #include "qwindowsinputcontext.h"
 #include "qwindowskeymapper.h"
 #ifndef QT_NO_ACCESSIBILITY
-#  include "accessible/qwindowsaccessibility.h"
+#  include "uiautomation/qwindowsuiaaccessibility.h"
 #endif
 
 #include <qpa/qplatformnativeinterface.h>
@@ -151,7 +151,7 @@ struct QWindowsIntegrationPrivate
 #endif // QT_NO_OPENGL
     QScopedPointer<QPlatformInputContext> m_inputContext;
 #ifndef QT_NO_ACCESSIBILITY
-    QWindowsAccessibility m_accessibility;
+   QWindowsUiaAccessibility m_accessibility;
 #endif
     QWindowsServices m_services;
 };

@@ -34,6 +34,7 @@ qtConfig(accessibility) {
         SUBDIRS += linuxaccessibility
         linuxaccessibility.depends += accessibility
     }
+    win32:!winrt: SUBDIRS += windowsuiautomation
 }
 
 darwin {

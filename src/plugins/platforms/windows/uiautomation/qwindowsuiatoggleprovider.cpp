@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,27 +37,69 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSACCESSIBILITY_H
-#define QWINDOWSACCESSIBILITY_H
+#include <QtCore/QtConfig>
+#ifndef QT_NO_ACCESSIBILITY
 
-#include "../qtwindowsglobal.h"
-#include "../qwindowscontext.h"
-#include <qpa/qplatformaccessibility.h>
+#include "qwindowsuiatoggleprovider.h"
+#include "qwindowsuiautils.h"
+#include "qwindowscontext.h"
 
-#include <oleacc.h>
+#include <QtGui/QAccessible>
+#include <QtGui/QAccessibleInterface>
+#include <QtCore/QDebug>
+#include <QtCore/QString>
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsAccessibility : public QPlatformAccessibility
+using namespace QWindowsUiAutomation;
+
+
+QWindowsUiaToggleProvider::QWindowsUiaToggleProvider(QAccessible::Id id) :
+    QWindowsUiaBaseProvider(id)
 {
-public:
-    QWindowsAccessibility();
-    static bool handleAccessibleObjectFromWindowRequest(HWND hwnd, WPARAM wParam, LPARAM lParam, LRESULT *lResult);
-    void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
-    static IAccessible *wrap(QAccessibleInterface *acc);
-    static QWindow *windowHelper(const QAccessibleInterface *iface);
-};
+}
+
+QWindowsUiaToggleProvider::~QWindowsUiaToggleProvider()
+{
+}
+
+// toggles the state by invoking the toggle action
+HRESULT STDMETHODCALLTYPE QWindowsUiaToggleProvider::Toggle()
+{
+    qCDebug(lcQpaUiAutomation) << __FUNCTION__;
+
+    QAccessibleInterface *accessible = accessibleInterface();
+    if (!accessible)
+        return UIA_E_ELEMENTNOTAVAILABLE;
+
+    QAccessibleActionInterface *actionInterface = accessible->actionInterface();
+    if (!actionInterface)
+        return UIA_E_ELEMENTNOTAVAILABLE;
+
+    actionInterface->doAction(QAccessibleActionInterface::toggleAction());
+    return S_OK;
+}
+
+// Gets the current toggle state.
+HRESULT STDMETHODCALLTYPE QWindowsUiaToggleProvider::get_ToggleState(ToggleState *pRetVal)
+{
+    qCDebug(lcQpaUiAutomation) << __FUNCTION__;
+
+    if (!pRetVal)
+        return E_INVALIDARG;
+    *pRetVal = ToggleState_Off;
+
+    QAccessibleInterface *accessible = accessibleInterface();
+    if (!accessible)
+        return UIA_E_ELEMENTNOTAVAILABLE;
+
+    if (accessible->state().checked)
+        *pRetVal = accessible->state().checkStateMixed ? ToggleState_Indeterminate : ToggleState_On;
+    else
+        *pRetVal = ToggleState_Off;
+    return S_OK;
+}
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSACCESSIBILITY_H
+#endif // QT_NO_ACCESSIBILITY

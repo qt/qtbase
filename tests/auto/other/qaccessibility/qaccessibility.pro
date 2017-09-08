@@ -8,9 +8,8 @@ HEADERS += accessiblewidgets.h
 unix:!darwin:!haiku:!integity: LIBS += -lm
 
 win32 {
-    !*g++:!winrt {
-        include(../../../../src/3rdparty/iaccessible2/iaccessible2.pri)
-        DEFINES += QT_SUPPORTS_IACCESSIBLE2
+    !winrt {
+        QT += windowsuiautomation_support-private
     }
     LIBS += -luuid -loleacc -loleaut32 -lole32
 }
