@@ -89,10 +89,6 @@ public:
     QString appName() const;
     QString appVersion() const;
 
-#ifdef Q_OS_MACOS
-    QMacRootLevelAutoReleasePool autoReleasePool;
-#endif
-
 #ifdef Q_OS_DARWIN
     static QString infoDictionaryStringProperty(const QString &propertyName);
 #endif
