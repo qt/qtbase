@@ -42,12 +42,12 @@
 
 #ifndef QT_NO_TEMPORARYFILE
 
+#include "qdebug.h"
 #include "qdiriterator.h"
+#include "qpair.h"
 #include "qplatformdefs.h"
+#include "qrandom.h"
 #include "private/qtemporaryfile_p.h"
-#include <QDebug>
-#include <QPair>
-#include <QRandomGenerator>
 
 #if defined(QT_BUILD_CORE_LIB)
 #include "qcoreapplication.h"

@@ -45,6 +45,7 @@ SOURCES += \
            ../../corelib/io/qiodevice.cpp \
            ../../corelib/io/qfiledevice.cpp \
            ../../corelib/io/qresource.cpp \
+           ../../corelib/io/qtemporarydir.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
            ../../corelib/io/qsavefile.cpp \
