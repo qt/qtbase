@@ -21,7 +21,6 @@
     "QtServiceSupport" => "$basedir/src/platformsupport/services",
     "QtThemeSupport" => "$basedir/src/platformsupport/themes",
     "QtGraphicsSupport" => "$basedir/src/platformsupport/graphics",
-    "QtCglSupport" => "$basedir/src/platformsupport/cglconvenience",
     "QtEglSupport" => "$basedir/src/platformsupport/eglconvenience",
     "QtFbSupport" => "$basedir/src/platformsupport/fbconvenience",
     "QtGlxSupport" => "$basedir/src/platformsupport/glxconvenience",
