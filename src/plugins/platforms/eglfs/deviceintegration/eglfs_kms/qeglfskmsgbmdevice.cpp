@@ -53,17 +53,6 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
-void QEglFSKmsGbmDevice::pageFlipHandler(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data)
-{
-    Q_UNUSED(fd);
-    Q_UNUSED(sequence);
-    Q_UNUSED(tv_sec);
-    Q_UNUSED(tv_usec);
-
-    QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(user_data);
-    screen->flipFinished();
-}
-
 QEglFSKmsGbmDevice::QEglFSKmsGbmDevice(QKmsScreenConfig *screenConfig, const QString &path)
     : QEglFSKmsDevice(screenConfig, path)
     , m_gbm_device(Q_NULLPTR)
@@ -136,17 +125,6 @@ void QEglFSKmsGbmDevice::destroyGlobalCursor()
         delete m_globalCursor;
         m_globalCursor = Q_NULLPTR;
     }
-}
-
-void QEglFSKmsGbmDevice::handleDrmEvent()
-{
-    drmEventContext drmEvent;
-    memset(&drmEvent, 0, sizeof(drmEvent));
-    drmEvent.version = 2;
-    drmEvent.vblank_handler = nullptr;
-    drmEvent.page_flip_handler = pageFlipHandler;
-
-    drmHandleEvent(fd(), &drmEvent);
 }
 
 QPlatformScreen *QEglFSKmsGbmDevice::createScreen(const QKmsOutput &output)

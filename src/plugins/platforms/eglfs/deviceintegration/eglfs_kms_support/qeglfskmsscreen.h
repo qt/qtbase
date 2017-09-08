@@ -90,8 +90,6 @@ public:
     QKmsDevice *device() const { return m_device; }
 
     virtual void waitForFlip();
-    virtual void flip();
-    virtual void flipFinished();
 
     QKmsOutput &output() { return m_output; }
     void restoreMode();

@@ -203,14 +203,6 @@ void QEglFSKmsScreen::waitForFlip()
 {
 }
 
-void QEglFSKmsScreen::flip()
-{
-}
-
-void QEglFSKmsScreen::flipFinished()
-{
-}
-
 void QEglFSKmsScreen::restoreMode()
 {
     m_output.restoreMode(m_device);

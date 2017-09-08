@@ -235,8 +235,14 @@ void QEglFSKmsGbmScreen::waitForFlip()
         return;
 
     QMutexLocker lock(&m_waitForFlipMutex);
-    while (m_gbm_bo_next)
-        static_cast<QEglFSKmsGbmDevice *>(device())->handleDrmEvent();
+    while (m_gbm_bo_next) {
+        drmEventContext drmEvent;
+        memset(&drmEvent, 0, sizeof(drmEvent));
+        drmEvent.version = 2;
+        drmEvent.vblank_handler = nullptr;
+        drmEvent.page_flip_handler = pageFlipHandler;
+        drmHandleEvent(device()->fd(), &drmEvent);
+    }
 }
 
 void QEglFSKmsGbmScreen::flip()
@@ -296,6 +302,17 @@ void QEglFSKmsGbmScreen::flip()
             }
         }
     }
+}
+
+void QEglFSKmsGbmScreen::pageFlipHandler(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data)
+{
+    Q_UNUSED(fd);
+    Q_UNUSED(sequence);
+    Q_UNUSED(tv_sec);
+    Q_UNUSED(tv_usec);
+
+    QEglFSKmsGbmScreen *screen = static_cast<QEglFSKmsGbmScreen *>(user_data);
+    screen->flipFinished();
 }
 
 void QEglFSKmsGbmScreen::flipFinished()

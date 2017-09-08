@@ -125,8 +125,7 @@ QPlatformCursor *QEglFSKmsGbmIntegration::createCursor(QPlatformScreen *screen) 
 void QEglFSKmsGbmIntegration::presentBuffer(QPlatformSurface *surface)
 {
     QWindow *window = static_cast<QWindow *>(surface->surface());
-    QEglFSKmsScreen *screen = static_cast<QEglFSKmsScreen *>(window->screen()->handle());
-
+    QEglFSKmsGbmScreen *screen = static_cast<QEglFSKmsGbmScreen *>(window->screen()->handle());
     screen->flip();
 }
 
