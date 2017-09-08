@@ -427,11 +427,9 @@ QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function)
 #if QT_CONFIG(evdev)
     if (function == QEglFSFunctions::loadKeymapTypeIdentifier())
         return QFunctionPointer(loadKeymapStatic);
-#else
-    Q_UNUSED(function)
 #endif
 
-    return 0;
+    return qt_egl_device_integration()->platformFunction(function);
 }
 
 void QEglFSIntegration::loadKeymapStatic(const QString &filename)

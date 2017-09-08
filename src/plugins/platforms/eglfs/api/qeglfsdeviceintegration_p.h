@@ -103,6 +103,7 @@ public:
     virtual int framebufferIndex() const;
     virtual bool supportsPBuffers() const;
     virtual bool supportsSurfacelessContexts() const;
+    virtual QFunctionPointer platformFunction(const QByteArray &function) const;
 
     virtual void *wlDisplay() const;
 

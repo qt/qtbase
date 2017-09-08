@@ -351,6 +351,12 @@ bool QEglFSDeviceIntegration::supportsSurfacelessContexts() const
     return true;
 }
 
+QFunctionPointer QEglFSDeviceIntegration::platformFunction(const QByteArray &function) const
+{
+    Q_UNUSED(function);
+    return nullptr;
+}
+
 void *QEglFSDeviceIntegration::wlDisplay() const
 {
     return Q_NULLPTR;
