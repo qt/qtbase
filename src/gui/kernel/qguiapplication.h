@@ -110,6 +110,8 @@ public:
 
     static QScreen *primaryScreen();
     static QList<QScreen *> screens();
+    static QScreen *screenAt(const QPoint &point);
+
     qreal devicePixelRatio() const;
 
 #ifndef QT_NO_CURSOR
