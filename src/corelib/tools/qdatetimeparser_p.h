@@ -223,7 +223,10 @@ private:
                 QString *dayName = 0, int *used = 0) const;
     ParsedSection findTimeZone(QStringRef str, const QDateTime &when,
                                int maxVal, int minVal) const;
-    static int startsWithLocalTimeZone(const QStringRef name); // implemented in qdatetime.cpp
+#if QT_CONFIG(timezone)
+    // Implemented in qdatetime.cpp:
+    static int startsWithLocalTimeZone(const QStringRef name);
+#endif
 
     enum AmPmFinder {
         Neither = -1,

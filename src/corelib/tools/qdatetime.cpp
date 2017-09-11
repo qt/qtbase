@@ -2227,7 +2227,7 @@ static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 #endif // Q_OS_WIN
 }
 
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(datetimeparser) && QT_CONFIG(timezone)
 /*
   \internal
   Implemented here to share qt_tzname()
@@ -2245,7 +2245,7 @@ int QDateTimeParser::startsWithLocalTimeZone(const QStringRef name)
     }
     return 0;
 }
-#endif // QT_BOOTSTRAPPED
+#endif // datetimeparser && timezone
 
 // Calls the platform variant of mktime for the given date, time and daylightStatus,
 // and updates the date, time, daylightStatus and abbreviation with the returned values
