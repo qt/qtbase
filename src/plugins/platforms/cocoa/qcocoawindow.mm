@@ -1079,6 +1079,8 @@ void QCocoaWindow::handleGeometryChange()
 
 void QCocoaWindow::handleExposeEvent(const QRegion &region)
 {
+    const bool wasExposed = isExposed();
+
     // Ideally we'd implement isExposed() in terms of these properties,
     // plus the occlusionState of the NSWindow, and let the expose event
     // pull the exposed state out when needed. However, when the window
@@ -1096,13 +1098,21 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
         && !region.isEmpty()
         && !m_view.hiddenOrHasHiddenAncestor;
 
-
     QWindowPrivate *windowPrivate = qt_window_private(window());
-    if (m_isExposed && windowPrivate->updateRequestPending) {
-        // FIXME: Should this logic for expose events be in QGuiApplication?
-        qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
-        windowPrivate->deliverUpdateRequest();
-        return;
+    if (windowPrivate->updateRequestPending) {
+        // We can only deliver update request events when the window is exposed,
+        // and we also have to make sure we deliver the first expose event after
+        // becoming exposed as a real expose event, otherwise the exposed state
+        // of the QWindow is never updated.
+        // FIXME: Should this logic live in QGuiApplication?
+        if (wasExposed && m_isExposed) {
+            qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
+            windowPrivate->deliverUpdateRequest();
+            return;
+        }
+
+        // FIXME: Should we re-trigger setNeedsDisplay in case of !wasExposed && m_isExposed?
+        // Or possibly send the expose event first, and then the update request?
     }
 
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
