@@ -368,7 +368,7 @@
 */
 
 /*!
-    \fn bool QGlobalStatic::isDestroyed() const
+    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> bool QGlobalStatic<T, innerFunction, guard>::isDestroyed() const
 
     This function returns \c true if the global static object has already
     completed destruction (that is, if the destructor for the type has already
@@ -398,7 +398,7 @@
 */
 
 /*!
-    \fn bool QGlobalStatic::exists() const
+    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> bool QGlobalStatic<T, innerFunction, guard>::exists() const
 
     This function returns \c true if the global static object has already
     completed initialization (that is, if the constructor for the type has
@@ -447,7 +447,7 @@
 */
 
 /*!
-    \fn QGlobalStatic::operator Type*()
+    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> QGlobalStatic<T, innerFunction, guard>::operator Type*()
 
     This function returns the address of the contents of this global static. If
     the contents have not yet been created, they will be created thread-safely
@@ -480,7 +480,7 @@
 */
 
 /*!
-    \fn Type *QGlobalStatic::operator()()
+    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> Type *QGlobalStatic<T, innerFunction, guard>::operator()()
     \deprecated
 
     This function returns the address of the contents of this global static. If
@@ -495,7 +495,7 @@
 */
 
 /*!
-    \fn Type *QGlobalStatic::operator->()
+    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> Type *QGlobalStatic<T, innerFunction, guard>::operator->()
 
     This function returns the address of the contents of this global static. If
     the contents have not yet been created, they will be created thread-safely
@@ -508,7 +508,7 @@
 */
 
 /*!
-    \fn Type &QGlobalStatic::operator*()
+    \fn template <typename T, T *(&innerFunction)(), QBasicAtomicInt &guard> Type &QGlobalStatic<T, innerFunction, guard>::operator*()
 
     This function returns a reference to the contents of this global static. If
     the contents have not yet been created, they will be created thread-safely
