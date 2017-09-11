@@ -148,6 +148,11 @@ bool RasterWindow::event(QEvent *e)
 
 void RasterWindow::render()
 {
+    if (!isExposed()) {
+        qDebug() << "Skipping render, not exposed";
+        return;
+    }
+
     QRect rect(QPoint(), geometry().size());
 
     m_backingStore->resize(rect.size());

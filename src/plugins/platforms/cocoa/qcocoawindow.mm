@@ -97,34 +97,30 @@ static void qRegisterNotificationCallbacks()
         [center addObserverForName:notificationName.toNSString() object:nil queue:nil
             usingBlock:^(NSNotification *notification) {
 
-            NSView *view = nullptr;
+            QVarLengthArray<QCocoaWindow *, 32> cocoaWindows;
             if ([notification.object isKindOfClass:[NSWindow class]]) {
-                NSWindow *window = notification.object;
-                if (!window.contentView)
-                    return;
-
-                view = window.contentView;
+                NSWindow *nsWindow = notification.object;
+                for (const QWindow *window : QGuiApplication::allWindows()) {
+                    if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle()))
+                        if (cocoaWindow->nativeWindow() == nsWindow)
+                            cocoaWindows += cocoaWindow;
+                }
             } else if ([notification.object isKindOfClass:[NSView class]]) {
-                view = notification.object;
+                if (QNSView *qnsView = qnsview_cast(notification.object))
+                    cocoaWindows += qnsView.platformWindow;
             } else {
                 qCWarning(lcQpaCocoaWindow) << "Unhandled notifcation"
                     << notification.name << "for" << notification.object;
                 return;
             }
-            Q_ASSERT(view);
-
-            QCocoaWindow *cocoaWindow = nullptr;
-            if (QNSView *qnsView = qnsview_cast(view))
-                cocoaWindow = qnsView.platformWindow;
 
             // FIXME: Could be a foreign window, look up by iterating top level QWindows
 
-            if (!cocoaWindow)
-                return;
-
-            if (!method.invoke(cocoaWindow, Qt::DirectConnection)) {
-                qCWarning(lcQpaCocoaWindow) << "Failed to invoke NSNotification callback for"
-                    << notification.name << "on" << cocoaWindow;
+            for (QCocoaWindow *cocoaWindow : cocoaWindows) {
+                if (!method.invoke(cocoaWindow, Qt::DirectConnection)) {
+                    qCWarning(lcQpaCocoaWindow) << "Failed to invoke NSNotification callback for"
+                        << notification.name << "on" << cocoaWindow;
+                }
             }
         }];
     }
@@ -844,32 +840,7 @@ void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
     m_nsWindow = 0;
 }
 
-// ----------------------- NSWindow notifications -----------------------
-
-void QCocoaWindow::windowWillMove()
-{
-    // Close any open popups on window move
-    qt_closePopups();
-}
-
-void QCocoaWindow::windowDidMove()
-{
-    handleGeometryChange();
-
-    // Moving a window might bring it out of maximized state
-    handleWindowStateChanged();
-}
-
-void QCocoaWindow::windowDidResize()
-{
-    if (!isContentView())
-        return;
-
-    handleGeometryChange();
-
-    if (!m_view.inLiveResize)
-        handleWindowStateChanged();
-}
+// ----------------------- NSView notifications -----------------------
 
 void QCocoaWindow::viewDidChangeFrame()
 {
@@ -888,13 +859,54 @@ void QCocoaWindow::viewDidChangeGlobalFrame()
     [m_view setNeedsDisplay:YES];
 }
 
+// ----------------------- NSWindow notifications -----------------------
+
+// Note: The following notifications are delivered to every QCocoaWindow
+// that is a child of the NSWindow that triggered the notification. Each
+// callback should make sure to filter out notifications if they do not
+// apply to that QCocoaWindow, e.g. if the window is not a content view.
+
+void QCocoaWindow::windowWillMove()
+{
+    // Close any open popups on window move
+    qt_closePopups();
+}
+
+void QCocoaWindow::windowDidMove()
+{
+    if (!isContentView())
+        return;
+
+    handleGeometryChange();
+
+    // Moving a window might bring it out of maximized state
+    handleWindowStateChanged();
+}
+
+void QCocoaWindow::windowDidResize()
+{
+    if (!isContentView())
+        return;
+
+    handleGeometryChange();
+
+    if (!m_view.inLiveResize)
+        handleWindowStateChanged();
+}
+
 void QCocoaWindow::windowDidEndLiveResize()
 {
+    if (!isContentView())
+        return;
+
     handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowDidBecomeKey()
 {
+    if (!isContentView())
+        return;
+
     if (isForeignWindow())
         return;
 
@@ -911,6 +923,9 @@ void QCocoaWindow::windowDidBecomeKey()
 
 void QCocoaWindow::windowDidResignKey()
 {
+    if (!isContentView())
+        return;
+
     if (isForeignWindow())
         return;
 
@@ -927,16 +942,25 @@ void QCocoaWindow::windowDidResignKey()
 
 void QCocoaWindow::windowDidMiniaturize()
 {
+    if (!isContentView())
+        return;
+
     handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowDidDeminiaturize()
 {
+    if (!isContentView())
+        return;
+
     handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowWillEnterFullScreen()
 {
+    if (!isContentView())
+        return;
+
     // The NSWindow needs to be resizable, otherwise we'll end up with
     // the normal window geometry, centered in the middle of the screen
     // on a black background. The styleMask will be reset below.
@@ -945,6 +969,9 @@ void QCocoaWindow::windowWillEnterFullScreen()
 
 void QCocoaWindow::windowDidEnterFullScreen()
 {
+    if (!isContentView())
+        return;
+
     Q_ASSERT_X(m_view.window.qt_fullScreen, "QCocoaWindow",
         "FullScreen category processes window notifications first");
 
@@ -956,6 +983,9 @@ void QCocoaWindow::windowDidEnterFullScreen()
 
 void QCocoaWindow::windowWillExitFullScreen()
 {
+    if (!isContentView())
+        return;
+
     // The NSWindow needs to be resizable, otherwise we'll end up with
     // a weird zoom animation. The styleMask will be reset below.
     m_view.window.styleMask |= NSResizableWindowMask;
@@ -963,6 +993,9 @@ void QCocoaWindow::windowWillExitFullScreen()
 
 void QCocoaWindow::windowDidExitFullScreen()
 {
+    if (!isContentView())
+        return;
+
     Q_ASSERT_X(!m_view.window.qt_fullScreen, "QCocoaWindow",
         "FullScreen category processes window notifications first");
 
@@ -981,14 +1014,14 @@ void QCocoaWindow::windowDidExitFullScreen()
     }
 }
 
-void QCocoaWindow::windowDidOrderOffScreen()
-{
-    handleExposeEvent(QRegion());
-}
-
 void QCocoaWindow::windowDidOrderOnScreen()
 {
     [m_view setNeedsDisplay:YES];
+}
+
+void QCocoaWindow::windowDidOrderOffScreen()
+{
+    handleExposeEvent(QRegion());
 }
 
 void QCocoaWindow::windowDidChangeOcclusionState()
@@ -1422,13 +1455,13 @@ QRect QCocoaWindow::nativeWindowGeometry() const
 */
 void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
 {
+    if (!isContentView())
+        return;
+
     const Qt::WindowState currentState = windowState();
     const Qt::WindowState newState = QWindowPrivate::effectiveState(requestedState);
 
     if (newState == currentState)
-        return;
-
-    if (!isContentView())
         return;
 
     const NSSize contentSize = m_view.frame.size;
