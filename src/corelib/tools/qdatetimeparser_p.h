@@ -63,6 +63,8 @@
 #include "QtCore/qvector.h"
 #include "QtCore/qcoreapplication.h"
 
+QT_REQUIRE_CONFIG(datetimeparser);
+
 #define QDATETIMEEDIT_TIME_MIN QTime(0, 0, 0, 0)
 #define QDATETIMEEDIT_TIME_MAX QTime(23, 59, 59, 999)
 #define QDATETIMEEDIT_DATE_MIN QDate(100, 1, 1)
@@ -74,8 +76,6 @@
 #define QDATETIMEEDIT_DATE_INITIAL QDate(2000, 1, 1)
 
 QT_BEGIN_NAMESPACE
-
-#ifndef QT_BOOTSTRAPPED
 
 class Q_CORE_EXPORT QDateTimeParser
 {
@@ -286,8 +286,6 @@ Q_CORE_EXPORT bool operator==(const QDateTimeParser::SectionNode &s1, const QDat
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::Sections)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::FieldInfo)
-
-#endif // QT_BOOTSTRAPPED
 
 QT_END_NAMESPACE
 

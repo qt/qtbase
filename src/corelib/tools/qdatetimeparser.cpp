@@ -58,8 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_BOOTSTRAPPED
-
 QDateTimeParser::~QDateTimeParser()
 {
 }
@@ -1714,7 +1712,5 @@ bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::S
 {
     return (s1.type == s2.type) && (s1.pos == s2.pos) && (s1.count == s2.count);
 }
-
-#endif // QT_BOOTSTRAPPED
 
 QT_END_NAMESPACE

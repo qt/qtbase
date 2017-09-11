@@ -733,9 +733,15 @@
         },
         "timezone": {
             "label": "QTimeZone",
-            "purpose": "Provides support for timezone handling.",
+            "purpose": "Provides support for time-zone handling.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
+        },
+        "datetimeparser": {
+            "label": "QDateTimeParser",
+            "purpose": "Provides support for parsing date-time texts.",
+            "section": "Utilities",
+            "output": [ "privateFeature" ]
         },
         "commandlineparser": {
             "label": "QCommandlineParser",
