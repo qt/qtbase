@@ -3052,6 +3052,9 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
 */
 bool QVariant::canConvert(int targetTypeId) const
 {
+    if (d.type == targetTypeId)
+        return true;
+
     if ((targetTypeId == QMetaType::QModelIndex && d.type == QMetaType::QPersistentModelIndex)
         || (targetTypeId == QMetaType::QPersistentModelIndex && d.type == QMetaType::QModelIndex))
         return true;
