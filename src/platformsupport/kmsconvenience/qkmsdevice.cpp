@@ -489,7 +489,7 @@ void QKmsDevice::createScreens()
         } else {
             virtualPos = orderedScreen.vinfo.virtualPos;
         }
-        qCDebug(qLcKmsDebug) << "Adding QPlatformScren" << s << "(" << s->name() << ")"
+        qCDebug(qLcKmsDebug) << "Adding QPlatformScreen" << s << "(" << s->name() << ")"
                              << "to QPA with geometry" << s->geometry()
                              << "and isPrimary=" << orderedScreen.vinfo.isPrimary;
         // The order in qguiapp's screens list will match the order set by
