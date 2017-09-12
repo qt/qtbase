@@ -850,17 +850,20 @@ Q_INLINE_TEMPLATE typename QSharedPointer<X>::difference_type operator-(T *ptr1,
 template <class T, class X>
 Q_INLINE_TEMPLATE bool operator<(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
 {
-    return ptr1.data() < ptr2.data();
+    using CT = typename std::common_type<T *, X *>::type;
+    return std::less<CT>()(ptr1.data(), ptr2.data());
 }
 template <class T, class X>
 Q_INLINE_TEMPLATE bool operator<(const QSharedPointer<T> &ptr1, X *ptr2)
 {
-    return ptr1.data() < ptr2;
+    using CT = typename std::common_type<T *, X *>::type;
+    return std::less<CT>()(ptr1.data(), ptr2);
 }
 template <class T, class X>
 Q_INLINE_TEMPLATE bool operator<(T *ptr1, const QSharedPointer<X> &ptr2)
 {
-    return ptr1 < ptr2.data();
+    using CT = typename std::common_type<T *, X *>::type;
+    return std::less<CT>()(ptr1, ptr2.data());
 }
 
 //
