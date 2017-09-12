@@ -164,7 +164,8 @@ bool QXcbSoftwareOpenGLEnforcer::forceSoftwareOpenGL = false;
 template <class T>
 struct QXlibScopedPointerDeleter {
     static inline void cleanup(T *pointer) {
-        XFree(pointer);
+        if (pointer)
+            XFree(pointer);
     }
 };
 
@@ -202,6 +203,8 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
             GLXFBConfig candidate = configs[i];
 
             QXlibPointer<XVisualInfo> visual(glXGetVisualFromFBConfig(display, candidate));
+            if (visual.isNull())
+                continue;
 
             const int actualRed = qPopulationCount(visual->red_mask);
             const int actualGreen = qPopulationCount(visual->green_mask);
