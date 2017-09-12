@@ -2228,8 +2228,15 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
         if (test->isWindow())
             seenWindow = true;
 
+        // If the next focus widget has a focus proxy, we need to check to ensure
+        // that the proxy is in the correct parent-child direction (according to
+        // \a next). This is to ensure that we can tab in and out of compound widgets
+        // without getting stuck in a tab-loop between parent and child.
+        QWidget *focusProxy = test->d_func()->deepestFocusProxy();
+
         if ((test->focusPolicy() & focus_flag) == focus_flag
-            && !(test->d_func()->extra && test->d_func()->extra->focus_proxy)
+            && !(next && focusProxy && focusProxy->isAncestorOf(test))
+            && !(!next && focusProxy && test->isAncestorOf(focusProxy))
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
             && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
