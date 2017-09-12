@@ -40,6 +40,7 @@
 #include "qevent.h"
 #include "qcursor.h"
 #include "private/qguiapplication_p.h"
+#include "private/qtouchdevice_p.h"
 #include "qpa/qplatformintegration.h"
 #include "qpa/qplatformdrag.h"
 #include "private/qevent_p.h"
@@ -2765,12 +2766,18 @@ Qt::MouseButtons QTabletEvent::buttons() const
 
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
 */
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
                                          const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
     : QInputEvent(QEvent::NativeGesture), mGestureType(type),
+      mTouchDeviceId(QTouchDevicePrivate::get(const_cast<QTouchDevice *>(dev))->id),
       mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
       mSequenceId(sequenceId), mIntValue(intValue)
 { }
+
+const QTouchDevice *QNativeGestureEvent::device() const
+{
+    return QTouchDevicePrivate::deviceById(mTouchDeviceId);
+}
 
 /*!
     \fn QNativeGestureEvent::gestureType() const

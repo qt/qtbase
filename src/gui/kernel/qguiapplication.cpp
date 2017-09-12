@@ -2420,7 +2420,7 @@ void QGuiApplicationPrivate::processGestureEvent(QWindowSystemInterfacePrivate::
     if (e->window.isNull())
         return;
 
-    QNativeGestureEvent ev(e->type, e->pos, e->pos, e->globalPos, e->realValue, e->sequenceId, e->intValue);
+    QNativeGestureEvent ev(e->type, e->device, e->pos, e->pos, e->globalPos, e->realValue, e->sequenceId, e->intValue);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(e->window, &ev);
 }

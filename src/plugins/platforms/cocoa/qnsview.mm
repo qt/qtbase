@@ -1129,12 +1129,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if ([self handleGestureAsBeginEnd:event])
         return;
 
-    qCDebug(lcQpaGestures) << "magnifyWithEvent" << [event magnification];
+    qCDebug(lcQpaGestures) << "magnifyWithEvent" << [event magnification] << "from device" << hex << [event deviceID];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp, Qt::ZoomNativeGesture,
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), touchDevice, timestamp, Qt::ZoomNativeGesture,
                                                             [event magnification], windowPoint, screenPoint);
 }
 
@@ -1144,12 +1144,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         return;
 
     static bool zoomIn = true;
-    qCDebug(lcQpaGestures) << "smartMagnifyWithEvent" << zoomIn;
+    qCDebug(lcQpaGestures) << "smartMagnifyWithEvent" << zoomIn << "from device" << hex << [event deviceID];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp, Qt::SmartZoomNativeGesture,
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), touchDevice, timestamp, Qt::SmartZoomNativeGesture,
                                                             zoomIn ? 1.0f : 0.0f, windowPoint, screenPoint);
     zoomIn = !zoomIn;
 }
@@ -1166,7 +1166,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp, Qt::RotateNativeGesture,
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), touchDevice, timestamp, Qt::RotateNativeGesture,
                                                             -[event rotation], windowPoint, screenPoint);
 }
 
@@ -1175,7 +1175,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaGestures) << "swipeWithEvent" << [event deltaX] << [event deltaY];
+    qCDebug(lcQpaGestures) << "swipeWithEvent" << [event deltaX] << [event deltaY] << "from device" << hex << [event deviceID];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
@@ -1191,7 +1191,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     else if ([event deltaY] == -1)
         angle = 270.0f;
 
-    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), timestamp, Qt::SwipeNativeGesture,
+    QWindowSystemInterface::handleGestureEventWithRealValue(m_platformWindow->window(), touchDevice, timestamp, Qt::SwipeNativeGesture,
                                                             angle, windowPoint, screenPoint);
 }
 
@@ -1204,8 +1204,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    qCDebug(lcQpaGestures) << "beginGestureWithEvent @" << windowPoint;
-    QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), timestamp, Qt::BeginNativeGesture,
+    qCDebug(lcQpaGestures) << "beginGestureWithEvent @" << windowPoint << "from device" << hex << [event deviceID];
+    QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), touchDevice, timestamp, Qt::BeginNativeGesture,
                                                windowPoint, screenPoint);
 }
 
@@ -1214,12 +1214,12 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaGestures) << "endGestureWithEvent";
+    qCDebug(lcQpaGestures) << "endGestureWithEvent" << "from device" << hex << [event deviceID];
     const NSTimeInterval timestamp = [event timestamp];
     QPointF windowPoint;
     QPointF screenPoint;
     [self convertFromScreen:[self screenMousePoint:event] toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), timestamp, Qt::EndNativeGesture,
+    QWindowSystemInterface::handleGestureEvent(m_platformWindow->window(), touchDevice, timestamp, Qt::EndNativeGesture,
                                                windowPoint, screenPoint);
 }
 #endif // QT_NO_GESTURES
