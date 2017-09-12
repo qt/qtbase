@@ -577,6 +577,15 @@
 */
 
 /*!
+    \fn T *QSharedPointer::get() const
+    \since 5.11
+
+    Same as data().
+
+    This function is provided for API compatibility with \c{std::shared_ptr}.
+*/
+
+/*!
     \fn T &QSharedPointer::operator *() const
 
     Provides access to the shared pointer's members.

@@ -303,6 +303,7 @@ public:
     typedef qptrdiff difference_type;
 
     T *data() const Q_DECL_NOTHROW { return value; }
+    T *get() const Q_DECL_NOTHROW { return value; }
     bool isNull() const Q_DECL_NOTHROW { return !data(); }
     operator RestrictedBool() const Q_DECL_NOTHROW { return isNull() ? Q_NULLPTR : &QSharedPointer::value; }
     bool operator !() const Q_DECL_NOTHROW { return isNull(); }

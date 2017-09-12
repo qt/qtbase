@@ -59,6 +59,7 @@ class QSharedPointer
 public:
     // basic accessor functions
     T *data() const;
+    T *get() const;
     bool isNull() const;
     operator bool() const;
     bool operator!() const;
