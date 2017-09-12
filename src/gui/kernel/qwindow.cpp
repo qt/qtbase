@@ -1882,11 +1882,16 @@ void QWindowPrivate::destroy()
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
     QGuiApplication::sendEvent(q, &e);
 
-    delete platformWindow;
+    // Unset platformWindow before deleting, so that the destructor of the
+    // platform window does not recurse back into the platform window via
+    // this window during destruction (e.g. as a result of platform events).
+    QPlatformWindow *pw = platformWindow;
+    platformWindow = nullptr;
+    delete pw;
+
     resizeEventPending = true;
     receivedExpose = false;
     exposed = false;
-    platformWindow = 0;
 
     if (wasVisible)
         maybeQuitOnLastWindowClosed();
