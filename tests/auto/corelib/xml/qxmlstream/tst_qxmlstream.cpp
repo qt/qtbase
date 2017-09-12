@@ -576,6 +576,7 @@ private slots:
     void invalidStringCharacters_data() const;
     void invalidStringCharacters() const;
     void hasError() const;
+    void readBack() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -1693,6 +1694,51 @@ void tst_QXmlStream::invalidStringCharacters_data() const
     //
     QTest::newRow("utf8, mix of illegal control") << false << QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root attr='a&#0;&#x4;&#x1c;a'><![CDATA[abcdefghi]]></root>");
     //
+}
+
+static bool isValidSingleTextChar(const ushort c)
+{
+    // Conforms to https://www.w3.org/TR/REC-xml/#NT-Char - except for the high range, which is done
+    // with surrogates.
+    // Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+    static const QPair<ushort, ushort> validRanges[] = {
+        QPair<ushort, ushort>(0x9, 0xb),
+        QPair<ushort, ushort>(0xd, 0xe),
+        QPair<ushort, ushort>(0x20, 0xd800),
+        QPair<ushort, ushort>(0xe000, 0xfffe)
+    };
+
+    for (const QPair<ushort, ushort> &range : validRanges) {
+        if (c >= range.first && c < range.second)
+            return true;
+    }
+    return false;
+}
+
+void tst_QXmlStream::readBack() const
+{
+    for (ushort c = 0; c < std::numeric_limits<ushort>::max(); ++c) {
+        QBuffer buffer;
+
+        QVERIFY(buffer.open(QIODevice::WriteOnly));
+        QXmlStreamWriter writer(&buffer);
+        writer.writeStartDocument();
+        writer.writeTextElement("a", QString(QChar(c)));
+        writer.writeEndDocument();
+        buffer.close();
+
+        if (writer.hasError()) {
+            QVERIFY2(!isValidSingleTextChar(c), QByteArray::number(c));
+        } else {
+            QVERIFY2(isValidSingleTextChar(c), QByteArray::number(c));
+            QVERIFY(buffer.open(QIODevice::ReadOnly));
+            QXmlStreamReader reader(&buffer);
+            do {
+                reader.readNext();
+            } while (!reader.atEnd());
+            QVERIFY2(!reader.hasError(), QByteArray::number(c));
+        }
+    }
 }
 
 #include "tst_qxmlstream.moc"
