@@ -2096,8 +2096,8 @@ static QImage convertWithPalette(const QImage &src, QImage::Format format,
     Returns a copy of the image converted to the given \a format,
     using the specified \a colorTable.
 
-    Conversion from 32 bit to 8 bit indexed is a slow operation and
-    will use a straightforward nearest color approach, with no
+    Conversion from RGB formats to indexed formats is a slow operation
+    and will use a straightforward nearest color approach, with no
     dithering.
 */
 QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Qt::ImageConversionFlags flags) const
@@ -2105,23 +2105,12 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
     if (!d || d->format == format)
         return *this;
 
-    if (format <= QImage::Format_Indexed8 && depth() == 32) {
-        return convertWithPalette(*this, format, colorTable);
-    }
-
-    const Image_Converter *converterPtr = &qimage_converter_map[d->format][format];
-    Image_Converter converter = *converterPtr;
-    if (!converter)
+    if (format == QImage::Format_Invalid)
         return QImage();
+    if (format <= QImage::Format_Indexed8)
+        return convertWithPalette(convertToFormat(QImage::Format_ARGB32, flags), format, colorTable);
 
-    QImage image(d->width, d->height, format);
-    QIMAGE_SANITYCHECK_MEMORY(image);
-
-    image.d->offset = offset();
-    copyMetadata(image.d, d);
-
-    converter(image.d, d, flags);
-    return image;
+    return convertToFormat(format, flags);
 }
 
 /*!

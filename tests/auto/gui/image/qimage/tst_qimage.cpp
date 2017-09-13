@@ -69,6 +69,7 @@ private slots:
 
     void convertToFormat_data();
     void convertToFormat();
+    void convertToFormatWithColorTable();
 
     void convertToFormatRgb888ToRGB32();
 
@@ -956,6 +957,18 @@ void tst_QImage::convertToFormat()
     QCOMPARE(result2, expected2);
     QFile::remove(QLatin1String("result2.xpm"));
     QFile::remove(QLatin1String("expected2.xpm"));
+}
+
+void tst_QImage::convertToFormatWithColorTable()
+{
+    QVector<QRgb> colors(2);
+    colors[0] = 0xFF000000;
+    colors[1] = 0xFFFFFFFF;
+    for (int format = QImage::Format_RGB32; format < QImage::Format_Alpha8; ++format) {
+        QImage fromImage(10, 10, (QImage::Format)format);
+        QImage bitmap = fromImage.convertToFormat(QImage::Format_Mono, colors);
+        QVERIFY(!bitmap.isNull());
+    }
 }
 
 void tst_QImage::convertToFormatRgb888ToRGB32()
