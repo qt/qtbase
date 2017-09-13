@@ -6523,9 +6523,9 @@ void QWidget::setFocus(Qt::FocusReason reason)
     if (!isEnabled())
         return;
 
-    QWidget *f = this;
-    while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
-        f = f->d_func()->extra->focus_proxy;
+    QWidget *f = d_func()->deepestFocusProxy();
+    if (!f)
+        f = this;
 
     if (QApplication::focusWidget() == f
 #if 0 // Used to be included in Qt4 for Q_WS_WIN
@@ -6620,6 +6620,27 @@ void QWidget::setFocus(Qt::FocusReason reason)
     } else {
         f->d_func()->updateFocusChild();
     }
+}
+
+
+/*!\internal
+ * A focus proxy can have its own focus proxy, which can have its own
+ * proxy, and so on. This helper function returns the widget that sits
+ * at the bottom of the proxy chain, and therefore the one that should
+ * normally get focus if this widget receives a focus request.
+ */
+QWidget *QWidgetPrivate::deepestFocusProxy() const
+{
+    Q_Q(const QWidget);
+
+    QWidget *focusProxy = q->focusProxy();
+    if (!focusProxy)
+        return nullptr;
+
+    while (QWidget *nextFocusProxy = focusProxy->focusProxy())
+        focusProxy = nextFocusProxy;
+
+    return focusProxy;
 }
 
 void QWidgetPrivate::setFocus_sys()

@@ -369,6 +369,7 @@ public:
     void lower_sys();
     void stackUnder_sys(QWidget *);
 
+    QWidget *deepestFocusProxy() const;
     void setFocus_sys();
     void updateFocusChild();
 
