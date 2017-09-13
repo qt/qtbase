@@ -93,14 +93,14 @@
     The second element in the pair.
 */
 
-/*! \fn QPair::QPair()
+/*! \fn template <class T1, class T2> QPair<T1, T2>::QPair()
 
     Constructs an empty pair. The \c first and \c second elements are
     initialized with \l{default-constructed value}s.
 */
 
 /*!
-    \fn QPair::QPair(const T1 &value1, const T2 &value2)
+    \fn template <class T1, class T2> QPair<T1, T2>::QPair(const T1 &value1, const T2 &value2)
 
     Constructs a pair and initializes the \c first element with \a
     value1 and the \c second element with \a value2.
@@ -109,7 +109,7 @@
 */
 
 /*!
-\fn void QPair::swap(QPair &other)
+\fn template <class T1, class T2> void QPair<T1, T2>::swap(QPair &other)
 
     \since 5.5
     Swaps this pair with \a other.
@@ -125,7 +125,7 @@
 */
 
 /*!
-\fn void swap(QPair<T1, T2> &lhs, QPair<T1, T2> &rhs)
+\fn template <class T1, class T2> void swap(QPair<T1, T2> &lhs, QPair<T1, T2> &rhs)
     \overload
     \relates QPair
     \since 5.5
@@ -134,7 +134,7 @@
 */
 
 /*!
-    \fn QPair::QPair(const QPair<TT1, TT2> &p)
+    \fn template <class T1, class T2> template <typename TT1, typename TT2> QPair<T1, T2>::QPair(const QPair<TT1, TT2> &p)
     \since 5.2
 
     Constructs a pair from the other pair \a p, of types TT1 and TT2. This
@@ -145,14 +145,14 @@
 */
 
 /*!
-    \fn QPair::QPair(QPair<TT1, TT2> &&p)
+    \fn template <class T1, class T2> template <typename TT1, typename TT2> QPair<T1, T2>::QPair(QPair<TT1, TT2> &&p)
     \since 5.2
 
     Move-constructs a QPair instance, making it point to the same object that \a p was pointing to.
 */
 
 /*!
-    \fn QPair & QPair::operator=(const QPair<TT1, TT2> &p)
+    \fn template <class T1, class T2> template <typename TT1, typename TT2> QPair & QPair<T1, T2>::operator=(const QPair<TT1, TT2> &p)
     \since 5.2
 
     Copies pair \a p into this pair.
@@ -161,13 +161,13 @@
 */
 
 /*!
-    \fn QPair & QPair::operator=(QPair<TT1, TT2> &&p)
+    \fn template <class T1, class T2> template <typename TT1, typename TT2> QPair & QPair<T1, T2>::operator=(QPair<TT1, TT2> &&p)
     \since 5.2
 
     Move-assigns pair \a p into this pair instance.
 */
 
-/*! \fn bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+/*! \fn template <class T1, class T2> bool operator==(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 
     \relates QPair
 
@@ -179,7 +179,7 @@
     implementation of \c operator==().
 */
 
-/*! \fn bool operator!=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+/*! \fn template <class T1, class T2> bool operator!=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 
     \relates QPair
 
@@ -192,7 +192,7 @@
     implementation of \c operator==().
 */
 
-/*! \fn bool operator<(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+/*! \fn template <class T1, class T2> bool operator<(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 
     \relates QPair
 
@@ -205,7 +205,7 @@
     implementation of \c operator<().
 */
 
-/*! \fn bool operator>(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+/*! \fn template <class T1, class T2> bool operator>(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 
     \relates QPair
 
@@ -218,7 +218,7 @@
     implementation of \c operator<().
 */
 
-/*! \fn bool operator<=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+/*! \fn template <class T1, class T2> bool operator<=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 
     \relates QPair
 
@@ -231,7 +231,7 @@
     implementation of \c operator<().
 */
 
-/*! \fn bool operator>=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
+/*! \fn template <class T1, class T2> bool operator>=(const QPair<T1, T2> &p1, const QPair<T1, T2> &p2)
 
     \relates QPair
 
@@ -245,7 +245,7 @@
 */
 
 /*!
-    \fn QPair<T1, T2> qMakePair(const T1 &value1, const T2 &value2)
+    \fn template <class T1, class T2> QPair<T1, T2> qMakePair(const T1 &value1, const T2 &value2)
 
     \relates QPair
 
@@ -258,7 +258,7 @@
     usually requires less typing.
 */
 
-/*! \fn QDataStream &operator>>(QDataStream &in, QPair<T1, T2> &pair)
+/*! \fn template <class T1, class T2> QDataStream &operator>>(QDataStream &in, QPair<T1, T2> &pair)
 
     \relates QPair
 
@@ -269,7 +269,7 @@
     \sa {Serializing Qt Data Types}
 */
 
-/*! \fn QDataStream &operator<<(QDataStream &out, const QPair<T1, T2> &pair)
+/*! \fn template <class T1, class T2> QDataStream &operator<<(QDataStream &out, const QPair<T1, T2> &pair)
 
     \relates QPair
 
