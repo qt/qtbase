@@ -5773,6 +5773,15 @@ void tst_QNetworkReply::proxyChange()
     QNetworkRequest req(QUrl("http://" + QtNetworkSettings::serverName()));
     proxyServer.doClose = false;
 
+    {
+        // Needed to initialize a network session in QNAM. Without an initialized session the GET
+        // will be deferred until later, and the proxy will be unset first. This caused the test to
+        // fail in standalone runs (it passed in CI because the same QNAM instance is used for the
+        // entire test).
+        QNetworkReplyPtr temporary(manager.get(req));
+        waitForFinish(temporary);
+    }
+
     manager.setProxy(dummyProxy);
     QNetworkReplyPtr reply1(manager.get(req));
     connect(reply1, SIGNAL(finished()), &helper, SLOT(finishedSlot()));
