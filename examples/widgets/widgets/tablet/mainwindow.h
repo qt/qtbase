@@ -72,8 +72,9 @@ private slots:
     void setLineWidthValuator(QAction *action);
     void setSaturationValuator(QAction *action);
     void setEventCompression(bool compress);
-    void save();
+    bool save();
     void load();
+    void clear();
     void about();
 
 private:

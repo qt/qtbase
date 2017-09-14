@@ -90,6 +90,12 @@ bool TabletCanvas::loadImage(const QString &file)
 }
 //! [2]
 
+void TabletCanvas::clear()
+{
+    m_pixmap.fill(Qt::white);
+    update();
+}
+
 //! [3]
 void TabletCanvas::tabletEvent(QTabletEvent *event)
 {
