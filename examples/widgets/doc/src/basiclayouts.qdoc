@@ -67,11 +67,11 @@
     In the constructor, we first use the \c createMenu() function to
     create and populate a menu bar and the \c createHorizontalGroupBox()
     function to create a group box containing four buttons with a
-    horizontal layout. Next we use the \c createGridGroupBox() function
+    horizontal layout. Next, we use the \c createGridGroupBox() function
     to create a group box containing several line edits and a small text
     editor which are displayed in a grid layout. Finally, we use the
     \c createFormGroupBox() function to create a group box with
-    three labels and three input fields: a line edit, a combo box and
+    three labels and three input fields: a line edit, a combo box, and
     a spin box.
 
     \snippet layouts/basiclayouts/dialog.cpp 1
@@ -111,7 +111,7 @@
     \snippet layouts/basiclayouts/dialog.cpp 4
 
     We use the QBoxLayout::addWidget() function to add the widgets to
-    the end of layout. Each widget will get at least its minimum size
+    the end of the layout. Each widget will get at least its minimum size
     and at most its maximum size. It is possible to specify a stretch
     factor in the \l {QBoxLayout::addWidget()}{addWidget()} function,
     and any excess space is shared according to these stretch
