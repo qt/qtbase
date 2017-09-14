@@ -1063,7 +1063,12 @@ void QPdfEngine::drawHyperlink(const QRectF &r, const QUrl &url)
 
     char buf[256];
     const QRectF rr = d->pageMatrix().mapRect(r);
-    d->xprintf("<<\n/Type /Annot\n/Subtype /Link\n/Rect [");
+    d->xprintf("<<\n/Type /Annot\n/Subtype /Link\n");
+
+    if (d->pdfVersion == QPdfEngine::Version_A1b)
+        d->xprintf("/F 4\n"); // enable print flag, disable all other
+
+    d->xprintf("/Rect [");
     d->xprintf("%s ", qt_real_to_string(rr.left(), buf));
     d->xprintf("%s ", qt_real_to_string(rr.top(), buf));
     d->xprintf("%s ", qt_real_to_string(rr.right(), buf));
@@ -2831,7 +2836,12 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
         x2s.setNum(static_cast<double>(x2), 'f');
         y2s.setNum(static_cast<double>(y2), 'f');
         QByteArray rectData = x1s + ' ' + y1s + ' ' + x2s + ' ' + y2s;
-        xprintf("<<\n/Type /Annot\n/Subtype /Link\n/Rect [");
+        xprintf("<<\n/Type /Annot\n/Subtype /Link\n");
+
+        if (pdfVersion == QPdfEngine::Version_A1b)
+            xprintf("/F 4\n"); // enable print flag, disable all other
+
+        xprintf("/Rect [");
         xprintf(rectData.constData());
 #ifdef Q_DEBUG_PDF_LINKS
         xprintf("]\n/Border [16 16 1]\n/A <<\n");
