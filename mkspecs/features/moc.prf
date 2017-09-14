@@ -45,7 +45,7 @@ if(gcc|intel_icl|msvc):!rim_qcc:!uikit:!no_moc_predefs:if(!macos|count(QMAKE_APP
 
 defineReplace(mocCmdBase) {
     !isEmpty(WIN_INCLUDETEMP) {
-        incvar = @$$WIN_INCLUDETEMP
+        incvar = @$$shell_quote($$WIN_INCLUDETEMP)
     } else {
         incvar =
         for (inc, MOC_INCLUDEPATH): \
