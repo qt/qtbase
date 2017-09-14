@@ -119,12 +119,12 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
         case QEvent::TabletRelease:
             if (m_deviceDown && event->buttons() == Qt::NoButton)
                 m_deviceDown = false;
+            update();
             break;
         default:
             break;
     }
     event->accept();
-    update();
 }
 //! [3]
 
@@ -154,6 +154,7 @@ void TabletCanvas::paintEvent(QPaintEvent *)
 //! [5]
 void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
 {
+    static qreal maxPenRadius = pressureToWidth(1.0);
     painter.setRenderHint(QPainter::Antialiasing);
 
     switch (event->device()) {
@@ -169,6 +170,7 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 painter.setBrush(grad);
                 qreal radius = grad.radius();
                 painter.drawEllipse(event->posF(), radius, radius);
+                update(QRect(event->pos() - QPoint(radius, radius), QSize(radius * 2, radius * 2)));
             }
             break;
         case QTabletEvent::RotationStylus:
@@ -188,6 +190,7 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 poly << event->posF() - brushAdjust;
                 poly << event->posF() + brushAdjust;
                 painter.drawConvexPolygon(poly);
+                update(poly.boundingRect().toRect());
             }
             break;
 //! [6]
@@ -217,6 +220,8 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
         case QTabletEvent::Stylus:
             painter.setPen(m_pen);
             painter.drawLine(lastPoint.pos, event->posF());
+            update(QRect(lastPoint.pos.toPoint(), event->pos()).normalized()
+                   .adjusted(-maxPenRadius, -maxPenRadius, maxPenRadius, maxPenRadius));
             break;
     }
 }
