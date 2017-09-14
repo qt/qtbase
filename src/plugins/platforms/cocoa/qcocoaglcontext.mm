@@ -152,9 +152,32 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
 
     QMacAutoReleasePool pool; // For the SG Canvas render thread
 
+    m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
+
+    if (m_shareContext) {
+        // Allow sharing between 3.2 Core and 4.1 Core profile versions in
+        // cases where NSOpenGLContext creates a 4.1 context where a 3.2
+        // context was requested. Due to the semantics of QSurfaceFormat
+        // this 4.1 version can find its way onto the format for the new
+        // context, even though it was at no point requested by the user.
+        GLint shareContextRequestedProfile;
+        [m_shareContext.pixelFormat getValues:&shareContextRequestedProfile
+            forAttribute:NSOpenGLPFAOpenGLProfile forVirtualScreen:0];
+        auto shareContextActualProfile = share->format().version();
+
+        if (shareContextRequestedProfile == NSOpenGLProfileVersion3_2Core &&
+            shareContextActualProfile >= qMakePair(4, 1)) {
+
+            // There is a mismatch, downgrade requested format to make the
+            // NSOpenGLPFAOpenGLProfile attributes match. (NSOpenGLContext will
+            // fail to create a new context if there is a mismatch).
+            if (m_format.version() >= qMakePair(4, 1))
+                m_format.setVersion(3, 2);
+        }
+    }
+
     // create native context for the requested pixel format and share
     NSOpenGLPixelFormat *pixelFormat = createNSOpenGLPixelFormat(m_format);
-    m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
     m_context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:m_shareContext];
 
     // retry without sharing on context creation failure.
