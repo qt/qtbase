@@ -277,8 +277,9 @@ static void parseTzLeapSeconds(QDataStream &ds, int tzh_leapcnt, bool longTran)
 {
     // Parse tzh_leapcnt x pairs of leap seconds
     // We don't use leap seconds, so only read and don't store
-    qint64 val;
+    qint32 val;
     if (longTran) {
+        // v2 file format, each entry is 12 bytes long
         qint64 time;
         for (int i = 0; i < tzh_leapcnt && ds.status() == QDataStream::Ok; ++i) {
             // Parse Leap Occurrence Time, 8 bytes
@@ -288,6 +289,7 @@ static void parseTzLeapSeconds(QDataStream &ds, int tzh_leapcnt, bool longTran)
                 ds >> val;
         }
     } else {
+        // v0 file format, each entry is 8 bytes long
         for (int i = 0; i < tzh_leapcnt && ds.status() == QDataStream::Ok; ++i) {
             // Parse Leap Occurrence Time, 4 bytes
             ds >> val;
