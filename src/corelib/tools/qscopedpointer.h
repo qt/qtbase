@@ -140,6 +140,11 @@ public:
         return d;
     }
 
+    T *get() const Q_DECL_NOTHROW
+    {
+        return d;
+    }
+
     bool isNull() const Q_DECL_NOTHROW
     {
         return !d;

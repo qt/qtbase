@@ -68,6 +68,7 @@ void tst_QScopedPointer::defaultConstructor()
     /* Check that the members, one, is correctly initialized. */
     QScopedPointer<int> p;
     QCOMPARE(p.data(), static_cast<int *>(0));
+    QCOMPARE(p.get(), static_cast<int *>(0));
 }
 
 void tst_QScopedPointer::dataOnDefaultConstructed()
@@ -75,6 +76,7 @@ void tst_QScopedPointer::dataOnDefaultConstructed()
     QScopedPointer<int> p;
 
     QCOMPARE(p.data(), static_cast<int *>(0));
+    QCOMPARE(p.get(), static_cast<int *>(0));
 }
 
 class MyClass
@@ -113,6 +115,7 @@ void tst_QScopedPointer::reset()
         QScopedPointer<int> p;
         p.reset();
         QCOMPARE(p.data(), static_cast<int *>(0));
+        QCOMPARE(p.get(), static_cast<int *>(0));
     }
 
     /* Call reset() on an active value. */
@@ -120,6 +123,7 @@ void tst_QScopedPointer::reset()
         QScopedPointer<int> p(new int(3));
         p.reset();
         QCOMPARE(p.data(), static_cast<int *>(0));
+        QCOMPARE(p.get(), static_cast<int *>(0));
     }
 
     /* Call reset() with a value, on an active value. */
@@ -129,6 +133,7 @@ void tst_QScopedPointer::reset()
         int *const value = new int(9);
         p.reset(value);
         QCOMPARE(*p.data(), 9);
+        QCOMPARE(*p.get(), 9);
     }
 
     /* Call reset() with a value, on default constructed value. */
@@ -138,6 +143,7 @@ void tst_QScopedPointer::reset()
         int *const value = new int(9);
         p.reset(value);
         QCOMPARE(*p.data(), 9);
+        QCOMPARE(*p.get(), 9);
     }
 }
 

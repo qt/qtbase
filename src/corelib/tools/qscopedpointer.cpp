@@ -146,6 +146,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn T *QScopedPointer::get() const
+    \since 5.11
+
+    Same as data().
+*/
+
+/*!
     \fn T &QScopedPointer::operator*() const
 
     Provides access to the scoped pointer's object.
