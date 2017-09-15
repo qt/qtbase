@@ -119,6 +119,12 @@ public:
     bool event(QEvent *event) Q_DECL_OVERRIDE;
     int loopLevel() const;
 
+#ifdef Q_QDOC
+    template <typename Function, typename... Args>
+    static QThread *create(Function &&f, Args &&... args);
+    template <typename Function>
+    static QThread *create(Function &&f);
+#else
 #ifdef QTHREAD_HAS_CREATE
 #ifdef QTHREAD_HAS_VARIADIC_CREATE
     template <typename Function, typename... Args>
@@ -126,6 +132,7 @@ public:
 #else
     template <typename Function>
     static QThread *create(Function &&f);
+#endif
 #endif
 #endif
 
