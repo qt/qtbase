@@ -318,6 +318,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     QIOSIntegration *iosIntegration = QIOSIntegration::instance();
     bool supportsPressure = QIOSIntegration::instance()->touchDevice()->capabilities() & QTouchDevice::Pressure;
 
+#if QT_CONFIG(tabletevent)
     if (m_activePencilTouch && [touches containsObject:m_activePencilTouch]) {
         NSArray<UITouch *> *cTouches = [event coalescedTouchesForTouch:m_activePencilTouch];
         int i = 0;
@@ -347,6 +348,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
             ++i;
         }
     }
+#endif
 
     for (UITouch *uiTouch : m_activeTouches.keys()) {
         QWindowSystemInterface::TouchPoint &touchPoint = m_activeTouches[uiTouch];
@@ -393,16 +395,21 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     // points to QWindowSystemInterface::TouchPoints, and assigns each TouchPoint
     // an id for use by Qt.
     for (UITouch *touch in touches) {
+#if QT_CONFIG(tabletevent)
         if (touch.type == UITouchTypeStylus) {
             if (Q_UNLIKELY(m_activePencilTouch)) {
                 qWarning("ignoring additional Pencil while first is still active");
                 continue;
             }
             m_activePencilTouch = touch;
-        } else {
+        } else
+        {
             Q_ASSERT(!m_activeTouches.contains(touch));
+#endif
             m_activeTouches[touch].id = m_nextTouchId++;
+#if QT_CONFIG(tabletevent)
         }
+#endif
     }
 
     if (m_qioswindow->shouldAutoActivateWindow() && m_activeTouches.size() == 1) {
@@ -427,9 +434,12 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
     // Remove ended touch points from the active set:
     for (UITouch *touch in touches) {
+#if QT_CONFIG(tabletevent)
         if (touch.type == UITouchTypeStylus) {
             m_activePencilTouch = nil;
-        } else {
+        } else
+#endif
+        {
             m_activeTouches.remove(touch);
         }
     }
