@@ -1338,7 +1338,7 @@ void tst_QThread::quitLock()
 
 void tst_QThread::create()
 {
-#ifndef QTHREAD_HAS_CREATE
+#if !QT_CONFIG(cxx11_future)
     QSKIP("This test requires QThread::create");
 #else
     {
@@ -1586,7 +1586,7 @@ void tst_QThread::create()
     }
 #endif // QT_NO_EXCEPTIONS
 #endif // QTHREAD_HAS_VARIADIC_CREATE
-#endif // QTHREAD_HAS_CREATE
+#endif // QT_CONFIG(cxx11_future)
 }
 
 class StopableJob : public QObject

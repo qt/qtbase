@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -42,17 +43,10 @@
 
 #include <QtCore/qobject.h>
 
-// The implementation of QThread::create uses various C++14/C++17 facilities;
-// we must check for their presence. Specifically for glibcxx bundled in MinGW
-// with win32 threads, we check the condition found in its <future> header
-// since _GLIBCXX_HAS_GTHREADS might then not be defined.
-// For std::async (used in all codepaths)
-// there is no SG10 feature macro; just test for the header presence.
-// For the C++17 codepath do some more throughout checks for std::invoke and
-// C++14 lambdas availability.
-#if QT_HAS_INCLUDE(<future>) \
-    && (!defined(__GLIBCXX__) || (defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)))
-#  define QTHREAD_HAS_CREATE
+// For QThread::create. The configure-time test just checks for the availability
+// of std::future and std::async; for the C++17 codepath we perform some extra
+// checks here (for std::invoke and C++14 lambdas).
+#if QT_CONFIG(cxx11_future)
 #  include <future> // for std::async
 #  include <functional> // for std::invoke; no guard needed as it's a C++98 header
 
@@ -125,16 +119,16 @@ public:
     template <typename Function>
     static QThread *create(Function &&f);
 #else
-#ifdef QTHREAD_HAS_CREATE
-#ifdef QTHREAD_HAS_VARIADIC_CREATE
+#  if QT_CONFIG(cxx11_future)
+#    ifdef QTHREAD_HAS_VARIADIC_CREATE
     template <typename Function, typename... Args>
     static QThread *create(Function &&f, Args &&... args);
-#else
+#    else
     template <typename Function>
     static QThread *create(Function &&f);
-#endif
-#endif
-#endif
+#    endif // QTHREAD_HAS_VARIADIC_CREATE
+#  endif // QT_CONFIG(cxx11_future)
+#endif // Q_QDOC
 
 public Q_SLOTS:
     void start(Priority = InheritPriority);
@@ -165,7 +159,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QThread)
 
-#ifdef QTHREAD_HAS_CREATE
+#if QT_CONFIG(cxx11_future)
     static QThread *createThreadImpl(std::future<void> &&future);
 #endif
 
@@ -173,9 +167,9 @@ private:
     friend class QThreadData;
 };
 
-#ifdef QTHREAD_HAS_CREATE
+#if QT_CONFIG(cxx11_future)
 
-#ifdef QTHREAD_HAS_VARIADIC_CREATE
+#if defined(QTHREAD_HAS_VARIADIC_CREATE)
 // C++17: std::thread's constructor complying call
 template <typename Function, typename... Args>
 QThread *QThread::create(Function &&f, Args &&... args)
@@ -243,7 +237,7 @@ QThread *QThread::create(Function &&f)
 }
 #endif // QTHREAD_HAS_VARIADIC_CREATE
 
-#endif // QTHREAD_HAS_CREATE
+#endif // QT_CONFIG(cxx11_future)
 
 #else // QT_NO_THREAD
 

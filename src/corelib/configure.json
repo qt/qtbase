@@ -251,6 +251,18 @@
                 ]
             }
         },
+        "cxx11_future": {
+            "label": "C++11 <future>",
+            "type": "compile",
+            "test": {
+                "include": "future",
+                "main": [
+                    "std::future<int> f = std::async([]() { return 42; });",
+                    "(void)f.get();"
+                ],
+                "qmake": "unix:LIBS += -lpthread"
+            }
+        },
         "cxx11_random": {
             "label": "C++11 <random>",
             "type": "compile",
@@ -441,6 +453,11 @@
             "disable": "input.doubleconversion == 'qt'",
             "condition": "features.doubleconversion && libs.doubleconversion",
             "output": [ "privateFeature" ]
+        },
+        "cxx11_future": {
+            "label": "C++11 <future>",
+            "condition": "tests.cxx11_future",
+            "output": [ "publicFeature" ]
         },
         "cxx11_random": {
             "label": "C++11 <random>",
