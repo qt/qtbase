@@ -2729,14 +2729,14 @@ void QTreeWidget::setHeaderItem(QTreeWidgetItem *item)
 
     int oldCount = columnCount();
     if (oldCount < item->columnCount())
-         d->treeModel()->beginInsertColumns(QModelIndex(), oldCount, item->columnCount());
-    else
-         d->treeModel()->beginRemoveColumns(QModelIndex(), item->columnCount(), oldCount);
+         d->treeModel()->beginInsertColumns(QModelIndex(), oldCount, item->columnCount() - 1);
+    else if (oldCount > item->columnCount())
+         d->treeModel()->beginRemoveColumns(QModelIndex(), item->columnCount(), oldCount - 1);
     delete d->treeModel()->headerItem;
     d->treeModel()->headerItem = item;
     if (oldCount < item->columnCount())
         d->treeModel()->endInsertColumns();
-    else
+    else if (oldCount > item->columnCount())
         d->treeModel()->endRemoveColumns();
     d->treeModel()->headerDataChanged(Qt::Horizontal, 0, oldCount);
 }
