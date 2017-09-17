@@ -332,9 +332,18 @@ void tst_QTreeWidget::addTopLevelItem()
         for (int i = 0; i < 10; ++i)
             tops << new TreeItem();
         int count = tree.topLevelItemCount();
-        tree.insertTopLevelItems(100000, tops);
-        // ### fixme
+        tree.insertTopLevelItems(count, tops);
         QCOMPARE(tree.topLevelItemCount(), count + 10);
+    }
+
+    // invalid insert
+    {
+        tops.clear();
+        for (int i = 0; i < 10; ++i)
+            tops << new TreeItem();
+        int count = tree.topLevelItemCount();
+        tree.insertTopLevelItems(100000, tops); // should be a no-op
+        QCOMPARE(tree.topLevelItemCount(), count);
     }
 }
 

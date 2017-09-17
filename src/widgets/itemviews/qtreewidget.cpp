@@ -2009,6 +2009,9 @@ void QTreeWidgetItem::addChildren(const QList<QTreeWidgetItem*> &children)
 */
 void QTreeWidgetItem::insertChildren(int index, const QList<QTreeWidgetItem*> &children)
 {
+    if (index < 0 || index > this->children.count() || children.isEmpty())
+        return;
+
     if (view && view->isSortingEnabled()) {
         for (int n = 0; n < children.count(); ++n)
             insertChild(index, children.at(n));
