@@ -1,0 +1,37 @@
+# Feature       CPUID function      Bit     Required feature
+sse2            Leaf1EDX            26
+sse3            Leaf1ECX            0
+ssse3           Leaf1ECX            9
+fma             Leaf1ECX            12
+sse4.1          Leaf1ECX            19
+sse4.2          Leaf1ECX            20
+movbe           Leaf1ECX            22
+popcnt          Leaf1ECX            23
+aes             Leaf1ECX            25      sse4.2
+avx             Leaf1ECX            28
+f16c            Leaf1ECX            29
+rdrnd           Leaf1ECX            30
+bmi             Leaf7_0EBX          3
+hle             Leaf7_0EBX          4
+avx2            Leaf7_0EBX          5
+bmi2            Leaf7_0EBX          8
+rtm             Leaf7_0EBX          11
+avx512f         Leaf7_0EBX          16
+avx512dq        Leaf7_0EBX          17
+rdseed          Leaf7_0EBX          18
+avx512ifma      Leaf7_0EBX          21
+avx512pf        Leaf7_0EBX          26
+avx512er        Leaf7_0EBX          27
+avx512cd        Leaf7_0EBX          28
+sha             Leaf7_0EBX          29
+avx512bw        Leaf7_0EBX          30
+avx512vl        Leaf7_0EBX          31
+avx512vbmi      Leaf7_0ECX          1
+avx512vbmi2     Leaf7_0ECX          6
+gfni            Leaf7_0ECX          8
+vaes            Leaf7_0ECX          9
+avx512vnni      Leaf7_0ECX          11
+avx512bitalg    Leaf7_0ECX          12
+avx512vpopcntdq Leaf7_0ECX          14
+avx5124nniw     Leaf7_0EDX          2
+avx5124fmaps    Leaf7_0EDX          3

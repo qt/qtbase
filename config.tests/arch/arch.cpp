@@ -115,6 +115,22 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 // AVX512 Vector Byte Manipulation Instructions, Intel processor codename "Cannonlake"
 " avx512vbmi"
 #endif
+#ifdef __AVX512VBMI2__
+// AVX512 Vector Byte Manipulation Instructions #2, Intel processor codename "Ice Lake"
+" avx512vbmi2"
+#endif
+#ifdef __AVX512VPOPCNTDQ__
+// AVX512 Vector Population Count Double & Quad, Future Intel Xeon Phi processor codename "Knights Mill", Intel processor codename "Ice Lake"
+" avx512vpopcntdq"
+#endif
+#ifdef __AVX5124FMAPS__
+// AVX512 4-iteration Fused Multiply Accumulation Packed Single, Future Intel Xeon Phi processor codename "Knights Mill"
+" avx5124fmaps"
+#endif
+#ifdef __AVX5124VNNIW__
+// AVX512 4-iteration Vector Neural Network Instructions Word, Future Intel Xeon Phi processor codename "Knights Mill"
+" avx5124vnniw"
+#endif
 #ifdef __BMI__
 // Bit Manipulation Instructions 1, Intel Core 4th Generation ("Haswell"), AMD "Bulldozer 2"
 " bmi"
@@ -144,6 +160,14 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 #ifdef __FSGSBASE__
 // rdfsgsbase, wrfsgsbase, Intel Core 3rd Generation ("Ivy Bridge")
 " fsgsbase"
+#endif
+#ifdef __GFNI__
+// Galois Field new instructions, Intel processor codename "Ice Lake"
+" gfni"
+#endif
+#ifdef __IBT__
+// Indirect Branch Tracking, Intel processor TBA
+" ibt"
 #endif
 #ifdef __LWP__
 // LWP instructions, AMD "Bulldozer"
@@ -186,6 +210,10 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 // Prefetch data for writing, Intel Core 5th Generation ("Broadwell")
 " prfchw"
 #endif
+#ifdef __RDPID__
+// Read Processor ID, Intel processors codename "Ice Lake" and "Goldmont Plus"
+" rdpid"
+#endif
 #ifdef __RDRND__
 // Random number generator, Intel Core 3rd Generation ("Ivy Bridge")
 " rdrnd"
@@ -199,8 +227,12 @@ const char msg2[] = "==Qt=magic=Qt== Sub-architecture:"
 " rtm"
 #endif
 #ifdef __SHA__
-// SHA-1 and SHA-256 instructions, Intel processor TBA
+// SHA-1 and SHA-256 instructions, Intel processors codename "Cannon Lake" and "Goldmont"
 " sha"
+#endif
+#ifdef __SHSTK__
+// Shadow stack, Intel processor TBA
+" shstk"
 #endif
 #if defined(__SSE__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 1) || defined(_M_X64)
 // Streaming SIMD Extensions, Intel Pentium III, AMD Athlon
