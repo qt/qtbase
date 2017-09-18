@@ -5924,7 +5924,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     pixmapOffset -= effectRect.topLeft();
 
-    const qreal dpr = context->painter->device()->devicePixelRatio();
+    const qreal dpr = context->painter->device()->devicePixelRatioF();
     QPixmap pixmap(effectRect.size() * dpr);
     pixmap.setDevicePixelRatio(dpr);
 
