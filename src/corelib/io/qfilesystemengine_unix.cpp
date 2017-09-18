@@ -45,6 +45,7 @@
 
 #include <QtCore/qvarlengtharray.h>
 
+#include <pwd.h>
 #include <stdlib.h> // for realpath()
 #include <sys/types.h>
 #include <sys/stat.h>
