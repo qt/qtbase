@@ -209,7 +209,7 @@ void QWindowsDirect2DWindow::resizeSwapChain(const QSize &size)
 {
     m_pixmap.reset();
     m_bitmap.reset();
-    m_deviceContext->SetTarget(Q_NULLPTR);
+    m_deviceContext->SetTarget(nullptr);
     m_needsFullFlush = true;
 
     if (!m_swapChain)
@@ -241,7 +241,7 @@ QSharedPointer<QWindowsDirect2DBitmap> QWindowsDirect2DWindow::copyBackBuffer() 
         dpiX,                       // FLOAT dpiX;
         dpiY,                       // FLOAT dpiY;
         D2D1_BITMAP_OPTIONS_TARGET, // D2D1_BITMAP_OPTIONS bitmapOptions;
-        Q_NULLPTR                   // _Field_size_opt_(1) ID2D1ColorContext *colorContext;
+        nullptr                   // _Field_size_opt_(1) ID2D1ColorContext *colorContext;
     };
     ComPtr<ID2D1Bitmap1> copy;
     HRESULT hr = m_deviceContext.Get()->CreateBitmap(size, NULL, 0, properties, &copy);
@@ -257,7 +257,7 @@ QSharedPointer<QWindowsDirect2DBitmap> QWindowsDirect2DWindow::copyBackBuffer() 
         return null_result;
     }
 
-    return QSharedPointer<QWindowsDirect2DBitmap>(new QWindowsDirect2DBitmap(copy.Get(), Q_NULLPTR));
+    return QSharedPointer<QWindowsDirect2DBitmap>(new QWindowsDirect2DBitmap(copy.Get(), nullptr));
 }
 
 void QWindowsDirect2DWindow::setupBitmap()

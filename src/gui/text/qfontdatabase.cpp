@@ -2775,7 +2775,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     if (d->engineData->engines[script])
         return;
 
-    QFontEngine *fe = Q_NULLPTR;
+    QFontEngine *fe = nullptr;
 
     req.fallBackFamilies = fallBackFamilies;
     if (!req.fallBackFamilies.isEmpty())

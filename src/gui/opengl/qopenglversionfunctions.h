@@ -193,7 +193,7 @@ class QAbstractOpenGLFunctionsPrivate
 {
 public:
     QAbstractOpenGLFunctionsPrivate()
-        : owningContext(Q_NULLPTR),
+        : owningContext(nullptr),
           initialized(false)
     {}
 

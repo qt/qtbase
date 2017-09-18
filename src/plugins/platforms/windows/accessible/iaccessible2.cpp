@@ -925,7 +925,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedColumns(long **sele
         const QList<int> selectedIndices = tableIface->selectedColumns();
         const int count = selectedIndices.count();
         *nColumns = count;
-        *selectedColumns = Q_NULLPTR;
+        *selectedColumns = nullptr;
         if (count) {
             *selectedColumns = coTaskMemAllocArray<long>(count);
             std::copy(selectedIndices.constBegin(), selectedIndices.constEnd(),
@@ -948,7 +948,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_selectedRows(long **selecte
         const QList<int> selectedIndices = tableIface->selectedRows();
         const int count = selectedIndices.count();
         *nRows = count;
-        *selectedRows = Q_NULLPTR;
+        *selectedRows = nullptr;
         if (count) {
             *selectedRows = coTaskMemAllocArray<long>(count);
             std::copy(selectedIndices.constBegin(), selectedIndices.constEnd(),
@@ -1617,7 +1617,7 @@ HRESULT QWindowsIA2Accessible::wrapListOfCells(const QList<QAccessibleInterface*
     const int count = inputCells.count();
     // Server allocates array
     *nCellCount = count;
-    *outputAccessibles = Q_NULLPTR;
+    *outputAccessibles = nullptr;
     if (count) {
         *outputAccessibles = coTaskMemAllocArray<IUnknown *>(count);
         std::transform(inputCells.constBegin(), inputCells.constEnd(),

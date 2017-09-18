@@ -634,7 +634,7 @@ void tst_QTextStream::readLineInto()
     ts.readLineInto(&line);
     QCOMPARE(line, QStringLiteral("1"));
 
-    ts.readLineInto(Q_NULLPTR, 0); // read the second line, but don't store it
+    ts.readLineInto(nullptr, 0); // read the second line, but don't store it
 
     ts.readLineInto(&line);
     QCOMPARE(line, QStringLiteral("3"));

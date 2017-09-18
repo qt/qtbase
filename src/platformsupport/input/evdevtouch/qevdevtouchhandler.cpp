@@ -190,9 +190,9 @@ static inline bool testBit(long bit, const long *array)
 #endif
 
 QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const QString &spec, QObject *parent)
-    : QObject(parent), m_notify(Q_NULLPTR), m_fd(-1), d(Q_NULLPTR), m_device(Q_NULLPTR)
+    : QObject(parent), m_notify(nullptr), m_fd(-1), d(nullptr), m_device(nullptr)
 #if QT_CONFIG(mtdev)
-      , m_mtdev(Q_NULLPTR)
+      , m_mtdev(nullptr)
 #endif
 {
     setObjectName(QLatin1String("Evdev Touch Handler"));
@@ -425,7 +425,7 @@ err:
             qErrnoWarning(errno, "evdevtouch: Could not read from input device");
             if (errno == ENODEV) { // device got disconnected -> stop reading
                 delete m_notify;
-                m_notify = Q_NULLPTR;
+                m_notify = nullptr;
 
                 QT_CLOSE(m_fd);
                 m_fd = -1;
@@ -464,7 +464,7 @@ void QEvdevTouchScreenHandler::unregisterTouchDevice()
         delete m_device;
     }
 
-    m_device = Q_NULLPTR;
+    m_device = nullptr;
 }
 
 void QEvdevTouchScreenData::addTouchPoint(const Contact &contact, Qt::TouchPointStates *combinedStates)
@@ -779,13 +779,13 @@ void QEvdevTouchScreenData::reportPoints()
     if (m_filtered)
         emit q->touchPointsUpdated();
     else
-        QWindowSystemInterface::handleTouchEvent(Q_NULLPTR, q->touchDevice(), m_touchPoints);
+        QWindowSystemInterface::handleTouchEvent(nullptr, q->touchDevice(), m_touchPoints);
 }
 
 QEvdevTouchScreenHandlerThread::QEvdevTouchScreenHandlerThread(const QString &device, const QString &spec, QObject *parent)
-    : QDaemonThread(parent), m_device(device), m_spec(spec), m_handler(Q_NULLPTR), m_touchDeviceRegistered(false)
+    : QDaemonThread(parent), m_device(device), m_spec(spec), m_handler(nullptr), m_touchDeviceRegistered(false)
     , m_touchUpdatePending(false)
-    , m_filterWindow(Q_NULLPTR)
+    , m_filterWindow(nullptr)
     , m_touchRate(-1)
 {
     start();
@@ -810,7 +810,7 @@ void QEvdevTouchScreenHandlerThread::run()
     exec();
 
     delete m_handler;
-    m_handler = Q_NULLPTR;
+    m_handler = nullptr;
 }
 
 bool QEvdevTouchScreenHandlerThread::isTouchDeviceRegistered() const
@@ -951,7 +951,7 @@ void QEvdevTouchScreenHandlerThread::filterAndSendTouchPoints()
 
     m_filteredPoints = filteredPoints;
 
-    QWindowSystemInterface::handleTouchEvent(Q_NULLPTR,
+    QWindowSystemInterface::handleTouchEvent(nullptr,
                                              m_handler->touchDevice(),
                                              points);
 }

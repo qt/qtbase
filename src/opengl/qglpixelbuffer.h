@@ -53,9 +53,9 @@ class Q_OPENGL_EXPORT QGLPixelBuffer : public QPaintDevice
     Q_DECLARE_PRIVATE(QGLPixelBuffer)
 public:
     QGLPixelBuffer(const QSize &size, const QGLFormat &format = QGLFormat::defaultFormat(),
-                   QGLWidget *shareWidget = Q_NULLPTR);
+                   QGLWidget *shareWidget = nullptr);
     QGLPixelBuffer(int width, int height, const QGLFormat &format = QGLFormat::defaultFormat(),
-                   QGLWidget *shareWidget = Q_NULLPTR);
+                   QGLWidget *shareWidget = nullptr);
     virtual ~QGLPixelBuffer();
 
     bool isValid() const;

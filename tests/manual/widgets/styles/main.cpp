@@ -87,7 +87,7 @@ static QWidget *createStandardPixmapPage(QWidget *parent)
     const int maxColumns = 6;
     for (int i = 0; i <= int(QStyle::SP_LineEditClearButton); ++i) {
         const QStyle::StandardPixmap sp = static_cast<QStyle::StandardPixmap>(i);
-        QPixmap pixmap = result->style()->standardPixmap(sp, Q_NULLPTR, result);
+        QPixmap pixmap = result->style()->standardPixmap(sp, nullptr, result);
         QLabel *descriptionLabel = new QLabel(pixmapDescription(sp, pixmap));
         grid->addWidget(descriptionLabel, row, column++);
         QLabel *displayLabel = new QLabel;
@@ -111,7 +111,7 @@ static QWidget *createMetricsPage(QWidget *parent)
     for (int i = 0; i <= int(QStyle::PM_HeaderDefaultSectionSizeVertical); ++i) {
         const QStyle::PixelMetric m = static_cast<QStyle::PixelMetric>(i);
         str << formatEnumValue(m) << '(' << int(m) << ")="
-            << result->style()->pixelMetric(m, Q_NULLPTR, result) << '\n';
+            << result->style()->pixelMetric(m, nullptr, result) << '\n';
     }
     result->setPlainText(text);
     return result;
@@ -126,7 +126,7 @@ static QWidget *createHintsPage(QWidget *parent)
     for (int i = 0; i <= int(QStyle::SH_Menu_SubMenuDontStartSloppyOnLeave); ++i) {
         const QStyle::StyleHint h = static_cast<QStyle::StyleHint>(i);
         str << formatEnumValue(h) << '(' << int(h) << ")="
-            << result->style()->styleHint(h, Q_NULLPTR, result) << '\n';
+            << result->style()->styleHint(h, nullptr, result) << '\n';
     }
     result->setPlainText(text);
     return result;

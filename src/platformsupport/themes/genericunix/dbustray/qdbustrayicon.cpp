@@ -102,17 +102,17 @@ static int instanceCount = 0;
 */
 
 QDBusTrayIcon::QDBusTrayIcon()
-    : m_dbusConnection(Q_NULLPTR)
+    : m_dbusConnection(nullptr)
     , m_adaptor(new QStatusNotifierItemAdaptor(this))
-    , m_menuAdaptor(Q_NULLPTR)
-    , m_menu(Q_NULLPTR)
-    , m_notifier(Q_NULLPTR)
+    , m_menuAdaptor(nullptr)
+    , m_menu(nullptr)
+    , m_notifier(nullptr)
     , m_instanceId(KDEItemFormat.arg(QCoreApplication::applicationPid()).arg(++instanceCount))
     , m_category(QStringLiteral("ApplicationStatus"))
     , m_defaultStatus(QStringLiteral("Active")) // be visible all the time.  QSystemTrayIcon has no API to control this.
     , m_status(m_defaultStatus)
-    , m_tempIcon(Q_NULLPTR)
-    , m_tempAttentionIcon(Q_NULLPTR)
+    , m_tempIcon(nullptr)
+    , m_tempAttentionIcon(nullptr)
     , m_registered(false)
 {
     qCDebug(qLcTray);
@@ -149,9 +149,9 @@ void QDBusTrayIcon::cleanup()
     if (m_registered)
         dBusConnection()->unregisterTrayIcon(this);
     delete m_dbusConnection;
-    m_dbusConnection = Q_NULLPTR;
+    m_dbusConnection = nullptr;
     delete m_notifier;
-    m_notifier = Q_NULLPTR;
+    m_notifier = nullptr;
     m_registered = false;
 }
 
@@ -203,7 +203,7 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
         necessity_checked = true;
     }
     if (!necessary)
-        return Q_NULLPTR;
+        return nullptr;
     qreal dpr = qGuiApp->devicePixelRatio();
     QTemporaryFile *ret = new QTemporaryFile(TempFileTemplate, this);
     ret->open();

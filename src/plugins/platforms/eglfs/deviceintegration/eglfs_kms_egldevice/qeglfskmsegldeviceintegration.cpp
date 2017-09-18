@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QEglFSKmsEglDeviceIntegration::QEglFSKmsEglDeviceIntegration()
     : m_egl_device(EGL_NO_DEVICE_EXT)
-    , m_funcs(Q_NULLPTR)
+    , m_funcs(nullptr)
 {
     qCDebug(qLcEglfsKmsDebug, "New DRM/KMS on EGLDevice integration created");
 }
@@ -75,7 +75,7 @@ EGLDisplay QEglFSKmsEglDeviceIntegration::createDisplay(EGLNativeDisplayType nat
     EGLDisplay display;
 
     if (m_funcs->has_egl_platform_device) {
-        display = m_funcs->get_platform_display(EGL_PLATFORM_DEVICE_EXT, nativeDisplay, Q_NULLPTR);
+        display = m_funcs->get_platform_display(EGL_PLATFORM_DEVICE_EXT, nativeDisplay, nullptr);
     } else {
         qWarning("EGL_EXT_platform_device not available, falling back to legacy path!");
         display = eglGetDisplay(nativeDisplay);
@@ -162,7 +162,7 @@ void QEglFSKmsEglDeviceWindow::resetSurface()
         qCDebug(qLcEglfsKmsDebug, "Could not query number of EGLStream FIFO frames");
     }
 
-    if (!m_integration->m_funcs->get_output_layers(display, Q_NULLPTR, Q_NULLPTR, 0, &count) || count == 0) {
+    if (!m_integration->m_funcs->get_output_layers(display, nullptr, nullptr, 0, &count) || count == 0) {
         qWarning("No output layers found");
         return;
     }
@@ -172,7 +172,7 @@ void QEglFSKmsEglDeviceWindow::resetSurface()
     QVector<EGLOutputLayerEXT> layers;
     layers.resize(count);
     EGLint actualCount;
-    if (!m_integration->m_funcs->get_output_layers(display, Q_NULLPTR, layers.data(), count, &actualCount)) {
+    if (!m_integration->m_funcs->get_output_layers(display, nullptr, layers.data(), count, &actualCount)) {
         qWarning("Failed to get layers");
         return;
     }

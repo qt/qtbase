@@ -3449,7 +3449,7 @@ void tst_QTreeWidget::getMimeDataWithInvalidItem()
 {
     CustomTreeWidget w;
     QTest::ignoreMessage(QtWarningMsg, "QTreeWidget::mimeData: Null-item passed");
-    QMimeData *md = w.mimeData(QList<QTreeWidgetItem*>() << Q_NULLPTR);
+    QMimeData *md = w.mimeData(QList<QTreeWidgetItem*>() << nullptr);
     QVERIFY(!md);
 }
 

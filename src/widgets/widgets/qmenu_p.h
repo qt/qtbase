@@ -89,7 +89,7 @@ class QMenuSloppyState
     Q_DISABLE_COPY(QMenuSloppyState)
 public:
     QMenuSloppyState()
-        : m_menu(Q_NULLPTR)
+        : m_menu(nullptr)
         , m_enabled(false)
         , m_uni_directional(false)
         , m_select_other_actions(false)
@@ -99,9 +99,9 @@ public:
         , m_uni_dir_discarded_count(0)
         , m_uni_dir_fail_at_count(0)
         , m_timeout(0)
-        , m_reset_action(Q_NULLPTR)
-        , m_origin_action(Q_NULLPTR)
-        , m_parent(Q_NULLPTR)
+        , m_reset_action(nullptr)
+        , m_origin_action(nullptr)
+        , m_parent(nullptr)
     { }
 
     ~QMenuSloppyState() { reset(); }
@@ -184,7 +184,7 @@ public:
         QSetValueOnDestroy<QPointF> setPreviousPoint(m_previous_point, mousePos);
 
         if (resetAction && resetAction->isSeparator()) {
-            m_reset_action = Q_NULLPTR;
+            m_reset_action = nullptr;
             m_use_reset_action = true;
         } else if (m_reset_action != resetAction) {
             if (m_use_reset_action && resetAction) {
@@ -462,7 +462,7 @@ public:
     public:
         enum Type { ScrollUp, ScrollDown };
         ScrollerTearOffItem(Type type, QMenuPrivate *mPrivate,
-                            QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+                            QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
         void paintEvent(QPaintEvent *e) override;
         void updateScrollerRects(const QRect &rect);
 

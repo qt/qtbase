@@ -225,10 +225,10 @@ class Q_XML_EXPORT QXmlReader
 {
 public:
     virtual ~QXmlReader() {}
-    virtual bool feature(const QString& name, bool *ok = Q_NULLPTR) const = 0;
+    virtual bool feature(const QString& name, bool *ok = nullptr) const = 0;
     virtual void setFeature(const QString& name, bool value) = 0;
     virtual bool hasFeature(const QString& name) const = 0;
-    virtual void* property(const QString& name, bool *ok = Q_NULLPTR) const = 0;
+    virtual void* property(const QString& name, bool *ok = nullptr) const = 0;
     virtual void setProperty(const QString& name, void* value) = 0;
     virtual bool hasProperty(const QString& name) const = 0;
     virtual void setEntityResolver(QXmlEntityResolver* handler) = 0;
@@ -253,11 +253,11 @@ public:
     QXmlSimpleReader();
     virtual ~QXmlSimpleReader();
 
-    bool feature(const QString& name, bool *ok = Q_NULLPTR) const override;
+    bool feature(const QString& name, bool *ok = nullptr) const override;
     void setFeature(const QString& name, bool value) override;
     bool hasFeature(const QString& name) const override;
 
-    void* property(const QString& name, bool *ok = Q_NULLPTR) const override;
+    void* property(const QString& name, bool *ok = nullptr) const override;
     void setProperty(const QString& name, void* value) override;
     bool hasProperty(const QString& name) const override;
 

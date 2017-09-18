@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 class QMovableTabWidget : public QWidget
 {
 public:
-    explicit QMovableTabWidget(QWidget *parent = Q_NULLPTR);
+    explicit QMovableTabWidget(QWidget *parent = nullptr);
     void setPixmap(const QPixmap &pixmap);
 
 protected:

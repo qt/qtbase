@@ -141,7 +141,7 @@ public:
     };
     Q_ENUM(AncestorMode)
 
-    explicit QWindow(QScreen *screen = Q_NULLPTR);
+    explicit QWindow(QScreen *screen = nullptr);
     explicit QWindow(QWindow *parent);
     virtual ~QWindow();
 
@@ -380,12 +380,12 @@ private:
 #ifndef Q_QDOC
 template <> inline QWindow *qobject_cast<QWindow*>(QObject *o)
 {
-    if (!o || !o->isWindowType()) return Q_NULLPTR;
+    if (!o || !o->isWindowType()) return nullptr;
     return static_cast<QWindow*>(o);
 }
 template <> inline const QWindow *qobject_cast<const QWindow*>(const QObject *o)
 {
-    if (!o || !o->isWindowType()) return Q_NULLPTR;
+    if (!o || !o->isWindowType()) return nullptr;
     return static_cast<const QWindow*>(o);
 }
 #endif // !Q_QDOC

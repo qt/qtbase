@@ -258,7 +258,7 @@ void QAbstractTransition::setTargetStates(const QList<QAbstractState*> &targets)
 
     // Verify if any of the new target states is a null-pointer:
     for (int i = 0; i < targets.size(); ++i) {
-        if (targets.at(i) == Q_NULLPTR) {
+        if (targets.at(i) == nullptr) {
             qWarning("QAbstractTransition::setTargetStates: target state(s) cannot be null");
             return;
         }

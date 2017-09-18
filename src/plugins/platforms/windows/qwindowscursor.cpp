@@ -184,7 +184,7 @@ static HCURSOR createBitmapCursor(const QCursor &cursor, qreal scaleFactor = 1)
     return createBitmapCursor(bbits, mbits, cursor.hotSpot(), invb, invm);
 }
 
-static QSize systemCursorSize(const QPlatformScreen *screen = Q_NULLPTR)
+static QSize systemCursorSize(const QPlatformScreen *screen = nullptr)
 {
     const QSize primaryScreenCursorSize(GetSystemMetrics(SM_CXCURSOR), GetSystemMetrics(SM_CYCURSOR));
     if (screen) {

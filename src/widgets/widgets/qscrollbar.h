@@ -56,8 +56,8 @@ class Q_WIDGETS_EXPORT QScrollBar : public QAbstractSlider
 {
     Q_OBJECT
 public:
-    explicit QScrollBar(QWidget *parent = Q_NULLPTR);
-    explicit QScrollBar(Qt::Orientation, QWidget *parent = Q_NULLPTR);
+    explicit QScrollBar(QWidget *parent = nullptr);
+    explicit QScrollBar(Qt::Orientation, QWidget *parent = nullptr);
     ~QScrollBar();
 
     QSize sizeHint() const override;

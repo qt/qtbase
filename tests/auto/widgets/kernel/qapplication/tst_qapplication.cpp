@@ -2214,7 +2214,7 @@ void tst_QApplication::staticFunctions()
     QApplication::activeModalWidget();
     QApplication::focusWidget();
     QApplication::activeWindow();
-    QApplication::setActiveWindow(Q_NULLPTR);
+    QApplication::setActiveWindow(nullptr);
     QApplication::widgetAt(QPoint(0, 0));
     QApplication::topLevelAt(QPoint(0, 0));
     QApplication::setGlobalStrut(QSize(0, 0));

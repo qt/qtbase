@@ -276,7 +276,7 @@ QGraphicsWidget::~QGraphicsWidget()
     // Unset the parent here, when we're still a QGraphicsWidget.
     // It is otherwise done in ~QGraphicsItem() where we'd be
     // calling QGraphicsWidget members on an ex-QGraphicsWidget object
-    setParentItem(Q_NULLPTR);
+    setParentItem(nullptr);
 }
 
 /*!

@@ -62,7 +62,7 @@ class ColorSwatch : public QDockWidget
     Q_OBJECT
 
 public:
-    explicit ColorSwatch(const QString &colorName, QMainWindow *parent = Q_NULLPTR, Qt::WindowFlags flags = 0);
+    explicit ColorSwatch(const QString &colorName, QMainWindow *parent = nullptr, Qt::WindowFlags flags = 0);
 
     void setCustomSizeHint(const QSize &size);
     QMenu *colorSwatchMenu() const { return menu; }
@@ -128,7 +128,7 @@ class BlueTitleBar : public QWidget
 {
     Q_OBJECT
 public:
-    explicit BlueTitleBar(QWidget *parent = Q_NULLPTR);
+    explicit BlueTitleBar(QWidget *parent = nullptr);
 
     QSize sizeHint() const override { return minimumSizeHint(); }
     QSize minimumSizeHint() const override;

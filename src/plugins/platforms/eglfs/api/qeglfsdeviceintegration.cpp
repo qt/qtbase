@@ -103,7 +103,7 @@ QStringList QEglFSDeviceIntegrationFactory::keys(const QString &pluginPath)
 
 QEglFSDeviceIntegration *QEglFSDeviceIntegrationFactory::create(const QString &key, const QString &pluginPath)
 {
-    QEglFSDeviceIntegration *integration = Q_NULLPTR;
+    QEglFSDeviceIntegration *integration = nullptr;
 #if QT_CONFIG(library)
     if (!pluginPath.isEmpty()) {
         QCoreApplication::addLibraryPath(pluginPath);
@@ -365,7 +365,7 @@ void *QEglFSDeviceIntegration::nativeResourceForIntegration(const QByteArray &na
 
 void *QEglFSDeviceIntegration::wlDisplay() const
 {
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 EGLConfig QEglFSDeviceIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)

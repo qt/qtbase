@@ -372,10 +372,10 @@ namespace QtPrivate {
 
         inline int ref() Q_DECL_NOTHROW { return m_ref.ref(); }
         inline void destroyIfLastRef() Q_DECL_NOTHROW
-        { if (!m_ref.deref()) m_impl(Destroy, this, Q_NULLPTR, Q_NULLPTR, Q_NULLPTR); }
+        { if (!m_ref.deref()) m_impl(Destroy, this, nullptr, nullptr, nullptr); }
 
-        inline bool compare(void **a) { bool ret = false; m_impl(Compare, this, Q_NULLPTR, a, &ret); return ret; }
-        inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, Q_NULLPTR); }
+        inline bool compare(void **a) { bool ret = false; m_impl(Compare, this, nullptr, a, &ret); return ret; }
+        inline void call(QObject *r, void **a)  { m_impl(Call,    this, r, a, nullptr); }
     protected:
         ~QSlotObjectBase() {}
     private:

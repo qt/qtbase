@@ -72,7 +72,7 @@ class Q_WIDGETS_EXPORT QAbstractButton : public QWidget
     Q_PROPERTY(bool down READ isDown WRITE setDown DESIGNABLE false)
 
 public:
-    explicit QAbstractButton(QWidget *parent = Q_NULLPTR);
+    explicit QAbstractButton(QWidget *parent = nullptr);
     ~QAbstractButton();
 
     void setText(const QString &text);
@@ -144,7 +144,7 @@ protected:
 
 
 protected:
-    QAbstractButton(QAbstractButtonPrivate &dd, QWidget* parent = Q_NULLPTR);
+    QAbstractButton(QAbstractButtonPrivate &dd, QWidget* parent = nullptr);
 
 private:
     Q_DECLARE_PRIVATE(QAbstractButton)

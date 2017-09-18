@@ -190,7 +190,7 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
-QStyleHints *QGuiApplicationPrivate::styleHints = Q_NULLPTR;
+QStyleHints *QGuiApplicationPrivate::styleHints = nullptr;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
 
 QInputDeviceManager *QGuiApplicationPrivate::m_inputDeviceManager = 0;
@@ -748,7 +748,7 @@ QString QGuiApplication::desktopFileName()
 */
 QWindow *QGuiApplication::modalWindow()
 {
-    CHECK_QAPP_INSTANCE(Q_NULLPTR)
+    CHECK_QAPP_INSTANCE(nullptr)
     if (QGuiApplicationPrivate::self->modalWindowList.isEmpty())
         return 0;
     return QGuiApplicationPrivate::self->modalWindowList.first();
@@ -1053,7 +1053,7 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
     const QList<QScreen *> screens = QGuiApplication::screens();
     if (!screens.isEmpty()) {
         const QList<QScreen *> primaryScreens = screens.first()->virtualSiblings();
-        QScreen *windowScreen = Q_NULLPTR;
+        QScreen *windowScreen = nullptr;
 
         // Find the window on the primary virtual desktop first
         for (QScreen *screen : primaryScreens) {
@@ -1081,7 +1081,7 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
             return windowScreen->handle()->topLevelAt(devicePosition);
         }
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 /*!
@@ -1526,7 +1526,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     cleanupThreadData();
 
     delete QGuiApplicationPrivate::styleHints;
-    QGuiApplicationPrivate::styleHints = Q_NULLPTR;
+    QGuiApplicationPrivate::styleHints = nullptr;
     delete inputMethod;
 
     qt_cleanupFontDatabase();
@@ -1649,10 +1649,10 @@ QFunctionPointer QGuiApplication::platformFunction(const QByteArray &function)
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     if (!pi) {
         qWarning("QGuiApplication::platformFunction(): Must construct a QGuiApplication before accessing a platform function");
-        return Q_NULLPTR;
+        return nullptr;
     }
 
-    return pi->nativeInterface() ? pi->nativeInterface()->platformFunction(function) : Q_NULLPTR;
+    return pi->nativeInterface() ? pi->nativeInterface()->platformFunction(function) : nullptr;
 }
 
 /*!
@@ -2348,7 +2348,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
             localValid = false;
         }
         if (type == QEvent::TabletRelease)
-            pointData.target = Q_NULLPTR;
+            pointData.target = nullptr;
         if (!window)
             return;
     }
@@ -3505,7 +3505,7 @@ Qt::LayoutDirection QGuiApplication::layoutDirection()
 #ifndef QT_NO_CURSOR
 QCursor *QGuiApplication::overrideCursor()
 {
-    CHECK_QAPP_INSTANCE(Q_NULLPTR)
+    CHECK_QAPP_INSTANCE(nullptr)
     return qGuiApp->d_func()->cursor_list.isEmpty() ? 0 : &qGuiApp->d_func()->cursor_list.first();
 }
 
@@ -3705,7 +3705,7 @@ bool QGuiApplication::desktopSettingsAware()
   */
 QInputMethod *QGuiApplication::inputMethod()
 {
-    CHECK_QAPP_INSTANCE(Q_NULLPTR)
+    CHECK_QAPP_INSTANCE(nullptr)
     if (!qGuiApp->d_func()->inputMethod)
         qGuiApp->d_func()->inputMethod = new QInputMethod();
     return qGuiApp->d_func()->inputMethod;

@@ -102,7 +102,7 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
 
     if (ret) {
         qWarning("Failed to create KMS FB!");
-        return Q_NULLPTR;
+        return nullptr;
     }
 
     gbm_bo_set_user_data(bo, fb.data(), bufferDestroyedHandler);
@@ -111,12 +111,12 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
 
 QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QKmsDevice *device, const QKmsOutput &output, bool headless)
     : QEglFSKmsScreen(device, output, headless)
-    , m_gbm_surface(Q_NULLPTR)
-    , m_gbm_bo_current(Q_NULLPTR)
-    , m_gbm_bo_next(Q_NULLPTR)
+    , m_gbm_surface(nullptr)
+    , m_gbm_bo_current(nullptr)
+    , m_gbm_bo_next(nullptr)
     , m_flipPending(false)
-    , m_cursor(Q_NULLPTR)
-    , m_cloneSource(Q_NULLPTR)
+    , m_cursor(nullptr)
+    , m_cloneSource(nullptr)
 {
 }
 
@@ -283,7 +283,7 @@ void QEglFSKmsGbmScreen::flip()
         qErrnoWarning("Could not queue DRM page flip on screen %s", qPrintable(name()));
         m_flipPending = false;
         gbm_surface_release_buffer(m_gbm_surface, m_gbm_bo_next);
-        m_gbm_bo_next = Q_NULLPTR;
+        m_gbm_bo_next = nullptr;
         return;
     }
 
@@ -354,7 +354,7 @@ void QEglFSKmsGbmScreen::updateFlipStatus()
                                    m_gbm_bo_current);
 
     m_gbm_bo_current = m_gbm_bo_next;
-    m_gbm_bo_next = Q_NULLPTR;
+    m_gbm_bo_next = nullptr;
 }
 
 QT_END_NAMESPACE

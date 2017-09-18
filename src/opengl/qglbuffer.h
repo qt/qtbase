@@ -109,7 +109,7 @@ public:
     void write(int offset, const void *data, int count);
 
     void allocate(const void *data, int count);
-    inline void allocate(int count) { allocate(Q_NULLPTR, count); }
+    inline void allocate(int count) { allocate(nullptr, count); }
 
     void *map(QGLBuffer::Access access);
     bool unmap();

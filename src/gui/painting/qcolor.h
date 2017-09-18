@@ -129,10 +129,10 @@ public:
     void setGreenF(qreal green);
     void setBlueF(qreal blue);
 
-    void getRgb(int *r, int *g, int *b, int *a = Q_NULLPTR) const;
+    void getRgb(int *r, int *g, int *b, int *a = nullptr) const;
     void setRgb(int r, int g, int b, int a = 255);
 
-    void getRgbF(qreal *r, qreal *g, qreal *b, qreal *a = Q_NULLPTR) const;
+    void getRgbF(qreal *r, qreal *g, qreal *b, qreal *a = nullptr) const;
     void setRgbF(qreal r, qreal g, qreal b, qreal a = 1.0);
 
     QRgba64 rgba64() const Q_DECL_NOTHROW;
@@ -156,10 +156,10 @@ public:
     qreal hsvSaturationF() const Q_DECL_NOTHROW;
     qreal valueF() const Q_DECL_NOTHROW;
 
-    void getHsv(int *h, int *s, int *v, int *a = Q_NULLPTR) const;
+    void getHsv(int *h, int *s, int *v, int *a = nullptr) const;
     void setHsv(int h, int s, int v, int a = 255);
 
-    void getHsvF(qreal *h, qreal *s, qreal *v, qreal *a = Q_NULLPTR) const;
+    void getHsvF(qreal *h, qreal *s, qreal *v, qreal *a = nullptr) const;
     void setHsvF(qreal h, qreal s, qreal v, qreal a = 1.0);
 
     int cyan() const Q_DECL_NOTHROW;
@@ -172,10 +172,10 @@ public:
     qreal yellowF() const Q_DECL_NOTHROW;
     qreal blackF() const Q_DECL_NOTHROW;
 
-    void getCmyk(int *c, int *m, int *y, int *k, int *a = Q_NULLPTR);
+    void getCmyk(int *c, int *m, int *y, int *k, int *a = nullptr);
     void setCmyk(int c, int m, int y, int k, int a = 255);
 
-    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = Q_NULLPTR);
+    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = nullptr);
     void setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
 
     int hslHue() const Q_DECL_NOTHROW; // 0 <= hue < 360
@@ -186,10 +186,10 @@ public:
     qreal hslSaturationF() const Q_DECL_NOTHROW;
     qreal lightnessF() const Q_DECL_NOTHROW;
 
-    void getHsl(int *h, int *s, int *l, int *a = Q_NULLPTR) const;
+    void getHsl(int *h, int *s, int *l, int *a = nullptr) const;
     void setHsl(int h, int s, int l, int a = 255);
 
-    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = Q_NULLPTR) const;
+    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = nullptr) const;
     void setHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
     QColor toRgb() const Q_DECL_NOTHROW;

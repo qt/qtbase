@@ -134,7 +134,7 @@ void *QWindowsNativeInterface::nativeResourceForCursor(const QByteArray &resourc
                 return static_cast<const QWindowsCursor *>(pCursor)->hCursor(cursor);
         }
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 #endif // !QT_NO_CURSOR
 
@@ -280,7 +280,7 @@ QFunctionPointer QWindowsNativeInterface::platformFunction(const QByteArray &fun
         return QFunctionPointer(QWindowsWindow::setHasBorderInFullScreenStatic);
     else if (function == QWindowsWindowFunctions::isTabletModeIdentifier())
         return QFunctionPointer(QWindowsNativeInterface::isTabletMode);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QVariant QWindowsNativeInterface::gpu() const

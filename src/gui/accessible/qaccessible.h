@@ -511,7 +511,7 @@ public:
     virtual void virtual_hook(int id, void *data);
 
     virtual void *interface_cast(QAccessible::InterfaceType)
-    { return Q_NULLPTR; }
+    { return nullptr; }
 
 protected:
     friend class QAccessibleCache;
@@ -682,7 +682,7 @@ public:
     }
 
     inline QAccessibleEvent(QAccessibleInterface *iface, QAccessible::Event typ)
-        : m_type(typ), m_object(Q_NULLPTR)
+        : m_type(typ), m_object(nullptr)
     {
         Q_ASSERT(iface);
         Q_ASSERT(m_type != QAccessible::ValueChanged);

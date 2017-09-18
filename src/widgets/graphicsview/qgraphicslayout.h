@@ -54,7 +54,7 @@ class QGraphicsWidget;
 class Q_WIDGETS_EXPORT QGraphicsLayout : public QGraphicsLayoutItem
 {
 public:
-    QGraphicsLayout(QGraphicsLayoutItem *parent = Q_NULLPTR);
+    QGraphicsLayout(QGraphicsLayoutItem *parent = nullptr);
     ~QGraphicsLayout();
 
     void setContentsMargins(qreal left, qreal top, qreal right, qreal bottom);

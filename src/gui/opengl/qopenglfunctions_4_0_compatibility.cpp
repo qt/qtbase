@@ -85,7 +85,7 @@ QOpenGLFunctions_4_0_Compatibility::QOpenGLFunctions_4_0_Compatibility()
  , d_1_2_Deprecated(0)
  , d_1_3_Deprecated(0)
  , d_1_4_Deprecated(0)
- , m_reserved_2_0_Deprecated(Q_NULLPTR)
+ , m_reserved_2_0_Deprecated(nullptr)
  , d_3_3_Deprecated(0)
 {
 }

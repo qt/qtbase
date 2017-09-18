@@ -331,13 +331,13 @@ QLineEditIconButton::QLineEditIconButton(QWidget *parent)
 QLineEditPrivate *QLineEditIconButton::lineEditPrivate() const
 {
     QLineEdit *le = qobject_cast<QLineEdit *>(parentWidget());
-    return le ? static_cast<QLineEditPrivate *>(qt_widget_private(le)) : Q_NULLPTR;
+    return le ? static_cast<QLineEditPrivate *>(qt_widget_private(le)) : nullptr;
 }
 
 void QLineEditIconButton::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    QWindow *window = Q_NULLPTR;
+    QWindow *window = nullptr;
     if (const QWidget *nativeParent = nativeParentWidget())
         window = nativeParent->windowHandle();
     // Note isDown should really use the active state but in most styles

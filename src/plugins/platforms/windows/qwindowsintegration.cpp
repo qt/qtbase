@@ -252,7 +252,7 @@ QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
         delete m_fontDatabase;
 }
 
-QWindowsIntegration *QWindowsIntegration::m_instance = Q_NULLPTR;
+QWindowsIntegration *QWindowsIntegration::m_instance = nullptr;
 
 QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
     d(new QWindowsIntegrationPrivate(paramList))
@@ -266,7 +266,7 @@ QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
 
 QWindowsIntegration::~QWindowsIntegration()
 {
-    m_instance = Q_NULLPTR;
+    m_instance = nullptr;
 }
 
 void QWindowsIntegration::initialize()
@@ -336,7 +336,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
         << " handle=" << obtained.hwnd << ' ' << obtained.flags << '\n';
 
     if (Q_UNLIKELY(!obtained.hwnd))
-        return Q_NULLPTR;
+        return nullptr;
 
     QWindowsWindow *result = createPlatformWindowHelper(window, obtained);
     Q_ASSERT(result);
@@ -356,7 +356,7 @@ QPlatformWindow *QWindowsIntegration::createForeignWindow(QWindow *window, WId n
     }
     QWindowsForeignWindow *result = new QWindowsForeignWindow(window, hwnd);
     const QRect obtainedGeometry = result->geometry();
-    QScreen *screen = Q_NULLPTR;
+    QScreen *screen = nullptr;
     if (const QPlatformScreen *pScreen = result->screenForGeometry(obtainedGeometry))
         screen = pScreen->screen();
     if (screen && screen != window->screen())
@@ -402,7 +402,7 @@ QWindowsStaticOpenGLContext *QWindowsStaticOpenGLContext::doCreate()
         qCWarning(lcQpaGl, "Software OpenGL failed. Falling back to system OpenGL.");
         if (QWindowsOpenGLTester::supportedRenderers() & QWindowsOpenGLTester::DesktopGl)
             return QOpenGLStaticContext::create();
-        return Q_NULLPTR;
+        return nullptr;
     default:
         break;
     }

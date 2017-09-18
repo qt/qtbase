@@ -58,7 +58,7 @@ public:
     }
 
     struct Element {
-        Element() : name(Q_NULLPTR), type(0) {}
+        Element() : name(nullptr), type(0) {}
         Element(const char *n, int t) : name(n), type(t) {}
 
         const char *name;
@@ -130,12 +130,12 @@ int QTestTable::elementTypeId(int index) const
 
 const char *QTestTable::dataTag(int index) const
 {
-    return size_t(index) < d->elementList.size() ? d->elementList[index].name : Q_NULLPTR;
+    return size_t(index) < d->elementList.size() ? d->elementList[index].name : nullptr;
 }
 
 QTestData *QTestTable::testData(int index) const
 {
-    return size_t(index) < d->dataList.size() ? d->dataList[index] : Q_NULLPTR;
+    return size_t(index) < d->dataList.size() ? d->dataList[index] : nullptr;
 }
 
 class NamePredicate : public std::unary_function<QTestTablePrivate::Element, bool>

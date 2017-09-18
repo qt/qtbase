@@ -129,7 +129,7 @@ static QWidget *findWhatsThat()
         if (widget->inherits("QWhatsThat"))
             return widget;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void tst_QToolTip::whatsThis()
@@ -137,7 +137,7 @@ void tst_QToolTip::whatsThis()
     qApp->setStyleSheet( "QWidget { font-size: 72px; }" );
     QWhatsThis::showText(QPoint(0, 0), "This is text");
 
-    QWidget *whatsthis = Q_NULLPTR;
+    QWidget *whatsthis = nullptr;
     QTRY_VERIFY( (whatsthis = findWhatsThat()) );
     QVERIFY(whatsthis->isVisible());
     const int whatsThisHeight = whatsthis->height();

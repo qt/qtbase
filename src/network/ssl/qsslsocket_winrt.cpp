@@ -518,7 +518,7 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
     QList<QSslCertificate> peerCertificateChain;
     if (certificate) {
         ComPtr<IAsyncOperation<CertificateChain *>> op;
-        hr = certificate->BuildChainAsync(Q_NULLPTR, &op);
+        hr = certificate->BuildChainAsync(nullptr, &op);
         Q_ASSERT_SUCCEEDED(hr);
         ComPtr<ICertificateChain> certificateChain;
         hr = QWinRTFunctions::await(op, certificateChain.GetAddressOf());

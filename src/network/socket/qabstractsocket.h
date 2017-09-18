@@ -221,7 +221,7 @@ protected:
     void setPeerAddress(const QHostAddress &address);
     void setPeerName(const QString &name);
 
-    QAbstractSocket(SocketType socketType, QAbstractSocketPrivate &dd, QObject *parent = Q_NULLPTR);
+    QAbstractSocket(SocketType socketType, QAbstractSocketPrivate &dd, QObject *parent = nullptr);
 
 private:
     Q_DECLARE_PRIVATE(QAbstractSocket)

@@ -163,7 +163,7 @@ class CreatableGadget
 public:
     Q_INVOKABLE CreatableGadget()
     {
-        CreatableGadget::qt_static_metacall((QObject*)this, QMetaObject::ReadProperty, -1, Q_NULLPTR);
+        CreatableGadget::qt_static_metacall((QObject*)this, QMetaObject::ReadProperty, -1, nullptr);
     }
 };
 
@@ -223,7 +223,7 @@ namespace {
     {
         Q_OBJECT
     public:
-        explicit ObjectInUnnamedNS(QObject *parent = Q_NULLPTR) : QObject(parent) {}
+        explicit ObjectInUnnamedNS(QObject *parent = nullptr) : QObject(parent) {}
     };
 
 }
@@ -3768,7 +3768,7 @@ void tst_Moc::veryLongStringData()
 
 void tst_Moc::gadgetHierarchy()
 {
-    QCOMPARE(NonGadgetParent::Derived::staticMetaObject.superClass(), static_cast<const QMetaObject*>(Q_NULLPTR));
+    QCOMPARE(NonGadgetParent::Derived::staticMetaObject.superClass(), static_cast<const QMetaObject*>(nullptr));
     QCOMPARE(GrandParentGadget::DerivedGadget::staticMetaObject.superClass(), &GrandParentGadget::BaseGadget::staticMetaObject);
 }
 

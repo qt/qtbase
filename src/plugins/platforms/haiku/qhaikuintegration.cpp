@@ -87,13 +87,13 @@ QHaikuIntegration::QHaikuIntegration(const QStringList &parameters)
 QHaikuIntegration::~QHaikuIntegration()
 {
     destroyScreen(m_screen);
-    m_screen = Q_NULLPTR;
+    m_screen = nullptr;
 
     delete m_services;
-    m_services = Q_NULLPTR;
+    m_services = nullptr;
 
     delete m_clipboard;
-    m_clipboard = Q_NULLPTR;
+    m_clipboard = nullptr;
 
     be_app->LockLooper();
     be_app->Quit();

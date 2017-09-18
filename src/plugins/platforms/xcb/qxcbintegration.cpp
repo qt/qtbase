@@ -121,7 +121,7 @@ static bool runningUnderDebugger()
 #endif
 }
 
-QXcbIntegration *QXcbIntegration::m_instance = Q_NULLPTR;
+QXcbIntegration *QXcbIntegration::m_instance = nullptr;
 
 QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : m_services(new QGenericUnixServices)
@@ -222,7 +222,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 QXcbIntegration::~QXcbIntegration()
 {
     qDeleteAll(m_connections);
-    m_instance = Q_NULLPTR;
+    m_instance = nullptr;
 }
 
 QPlatformPixmap *QXcbIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
@@ -274,7 +274,7 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
     QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
     if (!glIntegration) {
         qWarning("QXcbIntegration: Cannot create platform OpenGL context, neither GLX nor EGL are enabled");
-        return Q_NULLPTR;
+        return nullptr;
     }
     return glIntegration->createPlatformOpenGLContext(context);
 }
@@ -296,7 +296,7 @@ QPlatformOffscreenSurface *QXcbIntegration::createPlatformOffscreenSurface(QOffs
     QXcbGlIntegration *glIntegration = screen->connection()->glIntegration();
     if (!glIntegration) {
         qWarning("QXcbIntegration: Cannot create platform offscreen surface, neither GLX nor EGL are enabled");
-        return Q_NULLPTR;
+        return nullptr;
     }
     return glIntegration->createPlatformOffscreenSurface(surface);
 }

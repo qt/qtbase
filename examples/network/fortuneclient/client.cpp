@@ -60,7 +60,7 @@ Client::Client(QWidget *parent)
     , portLineEdit(new QLineEdit)
     , getFortuneButton(new QPushButton(tr("Get Fortune")))
     , tcpSocket(new QTcpSocket(this))
-    , networkSession(Q_NULLPTR)
+    , networkSession(nullptr)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 //! [0]
@@ -127,7 +127,7 @@ Client::Client(QWidget *parent)
             this, &Client::displayError);
 //! [4]
 
-    QGridLayout *mainLayout = Q_NULLPTR;
+    QGridLayout *mainLayout = nullptr;
     if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
         QVBoxLayout *outerVerticalLayout = new QVBoxLayout(this);
         outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));

@@ -53,7 +53,7 @@ class Q_GUI_EXPORT QRasterWindow : public QPaintDeviceWindow
     Q_DECLARE_PRIVATE(QRasterWindow)
 
 public:
-    explicit QRasterWindow(QWindow *parent = Q_NULLPTR);
+    explicit QRasterWindow(QWindow *parent = nullptr);
     ~QRasterWindow();
 
 protected:

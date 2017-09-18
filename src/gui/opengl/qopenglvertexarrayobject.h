@@ -56,7 +56,7 @@ class Q_GUI_EXPORT QOpenGLVertexArrayObject : public QObject
     Q_OBJECT
 
 public:
-    explicit QOpenGLVertexArrayObject(QObject* parent = Q_NULLPTR);
+    explicit QOpenGLVertexArrayObject(QObject* parent = nullptr);
     ~QOpenGLVertexArrayObject();
 
     bool create();

@@ -61,9 +61,9 @@ class Q_WIDGETS_EXPORT QPushButton : public QAbstractButton
     Q_PROPERTY(bool flat READ isFlat WRITE setFlat)
 
 public:
-    explicit QPushButton(QWidget *parent = Q_NULLPTR);
-    explicit QPushButton(const QString &text, QWidget *parent = Q_NULLPTR);
-    QPushButton(const QIcon& icon, const QString &text, QWidget *parent = Q_NULLPTR);
+    explicit QPushButton(QWidget *parent = nullptr);
+    explicit QPushButton(const QString &text, QWidget *parent = nullptr);
+    QPushButton(const QIcon& icon, const QString &text, QWidget *parent = nullptr);
     ~QPushButton();
 
     QSize sizeHint() const override;
@@ -94,7 +94,7 @@ protected:
     void focusInEvent(QFocusEvent *) override;
     void focusOutEvent(QFocusEvent *) override;
     void initStyleOption(QStyleOptionButton *option) const;
-    QPushButton(QPushButtonPrivate &dd, QWidget* parent = Q_NULLPTR);
+    QPushButton(QPushButtonPrivate &dd, QWidget* parent = nullptr);
 
 public:
 

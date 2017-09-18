@@ -4007,7 +4007,7 @@ int QString::count(const QRegExp& rx) const
 */
 int QString::indexOf(const QRegularExpression& re, int from) const
 {
-    return indexOf(re, from, Q_NULLPTR);
+    return indexOf(re, from, nullptr);
 }
 
 /*!
@@ -4058,7 +4058,7 @@ int QString::indexOf(const QRegularExpression &re, int from, QRegularExpressionM
 */
 int QString::lastIndexOf(const QRegularExpression &re, int from) const
 {
-    return lastIndexOf(re, from, Q_NULLPTR);
+    return lastIndexOf(re, from, nullptr);
 }
 
 /*!
@@ -4110,7 +4110,7 @@ int QString::lastIndexOf(const QRegularExpression &re, int from, QRegularExpress
 */
 bool QString::contains(const QRegularExpression &re) const
 {
-    return contains(re, Q_NULLPTR);
+    return contains(re, nullptr);
 }
 
 /*!

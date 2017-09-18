@@ -209,7 +209,7 @@ void QEvdevMouseHandler::readMouseData()
                 // by the above error over and over again.
                 if (errno == ENODEV) {
                     delete m_notify;
-                    m_notify = Q_NULLPTR;
+                    m_notify = nullptr;
                     qt_safe_close(m_fd);
                     m_fd = -1;
                 }

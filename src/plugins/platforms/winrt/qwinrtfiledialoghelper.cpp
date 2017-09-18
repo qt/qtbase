@@ -83,7 +83,7 @@ public:
     }
     HRESULT __stdcall GetView(IVectorView<HSTRING> **view)
     {
-        *view = Q_NULLPTR;
+        *view = nullptr;
         return E_NOTIMPL;
     }
     HRESULT __stdcall IndexOf(HSTRING value, quint32 *index, boolean *found)

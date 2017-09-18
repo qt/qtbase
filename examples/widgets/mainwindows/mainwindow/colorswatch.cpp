@@ -468,7 +468,7 @@ static ColorSwatch *findByName(const QMainWindow *mainWindow, const QString &nam
         if (name == dock->objectName())
             return dock;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void ColorSwatch::splitInto(QAction *action)

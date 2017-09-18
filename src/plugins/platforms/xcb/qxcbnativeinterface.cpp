@@ -101,7 +101,7 @@ QXcbNativeInterface::QXcbNativeInterface() :
 static inline QXcbSystemTrayTracker *systemTrayTracker(const QScreen *s)
 {
     if (!s)
-        return Q_NULLPTR;
+        return nullptr;
 
     return static_cast<const QXcbScreen *>(s->handle())->connection()->systemTrayTracker();
 }
@@ -194,7 +194,7 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
 {
     if (!screen) {
         qWarning("nativeResourceForScreen: null screen");
-        return Q_NULLPTR;
+        return nullptr;
     }
 
     QByteArray lowerCaseResource = resourceString.toLower();
@@ -236,7 +236,7 @@ void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resourceStr
         break;
     case CompositingEnabled:
         if (QXcbVirtualDesktop *vd = xcbScreen->virtualDesktop())
-            result = vd->compositingActive() ? this : Q_NULLPTR;
+            result = vd->compositingActive() ? this : nullptr;
         break;
     default:
         break;
@@ -294,7 +294,7 @@ void *QXcbNativeInterface::nativeResourceForCursor(const QByteArray &resource, c
             }
         }
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 #endif // !QT_NO_CURSOR
 
@@ -323,7 +323,7 @@ QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::
     QPlatformNativeInterface::NativeResourceForContextFunction func = handlerNativeResourceFunctionForContext(lowerCaseResource);
     if (func)
         return func;
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::nativeResourceFunctionForScreen(const QByteArray &resource)
@@ -390,13 +390,13 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     if (function == QXcbScreenFunctions::virtualDesktopNumberIdentifier())
         return QFunctionPointer(QXcbScreenFunctions::VirtualDesktopNumber(QXcbScreen::virtualDesktopNumberStatic));
 
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::appTime(const QXcbScreen *screen)
 {
     if (!screen)
-        return Q_NULLPTR;
+        return nullptr;
 
     return reinterpret_cast<void *>(quintptr(screen->connection()->time()));
 }
@@ -404,7 +404,7 @@ void *QXcbNativeInterface::appTime(const QXcbScreen *screen)
 void *QXcbNativeInterface::appUserTime(const QXcbScreen *screen)
 {
     if (!screen)
-        return Q_NULLPTR;
+        return nullptr;
 
     return reinterpret_cast<void *>(quintptr(screen->connection()->netWmUserTime()));
 }
@@ -412,7 +412,7 @@ void *QXcbNativeInterface::appUserTime(const QXcbScreen *screen)
 void *QXcbNativeInterface::getTimestamp(const QXcbScreen *screen)
 {
     if (!screen)
-        return Q_NULLPTR;
+        return nullptr;
 
     return reinterpret_cast<void *>(quintptr(screen->connection()->getTimestamp()));
 }
@@ -452,7 +452,7 @@ void *QXcbNativeInterface::display()
     if (defaultConnection)
         return defaultConnection->xlib_display();
 #endif
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::connection()
@@ -525,10 +525,10 @@ QXcbScreen *QXcbNativeInterface::qPlatformScreenForWindow(QWindow *window)
     QXcbScreen *screen;
     if (window) {
         QScreen *qs = window->screen();
-        screen = static_cast<QXcbScreen *>(qs ? qs->handle() : Q_NULLPTR);
+        screen = static_cast<QXcbScreen *>(qs ? qs->handle() : nullptr);
     } else {
         QScreen *qs = QGuiApplication::primaryScreen();
-        screen = static_cast<QXcbScreen *>(qs ? qs->handle() : Q_NULLPTR);
+        screen = static_cast<QXcbScreen *>(qs ? qs->handle() : nullptr);
     }
     return screen;
 }
@@ -537,23 +537,23 @@ void *QXcbNativeInterface::displayForWindow(QWindow *window)
 {
 #if QT_CONFIG(xcb_xlib)
     QXcbScreen *screen = qPlatformScreenForWindow(window);
-    return screen ? screen->connection()->xlib_display() : Q_NULLPTR;
+    return screen ? screen->connection()->xlib_display() : nullptr;
 #else
     Q_UNUSED(window);
-    return Q_NULLPTR;
+    return nullptr;
 #endif
 }
 
 void *QXcbNativeInterface::connectionForWindow(QWindow *window)
 {
     QXcbScreen *screen = qPlatformScreenForWindow(window);
-    return screen ? screen->xcb_connection() : Q_NULLPTR;
+    return screen ? screen->xcb_connection() : nullptr;
 }
 
 void *QXcbNativeInterface::screenForWindow(QWindow *window)
 {
     QXcbScreen *screen = qPlatformScreenForWindow(window);
-    return screen ? screen->screen() : Q_NULLPTR;
+    return screen ? screen->screen() : nullptr;
 }
 
 void QXcbNativeInterface::addHandler(QXcbNativeInterfaceHandler *handler)
@@ -575,7 +575,7 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfa
         if (result)
             return result;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::handlerNativeResourceFunctionForContext(const QByteArray &resource) const
@@ -586,7 +586,7 @@ QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::
         if (result)
             return result;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::handlerNativeResourceFunctionForScreen(const QByteArray &resource) const
@@ -597,7 +597,7 @@ QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::h
         if (result)
             return result;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForWindowFunction QXcbNativeInterface::handlerNativeResourceFunctionForWindow(const QByteArray &resource) const
@@ -608,7 +608,7 @@ QPlatformNativeInterface::NativeResourceForWindowFunction QXcbNativeInterface::h
         if (result)
             return result;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForBackingStoreFunction QXcbNativeInterface::handlerNativeResourceFunctionForBackingStore(const QByteArray &resource) const
@@ -619,7 +619,7 @@ QPlatformNativeInterface::NativeResourceForBackingStoreFunction QXcbNativeInterf
         if (result)
             return result;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QFunctionPointer QXcbNativeInterface::handlerPlatformFunction(const QByteArray &function) const
@@ -630,7 +630,7 @@ QFunctionPointer QXcbNativeInterface::handlerPlatformFunction(const QByteArray &
         if (func)
             return func;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::handlerNativeResourceForIntegration(const QByteArray &resource) const
@@ -638,7 +638,7 @@ void *QXcbNativeInterface::handlerNativeResourceForIntegration(const QByteArray 
     NativeResourceForIntegrationFunction func = handlerNativeResourceFunctionForIntegration(resource);
     if (func)
         return func();
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::handlerNativeResourceForContext(const QByteArray &resource, QOpenGLContext *context) const
@@ -646,7 +646,7 @@ void *QXcbNativeInterface::handlerNativeResourceForContext(const QByteArray &res
     NativeResourceForContextFunction func = handlerNativeResourceFunctionForContext(resource);
     if (func)
         return func(context);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::handlerNativeResourceForScreen(const QByteArray &resource, QScreen *screen) const
@@ -654,7 +654,7 @@ void *QXcbNativeInterface::handlerNativeResourceForScreen(const QByteArray &reso
     NativeResourceForScreenFunction func = handlerNativeResourceFunctionForScreen(resource);
     if (func)
         return func(screen);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::handlerNativeResourceForWindow(const QByteArray &resource, QWindow *window) const
@@ -662,7 +662,7 @@ void *QXcbNativeInterface::handlerNativeResourceForWindow(const QByteArray &reso
     NativeResourceForWindowFunction func = handlerNativeResourceFunctionForWindow(resource);
     if (func)
         return func(window);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::handlerNativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore) const
@@ -670,7 +670,7 @@ void *QXcbNativeInterface::handlerNativeResourceForBackingStore(const QByteArray
     NativeResourceForBackingStoreFunction func = handlerNativeResourceFunctionForBackingStore(resource);
     if (func)
         return func(backingStore);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

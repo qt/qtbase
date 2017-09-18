@@ -617,7 +617,7 @@ static QMenu *getTornOffMenu()
         if (w->isVisible() && w->inherits("QTornOffMenu"))
             return static_cast<QMenu *>(w);
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void tst_QMenu::tearOff()

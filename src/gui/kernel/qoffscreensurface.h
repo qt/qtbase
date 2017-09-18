@@ -59,7 +59,7 @@ class Q_GUI_EXPORT QOffscreenSurface : public QObject, public QSurface
 public:
     // ### Qt 6: merge overloads
     explicit QOffscreenSurface(QScreen *screen, QObject *parent);
-    explicit QOffscreenSurface(QScreen *screen = Q_NULLPTR);
+    explicit QOffscreenSurface(QScreen *screen = nullptr);
     virtual ~QOffscreenSurface();
 
     SurfaceType surfaceType() const override;

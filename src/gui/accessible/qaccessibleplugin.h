@@ -60,7 +60,7 @@ class Q_GUI_EXPORT QAccessiblePlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QAccessiblePlugin(QObject *parent = Q_NULLPTR);
+    explicit QAccessiblePlugin(QObject *parent = nullptr);
     ~QAccessiblePlugin();
 
     virtual QAccessibleInterface *create(const QString &key, QObject *object) = 0;

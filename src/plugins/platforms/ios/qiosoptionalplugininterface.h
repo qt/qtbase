@@ -55,7 +55,7 @@ class QIosOptionalPluginInterface
 public:
     virtual ~QIosOptionalPluginInterface() {}
     virtual void initPlugin() const {};
-    virtual UIViewController* createImagePickerController(QIOSFileDialog *) const { return Q_NULLPTR; };
+    virtual UIViewController* createImagePickerController(QIOSFileDialog *) const { return nullptr; };
 };
 
 Q_DECLARE_INTERFACE(QIosOptionalPluginInterface, QIosOptionalPluginInterface_iid)

@@ -203,7 +203,7 @@ QWindowsDirect2DIntegration *QWindowsDirect2DIntegration::create(const QStringLi
                     caption.toStdWString().c_str(),
                     MB_OK | MB_ICONERROR);
 
-        return Q_NULLPTR;
+        return nullptr;
     }
 
     QWindowsDirect2DIntegration *integration = new QWindowsDirect2DIntegration(paramList);

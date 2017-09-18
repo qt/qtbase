@@ -116,7 +116,7 @@ QDBusServer::~QDBusServer()
             QDBusConnectionManager::instance()->removeConnection(name);
         d->serverConnectionNames.clear();
     }
-    d->serverObject = Q_NULLPTR;
+    d->serverObject = nullptr;
     d->ref.store(0);
     d->deleteLater();
 }

@@ -159,7 +159,7 @@ QObject *QWidgetWindow::focusObject() const
 {
     QWidget *windowWidget = m_widget;
     if (!windowWidget)
-        return Q_NULLPTR;
+        return nullptr;
 
     // A window can't have a focus object if it's being destroyed.
     if (QWidgetPrivate::get(windowWidget)->data.in_destructor)
@@ -410,7 +410,7 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         const QEnterEvent *ee = static_cast<QEnterEvent *>(event);
         QWidget *child = m_widget->childAt(ee->pos());
         QWidget *receiver = child ? child : m_widget.data();
-        QWidget *leave = Q_NULLPTR;
+        QWidget *leave = nullptr;
         if (QApplicationPrivate::inPopupMode() && receiver == m_widget
                 && qt_last_mouse_receiver != m_widget) {
             // This allows to deliver the leave event to the native widget
@@ -517,11 +517,11 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                     // Prevent negative mouse position on enter event - this event
                     // should be properly handled in "handleEnterLeaveEvent()".
                     if (receiverMapped.x() >= 0 && receiverMapped.y() >= 0) {
-                        QApplicationPrivate::dispatchEnterLeave(receiver, Q_NULLPTR, event->screenPos());
+                        QApplicationPrivate::dispatchEnterLeave(receiver, nullptr, event->screenPos());
                         qt_last_mouse_receiver = receiver;
                     }
                 } else {
-                    QApplicationPrivate::dispatchEnterLeave(Q_NULLPTR, qt_last_mouse_receiver, event->screenPos());
+                    QApplicationPrivate::dispatchEnterLeave(nullptr, qt_last_mouse_receiver, event->screenPos());
                     qt_last_mouse_receiver = receiver;
                     receiver = activePopupWidget;
                 }

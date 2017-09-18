@@ -284,14 +284,14 @@ class Q_CORE_EXPORT QVariant
     void detach();
     inline bool isDetached() const;
 
-    int toInt(bool *ok = Q_NULLPTR) const;
-    uint toUInt(bool *ok = Q_NULLPTR) const;
-    qlonglong toLongLong(bool *ok = Q_NULLPTR) const;
-    qulonglong toULongLong(bool *ok = Q_NULLPTR) const;
+    int toInt(bool *ok = nullptr) const;
+    uint toUInt(bool *ok = nullptr) const;
+    qlonglong toLongLong(bool *ok = nullptr) const;
+    qulonglong toULongLong(bool *ok = nullptr) const;
     bool toBool() const;
-    double toDouble(bool *ok = Q_NULLPTR) const;
-    float toFloat(bool *ok = Q_NULLPTR) const;
-    qreal toReal(bool *ok = Q_NULLPTR) const;
+    double toDouble(bool *ok = nullptr) const;
+    float toFloat(bool *ok = nullptr) const;
+    qreal toReal(bool *ok = nullptr) const;
     QByteArray toByteArray() const;
     QBitArray toBitArray() const;
     QString toString() const;
@@ -370,7 +370,7 @@ class Q_CORE_EXPORT QVariant
     struct Private
     {
         inline Private() Q_DECL_NOTHROW : type(Invalid), is_shared(false), is_null(true)
-        { data.ptr = Q_NULLPTR; }
+        { data.ptr = nullptr; }
 
         // Internal constructor for initialized variants.
         explicit inline Private(uint variantType) Q_DECL_NOTHROW

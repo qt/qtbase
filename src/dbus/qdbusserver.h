@@ -57,8 +57,8 @@ class Q_DBUS_EXPORT QDBusServer: public QObject
 {
     Q_OBJECT
 public:
-    explicit QDBusServer(const QString &address, QObject *parent = Q_NULLPTR);
-    explicit QDBusServer(QObject *parent = Q_NULLPTR);
+    explicit QDBusServer(const QString &address, QObject *parent = nullptr);
+    explicit QDBusServer(QObject *parent = nullptr);
     virtual ~QDBusServer();
 
     bool isConnected() const;

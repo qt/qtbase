@@ -338,7 +338,7 @@ class SelfDestructParent : public QWidget
     Q_OBJECT
 public:
     explicit SelfDestructParent(int delay = 100)
-        : QWidget(Q_NULLPTR)
+        : QWidget(nullptr)
     {
         QTimer::singleShot(delay, this, SLOT(deleteLater()));
     }

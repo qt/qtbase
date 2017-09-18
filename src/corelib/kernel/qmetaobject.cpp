@@ -1589,7 +1589,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 */
 
 /*!
-    \fn bool QMetaObject::invokeMethod(QObject *receiver, PointerToMemberFunction function, Qt::ConnectionType type = Qt::AutoConnection, MemberFunctionReturnType *ret = Q_NULLPTR)
+    \fn bool QMetaObject::invokeMethod(QObject *receiver, PointerToMemberFunction function, Qt::ConnectionType type = Qt::AutoConnection, MemberFunctionReturnType *ret = nullptr)
 
     \since 5.10
 
@@ -1607,7 +1607,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 */
 
 /*!
-    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, Qt::ConnectionType type = Qt::AutoConnection, FunctorReturnType *ret = Q_NULLPTR)
+    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, Qt::ConnectionType type = Qt::AutoConnection, FunctorReturnType *ret = nullptr)
 
     \since 5.10
 
@@ -1617,7 +1617,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 */
 
 /*!
-    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, FunctorReturnType *ret = Q_NULLPTR)
+    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, FunctorReturnType *ret = nullptr)
 
     \since 5.10
 

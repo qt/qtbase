@@ -3620,7 +3620,7 @@ static void PtsToRegion(int numFullPtBlocks, int iCurPtBlock,
                 }
 
                 if (rowSize) {
-                    QPoint *next = i ? &pts[2] : (numFullPtBlocks && iCurPtBlock ? CurPtBlock->next->pts : Q_NULLPTR);
+                    QPoint *next = i ? &pts[2] : (numFullPtBlocks && iCurPtBlock ? CurPtBlock->next->pts : nullptr);
 
                     if (!next || next->y() != pts[0].y()) {
                         flushRow(row.data(), pts[0].y(), rowSize, reg, &lastRow, &extendTo, &needsExtend);

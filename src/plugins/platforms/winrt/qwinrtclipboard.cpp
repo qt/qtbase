@@ -59,7 +59,7 @@ typedef IEventHandler<IInspectable *> ContentChangedHandler;
 QT_BEGIN_NAMESPACE
 
 QWinRTClipboard::QWinRTClipboard()
-    : m_mimeData(Q_NULLPTR)
+    : m_mimeData(nullptr)
 {
     QEventDispatcherWinRT::runOnXamlThread([this]() {
         HRESULT hr;

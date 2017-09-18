@@ -136,7 +136,7 @@ protected:
     QFileDevice(QFileDevicePrivate &dd);
 #else
     explicit QFileDevice(QObject *parent);
-    QFileDevice(QFileDevicePrivate &dd, QObject *parent = Q_NULLPTR);
+    QFileDevice(QFileDevicePrivate &dd, QObject *parent = nullptr);
 #endif
 
     qint64 readData(char *data, qint64 maxlen) override;

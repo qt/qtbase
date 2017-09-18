@@ -2837,7 +2837,7 @@ QFontEngine *QFontCache::findEngine(const Key &key)
                          end = engineCache.end();
     if (it == end) return 0;
 
-    Q_ASSERT(it.value().data != Q_NULLPTR);
+    Q_ASSERT(it.value().data != nullptr);
     Q_ASSERT(key.multi == (it.value().data->type() == QFontEngine::Multi));
 
     // found... update the hitcount and timestamp
@@ -2860,7 +2860,7 @@ void QFontCache::updateHitCountAndTimeStamp(Engine &value)
 
 void QFontCache::insertEngine(const Key &key, QFontEngine *engine, bool insertMulti)
 {
-    Q_ASSERT(engine != Q_NULLPTR);
+    Q_ASSERT(engine != nullptr);
     Q_ASSERT(key.multi == (engine->type() == QFontEngine::Multi));
 
 #ifdef QFONTCACHE_DEBUG

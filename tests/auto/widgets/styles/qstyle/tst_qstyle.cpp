@@ -779,7 +779,7 @@ class TestStyleOptionInitProxy: public QProxyStyle
     Q_OBJECT
 public:
     mutable bool invalidOptionsDetected;
-    explicit TestStyleOptionInitProxy(QStyle *style = Q_NULLPTR)
+    explicit TestStyleOptionInitProxy(QStyle *style = nullptr)
         : QProxyStyle(style),
           invalidOptionsDetected(false)
     {}
@@ -846,7 +846,7 @@ public:
 
 private:
     void checkStyle(const QByteArray &info, const QStyleOption *opt) const {
-        if (opt && (opt->version == 0 || opt->styleObject == Q_NULLPTR) ) {
+        if (opt && (opt->version == 0 || opt->styleObject == nullptr) ) {
             invalidOptionsDetected = true;
             qWarning() << baseStyle()->metaObject()->className()
                        << "Invalid QStyleOption found for"

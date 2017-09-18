@@ -1387,7 +1387,7 @@ void TestMethods::invokeTests(QObject *testObject) const
 
         if (!QTestResult::skipCurrentTest() && !previousFailed) {
             for (int i = 0, count = int(m_methods.size()); i < count; ++i) {
-                const char *data = Q_NULLPTR;
+                const char *data = nullptr;
                 if (i < QTest::testTags.size() && !QTest::testTags.at(i).isEmpty())
                     data = qstrdup(QTest::testTags.at(i).toLatin1().constData());
                 const bool ok = invokeTest(i, data, watchDog.data());
@@ -1532,7 +1532,7 @@ class DebugSymbolResolver
     Q_DISABLE_COPY(DebugSymbolResolver)
 public:
     struct Symbol {
-        Symbol() : name(Q_NULLPTR), address(0) {}
+        Symbol() : name(nullptr), address(0) {}
 
         const char *name; // Must be freed by caller.
         DWORD64 address;
@@ -1580,11 +1580,11 @@ void DebugSymbolResolver::cleanup()
     if (m_dbgHelpLib)
         FreeLibrary(m_dbgHelpLib);
     m_dbgHelpLib = 0;
-    m_symFromAddr = Q_NULLPTR;
+    m_symFromAddr = nullptr;
 }
 
 DebugSymbolResolver::DebugSymbolResolver(HANDLE process)
-    : m_process(process), m_dbgHelpLib(0), m_symFromAddr(Q_NULLPTR)
+    : m_process(process), m_dbgHelpLib(0), m_symFromAddr(nullptr)
 {
     bool success = false;
     m_dbgHelpLib = LoadLibraryW(L"dbghelp.dll");

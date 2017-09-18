@@ -77,7 +77,7 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbEglNativeInte
     default:
         break;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForContextFunction QXcbEglNativeInterfaceHandler::nativeResourceFunctionForContext(const QByteArray &resource) const
@@ -90,7 +90,7 @@ QPlatformNativeInterface::NativeResourceForContextFunction QXcbEglNativeInterfac
     default:
         break;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForWindowFunction QXcbEglNativeInterfaceHandler::nativeResourceFunctionForWindow(const QByteArray &resource) const
@@ -101,7 +101,7 @@ QPlatformNativeInterface::NativeResourceForWindowFunction QXcbEglNativeInterface
     default:
         break;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbEglNativeInterfaceHandler::eglDisplay()
@@ -114,11 +114,11 @@ void *QXcbEglNativeInterfaceHandler::eglDisplay()
 void *QXcbEglNativeInterfaceHandler::eglDisplayForWindow(QWindow *window)
 {
     Q_ASSERT(window);
-    if (window->supportsOpenGL() && window->handle() == Q_NULLPTR)
+    if (window->supportsOpenGL() && window->handle() == nullptr)
         return eglDisplay();
     else if (window->supportsOpenGL())
         return static_cast<QXcbEglWindow *>(window->handle())->glIntegration()->eglDisplay();
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbEglNativeInterfaceHandler::eglContextForContext(QOpenGLContext *context)

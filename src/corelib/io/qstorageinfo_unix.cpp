@@ -257,7 +257,7 @@ inline QStorageIterator::~QStorageIterator()
 
 inline bool QStorageIterator::isValid() const
 {
-    return fp != Q_NULLPTR;
+    return fp != nullptr;
 }
 
 inline bool QStorageIterator::next()
@@ -357,12 +357,12 @@ inline QStorageIterator::~QStorageIterator()
 
 inline bool QStorageIterator::isValid() const
 {
-    return fp != Q_NULLPTR;
+    return fp != nullptr;
 }
 
 inline bool QStorageIterator::next()
 {
-    return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != Q_NULLPTR;
+    return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != nullptr;
 }
 
 inline QString QStorageIterator::rootPath() const

@@ -63,7 +63,7 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     QIcon(QIcon &&other) Q_DECL_NOEXCEPT
         : d(other.d)
-    { other.d = Q_NULLPTR; }
+    { other.d = nullptr; }
 #endif
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);
@@ -147,7 +147,7 @@ Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QIcon &);
 #endif
 
 Q_GUI_EXPORT QString qt_findAtNxFile(const QString &baseFileName, qreal targetDevicePixelRatio,
-                                     qreal *sourceDevicePixelRatio = Q_NULLPTR);
+                                     qreal *sourceDevicePixelRatio = nullptr);
 
 QT_END_NAMESPACE
 

@@ -563,7 +563,7 @@ const QWindowsScreen *QWindowsScreenManager::screenAtDp(const QPoint &p) const
         if (scr->geometry().contains(p))
             return scr;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

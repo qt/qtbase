@@ -211,7 +211,7 @@ void HaikuViewProxy::handleKeyEvent(QEvent::Type type, BMessage *message)
 {
     int32 key = 0;
     uint32 code = 0;
-    const char *bytes = Q_NULLPTR;
+    const char *bytes = nullptr;
     QString text;
 
     if (message) {
@@ -265,7 +265,7 @@ QHaikuRasterWindow::~QHaikuRasterWindow()
     m_window->UnlockLooper();
 
     delete m_view;
-    m_view = Q_NULLPTR;
+    m_view = nullptr;
 }
 
 BView* QHaikuRasterWindow::nativeViewHandle() const

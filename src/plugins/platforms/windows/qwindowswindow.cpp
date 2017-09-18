@@ -857,7 +857,7 @@ QWindowsBaseWindow *QWindowsBaseWindow::baseWindowOf(const QWindow *w)
         if (QPlatformWindow *pw = w->handle())
             return static_cast<QWindowsBaseWindow *>(pw);
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 HWND QWindowsBaseWindow::handleOf(const QWindow *w)

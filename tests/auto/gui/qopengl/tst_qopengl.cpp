@@ -1593,7 +1593,7 @@ void tst_QOpenGL::defaultQGLCurrentBuffer()
     ctx->makeCurrent(surface.data());
 
     // Bind default FBO on the current context, and record what's the current QGL FBO. It should
-    // be Q_NULLPTR because the default platform OpenGL FBO is not backed by a
+    // be nullptr because the default platform OpenGL FBO is not backed by a
     // QOpenGLFramebufferObject.
     QOpenGLFramebufferObject::bindDefault();
     QOpenGLFramebufferObject *defaultQFBO = QOpenGLContextPrivate::get(ctx.data())->qgl_current_fbo;

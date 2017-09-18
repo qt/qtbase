@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SPINBOX
 QAccessibleAbstractSpinBox::QAccessibleAbstractSpinBox(QWidget *w)
-: QAccessibleWidget(w, QAccessible::SpinBox), lineEdit(Q_NULLPTR)
+: QAccessibleWidget(w, QAccessible::SpinBox), lineEdit(nullptr)
 {
     Q_ASSERT(abstractSpinBox());
 }

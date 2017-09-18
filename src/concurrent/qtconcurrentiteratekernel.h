@@ -159,7 +159,7 @@ public:
     inline ResultReporter(ThreadEngine<void> *) { }
     inline void reserveSpace(int) { }
     inline void reportResults(int) { }
-    inline void * getPointer() { return Q_NULLPTR; }
+    inline void * getPointer() { return nullptr; }
 };
 
 inline bool selectIteration(std::bidirectional_iterator_tag)

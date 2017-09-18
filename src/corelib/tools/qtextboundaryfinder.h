@@ -74,7 +74,7 @@ public:
     Q_DECLARE_FLAGS( BoundaryReasons, BoundaryReason )
 
     QTextBoundaryFinder(BoundaryType type, const QString &string);
-    QTextBoundaryFinder(BoundaryType type, const QChar *chars, int length, unsigned char *buffer = Q_NULLPTR, int bufferSize = 0);
+    QTextBoundaryFinder(BoundaryType type, const QChar *chars, int length, unsigned char *buffer = nullptr, int bufferSize = 0);
 
     inline bool isValid() const { return d; }
 

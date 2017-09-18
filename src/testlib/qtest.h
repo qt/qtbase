@@ -263,7 +263,7 @@ inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual,
             delete [] val2;
         }
     }
-    return compare_helper(isOk, msg, Q_NULLPTR, Q_NULLPTR, actual, expected, file, line);
+    return compare_helper(isOk, msg, nullptr, nullptr, actual, expected, file, line);
 }
 
 template <>

@@ -352,7 +352,7 @@ public:
 #if defined(Q_OS_UNIX)
     void execChild(const char *workingDirectory, char **argv, char **envp);
 #endif
-    bool processStarted(QString *errorMessage = Q_NULLPTR);
+    bool processStarted(QString *errorMessage = nullptr);
     void terminateProcess();
     void killProcess();
     void findExitCode();

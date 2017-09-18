@@ -180,13 +180,13 @@ public:
     QAccessibleTableCell(QAbstractItemView *view, const QModelIndex &m_index, QAccessible::Role role);
 
     void *interface_cast(QAccessible::InterfaceType t) override;
-    QObject *object() const override { return Q_NULLPTR; }
+    QObject *object() const override { return nullptr; }
     QAccessible::Role role() const override;
     QAccessible::State state() const override;
     QRect rect() const override;
     bool isValid() const override;
 
-    QAccessibleInterface *childAt(int, int) const override { return Q_NULLPTR; }
+    QAccessibleInterface *childAt(int, int) const override { return nullptr; }
     int childCount() const override { return 0; }
     int indexOfChild(const QAccessibleInterface *) const override { return -1; }
 
@@ -234,13 +234,13 @@ public:
     // For header cells, pass the header view in addition
     QAccessibleTableHeaderCell(QAbstractItemView *view, int index, Qt::Orientation orientation);
 
-    QObject *object() const override { return Q_NULLPTR; }
+    QObject *object() const override { return nullptr; }
     QAccessible::Role role() const override;
     QAccessible::State state() const override;
     QRect rect() const override;
     bool isValid() const override;
 
-    QAccessibleInterface *childAt(int, int) const override { return Q_NULLPTR; }
+    QAccessibleInterface *childAt(int, int) const override { return nullptr; }
     int childCount() const override { return 0; }
     int indexOfChild(const QAccessibleInterface *) const override { return -1; }
 
@@ -273,13 +273,13 @@ public:
         :view(view_)
     {}
 
-    QObject *object() const override { return Q_NULLPTR; }
+    QObject *object() const override { return nullptr; }
     QAccessible::Role role() const override { return QAccessible::Pane; }
     QAccessible::State state() const override { return QAccessible::State(); }
     QRect rect() const override { return QRect(); }
     bool isValid() const override { return true; }
 
-    QAccessibleInterface *childAt(int, int) const override { return Q_NULLPTR; }
+    QAccessibleInterface *childAt(int, int) const override { return nullptr; }
     int childCount() const override { return 0; }
     int indexOfChild(const QAccessibleInterface *) const override { return -1; }
 
@@ -290,7 +290,7 @@ public:
         return QAccessible::queryAccessibleInterface(view);
     }
     QAccessibleInterface *child(int) const override {
-        return Q_NULLPTR;
+        return nullptr;
     }
 
 private:

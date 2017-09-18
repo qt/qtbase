@@ -754,7 +754,7 @@ void tst_QTimer::recurseOnTimeoutAndStopTimer()
 
 struct CountedStruct
 {
-    CountedStruct(int *count, QThread *t = Q_NULLPTR) : count(count), thread(t) { }
+    CountedStruct(int *count, QThread *t = nullptr) : count(count), thread(t) { }
     ~CountedStruct() { }
     void operator()() const { ++(*count); if (thread) QCOMPARE(QThread::currentThread(), thread); }
 
@@ -763,7 +763,7 @@ struct CountedStruct
 };
 
 static QScopedPointer<QEventLoop> _e;
-static QThread *_t = Q_NULLPTR;
+static QThread *_t = nullptr;
 
 class StaticEventLoop
 {
@@ -827,7 +827,7 @@ void tst_QTimer::singleShotToFunctors()
     _t->quit();
     _t->wait();
     _t->deleteLater();
-    _t = Q_NULLPTR;
+    _t = nullptr;
 
     {
         QObject c3;
@@ -865,7 +865,7 @@ void tst_QTimer::singleShotToFunctors()
     QCOMPARE(count, 5);
 
     _e.reset();
-    _t = Q_NULLPTR;
+    _t = nullptr;
 }
 
 void tst_QTimer::singleShot_chrono()

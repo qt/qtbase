@@ -295,7 +295,7 @@ void tst_QGraphicsScene::construction()
 
 static inline const QGraphicsItem *itemAt(const QGraphicsScene &scene, qreal x, qreal y)
 {
-    return scene.items(QPointF(x, y)).value(0, Q_NULLPTR);
+    return scene.items(QPointF(x, y)).value(0, nullptr);
 }
 
 void tst_QGraphicsScene::sceneRect()

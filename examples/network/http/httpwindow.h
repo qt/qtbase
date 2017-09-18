@@ -71,7 +71,7 @@ class ProgressDialog : public QProgressDialog {
     Q_OBJECT
 
 public:
-    explicit ProgressDialog(const QUrl &url, QWidget *parent = Q_NULLPTR);
+    explicit ProgressDialog(const QUrl &url, QWidget *parent = nullptr);
 
 public slots:
    void networkReplyProgress(qint64 bytesRead, qint64 totalBytes);
@@ -82,7 +82,7 @@ class HttpWindow : public QDialog
     Q_OBJECT
 
 public:
-    explicit HttpWindow(QWidget *parent = Q_NULLPTR);
+    explicit HttpWindow(QWidget *parent = nullptr);
 
     void startRequest(const QUrl &requestedUrl);
 

@@ -497,7 +497,7 @@ QWinRTScreen::QWinRTScreen()
     Q_D(QWinRTScreen);
     qCDebug(lcQpaWindows) << __FUNCTION__;
     d->orientation = Qt::PrimaryOrientation;
-    d->touchDevice = Q_NULLPTR;
+    d->touchDevice = nullptr;
 
     HRESULT hr;
     ComPtr<Xaml::IWindowStatics> windowStatics;
@@ -540,7 +540,7 @@ QWinRTScreen::QWinRTScreen()
     Q_ASSERT_SUCCEEDED(hr);
     d->nativeOrientation = static_cast<Qt::ScreenOrientation>(static_cast<int>(qtOrientationsFromNative(displayOrientation)));
     // Set initial pixel density
-    onDpiChanged(Q_NULLPTR, Q_NULLPTR);
+    onDpiChanged(nullptr, nullptr);
     d->orientation = d->nativeOrientation;
 
     ComPtr<IApplicationViewStatics2> applicationViewStatics;
@@ -764,7 +764,7 @@ void QWinRTScreen::initialize()
     Q_ASSERT_SUCCEEDED(hr);
     hr = d->displayInformation->add_DpiChanged(Callback<DisplayInformationHandler>(this, &QWinRTScreen::onDpiChanged).Get(), &d->displayTokens[&IDisplayInformation::remove_DpiChanged]);
     Q_ASSERT_SUCCEEDED(hr);
-    onOrientationChanged(Q_NULLPTR, Q_NULLPTR);
+    onOrientationChanged(nullptr, nullptr);
     onVisibilityChanged(nullptr, nullptr);
 
     hr = d->redirect->add_PointerRoutedReleased(Callback<RedirectHandler>(this, &QWinRTScreen::onRedirectReleased).Get(), &d->redirectTokens[&ICorePointerRedirector::remove_PointerRoutedReleased]);
@@ -864,7 +864,7 @@ void QWinRTScreen::removeWindow(QWindow *window)
 
     const Qt::WindowType type = window->type();
     if (wasTopWindow && type != Qt::Popup && type != Qt::ToolTip && type != Qt::Tool)
-        QWindowSystemInterface::handleWindowActivated(Q_NULLPTR, Qt::OtherFocusReason);
+        QWindowSystemInterface::handleWindowActivated(nullptr, Qt::OtherFocusReason);
     handleExpose();
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 #ifndef QT_NO_DRAGANDDROP

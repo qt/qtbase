@@ -48,7 +48,7 @@
 #include "qiosoptionalplugininterface.h"
 
 QIOSFileDialog::QIOSFileDialog()
-    : m_viewController(Q_NULLPTR)
+    : m_viewController(nullptr)
 {
 }
 
@@ -112,7 +112,7 @@ void QIOSFileDialog::hide()
 
     [m_viewController dismissViewControllerAnimated:YES completion:nil];
     [m_viewController release];
-    m_viewController = Q_NULLPTR;
+    m_viewController = nullptr;
     m_eventLoop.exit();
 }
 

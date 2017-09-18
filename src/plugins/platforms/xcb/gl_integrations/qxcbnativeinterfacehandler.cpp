@@ -56,37 +56,37 @@ QXcbNativeInterfaceHandler::~QXcbNativeInterfaceHandler()
 QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfaceHandler::nativeResourceFunctionForIntegration(const QByteArray &resource) const
 {
     Q_UNUSED(resource);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterfaceHandler::nativeResourceFunctionForContext(const QByteArray &resource) const
 {
     Q_UNUSED(resource);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterfaceHandler::nativeResourceFunctionForScreen(const QByteArray &resource) const
 {
     Q_UNUSED(resource);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForWindowFunction QXcbNativeInterfaceHandler::nativeResourceFunctionForWindow(const QByteArray &resource) const
 {
     Q_UNUSED(resource);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForBackingStoreFunction QXcbNativeInterfaceHandler::nativeResourceFunctionForBackingStore(const QByteArray &resource) const
 {
     Q_UNUSED(resource);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QFunctionPointer QXcbNativeInterfaceHandler::platformFunction(const QByteArray &function) const
 {
     Q_UNUSED(function);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

@@ -428,7 +428,7 @@ static void populateFromPattern(FcPattern *pattern)
     if (res == FcResultMatch) {
         bool hasLang = false;
 #if FC_VERSION >= 20297
-        FcChar8 *cap = Q_NULLPTR;
+        FcChar8 *cap = nullptr;
         FcResult capRes = FcResultNoMatch;
 #endif
         for (int j = 1; j < QFontDatabase::WritingSystemsCount; ++j) {
@@ -438,7 +438,7 @@ static void populateFromPattern(FcPattern *pattern)
                 if (langRes != FcLangDifferentLang) {
 #if FC_VERSION >= 20297
                     if (*capabilityForWritingSystem[j] && requiresOpenType(j)) {
-                        if (cap == Q_NULLPTR)
+                        if (cap == nullptr)
                             capRes = FcPatternGetString(pattern, FC_CAPABILITY, 0, &cap);
                         if (capRes == FcResultMatch && strstr(reinterpret_cast<const char *>(cap), capabilityForWritingSystem[j]) == 0)
                             continue;

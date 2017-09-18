@@ -64,14 +64,14 @@ namespace QtAndroidPrivate {
     KeyEventListener::~KeyEventListener() {}
 }
 
-static JavaVM *g_javaVM = Q_NULLPTR;
-static jobject g_jActivity = Q_NULLPTR;
-static jobject g_jService = Q_NULLPTR;
-static jobject g_jClassLoader = Q_NULLPTR;
+static JavaVM *g_javaVM = nullptr;
+static jobject g_jActivity = nullptr;
+static jobject g_jService = nullptr;
+static jobject g_jClassLoader = nullptr;
 static jint g_androidSdkVersion = 0;
-static jclass g_jNativeClass = Q_NULLPTR;
-static jmethodID g_runPendingCppRunnablesMethodID = Q_NULLPTR;
-static jmethodID g_hideSplashScreenMethodID = Q_NULLPTR;
+static jclass g_jNativeClass = nullptr;
+static jmethodID g_runPendingCppRunnablesMethodID = nullptr;
+static jmethodID g_hideSplashScreenMethodID = nullptr;
 Q_GLOBAL_STATIC(std::deque<QtAndroidPrivate::Runnable>, g_pendingRunnables);
 static QBasicMutex g_pendingRunnablesMutex;
 

@@ -205,7 +205,7 @@ public:
 
     static inline void unlock() Q_DECL_NOTHROW { }
     static inline void relock() Q_DECL_NOTHROW { }
-    static inline QReadWriteLock *readWriteLock() Q_DECL_NOTHROW { return Q_NULLPTR; }
+    static inline QReadWriteLock *readWriteLock() Q_DECL_NOTHROW { return nullptr; }
 
 private:
     Q_DISABLE_COPY(QReadLocker)
@@ -219,7 +219,7 @@ public:
 
     static inline void unlock() Q_DECL_NOTHROW { }
     static inline void relock() Q_DECL_NOTHROW { }
-    static inline QReadWriteLock *readWriteLock() Q_DECL_NOTHROW { return Q_NULLPTR; }
+    static inline QReadWriteLock *readWriteLock() Q_DECL_NOTHROW { return nullptr; }
 
 private:
     Q_DISABLE_COPY(QWriteLocker)

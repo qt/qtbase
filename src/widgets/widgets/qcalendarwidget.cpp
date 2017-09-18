@@ -988,7 +988,7 @@ QCalendarModel::QCalendarModel(QObject *parent)
       m_firstDay(QLocale().firstDayOfWeek()),
       m_horizontalHeaderFormat(QCalendarWidget::ShortDayNames),
       m_weekNumbersShown(true),
-      m_view(Q_NULLPTR)
+      m_view(nullptr)
 {
 }
 

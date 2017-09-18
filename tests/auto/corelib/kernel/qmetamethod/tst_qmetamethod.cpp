@@ -763,7 +763,7 @@ void tst_QMetaMethod::gadget()
 
     {
         // Call with null should not crash
-        MyGadget *gadget = Q_NULLPTR;
+        MyGadget *gadget = nullptr;
         QString string;
         QVERIFY(!setValueMethod.invokeOnGadget(gadget, Q_ARG(QString, QLatin1String("hi"))));
         QVERIFY(!getValueMethod.invokeOnGadget(gadget, Q_RETURN_ARG(QString, string)));

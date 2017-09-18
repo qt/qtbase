@@ -64,7 +64,7 @@ class QMessageLogContext
     Q_DISABLE_COPY(QMessageLogContext)
 public:
     Q_DECL_CONSTEXPR QMessageLogContext()
-        : version(2), line(0), file(Q_NULLPTR), function(Q_NULLPTR), category(Q_NULLPTR) {}
+        : version(2), line(0), file(nullptr), function(nullptr), category(nullptr) {}
     Q_DECL_CONSTEXPR QMessageLogContext(const char *fileName, int lineNumber, const char *functionName, const char *categoryName)
         : version(2), line(lineNumber), file(fileName), function(functionName), category(categoryName) {}
 
@@ -150,9 +150,9 @@ private:
   #define QT_MESSAGELOG_LINE __LINE__
   #define QT_MESSAGELOG_FUNC Q_FUNC_INFO
 #else
-  #define QT_MESSAGELOG_FILE Q_NULLPTR
+  #define QT_MESSAGELOG_FILE nullptr
   #define QT_MESSAGELOG_LINE 0
-  #define QT_MESSAGELOG_FUNC Q_NULLPTR
+  #define QT_MESSAGELOG_FUNC nullptr
 #endif
 
 #define qDebug QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).debug

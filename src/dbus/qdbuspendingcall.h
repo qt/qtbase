@@ -100,7 +100,7 @@ class Q_DBUS_EXPORT QDBusPendingCallWatcher: public QObject, public QDBusPending
 {
     Q_OBJECT
 public:
-    explicit QDBusPendingCallWatcher(const QDBusPendingCall &call, QObject *parent = Q_NULLPTR);
+    explicit QDBusPendingCallWatcher(const QDBusPendingCall &call, QObject *parent = nullptr);
     ~QDBusPendingCallWatcher();
 
 #ifdef Q_QDOC
@@ -110,7 +110,7 @@ public:
     void waitForFinished();     // non-virtual override
 
 Q_SIGNALS:
-    void finished(QDBusPendingCallWatcher *self = Q_NULLPTR);
+    void finished(QDBusPendingCallWatcher *self = nullptr);
 
 private:
     Q_DECLARE_PRIVATE(QDBusPendingCallWatcher)

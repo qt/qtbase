@@ -75,7 +75,7 @@ class QEvdevTouchScreenHandler : public QObject
     Q_OBJECT
 
 public:
-    explicit QEvdevTouchScreenHandler(const QString &device, const QString &spec = QString(), QObject *parent = Q_NULLPTR);
+    explicit QEvdevTouchScreenHandler(const QString &device, const QString &spec = QString(), QObject *parent = nullptr);
     ~QEvdevTouchScreenHandler();
 
     QTouchDevice *touchDevice() const;
@@ -108,7 +108,7 @@ class QEvdevTouchScreenHandlerThread : public QDaemonThread
 {
     Q_OBJECT
 public:
-    explicit QEvdevTouchScreenHandlerThread(const QString &device, const QString &spec, QObject *parent = Q_NULLPTR);
+    explicit QEvdevTouchScreenHandlerThread(const QString &device, const QString &spec, QObject *parent = nullptr);
     ~QEvdevTouchScreenHandlerThread();
     void run() override;
 

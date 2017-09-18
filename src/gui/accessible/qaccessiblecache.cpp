@@ -54,7 +54,7 @@ static QAccessibleCache *accessibleCache = nullptr;
 static void cleanupAccessibleCache()
 {
     delete accessibleCache;
-    accessibleCache = Q_NULLPTR;
+    accessibleCache = nullptr;
 }
 
 QAccessibleCache *QAccessibleCache::instance()

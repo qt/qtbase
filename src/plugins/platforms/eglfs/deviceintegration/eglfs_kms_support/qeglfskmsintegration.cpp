@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(qLcEglfsKmsDebug, "qt.qpa.eglfs.kms")
 
 QEglFSKmsIntegration::QEglFSKmsIntegration()
-    : m_device(Q_NULLPTR),
+    : m_device(nullptr),
       m_screenConfig(new QKmsScreenConfig)
 {
 }
@@ -78,7 +78,7 @@ void QEglFSKmsIntegration::platformDestroy()
     qCDebug(qLcEglfsKmsDebug, "platformDestroy: Closing DRM device");
     m_device->close();
     delete m_device;
-    m_device = Q_NULLPTR;
+    m_device = nullptr;
 }
 
 EGLNativeDisplayType QEglFSKmsIntegration::platformDisplay() const

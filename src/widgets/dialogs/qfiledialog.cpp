@@ -1992,7 +1992,7 @@ QFileIconProvider *QFileDialog::iconProvider() const
 {
     Q_D(const QFileDialog);
     if (!d->model)
-        return Q_NULLPTR;
+        return nullptr;
     return d->model->iconProvider();
 }
 
@@ -3619,7 +3619,7 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
         }
     } else {
         // Do not accept when shift-clicking to multi-select a file in environments with single-click-activation (KDE)
-        if (!q->style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, Q_NULLPTR, qFileDialogUi->treeView)
+        if (!q->style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, qFileDialogUi->treeView)
             || q->fileMode() != QFileDialog::ExistingFiles || !(QGuiApplication::keyboardModifiers() & Qt::CTRL)) {
             q->accept();
         }

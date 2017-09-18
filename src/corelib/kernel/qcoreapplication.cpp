@@ -426,7 +426,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
     , argv(aargv)
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     , origArgc(0)
-    , origArgv(Q_NULLPTR)
+    , origArgv(nullptr)
 #endif
     , application_type(QCoreApplicationPrivate::Tty)
 #ifndef QT_NO_QOBJECT

@@ -55,7 +55,7 @@
 
 //! [0]
 MainWindow::MainWindow(TabletCanvas *canvas)
-  : m_canvas(canvas), m_colorDialog(Q_NULLPTR)
+  : m_canvas(canvas), m_colorDialog(nullptr)
 {
     createMenus();
     setWindowTitle(tr("Tablet Example"));

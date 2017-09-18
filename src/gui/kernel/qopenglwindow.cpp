@@ -344,7 +344,7 @@ void QOpenGLWindowPaintDevice::ensureActiveTarget()
   \sa QOpenGLWindow::UpdateBehavior
  */
 QOpenGLWindow::QOpenGLWindow(QOpenGLWindow::UpdateBehavior updateBehavior, QWindow *parent)
-    : QPaintDeviceWindow(*(new QOpenGLWindowPrivate(Q_NULLPTR, updateBehavior)), parent)
+    : QPaintDeviceWindow(*(new QOpenGLWindowPrivate(nullptr, updateBehavior)), parent)
 {
     setSurfaceType(QSurface::OpenGLSurface);
 }

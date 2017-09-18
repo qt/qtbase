@@ -34,7 +34,7 @@
 #include "propertyfield.h"
 
 PropertyWatcher::PropertyWatcher(QObject *subject, QString annotation, QWidget *parent)
-    : QWidget(parent), m_subject(Q_NULLPTR), m_formLayout(new QFormLayout(this))
+    : QWidget(parent), m_subject(nullptr), m_formLayout(new QFormLayout(this))
 {
     setMinimumSize(450, 300);
     m_formLayout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);

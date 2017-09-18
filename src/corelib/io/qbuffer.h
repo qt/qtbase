@@ -57,8 +57,8 @@ class Q_CORE_EXPORT QBuffer : public QIODevice
 
 public:
 #ifndef QT_NO_QOBJECT
-     explicit QBuffer(QObject *parent = Q_NULLPTR);
-     QBuffer(QByteArray *buf, QObject *parent = Q_NULLPTR);
+     explicit QBuffer(QObject *parent = nullptr);
+     QBuffer(QByteArray *buf, QObject *parent = nullptr);
 #else
      QBuffer();
      explicit QBuffer(QByteArray *buf);

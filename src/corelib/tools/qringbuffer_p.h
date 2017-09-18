@@ -80,7 +80,7 @@ public:
     }
 
     inline const char *readPointer() const {
-        return bufferSize == 0 ? Q_NULLPTR : (buffers.first().constData() + head);
+        return bufferSize == 0 ? nullptr : (buffers.first().constData() + head);
     }
 
     Q_CORE_EXPORT const char *readPointerAtPosition(qint64 pos, qint64 &length) const;

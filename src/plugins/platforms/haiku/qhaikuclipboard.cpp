@@ -47,8 +47,8 @@
 #include <Clipboard.h>
 
 QHaikuClipboard::QHaikuClipboard()
-    : m_systemMimeData(Q_NULLPTR)
-    , m_userMimeData(Q_NULLPTR)
+    : m_systemMimeData(nullptr)
+    , m_userMimeData(nullptr)
 {
     if (be_clipboard)
         be_clipboard->StartWatching(BMessenger(this));
@@ -81,12 +81,12 @@ QMimeData *QHaikuClipboard::mimeData(QClipboard::Mode mode)
 
     const BMessage *clipboard = be_clipboard->Data();
     if (clipboard) {
-        char *name = Q_NULLPTR;
+        char *name = nullptr;
         uint32 type = 0;
         int32 count = 0;
 
         for (int i = 0; clipboard->GetInfo(B_MIME_TYPE, i, &name, &type, &count) == B_OK; i++) {
-            const void *data = Q_NULLPTR;
+            const void *data = nullptr;
             int32 dataLen = 0;
 
             const status_t status = clipboard->FindData(name, B_MIME_TYPE, &data, &dataLen);
@@ -162,7 +162,7 @@ void QHaikuClipboard::MessageReceived(BMessage* message)
 {
     if (message->what == B_CLIPBOARD_CHANGED) {
         delete m_userMimeData;
-        m_userMimeData = Q_NULLPTR;
+        m_userMimeData = nullptr;
 
         emitChanged(QClipboard::Clipboard);
     }

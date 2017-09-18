@@ -61,10 +61,10 @@ class Q_WIDGETS_EXPORT QListWidgetItem
     friend class QListWidget;
 public:
     enum ItemType { Type = 0, UserType = 1000 };
-    explicit QListWidgetItem(QListWidget *view = Q_NULLPTR, int type = Type);
-    explicit QListWidgetItem(const QString &text, QListWidget *view = Q_NULLPTR, int type = Type);
+    explicit QListWidgetItem(QListWidget *view = nullptr, int type = Type);
+    explicit QListWidgetItem(const QString &text, QListWidget *view = nullptr, int type = Type);
     explicit QListWidgetItem(const QIcon &icon, const QString &text,
-                             QListWidget *view = Q_NULLPTR, int type = Type);
+                             QListWidget *view = nullptr, int type = Type);
     QListWidgetItem(const QListWidgetItem &other);
     virtual ~QListWidgetItem();
 
@@ -204,7 +204,7 @@ class Q_WIDGETS_EXPORT QListWidget : public QListView
     friend class QListWidgetItem;
     friend class QListModel;
 public:
-    explicit QListWidget(QWidget *parent = Q_NULLPTR);
+    explicit QListWidget(QWidget *parent = nullptr);
     ~QListWidget();
 
     void setSelectionModel(QItemSelectionModel *selectionModel) override;
@@ -322,7 +322,7 @@ private:
 };
 
 inline void QListWidget::removeItemWidget(QListWidgetItem *aItem)
-{ setItemWidget(aItem, Q_NULLPTR); }
+{ setItemWidget(aItem, nullptr); }
 
 inline void QListWidget::addItem(QListWidgetItem *aitem)
 { insertItem(count(), aitem); }

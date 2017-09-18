@@ -95,7 +95,7 @@ struct QWindowsLibGLESv2
 #if !defined(QT_STATIC) || defined(QT_OPENGL_DYNAMIC)
     void *moduleHandle() const { return m_lib; }
 #else
-    void *moduleHandle() const { return Q_NULLPTR; }
+    void *moduleHandle() const { return nullptr; }
 #endif
 
     const GLubyte * (APIENTRY * glGetString)(GLenum name);

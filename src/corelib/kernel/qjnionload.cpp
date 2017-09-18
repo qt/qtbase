@@ -61,7 +61,7 @@ Q_CORE_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     __android_log_print(ANDROID_LOG_INFO, logTag, "Start");
 
     _JNIEnv uenv;
-    uenv.venv = Q_NULLPTR;
+    uenv.venv = nullptr;
 
     if (vm->GetEnv(&uenv.venv, JNI_VERSION_1_6) != JNI_OK)
     {

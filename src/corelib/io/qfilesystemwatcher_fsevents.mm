@@ -336,7 +336,7 @@ QStringList QFseventsFileSystemWatcherEngine::addPaths(const QStringList &paths,
 
     QMutexLocker locker(&lock);
 
-    bool wasRunning = stream != Q_NULLPTR;
+    bool wasRunning = stream != nullptr;
     bool needsRestart = false;
 
     WatchingState oldState = watchingState;

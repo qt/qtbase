@@ -90,7 +90,7 @@ public:
     int endPos() const { return m_endPos; }
     QByteArray mask() const;
 
-    bool isValid() const { return m_matchFunction != Q_NULLPTR; }
+    bool isValid() const { return m_matchFunction != nullptr; }
 
     bool matches(const QByteArray &data) const;
 

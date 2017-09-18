@@ -86,7 +86,7 @@ void QCocoaCursor::setPos(const QPoint &position)
 
 NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
 {
-    if (cursor == Q_NULLPTR)
+    if (cursor == nullptr)
         return 0;
 
     const Qt::CursorShape newShape = cursor->shape();

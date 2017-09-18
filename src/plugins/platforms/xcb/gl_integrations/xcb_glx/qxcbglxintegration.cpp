@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 QXcbGlxIntegration::QXcbGlxIntegration()
-    : m_connection(Q_NULLPTR)
+    : m_connection(nullptr)
     , m_glx_first_event(0)
 {
     qCDebug(lcQpaGl) << "Xcb GLX gl-integration created";

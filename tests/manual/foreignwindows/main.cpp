@@ -110,7 +110,7 @@ EmbeddingWindow::EmbeddingWindow(QWindow *window) : m_window(window)
         + QLatin1String(" 0x") + QString::number(window->winId(), 16);
     setWindowTitle(title);
     setObjectName("MainWindow");
-    QWidget *container = QWidget::createWindowContainer(window, Q_NULLPTR, Qt::Widget);
+    QWidget *container = QWidget::createWindowContainer(window, nullptr, Qt::Widget);
     container->setObjectName("Container");
     setCentralWidget(container);
 
@@ -149,8 +149,8 @@ EmbeddingWindow::EmbeddingWindow(QWindow *window) : m_window(window)
 void EmbeddingWindow::releaseForeignWindow()
 {
     if (m_window) {
-        m_window->setParent(Q_NULLPTR);
-        m_window = Q_NULLPTR;
+        m_window->setParent(nullptr);
+        m_window = nullptr;
         m_releaseAction->setEnabled(false);
     }
 }

@@ -288,7 +288,7 @@ public:
 class ScrollPerItemListView : public QListView
 {
 public:
-    explicit ScrollPerItemListView(QWidget *parent = Q_NULLPTR)
+    explicit ScrollPerItemListView(QWidget *parent = nullptr)
         : QListView(parent)
     {
         // Force per item scroll mode since it comes from the style by default

@@ -112,7 +112,7 @@ void QStorageInfoPrivate::retrieveUrlProperties(bool initRootPath)
     QCFType<CFArrayRef> keys = CFArrayCreate(kCFAllocatorDefault,
                                              initRootPath ? rootPathKeys : propertyKeys,
                                              size,
-                                             Q_NULLPTR);
+                                             nullptr);
 
     if (!keys)
         return;
@@ -178,9 +178,9 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     QList<QStorageInfo> volumes;
 
     QCFType<CFURLEnumeratorRef> enumerator;
-    enumerator = CFURLEnumeratorCreateForMountedVolumes(Q_NULLPTR,
+    enumerator = CFURLEnumeratorCreateForMountedVolumes(nullptr,
                                                         kCFURLEnumeratorSkipInvisibles,
-                                                        Q_NULLPTR);
+                                                        nullptr);
 
     CFURLEnumeratorResult result = kCFURLEnumeratorSuccess;
     do {

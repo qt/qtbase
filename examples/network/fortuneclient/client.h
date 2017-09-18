@@ -70,7 +70,7 @@ class Client : public QDialog
     Q_OBJECT
 
 public:
-    explicit Client(QWidget *parent = Q_NULLPTR);
+    explicit Client(QWidget *parent = nullptr);
 
 private slots:
     void requestNewFortune();

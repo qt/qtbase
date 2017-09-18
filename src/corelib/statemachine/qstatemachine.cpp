@@ -560,7 +560,7 @@ QList<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *even
     QList<QAbstractTransition*> enabledTransitions;
     const_cast<QStateMachine*>(q)->beginSelectTransitions(event);
     for (QAbstractState *state : qAsConst(configuration_sorted)) {
-        QVector<QState*> lst = getProperAncestors(state, Q_NULLPTR);
+        QVector<QState*> lst = getProperAncestors(state, nullptr);
         if (QState *grp = toStandardState(state))
             lst.prepend(grp);
         bool found = false;
@@ -767,7 +767,7 @@ QSet<QAbstractState*> QStateMachinePrivate::computeExitSet_Unordered(QAbstractTr
 
     QList<QAbstractState *> effectiveTargetStates = getEffectiveTargetStates(t, cache);
     QAbstractState *domain = getTransitionDomain(t, effectiveTargetStates, cache);
-    if (domain == Q_NULLPTR && !t->targetStates().isEmpty()) {
+    if (domain == nullptr && !t->targetStates().isEmpty()) {
         // So we didn't find the least common ancestor for the source and target states of the
         // transition. If there were not target states, that would be fine: then the transition
         // will fire any events or signals, but not exit the state.
@@ -909,7 +909,7 @@ QAbstractState *QStateMachinePrivate::getTransitionDomain(QAbstractTransition *t
     if (effectiveTargetStates.isEmpty())
         return 0;
 
-    QAbstractState *domain = Q_NULLPTR;
+    QAbstractState *domain = nullptr;
     if (cache->transitionDomain(t, &domain))
         return domain;
 

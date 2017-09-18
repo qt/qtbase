@@ -68,7 +68,7 @@ void tst_QRingBuffer::constructing()
     QCOMPARE(ringBuffer.size(), Q_INT64_C(0));
     QVERIFY(ringBuffer.isEmpty());
     QCOMPARE(ringBuffer.nextDataBlockSize(), Q_INT64_C(0));
-    QVERIFY(ringBuffer.readPointer() == Q_NULLPTR);
+    QVERIFY(ringBuffer.readPointer() == nullptr);
     QCOMPARE(ringBuffer.skip(5), Q_INT64_C(0));
     QCOMPARE(ringBuffer.read(), QByteArray());
     QCOMPARE(ringBuffer.getChar(), -1);

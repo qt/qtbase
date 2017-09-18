@@ -115,7 +115,7 @@ void QXcbNativeBackingStore::flush(QWindow *window, const QRegion &region, const
     else
 #endif
     {
-        GC gc = XCreateGC(display(), wid, 0, Q_NULLPTR);
+        GC gc = XCreateGC(display(), wid, 0, nullptr);
 
         if (clipRects.size() != 1)
             XSetClipRectangles(display(), gc, 0, 0, clipRects.data(), clipRects.size(), YXBanded);
@@ -155,7 +155,7 @@ void QXcbNativeBackingStore::resize(const QSize &size, const QRegion &staticCont
         QRect br = staticContents.boundingRect().intersected(QRect(QPoint(0, 0), size));
 
         if (!br.isEmpty()) {
-            GC gc = XCreateGC(display(), to, 0, Q_NULLPTR);
+            GC gc = XCreateGC(display(), to, 0, nullptr);
             XCopyArea(display(), from, to, gc, br.x(), br.y(), br.width(), br.height(), br.x(), br.y());
             XFreeGC(display(), gc);
         }
@@ -172,7 +172,7 @@ bool QXcbNativeBackingStore::scroll(const QRegion &area, int dx, int dy)
     QRect rect = area.boundingRect();
     Pixmap pix = qt_x11PixmapHandle(m_pixmap);
 
-    GC gc = XCreateGC(display(), pix, 0, Q_NULLPTR);
+    GC gc = XCreateGC(display(), pix, 0, nullptr);
     XCopyArea(display(), pix, pix, gc,
               rect.x(), rect.y(), rect.width(), rect.height(),
               rect.x()+dx, rect.y()+dy);

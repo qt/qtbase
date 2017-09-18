@@ -76,7 +76,7 @@ public:
         CosineCurve
     };
 
-    explicit QTimeLine(int duration = 1000, QObject *parent = Q_NULLPTR);
+    explicit QTimeLine(int duration = 1000, QObject *parent = nullptr);
     virtual ~QTimeLine();
 
     State state() const;

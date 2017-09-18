@@ -148,7 +148,7 @@ public:
     typedef void (*Hook)(const QDBusMessage&);
     QDBusSpyCallEvent(QDBusConnectionPrivate *cp, const QDBusConnection &c, const QDBusMessage &msg,
                       const Hook *hooks, int count)
-        : QMetaCallEvent(0, 0, Q_NULLPTR, cp, 0), conn(c), msg(msg), hooks(hooks), hookCount(count)
+        : QMetaCallEvent(0, 0, nullptr, cp, 0), conn(c), msg(msg), hooks(hooks), hookCount(count)
     {}
     ~QDBusSpyCallEvent();
     void placeMetaCall(QObject *) override;

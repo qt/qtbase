@@ -51,7 +51,7 @@ class HaikuWindowProxy : public QObject, public BWindow
     Q_OBJECT
 
 public:
-    explicit HaikuWindowProxy(QWindow *window, const QRect &rect, QObject *parent = Q_NULLPTR);
+    explicit HaikuWindowProxy(QWindow *window, const QRect &rect, QObject *parent = nullptr);
 
     void FrameMoved(BPoint pos) override;
     void FrameResized(float width, float height) override;

@@ -804,7 +804,7 @@ public:
         const bool alias = !q->antiAliasingEnabled();
 
         QVectorPath::CacheEntry *cacheEntry = path.isCacheable() ? path.lookupCacheData(q)
-                                                                 : Q_NULLPTR;
+                                                                 : nullptr;
 
         if (cacheEntry) {
             D2DVectorPathCache *e = static_cast<D2DVectorPathCache *>(cacheEntry->data);

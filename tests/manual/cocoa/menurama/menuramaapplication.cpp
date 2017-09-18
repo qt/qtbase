@@ -71,5 +71,5 @@ QAction *MenuramaApplication::findAction(QLatin1String title, QMenu *parentMenu)
         if (a->text() == title)
             return a;
 
-    return Q_NULLPTR;
+    return nullptr;
 }

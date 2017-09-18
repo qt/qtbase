@@ -379,7 +379,7 @@ class WakeThreadBase : public TerminatingThread
 public:
     QAtomicInt *count;
 
-    WakeThreadBase() : count(Q_NULLPTR) {}
+    WakeThreadBase() : count(nullptr) {}
 };
 
 class wake_Thread : public WakeThreadBase

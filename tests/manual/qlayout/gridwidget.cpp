@@ -62,8 +62,8 @@ GridWidget::GridWidget(QWidget *parent) :
 
     qDebug("There should be four warnings, but no crash or freeze:");
     hb->addWidget(this, 6, 6); ///< This command should print a warning, but should not add "this"
-    hb->addWidget(Q_NULLPTR, 6, 7); ///< This command should print a warning, but should not add "NULL"
+    hb->addWidget(nullptr, 6, 7); ///< This command should print a warning, but should not add "NULL"
     hb->addLayout(hb, 7, 6); ///< This command should print a warning, but should not add "hb"
-    hb->addLayout(Q_NULLPTR, 7, 7); ///< This command should print a warning, but should not add "NULL"
+    hb->addLayout(nullptr, 7, 7); ///< This command should print a warning, but should not add "NULL"
     qDebug("Neither crashed nor frozen");
 }

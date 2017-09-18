@@ -382,7 +382,7 @@ void MainWindow::switchLayoutDirection()
 class CreateDockWidgetDialog : public QDialog
 {
 public:
-    explicit CreateDockWidgetDialog(QWidget *parent = Q_NULLPTR);
+    explicit CreateDockWidgetDialog(QWidget *parent = nullptr);
 
     QString enteredObjectName() const { return m_objectName->text(); }
     Qt::DockWidgetArea location() const;

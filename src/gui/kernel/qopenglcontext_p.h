@@ -213,7 +213,7 @@ public:
         , workaround_missingPrecisionQualifiers(false)
         , active_engine(0)
         , qgl_current_fbo_invalid(false)
-        , qgl_current_fbo(Q_NULLPTR)
+        , qgl_current_fbo(nullptr)
         , defaultFboRedirect(0)
     {
         requestedFormat = QSurfaceFormat::defaultFormat();
@@ -266,7 +266,7 @@ public:
 
     static QOpenGLContextPrivate *get(QOpenGLContext *context)
     {
-        return context ? context->d_func() : Q_NULLPTR;
+        return context ? context->d_func() : nullptr;
     }
 
 #if !defined(QT_NO_DEBUG)

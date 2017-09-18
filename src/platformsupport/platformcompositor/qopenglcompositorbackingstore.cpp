@@ -196,7 +196,7 @@ void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region
     dstCtx->makeCurrent(dstWin);
     updateTexture();
     m_textures->clear();
-    m_textures->appendTexture(Q_NULLPTR, m_bsTexture, window->geometry());
+    m_textures->appendTexture(nullptr, m_bsTexture, window->geometry());
 
     compositor->update();
 }
@@ -234,7 +234,7 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
                                   textures->clipRect(i), textures->flags(i));
 
     updateTexture();
-    m_textures->appendTexture(Q_NULLPTR, m_bsTexture, window->geometry());
+    m_textures->appendTexture(nullptr, m_bsTexture, window->geometry());
 
     textures->lock(true);
     m_lockedWidgetTextures = textures;
@@ -281,7 +281,7 @@ void QOpenGLCompositorBackingStore::resize(const QSize &size, const QRegion &sta
     if (m_bsTexture) {
         glDeleteTextures(1, &m_bsTexture);
         m_bsTexture = 0;
-        m_bsTextureContext = Q_NULLPTR;
+        m_bsTextureContext = nullptr;
     }
 }
 

@@ -145,7 +145,7 @@ private:
 
 QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QImage::Format format)
     : QXcbObject(screen->connection())
-    , m_graphics_buffer(Q_NULLPTR)
+    , m_graphics_buffer(nullptr)
     , m_gc(0)
     , m_gc_drawable(0)
     , m_xcb_pixmap(0)
@@ -265,7 +265,7 @@ void QXcbShmImage::destroy()
     if (m_gc)
         xcb_free_gc(xcb_connection(), m_gc);
     delete m_graphics_buffer;
-    m_graphics_buffer = Q_NULLPTR;
+    m_graphics_buffer = nullptr;
 
     if (m_xcb_pixmap) {
         xcb_free_pixmap(xcb_connection(), m_xcb_pixmap);
@@ -565,7 +565,7 @@ QImage QXcbBackingStore::toImage() const
 
 QPlatformGraphicsBuffer *QXcbBackingStore::graphicsBuffer() const
 {
-    return m_image ? m_image->graphicsBuffer() : Q_NULLPTR;
+    return m_image ? m_image->graphicsBuffer() : nullptr;
 }
 
 void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)

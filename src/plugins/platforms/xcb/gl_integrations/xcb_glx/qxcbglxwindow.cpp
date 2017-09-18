@@ -58,7 +58,7 @@ const xcb_visualtype_t *QXcbGlxWindow::createVisual()
 {
     QXcbScreen *scr = xcbScreen();
     if (!scr)
-        return Q_NULLPTR;
+        return nullptr;
 
     qDebug(lcQpaGl) << "Requested format before FBConfig/Visual selection:" << m_format;
 
@@ -74,7 +74,7 @@ const xcb_visualtype_t *QXcbGlxWindow::createVisual()
     XVisualInfo *visualInfo = qglx_findVisualInfo(dpy, scr->screenNumber(), &m_format, GLX_WINDOW_BIT, flags);
     if (!visualInfo) {
         qWarning() << "No XVisualInfo for format" << m_format;
-        return Q_NULLPTR;
+        return nullptr;
     }
     const xcb_visualtype_t *xcb_visualtype = scr->visualForId(visualInfo->visualid);
     XFree(visualInfo);

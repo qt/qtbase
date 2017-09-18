@@ -321,7 +321,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
         if (!m_context && m_shareContext) {
             // re-try without a shared glx context
             m_shareContext = 0;
-            m_context = glXCreateContext(m_display, visualInfo, Q_NULLPTR, true);
+            m_context = glXCreateContext(m_display, visualInfo, nullptr, true);
         }
 
         // Create a temporary window so that we can make the new context current
@@ -470,7 +470,7 @@ static QXcbScreen *screenForPlatformSurface(QPlatformSurface *surface)
     } else if (surfaceClass == QSurface::Offscreen) {
         return static_cast<QXcbScreen *>(static_cast<QGLXPbuffer *>(surface)->screen());
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QVariant QGLXContext::nativeHandle() const

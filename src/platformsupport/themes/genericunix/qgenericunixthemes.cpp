@@ -197,7 +197,7 @@ QPlatformSystemTrayIcon *QGenericUnixTheme::createPlatformSystemTrayIcon() const
 {
     if (isDBusTrayAvailable())
         return new QDBusTrayIcon();
-    return Q_NULLPTR;
+    return nullptr;
 }
 #endif
 
@@ -672,7 +672,7 @@ QPlatformSystemTrayIcon *QKdeTheme::createPlatformSystemTrayIcon() const
 {
     if (isDBusTrayAvailable())
         return new QDBusTrayIcon();
-    return Q_NULLPTR;
+    return nullptr;
 }
 #endif
 
@@ -691,7 +691,7 @@ const char *QGnomeTheme::name = "gnome";
 class QGnomeThemePrivate : public QPlatformThemePrivate
 {
 public:
-    QGnomeThemePrivate() : systemFont(Q_NULLPTR), fixedFont(Q_NULLPTR) {}
+    QGnomeThemePrivate() : systemFont(nullptr), fixedFont(nullptr) {}
     ~QGnomeThemePrivate() { delete systemFont; delete fixedFont; }
 
     void configureFonts(const QString &gtkFontName) const
@@ -791,7 +791,7 @@ QPlatformSystemTrayIcon *QGnomeTheme::createPlatformSystemTrayIcon() const
 {
     if (isDBusTrayAvailable())
         return new QDBusTrayIcon();
-    return Q_NULLPTR;
+    return nullptr;
 }
 #endif
 
@@ -829,7 +829,7 @@ QPlatformTheme *QGenericUnixTheme::createUnixTheme(const QString &name)
 #endif
     if (name == QLatin1String(QGnomeTheme::name))
         return new QGnomeTheme;
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QStringList QGenericUnixTheme::themeNames()

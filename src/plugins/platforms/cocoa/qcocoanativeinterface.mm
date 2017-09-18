@@ -233,7 +233,7 @@ QFunctionPointer QCocoaNativeInterface::platformFunction(const QByteArray &funct
     if (function == QCocoaWindowFunctions::bottomLeftClippedByNSWindowOffsetIdentifier())
         return QFunctionPointer(QCocoaWindowFunctions::BottomLeftClippedByNSWindowOffset(QCocoaWindow::bottomLeftClippedByNSWindowOffsetStatic));
 
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void QCocoaNativeInterface::addToMimeList(void *macPasteboardMime)

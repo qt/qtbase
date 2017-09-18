@@ -59,7 +59,7 @@ class IconSizeSpinBox : public QSpinBox
     Q_OBJECT
 
 public:
-    explicit IconSizeSpinBox(QWidget *parent = Q_NULLPTR);
+    explicit IconSizeSpinBox(QWidget *parent = nullptr);
 
     int valueFromText(const QString &text) const override;
     QString textFromValue(int value) const override;

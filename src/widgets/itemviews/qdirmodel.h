@@ -66,8 +66,8 @@ public:
     };
 
     QDirModel(const QStringList &nameFilters, QDir::Filters filters,
-              QDir::SortFlags sort, QObject *parent = Q_NULLPTR);
-    explicit QDirModel(QObject *parent = Q_NULLPTR);
+              QDir::SortFlags sort, QObject *parent = nullptr);
+    explicit QDirModel(QObject *parent = nullptr);
     ~QDirModel();
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
@@ -133,7 +133,7 @@ public Q_SLOTS:
     void refresh(const QModelIndex &parent = QModelIndex());
 
 protected:
-    QDirModel(QDirModelPrivate &, QObject *parent = Q_NULLPTR);
+    QDirModel(QDirModelPrivate &, QObject *parent = nullptr);
     friend class QFileDialogPrivate;
 
 private:

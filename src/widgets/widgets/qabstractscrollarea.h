@@ -61,7 +61,7 @@ class Q_WIDGETS_EXPORT QAbstractScrollArea : public QFrame
     Q_PROPERTY(SizeAdjustPolicy sizeAdjustPolicy READ sizeAdjustPolicy WRITE setSizeAdjustPolicy)
 
 public:
-    explicit QAbstractScrollArea(QWidget *parent = Q_NULLPTR);
+    explicit QAbstractScrollArea(QWidget *parent = nullptr);
     ~QAbstractScrollArea();
 
     enum SizeAdjustPolicy {
@@ -101,7 +101,7 @@ public:
     void setSizeAdjustPolicy(SizeAdjustPolicy policy);
 
 protected:
-    QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget *parent = Q_NULLPTR);
+    QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget *parent = nullptr);
     void setViewportMargins(int left, int top, int right, int bottom);
     void setViewportMargins(const QMargins &margins);
     QMargins viewportMargins() const;

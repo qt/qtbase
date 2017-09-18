@@ -1488,7 +1488,7 @@ QDataStream &operator>>(QDataStream &stream, QEasingCurve &easing)
     bool hasConfig;
     stream >> hasConfig;
     delete easing.d_ptr->config;
-    easing.d_ptr->config = Q_NULLPTR;
+    easing.d_ptr->config = nullptr;
     if (hasConfig) {
         QEasingCurveFunction *config = curveToFunctionObject(type);
         stream >> config->_p;

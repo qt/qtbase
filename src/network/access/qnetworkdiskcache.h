@@ -54,7 +54,7 @@ class Q_NETWORK_EXPORT QNetworkDiskCache : public QAbstractNetworkCache
     Q_OBJECT
 
 public:
-    explicit QNetworkDiskCache(QObject *parent = Q_NULLPTR);
+    explicit QNetworkDiskCache(QObject *parent = nullptr);
     ~QNetworkDiskCache();
 
     QString cacheDirectory() const;

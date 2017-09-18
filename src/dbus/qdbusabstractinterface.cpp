@@ -70,7 +70,7 @@ class DisconnectRelayEvent : public QMetaCallEvent
 {
 public:
     DisconnectRelayEvent(QObject *sender, const QMetaMethod &m)
-        : QMetaCallEvent(0, 0, Q_NULLPTR, sender, m.methodIndex())
+        : QMetaCallEvent(0, 0, nullptr, sender, m.methodIndex())
     {}
 
     void placeMetaCall(QObject *object) override

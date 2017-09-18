@@ -207,7 +207,7 @@ void tst_QSettings::getSetCheck()
     QCOMPARE(true, obj1.fallbacksEnabled());
 }
 
-static QString settingsPath(const char *path = Q_NULLPTR)
+static QString settingsPath(const char *path = nullptr)
 {
     // Temporary path for files that are specified explicitly in the constructor.
 #ifndef Q_OS_WINRT

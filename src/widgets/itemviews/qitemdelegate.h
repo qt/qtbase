@@ -59,7 +59,7 @@ class Q_WIDGETS_EXPORT QItemDelegate : public QAbstractItemDelegate
     Q_PROPERTY(bool clipping READ hasClipping WRITE setClipping)
 
 public:
-    explicit QItemDelegate(QObject *parent = Q_NULLPTR);
+    explicit QItemDelegate(QObject *parent = nullptr);
     ~QItemDelegate();
 
     bool hasClipping() const;

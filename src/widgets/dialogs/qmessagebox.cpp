@@ -2604,7 +2604,7 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
         break;
     }
     if (!tmpIcon.isNull()) {
-        QWindow *window = Q_NULLPTR;
+        QWindow *window = nullptr;
         if (mb) {
             window = mb->windowHandle();
             if (!window) {

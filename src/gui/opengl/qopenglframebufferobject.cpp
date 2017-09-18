@@ -953,7 +953,7 @@ QOpenGLFramebufferObject::~QOpenGLFramebufferObject()
     QOpenGLContextPrivate *contextPrv = QOpenGLContextPrivate::get(QOpenGLContext::currentContext());
     if (contextPrv && contextPrv->qgl_current_fbo == this) {
         contextPrv->qgl_current_fbo_invalid = true;
-        contextPrv->qgl_current_fbo = Q_NULLPTR;
+        contextPrv->qgl_current_fbo = nullptr;
     }
 }
 
@@ -1116,7 +1116,7 @@ bool QOpenGLFramebufferObject::release()
 
         QOpenGLContextPrivate *contextPrv = QOpenGLContextPrivate::get(current);
         contextPrv->qgl_current_fbo_invalid = true;
-        contextPrv->qgl_current_fbo = Q_NULLPTR;
+        contextPrv->qgl_current_fbo = nullptr;
     }
 
     return true;
@@ -1472,7 +1472,7 @@ bool QOpenGLFramebufferObject::bindDefault()
     if (ctx) {
         ctx->functions()->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
         QOpenGLContextPrivate::get(ctx)->qgl_current_fbo_invalid = true;
-        QOpenGLContextPrivate::get(ctx)->qgl_current_fbo = Q_NULLPTR;
+        QOpenGLContextPrivate::get(ctx)->qgl_current_fbo = nullptr;
     }
 #ifdef QT_DEBUG
     else

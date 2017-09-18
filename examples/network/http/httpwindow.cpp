@@ -87,8 +87,8 @@ HttpWindow::HttpWindow(QWidget *parent)
     , launchCheckBox(new QCheckBox("Launch file"))
     , defaultFileLineEdit(new QLineEdit(defaultFileName))
     , downloadDirectoryLineEdit(new QLineEdit)
-    , reply(Q_NULLPTR)
-    , file(Q_NULLPTR)
+    , reply(nullptr)
+    , file(nullptr)
     , httpRequestAborted(false)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -204,7 +204,7 @@ QFile *HttpWindow::openFileForWrite(const QString &fileName)
                                  tr("Unable to save the file %1: %2.")
                                  .arg(QDir::toNativeSeparators(fileName),
                                       file->errorString()));
-        return Q_NULLPTR;
+        return nullptr;
     }
     return file.take();
 }
@@ -224,12 +224,12 @@ void HttpWindow::httpFinished()
         fi.setFile(file->fileName());
         file->close();
         delete file;
-        file = Q_NULLPTR;
+        file = nullptr;
     }
 
     if (httpRequestAborted) {
         reply->deleteLater();
-        reply = Q_NULLPTR;
+        reply = nullptr;
         return;
     }
 
@@ -238,14 +238,14 @@ void HttpWindow::httpFinished()
         statusLabel->setText(tr("Download failed:\n%1.").arg(reply->errorString()));
         downloadButton->setEnabled(true);
         reply->deleteLater();
-        reply = Q_NULLPTR;
+        reply = nullptr;
         return;
     }
 
     const QVariant redirectionTarget = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
 
     reply->deleteLater();
-    reply = Q_NULLPTR;
+    reply = nullptr;
 
     if (!redirectionTarget.isNull()) {
         const QUrl redirectedUrl = url.resolved(redirectionTarget.toUrl());

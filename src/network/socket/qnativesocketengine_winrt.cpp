@@ -1340,7 +1340,7 @@ QNativeSocketEnginePrivate::QNativeSocketEnginePrivate()
     , closingDown(false)
     , socketDescriptor(-1)
     , worker(new SocketEngineWorker(this))
-    , sslSocket(Q_NULLPTR)
+    , sslSocket(nullptr)
     , connectionToken( { -1 } )
 {
 }

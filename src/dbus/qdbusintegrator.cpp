@@ -1078,7 +1078,7 @@ QDBusConnectionPrivate::~QDBusConnectionPrivate()
         Q_ASSERT(ref.load() == 0);
         QObject *obj = (QObject *)busService;
         if (obj) {
-            disconnect(obj, Q_NULLPTR, this, Q_NULLPTR);
+            disconnect(obj, nullptr, this, nullptr);
             delete obj;
         }
         if (connection)
@@ -1950,7 +1950,7 @@ bool QDBusConnectionPrivate::send(const QDBusMessage& message)
 
     q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
     qDBusDebug() << this << "sending message (no reply):" << message;
-    emit messageNeedsSending(Q_NULLPTR, msg);
+    emit messageNeedsSending(nullptr, msg);
     return true;
 }
 
@@ -2166,7 +2166,7 @@ void QDBusConnectionPrivate::sendInternal(QDBusPendingCallPrivate *pcall, void *
     checkThread();
     QDBusDispatchLocker locker(SendMessageAction, this);
 
-    if (isNoReply && q_dbus_connection_send(connection, msg, Q_NULLPTR)) {
+    if (isNoReply && q_dbus_connection_send(connection, msg, nullptr)) {
         // success
     } else if (!isNoReply && q_dbus_connection_send_with_reply(connection, msg, &pending, timeout)) {
         if (pending) {
@@ -2509,7 +2509,7 @@ QString QDBusConnectionPrivate::getNameOwnerNoCache(const QString &serviceName)
     QDBusMessagePrivate::setParametersValidated(msg, true);
     msg << serviceName;
 
-    QDBusPendingCallPrivate *pcall = sendWithReplyAsync(msg, Q_NULLPTR, Q_NULLPTR, Q_NULLPTR);
+    QDBusPendingCallPrivate *pcall = sendWithReplyAsync(msg, nullptr, nullptr, nullptr);
     if (thread() == QThread::currentThread()) {
         // this function may be called in our own thread and
         // QDBusPendingCallPrivate::waitForFinished() would deadlock there

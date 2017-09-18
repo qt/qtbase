@@ -241,7 +241,7 @@ void QMenuPrivate::syncPlatformMenu()
     if (platformMenu.isNull())
         return;
 
-    QPlatformMenuItem *beforeItem = Q_NULLPTR;
+    QPlatformMenuItem *beforeItem = nullptr;
     const QList<QAction*> actions = q->actions();
     for (QList<QAction*>::const_reverse_iterator it = actions.rbegin(), end = actions.rend(); it != end; ++it) {
         QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
@@ -621,7 +621,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
     if (action
             && (action->isSeparator()
                 || (!action->isEnabled() && !q->style()->styleHint(QStyle::SH_Menu_AllowActiveAndDisabled, 0, q))))
-        action = Q_NULLPTR;
+        action = nullptr;
 
     // Reselect the currently active action in case mouse moved over other menu items when
     // moving from sub menu action to sub menu (QTBUG-20094).
@@ -695,13 +695,13 @@ void QMenuSloppyState::reset()
     m_use_reset_action = true;
     m_uni_dir_discarded_count = 0;
     m_time.stop();
-    m_reset_action = Q_NULLPTR;
-    m_origin_action = Q_NULLPTR;
+    m_reset_action = nullptr;
+    m_origin_action = nullptr;
     m_action_rect = QRect();
     m_previous_point = QPointF();
     if (m_sub_menu) {
-        QMenuPrivate::get(m_sub_menu)->sloppyState.m_parent = Q_NULLPTR;
-        m_sub_menu = Q_NULLPTR;
+        QMenuPrivate::get(m_sub_menu)->sloppyState.m_parent = nullptr;
+        m_sub_menu = nullptr;
     }
 }
 void QMenuSloppyState::enter()
@@ -810,7 +810,7 @@ void QMenuSloppyState::timeout()
         if (m_use_reset_action)
             menu_priv->setCurrentAction(m_reset_action, 0);
     } else {
-        menu_priv->setCurrentAction(Q_NULLPTR, 0);
+        menu_priv->setCurrentAction(nullptr, 0);
     }
 }
 
@@ -2165,7 +2165,7 @@ void QMenu::hideTearOffMenu()
         // should consider the torn-off menu deleted.
         // This way showTearOffMenu() will not try to
         // reuse the dying torn-off menu.
-        d->tornPopup = Q_NULLPTR;
+        d->tornPopup = nullptr;
     }
 }
 

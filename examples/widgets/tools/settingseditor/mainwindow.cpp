@@ -56,7 +56,7 @@
 
 MainWindow::MainWindow()
     : settingsTree(new SettingsTree)
-    , locationDialog(Q_NULLPTR)
+    , locationDialog(nullptr)
 {
     setCentralWidget(settingsTree);
 

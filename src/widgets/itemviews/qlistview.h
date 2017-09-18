@@ -78,7 +78,7 @@ public:
     enum ViewMode { ListMode, IconMode };
     Q_ENUM(ViewMode)
 
-    explicit QListView(QWidget *parent = Q_NULLPTR);
+    explicit QListView(QWidget *parent = nullptr);
     ~QListView();
 
     void setMovement(Movement movement);
@@ -137,7 +137,7 @@ Q_SIGNALS:
     void indexesMoved(const QModelIndexList &indexes);
 
 protected:
-    QListView(QListViewPrivate &, QWidget *parent = Q_NULLPTR);
+    QListView(QListViewPrivate &, QWidget *parent = nullptr);
 
     bool event(QEvent *e) override;
 

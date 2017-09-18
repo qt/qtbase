@@ -81,8 +81,8 @@ static QPixmap genIcon(const QSize &iconSize, int number, const QColor &color)
 
 ToolBar::ToolBar(const QString &title, QWidget *parent)
     : QToolBar(parent)
-    , spinbox(Q_NULLPTR)
-    , spinboxAction(Q_NULLPTR)
+    , spinbox(nullptr)
+    , spinboxAction(nullptr)
 {
     setWindowTitle(title);
     setObjectName(title);

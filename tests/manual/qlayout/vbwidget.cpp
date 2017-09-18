@@ -58,8 +58,8 @@ VbWidget::VbWidget(QWidget *parent) :
 
     qDebug("There should be four warnings, but no crash or freeze:");
     hb->addWidget(this); ///< This command should print a warning, but should not add "this"
-    hb->addWidget(Q_NULLPTR); ///< This command should print a warning, but should not add "NULL"
+    hb->addWidget(nullptr); ///< This command should print a warning, but should not add "NULL"
     hb->addLayout(hb); ///< This command should print a warning, but should not add "hb"
-    hb->addLayout(Q_NULLPTR); ///< This command should print a warning, but should not add "NULL"
+    hb->addLayout(nullptr); ///< This command should print a warning, but should not add "NULL"
     qDebug("Neither crashed nor frozen");
 }

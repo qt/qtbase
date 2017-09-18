@@ -39,7 +39,7 @@ class PropertyWatcher : public QWidget
     Q_OBJECT
 
 public:
-    explicit PropertyWatcher(QObject* subject = Q_NULLPTR, QString annotation = QString(), QWidget *parent = Q_NULLPTR);
+    explicit PropertyWatcher(QObject* subject = nullptr, QString annotation = QString(), QWidget *parent = nullptr);
 
     QFormLayout *formLayout() { return m_formLayout; }
 

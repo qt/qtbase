@@ -698,7 +698,7 @@ class PlatformWindowFilter : public QObject
 public:
     PlatformWindowFilter(QObject *parent = 0)
         : QObject(parent)
-        , m_window(Q_NULLPTR)
+        , m_window(nullptr)
         , m_alwaysExisted(true)
     {}
 
@@ -710,7 +710,7 @@ public:
         // If they are, the native platform surface should always exist when we
         // receive a QPlatformSurfaceEvent
         if (e->type() == QEvent::PlatformSurface && o == m_window) {
-            m_alwaysExisted &= (m_window->handle() != Q_NULLPTR);
+            m_alwaysExisted &= (m_window->handle() != nullptr);
         }
         return false;
     }
@@ -737,7 +737,7 @@ void tst_QWindow::platformSurface()
 
     QTRY_COMPARE(window.received(QEvent::PlatformSurface), 1);
     QTRY_COMPARE(window.surfaceEventType(), QPlatformSurfaceEvent::SurfaceCreated);
-    QTRY_VERIFY(window.handle() != Q_NULLPTR);
+    QTRY_VERIFY(window.handle() != nullptr);
 
     window.destroy();
     QTRY_COMPARE(window.received(QEvent::PlatformSurface), 2);

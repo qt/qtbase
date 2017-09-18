@@ -3068,7 +3068,7 @@ void tst_QLineEdit::cutWithoutSelection()
     QClipboard *clipboard = QGuiApplication::clipboard();
     if (!PlatformClipboard::isAvailable()
         || !QGuiApplication::platformName().compare("xcb", Qt::CaseInsensitive)) { // Avoid unstable X11 clipboard
-        clipboard = Q_NULLPTR;
+        clipboard = nullptr;
     }
 
     if (clipboard)
@@ -4497,7 +4497,7 @@ template <class T> T *findAssociatedWidget(const QAction *a)
         if (T *result = qobject_cast<T *>(w))
             return result;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void tst_QLineEdit::sideWidgetsActionEvents()

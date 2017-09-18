@@ -218,7 +218,7 @@ class PaintTestWidget : public QWidget
 public:
     int paintEventCount;
 
-    explicit PaintTestWidget(QWidget *parent = Q_NULLPTR)
+    explicit PaintTestWidget(QWidget *parent = nullptr)
         : QWidget(parent)
         , paintEventCount(0)
     {}

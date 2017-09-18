@@ -248,7 +248,7 @@ namespace QTest
     template <typename T> // Fallback
     inline typename std::enable_if<!QtPrivate::IsQEnumHelper<T>::Value, char*>::type toString(const T &)
     {
-        return Q_NULLPTR;
+        return nullptr;
     }
 
     } // namespace Internal
@@ -271,14 +271,14 @@ namespace QTest
     Q_TESTLIB_EXPORT char *toString(const char *);
     Q_TESTLIB_EXPORT char *toString(const void *);
 
-    Q_TESTLIB_EXPORT void qInit(QObject *testObject, int argc = 0, char **argv = Q_NULLPTR);
+    Q_TESTLIB_EXPORT void qInit(QObject *testObject, int argc = 0, char **argv = nullptr);
     Q_TESTLIB_EXPORT int qRun();
     Q_TESTLIB_EXPORT void qCleanup();
 
-    Q_TESTLIB_EXPORT int qExec(QObject *testObject, int argc = 0, char **argv = Q_NULLPTR);
+    Q_TESTLIB_EXPORT int qExec(QObject *testObject, int argc = 0, char **argv = nullptr);
     Q_TESTLIB_EXPORT int qExec(QObject *testObject, const QStringList &arguments);
 
-    Q_TESTLIB_EXPORT void setMainSourcePath(const char *file, const char *builddir = Q_NULLPTR);
+    Q_TESTLIB_EXPORT void setMainSourcePath(const char *file, const char *builddir = nullptr);
 
     Q_TESTLIB_EXPORT bool qVerify(bool statement, const char *statementStr, const char *description,
                                  const char *file, int line);
@@ -286,7 +286,7 @@ namespace QTest
     Q_TESTLIB_EXPORT void qSkip(const char *message, const char *file, int line);
     Q_TESTLIB_EXPORT bool qExpectFail(const char *dataIndex, const char *comment, TestFailMode mode,
                            const char *file, int line);
-    Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = Q_NULLPTR, int line = 0);
+    Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = nullptr, int line = 0);
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const char *message);
 #ifndef QT_NO_REGULAREXPRESSION
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
@@ -295,8 +295,8 @@ namespace QTest
 #if QT_CONFIG(temporaryfile)
     Q_TESTLIB_EXPORT QSharedPointer<QTemporaryDir> qExtractTestData(const QString &dirName);
 #endif
-    Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = Q_NULLPTR, int line = 0, const char* builddir = Q_NULLPTR);
-    Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = Q_NULLPTR, int line = 0, const char* builddir = Q_NULLPTR);
+    Q_TESTLIB_EXPORT QString qFindTestData(const char* basepath, const char* file = nullptr, int line = 0, const char* builddir = nullptr);
+    Q_TESTLIB_EXPORT QString qFindTestData(const QString& basepath, const char* file = nullptr, int line = 0, const char* builddir = nullptr);
 
     Q_TESTLIB_EXPORT void *qData(const char *tagName, int typeId);
     Q_TESTLIB_EXPORT void *qGlobalData(const char *tagName, int typeId);

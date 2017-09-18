@@ -327,8 +327,8 @@ class Q_GUI_EXPORT QStandardItemModel : public QAbstractItemModel
     Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole)
 
 public:
-    explicit QStandardItemModel(QObject *parent = Q_NULLPTR);
-    QStandardItemModel(int rows, int columns, QObject *parent = Q_NULLPTR);
+    explicit QStandardItemModel(QObject *parent = nullptr);
+    QStandardItemModel(int rows, int columns, QObject *parent = nullptr);
     ~QStandardItemModel();
 
     void setItemRoleNames(const QHash<int,QByteArray> &roleNames);
@@ -422,7 +422,7 @@ Q_SIGNALS:
     void itemChanged(QStandardItem *item);
 
 protected:
-    QStandardItemModel(QStandardItemModelPrivate &dd, QObject *parent = Q_NULLPTR);
+    QStandardItemModel(QStandardItemModelPrivate &dd, QObject *parent = nullptr);
 
 private:
     friend class QStandardItemPrivate;

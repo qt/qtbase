@@ -71,7 +71,7 @@ void QFdContainer::reset() Q_DECL_NOTHROW
 }
 
 QEvdevKeyboardHandler::QEvdevKeyboardHandler(const QString &device, QFdContainer &fd, bool disableZap, bool enableCompose, const QString &keymapFile)
-    : m_device(device), m_fd(fd.release()), m_notify(Q_NULLPTR),
+    : m_device(device), m_fd(fd.release()), m_notify(nullptr),
       m_modifiers(0), m_composing(0), m_dead_unicode(0xffff),
       m_no_zap(disableZap), m_do_compose(enableCompose),
       m_keymap(0), m_keymap_size(0), m_keycompose(0), m_keycompose_size(0)
@@ -172,7 +172,7 @@ void QEvdevKeyboardHandler::readKeycode()
                 // by the above error over and over again.
                 if (errno == ENODEV) {
                     delete m_notify;
-                    m_notify = Q_NULLPTR;
+                    m_notify = nullptr;
                     m_fd.reset();
                 }
                 return;

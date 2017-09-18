@@ -166,7 +166,7 @@ static void waitForUnexposed(QWindow *w)
         if (remaining <= 0)
             break;
         QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-        QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
         QTest::qSleep(10);
     }
 }

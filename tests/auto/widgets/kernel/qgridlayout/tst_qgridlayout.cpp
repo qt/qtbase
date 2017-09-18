@@ -342,7 +342,7 @@ void tst_QGridLayout::setMinAndMaxSize()
 
     layout.removeItem(spacer);
     delete spacer;
-    spacer = Q_NULLPTR;
+    spacer = nullptr;
 
     rightChild.hide();
     QApplication::sendPostedEvents(0, 0);
@@ -1630,7 +1630,7 @@ void tst_QGridLayout::taskQTBUG_40609_addingWidgetToItsOwnLayout(){
     layout.setObjectName("d631e91a35f2b66a6dff35");
 
     QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add a null widget to QGridLayout/d631e91a35f2b66a6dff35");
-    layout.addWidget(Q_NULLPTR, 0, 0);
+    layout.addWidget(nullptr, 0, 0);
     QCOMPARE(layout.count(), 0);
 
     QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add parent widget QWidget/9bb37ca762aeb7269b8 to its child layout QGridLayout/d631e91a35f2b66a6dff35");
@@ -1645,7 +1645,7 @@ void tst_QGridLayout::taskQTBUG_40609_addingLayoutToItself(){
     layout.setObjectName("5d79e1b0aed83f100e3c2");
 
     QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add a null layout to QGridLayout/5d79e1b0aed83f100e3c2");
-    layout.addLayout(Q_NULLPTR, 0, 0);
+    layout.addLayout(nullptr, 0, 0);
     QCOMPARE(layout.count(), 0);
 
     QTest::ignoreMessage(QtWarningMsg, "QLayout: Cannot add layout QGridLayout/5d79e1b0aed83f100e3c2 to itself");

@@ -116,11 +116,11 @@ class Q_GUI_EXPORT QTextDocument : public QObject
     Q_PROPERTY(QUrl baseUrl READ baseUrl WRITE setBaseUrl NOTIFY baseUrlChanged)
 
 public:
-    explicit QTextDocument(QObject *parent = Q_NULLPTR);
-    explicit QTextDocument(const QString &text, QObject *parent = Q_NULLPTR);
+    explicit QTextDocument(QObject *parent = nullptr);
+    explicit QTextDocument(const QString &text, QObject *parent = nullptr);
     ~QTextDocument();
 
-    QTextDocument *clone(QObject *parent = Q_NULLPTR) const;
+    QTextDocument *clone(QObject *parent = nullptr) const;
 
     bool isEmpty() const;
     virtual void clear();

@@ -71,7 +71,7 @@ public:
     };
     Q_ENUM(ToolButtonPopupMode)
 
-    explicit QToolButton(QWidget *parent = Q_NULLPTR);
+    explicit QToolButton(QWidget *parent = nullptr);
     ~QToolButton();
 
     QSize sizeHint() const override;

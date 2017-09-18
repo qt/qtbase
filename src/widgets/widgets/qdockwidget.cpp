@@ -73,7 +73,7 @@ static inline QMainWindowLayout *qt_mainwindow_layout_from_dock(const QDockWidge
             return qt_mainwindow_layout(window);
         p = p->parentWidget();
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 static inline bool hasFeature(const QDockWidgetPrivate *priv, QDockWidget::DockWidgetFeature feature)

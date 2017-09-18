@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 QXcbEglWindow::QXcbEglWindow(QWindow *window, QXcbEglIntegration *glIntegration)
     : QXcbWindow(window)
     , m_glIntegration(glIntegration)
-    , m_config(Q_NULLPTR)
+    , m_config(nullptr)
     , m_surface(EGL_NO_SURFACE)
 {
 }

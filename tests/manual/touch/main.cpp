@@ -169,7 +169,7 @@ void SwipeGesture::draw(const QRectF &rect, QPainter &painter) const
 
 Gesture *Gesture::fromQGesture(const QWidget *w, const QGesture *source)
 {
-    Gesture *result = Q_NULLPTR;
+    Gesture *result = nullptr;
     switch (source->gestureType()) {
     case Qt::TapGesture:
     case Qt::TapAndHoldGesture:

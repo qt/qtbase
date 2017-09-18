@@ -66,7 +66,7 @@ class Server : public QDialog
     Q_OBJECT
 
 public:
-    explicit Server(QWidget *parent = Q_NULLPTR);
+    explicit Server(QWidget *parent = nullptr);
 
 private slots:
     void sessionOpened();

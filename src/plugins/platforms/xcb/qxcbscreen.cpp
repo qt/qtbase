@@ -140,7 +140,7 @@ QXcbScreen *QXcbVirtualDesktop::screenAt(const QPoint &pos) const
         if (screen->virtualDesktop() == this && screen->geometry().contains(pos))
             return screen;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void QXcbVirtualDesktop::addScreen(QPlatformScreen *s)

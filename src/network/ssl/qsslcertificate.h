@@ -154,7 +154,7 @@ public:
 
     static bool importPkcs12(QIODevice *device,
                              QSslKey *key, QSslCertificate *cert,
-                             QList<QSslCertificate> *caCertificates = Q_NULLPTR,
+                             QList<QSslCertificate> *caCertificates = nullptr,
                              const QByteArray &passPhrase=QByteArray());
 
     Qt::HANDLE handle() const;

@@ -92,7 +92,7 @@ void *QPlatformNativeInterface::nativeResourceForCursor(const QByteArray &resour
 {
     Q_UNUSED(resource);
     Q_UNUSED(cursor);
-    return Q_NULLPTR;
+    return nullptr;
 }
 #endif // !QT_NO_CURSOR
 
@@ -129,7 +129,7 @@ QPlatformNativeInterface::NativeResourceForBackingStoreFunction QPlatformNativeI
 QFunctionPointer QPlatformNativeInterface::platformFunction(const QByteArray &function) const
 {
     Q_UNUSED(function);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 /*!

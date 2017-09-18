@@ -104,7 +104,7 @@ QPlatformWindow *QPlatformWindow::parent() const
 QPlatformScreen *QPlatformWindow::screen() const
 {
     QScreen *scr = window()->screen();
-    return scr ? scr->handle() : Q_NULLPTR;
+    return scr ? scr->handle() : nullptr;
 }
 
 /*!

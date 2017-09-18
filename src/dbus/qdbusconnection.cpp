@@ -147,7 +147,7 @@ QDBusConnectionManager::QDBusConnectionManager()
     // prevent the library from being unloaded on Windows. See comments in the function.
     preventDllUnload();
 #endif
-    defaultBuses[0] = defaultBuses[1] = Q_NULLPTR;
+    defaultBuses[0] = defaultBuses[1] = nullptr;
     start();
 }
 
@@ -186,13 +186,13 @@ void QDBusConnectionManager::run()
             delete d;
         } else {
             d->closeConnection();
-            d->moveToThread(Q_NULLPTR);     // allow it to be deleted in another thread
+            d->moveToThread(nullptr);     // allow it to be deleted in another thread
         }
     }
     connectionHash.clear();
 
     // allow deletion from any thread without warning
-    moveToThread(Q_NULLPTR);
+    moveToThread(nullptr);
 }
 
 QDBusConnectionPrivate *QDBusConnectionManager::connectToBus(QDBusConnection::BusType type, const QString &name,
@@ -1175,7 +1175,7 @@ bool QDBusConnection::unregisterService(const QString &serviceName)
 QDBusConnection QDBusConnection::sessionBus()
 {
     if (_q_manager.isDestroyed())
-        return QDBusConnection(Q_NULLPTR);
+        return QDBusConnection(nullptr);
     return QDBusConnection(_q_manager()->busConnection(SessionBus));
 }
 
@@ -1189,7 +1189,7 @@ QDBusConnection QDBusConnection::sessionBus()
 QDBusConnection QDBusConnection::systemBus()
 {
     if (_q_manager.isDestroyed())
-        return QDBusConnection(Q_NULLPTR);
+        return QDBusConnection(nullptr);
     return QDBusConnection(_q_manager()->busConnection(SystemBus));
 }
 

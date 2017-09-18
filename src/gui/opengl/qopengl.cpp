@@ -143,7 +143,7 @@ typedef QJsonArray::ConstIterator JsonArrayConstIt;
 static inline bool contains(const QJsonArray &haystack, unsigned needle)
 {
     for (JsonArrayConstIt it = haystack.constBegin(), cend = haystack.constEnd(); it != cend; ++it) {
-        if (needle == it->toString().toUInt(Q_NULLPTR, /* base */ 0))
+        if (needle == it->toString().toUInt(nullptr, /* base */ 0))
             return true;
     }
     return false;
@@ -331,7 +331,7 @@ static bool matches(const QJsonObject &object,
 
     const QJsonValue vendorV = object.value(QLatin1String("vendor_id"));
     if (vendorV.isString()) {
-        if (gpu.vendorId != vendorV.toString().toUInt(Q_NULLPTR, /* base */ 0))
+        if (gpu.vendorId != vendorV.toString().toUInt(nullptr, /* base */ 0))
             return false;
     } else {
         if (object.contains(QLatin1String("gl_vendor"))) {

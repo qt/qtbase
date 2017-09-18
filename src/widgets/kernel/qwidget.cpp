@@ -1167,7 +1167,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (targetScreen >= 0) {
         topData()->initialScreenIndex = targetScreen;
         if (QWindow *window = q->windowHandle())
-            window->setScreen(QGuiApplication::screens().value(targetScreen, Q_NULLPTR));
+            window->setScreen(QGuiApplication::screens().value(targetScreen, nullptr));
     }
 
     data.fstrut_dirty = true;
@@ -1459,7 +1459,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
             screenNumber = q->windowType() != Qt::Desktop
                 ? QDesktopWidgetPrivate::screenNumber(q) : 0;
         }
-        win->setScreen(QGuiApplication::screens().value(screenNumber, Q_NULLPTR));
+        win->setScreen(QGuiApplication::screens().value(screenNumber, nullptr));
     }
 
     QSurfaceFormat format = win->requestedFormat();
@@ -7891,7 +7891,7 @@ void QWidgetPrivate::show_helper()
 
     const bool isWindow = q->isWindow();
 #if QT_CONFIG(graphicsview)
-    bool isEmbedded = isWindow && q->graphicsProxyWidget() != Q_NULLPTR;
+    bool isEmbedded = isWindow && q->graphicsProxyWidget() != nullptr;
 #else
     bool isEmbedded = false;
 #endif
@@ -12446,7 +12446,7 @@ static inline bool canMapPosition(QWindow *window)
 #if QT_CONFIG(graphicsview)
 static inline QGraphicsProxyWidget *graphicsProxyWidget(const QWidget *w)
 {
-    QGraphicsProxyWidget *result = Q_NULLPTR;
+    QGraphicsProxyWidget *result = nullptr;
     const QWidgetPrivate *d = qt_widget_private(const_cast<QWidget *>(w));
     if (d->extra)
         result = d->extra->proxyWidget;
@@ -12462,7 +12462,7 @@ struct MapToGlobalTransformResult {
 static MapToGlobalTransformResult mapToGlobalTransform(const QWidget *w)
 {
     MapToGlobalTransformResult result;
-    result.window = Q_NULLPTR;
+    result.window = nullptr;
     for ( ; w ; w = w->parentWidget()) {
 #if QT_CONFIG(graphicsview)
         if (QGraphicsProxyWidget *qgpw = graphicsProxyWidget(w)) {

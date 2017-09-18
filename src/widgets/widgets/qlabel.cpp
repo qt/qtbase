@@ -66,16 +66,16 @@ QLabelPrivate::QLabelPrivate()
       sh(),
       msh(),
       text(),
-      pixmap(Q_NULLPTR),
-      scaledpixmap(Q_NULLPTR),
-      cachedimage(Q_NULLPTR),
+      pixmap(nullptr),
+      scaledpixmap(nullptr),
+      cachedimage(nullptr),
 #ifndef QT_NO_PICTURE
-      picture(Q_NULLPTR),
+      picture(nullptr),
 #endif
 #if QT_CONFIG(movie)
       movie(),
 #endif
-      control(Q_NULLPTR),
+      control(nullptr),
       shortcutCursor(),
 #ifndef QT_NO_CURSOR
       cursor(),

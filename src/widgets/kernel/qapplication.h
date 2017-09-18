@@ -110,11 +110,11 @@ public:
     using QGuiApplication::palette;
     static QPalette palette(const QWidget *);
     static QPalette palette(const char *className);
-    static void setPalette(const QPalette &, const char* className = Q_NULLPTR);
+    static void setPalette(const QPalette &, const char* className = nullptr);
     static QFont font();
     static QFont font(const QWidget*);
     static QFont font(const char *className);
-    static void setFont(const QFont &, const char* className = Q_NULLPTR);
+    static void setFont(const QFont &, const char* className = nullptr);
     static QFontMetrics fontMetrics();
 
 #if QT_VERSION < 0x060000 // remove these forwarders in Qt 6

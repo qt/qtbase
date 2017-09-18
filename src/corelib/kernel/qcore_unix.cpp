@@ -130,7 +130,7 @@ int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct timespec *timeout
     if (!timeout_ts) {
         // no timeout -> block forever
         int ret;
-        EINTR_LOOP(ret, qt_ppoll(fds, nfds, Q_NULLPTR));
+        EINTR_LOOP(ret, qt_ppoll(fds, nfds, nullptr));
         return ret;
     }
 

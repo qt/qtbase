@@ -57,7 +57,7 @@ class Q_NETWORK_EXPORT QUdpSocket : public QAbstractSocket
 {
     Q_OBJECT
 public:
-    explicit QUdpSocket(QObject *parent = Q_NULLPTR);
+    explicit QUdpSocket(QObject *parent = nullptr);
     virtual ~QUdpSocket();
 
 #ifndef QT_NO_NETWORKINTERFACE
@@ -75,7 +75,7 @@ public:
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;
     QNetworkDatagram receiveDatagram(qint64 maxSize = -1);
-    qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *host = Q_NULLPTR, quint16 *port = Q_NULLPTR);
+    qint64 readDatagram(char *data, qint64 maxlen, QHostAddress *host = nullptr, quint16 *port = nullptr);
 
     qint64 writeDatagram(const QNetworkDatagram &datagram);
     qint64 writeDatagram(const char *data, qint64 len, const QHostAddress &host, quint16 port);

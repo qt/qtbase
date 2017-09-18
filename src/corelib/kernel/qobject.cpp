@@ -998,7 +998,7 @@ QObject::~QObject()
             if (senderLists)
                 senderLists->dirty = true;
 
-            QtPrivate::QSlotObjectBase *slotObj = Q_NULLPTR;
+            QtPrivate::QSlotObjectBase *slotObj = nullptr;
             if (node->isSlotObject) {
                 slotObj = node->slotObj;
                 node->isSlotObject = false;
@@ -1468,14 +1468,14 @@ void QObject::moveToThread(QThread *targetThread)
     }
 
     QThreadData *currentData = QThreadData::current();
-    QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : Q_NULLPTR;
+    QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : nullptr;
     if (d->threadData->thread == 0 && currentData == targetData) {
         // one exception to the rule: we allow moving objects with no thread affinity to the current thread
         currentData = d->threadData;
     } else if (d->threadData != currentData) {
         qWarning("QObject::moveToThread: Current thread (%p) is not the object's thread (%p).\n"
                  "Cannot move to target thread (%p)\n",
-                 currentData->thread.load(), d->threadData->thread.load(), targetData ? targetData->thread.load() : Q_NULLPTR);
+                 currentData->thread.load(), d->threadData->thread.load(), targetData ? targetData->thread.load() : nullptr);
 
 #ifdef Q_OS_MAC
         qWarning("You might be loading two sets of Qt binaries into the same process. "

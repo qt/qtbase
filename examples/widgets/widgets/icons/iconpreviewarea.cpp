@@ -190,7 +190,7 @@ QLabel *IconPreviewArea::createPixmapLabel()
 //! [5]
 void IconPreviewArea::updatePixmapLabels()
 {
-    QWindow *window = Q_NULLPTR;
+    QWindow *window = nullptr;
     if (const QWidget *nativeParent = nativeParentWidget())
         window = nativeParent->windowHandle();
     for (int column = 0; column < NumModes; ++column) {

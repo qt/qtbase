@@ -47,7 +47,7 @@ QPlatformIntegration *QHaikuIntegrationPlugin::create(const QString& system, con
     if (!system.compare(QLatin1String("haiku"), Qt::CaseInsensitive))
         return new QHaikuIntegration(paramList);
 
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

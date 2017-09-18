@@ -459,60 +459,60 @@ public:
 #if QT_DEPRECATED_SINCE(5, 3)
     QT_DEPRECATED void setData(int mipLevel, int layer, CubeMapFace cubeFace,
                                PixelFormat sourceFormat, PixelType sourceType,
-                               void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                               void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
     QT_DEPRECATED void setData(int mipLevel, int layer,
                                PixelFormat sourceFormat, PixelType sourceType,
-                               void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                               void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
     QT_DEPRECATED void setData(int mipLevel,
                                PixelFormat sourceFormat, PixelType sourceType,
-                               void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                               void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
     QT_DEPRECATED void setData(PixelFormat sourceFormat, PixelType sourceType,
-                               void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                               void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
 #endif // QT_DEPRECATED_SINCE(5, 3)
 
     void setData(int mipLevel, int layer, CubeMapFace cubeFace,
                  PixelFormat sourceFormat, PixelType sourceType,
-                 const void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
     void setData(int mipLevel, int layer, int layerCount, CubeMapFace cubeFace,
                  PixelFormat sourceFormat, PixelType sourceType,
-                 const void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
     void setData(int mipLevel, int layer,
                  PixelFormat sourceFormat, PixelType sourceType,
-                 const void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
     void setData(int mipLevel,
                  PixelFormat sourceFormat, PixelType sourceType,
-                 const void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
     void setData(PixelFormat sourceFormat, PixelType sourceType,
-                 const void *data, const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                 const void *data, const QOpenGLPixelTransferOptions * const options = nullptr);
 
     // Compressed data upload
     // ### Qt 6: remove the non-const void * overloads
 #if QT_DEPRECATED_SINCE(5, 3)
     QT_DEPRECATED void setCompressedData(int mipLevel, int layer, CubeMapFace cubeFace,
                                          int dataSize, void *data,
-                                         const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                                         const QOpenGLPixelTransferOptions * const options = nullptr);
     QT_DEPRECATED void setCompressedData(int mipLevel, int layer,
                                          int dataSize, void *data,
-                                         const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                                         const QOpenGLPixelTransferOptions * const options = nullptr);
     QT_DEPRECATED void setCompressedData(int mipLevel, int dataSize, void *data,
-                                         const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                                         const QOpenGLPixelTransferOptions * const options = nullptr);
     QT_DEPRECATED void setCompressedData(int dataSize, void *data,
-                                         const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                                         const QOpenGLPixelTransferOptions * const options = nullptr);
 #endif // QT_DEPRECATED_SINCE(5, 3)
 
     void setCompressedData(int mipLevel, int layer, CubeMapFace cubeFace,
                            int dataSize, const void *data,
-                           const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                           const QOpenGLPixelTransferOptions * const options = nullptr);
     void setCompressedData(int mipLevel, int layer, int layerCount, CubeMapFace cubeFace,
                            int dataSize, const void *data,
-                           const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                           const QOpenGLPixelTransferOptions * const options = nullptr);
     void setCompressedData(int mipLevel, int layer,
                            int dataSize, const void *data,
-                           const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                           const QOpenGLPixelTransferOptions * const options = nullptr);
     void setCompressedData(int mipLevel, int dataSize, const void *data,
-                           const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                           const QOpenGLPixelTransferOptions * const options = nullptr);
     void setCompressedData(int dataSize, const void *data,
-                           const QOpenGLPixelTransferOptions * const options = Q_NULLPTR);
+                           const QOpenGLPixelTransferOptions * const options = nullptr);
 
     // Helpful overloads for setData
     void setData(const QImage& image, MipMapGeneration genMipMaps = GenerateMipMaps);

@@ -63,7 +63,7 @@ public:
 
     QNetworkDatagram(QNetworkDatagram &&other) Q_DECL_NOTHROW
         : d(other.d)
-    { other.d = Q_NULLPTR; }
+    { other.d = nullptr; }
     QNetworkDatagram &operator=(QNetworkDatagram &&other) Q_DECL_NOTHROW
     { swap(other); return *this; }
 

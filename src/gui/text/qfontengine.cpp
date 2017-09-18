@@ -1080,7 +1080,7 @@ QFontEngineGlyphCache *QFontEngine::glyphCache(const void *context, GlyphFormat 
 {
     const QHash<const void*, GlyphCaches>::const_iterator caches = m_glyphCaches.constFind(context);
     if (caches == m_glyphCaches.cend())
-        return Q_NULLPTR;
+        return nullptr;
 
     for (GlyphCaches::const_iterator it = caches->begin(), end = caches->end(); it != end; ++it) {
         QFontEngineGlyphCache *cache = it->cache.data();
@@ -1088,7 +1088,7 @@ QFontEngineGlyphCache *QFontEngine::glyphCache(const void *context, GlyphFormat 
             return cache;
     }
 
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 static inline QFixed kerning(int left, int right, const QFontEngine::KernPair *pairs, int numPairs)
@@ -1234,7 +1234,7 @@ int QFontEngine::glyphCount() const
 
 Qt::HANDLE QFontEngine::handle() const
 {
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSymbolFont, int *cmapSize)

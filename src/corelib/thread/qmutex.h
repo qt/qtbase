@@ -92,16 +92,16 @@ public:
 
 private:
     inline bool fastTryLock() Q_DECL_NOTHROW {
-        return d_ptr.testAndSetAcquire(Q_NULLPTR, dummyLocked());
+        return d_ptr.testAndSetAcquire(nullptr, dummyLocked());
     }
     inline bool fastTryUnlock() Q_DECL_NOTHROW {
-        return d_ptr.testAndSetRelease(dummyLocked(), Q_NULLPTR);
+        return d_ptr.testAndSetRelease(dummyLocked(), nullptr);
     }
     inline bool fastTryLock(QMutexData *&current) Q_DECL_NOTHROW {
-        return d_ptr.testAndSetAcquire(Q_NULLPTR, dummyLocked(), current);
+        return d_ptr.testAndSetAcquire(nullptr, dummyLocked(), current);
     }
     inline bool fastTryUnlock(QMutexData *&current) Q_DECL_NOTHROW {
-        return d_ptr.testAndSetRelease(dummyLocked(), Q_NULLPTR, current);
+        return d_ptr.testAndSetRelease(dummyLocked(), nullptr, current);
     }
 
     void lockInternal() QT_MUTEX_LOCK_NOEXCEPT;
@@ -287,7 +287,7 @@ public:
 
     inline void unlock() Q_DECL_NOTHROW {}
     void relock() Q_DECL_NOTHROW {}
-    inline QMutex *mutex() const Q_DECL_NOTHROW { return Q_NULLPTR; }
+    inline QMutex *mutex() const Q_DECL_NOTHROW { return nullptr; }
 
 private:
     Q_DISABLE_COPY(QMutexLocker)

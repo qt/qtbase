@@ -10334,7 +10334,7 @@ public slots:
         QTimer::singleShot(100, this, SLOT(doMouseMoves()));
         modal->exec();
         delete modal;
-        modal = Q_NULLPTR;
+        modal = nullptr;
     }
 
     void doMouseMoves()

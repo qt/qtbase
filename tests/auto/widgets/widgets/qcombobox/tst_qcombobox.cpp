@@ -3277,7 +3277,7 @@ void tst_QComboBox::task_QTBUG_49831_scrollerNotActivated()
 class QTBUG_56693_Model : public QStandardItemModel
 {
 public:
-    QTBUG_56693_Model(QObject *parent = Q_NULLPTR)
+    QTBUG_56693_Model(QObject *parent = nullptr)
         : QStandardItemModel(parent)
     { }
 
@@ -3305,7 +3305,7 @@ public:
 
     }
 
-    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p, const QWidget *w = Q_NULLPTR) const override
+    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p, const QWidget *w = nullptr) const override
     {
         if (element == CE_MenuItem)
             if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt))

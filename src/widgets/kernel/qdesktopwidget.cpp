@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 QDesktopScreenWidget::QDesktopScreenWidget(QScreen *screen, const QRect &geometry)
-    : QWidget(Q_NULLPTR, Qt::Desktop), m_screen(screen)
+    : QWidget(nullptr, Qt::Desktop), m_screen(screen)
 {
     setVisible(false);
     if (QWindow *winHandle = windowHandle())
@@ -114,7 +114,7 @@ QDesktopScreenWidget *QDesktopWidgetPrivate::widgetForScreen(QScreen *qScreen) c
         if (widget->screen() == qScreen)
             return widget;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void QDesktopWidgetPrivate::_q_updateScreens()
@@ -330,7 +330,7 @@ int QDesktopWidgetPrivate::screenNumber(const QWidget *w)
     if (!w->isWindow())
         frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
 
-    QScreen *widgetScreen = Q_NULLPTR;
+    QScreen *widgetScreen = nullptr;
     int largestArea = 0;
     foreach (QScreen *screen, screens) {
         const QRect deviceIndependentScreenGeometry =

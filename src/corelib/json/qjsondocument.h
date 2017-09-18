@@ -129,7 +129,7 @@ public:
         Compact
     };
 
-    static QJsonDocument fromJson(const QByteArray &json, QJsonParseError *error = Q_NULLPTR);
+    static QJsonDocument fromJson(const QByteArray &json, QJsonParseError *error = nullptr);
 
 #ifdef Q_QDOC
     QByteArray toJson(JsonFormat format = Indented) const;

@@ -120,23 +120,23 @@ class Q_CORE_EXPORT QObject
     Q_DECLARE_PRIVATE(QObject)
 
 public:
-    Q_INVOKABLE explicit QObject(QObject *parent=Q_NULLPTR);
+    Q_INVOKABLE explicit QObject(QObject *parent=nullptr);
     virtual ~QObject();
 
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
 
 #ifdef Q_QDOC
-    static QString tr(const char *sourceText, const char *comment = Q_NULLPTR, int n = -1);
-    static QString trUtf8(const char *sourceText, const char *comment = Q_NULLPTR, int n = -1);
+    static QString tr(const char *sourceText, const char *comment = nullptr, int n = -1);
+    static QString trUtf8(const char *sourceText, const char *comment = nullptr, int n = -1);
     virtual const QMetaObject *metaObject() const;
     static const QMetaObject staticMetaObject;
 #endif
 #ifdef QT_NO_TRANSLATION
-    static QString tr(const char *sourceText, const char * = Q_NULLPTR, int = -1)
+    static QString tr(const char *sourceText, const char * = nullptr, int = -1)
         { return QString::fromUtf8(sourceText); }
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED static QString trUtf8(const char *sourceText, const char * = Q_NULLPTR, int = -1)
+    QT_DEPRECATED static QString trUtf8(const char *sourceText, const char * = nullptr, int = -1)
         { return QString::fromUtf8(sourceText); }
 #endif
 #endif //QT_NO_TRANSLATION
@@ -248,7 +248,7 @@ public:
         Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType, typename SignalType::ReturnType>::value),
                           "Return type of the slot is not compatible with the return type of the signal.");
 
-        const int *types = Q_NULLPTR;
+        const int *types = nullptr;
         if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
@@ -288,11 +288,11 @@ public:
         Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType, typename SignalType::ReturnType>::value),
                           "Return type of the slot is not compatible with the return type of the signal.");
 
-        const int *types = Q_NULLPTR;
+        const int *types = nullptr;
         if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
-        return connectImpl(sender, reinterpret_cast<void **>(&signal), context, Q_NULLPTR,
+        return connectImpl(sender, reinterpret_cast<void **>(&signal), context, nullptr,
                            new QtPrivate::QStaticSlotObject<Func2,
                                                  typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
                                                  typename SignalType::ReturnType>(slot),
@@ -327,11 +327,11 @@ public:
         Q_STATIC_ASSERT_X(QtPrivate::HasQ_OBJECT_Macro<typename SignalType::Object>::Value,
                           "No Q_OBJECT in the class with the signal");
 
-        const int *types = Q_NULLPTR;
+        const int *types = nullptr;
         if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
             types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
 
-        return connectImpl(sender, reinterpret_cast<void **>(&signal), context, Q_NULLPTR,
+        return connectImpl(sender, reinterpret_cast<void **>(&signal), context, nullptr,
                            new QtPrivate::QFunctorSlotObject<Func2, SlotArgumentCount,
                                 typename QtPrivate::List_Left<typename SignalType::Arguments, SlotArgumentCount>::Value,
                                 typename SignalType::ReturnType>(std::move(slot)),
@@ -343,11 +343,11 @@ public:
                            const QObject *receiver, const char *member);
     static bool disconnect(const QObject *sender, const QMetaMethod &signal,
                            const QObject *receiver, const QMetaMethod &member);
-    inline bool disconnect(const char *signal = Q_NULLPTR,
-                           const QObject *receiver = Q_NULLPTR, const char *member = Q_NULLPTR) const
+    inline bool disconnect(const char *signal = nullptr,
+                           const QObject *receiver = nullptr, const char *member = nullptr) const
         { return disconnect(this, signal, receiver, member); }
-    inline bool disconnect(const QObject *receiver, const char *member = Q_NULLPTR) const
-        { return disconnect(this, Q_NULLPTR, receiver, member); }
+    inline bool disconnect(const QObject *receiver, const char *member = nullptr) const
+        { return disconnect(this, nullptr, receiver, member); }
     static bool disconnect(const QMetaObject::Connection &);
 
 #ifdef Q_QDOC
@@ -375,7 +375,7 @@ public:
     static inline bool disconnect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
                                   const QObject *receiver, void **zero)
     {
-        // This is the overload for when one wish to disconnect a signal from any slot. (slot=Q_NULLPTR)
+        // This is the overload for when one wish to disconnect a signal from any slot. (slot=nullptr)
         // Since the function template parameter cannot be deduced from '0', we use a
         // dummy void ** parameter that must be equal to 0
         Q_ASSERT(!zero);
@@ -406,14 +406,14 @@ public:
 #endif // QT_NO_USERDATA
 
 Q_SIGNALS:
-    void destroyed(QObject * = Q_NULLPTR);
+    void destroyed(QObject * = nullptr);
     void objectNameChanged(const QString &objectName, QPrivateSignal);
 
 public:
     inline QObject *parent() const { return d_ptr->parent; }
 
     inline bool inherits(const char *classname) const
-        { return const_cast<QObject *>(this)->qt_metacast(classname) != Q_NULLPTR; }
+        { return const_cast<QObject *>(this)->qt_metacast(classname) != nullptr; }
 
 public Q_SLOTS:
     void deleteLater();
@@ -432,7 +432,7 @@ protected:
     virtual void disconnectNotify(const QMetaMethod &signal);
 
 protected:
-    QObject(QObjectPrivate &dd, QObject *parent = Q_NULLPTR);
+    QObject(QObjectPrivate &dd, QObject *parent = nullptr);
 
 protected:
     QScopedPointer<QObjectData> d_ptr;
@@ -525,16 +525,16 @@ inline T qobject_cast(const QObject *object)
 
 
 template <class T> inline const char * qobject_interface_iid()
-{ return Q_NULLPTR; }
+{ return nullptr; }
 
 #ifndef Q_MOC_RUN
 #  define Q_DECLARE_INTERFACE(IFace, IId) \
     template <> inline const char *qobject_interface_iid<IFace *>() \
     { return IId; } \
     template <> inline IFace *qobject_cast<IFace *>(QObject *object) \
-    { return reinterpret_cast<IFace *>((object ? object->qt_metacast(IId) : Q_NULLPTR)); } \
+    { return reinterpret_cast<IFace *>((object ? object->qt_metacast(IId) : nullptr)); } \
     template <> inline IFace *qobject_cast<IFace *>(const QObject *object) \
-    { return reinterpret_cast<IFace *>((object ? const_cast<QObject *>(object)->qt_metacast(IId) : Q_NULLPTR)); }
+    { return reinterpret_cast<IFace *>((object ? const_cast<QObject *>(object)->qt_metacast(IId) : nullptr)); }
 #endif // Q_MOC_RUN
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -580,7 +580,7 @@ QSignalBlocker::QSignalBlocker(QSignalBlocker &&other) Q_DECL_NOTHROW
       m_blocked(other.m_blocked),
       m_inhibited(other.m_inhibited)
 {
-    other.m_o = Q_NULLPTR;
+    other.m_o = nullptr;
 }
 
 QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other) Q_DECL_NOTHROW
@@ -594,7 +594,7 @@ QSignalBlocker &QSignalBlocker::operator=(QSignalBlocker &&other) Q_DECL_NOTHROW
         m_blocked = other.m_blocked;
         m_inhibited = other.m_inhibited;
         // disable other:
-        other.m_o = Q_NULLPTR;
+        other.m_o = nullptr;
     }
     return *this;
 }

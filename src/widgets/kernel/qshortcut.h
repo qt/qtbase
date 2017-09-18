@@ -62,7 +62,7 @@ class Q_WIDGETS_EXPORT QShortcut : public QObject
 public:
     explicit QShortcut(QWidget *parent);
     QShortcut(const QKeySequence& key, QWidget *parent,
-              const char *member = Q_NULLPTR, const char *ambiguousMember = Q_NULLPTR,
+              const char *member = nullptr, const char *ambiguousMember = nullptr,
               Qt::ShortcutContext context = Qt::WindowShortcut);
     ~QShortcut();
 

@@ -120,7 +120,7 @@ public:
           reserved(other.reserved),
           m_isDefault(other.m_isDefault)
     {
-        other.reserved = Q_NULLPTR;
+        other.reserved = nullptr;
     }
     QXmlStreamAttribute &operator=(QXmlStreamAttribute &&other) Q_DECL_NOTHROW // = default;
     {

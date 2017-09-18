@@ -80,7 +80,7 @@ class Q_WIDGETS_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphic
     Q_PROPERTY(bool autoFillBackground READ autoFillBackground WRITE setAutoFillBackground)
     Q_PROPERTY(QGraphicsLayout* layout READ layout WRITE setLayout NOTIFY layoutChanged)
 public:
-    QGraphicsWidget(QGraphicsItem *parent = Q_NULLPTR, Qt::WindowFlags wFlags = Qt::WindowFlags());
+    QGraphicsWidget(QGraphicsItem *parent = nullptr, Qt::WindowFlags wFlags = Qt::WindowFlags());
     ~QGraphicsWidget();
     QGraphicsLayout *layout() const;
     void setLayout(QGraphicsLayout *layout);
@@ -163,8 +163,8 @@ public:
     };
     int type() const override;
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;
-    virtual void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    virtual void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr);
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
 

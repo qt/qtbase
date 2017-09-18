@@ -170,7 +170,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     const int crtc = crtcForConnector(resources, connector);
     if (crtc < 0) {
         qWarning() << "No usable crtc/encoder pair for connector" << connectorName;
-        return Q_NULLPTR;
+        return nullptr;
     }
 
     OutputConfiguration configuration;
@@ -217,14 +217,14 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
 
     if (configuration == OutputConfigOff) {
         qCDebug(qLcKmsDebug) << "Turning off output" << connectorName;
-        drmModeSetCrtc(m_dri_fd, crtc_id, 0, 0, 0, 0, 0, Q_NULLPTR);
-        return Q_NULLPTR;
+        drmModeSetCrtc(m_dri_fd, crtc_id, 0, 0, 0, 0, 0, nullptr);
+        return nullptr;
     }
 
     // Skip disconnected output
     if (configuration == OutputConfigPreferred && connector->connection == DRM_MODE_DISCONNECTED) {
         qCDebug(qLcKmsDebug) << "Skipping disconnected output" << connectorName;
-        return Q_NULLPTR;
+        return nullptr;
     }
 
     // Get the current mode on the current crtc
@@ -235,7 +235,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         drmModeFreeEncoder(encoder);
 
         if (!crtc)
-            return Q_NULLPTR;
+            return nullptr;
 
         if (crtc->mode_valid)
             crtc_mode = crtc->mode;
@@ -305,7 +305,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
 
     if (selected_mode < 0) {
         qWarning() << "No modes available for output" << connectorName;
-        return Q_NULLPTR;
+        return nullptr;
     } else {
         int width = modes[selected_mode].hdisplay;
         int height = modes[selected_mode].vdisplay;
@@ -438,7 +438,7 @@ drmModePropertyPtr QKmsDevice::connectorProperty(drmModeConnectorPtr connector, 
         drmModeFreeProperty(prop);
     }
 
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 drmModePropertyBlobPtr QKmsDevice::connectorPropertyBlob(drmModeConnectorPtr connector, const QByteArray &name)

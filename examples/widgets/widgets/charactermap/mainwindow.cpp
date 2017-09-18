@@ -244,7 +244,7 @@ void MainWindow::updateClipboard()
 class FontInfoDialog : public QDialog
 {
 public:
-    explicit FontInfoDialog(QWidget *parent = Q_NULLPTR);
+    explicit FontInfoDialog(QWidget *parent = nullptr);
 
 private:
     QString text() const;

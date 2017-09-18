@@ -53,7 +53,7 @@ class Q_CORE_EXPORT QSocketNotifier : public QObject
 public:
     enum Type { Read, Write, Exception };
 
-    QSocketNotifier(qintptr socket, Type, QObject *parent = Q_NULLPTR);
+    QSocketNotifier(qintptr socket, Type, QObject *parent = nullptr);
     ~QSocketNotifier();
 
     qintptr socket() const;

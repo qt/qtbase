@@ -94,7 +94,7 @@ QLibInputHandler::QLibInputHandler(const QString &key, const QString &spec)
     if (Q_UNLIKELY(!m_udev))
         qFatal("Failed to get udev context for libinput");
 
-    m_li = libinput_udev_create_context(&liInterface, Q_NULLPTR, m_udev);
+    m_li = libinput_udev_create_context(&liInterface, nullptr, m_udev);
     if (Q_UNLIKELY(!m_li))
         qFatal("Failed to get libinput context");
 
@@ -137,7 +137,7 @@ void QLibInputHandler::onReadyRead()
     }
 
     libinput_event *ev;
-    while ((ev = libinput_get_event(m_li)) != Q_NULLPTR) {
+    while ((ev = libinput_get_event(m_li)) != nullptr) {
         processEvent(ev);
         libinput_event_destroy(ev);
     }

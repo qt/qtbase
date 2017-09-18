@@ -67,7 +67,7 @@ public:
 
     explicit QSaveFile(const QString &name);
 #ifndef QT_NO_QOBJECT
-    explicit QSaveFile(QObject *parent = Q_NULLPTR);
+    explicit QSaveFile(QObject *parent = nullptr);
     explicit QSaveFile(const QString &name, QObject *parent);
 #endif
     ~QSaveFile();

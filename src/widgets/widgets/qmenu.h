@@ -72,8 +72,8 @@ private:
     Q_PROPERTY(bool toolTipsVisible READ toolTipsVisible WRITE setToolTipsVisible)
 
 public:
-    explicit QMenu(QWidget *parent = Q_NULLPTR);
-    explicit QMenu(const QString &title, QWidget *parent = Q_NULLPTR);
+    explicit QMenu(QWidget *parent = nullptr);
+    explicit QMenu(const QString &title, QWidget *parent = nullptr);
     ~QMenu();
 
     using QWidget::addAction;
@@ -185,14 +185,14 @@ public:
     void setActiveAction(QAction *act);
     QAction *activeAction() const;
 
-    void popup(const QPoint &pos, QAction *at = Q_NULLPTR);
+    void popup(const QPoint &pos, QAction *at = nullptr);
     QAction *exec();
-    QAction *exec(const QPoint &pos, QAction *at = Q_NULLPTR);
+    QAction *exec(const QPoint &pos, QAction *at = nullptr);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-    static QAction *exec(const QList<QAction *> &actions, const QPoint &pos, QAction *at = Q_NULLPTR, QWidget *parent = Q_NULLPTR);
+    static QAction *exec(const QList<QAction *> &actions, const QPoint &pos, QAction *at = nullptr, QWidget *parent = nullptr);
 #else
-    static QAction *exec(QList<QAction*> actions, const QPoint &pos, QAction *at = Q_NULLPTR, QWidget *parent = Q_NULLPTR);
+    static QAction *exec(QList<QAction*> actions, const QPoint &pos, QAction *at = nullptr, QWidget *parent = nullptr);
 #endif
 
     QSize sizeHint() const override;
@@ -260,7 +260,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_platformMenuAboutToShow())
 
 protected:
-    QMenu(QMenuPrivate &dd, QWidget* parent = Q_NULLPTR);
+    QMenu(QMenuPrivate &dd, QWidget* parent = nullptr);
 
 private:
     Q_DISABLE_COPY(QMenu)

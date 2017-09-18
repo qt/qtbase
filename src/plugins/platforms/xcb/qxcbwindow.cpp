@@ -287,7 +287,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
     if (!mapper || errCode < 0) {
         mapper = QTextCodec::codecForName("latin1");
         if (!mapper || !mapper->canEncode(s))
-            return Q_NULLPTR;
+            return nullptr;
 #endif
         static QByteArray qcs;
         qcs = s.toLatin1();
@@ -322,7 +322,7 @@ static QWindow *childWindowAt(QWindow *win, const QPoint &p)
             && win->geometry().contains(win->parent()->mapFromGlobal(p))) {
         return win;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 static const char *wm_window_type_property_id = "_q_xcb_wm_window_type";
@@ -418,7 +418,7 @@ void QXcbWindow::create()
 
     resolveFormat(platformScreen->surfaceFormatFor(window()->requestedFormat()));
 
-    const xcb_visualtype_t *visual = Q_NULLPTR;
+    const xcb_visualtype_t *visual = nullptr;
 
     if (connection()->hasDefaultVisualId()) {
         visual = platformScreen->visualForId(connection()->defaultVisualId());
@@ -641,7 +641,7 @@ void QXcbWindow::destroy()
     if (connection()->focusWindow() == this)
         doFocusOut();
     if (connection()->mouseGrabber() == this)
-        connection()->setMouseGrabber(Q_NULLPTR);
+        connection()->setMouseGrabber(nullptr);
 
     if (m_syncCounter && m_usingSyncProtocol)
         xcb_sync_destroy_counter(xcb_connection(), m_syncCounter);
@@ -877,12 +877,12 @@ void QXcbWindow::hide()
     xcb_flush(xcb_connection());
 
     if (connection()->mouseGrabber() == this)
-        connection()->setMouseGrabber(Q_NULLPTR);
+        connection()->setMouseGrabber(nullptr);
     if (QPlatformWindow *w = connection()->mousePressWindow()) {
         // Unset mousePressWindow when it (or one of its parents) is unmapped
         while (w) {
             if (w == this) {
-                connection()->setMousePressWindow(Q_NULLPTR);
+                connection()->setMousePressWindow(nullptr);
                 break;
             }
             w = w->parent();
@@ -900,7 +900,7 @@ void QXcbWindow::hide()
 
         // Find the top level window at cursor position.
         // Don't use QGuiApplication::topLevelAt(): search only the virtual siblings of this window's screen
-        QWindow *enterWindow = Q_NULLPTR;
+        QWindow *enterWindow = nullptr;
         const auto screens = xcbScreen()->virtualSiblings();
         for (QPlatformScreen *screen : screens) {
             if (screen->geometry().contains(cursorPos)) {
@@ -2227,7 +2227,7 @@ void QXcbWindow::handleButtonReleaseEvent(int event_x, int event_y, int root_x, 
     }
 
     if (connection()->buttonState() == Qt::NoButton)
-        connection()->setMousePressWindow(Q_NULLPTR);
+        connection()->setMousePressWindow(nullptr);
 
     handleMouseEvent(timestamp, local, global, modifiers, source);
 }
@@ -2252,7 +2252,7 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
     return true;
 }
 
-static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn = Q_NULLPTR)
+static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn = nullptr)
 {
     return ((doCheckUnGrabAncestor(conn)
              && mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
@@ -2261,7 +2261,7 @@ static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn = 
             || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
 }
 
-static bool ignoreEnterEvent(quint8 mode, quint8 detail, QXcbConnection *conn = Q_NULLPTR)
+static bool ignoreEnterEvent(quint8 mode, quint8 detail, QXcbConnection *conn = nullptr)
 {
     return ((doCheckUnGrabAncestor(conn)
              && mode == XCB_NOTIFY_MODE_UNGRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
@@ -2338,11 +2338,11 @@ void QXcbWindow::handleMotionNotifyEvent(int event_x, int event_y, int root_x, i
     // "mousePressWindow" can be NULL i.e. if a window will be grabbed or unmapped, so set it again here.
     // Unset "mousePressWindow" when mouse button isn't pressed - in some cases the release event won't arrive.
     const bool isMouseButtonPressed = (connection()->buttonState() != Qt::NoButton);
-    const bool hasMousePressWindow = (connection()->mousePressWindow() != Q_NULLPTR);
+    const bool hasMousePressWindow = (connection()->mousePressWindow() != nullptr);
     if (isMouseButtonPressed && !hasMousePressWindow)
         connection()->setMousePressWindow(this);
     else if (hasMousePressWindow && !isMouseButtonPressed)
-        connection()->setMousePressWindow(Q_NULLPTR);
+        connection()->setMousePressWindow(nullptr);
 
     handleMouseEvent(timestamp, local, global, modifiers, source);
 }
@@ -2524,7 +2524,7 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
             m_lastWindowStateEvent = newState;
             m_windowState = newState;
             if ((m_windowState & Qt::WindowMinimized) && connection()->mouseGrabber() == this)
-                connection()->setMouseGrabber(Q_NULLPTR);
+                connection()->setMouseGrabber(nullptr);
         }
         return;
     } else if (event->atom == atom(QXcbAtom::_NET_FRAME_EXTENTS)) {
@@ -2592,7 +2592,7 @@ bool QXcbWindow::setKeyboardGrabEnabled(bool grab)
 bool QXcbWindow::setMouseGrabEnabled(bool grab)
 {
     if (!grab && connection()->mouseGrabber() == this)
-        connection()->setMouseGrabber(Q_NULLPTR);
+        connection()->setMouseGrabber(nullptr);
 
 #if QT_CONFIG(xinput2)
     if (connection()->hasXInput2() && !connection()->xi2MouseEventsDisabled()) {

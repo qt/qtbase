@@ -754,7 +754,7 @@ HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
 // present in the MSVCRT.DLL found on Windows XP (QTBUG-35617).
 static inline QString errorMessageFromComError(const _com_error &comError)
 {
-     TCHAR *message = Q_NULLPTR;
+     TCHAR *message = nullptr;
      FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
                    NULL, DWORD(comError.Error()), MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),
                    message, 0, NULL);

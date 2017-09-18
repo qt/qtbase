@@ -59,10 +59,10 @@ public:
     static bool inWhatsThisMode();
     static void leaveWhatsThisMode();
 
-    static void showText(const QPoint &pos, const QString &text, QWidget *w = Q_NULLPTR);
+    static void showText(const QPoint &pos, const QString &text, QWidget *w = nullptr);
     static void hideText();
 
-    static QAction *createAction(QObject *parent = Q_NULLPTR);
+    static QAction *createAction(QObject *parent = nullptr);
 
 };
 

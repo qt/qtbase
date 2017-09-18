@@ -61,7 +61,7 @@ public:
     enum Direction { LeftToRight, RightToLeft, TopToBottom, BottomToTop,
                      Down = TopToBottom, Up = BottomToTop };
 
-    explicit QBoxLayout(Direction, QWidget *parent = Q_NULLPTR);
+    explicit QBoxLayout(Direction, QWidget *parent = nullptr);
 
     ~QBoxLayout();
 

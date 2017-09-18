@@ -68,7 +68,7 @@ Q_SIGNALS:
     void activeChanged(bool active);
 
 protected:
-    QAbstractState(QState *parent = Q_NULLPTR);
+    QAbstractState(QState *parent = nullptr);
 
     virtual void onEntry(QEvent *event) = 0;
     virtual void onExit(QEvent *event) = 0;

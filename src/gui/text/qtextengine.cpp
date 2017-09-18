@@ -1242,7 +1242,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                 { HB_TAG('h','l','i','g'), !dontLigate, 0, uint(-1) } };
             const int num_features = dontLigate ? 5 : 1;
 
-            const char *const *shaper_list = Q_NULLPTR;
+            const char *const *shaper_list = nullptr;
 #if defined(Q_OS_DARWIN)
             // What's behind QFontEngine::FaceData::user_data isn't compatible between different font engines
             // - specifically functions in hb-coretext.cc would run into undefined behavior with data
@@ -1252,7 +1252,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                     "graphite2",
                     "ot",
                     "fallback",
-                    Q_NULLPTR
+                    nullptr
                 };
                 shaper_list = s_shaper_list_without_coretext;
             }

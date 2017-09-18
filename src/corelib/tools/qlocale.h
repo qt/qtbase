@@ -949,23 +949,23 @@ public:
     QString nativeCountryName() const;
 
 #if QT_STRINGVIEW_LEVEL < 2
-    short toShort(const QString &s, bool *ok = Q_NULLPTR) const;
-    ushort toUShort(const QString &s, bool *ok = Q_NULLPTR) const;
-    int toInt(const QString &s, bool *ok = Q_NULLPTR) const;
-    uint toUInt(const QString &s, bool *ok = Q_NULLPTR) const;
-    qlonglong toLongLong(const QString &s, bool *ok = Q_NULLPTR) const;
-    qulonglong toULongLong(const QString &s, bool *ok = Q_NULLPTR) const;
-    float toFloat(const QString &s, bool *ok = Q_NULLPTR) const;
-    double toDouble(const QString &s, bool *ok = Q_NULLPTR) const;
+    short toShort(const QString &s, bool *ok = nullptr) const;
+    ushort toUShort(const QString &s, bool *ok = nullptr) const;
+    int toInt(const QString &s, bool *ok = nullptr) const;
+    uint toUInt(const QString &s, bool *ok = nullptr) const;
+    qlonglong toLongLong(const QString &s, bool *ok = nullptr) const;
+    qulonglong toULongLong(const QString &s, bool *ok = nullptr) const;
+    float toFloat(const QString &s, bool *ok = nullptr) const;
+    double toDouble(const QString &s, bool *ok = nullptr) const;
 
-    short toShort(const QStringRef &s, bool *ok = Q_NULLPTR) const;
-    ushort toUShort(const QStringRef &s, bool *ok = Q_NULLPTR) const;
-    int toInt(const QStringRef &s, bool *ok = Q_NULLPTR) const;
-    uint toUInt(const QStringRef &s, bool *ok = Q_NULLPTR) const;
-    qlonglong toLongLong(const QStringRef &s, bool *ok = Q_NULLPTR) const;
-    qulonglong toULongLong(const QStringRef &s, bool *ok = Q_NULLPTR) const;
-    float toFloat(const QStringRef &s, bool *ok = Q_NULLPTR) const;
-    double toDouble(const QStringRef &s, bool *ok = Q_NULLPTR) const;
+    short toShort(const QStringRef &s, bool *ok = nullptr) const;
+    ushort toUShort(const QStringRef &s, bool *ok = nullptr) const;
+    int toInt(const QStringRef &s, bool *ok = nullptr) const;
+    uint toUInt(const QStringRef &s, bool *ok = nullptr) const;
+    qlonglong toLongLong(const QStringRef &s, bool *ok = nullptr) const;
+    qulonglong toULongLong(const QStringRef &s, bool *ok = nullptr) const;
+    float toFloat(const QStringRef &s, bool *ok = nullptr) const;
+    double toDouble(const QStringRef &s, bool *ok = nullptr) const;
 #endif
 
     short toShort(QStringView s, bool *ok = nullptr) const;

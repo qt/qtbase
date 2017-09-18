@@ -2797,7 +2797,7 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 */
 QDesktopWidget *QApplication::desktop()
 {
-    CHECK_QAPP_INSTANCE(Q_NULLPTR)
+    CHECK_QAPP_INSTANCE(nullptr)
     if (!qt_desktopWidget || // not created yet
          !(qt_desktopWidget->windowType() == Qt::Desktop)) { // reparented away
         qt_desktopWidget = new QDesktopWidget();
@@ -3277,7 +3277,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 // sequence, so we reset wheel_widget in case no one accepts the event
                 // or if we didn't get (or missed) a ScrollEnd previously.
                 if (spontaneous && phase == Qt::ScrollBegin)
-                    QApplicationPrivate::wheel_widget = Q_NULLPTR;
+                    QApplicationPrivate::wheel_widget = nullptr;
 
                 const QPoint &relpos = wheel->pos();
 
@@ -3327,7 +3327,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 d->notify_helper(QApplicationPrivate::wheel_widget, &we);
                 wheel->setAccepted(we.isAccepted());
                 if (phase == Qt::ScrollEnd)
-                    QApplicationPrivate::wheel_widget = Q_NULLPTR;
+                    QApplicationPrivate::wheel_widget = nullptr;
             }
         }
         break;

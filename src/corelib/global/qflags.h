@@ -118,7 +118,7 @@ public:
     Q_DECL_CONSTEXPR inline QFlags &operator=(const QFlags &other);
 #endif
     Q_DECL_CONSTEXPR inline QFlags(Enum f) Q_DECL_NOTHROW : i(Int(f)) {}
-    Q_DECL_CONSTEXPR inline QFlags(Zero = Q_NULLPTR) Q_DECL_NOTHROW : i(0) {}
+    Q_DECL_CONSTEXPR inline QFlags(Zero = nullptr) Q_DECL_NOTHROW : i(0) {}
     Q_DECL_CONSTEXPR inline QFlags(QFlag f) Q_DECL_NOTHROW : i(f) {}
 
 #ifdef Q_COMPILER_INITIALIZER_LISTS

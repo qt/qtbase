@@ -616,7 +616,7 @@ bool QConfFileSettingsPrivate::readPlistFile(const QByteArray &data, ParsedSetti
 {
     QCFType<CFDataRef> cfData = data.toRawCFData();
     QCFType<CFPropertyListRef> propertyList =
-            CFPropertyListCreateWithData(kCFAllocatorDefault, cfData, kCFPropertyListImmutable, Q_NULLPTR, Q_NULLPTR);
+            CFPropertyListCreateWithData(kCFAllocatorDefault, cfData, kCFPropertyListImmutable, nullptr, nullptr);
 
     if (!propertyList)
         return true;

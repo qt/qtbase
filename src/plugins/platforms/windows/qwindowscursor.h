@@ -70,7 +70,7 @@ class CursorHandle
 {
     Q_DISABLE_COPY(CursorHandle)
 public:
-    explicit CursorHandle(HCURSOR hcursor = Q_NULLPTR) : m_hcursor(hcursor) {}
+    explicit CursorHandle(HCURSOR hcursor = nullptr) : m_hcursor(hcursor) {}
     ~CursorHandle()
     {
         if (m_hcursor)
@@ -113,9 +113,9 @@ public:
 
     static HCURSOR createPixmapCursor(QPixmap pixmap, const QPoint &hotSpot, qreal scaleFactor = 1);
     static HCURSOR createPixmapCursor(const PixmapCursor &pc, qreal scaleFactor = 1) { return createPixmapCursor(pc.pixmap, pc.hotSpot, scaleFactor); }
-    static PixmapCursor customCursor(Qt::CursorShape cursorShape, const QPlatformScreen *screen = Q_NULLPTR);
+    static PixmapCursor customCursor(Qt::CursorShape cursorShape, const QPlatformScreen *screen = nullptr);
 
-    static HCURSOR createCursorFromShape(Qt::CursorShape cursorShape, const QPlatformScreen *screen = Q_NULLPTR);
+    static HCURSOR createCursorFromShape(Qt::CursorShape cursorShape, const QPlatformScreen *screen = nullptr);
     static QPoint mousePosition();
     static CursorState cursorState();
 

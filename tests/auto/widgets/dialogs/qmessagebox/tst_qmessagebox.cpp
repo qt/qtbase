@@ -134,10 +134,10 @@ class ExecCloseHelper : public QObject
 public:
     enum { CloseWindow = -1 };
 
-    explicit ExecCloseHelper(QObject *parent = Q_NULLPTR)
-        : QObject(parent), m_key(0), m_timerId(0), m_testCandidate(Q_NULLPTR) { }
+    explicit ExecCloseHelper(QObject *parent = nullptr)
+        : QObject(parent), m_key(0), m_timerId(0), m_testCandidate(nullptr) { }
 
-    void start(int key, QWidget *testCandidate = Q_NULLPTR)
+    void start(int key, QWidget *testCandidate = nullptr)
     {
         m_key = key;
         m_testCandidate = testCandidate;
@@ -172,7 +172,7 @@ void ExecCloseHelper::timerEvent(QTimerEvent *te)
             QKeyEvent *ke = new QKeyEvent(QEvent::KeyPress, m_key, Qt::NoModifier);
             QCoreApplication::postEvent(m_testCandidate, ke);
         }
-        m_testCandidate = Q_NULLPTR;
+        m_testCandidate = nullptr;
         killTimer(m_timerId);
         m_timerId = m_key = 0;
     }

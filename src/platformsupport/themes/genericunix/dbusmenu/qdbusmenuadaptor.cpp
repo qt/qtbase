@@ -122,7 +122,7 @@ void QDBusMenuAdaptor::Event(int id, const QString &eventId, const QDBusVariant 
         emit item->hovered();
     if (eventId == QLatin1String("closed")) {
         // There is no explicit AboutToHide method, so map closed event to aboutToHide method
-        const QDBusPlatformMenu *menu = Q_NULLPTR;
+        const QDBusPlatformMenu *menu = nullptr;
         if (item)
             menu = static_cast<const QDBusPlatformMenu *>(item->menu());
         else if (id == 0)

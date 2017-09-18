@@ -1060,7 +1060,7 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 {
     Q_UNUSED(tlw);
     Q_UNUSED(widget);
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 #endif // QT_NO_OPENGL

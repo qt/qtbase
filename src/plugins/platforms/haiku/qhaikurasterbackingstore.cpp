@@ -47,14 +47,14 @@ QT_BEGIN_NAMESPACE
 
 QHaikuRasterBackingStore::QHaikuRasterBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
-    , m_bitmap(Q_NULLPTR)
+    , m_bitmap(nullptr)
 {
 }
 
 QHaikuRasterBackingStore::~QHaikuRasterBackingStore()
 {
     delete m_bitmap;
-    m_bitmap = Q_NULLPTR;
+    m_bitmap = nullptr;
 }
 
 QPaintDevice *QHaikuRasterBackingStore::paintDevice()
@@ -62,7 +62,7 @@ QPaintDevice *QHaikuRasterBackingStore::paintDevice()
     if (!m_bufferSize.isEmpty() && m_bitmap)
         return m_buffer.image();
 
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void QHaikuRasterBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)

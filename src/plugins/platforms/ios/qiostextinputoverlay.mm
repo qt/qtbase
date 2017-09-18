@@ -617,7 +617,7 @@ static void executeBlockWithoutAnimation(Block block)
 - (QIOSLoupeLayer *)createLoupeLayer
 {
     Q_UNREACHABLE();
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 - (void)updateFocalPoint:(QPointF)touchPoint
@@ -993,12 +993,12 @@ static void executeBlockWithoutAnimation(Block block)
 
 QT_BEGIN_NAMESPACE
 
-QIOSEditMenu *QIOSTextInputOverlay::s_editMenu = Q_NULLPTR;
+QIOSEditMenu *QIOSTextInputOverlay::s_editMenu = nullptr;
 
 QIOSTextInputOverlay::QIOSTextInputOverlay()
-    : m_cursorRecognizer(Q_NULLPTR)
-    , m_selectionRecognizer(Q_NULLPTR)
-    , m_openMenuOnTapRecognizer(Q_NULLPTR)
+    : m_cursorRecognizer(nullptr)
+    , m_selectionRecognizer(nullptr)
+    , m_openMenuOnTapRecognizer(nullptr)
 {
     connect(qApp, &QGuiApplication::focusObjectChanged, this, &QIOSTextInputOverlay::updateFocusObject);
 }
@@ -1021,10 +1021,10 @@ void QIOSTextInputOverlay::updateFocusObject()
         [m_selectionRecognizer release];
         [m_openMenuOnTapRecognizer release];
         [s_editMenu release];
-        m_cursorRecognizer = Q_NULLPTR;
-        m_selectionRecognizer = Q_NULLPTR;
-        m_openMenuOnTapRecognizer = Q_NULLPTR;
-        s_editMenu = Q_NULLPTR;
+        m_cursorRecognizer = nullptr;
+        m_selectionRecognizer = nullptr;
+        m_openMenuOnTapRecognizer = nullptr;
+        s_editMenu = nullptr;
     }
 
     if (platformInputContext()->inputMethodAccepted()) {

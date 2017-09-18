@@ -135,7 +135,7 @@ public:
         typedef QJsonValueRef reference;
         typedef QJsonValuePtr pointer;
 
-        Q_DECL_CONSTEXPR inline iterator() : o(Q_NULLPTR), i(0) {}
+        Q_DECL_CONSTEXPR inline iterator() : o(nullptr), i(0) {}
         Q_DECL_CONSTEXPR inline iterator(QJsonObject *obj, int index) : o(obj), i(index) {}
 
         inline QString key() const { return o->keyAt(i); }
@@ -178,7 +178,7 @@ public:
         typedef QJsonValue reference;
         typedef QJsonValuePtr pointer;
 
-        Q_DECL_CONSTEXPR inline const_iterator() : o(Q_NULLPTR), i(0) {}
+        Q_DECL_CONSTEXPR inline const_iterator() : o(nullptr), i(0) {}
         Q_DECL_CONSTEXPR inline const_iterator(const QJsonObject *obj, int index)
             : o(obj), i(index) {}
         inline const_iterator(const iterator &other)

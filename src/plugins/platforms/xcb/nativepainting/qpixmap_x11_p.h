@@ -123,7 +123,7 @@ inline QX11PlatformPixmap *qt_x11Pixmap(const QPixmap &pixmap)
 {
     return (pixmap.handle() && pixmap.handle()->classId() == QPlatformPixmap::X11Class)
             ? static_cast<QX11PlatformPixmap *>(pixmap.handle())
-            : Q_NULLPTR;
+            : nullptr;
 }
 
 inline Picture qt_x11PictureHandle(const QPixmap &pixmap)

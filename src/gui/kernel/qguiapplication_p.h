@@ -213,7 +213,7 @@ public:
     static bool highDpiScalingUpdated;
 
     struct TabletPointData {
-        TabletPointData(qint64 devId = 0) : deviceId(devId), state(Qt::NoButton), target(Q_NULLPTR) {}
+        TabletPointData(qint64 devId = 0) : deviceId(devId), state(Qt::NoButton), target(nullptr) {}
         qint64 deviceId;
         Qt::MouseButtons state;
         QWindow *target;

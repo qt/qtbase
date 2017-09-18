@@ -413,7 +413,7 @@ public:
 
 protected:
     QOpenGLFunctionsPrivate *d_ptr;
-    static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != Q_NULLPTR; }
+    static bool isInitialized(const QOpenGLFunctionsPrivate *d) { return d != nullptr; }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLFunctions::OpenGLFeatures)

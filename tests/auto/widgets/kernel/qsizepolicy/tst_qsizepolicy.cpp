@@ -60,7 +60,7 @@ private:
 struct PrettyPrint {
     const char *m_s;
     template <typename T>
-    explicit PrettyPrint(const T &t) : m_s(Q_NULLPTR)
+    explicit PrettyPrint(const T &t) : m_s(nullptr)
     {
         using QT_PREPEND_NAMESPACE(QTest)::toString;
         m_s = toString(t);

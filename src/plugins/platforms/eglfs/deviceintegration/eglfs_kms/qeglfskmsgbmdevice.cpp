@@ -55,15 +55,15 @@ Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
 QEglFSKmsGbmDevice::QEglFSKmsGbmDevice(QKmsScreenConfig *screenConfig, const QString &path)
     : QEglFSKmsDevice(screenConfig, path)
-    , m_gbm_device(Q_NULLPTR)
-    , m_globalCursor(Q_NULLPTR)
+    , m_gbm_device(nullptr)
+    , m_globalCursor(nullptr)
 {
 }
 
 bool QEglFSKmsGbmDevice::open()
 {
     Q_ASSERT(fd() == -1);
-    Q_ASSERT(m_gbm_device == Q_NULLPTR);
+    Q_ASSERT(m_gbm_device == nullptr);
 
     int fd = qt_safe_open(devicePath().toLocal8Bit().constData(), O_RDWR | O_CLOEXEC);
     if (fd == -1) {
@@ -92,7 +92,7 @@ void QEglFSKmsGbmDevice::close()
 
     if (m_gbm_device) {
         gbm_device_destroy(m_gbm_device);
-        m_gbm_device = Q_NULLPTR;
+        m_gbm_device = nullptr;
     }
 
     if (fd() != -1) {
@@ -123,7 +123,7 @@ void QEglFSKmsGbmDevice::destroyGlobalCursor()
     if (m_globalCursor) {
         qCDebug(qLcEglfsKmsDebug, "Destroying global GBM mouse cursor");
         delete m_globalCursor;
-        m_globalCursor = Q_NULLPTR;
+        m_globalCursor = nullptr;
     }
 }
 

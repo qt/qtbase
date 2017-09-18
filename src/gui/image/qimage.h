@@ -136,20 +136,20 @@ public:
     QImage() Q_DECL_NOEXCEPT;
     QImage(const QSize &size, Format format);
     QImage(int width, int height, Format format);
-    QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = Q_NULLPTR, void *cleanupInfo = Q_NULLPTR);
-    QImage(const uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = Q_NULLPTR, void *cleanupInfo = Q_NULLPTR);
-    QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = Q_NULLPTR, void *cleanupInfo = Q_NULLPTR);
-    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = Q_NULLPTR, void *cleanupInfo = Q_NULLPTR);
+    QImage(uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
+    QImage(const uchar *data, int width, int height, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
+    QImage(uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
+    QImage(const uchar *data, int width, int height, int bytesPerLine, Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr);
 
 #ifndef QT_NO_IMAGEFORMAT_XPM
     explicit QImage(const char * const xpm[]);
 #endif
-    explicit QImage(const QString &fileName, const char *format = Q_NULLPTR);
+    explicit QImage(const QString &fileName, const char *format = nullptr);
 
     QImage(const QImage &);
 #ifdef Q_COMPILER_RVALUE_REFS
     inline QImage(QImage &&other) Q_DECL_NOEXCEPT
-        : QPaintDevice(), d(Q_NULLPTR)
+        : QPaintDevice(), d(nullptr)
     { qSwap(d, other.d); }
 #endif
     ~QImage();
@@ -294,16 +294,16 @@ public:
 
 
     bool load(QIODevice *device, const char* format);
-    bool load(const QString &fileName, const char *format = Q_NULLPTR);
-    bool loadFromData(const uchar *buf, int len, const char *format = Q_NULLPTR);
-    inline bool loadFromData(const QByteArray &data, const char *aformat = Q_NULLPTR)
+    bool load(const QString &fileName, const char *format = nullptr);
+    bool loadFromData(const uchar *buf, int len, const char *format = nullptr);
+    inline bool loadFromData(const QByteArray &data, const char *aformat = nullptr)
         { return loadFromData(reinterpret_cast<const uchar *>(data.constData()), data.size(), aformat); }
 
-    bool save(const QString &fileName, const char *format = Q_NULLPTR, int quality = -1) const;
-    bool save(QIODevice *device, const char *format = Q_NULLPTR, int quality = -1) const;
+    bool save(const QString &fileName, const char *format = nullptr, int quality = -1) const;
+    bool save(QIODevice *device, const char *format = nullptr, int quality = -1) const;
 
-    static QImage fromData(const uchar *data, int size, const char *format = Q_NULLPTR);
-    inline static QImage fromData(const QByteArray &data, const char *format = Q_NULLPTR)
+    static QImage fromData(const uchar *data, int size, const char *format = nullptr);
+    inline static QImage fromData(const QByteArray &data, const char *format = nullptr)
         { return fromData(reinterpret_cast<const uchar *>(data.constData()), data.size(), format); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -335,7 +335,7 @@ public:
 #endif
 
 #if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline QString text(const char *key, const char *lang = Q_NULLPTR) const;
+    QT_DEPRECATED inline QString text(const char *key, const char *lang = nullptr) const;
     QT_DEPRECATED inline QList<QImageTextKeyLang> textList() const;
     QT_DEPRECATED inline QStringList textLanguages() const;
     QT_DEPRECATED inline QString text(const QImageTextKeyLang&) const;

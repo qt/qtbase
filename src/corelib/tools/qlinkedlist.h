@@ -134,7 +134,7 @@ public:
         typedef T *pointer;
         typedef T &reference;
         Node *i;
-        inline iterator() : i(Q_NULLPTR) {}
+        inline iterator() : i(nullptr) {}
         inline iterator(Node *n) : i(n) {}
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         iterator(const iterator &other) Q_DECL_NOTHROW : i(other.i) {}
@@ -171,7 +171,7 @@ public:
         typedef const T *pointer;
         typedef const T &reference;
         Node *i;
-        inline const_iterator() : i(Q_NULLPTR) {}
+        inline const_iterator() : i(nullptr) {}
         inline const_iterator(Node *n) : i(n) {}
         inline const_iterator(iterator ci) : i(ci.i){}
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)

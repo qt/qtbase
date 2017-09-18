@@ -68,7 +68,7 @@ class Q_WIDGETS_EXPORT QTreeView : public QAbstractItemView
     Q_PROPERTY(bool expandsOnDoubleClick READ expandsOnDoubleClick WRITE setExpandsOnDoubleClick)
 
 public:
-    explicit QTreeView(QWidget *parent = Q_NULLPTR);
+    explicit QTreeView(QWidget *parent = nullptr);
     ~QTreeView();
 
     void setModel(QAbstractItemModel *model) override;
@@ -172,7 +172,7 @@ protected Q_SLOTS:
     void verticalScrollbarValueChanged(int value) override;
 
 protected:
-    QTreeView(QTreeViewPrivate &dd, QWidget *parent = Q_NULLPTR);
+    QTreeView(QTreeViewPrivate &dd, QWidget *parent = nullptr);
     void scrollContentsBy(int dx, int dy) override;
     void rowsInserted(const QModelIndex &parent, int start, int end) override;
     void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end) override;

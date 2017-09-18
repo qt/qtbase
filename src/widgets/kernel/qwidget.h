@@ -211,7 +211,7 @@ public:
     };
     Q_DECLARE_FLAGS(RenderFlags, RenderFlag)
 
-    explicit QWidget(QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit QWidget(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~QWidget();
 
     int devType() const override;
@@ -596,7 +596,7 @@ public:
 
     QWindow *windowHandle() const;
 
-    static QWidget *createWindowContainer(QWindow *window, QWidget *parent=Q_NULLPTR, Qt::WindowFlags flags=Qt::WindowFlags());
+    static QWidget *createWindowContainer(QWindow *window, QWidget *parent=nullptr, Qt::WindowFlags flags=Qt::WindowFlags());
 
     friend class QDesktopScreenWidget;
 
@@ -738,12 +738,12 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QWidget::RenderFlags)
 #ifndef Q_QDOC
 template <> inline QWidget *qobject_cast<QWidget*>(QObject *o)
 {
-    if (!o || !o->isWidgetType()) return Q_NULLPTR;
+    if (!o || !o->isWidgetType()) return nullptr;
     return static_cast<QWidget*>(o);
 }
 template <> inline const QWidget *qobject_cast<const QWidget*>(const QObject *o)
 {
-    if (!o || !o->isWidgetType()) return Q_NULLPTR;
+    if (!o || !o->isWidgetType()) return nullptr;
     return static_cast<const QWidget*>(o);
 }
 #endif // !Q_QDOC

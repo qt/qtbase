@@ -1324,7 +1324,7 @@ void QMenuBarPrivate::handleReparent()
     //Note: if parent is reparented, then window may change even if parent doesn't.
     // We need to install an avent filter on each parent up to the parent that is
     // also a window (for shortcuts)
-    QWidget *newWindow = newParent ? newParent->window() : Q_NULLPTR;
+    QWidget *newWindow = newParent ? newParent->window() : nullptr;
 
     QVector<QPointer<QWidget> > newParents;
     // Remove event filters on ex-parents, keep them on still-parents
@@ -1703,7 +1703,7 @@ void QMenuBarPrivate::_q_internalShortcutActivated(int id)
     QAction *act = actions.at(id);
     if (act && act->menu()) {
         if (QPlatformMenu *platformMenu = act->menu()->platformMenu()) {
-            platformMenu->showPopup(q->windowHandle(), actionRects.at(id), Q_NULLPTR);
+            platformMenu->showPopup(q->windowHandle(), actionRects.at(id), nullptr);
             return;
         }
     }

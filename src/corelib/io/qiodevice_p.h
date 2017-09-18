@@ -88,14 +88,14 @@ public:
 
     class QRingBufferRef {
         QRingBuffer *m_buf;
-        inline QRingBufferRef() : m_buf(Q_NULLPTR) { }
+        inline QRingBufferRef() : m_buf(nullptr) { }
         friend class QIODevicePrivate;
     public:
         // wrap functions from QRingBuffer
         inline void setChunkSize(int size) { Q_ASSERT(m_buf); m_buf->setChunkSize(size); }
         inline int chunkSize() const { Q_ASSERT(m_buf); return m_buf->chunkSize(); }
         inline qint64 nextDataBlockSize() const { return (m_buf ? m_buf->nextDataBlockSize() : Q_INT64_C(0)); }
-        inline const char *readPointer() const { return (m_buf ? m_buf->readPointer() : Q_NULLPTR); }
+        inline const char *readPointer() const { return (m_buf ? m_buf->readPointer() : nullptr); }
         inline const char *readPointerAtPosition(qint64 pos, qint64 &length) const { Q_ASSERT(m_buf); return m_buf->readPointerAtPosition(pos, length); }
         inline void free(qint64 bytes) { Q_ASSERT(m_buf); m_buf->free(bytes); }
         inline char *reserve(qint64 bytes) { Q_ASSERT(m_buf); return m_buf->reserve(bytes); }

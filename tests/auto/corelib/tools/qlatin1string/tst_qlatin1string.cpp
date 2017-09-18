@@ -86,7 +86,7 @@ void tst_QLatin1String::nullString()
     // default ctor
     {
         QLatin1String l1;
-        QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(Q_NULLPTR));
+        QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(nullptr));
         QCOMPARE(l1.size(), 0);
 
         QString s = l1;
@@ -95,9 +95,9 @@ void tst_QLatin1String::nullString()
 
     // from nullptr
     {
-        const char *null = Q_NULLPTR;
+        const char *null = nullptr;
         QLatin1String l1(null);
-        QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(Q_NULLPTR));
+        QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(nullptr));
         QCOMPARE(l1.size(), 0);
 
         QString s = l1;
@@ -111,7 +111,7 @@ void tst_QLatin1String::nullString()
 
         QLatin1String l1(null);
         QEXPECT_FAIL("", "null QByteArrays become non-null QLatin1Strings...", Continue);
-        QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(Q_NULLPTR));
+        QCOMPARE(static_cast<const void*>(l1.data()), static_cast<const void*>(nullptr));
         QCOMPARE(l1.size(), 0);
 
         QString s = l1;

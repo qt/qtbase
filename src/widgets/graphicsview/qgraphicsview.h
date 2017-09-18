@@ -114,8 +114,8 @@ public:
     };
     Q_DECLARE_FLAGS(OptimizationFlags, OptimizationFlag)
 
-    QGraphicsView(QWidget *parent = Q_NULLPTR);
-    QGraphicsView(QGraphicsScene *scene, QWidget *parent = Q_NULLPTR);
+    QGraphicsView(QWidget *parent = nullptr);
+    QGraphicsView(QGraphicsScene *scene, QWidget *parent = nullptr);
     ~QGraphicsView();
 
     QSize sizeHint() const override;
@@ -236,7 +236,7 @@ protected Q_SLOTS:
     void setupViewport(QWidget *widget) override;
 
 protected:
-    QGraphicsView(QGraphicsViewPrivate &, QWidget *parent = Q_NULLPTR);
+    QGraphicsView(QGraphicsViewPrivate &, QWidget *parent = nullptr);
     bool event(QEvent *event) override;
     bool viewportEvent(QEvent *event) override;
 

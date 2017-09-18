@@ -740,7 +740,7 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 */
 quint32 QHostAddress::toIPv4Address() const
 {
-    return toIPv4Address(Q_NULLPTR);
+    return toIPv4Address(nullptr);
 }
 
 /*!

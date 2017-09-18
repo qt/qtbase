@@ -58,10 +58,10 @@ QHaikuScreen::QHaikuScreen()
 QHaikuScreen::~QHaikuScreen()
 {
     delete m_cursor;
-    m_cursor = Q_NULLPTR;
+    m_cursor = nullptr;
 
     delete m_screen;
-    m_screen = Q_NULLPTR;
+    m_screen = nullptr;
 }
 
 QPixmap QHaikuScreen::grabWindow(WId winId, int x, int y, int width, int height) const
@@ -69,8 +69,8 @@ QPixmap QHaikuScreen::grabWindow(WId winId, int x, int y, int width, int height)
     if (width == 0 || height == 0)
         return QPixmap();
 
-    BScreen screen(Q_NULLPTR);
-    BBitmap *bitmap = Q_NULLPTR;
+    BScreen screen(nullptr);
+    BBitmap *bitmap = nullptr;
     screen.GetBitmap(&bitmap);
 
     const BRect frame = (winId ? ((BWindow*)winId)->Frame() : screen.Frame());

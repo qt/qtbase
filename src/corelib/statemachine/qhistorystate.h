@@ -61,8 +61,8 @@ public:
     };
     Q_ENUM(HistoryType)
 
-    QHistoryState(QState *parent = Q_NULLPTR);
-    QHistoryState(HistoryType type, QState *parent = Q_NULLPTR);
+    QHistoryState(QState *parent = nullptr);
+    QHistoryState(HistoryType type, QState *parent = nullptr);
     ~QHistoryState();
 
     QAbstractTransition *defaultTransition() const;

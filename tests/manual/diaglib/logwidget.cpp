@@ -133,7 +133,7 @@ void LogWidget::install()
     qInfo("%s", qPrintable(LogWidget::startupMessage()));
 }
 
-void LogWidget::uninstall() { qInstallMessageHandler(Q_NULLPTR); }
+void LogWidget::uninstall() { qInstallMessageHandler(nullptr); }
 
 #else // Qt 5
 

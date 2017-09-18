@@ -69,7 +69,7 @@ public:
 #endif
     virtual QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const = 0;
 
-    virtual QXcbNativeInterfaceHandler *nativeInterfaceHandler() const  { return Q_NULLPTR; }
+    virtual QXcbNativeInterfaceHandler *nativeInterfaceHandler() const  { return nullptr; }
 };
 
 QT_END_NAMESPACE

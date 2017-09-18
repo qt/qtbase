@@ -178,7 +178,7 @@ public:
     inline QTreeWidgetItem *parent() const { return par; }
     inline QTreeWidgetItem *child(int index) const {
         if (index < 0 || index >= children.size())
-            return Q_NULLPTR;
+            return nullptr;
         executePendingSort();
         return children.at(index);
     }
@@ -261,7 +261,7 @@ class Q_WIDGETS_EXPORT QTreeWidget : public QTreeView
     friend class QTreeModel;
     friend class QTreeWidgetItem;
 public:
-    explicit QTreeWidget(QWidget *parent = Q_NULLPTR);
+    explicit QTreeWidget(QWidget *parent = nullptr);
     ~QTreeWidget();
 
     int columnCount() const;
@@ -395,7 +395,7 @@ private:
 };
 
 inline void QTreeWidget::removeItemWidget(QTreeWidgetItem *item, int column)
-{ setItemWidget(item, column, Q_NULLPTR); }
+{ setItemWidget(item, column, nullptr); }
 
 inline QTreeWidgetItem *QTreeWidget::itemAt(int ax, int ay) const
 { return itemAt(QPoint(ax, ay)); }

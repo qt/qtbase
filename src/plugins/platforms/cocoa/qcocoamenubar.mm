@@ -450,7 +450,7 @@ NSMenuItem *QCocoaMenuBar::itemForRole(QPlatformMenuItem::MenuRole r)
         foreach (QCocoaMenuItem *i, m->items())
             if (i->effectiveRole() == r)
                 return i->nsItem();
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

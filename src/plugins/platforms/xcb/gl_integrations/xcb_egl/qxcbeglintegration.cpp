@@ -49,7 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 QXcbEglIntegration::QXcbEglIntegration()
-    : m_connection(Q_NULLPTR)
+    : m_connection(nullptr)
     , m_egl_display(EGL_NO_DISPLAY)
 {
     qCDebug(lcQpaGl) << "Xcb EGL gl-integration created";

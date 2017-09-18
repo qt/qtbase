@@ -74,7 +74,7 @@ static const char *candidateSignal(int which)
     case NumCandidateSignals:       ; // fall through
     };
     Q_UNREACHABLE();
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 static const char *signalForMember(const char *member)

@@ -161,7 +161,7 @@ void QWindowsDirect2DDeviceContextSuspender::resume()
 {
     if (m_dc) {
         m_dc->resume();
-        m_dc = Q_NULLPTR;
+        m_dc = nullptr;
     }
 }
 

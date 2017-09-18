@@ -118,12 +118,12 @@ void HaikuWindowProxy::zoomByQt()
 
 QHaikuWindow::QHaikuWindow(QWindow *window)
     : QPlatformWindow(window)
-    , m_window(Q_NULLPTR)
+    , m_window(nullptr)
     , m_windowState(Qt::WindowNoState)
 {
     const QRect rect = initialGeometry(window, window->geometry(), DefaultWindowWidth, DefaultWindowHeight);
 
-    HaikuWindowProxy *haikuWindow = new HaikuWindowProxy(window, rect, Q_NULLPTR);
+    HaikuWindowProxy *haikuWindow = new HaikuWindowProxy(window, rect, nullptr);
     connect(haikuWindow, SIGNAL(moved(QPoint)), SLOT(haikuWindowMoved(QPoint)));
     connect(haikuWindow, SIGNAL(resized(QSize,bool)), SLOT(haikuWindowResized(QSize,bool)));
     connect(haikuWindow, SIGNAL(windowActivated(bool)), SLOT(haikuWindowActivated(bool)));
@@ -145,7 +145,7 @@ QHaikuWindow::~QHaikuWindow()
     m_window->LockLooper();
     m_window->Quit();
 
-    m_window = Q_NULLPTR;
+    m_window = nullptr;
 }
 
 void QHaikuWindow::setGeometry(const QRect &rect)
@@ -330,7 +330,7 @@ void QHaikuWindow::haikuWindowResized(const QSize &size, bool zoomInProgress)
 
 void QHaikuWindow::haikuWindowActivated(bool activated)
 {
-    QWindowSystemInterface::handleWindowActivated(activated ? window() : Q_NULLPTR);
+    QWindowSystemInterface::handleWindowActivated(activated ? window() : nullptr);
 }
 
 void QHaikuWindow::haikuWindowMinimized(bool minimize)

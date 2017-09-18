@@ -64,7 +64,7 @@ public:
     typedef QMap<QString, QSize> CustomSizeHintMap;
 
     explicit MainWindow(const CustomSizeHintMap &customSizeHints,
-                        QWidget *parent = Q_NULLPTR,
+                        QWidget *parent = nullptr,
                         Qt::WindowFlags flags = 0);
 
 public slots:

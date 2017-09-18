@@ -369,7 +369,7 @@ void QXcbConnection::destroyScreen(QXcbScreen *screen)
         // If there are no other screens on the same virtual desktop,
         // then transform the physical screen into a fake screen.
         const QString nameWas = screen->name();
-        screen->setOutput(XCB_NONE, Q_NULLPTR);
+        screen->setOutput(XCB_NONE, nullptr);
         qCDebug(lcQpaScreen) << "transformed" << nameWas << "to fake" << screen;
     } else {
         // There is more than one screen on the same virtual desktop, remove the screen
@@ -395,7 +395,7 @@ void QXcbConnection::initializeScreens()
 {
     xcb_screen_iterator_t it = xcb_setup_roots_iterator(m_setup);
     int xcbScreenNumber = 0;    // screen number in the xcb sense
-    QXcbScreen *primaryScreen = Q_NULLPTR;
+    QXcbScreen *primaryScreen = nullptr;
     while (it.rem) {
         // Each "screen" in xcb terminology is a virtual desktop,
         // potentially a collection of separate juxtaposed monitors.
@@ -415,7 +415,7 @@ void QXcbConnection::initializeScreens()
                 qWarning("failed to get the current screen resources");
             } else {
                 xcb_timestamp_t timestamp = 0;
-                xcb_randr_output_t *outputs = Q_NULLPTR;
+                xcb_randr_output_t *outputs = nullptr;
                 int outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources_current.get());
                 if (outputCount) {
                     timestamp = resources_current->config_timestamp;
@@ -487,7 +487,7 @@ void QXcbConnection::initializeScreens()
                 while (it.rem) {
                     xcb_xinerama_screen_info_t *screen_info = it.data;
                     QXcbScreen *screen = new QXcbScreen(this, virtualDesktop,
-                                                        XCB_NONE, Q_NULLPTR,
+                                                        XCB_NONE, nullptr,
                                                         screen_info, it.index);
                     siblings << screen;
                     m_screens << screen;
@@ -498,7 +498,7 @@ void QXcbConnection::initializeScreens()
         if (siblings.isEmpty()) {
             // If there are no XRandR outputs or XRandR extension is missing,
             // then create a fake/legacy screen.
-            QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, XCB_NONE, Q_NULLPTR);
+            QXcbScreen *screen = new QXcbScreen(this, virtualDesktop, XCB_NONE, nullptr);
             qCDebug(lcQpaScreen) << "created fake screen" << screen;
             m_screens << screen;
             if (m_primaryScreenNumber == xcbScreenNumber) {
@@ -631,7 +631,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
             if (m_glIntegration && !m_glIntegration->initialize(this)) {
                 qCDebug(lcQpaGl) << "Failed to initialize xcb gl-integration" << glIntegrationNames.at(i);
                 delete m_glIntegration;
-                m_glIntegration = Q_NULLPTR;
+                m_glIntegration = nullptr;
             }
         }
         if (!m_glIntegration)
@@ -689,7 +689,7 @@ QXcbScreen *QXcbConnection::primaryScreen() const
         return m_screens.first();
     }
 
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void QXcbConnection::addWindowEventListener(xcb_window_t id, QXcbWindowEventListener *eventListener)
@@ -1413,7 +1413,7 @@ void QXcbConnection::setFocusWindow(QWindow *w)
 void QXcbConnection::setMouseGrabber(QXcbWindow *w)
 {
     m_mouseGrabber = w;
-    m_mousePressWindow = Q_NULLPTR;
+    m_mousePressWindow = nullptr;
 }
 void QXcbConnection::setMousePressWindow(QXcbWindow *w)
 {

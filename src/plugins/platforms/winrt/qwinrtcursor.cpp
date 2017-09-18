@@ -89,7 +89,7 @@ void QWinRTCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     switch (windowCursor ? windowCursor->shape() : Qt::ArrowCursor) {
     case Qt::BlankCursor:
         hr = QEventDispatcherWinRT::runOnXamlThread([coreWindow]() {
-            coreWindow->put_PointerCursor(Q_NULLPTR);
+            coreWindow->put_PointerCursor(nullptr);
             return S_OK;
         });
         RETURN_VOID_IF_FAILED("Failed to set blank native cursor");

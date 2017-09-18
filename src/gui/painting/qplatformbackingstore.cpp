@@ -690,7 +690,7 @@ void QPlatformBackingStore::endPaint()
 */
 QPlatformGraphicsBuffer *QPlatformBackingStore::graphicsBuffer() const
 {
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 /*!

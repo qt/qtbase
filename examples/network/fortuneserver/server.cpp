@@ -58,7 +58,7 @@
 Server::Server(QWidget *parent)
     : QDialog(parent)
     , statusLabel(new QLabel)
-    , tcpServer(Q_NULLPTR)
+    , tcpServer(nullptr)
     , networkSession(0)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -109,7 +109,7 @@ Server::Server(QWidget *parent)
         buttonLayout->addWidget(quitButton);
         buttonLayout->addStretch(1);
 
-        QVBoxLayout *mainLayout = Q_NULLPTR;
+        QVBoxLayout *mainLayout = nullptr;
         if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
             QVBoxLayout *outerVerticalLayout = new QVBoxLayout(this);
             outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));

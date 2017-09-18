@@ -69,7 +69,7 @@ class PreviewForm : public QDialog
     Q_OBJECT
 
 public:
-    explicit PreviewForm(QWidget *parent = Q_NULLPTR);
+    explicit PreviewForm(QWidget *parent = nullptr);
 
     void setCodecList(const QList<QTextCodec *> &list);
     void setEncodedData(const QByteArray &data);

@@ -100,7 +100,7 @@ public:
     Q_ENUM(NetworkAccessibility)
 #endif
 
-    explicit QNetworkAccessManager(QObject *parent = Q_NULLPTR);
+    explicit QNetworkAccessManager(QObject *parent = nullptr);
     ~QNetworkAccessManager();
 
     // ### Qt 6: turn into virtual
@@ -139,7 +139,7 @@ public:
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *put(const QNetworkRequest &request, QHttpMultiPart *multiPart);
     QNetworkReply *deleteResource(const QNetworkRequest &request);
-    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = Q_NULLPTR);
+    QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, const QByteArray &data);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QHttpMultiPart *multiPart);
 
@@ -181,7 +181,7 @@ Q_SIGNALS:
 
 protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,
-                                         QIODevice *outgoingData = Q_NULLPTR);
+                                         QIODevice *outgoingData = nullptr);
 
 protected Q_SLOTS:
     QStringList supportedSchemesImplementation() const;

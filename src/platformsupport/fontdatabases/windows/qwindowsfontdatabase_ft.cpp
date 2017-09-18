@@ -144,7 +144,7 @@ static FontKeys &fontKeys()
     return result;
 }
 
-static const FontKey *findFontKey(const QString &name, int *indexIn = Q_NULLPTR)
+static const FontKey *findFontKey(const QString &name, int *indexIn = nullptr)
 {
      const FontKeys &keys = fontKeys();
      for (auto it = keys.constBegin(), cend = keys.constEnd(); it != cend; ++it) {
@@ -157,7 +157,7 @@ static const FontKey *findFontKey(const QString &name, int *indexIn = Q_NULLPTR)
      }
      if (indexIn)
          *indexIn = -1;
-     return Q_NULLPTR;
+     return nullptr;
 }
 
 static bool addFontToDatabase(QString familyName,
@@ -310,7 +310,7 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
     // NEWTEXTMETRICEX (passed for TT fonts) is a NEWTEXTMETRIC, which according
     // to the documentation is identical to a TEXTMETRIC except for the last four
     // members, which we don't use anyway
-    const FONTSIGNATURE *signature = Q_NULLPTR;
+    const FONTSIGNATURE *signature = nullptr;
     if (type & TRUETYPE_FONTTYPE)
         signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
     addFontToDatabase(faceName, styleName, fullName, *logFont, textmetric, signature, type);

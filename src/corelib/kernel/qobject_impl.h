@@ -68,9 +68,9 @@ namespace QtPrivate {
     { enum { Value = QMetaTypeId2<Arg>::Defined && TypesAreDeclaredMetaType<List<Tail...>>::Value }; };
 
     template <typename ArgList, bool Declared = TypesAreDeclaredMetaType<ArgList>::Value > struct ConnectionTypes
-    { static const int *types() { return Q_NULLPTR; } };
+    { static const int *types() { return nullptr; } };
     template <> struct ConnectionTypes<List<>, true>
-    { static const int *types() { return Q_NULLPTR; } };
+    { static const int *types() { return nullptr; } };
     template <typename... Args> struct ConnectionTypes<List<Args...>, true>
     { static const int *types() { static const int t[sizeof...(Args) + 1] = { (QtPrivate::QMetaTypeIdHelper<Args>::qt_metatype_id())..., 0 }; return t; } };
 

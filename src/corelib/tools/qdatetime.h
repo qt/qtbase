@@ -79,7 +79,7 @@ public:
     int dayOfYear() const;
     int daysInMonth() const;
     int daysInYear() const;
-    int weekNumber(int *yearNum = Q_NULLPTR) const;
+    int weekNumber(int *yearNum = nullptr) const;
 
 #if QT_DEPRECATED_SINCE(5, 11) && !defined QT_NO_TEXTDATE
     QT_DEPRECATED_X("Use QLocale::monthName or QLocale::standaloneMonthName")

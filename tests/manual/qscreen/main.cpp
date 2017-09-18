@@ -100,7 +100,7 @@ class ScreenPropertyWatcher : public PropertyWatcher
 {
     Q_OBJECT
 public:
-    ScreenPropertyWatcher(QWidget *wp = Q_NULLPTR) : PropertyWatcher(Q_NULLPTR, QString(), wp)
+    ScreenPropertyWatcher(QWidget *wp = nullptr) : PropertyWatcher(nullptr, QString(), wp)
     {
         // workaround for the fact that virtualSiblings is not a property,
         // thus there is no change notification:

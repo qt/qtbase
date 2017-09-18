@@ -511,7 +511,7 @@ public:
     void glTexStorage3DMultisample(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
 
 private:
-    static bool isInitialized(const QOpenGLExtraFunctionsPrivate *d) { return d != Q_NULLPTR; }
+    static bool isInitialized(const QOpenGLExtraFunctionsPrivate *d) { return d != nullptr; }
 };
 
 

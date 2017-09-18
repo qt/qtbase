@@ -260,7 +260,7 @@ QJNIEnvironmentPrivate::QJNIEnvironmentPrivate()
         return;
 
     if (ret == JNI_EDETACHED) { // We need to (re-)attach
-        JavaVMAttachArgs args = { JNI_VERSION_1_6, qJniThreadName, Q_NULLPTR };
+        JavaVMAttachArgs args = { JNI_VERSION_1_6, qJniThreadName, nullptr };
         if (vm->AttachCurrentThread(&jniEnv, &args) != JNI_OK)
             return;
 

@@ -62,7 +62,7 @@ class Q_WIDGETS_EXPORT QTableView : public QAbstractItemView
 #endif
 
 public:
-    explicit QTableView(QWidget *parent = Q_NULLPTR);
+    explicit QTableView(QWidget *parent = nullptr);
     ~QTableView();
 
     void setModel(QAbstractItemModel *model) override;

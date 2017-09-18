@@ -55,7 +55,7 @@
 
 //! [0]
 TabletCanvas::TabletCanvas()
-  : QWidget(Q_NULLPTR)
+  : QWidget(nullptr)
   , m_alphaChannelValuator(TangentialPressureValuator)
   , m_colorSaturationValuator(NoValuator)
   , m_lineWidthValuator(PressureValuator)

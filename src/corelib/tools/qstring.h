@@ -91,7 +91,7 @@ template <typename T> class QVector;
 class QLatin1String
 {
 public:
-    Q_DECL_CONSTEXPR inline QLatin1String() Q_DECL_NOTHROW : m_size(0), m_data(Q_NULLPTR) {}
+    Q_DECL_CONSTEXPR inline QLatin1String() Q_DECL_NOTHROW : m_size(0), m_data(nullptr) {}
     Q_DECL_CONSTEXPR inline explicit QLatin1String(const char *s) Q_DECL_NOTHROW : m_size(s ? int(strlen(s)) : 0), m_data(s) {}
     Q_DECL_CONSTEXPR explicit QLatin1String(const char *f, const char *l)
         : QLatin1String(f, int(l - f)) {}
@@ -624,16 +624,16 @@ public:
     static int localeAwareCompare(const QString& s1, const QStringRef& s2);
 
     // ### Qt6: make inline except for the long long versions
-    short  toShort(bool *ok=Q_NULLPTR, int base=10) const;
-    ushort toUShort(bool *ok=Q_NULLPTR, int base=10) const;
-    int toInt(bool *ok=Q_NULLPTR, int base=10) const;
-    uint toUInt(bool *ok=Q_NULLPTR, int base=10) const;
-    long toLong(bool *ok=Q_NULLPTR, int base=10) const;
-    ulong toULong(bool *ok=Q_NULLPTR, int base=10) const;
-    qlonglong toLongLong(bool *ok=Q_NULLPTR, int base=10) const;
-    qulonglong toULongLong(bool *ok=Q_NULLPTR, int base=10) const;
-    float toFloat(bool *ok=Q_NULLPTR) const;
-    double toDouble(bool *ok=Q_NULLPTR) const;
+    short  toShort(bool *ok=nullptr, int base=10) const;
+    ushort toUShort(bool *ok=nullptr, int base=10) const;
+    int toInt(bool *ok=nullptr, int base=10) const;
+    uint toUInt(bool *ok=nullptr, int base=10) const;
+    long toLong(bool *ok=nullptr, int base=10) const;
+    ulong toULong(bool *ok=nullptr, int base=10) const;
+    qlonglong toLongLong(bool *ok=nullptr, int base=10) const;
+    qulonglong toULongLong(bool *ok=nullptr, int base=10) const;
+    float toFloat(bool *ok=nullptr) const;
+    double toDouble(bool *ok=nullptr) const;
 
     QString &setNum(short, int base=10);
     QString &setNum(ushort, int base=10);
@@ -1417,7 +1417,7 @@ public:
     typedef QString::const_reference const_reference;
 
     // ### Qt 6: make this constructor constexpr, after the destructor is made trivial
-    inline QStringRef() : m_string(Q_NULLPTR), m_position(0), m_size(0) {}
+    inline QStringRef() : m_string(nullptr), m_position(0), m_size(0) {}
     inline QStringRef(const QString *string, int position, int size);
     inline QStringRef(const QString *string);
 
@@ -1533,10 +1533,10 @@ public:
     Q_REQUIRED_RESULT QByteArray toLocal8Bit() const;
     Q_REQUIRED_RESULT QVector<uint> toUcs4() const;
 
-    inline void clear() { m_string = Q_NULLPTR; m_position = m_size = 0; }
+    inline void clear() { m_string = nullptr; m_position = m_size = 0; }
     QString toString() const;
     inline bool isEmpty() const { return m_size == 0; }
-    inline bool isNull() const { return m_string == Q_NULLPTR || m_string->isNull(); }
+    inline bool isNull() const { return m_string == nullptr || m_string->isNull(); }
 
     QStringRef appendTo(QString *string) const;
 
@@ -1576,16 +1576,16 @@ public:
     static int localeAwareCompare(const QStringRef &s1, const QStringRef &s2);
 
     Q_REQUIRED_RESULT QStringRef trimmed() const;
-    short  toShort(bool *ok = Q_NULLPTR, int base = 10) const;
-    ushort toUShort(bool *ok = Q_NULLPTR, int base = 10) const;
-    int toInt(bool *ok = Q_NULLPTR, int base = 10) const;
-    uint toUInt(bool *ok = Q_NULLPTR, int base = 10) const;
-    long toLong(bool *ok = Q_NULLPTR, int base = 10) const;
-    ulong toULong(bool *ok = Q_NULLPTR, int base = 10) const;
-    qlonglong toLongLong(bool *ok = Q_NULLPTR, int base = 10) const;
-    qulonglong toULongLong(bool *ok = Q_NULLPTR, int base = 10) const;
-    float toFloat(bool *ok = Q_NULLPTR) const;
-    double toDouble(bool *ok = Q_NULLPTR) const;
+    short  toShort(bool *ok = nullptr, int base = 10) const;
+    ushort toUShort(bool *ok = nullptr, int base = 10) const;
+    int toInt(bool *ok = nullptr, int base = 10) const;
+    uint toUInt(bool *ok = nullptr, int base = 10) const;
+    long toLong(bool *ok = nullptr, int base = 10) const;
+    ulong toULong(bool *ok = nullptr, int base = 10) const;
+    qlonglong toLongLong(bool *ok = nullptr, int base = 10) const;
+    qulonglong toULongLong(bool *ok = nullptr, int base = 10) const;
+    float toFloat(bool *ok = nullptr) const;
+    double toDouble(bool *ok = nullptr) const;
 };
 Q_DECLARE_TYPEINFO(QStringRef, Q_PRIMITIVE_TYPE);
 

@@ -104,7 +104,7 @@ void tst_QHttpNetworkReply::parseHeader()
 class TestHeaderSocket : public QAbstractSocket
 {
 public:
-    explicit TestHeaderSocket(const QByteArray &input) : QAbstractSocket(QAbstractSocket::TcpSocket, Q_NULLPTR)
+    explicit TestHeaderSocket(const QByteArray &input) : QAbstractSocket(QAbstractSocket::TcpSocket, nullptr)
     {
         inputBuffer.setData(input);
         inputBuffer.open(QIODevice::ReadOnly | QIODevice::Unbuffered);

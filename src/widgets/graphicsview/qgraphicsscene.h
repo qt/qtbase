@@ -121,9 +121,9 @@ public:
     };
     Q_DECLARE_FLAGS(SceneLayers, SceneLayer)
 
-    QGraphicsScene(QObject *parent = Q_NULLPTR);
-    QGraphicsScene(const QRectF &sceneRect, QObject *parent = Q_NULLPTR);
-    QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject *parent = Q_NULLPTR);
+    QGraphicsScene(QObject *parent = nullptr);
+    QGraphicsScene(const QRectF &sceneRect, QObject *parent = nullptr);
+    QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObject *parent = nullptr);
     virtual ~QGraphicsScene();
 
     QRectF sceneRect() const;
@@ -159,7 +159,7 @@ public:
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QGraphicsItem *itemAt(const QPointF &position) const {
         QList<QGraphicsItem *> itemsAtPoint = items(position);
-        return itemsAtPoint.isEmpty() ? Q_NULLPTR : itemsAtPoint.first();
+        return itemsAtPoint.isEmpty() ? nullptr : itemsAtPoint.first();
     }
 #endif
     QGraphicsItem *itemAt(const QPointF &pos, const QTransform &deviceTransform) const;
@@ -173,7 +173,7 @@ public:
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED inline QGraphicsItem *itemAt(qreal x, qreal y) const {
         QList<QGraphicsItem *> itemsAtPoint = items(QPointF(x, y));
-        return itemsAtPoint.isEmpty() ? Q_NULLPTR : itemsAtPoint.first();
+        return itemsAtPoint.isEmpty() ? nullptr : itemsAtPoint.first();
     }
 #endif
     inline QGraphicsItem *itemAt(qreal x, qreal y, const QTransform &deviceTransform) const
@@ -285,7 +285,7 @@ protected:
     virtual void drawItems(QPainter *painter, int numItems,
                            QGraphicsItem *items[],
                            const QStyleOptionGraphicsItem options[],
-                           QWidget *widget = Q_NULLPTR);
+                           QWidget *widget = nullptr);
 
 protected Q_SLOTS:
     // ### Qt 6: make unconditional

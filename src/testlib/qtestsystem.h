@@ -62,7 +62,7 @@ namespace QTest
         int remaining = ms;
         do {
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
             remaining = timer.remainingTime();
             if (remaining <= 0)
                 break;
@@ -78,7 +78,7 @@ namespace QTest
         int remaining = timeout;
         while (!window->isActive() && remaining > 0) {
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
             QTest::qSleep(10);
             remaining = timer.remainingTime();
         }
@@ -105,7 +105,7 @@ namespace QTest
         int remaining = timeout;
         while (!window->isExposed() && remaining > 0) {
             QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
             QTest::qSleep(10);
             remaining = timer.remainingTime();
         }

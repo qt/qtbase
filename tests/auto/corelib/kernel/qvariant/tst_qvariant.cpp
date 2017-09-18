@@ -4927,7 +4927,7 @@ void tst_QVariant::accessSequentialContainerKey()
     {
     QMap<QString, QObject*> mapping;
     QString name = QString::fromLatin1("Seven");
-    mapping.insert(name, Q_NULLPTR);
+    mapping.insert(name, nullptr);
 
     QVariant variant = QVariant::fromValue(mapping);
 

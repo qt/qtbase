@@ -72,7 +72,7 @@ QPlatformNativeInterface::NativeResourceForContextFunction QXcbGlxNativeInterfac
     default:
         break;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void *QXcbGlxNativeInterfaceHandler::glxContextForContext(QOpenGLContext *context)

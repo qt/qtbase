@@ -97,7 +97,7 @@ QBasicDrag::QBasicDrag() :
     m_restoreCursor(false), m_eventLoop(0),
     m_executed_drop_action(Qt::IgnoreAction), m_can_drop(false),
     m_drag(0), m_drag_icon_window(0), m_useCompositing(true),
-    m_screen(Q_NULLPTR)
+    m_screen(nullptr)
 {
 }
 

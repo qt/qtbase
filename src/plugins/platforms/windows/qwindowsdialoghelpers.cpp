@@ -711,7 +711,7 @@ QString QWindowsShellItem::libraryItemDefaultSaveFolder(IShellItem *item)
 {
     QString result;
     if (IShellLibrary *library = sHLoadLibraryFromItem(item, STGM_READ | STGM_SHARE_DENY_WRITE)) {
-        IShellItem *item = Q_NULLPTR;
+        IShellItem *item = nullptr;
         if (SUCCEEDED(library->GetDefaultSaveFolder(DSFT_DETECT, IID_IShellItem, reinterpret_cast<void **>(&item)))) {
             result = QDir::cleanPath(QWindowsShellItem::displayName(item, SIGDN_FILESYSPATH));
             item->Release();
@@ -893,7 +893,7 @@ void QWindowsNativeFileDialogBase::setWindowTitle(const QString &title)
 IShellItem *QWindowsNativeFileDialogBase::shellItem(const QUrl &url)
 {
     if (url.isLocalFile()) {
-        IShellItem *result = Q_NULLPTR;
+        IShellItem *result = nullptr;
         const QString native = QDir::toNativeSeparators(url.toLocalFile());
         const HRESULT hr =
                 SHCreateItemFromParsingName(reinterpret_cast<const wchar_t *>(native.utf16()),
@@ -901,30 +901,30 @@ IShellItem *QWindowsNativeFileDialogBase::shellItem(const QUrl &url)
                                             reinterpret_cast<void **>(&result));
         if (FAILED(hr)) {
             qErrnoWarning("%s: SHCreateItemFromParsingName(%s)) failed", __FUNCTION__, qPrintable(url.toString()));
-            return Q_NULLPTR;
+            return nullptr;
         }
         return result;
     } else if (url.scheme() == QLatin1String("clsid")) {
         // Support for virtual folders via GUID
         // (see https://msdn.microsoft.com/en-us/library/windows/desktop/dd378457(v=vs.85).aspx)
         // specified as "clsid:<GUID>" (without '{', '}').
-        IShellItem *result = Q_NULLPTR;
+        IShellItem *result = nullptr;
         const auto uuid = QUuid::fromString(url.path());
         if (uuid.isNull()) {
             qWarning() << __FUNCTION__ << ": Invalid CLSID: " << url.path();
-            return Q_NULLPTR;
+            return nullptr;
         }
         PIDLIST_ABSOLUTE idList;
         HRESULT hr = SHGetKnownFolderIDList(uuid, 0, 0, &idList);
         if (FAILED(hr)) {
             qErrnoWarning("%s: SHGetKnownFolderIDList(%s)) failed", __FUNCTION__, qPrintable(url.toString()));
-            return Q_NULLPTR;
+            return nullptr;
         }
         hr = SHCreateItemFromIDList(idList, IID_IShellItem, reinterpret_cast<void **>(&result));
         CoTaskMemFree(idList);
         if (FAILED(hr)) {
             qErrnoWarning("%s: SHCreateItemFromIDList(%s)) failed", __FUNCTION__, qPrintable(url.toString()));
-            return Q_NULLPTR;
+            return nullptr;
         }
         return result;
     } else {

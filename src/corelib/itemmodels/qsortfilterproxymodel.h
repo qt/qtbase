@@ -70,7 +70,7 @@ class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
     Q_PROPERTY(bool recursiveFiltering READ recursiveFiltering WRITE setRecursiveFiltering)
 
 public:
-    explicit QSortFilterProxyModel(QObject *parent = Q_NULLPTR);
+    explicit QSortFilterProxyModel(QObject *parent = nullptr);
     ~QSortFilterProxyModel();
 
     void setSourceModel(QAbstractItemModel *sourceModel) override;

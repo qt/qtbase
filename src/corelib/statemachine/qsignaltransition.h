@@ -55,17 +55,17 @@ class Q_CORE_EXPORT QSignalTransition : public QAbstractTransition
     Q_PROPERTY(QByteArray signal READ signal WRITE setSignal NOTIFY signalChanged)
 
 public:
-    QSignalTransition(QState *sourceState = Q_NULLPTR);
+    QSignalTransition(QState *sourceState = nullptr);
     QSignalTransition(const QObject *sender, const char *signal,
-                      QState *sourceState = Q_NULLPTR);
+                      QState *sourceState = nullptr);
 #ifdef Q_QDOC
     template<typename PointerToMemberFunction>
     QSignalTransition(const QObject *object, PointerToMemberFunction signal,
-                      QState *sourceState = Q_NULLPTR);
+                      QState *sourceState = nullptr);
 #elif defined(Q_COMPILER_DELEGATING_CONSTRUCTORS)
     template <typename Func>
     QSignalTransition(const typename QtPrivate::FunctionPointer<Func>::Object *obj,
-                      Func sig, QState *srcState = Q_NULLPTR)
+                      Func sig, QState *srcState = nullptr)
     : QSignalTransition(obj, QMetaMethod::fromSignal(sig).methodSignature().constData(), srcState)
     {
     }

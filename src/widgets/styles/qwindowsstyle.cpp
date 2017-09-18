@@ -374,7 +374,7 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
 
 static QWindow *windowOf(const QWidget *w)
 {
-    QWindow *result = Q_NULLPTR;
+    QWindow *result = nullptr;
     if (w) {
         result = w->windowHandle();
         if (!result) {

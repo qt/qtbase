@@ -49,7 +49,7 @@
 #include "qiosmessagedialog.h"
 
 QIOSMessageDialog::QIOSMessageDialog()
-    : m_alertController(Q_NULLPTR)
+    : m_alertController(nullptr)
 {
 }
 
@@ -138,5 +138,5 @@ void QIOSMessageDialog::hide()
     m_eventLoop.exit();
     [m_alertController dismissViewControllerAnimated:YES completion:nil];
     [m_alertController release];
-    m_alertController = Q_NULLPTR;
+    m_alertController = nullptr;
 }

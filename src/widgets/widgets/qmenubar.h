@@ -61,7 +61,7 @@ class Q_WIDGETS_EXPORT QMenuBar : public QWidget
     Q_PROPERTY(bool nativeMenuBar READ isNativeMenuBar WRITE setNativeMenuBar)
 
 public:
-    explicit QMenuBar(QWidget *parent = Q_NULLPTR);
+    explicit QMenuBar(QWidget *parent = nullptr);
     ~QMenuBar();
 
     using QWidget::addAction;

@@ -66,7 +66,7 @@ class IconPreviewArea : public QWidget
     Q_OBJECT
 
 public:
-    explicit IconPreviewArea(QWidget *parent = Q_NULLPTR);
+    explicit IconPreviewArea(QWidget *parent = nullptr);
 
     void setIcon(const QIcon &icon);
     void setSize(const QSize &size);

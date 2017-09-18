@@ -3126,7 +3126,7 @@ void tst_QTcpSocket::readNotificationsAfterBind()
     if (setProxy)
         return;
 
-    QAbstractSocket socket(QAbstractSocket::TcpSocket, Q_NULLPTR);
+    QAbstractSocket socket(QAbstractSocket::TcpSocket, nullptr);
     QVERIFY2(socket.bind(), "Bind error!");
 
     connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), &QTestEventLoop::instance(), SLOT(exitLoop()));

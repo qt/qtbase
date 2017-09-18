@@ -156,7 +156,7 @@ QAbstractEventDispatcher *QMinimalEglIntegration::createEventDispatcher() const
 #elif defined(Q_OS_WIN)
     return new QWindowsGuiEventDispatcher;
 #else
-    return Q_NULLPTR;
+    return nullptr;
 #endif
 }
 

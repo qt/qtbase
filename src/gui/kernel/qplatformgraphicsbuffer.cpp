@@ -217,7 +217,7 @@ void QPlatformGraphicsBuffer::unlock()
     the memory returned when not having a SWWriteAccess.
 */
 const uchar *QPlatformGraphicsBuffer::data() const
-{ return Q_NULLPTR; }
+{ return nullptr; }
 
 /*!
     Accessor for the bytes of the buffer. This function needs to be called on a
@@ -226,7 +226,7 @@ const uchar *QPlatformGraphicsBuffer::data() const
 */
 uchar *QPlatformGraphicsBuffer::data()
 {
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 /*!

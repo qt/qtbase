@@ -1333,7 +1333,7 @@ QXcbConnection::TabletData *QXcbConnection::tabletDataForDevice(int id)
         if (m_tabletData.at(i).deviceId == id)
             return &m_tabletData[i];
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 #endif // QT_CONFIG(tabletevent)

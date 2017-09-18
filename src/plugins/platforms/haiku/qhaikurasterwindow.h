@@ -51,7 +51,7 @@ class HaikuViewProxy : public QObject, public BView
     Q_OBJECT
 
 public:
-    explicit HaikuViewProxy(BWindow *window, QObject *parent = Q_NULLPTR);
+    explicit HaikuViewProxy(BWindow *window, QObject *parent = nullptr);
 
     void MessageReceived(BMessage *message) override;
     void Draw(BRect updateRect) override;

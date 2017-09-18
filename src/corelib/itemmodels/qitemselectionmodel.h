@@ -164,7 +164,7 @@ public:
     Q_DECLARE_FLAGS(SelectionFlags, SelectionFlag)
     Q_FLAG(SelectionFlags)
 
-    explicit QItemSelectionModel(QAbstractItemModel *model = Q_NULLPTR);
+    explicit QItemSelectionModel(QAbstractItemModel *model = nullptr);
     explicit QItemSelectionModel(QAbstractItemModel *model, QObject *parent);
     virtual ~QItemSelectionModel();
 

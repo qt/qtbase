@@ -93,7 +93,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
         // Windows with alpha: Use blend function to update.
         QRect r = QHighDpi::toNativePixels(window->frameGeometry(), window);
         QPoint frameOffset(QHighDpi::toNativePixels(QPoint(window->frameMargins().left(), window->frameMargins().top()),
-                                                    static_cast<const QWindow *>(Q_NULLPTR)));
+                                                    static_cast<const QWindow *>(nullptr)));
         QRect dirtyRect = br.translated(offset + frameOffset);
 
         SIZE size = {r.width(), r.height()};

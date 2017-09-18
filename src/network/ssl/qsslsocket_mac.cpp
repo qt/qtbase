@@ -167,7 +167,7 @@ static SSLContextRef qt_createSecureTransportContext(QSslSocket::SslMode mode)
     const bool isServer = mode == QSslSocket::SslServerMode;
     const SSLProtocolSide side = isServer ? kSSLServerSide : kSSLClientSide;
     // We never use kSSLDatagramType, so it's kSSLStreamType unconditionally.
-    SSLContextRef context = SSLCreateContext(Q_NULLPTR, side, kSSLStreamType);
+    SSLContextRef context = SSLCreateContext(nullptr, side, kSSLStreamType);
     if (!context)
         qCWarning(lcSsl) << "SSLCreateContext failed";
     return context;
@@ -356,7 +356,7 @@ void QSslSocketPrivate::resetDefaultEllipticCurves()
 }
 
 QSslSocketBackendPrivate::QSslSocketBackendPrivate()
-    : context(Q_NULLPTR)
+    : context(nullptr)
 {
 }
 
@@ -885,7 +885,7 @@ bool QSslSocketBackendPrivate::initSslContext()
 
 void QSslSocketBackendPrivate::destroySslContext()
 {
-    context.reset(Q_NULLPTR);
+    context.reset(nullptr);
 }
 
 static QByteArray _q_makePkcs12(const QList<QSslCertificate> &certs, const QSslKey &key, const QString &passPhrase);

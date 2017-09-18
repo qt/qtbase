@@ -315,7 +315,7 @@ public:
         typedef T *pointer;
         typedef T &reference;
 
-        inline iterator() : i(Q_NULLPTR) { }
+        inline iterator() : i(nullptr) { }
         explicit inline iterator(void *node) : i(reinterpret_cast<QHashData::Node *>(node)) { }
 
         inline const Key &key() const { return concrete(i)->key; }
@@ -373,7 +373,7 @@ public:
         typedef const T *pointer;
         typedef const T &reference;
 
-        Q_DECL_CONSTEXPR inline const_iterator() : i(Q_NULLPTR) { }
+        Q_DECL_CONSTEXPR inline const_iterator() : i(nullptr) { }
         explicit inline const_iterator(void *node)
             : i(reinterpret_cast<QHashData::Node *>(node)) { }
 #ifdef QT_STRICT_ITERATORS
@@ -502,7 +502,7 @@ public:
 private:
     void detach_helper();
     void freeData(QHashData *d);
-    Node **findNode(const Key &key, uint *hp = Q_NULLPTR) const;
+    Node **findNode(const Key &key, uint *hp = nullptr) const;
     Node **findNode(const Key &key, uint h) const;
     Node *createNode(uint h, const Key &key, const T &value, Node **nextNode);
     void deleteNode(Node *node);
@@ -550,7 +550,7 @@ template <class Key, class T>
 Q_INLINE_TEMPLATE void QHash<Key, T>::duplicateNode(QHashData::Node *node, void *newNode)
 {
     Node *concreteNode = concrete(node);
-    new (newNode) Node(concreteNode->key, concreteNode->value, concreteNode->h, Q_NULLPTR);
+    new (newNode) Node(concreteNode->key, concreteNode->value, concreteNode->h, nullptr);
 }
 
 template <class Key, class T>

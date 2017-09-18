@@ -79,7 +79,7 @@ public:
         AutoVerifyPeer
     };
 
-    explicit QSslSocket(QObject *parent = Q_NULLPTR);
+    explicit QSslSocket(QObject *parent = nullptr);
     ~QSslSocket();
     void resume() override; // to continue after proxy authentication required, SSL errors etc.
 

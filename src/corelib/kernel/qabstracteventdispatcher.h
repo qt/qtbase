@@ -70,10 +70,10 @@ public:
         { }
     };
 
-    explicit QAbstractEventDispatcher(QObject *parent = Q_NULLPTR);
+    explicit QAbstractEventDispatcher(QObject *parent = nullptr);
     ~QAbstractEventDispatcher();
 
-    static QAbstractEventDispatcher *instance(QThread *thread = Q_NULLPTR);
+    static QAbstractEventDispatcher *instance(QThread *thread = nullptr);
 
     virtual bool processEvents(QEventLoop::ProcessEventsFlags flags) = 0;
     virtual bool hasPendingEvents() = 0; // ### Qt6: remove, mark final or make protected
@@ -112,7 +112,7 @@ public:
     bool filterNativeEvent(const QByteArray &eventType, void *message, long *result);
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED bool filterEvent(void *message)
-    { return filterNativeEvent("", message, Q_NULLPTR); }
+    { return filterNativeEvent("", message, nullptr); }
 #endif
 
 Q_SIGNALS:

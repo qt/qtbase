@@ -249,7 +249,7 @@ class CharStarContainer
 {
     const char *str;
 public:
-    explicit Q_DECL_CONSTEXPR CharStarContainer(const char *s = Q_NULLPTR) : str(s) {}
+    explicit Q_DECL_CONSTEXPR CharStarContainer(const char *s = nullptr) : str(s) {}
     Q_DECL_CONSTEXPR operator const char *() const { return str; }
 };
 
@@ -1483,7 +1483,7 @@ void tst_QString::indexOf()
 
         QRegularExpression re(QRegularExpression::escape(needle), options);
         QCOMPARE( haystack.indexOf(re, startpos), resultpos );
-        QCOMPARE(haystack.indexOf(re, startpos, Q_NULLPTR), resultpos);
+        QCOMPARE(haystack.indexOf(re, startpos, nullptr), resultpos);
 
         QRegularExpressionMatch match;
         QVERIFY(!match.hasMatch());
@@ -1608,7 +1608,7 @@ void tst_QString::indexOfInvalidRegex()
     QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\")), -1);
     QTest::ignoreMessage(QtWarningMsg, "QString::indexOf: invalid QRegularExpression object");
-    QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, Q_NULLPTR), -1);
+    QCOMPARE(QString("invalid regex\\").indexOf(QRegularExpression("invalid regex\\"), -1, nullptr), -1);
 
     QRegularExpressionMatch match;
     QVERIFY(!match.hasMatch());
@@ -1706,7 +1706,7 @@ void tst_QString::lastIndexOf()
 
             QRegularExpression re(QRegularExpression::escape(needle), options);
             QCOMPARE(haystack.lastIndexOf(re, from), expected);
-            QCOMPARE(haystack.lastIndexOf(re, from, Q_NULLPTR), expected);
+            QCOMPARE(haystack.lastIndexOf(re, from, nullptr), expected);
             QRegularExpressionMatch match;
             QVERIFY(!match.hasMatch());
             QCOMPARE(haystack.lastIndexOf(re, from, &match), expected);
@@ -1743,7 +1743,7 @@ void tst_QString::lastIndexOfInvalidRegex()
     QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
     QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), 0), -1);
     QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
-    QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, Q_NULLPTR), -1);
+    QCOMPARE(QString("invalid regex\\").lastIndexOf(QRegularExpression("invalid regex\\"), -1, nullptr), -1);
 
     QRegularExpressionMatch match;
     QVERIFY(!match.hasMatch());

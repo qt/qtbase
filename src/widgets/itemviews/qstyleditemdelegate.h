@@ -58,7 +58,7 @@ class Q_WIDGETS_EXPORT QStyledItemDelegate : public QAbstractItemDelegate
     Q_OBJECT
 
 public:
-    explicit QStyledItemDelegate(QObject *parent = Q_NULLPTR);
+    explicit QStyledItemDelegate(QObject *parent = nullptr);
     ~QStyledItemDelegate();
 
     // painting

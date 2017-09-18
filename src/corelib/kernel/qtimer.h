@@ -63,7 +63,7 @@ class Q_CORE_EXPORT QTimer : public QObject
     Q_PROPERTY(Qt::TimerType timerType READ timerType WRITE setTimerType)
     Q_PROPERTY(bool active READ isActive)
 public:
-    explicit QTimer(QObject *parent = Q_NULLPTR);
+    explicit QTimer(QObject *parent = nullptr);
     ~QTimer();
 
     inline bool isActive() const { return id >= 0; }

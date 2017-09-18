@@ -97,7 +97,7 @@ class QScopedPointer
 {
     typedef T *QScopedPointer:: *RestrictedBool;
 public:
-    explicit QScopedPointer(T *p = Q_NULLPTR) Q_DECL_NOTHROW : d(p)
+    explicit QScopedPointer(T *p = nullptr) Q_DECL_NOTHROW : d(p)
     {
     }
 
@@ -126,12 +126,12 @@ public:
 #if defined(Q_QDOC)
     inline operator bool() const
     {
-        return isNull() ? Q_NULLPTR : &QScopedPointer::d;
+        return isNull() ? nullptr : &QScopedPointer::d;
     }
 #else
     operator RestrictedBool() const Q_DECL_NOTHROW
     {
-        return isNull() ? Q_NULLPTR : &QScopedPointer::d;
+        return isNull() ? nullptr : &QScopedPointer::d;
     }
 #endif
 
@@ -150,7 +150,7 @@ public:
         return !d;
     }
 
-    void reset(T *other = Q_NULLPTR) Q_DECL_NOEXCEPT_EXPR(noexcept(Cleanup::cleanup(std::declval<T *>())))
+    void reset(T *other = nullptr) Q_DECL_NOEXCEPT_EXPR(noexcept(Cleanup::cleanup(std::declval<T *>())))
     {
         if (d == other)
             return;
@@ -162,7 +162,7 @@ public:
     T *take() Q_DECL_NOTHROW
     {
         T *oldD = d;
-        d = Q_NULLPTR;
+        d = nullptr;
         return oldD;
     }
 
@@ -226,7 +226,7 @@ class QScopedArrayPointer : public QScopedPointer<T, Cleanup>
     template <typename Ptr>
     using if_same_type = typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, Ptr>::value, bool>::type;
 public:
-    inline QScopedArrayPointer() : QScopedPointer<T, Cleanup>(Q_NULLPTR) {}
+    inline QScopedArrayPointer() : QScopedPointer<T, Cleanup>(nullptr) {}
 
     template <typename D, if_same_type<D> = true>
     explicit QScopedArrayPointer(D *p)

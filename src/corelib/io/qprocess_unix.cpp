@@ -885,7 +885,7 @@ bool QProcessPrivate::waitForDeadChild()
     // read the process information from our fd
     forkfd_info info;
     int ret;
-    EINTR_LOOP(ret, forkfd_wait(forkfd, &info, Q_NULLPTR));
+    EINTR_LOOP(ret, forkfd_wait(forkfd, &info, nullptr));
 
     exitCode = info.status;
     crashed = info.code != CLD_EXITED;

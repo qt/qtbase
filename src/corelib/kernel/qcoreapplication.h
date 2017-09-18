@@ -123,7 +123,7 @@ public:
 
     static bool sendEvent(QObject *receiver, QEvent *event);
     static void postEvent(QObject *receiver, QEvent *event, int priority = Qt::NormalEventPriority);
-    static void sendPostedEvents(QObject *receiver = Q_NULLPTR, int event_type = 0);
+    static void sendPostedEvents(QObject *receiver = nullptr, int event_type = 0);
     static void removePostedEvents(QObject *receiver, int eventType = 0);
 #if QT_DEPRECATED_SINCE(5, 3)
     QT_DEPRECATED static bool hasPendingEvents();
@@ -155,7 +155,7 @@ public:
 
     static QString translate(const char * context,
                              const char * key,
-                             const char * disambiguation = Q_NULLPTR,
+                             const char * disambiguation = nullptr,
                              int n = -1);
 #if QT_DEPRECATED_SINCE(5, 0)
     enum Encoding { UnicodeUTF8, Latin1, DefaultCodec = UnicodeUTF8, CodecForTr = UnicodeUTF8 };
@@ -241,13 +241,13 @@ inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *ev
 #  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)
 #else
 #  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context) \
-    QT_DEPRECATED static inline QString trUtf8(const char *sourceText, const char *disambiguation = Q_NULLPTR, int n = -1) \
+    QT_DEPRECATED static inline QString trUtf8(const char *sourceText, const char *disambiguation = nullptr, int n = -1) \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, n); }
 #endif
 
 #define Q_DECLARE_TR_FUNCTIONS(context) \
 public: \
-    static inline QString tr(const char *sourceText, const char *disambiguation = Q_NULLPTR, int n = -1) \
+    static inline QString tr(const char *sourceText, const char *disambiguation = nullptr, int n = -1) \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, n); } \
     QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context) \
 private:

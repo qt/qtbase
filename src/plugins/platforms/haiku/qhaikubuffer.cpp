@@ -45,7 +45,7 @@
 QT_BEGIN_NAMESPACE
 
 QHaikuBuffer::QHaikuBuffer()
-    : m_buffer(Q_NULLPTR)
+    : m_buffer(nullptr)
 {
 }
 
@@ -63,12 +63,12 @@ BBitmap* QHaikuBuffer::nativeBuffer() const
 
 const QImage *QHaikuBuffer::image() const
 {
-    return (m_buffer != Q_NULLPTR) ? &m_image : Q_NULLPTR;
+    return (m_buffer != nullptr) ? &m_image : nullptr;
 }
 
 QImage *QHaikuBuffer::image()
 {
-    return (m_buffer != Q_NULLPTR) ? &m_image : Q_NULLPTR;
+    return (m_buffer != nullptr) ? &m_image : nullptr;
 }
 
 QRect QHaikuBuffer::rect() const

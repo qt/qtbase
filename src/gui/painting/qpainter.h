@@ -416,9 +416,9 @@ public:
 
     void drawText(const QPointF &p, const QString &str, int tf, int justificationPadding);
 
-    void drawText(const QRectF &r, int flags, const QString &text, QRectF *br = Q_NULLPTR);
-    void drawText(const QRect &r, int flags, const QString &text, QRect *br = Q_NULLPTR);
-    inline void drawText(int x, int y, int w, int h, int flags, const QString &text, QRect *br = Q_NULLPTR);
+    void drawText(const QRectF &r, int flags, const QString &text, QRectF *br = nullptr);
+    void drawText(const QRect &r, int flags, const QString &text, QRect *br = nullptr);
+    inline void drawText(int x, int y, int w, int h, int flags, const QString &text, QRect *br = nullptr);
 
     void drawText(const QRectF &r, const QString &text, const QTextOption &o = QTextOption());
 
@@ -461,7 +461,7 @@ public:
 
     static void setRedirected(const QPaintDevice *device, QPaintDevice *replacement,
                               const QPoint& offset = QPoint());
-    static QPaintDevice *redirected(const QPaintDevice *device, QPoint *offset = Q_NULLPTR);
+    static QPaintDevice *redirected(const QPaintDevice *device, QPoint *offset = nullptr);
     static void restoreRedirected(const QPaintDevice *device);
 
     void beginNativePainting();

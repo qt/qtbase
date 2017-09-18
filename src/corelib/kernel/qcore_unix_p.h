@@ -362,7 +362,7 @@ Q_CORE_EXPORT int qt_safe_poll(struct pollfd *fds, nfds_t nfds, const struct tim
 
 static inline int qt_poll_msecs(struct pollfd *fds, nfds_t nfds, int timeout)
 {
-    timespec ts, *pts = Q_NULLPTR;
+    timespec ts, *pts = nullptr;
 
     if (timeout >= 0) {
         ts.tv_sec = timeout / 1000;

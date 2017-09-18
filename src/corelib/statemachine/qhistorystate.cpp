@@ -203,7 +203,7 @@ void QHistoryState::setDefaultTransition(QAbstractTransition *transition)
 QAbstractState *QHistoryState::defaultState() const
 {
     Q_D(const QHistoryState);
-    return d->defaultTransition ? d->defaultTransition->targetState() : Q_NULLPTR;
+    return d->defaultTransition ? d->defaultTransition->targetState() : nullptr;
 }
 
 static inline bool isSoleEntry(const QList<QAbstractState*> &states, const QAbstractState * state)

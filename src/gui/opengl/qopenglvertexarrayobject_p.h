@@ -70,10 +70,10 @@ class QOpenGLVertexArrayObjectHelper
 
 public:
     explicit inline QOpenGLVertexArrayObjectHelper(QOpenGLContext *context)
-        : GenVertexArrays(Q_NULLPTR)
-        , DeleteVertexArrays(Q_NULLPTR)
-        , BindVertexArray(Q_NULLPTR)
-        , IsVertexArray(Q_NULLPTR)
+        : GenVertexArrays(nullptr)
+        , DeleteVertexArrays(nullptr)
+        , BindVertexArray(nullptr)
+        , IsVertexArray(nullptr)
     {
         qtInitializeVertexArrayObjectHelper(this, context);
     }

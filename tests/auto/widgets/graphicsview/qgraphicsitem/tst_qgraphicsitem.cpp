@@ -1110,11 +1110,11 @@ void tst_QGraphicsItem::visible()
 
     scene.addItem(item);
     QVERIFY(item->isVisible());
-    QCOMPARE(scene.items(QPointF(0, 0)).value(0, Q_NULLPTR), item);
+    QCOMPARE(scene.items(QPointF(0, 0)).value(0, nullptr), item);
     item->setVisible(false);
     QVERIFY(scene.items(QPointF(0, 0)).isEmpty());
     item->setVisible(true);
-    QCOMPARE(scene.items(QPointF(0, 0)).value(0, Q_NULLPTR), item);
+    QCOMPARE(scene.items(QPointF(0, 0)).value(0, nullptr), item);
 
     QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
     event.setButton(Qt::LeftButton);
@@ -5503,16 +5503,16 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
     QGraphicsScene scene;
     scene.addItem(parent);
 
-    QCOMPARE(scene.items(QPointF(5, 5)).value(0, Q_NULLPTR), (QGraphicsItem *)parent);
+    QCOMPARE(scene.items(QPointF(5, 5)).value(0, nullptr), (QGraphicsItem *)parent);
     QVERIFY(scene.items(QPointF(15, 5)).isEmpty());
     QVERIFY(scene.items(QPointF(5, 15)).isEmpty());
     QVERIFY(scene.items(QPointF(60, 60)).isEmpty());
     QVERIFY(scene.items(QPointF(140, 60)).isEmpty());
     QVERIFY(scene.items(QPointF(60, 140)).isEmpty());
     QVERIFY(scene.items(QPointF(140, 140)).isEmpty());
-    QCOMPARE(scene.items(QPointF(75, 75)).value(0, Q_NULLPTR), (QGraphicsItem *)child2);
-    QCOMPARE(scene.items(QPointF(75, 100)).value(0, Q_NULLPTR), (QGraphicsItem *)child1);
-    QCOMPARE(scene.items(QPointF(100, 75)).value(0, Q_NULLPTR), (QGraphicsItem *)child1);
+    QCOMPARE(scene.items(QPointF(75, 75)).value(0, nullptr), (QGraphicsItem *)child2);
+    QCOMPARE(scene.items(QPointF(75, 100)).value(0, nullptr), (QGraphicsItem *)child1);
+    QCOMPARE(scene.items(QPointF(100, 75)).value(0, nullptr), (QGraphicsItem *)child1);
 
     QImage image(100, 100, QImage::Format_ARGB32_Premultiplied);
     image.fill(0);
@@ -5547,9 +5547,9 @@ void tst_QGraphicsItem::itemClipsChildrenToShape3()
     grandchild->setPos( 50, 50 );
     parent->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
 
-    QCOMPARE(scene.items(QPointF(25, 25)).value(0, Q_NULLPTR), (QGraphicsItem *)parent);
-    QCOMPARE(scene.items(QPointF(75, 75)).value(0, Q_NULLPTR), (QGraphicsItem *)child);
-    QCOMPARE(scene.items(QPointF(125, 125)).value(0, Q_NULLPTR), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.items(QPointF(25, 25)).value(0, nullptr), (QGraphicsItem *)parent);
+    QCOMPARE(scene.items(QPointF(75, 75)).value(0, nullptr), (QGraphicsItem *)child);
+    QCOMPARE(scene.items(QPointF(125, 125)).value(0, nullptr), (QGraphicsItem *)grandchild);
     QVERIFY(scene.items(QPointF(175, 175)).isEmpty());
 
     // Move child to fully overlap the parent.  The grandchild should
@@ -5557,9 +5557,9 @@ void tst_QGraphicsItem::itemClipsChildrenToShape3()
     child->prepareGeometryChange();
     child->setPos( 0, 0 );
 
-    QCOMPARE(scene.items(QPointF(25, 25)).value(0, Q_NULLPTR), (QGraphicsItem *)child);
-    QCOMPARE(scene.items(QPointF(75, 75)).value(0, Q_NULLPTR), (QGraphicsItem *)grandchild);
-    QCOMPARE(scene.items(QPointF(125, 125)).value(0, Q_NULLPTR), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.items(QPointF(25, 25)).value(0, nullptr), (QGraphicsItem *)child);
+    QCOMPARE(scene.items(QPointF(75, 75)).value(0, nullptr), (QGraphicsItem *)grandchild);
+    QCOMPARE(scene.items(QPointF(125, 125)).value(0, nullptr), (QGraphicsItem *)grandchild);
     QVERIFY(scene.items(QPointF(175, 175)).isEmpty());
 }
 
@@ -5832,8 +5832,8 @@ void tst_QGraphicsItem::itemClippingDiscovery()
     rightRectItem->setParentItem(clipItem);
 
     // The rects item are both visible at these points.
-    QCOMPARE(scene.items(QPointF(10, 10)).value(0, Q_NULLPTR), (QGraphicsItem *)leftRectItem);
-    QCOMPARE(scene.items(QPointF(90, 90)).value(0, Q_NULLPTR), (QGraphicsItem *)rightRectItem);
+    QCOMPARE(scene.items(QPointF(10, 10)).value(0, nullptr), (QGraphicsItem *)leftRectItem);
+    QCOMPARE(scene.items(QPointF(90, 90)).value(0, nullptr), (QGraphicsItem *)rightRectItem);
 
     // The ellipse clips the rects now.
     clipItem->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
@@ -5873,7 +5873,7 @@ void tst_QGraphicsItem::itemContainsChildrenInShape()
     int oldChildBoundingRectCalls = childOutsideShape->boundingRectCalls;
 
     // First test that both items are searched if no optimization flags are set
-    QGraphicsItem* item = scene.items(QPointF(25, 5)).value(0, Q_NULLPTR);
+    QGraphicsItem* item = scene.items(QPointF(25, 5)).value(0, nullptr);
 
     QCOMPARE(item, childOutsideShape);
     QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);
@@ -5884,7 +5884,7 @@ void tst_QGraphicsItem::itemContainsChildrenInShape()
     oldChildBoundingRectCalls = childOutsideShape->boundingRectCalls;
 
     // Repeat the test to make sure that no caching/indexing is in effect
-    item = scene.items(QPointF(25, 5)).value(0, Q_NULLPTR);
+    item = scene.items(QPointF(25, 5)).value(0, nullptr);
 
     QCOMPARE(item, childOutsideShape);
     QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);
@@ -5897,7 +5897,7 @@ void tst_QGraphicsItem::itemContainsChildrenInShape()
     // Set the optimization flag and make sure that the child is not returned
     // and that the child's boundingRect() method is never called.
     parent->setFlag(QGraphicsItem::ItemContainsChildrenInShape);
-    item = scene.items(QPointF(25, 5)).value(0, Q_NULLPTR);
+    item = scene.items(QPointF(25, 5)).value(0, nullptr);
 
     QVERIFY(!(item));
     QVERIFY(parent->boundingRectCalls > oldParentBoundingRectCalls);

@@ -68,7 +68,7 @@ Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 QEglFSKmsGbmCursor::QEglFSKmsGbmCursor(QEglFSKmsGbmScreen *screen)
     : m_screen(screen)
     , m_cursorSize(64, 64) // 64x64 is the old standard size, we now try to query the real size below
-    , m_bo(Q_NULLPTR)
+    , m_bo(nullptr)
     , m_cursorImage(0, 0, 0, 0, 0, 0)
     , m_state(CursorPendingVisible)
 {
@@ -118,7 +118,7 @@ QEglFSKmsGbmCursor::~QEglFSKmsGbmCursor()
 
     if (m_bo) {
         gbm_bo_destroy(m_bo);
-        m_bo = Q_NULLPTR;
+        m_bo = nullptr;
     }
 }
 
@@ -132,7 +132,7 @@ void QEglFSKmsGbmCursor::updateMouseStatus()
     m_state = visible ? CursorPendingVisible : CursorPendingHidden;
 
 #ifndef QT_NO_CURSOR
-    changeCursor(Q_NULLPTR, m_screen->topLevelAt(pos()));
+    changeCursor(nullptr, m_screen->topLevelAt(pos()));
 #endif
 }
 

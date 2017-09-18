@@ -143,7 +143,7 @@ QLibInputKeyboard::QLibInputKeyboard()
         qWarning("Failed to create xkb context");
         return;
     }
-    m_keymap = xkb_keymap_new_from_names(m_ctx, Q_NULLPTR, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    m_keymap = xkb_keymap_new_from_names(m_ctx, nullptr, XKB_KEYMAP_COMPILE_NO_FLAGS);
     if (!m_keymap) {
         qWarning("Failed to compile keymap");
         return;
@@ -211,7 +211,7 @@ void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
 
     xkb_state_update_key(m_state, k, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
 
-    QWindowSystemInterface::handleExtendedKeyEvent(Q_NULLPTR,
+    QWindowSystemInterface::handleExtendedKeyEvent(nullptr,
                                                    pressed ? QEvent::KeyPress : QEvent::KeyRelease,
                                                    qtkey, mods, k, sym, mods, text);
 
@@ -237,7 +237,7 @@ void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
 #ifndef QT_NO_XKBCOMMON_EVDEV
 void QLibInputKeyboard::handleRepeat()
 {
-    QWindowSystemInterface::handleExtendedKeyEvent(Q_NULLPTR, QEvent::KeyPress,
+    QWindowSystemInterface::handleExtendedKeyEvent(nullptr, QEvent::KeyPress,
                                                    m_repeatData.qtkey, m_repeatData.mods,
                                                    m_repeatData.nativeScanCode, m_repeatData.virtualKey, m_repeatData.nativeMods,
                                                    m_repeatData.unicodeText, true, m_repeatData.repeatCount);

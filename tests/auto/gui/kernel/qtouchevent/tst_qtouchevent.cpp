@@ -48,7 +48,7 @@ public:
     ulong timestamp;
     QTouchDevice *deviceFromEvent;
 
-    explicit tst_QTouchEventWidget(QWidget *parent = Q_NULLPTR) : QWidget(parent)
+    explicit tst_QTouchEventWidget(QWidget *parent = nullptr) : QWidget(parent)
     {
         reset();
     }
@@ -117,7 +117,7 @@ public:
     bool deleteInTouchBegin, deleteInTouchUpdate, deleteInTouchEnd;
     tst_QTouchEventGraphicsItem **weakpointer;
 
-    explicit tst_QTouchEventGraphicsItem(QGraphicsItem *parent = Q_NULLPTR)
+    explicit tst_QTouchEventGraphicsItem(QGraphicsItem *parent = nullptr)
         : QGraphicsItem(parent), weakpointer(0)
     {
         reset();

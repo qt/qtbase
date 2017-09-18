@@ -216,7 +216,7 @@ void tst_QGraphicsScene::itemAt()
 
     QGraphicsItem *item = 0;
     QBENCHMARK {
-        item = scene.items(QPointF(0, 0)).value(0, Q_NULLPTR);
+        item = scene.items(QPointF(0, 0)).value(0, nullptr);
     }
 
     //let QGraphicsScene::_q_polishItems be called so ~QGraphicsItem doesn't spend all his time cleaning the unpolished list

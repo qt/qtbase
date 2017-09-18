@@ -144,7 +144,7 @@ QAbstractFileEngine *QWinRTFileEngineHandler::create(const QString &fileName) co
     if (file != d->files.end())
         return new QWinRTFileEngine(fileName, file.value().Get());
 
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 static HRESULT getDestinationFolder(const QString &fileName, const QString &newFileName,

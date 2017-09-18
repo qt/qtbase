@@ -151,7 +151,7 @@ class Q_GUI_EXPORT QOpenGLContext : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QOpenGLContext)
 public:
-    explicit QOpenGLContext(QObject *parent = Q_NULLPTR);
+    explicit QOpenGLContext(QObject *parent = nullptr);
     ~QOpenGLContext();
 
     void setFormat(const QSurfaceFormat &format);

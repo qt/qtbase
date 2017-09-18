@@ -53,7 +53,7 @@ class Q_WIDGETS_EXPORT QFocusFrame : public QWidget
 {
     Q_OBJECT
 public:
-    QFocusFrame(QWidget *parent = Q_NULLPTR);
+    QFocusFrame(QWidget *parent = nullptr);
     ~QFocusFrame();
 
     void setWidget(QWidget *widget);

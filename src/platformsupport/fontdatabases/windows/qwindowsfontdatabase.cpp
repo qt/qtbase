@@ -77,19 +77,19 @@ typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID
 static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
 {
     if (QSysInfo::windowsVersion() < QSysInfo::WV_VISTA)
-        return Q_NULLPTR;
+        return nullptr;
     QSystemLibrary library(QStringLiteral("dwrite"));
     QFunctionPointer result = library.resolve("DWriteCreateFactory");
     if (Q_UNLIKELY(!result)) {
         qWarning("Unable to load dwrite.dll");
-        return Q_NULLPTR;
+        return nullptr;
     }
     return reinterpret_cast<DWriteCreateFactoryType>(result);
 }
 
 static void createDirectWriteFactory(IDWriteFactory **factory)
 {
-    *factory = Q_NULLPTR;
+    *factory = nullptr;
 
     static const DWriteCreateFactoryType dWriteCreateFactory = resolveDWriteCreateFactory();
     if (!dWriteCreateFactory)
@@ -539,7 +539,7 @@ namespace {
     class CustomFontFileLoader
     {
     public:
-        CustomFontFileLoader() : m_directWriteFontFileLoader(Q_NULLPTR)
+        CustomFontFileLoader() : m_directWriteFontFileLoader(nullptr)
         {
             createDirectWriteFactory(&m_directWriteFactory);
 
@@ -1128,7 +1128,7 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
     // NEWTEXTMETRICEX (passed for TT fonts) is a NEWTEXTMETRIC, which according
     // to the documentation is identical to a TEXTMETRIC except for the last four
     // members, which we don't use anyway
-    const FONTSIGNATURE *signature = Q_NULLPTR;
+    const FONTSIGNATURE *signature = nullptr;
     if (type & TRUETYPE_FONTTYPE)
         signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
     addFontToDatabase(familyName, styleName, *logFont, textmetric, signature, type);
@@ -1909,7 +1909,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
             } else {
                 bool isColorFont = false;
 #if defined(QT_USE_DIRECTWRITE2)
-                IDWriteFontFace2 *directWriteFontFace2 = Q_NULLPTR;
+                IDWriteFontFace2 *directWriteFontFace2 = nullptr;
                 if (SUCCEEDED(directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace2),
                                                                   reinterpret_cast<void **>(&directWriteFontFace2)))) {
                     if (directWriteFontFace2->IsColorFont())

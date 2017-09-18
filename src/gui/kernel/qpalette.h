@@ -70,7 +70,7 @@ public:
 #ifdef Q_COMPILER_RVALUE_REFS
     QPalette(QPalette &&other) Q_DECL_NOTHROW
         : d(other.d), data(other.data)
-    { other.d = Q_NULLPTR; }
+    { other.d = nullptr; }
     inline QPalette &operator=(QPalette &&other) Q_DECL_NOEXCEPT
     {
         for_faster_swapping_dont_use = other.for_faster_swapping_dont_use;

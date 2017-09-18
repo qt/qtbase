@@ -1494,7 +1494,7 @@ void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
 
     //set the new parent, a window
     QScopedPointer<QWidget> windowedParent;
-    windowedParent.reset(new QWidget(Q_NULLPTR, Qt::WindowFlags()));
+    windowedParent.reset(new QWidget(nullptr, Qt::WindowFlags()));
     windowedParent->setGeometry(400, 10, 300, 300);
 
     windowedParent->show();
@@ -1511,7 +1511,7 @@ void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
     //to windowedParent<-movingParent<-containerWidget<-containedWidget<-menuBar
     movingParent.setParent(windowedParent.data(),0);
     // this resets the parenting and the menu bar's window
-    taskQTBUG53205MenuBar->setParent(Q_NULLPTR);
+    taskQTBUG53205MenuBar->setParent(nullptr);
     taskQTBUG53205MenuBar->setParent(&containedWidget);
     //from windowedParent<-movingParent<-containerWidget<-containedWidget<-menuBar
     //to : QMainWindow<-hiddenParent<-movingParent<-containerWidget<-containedWidget<-menuBar
@@ -1543,7 +1543,7 @@ void tst_QMenuBar::platformMenu()
 void tst_QMenuBar::slotForTaskQTBUG53205()
 {
     QWidget *parent = taskQTBUG53205MenuBar->parentWidget();
-    taskQTBUG53205MenuBar->setParent(Q_NULLPTR);
+    taskQTBUG53205MenuBar->setParent(nullptr);
     taskQTBUG53205MenuBar->setParent(parent);
 }
 
