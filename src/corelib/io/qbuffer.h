@@ -73,22 +73,22 @@ public:
     inline void setData(const char *data, int len);
     const QByteArray &data() const;
 
-    bool open(OpenMode openMode) Q_DECL_OVERRIDE;
+    bool open(OpenMode openMode) override;
 
-    void close() Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
-    qint64 pos() const Q_DECL_OVERRIDE;
-    bool seek(qint64 off) Q_DECL_OVERRIDE;
-    bool atEnd() const Q_DECL_OVERRIDE;
-    bool canReadLine() const Q_DECL_OVERRIDE;
+    void close() override;
+    qint64 size() const override;
+    qint64 pos() const override;
+    bool seek(qint64 off) override;
+    bool atEnd() const override;
+    bool canReadLine() const override;
 
 protected:
 #ifndef QT_NO_QOBJECT
-    void connectNotify(const QMetaMethod &) Q_DECL_OVERRIDE;
-    void disconnectNotify(const QMetaMethod &) Q_DECL_OVERRIDE;
+    void connectNotify(const QMetaMethod &) override;
+    void disconnectNotify(const QMetaMethod &) override;
 #endif
-    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-    qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE;
+    qint64 readData(char *data, qint64 maxlen) override;
+    qint64 writeData(const char *data, qint64 len) override;
 
 private:
     Q_DECLARE_PRIVATE(QBuffer)

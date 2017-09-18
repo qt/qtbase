@@ -164,7 +164,7 @@ public:
 
     bool isNull() const;
 
-    int devType() const Q_DECL_OVERRIDE;
+    int devType() const override;
 
     bool operator==(const QImage &) const;
     bool operator!=(const QImage &) const;
@@ -311,7 +311,7 @@ public:
 #endif
     qint64 cacheKey() const;
 
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const override;
 
     // Auxiliary data
     int dotsPerMeterX() const;
@@ -349,7 +349,7 @@ public:
 #endif
 
 protected:
-    virtual int metric(PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
+    virtual int metric(PaintDeviceMetric metric) const override;
     QImage mirrored_helper(bool horizontal, bool vertical) const;
     QImage rgbSwapped_helper() const;
     void mirrored_inplace(bool horizontal, bool vertical);

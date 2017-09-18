@@ -6634,7 +6634,7 @@ void tst_QStateMachine::postEventFromBeginSelectTransitions()
 {
     class StateMachine : public QStateMachine {
     protected:
-        void beginSelectTransitions(QEvent* e) Q_DECL_OVERRIDE {
+        void beginSelectTransitions(QEvent* e) override {
             if (e->type() == QEvent::Type(QEvent::User + 2))
                 postEvent(new QEvent(QEvent::Type(QEvent::User + 1)), QStateMachine::HighPriority);
         }

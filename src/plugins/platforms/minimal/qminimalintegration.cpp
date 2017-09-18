@@ -123,7 +123,7 @@ bool QMinimalIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 class DummyFontDatabase : public QPlatformFontDatabase
 {
 public:
-    virtual void populateFontDatabase() Q_DECL_OVERRIDE {}
+    virtual void populateFontDatabase() override {}
 };
 
 QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const

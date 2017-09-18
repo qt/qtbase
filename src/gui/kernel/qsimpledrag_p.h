@@ -72,10 +72,10 @@ class Q_GUI_EXPORT QBasicDrag : public QPlatformDrag, public QObject
 public:
     virtual ~QBasicDrag();
 
-    virtual Qt::DropAction drag(QDrag *drag) Q_DECL_OVERRIDE;
-    void cancelDrag() Q_DECL_OVERRIDE;
+    virtual Qt::DropAction drag(QDrag *drag) override;
+    void cancelDrag() override;
 
-    virtual bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE;
+    virtual bool eventFilter(QObject *o, QEvent *e) override;
 
 protected:
     QBasicDrag();
@@ -127,10 +127,10 @@ public:
     QSimpleDrag();
 
 protected:
-    virtual void startDrag() Q_DECL_OVERRIDE;
-    virtual void cancel() Q_DECL_OVERRIDE;
-    virtual void move(const QPoint &globalPos) Q_DECL_OVERRIDE;
-    virtual void drop(const QPoint &globalPos) Q_DECL_OVERRIDE;
+    virtual void startDrag() override;
+    virtual void cancel() override;
+    virtual void move(const QPoint &globalPos) override;
+    virtual void drop(const QPoint &globalPos) override;
 
 private:
     QWindow *m_current_window;

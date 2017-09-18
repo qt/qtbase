@@ -147,7 +147,7 @@ public:
     bool done() const { return !m_timerId; }
 
 protected:
-    void timerEvent(QTimerEvent *te) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *te) override;
 
 private:
     int m_key;

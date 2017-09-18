@@ -207,7 +207,7 @@ public:
     explicit QListWidget(QWidget *parent = Q_NULLPTR);
     ~QListWidget();
 
-    void setSelectionModel(QItemSelectionModel *selectionModel) Q_DECL_OVERRIDE;
+    void setSelectionModel(QItemSelectionModel *selectionModel) override;
 
     QListWidgetItem *item(int row) const;
     int row(const QListWidgetItem *item) const;
@@ -257,7 +257,7 @@ public:
 protected:
 #endif
 #if QT_CONFIG(draganddrop)
-    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
+    void dropEvent(QDropEvent *event) override;
 #endif
 public Q_SLOTS:
     void scrollToItem(const QListWidgetItem *item, QAbstractItemView::ScrollHint hint = EnsureVisible);
@@ -278,7 +278,7 @@ Q_SIGNALS:
     void itemSelectionChanged();
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
     virtual QStringList mimeTypes() const;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     virtual QMimeData *mimeData(const QList<QListWidgetItem *> &items) const;
@@ -304,7 +304,7 @@ protected:
     QListWidgetItem *itemFromIndex(const QModelIndex &index) const;
 
 private:
-    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
+    void setModel(QAbstractItemModel *model) override;
     Qt::SortOrder sortOrder() const;
 
     Q_DECLARE_PRIVATE(QListWidget)

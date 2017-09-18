@@ -98,17 +98,17 @@ public:
     QMimeBinaryProvider(QMimeDatabasePrivate *db);
     virtual ~QMimeBinaryProvider();
 
-    virtual bool isValid() Q_DECL_OVERRIDE;
-    virtual QMimeType mimeTypeForName(const QString &name) Q_DECL_OVERRIDE;
-    virtual QMimeGlobMatchResult findByFileName(const QString &fileName) Q_DECL_OVERRIDE;
-    virtual QStringList parents(const QString &mime) Q_DECL_OVERRIDE;
-    virtual QString resolveAlias(const QString &name) Q_DECL_OVERRIDE;
-    virtual QStringList listAliases(const QString &name) Q_DECL_OVERRIDE;
-    virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr) Q_DECL_OVERRIDE;
-    virtual QList<QMimeType> allMimeTypes() Q_DECL_OVERRIDE;
-    virtual void loadMimeTypePrivate(QMimeTypePrivate &) Q_DECL_OVERRIDE;
-    virtual void loadIcon(QMimeTypePrivate &) Q_DECL_OVERRIDE;
-    virtual void loadGenericIcon(QMimeTypePrivate &) Q_DECL_OVERRIDE;
+    virtual bool isValid() override;
+    virtual QMimeType mimeTypeForName(const QString &name) override;
+    virtual QMimeGlobMatchResult findByFileName(const QString &fileName) override;
+    virtual QStringList parents(const QString &mime) override;
+    virtual QString resolveAlias(const QString &name) override;
+    virtual QStringList listAliases(const QString &name) override;
+    virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr) override;
+    virtual QList<QMimeType> allMimeTypes() override;
+    virtual void loadMimeTypePrivate(QMimeTypePrivate &) override;
+    virtual void loadIcon(QMimeTypePrivate &) override;
+    virtual void loadGenericIcon(QMimeTypePrivate &) override;
 
 private:
     struct CacheFile;
@@ -141,14 +141,14 @@ public:
     QMimeXMLProvider(QMimeDatabasePrivate *db);
     ~QMimeXMLProvider();
 
-    virtual bool isValid() Q_DECL_OVERRIDE;
-    virtual QMimeType mimeTypeForName(const QString &name) Q_DECL_OVERRIDE;
-    virtual QMimeGlobMatchResult findByFileName(const QString &fileName) Q_DECL_OVERRIDE;
-    virtual QStringList parents(const QString &mime) Q_DECL_OVERRIDE;
-    virtual QString resolveAlias(const QString &name) Q_DECL_OVERRIDE;
-    virtual QStringList listAliases(const QString &name) Q_DECL_OVERRIDE;
-    virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr) Q_DECL_OVERRIDE;
-    virtual QList<QMimeType> allMimeTypes() Q_DECL_OVERRIDE;
+    virtual bool isValid() override;
+    virtual QMimeType mimeTypeForName(const QString &name) override;
+    virtual QMimeGlobMatchResult findByFileName(const QString &fileName) override;
+    virtual QStringList parents(const QString &mime) override;
+    virtual QString resolveAlias(const QString &name) override;
+    virtual QStringList listAliases(const QString &name) override;
+    virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr) override;
+    virtual QList<QMimeType> allMimeTypes() override;
 
     bool load(const QString &fileName, QString *errorMessage);
 

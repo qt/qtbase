@@ -62,7 +62,7 @@ public:
 
     bool isNull() const;
 
-    int devType() const Q_DECL_OVERRIDE;
+    int devType() const override;
     uint size() const;
     const char* data() const;
     virtual void setData(const char* data, uint size);
@@ -98,12 +98,12 @@ public:
     static QT_DEPRECATED QStringList outputFormatList();
 #endif // QT_DEPRECATED_SINCE(5, 10)
 
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const override;
 
 protected:
     QPicture(QPicturePrivate &data);
 
-    int metric(PaintDeviceMetric m) const Q_DECL_OVERRIDE;
+    int metric(PaintDeviceMetric m) const override;
 
 private:
     bool exec(QPainter *p, QDataStream &ds, int i);

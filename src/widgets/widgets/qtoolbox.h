@@ -95,11 +95,11 @@ Q_SIGNALS:
     void currentChanged(int index);
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
     virtual void itemInserted(int index);
     virtual void itemRemoved(int index);
-    void showEvent(QShowEvent *e) Q_DECL_OVERRIDE;
-    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *e) override;
+    void changeEvent(QEvent *) override;
 
 
 private:

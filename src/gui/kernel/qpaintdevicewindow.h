@@ -68,14 +68,14 @@ public Q_SLOTS:
 protected:
     virtual void paintEvent(QPaintEvent *event);
 
-    int metric(PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
-    void exposeEvent(QExposeEvent *) Q_DECL_OVERRIDE;
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    int metric(PaintDeviceMetric metric) const override;
+    void exposeEvent(QExposeEvent *) override;
+    bool event(QEvent *event) override;
 
     QPaintDeviceWindow(QPaintDeviceWindowPrivate &dd, QWindow *parent);
 
 private:
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const override;
     Q_DISABLE_COPY(QPaintDeviceWindow)
 };
 

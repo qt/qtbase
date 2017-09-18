@@ -45,13 +45,13 @@ struct WriteDeclaration : public TreeWalker
 {
     WriteDeclaration(Uic *uic);
 
-    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
-    void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
-    void acceptSpacer(DomSpacer *node) Q_DECL_OVERRIDE;
-    void acceptLayout(DomLayout *node) Q_DECL_OVERRIDE;
-    void acceptActionGroup(DomActionGroup *node) Q_DECL_OVERRIDE;
-    void acceptAction(DomAction *node) Q_DECL_OVERRIDE;
-    void acceptButtonGroup(const DomButtonGroup *buttonGroup) Q_DECL_OVERRIDE;
+    void acceptUI(DomUI *node) override;
+    void acceptWidget(DomWidget *node) override;
+    void acceptSpacer(DomSpacer *node) override;
+    void acceptLayout(DomLayout *node) override;
+    void acceptActionGroup(DomActionGroup *node) override;
+    void acceptAction(DomAction *node) override;
+    void acceptButtonGroup(const DomButtonGroup *buttonGroup) override;
 
 private:
     Uic *m_uic;

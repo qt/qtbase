@@ -177,7 +177,7 @@ public:
 #endif
 
     static int exec();
-    bool notify(QObject *, QEvent *) Q_DECL_OVERRIDE;
+    bool notify(QObject *, QEvent *) override;
 
 #ifdef QT_KEYPAD_NAVIGATION
     static Q_DECL_DEPRECATED void setKeypadNavigationEnabled(bool);
@@ -201,8 +201,8 @@ public Q_SLOTS:
     static void aboutQt();
 
 protected:
-    bool event(QEvent *) Q_DECL_OVERRIDE;
-    bool compressEvent(QEvent *, QObject *receiver, QPostEventList *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) override;
+    bool compressEvent(QEvent *, QObject *receiver, QPostEventList *) override;
 
 private:
     Q_DISABLE_COPY(QApplication)

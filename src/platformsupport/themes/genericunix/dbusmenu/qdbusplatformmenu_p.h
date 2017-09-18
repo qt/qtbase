@@ -77,31 +77,31 @@ public:
     ~QDBusPlatformMenuItem();
 
     const QString text() const { return m_text; }
-    void setText(const QString &text) Q_DECL_OVERRIDE;
+    void setText(const QString &text) override;
     QIcon icon() const { return m_icon; }
-    void setIcon(const QIcon &icon) Q_DECL_OVERRIDE;
+    void setIcon(const QIcon &icon) override;
     const QPlatformMenu *menu() const { return m_subMenu; }
-    void setMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
+    void setMenu(QPlatformMenu *menu) override;
     bool isEnabled() const { return m_isEnabled; }
-    void setEnabled(bool enabled) Q_DECL_OVERRIDE;
+    void setEnabled(bool enabled) override;
     bool isVisible() const { return m_isVisible; }
-    void setVisible(bool isVisible) Q_DECL_OVERRIDE;
+    void setVisible(bool isVisible) override;
     bool isSeparator() const { return m_isSeparator; }
-    void setIsSeparator(bool isSeparator) Q_DECL_OVERRIDE;
-    void setFont(const QFont &font) Q_DECL_OVERRIDE { Q_UNUSED(font); }
-    void setRole(MenuRole role) Q_DECL_OVERRIDE;
+    void setIsSeparator(bool isSeparator) override;
+    void setFont(const QFont &font) override { Q_UNUSED(font); }
+    void setRole(MenuRole role) override;
     bool isCheckable() const { return m_isCheckable; }
-    void setCheckable(bool checkable) Q_DECL_OVERRIDE;
+    void setCheckable(bool checkable) override;
     bool isChecked() const { return m_isChecked; }
-    void setChecked(bool isChecked) Q_DECL_OVERRIDE;
+    void setChecked(bool isChecked) override;
     bool hasExclusiveGroup() const { return m_hasExclusiveGroup; }
-    void setHasExclusiveGroup(bool hasExclusiveGroup) Q_DECL_OVERRIDE;
+    void setHasExclusiveGroup(bool hasExclusiveGroup) override;
 #ifndef QT_NO_SHORTCUT
     QKeySequence shortcut() const { return m_shortcut; }
-    void setShortcut(const QKeySequence& shortcut) Q_DECL_OVERRIDE;
+    void setShortcut(const QKeySequence& shortcut) override;
 #endif
-    void setIconSize(int size) Q_DECL_OVERRIDE { Q_UNUSED(size); }
-    void setNativeContents(WId item) Q_DECL_OVERRIDE { Q_UNUSED(item); }
+    void setIconSize(int size) override { Q_UNUSED(size); }
+    void setNativeContents(WId item) override { Q_UNUSED(item); }
 
     int dbusID() const { return m_dbusID; }
 
@@ -133,35 +133,35 @@ class QDBusPlatformMenu : public QPlatformMenu
 public:
     QDBusPlatformMenu();
     ~QDBusPlatformMenu();
-    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) Q_DECL_OVERRIDE;
-    void removeMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
+    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) override;
+    void removeMenuItem(QPlatformMenuItem *menuItem) override;
     void syncSubMenu(const QDBusPlatformMenu *menu);
-    void syncMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
-    void syncSeparatorsCollapsible(bool enable) Q_DECL_OVERRIDE { Q_UNUSED(enable); }
+    void syncMenuItem(QPlatformMenuItem *menuItem) override;
+    void syncSeparatorsCollapsible(bool enable) override { Q_UNUSED(enable); }
 
     const QString text() const { return m_text; }
-    void setText(const QString &text) Q_DECL_OVERRIDE;
+    void setText(const QString &text) override;
     QIcon icon() const { return m_icon; }
-    void setIcon(const QIcon &icon) Q_DECL_OVERRIDE;
-    bool isEnabled() const Q_DECL_OVERRIDE { return m_isEnabled; }
-    void setEnabled(bool enabled) Q_DECL_OVERRIDE;
+    void setIcon(const QIcon &icon) override;
+    bool isEnabled() const override { return m_isEnabled; }
+    void setEnabled(bool enabled) override;
     bool isVisible() const { return m_isVisible; }
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
-    void setMinimumWidth(int width) Q_DECL_OVERRIDE { Q_UNUSED(width); }
-    void setFont(const QFont &font) Q_DECL_OVERRIDE { Q_UNUSED(font); }
-    void setMenuType(MenuType type) Q_DECL_OVERRIDE { Q_UNUSED(type); }
+    void setVisible(bool visible) override;
+    void setMinimumWidth(int width) override { Q_UNUSED(width); }
+    void setFont(const QFont &font) override { Q_UNUSED(font); }
+    void setMenuType(MenuType type) override { Q_UNUSED(type); }
     void setContainingMenuItem(QDBusPlatformMenuItem *item);
 
-    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) Q_DECL_OVERRIDE;
+    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) override;
 
-    void dismiss() Q_DECL_OVERRIDE { } // Closes this and all its related menu popups
+    void dismiss() override { } // Closes this and all its related menu popups
 
-    QPlatformMenuItem *menuItemAt(int position) const Q_DECL_OVERRIDE;
-    QPlatformMenuItem *menuItemForTag(quintptr tag) const Q_DECL_OVERRIDE;
+    QPlatformMenuItem *menuItemAt(int position) const override;
+    QPlatformMenuItem *menuItemForTag(quintptr tag) const override;
     const QList<QDBusPlatformMenuItem *> items() const;
 
-    QPlatformMenuItem *createMenuItem() const Q_DECL_OVERRIDE;
-    QPlatformMenu *createSubMenu() const Q_DECL_OVERRIDE;
+    QPlatformMenuItem *createMenuItem() const override;
+    QPlatformMenu *createSubMenu() const override;
 
     uint revision() const { return m_revision; }
 

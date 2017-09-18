@@ -215,7 +215,7 @@ public:
     void setupPrinter();
     void updateWidgets();
 
-    virtual void setTabs(const QList<QWidget*> &tabs) Q_DECL_OVERRIDE;
+    virtual void setTabs(const QList<QWidget*> &tabs) override;
 
     Ui::QPrintSettingsOutput options;
     QUnixPrintWidget *top;

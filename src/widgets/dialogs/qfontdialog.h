@@ -89,7 +89,7 @@ public:
     using QDialog::open;
     void open(QObject *receiver, const char *member);
 
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) override;
 
     static QFont getFont(bool *ok, QWidget *parent = Q_NULLPTR);
     static QFont getFont(bool *ok, const QFont &initial, QWidget *parent = Q_NULLPTR, const QString &title = QString(),
@@ -100,9 +100,9 @@ Q_SIGNALS:
     void fontSelected(const QFont &font);
 
 protected:
-    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
-    void done(int result) Q_DECL_OVERRIDE;
-    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *event) override;
+    void done(int result) override;
+    bool eventFilter(QObject *object, QEvent *event) override;
 
 private:
     Q_DISABLE_COPY(QFontDialog)

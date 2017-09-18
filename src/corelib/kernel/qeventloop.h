@@ -76,7 +76,7 @@ public:
 
     void wakeUp();
 
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
 
 public Q_SLOTS:
     void quit();

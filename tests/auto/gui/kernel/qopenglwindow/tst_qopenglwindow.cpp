@@ -74,17 +74,17 @@ public:
         initCount = resizeCount = paintCount = 0;
     }
 
-    void initializeGL() Q_DECL_OVERRIDE {
+    void initializeGL() override {
         ++initCount;
     }
 
-    void resizeGL(int w, int h) Q_DECL_OVERRIDE {
+    void resizeGL(int w, int h) override {
         ++resizeCount;
         QCOMPARE(w, size().width());
         QCOMPARE(h, size().height());
     }
 
-    void paintGL() Q_DECL_OVERRIDE {
+    void paintGL() override {
         ++paintCount;
 
         QOpenGLContext *ctx = QOpenGLContext::currentContext();
@@ -144,7 +144,7 @@ void tst_QOpenGLWindow::basic()
 class PainterWindow : public QOpenGLWindow
 {
 public:
-    void paintGL() Q_DECL_OVERRIDE {
+    void paintGL() override {
         QOpenGLContext *ctx = QOpenGLContext::currentContext();
         QVERIFY(ctx);
         QCOMPARE(ctx, context());
@@ -183,7 +183,7 @@ public:
     PartialPainterWindow(QOpenGLWindow::UpdateBehavior u)
         : QOpenGLWindow(u), x(0) { }
 
-    void paintGL() Q_DECL_OVERRIDE {
+    void paintGL() override {
         ++paintCount;
 
         QPainter p(this);
@@ -244,7 +244,7 @@ public:
         Error
     } m_state;
 
-    void paintUnderGL() Q_DECL_OVERRIDE {
+    void paintUnderGL() override {
         if (m_state == None || m_state == PaintOver)
             m_state = PaintUnder;
         else
@@ -255,7 +255,7 @@ public:
         QCOMPARE(fbo, GLuint(0));
     }
 
-    void paintGL() Q_DECL_OVERRIDE {
+    void paintGL() override {
         if (m_state == PaintUnder)
             m_state = Paint;
         else
@@ -268,7 +268,7 @@ public:
         QCOMPARE(fbo, defaultFramebufferObject());
     }
 
-    void paintOverGL() Q_DECL_OVERRIDE {
+    void paintOverGL() override {
         if (m_state == Paint)
             m_state = PaintOver;
         else

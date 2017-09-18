@@ -75,13 +75,13 @@ public:
 
     QWidget *widget() const { return m_widget; }
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessibleInterface *accessibleRoot() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *accessibleRoot() const override;
 #endif
 
-    QObject *focusObject() const Q_DECL_OVERRIDE;
+    QObject *focusObject() const override;
     void setNativeWindowVisibility(bool visible);
 protected:
-    bool event(QEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) override;
 
     void handleCloseEvent(QCloseEvent *);
     void handleEnterLeaveEvent(QEvent *);
@@ -102,7 +102,7 @@ protected:
 #endif
     void handleExposeEvent(QExposeEvent *);
     void handleWindowStateChangedEvent(QWindowStateChangeEvent *event);
-    bool nativeEvent(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result) override;
 #if QT_CONFIG(tabletevent)
     void handleTabletEvent(QTabletEvent *);
 #endif

@@ -65,10 +65,10 @@ public:
     void setEventType(QEvent::Type type);
 
 protected:
-    bool eventTest(QEvent *event) Q_DECL_OVERRIDE;
-    void onTransition(QEvent *event) Q_DECL_OVERRIDE;
+    bool eventTest(QEvent *event) override;
+    void onTransition(QEvent *event) override;
 
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
 
 protected:
     QEventTransition(QEventTransitionPrivate &dd, QState *parent);

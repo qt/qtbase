@@ -66,10 +66,10 @@ public:
     QNetworkAccessFileBackend();
     virtual ~QNetworkAccessFileBackend();
 
-    virtual void open() Q_DECL_OVERRIDE;
-    virtual void closeDownstreamChannel() Q_DECL_OVERRIDE;
+    virtual void open() override;
+    virtual void closeDownstreamChannel() override;
 
-    virtual void downstreamReadyWrite() Q_DECL_OVERRIDE;
+    virtual void downstreamReadyWrite() override;
 
 public slots:
     void uploadReadyReadSlot();
@@ -87,9 +87,9 @@ private:
 class QNetworkAccessFileBackendFactory: public QNetworkAccessBackendFactory
 {
 public:
-    virtual QStringList supportedSchemes() const Q_DECL_OVERRIDE;
+    virtual QStringList supportedSchemes() const override;
     virtual QNetworkAccessBackend *create(QNetworkAccessManager::Operation op,
-                                          const QNetworkRequest &request) const Q_DECL_OVERRIDE;
+                                          const QNetworkRequest &request) const override;
 };
 
 QT_END_NAMESPACE

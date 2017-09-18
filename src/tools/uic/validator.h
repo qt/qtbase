@@ -43,14 +43,14 @@ struct Validator : public TreeWalker
 {
     Validator(Uic *uic);
 
-    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
-    void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
+    void acceptUI(DomUI *node) override;
+    void acceptWidget(DomWidget *node) override;
 
-    void acceptLayoutItem(DomLayoutItem *node) Q_DECL_OVERRIDE;
-    void acceptLayout(DomLayout *node) Q_DECL_OVERRIDE;
+    void acceptLayoutItem(DomLayoutItem *node) override;
+    void acceptLayout(DomLayout *node) override;
 
-    void acceptActionGroup(DomActionGroup *node) Q_DECL_OVERRIDE;
-    void acceptAction(DomAction *node) Q_DECL_OVERRIDE;
+    void acceptActionGroup(DomActionGroup *node) override;
+    void acceptAction(DomAction *node) override;
 
 private:
     Driver *m_driver;

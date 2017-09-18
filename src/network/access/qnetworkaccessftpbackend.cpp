@@ -96,7 +96,7 @@ public:
         setShareable(false);
     }
 
-    void dispose() Q_DECL_OVERRIDE
+    void dispose() override
     {
         connect(this, SIGNAL(done(bool)), this, SLOT(deleteLater()));
         close();

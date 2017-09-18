@@ -83,7 +83,7 @@ public:
     operator QVariant() const;
 
     bool isNull() const;
-    int devType() const Q_DECL_OVERRIDE;
+    int devType() const override;
 
     int width() const;
     int height() const;
@@ -162,7 +162,7 @@ public:
 
     bool isQBitmap() const;
 
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const override;
 
     inline bool operator!() const { return isNull(); }
 
@@ -172,7 +172,7 @@ public:
 #endif
 
 protected:
-    int metric(PaintDeviceMetric) const Q_DECL_OVERRIDE;
+    int metric(PaintDeviceMetric) const override;
     static QPixmap fromImageInPlace(QImage &image, Qt::ImageConversionFlags flags = Qt::AutoColor);
 
 private:

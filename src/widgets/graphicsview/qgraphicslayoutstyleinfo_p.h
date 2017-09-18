@@ -70,17 +70,17 @@ public:
 
     virtual qreal combinedLayoutSpacing(QLayoutPolicy::ControlTypes controls1,
                                         QLayoutPolicy::ControlTypes controls2,
-                                        Qt::Orientation orientation) const Q_DECL_OVERRIDE;
+                                        Qt::Orientation orientation) const override;
 
     virtual qreal perItemSpacing(QLayoutPolicy::ControlType control1,
                                  QLayoutPolicy::ControlType control2,
-                                 Qt::Orientation orientation) const Q_DECL_OVERRIDE;
+                                 Qt::Orientation orientation) const override;
 
-    virtual qreal spacing(Qt::Orientation orientation) const Q_DECL_OVERRIDE;
+    virtual qreal spacing(Qt::Orientation orientation) const override;
 
-    virtual qreal windowMargin(Qt::Orientation orientation) const Q_DECL_OVERRIDE;
+    virtual qreal windowMargin(Qt::Orientation orientation) const override;
 
-    virtual void invalidate() Q_DECL_OVERRIDE
+    virtual void invalidate() override
     {
         m_style = 0;
         QAbstractLayoutStyleInfo::invalidate();

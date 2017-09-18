@@ -2803,7 +2803,7 @@ void tst_QVector::detachThreadSafety() const
     static const uint threadsCount = 5;
 
     struct : QThread {
-        void run() Q_DECL_OVERRIDE
+        void run() override
         {
             QVector<T> copy(*detachThreadSafetyData<T>()->load());
             QVERIFY(!copy.isDetached());

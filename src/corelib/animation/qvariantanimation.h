@@ -82,7 +82,7 @@ public:
 
     QVariant currentValue() const;
 
-    int duration() const Q_DECL_OVERRIDE;
+    int duration() const override;
     void setDuration(int msecs);
 
     QEasingCurve easingCurve() const;
@@ -95,10 +95,10 @@ Q_SIGNALS:
 
 protected:
     QVariantAnimation(QVariantAnimationPrivate &dd, QObject *parent = Q_NULLPTR);
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
 
-    void updateCurrentTime(int) Q_DECL_OVERRIDE;
-    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) Q_DECL_OVERRIDE;
+    void updateCurrentTime(int) override;
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) override;
 
     virtual void updateCurrentValue(const QVariant &value);
     virtual QVariant interpolated(const QVariant &from, const QVariant &to, qreal progress) const;

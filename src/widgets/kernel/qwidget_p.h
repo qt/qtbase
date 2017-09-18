@@ -902,26 +902,26 @@ public:
         : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0), updateDueToGraphicsEffect(false)
     {}
 
-    void detach() Q_DECL_OVERRIDE
+    void detach() override
     { m_widget->d_func()->graphicsEffect = 0; }
 
-    const QGraphicsItem *graphicsItem() const Q_DECL_OVERRIDE
+    const QGraphicsItem *graphicsItem() const override
     { return 0; }
 
-    const QWidget *widget() const Q_DECL_OVERRIDE
+    const QWidget *widget() const override
     { return m_widget; }
 
-    void update() Q_DECL_OVERRIDE
+    void update() override
     {
         updateDueToGraphicsEffect = true;
         m_widget->update();
         updateDueToGraphicsEffect = false;
     }
 
-    bool isPixmap() const Q_DECL_OVERRIDE
+    bool isPixmap() const override
     { return false; }
 
-    void effectBoundingRectChanged() Q_DECL_OVERRIDE
+    void effectBoundingRectChanged() override
     {
         // ### This function should take a rect parameter; then we can avoid
         // updating too much on the parent widget.
@@ -931,16 +931,16 @@ public:
             update();
     }
 
-    const QStyleOption *styleOption() const Q_DECL_OVERRIDE
+    const QStyleOption *styleOption() const override
     { return 0; }
 
-    QRect deviceRect() const Q_DECL_OVERRIDE
+    QRect deviceRect() const override
     { return m_widget->window()->rect(); }
 
-    QRectF boundingRect(Qt::CoordinateSystem system) const Q_DECL_OVERRIDE;
-    void draw(QPainter *p) Q_DECL_OVERRIDE;
+    QRectF boundingRect(Qt::CoordinateSystem system) const override;
+    void draw(QPainter *p) override;
     QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                   QGraphicsEffect::PixmapPadMode mode) const Q_DECL_OVERRIDE;
+                   QGraphicsEffect::PixmapPadMode mode) const override;
 
     QWidget *m_widget;
     QWidgetPaintContext *context;

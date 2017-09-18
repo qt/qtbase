@@ -164,7 +164,7 @@ public:
 #endif
     void start(OpenMode mode = ReadWrite);
     bool startDetached(qint64 *pid = nullptr);
-    bool open(OpenMode mode = ReadWrite) Q_DECL_OVERRIDE;
+    bool open(OpenMode mode = ReadWrite) override;
 
     QString program() const;
     void setProgram(const QString &program);
@@ -227,8 +227,8 @@ public:
     qint64 processId() const;
 
     bool waitForStarted(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000) Q_DECL_OVERRIDE;
-    bool waitForBytesWritten(int msecs = 30000) Q_DECL_OVERRIDE;
+    bool waitForReadyRead(int msecs = 30000) override;
+    bool waitForBytesWritten(int msecs = 30000) override;
     bool waitForFinished(int msecs = 30000);
 
     QByteArray readAllStandardOutput();
@@ -238,12 +238,12 @@ public:
     QProcess::ExitStatus exitStatus() const;
 
     // QIODevice
-    qint64 bytesAvailable() const Q_DECL_OVERRIDE; // ### Qt6: remove trivial override
-    qint64 bytesToWrite() const Q_DECL_OVERRIDE;
-    bool isSequential() const Q_DECL_OVERRIDE;
-    bool canReadLine() const Q_DECL_OVERRIDE; // ### Qt6: remove trivial override
-    void close() Q_DECL_OVERRIDE;
-    bool atEnd() const Q_DECL_OVERRIDE; // ### Qt6: remove trivial override
+    qint64 bytesAvailable() const override; // ### Qt6: remove trivial override
+    qint64 bytesToWrite() const override;
+    bool isSequential() const override;
+    bool canReadLine() const override; // ### Qt6: remove trivial override
+    void close() override;
+    bool atEnd() const override; // ### Qt6: remove trivial override
 
     static int execute(const QString &program, const QStringList &arguments);
     static int execute(const QString &command);
@@ -286,8 +286,8 @@ protected:
     virtual void setupChildProcess();
 
     // QIODevice
-    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-    qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE;
+    qint64 readData(char *data, qint64 maxlen) override;
+    qint64 writeData(const char *data, qint64 len) override;
 
 private:
     Q_DECLARE_PRIVATE(QProcess)

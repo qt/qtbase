@@ -819,7 +819,7 @@ public:
     }
 
 protected:
-    void showEvent(QShowEvent *e) Q_DECL_OVERRIDE
+    void showEvent(QShowEvent *e) override
     {
         QVERIFY(m_subMenu->isVisible());
         QVERIFY2(m_subMenu->x() > x(),
@@ -828,7 +828,7 @@ protected:
         QMenu::showEvent(e);
     }
 
-    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE
+    void timerEvent(QTimerEvent *e) override
     {
         if (e->timerId() == m_timerId) {
             switch (m_timerTick++) {
@@ -1217,7 +1217,7 @@ public:
         setMouseTracking(true);
     }
 
-    bool event(QEvent *e) Q_DECL_OVERRIDE
+    bool event(QEvent *e) override
     {
         switch (e->type()) {
         case QEvent::MouseMove:
@@ -1525,7 +1525,7 @@ void tst_QMenu::menuSize_Scrolling()
         ~TestMenu() {}
 
     private:
-        void showEvent(QShowEvent *e) Q_DECL_OVERRIDE
+        void showEvent(QShowEvent *e) override
         {
             QVERIFY(actions().length() == m_numItems);
 

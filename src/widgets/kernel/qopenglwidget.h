@@ -96,13 +96,13 @@ protected:
     virtual void resizeGL(int w, int h);
     virtual void paintGL();
 
-    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *e) override;
+    void resizeEvent(QResizeEvent *e) override;
+    bool event(QEvent *e) override;
 
-    int metric(QPaintDevice::PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
-    QPaintDevice *redirected(QPoint *p) const Q_DECL_OVERRIDE;
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
+    int metric(QPaintDevice::PaintDeviceMetric metric) const override;
+    QPaintDevice *redirected(QPoint *p) const override;
+    QPaintEngine *paintEngine() const override;
 
 private:
     Q_DISABLE_COPY(QOpenGLWidget)

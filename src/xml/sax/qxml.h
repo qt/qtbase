@@ -253,29 +253,29 @@ public:
     QXmlSimpleReader();
     virtual ~QXmlSimpleReader();
 
-    bool feature(const QString& name, bool *ok = Q_NULLPTR) const Q_DECL_OVERRIDE;
-    void setFeature(const QString& name, bool value) Q_DECL_OVERRIDE;
-    bool hasFeature(const QString& name) const Q_DECL_OVERRIDE;
+    bool feature(const QString& name, bool *ok = Q_NULLPTR) const override;
+    void setFeature(const QString& name, bool value) override;
+    bool hasFeature(const QString& name) const override;
 
-    void* property(const QString& name, bool *ok = Q_NULLPTR) const Q_DECL_OVERRIDE;
-    void setProperty(const QString& name, void* value) Q_DECL_OVERRIDE;
-    bool hasProperty(const QString& name) const Q_DECL_OVERRIDE;
+    void* property(const QString& name, bool *ok = Q_NULLPTR) const override;
+    void setProperty(const QString& name, void* value) override;
+    bool hasProperty(const QString& name) const override;
 
-    void setEntityResolver(QXmlEntityResolver* handler) Q_DECL_OVERRIDE;
-    QXmlEntityResolver* entityResolver() const Q_DECL_OVERRIDE;
-    void setDTDHandler(QXmlDTDHandler* handler) Q_DECL_OVERRIDE;
-    QXmlDTDHandler* DTDHandler() const Q_DECL_OVERRIDE;
-    void setContentHandler(QXmlContentHandler* handler) Q_DECL_OVERRIDE;
-    QXmlContentHandler* contentHandler() const Q_DECL_OVERRIDE;
-    void setErrorHandler(QXmlErrorHandler* handler) Q_DECL_OVERRIDE;
-    QXmlErrorHandler* errorHandler() const Q_DECL_OVERRIDE;
-    void setLexicalHandler(QXmlLexicalHandler* handler) Q_DECL_OVERRIDE;
-    QXmlLexicalHandler* lexicalHandler() const Q_DECL_OVERRIDE;
-    void setDeclHandler(QXmlDeclHandler* handler) Q_DECL_OVERRIDE;
-    QXmlDeclHandler* declHandler() const Q_DECL_OVERRIDE;
+    void setEntityResolver(QXmlEntityResolver* handler) override;
+    QXmlEntityResolver* entityResolver() const override;
+    void setDTDHandler(QXmlDTDHandler* handler) override;
+    QXmlDTDHandler* DTDHandler() const override;
+    void setContentHandler(QXmlContentHandler* handler) override;
+    QXmlContentHandler* contentHandler() const override;
+    void setErrorHandler(QXmlErrorHandler* handler) override;
+    QXmlErrorHandler* errorHandler() const override;
+    void setLexicalHandler(QXmlLexicalHandler* handler) override;
+    QXmlLexicalHandler* lexicalHandler() const override;
+    void setDeclHandler(QXmlDeclHandler* handler) override;
+    QXmlDeclHandler* declHandler() const override;
 
-    bool parse(const QXmlInputSource& input) Q_DECL_OVERRIDE;
-    bool parse(const QXmlInputSource* input) Q_DECL_OVERRIDE;
+    bool parse(const QXmlInputSource& input) override;
+    bool parse(const QXmlInputSource* input) override;
     virtual bool parse(const QXmlInputSource* input, bool incremental);
     virtual bool parseContinue();
 
@@ -385,40 +385,40 @@ public:
     QXmlDefaultHandler();
     virtual ~QXmlDefaultHandler();
 
-    void setDocumentLocator(QXmlLocator* locator) Q_DECL_OVERRIDE;
-    bool startDocument() Q_DECL_OVERRIDE;
-    bool endDocument() Q_DECL_OVERRIDE;
-    bool startPrefixMapping(const QString& prefix, const QString& uri) Q_DECL_OVERRIDE;
-    bool endPrefixMapping(const QString& prefix) Q_DECL_OVERRIDE;
-    bool startElement(const QString& namespaceURI, const QString& localName, const QString& qName, const QXmlAttributes& atts) Q_DECL_OVERRIDE;
-    bool endElement(const QString& namespaceURI, const QString& localName, const QString& qName) Q_DECL_OVERRIDE;
-    bool characters(const QString& ch) Q_DECL_OVERRIDE;
-    bool ignorableWhitespace(const QString& ch) Q_DECL_OVERRIDE;
-    bool processingInstruction(const QString& target, const QString& data) Q_DECL_OVERRIDE;
-    bool skippedEntity(const QString& name) Q_DECL_OVERRIDE;
+    void setDocumentLocator(QXmlLocator* locator) override;
+    bool startDocument() override;
+    bool endDocument() override;
+    bool startPrefixMapping(const QString& prefix, const QString& uri) override;
+    bool endPrefixMapping(const QString& prefix) override;
+    bool startElement(const QString& namespaceURI, const QString& localName, const QString& qName, const QXmlAttributes& atts) override;
+    bool endElement(const QString& namespaceURI, const QString& localName, const QString& qName) override;
+    bool characters(const QString& ch) override;
+    bool ignorableWhitespace(const QString& ch) override;
+    bool processingInstruction(const QString& target, const QString& data) override;
+    bool skippedEntity(const QString& name) override;
 
-    bool warning(const QXmlParseException& exception) Q_DECL_OVERRIDE;
-    bool error(const QXmlParseException& exception) Q_DECL_OVERRIDE;
-    bool fatalError(const QXmlParseException& exception) Q_DECL_OVERRIDE;
+    bool warning(const QXmlParseException& exception) override;
+    bool error(const QXmlParseException& exception) override;
+    bool fatalError(const QXmlParseException& exception) override;
 
-    bool notationDecl(const QString& name, const QString& publicId, const QString& systemId) Q_DECL_OVERRIDE;
-    bool unparsedEntityDecl(const QString& name, const QString& publicId, const QString& systemId, const QString& notationName) Q_DECL_OVERRIDE;
+    bool notationDecl(const QString& name, const QString& publicId, const QString& systemId) override;
+    bool unparsedEntityDecl(const QString& name, const QString& publicId, const QString& systemId, const QString& notationName) override;
 
-    bool resolveEntity(const QString& publicId, const QString& systemId, QXmlInputSource*& ret) Q_DECL_OVERRIDE;
+    bool resolveEntity(const QString& publicId, const QString& systemId, QXmlInputSource*& ret) override;
 
-    bool startDTD(const QString& name, const QString& publicId, const QString& systemId) Q_DECL_OVERRIDE;
-    bool endDTD() Q_DECL_OVERRIDE;
-    bool startEntity(const QString& name) Q_DECL_OVERRIDE;
-    bool endEntity(const QString& name) Q_DECL_OVERRIDE;
-    bool startCDATA() Q_DECL_OVERRIDE;
-    bool endCDATA() Q_DECL_OVERRIDE;
-    bool comment(const QString& ch) Q_DECL_OVERRIDE;
+    bool startDTD(const QString& name, const QString& publicId, const QString& systemId) override;
+    bool endDTD() override;
+    bool startEntity(const QString& name) override;
+    bool endEntity(const QString& name) override;
+    bool startCDATA() override;
+    bool endCDATA() override;
+    bool comment(const QString& ch) override;
 
-    bool attributeDecl(const QString& eName, const QString& aName, const QString& type, const QString& valueDefault, const QString& value) Q_DECL_OVERRIDE;
-    bool internalEntityDecl(const QString& name, const QString& value) Q_DECL_OVERRIDE;
-    bool externalEntityDecl(const QString& name, const QString& publicId, const QString& systemId) Q_DECL_OVERRIDE;
+    bool attributeDecl(const QString& eName, const QString& aName, const QString& type, const QString& valueDefault, const QString& value) override;
+    bool internalEntityDecl(const QString& name, const QString& value) override;
+    bool externalEntityDecl(const QString& name, const QString& publicId, const QString& systemId) override;
 
-    QString errorString() const Q_DECL_OVERRIDE;
+    QString errorString() const override;
 
 private:
     QXmlDefaultHandlerPrivate *d;

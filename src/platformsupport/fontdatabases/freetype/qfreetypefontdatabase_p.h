@@ -66,11 +66,11 @@ struct FontFile
 class QFreeTypeFontDatabase : public QPlatformFontDatabase
 {
 public:
-    void populateFontDatabase() Q_DECL_OVERRIDE;
-    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) Q_DECL_OVERRIDE;
-    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) Q_DECL_OVERRIDE;
-    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) Q_DECL_OVERRIDE;
-    void releaseHandle(void *handle) Q_DECL_OVERRIDE;
+    void populateFontDatabase() override;
+    QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
+    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
+    QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName) override;
+    void releaseHandle(void *handle) override;
 
     static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file);
 };

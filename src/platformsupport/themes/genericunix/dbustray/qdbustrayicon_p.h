@@ -91,18 +91,18 @@ public:
 
     QDBusMenuConnection * dBusConnection();
 
-    void init() Q_DECL_OVERRIDE;
-    void cleanup() Q_DECL_OVERRIDE;
-    void updateIcon(const QIcon &icon) Q_DECL_OVERRIDE;
-    void updateToolTip(const QString &tooltip) Q_DECL_OVERRIDE;
-    void updateMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
-    QPlatformMenu *createMenu() const Q_DECL_OVERRIDE;
+    void init() override;
+    void cleanup() override;
+    void updateIcon(const QIcon &icon) override;
+    void updateToolTip(const QString &tooltip) override;
+    void updateMenu(QPlatformMenu *menu) override;
+    QPlatformMenu *createMenu() const override;
     void showMessage(const QString &title, const QString &msg,
-                     const QIcon &icon, MessageIcon iconType, int msecs) Q_DECL_OVERRIDE;
+                     const QIcon &icon, MessageIcon iconType, int msecs) override;
 
-    bool isSystemTrayAvailable() const Q_DECL_OVERRIDE;
-    bool supportsMessages() const Q_DECL_OVERRIDE { return true; }
-    QRect geometry() const Q_DECL_OVERRIDE { return QRect(); }
+    bool isSystemTrayAvailable() const override;
+    bool supportsMessages() const override { return true; }
+    QRect geometry() const override { return QRect(); }
 
     QString category() const { return m_category; }
     QString status() const { return m_status; }

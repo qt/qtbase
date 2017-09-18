@@ -71,8 +71,8 @@ public:
         setCaseSensitivity(Qt::CaseInsensitive);
 #endif
     }
-    QString pathFromIndex(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    QStringList splitPath(const QString& path) const Q_DECL_OVERRIDE;
+    QString pathFromIndex(const QModelIndex &index) const override;
+    QStringList splitPath(const QString& path) const override;
 
     QAbstractProxyModel *proxyModel;
     QFileSystemModel *sourceModel;

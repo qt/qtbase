@@ -116,7 +116,7 @@ public:
     QAbstractEventDispatcher *eventDispatcher() const;
     void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
 
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
     int loopLevel() const;
 
 #ifdef QTHREAD_HAS_CREATE

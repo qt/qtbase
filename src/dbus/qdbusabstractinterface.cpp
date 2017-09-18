@@ -73,7 +73,7 @@ public:
         : QMetaCallEvent(0, 0, Q_NULLPTR, sender, m.methodIndex())
     {}
 
-    void placeMetaCall(QObject *object) Q_DECL_OVERRIDE
+    void placeMetaCall(QObject *object) override
     {
         QDBusAbstractInterface *iface = static_cast<QDBusAbstractInterface *>(object);
         QDBusAbstractInterfacePrivate::finishDisconnectNotify(iface, signalId());

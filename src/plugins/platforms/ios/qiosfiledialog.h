@@ -53,17 +53,17 @@ public:
     QIOSFileDialog();
     ~QIOSFileDialog();
 
-    void exec() Q_DECL_OVERRIDE;
-    bool defaultNameFilterDisables() const Q_DECL_OVERRIDE { return false; }
-    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
-    void setDirectory(const QUrl &) Q_DECL_OVERRIDE {}
-    QUrl directory() const Q_DECL_OVERRIDE { return QUrl(); }
-    void selectFile(const QUrl &) Q_DECL_OVERRIDE {}
-    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
-    void setFilter() Q_DECL_OVERRIDE {}
-    void selectNameFilter(const QString &) Q_DECL_OVERRIDE {}
-    QString selectedNameFilter() const Q_DECL_OVERRIDE { return QString(); }
+    void exec() override;
+    bool defaultNameFilterDisables() const override { return false; }
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) override;
+    void hide() override;
+    void setDirectory(const QUrl &) override {}
+    QUrl directory() const override { return QUrl(); }
+    void selectFile(const QUrl &) override {}
+    QList<QUrl> selectedFiles() const override;
+    void setFilter() override {}
+    void selectNameFilter(const QString &) override {}
+    QString selectedNameFilter() const override { return QString(); }
 
     void selectedFilesChanged(QList<QUrl> selection);
 

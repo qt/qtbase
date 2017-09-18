@@ -204,9 +204,9 @@ Q_SIGNALS:
 
 protected:
 #ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent *event) override;
 #endif
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
 
 private:
     Q_DECLARE_PRIVATE(QMainWindow)

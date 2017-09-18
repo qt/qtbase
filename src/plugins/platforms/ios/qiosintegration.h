@@ -64,45 +64,45 @@ public:
     QIOSIntegration();
     ~QIOSIntegration();
 
-    bool hasCapability(Capability cap) const Q_DECL_OVERRIDE;
+    bool hasCapability(Capability cap) const override;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
-    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const override;
 #ifndef QT_NO_CLIPBOARD
-    QPlatformClipboard *clipboard() const Q_DECL_OVERRIDE;
+    QPlatformClipboard *clipboard() const override;
 #endif
-    QPlatformInputContext *inputContext() const Q_DECL_OVERRIDE;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
+    QPlatformInputContext *inputContext() const override;
+    QPlatformServices *services() const override;
 
-    QVariant styleHint(StyleHint hint) const Q_DECL_OVERRIDE;
+    QVariant styleHint(StyleHint hint) const override;
 
-    QStringList themeNames() const Q_DECL_OVERRIDE;
-    QPlatformTheme *createPlatformTheme(const QString &name) const Q_DECL_OVERRIDE;
+    QStringList themeNames() const override;
+    QPlatformTheme *createPlatformTheme(const QString &name) const override;
 
-    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
-    QPlatformNativeInterface *nativeInterface() const Q_DECL_OVERRIDE;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
+    QPlatformNativeInterface *nativeInterface() const override;
 
     QTouchDevice *touchDevice();
 #ifndef QT_NO_ACCESSIBILITY
-    QPlatformAccessibility *accessibility() const Q_DECL_OVERRIDE;
+    QPlatformAccessibility *accessibility() const override;
 #endif
 
     // Called from Objective-C class QIOSScreenTracker, which can't be friended
     void addScreen(QPlatformScreen *screen) { screenAdded(screen); }
     void destroyScreen(QPlatformScreen *screen) { QPlatformIntegration::destroyScreen(screen); }
 
-    void beep() const Q_DECL_OVERRIDE;
+    void beep() const override;
 
     static QIOSIntegration *instance();
 
     // -- QPlatformNativeInterface --
 
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) Q_DECL_OVERRIDE;
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
 
     void setDebugWindowManagement(bool);
     bool debugWindowManagement() const;

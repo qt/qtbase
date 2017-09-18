@@ -78,7 +78,7 @@ public:
     FontFilters fontFilters() const;
 
     QFont currentFont() const;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
 
 public Q_SLOTS:
     void setCurrentFont(const QFont &f);
@@ -87,7 +87,7 @@ Q_SIGNALS:
     void currentFontChanged(const QFont &f);
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
 
 private:
     Q_DISABLE_COPY(QFontComboBox)

@@ -141,7 +141,7 @@ public:
     QSet<QAbstractState*> configuration() const;
 
 #if QT_CONFIG(qeventtransition)
-    bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 #endif
 
 public Q_SLOTS:
@@ -156,8 +156,8 @@ Q_SIGNALS:
 
 
 protected:
-    void onEntry(QEvent *event) Q_DECL_OVERRIDE;
-    void onExit(QEvent *event) Q_DECL_OVERRIDE;
+    void onEntry(QEvent *event) override;
+    void onExit(QEvent *event) override;
 
     virtual void beginSelectTransitions(QEvent *event);
     virtual void endSelectTransitions(QEvent *event);
@@ -165,7 +165,7 @@ protected:
     virtual void beginMicrostep(QEvent *event);
     virtual void endMicrostep(QEvent *event);
 
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
 
 protected:
     QStateMachine(QStateMachinePrivate &dd, QObject *parent);

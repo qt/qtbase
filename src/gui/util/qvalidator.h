@@ -97,8 +97,8 @@ public:
     QIntValidator(int bottom, int top, QObject *parent = Q_NULLPTR);
     ~QIntValidator();
 
-    QValidator::State validate(QString &, int &) const Q_DECL_OVERRIDE;
-    void fixup(QString &input) const Q_DECL_OVERRIDE;
+    QValidator::State validate(QString &, int &) const override;
+    void fixup(QString &input) const override;
 
     void setBottom(int);
     void setTop(int);
@@ -139,7 +139,7 @@ public:
         ScientificNotation
     };
     Q_ENUM(Notation)
-    QValidator::State validate(QString &, int &) const Q_DECL_OVERRIDE;
+    QValidator::State validate(QString &, int &) const override;
 
     virtual void setRange(double bottom, double top, int decimals = 0);
     void setBottom(double);
@@ -178,7 +178,7 @@ public:
     explicit QRegExpValidator(const QRegExp& rx, QObject *parent = Q_NULLPTR);
     ~QRegExpValidator();
 
-    virtual QValidator::State validate(QString& input, int& pos) const Q_DECL_OVERRIDE;
+    virtual QValidator::State validate(QString& input, int& pos) const override;
 
     void setRegExp(const QRegExp& rx);
     const QRegExp& regExp() const { return r; }
@@ -208,7 +208,7 @@ public:
     explicit QRegularExpressionValidator(const QRegularExpression &re, QObject *parent = Q_NULLPTR);
     ~QRegularExpressionValidator();
 
-    virtual QValidator::State validate(QString &input, int &pos) const Q_DECL_OVERRIDE;
+    virtual QValidator::State validate(QString &input, int &pos) const override;
 
     QRegularExpression regularExpression() const;
 

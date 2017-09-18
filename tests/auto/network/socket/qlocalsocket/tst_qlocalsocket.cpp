@@ -476,7 +476,7 @@ void tst_QLocalSocket::connectWithOldOpen()
     class OverriddenOpen : public LocalSocket
     {
     public:
-        virtual bool open(OpenMode mode) Q_DECL_OVERRIDE
+        virtual bool open(OpenMode mode) override
         { return QIODevice::open(mode); }
     };
 

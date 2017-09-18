@@ -91,11 +91,11 @@ class QTsciiCodec : public QTextCodec {
 public:
     ~QTsciiCodec();
 
-    QByteArray name() const Q_DECL_OVERRIDE;
-    int mibEnum() const Q_DECL_OVERRIDE;
+    QByteArray name() const override;
+    int mibEnum() const override;
 
-    QString convertToUnicode(const char *, int, ConverterState *) const Q_DECL_OVERRIDE;
-    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const Q_DECL_OVERRIDE;
+    QString convertToUnicode(const char *, int, ConverterState *) const override;
+    QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const override;
 };
 
 #endif // QT_NO_CODECS

@@ -68,7 +68,7 @@ Q_SIGNALS:
     void activated(int socket, QPrivateSignal);
 
 protected:
-    bool event(QEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) override;
 
 private:
     Q_DISABLE_COPY(QSocketNotifier)

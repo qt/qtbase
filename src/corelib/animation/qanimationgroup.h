@@ -67,7 +67,7 @@ public:
 
 protected:
     QAnimationGroup(QAnimationGroupPrivate &dd, QObject *parent);
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
 
 private:
     Q_DISABLE_COPY(QAnimationGroup)

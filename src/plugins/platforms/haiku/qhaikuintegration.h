@@ -54,17 +54,17 @@ public:
     explicit QHaikuIntegration(const QStringList &paramList);
     ~QHaikuIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
-    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
 
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
-    QPlatformServices *services() const Q_DECL_OVERRIDE;
+    QPlatformFontDatabase *fontDatabase() const override;
+    QPlatformServices *services() const override;
 
 #ifndef QT_NO_CLIPBOARD
-    QPlatformClipboard *clipboard() const Q_DECL_OVERRIDE;
+    QPlatformClipboard *clipboard() const override;
 #endif
 
 private:

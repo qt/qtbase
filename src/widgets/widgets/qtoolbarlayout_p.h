@@ -68,7 +68,7 @@ class QToolBarItem : public QWidgetItem
 {
 public:
     QToolBarItem(QWidget *widget);
-    bool isEmpty() const Q_DECL_OVERRIDE;
+    bool isEmpty() const override;
 
     QAction *action;
     bool customWidget;
@@ -82,22 +82,22 @@ public:
     QToolBarLayout(QWidget *parent = 0);
     ~QToolBarLayout();
 
-    void addItem(QLayoutItem *item) Q_DECL_OVERRIDE;
-    QLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
-    QLayoutItem *takeAt(int index) Q_DECL_OVERRIDE;
-    int count() const Q_DECL_OVERRIDE;
+    void addItem(QLayoutItem *item) override;
+    QLayoutItem *itemAt(int index) const override;
+    QLayoutItem *takeAt(int index) override;
+    int count() const override;
 
-    bool isEmpty() const Q_DECL_OVERRIDE;
-    void invalidate() Q_DECL_OVERRIDE;
-    Qt::Orientations expandingDirections() const Q_DECL_OVERRIDE;
+    bool isEmpty() const override;
+    void invalidate() override;
+    Qt::Orientations expandingDirections() const override;
 
-    void setGeometry(const QRect &r) Q_DECL_OVERRIDE;
-    QSize minimumSize() const Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &r) override;
+    QSize minimumSize() const override;
+    QSize sizeHint() const override;
 
     void insertAction(int index, QAction *action);
     int indexOf(QAction *action) const;
-    int indexOf(QWidget *widget) const Q_DECL_OVERRIDE { return QLayout::indexOf(widget); }
+    int indexOf(QWidget *widget) const override { return QLayout::indexOf(widget); }
 
     bool layoutActions(const QSize &size);
     QSize expandedSize(const QSize &size) const;

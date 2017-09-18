@@ -93,41 +93,41 @@ struct WriteInitialization : public TreeWalker
 //
 // widgets
 //
-    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
-    void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
+    void acceptUI(DomUI *node) override;
+    void acceptWidget(DomWidget *node) override;
 
-    void acceptLayout(DomLayout *node) Q_DECL_OVERRIDE;
-    void acceptSpacer(DomSpacer *node) Q_DECL_OVERRIDE;
-    void acceptLayoutItem(DomLayoutItem *node) Q_DECL_OVERRIDE;
+    void acceptLayout(DomLayout *node) override;
+    void acceptSpacer(DomSpacer *node) override;
+    void acceptLayoutItem(DomLayoutItem *node) override;
 
 //
 // actions
 //
-    void acceptActionGroup(DomActionGroup *node) Q_DECL_OVERRIDE;
-    void acceptAction(DomAction *node) Q_DECL_OVERRIDE;
-    void acceptActionRef(DomActionRef *node) Q_DECL_OVERRIDE;
+    void acceptActionGroup(DomActionGroup *node) override;
+    void acceptAction(DomAction *node) override;
+    void acceptActionRef(DomActionRef *node) override;
 
 //
 // tab stops
 //
-    void acceptTabStops(DomTabStops *tabStops) Q_DECL_OVERRIDE;
+    void acceptTabStops(DomTabStops *tabStops) override;
 
 //
 // custom widgets
 //
-    void acceptCustomWidgets(DomCustomWidgets *node) Q_DECL_OVERRIDE;
-    void acceptCustomWidget(DomCustomWidget *node) Q_DECL_OVERRIDE;
+    void acceptCustomWidgets(DomCustomWidgets *node) override;
+    void acceptCustomWidget(DomCustomWidget *node) override;
 
 //
 // layout defaults/functions
 //
-    void acceptLayoutDefault(DomLayoutDefault *node) Q_DECL_OVERRIDE   { m_LayoutDefaultHandler.acceptLayoutDefault(node); }
-    void acceptLayoutFunction(DomLayoutFunction *node) Q_DECL_OVERRIDE { m_LayoutDefaultHandler.acceptLayoutFunction(node); }
+    void acceptLayoutDefault(DomLayoutDefault *node) override   { m_LayoutDefaultHandler.acceptLayoutDefault(node); }
+    void acceptLayoutFunction(DomLayoutFunction *node) override { m_LayoutDefaultHandler.acceptLayoutFunction(node); }
 
 //
 // signal/slot connections
 //
-    void acceptConnection(DomConnection *connection) Q_DECL_OVERRIDE;
+    void acceptConnection(DomConnection *connection) override;
 
     enum {
         Use43UiFile = 0,

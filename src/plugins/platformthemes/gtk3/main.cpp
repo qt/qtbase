@@ -48,7 +48,7 @@ class QGtk3ThemePlugin : public QPlatformThemePlugin
    Q_PLUGIN_METADATA(IID QPlatformThemeFactoryInterface_iid FILE "gtk3.json")
 
 public:
-    QPlatformTheme *create(const QString &key, const QStringList &params) Q_DECL_OVERRIDE;
+    QPlatformTheme *create(const QString &key, const QStringList &params) override;
 };
 
 QPlatformTheme *QGtk3ThemePlugin::create(const QString &key, const QStringList &params)

@@ -572,7 +572,7 @@ class SlowTask : public QRunnable
 {
 public:
     static QAtomicInt cancel;
-    void run() Q_DECL_OVERRIDE {
+    void run() override {
         int iter = 60;
         while (--iter && !cancel.load())
             QThread::currentThread()->msleep(25);

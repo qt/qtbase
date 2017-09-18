@@ -229,8 +229,8 @@ class QDefaultItemEditorFactory : public QItemEditorFactory
 {
 public:
     inline QDefaultItemEditorFactory() {}
-    QWidget *createEditor(int userType, QWidget *parent) const Q_DECL_OVERRIDE;
-    QByteArray valuePropertyName(int) const Q_DECL_OVERRIDE;
+    QWidget *createEditor(int userType, QWidget *parent) const override;
+    QByteArray valuePropertyName(int) const override;
 };
 
 QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) const

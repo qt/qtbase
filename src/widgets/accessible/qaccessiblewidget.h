@@ -54,32 +54,32 @@ class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject, public QAcc
 {
 public:
     explicit QAccessibleWidget(QWidget *o, QAccessible::Role r = QAccessible::Client, const QString& name = QString());
-    bool isValid() const Q_DECL_OVERRIDE;
+    bool isValid() const override;
 
-    QWindow *window() const Q_DECL_OVERRIDE;
-    int childCount() const Q_DECL_OVERRIDE;
-    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
-    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const Q_DECL_OVERRIDE;
-    QAccessibleInterface *focusChild() const Q_DECL_OVERRIDE;
+    QWindow *window() const override;
+    int childCount() const override;
+    int indexOfChild(const QAccessibleInterface *child) const override;
+    QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > relations(QAccessible::Relation match = QAccessible::AllRelations) const override;
+    QAccessibleInterface *focusChild() const override;
 
-    QRect rect() const Q_DECL_OVERRIDE;
+    QRect rect() const override;
 
-    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    QAccessibleInterface *parent() const override;
+    QAccessibleInterface *child(int index) const override;
 
-    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
-    QAccessible::Role role() const Q_DECL_OVERRIDE;
-    QAccessible::State state() const Q_DECL_OVERRIDE;
+    QString text(QAccessible::Text t) const override;
+    QAccessible::Role role() const override;
+    QAccessible::State state() const override;
 
-    QColor foregroundColor() const Q_DECL_OVERRIDE;
-    QColor backgroundColor() const Q_DECL_OVERRIDE;
+    QColor foregroundColor() const override;
+    QColor backgroundColor() const override;
 
-    void *interface_cast(QAccessible::InterfaceType t) Q_DECL_OVERRIDE;
+    void *interface_cast(QAccessible::InterfaceType t) override;
 
     // QAccessibleActionInterface
-    QStringList actionNames() const Q_DECL_OVERRIDE;
-    void doAction(const QString &actionName) Q_DECL_OVERRIDE;
-    QStringList keyBindingsForAction(const QString &actionName) const Q_DECL_OVERRIDE;
+    QStringList actionNames() const override;
+    void doAction(const QString &actionName) override;
+    QStringList keyBindingsForAction(const QString &actionName) const override;
 protected:
     ~QAccessibleWidget();
     QWidget *widget() const;

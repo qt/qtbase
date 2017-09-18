@@ -60,18 +60,18 @@ public:
     QCocoaNativeInterface();
 
 #ifndef QT_NO_OPENGL
-    void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context) Q_DECL_OVERRIDE;
+    void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context) override;
 #endif
-    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) Q_DECL_OVERRIDE;
+    void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window) override;
 
-    NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
+    NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) override;
 
 #ifndef QT_NO_OPENGL
     static void *cglContextForContext(QOpenGLContext *context);
     static void *nsOpenGLContextForContext(QOpenGLContext* context);
 #endif
 
-    QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+    QFunctionPointer platformFunction(const QByteArray &function) const override;
 
 public Q_SLOTS:
     void onAppFocusWindowChanged(QWindow *window);

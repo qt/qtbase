@@ -204,12 +204,12 @@ class QIOSOffscreenSurface : public QPlatformOffscreenSurface
 public:
     QIOSOffscreenSurface(QOffscreenSurface *offscreenSurface) : QPlatformOffscreenSurface(offscreenSurface) {}
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE
+    QSurfaceFormat format() const override
     {
         Q_ASSERT(offscreenSurface());
         return offscreenSurface()->requestedFormat();
     }
-    bool isValid() const Q_DECL_OVERRIDE { return true; }
+    bool isValid() const override { return true; }
 };
 
 QPlatformOffscreenSurface *QIOSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const

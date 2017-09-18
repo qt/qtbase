@@ -71,9 +71,9 @@ public:
 
     Qt::Orientation orientation() const;
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
 
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) override;
     void initStyleOption(QStyleOption *option) const;
 
 public Q_SLOTS:

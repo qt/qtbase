@@ -396,8 +396,8 @@ public:
         : QAbstractTransition()
     { setTargetState(target); }
 protected:
-    void onTransition(QEvent *) Q_DECL_OVERRIDE {}
-    bool eventTest(QEvent *) Q_DECL_OVERRIDE { return true; }
+    void onTransition(QEvent *) override {}
+    bool eventTest(QEvent *) override { return true; }
 };
 
 } // namespace

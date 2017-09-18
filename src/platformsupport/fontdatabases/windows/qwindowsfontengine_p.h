@@ -76,53 +76,53 @@ public:
     void initFontInfo(const QFontDef &request,
                       int dpi);
 
-    QFixed lineThickness() const Q_DECL_OVERRIDE;
-    Properties properties() const Q_DECL_OVERRIDE;
-    void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) Q_DECL_OVERRIDE;
-    FaceId faceId() const Q_DECL_OVERRIDE;
-    bool getSfntTableData(uint tag, uchar *buffer, uint *length) const Q_DECL_OVERRIDE;
-    int synthesized() const Q_DECL_OVERRIDE;
-    QFixed emSquareSize() const Q_DECL_OVERRIDE;
+    QFixed lineThickness() const override;
+    Properties properties() const override;
+    void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) override;
+    FaceId faceId() const override;
+    bool getSfntTableData(uint tag, uchar *buffer, uint *length) const override;
+    int synthesized() const override;
+    QFixed emSquareSize() const override;
 
-    glyph_t glyphIndex(uint ucs4) const Q_DECL_OVERRIDE;
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const Q_DECL_OVERRIDE;
-    void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const Q_DECL_OVERRIDE;
+    glyph_t glyphIndex(uint ucs4) const override;
+    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
+    void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const override;
 
-    void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags) Q_DECL_OVERRIDE;
+    void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags) override;
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
-                         QPainterPath *path, QTextItem::RenderFlags flags) Q_DECL_OVERRIDE;
+                         QPainterPath *path, QTextItem::RenderFlags flags) override;
 
     HGDIOBJ selectDesignFont() const;
 
-    glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) Q_DECL_OVERRIDE;
-    glyph_metrics_t boundingBox(glyph_t g) Q_DECL_OVERRIDE { return boundingBox(g, QTransform()); }
-    glyph_metrics_t boundingBox(glyph_t g, const QTransform &t) Q_DECL_OVERRIDE;
+    glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) override;
+    glyph_metrics_t boundingBox(glyph_t g) override { return boundingBox(g, QTransform()); }
+    glyph_metrics_t boundingBox(glyph_t g, const QTransform &t) override;
 
 
-    QFixed ascent() const Q_DECL_OVERRIDE;
-    QFixed descent() const Q_DECL_OVERRIDE;
-    QFixed leading() const Q_DECL_OVERRIDE;
-    QFixed xHeight() const Q_DECL_OVERRIDE;
-    QFixed capHeight() const Q_DECL_OVERRIDE;
-    QFixed averageCharWidth() const Q_DECL_OVERRIDE;
-    qreal maxCharWidth() const Q_DECL_OVERRIDE;
-    qreal minLeftBearing() const Q_DECL_OVERRIDE;
-    qreal minRightBearing() const Q_DECL_OVERRIDE;
+    QFixed ascent() const override;
+    QFixed descent() const override;
+    QFixed leading() const override;
+    QFixed xHeight() const override;
+    QFixed capHeight() const override;
+    QFixed averageCharWidth() const override;
+    qreal maxCharWidth() const override;
+    qreal minLeftBearing() const override;
+    qreal minRightBearing() const override;
 
-    QImage alphaMapForGlyph(glyph_t t) Q_DECL_OVERRIDE { return alphaMapForGlyph(t, QTransform()); }
-    QImage alphaMapForGlyph(glyph_t, const QTransform &xform) Q_DECL_OVERRIDE;
-    QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform) Q_DECL_OVERRIDE;
-    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) Q_DECL_OVERRIDE;
+    QImage alphaMapForGlyph(glyph_t t) override { return alphaMapForGlyph(t, QTransform()); }
+    QImage alphaMapForGlyph(glyph_t, const QTransform &xform) override;
+    QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform) override;
+    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) override;
 
-    QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
-    Qt::HANDLE handle() const Q_DECL_OVERRIDE;
-    bool supportsTransformation(const QTransform &transform) const Q_DECL_OVERRIDE;
+    QFontEngine *cloneWithSize(qreal pixelSize) const override;
+    Qt::HANDLE handle() const override;
+    bool supportsTransformation(const QTransform &transform) const override;
 
 #ifndef Q_CC_MINGW
-    void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0) Q_DECL_OVERRIDE;
+    void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0) override;
 #endif
 
-    bool hasUnreliableGlyphOutline() const Q_DECL_OVERRIDE;
+    bool hasUnreliableGlyphOutline() const override;
 
     int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs) const;
     void getCMap();
@@ -173,7 +173,7 @@ class QWindowsMultiFontEngine : public QFontEngineMulti
 public:
     explicit QWindowsMultiFontEngine(QFontEngine *fe, int script);
 
-    QFontEngine *loadEngine(int at) Q_DECL_OVERRIDE;
+    QFontEngine *loadEngine(int at) override;
 };
 
 QT_END_NAMESPACE

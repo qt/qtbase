@@ -56,15 +56,15 @@ public:
     QParallelAnimationGroup(QObject *parent = Q_NULLPTR);
     ~QParallelAnimationGroup();
 
-    int duration() const Q_DECL_OVERRIDE;
+    int duration() const override;
 
 protected:
     QParallelAnimationGroup(QParallelAnimationGroupPrivate &dd, QObject *parent);
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
 
-    void updateCurrentTime(int currentTime) Q_DECL_OVERRIDE;
-    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) Q_DECL_OVERRIDE;
-    void updateDirection(QAbstractAnimation::Direction direction) Q_DECL_OVERRIDE;
+    void updateCurrentTime(int currentTime) override;
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState) override;
+    void updateDirection(QAbstractAnimation::Direction direction) override;
 
 private:
     Q_DISABLE_COPY(QParallelAnimationGroup)

@@ -294,7 +294,7 @@ public:
                Qt::TextFormat titleFormat, Qt::TextFormat subTitleFormat);
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) override;
 #if QT_CONFIG(style_windowsvista)
 private:
     bool vistaDisabled() const;
@@ -450,7 +450,7 @@ public:
             m_layout->addWidget(m_sideWidget);
     }
 
-    QSize minimumSizeHint() const Q_DECL_OVERRIDE {
+    QSize minimumSizeHint() const override {
         if (pixmap() && !pixmap()->isNull())
             return pixmap()->size();
         return QFrame::minimumSizeHint();

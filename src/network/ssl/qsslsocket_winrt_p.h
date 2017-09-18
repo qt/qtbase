@@ -80,14 +80,14 @@ public:
     ~QSslSocketBackendPrivate();
 
     // Platform specific functions
-    void startClientEncryption() Q_DECL_OVERRIDE;
-    void startServerEncryption() Q_DECL_OVERRIDE;
-    void transmit() Q_DECL_OVERRIDE;
-    void disconnectFromHost() Q_DECL_OVERRIDE;
-    void disconnected() Q_DECL_OVERRIDE;
-    QSslCipher sessionCipher() const Q_DECL_OVERRIDE;
-    QSsl::SslProtocol sessionProtocol() const Q_DECL_OVERRIDE;
-    void continueHandshake() Q_DECL_OVERRIDE;
+    void startClientEncryption() override;
+    void startServerEncryption() override;
+    void transmit() override;
+    void disconnectFromHost() override;
+    void disconnected() override;
+    QSslCipher sessionCipher() const override;
+    QSsl::SslProtocol sessionProtocol() const override;
+    void continueHandshake() override;
 
     static QList<QSslCipher> defaultCiphers();
     static QList<QSslError> verify(const QList<QSslCertificate> &certificateChain, const QString &hostName);

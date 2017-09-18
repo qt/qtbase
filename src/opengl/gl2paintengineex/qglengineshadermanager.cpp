@@ -68,13 +68,13 @@ public:
         delete m_shaders;
     }
 
-    void invalidateResource() Q_DECL_OVERRIDE
+    void invalidateResource() override
     {
         delete m_shaders;
         m_shaders = 0;
     }
 
-    void freeResource(QOpenGLContext *) Q_DECL_OVERRIDE
+    void freeResource(QOpenGLContext *) override
     {
     }
 

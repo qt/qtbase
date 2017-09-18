@@ -86,7 +86,7 @@ public:
     void setBlurRadius(float blurRadius);
 
 protected:
-    void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *e) override;
     void setAnimating(bool animate);
 
 private:

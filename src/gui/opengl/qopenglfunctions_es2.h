@@ -57,7 +57,7 @@ public:
     QOpenGLFunctions_ES2();
     ~QOpenGLFunctions_ES2();
 
-    bool initializeOpenGLFunctions() Q_DECL_OVERRIDE;
+    bool initializeOpenGLFunctions() override;
 
     // OpenGL ES2 core functions
     void glActiveTexture(GLenum texture);

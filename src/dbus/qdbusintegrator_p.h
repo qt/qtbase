@@ -109,7 +109,7 @@ public:
         : QMetaCallEvent(0, id, 0, sender, -1), connection(c), message(msg), metaTypes(types), flags(f)
         { }
 
-    void placeMetaCall(QObject *object) Q_DECL_OVERRIDE
+    void placeMetaCall(QObject *object) override
     {
         QDBusConnectionPrivate::d(connection)->deliverCall(object, flags, message, metaTypes, id());
     }
@@ -132,7 +132,7 @@ public:
         { }
     ~QDBusActivateObjectEvent();
 
-    void placeMetaCall(QObject *) Q_DECL_OVERRIDE;
+    void placeMetaCall(QObject *) override;
 
 private:
     QDBusConnection connection; // just for refcounting
@@ -151,7 +151,7 @@ public:
         : QMetaCallEvent(0, 0, Q_NULLPTR, cp, 0), conn(c), msg(msg), hooks(hooks), hookCount(count)
     {}
     ~QDBusSpyCallEvent();
-    void placeMetaCall(QObject *) Q_DECL_OVERRIDE;
+    void placeMetaCall(QObject *) override;
     static inline void invokeSpyHooks(const QDBusMessage &msg, const Hook *hooks, int hookCount);
 
     QDBusConnection conn;   // keeps the refcount in QDBusConnectionPrivate up

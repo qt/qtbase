@@ -187,7 +187,7 @@ Q_SIGNALS:
     void applicationVersionChanged();
 
 protected:
-    bool event(QEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) override;
 
     virtual bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
 #endif // QT_NO_QOBJECT

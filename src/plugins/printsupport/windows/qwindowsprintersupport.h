@@ -50,12 +50,12 @@ public:
     QWindowsPrinterSupport();
     ~QWindowsPrinterSupport();
 
-    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) Q_DECL_OVERRIDE;
-    QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode) Q_DECL_OVERRIDE;
+    QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode, const QString &deviceId = QString()) override;
+    QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode) override;
 
-    QPrintDevice createPrintDevice(const QString &id) Q_DECL_OVERRIDE;
-    QStringList availablePrintDeviceIds() const Q_DECL_OVERRIDE;
-    QString defaultPrintDeviceId() const Q_DECL_OVERRIDE;
+    QPrintDevice createPrintDevice(const QString &id) override;
+    QStringList availablePrintDeviceIds() const override;
+    QString defaultPrintDeviceId() const override;
 };
 
 QT_END_NAMESPACE

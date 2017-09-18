@@ -51,8 +51,8 @@ class QIOSEventDispatcher : public QEventDispatcherCoreFoundation
 public:
     explicit QIOSEventDispatcher(QObject *parent = 0);
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags) Q_DECL_OVERRIDE;
-    bool processPostedEvents() Q_DECL_OVERRIDE;
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool processPostedEvents() override;
 
     void handleRunLoopExit(CFRunLoopActivity activity);
 

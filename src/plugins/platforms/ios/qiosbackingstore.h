@@ -54,7 +54,7 @@ public:
     QIOSBackingStore(QWindow *window);
     ~QIOSBackingStore();
 
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
 
 private:
     QOpenGLContext *m_context;

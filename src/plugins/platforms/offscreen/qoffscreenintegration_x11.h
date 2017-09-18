@@ -55,9 +55,9 @@ class QOffscreenX11Info;
 class QOffscreenX11Integration : public QOffscreenIntegration
 {
 public:
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
 
 private:
     mutable QScopedPointer<QOffscreenX11Connection> m_connection;
@@ -88,14 +88,14 @@ public:
     QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGLContext *context);
     ~QOffscreenX11GLXContext();
 
-    bool makeCurrent(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    void doneCurrent() Q_DECL_OVERRIDE;
-    void swapBuffers(QPlatformSurface *surface) Q_DECL_OVERRIDE;
-    QFunctionPointer getProcAddress(const char *procName) Q_DECL_OVERRIDE;
+    bool makeCurrent(QPlatformSurface *surface) override;
+    void doneCurrent() override;
+    void swapBuffers(QPlatformSurface *surface) override;
+    QFunctionPointer getProcAddress(const char *procName) override;
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE;
-    bool isSharing() const Q_DECL_OVERRIDE;
-    bool isValid() const Q_DECL_OVERRIDE;
+    QSurfaceFormat format() const override;
+    bool isSharing() const override;
+    bool isValid() const override;
 
 private:
     QScopedPointer<QOffscreenX11GLXContextData> d;

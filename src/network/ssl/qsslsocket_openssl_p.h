@@ -132,22 +132,22 @@ public:
 #endif
 
     // Platform specific functions
-    void startClientEncryption() Q_DECL_OVERRIDE;
-    void startServerEncryption() Q_DECL_OVERRIDE;
-    void transmit() Q_DECL_OVERRIDE;
+    void startClientEncryption() override;
+    void startServerEncryption() override;
+    void transmit() override;
     bool startHandshake();
-    void disconnectFromHost() Q_DECL_OVERRIDE;
-    void disconnected() Q_DECL_OVERRIDE;
-    QSslCipher sessionCipher() const Q_DECL_OVERRIDE;
-    QSsl::SslProtocol sessionProtocol() const Q_DECL_OVERRIDE;
-    void continueHandshake() Q_DECL_OVERRIDE;
+    void disconnectFromHost() override;
+    void disconnected() override;
+    QSslCipher sessionCipher() const override;
+    QSsl::SslProtocol sessionProtocol() const override;
+    void continueHandshake() override;
     bool checkSslErrors();
     void storePeerCertificates();
     unsigned int tlsPskClientCallback(const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
     unsigned int tlsPskServerCallback(const char *identity, unsigned char *psk, unsigned int max_psk_len);
 #ifdef Q_OS_WIN
     void fetchCaRootForCert(const QSslCertificate &cert);
-    void _q_caRootLoaded(QSslCertificate,QSslCertificate) Q_DECL_OVERRIDE;
+    void _q_caRootLoaded(QSslCertificate,QSslCertificate) override;
 #endif
 
     Q_AUTOTEST_EXPORT static long setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions);

@@ -80,7 +80,7 @@ Q_SIGNALS:
     void widgetRemoved(int index);
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
 
 private:
     Q_DISABLE_COPY(QStackedWidget)

@@ -56,25 +56,25 @@ public:
 
     void reset();
 
-    QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
-    QPlatformMenu* createPlatformMenu() const Q_DECL_OVERRIDE;
-    QPlatformMenuBar* createPlatformMenuBar() const Q_DECL_OVERRIDE;
+    QPlatformMenuItem* createPlatformMenuItem() const override;
+    QPlatformMenu* createPlatformMenu() const override;
+    QPlatformMenuBar* createPlatformMenuBar() const override;
 
 #ifndef QT_NO_SYSTEMTRAYICON
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
 #endif
 
-    bool usePlatformNativeDialog(DialogType dialogType) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const Q_DECL_OVERRIDE;
+    bool usePlatformNativeDialog(DialogType dialogType) const override;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType dialogType) const override;
 
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
-    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE;
-    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
+    const QPalette *palette(Palette type = SystemPalette) const override;
+    const QFont *font(Font type = SystemFont) const override;
+    QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
     QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions options = 0) const override;
 
-    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
-    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
-    QKeySequence standardButtonShortcut(int button) const Q_DECL_OVERRIDE;
+    QVariant themeHint(ThemeHint hint) const override;
+    QString standardButtonText(int button) const override;
+    QKeySequence standardButtonShortcut(int button) const override;
 
     static const char *name;
 

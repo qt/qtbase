@@ -59,21 +59,21 @@ public:
     QWindowsDirect2DPlatformPixmap(PixelType pixelType, QWindowsDirect2DPaintEngine::Flags flags, QWindowsDirect2DBitmap *bitmap);
     ~QWindowsDirect2DPlatformPixmap();
 
-    void resize(int width, int height) Q_DECL_OVERRIDE;
-    void fromImage(const QImage &image, Qt::ImageConversionFlags flags) Q_DECL_OVERRIDE;
+    void resize(int width, int height) override;
+    void fromImage(const QImage &image, Qt::ImageConversionFlags flags) override;
 
-    int metric(QPaintDevice::PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
-    void fill(const QColor &color) Q_DECL_OVERRIDE;
+    int metric(QPaintDevice::PaintDeviceMetric metric) const override;
+    void fill(const QColor &color) override;
 
-    bool hasAlphaChannel() const Q_DECL_OVERRIDE;
+    bool hasAlphaChannel() const override;
 
-    QImage toImage() const Q_DECL_OVERRIDE;
-    QImage toImage(const QRect &rect) const Q_DECL_OVERRIDE;
+    QImage toImage() const override;
+    QImage toImage(const QRect &rect) const override;
 
-    QPaintEngine* paintEngine() const Q_DECL_OVERRIDE;
+    QPaintEngine* paintEngine() const override;
 
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
-    void setDevicePixelRatio(qreal scaleFactor) Q_DECL_OVERRIDE;
+    qreal devicePixelRatio() const override;
+    void setDevicePixelRatio(qreal scaleFactor) override;
 
     QWindowsDirect2DBitmap *bitmap() const;
 

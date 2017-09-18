@@ -87,18 +87,18 @@ public:
     virtual ~QPdfPrintEngine();
 
     // reimplementations QPaintEngine
-    bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
-    bool end() Q_DECL_OVERRIDE;
+    bool begin(QPaintDevice *pdev) override;
+    bool end() override;
     // end reimplementations QPaintEngine
 
     // reimplementations QPrintEngine
-    bool abort() Q_DECL_OVERRIDE {return false;}
-    QPrinter::PrinterState printerState() const Q_DECL_OVERRIDE {return state;}
+    bool abort() override {return false;}
+    QPrinter::PrinterState printerState() const override {return state;}
 
-    bool newPage() Q_DECL_OVERRIDE;
-    int metric(QPaintDevice::PaintDeviceMetric) const Q_DECL_OVERRIDE;
-    virtual void setProperty(PrintEnginePropertyKey key, const QVariant &value) Q_DECL_OVERRIDE;
-    virtual QVariant property(PrintEnginePropertyKey key) const Q_DECL_OVERRIDE;
+    bool newPage() override;
+    int metric(QPaintDevice::PaintDeviceMetric) const override;
+    virtual void setProperty(PrintEnginePropertyKey key, const QVariant &value) override;
+    virtual QVariant property(PrintEnginePropertyKey key) const override;
     // end reimplementations QPrintEngine
 
     QPrinter::PrinterState state;

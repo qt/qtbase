@@ -50,7 +50,7 @@ class QAndroidBearerEnginePlugin : public QBearerEnginePlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QBearerEngineFactoryInterface" FILE "android.json")
 
 public:
-    QBearerEngine *create(const QString &key) const Q_DECL_OVERRIDE
+    QBearerEngine *create(const QString &key) const override
     {
         return (key == QLatin1String("android")) ? new QAndroidBearerEngine() : 0;
     }

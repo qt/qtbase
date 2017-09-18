@@ -302,7 +302,7 @@ public:
         g_iteratorCurrentUrl.setLocalData(QString());
     }
 
-    QString next() Q_DECL_OVERRIDE
+    QString next() override
     {
         // Cache the URL that we are about to return, since QDir will immediately create a
         // new file engine on the file and ask if it exists. Unless we do this, we end up
@@ -314,17 +314,17 @@ public:
         return url;
     }
 
-    bool hasNext() const Q_DECL_OVERRIDE
+    bool hasNext() const override
     {
         return m_enumerator->hasNext();
     }
 
-    QString currentFileName() const Q_DECL_OVERRIDE
+    QString currentFileName() const override
     {
         return g_iteratorCurrentUrl.localData();
     }
 
-    QFileInfo currentFileInfo() const Q_DECL_OVERRIDE
+    QFileInfo currentFileInfo() const override
     {
         return QFileInfo(currentFileName());
     }

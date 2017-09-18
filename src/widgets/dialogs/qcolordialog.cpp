@@ -132,7 +132,7 @@ public:
     bool handleColorPickingMouseButtonRelease(QMouseEvent *e);
     bool handleColorPickingKeyPress(QKeyEvent *e);
 
-    bool canBeNativeDialog() const Q_DECL_OVERRIDE;
+    bool canBeNativeDialog() const override;
 
     QWellArray *custom;
     QWellArray *standard;
@@ -165,8 +165,8 @@ public:
 #endif
 
 private:
-    virtual void initHelper(QPlatformDialogHelper *h) Q_DECL_OVERRIDE;
-    virtual void helperPrepareShow(QPlatformDialogHelper *h) Q_DECL_OVERRIDE;
+    virtual void initHelper(QPlatformDialogHelper *h) override;
+    virtual void helperPrepareShow(QPlatformDialogHelper *h) override;
 };
 
 //////////// QWellArray BEGIN
@@ -190,7 +190,7 @@ public:
     virtual void setCurrent(int row, int col);
     virtual void setSelected(int row, int col);
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
 
     inline int cellWidth() const
         { return cellw; }
@@ -240,12 +240,12 @@ protected:
     virtual void paintCell(QPainter *, int row, int col, const QRect&);
     virtual void paintCellContents(QPainter *, int row, int col, const QRect&);
 
-    void mousePressEvent(QMouseEvent*) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent*) Q_DECL_OVERRIDE;
-    void keyPressEvent(QKeyEvent*) Q_DECL_OVERRIDE;
-    void focusInEvent(QFocusEvent*) Q_DECL_OVERRIDE;
-    void focusOutEvent(QFocusEvent*) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
+    void keyPressEvent(QKeyEvent*) override;
+    void focusInEvent(QFocusEvent*) override;
+    void focusOutEvent(QFocusEvent*) override;
+    void paintEvent(QPaintEvent *) override;
 
 private:
     Q_DISABLE_COPY(QWellArray)
@@ -493,7 +493,7 @@ class QColorPickingEventFilter : public QObject {
 public:
     explicit QColorPickingEventFilter(QColorDialogPrivate *dp, QObject *parent = 0) : QObject(parent), m_dp(dp) {}
 
-    bool eventFilter(QObject *, QEvent *event) Q_DECL_OVERRIDE
+    bool eventFilter(QObject *, QEvent *event) override
     {
         switch (event->type()) {
         case QEvent::MouseMove:
@@ -584,15 +584,15 @@ public:
     { setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum)); }
 
 protected:
-    void paintCellContents(QPainter *, int row, int col, const QRect&) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void paintCellContents(QPainter *, int row, int col, const QRect&) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
 #ifndef QT_NO_DRAGANDDROP
-    void dragEnterEvent(QDragEnterEvent *e) Q_DECL_OVERRIDE;
-    void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
-    void dragMoveEvent(QDragMoveEvent *e) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
+    void dragEnterEvent(QDragEnterEvent *e) override;
+    void dragLeaveEvent(QDragLeaveEvent *e) override;
+    void dragMoveEvent(QDragMoveEvent *e) override;
+    void dropEvent(QDropEvent *e) override;
 #endif
 
 private:
@@ -706,11 +706,11 @@ signals:
     void newCol(int h, int s);
 
 protected:
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
+    void resizeEvent(QResizeEvent *) override;
 
 private:
     int hue;
@@ -743,9 +743,9 @@ signals:
     void newHsv(int h, int s, int v);
 
 protected:
-    void paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
 
 private:
     enum { foff = 3, coff = 4 }; //frame and contents offset
@@ -1065,14 +1065,14 @@ signals:
     void colorDropped(QRgb);
 
 protected:
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
 #ifndef QT_NO_DRAGANDDROP
-    void dragEnterEvent(QDragEnterEvent *e) Q_DECL_OVERRIDE;
-    void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
+    void dragEnterEvent(QDragEnterEvent *e) override;
+    void dragLeaveEvent(QDragLeaveEvent *e) override;
+    void dropEvent(QDropEvent *e) override;
 #endif
 
 private:

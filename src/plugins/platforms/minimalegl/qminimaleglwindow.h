@@ -51,8 +51,8 @@ class QMinimalEglWindow : public QPlatformWindow
 public:
     QMinimalEglWindow(QWindow *w);
 
-    void setGeometry(const QRect &) Q_DECL_OVERRIDE;
-    WId winId() const Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &) override;
+    WId winId() const override;
 
 private:
     WId m_winid;

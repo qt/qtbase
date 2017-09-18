@@ -77,8 +77,8 @@ public:
     QInternalMimeData();
     ~QInternalMimeData();
 
-    bool hasFormat(const QString &mimeType) const Q_DECL_OVERRIDE;
-    QStringList formats() const Q_DECL_OVERRIDE;
+    bool hasFormat(const QString &mimeType) const override;
+    QStringList formats() const override;
     static bool canReadData(const QString &mimeType);
 
 
@@ -87,7 +87,7 @@ public:
     static QByteArray renderDataHelper(const QString &mimeType, const QMimeData *data);
 
 protected:
-    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const Q_DECL_OVERRIDE;
+    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
 
     virtual bool hasFormat_sys(const QString &mimeType) const = 0;
     virtual QStringList formats_sys() const = 0;

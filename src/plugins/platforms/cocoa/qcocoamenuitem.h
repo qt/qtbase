@@ -78,22 +78,22 @@ public:
     QCocoaMenuItem();
     ~QCocoaMenuItem();
 
-    void setText(const QString &text) Q_DECL_OVERRIDE;
-    void setIcon(const QIcon &icon) Q_DECL_OVERRIDE;
-    void setMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
-    void setVisible(bool isVisible) Q_DECL_OVERRIDE;
-    void setIsSeparator(bool isSeparator) Q_DECL_OVERRIDE;
-    void setFont(const QFont &font) Q_DECL_OVERRIDE;
-    void setRole(MenuRole role) Q_DECL_OVERRIDE;
+    void setText(const QString &text) override;
+    void setIcon(const QIcon &icon) override;
+    void setMenu(QPlatformMenu *menu) override;
+    void setVisible(bool isVisible) override;
+    void setIsSeparator(bool isSeparator) override;
+    void setFont(const QFont &font) override;
+    void setRole(MenuRole role) override;
 #ifndef QT_NO_SHORTCUT
-    void setShortcut(const QKeySequence& shortcut) Q_DECL_OVERRIDE;
+    void setShortcut(const QKeySequence& shortcut) override;
 #endif
-    void setCheckable(bool checkable) Q_DECL_OVERRIDE { Q_UNUSED(checkable) }
-    void setChecked(bool isChecked) Q_DECL_OVERRIDE;
-    void setEnabled(bool isEnabled) Q_DECL_OVERRIDE;
-    void setIconSize(int size) Q_DECL_OVERRIDE;
+    void setCheckable(bool checkable) override { Q_UNUSED(checkable) }
+    void setChecked(bool isChecked) override;
+    void setEnabled(bool isEnabled) override;
+    void setIconSize(int size) override;
 
-    void setNativeContents(WId item) Q_DECL_OVERRIDE;
+    void setNativeContents(WId item) override;
 
     inline QString text() const { return m_text; }
     inline NSMenuItem * nsItem() { return m_native; }

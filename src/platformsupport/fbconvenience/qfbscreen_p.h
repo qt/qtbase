@@ -78,14 +78,14 @@ public:
 
     virtual bool initialize();
 
-    QRect geometry() const Q_DECL_OVERRIDE { return mGeometry; }
-    int depth() const Q_DECL_OVERRIDE { return mDepth; }
-    QImage::Format format() const Q_DECL_OVERRIDE { return mFormat; }
-    QSizeF physicalSize() const Q_DECL_OVERRIDE { return mPhysicalSize; }
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE { return mCursor; }
+    QRect geometry() const override { return mGeometry; }
+    int depth() const override { return mDepth; }
+    QImage::Format format() const override { return mFormat; }
+    QSizeF physicalSize() const override { return mPhysicalSize; }
+    QPlatformCursor *cursor() const override { return mCursor; }
 
     QWindow *topWindow() const;
-    QWindow *topLevelAt(const QPoint & p) const Q_DECL_OVERRIDE;
+    QWindow *topLevelAt(const QPoint & p) const override;
 
     // compositor api
     virtual void addWindow(QFbWindow *window);
@@ -109,7 +109,7 @@ protected:
     virtual QRegion doRedraw();
 
     void initializeCompositor();
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
 
     QFbWindow *windowForId(WId wid) const;
 

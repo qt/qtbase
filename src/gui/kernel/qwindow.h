@@ -146,7 +146,7 @@ public:
     virtual ~QWindow();
 
     void setSurfaceType(SurfaceType surfaceType);
-    SurfaceType surfaceType() const Q_DECL_OVERRIDE;
+    SurfaceType surfaceType() const override;
 
     bool isVisible() const;
 
@@ -168,7 +168,7 @@ public:
     void setModality(Qt::WindowModality modality);
 
     void setFormat(const QSurfaceFormat &format);
-    QSurfaceFormat format() const Q_DECL_OVERRIDE;
+    QSurfaceFormat format() const override;
     QSurfaceFormat requestedFormat() const;
 
     void setFlags(Qt::WindowFlags flags);
@@ -233,7 +233,7 @@ public:
     inline int x() const { return geometry().x(); }
     inline int y() const { return geometry().y(); }
 
-    QSize size() const Q_DECL_OVERRIDE { return geometry().size(); }
+    QSize size() const override { return geometry().size(); }
     inline QPoint position() const { return geometry().topLeft(); }
 
     void setPosition(const QPoint &pt);
@@ -347,7 +347,7 @@ protected:
     virtual void hideEvent(QHideEvent *);
     // TODO Qt 6 - add closeEvent virtual handler
 
-    virtual bool event(QEvent *) Q_DECL_OVERRIDE;
+    virtual bool event(QEvent *) override;
     virtual void keyPressEvent(QKeyEvent *);
     virtual void keyReleaseEvent(QKeyEvent *);
     virtual void mousePressEvent(QMouseEvent *);
@@ -367,7 +367,7 @@ protected:
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_clearAlert())
-    QPlatformSurface *surfaceHandle() const Q_DECL_OVERRIDE;
+    QPlatformSurface *surfaceHandle() const override;
 
     Q_DISABLE_COPY(QWindow)
 

@@ -185,7 +185,7 @@ private Q_SLOTS:
     void driveRemoved();
 
 private:
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
     // called by run():
     void getFileInfos(const QString &path, const QStringList &files);
     void fetch(const QFileInfo &info, QElapsedTimer &base, bool &firstTime, QVector<QPair<QString, QFileInfo> > &updatedFiles, const QString &path);

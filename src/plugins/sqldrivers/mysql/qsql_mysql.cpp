@@ -175,26 +175,26 @@ public:
     explicit QMYSQLResult(const QMYSQLDriver *db);
     ~QMYSQLResult();
 
-    QVariant handle() const Q_DECL_OVERRIDE;
+    QVariant handle() const override;
 protected:
     void cleanup();
-    bool fetch(int i) Q_DECL_OVERRIDE;
-    bool fetchNext() Q_DECL_OVERRIDE;
-    bool fetchLast() Q_DECL_OVERRIDE;
-    bool fetchFirst() Q_DECL_OVERRIDE;
-    QVariant data(int field) Q_DECL_OVERRIDE;
-    bool isNull(int field) Q_DECL_OVERRIDE;
-    bool reset (const QString& query) Q_DECL_OVERRIDE;
-    int size() Q_DECL_OVERRIDE;
-    int numRowsAffected() Q_DECL_OVERRIDE;
-    QVariant lastInsertId() const Q_DECL_OVERRIDE;
-    QSqlRecord record() const Q_DECL_OVERRIDE;
-    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
-    bool nextResult() Q_DECL_OVERRIDE;
+    bool fetch(int i) override;
+    bool fetchNext() override;
+    bool fetchLast() override;
+    bool fetchFirst() override;
+    QVariant data(int field) override;
+    bool isNull(int field) override;
+    bool reset (const QString& query) override;
+    int size() override;
+    int numRowsAffected() override;
+    QVariant lastInsertId() const override;
+    QSqlRecord record() const override;
+    void virtual_hook(int id, void *data) override;
+    bool nextResult() override;
 
 #if MYSQL_VERSION_ID >= 40108
-    bool prepare(const QString &stmt) Q_DECL_OVERRIDE;
-    bool exec() Q_DECL_OVERRIDE;
+    bool prepare(const QString &stmt) override;
+    bool exec() override;
 #endif
 };
 

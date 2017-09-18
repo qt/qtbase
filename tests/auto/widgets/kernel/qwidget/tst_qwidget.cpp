@@ -5878,7 +5878,7 @@ public:
         startTimer(1000);
     }
 
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE
+    void timerEvent(QTimerEvent *) override
     {
         switch (state++) {
         case 0:
@@ -5901,7 +5901,7 @@ public:
         return false;
     }
 
-    bool nativeEvent(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
+    bool nativeEvent(const QByteArray &eventType, void *message, long *) override
     {
         if (isMapNotify(eventType, message))
             gotExpectedMapNotify = true;
@@ -5909,7 +5909,7 @@ public:
     }
 
     // QAbstractNativeEventFilter interface
-    bool nativeEventFilter(const QByteArray &eventType, void *message, long *) Q_DECL_OVERRIDE
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *) override
     {
         if (isMapNotify(eventType, message))
             gotExpectedGlobalEvent = true;
@@ -10407,7 +10407,7 @@ class KeyboardWidget : public QWidget
 {
 public:
     KeyboardWidget(QWidget* parent = 0) : QWidget(parent), m_eventCounter(0) {}
-    virtual void mousePressEvent(QMouseEvent* ev) Q_DECL_OVERRIDE {
+    virtual void mousePressEvent(QMouseEvent* ev) override {
         m_modifiers = ev->modifiers();
         m_appModifiers = QApplication::keyboardModifiers();
         ++m_eventCounter;

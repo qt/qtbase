@@ -356,16 +356,16 @@ class QIBaseResult : public QSqlCachedResult
 public:
     explicit QIBaseResult(const QIBaseDriver* db);
 
-    bool prepare(const QString &query) Q_DECL_OVERRIDE;
-    bool exec() Q_DECL_OVERRIDE;
-    QVariant handle() const Q_DECL_OVERRIDE;
+    bool prepare(const QString &query) override;
+    bool exec() override;
+    QVariant handle() const override;
 
 protected:
-    bool gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx) Q_DECL_OVERRIDE;
-    bool reset (const QString &query) Q_DECL_OVERRIDE;
-    int size() Q_DECL_OVERRIDE;
-    int numRowsAffected() Q_DECL_OVERRIDE;
-    QSqlRecord record() const Q_DECL_OVERRIDE;
+    bool gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx) override;
+    bool reset (const QString &query) override;
+    int size() override;
+    int numRowsAffected() override;
+    QSqlRecord record() const override;
 };
 
 class QIBaseResultPrivate: public QSqlCachedResultPrivate

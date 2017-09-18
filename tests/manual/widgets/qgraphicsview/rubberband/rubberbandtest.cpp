@@ -36,7 +36,7 @@ public:
         setFlags(QGraphicsItem::ItemIsSelectable);
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem * /* option*/, QWidget * /*widget*/) Q_DECL_OVERRIDE
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem * /* option*/, QWidget * /*widget*/) override
     {
         if (isSelected())
             painter->fillRect(rect(), QColor(255, 0, 0));
@@ -55,7 +55,7 @@ public:
         connect(this, SIGNAL(rubberBandChanged(QRect, QPointF, QPointF)), this, SLOT(updateRubberbandInfo(QRect, QPointF, QPointF)));
     }
 protected:
-    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE
+    void mouseMoveEvent(QMouseEvent *event) override
     {
         QGraphicsView::mouseMoveEvent(event);
 

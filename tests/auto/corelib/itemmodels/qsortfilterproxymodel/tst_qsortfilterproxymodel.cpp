@@ -4072,11 +4072,11 @@ public:
     }
 
     bool canDropMimeData(const QMimeData *, Qt::DropAction,
-                         int row, int /* column */, const QModelIndex & /* parent */) const Q_DECL_OVERRIDE
+                         int row, int /* column */, const QModelIndex & /* parent */) const override
     { return row == 1; }
 
     bool dropMimeData(const QMimeData *, Qt::DropAction,
-                      int row, int /* column */, const QModelIndex & /* parent */) Q_DECL_OVERRIDE
+                      int row, int /* column */, const QModelIndex & /* parent */) override
     { return row == 1; }
 };
 

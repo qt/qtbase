@@ -53,12 +53,12 @@ class HaikuWindowProxy : public QObject, public BWindow
 public:
     explicit HaikuWindowProxy(QWindow *window, const QRect &rect, QObject *parent = Q_NULLPTR);
 
-    void FrameMoved(BPoint pos) Q_DECL_OVERRIDE;
-    void FrameResized(float width, float height) Q_DECL_OVERRIDE;
-    void WindowActivated(bool activated) Q_DECL_OVERRIDE;
-    void Minimize(bool minimize) Q_DECL_OVERRIDE;
-    void Zoom(BPoint pos, float width, float height) Q_DECL_OVERRIDE;
-    bool QuitRequested() Q_DECL_OVERRIDE;
+    void FrameMoved(BPoint pos) override;
+    void FrameResized(float width, float height) override;
+    void WindowActivated(bool activated) override;
+    void Minimize(bool minimize) override;
+    void Zoom(BPoint pos, float width, float height) override;
+    bool QuitRequested() override;
 
     void zoomByQt();
 
@@ -83,23 +83,23 @@ public:
     explicit QHaikuWindow(QWindow *window);
     virtual ~QHaikuWindow();
 
-    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
-    QMargins frameMargins() const Q_DECL_OVERRIDE;
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &rect) override;
+    QMargins frameMargins() const override;
+    void setVisible(bool visible) override;
 
-    bool isExposed() const Q_DECL_OVERRIDE;
-    bool isActive() const Q_DECL_OVERRIDE;
+    bool isExposed() const override;
+    bool isActive() const override;
 
-    WId winId() const Q_DECL_OVERRIDE;
+    WId winId() const override;
     BWindow* nativeHandle() const;
 
-    void requestActivateWindow() Q_DECL_OVERRIDE;
-    void setWindowState(Qt::WindowStates state) Q_DECL_OVERRIDE;
-    void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
+    void requestActivateWindow() override;
+    void setWindowState(Qt::WindowStates state) override;
+    void setWindowFlags(Qt::WindowFlags flags) override;
 
-    void setWindowTitle(const QString &title) Q_DECL_OVERRIDE;
+    void setWindowTitle(const QString &title) override;
 
-    void propagateSizeHints() Q_DECL_OVERRIDE;
+    void propagateSizeHints() override;
 
 protected:
     HaikuWindowProxy *m_window;

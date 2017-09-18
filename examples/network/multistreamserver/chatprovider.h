@@ -59,9 +59,9 @@ class ChatProvider : public Provider
 public:
     explicit ChatProvider(QObject *parent = nullptr);
 
-    void readDatagram(QSctpSocket &from, const QByteArray &ba) Q_DECL_OVERRIDE;
-    void newConnection(QSctpSocket &client) Q_DECL_OVERRIDE;
-    void clientDisconnected(QSctpSocket &client) Q_DECL_OVERRIDE;
+    void readDatagram(QSctpSocket &from, const QByteArray &ba) override;
+    void newConnection(QSctpSocket &client) override;
+    void clientDisconnected(QSctpSocket &client) override;
 };
 
 #endif

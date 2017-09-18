@@ -54,7 +54,7 @@ class PainterWindow : public QRasterWindow
 public:
     void reset() { paintCount = 0; }
 
-    void paintEvent(QPaintEvent*) Q_DECL_OVERRIDE {
+    void paintEvent(QPaintEvent*) override {
         ++paintCount;
         QPainter p(this);
         p.fillRect(QRect(0, 0, 100, 100), Qt::blue);

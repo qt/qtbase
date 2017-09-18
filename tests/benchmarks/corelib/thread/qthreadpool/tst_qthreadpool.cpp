@@ -53,7 +53,7 @@ tst_QThreadPool::~tst_QThreadPool()
 class NoOpRunnable : public QRunnable
 {
 public:
-    void run() Q_DECL_OVERRIDE {
+    void run() override {
     }
 };
 

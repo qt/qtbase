@@ -56,8 +56,8 @@ public:
     explicit QSctpSocket(QObject *parent = nullptr);
     virtual ~QSctpSocket();
 
-    void close() Q_DECL_OVERRIDE;
-    void disconnectFromHost() Q_DECL_OVERRIDE;
+    void close() override;
+    void disconnectFromHost() override;
 
     void setMaximumChannelCount(int count);
     int maximumChannelCount() const;
@@ -67,8 +67,8 @@ public:
     bool writeDatagram(const QNetworkDatagram &datagram);
 
 protected:
-    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
-    qint64 readLineData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    qint64 readData(char *data, qint64 maxlen) override;
+    qint64 readLineData(char *data, qint64 maxlen) override;
 
 private:
     Q_DISABLE_COPY(QSctpSocket)

@@ -84,7 +84,7 @@ public:
         { return m_receivedGestures.value(gestureType); }
 
 protected:
-    bool event(QEvent * event) Q_DECL_OVERRIDE;
+    bool event(QEvent * event) override;
 
 private:
     typedef QHash<Qt::GestureType, bool> GestureTypeHash;

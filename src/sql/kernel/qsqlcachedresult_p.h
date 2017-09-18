@@ -78,20 +78,20 @@ protected:
 
     virtual bool gotoNext(ValueCache &values, int index) = 0;
 
-    QVariant data(int i) Q_DECL_OVERRIDE;
-    bool isNull(int i) Q_DECL_OVERRIDE;
-    bool fetch(int i) Q_DECL_OVERRIDE;
-    bool fetchNext() Q_DECL_OVERRIDE;
-    bool fetchPrevious() Q_DECL_OVERRIDE;
-    bool fetchFirst() Q_DECL_OVERRIDE;
-    bool fetchLast() Q_DECL_OVERRIDE;
+    QVariant data(int i) override;
+    bool isNull(int i) override;
+    bool fetch(int i) override;
+    bool fetchNext() override;
+    bool fetchPrevious() override;
+    bool fetchFirst() override;
+    bool fetchLast() override;
 
     int colCount() const;
     ValueCache &cache();
 
-    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
-    void detachFromResultSet() Q_DECL_OVERRIDE;
-    void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy) Q_DECL_OVERRIDE;
+    void virtual_hook(int id, void *data) override;
+    void detachFromResultSet() override;
+    void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy) override;
 private:
     bool cacheNext();
 };

@@ -56,9 +56,9 @@ public:
     QMinimalEglScreen(EGLNativeDisplayType display);
     ~QMinimalEglScreen();
 
-    QRect geometry() const Q_DECL_OVERRIDE;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
+    QRect geometry() const override;
+    int depth() const override;
+    QImage::Format format() const override;
 #ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *platformContext() const;
 #endif

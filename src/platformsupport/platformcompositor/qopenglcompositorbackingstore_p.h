@@ -66,17 +66,17 @@ public:
     QOpenGLCompositorBackingStore(QWindow *window);
     ~QOpenGLCompositorBackingStore();
 
-    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
+    QPaintDevice *paintDevice() override;
 
-    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
+    void beginPaint(const QRegion &region) override;
 
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
-    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
+    void resize(const QSize &size, const QRegion &staticContents) override;
 
-    QImage toImage() const Q_DECL_OVERRIDE;
+    QImage toImage() const override;
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                          QPlatformTextureList *textures, QOpenGLContext *context,
-                         bool translucentBackground) Q_DECL_OVERRIDE;
+                         bool translucentBackground) override;
 
     const QPlatformTextureList *textures() const { return m_textures; }
 

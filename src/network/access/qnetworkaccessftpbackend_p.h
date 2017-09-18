@@ -84,10 +84,10 @@ public:
     QNetworkAccessFtpBackend();
     virtual ~QNetworkAccessFtpBackend();
 
-    virtual void open() Q_DECL_OVERRIDE;
-    virtual void closeDownstreamChannel() Q_DECL_OVERRIDE;
+    virtual void open() override;
+    virtual void closeDownstreamChannel() override;
 
-    virtual void downstreamReadyWrite() Q_DECL_OVERRIDE;
+    virtual void downstreamReadyWrite() override;
 
     enum CacheCleanupMode {
         ReleaseCachedConnection,
@@ -115,9 +115,9 @@ private:
 class QNetworkAccessFtpBackendFactory: public QNetworkAccessBackendFactory
 {
 public:
-    virtual QStringList supportedSchemes() const Q_DECL_OVERRIDE;
+    virtual QStringList supportedSchemes() const override;
     virtual QNetworkAccessBackend *create(QNetworkAccessManager::Operation op,
-                                          const QNetworkRequest &request) const Q_DECL_OVERRIDE;
+                                          const QNetworkRequest &request) const override;
 };
 
 QT_END_NAMESPACE

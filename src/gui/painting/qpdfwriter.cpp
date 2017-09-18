@@ -79,7 +79,7 @@ public:
     virtual ~QPdfPagedPaintDevicePrivate()
     {}
 
-    bool setPageLayout(const QPageLayout &newPageLayout) Q_DECL_OVERRIDE
+    bool setPageLayout(const QPageLayout &newPageLayout) override
     {
         // Try to set the paint engine page layout
         pd->engine->setPageLayout(newPageLayout);
@@ -88,7 +88,7 @@ public:
         return m_pageLayout.isEquivalentTo(newPageLayout);
     }
 
-    bool setPageSize(const QPageSize &pageSize) Q_DECL_OVERRIDE
+    bool setPageSize(const QPageSize &pageSize) override
     {
         // Try to set the paint engine page size
         pd->engine->setPageSize(pageSize);
@@ -97,7 +97,7 @@ public:
         return m_pageLayout.pageSize().isEquivalentTo(pageSize);
     }
 
-    bool setPageOrientation(QPageLayout::Orientation orientation) Q_DECL_OVERRIDE
+    bool setPageOrientation(QPageLayout::Orientation orientation) override
     {
         // Set the print engine value
         pd->engine->setPageOrientation(orientation);
@@ -106,12 +106,12 @@ public:
         return m_pageLayout.orientation() == orientation;
     }
 
-    bool setPageMargins(const QMarginsF &margins) Q_DECL_OVERRIDE
+    bool setPageMargins(const QMarginsF &margins) override
     {
         return setPageMargins(margins, pageLayout().units());
     }
 
-    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) Q_DECL_OVERRIDE
+    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) override
     {
         // Try to set engine margins
         pd->engine->setPageMargins(margins, units);
@@ -120,7 +120,7 @@ public:
         return m_pageLayout.margins() == margins && m_pageLayout.units() == units;
     }
 
-    QPageLayout pageLayout() const Q_DECL_OVERRIDE
+    QPageLayout pageLayout() const override
     {
         return pd->engine->pageLayout();
     }

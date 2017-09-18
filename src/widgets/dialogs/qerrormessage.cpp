@@ -95,8 +95,8 @@ public:
     QErrorMessageTextView(QWidget *parent)
         : QTextEdit(parent) { setReadOnly(true); }
 
-    virtual QSize minimumSizeHint() const Q_DECL_OVERRIDE;
-    virtual QSize sizeHint() const Q_DECL_OVERRIDE;
+    virtual QSize minimumSizeHint() const override;
+    virtual QSize sizeHint() const override;
 };
 } // unnamed namespace
 

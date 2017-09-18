@@ -80,8 +80,8 @@ public:
     throw()
 #endif
     ;
-    void raise() const Q_DECL_OVERRIDE;
-    QUnhandledException *clone() const Q_DECL_OVERRIDE;
+    void raise() const override;
+    QUnhandledException *clone() const override;
 };
 
 namespace QtPrivate {

@@ -56,7 +56,7 @@ class ThreadedEventReceiver : public QObject
     Q_OBJECT
 public:
     QList<int> recordedEvents;
-    bool event(QEvent *event) Q_DECL_OVERRIDE
+    bool event(QEvent *event) override
     {
         if (event->type() != QEvent::Type(QEvent::User + 1))
             return QObject::event(event);
@@ -70,7 +70,7 @@ public:
 
 class Thread : public QDaemonThread
 {
-    void run() Q_DECL_OVERRIDE
+    void run() override
     {
         QThreadData *data = QThreadData::current();
         QVERIFY(!data->requiresCoreApplication);        // daemon thread

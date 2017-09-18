@@ -170,7 +170,7 @@ public:
         }
         return 0;
     }
-    QLayoutItem* replaceAt(int index, QLayoutItem *newitem) Q_DECL_OVERRIDE
+    QLayoutItem* replaceAt(int index, QLayoutItem *newitem) override
     {
         if (!newitem)
             return 0;

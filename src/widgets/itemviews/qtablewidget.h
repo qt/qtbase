@@ -318,7 +318,7 @@ Q_SIGNALS:
     void currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
     virtual QStringList mimeTypes() const;
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     virtual QMimeData *mimeData(const QList<QTableWidgetItem *> &items) const;
@@ -343,10 +343,10 @@ protected:
 
 protected:
 #if QT_CONFIG(draganddrop)
-    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
+    void dropEvent(QDropEvent *event) override;
 #endif
 private:
-    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
+    void setModel(QAbstractItemModel *model) override;
 
     Q_DECLARE_PRIVATE(QTableWidget)
     Q_DISABLE_COPY(QTableWidget)

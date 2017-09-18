@@ -114,7 +114,7 @@ class QTornOffMenu : public QMenu
             q->setFixedSize(size);
         }
 
-        QVector<QPointer<QWidget> > calcCausedStack() const Q_DECL_OVERRIDE { return causedStack; }
+        QVector<QPointer<QWidget> > calcCausedStack() const override { return causedStack; }
         QPointer<QMenu> causedMenu;
         QVector<QPointer<QWidget> > causedStack;
         bool initialized;
@@ -160,7 +160,7 @@ public:
         } else if (act->type() == QEvent::ActionRemoved)
             removeAction(act->action());
     }
-    void actionEvent(QActionEvent *e) Q_DECL_OVERRIDE
+    void actionEvent(QActionEvent *e) override
     {
         Q_D(QTornOffMenu);
         QMenu::actionEvent(e);

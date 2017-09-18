@@ -66,7 +66,7 @@ public:
 
     int maximumChannelCount;
 
-    void configureCreatedSocket() Q_DECL_OVERRIDE;
+    void configureCreatedSocket() override;
 };
 
 #endif // QT_NO_SCTP

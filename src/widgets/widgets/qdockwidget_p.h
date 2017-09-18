@@ -135,18 +135,18 @@ class Q_WIDGETS_EXPORT QDockWidgetLayout : public QLayout
 public:
     QDockWidgetLayout(QWidget *parent = 0);
     ~QDockWidgetLayout();
-    void addItem(QLayoutItem *item) Q_DECL_OVERRIDE;
-    QLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
-    QLayoutItem *takeAt(int index) Q_DECL_OVERRIDE;
-    int count() const Q_DECL_OVERRIDE;
+    void addItem(QLayoutItem *item) override;
+    QLayoutItem *itemAt(int index) const override;
+    QLayoutItem *takeAt(int index) override;
+    int count() const override;
 
-    QSize maximumSize() const Q_DECL_OVERRIDE;
-    QSize minimumSize() const Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize maximumSize() const override;
+    QSize minimumSize() const override;
+    QSize sizeHint() const override;
 
     QSize sizeFromContent(const QSize &content, bool floating) const;
 
-    void setGeometry(const QRect &r) Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &r) override;
 
     enum Role { Content, CloseButton, FloatButton, TitleBar, RoleCount };
     QWidget *widgetForRole(Role r) const;
@@ -178,9 +178,9 @@ class QDockWidgetItem : public QWidgetItem
 {
 public:
     QDockWidgetItem(QDockWidget *dockWidget);
-    QSize minimumSize() const Q_DECL_OVERRIDE;
-    QSize maximumSize() const Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimumSize() const override;
+    QSize maximumSize() const override;
+    QSize sizeHint() const override;
 
 private:
     inline QLayoutItem *dockWidgetChildItem() const;

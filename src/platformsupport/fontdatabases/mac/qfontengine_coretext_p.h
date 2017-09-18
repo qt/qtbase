@@ -70,53 +70,53 @@ public:
     QCoreTextFontEngine(CGFontRef font, const QFontDef &def);
     ~QCoreTextFontEngine();
 
-    glyph_t glyphIndex(uint ucs4) const Q_DECL_OVERRIDE;
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const Q_DECL_OVERRIDE;
-    void recalcAdvances(QGlyphLayout *, ShaperFlags) const Q_DECL_OVERRIDE;
+    glyph_t glyphIndex(uint ucs4) const override;
+    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
+    void recalcAdvances(QGlyphLayout *, ShaperFlags) const override;
 
-    glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) Q_DECL_OVERRIDE;
-    glyph_metrics_t boundingBox(glyph_t glyph) Q_DECL_OVERRIDE;
+    glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) override;
+    glyph_metrics_t boundingBox(glyph_t glyph) override;
 
-    QFixed ascent() const Q_DECL_OVERRIDE;
-    QFixed capHeight() const Q_DECL_OVERRIDE;
-    QFixed descent() const Q_DECL_OVERRIDE;
-    QFixed leading() const Q_DECL_OVERRIDE;
-    QFixed xHeight() const Q_DECL_OVERRIDE;
-    qreal maxCharWidth() const Q_DECL_OVERRIDE;
-    QFixed averageCharWidth() const Q_DECL_OVERRIDE;
+    QFixed ascent() const override;
+    QFixed capHeight() const override;
+    QFixed descent() const override;
+    QFixed leading() const override;
+    QFixed xHeight() const override;
+    qreal maxCharWidth() const override;
+    QFixed averageCharWidth() const override;
 
     void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int numGlyphs,
-                         QPainterPath *path, QTextItem::RenderFlags) Q_DECL_OVERRIDE;
+                         QPainterPath *path, QTextItem::RenderFlags) override;
 
-    bool canRender(const QChar *string, int len) const Q_DECL_OVERRIDE;
+    bool canRender(const QChar *string, int len) const override;
 
-    int synthesized() const Q_DECL_OVERRIDE { return synthesisFlags; }
-    bool supportsSubPixelPositions() const Q_DECL_OVERRIDE { return true; }
+    int synthesized() const override { return synthesisFlags; }
+    bool supportsSubPixelPositions() const override { return true; }
 
-    QFixed lineThickness() const Q_DECL_OVERRIDE;
-    QFixed underlinePosition() const Q_DECL_OVERRIDE;
+    QFixed lineThickness() const override;
+    QFixed underlinePosition() const override;
 
     void draw(CGContextRef ctx, qreal x, qreal y, const QTextItemInt &ti, int paintDeviceHeight);
 
-    FaceId faceId() const Q_DECL_OVERRIDE;
-    bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const Q_DECL_OVERRIDE;
-    void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) Q_DECL_OVERRIDE;
-    QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition) Q_DECL_OVERRIDE;
-    QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
-    QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
-    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) Q_DECL_OVERRIDE;
-    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) Q_DECL_OVERRIDE;
-    QFixed emSquareSize() const Q_DECL_OVERRIDE;
-    void doKerning(QGlyphLayout *g, ShaperFlags flags) const Q_DECL_OVERRIDE;
+    FaceId faceId() const override;
+    bool getSfntTableData(uint /*tag*/, uchar * /*buffer*/, uint * /*length*/) const override;
+    void getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics) override;
+    QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition) override;
+    QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) override;
+    QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
+    glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) override;
+    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
+    QFixed emSquareSize() const override;
+    void doKerning(QGlyphLayout *g, ShaperFlags flags) const override;
 
-    bool supportsTransformation(const QTransform &transform) const Q_DECL_OVERRIDE;
-    bool expectsGammaCorrectedBlending() const Q_DECL_OVERRIDE;
+    bool supportsTransformation(const QTransform &transform) const override;
+    bool expectsGammaCorrectedBlending() const override;
 
-    QFontEngine *cloneWithSize(qreal pixelSize) const Q_DECL_OVERRIDE;
-    Qt::HANDLE handle() const Q_DECL_OVERRIDE;
-    int glyphMargin(QFontEngine::GlyphFormat format) Q_DECL_OVERRIDE { Q_UNUSED(format); return 0; }
+    QFontEngine *cloneWithSize(qreal pixelSize) const override;
+    Qt::HANDLE handle() const override;
+    int glyphMargin(QFontEngine::GlyphFormat format) override { Q_UNUSED(format); return 0; }
 
-    QFontEngine::Properties properties() const Q_DECL_OVERRIDE;
+    QFontEngine::Properties properties() const override;
 
     static bool ct_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *length);
     static QFont::Weight qtWeightFromCFWeight(float value);

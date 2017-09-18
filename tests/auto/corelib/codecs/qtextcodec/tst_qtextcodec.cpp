@@ -2406,16 +2406,16 @@ void tst_QTextCodec::shiftJis()
 struct UserCodec : public QTextCodec
 {
     // implement pure virtuals
-    QByteArray name() const Q_DECL_OVERRIDE
+    QByteArray name() const override
     { return "UserCodec"; }
-    QList<QByteArray> aliases() const Q_DECL_OVERRIDE
+    QList<QByteArray> aliases() const override
     { return QList<QByteArray>() << "usercodec" << "user-codec"; }
-    int mibEnum() const Q_DECL_OVERRIDE
+    int mibEnum() const override
     { return 5000; }
 
-    virtual QString convertToUnicode(const char *, int, ConverterState *) const Q_DECL_OVERRIDE
+    virtual QString convertToUnicode(const char *, int, ConverterState *) const override
     { return QString(); }
-    virtual QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const Q_DECL_OVERRIDE
+    virtual QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const override
     { return QByteArray(); }
 };
 

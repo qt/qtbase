@@ -64,8 +64,8 @@ class ChatConsumer : public Consumer
 public:
     explicit ChatConsumer(QObject *parent = nullptr);
 
-    QWidget *widget() Q_DECL_OVERRIDE;
-    void readDatagram(const QByteArray &ba) Q_DECL_OVERRIDE;
+    QWidget *widget() override;
+    void readDatagram(const QByteArray &ba) override;
 
 private slots:
     void returnPressed();

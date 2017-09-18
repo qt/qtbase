@@ -193,19 +193,19 @@ class QOCIResult: public QSqlCachedResult
 public:
     QOCIResult(const QOCIDriver *db);
     ~QOCIResult();
-    bool prepare(const QString &query) Q_DECL_OVERRIDE;
-    bool exec() Q_DECL_OVERRIDE;
-    QVariant handle() const Q_DECL_OVERRIDE;
+    bool prepare(const QString &query) override;
+    bool exec() override;
+    QVariant handle() const override;
 
 protected:
-    bool gotoNext(ValueCache &values, int index) Q_DECL_OVERRIDE;
-    bool reset(const QString &query) Q_DECL_OVERRIDE;
-    int size() Q_DECL_OVERRIDE;
-    int numRowsAffected() Q_DECL_OVERRIDE;
-    QSqlRecord record() const Q_DECL_OVERRIDE;
-    QVariant lastInsertId() const Q_DECL_OVERRIDE;
-    bool execBatch(bool arrayBind = false) Q_DECL_OVERRIDE;
-    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
+    bool gotoNext(ValueCache &values, int index) override;
+    bool reset(const QString &query) override;
+    int size() override;
+    int numRowsAffected() override;
+    QSqlRecord record() const override;
+    QVariant lastInsertId() const override;
+    bool execBatch(bool arrayBind = false) override;
+    void virtual_hook(int id, void *data) override;
 };
 
 class QOCIResultPrivate: public QSqlCachedResultPrivate

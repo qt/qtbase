@@ -67,7 +67,7 @@ public:
 
 public Q_SLOTS:
     void open();
-    void close() Q_DECL_OVERRIDE;
+    void close() override;
 
 Q_SIGNALS:
     void finished(bool ok);

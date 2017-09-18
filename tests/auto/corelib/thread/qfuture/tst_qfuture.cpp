@@ -1303,8 +1303,8 @@ QFuture<int> createExceptionResultFuture()
 class DerivedException : public QException
 {
 public:
-    void raise() const Q_DECL_OVERRIDE { throw *this; }
-    DerivedException *clone() const Q_DECL_OVERRIDE { return new DerivedException(*this); }
+    void raise() const override { throw *this; }
+    DerivedException *clone() const override { return new DerivedException(*this); }
 };
 
 QFuture<void> createDerivedExceptionFuture()
@@ -1454,7 +1454,7 @@ void tst_QFuture::nonGlobalThreadPool()
             return f;
         }
 
-        void run() Q_DECL_OVERRIDE
+        void run() override
         {
             const int ms = 100 + (qrand() % 100 - 100/2);
             QThread::msleep(ms);

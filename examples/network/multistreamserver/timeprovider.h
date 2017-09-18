@@ -59,7 +59,7 @@ class TimeProvider : public Provider
 public:
     explicit TimeProvider(QObject *parent = nullptr);
 
-    void readDatagram(QSctpSocket &from, const QByteArray &ba) Q_DECL_OVERRIDE;
+    void readDatagram(QSctpSocket &from, const QByteArray &ba) override;
 };
 
 #endif

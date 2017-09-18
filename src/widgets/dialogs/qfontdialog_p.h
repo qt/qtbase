@@ -141,12 +141,12 @@ public:
     QPointer<QObject> receiverToDisconnectOnClose;
     QByteArray memberToDisconnectOnClose;
 
-    bool canBeNativeDialog() const Q_DECL_OVERRIDE;
+    bool canBeNativeDialog() const override;
     void _q_runNativeAppModalPanel();
 
 private:
-    virtual void initHelper(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
-    virtual void helperPrepareShow(QPlatformDialogHelper *) Q_DECL_OVERRIDE;
+    virtual void initHelper(QPlatformDialogHelper *) override;
+    virtual void helperPrepareShow(QPlatformDialogHelper *) override;
 };
 
 QT_END_NAMESPACE

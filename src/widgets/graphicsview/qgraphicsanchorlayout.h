@@ -97,14 +97,14 @@ public:
     qreal horizontalSpacing() const;
     qreal verticalSpacing() const;
 
-    void removeAt(int index) Q_DECL_OVERRIDE;
-    void setGeometry(const QRectF &rect) Q_DECL_OVERRIDE;
-    int count() const Q_DECL_OVERRIDE;
-    QGraphicsLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
+    void removeAt(int index) override;
+    void setGeometry(const QRectF &rect) override;
+    int count() const override;
+    QGraphicsLayoutItem *itemAt(int index) const override;
 
-    void invalidate() Q_DECL_OVERRIDE;
+    void invalidate() override;
 protected:
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const Q_DECL_OVERRIDE;
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override;
 
 private:
     Q_DISABLE_COPY(QGraphicsAnchorLayout)

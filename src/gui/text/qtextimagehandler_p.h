@@ -67,8 +67,8 @@ class Q_GUI_EXPORT QTextImageHandler : public QObject,
 public:
     explicit QTextImageHandler(QObject *parent = 0);
 
-    virtual QSizeF intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat &format) Q_DECL_OVERRIDE;
-    virtual void drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format) Q_DECL_OVERRIDE;
+    virtual QSizeF intrinsicSize(QTextDocument *doc, int posInDocument, const QTextFormat &format) override;
+    virtual void drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format) override;
     QImage image(QTextDocument *doc, const QTextImageFormat &imageFormat);
 };
 

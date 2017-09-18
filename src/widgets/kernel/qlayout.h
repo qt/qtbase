@@ -104,8 +104,8 @@ public:
 
     QWidget *parentWidget() const;
 
-    void invalidate() Q_DECL_OVERRIDE;
-    QRect geometry() const Q_DECL_OVERRIDE;
+    void invalidate() override;
+    QRect geometry() const override;
     bool activate();
     void update();
 
@@ -115,16 +115,16 @@ public:
     void removeWidget(QWidget *w);
     void removeItem(QLayoutItem *);
 
-    Qt::Orientations expandingDirections() const Q_DECL_OVERRIDE;
-    QSize minimumSize() const Q_DECL_OVERRIDE;
-    QSize maximumSize() const Q_DECL_OVERRIDE;
-    virtual void setGeometry(const QRect&) Q_DECL_OVERRIDE;
+    Qt::Orientations expandingDirections() const override;
+    QSize minimumSize() const override;
+    QSize maximumSize() const override;
+    virtual void setGeometry(const QRect&) override;
     virtual QLayoutItem *itemAt(int index) const = 0;
     virtual QLayoutItem *takeAt(int index) = 0;
     virtual int indexOf(QWidget *) const;
     virtual int count() const = 0;
-    bool isEmpty() const Q_DECL_OVERRIDE;
-    QSizePolicy::ControlTypes controlTypes() const Q_DECL_OVERRIDE;
+    bool isEmpty() const override;
+    QSizePolicy::ControlTypes controlTypes() const override;
 
     // ### Qt 6 make this function virtual
     QLayoutItem *replaceWidget(QWidget *from, QWidget *to, Qt::FindChildOptions options = Qt::FindChildrenRecursively);
@@ -133,7 +133,7 @@ public:
     QSize totalMinimumSize() const;
     QSize totalMaximumSize() const;
     QSize totalSizeHint() const;
-    QLayout *layout() Q_DECL_OVERRIDE;
+    QLayout *layout() override;
 
     void setEnabled(bool);
     bool isEnabled() const;
@@ -143,7 +143,7 @@ public:
 
 protected:
     void widgetEvent(QEvent *);
-    void childEvent(QChildEvent *e) Q_DECL_OVERRIDE;
+    void childEvent(QChildEvent *e) override;
     void addChildLayout(QLayout *l);
     void addChildWidget(QWidget *w);
     bool adoptLayout(QLayout *layout);

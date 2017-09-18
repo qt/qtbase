@@ -69,8 +69,8 @@ class QFutureWatcherBasePrivate : public QObjectPrivate,
 public:
     QFutureWatcherBasePrivate();
 
-    void postCallOutEvent(const QFutureCallOutEvent &callOutEvent) Q_DECL_OVERRIDE;
-    void callOutInterfaceDisconnected() Q_DECL_OVERRIDE;
+    void postCallOutEvent(const QFutureCallOutEvent &callOutEvent) override;
+    void callOutInterfaceDisconnected() override;
 
     void sendCallOutEvent(QFutureCallOutEvent *event);
 

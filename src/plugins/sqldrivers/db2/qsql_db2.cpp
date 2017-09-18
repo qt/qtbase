@@ -92,24 +92,24 @@ class QDB2Result: public QSqlResult
 public:
     QDB2Result(const QDB2Driver *drv);
     ~QDB2Result();
-    bool prepare(const QString &query) Q_DECL_OVERRIDE;
-    bool exec() Q_DECL_OVERRIDE;
-    QVariant handle() const Q_DECL_OVERRIDE;
+    bool prepare(const QString &query) override;
+    bool exec() override;
+    QVariant handle() const override;
 
 protected:
-    QVariant data(int field) Q_DECL_OVERRIDE;
-    bool reset(const QString &query) Q_DECL_OVERRIDE;
-    bool fetch(int i) Q_DECL_OVERRIDE;
-    bool fetchNext() Q_DECL_OVERRIDE;
-    bool fetchFirst() Q_DECL_OVERRIDE;
-    bool fetchLast() Q_DECL_OVERRIDE;
-    bool isNull(int i) Q_DECL_OVERRIDE;
-    int size() Q_DECL_OVERRIDE;
-    int numRowsAffected() Q_DECL_OVERRIDE;
-    QSqlRecord record() const Q_DECL_OVERRIDE;
-    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
-    void detachFromResultSet() Q_DECL_OVERRIDE;
-    bool nextResult() Q_DECL_OVERRIDE;
+    QVariant data(int field) override;
+    bool reset(const QString &query) override;
+    bool fetch(int i) override;
+    bool fetchNext() override;
+    bool fetchFirst() override;
+    bool fetchLast() override;
+    bool isNull(int i) override;
+    int size() override;
+    int numRowsAffected() override;
+    QSqlRecord record() const override;
+    void virtual_hook(int id, void *data) override;
+    void detachFromResultSet() override;
+    bool nextResult() override;
 };
 
 class QDB2ResultPrivate: public QSqlResultPrivate

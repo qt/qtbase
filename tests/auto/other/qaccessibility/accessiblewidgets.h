@@ -47,7 +47,7 @@ class QtTestAccessibleWidgetIface: public QAccessibleWidget
 {
 public:
     QtTestAccessibleWidgetIface(QtTestAccessibleWidget *w): QAccessibleWidget(w) {}
-    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE
+    QString text(QAccessible::Text t) const override
     {
         if (t == QAccessible::Help)
             return QString::fromLatin1("Help yourself");

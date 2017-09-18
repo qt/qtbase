@@ -53,13 +53,13 @@ public:
     QHaikuScreen();
     ~QHaikuScreen();
 
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const Q_DECL_OVERRIDE;
+    QPixmap grabWindow(WId window, int x, int y, int width, int height) const override;
 
-    QRect geometry() const Q_DECL_OVERRIDE;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
+    QRect geometry() const override;
+    int depth() const override;
+    QImage::Format format() const override;
 
-    QPlatformCursor *cursor() const Q_DECL_OVERRIDE;
+    QPlatformCursor *cursor() const override;
 
 private:
     BScreen *m_screen;

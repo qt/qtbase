@@ -61,18 +61,18 @@ public:
     QCsvBenchmarkLogger(const char *filename);
     ~QCsvBenchmarkLogger();
 
-    void startLogging() Q_DECL_OVERRIDE;
-    void stopLogging() Q_DECL_OVERRIDE;
+    void startLogging() override;
+    void stopLogging() override;
 
-    void enterTestFunction(const char *function) Q_DECL_OVERRIDE;
-    void leaveTestFunction() Q_DECL_OVERRIDE;
+    void enterTestFunction(const char *function) override;
+    void leaveTestFunction() override;
 
     void addIncident(IncidentTypes type, const char *description,
-                     const char *file = 0, int line = 0) Q_DECL_OVERRIDE;
-    void addBenchmarkResult(const QBenchmarkResult &result) Q_DECL_OVERRIDE;
+                     const char *file = 0, int line = 0) override;
+    void addBenchmarkResult(const QBenchmarkResult &result) override;
 
     void addMessage(MessageTypes type, const QString &message,
-                            const char *file = 0, int line = 0) Q_DECL_OVERRIDE;
+                            const char *file = 0, int line = 0) override;
 };
 
 QT_END_NAMESPACE

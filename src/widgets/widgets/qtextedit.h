@@ -218,7 +218,7 @@ public:
 
     void print(QPagedPaintDevice *printer) const;
 
-    QVariant inputMethodQuery(Qt::InputMethodQuery property) const Q_DECL_OVERRIDE;
+    QVariant inputMethodQuery(Qt::InputMethodQuery property) const override;
     Q_INVOKABLE QVariant inputMethodQuery(Qt::InputMethodQuery query, QVariant argument) const;
 
 public Q_SLOTS:
@@ -272,43 +272,43 @@ Q_SIGNALS:
     void cursorPositionChanged();
 
 protected:
-    virtual bool event(QEvent *e) Q_DECL_OVERRIDE;
-    virtual void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
-    virtual void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
-    virtual void keyReleaseEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
-    virtual void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
-    virtual void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
-    virtual void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    virtual void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    virtual void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    virtual void mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    virtual bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
+    virtual bool event(QEvent *e) override;
+    virtual void timerEvent(QTimerEvent *e) override;
+    virtual void keyPressEvent(QKeyEvent *e) override;
+    virtual void keyReleaseEvent(QKeyEvent *e) override;
+    virtual void resizeEvent(QResizeEvent *e) override;
+    virtual void paintEvent(QPaintEvent *e) override;
+    virtual void mousePressEvent(QMouseEvent *e) override;
+    virtual void mouseMoveEvent(QMouseEvent *e) override;
+    virtual void mouseReleaseEvent(QMouseEvent *e) override;
+    virtual void mouseDoubleClickEvent(QMouseEvent *e) override;
+    virtual bool focusNextPrevChild(bool next) override;
 #ifndef QT_NO_CONTEXTMENU
-    virtual void contextMenuEvent(QContextMenuEvent *e) Q_DECL_OVERRIDE;
+    virtual void contextMenuEvent(QContextMenuEvent *e) override;
 #endif
 #ifndef QT_NO_DRAGANDDROP
-    virtual void dragEnterEvent(QDragEnterEvent *e) Q_DECL_OVERRIDE;
-    virtual void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
-    virtual void dragMoveEvent(QDragMoveEvent *e) Q_DECL_OVERRIDE;
-    virtual void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
+    virtual void dragEnterEvent(QDragEnterEvent *e) override;
+    virtual void dragLeaveEvent(QDragLeaveEvent *e) override;
+    virtual void dragMoveEvent(QDragMoveEvent *e) override;
+    virtual void dropEvent(QDropEvent *e) override;
 #endif
-    virtual void focusInEvent(QFocusEvent *e) Q_DECL_OVERRIDE;
-    virtual void focusOutEvent(QFocusEvent *e) Q_DECL_OVERRIDE;
-    virtual void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
-    virtual void changeEvent(QEvent *e) Q_DECL_OVERRIDE;
+    virtual void focusInEvent(QFocusEvent *e) override;
+    virtual void focusOutEvent(QFocusEvent *e) override;
+    virtual void showEvent(QShowEvent *) override;
+    virtual void changeEvent(QEvent *e) override;
 #if QT_CONFIG(wheelevent)
-    virtual void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
+    virtual void wheelEvent(QWheelEvent *e) override;
 #endif
 
     virtual QMimeData *createMimeDataFromSelection() const;
     virtual bool canInsertFromMimeData(const QMimeData *source) const;
     virtual void insertFromMimeData(const QMimeData *source);
 
-    virtual void inputMethodEvent(QInputMethodEvent *) Q_DECL_OVERRIDE;
+    virtual void inputMethodEvent(QInputMethodEvent *) override;
 
     QTextEdit(QTextEditPrivate &dd, QWidget *parent);
 
-    virtual void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
+    virtual void scrollContentsBy(int dx, int dy) override;
     virtual void doSetTextCursor(const QTextCursor &cursor);
 
     void zoomInF(float range);

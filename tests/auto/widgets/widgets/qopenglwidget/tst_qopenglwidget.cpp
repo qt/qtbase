@@ -100,16 +100,16 @@ public:
           m_w(expectedWidth), m_h(expectedHeight),
           r(1.0f), g(0.0f), b(0.0f) { }
 
-    void initializeGL() Q_DECL_OVERRIDE {
+    void initializeGL() override {
         m_initCalled = true;
         initializeOpenGLFunctions();
     }
-    void paintGL() Q_DECL_OVERRIDE {
+    void paintGL() override {
         m_paintCalled = true;
         glClearColor(r, g, b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
-    void resizeGL(int w, int h) Q_DECL_OVERRIDE {
+    void resizeGL(int w, int h) override {
         m_resizeCalled = true;
         m_resizeOk = w == m_w && h == m_h;
     }
@@ -203,10 +203,10 @@ public:
     PainterWidget(QWidget *parent)
         : QOpenGLWidget(parent), m_clear(false) { }
 
-    void initializeGL() Q_DECL_OVERRIDE {
+    void initializeGL() override {
         initializeOpenGLFunctions();
     }
-    void paintGL() Q_DECL_OVERRIDE {
+    void paintGL() override {
         QPainter p(this);
         QCOMPARE(p.device()->width(), width());
         QCOMPARE(p.device()->height(), height());
@@ -322,7 +322,7 @@ public:
     void resetPaintCount() { m_count = 0; }
 
 protected:
-    void drawForeground(QPainter *, const QRectF &) Q_DECL_OVERRIDE;
+    void drawForeground(QPainter *, const QRectF &) override;
     int m_count;
 };
 
@@ -372,7 +372,7 @@ class PaintCountWidget : public QOpenGLWidget
 public:
     PaintCountWidget() : m_count(0) { }
     void reset() { m_count = 0; }
-    void paintGL() Q_DECL_OVERRIDE { ++m_count; }
+    void paintGL() override { ++m_count; }
     int m_count;
 };
 
@@ -393,7 +393,7 @@ void tst_QOpenGLWidget::requestUpdate()
 class FboCheckWidget : public QOpenGLWidget
 {
 public:
-    void paintGL() Q_DECL_OVERRIDE {
+    void paintGL() override {
         GLuint reportedDefaultFbo = QOpenGLContext::currentContext()->defaultFramebufferObject();
         GLuint expectedDefaultFbo = defaultFramebufferObject();
         QCOMPARE(reportedDefaultFbo, expectedDefaultFbo);

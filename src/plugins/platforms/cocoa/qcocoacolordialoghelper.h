@@ -55,12 +55,12 @@ public:
     QCocoaColorDialogHelper();
     ~QCocoaColorDialogHelper();
 
-    void exec() Q_DECL_OVERRIDE;
-    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
+    void exec() override;
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) override;
+    void hide() override;
 
-    void setCurrentColor(const QColor&) Q_DECL_OVERRIDE;
-    QColor currentColor() const Q_DECL_OVERRIDE;
+    void setCurrentColor(const QColor&) override;
+    QColor currentColor() const override;
 };
 
 QT_END_NAMESPACE

@@ -129,7 +129,7 @@ private slots:
     void readReady();
 
 private:
-    void incomingConnection(qintptr socketDescriptor) Q_DECL_OVERRIDE;
+    void incomingConnection(qintptr socketDescriptor) override;
 
     quint32 clientSetting(Http2::Settings identifier, quint32 defaultValue);
     bool readMethodLine();

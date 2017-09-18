@@ -223,7 +223,7 @@ public:
         , paintEventCount(0)
     {}
 
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE
+    void paintEvent(QPaintEvent *event) override
     {
         ++paintEventCount;
         QWidget::paintEvent(event);
@@ -696,7 +696,7 @@ public:
     int resizeCount;
 
 protected:
-    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE
+    void resizeEvent(QResizeEvent *) override
     {
         resizeCount++;
     }
@@ -763,7 +763,7 @@ public:
         , moveCount(0)
     { }
 
-    void moveEvent(QMoveEvent *) Q_DECL_OVERRIDE
+    void moveEvent(QMoveEvent *) override
     {
         moveCount++;
     }
@@ -802,7 +802,7 @@ public:
     }
 
 protected:
-    bool eventFilter(QObject *o, QEvent *e) Q_DECL_OVERRIDE
+    bool eventFilter(QObject *o, QEvent *e) override
     {
         if (e->type() == filterEventType())
             ++eventCount;

@@ -79,7 +79,7 @@ public:
     int valueFromPoint(const QPoint &) const;
     double angle(const QPoint &, const QPoint &) const;
     void init();
-    virtual int bound(int val) const Q_DECL_OVERRIDE;
+    virtual int bound(int val) const override;
 };
 
 void QDialPrivate::init()

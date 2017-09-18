@@ -151,7 +151,7 @@ public:
         return count() > origCount;
     }
 
-    int qt_metacall(QMetaObject::Call call, int methodId, void **a) Q_DECL_OVERRIDE
+    int qt_metacall(QMetaObject::Call call, int methodId, void **a) override
     {
         methodId = QObject::qt_metacall(call, methodId, a);
         if (methodId < 0)

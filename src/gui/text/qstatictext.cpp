@@ -439,7 +439,7 @@ namespace {
         {
         }
 
-        virtual void updateState(const QPaintEngineState &newState) Q_DECL_OVERRIDE
+        virtual void updateState(const QPaintEngineState &newState) override
         {
             if (newState.state() & QPaintEngine::DirtyPen
                 && newState.pen().color() != m_currentColor) {
@@ -448,7 +448,7 @@ namespace {
             }
         }
 
-        virtual void drawTextItem(const QPointF &position, const QTextItem &textItem) Q_DECL_OVERRIDE
+        virtual void drawTextItem(const QPointF &position, const QTextItem &textItem) override
         {
             const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
 
@@ -484,15 +484,15 @@ namespace {
             m_items.append(currentItem);
         }
 
-        virtual void drawPolygon(const QPointF *, int , PolygonDrawMode ) Q_DECL_OVERRIDE
+        virtual void drawPolygon(const QPointF *, int , PolygonDrawMode ) override
         {
             /* intentionally empty */
         }
 
-        virtual bool begin(QPaintDevice *) Q_DECL_OVERRIDE  { return true; }
-        virtual bool end() Q_DECL_OVERRIDE { return true; }
-        virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) Q_DECL_OVERRIDE {}
-        virtual Type type() const Q_DECL_OVERRIDE
+        virtual bool begin(QPaintDevice *) override  { return true; }
+        virtual bool end() override { return true; }
+        virtual void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) override {}
+        virtual Type type() const override
         {
             return User;
         }
@@ -537,7 +537,7 @@ namespace {
             delete m_paintEngine;
         }
 
-        int metric(PaintDeviceMetric m) const Q_DECL_OVERRIDE
+        int metric(PaintDeviceMetric m) const override
         {
             int val;
             switch (m) {
@@ -574,7 +574,7 @@ namespace {
             return val;
         }
 
-        virtual QPaintEngine *paintEngine() const Q_DECL_OVERRIDE
+        virtual QPaintEngine *paintEngine() const override
         {
             return m_paintEngine;
         }

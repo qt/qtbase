@@ -55,9 +55,9 @@ public:
     explicit QHaikuRasterBackingStore(QWindow *window);
     ~QHaikuRasterBackingStore();
 
-    QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
-    void resize(const QSize &size, const QRegion &staticContents) Q_DECL_OVERRIDE;
+    QPaintDevice *paintDevice() override;
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
+    void resize(const QSize &size, const QRegion &staticContents) override;
 
 private:
     BBitmap *m_bitmap;

@@ -110,7 +110,7 @@ Q_SIGNALS:
     void messageClicked();
 
 protected:
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
 
 private:
     Q_DISABLE_COPY(QSystemTrayIcon)

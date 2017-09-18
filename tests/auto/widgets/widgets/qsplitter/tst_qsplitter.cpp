@@ -299,7 +299,7 @@ class TestSplitterStyle : public QProxyStyle
 {
 public:
     TestSplitterStyle() : handleWidth(5) {}
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const override
     {
         if (metric == QStyle::PM_SplitterWidth)
             return handleWidth;

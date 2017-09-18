@@ -56,22 +56,22 @@ public:
     QX11PlatformPixmap(PixelType pixelType);
     ~QX11PlatformPixmap();
 
-    QPlatformPixmap *createCompatiblePlatformPixmap() const Q_DECL_OVERRIDE;
-    void resize(int width, int height) Q_DECL_OVERRIDE;
-    void fromImage(const QImage &img, Qt::ImageConversionFlags flags) Q_DECL_OVERRIDE;
-    void copy(const QPlatformPixmap *data, const QRect &rect) Q_DECL_OVERRIDE;
-    bool scroll(int dx, int dy, const QRect &rect) Q_DECL_OVERRIDE;
-    int metric(QPaintDevice::PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
-    void fill(const QColor &fillColor) Q_DECL_OVERRIDE;
-    QBitmap mask() const Q_DECL_OVERRIDE;
-    void setMask(const QBitmap &mask) Q_DECL_OVERRIDE;
-    bool hasAlphaChannel() const Q_DECL_OVERRIDE;
-    QPixmap transformed(const QTransform &matrix, Qt::TransformationMode mode) const Q_DECL_OVERRIDE;
-    QImage toImage() const Q_DECL_OVERRIDE;
-    QImage toImage(const QRect &rect) const Q_DECL_OVERRIDE;
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
-    void setDevicePixelRatio(qreal scaleFactor) Q_DECL_OVERRIDE;
+    QPlatformPixmap *createCompatiblePlatformPixmap() const override;
+    void resize(int width, int height) override;
+    void fromImage(const QImage &img, Qt::ImageConversionFlags flags) override;
+    void copy(const QPlatformPixmap *data, const QRect &rect) override;
+    bool scroll(int dx, int dy, const QRect &rect) override;
+    int metric(QPaintDevice::PaintDeviceMetric metric) const override;
+    void fill(const QColor &fillColor) override;
+    QBitmap mask() const override;
+    void setMask(const QBitmap &mask) override;
+    bool hasAlphaChannel() const override;
+    QPixmap transformed(const QTransform &matrix, Qt::TransformationMode mode) const override;
+    QImage toImage() const override;
+    QImage toImage(const QRect &rect) const override;
+    QPaintEngine *paintEngine() const override;
+    qreal devicePixelRatio() const override;
+    void setDevicePixelRatio(qreal scaleFactor) override;
 
     inline Drawable handle() const { return hd; }
     inline Picture x11PictureHandle() const { return picture; }

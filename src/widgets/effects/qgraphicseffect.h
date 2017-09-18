@@ -144,7 +144,7 @@ Q_SIGNALS:
     void strengthChanged(qreal strength);
 
 protected:
-    void draw(QPainter *painter) Q_DECL_OVERRIDE;
+    void draw(QPainter *painter) override;
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsColorizeEffect)
@@ -170,7 +170,7 @@ public:
     QGraphicsBlurEffect(QObject *parent = Q_NULLPTR);
     ~QGraphicsBlurEffect();
 
-    QRectF boundingRectFor(const QRectF &rect) const Q_DECL_OVERRIDE;
+    QRectF boundingRectFor(const QRectF &rect) const override;
     qreal blurRadius() const;
     BlurHints blurHints() const;
 
@@ -183,7 +183,7 @@ Q_SIGNALS:
     void blurHintsChanged(BlurHints hints);
 
 protected:
-    void draw(QPainter *painter) Q_DECL_OVERRIDE;
+    void draw(QPainter *painter) override;
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsBlurEffect)
@@ -205,7 +205,7 @@ public:
     QGraphicsDropShadowEffect(QObject *parent = Q_NULLPTR);
     ~QGraphicsDropShadowEffect();
 
-    QRectF boundingRectFor(const QRectF &rect) const Q_DECL_OVERRIDE;
+    QRectF boundingRectFor(const QRectF &rect) const override;
     QPointF offset() const;
 
     inline qreal xOffset() const
@@ -241,7 +241,7 @@ Q_SIGNALS:
     void colorChanged(const QColor &color);
 
 protected:
-    void draw(QPainter *painter) Q_DECL_OVERRIDE;
+    void draw(QPainter *painter) override;
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsDropShadowEffect)
@@ -270,7 +270,7 @@ Q_SIGNALS:
     void opacityMaskChanged(const QBrush &mask);
 
 protected:
-    void draw(QPainter *painter) Q_DECL_OVERRIDE;
+    void draw(QPainter *painter) override;
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsOpacityEffect)

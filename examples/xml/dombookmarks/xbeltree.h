@@ -67,7 +67,7 @@ public:
 
 protected:
 #if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_CLIPBOARD)
-    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+    void contextMenuEvent(QContextMenuEvent *event) override;
 #endif
 
 private slots:

@@ -64,17 +64,17 @@ public:
     QFbWindow(QWindow *window);
     ~QFbWindow();
 
-    void raise() Q_DECL_OVERRIDE;
-    void lower() Q_DECL_OVERRIDE;
+    void raise() override;
+    void lower() override;
 
-    void setGeometry(const QRect &rect) Q_DECL_OVERRIDE;
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &rect) override;
+    void setVisible(bool visible) override;
 
-    void setWindowState(Qt::WindowStates state) Q_DECL_OVERRIDE;
-    void setWindowFlags(Qt::WindowFlags type) Q_DECL_OVERRIDE;
+    void setWindowState(Qt::WindowStates state) override;
+    void setWindowFlags(Qt::WindowFlags type) override;
     Qt::WindowFlags windowFlags() const;
 
-    WId winId() const Q_DECL_OVERRIDE { return mWindowId; }
+    WId winId() const override { return mWindowId; }
 
     void setBackingStore(QFbBackingStore *store) { mBackingStore = store; }
     QFbBackingStore *backingStore() const { return mBackingStore; }
@@ -83,9 +83,9 @@ public:
 
     virtual void repaint(const QRegion&);
 
-    void propagateSizeHints() Q_DECL_OVERRIDE { }
-    bool setKeyboardGrabEnabled(bool) Q_DECL_OVERRIDE { return false; }
-    bool setMouseGrabEnabled(bool) Q_DECL_OVERRIDE { return false; }
+    void propagateSizeHints() override { }
+    bool setKeyboardGrabEnabled(bool) override { return false; }
+    bool setMouseGrabEnabled(bool) override { return false; }
 
 protected:
     friend class QFbScreen;

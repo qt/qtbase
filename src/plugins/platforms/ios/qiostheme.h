@@ -52,16 +52,16 @@ public:
     QIOSTheme();
     ~QIOSTheme();
 
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    const QPalette *palette(Palette type = SystemPalette) const override;
+    QVariant themeHint(ThemeHint hint) const override;
 
-    QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
-    QPlatformMenu* createPlatformMenu() const Q_DECL_OVERRIDE;
+    QPlatformMenuItem* createPlatformMenuItem() const override;
+    QPlatformMenu* createPlatformMenu() const override;
 
-    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
+    bool usePlatformNativeDialog(DialogType type) const override;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
-    const QFont *font(Font type = SystemFont) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type = SystemFont) const override;
 
     static const char *name;
 

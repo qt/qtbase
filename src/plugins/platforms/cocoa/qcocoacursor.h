@@ -53,9 +53,9 @@ public:
     QCocoaCursor();
     ~QCocoaCursor();
 
-    void changeCursor(QCursor *cursor, QWindow *window) Q_DECL_OVERRIDE;
-    QPoint pos() const Q_DECL_OVERRIDE;
-    void setPos(const QPoint &position) Q_DECL_OVERRIDE;
+    void changeCursor(QCursor *cursor, QWindow *window) override;
+    QPoint pos() const override;
+    void setPos(const QPoint &position) override;
 private:
     QHash<Qt::CursorShape, NSCursor *> m_cursors;
     NSCursor *convertCursor(QCursor *cursor);

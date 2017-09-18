@@ -51,7 +51,7 @@ class QIbusPlatformInputContextPlugin : public QPlatformInputContextPlugin
     Q_PLUGIN_METADATA(IID QPlatformInputContextFactoryInterface_iid FILE "ibus.json")
 
 public:
-    QIBusPlatformInputContext *create(const QString&, const QStringList&) Q_DECL_OVERRIDE;
+    QIBusPlatformInputContext *create(const QString&, const QStringList&) override;
 };
 
 QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString& system, const QStringList& paramList)

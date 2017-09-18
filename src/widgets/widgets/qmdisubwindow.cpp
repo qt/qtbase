@@ -369,18 +369,18 @@ class ControlLabel : public QWidget
 public:
     ControlLabel(QMdiSubWindow *subWindow, QWidget *parent = 0);
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
 
 signals:
     void _q_clicked();
     void _q_doubleClicked();
 
 protected:
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *paintEvent) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
-    void mouseDoubleClickEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *mouseEvent) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
+    void paintEvent(QPaintEvent *paintEvent) override;
+    void mousePressEvent(QMouseEvent *mouseEvent) override;
+    void mouseDoubleClickEvent(QMouseEvent *mouseEvent) override;
+    void mouseReleaseEvent(QMouseEvent *mouseEvent) override;
 
 private:
     QPixmap label;
@@ -500,7 +500,7 @@ class ControllerWidget : public QWidget
     Q_OBJECT
 public:
     ControllerWidget(QMdiSubWindow *subWindow, QWidget *parent = 0);
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
     void setControlVisible(QMdiSubWindowPrivate::WindowStateAction action, bool visible);
     inline bool hasVisibleControls() const
     {
@@ -515,12 +515,12 @@ signals:
     void _q_close();
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    bool event(QEvent *event) override;
 
 private:
     QStyle::SubControl activeControl;

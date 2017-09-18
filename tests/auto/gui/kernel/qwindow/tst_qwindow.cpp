@@ -352,7 +352,7 @@ private:
 class ColoredWindow : public QRasterWindow {
 public:
     explicit ColoredWindow(const QColor &color, QWindow *parent = 0) : QRasterWindow(parent), m_color(color) {}
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE
+    void paintEvent(QPaintEvent *) override
     {
         QPainter p(this);
         p.fillRect(QRect(QPoint(0, 0), size()), m_color);

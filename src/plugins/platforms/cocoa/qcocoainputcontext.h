@@ -53,11 +53,11 @@ public:
     explicit QCocoaInputContext();
     ~QCocoaInputContext();
 
-    bool isValid() const Q_DECL_OVERRIDE { return true; }
+    bool isValid() const override { return true; }
 
-    void reset() Q_DECL_OVERRIDE;
+    void reset() override;
 
-    QLocale locale() const Q_DECL_OVERRIDE { return m_locale; }
+    QLocale locale() const override { return m_locale; }
     void updateLocale();
 
 private Q_SLOTS:

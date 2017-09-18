@@ -72,7 +72,7 @@ public:
     virtual ~Server();
 
 public slots:
-    int exec() Q_DECL_OVERRIDE;
+    int exec() override;
 
 private slots:
     void newConnection();

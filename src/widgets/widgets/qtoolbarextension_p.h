@@ -64,8 +64,8 @@ class Q_AUTOTEST_EXPORT QToolBarExtension : public QToolButton
 
 public:
     explicit QToolBarExtension(QWidget *parent);
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) override;
+    QSize sizeHint() const override;
 
 public Q_SLOTS:
     void setOrientation(Qt::Orientation o);

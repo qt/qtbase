@@ -73,12 +73,12 @@ public:
     }
 
 protected:
-    void mouseMoveEvent(QMouseEvent *ev) Q_DECL_OVERRIDE {
+    void mouseMoveEvent(QMouseEvent *ev) override {
         m_cursorPos = ev->screenPos().toPoint();
         updateText();
     }
 
-    void mousePressEvent(QMouseEvent *ev) Q_DECL_OVERRIDE {
+    void mousePressEvent(QMouseEvent *ev) override {
         m_cursorPos = ev->screenPos().toPoint();
         qDebug() << "top level @" << m_cursorPos << ":" << QGuiApplication::topLevelAt(m_cursorPos);
         updateText();
@@ -150,7 +150,7 @@ public:
     QScreen *screenSubject() const { return m_watcher->screenSubject(); }
 
 protected:
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
     void startMouseMonitor();
 
 private:

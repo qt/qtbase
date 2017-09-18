@@ -188,10 +188,10 @@ Q_SIGNALS:
     void visibilityChanged(bool visible);
 
 protected:
-    void actionEvent(QActionEvent *event) Q_DECL_OVERRIDE;
-    void changeEvent(QEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void actionEvent(QActionEvent *event) override;
+    void changeEvent(QEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
+    bool event(QEvent *event) override;
     void initStyleOption(QStyleOptionToolBar *option) const;
 
 

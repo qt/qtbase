@@ -77,13 +77,13 @@ public:
     explicit QHeaderView(Qt::Orientation orientation, QWidget *parent = Q_NULLPTR);
     virtual ~QHeaderView();
 
-    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
+    void setModel(QAbstractItemModel *model) override;
 
     Qt::Orientation orientation() const;
     int offset() const;
     int length() const;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    void setVisible(bool v) Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
+    void setVisible(bool v) override;
     int sectionSizeHint(int logicalIndex) const;
 
     int visualIndexAt(int position) const;
@@ -172,7 +172,7 @@ public:
     Qt::Alignment defaultAlignment() const;
     void setDefaultAlignment(Qt::Alignment alignment);
 
-    void doItemsLayout() Q_DECL_OVERRIDE;
+    void doItemsLayout() override;
     bool sectionsMoved() const;
     bool sectionsHidden() const;
 
@@ -181,7 +181,7 @@ public:
     bool restoreState(const QByteArray &state);
 #endif
 
-    void reset() Q_DECL_OVERRIDE;
+    void reset() override;
 
 public Q_SLOTS:
     void setOffset(int offset);
@@ -213,36 +213,36 @@ protected:
 
     void initializeSections();
     void initializeSections(int start, int end);
-    void currentChanged(const QModelIndex &current, const QModelIndex &old) Q_DECL_OVERRIDE;
+    void currentChanged(const QModelIndex &current, const QModelIndex &old) override;
 
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseDoubleClickEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    bool viewportEvent(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
+    void paintEvent(QPaintEvent *e) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
+    void mouseDoubleClickEvent(QMouseEvent *e) override;
+    bool viewportEvent(QEvent *e) override;
 
     virtual void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const;
     virtual QSize sectionSizeFromContents(int logicalIndex) const;
 
-    int horizontalOffset() const Q_DECL_OVERRIDE;
-    int verticalOffset() const Q_DECL_OVERRIDE;
-    void updateGeometries() Q_DECL_OVERRIDE;
-    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
+    int horizontalOffset() const override;
+    int verticalOffset() const override;
+    void updateGeometries() override;
+    void scrollContentsBy(int dx, int dy) override;
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) Q_DECL_OVERRIDE;
-    void rowsInserted(const QModelIndex &parent, int start, int end) Q_DECL_OVERRIDE;
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override;
+    void rowsInserted(const QModelIndex &parent, int start, int end) override;
 
-    QRect visualRect(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    void scrollTo(const QModelIndex &index, ScrollHint hint) Q_DECL_OVERRIDE;
+    QRect visualRect(const QModelIndex &index) const override;
+    void scrollTo(const QModelIndex &index, ScrollHint hint) override;
 
-    QModelIndex indexAt(const QPoint &p) const Q_DECL_OVERRIDE;
-    bool isIndexHidden(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    QModelIndex indexAt(const QPoint &p) const override;
+    bool isIndexHidden(const QModelIndex &index) const override;
 
-    QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers) Q_DECL_OVERRIDE;
-    void setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags) Q_DECL_OVERRIDE;
-    QRegion visualRegionForSelection(const QItemSelection &selection) const Q_DECL_OVERRIDE;
+    QModelIndex moveCursor(CursorAction, Qt::KeyboardModifiers) override;
+    void setSelection(const QRect& rect, QItemSelectionModel::SelectionFlags flags) override;
+    QRegion visualRegionForSelection(const QItemSelection &selection) const override;
     void initStyleOption(QStyleOptionHeader *option) const;
 
     friend class QTableView;

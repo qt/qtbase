@@ -73,7 +73,7 @@ protected:
     virtual void onEntry(QEvent *event) = 0;
     virtual void onExit(QEvent *event) = 0;
 
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
 
 protected:
     QAbstractState(QAbstractStatePrivate &dd, QState *parent);

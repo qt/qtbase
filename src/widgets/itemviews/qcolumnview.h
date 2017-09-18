@@ -62,14 +62,14 @@ public:
     ~QColumnView();
 
     // QAbstractItemView overloads
-    QModelIndex indexAt(const QPoint &point) const Q_DECL_OVERRIDE;
-    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) Q_DECL_OVERRIDE;
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    QRect visualRect(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
-    void setSelectionModel(QItemSelectionModel * selectionModel) Q_DECL_OVERRIDE;
-    void setRootIndex(const QModelIndex &index) Q_DECL_OVERRIDE;
-    void selectAll() Q_DECL_OVERRIDE;
+    QModelIndex indexAt(const QPoint &point) const override;
+    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;
+    QSize sizeHint() const override;
+    QRect visualRect(const QModelIndex &index) const override;
+    void setModel(QAbstractItemModel *model) override;
+    void setSelectionModel(QItemSelectionModel * selectionModel) override;
+    void setRootIndex(const QModelIndex &index) override;
+    void selectAll() override;
 
     // QColumnView functions
     void setResizeGripsVisible(bool visible);
@@ -85,18 +85,18 @@ protected:
     QColumnView(QColumnViewPrivate &dd, QWidget *parent = Q_NULLPTR);
 
     // QAbstractItemView overloads
-    bool isIndexHidden(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
-    void setSelection(const QRect & rect, QItemSelectionModel::SelectionFlags command) Q_DECL_OVERRIDE;
-    QRegion visualRegionForSelection(const QItemSelection &selection) const Q_DECL_OVERRIDE;
-    int horizontalOffset() const Q_DECL_OVERRIDE;
-    int verticalOffset() const Q_DECL_OVERRIDE;
-    void rowsInserted(const QModelIndex &parent, int start, int end) Q_DECL_OVERRIDE;
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous) Q_DECL_OVERRIDE;
+    bool isIndexHidden(const QModelIndex &index) const override;
+    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void setSelection(const QRect & rect, QItemSelectionModel::SelectionFlags command) override;
+    QRegion visualRegionForSelection(const QItemSelection &selection) const override;
+    int horizontalOffset() const override;
+    int verticalOffset() const override;
+    void rowsInserted(const QModelIndex &parent, int start, int end) override;
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
 
     // QColumnView functions
-    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
+    void scrollContentsBy(int dx, int dy) override;
     virtual QAbstractItemView* createColumn(const QModelIndex &rootIndex);
     void initializeColumn(QAbstractItemView *column) const;
 

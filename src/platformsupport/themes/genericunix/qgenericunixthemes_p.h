@@ -81,15 +81,15 @@ public:
     static QPlatformTheme *createUnixTheme(const QString &name);
     static QStringList themeNames();
 
-    const QFont *font(Font type) const Q_DECL_OVERRIDE;
-    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type) const override;
+    QVariant themeHint(ThemeHint hint) const override;
 
     static QStringList xdgIconThemePaths();
 #ifndef QT_NO_DBUS
-    QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
+    QPlatformMenuBar *createPlatformMenuBar() const override;
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
 #endif
 
     static const char *name;
@@ -105,19 +105,19 @@ public:
     QKdeTheme(const QStringList& kdeDirs, int kdeVersion);
 
     static QPlatformTheme *createKdeTheme();
-    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    QVariant themeHint(ThemeHint hint) const override;
 
     QIcon fileIcon(const QFileInfo &fileInfo,
                    QPlatformTheme::IconOptions iconOptions = 0) const override;
 
-    const QPalette *palette(Palette type = SystemPalette) const Q_DECL_OVERRIDE;
+    const QPalette *palette(Palette type = SystemPalette) const override;
 
-    const QFont *font(Font type) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type) const override;
 #ifndef QT_NO_DBUS
-    QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
+    QPlatformMenuBar *createPlatformMenuBar() const override;
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
 #endif
 
     static const char *name;
@@ -131,18 +131,18 @@ class QGnomeTheme : public QPlatformTheme
     Q_DECLARE_PRIVATE(QGnomeTheme)
 public:
     QGnomeTheme();
-    QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    QVariant themeHint(ThemeHint hint) const override;
     QIcon fileIcon(const QFileInfo &fileInfo,
                    QPlatformTheme::IconOptions = 0) const override;
-    const QFont *font(Font type) const Q_DECL_OVERRIDE;
-    QString standardButtonText(int button) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type) const override;
+    QString standardButtonText(int button) const override;
 
     virtual QString gtkFontName() const;
 #ifndef QT_NO_DBUS
-    QPlatformMenuBar *createPlatformMenuBar() const Q_DECL_OVERRIDE;
+    QPlatformMenuBar *createPlatformMenuBar() const override;
 #endif
 #if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const Q_DECL_OVERRIDE;
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
 #endif
 
     static const char *name;

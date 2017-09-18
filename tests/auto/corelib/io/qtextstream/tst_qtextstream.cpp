@@ -609,14 +609,14 @@ void tst_QTextStream::readLinesFromBufferCRCR()
 class ErrorDevice : public QIODevice
 {
 protected:
-    qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE
+    qint64 readData(char *data, qint64 maxlen) override
     {
         Q_UNUSED(data)
         Q_UNUSED(maxlen)
         return -1;
     }
 
-    qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE
+    qint64 writeData(const char *data, qint64 len) override
     {
         Q_UNUSED(data)
         Q_UNUSED(len)

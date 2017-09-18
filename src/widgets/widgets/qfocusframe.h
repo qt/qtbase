@@ -60,10 +60,10 @@ public:
     QWidget *widget() const;
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
 
-    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *, QEvent *) override;
+    void paintEvent(QPaintEvent *) override;
     void initStyleOption(QStyleOption *option) const;
 
 private:

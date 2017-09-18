@@ -67,12 +67,12 @@ public:
     QDBusMenuBar();
     virtual ~QDBusMenuBar();
 
-    void insertMenu(QPlatformMenu *menu, QPlatformMenu *before) Q_DECL_OVERRIDE;
-    void removeMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
-    void syncMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
-    void handleReparent(QWindow *newParentWindow) Q_DECL_OVERRIDE;
-    QPlatformMenu *menuForTag(quintptr tag) const Q_DECL_OVERRIDE;
-    QPlatformMenu *createMenu() const Q_DECL_OVERRIDE;
+    void insertMenu(QPlatformMenu *menu, QPlatformMenu *before) override;
+    void removeMenu(QPlatformMenu *menu) override;
+    void syncMenu(QPlatformMenu *menu) override;
+    void handleReparent(QWindow *newParentWindow) override;
+    QPlatformMenu *menuForTag(quintptr tag) const override;
+    QPlatformMenu *createMenu() const override;
 
 private:
     QDBusPlatformMenu *m_menu;

@@ -86,15 +86,15 @@ public:
     QIBusPlatformInputContext();
     ~QIBusPlatformInputContext();
 
-    bool isValid() const Q_DECL_OVERRIDE;
-    void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
+    bool isValid() const override;
+    void setFocusObject(QObject *object) override;
 
-    void invokeAction(QInputMethod::Action a, int x) Q_DECL_OVERRIDE;
-    void reset() Q_DECL_OVERRIDE;
-    void commit() Q_DECL_OVERRIDE;
-    void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
-    bool filterEvent(const QEvent *event) Q_DECL_OVERRIDE;
-    QLocale locale() const Q_DECL_OVERRIDE;
+    void invokeAction(QInputMethod::Action a, int x) override;
+    void reset() override;
+    void commit() override;
+    void update(Qt::InputMethodQueries) override;
+    bool filterEvent(const QEvent *event) override;
+    QLocale locale() const override;
 
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);

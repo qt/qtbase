@@ -67,15 +67,15 @@ class QNetworkReplyDataImpl: public QNetworkReply
 public:
     QNetworkReplyDataImpl(QObject *parent, const QNetworkRequest &req, const QNetworkAccessManager::Operation op);
     ~QNetworkReplyDataImpl();
-    virtual void abort() Q_DECL_OVERRIDE;
+    virtual void abort() override;
 
     // reimplemented from QNetworkReply
-    virtual void close() Q_DECL_OVERRIDE;
-    virtual qint64 bytesAvailable() const Q_DECL_OVERRIDE;
-    virtual bool isSequential () const Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
+    virtual void close() override;
+    virtual qint64 bytesAvailable() const override;
+    virtual bool isSequential () const override;
+    qint64 size() const override;
 
-    virtual qint64 readData(char *data, qint64 maxlen) Q_DECL_OVERRIDE;
+    virtual qint64 readData(char *data, qint64 maxlen) override;
 
     Q_DECLARE_PRIVATE(QNetworkReplyDataImpl)
 };

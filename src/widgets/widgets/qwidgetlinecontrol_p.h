@@ -548,7 +548,7 @@ Q_SIGNALS:
     void editFocusChange(bool);
 #endif
 protected:
-    virtual void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+    virtual void timerEvent(QTimerEvent *event) override;
 
 private Q_SLOTS:
     void _q_deleteSelected();

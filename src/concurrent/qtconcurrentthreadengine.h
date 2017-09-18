@@ -113,7 +113,7 @@ private:
     void startThreads();
     void threadExit();
     bool threadThrottleExit();
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
     virtual void asynchronousFinish() = 0;
 #ifndef QT_NO_EXCEPTIONS
     void handleException(const QException &exception);
@@ -173,7 +173,7 @@ public:
         return future;
     }
 
-    void asynchronousFinish() Q_DECL_OVERRIDE
+    void asynchronousFinish() override
     {
         finish();
         futureInterfaceTyped()->reportFinished(result());

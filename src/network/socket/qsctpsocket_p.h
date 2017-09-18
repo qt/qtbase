@@ -70,8 +70,8 @@ public:
     QSctpSocketPrivate();
     virtual ~QSctpSocketPrivate();
 
-    bool canReadNotification() Q_DECL_OVERRIDE;
-    bool writeToSocket() Q_DECL_OVERRIDE;
+    bool canReadNotification() override;
+    bool writeToSocket() override;
 
     QByteArray incomingDatagram;
     int maximumChannelCount;
@@ -80,7 +80,7 @@ public:
     QVector<IpHeaderList> readHeaders;
     QVector<IpHeaderList> writeHeaders;
 
-    void configureCreatedSocket() Q_DECL_OVERRIDE;
+    void configureCreatedSocket() override;
 };
 
 #endif // QT_NO_SCTP

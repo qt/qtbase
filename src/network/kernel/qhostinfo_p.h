@@ -194,7 +194,7 @@ public:
     QHostInfoRunnable(const QString &hn, int i);
     QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
                       QtPrivate::QSlotObjectBase *slotObj);
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
 
     QString toBeLookedUp;
     int id;
@@ -225,7 +225,7 @@ public:
     QHostInfoLookupManager();
     ~QHostInfoLookupManager();
 
-    void clear() Q_DECL_OVERRIDE;
+    void clear() override;
     void work();
 
     // called from QHostInfo

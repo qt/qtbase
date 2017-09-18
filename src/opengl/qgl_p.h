@@ -140,7 +140,7 @@ public:
     void initContext(QGLContext *context, const QGLWidget* shareWidget);
     bool renderCxPm(QPixmap *pixmap);
     void cleanupColormaps();
-    void aboutToDestroy() Q_DECL_OVERRIDE {
+    void aboutToDestroy() override {
         if (glcx && !parent_changing)
             glcx->reset();
     }
@@ -488,12 +488,12 @@ public:
     }
 
 protected:
-    void invalidateResource() Q_DECL_OVERRIDE
+    void invalidateResource() override
     {
         m_id = 0;
     }
 
-    void freeResource(QOpenGLContext *context) Q_DECL_OVERRIDE
+    void freeResource(QOpenGLContext *context) override
     {
         if (m_id) {
             freeResource(QGLContext::fromOpenGLContext(context), m_id);
@@ -517,7 +517,7 @@ public:
     }
 
 protected:
-    void freeResource(QGLContext *ctx, GLuint id) Q_DECL_OVERRIDE
+    void freeResource(QGLContext *ctx, GLuint id) override
     {
         m_func(ctx, id);
     }

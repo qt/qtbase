@@ -136,34 +136,34 @@ public:
     QPixmapStyle();
     ~QPixmapStyle();
 
-    void polish(QApplication *application) Q_DECL_OVERRIDE;
-    void polish(QPalette &palette) Q_DECL_OVERRIDE;
-    void polish(QWidget *widget) Q_DECL_OVERRIDE;
-    void unpolish(QApplication *application) Q_DECL_OVERRIDE;
-    void unpolish(QWidget *widget) Q_DECL_OVERRIDE;
+    void polish(QApplication *application) override;
+    void polish(QPalette &palette) override;
+    void polish(QWidget *widget) override;
+    void unpolish(QApplication *application) override;
+    void unpolish(QWidget *widget) override;
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
-            QPainter *painter, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
+            QPainter *painter, const QWidget *widget = Q_NULLPTR) const override;
     void drawControl(ControlElement element, const QStyleOption *option,
-            QPainter *painter, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
+            QPainter *painter, const QWidget *widget = Q_NULLPTR) const override;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *option,
-                            QPainter *painter, const QWidget *widget=0) const Q_DECL_OVERRIDE;
+                            QPainter *painter, const QWidget *widget=0) const override;
 
     QSize sizeFromContents(ContentsType type, const QStyleOption *option,
-            const QSize &contentsSize, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
+            const QSize &contentsSize, const QWidget *widget = Q_NULLPTR) const override;
     QRect subElementRect(SubElement element, const QStyleOption *option,
-            const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
+            const QWidget *widget = Q_NULLPTR) const override;
     QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *option,
-                         SubControl sc, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
+                         SubControl sc, const QWidget *widget = Q_NULLPTR) const override;
 
     int pixelMetric(PixelMetric metric, const QStyleOption *option = Q_NULLPTR,
-            const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
+            const QWidget *widget = Q_NULLPTR) const override;
     int styleHint(StyleHint hint, const QStyleOption *option,
-                  const QWidget *widget, QStyleHintReturn *returnData) const Q_DECL_OVERRIDE;
+                  const QWidget *widget, QStyleHintReturn *returnData) const override;
     SubControl hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option,
-                                     const QPoint &pos, const QWidget *widget) const Q_DECL_OVERRIDE;
+                                     const QPoint &pos, const QWidget *widget) const override;
 
-    bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
     void addDescriptor(ControlDescriptor control, const QString &fileName,
                        QMargins margins = QMargins(),

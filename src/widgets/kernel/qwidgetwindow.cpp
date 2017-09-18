@@ -78,7 +78,7 @@ public:
             QWindowPrivate::setVisible(visible);
     }
 
-    QWindow *eventReceiver() Q_DECL_OVERRIDE {
+    QWindow *eventReceiver() override {
         Q_Q(QWidgetWindow);
         QWindow *w = q;
         while (w->parent() && qobject_cast<QWidgetWindow *>(w) && qobject_cast<QWidgetWindow *>(w->parent())) {
@@ -87,7 +87,7 @@ public:
         return w;
     }
 
-    void clearFocusObject() Q_DECL_OVERRIDE
+    void clearFocusObject() override
     {
         Q_Q(QWidgetWindow);
         QWidget *widget = q->widget();
@@ -95,7 +95,7 @@ public:
             widget->focusWidget()->clearFocus();
     }
 
-    QRectF closestAcceptableGeometry(const QRectF &rect) const Q_DECL_OVERRIDE;
+    QRectF closestAcceptableGeometry(const QRectF &rect) const override;
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const

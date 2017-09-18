@@ -189,26 +189,26 @@ public:
 
     QUtcTimeZonePrivate *clone() const override;
 
-    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data data(qint64 forMSecsSinceEpoch) const override;
 
-    QLocale::Country country() const Q_DECL_OVERRIDE;
-    QString comment() const Q_DECL_OVERRIDE;
+    QLocale::Country country() const override;
+    QString comment() const override;
 
     QString displayName(QTimeZone::TimeType timeType,
                         QTimeZone::NameType nameType,
-                        const QLocale &locale) const Q_DECL_OVERRIDE;
-    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+                        const QLocale &locale) const override;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const override;
 
-    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const override;
 
-    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+    QByteArray systemTimeZoneId() const override;
 
-    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
-    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
-    QList<QByteArray> availableTimeZoneIds(int utcOffset) const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const override;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const override;
+    QList<QByteArray> availableTimeZoneIds(int utcOffset) const override;
 
-    void serialize(QDataStream &ds) const Q_DECL_OVERRIDE;
+    void serialize(QDataStream &ds) const override;
 
 private:
     void init(const QByteArray &zoneId);
@@ -237,27 +237,27 @@ public:
     QIcuTimeZonePrivate *clone() const override;
 
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
-                        const QLocale &locale) const Q_DECL_OVERRIDE;
-    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+                        const QLocale &locale) const override;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const override;
 
-    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const override;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const override;
 
-    bool hasDaylightTime() const Q_DECL_OVERRIDE;
-    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasDaylightTime() const override;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
-    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data data(qint64 forMSecsSinceEpoch) const override;
 
-    bool hasTransitions() const Q_DECL_OVERRIDE;
-    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasTransitions() const override;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const override;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const override;
 
-    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+    QByteArray systemTimeZoneId() const override;
 
-    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
-    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
-    QList<QByteArray> availableTimeZoneIds(int offsetFromUtc) const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const override;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const override;
+    QList<QByteArray> availableTimeZoneIds(int offsetFromUtc) const override;
 
 private:
     void init(const QByteArray &ianaId);
@@ -297,34 +297,34 @@ public:
 
     QTzTimeZonePrivate *clone() const override;
 
-    QLocale::Country country() const Q_DECL_OVERRIDE;
-    QString comment() const Q_DECL_OVERRIDE;
+    QLocale::Country country() const override;
+    QString comment() const override;
 
     QString displayName(qint64 atMSecsSinceEpoch,
                         QTimeZone::NameType nameType,
-                        const QLocale &locale) const Q_DECL_OVERRIDE;
+                        const QLocale &locale) const override;
     QString displayName(QTimeZone::TimeType timeType,
                         QTimeZone::NameType nameType,
-                        const QLocale &locale) const Q_DECL_OVERRIDE;
-    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+                        const QLocale &locale) const override;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const override;
 
-    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const override;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const override;
 
-    bool hasDaylightTime() const Q_DECL_OVERRIDE;
-    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasDaylightTime() const override;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
-    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data data(qint64 forMSecsSinceEpoch) const override;
 
-    bool hasTransitions() const Q_DECL_OVERRIDE;
-    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasTransitions() const override;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const override;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const override;
 
-    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+    QByteArray systemTimeZoneId() const override;
 
-    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
-    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const override;
+    QList<QByteArray> availableTimeZoneIds(QLocale::Country country) const override;
 
 private:
     void init(const QByteArray &ianaId);
@@ -353,28 +353,28 @@ public:
 
     QMacTimeZonePrivate *clone() const override;
 
-    QString comment() const Q_DECL_OVERRIDE;
+    QString comment() const override;
 
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
-                        const QLocale &locale) const Q_DECL_OVERRIDE;
-    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+                        const QLocale &locale) const override;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const override;
 
-    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const override;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const override;
 
-    bool hasDaylightTime() const Q_DECL_OVERRIDE;
-    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasDaylightTime() const override;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
-    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data data(qint64 forMSecsSinceEpoch) const override;
 
-    bool hasTransitions() const Q_DECL_OVERRIDE;
-    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasTransitions() const override;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const override;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const override;
 
-    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+    QByteArray systemTimeZoneId() const override;
 
-    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const override;
 
     NSTimeZone *nsTimeZone() const;
 
@@ -406,28 +406,28 @@ public:
 
     QWinTimeZonePrivate *clone() const override;
 
-    QString comment() const Q_DECL_OVERRIDE;
+    QString comment() const override;
 
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
-                        const QLocale &locale) const Q_DECL_OVERRIDE;
-    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+                        const QLocale &locale) const override;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const override;
 
-    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const override;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const override;
 
-    bool hasDaylightTime() const Q_DECL_OVERRIDE;
-    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasDaylightTime() const override;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
-    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data data(qint64 forMSecsSinceEpoch) const override;
 
-    bool hasTransitions() const Q_DECL_OVERRIDE;
-    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasTransitions() const override;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const override;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const override;
 
-    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+    QByteArray systemTimeZoneId() const override;
 
-    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const override;
 
 private:
     void init(const QByteArray &ianaId);
@@ -457,25 +457,25 @@ public:
     QAndroidTimeZonePrivate *clone() const override;
 
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
-                        const QLocale &locale) const Q_DECL_OVERRIDE;
-    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+                        const QLocale &locale) const override;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const override;
 
-    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const override;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const override;
 
-    bool hasDaylightTime() const Q_DECL_OVERRIDE;
-    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasDaylightTime() const override;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
-    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data data(qint64 forMSecsSinceEpoch) const override;
 
-    bool hasTransitions() const Q_DECL_OVERRIDE;
-    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
-    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    bool hasTransitions() const override;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const override;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const override;
 
-    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+    QByteArray systemTimeZoneId() const override;
 
-    QList<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QList<QByteArray> availableTimeZoneIds() const override;
 
 private:
     void init(const QByteArray &zoneId);

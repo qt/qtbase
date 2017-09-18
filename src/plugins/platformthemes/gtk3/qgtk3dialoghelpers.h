@@ -63,12 +63,12 @@ public:
     QGtk3ColorDialogHelper();
     ~QGtk3ColorDialogHelper();
 
-    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent) Q_DECL_OVERRIDE;
-    void exec() Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
+    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent) override;
+    void exec() override;
+    void hide() override;
 
-    void setCurrentColor(const QColor &color) Q_DECL_OVERRIDE;
-    QColor currentColor() const Q_DECL_OVERRIDE;
+    void setCurrentColor(const QColor &color) override;
+    QColor currentColor() const override;
 
 private Q_SLOTS:
     void onAccepted();
@@ -88,18 +88,18 @@ public:
     QGtk3FileDialogHelper();
     ~QGtk3FileDialogHelper();
 
-    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent) Q_DECL_OVERRIDE;
-    void exec() Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
+    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent) override;
+    void exec() override;
+    void hide() override;
 
-    bool defaultNameFilterDisables() const Q_DECL_OVERRIDE;
-    void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
-    QUrl directory() const Q_DECL_OVERRIDE;
-    void selectFile(const QUrl &filename) Q_DECL_OVERRIDE;
-    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
-    void setFilter() Q_DECL_OVERRIDE;
-    void selectNameFilter(const QString &filter) Q_DECL_OVERRIDE;
-    QString selectedNameFilter() const Q_DECL_OVERRIDE;
+    bool defaultNameFilterDisables() const override;
+    void setDirectory(const QUrl &directory) override;
+    QUrl directory() const override;
+    void selectFile(const QUrl &filename) override;
+    QList<QUrl> selectedFiles() const override;
+    void setFilter() override;
+    void selectNameFilter(const QString &filter) override;
+    QString selectedNameFilter() const override;
 
 private Q_SLOTS:
     void onAccepted();
@@ -128,12 +128,12 @@ public:
     QGtk3FontDialogHelper();
     ~QGtk3FontDialogHelper();
 
-    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent) Q_DECL_OVERRIDE;
-    void exec() Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
+    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent) override;
+    void exec() override;
+    void hide() override;
 
-    void setCurrentFont(const QFont &font) Q_DECL_OVERRIDE;
-    QFont currentFont() const Q_DECL_OVERRIDE;
+    void setCurrentFont(const QFont &font) override;
+    QFont currentFont() const override;
 
 private Q_SLOTS:
     void onAccepted();

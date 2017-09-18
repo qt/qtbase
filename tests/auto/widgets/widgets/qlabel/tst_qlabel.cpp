@@ -47,7 +47,7 @@ public:
     QList<QEvent::Type> events;
 
 protected:
-    bool event(QEvent *ev) Q_DECL_OVERRIDE {
+    bool event(QEvent *ev) override {
         events.append(ev->type());
         return QWidget::event(ev);
     }

@@ -87,7 +87,7 @@ Q_SIGNALS:
     void primaryScreenChanged();
 
 protected:
-    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *e) override;
 
 private:
     Q_DISABLE_COPY(QDesktopWidget)

@@ -124,7 +124,7 @@ public:
     void calcHfw(int);
 
     void effectiveMargins(int *left, int *top, int *right, int *bottom) const;
-    QLayoutItem* replaceAt(int index, QLayoutItem*) Q_DECL_OVERRIDE;
+    QLayoutItem* replaceAt(int index, QLayoutItem*) override;
 };
 
 QBoxLayoutPrivate::~QBoxLayoutPrivate()

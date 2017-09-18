@@ -57,17 +57,17 @@ class Q_GUI_EXPORT QCocoaSystemTrayIcon : public QPlatformSystemTrayIcon
 public:
     QCocoaSystemTrayIcon() : m_sys(0) {}
 
-    void init() Q_DECL_OVERRIDE;
-    void cleanup() Q_DECL_OVERRIDE;
-    void updateIcon(const QIcon &icon) Q_DECL_OVERRIDE;
-    void updateToolTip(const QString &toolTip) Q_DECL_OVERRIDE;
-    void updateMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
-    QRect geometry() const Q_DECL_OVERRIDE;
+    void init() override;
+    void cleanup() override;
+    void updateIcon(const QIcon &icon) override;
+    void updateToolTip(const QString &toolTip) override;
+    void updateMenu(QPlatformMenu *menu) override;
+    QRect geometry() const override;
     void showMessage(const QString &title, const QString &msg,
-                     const QIcon& icon, MessageIcon iconType, int secs) Q_DECL_OVERRIDE;
+                     const QIcon& icon, MessageIcon iconType, int secs) override;
 
-    bool isSystemTrayAvailable() const Q_DECL_OVERRIDE;
-    bool supportsMessages() const Q_DECL_OVERRIDE;
+    bool isSystemTrayAvailable() const override;
+    bool supportsMessages() const override;
 
 private:
     QSystemTrayIconSys *m_sys;

@@ -198,7 +198,7 @@ public:
         : QAbstractAnimation(_d), d(_d), ignoreUpdate(false), skip(0)
     { }
 
-    int duration() const Q_DECL_OVERRIDE
+    int duration() const override
     {
         return -1;
     }
@@ -214,7 +214,7 @@ public:
     }
 
 protected:
-    void updateCurrentTime(int /*currentTime*/) Q_DECL_OVERRIDE
+    void updateCurrentTime(int /*currentTime*/) override
    {
         if (!ignoreUpdate) {
             if (++skip >= d->frameRateSkip()) {

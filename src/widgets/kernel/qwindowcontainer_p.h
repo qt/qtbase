@@ -75,7 +75,7 @@ public:
     static void parentWasLowered(QWidget *parent);
 
 protected:
-    bool event(QEvent *ev) Q_DECL_OVERRIDE;
+    bool event(QEvent *ev) override;
 
 private slots:
     void focusWindowChanged(QWindow *focusWindow);

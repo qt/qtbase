@@ -114,12 +114,12 @@ public:
     GLuint id() const { return m_id; }
 
 protected:
-    void invalidateResource() Q_DECL_OVERRIDE
+    void invalidateResource() override
     {
         m_id = 0;
     }
 
-    void freeResource(QOpenGLContext *context) Q_DECL_OVERRIDE;
+    void freeResource(QOpenGLContext *context) override;
 
 private:
     GLuint m_id;

@@ -49,14 +49,14 @@ class QGtk3Theme : public QGnomeTheme
 public:
     QGtk3Theme();
 
-    virtual QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
-    virtual QString gtkFontName() const Q_DECL_OVERRIDE;
+    virtual QVariant themeHint(ThemeHint hint) const override;
+    virtual QString gtkFontName() const override;
 
-    bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
-    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
+    bool usePlatformNativeDialog(DialogType type) const override;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
-    QPlatformMenu* createPlatformMenu() const Q_DECL_OVERRIDE;
-    QPlatformMenuItem* createPlatformMenuItem() const Q_DECL_OVERRIDE;
+    QPlatformMenu* createPlatformMenu() const override;
+    QPlatformMenuItem* createPlatformMenuItem() const override;
 
     static const char *name;
 };

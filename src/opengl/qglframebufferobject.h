@@ -84,7 +84,7 @@ public:
     QImage toImage() const;
     Attachment attachment() const;
 
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const override;
     GLuint handle() const;
 
     static bool bindDefault();
@@ -101,8 +101,8 @@ public:
                                 GLenum filter = GL_NEAREST);
 
 protected:
-    int metric(PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
-    int devType() const Q_DECL_OVERRIDE { return QInternal::FramebufferObject; }
+    int metric(PaintDeviceMetric metric) const override;
+    int devType() const override { return QInternal::FramebufferObject; }
 
 private:
     Q_DISABLE_COPY(QGLFramebufferObject)

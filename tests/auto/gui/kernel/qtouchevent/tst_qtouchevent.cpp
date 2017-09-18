@@ -63,7 +63,7 @@ public:
         deleteInTouchBegin = deleteInTouchUpdate = deleteInTouchEnd = false;
     }
 
-    bool event(QEvent *event) Q_DECL_OVERRIDE
+    bool event(QEvent *event) override
     {
         switch (event->type()) {
         case QEvent::TouchBegin:
@@ -140,13 +140,13 @@ public:
         deleteInTouchBegin = deleteInTouchUpdate = deleteInTouchEnd = false;
     }
 
-    QRectF boundingRect() const Q_DECL_OVERRIDE { return QRectF(0, 0, 10, 10); }
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE
+    QRectF boundingRect() const override { return QRectF(0, 0, 10, 10); }
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
         painter->fillRect(QRectF(QPointF(0, 0), boundingRect().size()), Qt::yellow);
     }
 
-    bool sceneEvent(QEvent *event) Q_DECL_OVERRIDE
+    bool sceneEvent(QEvent *event) override
     {
         switch (event->type()) {
         case QEvent::TouchBegin:
@@ -1628,7 +1628,7 @@ class WindowTouchEventFilter : public QObject
 {
     Q_OBJECT
 public:
-    bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *obj, QEvent *event) override;
     struct TouchInfo {
         QList<QTouchEvent::TouchPoint> points;
         QEvent::Type lastSeenType;

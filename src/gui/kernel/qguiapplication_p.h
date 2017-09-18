@@ -85,13 +85,13 @@ public:
     void init();
 
     void createPlatformIntegration();
-    void createEventDispatcher() Q_DECL_OVERRIDE;
-    void eventDispatcherReady() Q_DECL_OVERRIDE;
+    void createEventDispatcher() override;
+    void eventDispatcherReady() override;
 
     virtual void notifyLayoutDirectionChange();
     virtual void notifyActiveWindowChange(QWindow *previous);
 
-    virtual bool shouldQuit() Q_DECL_OVERRIDE;
+    virtual bool shouldQuit() override;
 
     bool shouldQuitInternal(const QWindowList &processedWindows);
     virtual bool tryCloseAllWindows();

@@ -62,8 +62,8 @@ public:
     explicit QCheckBox(const QString &text, QWidget *parent = Q_NULLPTR);
     ~QCheckBox();
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
 
     void setTristate(bool y = true);
     bool isTristate() const;
@@ -75,12 +75,12 @@ Q_SIGNALS:
     void stateChanged(int);
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
-    bool hitButton(const QPoint &pos) const Q_DECL_OVERRIDE;
-    void checkStateSet() Q_DECL_OVERRIDE;
-    void nextCheckState() Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
+    bool hitButton(const QPoint &pos) const override;
+    void checkStateSet() override;
+    void nextCheckState() override;
+    void paintEvent(QPaintEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
     void initStyleOption(QStyleOptionButton *option) const;
 
 

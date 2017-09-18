@@ -59,19 +59,19 @@ public:
     QCocoaFileDialogHelper();
     virtual ~QCocoaFileDialogHelper();
 
-    void exec() Q_DECL_OVERRIDE;
+    void exec() override;
 
-    bool defaultNameFilterDisables() const Q_DECL_OVERRIDE;
+    bool defaultNameFilterDisables() const override;
 
-    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) Q_DECL_OVERRIDE;
-    void hide() Q_DECL_OVERRIDE;
-    void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
-    QUrl directory() const Q_DECL_OVERRIDE;
-    void selectFile(const QUrl &filename) Q_DECL_OVERRIDE;
-    QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
-    void setFilter() Q_DECL_OVERRIDE;
-    void selectNameFilter(const QString &filter) Q_DECL_OVERRIDE;
-    QString selectedNameFilter() const Q_DECL_OVERRIDE;
+    bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) override;
+    void hide() override;
+    void setDirectory(const QUrl &directory) override;
+    QUrl directory() const override;
+    void selectFile(const QUrl &filename) override;
+    QList<QUrl> selectedFiles() const override;
+    void setFilter() override;
+    void selectNameFilter(const QString &filter) override;
+    QString selectedNameFilter() const override;
 
 public:
     bool showCocoaFilePanel(Qt::WindowModality windowModality, QWindow *parent);

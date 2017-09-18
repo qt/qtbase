@@ -125,13 +125,13 @@ public:
     void setSelectionRectVisible(bool show);
     bool isSelectionRectVisible() const;
 
-    QRect visualRect(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) Q_DECL_OVERRIDE;
-    QModelIndex indexAt(const QPoint &p) const Q_DECL_OVERRIDE;
+    QRect visualRect(const QModelIndex &index) const override;
+    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;
+    QModelIndex indexAt(const QPoint &p) const override;
 
-    void doItemsLayout() Q_DECL_OVERRIDE;
-    void reset() Q_DECL_OVERRIDE;
-    void setRootIndex(const QModelIndex &index) Q_DECL_OVERRIDE;
+    void doItemsLayout() override;
+    void reset() override;
+    void setRootIndex(const QModelIndex &index) override;
 
 Q_SIGNALS:
     void indexesMoved(const QModelIndexList &indexes);
@@ -139,53 +139,53 @@ Q_SIGNALS:
 protected:
     QListView(QListViewPrivate &, QWidget *parent = Q_NULLPTR);
 
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
 
-    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
+    void scrollContentsBy(int dx, int dy) override;
 
     void resizeContents(int width, int height);
     QSize contentsSize() const;
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) Q_DECL_OVERRIDE;
-    void rowsInserted(const QModelIndex &parent, int start, int end) Q_DECL_OVERRIDE;
-    void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end) Q_DECL_OVERRIDE;
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override;
+    void rowsInserted(const QModelIndex &parent, int start, int end) override;
+    void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end) override;
 
-    void mouseMoveEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *e) Q_DECL_OVERRIDE;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent *e) override;
 #if QT_CONFIG(wheelevent)
-    void wheelEvent(QWheelEvent *e) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *e) override;
 #endif
 
-    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *e) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *e) override;
+    void resizeEvent(QResizeEvent *e) override;
 #ifndef QT_NO_DRAGANDDROP
-    void dragMoveEvent(QDragMoveEvent *e) Q_DECL_OVERRIDE;
-    void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
-    void startDrag(Qt::DropActions supportedActions) Q_DECL_OVERRIDE;
+    void dragMoveEvent(QDragMoveEvent *e) override;
+    void dragLeaveEvent(QDragLeaveEvent *e) override;
+    void dropEvent(QDropEvent *e) override;
+    void startDrag(Qt::DropActions supportedActions) override;
 #endif // QT_NO_DRAGANDDROP
 
-    QStyleOptionViewItem viewOptions() const Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    QStyleOptionViewItem viewOptions() const override;
+    void paintEvent(QPaintEvent *e) override;
 
-    int horizontalOffset() const Q_DECL_OVERRIDE;
-    int verticalOffset() const Q_DECL_OVERRIDE;
-    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) Q_DECL_OVERRIDE;
+    int horizontalOffset() const override;
+    int verticalOffset() const override;
+    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
     QRect rectForIndex(const QModelIndex &index) const;
     void setPositionForIndex(const QPoint &position, const QModelIndex &index);
 
-    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command) Q_DECL_OVERRIDE;
-    QRegion visualRegionForSelection(const QItemSelection &selection) const Q_DECL_OVERRIDE;
-    QModelIndexList selectedIndexes() const Q_DECL_OVERRIDE;
+    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command) override;
+    QRegion visualRegionForSelection(const QItemSelection &selection) const override;
+    QModelIndexList selectedIndexes() const override;
 
-    void updateGeometries() Q_DECL_OVERRIDE;
+    void updateGeometries() override;
 
-    bool isIndexHidden(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    bool isIndexHidden(const QModelIndex &index) const override;
 
-    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) Q_DECL_OVERRIDE;
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous) Q_DECL_OVERRIDE;
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) override;
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
 
-    QSize viewportSizeHint() const Q_DECL_OVERRIDE;
+    QSize viewportSizeHint() const override;
 
 private:
     int visualIndex(const QModelIndex &index) const;

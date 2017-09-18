@@ -54,13 +54,13 @@ public:
     QHaikuClipboard();
     ~QHaikuClipboard();
 
-    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
-    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
-    bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
-    bool ownsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
+    void setMimeData(QMimeData *data, QClipboard::Mode mode = QClipboard::Clipboard) override;
+    bool supportsMode(QClipboard::Mode mode) const override;
+    bool ownsMode(QClipboard::Mode mode) const override;
 
     // override from BHandler to catch change notifications from Haiku clipboard
-    void MessageReceived(BMessage* message) Q_DECL_OVERRIDE;
+    void MessageReceived(BMessage* message) override;
 
 private:
     QMimeData *m_systemMimeData;

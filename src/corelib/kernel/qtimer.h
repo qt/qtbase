@@ -203,7 +203,7 @@ public:
 #endif
 
 protected:
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) override;
 
 private:
     Q_DISABLE_COPY(QTimer)

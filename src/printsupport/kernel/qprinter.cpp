@@ -231,7 +231,7 @@ public:
     virtual ~QPrinterPagedPaintDevicePrivate()
     {}
 
-    bool setPageLayout(const QPageLayout &newPageLayout) Q_DECL_OVERRIDE
+    bool setPageLayout(const QPageLayout &newPageLayout) override
     {
         if (pd->paintEngine->type() != QPaintEngine::Pdf
             && pd->printEngine->printerState() == QPrinter::Active) {
@@ -248,7 +248,7 @@ public:
         return pageLayout().isEquivalentTo(newPageLayout);
     }
 
-    bool setPageSize(const QPageSize &pageSize) Q_DECL_OVERRIDE
+    bool setPageSize(const QPageSize &pageSize) override
     {
         if (pd->paintEngine->type() != QPaintEngine::Pdf
             && pd->printEngine->printerState() == QPrinter::Active) {
@@ -266,7 +266,7 @@ public:
         return pageLayout().pageSize().isEquivalentTo(pageSize);
     }
 
-    bool setPageOrientation(QPageLayout::Orientation orientation) Q_DECL_OVERRIDE
+    bool setPageOrientation(QPageLayout::Orientation orientation) override
     {
         // Set the print engine value
         pd->setProperty(QPrintEngine::PPK_Orientation, orientation);
@@ -277,12 +277,12 @@ public:
         return pageLayout().orientation() == orientation;
     }
 
-    bool setPageMargins(const QMarginsF &margins) Q_DECL_OVERRIDE
+    bool setPageMargins(const QMarginsF &margins) override
     {
         return setPageMargins(margins, pageLayout().units());
     }
 
-    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) Q_DECL_OVERRIDE
+    bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) override
     {
         // Try to set print engine margins
         QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(margins, units);
@@ -294,7 +294,7 @@ public:
         return pageLayout().margins() == margins && pageLayout().units() == units;
     }
 
-    QPageLayout pageLayout() const Q_DECL_OVERRIDE
+    QPageLayout pageLayout() const override
     {
         return pd->printEngine->property(QPrintEngine::PPK_QPageLayout).value<QPageLayout>();
     }

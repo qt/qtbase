@@ -68,8 +68,8 @@ public:
 
     QPrinter *printer();
 
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
-    void done(int result) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) override;
+    void done(int result) override;
 
 Q_SIGNALS:
     void paintRequested(QPrinter *printer);

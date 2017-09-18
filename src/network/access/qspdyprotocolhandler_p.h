@@ -101,9 +101,9 @@ public:
 
     Q_DECLARE_FLAGS(SETTINGS_ID_Flags, SETTINGS_ID_Flag)
 
-    virtual void _q_receiveReply() Q_DECL_OVERRIDE;
-    virtual void _q_readyRead() Q_DECL_OVERRIDE;
-    virtual bool sendRequest() Q_DECL_OVERRIDE;
+    virtual void _q_receiveReply() override;
+    virtual void _q_readyRead() override;
+    virtual bool sendRequest() override;
 
 private slots:
     void _q_uploadDataReadyRead();

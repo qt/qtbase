@@ -64,9 +64,9 @@ public:
     QHttpProtocolHandler(QHttpNetworkConnectionChannel *channel);
 
 private:
-    virtual void _q_receiveReply() Q_DECL_OVERRIDE;
-    virtual void _q_readyRead() Q_DECL_OVERRIDE;
-    virtual bool sendRequest() Q_DECL_OVERRIDE;
+    virtual void _q_receiveReply() override;
+    virtual void _q_readyRead() override;
+    virtual bool sendRequest() override;
 };
 
 QT_END_NAMESPACE

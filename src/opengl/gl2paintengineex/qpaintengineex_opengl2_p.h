@@ -108,37 +108,37 @@ public:
     QGL2PaintEngineEx();
     ~QGL2PaintEngineEx();
 
-    bool begin(QPaintDevice *device) Q_DECL_OVERRIDE;
+    bool begin(QPaintDevice *device) override;
     void ensureActive();
-    bool end() Q_DECL_OVERRIDE;
+    bool end() override;
 
-    virtual void clipEnabledChanged() Q_DECL_OVERRIDE;
-    virtual void penChanged() Q_DECL_OVERRIDE;
-    virtual void brushChanged() Q_DECL_OVERRIDE;
-    virtual void brushOriginChanged() Q_DECL_OVERRIDE;
-    virtual void opacityChanged() Q_DECL_OVERRIDE;
-    virtual void compositionModeChanged() Q_DECL_OVERRIDE;
-    virtual void renderHintsChanged() Q_DECL_OVERRIDE;
-    virtual void transformChanged() Q_DECL_OVERRIDE;
+    virtual void clipEnabledChanged() override;
+    virtual void penChanged() override;
+    virtual void brushChanged() override;
+    virtual void brushOriginChanged() override;
+    virtual void opacityChanged() override;
+    virtual void compositionModeChanged() override;
+    virtual void renderHintsChanged() override;
+    virtual void transformChanged() override;
 
-    virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
+    virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) override;
     virtual void drawPixmapFragments(const QPainter::PixmapFragment *fragments, int fragmentCount, const QPixmap &pixmap,
-                                     QPainter::PixmapFragmentHints hints) Q_DECL_OVERRIDE;
+                                     QPainter::PixmapFragmentHints hints) override;
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
-                           Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
-    virtual void drawTextItem(const QPointF &p, const QTextItem &textItem) Q_DECL_OVERRIDE;
-    virtual void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
-    virtual void stroke(const QVectorPath &path, const QPen &pen) Q_DECL_OVERRIDE;
-    virtual void clip(const QVectorPath &path, Qt::ClipOperation op) Q_DECL_OVERRIDE;
+                           Qt::ImageConversionFlags flags = Qt::AutoColor) override;
+    virtual void drawTextItem(const QPointF &p, const QTextItem &textItem) override;
+    virtual void fill(const QVectorPath &path, const QBrush &brush) override;
+    virtual void stroke(const QVectorPath &path, const QPen &pen) override;
+    virtual void clip(const QVectorPath &path, Qt::ClipOperation op) override;
 
-    virtual void drawStaticTextItem(QStaticTextItem *textItem) Q_DECL_OVERRIDE;
+    virtual void drawStaticTextItem(QStaticTextItem *textItem) override;
 
     bool drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
 
-    Type type() const Q_DECL_OVERRIDE { return OpenGL2; }
+    Type type() const override { return OpenGL2; }
 
-    virtual void setState(QPainterState *s) Q_DECL_OVERRIDE;
-    virtual QPainterState *createState(QPainterState *orig) const Q_DECL_OVERRIDE;
+    virtual void setState(QPainterState *s) override;
+    virtual QPainterState *createState(QPainterState *orig) const override;
     inline QGL2PaintEngineState *state() {
         return static_cast<QGL2PaintEngineState *>(QPaintEngineEx::state());
     }
@@ -146,16 +146,16 @@ public:
         return static_cast<const QGL2PaintEngineState *>(QPaintEngineEx::state());
     }
 
-    void beginNativePainting() Q_DECL_OVERRIDE;
-    void endNativePainting() Q_DECL_OVERRIDE;
+    void beginNativePainting() override;
+    void endNativePainting() override;
 
     void invalidateState();
 
     void setRenderTextActive(bool);
 
     bool isNativePaintingActive() const;
-    bool requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const Q_DECL_OVERRIDE { return false; }
-    bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const Q_DECL_OVERRIDE;
+    bool requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const override { return false; }
+    bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const override;
 
     void setTranslateZ(GLfloat z);
 
@@ -244,7 +244,7 @@ public:
     void updateClipScissorTest();
     void setScissor(const QRect &rect);
     void regenerateClip();
-    void systemStateChanged() Q_DECL_OVERRIDE;
+    void systemStateChanged() override;
 
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }

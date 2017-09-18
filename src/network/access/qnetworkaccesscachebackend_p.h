@@ -65,12 +65,12 @@ public:
     QNetworkAccessCacheBackend();
     ~QNetworkAccessCacheBackend();
 
-    void open() Q_DECL_OVERRIDE;
-    void closeDownstreamChannel() Q_DECL_OVERRIDE;
+    void open() override;
+    void closeDownstreamChannel() override;
     void closeUpstreamChannel();
 
     void upstreamReadyRead();
-    void downstreamReadyWrite() Q_DECL_OVERRIDE;
+    void downstreamReadyWrite() override;
 
 private:
     bool sendCacheContents();

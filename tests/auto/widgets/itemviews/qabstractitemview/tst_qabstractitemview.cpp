@@ -86,7 +86,7 @@ public:
     GeometriesTestView() : QTableView(), updateGeometriesCalled(false) {}
     bool updateGeometriesCalled;
 protected slots:
-    void updateGeometries() Q_DECL_OVERRIDE { updateGeometriesCalled = true; QTableView::updateGeometries(); }
+    void updateGeometries() override { updateGeometriesCalled = true; QTableView::updateGeometries(); }
 };
 
 class tst_QAbstractItemView : public QObject
@@ -1562,7 +1562,7 @@ public:
     QItemDelegate(parent)
   {}
 
-  void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE {
+  void setEditorData(QWidget *editor, const QModelIndex &index) const override {
       Q_UNUSED(index);
       static bool w = true;
       editor->setEnabled(w);
@@ -2006,7 +2006,7 @@ void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
         {
         }
 
-        void setSelectionModel(QItemSelectionModel *model) Q_DECL_OVERRIDE
+        void setSelectionModel(QItemSelectionModel *model) override
         {
             m_deselectedMustBeEmpty = !selectionModel() || !model || selectionModel()->model() != model->model();
             QListView::setSelectionModel(model);
@@ -2016,7 +2016,7 @@ void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
         bool selectionChangedOk() const { return m_selectionChangedOk; }
 
     protected:
-        bool viewportEvent(QEvent *event) Q_DECL_OVERRIDE
+        bool viewportEvent(QEvent *event) override
         {
             if (event->type() == QEvent::Paint)
                 ++m_paintEventsCount;
@@ -2024,7 +2024,7 @@ void tst_QAbstractItemView::QTBUG50535_update_on_new_selection_model()
         }
 
         void selectionChanged(const QItemSelection &selected,
-                              const QItemSelection &deselected) Q_DECL_OVERRIDE
+                              const QItemSelection &deselected) override
         {
             if (m_deselectedMustBeEmpty && !deselected.isEmpty())
                 m_selectionChangedOk = false;
@@ -2147,7 +2147,7 @@ signals:
     void setSelectionCalled(const QRect &rect);
 
 protected:
-    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags flags) Q_DECL_OVERRIDE
+    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags flags) override
     {
         emit setSelectionCalled(rect);
         QListView::setSelection(rect, flags);

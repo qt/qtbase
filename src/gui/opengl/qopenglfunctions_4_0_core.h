@@ -65,7 +65,7 @@ public:
     QOpenGLFunctions_4_0_Core();
     ~QOpenGLFunctions_4_0_Core();
 
-    bool initializeOpenGLFunctions() Q_DECL_OVERRIDE;
+    bool initializeOpenGLFunctions() override;
 
     // OpenGL 1.0 core functions
     void glViewport(GLint x, GLint y, GLsizei width, GLsizei height);

@@ -106,7 +106,7 @@ signals:
     void entryReady(QNetworkAccessCache::CacheableObject *);
 
 protected:
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) override;
 
 private:
     // idea copied from qcache.h

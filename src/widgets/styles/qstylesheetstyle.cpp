@@ -1451,7 +1451,7 @@ class QStyleSheetStyleSelector : public StyleSelector
 public:
     QStyleSheetStyleSelector() { }
 
-    QStringList nodeNames(NodePtr node) const Q_DECL_OVERRIDE
+    QStringList nodeNames(NodePtr node) const override
     {
         if (isNullNode(node))
             return QStringList();
@@ -1467,7 +1467,7 @@ public:
         } while (metaObject != 0);
         return result;
     }
-    QString attribute(NodePtr node, const QString& name) const Q_DECL_OVERRIDE
+    QString attribute(NodePtr node, const QString& name) const override
     {
         if (isNullNode(node))
             return QString();
@@ -1504,7 +1504,7 @@ public:
         cache[name] = valueStr;
         return valueStr;
     }
-    bool nodeNameEquals(NodePtr node, const QString& nodeName) const Q_DECL_OVERRIDE
+    bool nodeNameEquals(NodePtr node, const QString& nodeName) const override
     {
         if (isNullNode(node))
             return false;
@@ -1527,19 +1527,19 @@ public:
         } while (metaObject != 0);
         return false;
     }
-    bool hasAttributes(NodePtr) const Q_DECL_OVERRIDE
+    bool hasAttributes(NodePtr) const override
     { return true; }
-    QStringList nodeIds(NodePtr node) const Q_DECL_OVERRIDE
+    QStringList nodeIds(NodePtr node) const override
     { return isNullNode(node) ? QStringList() : QStringList(OBJECT_PTR(node)->objectName()); }
-    bool isNullNode(NodePtr node) const Q_DECL_OVERRIDE
+    bool isNullNode(NodePtr node) const override
     { return node.ptr == 0; }
-    NodePtr parentNode(NodePtr node) const Q_DECL_OVERRIDE
+    NodePtr parentNode(NodePtr node) const override
     { NodePtr n; n.ptr = isNullNode(node) ? 0 : parentObject(OBJECT_PTR(node)); return n; }
-    NodePtr previousSiblingNode(NodePtr) const Q_DECL_OVERRIDE
+    NodePtr previousSiblingNode(NodePtr) const override
     { NodePtr n; n.ptr = 0; return n; }
-    NodePtr duplicateNode(NodePtr node) const Q_DECL_OVERRIDE
+    NodePtr duplicateNode(NodePtr node) const override
     { return node; }
-    void freeNode(NodePtr) const Q_DECL_OVERRIDE
+    void freeNode(NodePtr) const override
     { }
 
 private:

@@ -51,7 +51,7 @@ class QStackedLayoutPrivate : public QLayoutPrivate
     Q_DECLARE_PUBLIC(QStackedLayout)
 public:
     QStackedLayoutPrivate() : index(-1), stackingMode(QStackedLayout::StackOne) {}
-    QLayoutItem* replaceAt(int index, QLayoutItem *newitem) Q_DECL_OVERRIDE;
+    QLayoutItem* replaceAt(int index, QLayoutItem *newitem) override;
     QList<QLayoutItem *> list;
     int index;
     QStackedLayout::StackingMode stackingMode;

@@ -53,13 +53,13 @@ class HaikuViewProxy : public QObject, public BView
 public:
     explicit HaikuViewProxy(BWindow *window, QObject *parent = Q_NULLPTR);
 
-    void MessageReceived(BMessage *message) Q_DECL_OVERRIDE;
-    void Draw(BRect updateRect) Q_DECL_OVERRIDE;
-    void MouseDown(BPoint pos) Q_DECL_OVERRIDE;
-    void MouseUp(BPoint pos) Q_DECL_OVERRIDE;
-    void MouseMoved(BPoint pos, uint32 code, const BMessage *dragMessage) Q_DECL_OVERRIDE;
-    void KeyDown(const char *bytes, int32 numBytes) Q_DECL_OVERRIDE;
-    void KeyUp(const char *bytes, int32 numBytes) Q_DECL_OVERRIDE;
+    void MessageReceived(BMessage *message) override;
+    void Draw(BRect updateRect) override;
+    void MouseDown(BPoint pos) override;
+    void MouseUp(BPoint pos) override;
+    void MouseMoved(BPoint pos, uint32 code, const BMessage *dragMessage) override;
+    void KeyDown(const char *bytes, int32 numBytes) override;
+    void KeyUp(const char *bytes, int32 numBytes) override;
 
 Q_SIGNALS:
     void mouseEvent(const QPoint &localPosition, const QPoint &globalPosition, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::MouseEventSource source);

@@ -58,10 +58,10 @@ public:
     QIOSClipboard();
     ~QIOSClipboard();
 
-    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
-    void setMimeData(QMimeData *mimeData, QClipboard::Mode mode = QClipboard::Clipboard) Q_DECL_OVERRIDE;
-    bool supportsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
-    bool ownsMode(QClipboard::Mode mode) const Q_DECL_OVERRIDE;
+    QMimeData *mimeData(QClipboard::Mode mode = QClipboard::Clipboard) override;
+    void setMimeData(QMimeData *mimeData, QClipboard::Mode mode = QClipboard::Clipboard) override;
+    bool supportsMode(QClipboard::Mode mode) const override;
+    bool ownsMode(QClipboard::Mode mode) const override;
 
 private:
     QUIClipboard *m_clipboard;

@@ -61,7 +61,7 @@ class QDeviceDiscoveryStatic : public QDeviceDiscovery
 
 public:
     QDeviceDiscoveryStatic(QDeviceTypes types, QObject *parent = 0);
-    QStringList scanConnectedDevices() Q_DECL_OVERRIDE;
+    QStringList scanConnectedDevices() override;
 
 private:
     bool checkDeviceType(const QString &device);

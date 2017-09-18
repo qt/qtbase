@@ -49,7 +49,7 @@ class QGraphicsSceneInsertItemBspTreeVisitor : public QGraphicsSceneBspTreeVisit
 public:
     QGraphicsItem *item;
 
-    void visit(QList<QGraphicsItem *> *items) Q_DECL_OVERRIDE
+    void visit(QList<QGraphicsItem *> *items) override
     { items->prepend(item); }
 };
 
@@ -58,7 +58,7 @@ class QGraphicsSceneRemoveItemBspTreeVisitor : public QGraphicsSceneBspTreeVisit
 public:
     QGraphicsItem *item;
 
-    void visit(QList<QGraphicsItem *> *items) Q_DECL_OVERRIDE
+    void visit(QList<QGraphicsItem *> *items) override
     { items->removeAll(item); }
 };
 
@@ -68,7 +68,7 @@ public:
     QList<QGraphicsItem *> *foundItems;
     bool onlyTopLevelItems;
 
-    void visit(QList<QGraphicsItem *> *items) Q_DECL_OVERRIDE
+    void visit(QList<QGraphicsItem *> *items) override
     {
         for (int i = 0; i < items->size(); ++i) {
             QGraphicsItem *item = items->at(i);

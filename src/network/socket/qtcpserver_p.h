@@ -93,13 +93,13 @@ public:
     virtual void configureCreatedSocket();
 
     // from QAbstractSocketEngineReceiver
-    void readNotification() Q_DECL_OVERRIDE;
-    void closeNotification() Q_DECL_OVERRIDE { readNotification(); }
-    void writeNotification() Q_DECL_OVERRIDE {}
-    void exceptionNotification() Q_DECL_OVERRIDE {}
-    void connectionNotification() Q_DECL_OVERRIDE {}
+    void readNotification() override;
+    void closeNotification() override { readNotification(); }
+    void writeNotification() override {}
+    void exceptionNotification() override {}
+    void connectionNotification() override {}
 #ifndef QT_NO_NETWORKPROXY
-    void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *) Q_DECL_OVERRIDE {}
+    void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *) override {}
 #endif
 
 };

@@ -56,7 +56,7 @@ public:
     QWindowsDirect2DWindow(QWindow *window, const QWindowsWindowData &data);
     ~QWindowsDirect2DWindow();
 
-    void setWindowFlags(Qt::WindowFlags flags) Q_DECL_OVERRIDE;
+    void setWindowFlags(Qt::WindowFlags flags) override;
 
     QPixmap *pixmap();
     void flush(QWindowsDirect2DBitmap *bitmap, const QRegion &region, const QPoint &offset);

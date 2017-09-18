@@ -58,11 +58,11 @@ public:
                                 QWindowsDirect2DPaintEngine::Flags paintFlags = QWindowsDirect2DPaintEngine::NoFlag);
     ~QWindowsDirect2DPaintDevice();
 
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
-    int devType() const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const override;
+    int devType() const override;
 
 protected:
-    int metric(PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
+    int metric(PaintDeviceMetric metric) const override;
 
 private:
     QScopedPointer<QWindowsDirect2DPaintDevicePrivate> d_ptr;

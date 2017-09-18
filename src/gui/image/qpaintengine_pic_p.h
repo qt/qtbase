@@ -68,10 +68,10 @@ public:
     QPicturePaintEngine();
     ~QPicturePaintEngine();
 
-    bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
-    bool end() Q_DECL_OVERRIDE;
+    bool begin(QPaintDevice *pdev) override;
+    bool end() override;
 
-    void updateState(const QPaintEngineState &state) Q_DECL_OVERRIDE;
+    void updateState(const QPaintEngineState &state) override;
 
     void updatePen(const QPen &pen);
     void updateBrush(const QBrush &brush);
@@ -86,18 +86,18 @@ public:
     void updateClipEnabled(bool enabled);
     void updateOpacity(qreal opacity);
 
-    void drawEllipse(const QRectF &rect) Q_DECL_OVERRIDE;
-    void drawPath(const QPainterPath &path) Q_DECL_OVERRIDE;
-    void drawPolygon(const QPointF *points, int numPoints, PolygonDrawMode mode) Q_DECL_OVERRIDE;
+    void drawEllipse(const QRectF &rect) override;
+    void drawPath(const QPainterPath &path) override;
+    void drawPolygon(const QPointF *points, int numPoints, PolygonDrawMode mode) override;
     using QPaintEngine::drawPolygon;
 
-    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
-    void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) Q_DECL_OVERRIDE;
+    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) override;
+    void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) override;
     void drawImage(const QRectF &r, const QImage &image, const QRectF &sr,
-                   Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
-    void drawTextItem(const QPointF &p, const QTextItem &ti) Q_DECL_OVERRIDE;
+                   Qt::ImageConversionFlags flags = Qt::AutoColor) override;
+    void drawTextItem(const QPointF &p, const QTextItem &ti) override;
 
-    Type type() const Q_DECL_OVERRIDE { return Picture; }
+    Type type() const override { return Picture; }
 
 protected:
     QPicturePaintEngine(QPaintEnginePrivate &dptr);

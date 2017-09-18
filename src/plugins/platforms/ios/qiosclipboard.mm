@@ -138,8 +138,8 @@ public:
     QIOSMimeData(QClipboard::Mode mode) : QMimeData(), m_mode(mode) { }
     ~QIOSMimeData() { }
 
-    QStringList formats() const Q_DECL_OVERRIDE;
-    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const Q_DECL_OVERRIDE;
+    QStringList formats() const override;
+    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
 
 private:
     const QClipboard::Mode m_mode;

@@ -94,7 +94,7 @@ public:
         if (contentStream)
             contentStream->close();
     }
-    virtual void addFile(const QString &, const QString &, const QByteArray &) Q_DECL_OVERRIDE
+    virtual void addFile(const QString &, const QString &, const QByteArray &) override
     {
         // we ignore this...
     }
@@ -137,7 +137,7 @@ public:
         zip.close();
     }
 
-    virtual void addFile(const QString &fileName, const QString &mimeType, const QByteArray &bytes) Q_DECL_OVERRIDE
+    virtual void addFile(const QString &fileName, const QString &mimeType, const QByteArray &bytes) override
     {
         zip.addFile(fileName, bytes);
         addFile(fileName, mimeType);

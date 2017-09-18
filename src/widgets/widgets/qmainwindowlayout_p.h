@@ -345,8 +345,8 @@ public:
     QList<int> currentGapPos;
 
 protected:
-    bool event(QEvent *) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent*) Q_DECL_OVERRIDE;
+    bool event(QEvent *) override;
+    void paintEvent(QPaintEvent*) override;
 
 private:
     QSize m_removedFrameSize;
@@ -358,9 +358,9 @@ class QDockWidgetGroupWindowItem : public QWidgetItem
 {
 public:
     explicit QDockWidgetGroupWindowItem(QDockWidgetGroupWindow *parent) : QWidgetItem(parent) {}
-    QSize minimumSize() const Q_DECL_OVERRIDE { return lay()->minimumSize(); }
-    QSize maximumSize() const Q_DECL_OVERRIDE { return lay()->maximumSize(); }
-    QSize sizeHint() const Q_DECL_OVERRIDE { return lay()->sizeHint(); }
+    QSize minimumSize() const override { return lay()->minimumSize(); }
+    QSize maximumSize() const override { return lay()->maximumSize(); }
+    QSize sizeHint() const override { return lay()->sizeHint(); }
 
 private:
     QLayout *lay() const { return const_cast<QDockWidgetGroupWindowItem *>(this)->widget()->layout(); }
@@ -533,17 +533,17 @@ public:
 
     // QLayout interface
 
-    void addItem(QLayoutItem *item) Q_DECL_OVERRIDE;
-    void setGeometry(const QRect &r) Q_DECL_OVERRIDE;
-    QLayoutItem *itemAt(int index) const Q_DECL_OVERRIDE;
-    QLayoutItem *takeAt(int index) Q_DECL_OVERRIDE;
-    int count() const Q_DECL_OVERRIDE;
+    void addItem(QLayoutItem *item) override;
+    void setGeometry(const QRect &r) override;
+    QLayoutItem *itemAt(int index) const override;
+    QLayoutItem *takeAt(int index) override;
+    int count() const override;
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    QSize minimumSize() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
+    QSize minimumSize() const override;
     mutable QSize szHint;
     mutable QSize minSize;
-    void invalidate() Q_DECL_OVERRIDE;
+    void invalidate() override;
 
     // animations
 

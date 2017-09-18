@@ -70,7 +70,7 @@ class QRasterWindowPrivate : public QPaintDeviceWindowPrivate
 {
     Q_DECLARE_PUBLIC(QRasterWindow)
 public:
-    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE
+    void beginPaint(const QRegion &region) override
     {
         Q_Q(QRasterWindow);
         const QSize size = q->size();
@@ -81,12 +81,12 @@ public:
         backingstore->beginPaint(region);
     }
 
-    void endPaint() Q_DECL_OVERRIDE
+    void endPaint() override
     {
         backingstore->endPaint();
     }
 
-    void flush(const QRegion &region) Q_DECL_OVERRIDE
+    void flush(const QRegion &region) override
     {
         Q_Q(QRasterWindow);
         backingstore->flush(region, q);

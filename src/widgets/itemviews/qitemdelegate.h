@@ -68,21 +68,21 @@ public:
     // painting
     void paint(QPainter *painter,
                const QStyleOptionViewItem &option,
-               const QModelIndex &index) const Q_DECL_OVERRIDE;
+               const QModelIndex &index) const override;
     QSize sizeHint(const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const Q_DECL_OVERRIDE;
+                   const QModelIndex &index) const override;
 
     // editing
     QWidget *createEditor(QWidget *parent,
                           const QStyleOptionViewItem &option,
-                          const QModelIndex &index) const Q_DECL_OVERRIDE;
+                          const QModelIndex &index) const override;
 
-    void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE;
-    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const Q_DECL_OVERRIDE;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
     void updateEditorGeometry(QWidget *editor,
                               const QStyleOptionViewItem &option,
-                              const QModelIndex &index) const Q_DECL_OVERRIDE;
+                              const QModelIndex &index) const override;
 
     // editor factory
     QItemEditorFactory *itemEditorFactory() const;
@@ -105,9 +105,9 @@ protected:
 
     QRect rect(const QStyleOptionViewItem &option, const QModelIndex &index, int role) const;
 
-    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *object, QEvent *event) override;
     bool editorEvent(QEvent *event, QAbstractItemModel *model,
-                     const QStyleOptionViewItem &option, const QModelIndex &index) Q_DECL_OVERRIDE;
+                     const QStyleOptionViewItem &option, const QModelIndex &index) override;
 
     QStyleOptionViewItem setOptions(const QModelIndex &index,
                                     const QStyleOptionViewItem &option) const;

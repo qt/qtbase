@@ -463,7 +463,7 @@ public:
         enum Type { ScrollUp, ScrollDown };
         ScrollerTearOffItem(Type type, QMenuPrivate *mPrivate,
                             QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-        void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+        void paintEvent(QPaintEvent *e) override;
         void updateScrollerRects(const QRect &rect);
 
     private:

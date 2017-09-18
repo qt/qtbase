@@ -63,7 +63,7 @@ public:
 
     ~QFontEngineMultiFontConfig();
 
-    bool shouldLoadFontEngineForCharacter(int at, uint ucs4) const Q_DECL_OVERRIDE;
+    bool shouldLoadFontEngineForCharacter(int at, uint ucs4) const override;
 private:
     FcPattern* getMatchPatternForFallback(int at) const;
 

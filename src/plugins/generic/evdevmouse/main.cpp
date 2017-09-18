@@ -50,7 +50,7 @@ class QEvdevMousePlugin : public QGenericPlugin
 public:
     QEvdevMousePlugin();
 
-    QObject* create(const QString &key, const QString &specification) Q_DECL_OVERRIDE;
+    QObject* create(const QString &key, const QString &specification) override;
 };
 
 QEvdevMousePlugin::QEvdevMousePlugin()

@@ -55,8 +55,8 @@ class QOffscreenCursor : public QPlatformCursor
 public:
     QOffscreenCursor() : m_pos(10, 10) {}
 
-    QPoint pos() const Q_DECL_OVERRIDE { return m_pos; }
-    void setPos(const QPoint &pos) Q_DECL_OVERRIDE
+    QPoint pos() const override { return m_pos; }
+    void setPos(const QPoint &pos) override
     {
         m_pos = pos;
         const QWindowList wl = QGuiApplication::topLevelWindows();
@@ -82,7 +82,7 @@ public:
         QOffscreenScreen::windowContainingCursor = containing ? containing->handle() : 0;
     }
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor *windowCursor, QWindow *window) Q_DECL_OVERRIDE
+    void changeCursor(QCursor *windowCursor, QWindow *window) override
     {
         Q_UNUSED(windowCursor);
         Q_UNUSED(window);

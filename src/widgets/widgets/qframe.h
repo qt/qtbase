@@ -69,7 +69,7 @@ public:
 
     int frameWidth() const;
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
 
     enum Shape {
         NoFrame  = 0, // no frame
@@ -108,9 +108,9 @@ public:
     void setFrameRect(const QRect &);
 
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
+    void paintEvent(QPaintEvent *) override;
+    void changeEvent(QEvent *) override;
     void drawFrame(QPainter *);
 
 

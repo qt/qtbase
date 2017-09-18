@@ -3461,12 +3461,12 @@ void tst_QGraphicsWidget::QTBUG_45867_send_itemChildAddedChange_to_parent()
         {
         }
 
-        QRectF boundingRect() const Q_DECL_OVERRIDE { return QRectF(); }
+        QRectF boundingRect() const override { return QRectF(); }
 
-        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) Q_DECL_OVERRIDE {}
+        void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) override {}
 
     protected:
-        QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE
+        QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) override
         {
             if (change == QGraphicsItem::ItemChildAddedChange)
                 ++m_itemChildAddedChangeNotificationsCount;

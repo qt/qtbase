@@ -135,23 +135,23 @@ public:
     QPSQLResult(const QPSQLDriver *db);
     ~QPSQLResult();
 
-    QVariant handle() const Q_DECL_OVERRIDE;
-    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
+    QVariant handle() const override;
+    void virtual_hook(int id, void *data) override;
 
 protected:
     void cleanup();
-    bool fetch(int i) Q_DECL_OVERRIDE;
-    bool fetchFirst() Q_DECL_OVERRIDE;
-    bool fetchLast() Q_DECL_OVERRIDE;
-    QVariant data(int i) Q_DECL_OVERRIDE;
-    bool isNull(int field) Q_DECL_OVERRIDE;
-    bool reset (const QString &query) Q_DECL_OVERRIDE;
-    int size() Q_DECL_OVERRIDE;
-    int numRowsAffected() Q_DECL_OVERRIDE;
-    QSqlRecord record() const Q_DECL_OVERRIDE;
-    QVariant lastInsertId() const Q_DECL_OVERRIDE;
-    bool prepare(const QString &query) Q_DECL_OVERRIDE;
-    bool exec() Q_DECL_OVERRIDE;
+    bool fetch(int i) override;
+    bool fetchFirst() override;
+    bool fetchLast() override;
+    QVariant data(int i) override;
+    bool isNull(int field) override;
+    bool reset (const QString &query) override;
+    int size() override;
+    int numRowsAffected() override;
+    QSqlRecord record() const override;
+    QVariant lastInsertId() const override;
+    bool prepare(const QString &query) override;
+    bool exec() override;
 };
 
 class QPSQLDriverPrivate : public QSqlDriverPrivate
@@ -236,7 +236,7 @@ public:
         preparedQueriesEnabled(false)
     { }
 
-    QString fieldSerial(int i) const Q_DECL_OVERRIDE { return QLatin1Char('$') + QString::number(i + 1); }
+    QString fieldSerial(int i) const override { return QLatin1Char('$') + QString::number(i + 1); }
     void deallocatePreparedStmt();
 
     PGresult *result;

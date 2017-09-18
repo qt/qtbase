@@ -216,13 +216,13 @@ struct QOpenGLFunctionsPrivateEx : public QOpenGLExtensionsPrivate, public QOpen
         , m_extensions(-1)
     {}
 
-    void invalidateResource() Q_DECL_OVERRIDE
+    void invalidateResource() override
     {
         m_features = -1;
         m_extensions = -1;
     }
 
-    void freeResource(QOpenGLContext *) Q_DECL_OVERRIDE
+    void freeResource(QOpenGLContext *) override
     {
         // no gl resources to free
     }

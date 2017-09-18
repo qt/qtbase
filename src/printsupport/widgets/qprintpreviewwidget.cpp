@@ -64,13 +64,13 @@ public:
         setCacheMode(DeviceCoordinateCache);
     }
 
-    QRectF boundingRect() const Q_DECL_OVERRIDE
+    QRectF boundingRect() const override
     { return brect; }
 
     inline int pageNumber() const
     { return pageNum; }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) Q_DECL_OVERRIDE;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget) override;
 
 private:
     int pageNum;
@@ -156,7 +156,7 @@ signals:
     void resized();
 
 protected:
-    void resizeEvent(QResizeEvent* e) Q_DECL_OVERRIDE
+    void resizeEvent(QResizeEvent* e) override
     {
         {
             const QSignalBlocker blocker(verticalScrollBar()); // Don't change page, QTBUG-14517
@@ -165,7 +165,7 @@ protected:
         emit resized();
     }
 
-    void showEvent(QShowEvent* e) Q_DECL_OVERRIDE
+    void showEvent(QShowEvent* e) override
     {
         QGraphicsView::showEvent(e);
         emit resized();

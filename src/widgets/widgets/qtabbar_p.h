@@ -75,7 +75,7 @@ public:
     void setPixmap(const QPixmap &pixmap);
 
 protected:
-    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *e) override;
 
 private:
     QPixmap m_pixmap;
@@ -142,9 +142,9 @@ public:
             TabBarAnimation(Tab *t, QTabBarPrivate *_priv) : tab(t), priv(_priv)
             { setEasingCurve(QEasingCurve::InOutQuad); }
 
-            void updateCurrentValue(const QVariant &current) Q_DECL_OVERRIDE;
+            void updateCurrentValue(const QVariant &current) override;
 
-            void updateState(State, State newState) Q_DECL_OVERRIDE;
+            void updateState(State, State newState) override;
         private:
             //these are needed for the callbacks
             Tab *tab;
@@ -278,12 +278,12 @@ class CloseButton : public QAbstractButton
 public:
     explicit CloseButton(QWidget *parent = 0);
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    QSize minimumSizeHint() const Q_DECL_OVERRIDE
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override
         { return sizeHint(); }
-    void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
-    void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void enterEvent(QEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 };
 
 QT_END_NAMESPACE

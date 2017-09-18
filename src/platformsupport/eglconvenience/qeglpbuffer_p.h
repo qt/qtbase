@@ -63,8 +63,8 @@ public:
                 QEGLPlatformContext::Flags flags = 0);
     ~QEGLPbuffer();
 
-    QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
-    bool isValid() const Q_DECL_OVERRIDE { return m_pbuffer != EGL_NO_SURFACE; }
+    QSurfaceFormat format() const override { return m_format; }
+    bool isValid() const override { return m_pbuffer != EGL_NO_SURFACE; }
 
     EGLSurface pbuffer() const { return m_pbuffer; }
 

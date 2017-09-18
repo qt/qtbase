@@ -91,12 +91,12 @@ public:
     QString fullServerName() const;
 
     void abort();
-    virtual bool isSequential() const Q_DECL_OVERRIDE;
-    virtual qint64 bytesAvailable() const Q_DECL_OVERRIDE;
-    virtual qint64 bytesToWrite() const Q_DECL_OVERRIDE;
-    virtual bool canReadLine() const Q_DECL_OVERRIDE;
-    virtual bool open(OpenMode openMode = ReadWrite) Q_DECL_OVERRIDE;
-    virtual void close() Q_DECL_OVERRIDE;
+    virtual bool isSequential() const override;
+    virtual qint64 bytesAvailable() const override;
+    virtual qint64 bytesToWrite() const override;
+    virtual bool canReadLine() const override;
+    virtual bool open(OpenMode openMode = ReadWrite) override;
+    virtual void close() override;
     LocalSocketError error() const;
     bool flush();
     bool isValid() const;
@@ -109,10 +109,10 @@ public:
     qintptr socketDescriptor() const;
 
     LocalSocketState state() const;
-    bool waitForBytesWritten(int msecs = 30000) Q_DECL_OVERRIDE;
+    bool waitForBytesWritten(int msecs = 30000) override;
     bool waitForConnected(int msecs = 30000);
     bool waitForDisconnected(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000) Q_DECL_OVERRIDE;
+    bool waitForReadyRead(int msecs = 30000) override;
 
 Q_SIGNALS:
     void connected();
@@ -121,8 +121,8 @@ Q_SIGNALS:
     void stateChanged(QLocalSocket::LocalSocketState socketState);
 
 protected:
-    virtual qint64 readData(char*, qint64) Q_DECL_OVERRIDE;
-    virtual qint64 writeData(const char*, qint64) Q_DECL_OVERRIDE;
+    virtual qint64 readData(char*, qint64) override;
+    virtual qint64 writeData(const char*, qint64) override;
 
 private:
     Q_DISABLE_COPY(QLocalSocket)

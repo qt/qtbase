@@ -67,48 +67,48 @@ class Q_GUI_EXPORT QBlitterPaintEngine : public QRasterPaintEngine
 public:
     QBlitterPaintEngine(QBlittablePlatformPixmap *p);
 
-    virtual QPaintEngine::Type type() const Q_DECL_OVERRIDE
+    virtual QPaintEngine::Type type() const override
     { return Blitter; }
 
-    virtual bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
-    virtual bool end() Q_DECL_OVERRIDE;
+    virtual bool begin(QPaintDevice *pdev) override;
+    virtual bool end() override;
 
     // Call down into QBlittable
-    void fill(const QVectorPath &path, const QBrush &brush) Q_DECL_OVERRIDE;
-    void fillRect(const QRectF &rect, const QBrush &brush) Q_DECL_OVERRIDE;
-    void fillRect(const QRectF &rect, const QColor &color) Q_DECL_OVERRIDE;
-    void drawRects(const QRect *rects, int rectCount) Q_DECL_OVERRIDE;
-    void drawRects(const QRectF *rects, int rectCount) Q_DECL_OVERRIDE;
-    void drawPixmap(const QPointF &p, const QPixmap &pm) Q_DECL_OVERRIDE;
-    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
+    void fill(const QVectorPath &path, const QBrush &brush) override;
+    void fillRect(const QRectF &rect, const QBrush &brush) override;
+    void fillRect(const QRectF &rect, const QColor &color) override;
+    void drawRects(const QRect *rects, int rectCount) override;
+    void drawRects(const QRectF *rects, int rectCount) override;
+    void drawPixmap(const QPointF &p, const QPixmap &pm) override;
+    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) override;
 
     // State tracking
-    void setState(QPainterState *s) Q_DECL_OVERRIDE;
-    virtual void clipEnabledChanged() Q_DECL_OVERRIDE;
-    virtual void penChanged() Q_DECL_OVERRIDE;
-    virtual void brushChanged() Q_DECL_OVERRIDE;
-    virtual void opacityChanged() Q_DECL_OVERRIDE;
-    virtual void compositionModeChanged() Q_DECL_OVERRIDE;
-    virtual void renderHintsChanged() Q_DECL_OVERRIDE;
-    virtual void transformChanged() Q_DECL_OVERRIDE;
+    void setState(QPainterState *s) override;
+    virtual void clipEnabledChanged() override;
+    virtual void penChanged() override;
+    virtual void brushChanged() override;
+    virtual void opacityChanged() override;
+    virtual void compositionModeChanged() override;
+    virtual void renderHintsChanged() override;
+    virtual void transformChanged() override;
 
     // Override to lock the QBlittable before using raster
-    void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) Q_DECL_OVERRIDE;
-    void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode) Q_DECL_OVERRIDE;
-    void fillPath(const QPainterPath &path, QSpanData *fillData) Q_DECL_OVERRIDE;
-    void fillPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) Q_DECL_OVERRIDE;
-    void drawEllipse(const QRectF &rect) Q_DECL_OVERRIDE;
-    void drawImage(const QPointF &p, const QImage &img) Q_DECL_OVERRIDE;
+    void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) override;
+    void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode) override;
+    void fillPath(const QPainterPath &path, QSpanData *fillData) override;
+    void fillPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) override;
+    void drawEllipse(const QRectF &rect) override;
+    void drawImage(const QPointF &p, const QImage &img) override;
     void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
-                   Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
-    void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &sr) Q_DECL_OVERRIDE;
-    void drawTextItem(const QPointF &p, const QTextItem &textItem) Q_DECL_OVERRIDE;
-    void drawPoints(const QPointF *points, int pointCount) Q_DECL_OVERRIDE;
-    void drawPoints(const QPoint *points, int pointCount) Q_DECL_OVERRIDE;
-    void stroke(const QVectorPath &path, const QPen &pen) Q_DECL_OVERRIDE;
-    void drawStaticTextItem(QStaticTextItem *) Q_DECL_OVERRIDE;
+                   Qt::ImageConversionFlags flags = Qt::AutoColor) override;
+    void drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &sr) override;
+    void drawTextItem(const QPointF &p, const QTextItem &textItem) override;
+    void drawPoints(const QPointF *points, int pointCount) override;
+    void drawPoints(const QPoint *points, int pointCount) override;
+    void stroke(const QVectorPath &path, const QPen &pen) override;
+    void drawStaticTextItem(QStaticTextItem *) override;
     bool drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
-                          QFontEngine *fontEngine) Q_DECL_OVERRIDE;
+                          QFontEngine *fontEngine) override;
 };
 
 QT_END_NAMESPACE

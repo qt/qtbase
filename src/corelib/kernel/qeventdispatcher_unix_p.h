@@ -105,8 +105,8 @@ public:
     explicit QEventDispatcherUNIX(QObject *parent = 0);
     ~QEventDispatcherUNIX();
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags) Q_DECL_OVERRIDE;
-    bool hasPendingEvents() Q_DECL_OVERRIDE;
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool hasPendingEvents() override;
 
     void registerSocketNotifier(QSocketNotifier *notifier) Q_DECL_FINAL;
     void unregisterSocketNotifier(QSocketNotifier *notifier) Q_DECL_FINAL;
@@ -120,7 +120,7 @@ public:
 
     void wakeUp() Q_DECL_FINAL;
     void interrupt() Q_DECL_FINAL;
-    void flush() Q_DECL_OVERRIDE;
+    void flush() override;
 
 protected:
     QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObject *parent = 0);

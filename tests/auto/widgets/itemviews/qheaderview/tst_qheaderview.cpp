@@ -1799,7 +1799,7 @@ class TestHeaderViewStyle : public QProxyStyle
 {
 public:
     TestHeaderViewStyle() : horizontalSectionSize(100) {}
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const override
     {
         if (metric == QStyle::PM_HeaderDefaultSectionSizeHorizontal)
             return horizontalSectionSize;

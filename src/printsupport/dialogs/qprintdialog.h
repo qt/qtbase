@@ -63,11 +63,11 @@ public:
     explicit QPrintDialog(QWidget *parent = Q_NULLPTR);
     ~QPrintDialog();
 
-    int exec() Q_DECL_OVERRIDE;
+    int exec() override;
 #if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
-    virtual void accept() Q_DECL_OVERRIDE;
+    virtual void accept() override;
 #endif
-    void done(int result) Q_DECL_OVERRIDE;
+    void done(int result) override;
 
     void setOption(PrintDialogOption option, bool on = true);
     bool testOption(PrintDialogOption option) const;
@@ -75,7 +75,7 @@ public:
     PrintDialogOptions options() const;
 
 #if defined(Q_OS_UNIX) || defined(Q_OS_WIN)
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) override;
 #endif
 
     using QDialog::open;

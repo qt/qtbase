@@ -71,7 +71,7 @@ public:
     void updateGeometry(const QPoint &pos);
 
 protected:
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) override;
 
 private:
     QPixmap m_pixmap;

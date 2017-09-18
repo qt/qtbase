@@ -56,13 +56,13 @@ class Q_GUI_EXPORT QAccessibleObject : public QAccessibleInterface
 public:
     explicit QAccessibleObject(QObject *object);
 
-    bool isValid() const Q_DECL_OVERRIDE;
-    QObject *object() const Q_DECL_OVERRIDE;
+    bool isValid() const override;
+    QObject *object() const override;
 
     // properties
-    QRect rect() const Q_DECL_OVERRIDE;
-    void setText(QAccessible::Text t, const QString &text) Q_DECL_OVERRIDE;
-    QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
+    QRect rect() const override;
+    void setText(QAccessible::Text t, const QString &text) override;
+    QAccessibleInterface *childAt(int x, int y) const override;
 
 protected:
     virtual ~QAccessibleObject();
@@ -77,20 +77,20 @@ class Q_GUI_EXPORT QAccessibleApplication : public QAccessibleObject
 public:
     QAccessibleApplication();
 
-    QWindow *window() const Q_DECL_OVERRIDE;
+    QWindow *window() const override;
     // relations
-    int childCount() const Q_DECL_OVERRIDE;
-    int indexOfChild(const QAccessibleInterface*) const Q_DECL_OVERRIDE;
-    QAccessibleInterface *focusChild() const Q_DECL_OVERRIDE;
+    int childCount() const override;
+    int indexOfChild(const QAccessibleInterface*) const override;
+    QAccessibleInterface *focusChild() const override;
 
     // navigation
-    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    QAccessibleInterface *parent() const override;
+    QAccessibleInterface *child(int index) const override;
 
     // properties and state
-    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
-    QAccessible::Role role() const Q_DECL_OVERRIDE;
-    QAccessible::State state() const Q_DECL_OVERRIDE;
+    QString text(QAccessible::Text t) const override;
+    QAccessible::Role role() const override;
+    QAccessible::State state() const override;
 };
 
 #endif // QT_NO_ACCESSIBILITY

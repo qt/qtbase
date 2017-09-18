@@ -70,8 +70,8 @@ public:
     explicit QEventDispatcherGlib(GMainContext *context, QObject *parent = 0);
     ~QEventDispatcherGlib();
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags) Q_DECL_OVERRIDE;
-    bool hasPendingEvents() Q_DECL_OVERRIDE;
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool hasPendingEvents() override;
 
     void registerSocketNotifier(QSocketNotifier *socketNotifier) Q_DECL_FINAL;
     void unregisterSocketNotifier(QSocketNotifier *socketNotifier) Q_DECL_FINAL;

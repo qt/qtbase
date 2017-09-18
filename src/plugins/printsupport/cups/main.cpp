@@ -52,7 +52,7 @@ class QCupsPrinterSupportPlugin : public QPlatformPrinterSupportPlugin
 
 public:
     QStringList keys() const;
-    QPlatformPrinterSupport *create(const QString &) Q_DECL_OVERRIDE;
+    QPlatformPrinterSupport *create(const QString &) override;
 };
 
 QStringList QCupsPrinterSupportPlugin::keys() const

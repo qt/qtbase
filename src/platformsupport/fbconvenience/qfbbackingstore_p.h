@@ -66,10 +66,10 @@ public:
     QFbBackingStore(QWindow *window);
     ~QFbBackingStore();
 
-    QPaintDevice *paintDevice() Q_DECL_OVERRIDE { return &mImage; }
-    void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
+    QPaintDevice *paintDevice() override { return &mImage; }
+    void flush(QWindow *window, const QRegion &region, const QPoint &offset) override;
 
-    void resize(const QSize &size, const QRegion &region) Q_DECL_OVERRIDE;
+    void resize(const QSize &size, const QRegion &region) override;
 
     const QImage image();
     QImage toImage() const override;
@@ -77,8 +77,8 @@ public:
     void lock();
     void unlock();
 
-    void beginPaint(const QRegion &) Q_DECL_OVERRIDE;
-    void endPaint() Q_DECL_OVERRIDE;
+    void beginPaint(const QRegion &) override;
+    void endPaint() override;
 
 protected:
     friend class QFbWindow;

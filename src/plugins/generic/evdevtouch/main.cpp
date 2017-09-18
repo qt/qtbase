@@ -50,7 +50,7 @@ class QEvdevTouchScreenPlugin : public QGenericPlugin
 public:
     QEvdevTouchScreenPlugin();
 
-    QObject* create(const QString &key, const QString &specification) Q_DECL_OVERRIDE;
+    QObject* create(const QString &key, const QString &specification) override;
 };
 
 QEvdevTouchScreenPlugin::QEvdevTouchScreenPlugin()

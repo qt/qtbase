@@ -69,14 +69,14 @@ class QAccessibleMenu : public QAccessibleWidget
 public:
     explicit QAccessibleMenu(QWidget *w);
 
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
+    int childCount() const override;
+    QAccessibleInterface *childAt(int x, int y) const override;
 
-    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
-    QAccessible::Role role() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
-    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
-    int indexOfChild( const QAccessibleInterface *child ) const Q_DECL_OVERRIDE;
+    QString text(QAccessible::Text t) const override;
+    QAccessible::Role role() const override;
+    QAccessibleInterface *child(int index) const override;
+    QAccessibleInterface *parent() const override;
+    int indexOfChild( const QAccessibleInterface *child ) const override;
 
 protected:
     QMenu *menu() const;
@@ -88,10 +88,10 @@ class QAccessibleMenuBar : public QAccessibleWidget
 public:
     explicit QAccessibleMenuBar(QWidget *w);
 
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
-    int childCount() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *child(int index) const override;
+    int childCount() const override;
 
-    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface *child) const override;
 
 protected:
     QMenuBar *menuBar() const;
@@ -105,28 +105,28 @@ public:
     explicit QAccessibleMenuItem(QWidget *owner, QAction *w);
 
     ~QAccessibleMenuItem();
-    void *interface_cast(QAccessible::InterfaceType t) Q_DECL_OVERRIDE;
+    void *interface_cast(QAccessible::InterfaceType t) override;
 
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
-    bool isValid() const Q_DECL_OVERRIDE;
-    int indexOfChild(const QAccessibleInterface * child) const Q_DECL_OVERRIDE;
+    int childCount() const override;
+    QAccessibleInterface *childAt(int x, int y) const override;
+    bool isValid() const override;
+    int indexOfChild(const QAccessibleInterface * child) const override;
 
-    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
-    QObject * object() const Q_DECL_OVERRIDE;
-    QWindow *window() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *parent() const override;
+    QAccessibleInterface *child(int index) const override;
+    QObject * object() const override;
+    QWindow *window() const override;
 
-    QRect rect() const Q_DECL_OVERRIDE;
-    QAccessible::Role role() const Q_DECL_OVERRIDE;
-    void setText(QAccessible::Text t, const QString & text) Q_DECL_OVERRIDE;
-    QAccessible::State state() const Q_DECL_OVERRIDE;
-    QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
+    QRect rect() const override;
+    QAccessible::Role role() const override;
+    void setText(QAccessible::Text t, const QString & text) override;
+    QAccessible::State state() const override;
+    QString text(QAccessible::Text t) const override;
 
     // QAccessibleActionInterface
-    QStringList actionNames() const Q_DECL_OVERRIDE;
-    void doAction(const QString &actionName) Q_DECL_OVERRIDE;
-    QStringList keyBindingsForAction(const QString &actionName) const Q_DECL_OVERRIDE;
+    QStringList actionNames() const override;
+    void doAction(const QString &actionName) override;
+    QStringList keyBindingsForAction(const QString &actionName) const override;
 
     QWidget *owner() const;
 protected:

@@ -65,10 +65,10 @@ public:
     explicit QTableView(QWidget *parent = Q_NULLPTR);
     ~QTableView();
 
-    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
-    void setRootIndex(const QModelIndex &index) Q_DECL_OVERRIDE;
-    void setSelectionModel(QItemSelectionModel *selectionModel) Q_DECL_OVERRIDE;
-    void doItemsLayout() Q_DECL_OVERRIDE;
+    void setModel(QAbstractItemModel *model) override;
+    void setRootIndex(const QModelIndex &index) override;
+    void setSelectionModel(QItemSelectionModel *selectionModel) override;
+    void doItemsLayout() override;
 
     QHeaderView *horizontalHeader() const;
     QHeaderView *verticalHeader() const;
@@ -109,9 +109,9 @@ public:
     bool isCornerButtonEnabled() const;
 #endif
 
-    QRect visualRect(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) Q_DECL_OVERRIDE;
-    QModelIndex indexAt(const QPoint &p) const Q_DECL_OVERRIDE;
+    QRect visualRect(const QModelIndex &index) const override;
+    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;
+    QModelIndex indexAt(const QPoint &p) const override;
 
     void setSpan(int row, int column, int rowSpan, int columnSpan);
     int rowSpan(int row, int column) const;
@@ -144,37 +144,37 @@ protected Q_SLOTS:
 
 protected:
     QTableView(QTableViewPrivate &, QWidget *parent);
-    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
+    void scrollContentsBy(int dx, int dy) override;
 
-    QStyleOptionViewItem viewOptions() const Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+    QStyleOptionViewItem viewOptions() const override;
+    void paintEvent(QPaintEvent *e) override;
 
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) override;
 
-    int horizontalOffset() const Q_DECL_OVERRIDE;
-    int verticalOffset() const Q_DECL_OVERRIDE;
-    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) Q_DECL_OVERRIDE;
+    int horizontalOffset() const override;
+    int verticalOffset() const override;
+    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
 
-    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command) Q_DECL_OVERRIDE;
-    QRegion visualRegionForSelection(const QItemSelection &selection) const Q_DECL_OVERRIDE;
-    QModelIndexList selectedIndexes() const Q_DECL_OVERRIDE;
+    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command) override;
+    QRegion visualRegionForSelection(const QItemSelection &selection) const override;
+    QModelIndexList selectedIndexes() const override;
 
-    void updateGeometries() Q_DECL_OVERRIDE;
+    void updateGeometries() override;
 
-    QSize viewportSizeHint() const Q_DECL_OVERRIDE;
+    QSize viewportSizeHint() const override;
 
-    int sizeHintForRow(int row) const Q_DECL_OVERRIDE;
-    int sizeHintForColumn(int column) const Q_DECL_OVERRIDE;
+    int sizeHintForRow(int row) const override;
+    int sizeHintForColumn(int column) const override;
 
-    void verticalScrollbarAction(int action) Q_DECL_OVERRIDE;
-    void horizontalScrollbarAction(int action) Q_DECL_OVERRIDE;
+    void verticalScrollbarAction(int action) override;
+    void horizontalScrollbarAction(int action) override;
 
-    bool isIndexHidden(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    bool isIndexHidden(const QModelIndex &index) const override;
 
     void selectionChanged(const QItemSelection &selected,
-                          const QItemSelection &deselected) Q_DECL_OVERRIDE;
+                          const QItemSelection &deselected) override;
     void currentChanged(const QModelIndex &current,
-                          const QModelIndex &previous) Q_DECL_OVERRIDE;
+                          const QModelIndex &previous) override;
 
 private:
     friend class QAccessibleItemView;

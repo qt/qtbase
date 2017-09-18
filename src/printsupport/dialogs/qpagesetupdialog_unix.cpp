@@ -117,7 +117,7 @@ public:
     }
 
 protected:
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE
+    void paintEvent(QPaintEvent *) override
     {
         QSize pageSize = m_pageLayout.fullRectPoints().size();
         QSizeF scaledSize = pageSize.scaled(width() - 10, height() - 10, Qt::KeepAspectRatio);

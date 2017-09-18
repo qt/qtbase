@@ -203,14 +203,14 @@ public:
         layoutState.deleteAllLayoutItems();
     }
 
-    void addItem(QLayoutItem*) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    int count() const Q_DECL_OVERRIDE { return 0; }
-    QLayoutItem* itemAt(int index) const Q_DECL_OVERRIDE
+    void addItem(QLayoutItem*) override { Q_UNREACHABLE(); }
+    int count() const override { return 0; }
+    QLayoutItem* itemAt(int index) const override
     {
         int x = 0;
         return layoutState.itemAt(&x, index);
     }
-    QLayoutItem* takeAt(int index) Q_DECL_OVERRIDE
+    QLayoutItem* takeAt(int index) override
     {
         int x = 0;
         QLayoutItem *ret = layoutState.takeAt(&x, index);
@@ -226,22 +226,22 @@ public:
         }
         return ret;
     }
-    QSize sizeHint() const Q_DECL_OVERRIDE
+    QSize sizeHint() const override
     {
         int fw = frameWidth();
         return layoutState.sizeHint() + QSize(fw, fw);
     }
-    QSize minimumSize() const Q_DECL_OVERRIDE
+    QSize minimumSize() const override
     {
         int fw = frameWidth();
         return layoutState.minimumSize() + QSize(fw, fw);
     }
-    QSize maximumSize() const Q_DECL_OVERRIDE
+    QSize maximumSize() const override
     {
         int fw = frameWidth();
         return layoutState.maximumSize() + QSize(fw, fw);
     }
-    void setGeometry(const QRect&r) Q_DECL_OVERRIDE
+    void setGeometry(const QRect&r) override
     {
         groupWindow()->destroyOrHideIfEmpty();
         QDockAreaLayoutInfo *li = dockAreaLayoutInfo();
@@ -1659,9 +1659,9 @@ class QMainWindowTabBar : public QTabBar
 public:
     QMainWindowTabBar(QMainWindow *parent);
 protected:
-    bool event(QEvent *e) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent*) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent*) Q_DECL_OVERRIDE;
+    bool event(QEvent *e) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
 
 };
 

@@ -69,17 +69,17 @@ public:
     QBlittable *blittable() const;
     void setBlittable(QBlittable *blittable);
 
-    void resize(int width, int height) Q_DECL_OVERRIDE;
-    int metric(QPaintDevice::PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
-    void fill(const QColor &color) Q_DECL_OVERRIDE;
-    QImage *buffer() Q_DECL_OVERRIDE;
-    QImage toImage() const Q_DECL_OVERRIDE;
-    bool hasAlphaChannel() const Q_DECL_OVERRIDE;
-    void fromImage(const QImage &image, Qt::ImageConversionFlags flags) Q_DECL_OVERRIDE;
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
-    void setDevicePixelRatio(qreal scaleFactor) Q_DECL_OVERRIDE;
+    void resize(int width, int height) override;
+    int metric(QPaintDevice::PaintDeviceMetric metric) const override;
+    void fill(const QColor &color) override;
+    QImage *buffer() override;
+    QImage toImage() const override;
+    bool hasAlphaChannel() const override;
+    void fromImage(const QImage &image, Qt::ImageConversionFlags flags) override;
+    qreal devicePixelRatio() const override;
+    void setDevicePixelRatio(qreal scaleFactor) override;
 
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const override;
 
     void markRasterOverlay(const QRectF &);
     void markRasterOverlay(const QPointF &, const QTextItem &);

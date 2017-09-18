@@ -84,21 +84,21 @@ public:
               const QString &password,
               const QString &host,
               int port,
-              const QString &connOpts) Q_DECL_OVERRIDE;
-    void close() Q_DECL_OVERRIDE;
-    QSqlResult *createResult() const Q_DECL_OVERRIDE;
-    QStringList tables(QSql::TableType) const Q_DECL_OVERRIDE;
-    QSqlRecord record(const QString &tablename) const Q_DECL_OVERRIDE;
-    QSqlIndex primaryIndex(const QString& tablename) const Q_DECL_OVERRIDE;
+              const QString &connOpts) override;
+    void close() override;
+    QSqlResult *createResult() const override;
+    QStringList tables(QSql::TableType) const override;
+    QSqlRecord record(const QString &tablename) const override;
+    QSqlIndex primaryIndex(const QString& tablename) const override;
     QString formatValue(const QSqlField &field,
-                        bool trimStrings) const Q_DECL_OVERRIDE;
-    QVariant handle() const Q_DECL_OVERRIDE;
-    QString escapeIdentifier(const QString &identifier, IdentifierType) const Q_DECL_OVERRIDE;
+                        bool trimStrings) const override;
+    QVariant handle() const override;
+    QString escapeIdentifier(const QString &identifier, IdentifierType) const override;
 
 protected:
-    bool                beginTransaction() Q_DECL_OVERRIDE;
-    bool                commitTransaction() Q_DECL_OVERRIDE;
-    bool                rollbackTransaction() Q_DECL_OVERRIDE;
+    bool                beginTransaction() override;
+    bool                commitTransaction() override;
+    bool                rollbackTransaction() override;
 };
 
 QT_END_NAMESPACE

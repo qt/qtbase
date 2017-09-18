@@ -169,9 +169,9 @@ public:
         : QTextureGlyphCache(format, matrix) { }
     ~QImageTextureGlyphCache();
 
-    virtual void createTextureData(int width, int height) Q_DECL_OVERRIDE;
-    virtual void resizeTextureData(int width, int height) Q_DECL_OVERRIDE;
-    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition) Q_DECL_OVERRIDE;
+    virtual void createTextureData(int width, int height) override;
+    virtual void resizeTextureData(int width, int height) override;
+    virtual void fillTexture(const Coord &c, glyph_t glyph, QFixed subPixelPosition) override;
 
     inline const QImage &image() const { return m_image; }
 

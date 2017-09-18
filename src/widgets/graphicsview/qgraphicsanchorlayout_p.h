@@ -198,7 +198,7 @@ struct SequentialAnchorData : public AnchorData
 #endif
     }
 
-    virtual void updateChildrenSizes() Q_DECL_OVERRIDE;
+    virtual void updateChildrenSizes() override;
     void calculateSizeHints();
 
     QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
@@ -226,7 +226,7 @@ struct ParallelAnchorData : public AnchorData
 #endif
     }
 
-    virtual void updateChildrenSizes() Q_DECL_OVERRIDE;
+    virtual void updateChildrenSizes() override;
     bool calculateSizeHints();
 
     bool secondForward() const {

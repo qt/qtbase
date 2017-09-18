@@ -70,7 +70,7 @@ public:
 #endif
     ~QFile();
 
-    QString fileName() const Q_DECL_OVERRIDE;
+    QString fileName() const override;
     void setFileName(const QString &name);
 
 #if defined(Q_OS_DARWIN)
@@ -124,18 +124,18 @@ public:
     bool copy(const QString &newName);
     static bool copy(const QString &fileName, const QString &newName);
 
-    bool open(OpenMode flags) Q_DECL_OVERRIDE;
+    bool open(OpenMode flags) override;
     bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
     bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
 
-    qint64 size() const Q_DECL_OVERRIDE;
+    qint64 size() const override;
 
-    bool resize(qint64 sz) Q_DECL_OVERRIDE;
+    bool resize(qint64 sz) override;
     static bool resize(const QString &filename, qint64 sz);
 
-    Permissions permissions() const Q_DECL_OVERRIDE;
+    Permissions permissions() const override;
     static Permissions permissions(const QString &filename);
-    bool setPermissions(Permissions permissionSpec) Q_DECL_OVERRIDE;
+    bool setPermissions(Permissions permissionSpec) override;
     static bool setPermissions(const QString &filename, Permissions permissionSpec);
 
 protected:

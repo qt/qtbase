@@ -72,7 +72,7 @@ public:
     explicit QPrinter(const QPrinterInfo& printer, PrinterMode mode = ScreenResolution);
     ~QPrinter();
 
-    int devType() const Q_DECL_OVERRIDE;
+    int devType() const override;
 
     enum Orientation { Portrait, Landscape };
 
@@ -170,10 +170,10 @@ public:
     void setOrientation(Orientation);
     Orientation orientation() const;
 
-    void setPageSize(PageSize) Q_DECL_OVERRIDE;
+    void setPageSize(PageSize) override;
     PageSize pageSize() const;
 
-    void setPageSizeMM(const QSizeF &size) Q_DECL_OVERRIDE;
+    void setPageSizeMM(const QSizeF &size) override;
 
     void setPaperSize(PaperSize);
     PaperSize paperSize() const;
@@ -237,12 +237,12 @@ public:
     QString printerSelectionOption() const;
     void setPrinterSelectionOption(const QString &);
 
-    bool newPage() Q_DECL_OVERRIDE;
+    bool newPage() override;
     bool abort();
 
     PrinterState printerState() const;
 
-    QPaintEngine *paintEngine() const Q_DECL_OVERRIDE;
+    QPaintEngine *paintEngine() const override;
     QPrintEngine *printEngine() const;
 
     void setFromTo(int fromPage, int toPage);
@@ -252,13 +252,13 @@ public:
     void setPrintRange(PrintRange range);
     PrintRange printRange() const;
 
-    void setMargins(const Margins &m) Q_DECL_OVERRIDE;
+    void setMargins(const Margins &m) override;
 
     void setPageMargins(qreal left, qreal top, qreal right, qreal bottom, Unit unit);
     void getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bottom, Unit unit) const;
 
 protected:
-    int metric(PaintDeviceMetric) const Q_DECL_OVERRIDE;
+    int metric(PaintDeviceMetric) const override;
     void setEngines(QPrintEngine *printEngine, QPaintEngine *paintEngine);
 
 private:

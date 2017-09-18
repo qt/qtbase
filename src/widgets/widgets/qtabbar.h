@@ -136,8 +136,8 @@ public:
     int currentIndex() const;
     int count() const;
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
-    QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
 
     void setDrawBase(bool drawTheBase);
     bool drawBase() const;
@@ -194,20 +194,20 @@ protected:
     virtual void tabRemoved(int index);
     virtual void tabLayoutChange();
 
-    bool event(QEvent *) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
-    void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
-    void hideEvent(QHideEvent *) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    void mousePressEvent (QMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseMoveEvent (QMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent (QMouseEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *) override;
+    void resizeEvent(QResizeEvent *) override;
+    void showEvent(QShowEvent *) override;
+    void hideEvent(QHideEvent *) override;
+    void paintEvent(QPaintEvent *) override;
+    void mousePressEvent (QMouseEvent *) override;
+    void mouseMoveEvent (QMouseEvent *) override;
+    void mouseReleaseEvent (QMouseEvent *) override;
 #if QT_CONFIG(wheelevent)
-    void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *event) override;
 #endif
-    void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
-    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *) override;
+    void changeEvent(QEvent *) override;
+    void timerEvent(QTimerEvent *event) override;
     void initStyleOption(QStyleOptionTab *option, int tabIndex) const;
 
 #ifndef QT_NO_ACCESSIBILITY

@@ -51,9 +51,9 @@ public:
     QMinimalScreen()
         : mDepth(32), mFormat(QImage::Format_ARGB32_Premultiplied) {}
 
-    QRect geometry() const Q_DECL_OVERRIDE { return mGeometry; }
-    int depth() const Q_DECL_OVERRIDE { return mDepth; }
-    QImage::Format format() const Q_DECL_OVERRIDE { return mFormat; }
+    QRect geometry() const override { return mGeometry; }
+    int depth() const override { return mDepth; }
+    QImage::Format format() const override { return mFormat; }
 
 public:
     QRect mGeometry;
@@ -74,12 +74,12 @@ public:
     explicit QMinimalIntegration(const QStringList &parameters);
     ~QMinimalIntegration();
 
-    bool hasCapability(QPlatformIntegration::Capability cap) const Q_DECL_OVERRIDE;
-    QPlatformFontDatabase *fontDatabase() const Q_DECL_OVERRIDE;
+    bool hasCapability(QPlatformIntegration::Capability cap) const override;
+    QPlatformFontDatabase *fontDatabase() const override;
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
-    QAbstractEventDispatcher *createEventDispatcher() const Q_DECL_OVERRIDE;
+    QPlatformWindow *createPlatformWindow(QWindow *window) const override;
+    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
+    QAbstractEventDispatcher *createEventDispatcher() const override;
 
     unsigned options() const { return m_options; }
 

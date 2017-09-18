@@ -61,7 +61,7 @@ class QDeviceDiscoveryDummy : public QDeviceDiscovery
 
 public:
     QDeviceDiscoveryDummy(QDeviceTypes types, QObject *parent = 0);
-    QStringList scanConnectedDevices() Q_DECL_OVERRIDE;
+    QStringList scanConnectedDevices() override;
 };
 
 QT_END_NAMESPACE

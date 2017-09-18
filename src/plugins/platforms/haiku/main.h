@@ -47,7 +47,7 @@ class QHaikuIntegrationPlugin : public QPlatformIntegrationPlugin
     Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "haiku.json")
 
 public:
-    QPlatformIntegration *create(const QString&, const QStringList&) Q_DECL_OVERRIDE;
+    QPlatformIntegration *create(const QString&, const QStringList&) override;
 };
 
 QT_END_NAMESPACE

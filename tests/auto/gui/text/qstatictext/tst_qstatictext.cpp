@@ -862,19 +862,19 @@ void tst_QStaticText::textDocumentColor()
 class TestPaintEngine: public QPaintEngine
 {
 public:
-    void drawTextItem(const QPointF &p, const QTextItem &) Q_DECL_OVERRIDE
+    void drawTextItem(const QPointF &p, const QTextItem &) override
     {
         differentVerticalPositions.insert(qRound(p.y()));
     }
 
-    void updateState(const QPaintEngineState &) Q_DECL_OVERRIDE {}
+    void updateState(const QPaintEngineState &) override {}
 
-    void drawPolygon(const QPointF *, int , PolygonDrawMode ) Q_DECL_OVERRIDE {}
+    void drawPolygon(const QPointF *, int , PolygonDrawMode ) override {}
 
-    bool begin(QPaintDevice *) Q_DECL_OVERRIDE  { return true; }
-    bool end() Q_DECL_OVERRIDE { return true; }
-    void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) Q_DECL_OVERRIDE {}
-    Type type() const Q_DECL_OVERRIDE
+    bool begin(QPaintDevice *) override  { return true; }
+    bool end() override { return true; }
+    void drawPixmap(const QRectF &, const QPixmap &, const QRectF &) override {}
+    Type type() const override
     {
         return User;
     }

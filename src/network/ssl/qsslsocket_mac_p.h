@@ -86,14 +86,14 @@ public:
     virtual ~QSslSocketBackendPrivate();
 
     // Final-overriders (QSslSocketPrivate):
-    void continueHandshake() Q_DECL_OVERRIDE;
-    void disconnected() Q_DECL_OVERRIDE;
-    void disconnectFromHost() Q_DECL_OVERRIDE;
-    QSslCipher sessionCipher() const Q_DECL_OVERRIDE;
-    QSsl::SslProtocol sessionProtocol() const Q_DECL_OVERRIDE;
-    void startClientEncryption() Q_DECL_OVERRIDE;
-    void startServerEncryption() Q_DECL_OVERRIDE;
-    void transmit() Q_DECL_OVERRIDE;
+    void continueHandshake() override;
+    void disconnected() override;
+    void disconnectFromHost() override;
+    QSslCipher sessionCipher() const override;
+    QSsl::SslProtocol sessionProtocol() const override;
+    void startClientEncryption() override;
+    void startServerEncryption() override;
+    void transmit() override;
 
     static QList<QSslError> verify(QList<QSslCertificate> certificateChain,
                                    const QString &hostName);

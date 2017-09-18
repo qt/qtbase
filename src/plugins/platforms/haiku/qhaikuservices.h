@@ -47,10 +47,10 @@ QT_BEGIN_NAMESPACE
 class QHaikuServices : public QPlatformServices
 {
 public:
-    bool openUrl(const QUrl &url) Q_DECL_OVERRIDE;
-    bool openDocument(const QUrl &url) Q_DECL_OVERRIDE;
+    bool openUrl(const QUrl &url) override;
+    bool openDocument(const QUrl &url) override;
 
-    QByteArray desktopEnvironment() const Q_DECL_OVERRIDE;
+    QByteArray desktopEnvironment() const override;
 };
 
 QT_END_NAMESPACE

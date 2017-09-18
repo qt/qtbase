@@ -106,11 +106,11 @@ public:
     QApplicationPrivate(int &argc, char **argv, int flags);
     ~QApplicationPrivate();
 
-    virtual void notifyLayoutDirectionChange() Q_DECL_OVERRIDE;
-    virtual void notifyActiveWindowChange(QWindow *) Q_DECL_OVERRIDE;
+    virtual void notifyLayoutDirectionChange() override;
+    virtual void notifyActiveWindowChange(QWindow *) override;
 
-    virtual bool shouldQuit() Q_DECL_OVERRIDE;
-    bool tryCloseAllWindows() Q_DECL_OVERRIDE;
+    virtual bool shouldQuit() override;
+    bool tryCloseAllWindows() override;
 
 #if 0 // Used to be included in Qt4 for Q_WS_X11
 #ifndef QT_NO_SETTINGS
@@ -122,13 +122,13 @@ public:
     static QString desktopStyleKey();
 
 
-    void createEventDispatcher() Q_DECL_OVERRIDE;
+    void createEventDispatcher() override;
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave, const QPointF &globalPosF);
 
-    void notifyWindowIconChanged() Q_DECL_OVERRIDE;
+    void notifyWindowIconChanged() override;
 
     //modality
-    bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const Q_DECL_OVERRIDE;
+    bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const override;
     static bool isBlockedByModal(QWidget *widget);
     static bool modalState();
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = 0);
@@ -158,7 +158,7 @@ public:
 #endif
 
     static bool inPopupMode();
-    bool popupActive() Q_DECL_OVERRIDE { return inPopupMode(); }
+    bool popupActive() override { return inPopupMode(); }
     void closePopup(QWidget *popup);
     void openPopup(QWidget *popup);
     static void setFocusWidget(QWidget *focus, Qt::FocusReason reason);
@@ -183,9 +183,9 @@ public:
     static QPalette *set_pal;
 
 protected:
-    void notifyThemeChanged() Q_DECL_OVERRIDE;
+    void notifyThemeChanged() override;
 #ifndef QT_NO_DRAGANDDROP
-    void notifyDragStarted(const QDrag *) Q_DECL_OVERRIDE;
+    void notifyDragStarted(const QDrag *) override;
 #endif // QT_NO_DRAGANDDROP
 
 public:
@@ -284,7 +284,7 @@ public:
                                        ulong timestamp);
     static void translateTouchCancel(QTouchDevice *device, ulong timestamp);
 
-    QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const Q_DECL_OVERRIDE;
+    QPixmap applyQIconStyleHelper(QIcon::Mode mode, const QPixmap& base) const override;
 private:
     static QApplicationPrivate *self;
     static bool tryCloseAllWidgetWindows(QWindowList *processedWindows);

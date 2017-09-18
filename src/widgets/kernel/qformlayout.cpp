@@ -224,7 +224,7 @@ public:
 
     int hSpacing;
     int vSpacing;
-    QLayoutItem* replaceAt(int index, QLayoutItem*) Q_DECL_OVERRIDE;
+    QLayoutItem* replaceAt(int index, QLayoutItem*) override;
 };
 
 QFormLayoutPrivate::QFormLayoutPrivate()

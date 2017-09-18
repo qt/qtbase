@@ -77,7 +77,7 @@ public:
     // ### Hides open(flags)
     bool open() { return open(QIODevice::ReadWrite); }
 
-    QString fileName() const Q_DECL_OVERRIDE;
+    QString fileName() const override;
     QString fileTemplate() const;
     void setFileTemplate(const QString &name);
 
@@ -95,7 +95,7 @@ public:
     static QTemporaryFile *createNativeFile(QFile &file);
 
 protected:
-    bool open(OpenMode flags) Q_DECL_OVERRIDE;
+    bool open(OpenMode flags) override;
 
 private:
     friend class QFile;

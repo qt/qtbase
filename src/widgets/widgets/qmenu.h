@@ -195,7 +195,7 @@ public:
     static QAction *exec(QList<QAction*> actions, const QPoint &pos, QAction *at = Q_NULLPTR, QWidget *parent = Q_NULLPTR);
 #endif
 
-    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const override;
 
     QRect actionGeometry(QAction *) const;
     QAction *actionAt(const QPoint &) const;
@@ -232,22 +232,22 @@ Q_SIGNALS:
 protected:
     int columnCount() const;
 
-    void changeEvent(QEvent *) Q_DECL_OVERRIDE;
-    void keyPressEvent(QKeyEvent *) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent *) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *) Q_DECL_OVERRIDE;
+    void changeEvent(QEvent *) override;
+    void keyPressEvent(QKeyEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
 #if QT_CONFIG(wheelevent)
-    void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *) override;
 #endif
-    void enterEvent(QEvent *) Q_DECL_OVERRIDE;
-    void leaveEvent(QEvent *) Q_DECL_OVERRIDE;
-    void hideEvent(QHideEvent *) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
-    void actionEvent(QActionEvent *) Q_DECL_OVERRIDE;
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
-    bool event(QEvent *) Q_DECL_OVERRIDE;
-    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
+    void enterEvent(QEvent *) override;
+    void leaveEvent(QEvent *) override;
+    void hideEvent(QHideEvent *) override;
+    void paintEvent(QPaintEvent *) override;
+    void actionEvent(QActionEvent *) override;
+    void timerEvent(QTimerEvent *) override;
+    bool event(QEvent *) override;
+    bool focusNextPrevChild(bool next) override;
     void initStyleOption(QStyleOptionMenuItem *option, const QAction *action) const;
 
 private Q_SLOTS:

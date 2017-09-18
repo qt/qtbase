@@ -91,8 +91,8 @@ public:
 #endif
 
 protected:
-    void actionEvent(QActionEvent *e) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void actionEvent(QActionEvent *e) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private slots:
     void updateCursor();

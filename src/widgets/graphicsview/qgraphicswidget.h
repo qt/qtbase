@@ -106,12 +106,12 @@ public:
     inline void resize(qreal w, qreal h) { resize(QSizeF(w, h)); }
     QSizeF size() const;
 
-    void setGeometry(const QRectF &rect) Q_DECL_OVERRIDE;
+    void setGeometry(const QRectF &rect) override;
     inline void setGeometry(qreal x, qreal y, qreal w, qreal h);
     inline QRectF rect() const { return QRectF(QPointF(), size()); }
 
     void setContentsMargins(qreal left, qreal top, qreal right, qreal bottom);
-    void getContentsMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const Q_DECL_OVERRIDE;
+    void getContentsMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const override;
 
     void setWindowFrameMargins(qreal left, qreal top, qreal right, qreal bottom);
     void getWindowFrameMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const;
@@ -161,12 +161,12 @@ public:
     enum {
         Type = 11
     };
-    int type() const Q_DECL_OVERRIDE;
+    int type() const override;
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) Q_DECL_OVERRIDE;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR) override;
     virtual void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = Q_NULLPTR);
-    QRectF boundingRect() const Q_DECL_OVERRIDE;
-    QPainterPath shape() const Q_DECL_OVERRIDE;
+    QRectF boundingRect() const override;
+    QPainterPath shape() const override;
 
 #if 0
     void dumpFocusChain();
@@ -184,28 +184,28 @@ public Q_SLOTS:
 protected:
     virtual void initStyleOption(QStyleOption *option) const;
 
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const Q_DECL_OVERRIDE;
-    void updateGeometry() Q_DECL_OVERRIDE;
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override;
+    void updateGeometry() override;
 
     // Notification
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
     virtual QVariant propertyChange(const QString &propertyName, const QVariant &value);
 
     // Scene events
-    bool sceneEvent(QEvent *event) Q_DECL_OVERRIDE;
+    bool sceneEvent(QEvent *event) override;
     virtual bool windowFrameEvent(QEvent *e);
     virtual Qt::WindowFrameSection windowFrameSectionAt(const QPointF& pos) const;
 
     // Base event handlers
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
     //virtual void actionEvent(QActionEvent *event);
     virtual void changeEvent(QEvent *event);
     virtual void closeEvent(QCloseEvent *event);
     //void create(WId window = 0, bool initializeWindow = true, bool destroyOldWindow = true);
     //void destroy(bool destroyWindow = true, bool destroySubWindows = true);
-    void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
+    void focusInEvent(QFocusEvent *event) override;
     virtual bool focusNextPrevChild(bool next);
-    void focusOutEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
+    void focusOutEvent(QFocusEvent *event) override;
     virtual void hideEvent(QHideEvent *event);
     //virtual int metric(PaintDeviceMetric m ) const;
     virtual void moveEvent(QGraphicsSceneMoveEvent *event);
@@ -214,8 +214,8 @@ protected:
     virtual void resizeEvent(QGraphicsSceneResizeEvent *event);
     virtual void showEvent(QShowEvent *event);
     //virtual void tabletEvent(QTabletEvent *event);
-    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) Q_DECL_OVERRIDE;
-    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) Q_DECL_OVERRIDE;
+    virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+    virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
     virtual void grabMouseEvent(QEvent *event);
     virtual void ungrabMouseEvent(QEvent *event);
     virtual void grabKeyboardEvent(QEvent *event);

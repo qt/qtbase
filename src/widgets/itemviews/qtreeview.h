@@ -71,9 +71,9 @@ public:
     explicit QTreeView(QWidget *parent = Q_NULLPTR);
     ~QTreeView();
 
-    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
-    void setRootIndex(const QModelIndex &index) Q_DECL_OVERRIDE;
-    void setSelectionModel(QItemSelectionModel *selectionModel) Q_DECL_OVERRIDE;
+    void setModel(QAbstractItemModel *model) override;
+    void setRootIndex(const QModelIndex &index) override;
+    void setSelectionModel(QItemSelectionModel *selectionModel) override;
 
     QHeaderView *header() const;
     void setHeader(QHeaderView *header);
@@ -132,21 +132,21 @@ public:
     void setTreePosition(int logicalIndex);
     int treePosition() const;
 
-    void keyboardSearch(const QString &search) Q_DECL_OVERRIDE;
+    void keyboardSearch(const QString &search) override;
 
-    QRect visualRect(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) Q_DECL_OVERRIDE;
-    QModelIndex indexAt(const QPoint &p) const Q_DECL_OVERRIDE;
+    QRect visualRect(const QModelIndex &index) const override;
+    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;
+    QModelIndex indexAt(const QPoint &p) const override;
     QModelIndex indexAbove(const QModelIndex &index) const;
     QModelIndex indexBelow(const QModelIndex &index) const;
 
-    void doItemsLayout() Q_DECL_OVERRIDE;
-    void reset() Q_DECL_OVERRIDE;
+    void doItemsLayout() override;
+    void reset() override;
 
     void sortByColumn(int column, Qt::SortOrder order);
 
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) Q_DECL_OVERRIDE;
-    void selectAll() Q_DECL_OVERRIDE;
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override;
+    void selectAll() override;
 
 Q_SIGNALS:
     void expanded(const QModelIndex &index);
@@ -169,24 +169,24 @@ protected Q_SLOTS:
     void columnMoved();
     void reexpand();
     void rowsRemoved(const QModelIndex &parent, int first, int last);
-    void verticalScrollbarValueChanged(int value) Q_DECL_OVERRIDE;
+    void verticalScrollbarValueChanged(int value) override;
 
 protected:
     QTreeView(QTreeViewPrivate &dd, QWidget *parent = Q_NULLPTR);
-    void scrollContentsBy(int dx, int dy) Q_DECL_OVERRIDE;
-    void rowsInserted(const QModelIndex &parent, int start, int end) Q_DECL_OVERRIDE;
-    void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end) Q_DECL_OVERRIDE;
+    void scrollContentsBy(int dx, int dy) override;
+    void rowsInserted(const QModelIndex &parent, int start, int end) override;
+    void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end) override;
 
-    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) Q_DECL_OVERRIDE;
-    int horizontalOffset() const Q_DECL_OVERRIDE;
-    int verticalOffset() const Q_DECL_OVERRIDE;
+    QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
+    int horizontalOffset() const override;
+    int verticalOffset() const override;
 
-    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command) Q_DECL_OVERRIDE;
-    QRegion visualRegionForSelection(const QItemSelection &selection) const Q_DECL_OVERRIDE;
-    QModelIndexList selectedIndexes() const Q_DECL_OVERRIDE;
+    void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command) override;
+    QRegion visualRegionForSelection(const QItemSelection &selection) const override;
+    QModelIndexList selectedIndexes() const override;
 
-    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
     void drawTree(QPainter *painter, const QRegion &region) const;
     virtual void drawRow(QPainter *painter,
@@ -196,30 +196,30 @@ protected:
                               const QRect &rect,
                               const QModelIndex &index) const;
 
-    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 #ifndef QT_NO_DRAGANDDROP
-    void dragMoveEvent(QDragMoveEvent *event) Q_DECL_OVERRIDE;
+    void dragMoveEvent(QDragMoveEvent *event) override;
 #endif
-    bool viewportEvent(QEvent *event) Q_DECL_OVERRIDE;
+    bool viewportEvent(QEvent *event) override;
 
-    void updateGeometries() Q_DECL_OVERRIDE;
+    void updateGeometries() override;
 
-    QSize viewportSizeHint() const Q_DECL_OVERRIDE;
+    QSize viewportSizeHint() const override;
 
-    int sizeHintForColumn(int column) const Q_DECL_OVERRIDE;
+    int sizeHintForColumn(int column) const override;
     int indexRowSizeHint(const QModelIndex &index) const;
     int rowHeight(const QModelIndex &index) const;
 
-    void horizontalScrollbarAction(int action) Q_DECL_OVERRIDE;
+    void horizontalScrollbarAction(int action) override;
 
-    bool isIndexHidden(const QModelIndex &index) const Q_DECL_OVERRIDE;
+    bool isIndexHidden(const QModelIndex &index) const override;
     void selectionChanged(const QItemSelection &selected,
-                          const QItemSelection &deselected) Q_DECL_OVERRIDE;
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous) Q_DECL_OVERRIDE;
+                          const QItemSelection &deselected) override;
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
 
 private:
     friend class ::tst_QTreeView;

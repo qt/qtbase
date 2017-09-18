@@ -63,7 +63,7 @@ class QDeviceDiscoveryUDev : public QDeviceDiscovery
 public:
     QDeviceDiscoveryUDev(QDeviceTypes types, struct udev *udev, QObject *parent = 0);
     ~QDeviceDiscoveryUDev();
-    QStringList scanConnectedDevices() Q_DECL_OVERRIDE;
+    QStringList scanConnectedDevices() override;
 
 private slots:
     void handleUDevNotification();

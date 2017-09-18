@@ -2622,7 +2622,7 @@ namespace {
         {
         }
 
-        void drawTextItem(const QPointF &, const QTextItem &textItem) Q_DECL_OVERRIDE
+        void drawTextItem(const QPointF &, const QTextItem &textItem) override
         {
             itemFonts.append(qMakePair(textItem.text(), textItem.font()));
         }

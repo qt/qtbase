@@ -894,7 +894,7 @@ public:
         : QProxyStyle(key),
             horizontalSpacing(-1), verticalSpacing(-1) {}
 
-    virtual int pixelMetric(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0) const Q_DECL_OVERRIDE
+    virtual int pixelMetric(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0) const override
     {
         if (pm == QStyle::PM_LayoutHorizontalSpacing && horizontalSpacing >= 0) {
             return horizontalSpacing;

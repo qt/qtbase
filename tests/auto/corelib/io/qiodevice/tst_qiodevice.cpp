@@ -551,18 +551,18 @@ public:
         : QIODevice(), buf(byteArray), offset(0), ownbuf(false) { }
     virtual ~SequentialReadBuffer() { if (ownbuf) delete buf; }
 
-    bool isSequential() const Q_DECL_OVERRIDE { return true; }
+    bool isSequential() const override { return true; }
     const QByteArray &buffer() const { return *buf; }
 
 protected:
-    qint64 readData(char *data, qint64 maxSize) Q_DECL_OVERRIDE
+    qint64 readData(char *data, qint64 maxSize) override
     {
         maxSize = qMin(maxSize, qint64(buf->size() - offset));
         memcpy(data, buf->constData() + offset, maxSize);
         offset += maxSize;
         return maxSize;
     }
-    qint64 writeData(const char * /* data */, qint64 /* maxSize */) Q_DECL_OVERRIDE
+    qint64 writeData(const char * /* data */, qint64 /* maxSize */) override
     {
         return -1;
     }
@@ -598,13 +598,13 @@ public:
     RandomAccessBuffer(const char *data) : QIODevice(), buf(data) { }
 
 protected:
-    qint64 readData(char *data, qint64 maxSize) Q_DECL_OVERRIDE
+    qint64 readData(char *data, qint64 maxSize) override
     {
         maxSize = qMin(maxSize, qint64(buf.size() - pos()));
         memcpy(data, buf.constData() + pos(), maxSize);
         return maxSize;
     }
-    qint64 writeData(const char *data, qint64 maxSize) Q_DECL_OVERRIDE
+    qint64 writeData(const char *data, qint64 maxSize) override
     {
         maxSize = qMin(maxSize, qint64(buf.size() - pos()));
         memcpy(buf.data() + pos(), data, maxSize);

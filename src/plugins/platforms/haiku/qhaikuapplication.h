@@ -49,8 +49,8 @@ class QHaikuApplication : public BApplication
 public:
     explicit QHaikuApplication(const char *signature);
 
-    bool QuitRequested() Q_DECL_OVERRIDE;
-    void RefsReceived(BMessage* message) Q_DECL_OVERRIDE;
+    bool QuitRequested() override;
+    void RefsReceived(BMessage* message) override;
 };
 
 #endif

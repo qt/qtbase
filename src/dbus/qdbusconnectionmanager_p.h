@@ -85,7 +85,7 @@ signals:
     void serverRequested(const QString &address, void *server);
 
 protected:
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
 
 private:
     void executeConnectionRequest(ConnectionRequestData *data);

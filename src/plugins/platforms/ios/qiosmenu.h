@@ -56,20 +56,20 @@ class QIOSMenuItem : public QPlatformMenuItem
 public:
     QIOSMenuItem();
 
-    void setText(const QString &text) Q_DECL_OVERRIDE;
-    void setIcon(const QIcon &) Q_DECL_OVERRIDE {}
-    void setMenu(QPlatformMenu *) Q_DECL_OVERRIDE;
-    void setVisible(bool isVisible) Q_DECL_OVERRIDE;
-    void setIsSeparator(bool) Q_DECL_OVERRIDE;
-    void setFont(const QFont &) Q_DECL_OVERRIDE {}
-    void setRole(MenuRole role) Q_DECL_OVERRIDE;
-    void setCheckable(bool) Q_DECL_OVERRIDE {}
-    void setChecked(bool) Q_DECL_OVERRIDE {}
+    void setText(const QString &text) override;
+    void setIcon(const QIcon &) override {}
+    void setMenu(QPlatformMenu *) override;
+    void setVisible(bool isVisible) override;
+    void setIsSeparator(bool) override;
+    void setFont(const QFont &) override {}
+    void setRole(MenuRole role) override;
+    void setCheckable(bool) override {}
+    void setChecked(bool) override {}
 #ifndef QT_NO_SHORTCUT
-    void setShortcut(const QKeySequence&) Q_DECL_OVERRIDE;
+    void setShortcut(const QKeySequence&) override;
 #endif
-    void setEnabled(bool enabled) Q_DECL_OVERRIDE;
-    void setIconSize(int) Q_DECL_OVERRIDE {}
+    void setEnabled(bool enabled) override;
+    void setIconSize(int) override {}
 
     bool m_visible;
     QString m_text;
@@ -88,22 +88,22 @@ public:
     QIOSMenu();
     ~QIOSMenu();
 
-    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) Q_DECL_OVERRIDE;
-    void removeMenuItem(QPlatformMenuItem *menuItem) Q_DECL_OVERRIDE;
-    void syncMenuItem(QPlatformMenuItem *) Q_DECL_OVERRIDE;
-    void syncSeparatorsCollapsible(bool) Q_DECL_OVERRIDE {}
+    void insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before) override;
+    void removeMenuItem(QPlatformMenuItem *menuItem) override;
+    void syncMenuItem(QPlatformMenuItem *) override;
+    void syncSeparatorsCollapsible(bool) override {}
 
-    void setText(const QString &) Q_DECL_OVERRIDE;
-    void setIcon(const QIcon &) Q_DECL_OVERRIDE {}
-    void setEnabled(bool enabled) Q_DECL_OVERRIDE;
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
-    void setMenuType(MenuType type) Q_DECL_OVERRIDE;
+    void setText(const QString &) override;
+    void setIcon(const QIcon &) override {}
+    void setEnabled(bool enabled) override;
+    void setVisible(bool visible) override;
+    void setMenuType(MenuType type) override;
 
-    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) Q_DECL_OVERRIDE;
-    void dismiss() Q_DECL_OVERRIDE;
+    void showPopup(const QWindow *parentWindow, const QRect &targetRect, const QPlatformMenuItem *item) override;
+    void dismiss() override;
 
-    QPlatformMenuItem *menuItemAt(int position) const Q_DECL_OVERRIDE;
-    QPlatformMenuItem *menuItemForTag(quintptr tag) const Q_DECL_OVERRIDE;
+    QPlatformMenuItem *menuItemAt(int position) const override;
+    QPlatformMenuItem *menuItemForTag(quintptr tag) const override;
 
     void handleItemSelected(QIOSMenuItem *menuItem);
 
@@ -111,7 +111,7 @@ public:
     static id menuActionTarget() { return m_currentMenu ? m_currentMenu->m_menuController : 0; }
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     bool m_enabled;

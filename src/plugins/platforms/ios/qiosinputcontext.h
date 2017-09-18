@@ -88,24 +88,24 @@ public:
     QIOSInputContext();
     ~QIOSInputContext();
 
-    bool isValid() const Q_DECL_OVERRIDE { return true; }
+    bool isValid() const override { return true; }
 
-    void showInputPanel() Q_DECL_OVERRIDE;
-    void hideInputPanel() Q_DECL_OVERRIDE;
+    void showInputPanel() override;
+    void hideInputPanel() override;
 
-    bool isInputPanelVisible() const Q_DECL_OVERRIDE;
-    bool isAnimating() const Q_DECL_OVERRIDE;
-    QRectF keyboardRect() const Q_DECL_OVERRIDE;
+    bool isInputPanelVisible() const override;
+    bool isAnimating() const override;
+    QRectF keyboardRect() const override;
 
-    void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
-    void reset() Q_DECL_OVERRIDE;
-    void commit() Q_DECL_OVERRIDE;
+    void update(Qt::InputMethodQueries) override;
+    void reset() override;
+    void commit() override;
 
-    QLocale locale() const Q_DECL_OVERRIDE;
+    QLocale locale() const override;
 
     void clearCurrentFocusObject();
 
-    void setFocusObject(QObject *object) Q_DECL_OVERRIDE;
+    void setFocusObject(QObject *object) override;
     void focusWindowChanged(QWindow *focusWindow);
 
     void scrollToCursor();

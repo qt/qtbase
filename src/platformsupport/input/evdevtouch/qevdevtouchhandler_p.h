@@ -110,11 +110,11 @@ class QEvdevTouchScreenHandlerThread : public QDaemonThread
 public:
     explicit QEvdevTouchScreenHandlerThread(const QString &device, const QString &spec, QObject *parent = Q_NULLPTR);
     ~QEvdevTouchScreenHandlerThread();
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
 
     bool isTouchDeviceRegistered() const;
 
-    bool eventFilter(QObject *object, QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *object, QEvent *event) override;
 
 public slots:
     void scheduleTouchPointUpdate();

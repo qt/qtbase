@@ -229,12 +229,12 @@ private:
         return S_OK;
     }
 
-    HRESULT __stdcall OnActivated(IActivatedEventArgs *args) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnActivated(IActivatedEventArgs *args) override
     {
         return activatedLaunch(args);
     }
 
-    HRESULT __stdcall OnLaunched(ILaunchActivatedEventArgs *launchArgs) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnLaunched(ILaunchActivatedEventArgs *launchArgs) override
     {
         ComPtr<IPrelaunchActivatedEventArgs> preArgs;
         HRESULT hr = launchArgs->QueryInterface(preArgs.GetAddressOf());
@@ -324,41 +324,41 @@ private:
         return S_OK;
     }
 
-    HRESULT __stdcall OnFileActivated(IFileActivatedEventArgs *args) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnFileActivated(IFileActivatedEventArgs *args) override
     {
         return activatedLaunch(args);
     }
 
-    HRESULT __stdcall OnSearchActivated(ISearchActivatedEventArgs *args) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnSearchActivated(ISearchActivatedEventArgs *args) override
     {
         Q_UNUSED(args);
         return S_OK;
     }
 
-    HRESULT __stdcall OnShareTargetActivated(IShareTargetActivatedEventArgs *args) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnShareTargetActivated(IShareTargetActivatedEventArgs *args) override
     {
         return activatedLaunch(args);
     }
 
-    HRESULT __stdcall OnFileOpenPickerActivated(IFileOpenPickerActivatedEventArgs *args) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnFileOpenPickerActivated(IFileOpenPickerActivatedEventArgs *args) override
     {
         Q_UNUSED(args);
         return S_OK;
     }
 
-    HRESULT __stdcall OnFileSavePickerActivated(IFileSavePickerActivatedEventArgs *args) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnFileSavePickerActivated(IFileSavePickerActivatedEventArgs *args) override
     {
         Q_UNUSED(args);
         return S_OK;
     }
 
-    HRESULT __stdcall OnCachedFileUpdaterActivated(ICachedFileUpdaterActivatedEventArgs *args) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnCachedFileUpdaterActivated(ICachedFileUpdaterActivatedEventArgs *args) override
     {
         Q_UNUSED(args);
         return S_OK;
     }
 
-    HRESULT __stdcall OnWindowCreated(Xaml::IWindowCreatedEventArgs *args) Q_DECL_OVERRIDE
+    HRESULT __stdcall OnWindowCreated(Xaml::IWindowCreatedEventArgs *args) override
     {
         Q_UNUSED(args);
         return S_OK;

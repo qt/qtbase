@@ -49,23 +49,23 @@ struct WriteIncludes : public TreeWalker
 {
     WriteIncludes(Uic *uic);
 
-    void acceptUI(DomUI *node) Q_DECL_OVERRIDE;
-    void acceptWidget(DomWidget *node) Q_DECL_OVERRIDE;
-    void acceptLayout(DomLayout *node) Q_DECL_OVERRIDE;
-    void acceptSpacer(DomSpacer *node) Q_DECL_OVERRIDE;
-    void acceptProperty(DomProperty *node) Q_DECL_OVERRIDE;
+    void acceptUI(DomUI *node) override;
+    void acceptWidget(DomWidget *node) override;
+    void acceptLayout(DomLayout *node) override;
+    void acceptSpacer(DomSpacer *node) override;
+    void acceptProperty(DomProperty *node) override;
 
 //
 // custom widgets
 //
-    void acceptCustomWidgets(DomCustomWidgets *node) Q_DECL_OVERRIDE;
-    void acceptCustomWidget(DomCustomWidget *node) Q_DECL_OVERRIDE;
+    void acceptCustomWidgets(DomCustomWidgets *node) override;
+    void acceptCustomWidget(DomCustomWidget *node) override;
 
 //
 // include hints
 //
-    void acceptIncludes(DomIncludes *node) Q_DECL_OVERRIDE;
-    void acceptInclude(DomInclude *node) Q_DECL_OVERRIDE;
+    void acceptIncludes(DomIncludes *node) override;
+    void acceptInclude(DomInclude *node) override;
 
 private:
     void add(const QString &className, bool determineHeader = true, const QString &header = QString(), bool global = false);

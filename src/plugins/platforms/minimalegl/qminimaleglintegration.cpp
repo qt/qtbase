@@ -71,7 +71,7 @@ public:
     QWinRTEventDispatcher() {}
 
 protected:
-    bool hasPendingEvents() Q_DECL_OVERRIDE
+    bool hasPendingEvents() override
     {
         return QEventDispatcherWinRT::hasPendingEvents() || QWindowSystemInterface::windowSystemEventsQueued();
     }

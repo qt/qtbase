@@ -82,19 +82,19 @@ public:
     QPlainTextEditControl(QPlainTextEdit *parent);
 
 
-    QMimeData *createMimeDataFromSelection() const Q_DECL_OVERRIDE;
-    bool canInsertFromMimeData(const QMimeData *source) const Q_DECL_OVERRIDE;
-    void insertFromMimeData(const QMimeData *source) Q_DECL_OVERRIDE;
-    int hitTest(const QPointF &point, Qt::HitTestAccuracy = Qt::FuzzyHit) const Q_DECL_OVERRIDE;
-    QRectF blockBoundingRect(const QTextBlock &block) const Q_DECL_OVERRIDE;
-    QString anchorAt(const QPointF &pos) const Q_DECL_OVERRIDE;
+    QMimeData *createMimeDataFromSelection() const override;
+    bool canInsertFromMimeData(const QMimeData *source) const override;
+    void insertFromMimeData(const QMimeData *source) override;
+    int hitTest(const QPointF &point, Qt::HitTestAccuracy = Qt::FuzzyHit) const override;
+    QRectF blockBoundingRect(const QTextBlock &block) const override;
+    QString anchorAt(const QPointF &pos) const override;
     inline QRectF cursorRect(const QTextCursor &cursor) const {
         QRectF r = QWidgetTextControl::cursorRect(cursor);
         r.setLeft(qMax(r.left(), (qreal) 0.));
         return r;
     }
     inline QRectF cursorRect() { return cursorRect(textCursor()); }
-    void ensureCursorVisible() Q_DECL_OVERRIDE {
+    void ensureCursorVisible() override {
         textEdit->ensureCursorVisible();
         emit microFocusChanged();
     }
@@ -104,7 +104,7 @@ public:
     int topBlock;
     QTextBlock firstVisibleBlock() const;
 
-    QVariant loadResource(int type, const QUrl &name) Q_DECL_OVERRIDE {
+    QVariant loadResource(int type, const QUrl &name) override {
         return textEdit->loadResource(type, name);
     }
 

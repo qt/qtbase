@@ -78,7 +78,7 @@ public:
     void connectUncontrolledAnimations();
     void disconnectUncontrolledAnimations();
 
-    void animationRemoved(int index, QAbstractAnimation *) Q_DECL_OVERRIDE;
+    void animationRemoved(int index, QAbstractAnimation *) override;
 
     // private slot
     void _q_uncontrolledAnimationFinished();

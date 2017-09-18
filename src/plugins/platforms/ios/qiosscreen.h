@@ -56,17 +56,17 @@ public:
     QIOSScreen(UIScreen *screen);
     ~QIOSScreen();
 
-    QRect geometry() const Q_DECL_OVERRIDE;
-    QRect availableGeometry() const Q_DECL_OVERRIDE;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
-    QSizeF physicalSize() const Q_DECL_OVERRIDE;
-    QDpi logicalDpi() const Q_DECL_OVERRIDE;
-    qreal devicePixelRatio() const Q_DECL_OVERRIDE;
+    QRect geometry() const override;
+    QRect availableGeometry() const override;
+    int depth() const override;
+    QImage::Format format() const override;
+    QSizeF physicalSize() const override;
+    QDpi logicalDpi() const override;
+    qreal devicePixelRatio() const override;
 
-    Qt::ScreenOrientation nativeOrientation() const Q_DECL_OVERRIDE;
-    Qt::ScreenOrientation orientation() const Q_DECL_OVERRIDE;
-    void setOrientationUpdateMask(Qt::ScreenOrientations mask) Q_DECL_OVERRIDE;
+    Qt::ScreenOrientation nativeOrientation() const override;
+    Qt::ScreenOrientation orientation() const override;
+    void setOrientationUpdateMask(Qt::ScreenOrientations mask) override;
 
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const override;
 

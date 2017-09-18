@@ -69,7 +69,7 @@ protected:
 
     inline bool ensureFlushed() const;
 
-    bool putCharHelper(char c) Q_DECL_OVERRIDE;
+    bool putCharHelper(char c) override;
 
     void setError(QFileDevice::FileError err);
     void setError(QFileDevice::FileError err, const QString &errorString);

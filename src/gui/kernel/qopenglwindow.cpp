@@ -163,7 +163,7 @@ class QOpenGLWindowPaintDevice : public QOpenGLPaintDevice
 {
 public:
     QOpenGLWindowPaintDevice(QOpenGLWindow *window) : m_window(window) { }
-    void ensureActiveTarget() Q_DECL_OVERRIDE;
+    void ensureActiveTarget() override;
 
     QOpenGLWindow *m_window;
 };
@@ -188,9 +188,9 @@ public:
     void bindFBO();
     void initialize();
 
-    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE;
-    void endPaint() Q_DECL_OVERRIDE;
-    void flush(const QRegion &region) Q_DECL_OVERRIDE;
+    void beginPaint(const QRegion &region) override;
+    void endPaint() override;
+    void flush(const QRegion &region) override;
 
     QOpenGLWindow::UpdateBehavior updateBehavior;
     bool hasFboBlit;

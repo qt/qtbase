@@ -79,29 +79,29 @@ public:
     explicit QSQLite2Driver(QObject *parent = 0);
     explicit QSQLite2Driver(sqlite *connection, QObject *parent = 0);
     ~QSQLite2Driver();
-    bool hasFeature(DriverFeature f) const Q_DECL_OVERRIDE;
+    bool hasFeature(DriverFeature f) const override;
     bool open(const QString &db,
                    const QString &user,
                    const QString &password,
                    const QString &host,
                    int port,
-                   const QString &connOpts) Q_DECL_OVERRIDE;
+                   const QString &connOpts) override;
     bool open(const QString &db,
             const QString &user,
             const QString &password,
             const QString &host,
             int port) { return open(db, user, password, host, port, QString()); }
-    void close() Q_DECL_OVERRIDE;
-    QSqlResult *createResult() const Q_DECL_OVERRIDE;
-    bool beginTransaction() Q_DECL_OVERRIDE;
-    bool commitTransaction() Q_DECL_OVERRIDE;
-    bool rollbackTransaction() Q_DECL_OVERRIDE;
-    QStringList tables(QSql::TableType) const Q_DECL_OVERRIDE;
+    void close() override;
+    QSqlResult *createResult() const override;
+    bool beginTransaction() override;
+    bool commitTransaction() override;
+    bool rollbackTransaction() override;
+    QStringList tables(QSql::TableType) const override;
 
-    QSqlRecord record(const QString &tablename) const Q_DECL_OVERRIDE;
-    QSqlIndex primaryIndex(const QString &table) const Q_DECL_OVERRIDE;
-    QVariant handle() const Q_DECL_OVERRIDE;
-    QString escapeIdentifier(const QString &identifier, IdentifierType) const Q_DECL_OVERRIDE;
+    QSqlRecord record(const QString &tablename) const override;
+    QSqlIndex primaryIndex(const QString &table) const override;
+    QVariant handle() const override;
+    QString escapeIdentifier(const QString &identifier, IdentifierType) const override;
 };
 
 QT_END_NAMESPACE

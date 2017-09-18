@@ -118,7 +118,7 @@ public:
     explicit PanGesture(const QWidget *w, const QPanGesture *source) : Gesture(w, source)
         , m_offset(source->offset()) {}
 
-    void draw(const QRectF &rect, QPainter &painter) const Q_DECL_OVERRIDE
+    void draw(const QRectF &rect, QPainter &painter) const override
     {
         const QPointF hotSpot = drawHotSpot(rect, painter);
         painter.drawLine(hotSpot, hotSpot + m_offset);
@@ -134,7 +134,7 @@ public:
         , m_horizontal(source->horizontalDirection()), m_vertical(source->verticalDirection())
         , m_angle(source->swipeAngle()) {}
 
-    void draw(const QRectF &rect, QPainter &painter) const Q_DECL_OVERRIDE;
+    void draw(const QRectF &rect, QPainter &painter) const override;
 
 private:
     QSwipeGesture::SwipeDirection m_horizontal;
@@ -197,7 +197,7 @@ class EventFilter : public QObject {
 public:
     explicit EventFilter(const EventTypeVector &types, QObject *p) : QObject(p), m_types(types) {}
 
-    bool eventFilter(QObject *, QEvent *) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *, QEvent *) override;
 
 signals:
     void eventReceived(const QString &);
@@ -292,8 +292,8 @@ signals:
     void logMessage(const QString &);
 
 protected:
-    bool event(QEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) override;
+    void paintEvent(QPaintEvent *) override;
 
 private:
     void handleGestureEvent(QGestureEvent *gestureEvent);

@@ -123,19 +123,19 @@ class QSQLiteResult : public QSqlCachedResult
 public:
     explicit QSQLiteResult(const QSQLiteDriver* db);
     ~QSQLiteResult();
-    QVariant handle() const Q_DECL_OVERRIDE;
+    QVariant handle() const override;
 
 protected:
-    bool gotoNext(QSqlCachedResult::ValueCache& row, int idx) Q_DECL_OVERRIDE;
-    bool reset(const QString &query) Q_DECL_OVERRIDE;
-    bool prepare(const QString &query) Q_DECL_OVERRIDE;
-    bool exec() Q_DECL_OVERRIDE;
-    int size() Q_DECL_OVERRIDE;
-    int numRowsAffected() Q_DECL_OVERRIDE;
-    QVariant lastInsertId() const Q_DECL_OVERRIDE;
-    QSqlRecord record() const Q_DECL_OVERRIDE;
-    void detachFromResultSet() Q_DECL_OVERRIDE;
-    void virtual_hook(int id, void *data) Q_DECL_OVERRIDE;
+    bool gotoNext(QSqlCachedResult::ValueCache& row, int idx) override;
+    bool reset(const QString &query) override;
+    bool prepare(const QString &query) override;
+    bool exec() override;
+    int size() override;
+    int numRowsAffected() override;
+    QVariant lastInsertId() const override;
+    QSqlRecord record() const override;
+    void detachFromResultSet() override;
+    void virtual_hook(int id, void *data) override;
 };
 
 class QSQLiteDriverPrivate : public QSqlDriverPrivate

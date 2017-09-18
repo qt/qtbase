@@ -52,7 +52,7 @@ public:
     QHaikuCursor();
 
 #ifndef QT_NO_CURSOR
-    void changeCursor(QCursor *windowCursor, QWindow *window) Q_DECL_OVERRIDE;
+    void changeCursor(QCursor *windowCursor, QWindow *window) override;
 #endif
 
 private:

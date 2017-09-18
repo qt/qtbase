@@ -105,12 +105,12 @@ class QNonContiguousByteDeviceByteArrayImpl : public QNonContiguousByteDevice
 public:
     QNonContiguousByteDeviceByteArrayImpl(QByteArray *ba);
     ~QNonContiguousByteDeviceByteArrayImpl();
-    const char* readPointer(qint64 maximumLength, qint64 &len) Q_DECL_OVERRIDE;
-    bool advanceReadPointer(qint64 amount) Q_DECL_OVERRIDE;
-    bool atEnd() const Q_DECL_OVERRIDE;
-    bool reset() Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
-    qint64 pos() const Q_DECL_OVERRIDE;
+    const char* readPointer(qint64 maximumLength, qint64 &len) override;
+    bool advanceReadPointer(qint64 amount) override;
+    bool atEnd() const override;
+    bool reset() override;
+    qint64 size() const override;
+    qint64 pos() const override;
 protected:
     QByteArray* byteArray;
     qint64 currentPosition;
@@ -121,12 +121,12 @@ class QNonContiguousByteDeviceRingBufferImpl : public QNonContiguousByteDevice
 public:
     QNonContiguousByteDeviceRingBufferImpl(QSharedPointer<QRingBuffer> rb);
     ~QNonContiguousByteDeviceRingBufferImpl();
-    const char* readPointer(qint64 maximumLength, qint64 &len) Q_DECL_OVERRIDE;
-    bool advanceReadPointer(qint64 amount) Q_DECL_OVERRIDE;
-    bool atEnd() const Q_DECL_OVERRIDE;
-    bool reset() Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
-    qint64 pos() const Q_DECL_OVERRIDE;
+    const char* readPointer(qint64 maximumLength, qint64 &len) override;
+    bool advanceReadPointer(qint64 amount) override;
+    bool atEnd() const override;
+    bool reset() override;
+    qint64 size() const override;
+    qint64 pos() const override;
 protected:
     QSharedPointer<QRingBuffer> ringBuffer;
     qint64 currentPosition;
@@ -139,12 +139,12 @@ class QNonContiguousByteDeviceIoDeviceImpl : public QNonContiguousByteDevice
 public:
     QNonContiguousByteDeviceIoDeviceImpl(QIODevice *d);
     ~QNonContiguousByteDeviceIoDeviceImpl();
-    const char* readPointer(qint64 maximumLength, qint64 &len) Q_DECL_OVERRIDE;
-    bool advanceReadPointer(qint64 amount) Q_DECL_OVERRIDE;
-    bool atEnd() const Q_DECL_OVERRIDE;
-    bool reset() Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
-    qint64 pos() const Q_DECL_OVERRIDE;
+    const char* readPointer(qint64 maximumLength, qint64 &len) override;
+    bool advanceReadPointer(qint64 amount) override;
+    bool atEnd() const override;
+    bool reset() override;
+    qint64 size() const override;
+    qint64 pos() const override;
 protected:
     QIODevice* device;
     QByteArray* currentReadBuffer;
@@ -162,11 +162,11 @@ class QNonContiguousByteDeviceBufferImpl : public QNonContiguousByteDevice
 public:
     QNonContiguousByteDeviceBufferImpl(QBuffer *b);
     ~QNonContiguousByteDeviceBufferImpl();
-    const char* readPointer(qint64 maximumLength, qint64 &len) Q_DECL_OVERRIDE;
-    bool advanceReadPointer(qint64 amount) Q_DECL_OVERRIDE;
-    bool atEnd() const Q_DECL_OVERRIDE;
-    bool reset() Q_DECL_OVERRIDE;
-    qint64 size() const Q_DECL_OVERRIDE;
+    const char* readPointer(qint64 maximumLength, qint64 &len) override;
+    bool advanceReadPointer(qint64 amount) override;
+    bool atEnd() const override;
+    bool reset() override;
+    qint64 size() const override;
 protected:
     QBuffer* buffer;
     QByteArray byteArray;
@@ -179,13 +179,13 @@ class QByteDeviceWrappingIoDevice : public QIODevice
 public:
     QByteDeviceWrappingIoDevice (QNonContiguousByteDevice *bd);
     ~QByteDeviceWrappingIoDevice ();
-    virtual bool isSequential () const Q_DECL_OVERRIDE;
-    virtual bool atEnd () const Q_DECL_OVERRIDE;
-    virtual bool reset () Q_DECL_OVERRIDE;
-    virtual qint64 size () const Q_DECL_OVERRIDE;
+    virtual bool isSequential () const override;
+    virtual bool atEnd () const override;
+    virtual bool reset () override;
+    virtual qint64 size () const override;
 protected:
-     virtual qint64 readData ( char * data, qint64 maxSize ) Q_DECL_OVERRIDE;
-     virtual qint64 writeData ( const char * data, qint64 maxSize ) Q_DECL_OVERRIDE;
+     virtual qint64 readData ( char * data, qint64 maxSize ) override;
+     virtual qint64 writeData ( const char * data, qint64 maxSize ) override;
 
      QNonContiguousByteDevice *byteDevice;
 };

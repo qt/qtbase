@@ -57,8 +57,8 @@ public:
     ~QRasterWindow();
 
 protected:
-    int metric(PaintDeviceMetric metric) const Q_DECL_OVERRIDE;
-    QPaintDevice *redirected(QPoint *) const Q_DECL_OVERRIDE;
+    int metric(PaintDeviceMetric metric) const override;
+    QPaintDevice *redirected(QPoint *) const override;
 
 private:
     Q_DISABLE_COPY(QRasterWindow)

@@ -56,10 +56,10 @@ public:
     QX11PaintEngine();
     ~QX11PaintEngine();
 
-    bool begin(QPaintDevice *pdev) Q_DECL_OVERRIDE;
-    bool end() Q_DECL_OVERRIDE;
+    bool begin(QPaintDevice *pdev) override;
+    bool end() override;
 
-    void updateState(const QPaintEngineState &state) Q_DECL_OVERRIDE;
+    void updateState(const QPaintEngineState &state) override;
 
     void updatePen(const QPen &pen);
     void updateBrush(const QBrush &brush, const QPointF &pt);
@@ -68,31 +68,31 @@ public:
     void updateMatrix(const QTransform &matrix);
     void updateClipRegion_dev(const QRegion &region, Qt::ClipOperation op);
 
-    void drawLines(const QLine *lines, int lineCount) Q_DECL_OVERRIDE;
-    void drawLines(const QLineF *lines, int lineCount) Q_DECL_OVERRIDE;
+    void drawLines(const QLine *lines, int lineCount) override;
+    void drawLines(const QLineF *lines, int lineCount) override;
 
-    void drawRects(const QRect *rects, int rectCount) Q_DECL_OVERRIDE;
-    void drawRects(const QRectF *rects, int rectCount) Q_DECL_OVERRIDE;
+    void drawRects(const QRect *rects, int rectCount) override;
+    void drawRects(const QRectF *rects, int rectCount) override;
 
-    void drawPoints(const QPoint *points, int pointCount) Q_DECL_OVERRIDE;
-    void drawPoints(const QPointF *points, int pointCount) Q_DECL_OVERRIDE;
+    void drawPoints(const QPoint *points, int pointCount) override;
+    void drawPoints(const QPointF *points, int pointCount) override;
 
-    void drawEllipse(const QRect &r) Q_DECL_OVERRIDE;
-    void drawEllipse(const QRectF &r) Q_DECL_OVERRIDE;
+    void drawEllipse(const QRect &r) override;
+    void drawEllipse(const QRectF &r) override;
 
-    virtual void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) Q_DECL_OVERRIDE;
-    inline void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode) Q_DECL_OVERRIDE
+    virtual void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode) override;
+    inline void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode) override
         { QPaintEngine::drawPolygon(points, pointCount, mode); }
 
-    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) Q_DECL_OVERRIDE;
-    void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) Q_DECL_OVERRIDE;
-    void drawPath(const QPainterPath &path) Q_DECL_OVERRIDE;
-    void drawTextItem(const QPointF &p, const QTextItem &textItem) Q_DECL_OVERRIDE;
+    void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr) override;
+    void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s) override;
+    void drawPath(const QPainterPath &path) override;
+    void drawTextItem(const QPointF &p, const QTextItem &textItem) override;
     void drawImage(const QRectF &r, const QImage &img, const QRectF &sr,
-                   Qt::ImageConversionFlags flags = Qt::AutoColor) Q_DECL_OVERRIDE;
+                   Qt::ImageConversionFlags flags = Qt::AutoColor) override;
 
     virtual Drawable handle() const;
-    inline Type type() const Q_DECL_OVERRIDE { return QPaintEngine::X11; }
+    inline Type type() const override { return QPaintEngine::X11; }
 
     QPainter::RenderHints supportedRenderHints() const;
 

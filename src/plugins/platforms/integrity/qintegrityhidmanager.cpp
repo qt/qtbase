@@ -73,8 +73,8 @@ public:
     {
         CheckSuccess(gh_hid_close(handle));
     };
-    void process_event(void) Q_DECL_OVERRIDE;
-    void async_wait(void) Q_DECL_OVERRIDE;
+    void process_event(void) override;
+    void async_wait(void) override;
     HIDDriver *get_driver(void) { return driver; };
     HIDHandle get_handle(void) { return handle; };
 private:
@@ -92,8 +92,8 @@ public:
     {
         qDeleteAll(devices);
     };
-    void process_event(void) Q_DECL_OVERRIDE;
-    void async_wait(void) Q_DECL_OVERRIDE;
+    void process_event(void) override;
+    void async_wait(void) override;
     void find_devices(void);
 private:
     QHash<Value, HIDDeviceHandler *> devices;

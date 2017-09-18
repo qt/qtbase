@@ -56,11 +56,11 @@ public:
     QCocoaMenuBar();
     ~QCocoaMenuBar();
 
-    void insertMenu(QPlatformMenu *menu, QPlatformMenu* before) Q_DECL_OVERRIDE;
-    void removeMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
-    void syncMenu(QPlatformMenu *menuItem) Q_DECL_OVERRIDE;
-    void handleReparent(QWindow *newParentWindow) Q_DECL_OVERRIDE;
-    QPlatformMenu *menuForTag(quintptr tag) const Q_DECL_OVERRIDE;
+    void insertMenu(QPlatformMenu *menu, QPlatformMenu* before) override;
+    void removeMenu(QPlatformMenu *menu) override;
+    void syncMenu(QPlatformMenu *menuItem) override;
+    void handleReparent(QWindow *newParentWindow) override;
+    QPlatformMenu *menuForTag(quintptr tag) const override;
 
     inline NSMenu *nsMenu() const
         { return m_nativeMenu; }

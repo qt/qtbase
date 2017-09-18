@@ -47,8 +47,8 @@ QT_BEGIN_NAMESPACE
 class QCocoaServices : public QPlatformServices
 {
 public:
-    bool openUrl(const QUrl &url) Q_DECL_OVERRIDE;
-    bool openDocument(const QUrl &url) Q_DECL_OVERRIDE;
+    bool openUrl(const QUrl &url) override;
+    bool openDocument(const QUrl &url) override;
 };
 
 QT_END_NAMESPACE

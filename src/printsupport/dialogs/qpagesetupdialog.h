@@ -62,14 +62,14 @@ public:
     ~QPageSetupDialog();
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
+    void setVisible(bool visible) override;
 #endif
-    int exec() Q_DECL_OVERRIDE;
+    int exec() override;
 
     using QDialog::open;
     void open(QObject *receiver, const char *member);
 
-    void done(int result) Q_DECL_OVERRIDE;
+    void done(int result) override;
 
     QPrinter *printer();
 };

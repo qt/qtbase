@@ -132,17 +132,17 @@ public:
         : ExplicitOverrideControlBase(parent) {}
 
 private Q_SLOTS:
-    void pureSlot0() Q_DECL_OVERRIDE {}
-    void pureSlot1() Q_DECL_OVERRIDE {}
-    void pureSlot2() const Q_DECL_OVERRIDE {}
-    void pureSlot3() Q_DECL_OVERRIDE const {}
+    void pureSlot0() override {}
+    void pureSlot1() override {}
+    void pureSlot2() const override {}
+    void pureSlot3() override const {}
 #if 0 // moc doesn't support volatile slots
-    void pureSlot4() volatile Q_DECL_OVERRIDE {}
-    void pureSlot5() Q_DECL_OVERRIDE volatile {}
-    void pureSlot6() const volatile Q_DECL_OVERRIDE {}
-    void pureSlot7() volatile Q_DECL_OVERRIDE const {}
-    void pureSlot8() const Q_DECL_OVERRIDE volatile {}
-    void pureSlot9() Q_DECL_OVERRIDE volatile const {}
+    void pureSlot4() volatile override {}
+    void pureSlot5() override volatile {}
+    void pureSlot6() const volatile override {}
+    void pureSlot7() volatile override const {}
+    void pureSlot8() const override volatile {}
+    void pureSlot9() override volatile const {}
 #endif
 };
 
@@ -176,17 +176,17 @@ public:
         : ExplicitOverrideControlBase(parent) {}
 
 private Q_SLOTS:
-    void pureSlot0() Q_DECL_FINAL Q_DECL_OVERRIDE {}
-    void pureSlot1() Q_DECL_OVERRIDE Q_DECL_FINAL {}
-    void pureSlot2() Q_DECL_OVERRIDE const Q_DECL_FINAL {}
-    void pureSlot3() Q_DECL_FINAL const Q_DECL_OVERRIDE {}
+    void pureSlot0() Q_DECL_FINAL override {}
+    void pureSlot1() override Q_DECL_FINAL {}
+    void pureSlot2() override const Q_DECL_FINAL {}
+    void pureSlot3() Q_DECL_FINAL const override {}
 #if 0 // moc doesn't support volatile slots
-    void pureSlot4() volatile Q_DECL_FINAL Q_DECL_OVERRIDE {}
-    void pureSlot5() Q_DECL_OVERRIDE Q_DECL_FINAL volatile {}
-    void pureSlot6() Q_DECL_OVERRIDE const volatile Q_DECL_FINAL {}
-    void pureSlot7() volatile Q_DECL_OVERRIDE Q_DECL_FINAL const {}
-    void pureSlot8() const Q_DECL_FINAL Q_DECL_OVERRIDE volatile {}
-    void pureSlot9() Q_DECL_FINAL volatile const Q_DECL_OVERRIDE {}
+    void pureSlot4() volatile Q_DECL_FINAL override {}
+    void pureSlot5() override Q_DECL_FINAL volatile {}
+    void pureSlot6() override const volatile Q_DECL_FINAL {}
+    void pureSlot7() volatile override Q_DECL_FINAL const {}
+    void pureSlot8() const Q_DECL_FINAL override volatile {}
+    void pureSlot9() Q_DECL_FINAL volatile const override {}
 #endif
 };
 

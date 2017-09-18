@@ -82,8 +82,8 @@ public:
 
     void invalidate(qint64 key);
 
-    void invalidateResource() Q_DECL_OVERRIDE;
-    void freeResource(QOpenGLContext *ctx) Q_DECL_OVERRIDE;
+    void invalidateResource() override;
+    void freeResource(QOpenGLContext *ctx) override;
 
 private:
     GLuint bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureCache::BindOptions options);

@@ -170,7 +170,7 @@ public:
     static void checkSettingSslContext(QSslSocket*, QSharedPointer<QSslContext>);
     static QSharedPointer<QSslContext> sslContext(QSslSocket *socket);
     bool isPaused() const;
-    bool bind(const QHostAddress &address, quint16, QAbstractSocket::BindMode) Q_DECL_OVERRIDE;
+    bool bind(const QHostAddress &address, quint16, QAbstractSocket::BindMode) override;
     void _q_connectedSlot();
     void _q_hostFoundSlot();
     void _q_disconnectedSlot();
@@ -189,9 +189,9 @@ public:
 
     static QList<QByteArray> unixRootCertDirectories(); // used also by QSslContext
 
-    virtual qint64 peek(char *data, qint64 maxSize) Q_DECL_OVERRIDE;
-    virtual QByteArray peek(qint64 maxSize) Q_DECL_OVERRIDE;
-    bool flush() Q_DECL_OVERRIDE;
+    virtual qint64 peek(char *data, qint64 maxSize) override;
+    virtual QByteArray peek(qint64 maxSize) override;
+    bool flush() override;
 
     // Platform specific functions
     virtual void startClientEncryption() = 0;

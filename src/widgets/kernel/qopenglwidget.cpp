@@ -536,8 +536,8 @@ public:
         : QOpenGLPaintDevicePrivate(QSize()),
           w(widget) { }
 
-    void beginPaint() Q_DECL_OVERRIDE;
-    void endPaint() Q_DECL_OVERRIDE;
+    void beginPaint() override;
+    void endPaint() override;
 
     QOpenGLWidget *w;
 };
@@ -547,7 +547,7 @@ class QOpenGLWidgetPaintDevice : public QOpenGLPaintDevice
 public:
     QOpenGLWidgetPaintDevice(QOpenGLWidget *widget)
         : QOpenGLPaintDevice(*new QOpenGLWidgetPaintDevicePrivate(widget)) { }
-    void ensureActiveTarget() Q_DECL_OVERRIDE;
+    void ensureActiveTarget() override;
 };
 
 class QOpenGLWidgetPrivate : public QWidgetPrivate
@@ -576,8 +576,8 @@ public:
     void reset();
     void recreateFbo();
 
-    GLuint textureId() const Q_DECL_OVERRIDE;
-    QPlatformTextureList::Flags textureListFlags() Q_DECL_OVERRIDE;
+    GLuint textureId() const override;
+    QPlatformTextureList::Flags textureListFlags() override;
 
     void initialize();
     void invokeUserPaint();
@@ -585,14 +585,14 @@ public:
 
     void invalidateFbo();
 
-    QImage grabFramebuffer() Q_DECL_OVERRIDE;
-    void beginBackingStorePainting() Q_DECL_OVERRIDE { inBackingStorePaint = true; }
-    void endBackingStorePainting() Q_DECL_OVERRIDE { inBackingStorePaint = false; }
-    void beginCompose() Q_DECL_OVERRIDE;
-    void endCompose() Q_DECL_OVERRIDE;
-    void initializeViewportFramebuffer() Q_DECL_OVERRIDE;
-    void resizeViewportFramebuffer() Q_DECL_OVERRIDE;
-    void resolveSamples() Q_DECL_OVERRIDE;
+    QImage grabFramebuffer() override;
+    void beginBackingStorePainting() override { inBackingStorePaint = true; }
+    void endBackingStorePainting() override { inBackingStorePaint = false; }
+    void beginCompose() override;
+    void endCompose() override;
+    void initializeViewportFramebuffer() override;
+    void resizeViewportFramebuffer() override;
+    void resolveSamples() override;
 
     QOpenGLContext *context;
     QOpenGLFramebufferObject *fbo;

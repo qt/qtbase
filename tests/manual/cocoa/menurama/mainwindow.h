@@ -44,7 +44,7 @@ public:
     ~MainWindow();
 
 protected:
-    void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *) override;
 
 public slots:
     void enableStuffMenu(bool enable);

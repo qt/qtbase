@@ -595,28 +595,28 @@ public:
         : QGraphicsEffectSourcePrivate(), item(i), info(0)
     {}
 
-    void detach() Q_DECL_OVERRIDE
+    void detach() override
     {
         item->d_ptr->graphicsEffect = 0;
         item->prepareGeometryChange();
     }
 
-    const QGraphicsItem *graphicsItem() const Q_DECL_OVERRIDE
+    const QGraphicsItem *graphicsItem() const override
     { return item; }
 
-    const QWidget *widget() const Q_DECL_OVERRIDE
+    const QWidget *widget() const override
     { return 0; }
 
-    void update() Q_DECL_OVERRIDE {
+    void update() override {
         item->d_ptr->updateDueToGraphicsEffect = true;
         item->update();
         item->d_ptr->updateDueToGraphicsEffect = false;
     }
 
-    void effectBoundingRectChanged() Q_DECL_OVERRIDE
+    void effectBoundingRectChanged() override
     { item->prepareGeometryChange(); }
 
-    bool isPixmap() const Q_DECL_OVERRIDE
+    bool isPixmap() const override
     {
         return item->type() == QGraphicsPixmapItem::Type
                && !(item->flags() & QGraphicsItem::ItemIsSelectable)
@@ -624,10 +624,10 @@ public:
             //|| (item->d_ptr->isObject && qobject_cast<QDeclarativeImage *>(q_func()));
     }
 
-    const QStyleOption *styleOption() const Q_DECL_OVERRIDE
+    const QStyleOption *styleOption() const override
     { return info ? info->option : 0; }
 
-    QRect deviceRect() const Q_DECL_OVERRIDE
+    QRect deviceRect() const override
     {
         if (!info || !info->widget) {
             qWarning("QGraphicsEffectSource::deviceRect: Not yet implemented, lacking device context");
@@ -636,11 +636,11 @@ public:
         return info->widget->rect();
     }
 
-    QRectF boundingRect(Qt::CoordinateSystem system) const Q_DECL_OVERRIDE;
-    void draw(QPainter *) Q_DECL_OVERRIDE;
+    QRectF boundingRect(Qt::CoordinateSystem system) const override;
+    void draw(QPainter *) override;
     QPixmap pixmap(Qt::CoordinateSystem system,
                    QPoint *offset,
-                   QGraphicsEffect::PixmapPadMode mode) const Q_DECL_OVERRIDE;
+                   QGraphicsEffect::PixmapPadMode mode) const override;
     QRect paddedEffectRect(Qt::CoordinateSystem system, QGraphicsEffect::PixmapPadMode mode, const QRectF &sourceRect, bool *unpadded = 0) const;
 
     QGraphicsItem *item;
