@@ -43,6 +43,7 @@
 #endif
 
 #include <qversionnumber.h>
+#include <qdebug.h>
 
 #if defined(Q_OS_ANDROID)
 #include <private/qjni_p.h>
@@ -509,5 +510,17 @@ const QOperatingSystemVersion QOperatingSystemVersion::AndroidNougat_MR1 =
  */
 const QOperatingSystemVersion QOperatingSystemVersion::AndroidOreo =
     QOperatingSystemVersion(QOperatingSystemVersion::Android, 8, 0);
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QOperatingSystemVersion &ov)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QOperatingSystemVersion(" << ov.name()
+        << ", " << ov.majorVersion() << '.' << ov.minorVersion()
+        << '.' << ov.microVersion() << ')';
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE

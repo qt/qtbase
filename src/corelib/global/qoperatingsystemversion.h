@@ -128,6 +128,11 @@ private:
 };
 Q_DECLARE_TYPEINFO(QOperatingSystemVersion, QT_VERSION < QT_VERSION_CHECK(6, 0, 0) ? Q_RELOCATABLE_TYPE : Q_PRIMITIVE_TYPE);
 
+#ifndef QT_NO_DEBUG_STREAM
+class QDebug;
+Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QOperatingSystemVersion &ov);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QOPERATINGSYSTEMVERSION_H
