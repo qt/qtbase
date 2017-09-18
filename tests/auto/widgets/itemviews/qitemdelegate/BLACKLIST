@@ -1,2 +1,4 @@
 [enterKey]
 opensuse-42.3 ci
+[testLineEditValidation]
+opensuse-42.3 ci
