@@ -43,7 +43,6 @@
 // Multiscreen: QWindow-QScreen(-output) association. Needs some reorg (device cannot be owned by screen)
 // Find card via devicediscovery like in eglfs_kms.
 // Mode restore like QEglFSKmsInterruptHandler.
-// Formats other then 32 bpp?
 // grabWindow
 
 #include "qlinuxfbdrmscreen.h"
@@ -187,15 +186,67 @@ void QLinuxFbDevice::registerScreen(QPlatformScreen *screen,
     Q_UNREACHABLE();
 }
 
+static uint32_t bppForDrmFormat(uint32_t drmFormat)
+{
+    switch (drmFormat) {
+    case DRM_FORMAT_RGB565:
+    case DRM_FORMAT_BGR565:
+        return 16;
+    default:
+        return 32;
+    }
+}
+
+static int depthForDrmFormat(uint32_t drmFormat)
+{
+    switch (drmFormat) {
+    case DRM_FORMAT_RGB565:
+    case DRM_FORMAT_BGR565:
+        return 16;
+    case DRM_FORMAT_XRGB8888:
+    case DRM_FORMAT_XBGR8888:
+        return 24;
+    case DRM_FORMAT_XRGB2101010:
+    case DRM_FORMAT_XBGR2101010:
+        return 30;
+    default:
+        return 32;
+    }
+}
+
+static QImage::Format formatForDrmFormat(uint32_t drmFormat)
+{
+    switch (drmFormat) {
+    case DRM_FORMAT_XRGB8888:
+    case DRM_FORMAT_XBGR8888:
+        return QImage::Format_RGB32;
+    case DRM_FORMAT_ARGB8888:
+    case DRM_FORMAT_ABGR8888:
+        return QImage::Format_ARGB32;
+    case DRM_FORMAT_RGB565:
+    case DRM_FORMAT_BGR565:
+        return QImage::Format_RGB16;
+    case DRM_FORMAT_XRGB2101010:
+    case DRM_FORMAT_XBGR2101010:
+        return QImage::Format_RGB30;
+    case DRM_FORMAT_ARGB2101010:
+    case DRM_FORMAT_ABGR2101010:
+        return QImage::Format_A2RGB30_Premultiplied;
+    default:
+        return QImage::Format_ARGB32;
+    }
+}
+
 bool QLinuxFbDevice::createFramebuffer(QLinuxFbDevice::Output *output, int bufferIdx)
 {
     const QSize size = output->currentRes();
     const uint32_t w = size.width();
     const uint32_t h = size.height();
+    const uint32_t bpp = bppForDrmFormat(output->kmsOutput.drm_format);
     drm_mode_create_dumb creq = {
         h,
         w,
-        32,
+        bpp,
         0, 0, 0, 0
     };
     if (drmIoctl(fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq) == -1) {
@@ -207,10 +258,15 @@ bool QLinuxFbDevice::createFramebuffer(QLinuxFbDevice::Output *output, int buffe
     fb.handle = creq.handle;
     fb.pitch = creq.pitch;
     fb.size = creq.size;
-    qCDebug(qLcFbDrm, "Got a dumb buffer for size %dx%d, handle %u, pitch %u, size %u",
-            w, h, fb.handle, fb.pitch, (uint) fb.size);
+    qCDebug(qLcFbDrm, "Got a dumb buffer for size %dx%d and bpp %u: handle %u, pitch %u, size %u",
+            w, h, bpp, fb.handle, fb.pitch, (uint) fb.size);
 
-    if (drmModeAddFB(fd(), w, h, 24, 32, fb.pitch, fb.handle, &fb.fb) == -1) {
+    uint32_t handles[4] = { fb.handle };
+    uint32_t strides[4] = { fb.pitch };
+    uint32_t offsets[4] = { 0 };
+
+    if (drmModeAddFB2(fd(), w, h, output->kmsOutput.drm_format,
+                      handles, strides, offsets, &fb.fb, 0) == -1) {
         qErrnoWarning(errno, "Failed to add FB");
         return false;
     }
@@ -229,10 +285,10 @@ bool QLinuxFbDevice::createFramebuffer(QLinuxFbDevice::Output *output, int buffe
         return false;
     }
 
-    qCDebug(qLcFbDrm, "FB is %u, mapped at %p", fb.fb, fb.p);
+    qCDebug(qLcFbDrm, "FB is %u (DRM format 0x%x), mapped at %p", fb.fb, output->kmsOutput.drm_format, fb.p);
     memset(fb.p, 0, fb.size);
 
-    fb.wrapper = QImage(static_cast<uchar *>(fb.p), w, h, fb.pitch, QImage::Format_ARGB32);
+    fb.wrapper = QImage(static_cast<uchar *>(fb.p), w, h, fb.pitch, formatForDrmFormat(output->kmsOutput.drm_format));
 
     return true;
 }
@@ -357,10 +413,10 @@ bool QLinuxFbDrmScreen::initialize()
     QLinuxFbDevice::Output *output(m_device->output(0));
 
     mGeometry = QRect(QPoint(0, 0), output->currentRes());
-    mDepth = 32;
-    mFormat = QImage::Format_ARGB32;
+    mDepth = depthForDrmFormat(output->kmsOutput.drm_format);
+    mFormat = formatForDrmFormat(output->kmsOutput.drm_format);
     mPhysicalSize = output->kmsOutput.physical_size;
-    qCDebug(qLcFbDrm) << mGeometry << mPhysicalSize;
+    qCDebug(qLcFbDrm) << mGeometry << mPhysicalSize << mDepth << mFormat;
 
     QFbScreen::initializeCompositor();
 
