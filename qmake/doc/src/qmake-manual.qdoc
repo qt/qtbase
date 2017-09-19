@@ -3754,8 +3754,8 @@
        compiled (see QLibraryInfo::DataPath).
     \endlist
 
-    \note The \c QMAKESPEC path will automatically be added to the
-    \l{INCLUDEPATH} system variable.
+    \note The \c QMAKESPEC path will be automatically added to the generated
+    Makefile after the contents of the \l{INCLUDEPATH} system variable.
 
     \target cache
     \section1 Cache File
