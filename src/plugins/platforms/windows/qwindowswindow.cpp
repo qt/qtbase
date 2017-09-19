@@ -1527,6 +1527,26 @@ void QWindowsWindow::handleResized(int wParam)
     }
 }
 
+void QWindowsWindow::checkForScreenChanged()
+{
+    if (parent())
+        return;
+
+    QPlatformScreen *currentScreen = screen();
+    const auto &screenManager = QWindowsContext::instance()->screenManager();
+    // QTBUG-62971: When dragging a window by its border, detect by mouse position
+    // to prevent it from oscillating between screens when it resizes
+    const QWindowsScreen *newScreen = testFlag(ResizeMoveActive)
+        ? screenManager.screenAtDp(QWindowsCursor::mousePosition())
+        : screenManager.screenForHwnd(m_data.hwnd);
+    if (newScreen != nullptr && newScreen != currentScreen) {
+        qCDebug(lcQpaWindows).noquote().nospace() << __FUNCTION__
+            << ' ' << window() << " \"" << currentScreen->name()
+            << "\"->\"" << newScreen->name() << '"';
+        QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+    }
+}
+
 void QWindowsWindow::handleGeometryChange()
 {
     const QRect previousGeometry = m_data.geometry;
@@ -1541,17 +1561,9 @@ void QWindowsWindow::handleGeometryChange()
         && !(m_data.geometry.width() > previousGeometry.width() || m_data.geometry.height() > previousGeometry.height())) {
         fireExpose(QRect(QPoint(0, 0), m_data.geometry.size()), true);
     }
-    if (!parent() && previousGeometry.topLeft() != m_data.geometry.topLeft()) {
-        QPlatformScreen *currentScreen = screen();
-        const QWindowsScreen *newScreen =
-            QWindowsContext::instance()->screenManager().screenForHwnd(m_data.hwnd);
-        if (newScreen != nullptr && newScreen != currentScreen) {
-            qCDebug(lcQpaWindows).noquote().nospace() << __FUNCTION__
-                << ' ' << window() << " \"" << currentScreen->name()
-                << "\"->\"" << newScreen->name() << '"';
-            QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
-        }
-    }
+
+    checkForScreenChanged();
+
     if (testFlag(SynchronousGeometryChangeEvent))
         QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
 
