@@ -458,14 +458,14 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     reliable sequence, which may be needed for debugging.
 
     The class can generate 32-bit or 64-bit quantities, or fill an array of
-    those. The most common way of generating new values is to call the get32(),
+    those. The most common way of generating new values is to call the generate(),
     get64() or fillRange() functions. One would use it as:
 
     \code
-        quint32 value = QRandomGenerator::get32();
+        quint32 value = QRandomGenerator::generate();
     \endcode
 
-    Additionally, it provides a floating-point function getReal() that returns
+    Additionally, it provides a floating-point function generateDouble() that returns
     a number in the range [0, 1) (that is, inclusive of zero and exclusive of
     1). There's also a set of convenience functions that facilitate obtaining a
     random number in a bounded, integral range.
@@ -567,7 +567,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 
     Generates a 32-bit random quantity and returns it.
 
-    \sa QRandomGenerator::get32(), QRandomGenerator::get64()
+    \sa QRandomGenerator::generate(), QRandomGenerator::generate64()
  */
 
 /*!
@@ -611,7 +611,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     and \a end. This function is equivalent to (and is implemented as):
 
     \code
-        std::generate(begin, end, []() { return get32(); });
+        std::generate(begin, end, []() { return generate(); });
     \endcode
 
     This function complies with the requirements for the function
@@ -683,7 +683,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
  */
 
 /*!
-    \fn qreal QRandomGenerator::getReal()
+    \fn qreal QRandomGenerator::generateReal()
 
     Generates one random qreal in the canonical range [0, 1) (that is,
     inclusive of zero and exclusive of 1).
@@ -698,7 +698,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \c{\l{http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution}{std::uniform_real_distribution}}
     with parameters 0 and 1.
 
-    \sa get32(), get64(), bounded()
+    \sa generate(), get64(), bounded()
  */
 
 /*!
@@ -708,10 +708,10 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     sup (exclusive). This function is equivalent to and is implemented as:
 
     \code
-        return getReal() * sup;
+        return generateDouble() * sup;
     \endcode
 
-    \sa getReal(), bounded()
+    \sa generateDouble(), bounded()
  */
 
 /*!
@@ -730,13 +730,13 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
         quint32 v = QRandomGenerator::bounded(256);
     \endcode
 
-    Naturally, the same could also be obtained by masking the result of get32()
+    Naturally, the same could also be obtained by masking the result of generate()
     to only the lower 8 bits. Either solution is as efficient.
 
     Note that this function cannot be used to obtain values in the full 32-bit
-    range of quint32. Instead, use get32().
+    range of quint32. Instead, use generate().
 
-    \sa get32(), get64(), getReal()
+    \sa generate(), get64(), generateDouble()
  */
 
 /*!
@@ -747,9 +747,9 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \a sup (exclusive). \a sup must not be negative.
 
     Note that this function cannot be used to obtain values in the full 32-bit
-    range of int. Instead, use get32() and cast to int.
+    range of int. Instead, use generate() and cast to int.
 
-    \sa get32(), get64(), getReal()
+    \sa generate(), get64(), generateDouble()
  */
 
 /*!
@@ -771,9 +771,9 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 
 
     Note that this function cannot be used to obtain values in the full 32-bit
-    range of quint32. Instead, use get32().
+    range of quint32. Instead, use generate().
 
-    \sa get32(), get64(), getReal()
+    \sa generate(), get64(), generateDouble()
  */
 
 /*!
@@ -784,9 +784,9 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     (inclusive) and \a sup (exclusive), both of which may be negative.
 
     Note that this function cannot be used to obtain values in the full 32-bit
-    range of int. Instead, use get32() and cast to int.
+    range of int. Instead, use generate() and cast to int.
 
-    \sa get32(), get64(), getReal()
+    \sa generate(), get64(), generateDouble()
  */
 
 /*!
@@ -798,7 +798,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     from a high-quality, seed-less Random Number Generator.
 
     QRandomGenerator64 is a simple adaptor class around QRandomGenerator, making the
-    QRandomGenerator::get64() function the default for operator()(), instead of the
+    QRandomGenerator::generate64() function the default for operator()(), instead of the
     function that returns 32-bit quantities. This class is intended to be used
     in conjunction with Standard Library algorithms that need 64-bit quantities
     instead of 32-bit ones.
@@ -824,11 +824,28 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
  */
 
 /*!
+    \fn quint64 QRandomGenerator64::generate()
+
+    Generates one 64-bit random value and returns it.
+
+    Note about casting to a signed integer: all bits returned by this function
+    are random, so there's a 50% chance that the most significant bit will be
+    set. If you wish to cast the returned value to qint64 and keep it positive,
+    you should mask the sign bit off:
+
+    \code
+        qint64 value = QRandomGenerator64::generate() & std::numeric_limits<qint64>::max();
+    \endcode
+
+    \sa QRandomGenerator, QRandomGenerator::generate64()
+ */
+
+/*!
     \fn result_type QRandomGenerator64::operator()()
 
     Generates a 64-bit random quantity and returns it.
 
-    \sa QRandomGenerator::get32(), QRandomGenerator::get64()
+    \sa QRandomGenerator::generate(), QRandomGenerator::generate64()
  */
 
 /*!
@@ -874,12 +891,12 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     you should mask the sign bit off:
 
     \code
-        int value = QRandomGenerator::get32() & std::numeric_limits<int>::max();
+        int value = QRandomGenerator::generate() & std::numeric_limits<int>::max();
     \endcode
 
-    \sa get64(), getReal()
+    \sa get64(), generateDouble()
  */
-quint32 QRandomGenerator::get32()
+quint32 QRandomGenerator::generate()
 {
     quint32 ret;
     fill(&ret, &ret + 1);
@@ -895,12 +912,12 @@ quint32 QRandomGenerator::get32()
     you should mask the sign bit off:
 
     \code
-        qint64 value = QRandomGenerator::get64() & std::numeric_limits<qint64>::max();
+        qint64 value = QRandomGenerator::generate64() & std::numeric_limits<qint64>::max();
     \endcode
 
-    \sa get32(), getReal(), QRandomGenerator64
+    \sa generate(), generateDouble(), QRandomGenerator64
  */
-quint64 QRandomGenerator::get64()
+quint64 QRandomGenerator::generate64()
 {
     quint64 ret;
     fill(&ret, &ret + 1);
