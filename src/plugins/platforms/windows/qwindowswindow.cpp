@@ -872,7 +872,9 @@ void QWindowsBaseWindow::hide_sys() // Normal hide, do not activate other window
 void QWindowsBaseWindow::raise_sys()
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window();
-    if (window()->type() == Qt::Popup
+    const Qt::WindowType type = window()->type();
+    if (type == Qt::Popup
+        || type == Qt::SubWindow // Special case for QTBUG-63121: MDI subwindows with WindowStaysOnTopHint
         || (window()->flags() & (Qt::WindowStaysOnTopHint | Qt::WindowStaysOnBottomHint)) == 0) {
         SetWindowPos(handle(), HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     }
