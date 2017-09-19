@@ -69,7 +69,6 @@ include(gl_integrations/gl_integrations.pri)
 !qtConfig(system-xcb) {
     QMAKE_USE += xcb-static xcb
 } else {
-    LIBS += -lxcb-xinerama  ### there is no configure test for this!
     qtConfig(xkb): QMAKE_USE += xcb_xkb
     qtConfig(xcb-render): QMAKE_USE += xcb_render
     QMAKE_USE += xcb_syslibs
