@@ -2685,7 +2685,15 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
         index = match(multi ? QChar::Script_Common : script, request, family_name, foundry_name, &desc, blackListed);
     }
     if (index >= 0) {
-        engine = loadEngine(script, request, desc.family, desc.foundry, desc.style, desc.size);
+        QFontDef fontDef = request;
+
+        // Don't pass empty family names to the platform font database, since it will then invoke its own matching
+        // and we will be out of sync with the matched font.
+        if (fontDef.family.isEmpty())
+            fontDef.family = desc.family->name;
+
+        engine = loadEngine(script, fontDef, desc.family, desc.foundry, desc.style, desc.size);
+
         if (engine)
             initFontDef(desc, request, &engine->fontDef, multi);
         else
