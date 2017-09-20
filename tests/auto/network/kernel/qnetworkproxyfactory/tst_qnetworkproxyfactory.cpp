@@ -368,8 +368,8 @@ void tst_QNetworkProxyFactory::genericSystemProxy()
     QFETCH(QString, hostName);
     QFETCH(int, port);
 
-// The generic system proxy is only available on the following platforms
-#if (!defined Q_OS_WIN) && (!defined Q_OS_OSX) && !QT_CONFIG(libproxy)
+// We can only use the generic system proxy where available:
+#if !defined(Q_OS_WIN) && !defined(Q_OS_MACOS) && !QT_CONFIG(libproxy)
     qputenv(envVar, url);
     const QList<QNetworkProxy> systemProxy = QNetworkProxyFactory::systemProxyForQuery();
     QCOMPARE(systemProxy.size(), 1);
