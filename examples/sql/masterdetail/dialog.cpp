@@ -155,12 +155,12 @@ int Dialog::addNewAlbum(const QString &title, int artistId)
     return id;
 }
 
-void Dialog::addTracks(int albumId, QStringList tracks)
+void Dialog::addTracks(int albumId, const QStringList &tracks)
 {
     QDomElement albumNode = albumDetails.createElement("album");
     albumNode.setAttribute("id", albumId);
 
-    for (int i = 0; i < tracks.count(); i++) {
+    for (int i = 0; i < tracks.count(); ++i) {
         QString trackNumber = QString::number(i);
         if (i < 10)
             trackNumber.prepend('0');
@@ -254,9 +254,9 @@ QDialogButtonBox *Dialog::createButtons()
 
     closeButton->setDefault(true);
 
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
-    connect(revertButton, SIGNAL(clicked()), this, SLOT(revert()));
-    connect(submitButton, SIGNAL(clicked()), this, SLOT(submit()));
+    connect(closeButton, &QPushButton::clicked, this, &Dialog::close);
+    connect(revertButton, &QPushButton::clicked,  this, &Dialog::revert);
+    connect(submitButton, &QPushButton::clicked, this, &Dialog::submit);
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(submitButton, QDialogButtonBox::ResetRole);
@@ -270,7 +270,7 @@ QModelIndex Dialog::indexOfArtist(const QString &artist)
 {
     QSqlTableModel *artistModel = model->relationModel(2);
 
-    for (int i = 0; i < artistModel->rowCount(); i++) {
+    for (int i = 0; i < artistModel->rowCount(); ++i) {
         QSqlRecord record =  artistModel->record(i);
         if (record.value("artist") == artist)
             return artistModel->index(i, 1);

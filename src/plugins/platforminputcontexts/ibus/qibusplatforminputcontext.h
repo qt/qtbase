@@ -95,6 +95,7 @@ public:
     void update(Qt::InputMethodQueries) Q_DECL_OVERRIDE;
     bool filterEvent(const QEvent *event) Q_DECL_OVERRIDE;
     QLocale locale() const Q_DECL_OVERRIDE;
+    bool hasCapability(Capability capability) const Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);

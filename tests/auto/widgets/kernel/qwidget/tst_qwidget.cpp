@@ -1743,8 +1743,6 @@ void tst_QWidget::activation()
 {
     Q_CHECK_PAINTEVENTS
 
-    int waitTime = 100;
-
     QWidget widget1;
     widget1.setObjectName("activation-Widget1");
     widget1.setWindowTitle(widget1.objectName());
@@ -1756,25 +1754,18 @@ void tst_QWidget::activation()
     widget1.show();
     widget2.show();
 
-    QTest::qWait(waitTime);
-    QCOMPARE(QApplication::activeWindow(), &widget2);
+    QTRY_COMPARE(QApplication::activeWindow(), &widget2);
     widget2.showMinimized();
-    QTest::qWait(waitTime);
 
-    QCOMPARE(QApplication::activeWindow(), &widget1);
+    QTRY_COMPARE(QApplication::activeWindow(), &widget1);
     widget2.showMaximized();
-    QTest::qWait(waitTime);
-    QCOMPARE(QApplication::activeWindow(), &widget2);
+    QTRY_COMPARE(QApplication::activeWindow(), &widget2);
     widget2.showMinimized();
-    QTest::qWait(waitTime);
-    QCOMPARE(QApplication::activeWindow(), &widget1);
+    QTRY_COMPARE(QApplication::activeWindow(), &widget1);
     widget2.showNormal();
-    QTest::qWait(waitTime);
-    QTest::qWait(waitTime);
-    QCOMPARE(QApplication::activeWindow(), &widget2);
+    QTRY_COMPARE(QApplication::activeWindow(), &widget2);
     widget2.hide();
-    QTest::qWait(waitTime);
-    QCOMPARE(QApplication::activeWindow(), &widget1);
+    QTRY_COMPARE(QApplication::activeWindow(), &widget1);
 }
 #endif // Q_OS_WIN
 

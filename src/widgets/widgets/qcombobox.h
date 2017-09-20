@@ -45,6 +45,7 @@
 #include <QtWidgets/qabstractitemdelegate.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qvalidator.h>
 
 QT_REQUIRE_CONFIG(combobox);
 

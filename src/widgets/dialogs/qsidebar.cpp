@@ -42,7 +42,9 @@
 
 #include <qaction.h>
 #include <qurl.h>
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #include <qmimedata.h>
 #include <qevent.h>
 #include <qdebug.h>
@@ -435,7 +437,7 @@ void QSidebar::selectUrl(const QUrl &url)
             this, SLOT(clicked(QModelIndex)));
 }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 /*!
     \internal
 
@@ -454,7 +456,7 @@ void QSidebar::showContextMenu(const QPoint &position)
     if (actions.count() > 0)
         QMenu::exec(actions, mapToGlobal(position));
 }
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 /*!
     \internal

@@ -60,8 +60,8 @@ ImageItem::ImageItem(int id, const QPixmap &pixmap, QGraphicsItem *parent)
     timeLine.setDuration(150);
     timeLine.setFrameRange(0, 150);
 
-    connect(&timeLine, SIGNAL(frameChanged(int)), this, SLOT(setFrame(int)));
-    connect(&timeLine, SIGNAL(finished()), this, SLOT(updateItemPosition()));
+    connect(&timeLine, &QTimeLine::frameChanged, this, &ImageItem::setFrame);
+    connect(&timeLine, &QTimeLine::finished, this, &ImageItem::updateItemPosition);
 
     adjust();
 }
@@ -116,7 +116,7 @@ void ImageItem::adjust()
 //! [4]
 
 //! [5]
-int ImageItem::id()
+int ImageItem::id() const
 {
     return recordId;
 }

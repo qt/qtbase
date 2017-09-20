@@ -40,7 +40,6 @@
 #include "qlineedit.h"
 #include "qlineedit_p.h"
 
-#ifndef QT_NO_LINEEDIT
 #include "qaction.h"
 #include "qapplication.h"
 #include "qclipboard.h"
@@ -49,7 +48,9 @@
 #include "qevent.h"
 #include "qfontmetrics.h"
 #include "qstylehints.h"
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #include "qpainter.h"
 #include "qpixmap.h"
 #include "qpointer.h"
@@ -61,8 +62,10 @@
 #include "qvariant.h"
 #include "qvector.h"
 #include "qdebug.h"
+#if QT_CONFIG(textedit)
 #include "qtextedit.h"
 #include <private/qtextedit_p.h>
+#endif
 #include <private/qwidgettextcontrol_p.h>
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -2231,5 +2234,3 @@ void QLineEdit::changeEvent(QEvent *ev)
 QT_END_NAMESPACE
 
 #include "moc_qlineedit.cpp"
-
-#endif // QT_NO_LINEEDIT

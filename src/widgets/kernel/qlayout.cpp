@@ -45,7 +45,9 @@
 #include "qmenubar.h"
 #endif
 #include "qtoolbar.h"
+#if QT_CONFIG(sizegrip)
 #include "qsizegrip.h"
+#endif
 #include "qevent.h"
 #include "qstyle.h"
 #include "qvariant.h"

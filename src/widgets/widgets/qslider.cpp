@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qslider.h"
-#ifndef QT_NO_SLIDER
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
@@ -546,8 +545,6 @@ Q_WIDGETS_EXPORT QStyleOptionSlider qt_qsliderStyleOption(QSlider *slider)
     slider->initStyleOption(&sliderOption);
     return sliderOption;
 }
-
-#endif
 
 QT_END_NAMESPACE
 

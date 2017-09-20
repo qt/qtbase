@@ -53,7 +53,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#ifndef QT_NO_LINEEDIT
 #include "private/qwidget_p.h"
 #include "QtWidgets/qlineedit.h"
 #if QT_CONFIG(toolbutton)
@@ -72,6 +71,8 @@
 #include "private/qwidgetlinecontrol_p.h"
 
 #include <algorithm>
+
+QT_REQUIRE_CONFIG(lineedit);
 
 QT_BEGIN_NAMESPACE
 
@@ -255,8 +256,6 @@ private:
 };
 Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetEntry, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetLocation, Q_PRIMITIVE_TYPE);
-
-#endif // QT_NO_LINEEDIT
 
 QT_END_NAMESPACE
 

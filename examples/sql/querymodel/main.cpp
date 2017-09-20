@@ -48,11 +48,14 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "../connection.h"
 #include "customsqlmodel.h"
 #include "editablesqlmodel.h"
+
+#include <QApplication>
+#include <QTableView>
+
+#include <stdlib.h>
 
 void initializeModel(QSqlQueryModel *model)
 {
@@ -80,7 +83,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     if (!createConnection())
-        return 1;
+        return EXIT_FAILURE;
 
     QSqlQueryModel plainModel;
     EditableSqlModel editableModel;

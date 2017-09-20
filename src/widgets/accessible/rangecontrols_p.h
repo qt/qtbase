@@ -67,7 +67,7 @@ class QDoubleSpinBox;
 class QDial;
 class QAccessibleLineEdit;
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
 class QAccessibleAbstractSpinBox:
         public QAccessibleWidget,
         public QAccessibleValueInterface,
@@ -141,7 +141,7 @@ public:
 protected:
     QDoubleSpinBox *doubleSpinBox() const;
 };
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
 #if QT_CONFIG(slider)
 class QAccessibleAbstractSlider: public QAccessibleWidget, public QAccessibleValueInterface
@@ -174,7 +174,7 @@ protected:
 };
 #endif // QT_CONFIG(scrollbar)
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
 class QAccessibleSlider : public QAccessibleAbstractSlider
 {
 public:
@@ -184,7 +184,7 @@ public:
 protected:
     QSlider *slider() const;
 };
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
 #if QT_CONFIG(dial)
 class QAccessibleDial : public QAccessibleAbstractSlider

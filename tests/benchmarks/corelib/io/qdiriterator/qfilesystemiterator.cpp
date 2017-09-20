@@ -82,6 +82,7 @@
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qvariant.h>
+#include <qplatformdefs.h>
 
 #ifdef Q_OS_WIN
 #   include <windows.h>
@@ -343,8 +344,8 @@ bool QFileSystemIteratorPrivate::advanceHelper()
     QByteArray ba = m_dirPaths.top();
     ba += '/';
     ba += name;
-    struct stat st;
-    lstat(ba.constData(), &st);
+    QT_STATBUF st;
+    QT_LSTAT(ba.constData(), &st);
 
     if (S_ISDIR(st.st_mode)) {
         pushSubDirectory(ba);

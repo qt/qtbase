@@ -54,8 +54,12 @@
 #include <QtGui/qicon.h>
 #include <QtGui/qtextdocument.h>
 #include <QtWidgets/qapplication.h>
+#if QT_CONFIG(textedit)
 #include <QtWidgets/qtextedit.h>
+#endif
+#if QT_CONFIG(menu)
 #include <QtWidgets/qmenu.h>
+#endif
 #include "qdialog_p.h"
 #include <QtGui/qfont.h>
 #include <QtGui/qfontmetrics.h>
@@ -84,7 +88,7 @@ enum Button { Old_Ok = 1, Old_Cancel = 2, Old_Yes = 3, Old_No = 4, Old_Abort = 5
               NewButtonMask = 0xFFFFFC00 };
 
 enum DetailButtonLabel { ShowLabel = 0, HideLabel = 1 };
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
 class QMessageBoxDetailsText : public QWidget
 {
     Q_OBJECT
@@ -153,7 +157,7 @@ private:
     bool copyAvailable;
     TextEdit *textEdit;
 };
-#endif // QT_NO_TEXTEDIT
+#endif // QT_CONFIG(textedit)
 
 class DetailButton : public QPushButton
 {
@@ -193,7 +197,7 @@ class QMessageBoxPrivate : public QDialogPrivate
 
 public:
     QMessageBoxPrivate() : escapeButton(0), defaultButton(0), checkbox(0), clickedButton(0), detailsButton(0),
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
                            detailsText(0),
 #endif
                            compatMode(false), autoAddOkButton(true),
@@ -243,7 +247,7 @@ public:
     QCheckBox *checkbox;
     QAbstractButton *clickedButton;
     DetailButton *detailsButton;
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
     QMessageBoxDetailsText *detailsText;
 #endif
     bool compatMode;
@@ -464,7 +468,7 @@ int QMessageBoxPrivate::execReturnCode(QAbstractButton *button)
 void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
 {
     Q_Q(QMessageBox);
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
     if (detailsButton && detailsText && button == detailsButton) {
         detailsButton->setLabel(detailsText->isHidden() ? HideLabel : ShowLabel);
         detailsText->setHidden(!detailsText->isHidden());
@@ -1418,7 +1422,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
 
 #if !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_SHORTCUT)
 
-#if !defined(QT_NO_TEXTEDIT)
+#if QT_CONFIG(textedit)
         if (e == QKeySequence::Copy) {
             if (d->detailsText && d->detailsText->isVisible() && d->detailsText->copy()) {
                 e->setAccepted(true);
@@ -1429,7 +1433,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             e->setAccepted(true);
             return;
         }
-#endif // !QT_NO_TEXTEDIT
+#endif // QT_CONFIG(textedit)
 
 #if defined(Q_OS_WIN)
         if (e == QKeySequence::Copy) {
@@ -1445,7 +1449,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             for (const auto *button : buttons)
                 textToCopy += button->text() + QLatin1String("   ");
             textToCopy += QLatin1Char('\n') + separator;
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
             if (d->detailsText)
                 textToCopy += d->detailsText->text() + QLatin1Char('\n') + separator;
 #endif
@@ -1983,7 +1987,7 @@ int QMessageBoxPrivate::showOldMessageBox(QWidget *parent, QMessageBox::Icon ico
 
 void QMessageBoxPrivate::retranslateStrings()
 {
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
     if (detailsButton)
         detailsButton->setLabel(detailsText->isHidden() ? ShowLabel : HideLabel);
 #endif
@@ -2438,7 +2442,7 @@ void QMessageBox::setButtonText(int button, const QString &text)
     }
 }
 
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
 /*!
   \property QMessageBox::detailedText
   \brief the text to be displayed in the details area.
@@ -2486,7 +2490,7 @@ void QMessageBox::setDetailedText(const QString &text)
     }
     d->setupLayout();
 }
-#endif // QT_NO_TEXTEDIT
+#endif // QT_CONFIG(textedit)
 
 /*!
   \property QMessageBox::informativeText

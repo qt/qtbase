@@ -42,6 +42,8 @@
 #include <QSysInfo>
 #include <QThread>
 
+#include <private/qtnetworkglobal_p.h>
+
 class tst_QNetworkProxyFactory : public QObject {
     Q_OBJECT
 
@@ -255,7 +257,7 @@ void tst_QNetworkProxyFactory::genericSystemProxy()
     QFETCH(int, port);
 
 // The generic system proxy is only available on the following platforms
-#if (!defined Q_OS_WIN) && (!defined Q_OS_OSX)
+#if (!defined Q_OS_WIN) && (!defined Q_OS_OSX) && !QT_CONFIG(libproxy)
     qputenv(envVar, url);
     const QList<QNetworkProxy> systemProxy = QNetworkProxyFactory::systemProxyForQuery();
     QCOMPARE(systemProxy.size(), 1);

@@ -78,7 +78,7 @@ public:
         MiddleClick
     };
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void setContextMenu(QMenu *menu);
     QMenu *contextMenu() const;
 #endif

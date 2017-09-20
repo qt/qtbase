@@ -65,7 +65,9 @@
 #include "qimage.h"
 #include "qbitmap.h"
 #include "qpicture.h"
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 

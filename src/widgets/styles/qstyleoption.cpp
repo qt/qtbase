@@ -1949,7 +1949,7 @@ QStyleOptionComplex::QStyleOptionComplex(int version, int type)
     \sa QStyle::SubControl
 */
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
 /*!
     \class QStyleOptionSlider
     \brief The QStyleOptionSlider class is used to describe the
@@ -2146,9 +2146,9 @@ QStyleOptionSlider::QStyleOptionSlider(int version)
 
     \sa QAbstractSlider::pageStep
 */
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
 /*!
     \class QStyleOptionSpinBox
     \brief The QStyleOptionSpinBox class is used to describe the
@@ -2252,7 +2252,7 @@ QStyleOptionSpinBox::QStyleOptionSpinBox(int version)
 
     The default value is false, i.e. the spin box has no frame.
 */
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
 /*!
     \class QStyleOptionDockWidget
@@ -3554,7 +3554,7 @@ QStyleOptionTabBarBase::QStyleOptionTabBarBase(int version)
 
 #endif // QT_CONFIG(tabbar)
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
 /*!
     \class QStyleOptionSizeGrip
     \brief The QStyleOptionSizeGrip class is used to describe the
@@ -3634,7 +3634,7 @@ QStyleOptionSizeGrip::QStyleOptionSizeGrip(int version)
 
     \sa StyleOptionType
 */
-#endif // QT_NO_SIZEGRIP
+#endif // QT_CONFIG(sizegrip)
 
 /*!
     \class QStyleOptionGraphicsItem

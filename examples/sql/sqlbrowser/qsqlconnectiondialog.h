@@ -60,7 +60,7 @@ class QSqlConnectionDialog: public QDialog
 {
     Q_OBJECT
 public:
-    QSqlConnectionDialog(QWidget *parent = 0);
+    QSqlConnectionDialog(QWidget *parent = nullptr);
     ~QSqlConnectionDialog();
 
     QString driverName() const;

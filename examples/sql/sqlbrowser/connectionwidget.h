@@ -62,7 +62,7 @@ class ConnectionWidget: public QWidget
 {
     Q_OBJECT
 public:
-    ConnectionWidget(QWidget *parent = 0);
+    ConnectionWidget(QWidget *parent = nullptr);
     virtual ~ConnectionWidget();
 
     QSqlDatabase currentDatabase() const;

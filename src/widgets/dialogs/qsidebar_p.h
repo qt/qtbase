@@ -148,7 +148,7 @@ protected:
 
 private Q_SLOTS:
     void clicked(const QModelIndex &index);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void showContextMenu(const QPoint &position);
 #endif
     void removeEntry();

@@ -1,4 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS = \
-        qdbusperformance \
         qdbustype
+
+qtConfig(process): SUBDIRS += \
+        qdbusperformance

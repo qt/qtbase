@@ -76,7 +76,7 @@ public:
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
     bool hitButton(const QPoint &pos);
 #endif
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     QPoint adjustedMenuPosition();
 #endif
     void resetLayoutItemMargins();

@@ -148,7 +148,7 @@ private:
 };
 #endif
 
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
 class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface, public QAccessibleEditableTextInterface
 {
 public:
@@ -188,7 +188,7 @@ protected:
     QLineEdit *lineEdit() const;
     friend class QAccessibleAbstractSpinBox;
 };
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
 
 #if QT_CONFIG(progressbar)
 class QAccessibleProgressBar : public QAccessibleDisplay, public QAccessibleValueInterface

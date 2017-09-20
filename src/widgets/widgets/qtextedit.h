@@ -47,11 +47,9 @@
 #include <QtGui/qtextcursor.h>
 #include <QtGui/qtextformat.h>
 
-#ifndef QT_NO_TEXTEDIT
-
+QT_REQUIRE_CONFIG(textedit);
 
 QT_BEGIN_NAMESPACE
-
 
 class QStyleSheet;
 class QTextDocument;
@@ -328,7 +326,5 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextEdit::AutoFormatting)
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_TEXTEDIT
 
 #endif // QTEXTEDIT_H
