@@ -66,11 +66,7 @@
 #include FT_TYPE1_TABLES_H
 #include FT_GLYPH_H
 #include FT_MODULE_H
-
-#if defined(FT_LCD_FILTER_H)
 #include FT_LCD_FILTER_H
-#define QT_USE_FREETYPE_LCDFILTER
-#endif
 
 #if defined(FT_CONFIG_OPTIONS_H)
 #include FT_CONFIG_OPTIONS_H
@@ -125,12 +121,13 @@ class QtFreetypeData
 {
 public:
     QtFreetypeData()
-        : library(0)
+        : library(0), hasPatentFreeLcdRendering(false)
     { }
     ~QtFreetypeData();
 
     FT_Library library;
     QHash<QFontEngine::FaceId, QFreetypeFace *> faces;
+    bool hasPatentFreeLcdRendering;
 };
 
 QtFreetypeData::~QtFreetypeData()
@@ -164,6 +161,11 @@ QtFreetypeData *qt_getFreetypeData()
         FT_Bool no_darkening = false;
         FT_Property_Set(freetypeData->library, "cff", "no-stem-darkening", &no_darkening);
 #endif
+        // FreeType has since 2.8.1 a patent free alternative to LCD-filtering.
+        FT_Int amajor, aminor = 0, apatch = 0;
+        FT_Library_Version(freetypeData->library, &amajor, &aminor, &apatch);
+        if (QT_VERSION_CHECK(amajor, aminor, apatch) >= QT_VERSION_CHECK(2, 8, 1))
+            freetypeData->hasPatentFreeLcdRendering = true;
     }
     return freetypeData;
 }
@@ -775,10 +777,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     default_load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
     default_hint_style = ftInitialDefaultHintStyle;
     subpixelType = Subpixel_None;
-    lcdFilterType = 0;
-#if defined(FT_LCD_FILTER_H)
     lcdFilterType = (int)((quintptr) FT_LCD_FILTER_DEFAULT);
-#endif
     defaultFormat = Format_None;
     embeddedbitmap = false;
     const QByteArray env = qgetenv("QT_NO_FT_CACHE");
@@ -1165,14 +1164,14 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
 
     int glyph_buffer_size = 0;
     QScopedArrayPointer<uchar> glyph_buffer;
-#if defined(QT_USE_FREETYPE_LCDFILTER)
     bool useFreetypeRenderGlyph = false;
     if (slot->format == FT_GLYPH_FORMAT_OUTLINE && (hsubpixel || vfactor != 1)) {
         err = FT_Library_SetLcdFilter(slot->library, (FT_LcdFilter)lcdFilterType);
-        if (err == FT_Err_Ok)
+        // We use FT_Render_Glyph if freetype has support for lcd-filtering
+        // or is version 2.8.1 or higher and can do without.
+        if (err == FT_Err_Ok || qt_getFreetypeData()->hasPatentFreeLcdRendering)
             useFreetypeRenderGlyph = true;
     }
-
     if (useFreetypeRenderGlyph) {
         err = FT_Render_Glyph(slot, hsubpixel ? FT_RENDER_MODE_LCD : FT_RENDER_MODE_LCD_V);
 
@@ -1193,9 +1192,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
             convertRGBToARGB(slot->bitmap.buffer, (uint *)glyph_buffer.data(), info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_RGB, false);
         else if (vfactor != 1)
             convertRGBToARGB_V(slot->bitmap.buffer, (uint *)glyph_buffer.data(), info.width, info.height, slot->bitmap.pitch, subpixelType != Subpixel_VRGB, false);
-    } else
-#endif
-    {
+    } else {
     int left  = slot->metrics.horiBearingX;
     int right = slot->metrics.horiBearingX + slot->metrics.width;
     int top    = slot->metrics.horiBearingY;
@@ -1262,9 +1259,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
             Q_ASSERT(antialias);
             uchar *convoluted = new uchar[bitmap_buffer_size];
             bool useLegacyLcdFilter = false;
-#if defined(FC_LCD_FILTER) && defined(FT_LCD_FILTER_H)
             useLegacyLcdFilter = (lcdFilterType == FT_LCD_FILTER_LEGACY);
-#endif
             uchar *buffer = bitmap.buffer;
             if (!useLegacyLcdFilter) {
                 convoluteBitmap(bitmap.buffer, convoluted, bitmap.width, info.height, bitmap.pitch);
