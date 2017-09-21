@@ -2075,6 +2075,14 @@ void tst_QUrl::isValid()
     }
 
     {
+        QUrl url("http:");
+        url.setPath("//example.com");
+        QVERIFY(!url.isValid());
+        QVERIFY(url.toString().isEmpty());
+        QVERIFY(url.errorString().contains("Path component starts with '//' and authority is absent"));
+    }
+
+    {
         QUrl url;
         url.setPath("http://example.com");
         QVERIFY(!url.isValid());
@@ -3649,12 +3657,12 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("path-%3A-before-slash") << QUrl()
                                            << int(Path) << "c%3A/" << Tolerant << true
                                            << PrettyDecoded << "c%3A/" << "c%3A/";
-    QTest::newRow("path-doubleslash") << QUrl("trash:/")
+    QTest::newRow("path-doubleslash") << QUrl("http://example.com")
                                       << int(Path) << "//path" << Tolerant << true
-                                      << PrettyDecoded << "/path" << "trash:/path";
+                                      << PrettyDecoded << "//path" << "http://example.com//path";
     QTest::newRow("path-withdotdot") << QUrl("file:///tmp")
                                       << int(Path) << "//tmp/..///root/." << Tolerant << true
-                                      << PrettyDecoded << "/tmp/..///root/." << "file:///tmp/..///root/.";
+                                      << PrettyDecoded << "//tmp/..///root/." << "file:////tmp/..///root/.";
 
     // the other fields can be present and be empty
     // that is, their delimiters would be present, but there would be nothing to one side
@@ -3777,6 +3785,9 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("invalid-path-2") << QUrl("http://example.com")
                                     << int(Path) << "relative" << Strict << false
                                     << PrettyDecoded << "relative" << "";
+    QTest::newRow("invalid-path-3") << QUrl("trash:/")
+                                    << int(Path) << "//path" << Tolerant << false
+                                    << PrettyDecoded << "//path" << "";
 
     // -- test bad percent encoding --
     // unnecessary to test the scheme, since percent-decoding is not performed in it;
