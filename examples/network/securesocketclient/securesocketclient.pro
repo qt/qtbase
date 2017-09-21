@@ -1,3 +1,5 @@
+requires(qtHaveModule(network))
+
 HEADERS   += certificateinfo.h \
              sslclient.h
 SOURCES   += certificateinfo.cpp \

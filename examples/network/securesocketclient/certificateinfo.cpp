@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -57,8 +57,8 @@ CertificateInfo::CertificateInfo(QWidget *parent)
     form = new Ui_CertificateInfo;
     form->setupUi(this);
 
-    connect(form->certificationPathView, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(updateCertificateInfo(int)));
+    connect(form->certificationPathView, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &CertificateInfo::updateCertificateInfo);
 }
 
 CertificateInfo::~CertificateInfo()
@@ -68,25 +68,23 @@ CertificateInfo::~CertificateInfo()
 
 void CertificateInfo::setCertificateChain(const QList<QSslCertificate> &chain)
 {
-    this->chain = chain;
+    certificateChain = chain;
 
     form->certificationPathView->clear();
-
-    for (int i = 0; i < chain.size(); ++i) {
-        const QSslCertificate &cert = chain.at(i);
+    for (int i = 0; i < certificateChain.size(); ++i) {
+        const QSslCertificate &cert = certificateChain.at(i);
         form->certificationPathView->addItem(tr("%1%2 (%3)").arg(!i ? QString() : tr("Issued by: "))
                                              .arg(cert.subjectInfo(QSslCertificate::Organization).join(QLatin1Char(' ')))
                                              .arg(cert.subjectInfo(QSslCertificate::CommonName).join(QLatin1Char(' '))));
     }
-
     form->certificationPathView->setCurrentIndex(0);
 }
 
 void CertificateInfo::updateCertificateInfo(int index)
 {
     form->certificateInfoView->clear();
-    if (index >= 0 && index < chain.size()) {
-        const QSslCertificate &cert = chain.at(index);
+    if (index >= 0 && index < certificateChain.size()) {
+        const QSslCertificate &cert = certificateChain.at(index);
         QStringList lines;
         lines << tr("Organization: %1").arg(cert.subjectInfo(QSslCertificate::Organization).join(QLatin1Char(' ')))
               << tr("Subunit: %1").arg(cert.subjectInfo(QSslCertificate::OrganizationalUnitName).join(QLatin1Char(' ')))
@@ -101,9 +99,7 @@ void CertificateInfo::updateCertificateInfo(int index)
               << tr("Issuer Locality: %1").arg(cert.issuerInfo(QSslCertificate::LocalityName).join(QLatin1Char(' ')))
               << tr("Issuer State/Province: %1").arg(cert.issuerInfo(QSslCertificate::StateOrProvinceName).join(QLatin1Char(' ')))
               << tr("Issuer Common Name: %1").arg(cert.issuerInfo(QSslCertificate::CommonName).join(QLatin1Char(' ')));
-        foreach (QString line, lines)
+        for (const auto &line : lines)
             form->certificateInfoView->addItem(line);
-    } else {
-        form->certificateInfoView->clear();
     }
 }

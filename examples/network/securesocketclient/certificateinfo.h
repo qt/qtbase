@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -51,8 +51,9 @@
 #ifndef CERTIFICATEINFO_H
 #define CERTIFICATEINFO_H
 
-#include <QtWidgets/QDialog>
-#include <QtNetwork/QSslCertificate>
+#include <QDialog>
+#include <QList>
+#include <QSslCertificate>
 
 QT_BEGIN_NAMESPACE
 class Ui_CertificateInfo;
@@ -62,7 +63,7 @@ class CertificateInfo : public QDialog
 {
     Q_OBJECT
 public:
-    CertificateInfo(QWidget *parent = 0);
+    explicit CertificateInfo(QWidget *parent = nullptr);
     ~CertificateInfo();
 
     void setCertificateChain(const QList<QSslCertificate> &chain);
@@ -71,8 +72,8 @@ private slots:
     void updateCertificateInfo(int index);
 
 private:
-    Ui_CertificateInfo *form;
-    QList<QSslCertificate> chain;
+    Ui_CertificateInfo *form = nullptr;
+    QList<QSslCertificate> certificateChain;
 };
 
 #endif

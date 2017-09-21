@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -50,6 +50,9 @@
 
 #include <QApplication>
 #include <QMessageBox>
+#include <QtNetwork>
+
+QT_REQUIRE_CONFIG(ssl);
 
 #include "sslclient.h"
 
@@ -61,7 +64,7 @@ int main(int argc, char **argv)
 
     if (!QSslSocket::supportsSsl()) {
         QMessageBox::information(0, "Secure Socket Client",
-                                 "This system does not support OpenSSL.");
+                                 "This system does not support SSL/TLS.");
         return -1;
     }
 
