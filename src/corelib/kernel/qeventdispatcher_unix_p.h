@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 class QEventDispatcherUNIXPrivate;
 
-struct Q_CORE_EXPORT QSocketNotifierSetUNIX Q_DECL_FINAL
+struct Q_CORE_EXPORT QSocketNotifierSetUNIX final
 {
     inline QSocketNotifierSetUNIX() Q_DECL_NOTHROW;
 
@@ -108,18 +108,18 @@ public:
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
     bool hasPendingEvents() override;
 
-    void registerSocketNotifier(QSocketNotifier *notifier) Q_DECL_FINAL;
-    void unregisterSocketNotifier(QSocketNotifier *notifier) Q_DECL_FINAL;
+    void registerSocketNotifier(QSocketNotifier *notifier) final;
+    void unregisterSocketNotifier(QSocketNotifier *notifier) final;
 
-    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) Q_DECL_FINAL;
-    bool unregisterTimer(int timerId) Q_DECL_FINAL;
-    bool unregisterTimers(QObject *object) Q_DECL_FINAL;
-    QList<TimerInfo> registeredTimers(QObject *object) const Q_DECL_FINAL;
+    void registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object) final;
+    bool unregisterTimer(int timerId) final;
+    bool unregisterTimers(QObject *object) final;
+    QList<TimerInfo> registeredTimers(QObject *object) const final;
 
-    int remainingTime(int timerId) Q_DECL_FINAL;
+    int remainingTime(int timerId) final;
 
-    void wakeUp() Q_DECL_FINAL;
-    void interrupt() Q_DECL_FINAL;
+    void wakeUp() final;
+    void interrupt() final;
     void flush() override;
 
 protected:

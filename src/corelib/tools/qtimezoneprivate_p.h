@@ -171,7 +171,7 @@ Q_DECLARE_TYPEINFO(QTimeZonePrivate::Data, Q_MOVABLE_TYPE);
 
 template<> QTimeZonePrivate *QSharedDataPointer<QTimeZonePrivate>::clone();
 
-class Q_AUTOTEST_EXPORT QUtcTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+class Q_AUTOTEST_EXPORT QUtcTimeZonePrivate final : public QTimeZonePrivate
 {
 public:
     // Create default UTC time zone
@@ -224,7 +224,7 @@ private:
 };
 
 #if QT_CONFIG(icu)
-class Q_AUTOTEST_EXPORT QIcuTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+class Q_AUTOTEST_EXPORT QIcuTimeZonePrivate final : public QTimeZonePrivate
 {
 public:
     // Create default time zone
@@ -285,7 +285,7 @@ Q_DECL_CONSTEXPR inline bool operator==(const QTzTransitionRule &lhs, const QTzT
 Q_DECL_CONSTEXPR inline bool operator!=(const QTzTransitionRule &lhs, const QTzTransitionRule &rhs) Q_DECL_NOTHROW
 { return !operator==(lhs, rhs); }
 
-class Q_AUTOTEST_EXPORT QTzTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+class Q_AUTOTEST_EXPORT QTzTimeZonePrivate final : public QTimeZonePrivate
 {
     QTzTimeZonePrivate(const QTzTimeZonePrivate &) = default;
 public:
@@ -341,7 +341,7 @@ private:
 #endif // Q_OS_UNIX
 
 #ifdef Q_OS_MAC
-class Q_AUTOTEST_EXPORT QMacTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+class Q_AUTOTEST_EXPORT QMacTimeZonePrivate final : public QTimeZonePrivate
 {
 public:
     // Create default time zone
@@ -386,7 +386,7 @@ private:
 #endif // Q_OS_MAC
 
 #ifdef Q_OS_WIN
-class Q_AUTOTEST_EXPORT QWinTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+class Q_AUTOTEST_EXPORT QWinTimeZonePrivate final : public QTimeZonePrivate
 {
 public:
     struct QWinTransitionRule {
@@ -444,7 +444,7 @@ private:
 #endif // Q_OS_WIN
 
 #ifdef Q_OS_ANDROID
-class QAndroidTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+class QAndroidTimeZonePrivate final : public QTimeZonePrivate
 {
 public:
     // Create default time zone

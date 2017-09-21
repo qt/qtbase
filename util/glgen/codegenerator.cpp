@@ -989,7 +989,7 @@ void CodeGenerator::writeExtensionClassDeclaration(QTextStream &stream, const QS
         stream << QStringLiteral("    ") << className << QStringLiteral("();") << endl << endl;
 
         // Base class virtual function(s)
-        QString resolveFunction = QStringLiteral("    bool initializeOpenGLFunctions() Q_DECL_FINAL;");
+        QString resolveFunction = QStringLiteral("    bool initializeOpenGLFunctions() final;");
         stream << resolveFunction << endl << endl;
     }
 
