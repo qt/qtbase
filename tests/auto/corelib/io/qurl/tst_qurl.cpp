@@ -2080,6 +2080,11 @@ void tst_QUrl::isValid()
         QVERIFY(!url.isValid());
         QVERIFY(url.toString().isEmpty());
         QVERIFY(url.errorString().contains("Path component starts with '//' and authority is absent"));
+
+        // should disappear if we set a port
+        url.setPort(80);
+        QVERIFY(url.isValid());
+        QCOMPARE(url.toString(), QString("http://:80//example.com"));
     }
 
     {
@@ -2088,6 +2093,13 @@ void tst_QUrl::isValid()
         QVERIFY(!url.isValid());
         QVERIFY(url.toString().isEmpty());
         QVERIFY(url.errorString().contains("':' before any '/'"));
+
+        // this specific error disappears if we set anything in the authority,
+        // but then we run into another error
+        url.setPort(80);
+        QVERIFY(!url.isValid());
+        QVERIFY(url.toString().isEmpty());
+        QVERIFY(url.errorString().contains("Path component is relative and authority is present"));
     }
 
     {
@@ -2826,6 +2838,29 @@ void tst_QUrl::setPort()
         url.setPort(65536);
         QCOMPARE(url.port(), -1);
         QVERIFY(url.errorString().contains("out of range"));
+    }
+
+    {
+        QUrl reference("//:80");
+        QUrl piecewise;
+        piecewise.setPort(80);
+        QCOMPARE(piecewise, reference);
+    }
+
+    {
+        // setAuthority must clear the port
+        QUrl url("http://example.com:80");
+        url.setAuthority("example.org");
+        QCOMPARE(url.port(), -1);
+        QCOMPARE(url.toString(), QString("http://example.org"));
+    }
+
+    {
+        // setAuthority must clear the port
+        QUrl url("http://example.com:80");
+        url.setAuthority(QString());
+        QCOMPARE(url.port(), -1);
+        QCOMPARE(url.toString(), QString("http:"));
     }
 }
 
