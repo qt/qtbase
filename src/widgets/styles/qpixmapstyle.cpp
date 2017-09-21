@@ -43,7 +43,9 @@
 #include "qpixmapstyle_p_p.h"
 
 #include <QDebug>
+#if QT_CONFIG(textedit)
 #include <QTextEdit>
+#endif
 #include <QStringBuilder>
 #include <QPainter>
 #include <QPixmapCache>
@@ -52,7 +54,9 @@
 #if QT_CONFIG(progressbar)
 #include <QProgressBar>
 #endif
+#if QT_CONFIG(slider)
 #include <QSlider>
+#endif
 #include <QEvent>
 #if QT_CONFIG(combobox)
 #include <QComboBox>

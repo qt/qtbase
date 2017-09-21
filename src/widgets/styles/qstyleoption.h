@@ -41,11 +41,16 @@
 #define QSTYLEOPTION_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
+#include <QtCore/qlocale.h>
 #include <QtCore/qvariant.h>
+#if QT_CONFIG(spinbox)
 #include <QtWidgets/qabstractspinbox.h>
+#endif
 #include <QtGui/qicon.h>
 #include <QtGui/qmatrix.h>
+#if QT_CONFIG(slider)
 #include <QtWidgets/qslider.h>
+#endif
 #include <QtWidgets/qstyle.h>
 #if QT_CONFIG(tabbar)
 #include <QtWidgets/qtabbar.h>
@@ -505,7 +510,7 @@ public:
     QStyleOptionComplex(const QStyleOptionComplex &other) : QStyleOption(Version, Type) { *this = other; }
 };
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
 class Q_WIDGETS_EXPORT QStyleOptionSlider : public QStyleOptionComplex
 {
 public:
@@ -531,9 +536,9 @@ public:
 protected:
     QStyleOptionSlider(int version);
 };
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
 class Q_WIDGETS_EXPORT QStyleOptionSpinBox : public QStyleOptionComplex
 {
 public:
@@ -550,7 +555,7 @@ public:
 protected:
     QStyleOptionSpinBox(int version);
 };
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
 class Q_WIDGETS_EXPORT QStyleOptionToolButton : public QStyleOptionComplex
 {

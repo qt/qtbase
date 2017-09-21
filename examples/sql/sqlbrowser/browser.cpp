@@ -165,11 +165,12 @@ void Browser::showTable(const QString &t)
     model->select();
     if (model->lastError().type() != QSqlError::NoError)
         emit statusMessage(model->lastError().text());
+
     table->setModel(model);
     table->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed);
+    connect(table->selectionModel(), &QItemSelectionModel::currentRowChanged,
+            this, &Browser::currentChanged);
 
-    connect(table->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-            this, SLOT(currentChanged()));
     updateActions();
 }
 
@@ -188,7 +189,6 @@ void Browser::showMetaData(const QString &t)
     model->setHeaderData(4, Qt::Horizontal, "Required");
     model->setHeaderData(5, Qt::Horizontal, "AutoValue");
     model->setHeaderData(6, Qt::Horizontal, "DefaultValue");
-
 
     for (int i = 0; i < rec.count(); ++i) {
         QSqlField fld = rec.field(i);

@@ -28,6 +28,7 @@
 #include <QDebug>
 #include <QDirIterator>
 #include <QString>
+#include <qplatformdefs.h>
 
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
@@ -142,8 +143,8 @@ static int posix_helper(const char *dirpath)
         QByteArray ba = dirpath;
         ba += '/';
         ba += entry->d_name;
-        struct stat st;
-        lstat(ba.constData(), &st);
+        QT_STATBUF st;
+        QT_LSTAT(ba.constData(), &st);
         if (S_ISDIR(st.st_mode))
             count += posix_helper(ba.constData());
     }

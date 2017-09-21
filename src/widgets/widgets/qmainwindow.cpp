@@ -42,8 +42,6 @@
 #include "qmainwindow.h"
 #include "qmainwindowlayout_p.h"
 
-#ifndef QT_NO_MAINWINDOW
-
 #if QT_CONFIG(dockwidget)
 #include "qdockwidget.h"
 #endif
@@ -1446,7 +1444,7 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
     if (child == this)
         return;
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     QMenu *popup = createPopupMenu();
     if (popup) {
         if (!popup->isEmpty()) {
@@ -1461,7 +1459,7 @@ void QMainWindow::contextMenuEvent(QContextMenuEvent *event)
 }
 #endif // QT_NO_CONTEXTMENU
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 /*!
     Returns a popup menu containing checkable entries for the toolbars and
     dock widgets present in the main window. If  there are no toolbars and
@@ -1522,10 +1520,8 @@ QMenu *QMainWindow::createPopupMenu()
     Q_UNUSED(d);
     return menu;
 }
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 QT_END_NAMESPACE
 
 #include "moc_qmainwindow.cpp"
-
-#endif // QT_NO_MAINWINDOW

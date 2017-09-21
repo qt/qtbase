@@ -41,11 +41,13 @@
 #include "qabstracttextdocumentlayout.h"
 #include "qapplication.h"
 #include "qclipboard.h"
-#include "qtextedit.h"
-#include "private/qtextedit_p.h"
 #include "qtextdocument.h"
 #include "qtextobject.h"
+#if QT_CONFIG(textedit)
 #include "qplaintextedit.h"
+#include "qtextedit.h"
+#include "private/qtextedit_p.h"
+#endif
 #include "qtextboundaryfinder.h"
 #if QT_CONFIG(scrollbar)
 #include "qscrollbar.h"
@@ -58,8 +60,10 @@
 #if QT_CONFIG(toolbox)
 #include <QToolBox>
 #endif
+#if QT_CONFIG(mdiarea)
 #include <QMdiArea>
 #include <QMdiSubWindow>
+#endif
 #if QT_CONFIG(dialogbuttonbox)
 #include <QDialogButtonBox>
 #endif
@@ -80,8 +84,13 @@
 #include <QDockWidget>
 #include <private/qdockwidget_p.h>
 #endif
+#if QT_CONFIG(mainwindow)
 #include <QMainWindow>
+#endif
 #include <QFocusFrame>
+#if QT_CONFIG(menu)
+#include <QMenu>
+#endif
 
 #ifndef QT_NO_ACCESSIBILITY
 
@@ -113,7 +122,7 @@ QList<QWidget*> childWidgets(const QWidget *widget)
     return widgets;
 }
 
-#if !defined(QT_NO_TEXTEDIT) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(textedit) && !defined(QT_NO_CURSOR)
 
 QAccessiblePlainTextEdit::QAccessiblePlainTextEdit(QWidget* o)
   :QAccessibleTextWidget(o)
@@ -310,7 +319,7 @@ void QAccessibleTextEdit::scrollToSubstring(int startIndex, int endIndex)
         qWarning("AccessibleTextEdit::scrollToSubstring failed!");
 }
 
-#endif // QT_NO_TEXTEDIT && QT_NO_CURSOR
+#endif // QT_CONFIG(textedit) && QT_NO_CURSOR
 
 #if QT_CONFIG(stackedwidget)
 // ======================= QAccessibleStackedWidget ======================
@@ -375,7 +384,7 @@ QToolBox * QAccessibleToolBox::toolBox() const
 #endif // QT_CONFIG(toolbox)
 
 // ======================= QAccessibleMdiArea ======================
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
 QAccessibleMdiArea::QAccessibleMdiArea(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::LayeredPane)
 {
@@ -495,7 +504,7 @@ QMdiSubWindow *QAccessibleMdiSubWindow::mdiSubWindow() const
 {
     return static_cast<QMdiSubWindow *>(object());
 }
-#endif // QT_NO_MDIAREA
+#endif // QT_CONFIG(mdiarea)
 
 #if QT_CONFIG(dialogbuttonbox)
 // ======================= QAccessibleDialogButtonBox ======================
@@ -1090,7 +1099,7 @@ void QAccessibleTextWidget::replaceText(int startOffset, int endOffset, const QS
 #endif // QT_NO_CURSOR
 
 
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
 QAccessibleMainWindow::QAccessibleMainWindow(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Window) { }
 
@@ -1139,7 +1148,7 @@ QMainWindow *QAccessibleMainWindow::mainWindow() const
     return qobject_cast<QMainWindow *>(object());
 }
 
-#endif //QT_NO_MAINWINDOW
+#endif // QT_CONFIG(mainwindow)
 
 QT_END_NAMESPACE
 

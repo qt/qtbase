@@ -61,7 +61,7 @@ class Dialog : public QDialog
 
 public:
     Dialog(QSqlRelationalTableModel *albums, QDomDocument details,
-           QFile *output, QWidget *parent = 0);
+           QFile *output, QWidget *parent = nullptr);
 
 private slots:
     void revert();
@@ -70,12 +70,12 @@ private slots:
 private:
     int addNewAlbum(const QString &title, int artistId);
     int addNewArtist(const QString &name);
-    void addTracks(int albumId, QStringList tracks);
+    void addTracks(int albumId, const QStringList &tracks);
     QDialogButtonBox *createButtons();
     QGroupBox *createInputWidgets();
     int findArtistId(const QString &artist);
-    int generateAlbumId();
-    int generateArtistId();
+    static int generateAlbumId();
+    static int generateArtistId();
     void increaseAlbumCount(QModelIndex artistIndex);
     QModelIndex indexOfArtist(const QString &artist);
 

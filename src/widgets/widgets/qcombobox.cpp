@@ -52,7 +52,9 @@
 #endif
 #include <qitemdelegate.h>
 #include <qmap.h>
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #include <qevent.h>
 #include <qlayout.h>
 #include <qscrollbar.h>
@@ -1128,7 +1130,7 @@ void QComboBoxPrivate::updateViewContainerPaletteAndOpacity()
     Q_Q(QComboBox);
     QStyleOptionComboBox opt;
     q->initStyleOption(&opt);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (q->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, q)) {
         QMenu menu;
         menu.ensurePolished();

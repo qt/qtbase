@@ -42,7 +42,9 @@
 
 #ifndef QT_NO_SYSTEMTRAYICON
 
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #include "qlist.h"
 #include "qevent.h"
 #include "qpoint.h"
@@ -182,7 +184,7 @@ QSystemTrayIcon::~QSystemTrayIcon()
     d->remove_sys();
 }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 
 /*!
     Sets the specified \a menu to be the context menu for the system tray icon.
@@ -228,7 +230,7 @@ QMenu* QSystemTrayIcon::contextMenu() const
     return d->menu;
 }
 
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 /*!
     \property QSystemTrayIcon::icon

@@ -6,3 +6,5 @@ windows
 windows
 [openGLPaintDevice]
 windows
+[wglContextWrap]
+windows-7

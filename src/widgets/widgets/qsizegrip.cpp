@@ -39,8 +39,6 @@
 
 #include "qsizegrip.h"
 
-#ifndef QT_NO_SIZEGRIP
-
 #include "qapplication.h"
 #include "qevent.h"
 #include "qpainter.h"
@@ -508,5 +506,3 @@ bool QSizeGrip::event(QEvent *event)
 QT_END_NAMESPACE
 
 #include "moc_qsizegrip.cpp"
-
-#endif //QT_NO_SIZEGRIP

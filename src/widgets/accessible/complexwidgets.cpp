@@ -52,7 +52,9 @@
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qtooltip.h>

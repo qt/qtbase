@@ -65,7 +65,7 @@ class Browser: public QWidget, private Ui::Browser
 {
     Q_OBJECT
 public:
-    Browser(QWidget *parent = 0);
+    Browser(QWidget *parent = nullptr);
     virtual ~Browser();
 
     QSqlError addConnection(const QString &driver, const QString &dbName, const QString &host,
@@ -116,7 +116,9 @@ class CustomModel: public QSqlTableModel
 {
     Q_OBJECT
 public:
-    explicit CustomModel(QObject *parent = 0, QSqlDatabase db = QSqlDatabase()):QSqlTableModel(parent, db) {}
+    explicit CustomModel(QObject *parent = nullptr, QSqlDatabase db = QSqlDatabase())
+        : QSqlTableModel(parent, db) {}
+
     QVariant data(const QModelIndex &idx, int role) const override
     {
         if (role == Qt::BackgroundRole && isDirty(idx))

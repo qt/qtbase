@@ -78,10 +78,10 @@ MainWindow::MainWindow(const QString &artistTable, const QString &albumTable,
     uniqueAlbumId = model->rowCount();
     uniqueArtistId = artistView->count();
 
-    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(updateHeader(QModelIndex,int,int)));
-    connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-            this, SLOT(updateHeader(QModelIndex,int,int)));
+    connect(model, &QSqlRelationalTableModel::rowsInserted,
+            this, &MainWindow::updateHeader);
+    connect(model, &QSqlRelationalTableModel::rowsRemoved,
+            this, &MainWindow::updateHeader);
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(artists, 0, 0);
@@ -145,7 +145,7 @@ void MainWindow::showAlbumDetails(QModelIndex index)
     titleLabel->show();
 
     QDomNodeList albums = albumData.elementsByTagName("album");
-    for (int i = 0; i < albums.count(); i++) {
+    for (int i = 0; i < albums.count(); ++i) {
         QDomNode album = albums.item(i);
         if (album.toElement().attribute("id") == albumId) {
             getTrackList(album.toElement());
@@ -164,9 +164,9 @@ void MainWindow::getTrackList(QDomNode album)
     QDomNode track;
     QString trackNumber;
 
-    for (int j = 0; j < tracks.count(); j++) {
+    for (int i = 0; i < tracks.count(); ++i) {
 
-        track = tracks.item(j);
+        track = tracks.item(i);
         trackNumber = track.toElement().attribute("number");
 
         QListWidgetItem *item = new QListWidgetItem(trackList);
@@ -222,7 +222,7 @@ void MainWindow::removeAlbumFromFile(int id)
 
     QDomNodeList albums = albumData.elementsByTagName("album");
 
-    for (int i = 0; i < albums.count(); i++) {
+    for (int i = 0; i < albums.count(); ++i) {
         QDomNode node = albums.item(i);
         if (node.toElement().attribute("id").toInt() == id) {
             albumData.elementsByTagName("archive").item(0).removeChild(node);
@@ -283,8 +283,8 @@ QGroupBox* MainWindow::createArtistGroupBox()
     artistView->setModel(model->relationModel(2));
     artistView->setModelColumn(1);
 
-    connect(artistView, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(changeArtist(int)));
+    connect(artistView, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::changeArtist);
 
     QGroupBox *box = new QGroupBox(tr("Artist"));
 
@@ -314,10 +314,10 @@ QGroupBox* MainWindow::createAlbumGroupBox()
     locale.setNumberOptions(QLocale::OmitGroupSeparator);
     albumView->setLocale(locale);
 
-    connect(albumView, SIGNAL(clicked(QModelIndex)),
-            this, SLOT(showAlbumDetails(QModelIndex)));
-    connect(albumView, SIGNAL(activated(QModelIndex)),
-            this, SLOT(showAlbumDetails(QModelIndex)));
+    connect(albumView, &QTableView::clicked,
+            this, &MainWindow::showAlbumDetails);
+    connect(albumView, &QTableView::activated,
+            this, &MainWindow::showAlbumDetails);
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(albumView, 0, 0);
@@ -383,11 +383,16 @@ void MainWindow::createMenuBar()
     helpMenu->addAction(aboutAction);
     helpMenu->addAction(aboutQtAction);
 
-    connect(addAction, SIGNAL(triggered(bool)), this, SLOT(addAlbum()));
-    connect(deleteAction, SIGNAL(triggered(bool)), this, SLOT(deleteAlbum()));
-    connect(quitAction, SIGNAL(triggered(bool)), this, SLOT(close()));
-    connect(aboutAction, SIGNAL(triggered(bool)), this, SLOT(about()));
-    connect(aboutQtAction, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt()));
+    connect(addAction, &QAction::triggered,
+            this, &MainWindow::addAlbum);
+    connect(deleteAction, &QAction::triggered,
+            this, &MainWindow::deleteAlbum);
+    connect(quitAction, &QAction::triggered,
+            this, &MainWindow::close);
+    connect(aboutAction, &QAction::triggered,
+            this, &MainWindow::about);
+    connect(aboutQtAction, &QAction::triggered,
+            qApp, &QApplication::aboutQt);
 }
 
 void MainWindow::showImageLabel()

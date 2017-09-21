@@ -126,6 +126,21 @@
           "features": [
               "disable_desktopgl"
           ]
-       }
+        },
+        {
+          "id": 11,
+          "description": "Intel driver version 8.15.10.1749 causes GPU process hangs (QTBUG-56360)",
+          "vendor_id": "0x8086",
+          "os": {
+            "type": "win"
+          },
+          "driver_version": {
+            "op": "=",
+            "value": "8.15.10.1749"
+          },
+          "features": [
+            "disable_desktopgl", "disable_d3d11", "disable_d3d9"
+          ]
+        }
     ]
 }

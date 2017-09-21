@@ -72,7 +72,13 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     tst_Databases::safeDropTable( db, relTEST1 );
-    QString doubleField = (dbType == QSqlDriver::SQLite) ? "more_data double" : "more_data double(8,7)";
+    QString doubleField;
+    if (dbType == QSqlDriver::SQLite)
+        doubleField = "more_data double";
+    else if (dbType == QSqlDriver::Oracle)
+        doubleField = "more_data number(8,7)";
+    else
+        doubleField = "more_data double(8,7)";
     QVERIFY_SQL( q, exec("create table " + relTEST1 +
             " (id int not null primary key, name varchar(20), title_key int, another_title_key int, " + doubleField + QLatin1Char(')')));
     QVERIFY_SQL( q, exec("insert into " + relTEST1 + " values(1, 'harry', 1, 2, 1.234567)"));

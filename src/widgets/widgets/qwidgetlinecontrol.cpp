@@ -39,8 +39,6 @@
 
 #include "qwidgetlinecontrol_p.h"
 
-#ifndef QT_NO_LINEEDIT
-
 #if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
 #endif
@@ -56,6 +54,8 @@
 #if QT_CONFIG(graphicsview)
 #include "qgraphicssceneevent.h"
 #endif
+
+#include "qvalidator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1973,5 +1973,3 @@ bool QWidgetLineControl::isRedoAvailable() const
 QT_END_NAMESPACE
 
 #include "moc_qwidgetlinecontrol_p.cpp"
-
-#endif

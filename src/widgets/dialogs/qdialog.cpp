@@ -53,11 +53,15 @@
 #include <private/qdesktopwidget_p.h>
 #include "qapplication.h"
 #include "qlayout.h"
+#if QT_CONFIG(sizegrip)
 #include "qsizegrip.h"
+#endif
 #if QT_CONFIG(whatsthis)
 #include "qwhatsthis.h"
 #endif
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #include "qcursor.h"
 #if QT_CONFIG(messagebox)
 #include "qmessagebox.h"
@@ -621,7 +625,7 @@ bool QDialog::eventFilter(QObject *o, QEvent *e)
 /*! \reimp */
 void QDialog::contextMenuEvent(QContextMenuEvent *e)
 {
-#if !QT_CONFIG(whatsthis) || defined(QT_NO_MENU)
+#if !QT_CONFIG(whatsthis) || !QT_CONFIG(menu)
     Q_UNUSED(e);
 #else
     QWidget *w = childAt(e->pos());
@@ -1006,7 +1010,7 @@ void QDialog::showExtension(bool showIt)
             setFixedSize(w, height() + s.height());
         }
         d->extension->show();
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
         const bool sizeGripEnabled = isSizeGripEnabled();
         setSizeGripEnabled(false);
         d->sizeGripEnabled = sizeGripEnabled;
@@ -1019,7 +1023,7 @@ void QDialog::showExtension(bool showIt)
         resize(d->size);
         if (layout())
             layout()->setEnabled(true);
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
         setSizeGripEnabled(d->sizeGripEnabled);
 #endif
     }
@@ -1080,7 +1084,7 @@ void QDialog::setModal(bool modal)
 
 bool QDialog::isSizeGripEnabled() const
 {
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     Q_D(const QDialog);
     return !!d->resizer;
 #else
@@ -1091,11 +1095,11 @@ bool QDialog::isSizeGripEnabled() const
 
 void QDialog::setSizeGripEnabled(bool enabled)
 {
-#ifdef QT_NO_SIZEGRIP
+#if !QT_CONFIG(sizegrip)
     Q_UNUSED(enabled);
 #else
     Q_D(QDialog);
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     d->sizeGripEnabled = enabled;
     if (enabled && d->doShowExtension)
         return;
@@ -1116,7 +1120,7 @@ void QDialog::setSizeGripEnabled(bool enabled)
             d->resizer = 0;
         }
     }
-#endif //QT_NO_SIZEGRIP
+#endif // QT_CONFIG(sizegrip)
 }
 
 
@@ -1124,7 +1128,7 @@ void QDialog::setSizeGripEnabled(bool enabled)
 /*! \reimp */
 void QDialog::resizeEvent(QResizeEvent *)
 {
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     Q_D(QDialog);
     if (d->resizer) {
         if (isRightToLeft())

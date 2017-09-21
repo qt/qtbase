@@ -1,25 +1,8 @@
 # Qt widgets module
 
 HEADERS += \
-        widgets/qabstractspinbox.h \
-        widgets/qabstractspinbox_p.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
-        widgets/qlineedit.h \
-        widgets/qlineedit_p.h \
-        widgets/qmainwindow.h \
-        widgets/qmainwindowlayout_p.h \
-        widgets/qmdiarea.h \
-        widgets/qmdiarea_p.h \
-        widgets/qmdisubwindow.h \
-        widgets/qmdisubwindow_p.h \
-        widgets/qmenu.h \
-        widgets/qmenu_p.h \
-        widgets/qsizegrip.h \
-        widgets/qslider.h \
-        widgets/qspinbox.h \
-        widgets/qtextedit.h \
-        widgets/qtextedit_p.h \
         widgets/qtoolbar.h \
         widgets/qtoolbar_p.h \
         widgets/qtoolbarlayout_p.h \
@@ -28,34 +11,17 @@ HEADERS += \
         widgets/qabstractscrollarea_p.h \
         widgets/qfocusframe.h \
         widgets/qwidgetanimator_p.h \
-        widgets/qwidgetlinecontrol_p.h \
-        widgets/qtoolbararealayout_p.h \
-        widgets/qplaintextedit.h \
-        widgets/qplaintextedit_p.h
+        widgets/qtoolbararealayout_p.h
 
 SOURCES += \
-        widgets/qabstractspinbox.cpp \
         widgets/qframe.cpp \
-        widgets/qlineedit_p.cpp \
-        widgets/qlineedit.cpp \
-        widgets/qmainwindow.cpp \
-        widgets/qmainwindowlayout.cpp \
-        widgets/qmdiarea.cpp \
-        widgets/qmdisubwindow.cpp \
-        widgets/qmenu.cpp \
-        widgets/qsizegrip.cpp \
-        widgets/qslider.cpp \
-        widgets/qspinbox.cpp \
-        widgets/qtextedit.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
         widgets/qtoolbarseparator.cpp \
         widgets/qabstractscrollarea.cpp \
         widgets/qfocusframe.cpp \
         widgets/qwidgetanimator.cpp \
-        widgets/qwidgetlinecontrol.cpp \
-        widgets/qtoolbararealayout.cpp \
-        widgets/qplaintextedit.cpp
+        widgets/qtoolbararealayout.cpp
 
 qtConfig(abstractbutton) {
     HEADERS += \
@@ -177,6 +143,48 @@ qtConfig(lcdnumber) {
         widgets/qlcdnumber.cpp
 }
 
+qtConfig(lineedit) {
+    HEADERS += \
+        widgets/qlineedit.h \
+        widgets/qlineedit_p.h \
+        widgets/qwidgetlinecontrol_p.h
+
+    SOURCES += \
+        widgets/qlineedit_p.cpp \
+        widgets/qlineedit.cpp \
+        widgets/qwidgetlinecontrol.cpp
+}
+
+qtConfig(mainwindow) {
+    HEADERS += \
+        widgets/qmainwindow.h \
+        widgets/qmainwindowlayout_p.h
+
+    SOURCES += \
+        widgets/qmainwindow.cpp \
+        widgets/qmainwindowlayout.cpp
+}
+
+qtConfig(mdiarea) {
+    HEADERS += \
+        widgets/qmdiarea.h \
+        widgets/qmdiarea_p.h \
+        widgets/qmdisubwindow.h \
+        widgets/qmdisubwindow_p.h
+
+    SOURCES += \
+        widgets/qmdiarea.cpp \
+        widgets/qmdisubwindow.cpp
+}
+
+qtConfig(menu) {
+    HEADERS += \
+        widgets/qmenu.h \
+        widgets/qmenu_p.h
+
+    SOURCES += widgets/qmenu.cpp
+}
+
 qtConfig(menubar) {
     HEADERS += \
         widgets/qmenubar.h \
@@ -241,6 +249,27 @@ qtConfig(scrollbar) {
     SOURCES += widgets/qscrollbar.cpp
 }
 
+qtConfig(sizegrip) {
+    HEADERS += widgets/qsizegrip.h
+    SOURCES += widgets/qsizegrip.cpp
+}
+
+qtConfig(slider) {
+    HEADERS += widgets/qslider.h
+    SOURCES += widgets/qslider.cpp
+}
+
+qtConfig(spinbox) {
+    HEADERS += \
+        widgets/qabstractspinbox.h \
+        widgets/qabstractspinbox_p.h \
+        widgets/qspinbox.h
+
+    SOURCES += \
+        widgets/qabstractspinbox.cpp \
+        widgets/qspinbox.cpp
+}
+
 qtConfig(splashscreen) {
     HEADERS += \
         widgets/qsplashscreen.h
@@ -273,6 +302,18 @@ qtConfig(tabbar) {
         widgets/qtabbar_p.h
 
     SOURCES += widgets/qtabbar.cpp
+}
+
+qtConfig(textedit) {
+    HEADERS += \
+        widgets/qplaintextedit.h \
+        widgets/qplaintextedit_p.h \
+        widgets/qtextedit.h \
+        widgets/qtextedit_p.h
+
+    SOURCES += \
+        widgets/qplaintextedit.cpp \
+        widgets/qtextedit.cpp
 }
 
 qtConfig(textbrowser) {
@@ -315,7 +356,10 @@ macx {
         widgets/qmaccocoaviewcontainer_mac.h
 
     OBJECTIVE_SOURCES += \
-        widgets/qmenu_mac.mm \
         widgets/qmacnativewidget_mac.mm \
         widgets/qmaccocoaviewcontainer_mac.mm
+
+    qtConfig(menu)|qtConfig(menubar) {
+        SOURCES += widgets/qmenu_mac.mm
+    }
 }

@@ -1173,7 +1173,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
         }
     }
     break;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             // windows always has a check column, regardless whether we have an icon or not
@@ -1331,7 +1331,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
         }
         break;
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
     case CE_HeaderSection:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             partId = HP_HEADERITEM;
@@ -1772,7 +1772,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
             }
         }
         break;
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(option))
         {
@@ -1830,7 +1830,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
             }
         }
         break;
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
     default:
         QWindowsXPStyle::drawComplexControl(control, option, painter, widget);
         break;
@@ -2290,11 +2290,11 @@ void QWindowsVistaStyle::polish(QApplication *app)
 void QWindowsVistaStyle::polish(QWidget *widget)
 {
     QWindowsXPStyle::polish(widget);
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     if (qobject_cast<QLineEdit*>(widget))
         widget->setAttribute(Qt::WA_Hover);
     else
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
     if (qobject_cast<QGroupBox*>(widget))
         widget->setAttribute(Qt::WA_Hover);
     else if (qobject_cast<QCommandLinkButton*>(widget)) {
@@ -2351,11 +2351,11 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
 
     d->stopAnimation(widget);
 
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     if (qobject_cast<QLineEdit*>(widget))
         widget->setAttribute(Qt::WA_Hover, false);
     else
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
     if (qobject_cast<QGroupBox*>(widget))
         widget->setAttribute(Qt::WA_Hover, false);
     else if (qobject_cast<QMessageBox *> (widget)) {

@@ -74,11 +74,15 @@
 #include <qhash.h>
 #include <qheaderview.h>
 #include <qlayout.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #if QT_CONFIG(listview)
 #include <qlistview.h>
 #endif
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #include <qmap.h>
 #if QT_CONFIG(menubar)
 #include <qmenubar.h>
@@ -97,8 +101,12 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#if QT_CONFIG(sizegrip)
 #include <qsizegrip.h>
+#endif
+#if QT_CONFIG(spinbox)
 #include <qspinbox.h>
+#endif
 #if QT_CONFIG(splitter)
 #include <qsplitter.h>
 #endif

@@ -63,8 +63,8 @@ ConnectionWidget::ConnectionWidget(QWidget *parent)
     tree->header()->setSectionResizeMode(QHeaderView::Stretch);
     QAction *refreshAction = new QAction(tr("Refresh"), tree);
     metaDataAction = new QAction(tr("Show Schema"), tree);
-    connect(refreshAction, SIGNAL(triggered()), SLOT(refresh()));
-    connect(metaDataAction, SIGNAL(triggered()), SLOT(showMetaData()));
+    connect(refreshAction, &QAction::triggered, this, &ConnectionWidget::refresh);
+    connect(metaDataAction, &QAction::triggered, this, &ConnectionWidget::showMetaData);
     tree->addAction(refreshAction);
     tree->addAction(metaDataAction);
     tree->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -146,7 +146,6 @@ void ConnectionWidget::setActive(QTreeWidgetItem *item)
 
 void ConnectionWidget::on_tree_itemActivated(QTreeWidgetItem *item, int /* column */)
 {
-
     if (!item)
         return;
 

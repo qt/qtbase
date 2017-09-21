@@ -73,7 +73,7 @@ private slots:
     void toolDialogPosition();
     void deleteMainDefault();
     void deleteInExec();
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     void showSizeGrip();
 #endif
     void setVisible();
@@ -235,7 +235,7 @@ void tst_QDialog::showMaximized()
 {
     QDialog dialog(0);
     dialog.setSizeGripEnabled(true);
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QSizeGrip *sizeGrip = dialog.findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
 #endif
@@ -243,14 +243,14 @@ void tst_QDialog::showMaximized()
     dialog.showMaximized();
     QVERIFY(dialog.isMaximized());
     QVERIFY(dialog.isVisible());
-#if !defined(QT_NO_SIZEGRIP) && !defined(Q_OS_MAC) && !defined(Q_OS_IRIX) && !defined(Q_OS_HPUX)
+#if QT_CONFIG(sizegrip) && !defined(Q_OS_DARWIN) && !defined(Q_OS_IRIX) && !defined(Q_OS_HPUX)
     QVERIFY(!sizeGrip->isVisible());
 #endif
 
     dialog.showNormal();
     QVERIFY(!dialog.isMaximized());
     QVERIFY(dialog.isVisible());
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QVERIFY(sizeGrip->isVisible());
 #endif
 
@@ -312,7 +312,7 @@ void tst_QDialog::showFullScreen()
 {
     QDialog dialog(0, Qt::X11BypassWindowManagerHint);
     dialog.setSizeGripEnabled(true);
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QSizeGrip *sizeGrip = dialog.findChild<QSizeGrip *>();
     QVERIFY(sizeGrip);
 #endif
@@ -320,14 +320,14 @@ void tst_QDialog::showFullScreen()
     dialog.showFullScreen();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QVERIFY(!sizeGrip->isVisible());
 #endif
 
     dialog.showNormal();
     QVERIFY(!dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QVERIFY(sizeGrip->isVisible());
 #endif
 
@@ -414,7 +414,7 @@ void tst_QDialog::deleteInExec()
     QCOMPARE(dialog->exec(), int(QDialog::Rejected));
 }
 
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
 // From Task 124269
 void tst_QDialog::showSizeGrip()
 {

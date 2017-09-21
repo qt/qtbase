@@ -49,7 +49,9 @@
 #include <qpainter.h>
 #include <qstylepainter.h>
 #include <qevent.h>
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #include <qtoolbar.h>
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
@@ -82,7 +84,7 @@ QMenuBarExtension::QMenuBarExtension(QWidget *parent)
 {
     setObjectName(QLatin1String("qt_menubar_ext_button"));
     setAutoRaise(true);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     setPopupMode(QToolButton::InstantPopup);
 #endif
     setIcon(style()->standardIcon(QStyle::SP_ToolBarHorizontalExtensionButton, 0, parentWidget()));

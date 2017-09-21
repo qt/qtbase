@@ -57,7 +57,10 @@
 
 #ifndef QT_NO_SYSTEMTRAYICON
 
+#if QT_CONFIG(menu)
 #include "QtWidgets/qmenu.h"
+#endif
+#include "QtWidgets/qwidget.h"
 #include "QtGui/qpixmap.h"
 #include <qpa/qplatformsystemtrayicon.h>
 #include "QtCore/qstring.h"

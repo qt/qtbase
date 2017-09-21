@@ -84,10 +84,12 @@ InformationWindow::InformationWindow(int id, QSqlRelationalTableModel *items,
 //! [3]
 
 //! [4]
-    connect(descriptionEditor, SIGNAL(textChanged()),
-            this, SLOT(enableButtons()));
-    connect(imageFileEditor, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(enableButtons()));
+    connect(descriptionEditor, &QTextEdit::textChanged, [=]() {
+        enableButtons();
+    });
+    connect(imageFileEditor, QOverload<int>::of(&QComboBox::currentIndexChanged), [=]() {
+        enableButtons();
+    });
 
     QFormLayout *formLayout = new QFormLayout;
     formLayout->addRow(itemLabel, itemText);
@@ -109,7 +111,7 @@ InformationWindow::InformationWindow(int id, QSqlRelationalTableModel *items,
 //! [4]
 
 //! [5]
-int InformationWindow::id()
+int InformationWindow::id() const
 {
     return itemId;
 }
@@ -149,9 +151,9 @@ void InformationWindow::createButtons()
 
     closeButton->setDefault(true);
 
-    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
-    connect(revertButton, SIGNAL(clicked()), this, SLOT(revert()));
-    connect(submitButton, SIGNAL(clicked()), this, SLOT(submit()));
+    connect(closeButton, &QPushButton::clicked, this, &InformationWindow::close);
+    connect(revertButton, &QPushButton::clicked, this, &InformationWindow::revert);
+    connect(submitButton, &QPushButton::clicked, this, &InformationWindow::submit);
 //! [8]
 
 //! [9]
