@@ -312,7 +312,7 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
     // (other ELF-based systems don't seem to have AT_RANDOM)
     ulong auxvSeed = getauxval(AT_RANDOM);
     if (auxvSeed) {
-        memcpy(scratch, reinterpret_cast<void *>(auxvSeed), 16);
+        memcpy(end, reinterpret_cast<void *>(auxvSeed), 16);
         end += 4;   // 7 to 10
     }
 #  endif
