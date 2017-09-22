@@ -284,7 +284,7 @@ QT_END_NAMESPACE
     inLaunch = false;
 
     if (qEnvironmentVariableIsEmpty("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")) {
-        if (QSysInfo::macVersion() >= QSysInfo::MV_10_12) {
+        if (__builtin_available(macOS 10.12, *)) {
             // Move the application window to front to avoid launching behind the terminal.
             // Ignoring other apps is necessary (we must ignore the terminal), but makes
             // Qt apps play slightly less nice with other apps when lanching from Finder

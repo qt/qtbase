@@ -363,7 +363,7 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
         // Move the application window to front to make it take focus, also when launching
         // from the terminal. On 10.12+ this call has been moved to applicationDidFinishLauching
         // to work around issues with loss of focus at startup.
-        if (QSysInfo::macVersion() < QSysInfo::MV_10_12) {
+        if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSSierra) {
             // Ignoring other apps is necessary (we must ignore the terminal), but makes
             // Qt apps play slightly less nice with other apps when lanching from Finder
             // (See the activateIgnoringOtherApps docs.)

@@ -163,7 +163,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
     [mSavePanel setDelegate:self];
 
 #if QT_OSX_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_11)
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::OSXElCapitan)
+    if (__builtin_available(macOS 10.11, *))
         mOpenPanel.accessoryViewDisclosed = YES;
 #endif
 

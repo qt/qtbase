@@ -232,7 +232,7 @@ static bool isMouseEvent(NSEvent *ev)
     NSApplication *application = [NSApplication sharedApplication];
 
 #if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra) {
+    if (__builtin_available(macOS 10.12, *)) {
         // Unfortunately there's no NSWindowListOrderedBackToFront,
         // so we have to manually reverse the order using an array.
         NSMutableArray *windows = [[[NSMutableArray alloc] init] autorelease];
