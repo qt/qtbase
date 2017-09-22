@@ -92,6 +92,25 @@ public:
 
     static QOperatingSystemVersion current();
 
+    static Q_DECL_CONSTEXPR OSType currentType()
+    {
+#if defined(Q_OS_WIN)
+        return Windows;
+#elif defined(Q_OS_MACOS)
+        return MacOS;
+#elif defined(Q_OS_IOS)
+        return IOS;
+#elif defined(Q_OS_TVOS)
+        return TvOS;
+#elif defined(Q_OS_WATCHOS)
+        return WatchOS;
+#elif defined(Q_OS_ANDROID)
+        return Android;
+#else
+        return Unknown;
+#endif
+    }
+
     Q_DECL_CONSTEXPR int majorVersion() const { return m_major; }
     Q_DECL_CONSTEXPR int minorVersion() const { return m_minor; }
     Q_DECL_CONSTEXPR int microVersion() const { return m_micro; }

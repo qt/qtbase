@@ -155,6 +155,8 @@ QT_BEGIN_NAMESPACE
     \fn QOperatingSystemVersion QOperatingSystemVersion::current()
 
     Returns a QOperatingSystemVersion indicating the current OS and its version number.
+
+    \sa currentType()
 */
 #if !defined(Q_OS_DARWIN) && !defined(Q_OS_WIN)
 QOperatingSystemVersion QOperatingSystemVersion::current()
@@ -298,6 +300,14 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
     Returns the OS type identified by the QOperatingSystemVersion.
 
     \sa name()
+*/
+
+/*!
+    \fn QOperatingSystemVersion::OSType QOperatingSystemVersion::currentType()
+
+    Returns the current OS type without constructing a QOperatingSystemVersion instance.
+
+    \sa current()
 */
 
 /*!
