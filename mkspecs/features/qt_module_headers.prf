@@ -222,6 +222,7 @@ headersclean:!internal_module {
 
                 gcc_ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
                 versionAtLeast(gcc_ver, 4.5): hcleanFLAGS += -Wdouble-promotion
+                versionAtLeast(gcc_ver, 4.9): hcleanFLAGS += -Wfloat-conversion
 
                 c++11 {
                     # only enabled for actual c++11 builds due to
