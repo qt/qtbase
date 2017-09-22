@@ -2758,6 +2758,18 @@ Qt::MouseButtons QTabletEvent::buttons() const
 */
 
 /*!
+    \deprecated The QTouchDevice parameter is now required
+*/
+#if QT_DEPRECATED_SINCE(5, 10)
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
+                                         const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
+    : QInputEvent(QEvent::NativeGesture), mGestureType(type), mTouchDeviceId(255),
+      mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
+      mSequenceId(sequenceId), mIntValue(intValue)
+{ }
+#endif
+
+/*!
     Constructs a native gesture event of type \a type.
 
     The points \a localPos, \a windowPos and \a screenPos specify the

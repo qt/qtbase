@@ -301,6 +301,10 @@ protected:
 class Q_GUI_EXPORT QNativeGestureEvent : public QInputEvent
 {
 public:
+#if QT_DEPRECATED_SINCE(5, 10)
+    QT_DEPRECATED QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
+                        const QPointF &screenPos, qreal value, ulong sequenceId, quint64 intArgument);
+#endif
     QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
                         const QPointF &screenPos, qreal value, ulong sequenceId, quint64 intArgument);
     Qt::NativeGestureType gestureType() const { return mGestureType; }
