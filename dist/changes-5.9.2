@@ -1,0 +1,259 @@
+Qt 5.9.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.9.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.9 series is binary compatible with the 5.8.x series.
+Applications compiled for 5.8 will continue to run with 5.9.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - Building examples inside the Qt source tree while not building Qt itself
+   is rejected now, because this can cause hard to debug configuration
+   issues. If building isolated examples is needed, you may still use shadow
+   builds.
+
+ - This version of Qt restores compatibility with pre-5.9.0 calculation of
+   QCryptographicHash algorithms that were labelled "Sha3_nnn": that is,
+   applications compiled with old versions of Qt will continue using the
+   Keccak algorithm.  Applications recompiled with this version will use
+   SHA-3, unless QT_SHA3_KECCAK_COMPAT is #define'd prior to #include
+   <QCryptographicHash>.
+
+****************************************************************************
+*                               General Notes                              *
+****************************************************************************
+
+Binary Compatibility Note
+-------------------------
+
+ - The variable QOperatingSystemVersion::AndroidOreo was added in this
+   release. Code that uses this variable will not run under Qt 5.9.1. If
+   backwards compatibility is desired, use instead
+   QOperatingSystemVersion(QOperatingSystemVersion::Android, 8)
+   [This is similar to QOperatingSystemVersion::MacOSHighSierra added in
+   5.9.1]
+
+ - This version of Qt changes the values assigned to enumerations
+   QCryptographicHash::Sha3_nnn. Applications compiled with this version and
+   using those enumerations will not work with Qt 5.9.0 and 5.9.1, unless
+   QT_SHA3_KECCAK_COMPAT is defined.
+
+Deprecation Notice
+------------------
+
+ - Starting with Qt 5.10, IPv6 support will be mandatory for all platforms.
+   Systems without proper IPv6 support, such as the getaddrinfo() function
+   or the proper socket address structures, will not be able to build
+   QtNetwork anymore.
+
+Third-Party Code
+----------------
+
+ - [QTBUG-31020] zlib was updated to version 1.2.11.
+ - libpng was updated to version 1.6.32
+
+****************************************************************************
+*                               Library                                    *
+****************************************************************************
+
+QtCore
+------
+
+ - [QTBUG-61350] Fixed the conversion from string to double of the strings
+   "0E+1" and "0E-1" (with capital E), which QString::toDouble(),
+   QByteArray::toDouble() and similar functions reported as invalid.
+
+ - QFile:
+   * [QTBUG-57023] Reverted an incorrect change from Qt 5.9.0 that forbade
+     the creation and access to Alternate Data Streams on NTFS on Windows.
+     This means that file names containing a colon (':') are allowed again,
+     but note that they are not regular files.
+
+ - QFileInfo:
+   * [QTBUG-62802] Relative symbolic links on Windows are now resolved to
+     their absolute path by symLinkTarget().
+
+ - QFileSystemWatcher:
+   * [QTBUG-62242] Fixed a crash on Windows if this class was instantiated
+     before QCoreApplication was created.
+   * [QTBUG-61792] Fixed an issue on Windows that would cause this class not
+     to monitor files properly if the directory containing the monitored
+     files was added to the list of watched paths after the files.
+
+ - QLocale:
+   * [QTBUG-53565] Fixed the conversion of QTime to string form and parsing
+     from string form to always treat the value as the decimal fraction of
+     the seconds component. That is, the string format ".z" produces/parses
+     ".2" for 200 milliseconds and ".002" for 2 milliseconds. Use of "z" or
+     "zzz" is discouraged outside decimal fractions to avoid surprises.
+   * [QTBUG-61949] Fixed bcp57Name() to return "en" for the QLocale::c()
+     locale. Previously, it returned "C", which is not a valid BCP47
+     language tag.
+
+ - QProcess:
+   * [QTBUG-61634] Added a workaround for a rare race-condition bug in
+     some C libraries that caused the child process started by QProcess to
+     hang after trying to launch a non-existent executable or change to a
+     non-existent directory.
+   * [QTBUG-62584] Fixed a race-condition bug that could cause
+     waitForXxx() functions to hang forever if a slot triggered by that
+     function futher started a nested event loop.
+
+ - QTimeZone:
+   * [QTBUG-63205] Fixed a bug that would cause QTimeZone to mis-parse
+     timezone files on Unix systems if they contained leap second
+     information.
+
+ - QVariant:
+   * [QTBUG-61471] Fixed QVariant to actually perform the conversions
+     between QVariantHash and QVariantMap in the respective .toHash() and
+     .toMap() functions. QVariant already reported true in .canConvert()
+     between those two types.
+
+QtDBus
+------
+
+  - [QTBUG-62284] Fixed a race condition in QDBusAbstractInterface that
+    could cause the class to never see the notification that the remote
+    service became available and cause isValid() to change to true.
+
+QtGui
+-----
+
+ - Text:
+   * [QTBUG-61520] Fixed matching of non-regular font weights for
+     application fonts on macOS.
+
+QtNetwork
+---------
+
+ - [QTBUG-61692] Fixed the handling of application-wide proxy settings (set
+   with QNetworkProxy): previously, QTcpSocket would directly fall back to
+   the system settings if the object-specific setting was
+   QNetworkProxy::DefaultProxy.
+
+ - QLocalSocket:
+   * [QTBUG-61643] Fixed an issue with Qt pipe-handling code that could
+     cause deadlocks on Windows, most often if the QLocalSocket object tried
+     to wait for more data during application shutdown.
+
+QtTest
+------
+
+ - Added flowId to messages when logging in TeamCity format. FlowId is used
+   to distinguish logging from multiple processes running in parallel.
+
+QtWidgets
+---------
+
+ - Android:
+   * [QTBUG-48639] Fixed label duplication for buttons when using style
+     sheets with the Android style.
+
+ - QLineEdit:
+   * [QTBUG-60319] Fixed behavior of the ImSurroundingText query.
+     Previously, it returned a masked text whose length may be less than
+     the cursor position. Now it returns unmasked text, so the text length
+     is always greater than or equal to the cursor position.
+
+ - QMenu:
+   * [QTBUG-59794] Fixed menu size issue when using high DPI on
+     multi-screen system.
+
+****************************************************************************
+*                       Compiler-specific Changes                          *
+****************************************************************************
+
+clang
+-----
+
+ - [QTBUG-61840][QTBUG-62085] Fixed an issue that caused recent Clang
+   versions to print a warning about [[nodiscard].
+
+Visual Studio
+-------------
+
+ - [QTBUG-61902] Changed Qt uses of certain C++ Standard Library functions
+   that Visual Studio warns about. Now Qt public headers call
+   Microsoft-specific versions that do not produce warnings.
+
+****************************************************************************
+*                         Platform-specific Changes                        *
+****************************************************************************
+
+macOS
+-----
+
+ - [QTBUG-59222] Switching focus objects inside a top level window while
+   composing text using dead keys or input method events would leave the
+   application in an inconsistent state. The composition now automatically
+   cancels when the focus object changes.
+
+Windows
+-------
+
+ - [QTBUG-57916] Fixed build with ANGLE and newer MinGW versions.
+ - [QTBUG-62083] Fixed Qt trying to steal certain events from user windows if
+   the event ID was WM_USER.
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-35928][QTBUG-41908][Apple] Qt can now be built using just the
+   Xcode Command Line Tools, without needing to install the full Xcode IDE.
+ - [QTBUG-55755][Windows] All Qt .exe files now include meta information,
+   like .dll files already did.
+ - [QTBUG-58012] (Re-)added a way to specify alternative ICU libraries.
+ - [QTBUG-62150] Fixed detection of ICU in static builds.
+ - [QTBUG-53537][X11] Added missing detection of Xinerama.
+ - [QTBUG-61731][X11] Fixed detection of AT-SPI, allowing accessibility
+   support to be built again.
+ - [X11] Fixed detection of x11-xcb with pkg-config.
+ - [CMake] All Qt module defines are now propagated to the config files.
+
+qmake
+-----
+
+ - [QTBUG-31034] Added qmake feature and configure option to use ccache.
+ - [QTBUG-48342] Fixed generation of extraneous slashes in -project mode.
+ - [QTBUG-55633] Fixed misparsing of some string literal concatenations
+   as C++11 raw strings. This affects dependency scanning.
+ - [QTBUG-59301][Xcode] Fixed duplicate references in project files.
+ - [QTBUG-59827][nmake] The 'clean' target now deletes backup files of
+   MSVC manifests.
+ - [QTBUG-60455][Android] libc++ is now used instead of libstdc++ when
+   building with the android-clang mkspec.
+ - [QTBUG-60430][iOS] Fixed handling of the deprecated variable
+   QMAKE_IOS_TARGETED_DEVICE_FAMILY.
+ - [QTBUG-60899][WinRT] Fixed capability handling for Win10 targets.
+ - [WinRT] Added support for new Win10 capabilities.
+ - [QTBUG-61335][MinGW] Worked around LTO+MRI linker issue when cross-
+   building from Linux.
+ - [QTBUG-61411][Windows] _UNICODE is now defined, consistently with VS.
+ - [QTBUG-61688][MSVC] Fixed compilation of precompiled headers with
+   CONFIG+=silent. Done by removing redundant progress messages.
+ - [QTBUG-61690][QTBUG-61735] Fixed detection of compiler default search
+   paths for various compilers and platforms.
+ - [QTBUG-63197][Windows] Fixed moc'ing in a build directory with spaces
+   when INCLUDEPATH contains 40+ entries.
+ - [Android] Fixed building with ndkr16+ by using unified headers.
+ - [Windows] Fixed repeated installation of read-only files.
+ - [VS] Fixed deployment rules in created solution files.
