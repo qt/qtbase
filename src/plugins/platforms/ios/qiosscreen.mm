@@ -45,7 +45,6 @@
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
 #include "quiview.h"
-#include <QtCore/qoperatingsystemversion.h>
 
 #include <QtGui/private/qwindow_p.h>
 #include <private/qcoregraphics_p.h>
@@ -275,14 +274,6 @@ void QIOSScreen::updateProperties()
     if (m_uiScreen == [UIScreen mainScreen]) {
         Qt::ScreenOrientation statusBarOrientation = toQtScreenOrientation(UIDeviceOrientation([UIApplication sharedApplication].statusBarOrientation));
 
-        if (QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8)) {
-            // On iOS < 8.0 the UIScreen geometry is always in portait, and the system applies
-            // the screen rotation to the root view-controller's view instead of directly to the
-            // screen, like iOS 8 and above does.
-            m_geometry = mapBetween(Qt::PortraitOrientation, statusBarOrientation, m_geometry);
-            m_availableGeometry = transformBetween(Qt::PortraitOrientation, statusBarOrientation, m_geometry).mapRect(m_availableGeometry);
-        }
-
         QIOSViewController *qtViewController = [m_uiWindow.rootViewController isKindOfClass:[QIOSViewController class]] ?
             static_cast<QIOSViewController *>(m_uiWindow.rootViewController) : nil;
 
@@ -302,20 +293,15 @@ void QIOSScreen::updateProperties()
 #endif
 
     if (m_geometry != previousGeometry) {
-        QRectF physicalGeometry;
-        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::IOS, 8)) {
-             // We can't use the primaryOrientation of screen(), as we haven't reported the new geometry yet
-            Qt::ScreenOrientation primaryOrientation = m_geometry.width() >= m_geometry.height() ?
-                Qt::LandscapeOrientation : Qt::PortraitOrientation;
+        // We can't use the primaryOrientation of screen(), as we haven't reported the new geometry yet
+        Qt::ScreenOrientation primaryOrientation = m_geometry.width() >= m_geometry.height() ?
+            Qt::LandscapeOrientation : Qt::PortraitOrientation;
 
-            // On iPhone 6+ devices, or when display zoom is enabled, the render buffer is scaled
-            // before being output on the physical display. We have to take this into account when
-            // computing the physical size. Note that unlike the native bounds, the physical size
-            // follows the primary orientation of the screen.
-            physicalGeometry = mapBetween(nativeOrientation(), primaryOrientation, QRectF::fromCGRect(m_uiScreen.nativeBounds).toRect());
-        } else {
-            physicalGeometry = QRectF(0, 0, m_geometry.width() * devicePixelRatio(), m_geometry.height() * devicePixelRatio());
-        }
+        // On iPhone 6+ devices, or when display zoom is enabled, the render buffer is scaled
+        // before being output on the physical display. We have to take this into account when
+        // computing the physical size. Note that unlike the native bounds, the physical size
+        // follows the primary orientation of the screen.
+        const QRectF physicalGeometry = mapBetween(nativeOrientation(), primaryOrientation, QRectF::fromCGRect(m_uiScreen.nativeBounds).toRect());
 
         static const qreal millimetersPerInch = 25.4;
         m_physicalSize = physicalGeometry.size() / m_physicalDpi * millimetersPerInch;
