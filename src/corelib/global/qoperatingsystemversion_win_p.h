@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QOPERATINGSYSTEMVERSION_P_H
-#define QOPERATINGSYSTEMVERSION_P_H
+#ifndef QOPERATINGSYSTEMVERSION_WIN_P_H
+#define QOPERATINGSYSTEMVERSION_WIN_P_H
 
 //
 //  W A R N I N G
@@ -51,29 +51,13 @@
 // We mean it.
 //
 
-#include "qoperatingsystemversion.h"
+#include <QtCore/qglobal.h>
+#include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
-static inline QOperatingSystemVersion::OSType currentType()
-{
-#if defined(Q_OS_WIN)
-    return QOperatingSystemVersion::Windows;
-#elif defined(Q_OS_MACOS)
-    return QOperatingSystemVersion::MacOS;
-#elif defined(Q_OS_IOS)
-    return QOperatingSystemVersion::IOS;
-#elif defined(Q_OS_TVOS)
-    return QOperatingSystemVersion::TvOS;
-#elif defined(Q_OS_WATCHOS)
-    return QOperatingSystemVersion::WatchOS;
-#elif defined(Q_OS_ANDROID)
-    return QOperatingSystemVersion::Android;
-#else
-    return QOperatingSystemVersion::Unknown;
-#endif
-}
+OSVERSIONINFOEX qWindowsVersionInfo();
 
 QT_END_NAMESPACE
 
-#endif // QOPERATINGSYSTEMVERSION_P_H
+#endif // QOPERATINGSYSTEMVERSION_WIN_P_H

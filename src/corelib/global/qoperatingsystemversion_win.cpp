@@ -37,7 +37,10 @@
 **
 ****************************************************************************/
 
+#include "qoperatingsystemversion_win_p.h"
+
 #include "qoperatingsystemversion_p.h"
+
 #include <qt_windows.h>
 #include <qbytearray.h>
 
