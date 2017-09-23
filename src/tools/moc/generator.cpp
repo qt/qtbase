@@ -561,14 +561,14 @@ void Generator::generateCode()
     fprintf(out, "\nvoid *%s::qt_metacast(const char *_clname)\n{\n", cdef->qualified.constData());
     fprintf(out, "    if (!_clname) return nullptr;\n");
     fprintf(out, "    if (!strcmp(_clname, qt_meta_stringdata_%s.stringdata0))\n"
-                  "        return static_cast<void*>(const_cast< %s*>(this));\n",
-            qualifiedClassNameIdentifier.constData(), cdef->classname.constData());
+                  "        return static_cast<void*>(this);\n",
+            qualifiedClassNameIdentifier.constData());
     for (int i = 1; i < cdef->superclassList.size(); ++i) { // for all superclasses but the first one
         if (cdef->superclassList.at(i).second == FunctionDef::Private)
             continue;
         const char *cname = cdef->superclassList.at(i).first.constData();
-        fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(const_cast< %s*>(this));\n",
-                cname, cname, cdef->classname.constData());
+        fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(this);\n",
+                cname, cname);
     }
     for (int i = 0; i < cdef->interfaceList.size(); ++i) {
         const QVector<ClassDef::Interface> &iface = cdef->interfaceList.at(i);
@@ -576,8 +576,7 @@ void Generator::generateCode()
             fprintf(out, "    if (!strcmp(_clname, %s))\n        return ", iface.at(j).interfaceId.constData());
             for (int k = j; k >= 0; --k)
                 fprintf(out, "static_cast< %s*>(", iface.at(k).className.constData());
-            fprintf(out, "const_cast< %s*>(this)%s;\n",
-                    cdef->classname.constData(), QByteArray(j+1, ')').constData());
+            fprintf(out, "this%s;\n", QByteArray(j + 1, ')').constData());
         }
     }
     if (!purestSuperClass.isEmpty() && !isQObject) {
