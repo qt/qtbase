@@ -1,0 +1,55 @@
+/****************************************************************************
+**
+** Copyright (C) 2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Sérgio Martins <sergio.martins@kdab.com>
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qscopeguard.h"
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \fn const QScopeGuard<F> qScopeGuard(F f)
+    \inmodule QtCore
+    \brief The qScopeGuard function can be used to call a function at the end of the scope.
+    \since 5.12
+    \ingroup misc
+
+    QScopeGuard<F> is a class which sole purpose is to run a function F in its destructor.
+    This is useful for guaranteeing your cleanup code is executed whether the function is exited normally,
+    exited early by a return statement, or exited by an exception.
+
+    If F is a lambda then you cannot instantiate the template directly, therefore the qScopeGuard() helper
+    is provided and QScopeGuard<F> is made a private implementation detail.
+
+    Example usage is as follows:
+
+    \snippet code/src_corelib_tools_qscopeguard.cpp 0
+
+    \note Exceptions are not supported. The callable shouldn't throw when executed, copied or moved.
+
+    \sa QScopedValueRollback
+*/
+
+QT_END_NAMESPACE
