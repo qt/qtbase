@@ -2770,21 +2770,28 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
 #endif
 
 /*!
-    Constructs a native gesture event of type \a type.
+    Constructs a native gesture event of type \a type originating from \a device.
 
     The points \a localPos, \a windowPos and \a screenPos specify the
     gesture position relative to the receiving widget or item,
     window, and screen, respectively.
 
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
+    \since 5.10
 */
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *device, const QPointF &localPos, const QPointF &windowPos,
                                          const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
     : QInputEvent(QEvent::NativeGesture), mGestureType(type),
-      mTouchDeviceId(QTouchDevicePrivate::get(const_cast<QTouchDevice *>(dev))->id),
+      mTouchDeviceId(QTouchDevicePrivate::get(const_cast<QTouchDevice *>(device))->id),
       mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
       mSequenceId(sequenceId), mIntValue(intValue)
 { }
+
+/*!
+    \since 5.10
+
+    Returns the device.
+*/
 
 const QTouchDevice *QNativeGestureEvent::device() const
 {
