@@ -47,62 +47,26 @@
 #include <AppKit/AppKit.h>
 
 QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
-Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSWindowHelper));
-
-// -------------------------------------------------------------------------
 
 @interface NSWindow (FullScreenProperty)
 @property(readonly) BOOL qt_fullScreen;
 @end
 
-// -------------------------------------------------------------------------
-
 @protocol QNSWindowProtocol
-
-@property (nonatomic, readonly) QT_MANGLE_NAMESPACE(QNSWindowHelper) *helper;
-
-- (id)initWithContentRect:(NSRect)contentRect screen:(NSScreen*)screen
-      styleMask:(NSUInteger)windowStyle qPlatformWindow:(QCocoaWindow *)qpw;
-
-- (void)superSendEvent:(NSEvent *)theEvent;
+@optional
+- (BOOL)canBecomeKeyWindow;
+- (void)sendEvent:(NSEvent*)theEvent;
 - (void)closeAndRelease;
-
+- (void)dealloc;
+@property (nonatomic, readonly) QCocoaWindow *platformWindow;
 @end
 
 typedef NSWindow<QNSWindowProtocol> QCocoaNSWindow;
 
-// -------------------------------------------------------------------------
-
-@interface QT_MANGLE_NAMESPACE(QNSWindowHelper) : NSObject
-{
-    QPointer<QCocoaWindow> _platformWindow;
-}
-
-@property (nonatomic, readonly) QCocoaNSWindow *window;
-@property (nonatomic, readonly) QCocoaWindow *platformWindow;
-
-- (id)initWithNSWindow:(QCocoaNSWindow *)window platformWindow:(QCocoaWindow *)platformWindow;
-- (void)handleWindowEvent:(NSEvent *)theEvent;
-- (void)detachFromPlatformWindow;
-
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowHelper);
-
-// -------------------------------------------------------------------------
-
-@interface QT_MANGLE_NAMESPACE(QNSWindow) : NSWindow<QNSWindowProtocol>
-@end
-
+@interface QT_MANGLE_NAMESPACE(QNSWindow) : NSWindow<QNSWindowProtocol> @end
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindow);
 
-// -------------------------------------------------------------------------
-
-@interface QT_MANGLE_NAMESPACE(QNSPanel) : NSPanel<QNSWindowProtocol>
-@end
-
+@interface QT_MANGLE_NAMESPACE(QNSPanel) : NSPanel<QNSWindowProtocol> @end
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanel);
-
-// -------------------------------------------------------------------------
 
 #endif // QNSWINDOW_H
