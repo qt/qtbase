@@ -412,8 +412,11 @@ bool QFileSystemEngine::fillMetaData(int fd, QFileSystemMetaData &data)
 
     int ret = qt_fstatx(fd, &statxBuffer);
     if (ret != -ENOSYS) {
-        data.fillFromStatxBuf(statxBuffer);
-        return ret == 0;
+        if (ret == 0) {
+            data.fillFromStatxBuf(statxBuffer);
+            return true;
+        }
+        return false;
     }
 
     if (QT_FSTAT(fd, &statBuffer) == 0) {
