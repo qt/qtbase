@@ -302,9 +302,6 @@ namespace QXcbAtom {
         _COMPIZ_TOOLKIT_ACTION,
         _GTK_LOAD_ICONTHEMES,
 
-        NPredefinedAtoms,
-
-        _QT_SETTINGS_TIMESTAMP = NPredefinedAtoms,
         NAtoms
     };
 }
