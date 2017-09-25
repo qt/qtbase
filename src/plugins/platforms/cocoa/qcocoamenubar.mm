@@ -452,5 +452,10 @@ NSMenuItem *QCocoaMenuBar::itemForRole(QPlatformMenuItem::MenuRole r)
     return Q_NULLPTR;
 }
 
+QCocoaWindow *QCocoaMenuBar::cocoaWindow() const
+{
+    return m_window.data();
+}
+
 QT_END_NAMESPACE
 
