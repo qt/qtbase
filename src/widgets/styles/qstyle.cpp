@@ -1994,6 +1994,11 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            A value equal to zero means that the animations will be disabled.
            This enum value has been introduced in Qt 5.10.
 
+    \value SH_ComboBox_AllowWheelScrolling
+           Determines if the mouse wheel can be used to scroll inside a QComboBox.
+           This is on by default in all styles except the Mac style.
+           This enum value has been introduced in Qt 5.10.
+
     \sa styleHint()
 */
 

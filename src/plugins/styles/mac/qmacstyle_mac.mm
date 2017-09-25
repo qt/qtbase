@@ -2963,6 +2963,9 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         // min/max/close buttons on windows don't show tool tips
         ret = false;
         break;
+    case SH_ComboBox_AllowWheelScrolling:
+        ret = false;
+        break;
     default:
         ret = QCommonStyle::styleHint(sh, opt, w, hret);
         break;

@@ -5290,6 +5290,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_Widget_Animation_Duration:
         ret = styleHint(SH_Widget_Animate, opt, widget, hret) ? 200 : 0;
         break;
+    case SH_ComboBox_AllowWheelScrolling:
+        ret = true;
+        break;
     default:
         ret = 0;
         break;

@@ -3350,11 +3350,11 @@ void QComboBox::keyReleaseEvent(QKeyEvent *e)
 #if QT_CONFIG(wheelevent)
 void QComboBox::wheelEvent(QWheelEvent *e)
 {
-#ifdef Q_OS_DARWIN
-    Q_UNUSED(e);
-#else
     Q_D(QComboBox);
-    if (!d->viewContainer()->isVisible()) {
+    QStyleOptionComboBox opt;
+    initStyleOption(&opt);
+    if (style()->styleHint(QStyle::SH_ComboBox_AllowWheelScrolling, &opt, this) &&
+        !d->viewContainer()->isVisible()) {
         const int rowCount = count();
         int newIndex = currentIndex();
 
@@ -3374,7 +3374,6 @@ void QComboBox::wheelEvent(QWheelEvent *e)
         }
         e->accept();
     }
-#endif
 }
 #endif
 
