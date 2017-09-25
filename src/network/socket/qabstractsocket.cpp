@@ -1362,13 +1362,12 @@ void QAbstractSocketPrivate::fetchConnectionParameters()
     }
 
     state = QAbstractSocket::ConnectedState;
-    emit q->stateChanged(state);
-    emit q->connected();
-
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::fetchConnectionParameters() connection to %s:%i established",
            host.toString().toLatin1().constData(), port);
 #endif
+    emit q->stateChanged(state);
+    emit q->connected();
 }
 
 /*! \internal
