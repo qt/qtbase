@@ -388,7 +388,7 @@ QVersionNumber QVersionNumber::commonPrefix(const QVersionNumber &v1,
 /*!
     \fn QString QVersionNumber::toString() const
 
-    Returns a string with all of the segments delimited by a '.'.
+    Returns a string with all of the segments delimited by a period (\c{.}).
 
     \sa majorVersion(), minorVersion(), microVersion(), segments()
 */
@@ -411,7 +411,7 @@ QString QVersionNumber::toString() const
                                                   int *suffixIndex)
 
     Constructs a QVersionNumber from a specially formatted \a string of
-    non-negative decimal numbers delimited by '.'.
+    non-negative decimal numbers delimited by a period (\c{.}).
 
     Once the numerical segments have been parsed, the remainder of the string
     is considered to be the suffix string.  The start index of that string will be
