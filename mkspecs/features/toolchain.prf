@@ -120,7 +120,7 @@ isEmpty($${target_prefix}.INCDIRS) {
                 }
             }
         }
-        !darwin:clang {
+        if(!darwin:clang)|intel_icc {
             # Clang on a non-Apple system (that is, a system without ld64 -- say, with GNU ld
             # or gold under Linux) will not print any library search path. Need to use another
             # invocation with different options (which in turn doesn't print include search
@@ -205,7 +205,7 @@ isEmpty($${target_prefix}.COMPILER_MACROS) {
         vars = $$qtVariablesFromGCC($$QMAKE_CXX)
     }
     for (v, vars) {
-        isEmpty(v)|contains(v, $${LITERAL_HASH}.*): next()
+        contains(v, $${LITERAL_HASH}.*)|contains(v, " *"): next()
         # Set both <varname> for the outer scope ...
         eval($$v)
         v ~= s/ .*//
