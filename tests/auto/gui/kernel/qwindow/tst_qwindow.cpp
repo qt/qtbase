@@ -409,13 +409,17 @@ void tst_QWindow::exposeEventOnShrink_QTBUG54040()
 
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
-    const int initialExposeCount = window.received(QEvent::Expose);
+    int exposeCount = window.received(QEvent::Expose);
     window.resize(window.width(), window.height() - 5);
-    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 1);
+    QTRY_VERIFY(window.received(QEvent::Expose) > exposeCount);
+
+    exposeCount = window.received(QEvent::Expose);
     window.resize(window.width() - 5, window.height());
-    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 2);
+    QTRY_VERIFY(window.received(QEvent::Expose) > exposeCount);
+
+    exposeCount = window.received(QEvent::Expose);
     window.resize(window.width() - 5, window.height() - 5);
-    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 3);
+    QTRY_VERIFY(window.received(QEvent::Expose) > exposeCount);
 }
 
 void tst_QWindow::positioning_data()
