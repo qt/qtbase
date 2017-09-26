@@ -794,6 +794,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
             break;
         }
         Q_FALLTHROUGH();
+        // All numeric:
     case DaySection:
     case YearSection:
     case YearSection2Digits:
@@ -816,9 +817,9 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
             bool ok = true;
             int last = -1, used = -1;
 
-            const int max = qMin(sectionmaxsize, sectiontextSize);
-            QStringRef digitsStr = sectionTextRef.left(max);
-            for (int digits = max; digits >= 1; --digits) {
+            Q_ASSERT(sectiontextSize <= sectionmaxsize);
+            QStringRef digitsStr = sectionTextRef.left(sectiontextSize);
+            for (int digits = sectiontextSize; digits >= 1; --digits) {
                 digitsStr.truncate(digits);
                 int tmp = (int)loc.toUInt(digitsStr, &ok);
                 if (ok && sn.type == Hour12Section) {
@@ -845,20 +846,20 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex,
                     QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint" << last << ok;
             } else {
                 const FieldInfo fi = fieldInfo(sectionIndex);
-                const bool done = (used == sectionmaxsize);
-                if (!done && fi & Fraction) { // typing 2 in a zzz field should be .200, not .002
+                const bool unfilled = used < sectionmaxsize;
+                if (unfilled && fi & Fraction) { // typing 2 in a zzz field should be .200, not .002
                     for (int i = used; i < sectionmaxsize; ++i)
                         last *= 10;
                 }
+                // Even those *= 10s can't take last above absMax:
+                Q_ASSERT(last <= absMax);
                 const int absMin = absoluteMin(sectionIndex);
                 if (last < absMin) {
-                    if (!done) // reversed test to dodge QDTPDEBUG ugliness !
+                    if (unfilled)
                         result = ParsedSection(Intermediate, last, used);
                     else
                         QDTPDEBUG << "invalid because" << last << "is less than absoluteMin" << absMin;
-                } else if (last > absMax) {
-                    result = ParsedSection(Intermediate, last, used);
-                } else if (!done && (fi & (FixedWidth|Numeric)) == (FixedWidth|Numeric)) {
+                } else if (unfilled && (fi & (FixedWidth|Numeric)) == (FixedWidth|Numeric)) {
                     if (skipToNextSection(sectionIndex, currentValue, digitsStr)) {
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
                         result = ParsedSection(Acceptable, last, sectionmaxsize, missingZeroes);
