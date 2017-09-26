@@ -233,6 +233,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     // Check for events synthesized from touch. Lower 7 bits are touch/pen index, bit 8 indicates touch.
     // However, when tablet support is active, extraInfo is a packet serial number. This is not a problem
     // since we do not want to ignore mouse events coming from a tablet.
+    // See https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320.aspx
     const quint64 extraInfo = quint64(GetMessageExtraInfo());
     if ((extraInfo & signatureMask) == miWpSignature) {
         if (extraInfo & 0x80) { // Bit 7 indicates touch event, else tablet pen.
