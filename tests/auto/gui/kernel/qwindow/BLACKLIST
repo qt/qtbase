@@ -19,3 +19,5 @@ ubuntu-16.04
 osx
 [modalWindowModallity]
 osx
+[testInputEvents]
+rhel-7.4
