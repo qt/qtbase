@@ -71,9 +71,7 @@ done
 #--- EC ----------------------------------------------------------------------------
 # Note: EC will be generated with pre-defined curves. You can check supported curves
 #       with openssl ecparam -list_curves.
-#       If OpenSSL 1.0.2 is available brainpool should be added!
-# brainpoolP256r1 brainpoolP384r1 brainpoolP512r1
-for curve in secp224r1 prime256v1 secp384r1
+for curve in secp224r1 prime256v1 secp384r1 brainpoolP256r1 brainpoolP384r1 brainpoolP512r1
 do
   size=`tr -cd 0-9 <<< $curve`
   size=${size::-1} # remove last number of curve name as we need bit size only
