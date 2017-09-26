@@ -45,7 +45,9 @@
 #include "qdesktopwidget_p.h"
 #include "qevent.h"
 #include "qlayout.h"
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #include "qmetaobject.h"
 #include "qpixmap.h"
 #include "qpointer.h"
@@ -2439,7 +2441,7 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
 {
     Q_Q(const QWidget);
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     bool resetBrushOrigin = false;
     QPointF oldBrushOrigin;
     //If we are painting the viewport of a scrollarea, we must apply an offset to the brush in case we are drawing a texture
@@ -2452,7 +2454,7 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
         painter->setBrushOrigin(-priv->contentsOffset());
 
     }
-#endif // QT_NO_SCROLLAREA
+#endif // QT_CONFIG(scrollarea)
 
     const QBrush autoFillBrush = q->palette().brush(q->backgroundRole());
 
@@ -2479,10 +2481,10 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
         q->style()->drawPrimitive(QStyle::PE_Widget, &opt, painter, q);
     }
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     if (resetBrushOrigin)
         painter->setBrushOrigin(oldBrushOrigin);
-#endif // QT_NO_SCROLLAREA
+#endif // QT_CONFIG(scrollarea)
 }
 
 /*
@@ -6521,9 +6523,9 @@ void QWidget::setFocus(Qt::FocusReason reason)
     if (!isEnabled())
         return;
 
-    QWidget *f = this;
-    while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
-        f = f->d_func()->extra->focus_proxy;
+    QWidget *f = d_func()->deepestFocusProxy();
+    if (!f)
+        f = this;
 
     if (QApplication::focusWidget() == f
 #if 0 // Used to be included in Qt4 for Q_WS_WIN
@@ -6618,6 +6620,27 @@ void QWidget::setFocus(Qt::FocusReason reason)
     } else {
         f->d_func()->updateFocusChild();
     }
+}
+
+
+/*!\internal
+ * A focus proxy can have its own focus proxy, which can have its own
+ * proxy, and so on. This helper function returns the widget that sits
+ * at the bottom of the proxy chain, and therefore the one that should
+ * normally get focus if this widget receives a focus request.
+ */
+QWidget *QWidgetPrivate::deepestFocusProxy() const
+{
+    Q_Q(const QWidget);
+
+    QWidget *focusProxy = q->focusProxy();
+    if (!focusProxy)
+        return nullptr;
+
+    while (QWidget *nextFocusProxy = focusProxy->focusProxy())
+        focusProxy = nextFocusProxy;
+
+    return focusProxy;
 }
 
 void QWidgetPrivate::setFocus_sys()
@@ -8983,7 +9006,7 @@ bool QWidget::event(QEvent *event)
         case Qt::CustomContextMenu:
             emit customContextMenuRequested(static_cast<QContextMenuEvent *>(event)->pos());
             break;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
         case Qt::ActionsContextMenu:
             if (d->actions.count()) {
                 QMenu::exec(d->actions, static_cast<QContextMenuEvent *>(event)->globalPos(),

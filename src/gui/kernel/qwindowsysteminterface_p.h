@@ -421,9 +421,9 @@ public:
 #ifndef QT_NO_GESTURES
     class GestureEvent : public InputEvent {
     public:
-        GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, QPointF pos, QPointF globalPos)
+        GestureEvent(QWindow *window, ulong time, Qt::NativeGestureType type, QTouchDevice *dev, QPointF pos, QPointF globalPos)
             : InputEvent(window, time, Gesture, Qt::NoModifier), type(type), pos(pos), globalPos(globalPos),
-              realValue(0), sequenceId(0), intValue(0) { }
+              realValue(0), sequenceId(0), intValue(0), device(dev) { }
         Qt::NativeGestureType type;
         QPointF pos;
         QPointF globalPos;
@@ -432,6 +432,7 @@ public:
         // Windows
         ulong sequenceId;
         quint64 intValue;
+        QTouchDevice *device;
     };
 #endif
 

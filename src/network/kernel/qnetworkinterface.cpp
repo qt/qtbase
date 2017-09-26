@@ -257,7 +257,7 @@ void QNetworkAddressEntry::setIp(const QHostAddress &newIp)
 */
 QHostAddress QNetworkAddressEntry::netmask() const
 {
-    return d->netmask;
+    return d->netmask.address(d->address.protocol());
 }
 
 /*!
@@ -270,7 +270,7 @@ QHostAddress QNetworkAddressEntry::netmask() const
 void QNetworkAddressEntry::setNetmask(const QHostAddress &newNetmask)
 {
     if (newNetmask.protocol() != ip().protocol()) {
-        d->netmask = QNetmaskAddress();
+        d->netmask = QNetmask();
         return;
     }
 

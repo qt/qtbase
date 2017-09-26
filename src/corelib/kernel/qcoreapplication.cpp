@@ -263,7 +263,7 @@ Q_GLOBAL_STATIC(QStartUpFuncList, preRList)
 typedef QList<QtCleanUpFunction> QVFuncList;
 Q_GLOBAL_STATIC(QVFuncList, postRList)
 #ifndef QT_NO_QOBJECT
-static QBasicMutex globalPreRoutinesMutex;
+static QBasicMutex globalRoutinesMutex;
 #endif
 
 /*!
@@ -277,13 +277,15 @@ void qAddPreRoutine(QtStartUpFunction p)
     QStartUpFuncList *list = preRList();
     if (!list)
         return;
+
+    if (QCoreApplication::instance())
+        p();
+
     // Due to C++11 parallel dynamic initialization, this can be called
     // from multiple threads.
 #ifndef QT_NO_THREAD
-    QMutexLocker locker(&globalPreRoutinesMutex);
+    QMutexLocker locker(&globalRoutinesMutex);
 #endif
-    if (QCoreApplication::instance())
-        p();
     list->prepend(p); // in case QCoreApplication is re-created, see qt_call_pre_routines
 }
 
@@ -292,6 +294,9 @@ void qAddPostRoutine(QtCleanUpFunction p)
     QVFuncList *list = postRList();
     if (!list)
         return;
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(&globalRoutinesMutex);
+#endif
     list->prepend(p);
 }
 
@@ -300,6 +305,9 @@ void qRemovePostRoutine(QtCleanUpFunction p)
     QVFuncList *list = postRList();
     if (!list)
         return;
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(&globalRoutinesMutex);
+#endif
     list->removeAll(p);
 }
 
@@ -308,15 +316,18 @@ static void qt_call_pre_routines()
     if (!preRList.exists())
         return;
 
+    QVFuncList list;
+    {
 #ifndef QT_NO_THREAD
-    QMutexLocker locker(&globalPreRoutinesMutex);
+        QMutexLocker locker(&globalRoutinesMutex);
 #endif
-    QVFuncList *list = &(*preRList);
-    // Unlike qt_call_post_routines, we don't empty the list, because
-    // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
-    // the function to be executed every time QCoreApplication is created.
-    for (int i = 0; i < list->count(); ++i)
-        list->at(i)();
+        // Unlike qt_call_post_routines, we don't empty the list, because
+        // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
+        // the function to be executed every time QCoreApplication is created.
+        list = *preRList;
+    }
+    for (int i = 0; i < list.count(); ++i)
+        list.at(i)();
 }
 
 void Q_CORE_EXPORT qt_call_post_routines()
@@ -324,9 +335,21 @@ void Q_CORE_EXPORT qt_call_post_routines()
     if (!postRList.exists())
         return;
 
-    QVFuncList *list = &(*postRList);
-    while (!list->isEmpty())
-        (list->takeFirst())();
+    forever {
+        QVFuncList list;
+        {
+            // extract the current list and make the stored list empty
+#ifndef QT_NO_THREAD
+            QMutexLocker locker(&globalRoutinesMutex);
+#endif
+            qSwap(*postRList, list);
+        }
+
+        if (list.isEmpty())
+            break;
+        for (QtCleanUpFunction f : qAsConst(list))
+            f();
+    }
 }
 
 
@@ -2864,6 +2887,7 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
 /*!
     \fn void qAddPostRoutine(QtCleanUpFunction ptr)
+    \threadsafe
     \relates QCoreApplication
 
     Adds a global routine that will be called from the QCoreApplication
@@ -2877,10 +2901,10 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 4
 
-    Note that for an application- or module-wide cleanup, qaddPostRoutine()
+    Note that for an application- or module-wide cleanup, qAddPostRoutine()
     is often not suitable. For example, if the program is split into dynamically
     loaded modules, the relevant module may be unloaded long before the
-    QCoreApplication destructor is called. In such cases, if using qaddPostRoutine()
+    QCoreApplication destructor is called. In such cases, if using qAddPostRoutine()
     is still desirable, qRemovePostRoutine() can be used to prevent a routine
     from being called by the QCoreApplication destructor. For example, if that
     routine was called before the module was unloaded.
@@ -2896,11 +2920,14 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     By selecting the right parent object, this can often be made to
     clean up the module's data at the right moment.
 
+    \note This function has been thread-safe since Qt 5.10.
+
     \sa qRemovePostRoutine()
 */
 
 /*!
     \fn void qRemovePostRoutine(QtCleanUpFunction ptr)
+    \threadsafe
     \relates QCoreApplication
     \since 5.3
 
@@ -2908,6 +2935,8 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     routines called by the QCoreApplication destructor. The routine
     must have been previously added to the list by a call to
     qAddPostRoutine(), otherwise this function has no effect.
+
+    \note This function has been thread-safe since Qt 5.10.
 
     \sa qAddPostRoutine()
 */

@@ -119,6 +119,12 @@ public:
     bool event(QEvent *event) override;
     int loopLevel() const;
 
+#ifdef Q_QDOC
+    template <typename Function, typename... Args>
+    static QThread *create(Function &&f, Args &&... args);
+    template <typename Function>
+    static QThread *create(Function &&f);
+#else
 #ifdef QTHREAD_HAS_CREATE
 #ifdef QTHREAD_HAS_VARIADIC_CREATE
     template <typename Function, typename... Args>
@@ -126,6 +132,7 @@ public:
 #else
     template <typename Function>
     static QThread *create(Function &&f);
+#endif
 #endif
 #endif
 
@@ -158,98 +165,81 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QThread)
 
+#ifdef QTHREAD_HAS_CREATE
+    static QThread *createThreadImpl(std::future<void> &&future);
+#endif
+
     friend class QCoreApplication;
     friend class QThreadData;
 };
 
 #ifdef QTHREAD_HAS_CREATE
-namespace QtPrivate {
-
-class QThreadCreateThread : public QThread
-{
-public:
-#if defined(QTHREAD_HAS_VARIADIC_CREATE)
-    // C++17: std::thread's constructor complying call
-    template <typename Function, typename... Args>
-    explicit QThreadCreateThread(Function &&f, Args &&... args)
-        : m_future(std::async(std::launch::deferred,
-                   [f = static_cast<typename std::decay<Function>::type>(std::forward<Function>(f))](auto &&... largs) mutable -> void
-                   {
-                       (void)std::invoke(std::move(f), std::forward<decltype(largs)>(largs)...);
-                   }, std::forward<Args>(args)...))
-    {
-    }
-#elif defined(__cpp_init_captures) && __cpp_init_captures >= 201304
-    // C++14: implementation for just one callable
-    template <typename Function>
-    explicit QThreadCreateThread(Function &&f)
-        : m_future(std::async(std::launch::deferred,
-                   [f = static_cast<typename std::decay<Function>::type>(std::forward<Function>(f))]() mutable -> void
-                   {
-                       (void)f();
-                   }))
-    {
-    }
-#else
-private:
-    // C++11: same as C++14, but with a workaround for not having generalized lambda captures
-    template <typename Function>
-    struct Callable
-    {
-        explicit Callable(Function &&f)
-            : m_function(std::forward<Function>(f))
-        {
-        }
-
-#if defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
-        // Apply the same semantics of a lambda closure type w.r.t. the special
-        // member functions, if possible: delete the copy assignment operator,
-        // bring back all the others as per the RO5 (cf. §8.1.5.1/11 [expr.prim.lambda.closure])
-        ~Callable() = default;
-        Callable(const Callable &) = default;
-        Callable(Callable &&) = default;
-        Callable &operator=(const Callable &) = delete;
-        Callable &operator=(Callable &&) = default;
-#endif
-
-        void operator()()
-        {
-            (void)m_function();
-        }
-
-        typename std::decay<Function>::type m_function;
-    };
-
-public:
-    template <typename Function>
-    explicit QThreadCreateThread(Function &&f)
-        : m_future(std::async(std::launch::deferred, Callable<Function>(std::forward<Function>(f))))
-    {
-    }
-#endif // QTHREAD_HAS_VARIADIC_CREATE
-
-private:
-    void run() override
-    {
-        m_future.get();
-    }
-
-    std::future<void> m_future;
-};
-
-} // namespace QtPrivate
 
 #ifdef QTHREAD_HAS_VARIADIC_CREATE
+// C++17: std::thread's constructor complying call
 template <typename Function, typename... Args>
 QThread *QThread::create(Function &&f, Args &&... args)
 {
-    return new QtPrivate::QThreadCreateThread(std::forward<Function>(f), std::forward<Args>(args)...);
+    using DecayedFunction = typename std::decay<Function>::type;
+    auto threadFunction =
+        [f = static_cast<DecayedFunction>(std::forward<Function>(f))](auto &&... largs) mutable -> void
+        {
+            (void)std::invoke(std::move(f), std::forward<decltype(largs)>(largs)...);
+        };
+
+    return createThreadImpl(std::async(std::launch::deferred,
+                                       std::move(threadFunction),
+                                       std::forward<Args>(args)...));
 }
-#else
+#elif defined(__cpp_init_captures) && __cpp_init_captures >= 201304
+// C++14: implementation for just one callable
 template <typename Function>
 QThread *QThread::create(Function &&f)
 {
-    return new QtPrivate::QThreadCreateThread(std::forward<Function>(f));
+    using DecayedFunction = typename std::decay<Function>::type;
+    auto threadFunction =
+        [f = static_cast<DecayedFunction>(std::forward<Function>(f))]() mutable -> void
+        {
+            (void)f();
+        };
+
+    return createThreadImpl(std::async(std::launch::deferred, std::move(threadFunction)));
+}
+#else
+// C++11: same as C++14, but with a workaround for not having generalized lambda captures
+namespace QtPrivate {
+template <typename Function>
+struct Callable
+{
+    explicit Callable(Function &&f)
+        : m_function(std::forward<Function>(f))
+    {
+    }
+
+#if defined(Q_COMPILER_DEFAULT_MEMBERS) && defined(Q_COMPILER_DELETE_MEMBERS)
+    // Apply the same semantics of a lambda closure type w.r.t. the special
+    // member functions, if possible: delete the copy assignment operator,
+    // bring back all the others as per the RO5 (cf. §8.1.5.1/11 [expr.prim.lambda.closure])
+    ~Callable() = default;
+    Callable(const Callable &) = default;
+    Callable(Callable &&) = default;
+    Callable &operator=(const Callable &) = delete;
+    Callable &operator=(Callable &&) = default;
+#endif
+
+    void operator()()
+    {
+        (void)m_function();
+    }
+
+    typename std::decay<Function>::type m_function;
+};
+} // namespace QtPrivate
+
+template <typename Function>
+QThread *QThread::create(Function &&f)
+{
+    return createThreadImpl(std::async(std::launch::deferred, QtPrivate::Callable<Function>(std::forward<Function>(f))));
 }
 #endif // QTHREAD_HAS_VARIADIC_CREATE
 

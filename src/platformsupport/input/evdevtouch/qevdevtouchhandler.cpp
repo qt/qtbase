@@ -229,7 +229,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
 
     if (m_fd >= 0) {
         m_notify = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
-        connect(m_notify, SIGNAL(activated(int)), this, SLOT(readData()));
+        connect(m_notify, &QSocketNotifier::activated, this, &QEvdevTouchScreenHandler::readData);
     } else {
         qErrnoWarning(errno, "evdevtouch: Cannot open input device %s", qPrintable(device));
         return;

@@ -32,7 +32,7 @@
 
 #include <qcoreapplication.h>
 #include <qnetworkinterface.h>
-#include <qtcpsocket.h>
+#include <qudpsocket.h>
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QNetworkConfigurationManager>
 #include <QNetworkSession>
@@ -47,6 +47,8 @@ class tst_QNetworkInterface : public QObject
 public:
     tst_QNetworkInterface();
     virtual ~tst_QNetworkInterface();
+
+    bool isIPv6Working();
 
 private slots:
     void initTestCase();
@@ -74,6 +76,13 @@ tst_QNetworkInterface::tst_QNetworkInterface()
 
 tst_QNetworkInterface::~tst_QNetworkInterface()
 {
+}
+
+bool tst_QNetworkInterface::isIPv6Working()
+{
+    QUdpSocket socket;
+    socket.connectToHost(QHostAddress::LocalHostIPv6, 1234);
+    return socket.state() == QAbstractSocket::ConnectedState || socket.waitForConnected(100);
 }
 
 void tst_QNetworkInterface::initTestCase()
@@ -172,33 +181,19 @@ void tst_QNetworkInterface::loopbackIPv4()
 
 void tst_QNetworkInterface::loopbackIPv6()
 {
+    if (!isIPv6Working())
+        QSKIP("IPv6 not active on this machine");
     QList<QHostAddress> all = QNetworkInterface::allAddresses();
-
-    bool loopbackfound = false;
-    bool anyIPv6 = false;
-    foreach (QHostAddress addr, all)
-        if (addr == QHostAddress::LocalHostIPv6) {
-            loopbackfound = true;
-            anyIPv6 = true;
-            break;
-        } else if (addr.protocol() == QAbstractSocket::IPv6Protocol)
-            anyIPv6 = true;
-
-    QVERIFY(!anyIPv6 || loopbackfound);
+    QVERIFY(all.contains(QHostAddress(QHostAddress::LocalHostIPv6)));
 }
 
 void tst_QNetworkInterface::localAddress()
 {
-    QTcpSocket socket;
+    QUdpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 80);
     QVERIFY(socket.waitForConnected(5000));
 
     QHostAddress local = socket.localAddress();
-
-    // make Apache happy on fluke
-    socket.write("GET / HTTP/1.0\r\n\r\n");
-    socket.waitForBytesWritten(1000);
-    socket.close();
 
     // test that we can find the address that QTcpSocket reported
     QList<QHostAddress> all = QNetworkInterface::allAddresses();

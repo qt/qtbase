@@ -91,8 +91,6 @@ public:
 private:
     QCFType<TISInputSourceRef> currentInputSource;
 
-    QLocale keyboardInputLocale;
-    Qt::LayoutDirection keyboardInputDirection;
     enum { NullMode, UnicodeMode, OtherMode } keyboard_mode;
     union {
         const UCKeyboardLayout *unicode;

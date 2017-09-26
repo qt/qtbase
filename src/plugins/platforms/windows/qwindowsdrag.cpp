@@ -44,7 +44,7 @@
 #  include "qwindowsclipboard.h"
 #endif
 #include "qwindowsintegration.h"
-#include "qwindowsole.h"
+#include "qwindowsdropdataobject.h"
 #include <QtCore/qt_windows.h>
 #include "qwindowswindow.h"
 #include "qwindowsmousehandler.h"
@@ -673,7 +673,7 @@ Qt::DropAction QWindowsDrag::drag(QDrag *drag)
     QWindowsDrag::m_canceled = false;
     QWindowsOleDropSource *windowDropSource = new QWindowsOleDropSource(this);
     windowDropSource->createCursors();
-    QWindowsOleDataObject *dropDataObject = new QWindowsOleDataObject(dropData);
+    QWindowsDropDataObject *dropDataObject = new QWindowsDropDataObject(dropData);
     const Qt::DropActions possibleActions = drag->supportedActions();
     const DWORD allowedEffects = translateToWinDragEffects(possibleActions);
     qCDebug(lcQpaMime) << '>' << __FUNCTION__ << "possible Actions=0x"

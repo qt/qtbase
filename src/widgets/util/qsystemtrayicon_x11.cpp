@@ -47,7 +47,9 @@
 #include "qevent.h"
 #include "qapplication.h"
 #include "qlist.h"
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #include "qtimer.h"
 #include "qsystemtrayicon_p.h"
 #include "qpaintengine.h"

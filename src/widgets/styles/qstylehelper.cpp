@@ -69,13 +69,13 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
                       % HexString<uint>(size.width())
                       % HexString<uint>(size.height());
 
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
         tmp = tmp % HexString<uint>(spinBox->buttonSymbols)
                   % HexString<uint>(spinBox->stepEnabled)
                   % QLatin1Char(spinBox->frame ? '1' : '0'); ;
     }
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
     // QTBUG-56743, try to create a palette cache key reflecting the value,
     // as leaks may occur in conjunction with QStyleSheetStyle/QRenderRule modifying

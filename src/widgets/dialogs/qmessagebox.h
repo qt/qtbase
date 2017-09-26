@@ -61,7 +61,7 @@ class Q_WIDGETS_EXPORT QMessageBox : public QDialog
     Q_PROPERTY(QPixmap iconPixmap READ iconPixmap WRITE setIconPixmap)
     Q_PROPERTY(Qt::TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(StandardButtons standardButtons READ standardButtons WRITE setStandardButtons)
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
     Q_PROPERTY(QString detailedText READ detailedText WRITE setDetailedText)
 #endif
     Q_PROPERTY(QString informativeText READ informativeText WRITE setInformativeText)
@@ -270,7 +270,7 @@ public:
     QString informativeText() const;
     void setInformativeText(const QString &text);
 
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
     QString detailedText() const;
     void setDetailedText(const QString &text);
 #endif

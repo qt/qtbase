@@ -95,6 +95,7 @@ public:
     void update(Qt::InputMethodQueries) override;
     bool filterEvent(const QEvent *event) override;
     QLocale locale() const override;
+    bool hasCapability(Capability capability) const override;
 
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);

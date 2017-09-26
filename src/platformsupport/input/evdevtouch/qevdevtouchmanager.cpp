@@ -88,8 +88,11 @@ QEvdevTouchManager::QEvdevTouchManager(const QString &key, const QString &specif
             const QStringList devices = m_deviceDiscovery->scanConnectedDevices();
             for (const QString &device : devices)
                 addDevice(device);
-            connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addDevice(QString)));
-            connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeDevice(QString)));
+
+            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceDetected,
+                    this, &QEvdevTouchManager::addDevice);
+            connect(m_deviceDiscovery, &QDeviceDiscovery::deviceRemoved,
+                    this, &QEvdevTouchManager::removeDevice);
         }
     }
 }

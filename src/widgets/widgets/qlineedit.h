@@ -46,10 +46,9 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qmargins.h>
 
+QT_REQUIRE_CONFIG(lineedit);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_LINEEDIT
 
 class QValidator;
 class QMenu;
@@ -124,7 +123,7 @@ public:
     const QValidator * validator() const;
 #endif
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     void setCompleter(QCompleter *completer);
     QCompleter *completer() const;
 #endif
@@ -252,7 +251,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_handleWindowActivate())
     Q_PRIVATE_SLOT(d_func(), void _q_textEdited(const QString &))
     Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged(int, int))
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     Q_PRIVATE_SLOT(d_func(), void _q_completionHighlighted(const QString &))
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
@@ -263,8 +262,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString &))
     Q_PRIVATE_SLOT(d_func(), void _q_clearButtonClicked())
 };
-
-#endif // QT_NO_LINEEDIT
 
 QT_END_NAMESPACE
 

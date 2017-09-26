@@ -48,7 +48,9 @@
 #include "qstylehints.h"
 #include <private/qshortcutmap_p.h>
 #include <private/qapplication_p.h>
+#if QT_CONFIG(menu)
 #include <private/qmenu_p.h>
+#endif
 #include <private/qdebug_p.h>
 
 #define QAPP_CHECK(functionName) \
@@ -645,7 +647,7 @@ QIcon QAction::icon() const
     return d->icon;
 }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 /*!
   Returns the menu contained by this action. Actions that contain
   menus can be used to create menu items with submenus, or inserted
@@ -672,7 +674,7 @@ void QAction::setMenu(QMenu *menu)
         menu->d_func()->setOverrideMenuAction(this);
     d->sendDataChanged();
 }
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 /*!
   If \a b is true then this action will be considered a separator.

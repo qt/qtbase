@@ -89,8 +89,6 @@ void View::addItems()
     int topMargin = 40;
 
     for (int i = 0; i < itemCount; i++) {
-        ImageItem *image;
-        QGraphicsTextItem *label;
         QSqlRecord record = itemTable->record(i);
 
         int id = record.value("id").toInt();
@@ -101,12 +99,12 @@ void View::addItems()
         int x = ((i % 2) * imageOffset) + leftMargin + columnOffset;
         int y = ((i / 2) * imageOffset) + topMargin;
 
-        image = new ImageItem(id, QPixmap(":/" + file));
+        ImageItem *image = new ImageItem(id, QPixmap(":/" + file));
         image->setData(0, i);
         image->setPos(x, y);
         scene->addItem(image);
 
-        label = scene->addText(item);
+        QGraphicsTextItem *label = scene->addText(item);
         label->setDefaultTextColor(QColor("#d7d6d5"));
         QPointF labelOffset((120 - label->boundingRect().width()) / 2, 120.0);
         label->setPos(QPointF(x, y) + labelOffset);
@@ -133,22 +131,22 @@ void View::showInformation(ImageItem *image)
         return;
 
     InformationWindow *window = findWindow(id);
-    if (window && window->isVisible()) {
-        window->raise();
-        window->activateWindow();
-    } else if (window && !window->isVisible()) {
-        window->show();
-    } else {
-        InformationWindow *window;
+    if (!window) {
         window = new InformationWindow(id, itemTable, this);
 
-        connect(window, SIGNAL(imageChanged(int,QString)),
-                this, SLOT(updateImage(int,QString)));
+        connect(window, QOverload<int,const QString &>::of(&InformationWindow::imageChanged),
+                this, QOverload<int,const QString &>::of(&View::updateImage));
 
         window->move(pos() + QPoint(20, 40));
         window->show();
         informationWindows.append(window);
     }
+
+    if (window->isVisible()) {
+        window->raise();
+        window->activateWindow();
+    } else
+        window->show();
 }
 //! [6]
 
@@ -172,19 +170,13 @@ void View::updateImage(int id, const QString &fileName)
 //! [7]
 
 //! [8]
-InformationWindow* View::findWindow(int id)
+InformationWindow *View::findWindow(int id) const
 {
-    QList<InformationWindow*>::iterator i, beginning, end;
-
-    beginning = informationWindows.begin();
-    end = informationWindows.end();
-
-    for (i = beginning; i != end; ++i) {
-        InformationWindow *window = (*i);
+    for (auto window : informationWindows) {
         if (window && (window->id() == id))
             return window;
     }
-    return 0;
+    return nullptr;
 }
 //! [8]
 

@@ -699,6 +699,23 @@ static QPair<QSystemLibrary*, QSystemLibrary*> loadOpenSslWin32()
     pair.first = 0;
     pair.second = 0;
 
+#if QT_CONFIG(opensslv11)
+    // With OpenSSL 1.1 the names have changed to libssl-1_1(-x64) and libcrypto-1_1(-x64), for builds using
+    // MSVC and GCC, (-x64 suffix for 64-bit builds).
+
+#ifdef Q_PROCESSOR_X86_64
+#define QT_SSL_SUFFIX "-x64"
+#else // !Q_PROCESSOFR_X86_64
+#define QT_SSL_SUFFIX
+#endif // !Q_PROCESSOR_x86_64
+
+    tryToLoadOpenSslWin32Library(QLatin1String("libssl-1_1" QT_SSL_SUFFIX),
+                                 QLatin1String("libcrypto-1_1" QT_SSL_SUFFIX), pair);
+
+#undef QT_SSL_SUFFIX
+
+#else // QT_CONFIG(opensslv11)
+
     // When OpenSSL is built using MSVC then the libraries are named 'ssleay32.dll' and 'libeay32'dll'.
     // When OpenSSL is built using GCC then different library names are used (depending on the OpenSSL version)
     // The oldest version of a GCC-based OpenSSL which can be detected by the code below is 0.9.8g (released in 2007)
@@ -709,6 +726,7 @@ static QPair<QSystemLibrary*, QSystemLibrary*> loadOpenSslWin32()
             }
         }
     }
+#endif // !QT_CONFIG(opensslv11)
 
     return pair;
 }

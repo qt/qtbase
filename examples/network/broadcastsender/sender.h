@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -52,12 +52,11 @@
 #define SENDER_H
 
 #include <QWidget>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
-class QDialogButtonBox;
 class QLabel;
 class QPushButton;
-class QTimer;
 class QUdpSocket;
 QT_END_NAMESPACE
 
@@ -66,20 +65,18 @@ class Sender : public QWidget
     Q_OBJECT
 
 public:
-    Sender(QWidget *parent = 0);
+    explicit Sender(QWidget *parent = nullptr);
 
 private slots:
     void startBroadcasting();
     void broadcastDatagram();
 
 private:
-    QLabel *statusLabel;
-    QPushButton *startButton;
-    QPushButton *quitButton;
-    QDialogButtonBox *buttonBox;
-    QUdpSocket *udpSocket;
-    QTimer *timer;
-    int messageNo;
+    QLabel *statusLabel = nullptr;
+    QPushButton *startButton = nullptr;
+    QUdpSocket *udpSocket = nullptr;
+    QTimer timer;
+    int messageNo = 1;
 };
 
 #endif

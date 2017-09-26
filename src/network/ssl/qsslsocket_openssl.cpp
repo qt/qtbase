@@ -54,7 +54,6 @@
 ****************************************************************************/
 
 //#define QSSLSOCKET_DEBUG
-//#define QT_DECRYPT_SSL_TRAFFIC
 
 #include "qssl_p.h"
 #include "qsslsocket_openssl_p.h"
@@ -213,6 +212,7 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
     if (!ok) {
         // Store the error and at which depth the error was detected.
         _q_sslErrorList()->errors << QSslErrorEntry::fromStoreContext(ctx);
+#if !QT_CONFIG(opensslv11)
 #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << "verification error: dumping bad certificate";
         qCDebug(lcSsl) << QSslCertificatePrivate::QSslCertificate_from_X509(q_X509_STORE_CTX_get_current_cert(ctx)).toPem();
@@ -233,7 +233,8 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
                 << "ST=" << cert.subjectInfo(QSslCertificate::StateOrProvinceName);
             qCDebug(lcSsl) << "Valid:" << cert.effectiveDate() << '-' << cert.expiryDate();
         }
-#endif
+#endif // QSSLSOCKET_DEBUG
+#endif // !QT_CONFIG(opensslv11)
     }
     // Always return OK to allow verification to continue. We handle the
     // errors gracefully after collecting all errors, after verification has

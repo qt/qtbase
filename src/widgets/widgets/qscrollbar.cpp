@@ -44,7 +44,9 @@
 #include "qscrollbar.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
 #include <QtCore/qelapsedtimer.h>
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -395,7 +397,7 @@ void QScrollBar::contextMenuEvent(QContextMenuEvent *event)
         return ;
     }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     bool horiz = HORIZONTAL;
     QPointer<QMenu> menu = new QMenu(this);
     QAction *actScrollHere = menu->addAction(tr("Scroll here"));
@@ -426,7 +428,7 @@ void QScrollBar::contextMenuEvent(QContextMenuEvent *event)
         triggerAction(QAbstractSlider::SliderSingleStepSub);
     else if (actionSelected == actScrollDn)
         triggerAction(QAbstractSlider::SliderSingleStepAdd);
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 }
 #endif // QT_NO_CONTEXTMENU
 

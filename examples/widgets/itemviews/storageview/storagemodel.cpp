@@ -54,12 +54,25 @@
 #include <QDir>
 #include <QLocale>
 #include <qmath.h>
+#include <algorithm>
 #include <cmath>
 
 StorageModel::StorageModel(QObject *parent) :
-    QAbstractTableModel(parent),
-    m_volumes(QStorageInfo::mountedVolumes())
+    QAbstractTableModel(parent)
 {
+}
+
+void StorageModel::refresh()
+{
+    beginResetModel();
+    m_volumes = QStorageInfo::mountedVolumes();
+    std::sort(m_volumes.begin(), m_volumes.end(),
+              [](const QStorageInfo &st1, const QStorageInfo &st2) {
+                  static const QString rootSortString = QStringLiteral(" ");
+                  return (st1.isRoot() ? rootSortString : st1.rootPath())
+                       < (st2.isRoot() ? rootSortString : st2.rootPath());
+              });
+    endResetModel();
 }
 
 int StorageModel::columnCount(const QModelIndex &/*parent*/) const
@@ -72,6 +85,22 @@ int StorageModel::rowCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
     return m_volumes.count();
+}
+
+Qt::ItemFlags StorageModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags result = QAbstractTableModel::flags(index);
+    switch (index.column()) {
+    case ColumnAvailable:
+    case ColumnIsReady:
+    case ColumnIsReadOnly:
+    case ColumnIsValid:
+        result |= Qt::ItemIsUserCheckable;
+        break;
+    default:
+        break;
+    }
+    return result;
 }
 
 QVariant StorageModel::data(const QModelIndex &index, int role) const
@@ -96,6 +125,12 @@ QVariant StorageModel::data(const QModelIndex &index, int role) const
             return QLocale().formattedDataSize(volume.bytesFree());
         case ColumnAvailable:
             return QLocale().formattedDataSize(volume.bytesAvailable());
+        default:
+            break;
+        }
+    } else if (role == Qt::CheckStateRole) {
+        const QStorageInfo &volume = m_volumes.at(index.row());
+        switch (index.column()) {
         case ColumnIsReady:
             return volume.isReady();
         case ColumnIsReadOnly:
@@ -105,6 +140,16 @@ QVariant StorageModel::data(const QModelIndex &index, int role) const
         default:
             break;
         }
+    } else if (role == Qt::TextAlignmentRole) {
+        switch (index.column()) {
+        case ColumnTotal:
+        case ColumnFree:
+        case ColumnAvailable:
+            return Qt::AlignTrailing;
+        default:
+            break;
+        }
+        return Qt::AlignLeading;
     } else if (role == Qt::ToolTipRole) {
         QLocale locale;
         const QStorageInfo &volume = m_volumes.at(index.row());
@@ -147,13 +192,13 @@ QVariant StorageModel::headerData(int section, Qt::Orientation orientation, int 
 
     switch (section) {
     case ColumnRootPath:
-        return tr("Root path");
+        return tr("Root Path");
     case ColumnName:
         return tr("Volume Name");
     case ColumnDevice:
         return tr("Device");
     case ColumnFileSystemName:
-        return tr("File system");
+        return tr("File System");
     case ColumnTotal:
         return tr("Total");
     case ColumnFree:

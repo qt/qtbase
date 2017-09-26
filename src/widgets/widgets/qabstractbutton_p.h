@@ -80,7 +80,7 @@ public:
     uint blockRefresh :1;
     uint pressed : 1;
 
-#ifndef QT_NO_BUTTONGROUP
+#if QT_CONFIG(buttongroup)
     QButtonGroup* group;
 #endif
     QBasicTimer repeatTimer;

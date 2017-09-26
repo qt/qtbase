@@ -76,7 +76,9 @@ private slots:
     void serverTest();
     void udpLoopbackPerformance();
     void tcpLoopbackPerformance();
+#if 0
     void readWriteBufferSize();
+#endif
     void bind();
     void networkError();
     void setSocketDescriptor();
@@ -485,6 +487,7 @@ void tst_PlatformSocketEngine::tcpLoopbackPerformance()
            (readBytes / (timer.elapsed() / 1000.0)) / (1024 * 1024));
 }
 
+#if 0   // unused
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::readWriteBufferSize()
 {
@@ -503,6 +506,7 @@ void tst_PlatformSocketEngine::readWriteBufferSize()
     QVERIFY(device.sendBufferSize() > bufferSize);
 
 }
+#endif
 
 //---------------------------------------------------------------------------
 void tst_PlatformSocketEngine::tooManySockets()

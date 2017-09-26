@@ -53,8 +53,12 @@
 #include <QtGui/qpainter.h>
 #include <QtWidgets/qstyleoption.h>
 #include <QtWidgets/qgraphicsview.h>
+#if QT_CONFIG(lineedit)
 #include <QtWidgets/qlineedit.h>
+#endif
+#if QT_CONFIG(textedit)
 #include <QtWidgets/qtextedit.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 

@@ -46,9 +46,13 @@
 #include "qbitmap.h"
 #include "qdrawutil.h" // for now
 #include "qevent.h"
+#if QT_CONFIG(menu)
 #include "qmenu.h"
+#endif
+#if QT_CONFIG(menubar)
 #include "qmenubar.h"
 #include <private/qmenubar_p.h>
+#endif
 #include "qpaintengine.h"
 #include "qpainter.h"
 #if QT_CONFIG(rubberband)
@@ -60,7 +64,9 @@
 #endif
 #include "qwidget.h"
 #include "qdebug.h"
+#if QT_CONFIG(mainwindow)
 #include "qmainwindow.h"
+#endif
 #include "qfile.h"
 #include "qtextstream.h"
 #include "qpixmapcache.h"
@@ -166,7 +172,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
 
             // Update state and repaint the menu bars.
             d->alt_down = false;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
             QList<QMenuBar *> l = widget->findChildren<QMenuBar *>();
             for (int i = 0; i < l.size(); ++i)
                 l.at(i)->update();
@@ -343,12 +349,12 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
         return 2;
 #endif
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case QStyle::PM_SliderLength:
         return 11;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case QStyle::PM_MenuBarHMargin:
     case QStyle::PM_MenuBarVMargin:
     case QStyle::PM_MenuBarPanelWidth:
@@ -363,7 +369,7 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
     case QStyle::PM_DockWidgetFrameWidth:
         return 4;
 
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
     case QStyle::PM_ToolBarHandleExtent:
         return 10;
     default:
@@ -435,7 +441,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
             ret = 60;
         break;
 
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
         // Returns the number of pixels to use for the business part of the
         // slider (i.e., the non-tickmark portion). The remaining space is shared
         // equally between the tickmark regions.
@@ -463,7 +469,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
             ret = thick;
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 
     case PM_IconViewIconSize:
         ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
@@ -574,7 +580,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         // Do nothing if we always paint underlines
         Q_D(const QWindowsStyle);
         if (!ret && widget && d) {
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
             const QMenuBar *menuBar = qobject_cast<const QMenuBar *>(widget);
             if (!menuBar && qobject_cast<const QMenu *>(widget)) {
                 QWidget *w = QApplication::activeWindow();
@@ -587,7 +593,7 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
                     ret = 1;
                 // Otherwise draw underlines if the toplevel widget has seen an alt-press
             } else
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
             if (d->hasSeenAlt(widget)) {
                 ret = 1;
             }
@@ -1111,7 +1117,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         break;
 #endif // QT_CONFIG(rubberband)
 
-#if !defined(QT_NO_MENU) && !defined(QT_NO_MAINWINDOW)
+#if QT_CONFIG(menu) && QT_CONFIG(mainwindow)
     case CE_MenuBarEmptyArea:
         if (widget && qobject_cast<const QMainWindow *>(widget->parentWidget())) {
             p->fillRect(opt->rect, opt->palette.button());
@@ -1122,7 +1128,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
         }
         break;
 #endif
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuitem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             int x, y, w, h;
@@ -1259,8 +1265,8 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
         }
         break;
-#endif // QT_NO_MENU
-#ifndef QT_NO_MENUBAR
+#endif // QT_CONFIG(menu)
+#if QT_CONFIG(menubar)
     case CE_MenuBarItem:
         if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             bool active = mbi->state & State_Selected;
@@ -1284,7 +1290,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             QCommonStyle::drawControl(ce, &newMbi, p, widget);
         }
         break;
-#endif // QT_NO_MENUBAR
+#endif // QT_CONFIG(menubar)
 #if QT_CONFIG(tabbar)
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
@@ -1922,7 +1928,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                                        QPainter *p, const QWidget *widget) const
 {
     switch (cc) {
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             int thickness  = proxy()->pixelMetric(PM_SliderControlThickness, slider, widget);
@@ -2142,7 +2148,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
             }
         }
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_CONFIG(slider)
 #if QT_CONFIG(scrollbar)
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
@@ -2227,7 +2233,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
         }
         break;
 #endif // QT_CONFIG(combobox)
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             QStyleOptionSpinBox copy = *sb;
@@ -2316,7 +2322,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
             }
         }
         break;
-#endif // QT_NO_SPINBOX
+#endif // QT_CONFIG(spinbox)
 
     default:
         QCommonStyle::drawComplexControl(cc, opt, p, widget);
@@ -2349,7 +2355,7 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QSize(w, h);
         }
         break;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             int w = sz.width();
@@ -2391,8 +2397,8 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz.setWidth(w);
         }
         break;
-#endif // QT_NO_MENU
-#ifndef QT_NO_MENUBAR
+#endif // QT_CONFIG(menu)
+#if QT_CONFIG(menubar)
     case CT_MenuBarItem:
         if (!sz.isEmpty())
             sz += QSize(QWindowsStylePrivate::windowsItemHMargin * 4, QWindowsStylePrivate::windowsItemVMargin * 2);

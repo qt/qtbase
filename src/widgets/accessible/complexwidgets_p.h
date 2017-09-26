@@ -70,7 +70,7 @@ class QTitleBar;
 class QAbstractScrollArea;
 class QScrollArea;
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
 class QAccessibleAbstractScrollArea : public QAccessibleWidget
 {
 public:
@@ -105,7 +105,7 @@ class QAccessibleScrollArea : public QAccessibleAbstractScrollArea
 public:
     explicit QAccessibleScrollArea(QWidget *widget);
 };
-#endif // QT_NO_SCROLLAREA
+#endif // QT_CONFIG(scrollarea)
 
 #if QT_CONFIG(tabbar)
 class QAccessibleTabBar : public QAccessibleWidget

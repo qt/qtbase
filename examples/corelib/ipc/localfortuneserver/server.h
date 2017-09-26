@@ -64,14 +64,12 @@ class Server : public QDialog
     Q_OBJECT
 
 public:
-    Server(QWidget *parent = 0);
+    explicit Server(QWidget *parent = nullptr);
 
 private slots:
     void sendFortune();
 
 private:
-    QLabel *statusLabel;
-    QPushButton *quitButton;
     QLocalServer *server;
     QStringList fortunes;
 };

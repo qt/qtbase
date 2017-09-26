@@ -1075,6 +1075,21 @@
     \sa QTest::qSleep(), QSignalSpy::wait()
 */
 
+/*! \fn void QTest::qWaitFor(Functor predicate, int timeout)
+
+    Waits for \a timeout milliseconds or until the \a predicate returns true.
+
+    Returns \c true if the \a predicate returned true at any point, otherwise returns \c false.
+
+    Example:
+    \snippet code/src_qtestlib_qtestcase.cpp 30
+
+    The code above will wait for the object to become ready, for a
+    maximum of three seconds.
+
+    \since 5.10
+*/
+
 /*! \fn bool QTest::qWaitForWindowExposed(QWindow *window, int timeout)
     \since 5.0
 

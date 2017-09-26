@@ -39,8 +39,6 @@
 
 #include "qwidgetlinecontrol_p.h"
 
-#ifndef QT_NO_LINEEDIT
-
 #if QT_CONFIG(itemviews)
 #include "qabstractitemview.h"
 #endif
@@ -56,6 +54,8 @@
 #if QT_CONFIG(graphicsview)
 #include "qgraphicssceneevent.h"
 #endif
+
+#include "qvalidator.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -1428,7 +1428,7 @@ void QWidgetLineControl::emitCursorPositionChanged()
     }
 }
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
 // iterating forward(dir=1)/backward(dir=-1) from the
 // current row based. dir=0 indicates a new completion prefix was set.
 bool QWidgetLineControl::advanceToEnabledItem(int dir)
@@ -1627,7 +1627,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
 {
     bool inlineCompletionAccepted = false;
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     if (m_completer) {
         QCompleter::CompletionMode completionMode = m_completer->completionMode();
         if ((completionMode == QCompleter::PopupCompletion
@@ -1672,7 +1672,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
             }
         }
     }
-#endif // QT_NO_COMPLETER
+#endif // QT_CONFIG(completer)
 
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
         if (hasAcceptableInput() || fixup()) {
@@ -1774,7 +1774,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         end(1);
     }
     else if (event == QKeySequence::MoveToNextChar) {
-#if defined(QT_NO_COMPLETER)
+#if !QT_CONFIG(completer)
         const bool inlineCompletion = false;
 #else
         const bool inlineCompletion = m_completer && m_completer->completionMode() == QCompleter::InlineCompletion;
@@ -1791,7 +1791,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         cursorForward(1, visual ? 1 : (layoutDirection() == Qt::LeftToRight ? 1 : -1));
     }
     else if (event == QKeySequence::MoveToPreviousChar) {
-#if defined(QT_NO_COMPLETER)
+#if !QT_CONFIG(completer)
         const bool inlineCompletion = false;
 #else
         const bool inlineCompletion = m_completer && m_completer->completionMode() == QCompleter::InlineCompletion;
@@ -1886,7 +1886,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
                     del();
                 }
                 break;
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
             case Qt::Key_Up:
             case Qt::Key_Down:
                 complete(event->key());
@@ -1901,7 +1901,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
             case Qt::Key_Backspace:
                 if (!isReadOnly()) {
                     backspace();
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
                     complete(Qt::Key_Backspace);
 #endif
                 }
@@ -1941,7 +1941,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
         && !isReadOnly()
         && isAcceptableInput(event)) {
         insert(event->text());
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
         complete(event->key());
 #endif
         event->accept();
@@ -1973,5 +1973,3 @@ bool QWidgetLineControl::isRedoAvailable() const
 QT_END_NAMESPACE
 
 #include "moc_qwidgetlinecontrol_p.cpp"
-
-#endif

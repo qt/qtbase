@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractspinbox.h>
 
+QT_REQUIRE_CONFIG(spinbox);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_SPINBOX
 
 class QSpinBoxPrivate;
 class Q_WIDGETS_EXPORT QSpinBox : public QAbstractSpinBox
@@ -167,8 +166,6 @@ private:
     Q_DISABLE_COPY(QDoubleSpinBox)
     Q_DECLARE_PRIVATE(QDoubleSpinBox)
 };
-
-#endif // QT_NO_SPINBOX
 
 QT_END_NAMESPACE
 

@@ -124,7 +124,22 @@ void QCocoaInputContext::connectSignals()
 void QCocoaInputContext::focusObjectChanged(QObject *focusObject)
 {
     Q_UNUSED(focusObject);
-    mWindow = QGuiApplication::focusWindow();
+    if (mWindow == QGuiApplication::focusWindow()) {
+        if (!mWindow)
+            return;
+
+        QCocoaWindow *window = static_cast<QCocoaWindow *>(mWindow->handle());
+        QNSView *view = qnsview_cast(window->view());
+        if (!view)
+            return;
+
+        if (NSTextInputContext *ctxt = [NSTextInputContext currentInputContext]) {
+            [ctxt discardMarkedText];
+            [view cancelComposingText];
+        }
+    } else {
+        mWindow = QGuiApplication::focusWindow();
+    }
 }
 
 void QCocoaInputContext::updateLocale()

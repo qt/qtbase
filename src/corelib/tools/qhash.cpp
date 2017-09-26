@@ -296,7 +296,7 @@ static uint qt_create_qhash_seed()
         return seed;
     }
 
-    seed = QRandomGenerator::get32();
+    seed = QRandomGenerator::generate();
 #endif // QT_BOOTSTRAPPED
 
     return seed;

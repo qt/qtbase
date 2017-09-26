@@ -63,15 +63,12 @@ class QEvdevTabletData;
 
 class QEvdevTabletHandler : public QObject
 {
-    Q_OBJECT
-
 public:
     explicit QEvdevTabletHandler(const QString &device, const QString &spec = QString(), QObject *parent = 0);
     ~QEvdevTabletHandler();
 
     qint64 deviceId() const;
 
-private slots:
     void readData();
 
 private:

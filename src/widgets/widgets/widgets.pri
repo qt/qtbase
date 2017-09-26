@@ -1,78 +1,27 @@
 # Qt widgets module
 
 HEADERS += \
-        widgets/qbuttongroup.h \
-        widgets/qbuttongroup_p.h \
-        widgets/qabstractspinbox.h \
-        widgets/qabstractspinbox_p.h \
         widgets/qframe.h \
         widgets/qframe_p.h \
-        widgets/qkeysequenceedit.h \
-        widgets/qkeysequenceedit_p.h \
-        widgets/qlineedit.h \
-        widgets/qlineedit_p.h \
-        widgets/qmainwindow.h \
-        widgets/qmainwindowlayout_p.h \
-        widgets/qmdiarea.h \
-        widgets/qmdiarea_p.h \
-        widgets/qmdisubwindow.h \
-        widgets/qmdisubwindow_p.h \
-        widgets/qmenu.h \
-        widgets/qmenu_p.h \
-        widgets/qmenubar.h \
-        widgets/qmenubar_p.h \
-        widgets/qscrollarea_p.h \
-        widgets/qsizegrip.h \
-        widgets/qslider.h \
-        widgets/qspinbox.h \
-        widgets/qstackedwidget.h \
-        widgets/qtextedit.h \
-        widgets/qtextedit_p.h \
         widgets/qtoolbar.h \
         widgets/qtoolbar_p.h \
         widgets/qtoolbarlayout_p.h \
         widgets/qtoolbarseparator_p.h \
         widgets/qabstractscrollarea.h \
         widgets/qabstractscrollarea_p.h \
-        widgets/qwidgetresizehandler_p.h \
         widgets/qfocusframe.h \
-        widgets/qscrollarea.h \
         widgets/qwidgetanimator_p.h \
-        widgets/qwidgetlinecontrol_p.h \
-        widgets/qtoolbararealayout_p.h \
-        widgets/qplaintextedit.h \
-        widgets/qplaintextedit_p.h
+        widgets/qtoolbararealayout_p.h
 
 SOURCES += \
-        widgets/qbuttongroup.cpp \
-        widgets/qabstractspinbox.cpp \
-        widgets/qeffects.cpp \
         widgets/qframe.cpp \
-        widgets/qkeysequenceedit.cpp \
-        widgets/qlineedit_p.cpp \
-        widgets/qlineedit.cpp \
-        widgets/qmainwindow.cpp \
-        widgets/qmainwindowlayout.cpp \
-        widgets/qmdiarea.cpp \
-        widgets/qmdisubwindow.cpp \
-        widgets/qmenu.cpp \
-        widgets/qmenubar.cpp \
-        widgets/qsizegrip.cpp \
-        widgets/qslider.cpp \
-        widgets/qspinbox.cpp \
-        widgets/qstackedwidget.cpp \
-        widgets/qtextedit.cpp \
         widgets/qtoolbar.cpp \
         widgets/qtoolbarlayout.cpp \
         widgets/qtoolbarseparator.cpp \
         widgets/qabstractscrollarea.cpp \
-        widgets/qwidgetresizehandler.cpp \
         widgets/qfocusframe.cpp \
-        widgets/qscrollarea.cpp \
         widgets/qwidgetanimator.cpp \
-        widgets/qwidgetlinecontrol.cpp \
-        widgets/qtoolbararealayout.cpp \
-        widgets/qplaintextedit.cpp
+        widgets/qtoolbararealayout.cpp
 
 qtConfig(abstractbutton) {
     HEADERS += \
@@ -90,6 +39,14 @@ qtConfig(abstractslider) {
 
     SOURCES += \
         widgets/qabstractslider.cpp
+}
+
+qtConfig(buttongroup) {
+    HEADERS += \
+        widgets/qbuttongroup.h \
+        widgets/qbuttongroup_p.h
+
+    SOURCES += widgets/qbuttongroup.cpp
 }
 
 qtConfig(calendarwidget) {
@@ -146,6 +103,11 @@ qtConfig(dockwidget) {
         widgets/qdockarealayout.cpp
 }
 
+qtConfig(effects) {
+    HEADERS += widgets/qeffects_p.h
+    SOURCES += widgets/qeffects.cpp
+}
+
 qtConfig(fontcombobox) {
     HEADERS += widgets/qfontcombobox.h
     SOURCES += widgets/qfontcombobox.cpp
@@ -154,6 +116,14 @@ qtConfig(fontcombobox) {
 qtConfig(groupbox) {
     HEADERS += widgets/qgroupbox.h
     SOURCES += widgets/qgroupbox.cpp
+}
+
+qtConfig(keysequenceedit) {
+    HEADERS += \
+        widgets/qkeysequenceedit.h \
+        widgets/qkeysequenceedit_p.h
+
+    SOURCES += widgets/qkeysequenceedit.cpp
 }
 
 qtConfig(label) {
@@ -171,6 +141,56 @@ qtConfig(lcdnumber) {
 
     SOURCES += \
         widgets/qlcdnumber.cpp
+}
+
+qtConfig(lineedit) {
+    HEADERS += \
+        widgets/qlineedit.h \
+        widgets/qlineedit_p.h \
+        widgets/qwidgetlinecontrol_p.h
+
+    SOURCES += \
+        widgets/qlineedit_p.cpp \
+        widgets/qlineedit.cpp \
+        widgets/qwidgetlinecontrol.cpp
+}
+
+qtConfig(mainwindow) {
+    HEADERS += \
+        widgets/qmainwindow.h \
+        widgets/qmainwindowlayout_p.h
+
+    SOURCES += \
+        widgets/qmainwindow.cpp \
+        widgets/qmainwindowlayout.cpp
+}
+
+qtConfig(mdiarea) {
+    HEADERS += \
+        widgets/qmdiarea.h \
+        widgets/qmdiarea_p.h \
+        widgets/qmdisubwindow.h \
+        widgets/qmdisubwindow_p.h
+
+    SOURCES += \
+        widgets/qmdiarea.cpp \
+        widgets/qmdisubwindow.cpp
+}
+
+qtConfig(menu) {
+    HEADERS += \
+        widgets/qmenu.h \
+        widgets/qmenu_p.h
+
+    SOURCES += widgets/qmenu.cpp
+}
+
+qtConfig(menubar) {
+    HEADERS += \
+        widgets/qmenubar.h \
+        widgets/qmenubar_p.h
+
+    SOURCES += widgets/qmenubar.cpp
 }
 
 qtConfig(progressbar) {
@@ -195,6 +215,11 @@ qtConfig(radiobutton) {
         widgets/qradiobutton.cpp
 }
 
+qtConfig(resizehandler) {
+    HEADERS += widgets/qwidgetresizehandler_p.h
+    SOURCES += widgets/qwidgetresizehandler.cpp
+}
+
 qtConfig(dialogbuttonbox) {
     HEADERS += \
         widgets/qdialogbuttonbox.h
@@ -208,12 +233,41 @@ qtConfig(rubberband) {
     SOURCES += widgets/qrubberband.cpp
 }
 
+qtConfig(scrollarea) {
+    HEADERS += \
+        widgets/qscrollarea.h \
+        widgets/qscrollarea_p.h
+
+    SOURCES += widgets/qscrollarea.cpp
+}
+
 qtConfig(scrollbar) {
     HEADERS += \
         widgets/qscrollbar.h \
         widgets/qscrollbar_p.h
 
     SOURCES += widgets/qscrollbar.cpp
+}
+
+qtConfig(sizegrip) {
+    HEADERS += widgets/qsizegrip.h
+    SOURCES += widgets/qsizegrip.cpp
+}
+
+qtConfig(slider) {
+    HEADERS += widgets/qslider.h
+    SOURCES += widgets/qslider.cpp
+}
+
+qtConfig(spinbox) {
+    HEADERS += \
+        widgets/qabstractspinbox.h \
+        widgets/qabstractspinbox_p.h \
+        widgets/qspinbox.h
+
+    SOURCES += \
+        widgets/qabstractspinbox.cpp \
+        widgets/qspinbox.cpp
 }
 
 qtConfig(splashscreen) {
@@ -232,6 +286,11 @@ qtConfig(splitter) {
     SOURCES += widgets/qsplitter.cpp
 }
 
+qtConfig(stackedwidget) {
+    HEADERS += widgets/qstackedwidget.h
+    SOURCES += widgets/qstackedwidget.cpp
+}
+
 qtConfig(statusbar) {
     HEADERS += widgets/qstatusbar.h
     SOURCES += widgets/qstatusbar.cpp
@@ -243,6 +302,18 @@ qtConfig(tabbar) {
         widgets/qtabbar_p.h
 
     SOURCES += widgets/qtabbar.cpp
+}
+
+qtConfig(textedit) {
+    HEADERS += \
+        widgets/qplaintextedit.h \
+        widgets/qplaintextedit_p.h \
+        widgets/qtextedit.h \
+        widgets/qtextedit_p.h
+
+    SOURCES += \
+        widgets/qplaintextedit.cpp \
+        widgets/qtextedit.cpp
 }
 
 qtConfig(textbrowser) {
@@ -285,7 +356,10 @@ macx {
         widgets/qmaccocoaviewcontainer_mac.h
 
     OBJECTIVE_SOURCES += \
-        widgets/qmenu_mac.mm \
         widgets/qmacnativewidget_mac.mm \
         widgets/qmaccocoaviewcontainer_mac.mm
+
+    qtConfig(menu)|qtConfig(menubar) {
+        SOURCES += widgets/qmenu_mac.mm
+    }
 }

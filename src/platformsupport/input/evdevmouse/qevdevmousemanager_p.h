@@ -64,19 +64,15 @@ class QDeviceDiscovery;
 
 class QEvdevMouseManager : public QObject
 {
-    Q_OBJECT
 public:
     QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent = 0);
     ~QEvdevMouseManager();
 
-public slots:
     void handleMouseEvent(int x, int y, bool abs, Qt::MouseButtons buttons);
     void handleWheelEvent(QPoint delta);
 
-private slots:
     void addMouse(const QString &deviceNode = QString());
     void removeMouse(const QString &deviceNode);
-    void handleCursorPositionChange(const QPoint &pos);
 
 private:
     void clampPosition();

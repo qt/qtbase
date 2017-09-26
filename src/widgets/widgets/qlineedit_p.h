@@ -53,7 +53,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#ifndef QT_NO_LINEEDIT
 #include "private/qwidget_p.h"
 #include "QtWidgets/qlineedit.h"
 #if QT_CONFIG(toolbutton)
@@ -63,13 +62,17 @@
 #include "QtGui/qicon.h"
 #include "QtWidgets/qstyleoption.h"
 #include "QtCore/qbasictimer.h"
+#if QT_CONFIG(completer)
 #include "QtWidgets/qcompleter.h"
+#endif
 #include "QtCore/qpointer.h"
 #include "QtCore/qmimedata.h"
 
 #include "private/qwidgetlinecontrol_p.h"
 
 #include <algorithm>
+
+QT_REQUIRE_CONFIG(lineedit);
 
 QT_BEGIN_NAMESPACE
 
@@ -203,7 +206,7 @@ public:
 #endif
     void _q_selectionChanged();
     void _q_updateNeeded(const QRect &);
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     void _q_completionHighlighted(const QString &);
 #endif
     QPoint mousePressPos;
@@ -253,8 +256,6 @@ private:
 };
 Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetEntry, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QLineEditPrivate::SideWidgetLocation, Q_PRIMITIVE_TYPE);
-
-#endif // QT_NO_LINEEDIT
 
 QT_END_NAMESPACE
 

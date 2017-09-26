@@ -38,19 +38,22 @@
 ****************************************************************************/
 
 #include "qtextedit_p.h"
+#if QT_CONFIG(lineedit)
 #include "qlineedit.h"
+#endif
 #if QT_CONFIG(textbrowser)
 #include "qtextbrowser.h"
 #endif
 
-#ifndef QT_NO_TEXTEDIT
 #include <qfont.h>
 #include <qpainter.h>
 #include <qevent.h>
 #include <qdebug.h>
 #include <qdrag.h>
 #include <qclipboard.h>
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #include <qstyle.h>
 #include <qtimer.h>
 #ifndef QT_NO_ACCESSIBILITY
@@ -69,12 +72,8 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
-#endif
-
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_TEXTEDIT
 static inline bool shouldEnableInputMethod(QTextEdit *textedit)
 {
     return !textedit->isReadOnly();
@@ -2657,8 +2656,6 @@ void QTextEdit::ensureCursorVisible()
     This signal is emitted whenever redo operations become available
     (\a available is true) or unavailable (\a available is false).
 */
-
-#endif // QT_NO_TEXTEDIT
 
 QT_END_NAMESPACE
 

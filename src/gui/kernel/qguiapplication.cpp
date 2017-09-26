@@ -988,6 +988,34 @@ QList<QScreen *> QGuiApplication::screens()
 }
 
 /*!
+    Returns the screen at \a point, or \c nullptr if outside of any screen.
+
+    The \a point is in relation to the virtualGeometry() of each set of virtual
+    siblings. If the point maps to more than one set of virtual siblings the first
+    match is returned.
+
+    \since 5.10
+*/
+QScreen *QGuiApplication::screenAt(const QPoint &point)
+{
+    QVarLengthArray<const QScreen *, 8> visitedScreens;
+    for (const QScreen *screen : QGuiApplication::screens()) {
+        if (visitedScreens.contains(screen))
+            continue;
+
+        // The virtual siblings include the screen itself, so iterate directly
+        for (QScreen *sibling : screen->virtualSiblings()) {
+            if (sibling->geometry().contains(point))
+                return sibling;
+
+            visitedScreens.append(sibling);
+        }
+    }
+
+    return nullptr;
+}
+
+/*!
     \fn void QGuiApplication::screenAdded(QScreen *screen)
 
     This signal is emitted whenever a new screen \a screen has been added to the system.
@@ -1050,36 +1078,9 @@ qreal QGuiApplication::devicePixelRatio() const
 */
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {
-    const QList<QScreen *> screens = QGuiApplication::screens();
-    if (!screens.isEmpty()) {
-        const QList<QScreen *> primaryScreens = screens.first()->virtualSiblings();
-        QScreen *windowScreen = nullptr;
-
-        // Find the window on the primary virtual desktop first
-        for (QScreen *screen : primaryScreens) {
-            if (screen->geometry().contains(pos)) {
-                windowScreen = screen;
-                break;
-            }
-        }
-
-        // If the window is not found on primary virtual desktop, find it on all screens
-        // except the first which was for sure in the previous loop. Some other screens
-        // may repeat. Find only when there is more than one virtual desktop.
-        if (!windowScreen && screens.count() != primaryScreens.count()) {
-            for (int i = 1; i < screens.size(); ++i) {
-                QScreen *screen = screens.at(i);
-                if (screen->geometry().contains(pos)) {
-                    windowScreen = screen;
-                    break;
-                }
-            }
-        }
-
-        if (windowScreen) {
-            const QPoint devicePosition = QHighDpi::toNativePixels(pos, windowScreen);
-            return windowScreen->handle()->topLevelAt(devicePosition);
-        }
+    if (QScreen *windowScreen = screenAt(pos)) {
+        const QPoint devicePosition = QHighDpi::toNativePixels(pos, windowScreen);
+        return windowScreen->handle()->topLevelAt(devicePosition);
     }
     return nullptr;
 }
@@ -2419,7 +2420,7 @@ void QGuiApplicationPrivate::processGestureEvent(QWindowSystemInterfacePrivate::
     if (e->window.isNull())
         return;
 
-    QNativeGestureEvent ev(e->type, e->pos, e->pos, e->globalPos, e->realValue, e->sequenceId, e->intValue);
+    QNativeGestureEvent ev(e->type, e->device, e->pos, e->pos, e->globalPos, e->realValue, e->sequenceId, e->intValue);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(e->window, &ev);
 }

@@ -76,7 +76,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         return iface;
 
     if (false) {
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
     } else if (classname == QLatin1String("QLineEdit")) {
         if (widget->objectName() == QLatin1String("qt_spinbox_lineedit"))
             iface = 0;
@@ -87,7 +87,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QComboBox")) {
         iface = new QAccessibleComboBox(widget);
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
     } else if (classname == QLatin1String("QAbstractSpinBox")) {
         iface = new QAccessibleAbstractSpinBox(widget);
     } else if (classname == QLatin1String("QSpinBox")) {
@@ -99,7 +99,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QScrollBar")) {
         iface = new QAccessibleScrollBar(widget);
 #endif
-#ifndef QT_NO_SLIDER
+#if QT_CONFIG(slider)
     } else if (classname == QLatin1String("QAbstractSlider")) {
         iface = new QAccessibleAbstractSlider(widget);
     } else if (classname == QLatin1String("QSlider")) {
@@ -120,7 +120,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         iface = new QAccessibleWidget(widget, QAccessible::Dialog);
     } else if (classname == QLatin1String("QMessageBox")) {
         iface = new QAccessibleWidget(widget, QAccessible::AlertMessage);
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
     } else if (classname == QLatin1String("QMainWindow")) {
         iface = new QAccessibleMainWindow(widget);
 #endif
@@ -138,11 +138,11 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #endif
     } else if (classname == QLatin1String("QToolBar")) {
         iface = new QAccessibleWidget(widget, QAccessible::ToolBar, widget->windowTitle());
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     } else if (classname == QLatin1String("QMenuBar")) {
         iface = new QAccessibleMenuBar(widget);
 #endif
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     } else if (classname == QLatin1String("QMenu")) {
         iface = new QAccessibleMenu(widget);
 #endif
@@ -167,7 +167,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QSplitterHandle")) {
         iface = new QAccessibleWidget(widget, QAccessible::Grip);
 #endif
-#if !defined(QT_NO_TEXTEDIT) && !defined(QT_NO_CURSOR)
+#if QT_CONFIG(textedit) && !defined(QT_NO_CURSOR)
     } else if (classname == QLatin1String("QTextEdit")) {
         iface = new QAccessibleTextEdit(widget);
     } else if (classname == QLatin1String("QPlainTextEdit")) {
@@ -177,7 +177,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
         iface = new QAccessibleDisplay(widget, QAccessible::ToolTip);
     } else if (classname == QLatin1String("QFrame")) {
         iface = new QAccessibleWidget(widget, QAccessible::Border);
-#ifndef QT_NO_STACKEDWIDGET
+#if QT_CONFIG(stackedwidget)
     } else if (classname == QLatin1String("QStackedWidget")) {
         iface = new QAccessibleStackedWidget(widget);
 #endif
@@ -185,7 +185,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QToolBox")) {
         iface = new QAccessibleToolBox(widget);
 #endif
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
     } else if (classname == QLatin1String("QMdiArea")) {
         iface = new QAccessibleMdiArea(widget);
     } else if (classname == QLatin1String("QMdiSubWindow")) {
@@ -207,7 +207,7 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
     } else if (classname == QLatin1String("QTextBrowser")) {
         iface = new QAccessibleTextBrowser(widget);
 #endif
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
     } else if (classname == QLatin1String("QAbstractScrollArea")) {
         iface = new QAccessibleAbstractScrollArea(widget);
     } else if (classname == QLatin1String("QScrollArea")) {

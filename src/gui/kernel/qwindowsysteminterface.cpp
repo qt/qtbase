@@ -850,28 +850,28 @@ void QWindowSystemInterface::handleTabletLeaveProximityEvent(int device, int poi
 }
 
 #ifndef QT_NO_GESTURES
-void QWindowSystemInterface::handleGestureEvent(QWindow *window, ulong timestamp, Qt::NativeGestureType type,
+void QWindowSystemInterface::handleGestureEvent(QWindow *window, QTouchDevice *device, ulong timestamp, Qt::NativeGestureType type,
                                                 QPointF &local, QPointF &global)
 {
     QWindowSystemInterfacePrivate::GestureEvent *e =
-        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, local, global);
+        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device, local, global);
        QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, ulong timestamp, Qt::NativeGestureType type,
+void QWindowSystemInterface::handleGestureEventWithRealValue(QWindow *window, QTouchDevice *device, ulong timestamp, Qt::NativeGestureType type,
                                                                 qreal value, QPointF &local, QPointF &global)
 {
     QWindowSystemInterfacePrivate::GestureEvent *e =
-        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, local, global);
+        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device, local, global);
     e->realValue = value;
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleGestureEventWithSequenceIdAndValue(QWindow *window, ulong timestamp, Qt::NativeGestureType type,
+void QWindowSystemInterface::handleGestureEventWithSequenceIdAndValue(QWindow *window, QTouchDevice *device, ulong timestamp, Qt::NativeGestureType type,
                                                                          ulong sequenceId, quint64 value, QPointF &local, QPointF &global)
 {
     QWindowSystemInterfacePrivate::GestureEvent *e =
-        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, local, global);
+        new QWindowSystemInterfacePrivate::GestureEvent(window, timestamp, type, device, local, global);
     e->sequenceId = sequenceId;
     e->intValue = value;
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);

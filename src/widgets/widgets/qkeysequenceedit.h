@@ -44,9 +44,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(keysequenceedit);
 
-#ifndef QT_NO_KEYSEQUENCEEDIT
+QT_BEGIN_NAMESPACE
 
 class QKeySequenceEditPrivate;
 class Q_WIDGETS_EXPORT QKeySequenceEdit : public QWidget
@@ -81,8 +81,6 @@ private:
     Q_DISABLE_COPY(QKeySequenceEdit)
     Q_DECLARE_PRIVATE(QKeySequenceEdit)
 };
-
-#endif // QT_NO_KEYSEQUENCEEDIT
 
 QT_END_NAMESPACE
 

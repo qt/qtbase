@@ -54,8 +54,6 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qmainwindow.h"
 
-#ifndef QT_NO_MAINWINDOW
-
 #include "QtWidgets/qlayout.h"
 #if QT_CONFIG(tabbar)
 #include "QtWidgets/qtabbar.h"
@@ -72,6 +70,8 @@
 #include "qdockarealayout_p.h"
 #endif
 #include "qtoolbararealayout_p.h"
+
+QT_REQUIRE_CONFIG(mainwindow);
 
 QT_BEGIN_NAMESPACE
 
@@ -589,7 +589,5 @@ QDebug operator<<(QDebug debug, const QMainWindowLayout *layout);
 #endif
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MAINWINDOW
 
 #endif // QDYNAMICMAINWINDOWLAYOUT_P_H

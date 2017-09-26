@@ -46,10 +46,9 @@
 #include <QtWidgets/qtabwidget.h>
 #endif
 
+QT_REQUIRE_CONFIG(mainwindow);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_MAINWINDOW
 
 class QDockWidget;
 class QMainWindowPrivate;
@@ -123,7 +122,7 @@ public:
 
     bool isSeparator(const QPoint &pos) const;
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     QMenuBar *menuBar() const;
     void setMenuBar(QMenuBar *menubar);
 
@@ -182,7 +181,7 @@ public:
     QByteArray saveState(int version = 0) const;
     bool restoreState(const QByteArray &state, int version = 0);
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     virtual QMenu *createPopupMenu();
 #endif
 
@@ -214,8 +213,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMainWindow::DockOptions)
-
-#endif // QT_NO_MAINWINDOW
 
 QT_END_NAMESPACE
 

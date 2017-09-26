@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -51,24 +51,16 @@
 #ifndef SENDER_H
 #define SENDER_H
 
-#include <QDialog>
-#include <QHostAddress>
-
-QT_BEGIN_NAMESPACE
-class QDialogButtonBox;
-class QLabel;
-class QPushButton;
-class QTimer;
-class QUdpSocket;
-class QSpinBox;
-QT_END_NAMESPACE
+#include <QtWidgets>
+#include <QtNetwork>
+#include <QtCore>
 
 class Sender : public QDialog
 {
     Q_OBJECT
 
 public:
-    Sender(QWidget *parent = 0);
+    explicit Sender(QWidget *parent = nullptr);
 
 private slots:
     void ttlChanged(int newTtl);
@@ -76,16 +68,12 @@ private slots:
     void sendDatagram();
 
 private:
-    QLabel *statusLabel;
-    QLabel *ttlLabel;
-    QSpinBox *ttlSpinBox;
-    QPushButton *startButton;
-    QPushButton *quitButton;
-    QDialogButtonBox *buttonBox;
-    QUdpSocket *udpSocket;
-    QTimer *timer;
+    QLabel *statusLabel = nullptr;
+    QPushButton *startButton = nullptr;
+    QUdpSocket udpSocket;
+    QTimer timer;
     QHostAddress groupAddress;
-    int messageNo;
+    int messageNo = 1;
 };
 
 #endif

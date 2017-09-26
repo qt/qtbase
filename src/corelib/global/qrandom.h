@@ -53,29 +53,27 @@ class QRandomGenerator
 public:
     QRandomGenerator() = default;
 
-    static Q_CORE_EXPORT quint32 get32();
-    static Q_CORE_EXPORT quint64 get64();
-    static qreal getReal()
+    // ### REMOVE BEFORE 5.10
+    static quint32 get32() { return generate(); }
+    static quint64 get64() { return generate64(); }
+    static qreal getReal() { return generateDouble(); }
+
+    static Q_CORE_EXPORT quint32 generate();
+    static Q_CORE_EXPORT quint64 generate64();
+    static double generateDouble()
     {
-        const int digits = std::numeric_limits<qreal>::digits;
-        if (digits < std::numeric_limits<quint32>::digits) {
-            // use get32()
-            return qreal(get32()) / ((max)() + qreal(1.0));
-        } else {
-            // use get64()
-            // we won't have enough bits for a __float128 though
-            return qreal(get64()) / ((std::numeric_limits<quint64>::max)() + qreal(1.0));
-        }
+        // use get64() to get enough bits
+        return double(generate64()) / ((std::numeric_limits<quint64>::max)() + double(1.0));
     }
 
     static qreal bounded(qreal sup)
     {
-        return getReal() * sup;
+        return generateDouble() * sup;
     }
 
     static quint32 bounded(quint32 sup)
     {
-        quint64 value = get32();
+        quint64 value = generate();
         value *= sup;
         value /= (max)() + quint64(1);
         return quint32(value);
@@ -112,7 +110,8 @@ public:
     template <typename ForwardIterator>
     void generate(ForwardIterator begin, ForwardIterator end)
     {
-        std::generate(begin, end, &QRandomGenerator::get32);
+        auto generator = static_cast<quint32 (*)()>(&QRandomGenerator::generate);
+        std::generate(begin, end, generator);
     }
 
     void generate(quint32 *begin, quint32 *end)
@@ -122,7 +121,7 @@ public:
 
     // API like std::random_device
     typedef quint32 result_type;
-    result_type operator()() { return get32(); }
+    result_type operator()() { return generate(); }
     double entropy() const Q_DECL_NOTHROW { return 0.0; }
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
@@ -137,9 +136,11 @@ class QRandomGenerator64
 public:
     QRandomGenerator64() = default;
 
+    static quint64 generate() { return QRandomGenerator::generate64(); }
+
     // API like std::random_device
     typedef quint64 result_type;
-    result_type operator()() { return QRandomGenerator::get64(); }
+    result_type operator()() { return QRandomGenerator::generate64(); }
     double entropy() const Q_DECL_NOTHROW { return 0.0; }
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }

@@ -53,7 +53,6 @@
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#ifndef QT_NO_LINEEDIT
 #include "private/qwidget_p.h"
 #include "QtWidgets/qlineedit.h"
 #include "QtGui/qtextlayout.h"
@@ -62,7 +61,9 @@
 #include "QtGui/qclipboard.h"
 #include "QtGui/qinputmethod.h"
 #include "QtCore/qpoint.h"
+#if QT_CONFIG(completer)
 #include "QtWidgets/qcompleter.h"
+#endif
 #include "QtCore/qthread.h"
 #include "QtGui/private/qinputcontrol_p.h"
 
@@ -74,8 +75,9 @@
 #  undef DrawText
 #endif
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(lineedit);
 
+QT_BEGIN_NAMESPACE
 
 class Q_WIDGETS_EXPORT QWidgetLineControl : public QInputControl
 {
@@ -289,7 +291,7 @@ public:
     void setValidator(const QValidator *v) { m_validator = const_cast<QValidator*>(v); }
 #endif
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     QCompleter *completer() const { return m_completer; }
     /* Note that you must set the widget for the completer separately */
     void setCompleter(const QCompleter *c) { m_completer = const_cast<QCompleter*>(c); }
@@ -461,7 +463,7 @@ private:
     QPointer<QValidator> m_validator;
 #endif
     QPointer<QCompleter> m_completer;
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     bool advanceToEnabledItem(int dir);
 #endif
 
@@ -561,7 +563,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_LINEEDIT
 
 #endif // QWIDGETLINECONTROL_P_H

@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(mdiarea);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_MDIAREA
 
 class QMenu;
 class QMdiArea;
@@ -90,7 +89,7 @@ public:
     void setKeyboardPageStep(int step);
     int keyboardPageStep() const;
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void setSystemMenu(QMenu *systemMenu);
     QMenu *systemMenu() const;
 #endif
@@ -102,7 +101,7 @@ Q_SIGNALS:
     void aboutToActivate();
 
 public Q_SLOTS:
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void showSystemMenu();
 #endif
     void showShaded();
@@ -147,7 +146,5 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMdiSubWindow::SubWindowOptions)
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_MDIAREA
 
 #endif // QMDISUBWINDOW_H

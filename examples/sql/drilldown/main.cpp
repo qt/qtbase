@@ -48,10 +48,13 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include "../connection.h"
 #include "view.h"
+#include "../connection.h"
+
+#include <QApplication>
+
+#include <stdlib.h>
+
 
 int main(int argc, char *argv[])
 {
@@ -60,7 +63,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     if (!createConnection())
-        return 1;
+        return EXIT_FAILURE;
 
     View view("items", "images");
     view.show();

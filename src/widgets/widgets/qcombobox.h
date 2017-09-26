@@ -45,6 +45,7 @@
 #include <QtWidgets/qabstractitemdelegate.h>
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qvalidator.h>
 
 QT_REQUIRE_CONFIG(combobox);
 
@@ -71,10 +72,10 @@ class Q_WIDGETS_EXPORT QComboBox : public QWidget
     Q_PROPERTY(int minimumContentsLength READ minimumContentsLength WRITE setMinimumContentsLength)
     Q_PROPERTY(QSize iconSize READ iconSize WRITE setIconSize)
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     Q_PROPERTY(bool autoCompletion READ autoCompletion WRITE setAutoCompletion DESIGNABLE false)
     Q_PROPERTY(Qt::CaseSensitivity autoCompletionCaseSensitivity READ autoCompletionCaseSensitivity WRITE setAutoCompletionCaseSensitivity DESIGNABLE false)
-#endif // QT_NO_COMPLETER
+#endif // QT_CONFIG(completer)
 
     Q_PROPERTY(bool duplicatesEnabled READ duplicatesEnabled WRITE setDuplicatesEnabled)
     Q_PROPERTY(bool frame READ hasFrame WRITE setFrame)
@@ -91,7 +92,7 @@ public:
     void setMaxCount(int max);
     int maxCount() const;
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     bool autoCompletion() const;
     void setAutoCompletion(bool enable);
 
@@ -149,7 +150,7 @@ public:
     const QValidator *validator() const;
 #endif
 
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     void setCompleter(QCompleter *c);
     QCompleter *completer() const;
 #endif
@@ -262,7 +263,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_rowsRemoved(const QModelIndex & parent, int start, int end))
     Q_PRIVATE_SLOT(d_func(), void _q_modelDestroyed())
     Q_PRIVATE_SLOT(d_func(), void _q_modelReset())
-#ifndef QT_NO_COMPLETER
+#if QT_CONFIG(completer)
     Q_PRIVATE_SLOT(d_func(), void _q_completerActivated(const QModelIndex &index))
 #endif
 };

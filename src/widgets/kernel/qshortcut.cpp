@@ -45,8 +45,12 @@
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
 #endif
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #include <qapplication.h>
 #include <private/qapplication_p.h>
 #include <private/qshortcutmap_p.h>
@@ -143,7 +147,7 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
 static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     if (QMenuBar *menuBar = qobject_cast<QMenuBar *>(w)) {
         if (menuBar->isNativeMenuBar())
             visible = true;
@@ -208,7 +212,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window)
 {
     bool visible = w->isVisible();
-#if defined(Q_OS_DARWIN) && !defined(QT_NO_MENUBAR)
+#if defined(Q_OS_DARWIN) && QT_CONFIG(menubar)
     if (!qApp->testAttribute(Qt::AA_DontUseNativeMenuBar) && qobject_cast<QMenuBar *>(w))
         visible = true;
 #endif
@@ -274,7 +278,7 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
 #endif
     for (int i = 0; i < widgets.size(); ++i) {
         QWidget *w = widgets.at(i);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
         if (QMenu *menu = qobject_cast<QMenu *>(w)) {
 #ifdef Q_OS_DARWIN
             // On Mac, menu item shortcuts are processed before reaching any window.

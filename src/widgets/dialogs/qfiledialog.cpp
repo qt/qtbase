@@ -50,7 +50,9 @@
 #include <qheaderview.h>
 #include <qshortcut.h>
 #include <qgridlayout.h>
+#if QT_CONFIG(menu)
 #include <qmenu.h>
+#endif
 #if QT_CONFIG(messagebox)
 #include <qmessagebox.h>
 #endif
@@ -3353,7 +3355,7 @@ void QFileDialogPrivate::_q_showDetailsView()
 */
 void QFileDialogPrivate::_q_showContextMenu(const QPoint &position)
 {
-#ifdef QT_NO_MENU
+#if !QT_CONFIG(menu)
     Q_UNUSED(position);
 #else
     Q_Q(QFileDialog);
@@ -3382,7 +3384,7 @@ void QFileDialogPrivate::_q_showContextMenu(const QPoint &position)
         menu.addAction(newFolderAction);
     }
     menu.exec(view->viewport()->mapToGlobal(position));
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 }
 
 /*!
@@ -4130,7 +4132,7 @@ QStringList QFSCompleter::splitPath(const QString &path) const
     return parts;
 }
 
-#endif // QT_NO_COMPLETER
+#endif // QT_CONFIG(completer)
 
 
 QT_END_NAMESPACE

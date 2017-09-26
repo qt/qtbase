@@ -57,6 +57,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <AppKit/AppKit.h>
+#include <QuartzCore/QuartzCore.h>
 
 #include <QDebug>
 
@@ -149,7 +150,7 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_glContext(0)
 #endif
     , m_menubar(0)
-    , m_windowCursor(0)
+    , m_needsInvalidateShadow(false)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
     , m_isExposed(false)
@@ -228,7 +229,6 @@ QCocoaWindow::~QCocoaWindow()
 
     [m_view release];
     [m_nsWindow release];
-    [m_windowCursor release];
 }
 
 QSurfaceFormat QCocoaWindow::format() const
@@ -322,6 +322,12 @@ void QCocoaWindow::setVisible(bool visible)
     if (visible) {
         // We need to recreate if the modality has changed as the style mask will need updating
         recreateWindowIfNeeded();
+
+        // We didn't send geometry changes during creation, as that would have confused
+        // Qt, which expects a show-event to be sent before any resize events. But now
+        // that the window is made visible, we know that the show-event has been sent
+        // so we can send the geometry change. FIXME: Get rid of this workaround.
+        handleGeometryChange();
 
         // Register popup windows. The Cocoa platform plugin will forward mouse events
         // to them and close them when needed.
@@ -693,7 +699,7 @@ bool QCocoaWindow::isOpaque() const
 
     bool translucent = window()->format().alphaBufferSize() > 0
                         || window()->opacity() < 1
-                        || [qnsview_cast(m_view) hasMask]
+                        || !window()->mask().isEmpty()
                         || (surface()->supportsOpenGL() && openglSourfaceOrder == -1);
     return !translucent;
 }
@@ -743,17 +749,40 @@ void QCocoaWindow::setOpacity(qreal level)
         return;
 
     m_view.window.alphaValue = level;
-    m_view.window.opaque = isOpaque();
 }
 
 void QCocoaWindow::setMask(const QRegion &region)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::setMask" << window() << region;
-    if (isContentView())
-        m_view.window.backgroundColor = !region.isEmpty() ? [NSColor clearColor] : nil;
 
-    [qnsview_cast(m_view) setMaskRegion:&region];
-    m_view.window.opaque = isOpaque();
+    if (m_view.layer) {
+        if (!region.isEmpty()) {
+            QCFType<CGMutablePathRef> maskPath = CGPathCreateMutable();
+            for (const QRect &r : region)
+                CGPathAddRect(maskPath, nullptr, r.toCGRect());
+            CAShapeLayer *maskLayer = [CAShapeLayer layer];
+            maskLayer.path = maskPath;
+            m_view.layer.mask = maskLayer;
+        } else {
+            m_view.layer.mask = nil;
+        }
+    }
+
+    if (isContentView()) {
+        // Setting the mask requires invalidating the NSWindow shadow, but that needs
+        // to happen after the backingstore has been redrawn, so that AppKit can pick
+        // up the new window shape based on the backingstore content. Doing a display
+        // directly here is not an option, as the window might not be exposed at this
+        // time, and so would not result in an updated backingstore.
+        m_needsInvalidateShadow = true;
+        [m_view setNeedsDisplay:YES];
+
+        // FIXME: [NSWindow invalidateShadow] has no effect when in layer-backed mode,
+        // so if the mask is changed after the initial mask is applied, it will not
+        // result in any visual change to the shadow. This is an Apple bug, and there
+        // may be ways to work around it, such as calling setFrame on the window to
+        // trigger some internal invalidation, but that needs more research.
+    }
 }
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
@@ -1067,6 +1096,15 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
         && !region.isEmpty()
         && !m_view.hiddenOrHasHiddenAncestor;
 
+
+    QWindowPrivate *windowPrivate = qt_window_private(window());
+    if (m_isExposed && windowPrivate->updateRequestPending) {
+        // FIXME: Should this logic for expose events be in QGuiApplication?
+        qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
+        windowPrivate->deliverUpdateRequest();
+        return;
+    }
+
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), region);
 }
@@ -1237,6 +1275,12 @@ void QCocoaWindow::recreateWindowIfNeeded()
         updateNSToolbar();
 }
 
+void QCocoaWindow::requestUpdate()
+{
+    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::requestUpdate" << window();
+    [m_view setNeedsDisplay:YES];
+}
+
 void QCocoaWindow::requestActivateWindow()
 {
     NSWindow *window = [m_view window];
@@ -1311,11 +1355,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     nsWindow.restorable = NO;
     nsWindow.level = windowLevel(flags);
-
-    if (!isOpaque()) {
-        nsWindow.backgroundColor = [NSColor clearColor];
-        nsWindow.opaque = NO;
-    }
 
     if (shouldBePanel) {
         // Qt::Tool windows hide on app deactivation, unless Qt::WA_MacAlwaysShowToolWindow is set
@@ -1515,51 +1554,19 @@ QCocoaMenuBar *QCocoaWindow::menubar() const
     return m_menubar;
 }
 
-// Finds the effective cursor for this window by walking up the
-// ancestor chain (including this window) until a set cursor is
-// found. Returns nil if there is not set cursor.
-NSCursor *QCocoaWindow::effectiveWindowCursor() const
-{
-
-    if (m_windowCursor)
-        return m_windowCursor;
-    if (!QPlatformWindow::parent())
-        return nil;
-    return static_cast<QCocoaWindow *>(QPlatformWindow::parent())->effectiveWindowCursor();
-}
-
-// Applies the cursor as returned by effectiveWindowCursor(), handles
-// the special no-cursor-set case by setting the arrow cursor.
-void QCocoaWindow::applyEffectiveWindowCursor()
-{
-    NSCursor *effectiveCursor = effectiveWindowCursor();
-    if (effectiveCursor) {
-        [effectiveCursor set];
-    } else {
-        // We wold like to _unset_ the cursor here; but there is no such
-        // API. Fall back to setting the default arrow cursor.
-        [[NSCursor arrowCursor] set];
-    }
-}
-
 void QCocoaWindow::setWindowCursor(NSCursor *cursor)
 {
-    if (m_windowCursor == cursor)
-        return;
-
-    // Setting a cursor in a foregin view is not supported.
+    // Setting a cursor in a foreign view is not supported
     if (isForeignWindow())
         return;
 
-    [m_windowCursor release];
-    m_windowCursor = cursor;
-    [m_windowCursor retain];
+    QNSView *view = qnsview_cast(m_view);
+    if (cursor == view.cursor)
+        return;
 
-    // The installed view tracking area (see QNSView updateTrackingAreas) will
-    // handle cursor updates on mouse enter/leave. Handle the case where the
-    // mouse is on the this window by changing the cursor immediately.
-    if (m_windowUnderMouse)
-        applyEffectiveWindowCursor();
+    view.cursor = cursor;
+
+    [m_view.window invalidateCursorRectsForView:m_view];
 }
 
 void QCocoaWindow::registerTouch(bool enable)

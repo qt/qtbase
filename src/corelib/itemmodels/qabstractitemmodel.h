@@ -79,7 +79,7 @@ public:
             return  r <  other.r
                 || (r == other.r && (c <  other.c
                                  || (c == other.c && (i <  other.i
-                                                  || (i == other.i && m < other.m )))));
+                                                  || (i == other.i && std::less<const QAbstractItemModel *>()(m, other.m))))));
         }
 private:
     inline QModelIndex(int arow, int acolumn, void *ptr, const QAbstractItemModel *amodel) Q_DECL_NOTHROW

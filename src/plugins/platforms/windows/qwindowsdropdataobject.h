@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,25 +37,27 @@
 **
 ****************************************************************************/
 
-#ifndef QMACGLCONVENIENCE_H
-#define QMACGLCONVENIENCE_H
+#ifndef QWINDOWSDROPDATAOBJECT_H
+#define QWINDOWSDROPDATAOBJECT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "qwindowsole.h"
 
-#include <QSurfaceFormat>
-#include <QString>
-#include <OpenGL/OpenGL.h>
+QT_BEGIN_NAMESPACE
 
-QSurfaceFormat qcgl_surfaceFormat();
-void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format);
+class QWindowsDropDataObject : public QWindowsOleDataObject
+{
+public:
+    explicit QWindowsDropDataObject(QMimeData *mimeData);
+    virtual ~QWindowsDropDataObject();
 
-#endif // QMACGLCONVENIENCE_H
+    // overridden IDataObject methods
+    STDMETHOD(GetData)(LPFORMATETC pformatetcIn, LPSTGMEDIUM pmedium);
+    STDMETHOD(QueryGetData)(LPFORMATETC pformatetc);
+
+private:
+    bool shouldIgnore(LPFORMATETC pformatetc) const;
+};
+
+QT_END_NAMESPACE
+
+#endif // QWINDOWSDROPDATAOBJECT_H

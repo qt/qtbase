@@ -1162,6 +1162,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
     return ret > 0;
 }
 
+#if 0   // currently unused
 /*!
     Returns the size of the operating system's socket receive
     buffer. Depending on the operating system, this size may be
@@ -1220,7 +1221,7 @@ void QNativeSocketEngine::setSendBufferSize(qint64 size)
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::setSendBufferSize(), Q_VOID);
     setOption(SendBufferSocketOption, size);
 }
-
+#endif
 
 /*!
     Sets the option \a option to the value \a value.

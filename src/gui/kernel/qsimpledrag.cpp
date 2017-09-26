@@ -117,9 +117,9 @@ void QBasicDrag::disableEventFilter()
 }
 
 
-static inline QPoint getNativeMousePos(QEvent *e, QObject *o)
+static inline QPoint getNativeMousePos(QEvent *e, QWindow *window)
 {
-    return QHighDpi::toNativePixels(static_cast<QMouseEvent *>(e)->globalPos(), qobject_cast<QWindow*>(o));
+    return QHighDpi::toNativePixels(static_cast<QMouseEvent *>(e)->globalPos(), window);
 }
 
 bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
@@ -156,14 +156,14 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
 
         case QEvent::MouseMove:
         {
-            QPoint nativePosition = getNativeMousePos(e, o);
+            QPoint nativePosition = getNativeMousePos(e, m_drag_icon_window);
             move(nativePosition);
             return true; // Eat all mouse move events
         }
         case QEvent::MouseButtonRelease:
             disableEventFilter();
             if (canDrop()) {
-                QPoint nativePosition = getNativeMousePos(e, o);
+                QPoint nativePosition = getNativeMousePos(e, m_drag_icon_window);
                 drop(nativePosition);
             } else {
                 cancel();

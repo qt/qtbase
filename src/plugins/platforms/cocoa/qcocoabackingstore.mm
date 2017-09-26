@@ -79,7 +79,15 @@ void QCocoaBackingStore::beginPaint(const QRegion &region)
 void QCocoaBackingStore::endPaint()
 {
     QRasterBackingStore::endPaint();
-    m_cgImage = m_image.toCGImage();
+
+    // Prevent potentially costly color conversion by assiging the display
+    // color space to the backingstore image.
+    NSView *view = static_cast<QCocoaWindow *>(window()->handle())->view();
+    CGColorSpaceRef displayColorSpace = view.window.screen.colorSpace.CGColorSpace;
+    QCFType<CGImageRef> displayColorSpaceImage =
+        CGImageCreateCopyWithColorSpace(m_image.toCGImage(), displayColorSpace);
+
+    m_cgImage = displayColorSpaceImage;
 }
 
 #if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
@@ -190,14 +198,15 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     // Create temporary image to use for blitting, without copying image data
     NSImage *backingStoreImage = [[[NSImage alloc] initWithCGImage:m_cgImage size:NSZeroSize] autorelease];
 
-    if ([topLevelView hasMask]) {
-        // FIXME: Implement via NSBezierPath and addClip
-        CGRect boundingRect = region.boundingRect().toCGRect();
-        QCFType<CGImageRef> subMask = CGImageCreateWithImageInRect([topLevelView maskImage], boundingRect);
-        CGContextClipToMask(graphicsContext.CGContext, boundingRect, subMask);
+    QRegion clippedRegion = region;
+    for (QWindow *w = window; w; w = w->parent()) {
+        if (!w->mask().isEmpty()) {
+            clippedRegion &= w == window ? w->mask()
+                : w->mask().translated(window->mapFromGlobal(w->mapToGlobal(QPoint(0, 0))));
+        }
     }
 
-    for (const QRect &viewLocalRect : region) {
+    for (const QRect &viewLocalRect : clippedRegion) {
         QPoint backingStoreOffset = viewLocalRect.topLeft() + offset;
         QRect backingStoreRect(backingStoreOffset * devicePixelRatio, viewLocalRect.size() * devicePixelRatio);
         if (graphicsContext.flipped) // Flip backingStoreRect to match graphics context
@@ -225,6 +234,12 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
 #endif
     }
 
+    QCocoaWindow *topLevelCocoaWindow = static_cast<QCocoaWindow *>(topLevelWindow->handle());
+    if (Q_UNLIKELY(topLevelCocoaWindow->m_needsInvalidateShadow)) {
+        [topLevelView.window invalidateShadow];
+        topLevelCocoaWindow->m_needsInvalidateShadow = false;
+    }
+
     // -------------------------------------------------------------------------
 
     if (shouldHandleViewLockManually)
@@ -234,9 +249,6 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
         redrawRoundedBottomCorners([view convertRect:region.boundingRect().toCGRect() toView:nil]);
         [view.window flushWindow];
     }
-
-    // FIXME: Tie to changing window flags and/or mask instead
-    [view invalidateWindowShadowIfNeeded];
 }
 
 /*

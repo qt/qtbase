@@ -46,10 +46,9 @@
 #include <QtWidgets/qtabwidget.h>
 #endif
 
+QT_REQUIRE_CONFIG(mdiarea);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_MDIAREA
 
 class QMdiSubWindow;
 
@@ -171,5 +170,4 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QMdiArea::AreaOptions)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_MDIAREA
 #endif // QMDIAREA_H

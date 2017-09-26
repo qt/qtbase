@@ -33,6 +33,23 @@
 
 #include <AppKit/AppKit.h>
 
+
+@interface ContentView : NSView
+@end
+
+@implementation ContentView
+- (void)drawRect:(NSRect)dirtyRect {
+    [[NSColor whiteColor] setFill];
+    NSRectFill(dirtyRect);
+}
+
+- (void)cursorUpdate:(NSEvent *)theEvent
+{
+    Q_UNUSED(theEvent);
+    [[NSCursor pointingHandCursor] set];
+}
+@end
+
 @interface AppDelegate : NSObject <NSApplicationDelegate> {
     QGuiApplication *m_app;
     QWindow *m_window;
@@ -65,9 +82,29 @@
     [window setTitle:title];
     [window setBackgroundColor:[NSColor blueColor]];
 
-    // Create the QWindow, use its NSView as the content view
-    m_window = new RasterWindow();
-    [window setContentView:reinterpret_cast<NSView *>(m_window->winId())];
+    NSView *contentView = [[[ContentView alloc] initWithFrame:frame] autorelease];
+    [contentView addTrackingArea:[[NSTrackingArea alloc] initWithRect:[contentView frame]
+            options:NSTrackingActiveInActiveApp | NSTrackingInVisibleRect | NSTrackingCursorUpdate
+            owner:contentView userInfo:nil]];
+
+    window.contentView = contentView;
+
+    // Create the QWindow, add its NSView to the content view
+    m_window = new RasterWindow;
+    m_window->setObjectName("RasterWindow");
+    m_window->setCursor(Qt::CrossCursor);
+    m_window->setGeometry(QRect(0, 0, 300, 300));
+
+    QWindow *childWindow = new RasterWindow;
+    childWindow->setObjectName("RasterWindowChild");
+    childWindow->setParent(m_window);
+    childWindow->setCursor(Qt::BusyCursor);
+    childWindow->setGeometry(50, 50, 100, 100);
+
+    NSTextField *textField = [[NSTextField alloc] initWithFrame:NSMakeRect(10, 10, 80, 25)];
+    [(NSView*)childWindow->winId() addSubview:textField];
+
+    [window.contentView addSubview:reinterpret_cast<NSView *>(m_window->winId())];
 
     // Show the NSWindow
     [window makeKeyAndOrderFront:NSApp];

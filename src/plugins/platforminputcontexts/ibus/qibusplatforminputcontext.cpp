@@ -137,6 +137,17 @@ bool QIBusPlatformInputContext::isValid() const
     return d->valid && d->busConnected;
 }
 
+bool QIBusPlatformInputContext::hasCapability(Capability capability) const
+{
+    switch (capability) {
+    case QPlatformInputContext::HiddenTextCapability:
+        return false; // QTBUG-40691, do not show IME on desktop for password entry fields.
+    default:
+        break;
+    }
+    return true;
+}
+
 void QIBusPlatformInputContext::invokeAction(QInputMethod::Action a, int)
 {
     if (!d->busConnected)

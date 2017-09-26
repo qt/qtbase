@@ -82,7 +82,6 @@ public:
 
     bool isFiltered() const;
 
-private slots:
     void readData();
 
 signals:
@@ -116,7 +115,6 @@ public:
 
     bool eventFilter(QObject *object, QEvent *event) override;
 
-public slots:
     void scheduleTouchPointUpdate();
 
 signals:

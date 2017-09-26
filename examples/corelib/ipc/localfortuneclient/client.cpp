@@ -54,45 +54,45 @@
 #include "client.h"
 
 Client::Client(QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent),
+      hostLineEdit(new QLineEdit("fortune")),
+      getFortuneButton(new QPushButton(tr("Get Fortune"))),
+      statusLabel(new QLabel(tr("This examples requires that you run the "
+                                "Local Fortune Server example as well."))),
+      socket(new QLocalSocket(this))
 {
-    hostLabel = new QLabel(tr("&Server name:"));
-    hostLineEdit = new QLineEdit("fortune");
-
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    QLabel *hostLabel = new QLabel(tr("&Server name:"));
     hostLabel->setBuddy(hostLineEdit);
 
-    statusLabel = new QLabel(tr("This examples requires that you run the "
-                                "Fortune Server example as well."));
     statusLabel->setWordWrap(true);
 
-    getFortuneButton = new QPushButton(tr("Get Fortune"));
     getFortuneButton->setDefault(true);
+    QPushButton *quitButton = new QPushButton(tr("Quit"));
 
-    quitButton = new QPushButton(tr("Quit"));
-
-    buttonBox = new QDialogButtonBox;
+    QDialogButtonBox *buttonBox = new QDialogButtonBox;
     buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    socket = new QLocalSocket(this);
+    in.setDevice(socket);
+    in.setVersion(QDataStream::Qt_5_10);
 
-    connect(hostLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(enableGetFortuneButton()));
-    connect(getFortuneButton, SIGNAL(clicked()),
-            this, SLOT(requestNewFortune()));
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
-    connect(socket, SIGNAL(readyRead()), this, SLOT(readFortune()));
-    connect(socket, SIGNAL(error(QLocalSocket::LocalSocketError)),
-            this, SLOT(displayError(QLocalSocket::LocalSocketError)));
+    connect(hostLineEdit, &QLineEdit::textChanged,
+            this, &Client::enableGetFortuneButton);
+    connect(getFortuneButton, &QPushButton::clicked,
+            this, &Client::requestNewFortune);
+    connect(quitButton, &QPushButton::clicked, this, &Client::close);
+    connect(socket, &QLocalSocket::readyRead, this, &Client::readFortune);
+    connect(socket, QOverload<QLocalSocket::LocalSocketError>::of(&QLocalSocket::error),
+            this, &Client::displayError);
 
-    QGridLayout *mainLayout = new QGridLayout;
+    QGridLayout *mainLayout = new QGridLayout(this);
     mainLayout->addWidget(hostLabel, 0, 0);
     mainLayout->addWidget(hostLineEdit, 0, 1);
     mainLayout->addWidget(statusLabel, 2, 0, 1, 2);
     mainLayout->addWidget(buttonBox, 3, 0, 1, 2);
-    setLayout(mainLayout);
 
-    setWindowTitle(tr("Fortune Client"));
+    setWindowTitle(QGuiApplication::applicationDisplayName());
     hostLineEdit->setFocus();
 }
 
@@ -106,11 +106,9 @@ void Client::requestNewFortune()
 
 void Client::readFortune()
 {
-    QDataStream in(socket);
-    in.setVersion(QDataStream::Qt_4_0);
-
     if (blockSize == 0) {
-        // Relies on the fact that QDataStream format streams a quint32 into sizeof(quint32) bytes
+        // Relies on the fact that QDataStream serializes a quint32 into
+        // sizeof(quint32) bytes
         if (socket->bytesAvailable() < (int)sizeof(quint32))
             return;
         in >> blockSize;
@@ -123,7 +121,7 @@ void Client::readFortune()
     in >> nextFortune;
 
     if (nextFortune == currentFortune) {
-        QTimer::singleShot(0, this, SLOT(requestNewFortune()));
+        QTimer::singleShot(0, this, &Client::requestNewFortune);
         return;
     }
 
@@ -136,21 +134,22 @@ void Client::displayError(QLocalSocket::LocalSocketError socketError)
 {
     switch (socketError) {
     case QLocalSocket::ServerNotFoundError:
-        QMessageBox::information(this, tr("Fortune Client"),
-                                 tr("The host was not found. Please check the "
-                                    "host name and port settings."));
+        QMessageBox::information(this, tr("Local Fortune Client"),
+                                 tr("The host was not found. Please make sure "
+                                    "that the server is running and that the "
+                                    "server name is correct."));
         break;
     case QLocalSocket::ConnectionRefusedError:
-        QMessageBox::information(this, tr("Fortune Client"),
+        QMessageBox::information(this, tr("Local Fortune Client"),
                                  tr("The connection was refused by the peer. "
                                     "Make sure the fortune server is running, "
-                                    "and check that the host name and port "
-                                    "settings are correct."));
+                                    "and check that the server name "
+                                    "is correct."));
         break;
     case QLocalSocket::PeerClosedError:
         break;
     default:
-        QMessageBox::information(this, tr("Fortune Client"),
+        QMessageBox::information(this, tr("Local Fortune Client"),
                                  tr("The following error occurred: %1.")
                                  .arg(socket->errorString()));
     }

@@ -2293,6 +2293,9 @@ void QSslSocketPrivate::createPlainSocket(QIODevice::OpenMode openMode)
     q->connect(plainSocket, SIGNAL(channelBytesWritten(int, qint64)),
                q, SLOT(_q_channelBytesWrittenSlot(int, qint64)),
                Qt::DirectConnection);
+    q->connect(plainSocket, SIGNAL(readChannelFinished()),
+               q, SLOT(_q_readChannelFinishedSlot()),
+               Qt::DirectConnection);
 #ifndef QT_NO_NETWORKPROXY
     q->connect(plainSocket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                q, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -2509,6 +2512,15 @@ void QSslSocketPrivate::_q_channelBytesWrittenSlot(int channel, qint64 written)
     Q_Q(QSslSocket);
     if (mode == QSslSocket::UnencryptedMode)
         emit q->channelBytesWritten(channel, written);
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::_q_readChannelFinishedSlot()
+{
+    Q_Q(QSslSocket);
+    emit q->readChannelFinished();
 }
 
 /*!

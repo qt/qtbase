@@ -225,11 +225,11 @@ public:
     static void handleTabletLeaveProximityEvent(int device, int pointerType, qint64 uid);
 
 #ifndef QT_NO_GESTURES
-    static void handleGestureEvent(QWindow *window,  ulong timestamp, Qt::NativeGestureType type,
+    static void handleGestureEvent(QWindow *window, QTouchDevice *device,  ulong timestamp, Qt::NativeGestureType type,
                                    QPointF &local, QPointF &global);
-    static void handleGestureEventWithRealValue(QWindow *window,  ulong timestamp, Qt::NativeGestureType type,
+    static void handleGestureEventWithRealValue(QWindow *window, QTouchDevice *device,  ulong timestamp, Qt::NativeGestureType type,
                                                 qreal value, QPointF &local, QPointF &global);
-    static void handleGestureEventWithSequenceIdAndValue(QWindow *window, ulong timestamp,Qt::NativeGestureType type,
+    static void handleGestureEventWithSequenceIdAndValue(QWindow *window, QTouchDevice *device, ulong timestamp,Qt::NativeGestureType type,
                                                          ulong sequenceId, quint64 value, QPointF &local, QPointF &global);
 #endif // QT_NO_GESTURES
 

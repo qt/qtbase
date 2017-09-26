@@ -39,8 +39,6 @@
 
 #include "qsizegrip.h"
 
-#ifndef QT_NO_SIZEGRIP
-
 #include "qapplication.h"
 #include "qevent.h"
 #include "qpainter.h"
@@ -321,13 +319,13 @@ void QSizeGrip::mousePressEvent(QMouseEvent * e)
         // Check if tlw is inside QAbstractScrollArea/QScrollArea.
         // If that's the case tlw->parentWidget() will return the viewport
         // and tlw->parentWidget()->parentWidget() will return the scroll area.
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
         QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(tlwParent->parentWidget());
         if (scrollArea) {
             hasHorizontalSizeConstraint = scrollArea->horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff;
             hasVerticalSizeConstraint = scrollArea->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOff;
         }
-#endif // QT_NO_SCROLLAREA
+#endif // QT_CONFIG(scrollarea)
         availableGeometry = tlwParent->contentsRect();
     }
 
@@ -508,5 +506,3 @@ bool QSizeGrip::event(QEvent *event)
 QT_END_NAMESPACE
 
 #include "moc_qsizegrip.cpp"
-
-#endif //QT_NO_SIZEGRIP

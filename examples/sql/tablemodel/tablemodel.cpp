@@ -47,11 +47,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include <QtWidgets>
-#include <QtSql>
-
 #include "../connection.h"
+
+#include <QApplication>
+#include <QSqlTableModel>
+#include <QTableView>
+
+#include <stdlib.h>
 
 void initializeModel(QSqlTableModel *model)
 {
@@ -76,7 +78,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     if (!createConnection())
-        return 1;
+        return EXIT_FAILURE;
 
     QSqlTableModel model;
 

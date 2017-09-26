@@ -12,7 +12,5 @@ xcb
 xcb
 [forwardMousePress]
 xcb
-[hoverLeave]
-xcb
 [resizeAnchor]
 xcb

@@ -53,6 +53,8 @@ class QLatin1String;
 class QStringView;
 template <typename T> class QVector;
 
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION qssize_t qustrlen(const ushort *str) Q_DECL_NOTHROW;
+
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QStringView   lhs, QLatin1String rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;
 Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION int qCompareStrings(QLatin1String lhs, QStringView   rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) Q_DECL_NOTHROW;

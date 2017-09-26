@@ -57,17 +57,32 @@
 
 QT_BEGIN_NAMESPACE
 
-class QNetmaskAddress: public QHostAddress
+class QNetmask
 {
-    int length;
+    // stores 0-32 for IPv4, 0-128 for IPv6, or 255 for invalid
+    quint8 length;
 public:
-    QNetmaskAddress() : QHostAddress(), length(-1) { }
+    Q_DECL_CONSTEXPR QNetmask() : length(255) {}
 
-    bool setAddress(const QString &address);
     bool setAddress(const QHostAddress &address);
+    QHostAddress address(QAbstractSocket::NetworkLayerProtocol protocol) const;
 
-    int prefixLength() const;
-    void setPrefixLength(QAbstractSocket::NetworkLayerProtocol proto, int len);
+    int prefixLength() const { return length == 255 ? -1 : length; }
+    void setPrefixLength(QAbstractSocket::NetworkLayerProtocol proto, int len)
+    {
+        int maxlen = -1;
+        if (proto == QAbstractSocket::IPv4Protocol)
+            maxlen = 32;
+        else if (proto == QAbstractSocket::IPv6Protocol)
+            maxlen = 128;
+        if (len > maxlen || len < 0)
+            length = 255U;
+        else
+            length = unsigned(len);
+    }
+
+    friend bool operator==(QNetmask n1, QNetmask n2)
+    { return n1.length == n2.length; }
 };
 
 QT_END_NAMESPACE

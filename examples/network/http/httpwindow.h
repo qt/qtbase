@@ -92,9 +92,9 @@ private slots:
     void httpFinished();
     void httpReadyRead();
     void enableDownloadButton();
-    void slotAuthenticationRequired(QNetworkReply*,QAuthenticator *);
+    void slotAuthenticationRequired(QNetworkReply *, QAuthenticator *authenticator);
 #ifndef QT_NO_SSL
-    void sslErrors(QNetworkReply*,const QList<QSslError> &errors);
+    void sslErrors(QNetworkReply *, const QList<QSslError> &errors);
 #endif
 
 private:

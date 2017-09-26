@@ -39,10 +39,14 @@
 
 #include "qmultitouch_mac_p.h"
 #include "qcocoahelpers.h"
+#include <private/qtouchdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcInputDevices, "qt.qpa.input.devices")
+
 QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
+QHash<quint64, QTouchDevice*> QCocoaTouch::_touchDevices;
 QPointF QCocoaTouch::_screenReferencePos;
 QPointF QCocoaTouch::_trackpadReferencePos;
 int QCocoaTouch::_idAssignmentCount = 0;
@@ -207,6 +211,21 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
     }
 
     return touchPoints.values();
+}
+
+QTouchDevice *QCocoaTouch::getTouchDevice(QTouchDevice::DeviceType type, quint64 id)
+{
+    QTouchDevice *ret = _touchDevices.value(id);
+    if (!ret) {
+        ret = new QTouchDevice;
+        ret->setType(type);
+        ret->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition | QTouchDevice::MouseEmulation);
+        QWindowSystemInterface::registerTouchDevice(ret);
+        _touchDevices.insert(id, ret);
+        qCDebug(lcInputDevices) << "touch device" << id << "of type" << type
+                                << "registered as Qt device" << QTouchDevicePrivate::get(ret)->id;
+    }
+    return ret;
 }
 
 QT_END_NAMESPACE

@@ -132,7 +132,7 @@ protected:
     virtual QWidget *viewport() const = 0;
 };
 
-#ifndef QT_NO_TEXTEDIT
+#if QT_CONFIG(textedit)
 class QAccessiblePlainTextEdit : public QAccessibleTextWidget
 {
 public:
@@ -184,7 +184,7 @@ protected:
     QTextDocument *textDocument() const override;
     QWidget *viewport() const override;
 };
-#endif // QT_NO_TEXTEDIT
+#endif // QT_CONFIG(textedit)
 #endif  //QT_NO_CURSOR
 
 class QAccessibleStackedWidget : public QAccessibleWidget
@@ -216,7 +216,7 @@ protected:
     QToolBox *toolBox() const;
 };
 
-#ifndef QT_NO_MDIAREA
+#if QT_CONFIG(mdiarea)
 class QAccessibleMdiArea : public QAccessibleWidget
 {
 public:
@@ -246,7 +246,7 @@ public:
 protected:
     QMdiSubWindow *mdiSubWindow() const;
 };
-#endif // QT_NO_MDIAREA
+#endif // QT_CONFIG(mdiarea)
 
 #if QT_CONFIG(dialogbuttonbox)
 class QAccessibleDialogButtonBox : public QAccessibleWidget
@@ -304,7 +304,7 @@ protected:
 
 #endif // QT_CONFIG(dockwidget)
 
-#ifndef QT_NO_MAINWINDOW
+#if QT_CONFIG(mainwindow)
 class QAccessibleMainWindow : public QAccessibleWidget
 {
 public:
@@ -317,7 +317,7 @@ public:
     QMainWindow *mainWindow() const;
 
 };
-#endif //QT_NO_MAINWINDOW
+#endif // QT_CONFIG(mainwindow)
 
 #endif // QT_NO_ACCESSIBILITY
 

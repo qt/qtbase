@@ -69,7 +69,9 @@
 #include <qstackedwidget.h>
 #include <qdialogbuttonbox.h>
 #include <qabstractproxymodel.h>
+#if QT_CONFIG(completer)
 #include <qcompleter.h>
+#endif
 #include <qpointer.h>
 #include <qdebug.h>
 #include "qsidebar_p.h"

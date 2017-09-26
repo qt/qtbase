@@ -235,6 +235,15 @@ bool QTouchDevicePrivate::isRegistered(const QTouchDevice *dev)
     return deviceList()->contains(dev);
 }
 
+const QTouchDevice *QTouchDevicePrivate::deviceById(quint8 id)
+{
+    QMutexLocker locker(&devicesMutex);
+    for (const QTouchDevice *dev : *deviceList())
+        if (QTouchDevicePrivate::get(const_cast<QTouchDevice *>(dev))->id == id)
+            return dev;
+    return nullptr;
+}
+
 /*!
   \internal
   */

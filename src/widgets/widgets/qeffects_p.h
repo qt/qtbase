@@ -53,8 +53,9 @@
 //
 
 #include "QtCore/qnamespace.h"
+#include <QtWidgets/private/qtwidgetsglobal_p.h>
 
-#ifndef QT_NO_EFFECTS
+QT_REQUIRE_CONFIG(effects);
 
 QT_BEGIN_NAMESPACE
 
@@ -76,7 +77,5 @@ extern void Q_WIDGETS_EXPORT qScrollEffect(QWidget*, QEffects::DirFlags dir = QE
 extern void Q_WIDGETS_EXPORT qFadeEffect(QWidget*, int time = -1);
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_EFFECTS
 
 #endif // QEFFECTS_P_H

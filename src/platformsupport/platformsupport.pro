@@ -40,8 +40,6 @@ darwin {
     SUBDIRS += \
         clipboard \
         graphics
-    macos: \
-        SUBDIRS += cglconvenience
 }
 
 qtConfig(vulkan): \

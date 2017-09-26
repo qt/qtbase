@@ -78,6 +78,7 @@ public:
     static void registerDevice(const QTouchDevice *dev);
     static void unregisterDevice(const QTouchDevice *dev);
     static bool isRegistered(const QTouchDevice *dev);
+    static const QTouchDevice *deviceById(quint8 id);
     static QTouchDevicePrivate *get(QTouchDevice *q) { return q->d; }
 };
 

@@ -53,9 +53,9 @@
 
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include <qlineedit.h>
 
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
+#include <qlineedit.h>
 
 QT_REQUIRE_CONFIG(itemviews);
 
@@ -89,6 +89,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_LINEEDIT
+#endif // QT_CONFIG(lineedit)
 
 #endif //QITEMEDITORFACTORY_P_H

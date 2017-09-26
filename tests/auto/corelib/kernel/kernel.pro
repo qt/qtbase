@@ -41,3 +41,6 @@ SUBDIRS=\
 !win32*|winrt: SUBDIRS -= qwineventnotifier
 
 android|uikit: SUBDIRS -= qclipboard qobject qsharedmemory qsystemsemaphore
+
+!qtConfig(systemsemaphore): SUBDIRS -= \
+    qsystemsemaphore

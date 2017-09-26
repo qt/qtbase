@@ -73,37 +73,37 @@ public slots:
     void cleanup() { setRNGControl(0); }
 
 private slots:
-    void get32_data();
-    void get32();
-    void get64_data() { get32_data(); }
-    void get64();
-    void quality_data() { get32_data(); }
+    void generate32_data();
+    void generate32();
+    void generate64_data() { generate32_data(); }
+    void generate64();
+    void quality_data() { generate32_data(); }
     void quality();
-    void fillRangeUInt_data() { get32_data(); }
+    void fillRangeUInt_data() { generate32_data(); }
     void fillRangeUInt();
-    void fillRangeULong_data() { get32_data(); }
+    void fillRangeULong_data() { generate32_data(); }
     void fillRangeULong();
-    void fillRangeULLong_data() { get32_data(); }
+    void fillRangeULLong_data() { generate32_data(); }
     void fillRangeULLong();
-    void generateUInt_data() { get32_data(); }
+    void generateUInt_data() { generate32_data(); }
     void generateUInt();
-    void generateULLong_data() { get32_data(); }
+    void generateULLong_data() { generate32_data(); }
     void generateULLong();
-    void generateNonContiguous_data() { get32_data(); }
+    void generateNonContiguous_data() { generate32_data(); }
     void generateNonContiguous();
 
     void bounded_data();
     void bounded();
-    void boundedQuality_data() { get32_data(); }
+    void boundedQuality_data() { generate32_data(); }
     void boundedQuality();
 
-    void getReal_data() { get32_data(); }
-    void getReal();
+    void generateReal_data() { generate32_data(); }
+    void generateReal();
 
     void seedStdRandomEngines();
     void stdUniformIntDistribution_data();
     void stdUniformIntDistribution();
-    void stdGenerateCanonical_data() { getReal_data(); }
+    void stdGenerateCanonical_data() { generateReal_data(); }
     void stdGenerateCanonical();
     void stdUniformRealDistribution_data();
     void stdUniformRealDistribution();
@@ -114,7 +114,7 @@ using namespace std;
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 
-void tst_QRandomGenerator::get32_data()
+void tst_QRandomGenerator::generate32_data()
 {
     QTest::addColumn<uint>("control");
     QTest::newRow("default") << 0U;
@@ -127,42 +127,42 @@ void tst_QRandomGenerator::get32_data()
 #endif
 }
 
-void tst_QRandomGenerator::get32()
+void tst_QRandomGenerator::generate32()
 {
     QFETCH(uint, control);
     setRNGControl(control);
 
     for (int i = 0; i < 4; ++i) {
         QVERIFY_3TIMES([] {
-            quint32 value = QRandomGenerator::get32();
+            quint32 value = QRandomGenerator::generate();
             return value != 0 && value != RandomValue32;
         }());
     }
 
     // and should hopefully be different from repeated calls
     for (int i = 0; i < 4; ++i)
-        QVERIFY_3TIMES(QRandomGenerator::get32() != QRandomGenerator::get32());
+        QVERIFY_3TIMES(QRandomGenerator::generate() != QRandomGenerator::generate());
 }
 
-void tst_QRandomGenerator::get64()
+void tst_QRandomGenerator::generate64()
 {
     QFETCH(uint, control);
     setRNGControl(control);
 
     for (int i = 0; i < 4; ++i) {
         QVERIFY_3TIMES([] {
-            quint64 value = QRandomGenerator::get32();
+            quint64 value = QRandomGenerator::generate();
             return value != 0 && value != RandomValue32 && value != RandomValue64;
         }());
     }
 
     // and should hopefully be different from repeated calls
     for (int i = 0; i < 4; ++i)
-        QVERIFY_3TIMES(QRandomGenerator::get64() != QRandomGenerator::get64());
+        QVERIFY_3TIMES(QRandomGenerator::generate64() != QRandomGenerator::generate64());
     for (int i = 0; i < 4; ++i)
-        QVERIFY_3TIMES(QRandomGenerator::get32() != quint32(QRandomGenerator::get64()));
+        QVERIFY_3TIMES(QRandomGenerator::generate() != quint32(QRandomGenerator::generate64()));
     for (int i = 0; i < 4; ++i)
-        QVERIFY_3TIMES(QRandomGenerator::get32() != (QRandomGenerator::get64() >> 32));
+        QVERIFY_3TIMES(QRandomGenerator::generate() != (QRandomGenerator::generate64() >> 32));
 }
 
 void tst_QRandomGenerator::quality()
@@ -200,7 +200,7 @@ void tst_QRandomGenerator::quality()
         // test the quality of the generator
         quint32 buffer[BufferCount];
         memset(buffer, 0xcc, sizeof(buffer));
-        generate_n(buffer, +BufferCount, [] { return QRandomGenerator::get32(); });
+        generate_n(buffer, +BufferCount, [] { return QRandomGenerator::generate(); });
 
         quint8 *ptr = reinterpret_cast<quint8 *>(buffer);
         quint8 *end = ptr + sizeof(buffer);
@@ -439,21 +439,21 @@ void tst_QRandomGenerator::boundedQuality()
              << "at" << std::min_element(begin(histogram), end(histogram)) - histogram;
 }
 
-void tst_QRandomGenerator::getReal()
+void tst_QRandomGenerator::generateReal()
 {
     QFETCH(uint, control);
     setRNGControl(control);
 
     for (int i = 0; i < 4; ++i) {
         QVERIFY_3TIMES([] {
-            qreal value = QRandomGenerator::getReal();
+            qreal value = QRandomGenerator::generateDouble();
             return value > 0 && value < 1 && value != RandomValueFP;
         }());
     }
 
     // and should hopefully be different from repeated calls
     for (int i = 0; i < 4; ++i)
-        QVERIFY_3TIMES(QRandomGenerator::getReal() != QRandomGenerator::getReal());
+        QVERIFY_3TIMES(QRandomGenerator::generateDouble() != QRandomGenerator::generateDouble());
 }
 
 template <typename Engine> void seedStdRandomEngine()

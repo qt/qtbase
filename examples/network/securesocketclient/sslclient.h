@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -51,13 +51,13 @@
 #ifndef SSLCLIENT_H
 #define SSLCLIENT_H
 
-#include <QtWidgets/QWidget>
-#include <QtNetwork/QAbstractSocket>
-#include <QtNetwork/QSslSocket>
+#include <QtNetwork>
+
+QT_REQUIRE_CONFIG(ssl);
+
+#include <QtWidgets>
 
 QT_BEGIN_NAMESPACE
-class QSslSocket;
-class QToolButton;
 class Ui_Form;
 QT_END_NAMESPACE
 
@@ -65,7 +65,7 @@ class SslClient : public QWidget
 {
     Q_OBJECT
 public:
-    SslClient(QWidget *parent = 0);
+    explicit SslClient(QWidget *parent = nullptr);
     ~SslClient();
 
 private slots:
@@ -80,12 +80,15 @@ private slots:
     void displayCertificateInfo();
 
 private:
+    void setupUi();
+    void setupSecureSocket();
     void appendString(const QString &line);
 
-    QSslSocket *socket;
-    QToolButton *padLock;
-    Ui_Form *form;
-    bool executingDialog;
+    QSslSocket *socket = nullptr;
+    QToolButton *padLock = nullptr;
+    Ui_Form *form = nullptr;
+    bool handlingSocketError = false;
+    bool executingDialog = false;
 };
 
 #endif

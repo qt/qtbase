@@ -53,6 +53,8 @@
 #include <QDesktopWidget>
 #include <QSurfaceFormat>
 #include <QOpenGLContext>
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 #include "mainwindow.h"
 #include "glwidget.h"
 
@@ -66,6 +68,17 @@ static QString getGlString(QOpenGLFunctions *functions, GLenum name)
 int main( int argc, char ** argv )
 {
     QApplication a( argc, argv );
+
+    QCoreApplication::setApplicationName("Qt Threaded QOpenGLWidget Example");
+    QCoreApplication::setOrganizationName("QtProject");
+    QCoreApplication::setApplicationVersion(QT_VERSION_STR);
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QCoreApplication::applicationName());
+    parser.addHelpOption();
+    parser.addVersionOption();
+    QCommandLineOption singleOption("single", "Single thread");
+    parser.addOption(singleOption);
+    parser.process(a);
 
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
@@ -93,7 +106,7 @@ int main( int argc, char ** argv )
 
     QScopedPointer<MainWindow> mw1;
     QScopedPointer<MainWindow> mw2;
-    if (!QApplication::arguments().contains(QStringLiteral("--single"))) {
+    if (!parser.isSet(singleOption)) {
         if (supportsThreading) {
             pos += QPoint(100, 100);
             mw1.reset(new MainWindow);

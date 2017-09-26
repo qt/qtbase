@@ -52,7 +52,9 @@
 #if QT_CONFIG(combobox)
 #include <qcombobox.h>
 #endif
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qtooltip.h>
@@ -60,7 +62,9 @@
 #include <qwhatsthis.h>
 #endif
 #include <QAbstractScrollArea>
+#if QT_CONFIG(scrollarea)
 #include <QScrollArea>
+#endif
 #if QT_CONFIG(scrollbar)
 #include <QScrollBar>
 #endif
@@ -388,7 +392,7 @@ QStringList QAccessibleComboBox::keyBindingsForAction(const QString &/*actionNam
 
 #endif // QT_CONFIG(combobox)
 
-#ifndef QT_NO_SCROLLAREA
+#if QT_CONFIG(scrollarea)
 // ======================= QAccessibleAbstractScrollArea =======================
 QAccessibleAbstractScrollArea::QAccessibleAbstractScrollArea(QWidget *widget)
     : QAccessibleWidget(widget, QAccessible::Client)
@@ -497,7 +501,7 @@ QAccessibleScrollArea::QAccessibleScrollArea(QWidget *widget)
 {
     Q_ASSERT(qobject_cast<QScrollArea *>(widget));
 }
-#endif // QT_NO_SCROLLAREA
+#endif // QT_CONFIG(scrollarea)
 
 QT_END_NAMESPACE
 

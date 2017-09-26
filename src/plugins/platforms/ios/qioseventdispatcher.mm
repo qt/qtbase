@@ -372,7 +372,7 @@ static bool rootLevelRunLoopIntegration()
 // We treat applicationWillTerminate as SIGTERM, even if it can't be ignored,
 // and follow the bash convention of encoding the signal number in the upper
 // four bits of the exit code (exit(3) will only pass on the lower 8 bits).
-static const char kApplicationWillTerminateExitCode = SIGTERM | 0x80;
+static const char kApplicationWillTerminateExitCode = char(SIGTERM | 0x80);
 
 + (void)applicationWillTerminate
 {

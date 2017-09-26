@@ -75,12 +75,12 @@ qtConfig(opengl.*) {
 
 RESOURCES += qcocoaresources.qrc
 
-LIBS += -framework AppKit -framework Carbon -framework IOKit -lcups
+LIBS += -framework AppKit -framework Carbon -framework IOKit -framework QuartzCore -lcups
 
 QT += \
     core-private gui-private \
     accessibility_support-private clipboard_support-private theme_support-private \
-    fontdatabase_support-private graphics_support-private cgl_support-private
+    fontdatabase_support-private graphics_support-private
 
 CONFIG += no_app_extension_api_only
 

@@ -1,0 +1,288 @@
+Qt 5.6.3 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with previous Qt 5.6.x releases.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+  http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.6 series is binary compatible with the 5.5.x series.
+Applications compiled for 5.5 will continue to run with 5.6.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+  https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+*****************************************************************************
+*                              License Changes                              *
+*****************************************************************************
+
+ - Static libraries that are linked into executables (winmain and
+   qopenglextensions) are now licensed under BSD _and_ commercial licenses.
+
+******************************************************************************
+*                     Important Behavior Changes                             *
+******************************************************************************
+
+ - QPluginLoader:
+   * [QTBUG-49061] QPluginLoader no longer performs the actual unloading of
+     the plugin either on destruction or when unload() is called. This does
+     not affect QLibrary and QLibrary::unload().
+
+******************************************************************************
+*                                Library                                     *
+******************************************************************************
+
+QtCore
+------
+
+ - QDir:
+   * [QTBUG-58390] Fixed the implementation of mkpath() to not attempt to
+     mkdir directories that already exist, especially those in automount
+     filesystems (like /home).
+
+ - QHash / QMultiHash:
+   * [QTBUG-60395] Fixed a bug that caused operator== not to return true if
+     two containers had the elements with duplicate keys but in different
+     order.
+
+ - QLocale:
+   * [QTBUG-59159] Fixed the parsing of day-of-week names that start with the
+     name of another day.
+
+ - QObject:
+   * [QTBUG-59500] disconnectNotify() is now called when a connection is
+     disconnected using its QMetaObject::Connection handle.
+   * [QTBUG-52439] Fixed a bug that would cause applications compiled with the
+     Intel compiler to fail to connect signals and slots.
+
+ - QUrl:
+   * [QTBUG-60364] Fixed a bug that caused certain domain names that look
+     like Internationalized Domain Names to become corrupt in decoded forms
+     of QUrl, notably toString() and toDisplayString().
+   * Updated the table of valid top level domains
+
+ - QVarLengthArray:
+   * Fixed a bug involving appending an item already in the container to
+     the container again.
+   * [QTBUG-57277] Fixed a crash when initializing the array with an empty
+     std::initializer_list.
+
+QtSql
+-----
+
+ - MySql
+   * Fixed the build of MySql plugin with MySql 5.0
+   * [QTBUG-53397] Fixed the parsing of tinyint(1) when used via prepared
+     statements.
+
+ - PostgreSQL:
+   * [QTBUG-59524] Fixed datetime formats when the system locale doesn't use
+     arabic numerals
+
+QtDBus
+------
+
+ - QDBusServer
+   * [QTBUG-55087] Fixed a bug causing certain messages that arrive soon after
+     the client connects not to be processed.
+
+QtNetwork
+---------
+
+ - QNetworkInterface
+   * Fixed the reporting of virtual interfaces on Linux.
+
+ - QSslSocket
+   * [QTBUG-43388][QTBUG-55170] Fixed a bug that caused the read buffer's max
+     size not to be respected when using SecureTransport
+   * [QTBUG-49554] Made sure that the QSslConfiguration is up-to-date when the
+     QNetworkReply::encrypted() signal is emitted.
+
+QtGui
+-----
+
+ - Various fixes to our high DPI support.
+
+ - CSS parser:
+   * [QTBUG-53919] Fixed a crash while parsing malformed CSS.
+
+ - PDF writer:
+   * [QTBUG-56489] Monochrome images are now handled correctly.
+
+ - QImage:
+   * Fixed a crash when rendering to GrayScale8 images.
+   * [QTBUG-56252] Fixed an illegal memory access when rotating images.
+   * [QTBUG-59211] Improved rejection of corrupt images with invalid header
+     info.
+
+ - QMatrix4x4:
+   * operator*=() now calculates the correct result even if the RHS and LHS
+     are the same object.
+
+ - QPainter
+   * [QTBUG-14614] Fixed a read-after-free when using gradients.
+   * [QTBUG-56969] Fixed painting artifacts for certain dashed lines.
+
+ - Text:
+   * [QTBUG-55222] Always return a correct list of fallback fonts
+   * [QTBUG-55255][QTBUG-56714] Trailing whitespace are now properly taken
+     into account when shaping lines
+   * [QTBUG-53911] Fixed a crash that could happen if you were doing many
+     different text layouts with different fonts and superscript or
+     subscript alignment.
+   * [QTBUG-56659] Fixed a regression where raster fonts on Windows were
+     detected as smoothly scalable and thus rendering with said fonts in Qt
+     Quick would break.
+   * [QTBUG-51223] Fixed synthesized oblique for non-latin text on
+     platforms using the basic font database, such as Android.
+   * [QTBUG-56714] Fixed a bug where a no-break space would sometimes cause
+     the first character of the containing line to not be displayed.
+   * [QTBUG-48005] Fixed clipping errors and too small bounding rects for
+     some right-to-left text.
+   * [QTBUG-57241] Fixed a crash for very tall glyphs.
+   * [QTBUG-55569] Fixed Myanmar rendering with some fonts.
+   * [QTBUG-56659] Fixed the reporting of whether fonts are smoothly scalable
+     on Windows.
+   * [QTBUG-58364][QTBUG-42074][QTBUG-57003] Formatting characters are now
+     accepted as valid input.
+
+QtWidgets
+---------
+
+ - Input:
+   * [QTBUG-42074][QTBUG-57003] Characters in Private Use Area, as well as
+     zero-width joiners and zero-width non-joiners are now accepted as input
+     in QLineEdit and QTextEdit.
+
+ - QDockWidget:
+   * [QTBUG-7460][QTBUG-52354] Size of widgets no longer changed just because
+     they are in a floating dock.
+   * [QTBUG-58036] Dock widgets now have the correct parent after a drag.
+   * [QTBUG-58049] Fixed clearing the dock indicator when not over a floating
+     dock group window.
+
+ - QMainWindow:
+   * [QTBUG-56628] Fixed crash using takeCentralWidget when the central
+     widget was not set.
+
+ - QPixmapStyle:
+   * Now handles progress bars with minimum != 0 correctly.
+
+ - QPopup
+   * [QTBUG-57292] Popups blocked by modal dialogs are now properly closed.
+
+ - QTextEdit
+   * [QTBUG-55758] Placeholder text is no longer shown while composing text.
+
+ - QTooltip:
+   * [QTBUG-55523] QTooltip is now properly hidden when a close event is
+     received.
+   * [QTBUG-55523] Tooltips no longer prevent closing of the app on
+     lastWindowClosed()
+
+ - QWidget:
+   * [QTBUG-50589] Show and hide events are now properly sent to children on
+     minimize/restore.
+   * [QTBUG-53068] Fixed enter/leave events on popup menus.
+
+ - Style sheets:
+   * [QTBUG-55597] Now honors the font set on HeaderView section.
+
+******************************************************************************
+*                     Platform-specific Changes                              *
+******************************************************************************
+
+Android
+-------
+
+ - [QTBUG-44697] Removed old work-around which was causing OpenGL shader
+   compilation to fail on updated Android emulators.
+
+Darwin
+------
+
+ - [QTBUG-61034] QT_NO_EXCEPTIONS is now correctly set for Objective C++
+   source files.
+ - [QTBUG-57165] Made QDir::tempPath() return the same directory as
+   NSTemporaryDirectory, instead of a hardcoded "/tmp".
+ - [QTBUG-55896] Fixed a bug that would cause QFileSystemWatcher to fail to
+   watch certain paths containing non-ASCII characters.
+ - [QTBUG-56124] Fixed a bug that would cause data corruption in QSettings
+   when storing QStrings containing NULs, when storing to native format.
+
+ - iOS specific:
+   * Starting from iOS 10, Apple requires all apps that need access to photos
+     to have the key 'NSPhotoLibraryUsageDescription' in the Info.plist.
+     Therefore, to get the same support in Qt (when, e.g., using a file
+     dialog), the Info.plist assigned to QMAKE_INFO_PLIST will need this key
+     as well.
+   * [QTBUG-49893] The shortcuts bar on iPad is now hidden when showing menus.
+
+ - macOS specific:
+   * Speech to text dictation now works for Qt text input.
+   * Various bug fixes to menu bar handling.
+
+QNX
+---
+
+ - Qt can now handle more than 256 file descriptors open in the same process,
+   up to a limit of 1000.
+
+WinRT
+-----
+
+ - Various fixes in our event and timer handling.
+
+X11
+---
+
+ - [QTBUG-55942] Qt::WindowNoState event is no longer sent when hiding
+   minimized windows.
+ - [QTBUG-49645] Fixed keyboard modifier state for drops from external apps.
+ - [QTBUG-48795] Fixed the keyboard state when processing key events.
+
+******************************************************************************
+*                       Compiler Specific Changes                            *
+******************************************************************************
+
+Visual Studio
+-------------
+
+ - Visual Studio 2017 is now supported.
+ - [QTBUG-56594] PDB files are now properly generated even for static builds.
+
+******************************************************************************
+*                                 Tools                                      *
+******************************************************************************
+
+configure
+---------
+
+ - Fixed builds that explicitly asked for -sdk iphoneos.
+ - [QTBUG-56388] Fixed the detection of the Microsoft compiler version when
+   the CL environment variable was set or when the compiler was configured to
+   another language (other than English).
+
+qmake
+-----
+
+ - [QTBUG-55505] Fixed an issue with iOS when the project path had a
+   whitespace.
+ - [QTBUG-56289] When cross-compiling on Windows to Unix targets, qmake no
+   longer generates chmod calls.
+ - [QTBUG-53905] Fixed qmake not to run moc twice on Objective C++ sources
+   listed in the OBJECTIVE_SOURCES variable.
+ - [QTBUG-56507] Fixed builds where a lex source refers to a file generated
+   by yacc.
+ - [QTBUG-57090][Darwin] Fixed the installation of asset catalog files.
+
+qdbusxml2cpp
+------------
+
+ - [QTBUG-21577] Fixed the generation of signals when the direction argument
+   was inverted from expected.

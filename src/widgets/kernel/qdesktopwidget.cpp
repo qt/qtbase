@@ -352,26 +352,8 @@ int QDesktopWidget::screenNumber(const QPoint &p) const
 
 int QDesktopWidgetPrivate::screenNumber(const QPoint &p)
 {
-    const QList<QScreen *> screens = QGuiApplication::screens();
-    if (!screens.isEmpty()) {
-        const QList<QScreen *> primaryScreens = screens.first()->virtualSiblings();
-        // Find the screen index on the primary virtual desktop first
-        foreach (QScreen *screen, primaryScreens) {
-            if (screen->geometry().contains(p))
-                return screens.indexOf(screen);
-        }
-        // If the screen index is not found on primary virtual desktop, find
-        // the screen index on all screens except the first which was for
-        // sure in the previous loop. Some other screens may repeat. Find
-        // only when there is more than one virtual desktop.
-        if (screens.count() != primaryScreens.count()) {
-            for (int i = 1; i < screens.size(); ++i) {
-                if (screens[i]->geometry().contains(p))
-                    return i;
-            }
-        }
-    }
-    return primaryScreen(); //even better would be closest screen
+    QScreen *screen = QGuiApplication::screenAt(p);
+    return screen ? QGuiApplication::screens().indexOf(screen) : primaryScreen();
 }
 
 void QDesktopWidget::resizeEvent(QResizeEvent *)

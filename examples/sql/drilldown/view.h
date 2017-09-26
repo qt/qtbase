@@ -63,7 +63,7 @@ class View : public QGraphicsView
     Q_OBJECT
 
 public:
-    View(const QString &items, const QString &images, QWidget *parent = 0);
+    View(const QString &items, const QString &images, QWidget *parent = nullptr);
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -77,7 +77,7 @@ private slots:
 //! [2]
 private:
     void addItems();
-    InformationWindow* findWindow(int id);
+    InformationWindow *findWindow(int id) const;
     void showInformation(ImageItem *image);
 
     QGraphicsScene *scene;

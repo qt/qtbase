@@ -54,15 +54,19 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "qmdisubwindow.h"
 
-#ifndef QT_NO_MDIAREA
-
 #include <QStyle>
 #include <QStyleOptionTitleBar>
+#if QT_CONFIG(menubar)
 #include <QMenuBar>
+#endif
+#if QT_CONFIG(sizegrip)
 #include <QSizeGrip>
+#endif
 #include <QPointer>
 #include <QDebug>
 #include <private/qwidget_p.h>
+
+QT_REQUIRE_CONFIG(mdiarea);
 
 QT_BEGIN_NAMESPACE
 
@@ -96,7 +100,7 @@ public:
     ControlContainer(QMdiSubWindow *mdiChild);
     ~ControlContainer();
 
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     void showButtonsInMenuBar(QMenuBar *menuBar);
     void removeButtonsFromMenuBar(QMenuBar *menuBar = 0);
     QMenuBar *menuBar() const { return m_menuBar; }
@@ -108,7 +112,7 @@ public:
 private:
     QPointer<QWidget> previousLeft;
     QPointer<QWidget> previousRight;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     QPointer<QMenuBar> m_menuBar;
 #endif
     QPointer<QWidget> m_controllerWidget;
@@ -176,7 +180,7 @@ public:
     QPointer<QWidget> baseWidget;
     QPointer<QWidget> restoreFocusWidget;
     QPointer<QMdi::ControlContainer> controlContainer;
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     QPointer<QSizeGrip> sizeGrip;
 #endif
 #if QT_CONFIG(rubberband)
@@ -232,7 +236,7 @@ public:
     void leaveInteractiveMode();
     void removeBaseWidget();
     void initOperationMap();
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void createSystemMenu();
 #endif
     void updateCursor();
@@ -252,7 +256,7 @@ public:
     int titleBarHeight(const QStyleOptionTitleBar &options) const;
     void sizeParameters(int *margin, int *minWidth) const;
     bool drawTitleBarWhenMaximized() const;
-#ifndef QT_NO_MENUBAR
+#if QT_CONFIG(menubar)
     QMenuBar *menuBar() const;
     void showButtonsInMenuBar(QMenuBar *menuBar);
     void removeButtonsFromMenuBar();
@@ -271,12 +275,12 @@ public:
     void setVisible(WindowStateAction, bool visible = true);
 #ifndef QT_NO_ACTION
     void setEnabled(WindowStateAction, bool enable = true);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     void addToSystemMenu(WindowStateAction, const QString &text, const char *slot);
 #endif
 #endif // QT_NO_ACTION
     QSize iconSize() const;
-#ifndef QT_NO_SIZEGRIP
+#if QT_CONFIG(sizegrip)
     void setSizeGrip(QSizeGrip *sizeGrip);
     void setSizeGripVisible(bool visible = true) const;
 #endif
@@ -340,8 +344,6 @@ public:
         return currentOperation == Move;
     }
 };
-
-#endif // QT_NO_MDIAREA
 
 QT_END_NAMESPACE
 

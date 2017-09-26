@@ -40,7 +40,9 @@
 #include "qwizard.h"
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
+#if QT_CONFIG(spinbox)
 #include "qabstractspinbox.h"
+#endif
 #include "qalgorithms.h"
 #include "qapplication.h"
 #include "qboxlayout.h"
@@ -50,7 +52,9 @@
 #include "qevent.h"
 #include "qframe.h"
 #include "qlabel.h"
+#if QT_CONFIG(lineedit)
 #include "qlineedit.h"
+#endif
 #include "qpainter.h"
 #include "qwindow.h"
 #include "qpushbutton.h"
@@ -3680,13 +3684,13 @@ bool QWizardPage::isComplete() const
             if (value == field.initialValue)
                 return false;
 
-#ifndef QT_NO_LINEEDIT
+#if QT_CONFIG(lineedit)
             if (QLineEdit *lineEdit = qobject_cast<QLineEdit *>(field.object)) {
                 if (!lineEdit->hasAcceptableInput())
                     return false;
             }
 #endif
-#ifndef QT_NO_SPINBOX
+#if QT_CONFIG(spinbox)
             if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(field.object)) {
                 if (!spinBox->hasAcceptableInput())
                     return false;

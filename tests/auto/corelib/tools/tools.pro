@@ -67,3 +67,4 @@ SUBDIRS=\
     qvector_strictiterators \
     qversionnumber
 
+darwin: SUBDIRS += qmacautoreleasepool

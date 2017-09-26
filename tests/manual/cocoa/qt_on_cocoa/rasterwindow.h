@@ -44,7 +44,7 @@ protected:
     void exposeEvent(QExposeEvent *);
     void resizeEvent(QResizeEvent *);
 
-    void timerEvent(QTimerEvent *);
+    bool event(QEvent *);
 
 private:
     void render();
@@ -56,5 +56,4 @@ private:
     QPoint m_lastPos;
     int m_backgroundColorIndex;
     QBackingStore *m_backingStore;
-    int m_renderTimer;
 };

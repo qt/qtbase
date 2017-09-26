@@ -43,10 +43,10 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qwidget.h>
 
+QT_REQUIRE_CONFIG(sizegrip);
+
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_SIZEGRIP
 class QSizeGripPrivate;
 class Q_WIDGETS_EXPORT QSizeGrip : public QWidget
 {
@@ -76,7 +76,6 @@ private:
     Q_DISABLE_COPY(QSizeGrip)
     Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
 };
-#endif // QT_NO_SIZEGRIP
 
 QT_END_NAMESPACE
 

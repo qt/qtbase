@@ -47,7 +47,6 @@
 #include "qdrawutil.h"
 #include "qevent.h"
 #include "qfontmetrics.h"
-#include "qmenu.h"
 #include "qstylepainter.h"
 #include "qpixmap.h"
 #include "qpointer.h"
@@ -65,7 +64,10 @@
 #include "qaccessible.h"
 #endif
 
+#if QT_CONFIG(menu)
+#include "qmenu.h"
 #include "private/qmenu_p.h"
+#endif
 #include "private/qpushbutton_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -314,7 +316,7 @@ void QPushButton::initStyleOption(QStyleOptionButton *option) const
     option->features = QStyleOptionButton::None;
     if (d->flat)
         option->features |= QStyleOptionButton::Flat;
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (d->menu)
         option->features |= QStyleOptionButton::HasMenu;
 #endif
@@ -419,7 +421,7 @@ QSize QPushButton::sizeHint() const
     if(!empty || !h)
         h = qMax(h, sz.height());
     opt.rect.setSize(QSize(w, h)); // PM_MenuButtonIndicator depends on the height
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (menu())
         w += style()->pixelMetric(QStyle::PM_MenuButtonIndicator, &opt, this);
 #endif
@@ -499,13 +501,13 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
     }
 
     QAbstractButton::focusOutEvent(e);
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     if (d->menu && d->menu->isVisible())        // restore pressed status
         setDown(true);
 #endif
 }
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
 /*!
     Associates the popup menu \a menu with this push button. This
     turns the button into a menu button, which in some styles will
@@ -628,7 +630,7 @@ QPoint QPushButtonPrivate::adjustedMenuPosition()
     return QPoint(x,y);
 }
 
-#endif // QT_NO_MENU
+#endif // QT_CONFIG(menu)
 
 void QPushButtonPrivate::resetLayoutItemMargins()
 {

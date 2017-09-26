@@ -63,7 +63,9 @@
 
 #include <QtWidgets/qdialogbuttonbox.h>
 
+#if QT_CONFIG(completer)
 #include <private/qcompleter_p.h>
+#endif
 #include "ui_qprintpropertieswidget.h"
 #include "ui_qprintsettingsoutput.h"
 #include "ui_qprintwidget.h"
@@ -679,7 +681,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
     }
     widget.properties->setEnabled(true);
 
-#if QT_CONFIG(filesystemmodel) && !defined(QT_NO_COMPLETER)
+#if QT_CONFIG(filesystemmodel) && QT_CONFIG(completer)
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
     widget.filename->setCompleter(new QCompleter(fsm, widget.filename));

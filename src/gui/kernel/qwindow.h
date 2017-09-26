@@ -218,8 +218,6 @@ public:
     void setBaseSize(const QSize &size);
     void setSizeIncrement(const QSize &size);
 
-    void setGeometry(int posx, int posy, int w, int h);
-    void setGeometry(const QRect &rect);
     QRect geometry() const;
 
     QMargins frameMargins() const;
@@ -300,6 +298,8 @@ public Q_SLOTS:
     void setY(int arg);
     void setWidth(int arg);
     void setHeight(int arg);
+    void setGeometry(int posx, int posy, int w, int h);
+    void setGeometry(const QRect &rect);
 
     void setMinimumWidth(int w);
     void setMinimumHeight(int h);

@@ -40,8 +40,6 @@
 #include <private/qabstractspinbox_p.h>
 #include <qspinbox.h>
 
-#ifndef QT_NO_SPINBOX
-
 #include <qlineedit.h>
 #include <qlocale.h>
 #include <qvalidator.h>
@@ -1321,5 +1319,3 @@ bool QSpinBox::event(QEvent *event)
 QT_END_NAMESPACE
 
 #include "moc_qspinbox.cpp"
-
-#endif // QT_NO_SPINBOX

@@ -121,7 +121,7 @@ public:
     void setPriority(Priority priority);
     Priority priority() const;
 
-#ifndef QT_NO_MENU
+#if QT_CONFIG(menu)
     QMenu *menu() const;
     void setMenu(QMenu *menu);
 #endif

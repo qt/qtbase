@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qabstractscrollarea.h>
 
+QT_REQUIRE_CONFIG(scrollarea);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_SCROLLAREA
 
 class QScrollAreaPrivate;
 
@@ -90,8 +89,6 @@ private:
     Q_DECLARE_PRIVATE(QScrollArea)
     Q_DISABLE_COPY(QScrollArea)
 };
-
-#endif // QT_NO_SCROLLAREA
 
 QT_END_NAMESPACE
 

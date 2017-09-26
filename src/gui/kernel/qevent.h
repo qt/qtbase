@@ -301,7 +301,11 @@ protected:
 class Q_GUI_EXPORT QNativeGestureEvent : public QInputEvent
 {
 public:
-    QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
+#if QT_DEPRECATED_SINCE(5, 10)
+    QT_DEPRECATED QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
+                        const QPointF &screenPos, qreal value, ulong sequenceId, quint64 intArgument);
+#endif
+    QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
                         const QPointF &screenPos, qreal value, ulong sequenceId, quint64 intArgument);
     Qt::NativeGestureType gestureType() const { return mGestureType; }
     qreal value() const { return mRealValue; }
@@ -314,8 +318,12 @@ public:
     const QPointF &windowPos() const { return mWindowPos; }
     const QPointF &screenPos() const { return mScreenPos; }
 
+    const QTouchDevice *device() const;
+
 protected:
     Qt::NativeGestureType mGestureType;
+    quint8 mTouchDeviceId;  // QTouchDevicePrivate::id
+    quint8 mReserved[3];    // if qreal == double clang will pad the QPointF below to a 8-byte boundary
     QPointF mLocalPos;
     QPointF mWindowPos;
     QPointF mScreenPos;

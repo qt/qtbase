@@ -14,4 +14,3 @@ SUBDIRS       = classwizard \
 !qtConfig(wizard) {
     SUBDIRS -= trivialwizard licensewizard classwizard
 }
-wince: SUBDIRS += sipdialog

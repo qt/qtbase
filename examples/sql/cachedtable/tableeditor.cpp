@@ -85,9 +85,9 @@ TableEditor::TableEditor(const QString &tableName, QWidget *parent)
 //! [2]
 
 //! [3]
-    connect(submitButton, SIGNAL(clicked()), this, SLOT(submit()));
-    connect(revertButton, SIGNAL(clicked()), model, SLOT(revertAll()));
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(submitButton, &QPushButton::clicked, this, &TableEditor::submit);
+    connect(revertButton, &QPushButton::clicked,  model, &QSqlTableModel::revertAll);
+    connect(quitButton, &QPushButton::clicked, this, &TableEditor::close);
 //! [3]
 
 //! [4]

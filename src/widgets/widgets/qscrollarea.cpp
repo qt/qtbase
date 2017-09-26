@@ -40,8 +40,6 @@
 #include "qscrollarea.h"
 #include "private/qscrollarea_p.h"
 
-#ifndef QT_NO_SCROLLAREA
-
 #include "qscrollbar.h"
 #include "qlayout.h"
 #include "qstyle.h"
@@ -539,5 +537,3 @@ Qt::Alignment QScrollArea::alignment() const
 QT_END_NAMESPACE
 
 #include "moc_qscrollarea.cpp"
-
-#endif // QT_NO_SCROLLAREA

@@ -74,13 +74,19 @@
 #include <qhash.h>
 #include <qheaderview.h>
 #include <qlayout.h>
+#if QT_CONFIG(lineedit)
 #include <qlineedit.h>
+#endif
 #if QT_CONFIG(listview)
 #include <qlistview.h>
 #endif
+#if QT_CONFIG(mainwindow)
 #include <qmainwindow.h>
+#endif
 #include <qmap.h>
+#if QT_CONFIG(menubar)
 #include <qmenubar.h>
+#endif
 #include <qpaintdevice.h>
 #include <qpainter.h>
 #include <qpixmapcache.h>
@@ -95,8 +101,12 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#if QT_CONFIG(sizegrip)
 #include <qsizegrip.h>
+#endif
+#if QT_CONFIG(spinbox)
 #include <qspinbox.h>
+#endif
 #if QT_CONFIG(splitter)
 #include <qsplitter.h>
 #endif
@@ -146,11 +156,11 @@ QT_BEGIN_NAMESPACE
 
 /*
     AHIG:
-        Apple Human Interface Guidelines
-        http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/
+        macOS Human Interface Guidelines
+        https://developer.apple.com/macos/human-interface-guidelines/overview/themes/
 
     Builder:
-        Apple Interface Builder v. 3.1.1
+        Interface Builder in Xcode 8 or later
 */
 
 // this works as long as we have at most 16 different control types
@@ -246,7 +256,6 @@ public:
     void initHIThemePushButton(const QStyleOptionButton *btn, const QWidget *widget,
                                const ThemeDrawState tds,
                                HIThemeButtonDrawInfo *bdi) const;
-    QPixmap generateBackgroundPattern() const;
 
     void setAutoDefaultButton(QObject *button) const;
 
