@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1502,7 +1502,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     QBackingStore *store = q->backingStore();
 
     if (!store) {
-        if (win && q->windowType() != Qt::Desktop) {
+        if (q->windowType() != Qt::Desktop) {
             if (q->isTopLevel())
                 q->setBackingStore(new QBackingStore(win));
         } else {
