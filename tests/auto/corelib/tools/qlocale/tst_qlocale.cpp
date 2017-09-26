@@ -1569,6 +1569,16 @@ void tst_QLocale::toDateTime_data()
                          << "d'dd'd/MMM'M'/yysss" << "1dd1/DecM/74033";
     QTest::newRow("12C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(15, 0, 0))
                          << "d'd'dd/M/yyh" << "1d01/12/7415";
+    // Unpadded value for fixed-width field is wrong:
+    QTest::newRow("bad-day-C") << "C" << QDateTime() << "dd-MMM-yy" << "4-Jun-11";
+    QTest::newRow("bad-month-C") << "C" << QDateTime() << "d-MM-yy" << "4-6-11";
+    QTest::newRow("bad-year-C") << "C" << QDateTime() << "d-MMM-yyyy" << "4-Jun-11";
+    QTest::newRow("bad-hour-C") << "C" << QDateTime() << "d-MMM-yy hh:m" << "4-Jun-11 1:2";
+    QTest::newRow("bad-min-C") << "C" << QDateTime() << "d-MMM-yy h:mm" << "4-Jun-11 1:2";
+    QTest::newRow("bad-sec-C") << "C" << QDateTime() << "d-MMM-yy h:m:ss" << "4-Jun-11 1:2:3";
+    QTest::newRow("bad-milli-C") << "C" << QDateTime() << "d-MMM-yy h:m:s.zzz" << "4-Jun-11 1:2:3.4";
+    QTest::newRow("ok-C") << "C" << QDateTime(QDate(1911, 6, 4), QTime(1, 2, 3, 400))
+                          << "d-MMM-yy h:m:s.z" << "4-Jun-11 1:2:3.4";
 
     QTest::newRow("1no_NO") << "no_NO" << QDateTime(QDate(1974, 12, 1), QTime(5, 14, 0))
                             << "d/M/yyyy hh:h:mm" << "1/12/1974 05:5:14";

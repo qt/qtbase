@@ -1145,7 +1145,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         }
 
         state = qMin<State>(state, sect.state);
-        if (state == Invalid || (state == Intermediate && context == FromString))
+        // QDateTimeEdit can fix Intermediate and zeroes, but input needing that didn't match format:
+        if (state == Invalid || (context == FromString && (state == Intermediate || sect.zeroes)))
             return StateNode();
 
         switch (sn.type) {
