@@ -89,7 +89,7 @@ public:
 
     void updateUsesNativeWidgets()
     {
-        if (usesNativeWidgets || window->parent() == 0)
+        if (window->parent() == 0)
             return;
         Q_Q(QWindowContainer);
         if (q->internalWinId()) {
@@ -97,6 +97,7 @@ public:
             usesNativeWidgets = true;
             return;
         }
+        bool nativeWidgetSet = false;
         QWidget *p = q->parentWidget();
         while (p) {
             if (false
@@ -108,11 +109,12 @@ public:
 #endif
                     ) {
                 q->winId();
-                usesNativeWidgets = true;
+                nativeWidgetSet = true;
                 break;
             }
             p = p->parentWidget();
         }
+        usesNativeWidgets = nativeWidgetSet;
     }
 
     void markParentChain() {
