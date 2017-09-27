@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -49,22 +49,21 @@
 ****************************************************************************/
 
 #include "textprogressbar.h"
-#include <QByteArray>
-#include <stdio.h>
 
-TextProgressBar::TextProgressBar()
-    : value(0), maximum(-1), iteration(0)
-{
-}
+#include <QByteArray>
+
+#include <cstdio>
+
+using namespace std;
 
 void TextProgressBar::clear()
 {
     printf("\n");
     fflush(stdout);
 
-    iteration = 0;
     value = 0;
     maximum = -1;
+    iteration = 0;
 }
 
 void TextProgressBar::update()

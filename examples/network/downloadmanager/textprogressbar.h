@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -56,8 +56,6 @@
 class TextProgressBar
 {
 public:
-    TextProgressBar();
-
     void clear();
     void update();
     void setMessage(const QString &message);
@@ -65,9 +63,9 @@ public:
 
 private:
     QString message;
-    qint64 value;
-    qint64 maximum;
-    int iteration;
+    qint64 value = 0;
+    qint64 maximum = -1;
+    int iteration = 0;
 };
 
 #endif
