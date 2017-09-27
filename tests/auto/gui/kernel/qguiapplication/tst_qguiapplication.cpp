@@ -68,6 +68,7 @@ private slots:
     void changeFocusWindow();
     void keyboardModifiers();
     void palette();
+    void font();
     void modalWindow();
     void quitOnLastWindowClosed();
     void quitOnLastWindowClosedMulti();
@@ -521,6 +522,31 @@ void tst_QGuiApplication::palette()
 
     QGuiApplication::setPalette(oldPalette);
     QCOMPARE(QGuiApplication::palette(), oldPalette);
+    QCOMPARE(signalSpy.count(), 2);
+}
+
+void tst_QGuiApplication::font()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    QGuiApplication app(argc, argv);
+    QSignalSpy signalSpy(&app, SIGNAL(fontChanged(QFont)));
+
+    QFont oldFont = QGuiApplication::font();
+    QFont newFont = QFont("BogusFont", 33);
+
+    QGuiApplication::setFont(newFont);
+    QCOMPARE(QGuiApplication::font(), newFont);
+    QCOMPARE(signalSpy.count(), 1);
+    QCOMPARE(signalSpy.at(0).at(0), QVariant(newFont));
+
+    QGuiApplication::setFont(oldFont);
+    QCOMPARE(QGuiApplication::font(), oldFont);
+    QCOMPARE(signalSpy.count(), 2);
+    QCOMPARE(signalSpy.at(1).at(0), QVariant(oldFont));
+
+    QGuiApplication::setFont(oldFont);
+    QCOMPARE(QGuiApplication::font(), oldFont);
     QCOMPARE(signalSpy.count(), 2);
 }
 

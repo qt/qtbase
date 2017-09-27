@@ -3110,6 +3110,15 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 }
 
 /*!
+    \since 5.11
+    \fn void QGuiApplication::fontChanged(const QFont &font)
+
+    This signal is emitted when the \a font of the application changes.
+
+    \sa font()
+*/
+
+/*!
     Returns the default application font.
 
     \sa setFont()
@@ -3130,11 +3139,16 @@ QFont QGuiApplication::font()
 void QGuiApplication::setFont(const QFont &font)
 {
     QMutexLocker locker(&applicationFontMutex);
+    const bool emitChange = !QGuiApplicationPrivate::app_font
+                            || (*QGuiApplicationPrivate::app_font != font);
     if (!QGuiApplicationPrivate::app_font)
         QGuiApplicationPrivate::app_font = new QFont(font);
     else
         *QGuiApplicationPrivate::app_font = font;
     applicationResourceFlags |= ApplicationFontExplicitlySet;
+
+    if (emitChange && qGuiApp)
+        emit qGuiApp->fontChanged(*QGuiApplicationPrivate::app_font);
 }
 
 /*!
