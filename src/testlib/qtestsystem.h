@@ -90,10 +90,23 @@ namespace QTest
 
     Q_DECL_UNUSED inline static void qWait(int ms)
     {
+        // Ideally this method would be implemented in terms of qWaitFor, with
+        // a predicate that always returns false, but due to a compiler bug in
+        // GCC 6 we can't do that.
+
         Q_ASSERT(QCoreApplication::instance());
-        auto unconditionalWait = []() { return false; };
-        bool timedOut = !qWaitFor(unconditionalWait, ms);
-        Q_UNUSED(timedOut);
+
+        QDeadlineTimer timer(ms, Qt::PreciseTimer);
+        int remaining = ms;
+        do {
+            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
+            remaining = timer.remainingTime();
+            if (remaining <= 0)
+                break;
+            QTest::qSleep(qMin(10, remaining));
+            remaining = timer.remainingTime();
+        } while (remaining > 0);
     }
 
 #ifdef QT_GUI_LIB
