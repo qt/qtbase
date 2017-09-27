@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -60,7 +60,6 @@ Client::Client(QWidget *parent)
     , portLineEdit(new QLineEdit)
     , getFortuneButton(new QPushButton(tr("Get Fortune")))
     , tcpSocket(new QTcpSocket(this))
-    , networkSession(Q_NULLPTR)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 //! [0]
@@ -90,9 +89,9 @@ Client::Client(QWidget *parent)
 
     portLineEdit->setValidator(new QIntValidator(1, 65535, this));
 
-    QLabel *hostLabel = new QLabel(tr("&Server name:"));
+    auto hostLabel = new QLabel(tr("&Server name:"));
     hostLabel->setBuddy(hostCombo);
-    QLabel *portLabel = new QLabel(tr("S&erver port:"));
+    auto portLabel = new QLabel(tr("S&erver port:"));
     portLabel->setBuddy(portLineEdit);
 
     statusLabel = new QLabel(tr("This examples requires that you run the "
@@ -101,9 +100,9 @@ Client::Client(QWidget *parent)
     getFortuneButton->setDefault(true);
     getFortuneButton->setEnabled(false);
 
-    QPushButton *quitButton = new QPushButton(tr("Quit"));
+    auto quitButton = new QPushButton(tr("Quit"));
 
-    QDialogButtonBox *buttonBox = new QDialogButtonBox;
+    auto buttonBox = new QDialogButtonBox;
     buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
@@ -127,13 +126,13 @@ Client::Client(QWidget *parent)
             this, &Client::displayError);
 //! [4]
 
-    QGridLayout *mainLayout = Q_NULLPTR;
+    QGridLayout *mainLayout = nullptr;
     if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
-        QVBoxLayout *outerVerticalLayout = new QVBoxLayout(this);
+        auto outerVerticalLayout = new QVBoxLayout(this);
         outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
-        QHBoxLayout *outerHorizontalLayout = new QHBoxLayout;
+        auto outerHorizontalLayout = new QHBoxLayout;
         outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
-        QGroupBox *groupBox = new QGroupBox(QGuiApplication::applicationDisplayName());
+        auto groupBox = new QGroupBox(QGuiApplication::applicationDisplayName());
         mainLayout = new QGridLayout(groupBox);
         outerHorizontalLayout->addWidget(groupBox);
         outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
