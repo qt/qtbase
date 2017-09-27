@@ -456,11 +456,6 @@ QString qulltoa(qulonglong l, int base, const QChar _zero)
     return QString(reinterpret_cast<QChar *>(p), 65 - (p - buff));
 }
 
-QString qlltoa(qlonglong l, int base, const QChar zero)
-{
-    return qulltoa(l < 0 ? -l : l, base, zero);
-}
-
 QString &decimalForm(QChar zero, QChar decimal, QChar group,
                      QString &digits, int decpt, int precision,
                      PrecisionMode pm,

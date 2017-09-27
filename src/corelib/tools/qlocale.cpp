@@ -3149,11 +3149,15 @@ QString QLocaleData::longLongToString(const QChar zero, const QChar group,
         negative = false; // neither are negative numbers
     }
 
-    QString num_str;
-    if (base == 10)
-        num_str = qlltoa(l, base, zero);
-    else
-        num_str = qulltoa(l, base, zero);
+QT_WARNING_PUSH
+    /* "unary minus operator applied to unsigned type, result still unsigned" */
+QT_WARNING_DISABLE_MSVC(4146)
+    /*
+      Negating std::numeric_limits<qlonglong>::min() hits undefined behavior, so
+      taking an absolute value has to cast to unsigned to change sign.
+     */
+    QString num_str = qulltoa(negative ? -qulonglong(l) : qulonglong(l), base, zero);
+QT_WARNING_POP
 
     uint cnt_thousand_sep = 0;
     if (flags & ThousandsGroup && base == 10) {

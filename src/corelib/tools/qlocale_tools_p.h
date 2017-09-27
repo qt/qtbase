@@ -83,7 +83,6 @@ void doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *
                    bool &sign, int &length, int &decpt);
 
 QString qulltoa(qulonglong l, int base, const QChar _zero);
-QString qlltoa(qlonglong l, int base, const QChar zero);
 Q_CORE_EXPORT QString qdtoa(qreal d, int *decpt, int *sign);
 
 enum PrecisionMode {
