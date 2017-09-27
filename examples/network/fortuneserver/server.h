@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -52,10 +52,11 @@
 #define SERVER_H
 
 #include <QDialog>
+#include <QString>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 class QLabel;
-class QPushButton;
 class QTcpServer;
 class QNetworkSession;
 QT_END_NAMESPACE
@@ -66,17 +67,17 @@ class Server : public QDialog
     Q_OBJECT
 
 public:
-    explicit Server(QWidget *parent = Q_NULLPTR);
+    explicit Server(QWidget *parent = nullptr);
 
 private slots:
     void sessionOpened();
     void sendFortune();
 
 private:
-    QLabel *statusLabel;
-    QTcpServer *tcpServer;
-    QStringList fortunes;
-    QNetworkSession *networkSession;
+    QLabel *statusLabel = nullptr;
+    QTcpServer *tcpServer = nullptr;
+    QVector<QString> fortunes;
+    QNetworkSession *networkSession = nullptr;
 };
 //! [0]
 
