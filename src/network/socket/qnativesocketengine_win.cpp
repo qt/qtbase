@@ -491,9 +491,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     switch (opt) {
     case QNativeSocketEngine::SendBufferSocketOption:
         // see QTBUG-30478 SO_SNDBUF should not be used on Vista or later
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
-            return false;
-        break;
+        return false;
     case QNativeSocketEngine::NonBlockingSocketOption:
         {
         unsigned long buf = v;
@@ -571,7 +569,6 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     DWORD ipv6only = 0;
     QT_SOCKOPTLEN_T optlen = sizeof(ipv6only);
     if (localAddress == QHostAddress::AnyIPv6
-        && QSysInfo::windowsVersion() >= QSysInfo::WV_6_0
         && !getsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, &optlen )) {
             if (!ipv6only) {
                 socketProtocol = QAbstractSocket::AnyIPProtocol;
@@ -632,10 +629,8 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
 
     if ((socketProtocol == QAbstractSocket::IPv6Protocol || socketProtocol == QAbstractSocket::AnyIPProtocol) && address.toIPv4Address()) {
         //IPV6_V6ONLY option must be cleared to connect to a V4 mapped address
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0) {
-            DWORD ipv6only = 0;
-            ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
-        }
+        DWORD ipv6only = 0;
+        ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
     }
 
     forever {
