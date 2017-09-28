@@ -188,7 +188,7 @@ public Q_SLOTS:
 protected:
     virtual void resolveFormat(const QSurfaceFormat &format) { m_format = format; }
     virtual const xcb_visualtype_t *createVisual();
-    QImage::Format imageFormatForVisual(const xcb_visualtype_t *visual, bool *rgbSwap) const;
+    void setImageFormatForVisual(const xcb_visualtype_t *visual);
 
     QXcbScreen *parentScreen();
 

@@ -53,39 +53,108 @@ extern "C" {
 #undef template
 #endif
 
+#include "qxcbconnection.h"
+#include "qxcbintegration.h"
+
+namespace {
+
+QImage::Format imageFormatForMasks(int depth, int bits_per_pixel, int red_mask, int blue_mask)
+{
+    if (bits_per_pixel == 32) {
+        switch (depth) {
+        case 32:
+            if (red_mask == 0xff0000 && blue_mask == 0xff)
+                return QImage::Format_ARGB32_Premultiplied;
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+            if (red_mask == 0xff && blue_mask == 0xff0000)
+                return QImage::Format_RGBA8888_Premultiplied;
+#else
+            if (red_mask == 0xff000000 && blue_mask == 0xff00)
+                return QImage::Format_RGBA8888_Premultiplied;
+#endif
+            if (red_mask == 0x3ff && blue_mask == 0x3ff00000)
+                return QImage::Format_A2BGR30_Premultiplied;
+            if (red_mask == 0x3ff00000 && blue_mask == 0x3ff)
+                return QImage::Format_A2RGB30_Premultiplied;
+            break;
+        case 30:
+            if (red_mask == 0x3ff && blue_mask == 0x3ff00000)
+                return QImage::Format_BGR30;
+            if (blue_mask == 0x3ff && red_mask == 0x3ff00000)
+                return QImage::Format_RGB30;
+            break;
+        case 24:
+            if (red_mask == 0xff0000 && blue_mask == 0xff)
+                return QImage::Format_RGB32;
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+            if (red_mask == 0xff && blue_mask == 0xff0000)
+                return QImage::Format_RGBX8888;
+#else
+            if (red_mask == 0xff000000 && blue_mask == 0xff00)
+                return QImage::Format_RGBX8888;
+#endif
+            break;
+        }
+    } else if (bits_per_pixel == 16) {
+        if (depth == 16 && red_mask == 0xf800 && blue_mask == 0x1f)
+            return QImage::Format_RGB16;
+        if (depth == 15 && red_mask == 0x7c00 && blue_mask == 0x1f)
+            return QImage::Format_RGB555;
+    }
+    return QImage::Format_Invalid;
+}
+
+} // namespace
+
 QT_BEGIN_NAMESPACE
 
-// TODO: Merge with imageFormatForVisual in qxcbwindow.cpp
-QImage::Format qt_xcb_imageFormatForVisual(QXcbConnection *connection, uint8_t depth,
-                                           const xcb_visualtype_t *visual)
+bool qt_xcb_imageFormatForVisual(QXcbConnection *connection, uint8_t depth, const xcb_visualtype_t *visual,
+                                 QImage::Format *imageFormat, bool *needsRgbSwap)
 {
+    Q_ASSERT(connection && visual && imageFormat);
+
+    if (needsRgbSwap)
+        *needsRgbSwap = false;
+    *imageFormat = QImage::Format_Invalid;
+
+    if (depth == 8) {
+        if (visual->_class == XCB_VISUAL_CLASS_GRAY_SCALE) {
+            *imageFormat = QImage::Format_Grayscale8;
+            return true;
+        }
+#if QT_CONFIG(xcb_native_painting)
+        if (QXcbIntegration::instance() && QXcbIntegration::instance()->nativePaintingEnabled()) {
+            *imageFormat = QImage::Format_Indexed8;
+            return true;
+        }
+#endif
+        return false;
+    }
+
     const xcb_format_t *format = connection->formatForDepth(depth);
+    if (!format)
+        return false;
 
-    if (!visual || !format)
-        return QImage::Format_Invalid;
+    const bool connectionEndianSwap = connection->imageNeedsEndianSwap();
+    // We swap the masks and see if we can recognize it as a host format
+    const quint32 red_mask = connectionEndianSwap ? qbswap(visual->red_mask) : visual->red_mask;
+    const quint32 blue_mask = connectionEndianSwap ? qbswap(visual->blue_mask) : visual->blue_mask;
 
-    if (depth == 32 && format->bits_per_pixel == 32 && visual->red_mask == 0xff0000
-        && visual->green_mask == 0xff00 && visual->blue_mask == 0xff)
-        return QImage::Format_ARGB32_Premultiplied;
+    *imageFormat = imageFormatForMasks(depth, format->bits_per_pixel, red_mask, blue_mask);
+    if (*imageFormat != QImage::Format_Invalid)
+        return true;
 
-    if (depth == 30 && format->bits_per_pixel == 32 && visual->red_mask == 0x3ff
-        && visual->green_mask == 0x0ffc00 && visual->blue_mask == 0x3ff00000)
-        return QImage::Format_BGR30;
+    if (needsRgbSwap) {
+        *imageFormat = imageFormatForMasks(depth, format->bits_per_pixel, blue_mask, red_mask);
+        if (*imageFormat != QImage::Format_Invalid) {
+            *needsRgbSwap = true;
+            return true;
+        }
+    }
 
-    if (depth == 30 && format->bits_per_pixel == 32 && visual->blue_mask == 0x3ff
-        && visual->green_mask == 0x0ffc00 && visual->red_mask == 0x3ff00000)
-        return QImage::Format_RGB30;
+    qWarning("Unsupported screen format: depth: %d, bits_per_pixel: %d, red_mask: %x, blue_mask: %x", depth, format->bits_per_pixel, red_mask, blue_mask);
 
-    if (depth == 24 && format->bits_per_pixel == 32 && visual->red_mask == 0xff0000
-        && visual->green_mask == 0xff00 && visual->blue_mask == 0xff)
-        return QImage::Format_RGB32;
-
-    if (depth == 16 && format->bits_per_pixel == 16 && visual->red_mask == 0xf800
-        && visual->green_mask == 0x7e0 && visual->blue_mask == 0x1f)
-        return QImage::Format_RGB16;
-
-    qWarning("qt_xcb_imageFormatForVisual did not recognize format");
-    return QImage::Format_Invalid;
+    return false;
 }
 
 QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap,
@@ -105,33 +174,14 @@ QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap
 
     QPixmap result;
 
-    QImage::Format format = qt_xcb_imageFormatForVisual(connection, depth, visual);
-    if (format != QImage::Format_Invalid) {
+    QImage::Format format;
+    bool needsRgbSwap;
+    if (qt_xcb_imageFormatForVisual(connection, depth, visual, &format, &needsRgbSwap)) {
         uint32_t bytes_per_line = length / height;
         QImage image(const_cast<uint8_t *>(data), width, height, bytes_per_line, format);
 
-        // we may have to swap the byte order
-        if (connection->imageNeedsEndianSwap()) {
-            if (image.depth() == 16) {
-                for (int i = 0; i < image.height(); ++i) {
-                    ushort *p = reinterpret_cast<ushort *>(image.scanLine(i));
-                    ushort *end = p + image.width();
-                    while (p < end) {
-                        *p = qbswap(*p);
-                        p++;
-                    }
-                }
-            } else if (image.depth() == 32) {
-                for (int i = 0; i < image.height(); ++i) {
-                    uint *p = reinterpret_cast<uint *>(image.scanLine(i));
-                    uint *end = p + image.width();
-                    while (p < end) {
-                        *p = qbswap(*p);
-                        p++;
-                    }
-                }
-            }
-        }
+        if (needsRgbSwap)
+            image = std::move(image).rgbSwapped();
 
         // fix-up alpha channel
         if (format == QImage::Format_RGB32) {

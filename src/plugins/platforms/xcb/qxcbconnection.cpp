@@ -2070,7 +2070,8 @@ const xcb_format_t *QXcbConnection::formatForDepth(uint8_t depth) const
         xcb_format_next(&iterator);
     }
 
-    return 0;
+    qWarning() << "XCB failed to find an xcb_format_t for depth:" << depth;
+    return nullptr;
 }
 
 void QXcbConnection::sync()

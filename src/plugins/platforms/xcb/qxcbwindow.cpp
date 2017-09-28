@@ -42,7 +42,6 @@
 #include <QtDebug>
 #include <QMetaEnum>
 #include <QScreen>
-#include <QtCore/qendian.h>
 #include <QtGui/QIcon>
 #include <QtGui/QRegion>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -52,6 +51,7 @@
 #include "qxcbscreen.h"
 #include "qxcbdrag.h"
 #include "qxcbkeyboard.h"
+#include "qxcbimage.h"
 #include "qxcbwmsupport.h"
 #include "qxcbimage.h"
 #include "qxcbnativeinterface.h"
@@ -177,108 +177,23 @@ static inline bool isTransient(const QWindow *w)
            || w->type() == Qt::Popup;
 }
 
-// TODO: Merge with qt_xcb_imageFormatForVisual in qxcbimage.cpp
-QImage::Format QXcbWindow::imageFormatForVisual(const xcb_visualtype_t *visual, bool *rgbSwap) const
+void QXcbWindow::setImageFormatForVisual(const xcb_visualtype_t *visual)
 {
-    const bool connectionEndianSwap = connection()->imageNeedsEndianSwap();
-    // We swap the masks and see if we can recognize it as a host format
-    const quint32 red_mask = connectionEndianSwap ? qbswap(visual->red_mask) : visual->red_mask;
-    const quint32 blue_mask = connectionEndianSwap ? qbswap(visual->blue_mask) : visual->blue_mask;
-
-    if (rgbSwap)
-        *rgbSwap = false;
-    switch (m_depth) {
-    case 32:
-        if (blue_mask == 0xff)
-            return QImage::Format_ARGB32_Premultiplied;
-        if (red_mask == 0x3ff)
-            return QImage::Format_A2BGR30_Premultiplied;
-        if (blue_mask == 0x3ff)
-            return QImage::Format_A2RGB30_Premultiplied;
-        if (red_mask == 0xff) {
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-            return QImage::Format_RGBA8888_Premultiplied;
-#else
-            if (rgbSwap)
-                *rgbSwap = true;
-            return QImage::Format_ARGB32_Premultiplied;
-#endif
-        }
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        if (red_mask == 0xff00 && blue_mask == 0xff000000) {
-            if (rgbSwap)
-                *rgbSwap = true;
-            return QImage::Format_RGBA8888_Premultiplied;
-        }
-#endif
-        break;
-    case 30:
-        if (red_mask == 0x3ff)
-            return QImage::Format_BGR30;
-        if (blue_mask == 0x3ff)
-            return QImage::Format_RGB30;
-        break;
-    case 24:
-        if (blue_mask == 0xff)
-            return QImage::Format_RGB32;
-        if (red_mask == 0xff) {
-#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-            return QImage::Format_RGBX8888;
-#else
-            if (rgbSwap)
-                *rgbSwap = true;
-            return QImage::Format_RGB32;
-#endif
-        }
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        if (red_mask == 0xff00 && blue_mask == 0xff000000) {
-            *rgbSwap = true;
-            return QImage::Format_RGBX8888;
-        }
-#endif
-        break;
-    case 16:
-        if (blue_mask == 0x1f)
-            return QImage::Format_RGB16;
-        if (red_mask == 0x1f) {
-            if (rgbSwap)
-                *rgbSwap = true;
-            return QImage::Format_RGB16;
-        }
-        break;
-    case 15:
-        if (blue_mask == 0x1f)
-            return QImage::Format_RGB555;
-        if (red_mask == 0x1f) {
-            if (rgbSwap)
-                *rgbSwap = true;
-            return QImage::Format_RGB555;
-        }
-        break;
-#if QT_CONFIG(xcb_native_painting)
-    case 8:
-        if (QXcbIntegration::instance() && QXcbIntegration::instance()->nativePaintingEnabled())
-            return QImage::Format_Indexed8;
-        break;
-#endif
-    default:
-        break;
-    }
-    qWarning("Unsupported screen format: depth: %d, red_mask: %x, blue_mask: %x", m_depth, red_mask, blue_mask);
+    if (qt_xcb_imageFormatForVisual(connection(), m_depth, visual, &m_imageFormat, &m_imageRgbSwap))
+        return;
 
     switch (m_depth) {
     case 32:
     case 24:
         qWarning("Using RGB32 fallback, if this works your X11 server is reporting a bad screen format.");
-        return QImage::Format_RGB32;
+        m_imageFormat = QImage::Format_RGB32;
+        break;
     case 16:
         qWarning("Using RGB16 fallback, if this works your X11 server is reporting a bad screen format.");
-        return QImage::Format_RGB16;
+        m_imageFormat = QImage::Format_RGB16;
     default:
         break;
     }
-
-    return QImage::Format_Invalid;
 }
 
 static inline bool positionIncludesFrame(QWindow *w)
@@ -410,7 +325,7 @@ void QXcbWindow::create()
         }
         if (!visual)
             visual = platformScreen->visualForId(m_visualId);
-        m_imageFormat = imageFormatForVisual(visual, &m_imageRgbSwap);
+        setImageFormatForVisual(visual);
         connection()->addWindowEventListener(m_window, this);
         return;
     }
@@ -480,7 +395,7 @@ void QXcbWindow::create()
 
     m_visualId = visual->visual_id;
     m_depth = platformScreen->depthOfVisual(m_visualId);
-    m_imageFormat = imageFormatForVisual(visual, &m_imageRgbSwap);
+    setImageFormatForVisual(visual);
 
     quint32 mask = XCB_CW_BACK_PIXMAP
                  | XCB_CW_BORDER_PIXEL

@@ -583,7 +583,9 @@ QRect QXcbScreen::availableGeometry() const
 
 QImage::Format QXcbScreen::format() const
 {
-    return qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual));
+    QImage::Format format;
+    qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual), &format);
+    return format;
 }
 
 QDpi QXcbScreen::virtualDpi() const

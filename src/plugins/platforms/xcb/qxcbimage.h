@@ -48,8 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QImage::Format qt_xcb_imageFormatForVisual(QXcbConnection *connection,
-                                           uint8_t depth, const xcb_visualtype_t *visual);
+bool qt_xcb_imageFormatForVisual(QXcbConnection *connection, uint8_t depth, const xcb_visualtype_t *visual,
+                                 QImage::Format *imageFormat, bool *needsRgbSwap = nullptr);
 QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap,
                                  int width, int height, int depth,
                                  const xcb_visualtype_t *visual);
