@@ -414,25 +414,25 @@ public:
 #    define Q_REQUIRED_RESULT
 #    define Q_REQUIRED_RESULT_pushed
 #  endif
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString toLower() const &
+    Q_REQUIRED_RESULT QString toLower() const &
     { return toLower_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString toLower() &&
+    Q_REQUIRED_RESULT QString toLower() &&
     { return toLower_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString toUpper() const &
+    Q_REQUIRED_RESULT QString toUpper() const &
     { return toUpper_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString toUpper() &&
+    Q_REQUIRED_RESULT QString toUpper() &&
     { return toUpper_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString toCaseFolded() const &
+    Q_REQUIRED_RESULT QString toCaseFolded() const &
     { return toCaseFolded_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString toCaseFolded() &&
+    Q_REQUIRED_RESULT QString toCaseFolded() &&
     { return toCaseFolded_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString trimmed() const &
+    Q_REQUIRED_RESULT QString trimmed() const &
     { return trimmed_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString trimmed() &&
+    Q_REQUIRED_RESULT QString trimmed() &&
     { return trimmed_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString simplified() const &
+    Q_REQUIRED_RESULT QString simplified() const &
     { return simplified_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QString simplified() &&
+    Q_REQUIRED_RESULT QString simplified() &&
     { return simplified_helper(*this); }
 #  ifdef Q_REQUIRED_RESULT_pushed
 #    pragma pop_macro("Q_REQUIRED_RESULT")
