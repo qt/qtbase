@@ -191,7 +191,8 @@ void QWindowsUser32DLL::init()
     getDisplayAutoRotationPreferences = (GetDisplayAutoRotationPreferences)library.resolve("GetDisplayAutoRotationPreferences");
     setDisplayAutoRotationPreferences = (SetDisplayAutoRotationPreferences)library.resolve("SetDisplayAutoRotationPreferences");
 
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10) { // Appears in 10.0.14393, October 2016
+    if (QOperatingSystemVersion::current()
+        >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 14393)) {
         enableNonClientDpiScaling = (EnableNonClientDpiScaling)library.resolve("EnableNonClientDpiScaling");
         getWindowDpiAwarenessContext = (GetWindowDpiAwarenessContext)library.resolve("GetWindowDpiAwarenessContext");
         getAwarenessFromDpiAwarenessContext = (GetAwarenessFromDpiAwarenessContext)library.resolve("GetAwarenessFromDpiAwarenessContext");
@@ -434,7 +435,7 @@ QString QWindowsContext::registerWindowClass(const QWindow *w)
     // QOpenGLWidget or QQuickWidget later on. That cannot be detected at this stage.
     if (w->surfaceType() == QSurface::OpenGLSurface || (flags & Qt::MSWindowsOwnDC))
         style |= CS_OWNDC;
-    if (!(flags & Qt::NoDropShadowWindowHint) && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
+    if (!(flags & Qt::NoDropShadowWindowHint)
         && (type == Qt::Popup || w->property("_q_windowsDropShadow").toBool())) {
         style |= CS_DROPSHADOW;
     }
@@ -852,7 +853,7 @@ static inline bool resizeOnDpiChanged(const QWindow *w)
 
 static bool shouldHaveNonClientDpiScaling(const QWindow *window)
 {
-    return QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10
+    return QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10
         && window->isTopLevel()
         && !window->property(QWindowsWindow::embeddedNativeParentHandleProperty).isValid()
 #if QT_CONFIG(opengl) // /QTBUG-62901, EnableNonClientDpiScaling has problems with GL

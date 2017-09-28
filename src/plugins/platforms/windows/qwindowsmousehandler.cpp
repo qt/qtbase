@@ -130,8 +130,6 @@ static inline QTouchDevice *createTouchDevice()
            QT_NID_INTEGRATED_TOUCH = 0x1, QT_NID_EXTERNAL_TOUCH = 0x02,
            QT_NID_MULTI_INPUT = 0x40, QT_NID_READY = 0x80 };
 
-    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS7)
-        return 0;
     const int digitizers = GetSystemMetrics(QT_SM_DIGITIZER);
     if (!(digitizers & (QT_NID_INTEGRATED_TOUCH | QT_NID_EXTERNAL_TOUCH)))
         return 0;

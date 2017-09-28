@@ -40,6 +40,7 @@
 #include "qwin10helpers.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QOperatingSystemVersion>
 #include <QtCore/private/qsystemlibrary_p.h>
 
 #if defined(Q_CC_MINGW)
@@ -115,7 +116,7 @@ static QWindowsComBaseDLL baseComDll;
 
 bool QWindowsComBaseDLL::init()
 {
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS10 && !isValid()) {
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10 && !isValid()) {
         QSystemLibrary library(QStringLiteral("combase"));
         roGetActivationFactory =
             reinterpret_cast<RoGetActivationFactory>(library.resolve("RoGetActivationFactory"));

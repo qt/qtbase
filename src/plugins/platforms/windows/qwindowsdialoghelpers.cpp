@@ -599,8 +599,8 @@ QString QWindowsShellItem::path() const
 {
     if (isFileSystem())
         return QDir::cleanPath(QWindowsShellItem::displayName(m_item, SIGDN_FILESYSPATH));
-    // Check for a "Library" item (Windows 7)
-    if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7 && isDir())
+    // Check for a "Library" item
+    if (isDir())
         return QWindowsShellItem::libraryItemDefaultSaveFolder(m_item);
     return QString();
 }
@@ -2041,7 +2041,7 @@ bool useHelper(QPlatformTheme::DialogType type)
         return false;
     switch (type) {
     case QPlatformTheme::FileDialog:
-        return QSysInfo::windowsVersion() >= QSysInfo::WV_XP;
+        return true;
     case QPlatformTheme::ColorDialog:
 #ifdef USE_NATIVE_COLOR_DIALOG
         return true;
@@ -2062,13 +2062,10 @@ QPlatformDialogHelper *createHelper(QPlatformTheme::DialogType type)
     if (QWindowsIntegration::instance()->options() & QWindowsIntegration::NoNativeDialogs)
         return 0;
     switch (type) {
-    case QPlatformTheme::FileDialog: // Note: "Windows XP Professional x64 Edition has version number WV_5_2 (WV_2003).
-        if (QWindowsIntegration::instance()->options() & QWindowsIntegration::XpNativeDialogs
-            || QSysInfo::windowsVersion() <= QSysInfo::WV_2003) {
+    case QPlatformTheme::FileDialog:
+        if (QWindowsIntegration::instance()->options() & QWindowsIntegration::XpNativeDialogs)
             return new QWindowsXpFileDialogHelper();
-        }
-        if (QSysInfo::windowsVersion() > QSysInfo::WV_2003)
-            return new QWindowsFileDialogHelper();
+        return new QWindowsFileDialogHelper;
     case QPlatformTheme::ColorDialog:
 #ifdef USE_NATIVE_COLOR_DIALOG
         return new QWindowsColorDialogHelper();
