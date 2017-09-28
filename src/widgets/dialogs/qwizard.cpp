@@ -579,7 +579,7 @@ public:
         , bottomRuler(0)
 #if QT_CONFIG(style_windowsvista)
         , vistaHelper(0)
-        , vistaInitPending(false)
+        , vistaInitPending(true)
         , vistaState(QVistaHelper::Dirty)
         , vistaStateChanged(false)
         , inHandleAeroStyleChange(false)
@@ -590,12 +590,6 @@ public:
         , maximumHeight(QWIDGETSIZE_MAX)
     {
         std::fill(btns, btns + QWizard::NButtons, static_cast<QAbstractButton *>(0));
-
-#if QT_CONFIG(style_windowsvista)
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
-            vistaInitPending = true;
-#endif
     }
 
     void init();

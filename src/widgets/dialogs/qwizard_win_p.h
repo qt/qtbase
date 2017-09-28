@@ -104,8 +104,7 @@ public:
     static int titleBarSize() { return QVistaHelper::titleBarSizeDp() / QVistaHelper::m_devicePixelRatio; }
     static int titleBarSizeDp() { return QVistaHelper::frameSizeDp() + QVistaHelper::captionSizeDp(); }
     static int topPadding() { // padding under text
-        return int(QStyleHelper::dpiScaled(
-                QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ? 4 : 6));
+        return int(QStyleHelper::dpiScaled(4));
     }
     static int topOffset();
 
@@ -150,7 +149,6 @@ private:
 
     int titleBarOffset;  // Extra spacing above the text
     int iconSpacing;    // Space between button and icon
-    int textSpacing;    // Space between icon and text
     static int m_devicePixelRatio;
 };
 

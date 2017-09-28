@@ -154,10 +154,7 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     backButton_ = new QVistaBackButton(wizard);
     backButton_->hide();
 
-    // Handle diff between Windows 7 and Vista
     iconSpacing = QStyleHelper::dpiScaled(7);
-    textSpacing = QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ?
-                  iconSpacing : QStyleHelper::dpiScaled(20);
 }
 
 QVistaHelper::~QVistaHelper()
@@ -695,7 +692,7 @@ int QVistaHelper::captionSizeDp()
 
 int QVistaHelper::titleOffset()
 {
-    int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + textSpacing;
+    int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + iconSpacing;
     return leftMargin() + iconOffset;
 }
 
