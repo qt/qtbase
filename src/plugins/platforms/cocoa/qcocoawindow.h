@@ -285,8 +285,6 @@ public: // for QNSView
     };
     QHash<quintptr, BorderRange> m_contentBorderAreas; // identifer -> uppper/lower
     QHash<quintptr, bool> m_enabledContentBorderAreas; // identifer -> enabled state (true/false)
-
-    bool m_hasWindowFilePath;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

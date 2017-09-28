@@ -971,6 +971,11 @@ QString QWindow::filePath() const
 
     The window icon might be used by the windowing system for example to
     decorate the window, and/or in the task switcher.
+
+    \note On \macos, the window title bar icon is meant for windows representing
+    documents, and will only show up if a file path is also set.
+
+    \sa setFilePath()
 */
 void QWindow::setIcon(const QIcon &icon)
 {
@@ -983,7 +988,7 @@ void QWindow::setIcon(const QIcon &icon)
 }
 
 /*!
-    \brief Sets the window's icon in the windowing system
+    \brief Returns the window's icon in the windowing system
 
     \sa setIcon()
 */

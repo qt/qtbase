@@ -157,7 +157,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_drawContentBorderGradient(false)
     , m_topContentBorderThickness(0)
     , m_bottomContentBorderThickness(0)
-    , m_hasWindowFilePath(false)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::QCocoaWindow" << window();
 
@@ -594,6 +593,11 @@ void QCocoaWindow::setWindowTitle(const QString &title)
 
     QMacAutoReleasePool pool;
     m_view.window.title = title.toNSString();
+
+    if (title.isEmpty() && !window()->filePath().isEmpty()) {
+        // Clearing the title should restore the default filename
+        setWindowFilePath(window()->filePath());
+    }
 }
 
 void QCocoaWindow::setWindowFilePath(const QString &filePath)
@@ -602,9 +606,14 @@ void QCocoaWindow::setWindowFilePath(const QString &filePath)
         return;
 
     QMacAutoReleasePool pool;
-    QFileInfo fi(filePath);
-    [m_view.window setRepresentedFilename:fi.exists() ? filePath.toNSString() : @""];
-    m_hasWindowFilePath = fi.exists();
+
+    if (window()->title().isNull())
+        [m_view.window setTitleWithRepresentedFilename:filePath.toNSString()];
+    else
+        m_view.window.representedFilename = filePath.toNSString();
+
+    // Changing the file path may affect icon visibility
+    setWindowIcon(window()->icon());
 }
 
 void QCocoaWindow::setWindowIcon(const QIcon &icon)
@@ -612,23 +621,21 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
     if (!isContentView())
         return;
 
+    NSButton *iconButton = [m_view.window standardWindowButton:NSWindowDocumentIconButton];
+    if (!iconButton) {
+        // Window icons are only supported on macOS in combination with a document filePath
+        return;
+    }
+
     QMacAutoReleasePool pool;
 
-    NSButton *iconButton = [m_view.window standardWindowButton:NSWindowDocumentIconButton];
-    if (iconButton == nil) {
-        if (icon.isNull())
-            return;
-        NSString *title = window()->title().toNSString();
-        [m_view.window setRepresentedURL:[NSURL fileURLWithPath:title]];
-        iconButton = [m_view.window standardWindowButton:NSWindowDocumentIconButton];
-    }
     if (icon.isNull()) {
-        [iconButton setImage:nil];
+        NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+        [iconButton setImage:[workspace iconForFile:m_view.window.representedFilename]];
     } else {
         QPixmap pixmap = icon.pixmap(QSize(22, 22));
         NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(pixmap));
-        [iconButton setImage:image];
-        [image release];
+        [iconButton setImage:[image autorelease]];
     }
 }
 
