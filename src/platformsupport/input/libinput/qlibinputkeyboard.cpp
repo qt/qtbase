@@ -286,7 +286,7 @@ int QLibInputKeyboard::keysymToQtKey(xkb_keysym_t keysym, Qt::KeyboardModifiers 
         *modifiers |= Qt::KeypadModifier;
     } else if (text.length() == 1 && text.unicode()->unicode() > 0x1f
                                   && text.unicode()->unicode() != 0x7f
-                                  && !(keysym >= XKB_KEY_dead_grave && keysym <= XKB_KEY_dead_currency)) {
+                                  && !(keysym >= XKB_KEY_dead_grave && keysym <= XKB_KEY_dead_longsolidusoverlay)) {
         code = text.unicode()->toUpper().unicode();
     } else {
         // any other keys

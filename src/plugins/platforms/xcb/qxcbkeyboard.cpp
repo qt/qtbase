@@ -69,13 +69,74 @@
 #define XK_ISO_Left_Tab         0xFE20
 #endif
 
-#ifndef XK_dead_hook
-#define XK_dead_hook            0xFE61
+#ifndef XK_dead_a
+#define XK_dead_a               0xFE80
 #endif
 
-#ifndef XK_dead_horn
-#define XK_dead_horn            0xFE62
+#ifndef XK_dead_A
+#define XK_dead_A               0xFE81
 #endif
+
+#ifndef XK_dead_e
+#define XK_dead_e               0xFE82
+#endif
+
+#ifndef XK_dead_E
+#define XK_dead_E               0xFE83
+#endif
+
+#ifndef XK_dead_i
+#define XK_dead_i               0xFE84
+#endif
+
+#ifndef XK_dead_I
+#define XK_dead_I               0xFE85
+#endif
+
+#ifndef XK_dead_o
+#define XK_dead_o               0xFE86
+#endif
+
+#ifndef XK_dead_O
+#define XK_dead_O               0xFE87
+#endif
+
+#ifndef XK_dead_u
+#define XK_dead_u               0xFE88
+#endif
+
+#ifndef XK_dead_U
+#define XK_dead_U               0xFE89
+#endif
+
+#ifndef XK_dead_small_schwa
+#define XK_dead_small_schwa     0xFE8A
+#endif
+
+#ifndef XK_dead_capital_schwa
+#define XK_dead_capital_schwa   0xFE8B
+#endif
+
+#ifndef XK_dead_greek
+#define XK_dead_greek           0xFE8C
+#endif
+
+#ifndef XK_dead_lowline
+#define XK_dead_lowline         0xFE90
+#endif
+
+#ifndef XK_dead_aboveverticalline
+#define XK_dead_aboveverticalline 0xFE91
+#endif
+
+#ifndef XK_dead_belowverticalline
+#define XK_dead_belowverticalline 0xFE92
+#endif
+
+#ifndef XK_dead_longsolidusoverlay
+#define XK_dead_longsolidusoverlay 0xFE93
+#endif
+
 
 #ifndef XK_Codeinput
 #define XK_Codeinput            0xFF37
@@ -435,6 +496,36 @@ static const unsigned int KeyTbl[] = {
     XK_dead_belowdot,           Qt::Key_Dead_Belowdot,
     XK_dead_hook,               Qt::Key_Dead_Hook,
     XK_dead_horn,               Qt::Key_Dead_Horn,
+    XK_dead_stroke,             Qt::Key_Dead_Stroke,
+    XK_dead_abovecomma,         Qt::Key_Dead_Abovecomma,
+    XK_dead_abovereversedcomma, Qt::Key_Dead_Abovereversedcomma,
+    XK_dead_doublegrave,        Qt::Key_Dead_Doublegrave,
+    XK_dead_belowring,          Qt::Key_Dead_Belowring,
+    XK_dead_belowmacron,        Qt::Key_Dead_Belowmacron,
+    XK_dead_belowcircumflex,    Qt::Key_Dead_Belowcircumflex,
+    XK_dead_belowtilde,         Qt::Key_Dead_Belowtilde,
+    XK_dead_belowbreve,         Qt::Key_Dead_Belowbreve,
+    XK_dead_belowdiaeresis,     Qt::Key_Dead_Belowdiaeresis,
+    XK_dead_invertedbreve,      Qt::Key_Dead_Invertedbreve,
+    XK_dead_belowcomma,         Qt::Key_Dead_Belowcomma,
+    XK_dead_currency,           Qt::Key_Dead_Currency,
+    XK_dead_a,                  Qt::Key_Dead_a,
+    XK_dead_A,                  Qt::Key_Dead_A,
+    XK_dead_e,                  Qt::Key_Dead_e,
+    XK_dead_E,                  Qt::Key_Dead_E,
+    XK_dead_i,                  Qt::Key_Dead_i,
+    XK_dead_I,                  Qt::Key_Dead_I,
+    XK_dead_o,                  Qt::Key_Dead_o,
+    XK_dead_O,                  Qt::Key_Dead_O,
+    XK_dead_u,                  Qt::Key_Dead_u,
+    XK_dead_U,                  Qt::Key_Dead_U,
+    XK_dead_small_schwa,        Qt::Key_Dead_Small_Schwa,
+    XK_dead_capital_schwa,      Qt::Key_Dead_Capital_Schwa,
+    XK_dead_greek,              Qt::Key_Dead_Greek,
+    XK_dead_lowline,            Qt::Key_Dead_Lowline,
+    XK_dead_aboveverticalline,  Qt::Key_Dead_Aboveverticalline,
+    XK_dead_belowverticalline,  Qt::Key_Dead_Belowverticalline,
+    XK_dead_longsolidusoverlay, Qt::Key_Dead_Longsolidusoverlay,
 
     // Special keys from X.org - This include multimedia keys,
         // wireless/bluetooth/uwb keys, special launcher keys, etc.
@@ -1433,7 +1524,7 @@ int QXcbKeyboard::keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modi
         modifiers |= Qt::KeypadModifier;
     } else if (text.length() == 1 && text.unicode()->unicode() > 0x1f
                                   && text.unicode()->unicode() != 0x7f
-                                  && !(keysym >= XK_dead_grave && keysym <= XK_dead_currency)) {
+                                  && !(keysym >= XK_dead_grave && keysym <= XK_dead_longsolidusoverlay)) {
         code = text.unicode()->toUpper().unicode();
     } else {
         // any other keys

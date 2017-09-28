@@ -1613,6 +1613,36 @@
     \value Key_Dead_Belowdot
     \value Key_Dead_Hook
     \value Key_Dead_Horn
+    \value Key_Dead_Stroke
+    \value Key_Dead_Abovecomma
+    \value Key_Dead_Abovereversedcomma
+    \value Key_Dead_Doublegrave
+    \value Key_Dead_Belowring
+    \value Key_Dead_Belowmacron
+    \value Key_Dead_Belowcircumflex
+    \value Key_Dead_Belowtilde
+    \value Key_Dead_Belowbreve
+    \value Key_Dead_Belowdiaeresis
+    \value Key_Dead_Invertedbreve
+    \value Key_Dead_Belowcomma
+    \value Key_Dead_Currency
+    \value Key_Dead_a
+    \value Key_Dead_A
+    \value Key_Dead_e
+    \value Key_Dead_E
+    \value Key_Dead_i
+    \value Key_Dead_I
+    \value Key_Dead_o
+    \value Key_Dead_O
+    \value Key_Dead_u
+    \value Key_Dead_U
+    \value Key_Dead_Small_Schwa
+    \value Key_Dead_Capital_Schwa
+    \value Key_Dead_Greek
+    \value Key_Dead_Lowline
+    \value Key_Dead_Aboveverticalline
+    \value Key_Dead_Belowverticalline
+    \value Key_Dead_Longsolidusoverlay
     \value Key_Back
     \value Key_Forward
     \value Key_Stop
