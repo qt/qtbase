@@ -70,12 +70,8 @@ void QCollatorPrivate::init()
     if (caseSensitivity == Qt::CaseInsensitive)
         collator |= NORM_IGNORECASE;
 
-    if (numericMode) {
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
-            collator |= SORT_DIGITSASNUMBERS;
-        else
-            qWarning("Numeric sorting unsupported on Windows versions older than Windows 7.");
-    }
+    if (numericMode)
+        collator |= SORT_DIGITSASNUMBERS;
 
     if (ignorePunctuation)
         collator |= NORM_IGNORESYMBOLS;

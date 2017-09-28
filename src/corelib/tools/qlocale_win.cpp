@@ -326,9 +326,7 @@ QVariant QSystemLocalePrivate::timeFormat(QLocale::FormatType type)
 {
     switch (type) {
     case QLocale::ShortFormat:
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
-            return winToQtFormat(getLocaleInfo(LOCALE_SSHORTTIME));
-        // fall through
+        return winToQtFormat(getLocaleInfo(LOCALE_SSHORTTIME));
     case QLocale::LongFormat:
         return winToQtFormat(getLocaleInfo(LOCALE_STIMEFORMAT));
     case QLocale::NarrowFormat:
@@ -367,7 +365,7 @@ QVariant QSystemLocalePrivate::dayName(int day, QLocale::FormatType type)
 
     if (type == QLocale::LongFormat)
         return getLocaleInfo(long_day_map[day]);
-    else if (type == QLocale::NarrowFormat && QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA)
+    else if (type == QLocale::NarrowFormat)
         return getLocaleInfo(narrow_day_map[day]);
     return getLocaleInfo(short_day_map[day]);
 }
@@ -425,7 +423,7 @@ QVariant QSystemLocalePrivate::toString(const QTime &time, QLocale::FormatType t
 
     DWORD flags = 0;
     // keep the same conditional as timeFormat() above
-    if (type == QLocale::ShortFormat && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
+    if (type == QLocale::ShortFormat)
         flags = TIME_NOSECONDS;
 
     wchar_t buf[255];
@@ -656,15 +654,11 @@ QVariant QSystemLocalePrivate::uiLanguages()
 
 QVariant QSystemLocalePrivate::nativeLanguageName()
 {
-    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS7)
-        return getLocaleInfo(LOCALE_SNATIVELANGNAME);
     return getLocaleInfo(LOCALE_SNATIVELANGUAGENAME);
 }
 
 QVariant QSystemLocalePrivate::nativeCountryName()
 {
-    if (QSysInfo::windowsVersion() < QSysInfo::WV_WINDOWS7)
-        return getLocaleInfo(LOCALE_SNATIVECTRYNAME);
     return getLocaleInfo(LOCALE_SNATIVECOUNTRYNAME);
 }
 
