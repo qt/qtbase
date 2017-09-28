@@ -60,7 +60,7 @@
  * are present in the Windows SDK's, but not in older MSVC Express
  * versions. */
 
-#if defined(Q_CC_MINGW) || !defined(TOUCHEVENTF_MOVE)
+#if !defined(TOUCHEVENTF_MOVE)
 
 typedef struct tagTOUCHINPUT {
     LONG x;
@@ -85,7 +85,7 @@ typedef TOUCHINPUT const * PCTOUCHINPUT;
 #  define TOUCHEVENTF_PALM 0x0080
 #  define TOUCHINPUTMASKF_CONTACTAREA 0x0004
 #  define TOUCHINPUTMASKF_EXTRAINFO 0x0002
-#endif // if defined(Q_CC_MINGW) || !defined(TOUCHEVENTF_MOVE)
+#endif // if !defined(TOUCHEVENTF_MOVE)
 
 QT_BEGIN_NAMESPACE
 

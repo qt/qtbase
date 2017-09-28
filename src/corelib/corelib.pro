@@ -50,8 +50,6 @@ win32 {
     mingw {
         # otherwise mingw headers do not declare common functions like putenv
         CONFIG -= strict_c++
-        # Override MinGW's definition in _mingw.h
-        DEFINES += WINVER=0x600 _WIN32_WINNT=0x0600
     }
     LIBS_PRIVATE += -lws2_32
     !winrt {

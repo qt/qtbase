@@ -56,6 +56,7 @@
 // (http://sourceforge.net/p/mingw-w64/mailman/message/32935366/)
 #include <winsock2.h>
 #include <ws2ipdef.h>
+#include <wincrypt.h>
 #include <iphlpapi.h>
 #include <ws2tcpip.h>
 
