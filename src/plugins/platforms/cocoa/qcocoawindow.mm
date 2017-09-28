@@ -1292,6 +1292,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
         propagateSizeHints();
         setWindowFlags(window()->flags());
         setWindowTitle(window()->title());
+        setWindowFilePath(window()->filePath());
         setWindowState(window()->windowState());
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
