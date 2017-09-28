@@ -84,13 +84,7 @@ class QTouchDevice;
 struct QWindowsUser32DLL
 {
     inline void init();
-    inline bool initTouch();
 
-    typedef BOOL (WINAPI *IsTouchWindow)(HWND, PULONG); // Windows 7
-    typedef BOOL (WINAPI *RegisterTouchWindow)(HWND, ULONG);
-    typedef BOOL (WINAPI *UnregisterTouchWindow)(HWND);
-    typedef BOOL (WINAPI *GetTouchInputInfo)(HANDLE, UINT, PVOID, int);
-    typedef BOOL (WINAPI *CloseTouchInputHandle)(HANDLE);
     typedef BOOL (WINAPI *SetProcessDPIAware)();
     typedef BOOL (WINAPI *AddClipboardFormatListener)(HWND);
     typedef BOOL (WINAPI *RemoveClipboardFormatListener)(HWND);
@@ -99,13 +93,6 @@ struct QWindowsUser32DLL
     typedef BOOL (WINAPI *EnableNonClientDpiScaling)(HWND);
     typedef int  (WINAPI *GetWindowDpiAwarenessContext)(HWND);
     typedef int  (WINAPI *GetAwarenessFromDpiAwarenessContext)(int);
-
-    // Touch functions from Windows 7 onwards (also for use with Q_CC_MSVC).
-    IsTouchWindow isTouchWindow = nullptr;
-    RegisterTouchWindow registerTouchWindow = nullptr;
-    UnregisterTouchWindow unregisterTouchWindow = nullptr;
-    GetTouchInputInfo getTouchInputInfo = nullptr;
-    CloseTouchInputHandle closeTouchInputHandle = nullptr;
 
     // Windows Vista onwards
     SetProcessDPIAware setProcessDPIAware = nullptr;

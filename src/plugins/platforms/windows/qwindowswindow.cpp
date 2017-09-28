@@ -37,6 +37,13 @@
 **
 ****************************************************************************/
 
+#if defined(WINVER) && WINVER < 0x0601
+#  undef WINVER
+#endif
+#if !defined(WINVER)
+#  define WINVER 0x0601 // Enable touch functions for MinGW
+#endif
+
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
 #if QT_CONFIG(draganddrop)
@@ -1110,7 +1117,7 @@ QWindowsWindow::~QWindowsWindow()
 {
     setFlag(WithinDestroy);
     if (testFlag(TouchRegistered))
-        QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
+        UnregisterTouchWindow(m_data.hwnd);
     destroyWindow();
     destroyIcon();
 }
@@ -2585,12 +2592,12 @@ void QWindowsWindow::registerTouchWindow(QWindowsWindowFunctions::TouchWindowTou
     if ((QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         && !testFlag(TouchRegistered)) {
         ULONG touchFlags = 0;
-        const bool ret = QWindowsContext::user32dll.isTouchWindow(m_data.hwnd, &touchFlags);
+        const bool ret = IsTouchWindow(m_data.hwnd, &touchFlags);
         // Return if it is not a touch window or the flags are already set by a hook
         // such as HCBT_CREATEWND
         if (ret || touchFlags != 0)
             return;
-        if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, ULONG(touchTypes)))
+        if (RegisterTouchWindow(m_data.hwnd, ULONG(touchTypes)))
             setFlag(TouchRegistered);
         else
             qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(window()->objectName()));

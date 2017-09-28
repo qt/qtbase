@@ -198,19 +198,6 @@ void QWindowsUser32DLL::init()
     }
 }
 
-bool QWindowsUser32DLL::initTouch()
-{
-    if (!isTouchWindow && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7) {
-        QSystemLibrary library(QStringLiteral("user32"));
-        isTouchWindow = (IsTouchWindow)(library.resolve("IsTouchWindow"));
-        registerTouchWindow = (RegisterTouchWindow)(library.resolve("RegisterTouchWindow"));
-        unregisterTouchWindow = (UnregisterTouchWindow)(library.resolve("UnregisterTouchWindow"));
-        getTouchInputInfo = (GetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
-        closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
-    }
-    return isTouchWindow && registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && closeTouchInputHandle;
-}
-
 void QWindowsShcoreDLL::init()
 {
     if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
@@ -267,7 +254,7 @@ QWindowsContextPrivate::QWindowsContextPrivate()
     QWindowsContext::user32dll.init();
     QWindowsContext::shcoredll.init();
 
-    if (m_mouseHandler.touchDevice() && QWindowsContext::user32dll.initTouch())
+    if (m_mouseHandler.touchDevice())
         m_systemInfo |= QWindowsContext::SI_SupportsTouch;
     m_displayContext = GetDC(0);
     m_defaultDPI = GetDeviceCaps(m_displayContext, LOGPIXELSY);
@@ -324,11 +311,6 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
     QTouchDevice *touchDevice = d->m_mouseHandler.ensureTouchDevice();
     if (!touchDevice)
         return false;
-
-    if (!QWindowsContext::user32dll.initTouch()) {
-        delete touchDevice;
-        return false;
-    }
 
     if (!(integrationOptions & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch))
         touchDevice->setCapabilities(touchDevice->capabilities() | QTouchDevice::MouseEmulation);

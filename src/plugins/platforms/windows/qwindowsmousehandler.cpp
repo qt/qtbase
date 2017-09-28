@@ -37,6 +37,13 @@
 **
 ****************************************************************************/
 
+#if defined(WINVER) && WINVER < 0x0601
+#  undef WINVER
+#endif
+#if !defined(WINVER)
+#  define WINVER 0x0601 // Enable touch functions for MinGW
+#endif
+
 #include "qwindowsmousehandler.h"
 #include "qwindowskeymapper.h"
 #include "qwindowscontext.h"
@@ -55,37 +62,6 @@
 #include <QtCore/QScopedArrayPointer>
 
 #include <windowsx.h>
-
-/* Touch is supported from Windows 7 onwards and data structures
- * are present in the Windows SDK's, but not in older MSVC Express
- * versions. */
-
-#if defined(Q_CC_MINGW) || !defined(TOUCHEVENTF_MOVE)
-
-typedef struct tagTOUCHINPUT {
-    LONG x;
-    LONG y;
-    HANDLE hSource;
-    DWORD dwID;
-    DWORD dwFlags;
-    DWORD dwMask;
-    DWORD dwTime;
-    ULONG_PTR dwExtraInfo;
-    DWORD cxContact;
-    DWORD cyContact;
-} TOUCHINPUT, *PTOUCHINPUT;
-typedef TOUCHINPUT const * PCTOUCHINPUT;
-
-#  define TOUCHEVENTF_MOVE 0x0001
-#  define TOUCHEVENTF_DOWN 0x0002
-#  define TOUCHEVENTF_UP 0x0004
-#  define TOUCHEVENTF_INRANGE 0x0008
-#  define TOUCHEVENTF_PRIMARY 0x0010
-#  define TOUCHEVENTF_NOCOALESCE 0x0020
-#  define TOUCHEVENTF_PALM 0x0080
-#  define TOUCHINPUTMASKF_CONTACTAREA 0x0004
-#  define TOUCHINPUTMASKF_EXTRAINFO 0x0002
-#endif // if defined(Q_CC_MINGW) || !defined(TOUCHEVENTF_MOVE)
 
 QT_BEGIN_NAMESPACE
 
@@ -522,9 +498,8 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     touchPoints.reserve(winTouchPointCount);
     Qt::TouchPointStates allStates = 0;
 
-    QWindowsContext::user32dll.getTouchInputInfo(reinterpret_cast<HANDLE>(msg.lParam),
-                                                 UINT(msg.wParam),
-                                                 winTouchInputs.data(), sizeof(TOUCHINPUT));
+    GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(msg.lParam),
+                      UINT(msg.wParam), winTouchInputs.data(), sizeof(TOUCHINPUT));
     for (int i = 0; i < winTouchPointCount; ++i) {
         const TOUCHINPUT &winTouchInput = winTouchInputs[i];
         int id = m_touchInputIDToTouchPointID.value(winTouchInput.dwID, -1);
@@ -565,7 +540,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         touchPoints.append(touchPoint);
     }
 
-    QWindowsContext::user32dll.closeTouchInputHandle(reinterpret_cast<HANDLE>(msg.lParam));
+    CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(msg.lParam));
 
     // all touch points released, forget the ids we've seen, they may not be reused
     if (allStates == Qt::TouchPointReleased)
