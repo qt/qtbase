@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -61,13 +61,13 @@ class SearchBox: public QLineEdit
     Q_OBJECT
 
 public:
-    SearchBox(QWidget *parent = 0);
+    explicit SearchBox(QWidget *parent = nullptr);
 
 protected slots:
     void doSearch();
 
 private:
-    GSuggestCompletion *completer;
+    GSuggestCompletion *completer = nullptr;
 //! [1]
 };
 

@@ -51,7 +51,7 @@
 //! [1]
 #include "googlesuggest.h"
 
-#define GSUGGEST_URL "http://google.com/complete/search?output=toolbar&q=%1"
+const QString gsuggestUrl(QStringLiteral("http://google.com/complete/search?output=toolbar&q=%1"));
 //! [1]
 
 //! [2]
@@ -77,11 +77,10 @@ GSuggestCompletion::GSuggestCompletion(QLineEdit *parent): QObject(parent), edit
     connect(popup, SIGNAL(itemClicked(QTreeWidgetItem*,int)),
             SLOT(doneCompletion()));
 
-    timer = new QTimer(this);
-    timer->setSingleShot(true);
-    timer->setInterval(500);
-    connect(timer, SIGNAL(timeout()), SLOT(autoSuggest()));
-    connect(editor, SIGNAL(textEdited(QString)), timer, SLOT(start()));
+    timer.setSingleShot(true);
+    timer.setInterval(500);
+    connect(&timer, SIGNAL(timeout()), SLOT(autoSuggest()));
+    connect(editor, SIGNAL(textEdited(QString)), &timer, SLOT(start()));
 
     connect(&networkManager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(handleNetworkData(QNetworkReply*)));
@@ -109,7 +108,6 @@ bool GSuggestCompletion::eventFilter(QObject *obj, QEvent *ev)
     }
 
     if (ev->type() == QEvent::KeyPress) {
-
         bool consumed = false;
         int key = static_cast<QKeyEvent*>(ev)->key();
         switch (key) {
@@ -148,9 +146,8 @@ bool GSuggestCompletion::eventFilter(QObject *obj, QEvent *ev)
 //! [4]
 
 //! [5]
-void GSuggestCompletion::showCompletion(const QStringList &choices)
+void GSuggestCompletion::showCompletion(const QVector<QString> &choices)
 {
-
     if (choices.isEmpty())
         return;
 
@@ -159,12 +156,13 @@ void GSuggestCompletion::showCompletion(const QStringList &choices)
 
     popup->setUpdatesEnabled(false);
     popup->clear();
-    for (int i = 0; i < choices.count(); ++i) {
-        QTreeWidgetItem * item;
-        item = new QTreeWidgetItem(popup);
-        item->setText(0, choices[i]);
+
+    for (const auto &choice : choices) {
+        auto item  = new QTreeWidgetItem(popup);
+        item->setText(0, choice);
         item->setTextColor(0, color);
     }
+
     popup->setCurrentItem(popup->topLevelItem(0));
     popup->resizeColumnToContents(0);
     popup->setUpdatesEnabled(true);
@@ -178,7 +176,7 @@ void GSuggestCompletion::showCompletion(const QStringList &choices)
 //! [6]
 void GSuggestCompletion::doneCompletion()
 {
-    timer->stop();
+    timer.stop();
     popup->hide();
     editor->setFocus();
     QTreeWidgetItem *item = popup->currentItem();
@@ -193,15 +191,15 @@ void GSuggestCompletion::doneCompletion()
 void GSuggestCompletion::autoSuggest()
 {
     QString str = editor->text();
-    QString url = QString(GSUGGEST_URL).arg(str);
-    networkManager.get(QNetworkRequest(QString(url)));
+    QString url = gsuggestUrl.arg(str);
+    networkManager.get(QNetworkRequest(url));
 }
 //! [7]
 
 //! [8]
 void GSuggestCompletion::preventSuggest()
 {
-    timer->stop();
+    timer.stop();
 }
 //! [8]
 
@@ -209,8 +207,8 @@ void GSuggestCompletion::preventSuggest()
 void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
 {
     QUrl url = networkReply->url();
-    if (!networkReply->error()) {
-        QStringList choices;
+    if (networkReply->error() == QNetworkReply::NoError) {
+        QVector<QString> choices;
 
         QByteArray response(networkReply->readAll());
         QXmlStreamReader xml(response);
