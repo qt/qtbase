@@ -56,6 +56,8 @@ struct LockFileInfo
     qint64 pid;
     QString appname;
     QString hostname;
+    QByteArray hostid;
+    QByteArray bootid;
 };
 }
 
@@ -331,13 +333,15 @@ QByteArray QLockFilePrivate::lockFileContents() const
     // Use operator% from the fast builder to avoid multiple memory allocations.
     return QByteArray::number(QCoreApplication::applicationPid()) % '\n'
             % processNameByPid(QCoreApplication::applicationPid()).toUtf8() % '\n'
-            % machineName().toUtf8() % '\n';
+            % machineName().toUtf8() % '\n'
+            % QSysInfo::machineUniqueId() % '\n'
+            % QSysInfo::bootUniqueId() % '\n';
 }
 
 static bool getLockInfo_helper(const QString &fileName, LockFileInfo *info)
 {
     QFile reader(fileName);
-    if (!reader.open(QIODevice::ReadOnly))
+    if (!reader.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
 
     QByteArray pidLine = reader.readLine();
@@ -349,9 +353,17 @@ static bool getLockInfo_helper(const QString &fileName, LockFileInfo *info)
     QByteArray hostNameLine = reader.readLine();
     hostNameLine.chop(1);
 
+    // prior to Qt 5.10, only the lines above were recorded
+    QByteArray hostId = reader.readLine();
+    hostId.chop(1);
+    QByteArray bootId = reader.readLine();
+    bootId.chop(1);
+
     bool ok;
     info->appname = QString::fromUtf8(appNameLine);
     info->hostname = QString::fromUtf8(hostNameLine);
+    info->hostid = hostId;
+    info->bootid = bootId;
     info->pid = pidLine.toLongLong(&ok);
     return ok && info->pid > 0;
 }
@@ -360,7 +372,20 @@ bool QLockFilePrivate::isApparentlyStale() const
 {
     LockFileInfo info;
     if (getLockInfo_helper(fileName, &info)) {
-        if (info.hostname.isEmpty() || info.hostname == machineName()) {
+        bool sameHost = info.hostname.isEmpty() || info.hostname == machineName();
+        if (!info.hostid.isEmpty()) {
+            // Override with the host ID, if we know it.
+            QByteArray ourHostId = QSysInfo::machineUniqueId();
+            if (!ourHostId.isEmpty())
+                sameHost = (ourHostId == info.hostid);
+        }
+
+        if (sameHost) {
+            if (!info.bootid.isEmpty()) {
+                // If we've rebooted, then the lock is definitely stale.
+                if (info.bootid != QSysInfo::bootUniqueId())
+                    return true;
+            }
             if (!isProcessRunning(info.pid, info.appname))
                 return true;
         }
