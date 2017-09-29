@@ -78,27 +78,10 @@ set(Qt5_POSITION_INDEPENDENT_CODE True)
 # Applications now need to be compiled with the -fPIC option if the Qt option
 # \"reduce relocations\" is active. For backward compatibility only, Qt accepts
 # the use of -fPIE for GCC 4.x versions.
-if (CMAKE_VERSION VERSION_LESS 2.8.12
-        AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL \"GNU\"
-        OR CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
-    set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_POSITION_INDEPENDENT_CODE \"ON\")
-else()
-    set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_COMPILE_OPTIONS $$QMAKE_CXXFLAGS_APP)
-endif()
+set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_COMPILE_OPTIONS $$QMAKE_CXXFLAGS_APP)
 
-# Applications using qmake or cmake >= 2.8.12 as their build system will
-# adapt automatically. Applications using an older release of cmake in
-# combination with GCC 5.x need to change their CMakeLists.txt to add
-# Qt5Core_EXECUTABLE_COMPILE_FLAGS to CMAKE_CXX_FLAGS. In particular,
-# applications using cmake >= 2.8.9 and < 2.8.11 will continue to build
-# with the -fPIE option and invoke the special compatibility mode if using
-# GCC 4.x.
+# TODO Qt6: Remove
 set(Qt5Core_EXECUTABLE_COMPILE_FLAGS \"\")
-if (CMAKE_VERSION VERSION_LESS 2.8.12
-        AND (CMAKE_CXX_COMPILER_ID STREQUAL \"GNU\"
-        AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
-    set(Qt5Core_EXECUTABLE_COMPILE_FLAGS \"-fPIC\")
-endif()
 
 !!IF !isEmpty(QT_NAMESPACE)
 list(APPEND Qt5Core_DEFINITIONS -DQT_NAMESPACE=$$QT_NAMESPACE)
@@ -157,7 +140,7 @@ if (NOT TARGET Qt5::WinMain)
     )
 !!ENDIF
 
-    if (NOT CMAKE_VERSION VERSION_LESS 2.8.11 AND NOT Qt5_NO_LINK_QTMAIN)
+    if (NOT Qt5_NO_LINK_QTMAIN)
         set(_isExe $<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>)
         set(_isWin32 $<BOOL:$<TARGET_PROPERTY:WIN32_EXECUTABLE>>)
         set(_isNotExcluded $<NOT:$<BOOL:$<TARGET_PROPERTY:Qt5_NO_LINK_QTMAIN>>>)
