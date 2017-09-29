@@ -257,7 +257,7 @@ function(QT5_ADD_BINARY_RESOURCES target )
     add_custom_command(OUTPUT ${rcc_destination}
                        COMMAND ${Qt5Core_RCC_EXECUTABLE}
                        ARGS ${rcc_options} --binary --name ${target} --output ${rcc_destination} ${infiles}
-                       DEPENDS ${rc_depends} ${out_depends} VERBATIM)
+                       DEPENDS ${rc_depends} ${out_depends} ${infiles} VERBATIM)
     add_custom_target(${target} ALL DEPENDS ${rcc_destination})
 endfunction()
 
