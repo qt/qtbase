@@ -1042,18 +1042,12 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
     }
 
     const auto httpReplyPrivate = httpReply->d_func();
-    int statusCode = 0;
     for (const auto &pair : headers) {
         const auto &name = pair.name;
         auto value = pair.value;
 
         if (name == ":status") {
-            // TODO: part of this code copies what SPDY does when processing
-            // headers. It would be nice to re-factor HTTP/2 protocol handler
-            // to make it more strict in extracting things. For example, the
-            // status code below ... yeah, should be an integer, right?
-            statusCode = value.left(3).toInt();
-            httpReply->setStatusCode(statusCode);
+            httpReply->setStatusCode(value.left(3).toInt());
             httpReplyPrivate->reasonPhrase = QString::fromLatin1(value.mid(4));
         } else if (name == ":version") {
             httpReplyPrivate->majorVersion = value.at(5) - '0';
@@ -1064,17 +1058,6 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             if (ok)
                 httpReply->setContentLength(length);
         } else {
-            if (statusCode > 300 && statusCode <= 308 && name == "location") {
-                // For HTTP/1 'location' is handled (and redirect URL set) when
-                // a protocol handler emits channel->allDone(). Http/2 protocol
-                // handler never emits allDone, since we have many requests
-                // multiplexed in one channel at any moment and we are never
-                // done :) So it's time to extract location.
-                const QUrl redirectUrl(QUrl::fromEncoded(value));
-                if (redirectUrl.isValid())
-                    httpReply->setRedirectUrl(redirectUrl);
-            }
-
             QByteArray binder(", ");
             if (name == "set-cookie")
                 binder = "\n";
