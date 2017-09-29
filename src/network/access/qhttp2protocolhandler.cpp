@@ -1034,12 +1034,26 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
     }
 
     const auto httpReplyPrivate = httpReply->d_func();
+
+    // For HTTP/1 'location' is handled (and redirect URL set) when a protocol
+    // handler emits channel->allDone(). Http/2 protocol handler never emits
+    // allDone, since we have many requests multiplexed in one channel at any
+    // moment and we are probably not done yet. So we extract url and set it
+    // here, if needed.
+    int statusCode = 0;
+    QUrl redirectUrl;
+
     for (const auto &pair : headers) {
         const auto &name = pair.name;
         auto value = pair.value;
 
+        // TODO: part of this code copies what SPDY protocol handler does when
+        // processing headers. Binary nature of HTTP/2 and SPDY saves us a lot
+        // of parsing and related errors/bugs, but it would be nice to have
+        // more detailed validation of headers.
         if (name == ":status") {
-            httpReply->setStatusCode(value.left(3).toInt());
+            statusCode = value.left(3).toInt();
+            httpReply->setStatusCode(statusCode);
             httpReplyPrivate->reasonPhrase = QString::fromLatin1(value.mid(4));
         } else if (name == ":version") {
             httpReplyPrivate->majorVersion = value.at(5) - '0';
@@ -1050,12 +1064,17 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             if (ok)
                 httpReply->setContentLength(length);
         } else {
+            if (name == "location")
+                redirectUrl = QUrl::fromEncoded(value);
             QByteArray binder(", ");
             if (name == "set-cookie")
                 binder = "\n";
             httpReply->setHeaderField(name, value.replace('\0', binder));
         }
     }
+
+    if (QHttpNetworkReply::isHttpRedirect(statusCode) && redirectUrl.isValid())
+        httpReply->setRedirectUrl(redirectUrl);
 
     if (connectionType == Qt::DirectConnection)
         emit httpReply->headerChanged();
