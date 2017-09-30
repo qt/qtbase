@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -42,7 +42,6 @@
 #include "private/qlockfile_p.h"
 
 #include "QtCore/qtemporaryfile.h"
-#include "QtCore/qcoreapplication.h"
 #include "QtCore/qfileinfo.h"
 #include "QtCore/qdebug.h"
 #include "QtCore/qdatetime.h"
@@ -147,13 +146,6 @@ static bool setNativeLocks(int fd)
 
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
-    // Assemble data, to write in a single call to write
-    // (otherwise we'd have to check every write call)
-    // Use operator% from the fast builder to avoid multiple memory allocations.
-    QByteArray fileData = QByteArray::number(QCoreApplication::applicationPid()) % '\n'
-                          % QCoreApplication::applicationName().toUtf8() % '\n'
-                          % QSysInfo::machineHostName().toUtf8() % '\n';
-
     const QByteArray lockFileName = QFile::encodeName(fileName);
     const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY | O_CREAT | O_EXCL, 0666);
     if (fd < 0) {
@@ -173,6 +165,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
         qWarning() << "setNativeLocks failed:" << qt_error_string(errnoSaved);
     }
 
+    QByteArray fileData = lockFileContents();
     if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size()) {
         qt_safe_close(fd);
         if (!QFile::remove(fileName))
@@ -204,26 +197,21 @@ bool QLockFilePrivate::removeStaleLock()
     return success;
 }
 
-bool QLockFilePrivate::isApparentlyStale() const
+bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
 {
-    qint64 pid;
-    QString hostname, appname;
-    if (getLockInfo(&pid, &hostname, &appname)) {
-        if (hostname.isEmpty() || hostname == QSysInfo::machineHostName()) {
-            if (::kill(pid, 0) == -1 && errno == ESRCH)
-                return true; // PID doesn't exist anymore
-            const QString processName = processNameByPid(pid);
-            if (!processName.isEmpty()) {
-                QFileInfo fi(appname);
-                if (fi.isSymLink())
-                    fi.setFile(fi.symLinkTarget());
-                if (processName != fi.fileName())
-                    return true; // PID got reused by a different application.
-            }
-        }
+    if (::kill(pid, 0) == -1 && errno == ESRCH)
+        return false; // PID doesn't exist anymore
+
+    const QString processName = processNameByPid(pid);
+    if (!processName.isEmpty()) {
+        QFileInfo fi(appname);
+        if (fi.isSymLink())
+            fi.setFile(fi.symLinkTarget());
+        if (processName != fi.fileName())
+            return false;   // PID got reused by a different application.
     }
-    const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
-    return staleLockTime > 0 && qAbs(age) > staleLockTime;
+
+    return true;
 }
 
 QString QLockFilePrivate::processNameByPid(qint64 pid)
