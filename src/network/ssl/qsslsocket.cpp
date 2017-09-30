@@ -2647,6 +2647,20 @@ QByteArray QSslSocketPrivate::peek(qint64 maxSize)
 /*!
     \internal
 */
+qint64 QSslSocketPrivate::skip(qint64 maxSize)
+{
+    if (mode == QSslSocket::UnencryptedMode && !autoStartHandshake)
+        return plainSocket->skip(maxSize);
+
+    // In encrypted mode, the SSL backend writes decrypted data directly into the
+    // QIODevice's read buffer. As this buffer is always emptied by the caller,
+    // we need to wait for more incoming data.
+    return (state == QAbstractSocket::ConnectedState) ? Q_INT64_C(0) : Q_INT64_C(-1);
+}
+
+/*!
+    \internal
+*/
 bool QSslSocketPrivate::flush()
 {
 #ifdef QSSLSOCKET_DEBUG
