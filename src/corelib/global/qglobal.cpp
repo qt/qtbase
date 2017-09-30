@@ -2873,7 +2873,7 @@ enum {
     this ID is usually permanent and it matches the D-Bus machine ID, except
     for nodes without their own storage (replicated nodes).
 
-    \sa machineHostName()
+    \sa machineHostName(), bootUniqueId()
 */
 QByteArray QSysInfo::machineUniqueId()
 {
@@ -2894,7 +2894,7 @@ QByteArray QSysInfo::machineUniqueId()
                 return QByteArray(uuid, uuidlen);
 #  endif
 #elif defined(Q_OS_UNIX)
-        // the modern name on Linux is /etc/machine-id, but that path is
+        // The modern name on Linux is /etc/machine-id, but that path is
         // unlikely to exist on non-Linux (non-systemd) systems. The old
         // path is more than enough.
         static const char fullfilename[] = "/usr/local/var/lib/dbus/machine-id";
@@ -2929,6 +2929,46 @@ QByteArray QSysInfo::machineUniqueId()
     }();
     return cache;
 }
+
+/*!
+    \since 5.10
+
+    Returns a unique ID for this machine's boot, if one can be determined. If
+    no unique ID could be determined, this function returns an empty byte
+    array. This value is expected to change after every boot and can be
+    considered globally unique.
+
+    This function is currently only implemented for Linux and Apple operating
+    systems.
+
+    \sa machineUniqueId()
+*/
+QByteArray QSysInfo::bootUniqueId()
+{
+    // the boot unique ID cannot change
+    static const QByteArray cache = []() {
+#ifdef Q_OS_LINUX
+        // use low-level API here for simplicity
+        int fd = qt_safe_open("/proc/sys/kernel/random/boot_id", O_RDONLY);
+        if (fd != -1) {
+            char uuid[UuidStringLen];
+            qint64 len = qt_safe_read(fd, uuid, sizeof(uuid));
+            qt_safe_close(fd);
+            if (len == UuidStringLen)
+                return QByteArray(uuid, UuidStringLen);
+        }
+#elif defined(Q_OS_DARWIN)
+        // "kern.bootsessionuuid" is only available by name
+        char uuid[UuidStringLen];
+        size_t uuidlen = sizeof(uuid);
+        if (sysctlbyname("kern.bootsessionuuid", uuid, &uuidlen, nullptr, 0) == 0
+                && uuidlen == sizeof(uuid))
+            return QByteArray(uuid, uuidlen);
+#endif
+        return QByteArray();
+    }();
+    return cache;
+};
 
 /*!
     \macro void Q_ASSERT(bool test)

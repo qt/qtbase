@@ -134,6 +134,7 @@ int main(int argc, char *argv[])
     printf("QSysInfo::prettyProductName() = %s\n", qPrintable(QSysInfo::prettyProductName()));
     printf("QSysInfo::machineHostName() = %s\n", qPrintable(QSysInfo::machineHostName()));
     printf("QSysInfo::machineUniqueId() = %s\n", QSysInfo::machineUniqueId().constData());
+    printf("QSysInfo::bootUniqueId() = %s\n", qPrintable(QSysInfo::bootUniqueId()));
 
     const auto osv = QOperatingSystemVersion::current();
     printf("QOperatingSystemVersion::current() = %s %d.%d.%d\n",

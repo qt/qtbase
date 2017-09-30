@@ -241,6 +241,7 @@ QT_WARNING_POP
 
     static QString machineHostName();
     static QByteArray machineUniqueId();
+    static QByteArray bootUniqueId();
 };
 
 #undef QT_SYSINFO_DEPRECATED_X
