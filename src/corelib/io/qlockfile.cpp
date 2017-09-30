@@ -330,7 +330,7 @@ QByteArray QLockFilePrivate::lockFileContents() const
 {
     // Use operator% from the fast builder to avoid multiple memory allocations.
     return QByteArray::number(QCoreApplication::applicationPid()) % '\n'
-            % QCoreApplication::applicationName().toUtf8() % '\n'
+            % processNameByPid(QCoreApplication::applicationPid()).toUtf8() % '\n'
             % machineName().toUtf8() % '\n';
 }
 
