@@ -85,10 +85,6 @@ public:
     // used in dbusmenu
     Q_CORE_EXPORT static QString processNameByPid(qint64 pid);
 
-#ifdef Q_OS_UNIX
-    static int checkFcntlWorksAfterFlock(const QString &fn);
-#endif
-
     QString fileName;
 #ifdef Q_OS_WIN
     Qt::HANDLE fileHandle;
