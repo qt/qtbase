@@ -31,6 +31,12 @@
 #include <QLockFile>
 #include <QThread>
 
+#ifdef Q_OS_UNIX
+#  include <unistd.h>
+#else
+#  include <stdlib.h>
+#endif
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -44,11 +50,11 @@ int main(int argc, char *argv[])
     if (argc > 2)
         option = QString::fromLocal8Bit(argv[2]);
 
-    if (option == "-crash") {
+    if (option == "-uncleanexit") {
         QLockFile lockFile(lockName);
         lockFile.lock();
         // exit on purpose, so that the lock remains!
-        exit(0);
+        _exit(0);
     } else if (option == "-busy") {
         QLockFile lockFile(lockName);
         lockFile.lock();
