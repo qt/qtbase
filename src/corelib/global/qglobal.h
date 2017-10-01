@@ -355,7 +355,7 @@ typedef double qreal;
 #if !defined(QT_NAMESPACE) && defined(__cplusplus) && !defined(Q_QDOC)
 extern "C"
 #endif
-Q_CORE_EXPORT const char *qVersion() Q_DECL_NOTHROW;
+Q_CORE_EXPORT const char *qVersion(void) Q_DECL_NOTHROW;
 
 #if defined(__cplusplus)
 
