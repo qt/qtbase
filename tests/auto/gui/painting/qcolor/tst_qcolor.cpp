@@ -1423,9 +1423,6 @@ void tst_QColor::achromaticHslHue()
 #if 0 // Used to be included in Qt4 for Q_WS_X11
 void tst_QColor::setallowX11ColorNames()
 {
-#if defined(Q_OS_IRIX)
-    QSKIP("This fails due to the gamma settings in the SGI X server");
-#endif
     RGBData x11RgbTbl[] = {
         // a few standard X11 color names
         { "DodgerBlue1", qRgb(30, 144, 255) },

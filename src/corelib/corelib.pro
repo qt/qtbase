@@ -10,7 +10,6 @@ CONFIG += $$MODULE_CONFIG
 DEFINES += $$MODULE_DEFINES
 DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x67000000
-irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 CONFIG += optimize_full
 

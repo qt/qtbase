@@ -1873,9 +1873,6 @@ void tst_QSortFilterProxyModel::changeFilter()
         QCOMPARE(args.at(2).toInt(), finalRemoveIntervals.at(i).second);
     }
 
-#ifdef Q_OS_IRIX
-    QEXPECT_FAIL("filter (2)", "Not reliable on IRIX", Abort);
-#endif
     QCOMPARE(finalInsertSpy.count(), insertIntervals.count());
     for (int i = 0; i < finalInsertSpy.count(); ++i) {
         QList<QVariant> args = finalInsertSpy.at(i);

@@ -78,7 +78,6 @@ QT_BEGIN_NAMESPACE
 # define QT_SOCKOPTLEN_T QT_SOCKLEN_T
 #endif
 
-// UnixWare 7 redefines socket -> _socket
 static inline int qt_safe_socket(int domain, int type, int protocol, int flags = 0)
 {
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
@@ -105,7 +104,6 @@ static inline int qt_safe_socket(int domain, int type, int protocol, int flags =
 #endif
 }
 
-// Tru64 redefines accept -> _accept with _XOPEN_SOURCE_EXTENDED
 static inline int qt_safe_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *addrlen, int flags = 0)
 {
     Q_ASSERT((flags & ~O_NONBLOCK) == 0);
@@ -137,7 +135,6 @@ static inline int qt_safe_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *add
 #endif
 }
 
-// UnixWare 7 redefines listen -> _listen
 static inline int qt_safe_listen(int s, int backlog)
 {
     return ::listen(s, backlog);

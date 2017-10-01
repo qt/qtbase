@@ -487,9 +487,6 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
     if (sysctl(mib, 2, &cores, &len, NULL, 0) != 0) {
         perror("sysctl");
     }
-#elif defined(Q_OS_IRIX)
-    // IRIX
-    cores = (int)sysconf(_SC_NPROC_ONLN);
 #elif defined(Q_OS_INTEGRITY)
 #if (__INTEGRITY_MAJOR_VERSION >= 10)
     // Integrity V10+ does support multicore CPUs

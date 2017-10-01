@@ -32,7 +32,7 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
            namespace.h cxx17-namespaces.h
 
 
-if(*-g++*|*-icc*|*-clang*|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win-newlines.h
+if(*-g++*|*-icc*|*-clang*|*-llvm):!win32-*: HEADERS += os9-newlines.h win-newlines.h
 if(*-g++*|*-clang*): HEADERS += dollars.h
 SOURCES += tst_moc.cpp
 

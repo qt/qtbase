@@ -5,7 +5,6 @@ MODULE_CONFIG = uic
 CONFIG += $$MODULE_CONFIG
 DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
-irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
 

@@ -732,10 +732,6 @@ setBootstrapVariable()
         EXTRA_CXXFLAGS="\$(QMAKE_CXXFLAGS) \$(QMAKE_CXXFLAGS_CXX11) \$(QMAKE_CXXFLAGS_SPLIT_SECTIONS)"
         EXTRA_LFLAGS="\$(QMAKE_LFLAGS) \$(QMAKE_LFLAGS_GCSECTIONS)"
 
-        if [ "$PLATFORM" = "irix-cc" ] || [ "$PLATFORM" = "irix-cc-64" ]; then
-	    EXTRA_LFLAGS="$EXTRA_LFLAGS -lm"
-        fi
-
         [ "$CFG_SILENT" = "yes" ] && CC_TRANSFORM='s,^,\@,' || CC_TRANSFORM=
         setBootstrapVariable QMAKE_CC CC "$CC_TRANSFORM"
         setBootstrapVariable QMAKE_CXX CXX "$CC_TRANSFORM"

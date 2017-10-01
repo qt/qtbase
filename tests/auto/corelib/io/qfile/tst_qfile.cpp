@@ -68,8 +68,6 @@ QT_END_NAMESPACE
 #elif defined(Q_OS_FREEBSD)
 # include <sys/param.h>
 # include <sys/mount.h>
-#elif defined(Q_OS_IRIX)
-# include <sys/statfs.h>
 #elif defined(Q_OS_VXWORKS)
 # include <fcntl.h>
 #if defined(_WRS_KERNEL)
@@ -1905,10 +1903,6 @@ void tst_QFile::largeFileSupport()
     if (::GetDiskFreeSpaceEx((wchar_t*)QDir::currentPath().utf16(), &free, 0, 0))
         freespace = free.QuadPart;
     if (freespace != 0) {
-#elif defined(Q_OS_IRIX)
-    struct statfs info;
-    if (statfs(QDir::currentPath().local8Bit(), &info, sizeof(struct statfs), 0) == 0) {
-        freespace = qlonglong(info.f_bfree * info.f_bsize);
 #else
     struct statfs info;
     if (statfs(const_cast<char *>(QDir::currentPath().toLocal8Bit().constData()), &info) == 0) {

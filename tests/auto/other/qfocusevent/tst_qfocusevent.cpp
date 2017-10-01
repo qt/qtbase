@@ -346,10 +346,6 @@ void tst_QFocusEvent::checkReason_ActiveWindow()
     d->hide();
     QTest::qWait(100);
 
-#if defined(Q_OS_IRIX)
-    QEXPECT_FAIL("", "IRIX requires explicit activateWindow(), so this test does not make any sense.", Abort);
-#endif
-
     if (!QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)
         || !QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)) {
         // Activate window of testFocusWidget, focus in that window goes to childFocusWidgetOne

@@ -614,7 +614,7 @@ void tst_QCompleter::directoryModel_data()
         QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
-#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
+#if !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
         QTest::newRow("(/h)") << "/h" << "" << "home" << "/home";
 #endif
         QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
@@ -660,7 +660,7 @@ void tst_QCompleter::fileSystemModel_data()
         QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
-#if !defined(Q_OS_IRIX) && !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
+#if !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
         QTest::newRow("(/h)") << "/h" << "" << "home" << "/home";
 #endif
         QTest::newRow("(/et)") << "/et" << "" << "etc" << "/etc";

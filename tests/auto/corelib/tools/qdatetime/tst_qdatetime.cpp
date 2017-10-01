@@ -1263,9 +1263,6 @@ void tst_QDateTime::addSecs()
     QFETCH(QDateTime, dt);
     QFETCH(int, nsecs);
     QFETCH(QDateTime, result);
-#ifdef Q_OS_IRIX
-    QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
-#endif
     QDateTime test = dt.addSecs(nsecs);
     QCOMPARE(test, result);
     QCOMPARE(test.timeSpec(), dt.timeSpec());
@@ -1285,9 +1282,6 @@ void tst_QDateTime::addMSecs()
     QFETCH(int, nsecs);
     QFETCH(QDateTime, result);
 
-#ifdef Q_OS_IRIX
-    QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
-#endif
     QDateTime test = dt.addMSecs(qint64(nsecs) * 1000);
     QCOMPARE(test, result);
     QCOMPARE(test.timeSpec(), dt.timeSpec());
@@ -1373,9 +1367,6 @@ void tst_QDateTime::toTimeSpec()
         QCOMPARE(localToLocal.time(), fromLocal.time());
         QCOMPARE(localToLocal.timeSpec(), Qt::LocalTime);
 
-#ifdef Q_OS_IRIX
-        QEXPECT_FAIL("summer2", "IRIX databases say 1970 had DST", Abort);
-#endif
         QCOMPARE(utcToLocal, fromLocal);
         QCOMPARE(utcToLocal.date(), fromLocal.date());
         QCOMPARE(utcToLocal.time(), fromLocal.time());
@@ -1427,9 +1418,6 @@ void tst_QDateTime::toLocalTime()
         QFETCH(QDateTime, fromLocal);
 
         QCOMPARE(fromLocal.toLocalTime(), fromLocal);
-#ifdef Q_OS_IRIX
-        QEXPECT_FAIL("summer2", "IRIX databases say 1970 had DST", Abort);
-#endif
         QCOMPARE(fromUtc.toLocalTime(), fromLocal);
         QCOMPARE(fromUtc.toLocalTime(), fromLocal.toLocalTime());
     } else {
@@ -1449,9 +1437,6 @@ void tst_QDateTime::toUTC()
         QFETCH(QDateTime, fromLocal);
 
         QCOMPARE(fromUtc.toUTC(), fromUtc);
-#ifdef Q_OS_IRIX
-        QEXPECT_FAIL("summer2", "IRIX databases say 1970 had DST", Abort);
-#endif
         QCOMPARE(fromLocal.toUTC(), fromUtc);
         QCOMPARE(fromUtc.toUTC(), fromLocal.toUTC());
     } else {
@@ -1512,9 +1497,6 @@ void tst_QDateTime::secsTo()
     QFETCH(QDateTime, result);
 
     if (dt.isValid()) {
-    #ifdef Q_OS_IRIX
-        QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
-    #endif
         QCOMPARE(dt.secsTo(result), (qint64)nsecs);
         QCOMPARE(result.secsTo(dt), (qint64)-nsecs);
         QVERIFY((dt == result) == (0 == nsecs));
@@ -1541,9 +1523,6 @@ void tst_QDateTime::msecsTo()
     QFETCH(QDateTime, result);
 
     if (dt.isValid()) {
-    #ifdef Q_OS_IRIX
-        QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
-    #endif
         QCOMPARE(dt.msecsTo(result), qint64(nsecs) * 1000);
         QCOMPARE(result.msecsTo(dt), -qint64(nsecs) * 1000);
         QVERIFY((dt == result) == (0 == (qint64(nsecs) * 1000)));

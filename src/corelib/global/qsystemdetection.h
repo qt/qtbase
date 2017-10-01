@@ -52,30 +52,18 @@
      IOS      - iOS
      WATCHOS  - watchOS
      TVOS     - tvOS
-     MSDOS    - MS-DOS and Windows
-     OS2      - OS/2
-     OS2EMX   - XFree86 on OS/2 (not PM)
      WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
-     WINRT    - WinRT (Windows 8 Runtime)
+     WINRT    - WinRT (Windows Runtime)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
      HPUX     - HP-UX
-     ULTRIX   - DEC Ultrix
      LINUX    - Linux [has variants]
      FREEBSD  - FreeBSD [has variants]
      NETBSD   - NetBSD
      OPENBSD  - OpenBSD
-     BSDI     - BSD/OS
      INTERIX  - Interix
-     IRIX     - SGI Irix
-     OSF      - HP Tru64 UNIX
-     SCO      - SCO OpenServer 5
-     UNIXWARE - UnixWare 7, Open UNIX 8
      AIX      - AIX
      HURD     - GNU Hurd
-     DGUX     - DG/UX
-     RELIANT  - Reliant UNIX
-     DYNIX    - DYNIX/ptx
      QNX      - QNX [has variants]
      QNX6     - QNX RTP 6.1
      LYNX     - LynxOS
@@ -147,10 +135,6 @@
 #  define Q_OS_SOLARIS
 #elif defined(hpux) || defined(__hpux)
 #  define Q_OS_HPUX
-#elif defined(__ultrix) || defined(ultrix)
-#  define Q_OS_ULTRIX
-#elif defined(sinix)
-#  define Q_OS_RELIANT
 #elif defined(__native_client__)
 #  define Q_OS_NACL
 #elif defined(__linux__) || defined(__linux)
@@ -167,34 +151,17 @@
 #elif defined(__OpenBSD__)
 #  define Q_OS_OPENBSD
 #  define Q_OS_BSD4
-#elif defined(__bsdi__)
-#  define Q_OS_BSDI
-#  define Q_OS_BSD4
 #elif defined(__INTERIX)
 #  define Q_OS_INTERIX
 #  define Q_OS_BSD4
-#elif defined(__sgi)
-#  define Q_OS_IRIX
-#elif defined(__osf__)
-#  define Q_OS_OSF
 #elif defined(_AIX)
 #  define Q_OS_AIX
 #elif defined(__Lynx__)
 #  define Q_OS_LYNX
 #elif defined(__GNU__)
 #  define Q_OS_HURD
-#elif defined(__DGUX__)
-#  define Q_OS_DGUX
 #elif defined(__QNXNTO__)
 #  define Q_OS_QNX
-#elif defined(_SEQUENT_)
-#  define Q_OS_DYNIX
-#elif defined(_SCO_DS) /* SCO OpenServer 5 + GCC */
-#  define Q_OS_SCO
-#elif defined(__USLC__) /* all SCO platforms + UDK or OUDK */
-#  define Q_OS_UNIXWARE
-#elif defined(__svr4__) && defined(i386) /* Open UNIX 8 + GCC */
-#  define Q_OS_UNIXWARE
 #elif defined(__INTEGRITY)
 #  define Q_OS_INTEGRITY
 #elif defined(VXWORKS) /* there is no "real" VxWorks define - this has to be set in the mkspec! */

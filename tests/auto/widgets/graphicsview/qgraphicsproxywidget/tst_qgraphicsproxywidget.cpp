@@ -2661,9 +2661,6 @@ void tst_QGraphicsProxyWidget::childPos_data()
 
 void tst_QGraphicsProxyWidget::childPos()
 {
-#ifdef Q_OS_IRIX
-    QSKIP("This test is not reliable on IRIX.");
-#endif
     QFETCH(bool, moveCombo);
     QFETCH(QPoint, comboPos);
     QFETCH(QPointF, proxyPos);

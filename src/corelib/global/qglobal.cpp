@@ -1428,13 +1428,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
-    \macro Q_OS_ULTRIX
-    \relates <QtGlobal>
-
-    Defined on DEC Ultrix.
-*/
-
-/*!
     \macro Q_OS_LINUX
     \relates <QtGlobal>
 
@@ -1470,41 +1463,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
 */
 
 /*!
-    \macro Q_OS_BSDI
-    \relates <QtGlobal>
-
-    Defined on BSD/OS.
-*/
-
-/*!
-    \macro Q_OS_IRIX
-    \relates <QtGlobal>
-
-    Defined on SGI Irix.
-*/
-
-/*!
-    \macro Q_OS_OSF
-    \relates <QtGlobal>
-
-    Defined on HP Tru64 UNIX.
-*/
-
-/*!
-    \macro Q_OS_SCO
-    \relates <QtGlobal>
-
-    Defined on SCO OpenServer 5.
-*/
-
-/*!
-    \macro Q_OS_UNIXWARE
-    \relates <QtGlobal>
-
-    Defined on UnixWare 7, Open UNIX 8.
-*/
-
-/*!
     \macro Q_OS_AIX
     \relates <QtGlobal>
 
@@ -1516,27 +1474,6 @@ bool qSharedBuild() Q_DECL_NOTHROW
     \relates <QtGlobal>
 
     Defined on GNU Hurd.
-*/
-
-/*!
-    \macro Q_OS_DGUX
-    \relates <QtGlobal>
-
-    Defined on DG/UX.
-*/
-
-/*!
-    \macro Q_OS_RELIANT
-    \relates <QtGlobal>
-
-    Defined on Reliant UNIX.
-*/
-
-/*!
-    \macro Q_OS_DYNIX
-    \relates <QtGlobal>
-
-    Defined on DYNIX/ptx.
 */
 
 /*!

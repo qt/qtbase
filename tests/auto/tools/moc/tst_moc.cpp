@@ -43,7 +43,7 @@
 #include "pure-virtual-signals.h"
 #include "qinvokable.h"
 // msvc and friends crap out on it
-#if !defined(Q_CC_GNU) || defined(Q_OS_IRIX) || defined(Q_OS_WIN)
+#if !defined(Q_CC_GNU) || defined(Q_OS_WIN)
 #define SKIP_NEWLINE_TEST
 #endif
 #if !defined(SKIP_NEWLINE_TEST)
