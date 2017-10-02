@@ -1,5 +1,10 @@
 
-CMAKE_VERSION = $$system(cmake --version 2>$$QMAKE_NULL_DEVICE, lines)
+win32 {
+    CMAKE_VERSION = $$system(cmake --version 2>NUL, lines)
+} else {
+    CMAKE_VERSION = $$system(cmake --version 2>/dev/null, lines)
+}
+
 CMAKE_VERSION = $$member(CMAKE_VERSION, 0, 0)
 
 check.commands =
@@ -10,7 +15,12 @@ isEmpty(CMAKE_VERSION) {
     return()
 }
 
-CTEST_VERSION = $$system(ctest --version 2>$$QMAKE_NULL_DEVICE)
+win32 {
+    CTEST_VERSION = $$system(ctest --version 2>NUL)
+} else {
+    CTEST_VERSION = $$system(ctest --version 2>/dev/null)
+}
+
 isEmpty(CTEST_VERSION) {
     message("ctest executable not found. Not running CMake unit tests")
     return()

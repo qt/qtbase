@@ -32,11 +32,15 @@ isEmpty($${target_prefix}.INCDIRS) {
     # Get default include and library paths from compiler
     #
     gcc {
-        cmd_suffix = "<$$QMAKE_NULL_DEVICE >$$QMAKE_NULL_DEVICE"
-        equals(QMAKE_HOST.os, Windows): \
-            cmd_prefix = "set LC_ALL=C&"
-        else: \
+        !equals(QMAKE_HOST.os, Windows) {
             cmd_prefix = "LC_ALL=C"
+            cmd_suffix = "</dev/null >/dev/null"
+            null_file = /dev/null
+        } else {
+            cmd_prefix = "set LC_ALL=C&"
+            cmd_suffix = "<NUL >NUL"
+            null_file = NUL
+        }
 
         cxx_flags = $$QMAKE_CXXFLAGS
 
@@ -55,7 +59,7 @@ isEmpty($${target_prefix}.INCDIRS) {
 
         rim_qcc: \
             # Need the cc1plus and ld command lines to pick up the paths
-            cxx_flags += $$QMAKE_LFLAGS_SHLIB -o $$QMAKE_NULL_DEVICE -v
+            cxx_flags += $$QMAKE_LFLAGS_SHLIB -o $$null_file -v
         else: darwin:clang: \
             # Need to link to pick up library paths
             cxx_flags += $$QMAKE_LFLAGS_SHLIB -o /dev/null -v -Wl,-v
@@ -171,7 +175,9 @@ defineReplace(qtVariablesFromMSVC) {
 }
 
 defineReplace(qtVariablesFromGCC) {
-    ret = $$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) <$$QMAKE_NULL_DEVICE 2>$$QMAKE_NULL_DEVICE", lines, ec)
+    null_device = /dev/null
+    equals(QMAKE_HOST.os, Windows): null_device = NUL
+    ret = $$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) <$$null_device 2>$$null_device", lines, ec)
     !equals(ec, 0): qtCompilerErrror($$1)
     return($$ret)
 }

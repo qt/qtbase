@@ -291,7 +291,10 @@ defineReplace(pkgConfigExecutable) {
         }
     }
 
-    PKG_CONFIG += 2> $$QMAKE_NULL_DEVICE
+    equals(QMAKE_HOST.os, Windows): \
+        PKG_CONFIG += 2> NUL
+    else: \
+        PKG_CONFIG += 2> /dev/null
 
     return($$PKG_CONFIG)
 }

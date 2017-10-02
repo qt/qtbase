@@ -82,7 +82,6 @@ equals(MAKEFILE_GENERATOR, MSBUILD) \
     QMAKE_MKDIR             = mkdir          # legacy
     QMAKE_MKDIR_CMD         = if not exist %1 mkdir %1 & if not exist %1 exit 1
     QMAKE_STREAM_EDITOR     = $(QMAKE) -install sed
-    QMAKE_NULL_DEVICE       = NUL
     QMAKE_INSTALL_FILE      = copy /y
     QMAKE_INSTALL_PROGRAM   = copy /y
 } else {
@@ -102,7 +101,6 @@ equals(MAKEFILE_GENERATOR, MSBUILD) \
     QMAKE_MKDIR             = mkdir -p   # legacy
     QMAKE_MKDIR_CMD         = test -d %1 || mkdir -p %1
     QMAKE_STREAM_EDITOR     = sed
-    QMAKE_NULL_DEVICE       = /dev/null
 
     equals(QMAKE_HOST.os, Windows) {
         MINGW_IN_SHELL = 1   # legacy
