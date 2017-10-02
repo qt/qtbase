@@ -428,6 +428,20 @@ void QComboBoxPrivateContainer::resizeEvent(QResizeEvent *e)
     QFrame::resizeEvent(e);
 }
 
+void QComboBoxPrivateContainer::paintEvent(QPaintEvent *e)
+{
+    QStyleOptionComboBox cbOpt = comboStyleOption();
+    if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &cbOpt, combo)
+            && mask().isEmpty()) {
+        QStyleOption opt;
+        opt.initFrom(this);
+        QPainter p(this);
+        style()->drawPrimitive(QStyle::PE_PanelMenu, &opt, &p, this);
+    }
+
+    QFrame::paintEvent(e);
+}
+
 void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 {
 // On Mac using the Mac style we want to clear the selection

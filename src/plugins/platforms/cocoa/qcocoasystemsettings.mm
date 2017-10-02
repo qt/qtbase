@@ -144,7 +144,6 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette
                 || mac_widget_colors[i].paletteRole == QPlatformTheme::MenuBarPalette) {
-            pal.setBrush(QPalette::Background, qt_mac_toQColor([NSColor windowBackgroundColor]));
             pal.setBrush(QPalette::Highlight, qt_mac_toQColor([NSColor selectedMenuItemColor]));
             qc = qt_mac_toQColor([NSColor labelColor]);
             pal.setBrush(QPalette::ButtonText, qc);

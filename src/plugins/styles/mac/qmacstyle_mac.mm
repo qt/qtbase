@@ -663,14 +663,6 @@ HIMutableShapeRef qt_mac_toHIMutableShape(const QRegion &region)
     return shape;
 }
 
-QRegion qt_mac_fromHIShapeRef(HIShapeRef shape)
-{
-    QRegion returnRegion;
-    //returnRegion.detach();
-    HIShapeEnumerate(shape, kHIShapeParseFromTopLeft, qt_mac_shape2QRegionHelper, &returnRegion);
-    return returnRegion;
-}
-
 bool qt_macWindowIsTextured(const QWidget *window)
 {
     if (QWindow *w = window->windowHandle())
@@ -2291,24 +2283,7 @@ void QMacStyle::polish(QWidget* w)
             || qobject_cast<QComboBoxPrivateContainer *>(w)
 #endif
             ) {
-        w->setWindowOpacity(0.985);
-        if (!w->testAttribute(Qt::WA_SetPalette)) {
-            QPixmap px(64, 64);
-            px.fill(Qt::white);
-            HIThemeMenuDrawInfo mtinfo;
-            mtinfo.version = qt_mac_hitheme_version;
-            mtinfo.menuType = kThemeMenuTypePopUp;
-            // HIRect rect = CGRectMake(0, 0, px.width(), px.height());
-            // ###
-            //HIThemeDrawMenuBackground(&rect, &mtinfo, QMacCGContext(&px)),
-            //                          kHIThemeOrientationNormal);
-            QPalette pal = w->palette();
-            QBrush background(px);
-            pal.setBrush(QPalette::All, QPalette::Window, background);
-            pal.setBrush(QPalette::All, QPalette::Button, background);
-            w->setPalette(pal);
-            w->setAttribute(Qt::WA_SetPalette, false);
-        }
+        w->setAttribute(Qt::WA_TranslucentBackground, true);
     }
 #endif
 
@@ -3023,7 +2998,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = Qt::AlignRight;
         break;
     case SH_ComboBox_PopupFrameStyle:
-        ret = QFrame::NoFrame | QFrame::Plain;
+        ret = QFrame::NoFrame;
         break;
     case SH_MessageBox_TextInteractionFlags:
         ret = Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse | Qt::TextSelectableByKeyboard;
@@ -3056,27 +3031,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         break;
     case SH_Menu_FadeOutOnHide:
         ret = true;
-        break;
-    case SH_Menu_Mask:
-        if (opt) {
-            if (QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
-                ret = true;
-                CGRect menuRect = CGRectMake(opt->rect.x(), opt->rect.y() + 4,
-                                             opt->rect.width(), opt->rect.height() - 8);
-                HIThemeMenuDrawInfo mdi;
-                mdi.version = 0;
-#if QT_CONFIG(menu)
-                if (w && qobject_cast<QMenu *>(w->parentWidget()))
-                    mdi.menuType = kThemeMenuTypeHierarchical;
-                else
-#endif
-                    mdi.menuType = kThemeMenuTypePopUp;
-                QCFType<HIShapeRef> shape;
-                HIThemeGetMenuBackgroundShape(&menuRect, &mdi, &shape);
-
-                mask->region = qt_mac_fromHIShapeRef(shape);
-            }
-        }
         break;
     case SH_ItemView_PaintAlternatingRowColorsForEmptyArea:
         ret = true;
@@ -3587,6 +3541,40 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
 
         break;
     }
+    case PE_PanelMenu: {
+        p->save();
+        p->fillRect(opt->rect, Qt::transparent);
+        p->setPen(Qt::transparent);
+        p->setBrush(opt->palette.window());
+        p->setRenderHint(QPainter::Antialiasing, true);
+        QPainterPath path;
+        static const qreal CornerPointOffset = 5.5;
+        static const qreal CornerControlOffset = 2.1;
+        QRectF r = opt->rect;
+        // Top-left corner
+        path.moveTo(r.left(), r.top() + CornerPointOffset);
+        path.cubicTo(r.left(), r.top() + CornerControlOffset,
+                     r.left() + CornerControlOffset, r.top(),
+                     r.left() + CornerPointOffset, r.top());
+        // Top-right corner
+        path.lineTo(r.right() - CornerPointOffset, r.top());
+        path.cubicTo(r.right() - CornerControlOffset, r.top(),
+                     r.right(), r.top() + CornerControlOffset,
+                     r.right(), r.top() + CornerPointOffset);
+        // Bottom-right corner
+        path.lineTo(r.right(), r.bottom() - CornerPointOffset);
+        path.cubicTo(r.right(), r.bottom() - CornerControlOffset,
+                     r.right() - CornerControlOffset, r.bottom(),
+                     r.right() - CornerPointOffset, r.bottom());
+        // Bottom-right corner
+        path.lineTo(r.left() + CornerPointOffset, r.bottom());
+        path.cubicTo(r.left() + CornerControlOffset, r.bottom(),
+                     r.left(), r.bottom() - CornerControlOffset,
+                     r.left(), r.bottom() - CornerPointOffset);
+        path.lineTo(r.left(), r.top() + CornerPointOffset);
+        p->drawPath(path);
+        p->restore();
+        } break;
 
     default:
         QCommonStyle::drawPrimitive(pe, opt, p, w);
@@ -4269,16 +4257,18 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt, w);
         d->drawFocusRing(p, opt->rect, hMargin, vMargin);
         break; }
+    case CE_MenuEmptyArea:
+        // Skip: PE_PanelMenu fills in everything
+        break;
     case CE_MenuItem:
     case CE_MenuHMargin:
     case CE_MenuVMargin:
-    case CE_MenuEmptyArea:
     case CE_MenuTearoff:
     case CE_MenuScroller:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             const bool active = mi->state & State_Selected;
-            const QBrush bg = active ? mi->palette.highlight() : mi->palette.background();
-            p->fillRect(mi->rect, bg);
+            if (active)
+                p->fillRect(mi->rect, mi->palette.highlight());
 
             const QStyleHelper::WidgetSizePolicy widgetSize = d->aquaSizeConstrain(opt, w);
 

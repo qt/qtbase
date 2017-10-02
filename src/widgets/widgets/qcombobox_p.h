@@ -248,6 +248,7 @@ protected:
     void timerEvent(QTimerEvent *timerEvent) override;
     void leaveEvent(QEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
+    void paintEvent(QPaintEvent *e) override;
     QStyleOptionComboBox comboStyleOption() const;
 
 Q_SIGNALS:
