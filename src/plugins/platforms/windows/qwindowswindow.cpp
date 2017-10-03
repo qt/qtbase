@@ -695,7 +695,7 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
 {
     if (!hwnd)
         return;
-    UINT swpFlags = SWP_NOMOVE | SWP_NOSIZE;
+    UINT swpFlags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER;
     if (frameChange)
         swpFlags |= SWP_FRAMECHANGED;
     if (topLevel) {
