@@ -10,13 +10,13 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compare_unregistered_enums">
-<Incident type="fail" file="tst_cmptest.cpp" line="160">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA[Compared values are not the same]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compare_registered_enums">
-<Incident type="fail" file="tst_cmptest.cpp" line="167">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (Qt::Monday): Monday
    Expected (Qt::Sunday): Sunday]]></Description>
@@ -24,7 +24,7 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compare_class_enums">
-<Incident type="fail" file="tst_cmptest.cpp" line="173">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (MyClassEnum::MyClassEnumValue1): MyClassEnumValue1
    Expected (MyClassEnum::MyClassEnumValue2): MyClassEnumValue2]]></Description>
@@ -44,7 +44,7 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compare_tostring">
-<Incident type="fail" file="tst_cmptest.cpp" line="262">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[int, string]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (actual)  : QVariant(int,123)
@@ -53,19 +53,19 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[both invalid]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="262">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[null hash, invalid]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (actual)  : QVariant(QVariantHash)
    Expected (expected): QVariant()]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="262">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[string, null user type]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (actual)  : QVariant(QString,A simple string)
    Expected (expected): QVariant(PhonyClass)]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="262">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[both non-null user type]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (actual)  : QVariant(PhonyClass,<value not representable as string>)
@@ -80,31 +80,31 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[equal lists]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="356">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[last item different]]></DataTag>
     <Description><![CDATA[Compared lists differ at index 2.
    Actual   (opA): "string3"
    Expected (opB): "DIFFERS"]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="356">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[second-last item different]]></DataTag>
     <Description><![CDATA[Compared lists differ at index 2.
    Actual   (opA): "string3"
    Expected (opB): "DIFFERS"]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="356">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[prefix]]></DataTag>
     <Description><![CDATA[Compared lists have different sizes.
    Actual   (opA) size: 2
    Expected (opB) size: 1]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="356">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[short list second]]></DataTag>
     <Description><![CDATA[Compared lists have different sizes.
    Actual   (opA) size: 12
    Expected (opB) size: 1]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="356">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[short list first]]></DataTag>
     <Description><![CDATA[Compared lists have different sizes.
    Actual   (opA) size: 1
@@ -113,7 +113,7 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQListInt">
-<Incident type="fail" file="tst_cmptest.cpp" line="363">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA[Compared lists differ at index 2.
    Actual   (int1): 3
    Expected (int2): 4]]></Description>
@@ -121,7 +121,7 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQListDouble">
-<Incident type="fail" file="tst_cmptest.cpp" line="370">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA[Compared lists differ at index 0.
    Actual   (double1): 1.5
    Expected (double2): 1]]></Description>
@@ -129,10 +129,20 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQColor">
-<Incident type="fail" file="tst_cmptest.cpp" line="380">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[Qt::yellow vs "yellow"]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[Qt::yellow vs Qt::green]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (yellow): #ffff00
-   Expected (green) : #00ff00]]></Description>
+   Actual   (colorA): #ffffff00
+   Expected (colorB): #ff00ff00]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[0x88ff0000 vs 0xffff0000]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual   (colorA): #88ff0000
+   Expected (colorB): #ffff0000]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
@@ -140,13 +150,13 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[both null]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="405">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[one null]]></DataTag>
     <Description><![CDATA[Compared QPixmaps differ.
    Actual   (opA).isNull(): 1
    Expected (opB).isNull(): 0]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="405">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[other null]]></DataTag>
     <Description><![CDATA[Compared QPixmaps differ.
    Actual   (opA).isNull(): 0
@@ -155,13 +165,13 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[equal]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="405">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[different size]]></DataTag>
     <Description><![CDATA[Compared QPixmaps differ in size.
    Actual   (opA): 11x20
    Expected (opB): 20x20]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="405">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[different pixels]]></DataTag>
     <Description><![CDATA[Compared values are not the same]]></Description>
 </Incident>
@@ -171,13 +181,13 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[both null]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="432">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[one null]]></DataTag>
     <Description><![CDATA[Compared QImages differ.
    Actual   (opA).isNull(): 1
    Expected (opB).isNull(): 0]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="432">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[other null]]></DataTag>
     <Description><![CDATA[Compared QImages differ.
    Actual   (opA).isNull(): 0
@@ -186,19 +196,19 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[equal]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="432">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[different size]]></DataTag>
     <Description><![CDATA[Compared QImages differ in size.
    Actual   (opA): 11x20
    Expected (opB): 20x20]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="432">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[different format]]></DataTag>
     <Description><![CDATA[Compared QImages differ in format.
    Actual   (opA): 6
    Expected (opB): 3]]></Description>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="432">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[different pixels]]></DataTag>
     <Description><![CDATA[Compared values are not the same]]></Description>
 </Incident>
@@ -208,7 +218,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[equal-empty]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="455">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[1-empty]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (rA): QRegion(200x50+10+10)
@@ -217,7 +227,7 @@
 <Incident type="pass" file="" line="0">
     <DataTag><![CDATA[equal]]></DataTag>
 </Incident>
-<Incident type="fail" file="tst_cmptest.cpp" line="455">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[different lists]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (rA): QRegion(200x50+10+10)
@@ -226,7 +236,7 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQVector2D">
-<Incident type="fail" file="tst_cmptest.cpp" line="0">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (v2a): QVector2D(1, 2)
    Expected (v2b): QVector2D(1, 3)]]></Description>
@@ -234,7 +244,7 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQVector3D">
-<Incident type="fail" file="tst_cmptest.cpp" line="0">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (v3a): QVector3D(1, 2, 3)
    Expected (v3b): QVector3D(1, 3, 3)]]></Description>
@@ -242,7 +252,7 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQVector4D">
-<Incident type="fail" file="tst_cmptest.cpp" line="0">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA[Compared values are not the same
    Actual   (v4a): QVector4D(1, 2, 3, 4)
    Expected (v4b): QVector4D(1, 3, 3, 4)]]></Description>
@@ -250,25 +260,25 @@
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="verify">
-<Incident type="fail" file="tst_cmptest.cpp" line="467">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA['opaqueFunc() < 2' returned FALSE. ()]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="verify2">
-<Incident type="fail" file="tst_cmptest.cpp" line="473">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA['opaqueFunc() < 2' returned FALSE. (42)]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="tryVerify">
-<Incident type="fail" file="tst_cmptest.cpp" line="479">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA['opaqueFunc() < 2' returned FALSE. ()]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="tryVerify2">
-<Incident type="fail" file="tst_cmptest.cpp" line="485">
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <Description><![CDATA['opaqueFunc() < 2' returned FALSE. (42)]]></Description>
 </Incident>
     <Duration msecs="0"/>
