@@ -130,6 +130,8 @@ public:
 
     QWindow *topLevelWindow() const;
 
+    virtual QOpenGLContext *shareContext() const;
+
     virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
 
     virtual void setVisible(bool visible);

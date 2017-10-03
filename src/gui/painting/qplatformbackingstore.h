@@ -120,7 +120,7 @@ public:
     virtual void flush(QWindow *window, const QRegion &region, const QPoint &offset) = 0;
 #ifndef QT_NO_OPENGL
     virtual void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                 QPlatformTextureList *textures, QOpenGLContext *context,
+                                 QPlatformTextureList *textures,
                                  bool translucentBackground);
 #endif
     virtual QImage toImage() const;

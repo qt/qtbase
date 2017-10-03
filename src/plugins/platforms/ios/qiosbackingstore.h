@@ -55,9 +55,6 @@ public:
     ~QIOSBackingStore();
 
     void flush(QWindow *window, const QRegion &region, const QPoint &offset) Q_DECL_OVERRIDE;
-
-private:
-    QOpenGLContext *m_context;
 };
 
 QT_END_NAMESPACE

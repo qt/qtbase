@@ -96,6 +96,7 @@ public:
     }
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const Q_DECL_OVERRIDE;
+    QOpenGLContext *shareContext() const override;
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
@@ -125,6 +126,13 @@ QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
     else
         result.setRight(result.right() + dw); // right edge drag
     return result;
+}
+
+QOpenGLContext *QWidgetWindowPrivate::shareContext() const
+{
+    Q_Q(const QWidgetWindow);
+    const QWidgetPrivate *widgetPrivate = QWidgetPrivate::get(q->widget());
+    return widgetPrivate->shareContext();
 }
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)

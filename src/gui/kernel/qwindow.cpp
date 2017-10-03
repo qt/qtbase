@@ -45,6 +45,7 @@
 #ifndef QT_NO_OPENGL
 #include <qpa/qplatformopenglcontext.h>
 #include "qopenglcontext.h"
+#include "qopenglcontext_p.h"
 #endif
 #include "qscreen.h"
 
@@ -2632,6 +2633,11 @@ QWindow *QWindowPrivate::topLevelWindow() const
 
     return window;
 }
+
+QOpenGLContext *QWindowPrivate::shareContext() const
+{
+    return qt_gl_global_share_context();
+};
 
 /*!
     Creates a local representation of a window created by another process or by

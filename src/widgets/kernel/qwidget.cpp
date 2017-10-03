@@ -1876,39 +1876,15 @@ static void deleteBackingStore(QWidgetPrivate *d)
 {
     QTLWExtra *topData = d->topData();
 
-    // The context must be current when destroying the backing store as it may attempt to
-    // release resources like textures and shader programs. The window may not be suitable
-    // anymore as there will often not be a platform window underneath at this stage. Fall
-    // back to a QOffscreenSurface in this case.
-    QScopedPointer<QOffscreenSurface> tempSurface;
-#ifndef QT_NO_OPENGL
-    if (d->textureChildSeen && topData->shareContext) {
-        if (topData->window->handle()) {
-            topData->shareContext->makeCurrent(topData->window);
-        } else {
-            tempSurface.reset(new QOffscreenSurface);
-            tempSurface->setFormat(topData->shareContext->format());
-            tempSurface->create();
-            topData->shareContext->makeCurrent(tempSurface.data());
-        }
-    }
-#endif
-
     delete topData->backingStore;
     topData->backingStore = 0;
-
-#ifndef QT_NO_OPENGL
-    if (d->textureChildSeen && topData->shareContext)
-        topData->shareContext->doneCurrent();
-#endif
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
         //the qplatformbackingstore may hold a reference to the window, so the backingstore
-        //needs to be deleted first. If the backingstore holds GL resources, we need to
-        // make the context current here. This is taken care of by deleteBackingStore().
+        //needs to be deleted first.
 
         extra->topextra->backingStoreTracker.destroy();
         deleteBackingStore(this);

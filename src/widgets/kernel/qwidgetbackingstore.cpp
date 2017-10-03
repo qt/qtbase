@@ -143,10 +143,8 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
         // WA_TranslucentBackground. Therefore the compositor needs to know whether the app intends
         // to rely on translucency, in order to decide if it should clear to transparent or opaque.
         const bool translucentBackground = widget->testAttribute(Qt::WA_TranslucentBackground);
-        // Use the tlw's context, not widget's. The difference is important with native child
-        // widgets where tlw != widget.
-        backingStore->handle()->composeAndFlush(widget->windowHandle(), effectiveRegion, offset, widgetTextures,
-                                                tlw->d_func()->shareContext(), translucentBackground);
+        backingStore->handle()->composeAndFlush(widget->windowHandle(), effectiveRegion, offset,
+                                                widgetTextures, translucentBackground);
         widget->window()->d_func()->sendComposeStatus(widget->window(), true);
     } else
 #endif
