@@ -408,13 +408,13 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     // get the pointer to sendmsg and recvmsg
     DWORD bytesReturned;
     GUID recvmsgguid = WSAID_WSARECVMSG;
-    if (WSAIoctl(socketDescriptor, SIO_GET_EXTENSION_FUNCTION_POINTER,
+    if (WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
                  &recvmsgguid, sizeof(recvmsgguid),
                  &recvmsg, sizeof(recvmsg), &bytesReturned, NULL, NULL) == SOCKET_ERROR)
         recvmsg = 0;
 
     GUID sendmsgguid = WSAID_WSASENDMSG;
-    if (WSAIoctl(socketDescriptor, SIO_GET_EXTENSION_FUNCTION_POINTER,
+    if (WSAIoctl(socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
                  &sendmsgguid, sizeof(sendmsgguid),
                  &sendmsg, sizeof(sendmsg), &bytesReturned, NULL, NULL) == SOCKET_ERROR)
         sendmsg = 0;
@@ -1257,26 +1257,28 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
             qt_socket_getPortAndAddress(socketDescriptor, &aa, &header->senderPort, &header->senderAddress);
     }
 
-    if (ret != -1 && recvmsg) {
+    if (ret != -1 && recvmsg && options != QAbstractSocketEngine::WantNone) {
         // get the ancillary data
+        header->destinationPort = localPort;
         WSACMSGHDR *cmsgptr;
         for (cmsgptr = WSA_CMSG_FIRSTHDR(&msg); cmsgptr != NULL;
              cmsgptr = WSA_CMSG_NXTHDR(&msg, cmsgptr)) {
             if (cmsgptr->cmsg_level == IPPROTO_IPV6 && cmsgptr->cmsg_type == IPV6_PKTINFO
                     && cmsgptr->cmsg_len >= WSA_CMSG_LEN(sizeof(in6_pktinfo))) {
                 in6_pktinfo *info = reinterpret_cast<in6_pktinfo *>(WSA_CMSG_DATA(cmsgptr));
-                QHostAddress target(reinterpret_cast<quint8 *>(&info->ipi6_addr));
-                if (info->ipi6_ifindex)
-                    target.setScopeId(QString::number(info->ipi6_ifindex));
+
+                header->destinationAddress.setAddress(reinterpret_cast<quint8 *>(&info->ipi6_addr));
+                header->ifindex = info->ipi6_ifindex;
+                if (header->ifindex)
+                    header->destinationAddress.setScopeId(QString::number(info->ipi6_ifindex));
             }
             if (cmsgptr->cmsg_level == IPPROTO_IP && cmsgptr->cmsg_type == IP_PKTINFO
                     && cmsgptr->cmsg_len >= WSA_CMSG_LEN(sizeof(in_pktinfo))) {
                 in_pktinfo *info = reinterpret_cast<in_pktinfo *>(WSA_CMSG_DATA(cmsgptr));
                 u_long addr;
                 WSANtohl(socketDescriptor, info->ipi_addr.s_addr, &addr);
-                QHostAddress target(addr);
-                if (info->ipi_ifindex)
-                    target.setScopeId(QString::number(info->ipi_ifindex));
+                header->destinationAddress.setAddress(addr);
+                header->ifindex = info->ipi_ifindex;
             }
 
             if (cmsgptr->cmsg_len == WSA_CMSG_LEN(sizeof(int))
