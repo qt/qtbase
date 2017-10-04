@@ -75,6 +75,12 @@
 
 #include <QHostInfo>
 
+#if defined(Q_OS_MACOS)
+#include <CoreServices/CoreServices.h>
+#include <SystemConfiguration/SystemConfiguration.h>
+#include <Security/SecKeychain.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QNetworkAccessFileBackendFactory, fileBackend)
@@ -87,11 +93,6 @@ Q_GLOBAL_STATIC(QNetworkAccessDebugPipeBackendFactory, debugpipeBackend)
 #endif
 
 #if defined(Q_OS_MACX)
-
-#include <CoreServices/CoreServices.h>
-#include <SystemConfiguration/SystemConfiguration.h>
-#include <Security/SecKeychain.h>
-
 bool getProxyAuth(const QString& proxyHostname, const QString &scheme, QString& username, QString& password)
 {
     OSStatus err;

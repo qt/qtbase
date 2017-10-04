@@ -562,26 +562,11 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 offset, 
 }
 
 // this is also used in qmime_win.cpp
-bool qt_write_dib(QDataStream &s, QImage image)
+bool qt_write_dib(QDataStream &s, const QImage &image, int bpl, int bpl_bmp, int nbits)
 {
-    int        nbits;
-    int        bpl_bmp;
-    int        bpl = image.bytesPerLine();
-
     QIODevice* d = s.device();
     if (!d->isWritable())
         return false;
-
-    if (image.depth() == 8 && image.colorCount() <= 16) {
-        bpl_bmp = (((bpl+1)/2+3)/4)*4;
-        nbits = 4;
-    } else if (image.depth() == 32) {
-        bpl_bmp = ((image.width()*24+31)/32)*4;
-        nbits = 24;
-    } else {
-        bpl_bmp = bpl;
-        nbits = image.depth();
-    }
 
     BMP_INFOHDR bi;
     bi.biSize               = BMP_WIN;                // build info header
@@ -616,9 +601,6 @@ bool qt_write_dib(QDataStream &s, QImage image)
         }
         delete [] color_table;
     }
-
-    if (image.format() == QImage::Format_MonoLSB)
-        image = image.convertToFormat(QImage::Format_Mono);
 
     int y;
 
@@ -769,20 +751,16 @@ bool QBmpHandler::read(QImage *image)
 
 bool QBmpHandler::write(const QImage &img)
 {
-    if (m_format == DibFormat) {
-        QDataStream dibStream(device());
-        dibStream.setByteOrder(QDataStream::LittleEndian); // Intel byte order
-        return qt_write_dib(dibStream, img);
-    }
-
     QImage image;
     switch (img.format()) {
     case QImage::Format_Mono:
-    case QImage::Format_MonoLSB:
     case QImage::Format_Indexed8:
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32:
         image = img;
+        break;
+    case QImage::Format_MonoLSB:
+        image = img.convertToFormat(QImage::Format_Mono);
         break;
     case QImage::Format_Alpha8:
     case QImage::Format_Grayscale8:
@@ -796,20 +774,31 @@ bool QBmpHandler::write(const QImage &img)
         break;
     }
 
+    int nbits;
+    int bpl_bmp;
+    // Calculate a minimum bytes-per-line instead of using whatever value this QImage is using internally.
+    int bpl = ((image.width() * image.depth() + 31) >> 5) << 2;
+
+    if (image.depth() == 8 && image.colorCount() <= 16) {
+        bpl_bmp = (((bpl+1)/2+3)/4)*4;
+        nbits = 4;
+   } else if (image.depth() == 32) {
+        bpl_bmp = ((image.width()*24+31)/32)*4;
+        nbits = 24;
+    } else {
+        bpl_bmp = bpl;
+        nbits = image.depth();
+    }
+
+    if (m_format == DibFormat) {
+        QDataStream dibStream(device());
+        dibStream.setByteOrder(QDataStream::LittleEndian); // Intel byte order
+        return qt_write_dib(dibStream, img, bpl, bpl_bmp, nbits);
+    }
+
     QIODevice *d = device();
     QDataStream s(d);
     BMP_FILEHDR bf;
-    int bpl_bmp;
-    int bpl = image.bytesPerLine();
-
-    // Code partially repeated in qt_write_dib
-    if (image.depth() == 8 && image.colorCount() <= 16) {
-        bpl_bmp = (((bpl+1)/2+3)/4)*4;
-    } else if (image.depth() == 32) {
-        bpl_bmp = ((image.width()*24+31)/32)*4;
-    } else {
-        bpl_bmp = bpl;
-    }
 
     // Intel byte order
     s.setByteOrder(QDataStream::LittleEndian);
@@ -825,7 +814,7 @@ bool QBmpHandler::write(const QImage &img)
     s << bf;
 
     // write image
-    return qt_write_dib(s, image);
+    return qt_write_dib(s, image, bpl, bpl_bmp, nbits);
 }
 
 bool QBmpHandler::supportsOption(ImageOption option) const

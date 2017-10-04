@@ -168,29 +168,59 @@ void tst_QSslSocket_onDemandCertificates_member::proxyAuthenticationRequired(con
 
 #ifndef QT_NO_OPENSSL
 
+static bool waitForEncrypted(QSslSocket *socket)
+{
+    Q_ASSERT(socket);
+
+    QEventLoop eventLoop;
+
+    QTimer connectionTimeoutWatcher;
+    connectionTimeoutWatcher.setSingleShot(true);
+    connectionTimeoutWatcher.connect(&connectionTimeoutWatcher, &QTimer::timeout,
+                                     [&eventLoop]() {
+                                        eventLoop.exit();
+                                     });
+
+    bool encrypted = false;
+    socket->connect(socket, &QSslSocket::encrypted, [&eventLoop, &encrypted](){
+                        eventLoop.exit();
+                        encrypted = true;
+                    });
+
+    socket->connect(socket, QOverload<const QList<QSslError>&>::of(&QSslSocket::sslErrors),
+                    [&eventLoop](){
+                        eventLoop.exit();
+                    });
+
+    // Wait for 30 s. maximum - the default timeout in our QSslSocket::waitForEncrypted ...
+    connectionTimeoutWatcher.start(30000);
+    eventLoop.exec();
+    return encrypted;
+}
+
 void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMethods()
 {
-    QString host("www.qt.io");
+    const QString host("www.qt.io");
 
     // not using any root certs -> should not work
     QSslSocketPtr socket2 = newSocket();
     this->socket = socket2.data();
     socket2->setCaCertificates(QList<QSslCertificate>());
     socket2->connectToHostEncrypted(host, 443);
-    QVERIFY(!socket2->waitForEncrypted());
+    QVERIFY(!waitForEncrypted(socket2.data()));
 
     // default: using on demand loading -> should work
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
     socket->connectToHostEncrypted(host, 443);
-    QVERIFY2(socket->waitForEncrypted(), qPrintable(socket->errorString()));
+    QVERIFY2(waitForEncrypted(socket.data()), qPrintable(socket->errorString()));
 
     // not using any root certs again -> should not work
     QSslSocketPtr socket3 = newSocket();
     this->socket = socket3.data();
     socket3->setCaCertificates(QList<QSslCertificate>());
     socket3->connectToHostEncrypted(host, 443);
-    QVERIFY(!socket3->waitForEncrypted());
+    QVERIFY(!waitForEncrypted(socket3.data()));
 
     // setting empty SSL configuration explicitly -> depends on on-demand loading
     QSslSocketPtr socket4 = newSocket();
@@ -199,24 +229,16 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
     socket4->setSslConfiguration(conf);
     socket4->connectToHostEncrypted(host, 443);
 #ifdef QT_BUILD_INTERNAL
-    bool rootCertLoadingAllowed = QSslSocketPrivate::rootCertOnDemandLoadingSupported();
-#if defined(Q_OS_LINUX)
-    QCOMPARE(rootCertLoadingAllowed, true);
+    const bool works = QSslSocketPrivate::rootCertOnDemandLoadingSupported();
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN)
+    QCOMPARE(works, true);
 #elif defined(Q_OS_MAC)
-    QCOMPARE(rootCertLoadingAllowed, false);
-#endif // other platforms: undecided (Windows: depends on the version)
-    // when we allow on demand loading, it is enabled by default,
-    // so on Unix it will work without setting any certificates. Otherwise,
-    // the configuration contains an empty set of certificates
-    // and will fail.
-    bool works;
-#if defined (Q_OS_WIN)
-    works = false; // on Windows, this won't work even though we use on demand loading
-    Q_UNUSED(rootCertLoadingAllowed)
-#else
-    works = rootCertLoadingAllowed;
-#endif
-    QCOMPARE(socket4->waitForEncrypted(), works);
+    QCOMPARE(works, false);
+#endif // other platforms: undecided.
+    // When we *allow* on-demand loading, we enable it by default; so, on Unix,
+    // it will work without setting any certificates.  Otherwise, the configuration
+    // contains an empty set of certificates, so on-demand loading shall fail.
+   QCOMPARE(waitForEncrypted(socket4.data()), works);
 #endif // QT_BUILD_INTERNAL
 }
 

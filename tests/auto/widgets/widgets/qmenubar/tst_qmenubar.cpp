@@ -39,6 +39,7 @@
 #include <qstyleoption.h>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QPlainTextEdit>
 #include <qscreen.h>
 
 #include <qobject.h>
@@ -106,6 +107,7 @@ private slots:
     void allowActiveAndDisabled();
 #endif
 
+    void taskQTBUG56860_focus();
     void check_endKey();
     void check_homeKey();
 
@@ -709,6 +711,52 @@ void tst_QMenuBar::check_cursorKeys3()
     QCOMPARE(m_complexTriggerCount[int('d')], 0);
 }
 #endif
+
+void tst_QMenuBar::taskQTBUG56860_focus()
+{
+#if defined(Q_OS_DARWIN)
+    QSKIP("Native key events are needed to test menu action activation on macOS.");
+#endif
+    QMainWindow w;
+    QMenuBar *mb = w.menuBar();
+
+    if (mb->platformMenuBar())
+        QSKIP("This test requires the Qt menubar.");
+
+    QMenu *em = mb->addMenu("&Edit");
+    em->setObjectName("EditMenu");
+    em->addAction("&Cut");
+    em->addAction("C&opy");
+    QPlainTextEdit *e = new QPlainTextEdit;
+    e->setObjectName("edit");
+
+    w.setCentralWidget(e);
+    w.show();
+    QApplication::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+
+    QTRY_COMPARE(QApplication::focusWidget(), e);
+
+    // Open menu
+    QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_E, Qt::AltModifier );
+    QTRY_COMPARE(QApplication::activePopupWidget(), em);
+    // key down to trigger focus
+    QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Down );
+    // and press ENTER to close
+    QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Enter );
+    QTRY_COMPARE(QApplication::activePopupWidget(), nullptr);
+    // focus should have returned to the editor by now
+    QTRY_COMPARE(QApplication::focusWidget(), e);
+
+    // Now do it all over again...
+    QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_E, Qt::AltModifier );
+    QTRY_COMPARE(QApplication::activePopupWidget(), em);
+    QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Down );
+    QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Enter );
+    QTRY_COMPARE(QApplication::activePopupWidget(), nullptr);
+    QTRY_COMPARE(QApplication::focusWidget(), e);
+
+}
 
 /*!
     If a popupmenu is active you can use home to go quickly to the first item in the menu.

@@ -101,6 +101,9 @@ public:
     void _q_autoResizePopup();
     void _q_fileSystemModelDirectoryLoaded(const QString &path);
     void setCurrentIndex(QModelIndex, bool = true);
+
+    static QCompleterPrivate *get(QCompleter *o) { return o->d_func(); }
+    static const QCompleterPrivate *get(const QCompleter *o) { return o->d_func(); }
 };
 
 class QIndexMapper
