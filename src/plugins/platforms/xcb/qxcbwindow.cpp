@@ -1942,13 +1942,14 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
         return;
 
     if (event->type == atom(QXcbAtom::WM_PROTOCOLS)) {
-        if (event->data.data32[0] == atom(QXcbAtom::WM_DELETE_WINDOW)) {
+        xcb_atom_t protocolAtom = event->data.data32[0];
+        if (protocolAtom == atom(QXcbAtom::WM_DELETE_WINDOW)) {
             QWindowSystemInterface::handleCloseEvent(window());
-        } else if (event->data.data32[0] == atom(QXcbAtom::WM_TAKE_FOCUS)) {
+        } else if (protocolAtom == atom(QXcbAtom::WM_TAKE_FOCUS)) {
             connection()->setTime(event->data.data32[1]);
             relayFocusToModalWindow();
             return;
-        } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_PING)) {
+        } else if (protocolAtom == atom(QXcbAtom::_NET_WM_PING)) {
             if (event->window == xcbScreen()->root())
                 return;
 
@@ -1957,20 +1958,23 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             reply.response_type = XCB_CLIENT_MESSAGE;
             reply.window = xcbScreen()->root();
 
-            xcb_send_event(xcb_connection(), 0, xcbScreen()->root(), XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, (const char *)&reply);
+            xcb_send_event(xcb_connection(), 0, xcbScreen()->root(),
+                           XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+                           (const char *)&reply);
             xcb_flush(xcb_connection());
-        } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_SYNC_REQUEST)) {
+        } else if (protocolAtom == atom(QXcbAtom::_NET_WM_SYNC_REQUEST)) {
             connection()->setTime(event->data.data32[1]);
             m_syncValue.lo = event->data.data32[2];
             m_syncValue.hi = event->data.data32[3];
             if (m_usingSyncProtocol)
                 m_syncState = SyncReceived;
 #ifndef QT_NO_WHATSTHIS
-        } else if (event->data.data32[0] == atom(QXcbAtom::_NET_WM_CONTEXT_HELP)) {
+        } else if (protocolAtom == atom(QXcbAtom::_NET_WM_CONTEXT_HELP)) {
             QWindowSystemInterface::handleEnterWhatsThisEvent();
 #endif
         } else {
-            qWarning() << "QXcbWindow: Unhandled WM_PROTOCOLS message:" << connection()->atomName(event->data.data32[0]);
+            qCWarning(lcQpaXcb, "Unhandled WM_PROTOCOLS (%s)",
+                      connection()->atomName(protocolAtom).constData());
         }
 #ifndef QT_NO_DRAGANDDROP
     } else if (event->type == atom(QXcbAtom::XdndEnter)) {
@@ -1998,7 +2002,7 @@ void QXcbWindow::handleClientMessageEvent(const xcb_client_message_event_t *even
             || event->type == atom(QXcbAtom::_GTK_LOAD_ICONTHEMES)) {
         //silence the _COMPIZ and _GTK messages for now
     } else {
-        qWarning() << "QXcbWindow: Unhandled client message:" << connection()->atomName(event->type);
+        qCWarning(lcQpaXcb) << "Unhandled client message: " << connection()->atomName(event->type);
     }
 }
 
