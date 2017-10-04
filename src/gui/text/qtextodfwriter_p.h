@@ -56,8 +56,10 @@
 //
 
 #include <QtCore/QXmlStreamWriter>
+#include <QtCore/qhash.h>
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
+#include <QtCore/qvector.h>
 
 #include "qtextdocument_p.h"
 #include "qtextdocumentwriter.h"
@@ -94,11 +96,21 @@ public:
     void writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFormat format, int formatIndex) const;
     void writeListFormat(QXmlStreamWriter &writer, QTextListFormat format, int formatIndex) const;
     void writeFrameFormat(QXmlStreamWriter &writer, QTextFrameFormat format, int formatIndex) const;
-    void writeTableCellFormat(QXmlStreamWriter &writer, QTextTableCellFormat format, int formatIndex) const;
+    void writeTableFormat(QXmlStreamWriter &writer, QTextTableFormat format, int formatIndex) const;
+    void writeTableCellFormat(QXmlStreamWriter &writer, QTextTableCellFormat format, int formatIndex,
+                              QVector<QTextFormat> &styles) const;
     void writeFrame(QXmlStreamWriter &writer, const QTextFrame *frame);
     void writeInlineCharacter(QXmlStreamWriter &writer, const QTextFragment &fragment) const;
 
     const QString officeNS, textNS, styleNS, foNS, tableNS, drawNS, xlinkNS, svgNS;
+    const int defaultImageResolution = 11811; // 11811 dots per meter = (about) 300 dpi
+
+protected:
+    void tableCellStyleElement(QXmlStreamWriter &writer, const int &formatIndex,
+                               const QTextTableCellFormat &format,
+                               bool hasBorder, int tableId = 0,
+                               const QTextTableFormat tableFormatTmp = QTextTableFormat()) const;
+
 private:
     const QTextDocument *m_document;
     QIODevice *m_device;
@@ -108,6 +120,10 @@ private:
     bool m_createArchive;
 
     QStack<QTextList *> m_listStack;
+
+    QHash<int, QVector<int>> m_cellFormatsInTablesWithBorders;
+    QSet<int> m_tableFormatsWithBorders;
+    mutable QSet<int> m_tableFormatsWithColWidthConstraints;
 };
 
 QT_END_NAMESPACE

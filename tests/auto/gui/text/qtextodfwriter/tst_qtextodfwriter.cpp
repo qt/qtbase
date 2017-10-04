@@ -131,7 +131,7 @@ void tst_QTextOdfWriter::testWriteParagraph_data()
     QTest::newRow("misc2") << "\t     \tFoo" <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\"><text:tab/> <text:s text:c=\"4\"/><text:tab/>Foo</text:span></text:p>";
     QTest::newRow("linefeed") << (QStringLiteral("line1") + QChar(0x2028) + QStringLiteral("line2")) <<
-        "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">line1<text:line-break/>line2</text:span></text:p>";
+        "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">line1<text:tab/><text:line-break/>line2</text:span></text:p>";
     QTest::newRow("spaces") << "The quick brown fox jumped over the lazy dog" <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">The quick brown fox jumped over the lazy dog</text:span></text:p>";
 }
@@ -378,7 +378,7 @@ void tst_QTextOdfWriter::testWriteTable()
     odfWriter->writeFrame(*xmlWriter, document->rootFrame());
     QString xml = QString::fromLatin1(
         "<text:p text:style-name=\"p1\"/>"
-        "<table:table>"
+        "<table:table table:style-name=\"Table2\">"
             "<table:table-column table:number-columns-repeated=\"3\"/>"
             "<table:table-row>"
                 "<table:table-cell table:style-name=\"T3\">"
