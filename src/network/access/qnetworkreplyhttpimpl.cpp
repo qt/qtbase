@@ -1200,6 +1200,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
     case 302:                   // Found
     case 303:                   // See Other
     case 307:                   // Temporary Redirect
+    case 308:                   // Permanent Redirect
         // What do we do about the caching of the HTML note?
         // The response to a 303 MUST NOT be cached, while the response to
         // all of the others is cacheable if the headers indicate it to be
