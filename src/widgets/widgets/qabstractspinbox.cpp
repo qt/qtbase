@@ -39,7 +39,9 @@
 
 #include <qplatformdefs.h>
 #include <private/qabstractspinbox_p.h>
+#if QT_CONFIG(datetimeparser)
 #include <private/qdatetimeparser_p.h>
+#endif
 #include <private/qlineedit_p.h>
 #include <qabstractspinbox.h>
 
@@ -47,9 +49,6 @@
 #include <qstylehints.h>
 #include <qclipboard.h>
 #include <qdatetime.h>
-#if QT_CONFIG(datetimeedit)
-#include <qdatetimeedit.h>
-#endif
 #include <qevent.h>
 #if QT_CONFIG(menu)
 #include <qmenu.h>
@@ -1962,12 +1961,15 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
         break;
     }
     case QVariant::Double: ret = QVariant(arg1.toDouble() + arg2.toDouble()); break;
+#if QT_CONFIG(datetimeparser)
     case QVariant::DateTime: {
         QDateTime a2 = arg2.toDateTime();
         QDateTime a1 = arg1.toDateTime().addDays(QDATETIMEEDIT_DATETIME_MIN.daysTo(a2));
         a1.setTime(a1.time().addMSecs(QTime().msecsTo(a2.time())));
         ret = QVariant(a1);
+        break;
     }
+#endif // datetimeparser
     default: break;
     }
     return ret;
@@ -2022,6 +2024,7 @@ QVariant operator*(const QVariant &arg1, double multiplier)
         ret = static_cast<int>(qBound<double>(INT_MIN, arg1.toInt() * multiplier, INT_MAX));
         break;
     case QVariant::Double: ret = QVariant(arg1.toDouble() * multiplier); break;
+#if QT_CONFIG(datetimeparser)
     case QVariant::DateTime: {
         double days = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDateTime().date()) * multiplier;
         int daysInt = (int)days;
@@ -2031,6 +2034,7 @@ QVariant operator*(const QVariant &arg1, double multiplier)
         ret = QDateTime(QDate().addDays(int(days)), QTime().addMSecs(msecs));
         break;
     }
+#endif // datetimeparser
     default: ret = arg1; break;
     }
 
@@ -2053,11 +2057,14 @@ double operator/(const QVariant &arg1, const QVariant &arg2)
         a1 = arg1.toDouble();
         a2 = arg2.toDouble();
         break;
+#if QT_CONFIG(datetimeparser)
     case QVariant::DateTime:
         a1 = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDate());
         a2 = QDATETIMEEDIT_DATE_MIN.daysTo(arg2.toDate());
         a1 += (double)QDATETIMEEDIT_TIME_MIN.msecsTo(arg1.toDateTime().time()) / (long)(3600 * 24 * 1000);
         a2 += (double)QDATETIMEEDIT_TIME_MIN.msecsTo(arg2.toDateTime().time()) / (long)(3600 * 24 * 1000);
+        break;
+#endif // datetimeparser
     default: break;
     }
 

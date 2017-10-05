@@ -79,6 +79,14 @@ const char *algoname(int i)
         return "sha3_384-";
     case QCryptographicHash::Sha3_512:
         return "sha3_512-";
+    case QCryptographicHash::Keccak_224:
+        return "keccak_224-";
+    case QCryptographicHash::Keccak_256:
+        return "keccak_256-";
+    case QCryptographicHash::Keccak_384:
+        return "keccak_384-";
+    case QCryptographicHash::Keccak_512:
+        return "keccak_512-";
     }
     Q_UNREACHABLE();
     return 0;

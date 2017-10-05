@@ -196,6 +196,8 @@ public:
     void _q_tabMoved(int from, int to);
     void init();
 
+    void initBasicStyleOption(QStyleOptionTabWidgetFrame *option) const;
+
     QTabBar *tabs;
     QStackedWidget *stack;
     QRect panelRect;
@@ -258,6 +260,43 @@ bool QTabWidget::hasHeightForWidth() const
     return has;
 }
 
+/*!
+    \internal
+
+    Initialize only time inexpensive parts of the style option
+    for QTabWidget::setUpLayout()'s non-visible code path.
+*/
+void QTabWidgetPrivate::initBasicStyleOption(QStyleOptionTabWidgetFrame *option) const
+{
+    Q_Q(const QTabWidget);
+    option->initFrom(q);
+
+    if (q->documentMode())
+        option->lineWidth = 0;
+    else
+        option->lineWidth = q->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, q);
+
+    switch (pos) {
+    case QTabWidget::North:
+        option->shape = shape == QTabWidget::Rounded ? QTabBar::RoundedNorth
+                                                     : QTabBar::TriangularNorth;
+        break;
+    case QTabWidget::South:
+        option->shape = shape == QTabWidget::Rounded ? QTabBar::RoundedSouth
+                                                     : QTabBar::TriangularSouth;
+        break;
+    case QTabWidget::West:
+        option->shape = shape == QTabWidget::Rounded ? QTabBar::RoundedWest
+                                                     : QTabBar::TriangularWest;
+        break;
+    case QTabWidget::East:
+        option->shape = shape == QTabWidget::Rounded ? QTabBar::RoundedEast
+                                                     : QTabBar::TriangularEast;
+        break;
+    }
+
+    option->tabBarRect = q->tabBar()->geometry();
+}
 
 /*!
     Initialize \a option with the values from this QTabWidget. This method is useful
@@ -272,12 +311,7 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
         return;
 
     Q_D(const QTabWidget);
-    option->initFrom(this);
-
-    if (documentMode())
-        option->lineWidth = 0;
-    else
-        option->lineWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, this);
+    d->initBasicStyleOption(option);
 
     int exth = style()->pixelMetric(QStyle::PM_TabBarBaseHeight, 0, this);
     QSize t(0, d->stack->frameWidth());
@@ -308,31 +342,10 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
         option->leftCornerWidgetSize = QSize(0, 0);
     }
 
-    switch (d->pos) {
-    case QTabWidget::North:
-        option->shape = d->shape == QTabWidget::Rounded ? QTabBar::RoundedNorth
-                                                        : QTabBar::TriangularNorth;
-        break;
-    case QTabWidget::South:
-        option->shape = d->shape == QTabWidget::Rounded ? QTabBar::RoundedSouth
-                                                        : QTabBar::TriangularSouth;
-        break;
-    case QTabWidget::West:
-        option->shape = d->shape == QTabWidget::Rounded ? QTabBar::RoundedWest
-                                                        : QTabBar::TriangularWest;
-        break;
-    case QTabWidget::East:
-        option->shape = d->shape == QTabWidget::Rounded ? QTabBar::RoundedEast
-                                                        : QTabBar::TriangularEast;
-        break;
-    }
-
     option->tabBarSize = t;
 
-    QRect tbRect = tabBar()->geometry();
     QRect selectedTabRect = tabBar()->tabRect(tabBar()->currentIndex());
-    option->tabBarRect = tbRect;
-    selectedTabRect.moveTopLeft(selectedTabRect.topLeft() + tbRect.topLeft());
+    selectedTabRect.moveTopLeft(selectedTabRect.topLeft() + option->tabBarRect.topLeft());
     option->selectedTabRect = selectedTabRect;
 }
 
@@ -764,16 +777,18 @@ void QTabWidget::setUpLayout(bool onlyCheck)
     if (onlyCheck && !d->dirty)
         return; // nothing to do
 
-    QStyleOptionTabWidgetFrame option;
-    initStyleOption(&option);
-
-    // this must be done immediately, because QWidgetItem relies on it (even if !isVisible())
-    d->setLayoutItemMargins(QStyle::SE_TabWidgetLayoutItem, &option);
-
     if (!isVisible()) {
+        // this must be done immediately, because QWidgetItem relies on it (even if !isVisible())
+        QStyleOptionTabWidgetFrame basicOption;
+        d->initBasicStyleOption(&basicOption);
+        d->setLayoutItemMargins(QStyle::SE_TabWidgetLayoutItem, &basicOption);
         d->dirty = true;
         return; // we'll do it later
     }
+
+    QStyleOptionTabWidgetFrame option;
+    initStyleOption(&option);
+    d->setLayoutItemMargins(QStyle::SE_TabWidgetLayoutItem, &option);
 
     QRect tabRect = style()->subElementRect(QStyle::SE_TabWidgetTabBar, &option, this);
     d->panelRect = style()->subElementRect(QStyle::SE_TabWidgetTabPane, &option, this);

@@ -617,7 +617,7 @@ template<> class QTypeInfo<A> : public QTypeInfoMerger<A, B, C, D> {};
         void overloadedFunction(int, QString);
         void overloadedFunction(int, QString) const;
     };
-    ... qConstOverload<>(&Foo::overloadedFunction)
+    ... qConstOverload<int, QString>(&Foo::overloadedFunction)
     ... qNonConstOverload<int, QString>(&Foo::overloadedFunction)
 //! [54]
 

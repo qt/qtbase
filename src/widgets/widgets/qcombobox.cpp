@@ -72,6 +72,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <private/qlineedit_p.h>
+#include <private/qcompleter_p.h>
 #include <qdebug.h>
 #if QT_CONFIG(effects)
 # include <private/qeffects_p.h>
@@ -1227,8 +1228,27 @@ Qt::MatchFlags QComboBoxPrivate::matchFlags() const
 void QComboBoxPrivate::_q_editingFinished()
 {
     Q_Q(QComboBox);
-    if (lineEdit && !lineEdit->text().isEmpty() && itemText(currentIndex) != lineEdit->text()) {
-        const int index = q_func()->findText(lineEdit->text(), matchFlags());
+    if (!lineEdit)
+        return;
+    const auto leText = lineEdit->text();
+    if (!leText.isEmpty() && itemText(currentIndex) != leText) {
+#if QT_CONFIG(completer)
+        const auto *leCompleter = lineEdit->completer();
+        const auto *popup = leCompleter ? QCompleterPrivate::get(leCompleter)->popup : nullptr;
+        if (popup && popup->isVisible()) {
+            // QLineEdit::editingFinished() will be emitted before the code flow returns
+            // to QCompleter::eventFilter(), where QCompleter::activated() may be emitted.
+            // We know that the completer popup will still be visible at this point, and
+            // that any selection should be valid.
+            const QItemSelectionModel *selModel = popup->selectionModel();
+            const QModelIndex curIndex = popup->currentIndex();
+            const bool completerIsActive = selModel && selModel->selectedIndexes().contains(curIndex);
+
+            if (completerIsActive)
+                return;
+        }
+#endif
+        const int index = q_func()->findText(leText, matchFlags());
         if (index != -1) {
             q->setCurrentIndex(index);
             emitActivated(currentIndex);
@@ -3163,13 +3183,13 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
     Q_D(QComboBox);
 
 #if QT_CONFIG(completer)
-    if (d->lineEdit
-        && d->lineEdit->completer()
-        && d->lineEdit->completer()->popup()
-        && d->lineEdit->completer()->popup()->isVisible()) {
-        // provide same autocompletion support as line edit
-        d->lineEdit->event(e);
-        return;
+    if (const auto *cmpltr = completer()) {
+        const auto *popup = QCompleterPrivate::get(cmpltr)->popup;
+        if (popup && popup->isVisible()) {
+            // provide same autocompletion support as line edit
+            d->lineEdit->event(e);
+            return;
+        }
     }
 #endif
 

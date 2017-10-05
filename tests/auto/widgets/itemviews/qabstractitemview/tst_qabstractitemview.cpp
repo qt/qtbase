@@ -55,6 +55,8 @@
 #include <qproxystyle.h>
 #include <qdialog.h>
 
+Q_DECLARE_METATYPE(Qt::ItemFlags);
+
 static inline void setFrameless(QWidget *w)
 {
     Qt::WindowFlags flags = w->windowFlags();
@@ -154,6 +156,8 @@ private slots:
     void testDialogAsEditor();
     void QTBUG46785_mouseout_hover_state();
     void testClearModelInClickedSignal();
+    void inputMethodEnabled_data();
+    void inputMethodEnabled();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2293,6 +2297,108 @@ void tst_QAbstractItemView::testClearModelInClickedSignal()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
 
     QCOMPARE(view.model(), nullptr);
+}
+
+void tst_QAbstractItemView::inputMethodEnabled_data()
+{
+    QTest::addColumn<QByteArray>("viewType");
+    QTest::addColumn<Qt::ItemFlags>("itemFlags");
+    QTest::addColumn<bool>("result");
+
+    QList<QByteArray> widgets;
+    widgets << "QListView" << "QTreeView" << "QTableView";
+
+    for (const QByteArray &widget : qAsConst(widgets)) {
+        QTest::newRow(widget + ": no flags") << widget << Qt::ItemFlags(Qt::NoItemFlags) << false;
+        QTest::newRow(widget + ": checkable") << widget << Qt::ItemFlags(Qt::ItemIsUserCheckable) << false;
+        QTest::newRow(widget + ": selectable") << widget << Qt::ItemFlags(Qt::ItemIsSelectable) << false;
+        QTest::newRow(widget + ": enabled") << widget << Qt::ItemFlags(Qt::ItemIsEnabled) << false;
+        QTest::newRow(widget + ": selectable|enabled")
+            << widget << Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled) << false;
+        QTest::newRow(widget + ": editable|enabled")
+            << widget << Qt::ItemFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled) << true;
+        QTest::newRow(widget + ": editable|enabled|selectable")
+            << widget << Qt::ItemFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable) << true;
+    }
+}
+
+void tst_QAbstractItemView::inputMethodEnabled()
+{
+    QFETCH(QByteArray, viewType);
+    QFETCH(Qt::ItemFlags, itemFlags);
+    QFETCH(bool, result);
+
+    QScopedPointer<QAbstractItemView> view;
+    if (viewType == "QListView")
+        view.reset(new QListView());
+    else if (viewType == "QTableView")
+        view.reset(new QTableView());
+    else if (viewType == "QTreeView")
+        view.reset(new QTreeView());
+    else
+        QVERIFY(0);
+
+    centerOnScreen(view.data());
+    view->show();
+    QVERIFY(QTest::qWaitForWindowExposed(view.data()));
+
+    QStandardItemModel *model = new QStandardItemModel(view.data());
+    QStandardItem *item = new QStandardItem("first item");
+    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    model->appendRow(item);
+
+    QStandardItem *secondItem = new QStandardItem("test item");
+    secondItem->setFlags(Qt::ItemFlags(itemFlags));
+    model->appendRow(secondItem);
+
+    view->setModel(model);
+
+    // Check current changed
+    view->setCurrentIndex(model->index(0, 0));
+    QVERIFY(!view->testAttribute(Qt::WA_InputMethodEnabled));
+    view->setCurrentIndex(model->index(1, 0));
+    QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
+    view->setCurrentIndex(model->index(0, 0));
+    QVERIFY(!view->testAttribute(Qt::WA_InputMethodEnabled));
+
+    // Check focus by switching the activation of the window to force a focus in
+    view->setCurrentIndex(model->index(1, 0));
+    QApplication::setActiveWindow(0);
+    QApplication::setActiveWindow(view.data());
+    QVERIFY(QTest::qWaitForWindowActive(view.data()));
+    QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
+
+    view->setCurrentIndex(QModelIndex());
+    QVERIFY(!view->testAttribute(Qt::WA_InputMethodEnabled));
+    QApplication::setActiveWindow(0);
+    QApplication::setActiveWindow(view.data());
+    QVERIFY(QTest::qWaitForWindowActive(view.data()));
+    QModelIndex index = model->index(1, 0);
+    QPoint p = view->visualRect(index).center();
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, Qt::NoModifier, p);
+    if (itemFlags & Qt::ItemIsEnabled)
+        QCOMPARE(view->currentIndex(), index);
+    QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
+
+    index = model->index(0, 0);
+    QApplication::setActiveWindow(0);
+    QApplication::setActiveWindow(view.data());
+    QVERIFY(QTest::qWaitForWindowActive(view.data()));
+    p = view->visualRect(index).center();
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, Qt::NoModifier, p);
+    QCOMPARE(view->currentIndex(), index);
+    QVERIFY(!view->testAttribute(Qt::WA_InputMethodEnabled));
+
+    // There is a case when it goes to the first visible item so we
+    // make the flags of the first item match the ones we are testing
+    // to check the attribute correctly
+    QApplication::setActiveWindow(0);
+    view->setCurrentIndex(QModelIndex());
+    view->reset();
+    item->setFlags(Qt::ItemFlags(itemFlags));
+    QApplication::setActiveWindow(view.data());
+    QVERIFY(QTest::qWaitForWindowActive(view.data()));
+    QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

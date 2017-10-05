@@ -55,6 +55,8 @@
 #include <linux/input.h>
 #endif
 
+#include <math.h>
+
 #if QT_CONFIG(mtdev)
 extern "C" {
 #include <mtdev.h>

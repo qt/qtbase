@@ -443,6 +443,7 @@
                     "xcb/xfixes.h",
                     "xcb/xcb_image.h",
                     "xcb/xcb_keysyms.h",
+                    "xcb/xinerama.h",
                     "xcb/sync.h",
                     "xcb/randr.h",
                     "xcb/shm.h"
@@ -460,8 +461,8 @@
             },
             "sources": [
                 { "type": "pkgConfig",
-                  "args": "xcb xcb-shm xcb-sync xcb-xfixes xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape" },
-                "-lxcb -lxcb-shm -lxcb-sync -lxcb-xfixes -lxcb-randr -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-shape"
+                  "args": "xcb xcb-shm xcb-sync xcb-xfixes xcb-xinerama xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape" },
+                "-lxcb -lxcb-shm -lxcb-sync -lxcb-xfixes -lxcb-xinerama -lxcb-randr -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-shape"
             ]
         },
         "xcb_xlib": {

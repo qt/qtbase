@@ -95,7 +95,6 @@ public:
     void _q_startConnecting(const QHostInfo &hostInfo);
     void _q_testConnection();
     void _q_abortConnectionAttempt();
-    void _q_forceDisconnect();
 
     bool emittedReadyRead;
     bool emittedBytesWritten;
@@ -148,7 +147,6 @@ public:
     bool hasPendingData;
 
     QTimer *connectTimer;
-    QTimer *disconnectTimer;
 
     int hostLookupId;
 

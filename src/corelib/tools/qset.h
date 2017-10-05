@@ -340,13 +340,14 @@ Q_INLINE_TEMPLATE bool QSet<T>::intersects(const QSet<T> &other) const
 template <class T>
 Q_INLINE_TEMPLATE QSet<T> &QSet<T>::subtract(const QSet<T> &other)
 {
-    QSet<T> copy1(*this);
-    QSet<T> copy2(other);
-    typename QSet<T>::const_iterator i = copy1.constEnd();
-    while (i != copy1.constBegin()) {
-        --i;
-        if (copy2.contains(*i))
+    if (&other == this) {
+        clear();
+    } else {
+        auto i = other.constEnd();
+        while (i != other.constBegin()) {
+            --i;
             remove(*i);
+        }
     }
     return *this;
 }

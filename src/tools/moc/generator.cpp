@@ -562,14 +562,14 @@ void Generator::generateCode()
     fprintf(out, "\nvoid *%s::qt_metacast(const char *_clname)\n{\n", cdef->qualified.constData());
     fprintf(out, "    if (!_clname) return nullptr;\n");
     fprintf(out, "    if (!strcmp(_clname, qt_meta_stringdata_%s.stringdata0))\n"
-                  "        return static_cast<void*>(const_cast< %s*>(this));\n",
-            qualifiedClassNameIdentifier.constData(), cdef->classname.constData());
+                  "        return static_cast<void*>(this);\n",
+            qualifiedClassNameIdentifier.constData());
     for (int i = 1; i < cdef->superclassList.size(); ++i) { // for all superclasses but the first one
         if (cdef->superclassList.at(i).second == FunctionDef::Private)
             continue;
         const char *cname = cdef->superclassList.at(i).first.constData();
-        fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(const_cast< %s*>(this));\n",
-                cname, cname, cdef->classname.constData());
+        fprintf(out, "    if (!strcmp(_clname, \"%s\"))\n        return static_cast< %s*>(this);\n",
+                cname, cname);
     }
     for (int i = 0; i < cdef->interfaceList.size(); ++i) {
         const QVector<ClassDef::Interface> &iface = cdef->interfaceList.at(i);
@@ -577,8 +577,7 @@ void Generator::generateCode()
             fprintf(out, "    if (!strcmp(_clname, %s))\n        return ", iface.at(j).interfaceId.constData());
             for (int k = j; k >= 0; --k)
                 fprintf(out, "static_cast< %s*>(", iface.at(k).className.constData());
-            fprintf(out, "const_cast< %s*>(this)%s;\n",
-                    cdef->classname.constData(), QByteArray(j+1, ')').constData());
+            fprintf(out, "this%s;\n", QByteArray(j + 1, ')').constData());
         }
     }
     if (!purestSuperClass.isEmpty() && !isQObject) {
@@ -1263,7 +1262,6 @@ void Generator::generateStaticMetacall()
         Q_ASSERT(needElse); // if there is signal, there was method.
         fprintf(out, " else if (_c == QMetaObject::IndexOfMethod) {\n");
         fprintf(out, "        int *result = reinterpret_cast<int *>(_a[0]);\n");
-        fprintf(out, "        void **func = reinterpret_cast<void **>(_a[1]);\n");
         bool anythingUsed = false;
         for (int methodindex = 0; methodindex < cdef->signalList.size(); ++methodindex) {
             const FunctionDef &f = cdef->signalList.at(methodindex);
@@ -1289,14 +1287,14 @@ void Generator::generateStaticMetacall()
                 fprintf(out, ") const;\n");
             else
                 fprintf(out, ");\n");
-            fprintf(out, "            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&%s::%s)) {\n",
+            fprintf(out, "            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&%s::%s)) {\n",
                     cdef->classname.constData(), f.name.constData());
             fprintf(out, "                *result = %d;\n", methodindex);
             fprintf(out, "                return;\n");
             fprintf(out, "            }\n        }\n");
         }
         if (!anythingUsed)
-            fprintf(out, "        Q_UNUSED(result);\n        Q_UNUSED(func);\n");
+            fprintf(out, "        Q_UNUSED(result);\n");
         fprintf(out, "    }");
         needElse = true;
     }
