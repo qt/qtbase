@@ -61,6 +61,7 @@
 #include <QtCore/qstack.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +70,7 @@ class QStandardItemData
 public:
     inline QStandardItemData() : role(-1) {}
     inline QStandardItemData(int r, const QVariant &v) : role(r), value(v) {}
+    inline QStandardItemData(const std::pair<const int&, const QVariant&> &p) : role(p.first), value(p.second) {}
     int role;
     QVariant value;
     inline bool operator==(const QStandardItemData &other) const { return role == other.role && value == other.value; }
@@ -89,6 +91,15 @@ inline QDataStream &operator<<(QDataStream &out, const QStandardItemData &data)
     out << data.role;
     out << data.value;
     return out;
+}
+
+inline QDebug &operator<<(QDebug &debug, const QStandardItemData &data)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << data.role
+                    << " "
+                    << data.value;
+    return debug.space();
 }
 
 #endif // QT_NO_DATASTREAM

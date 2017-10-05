@@ -185,6 +185,72 @@ void QStandardItemPrivate::childDeleted(QStandardItem *child)
     emit model->dataChanged(modelIndex, modelIndex);
 }
 
+namespace {
+
+    struct ByNormalizedRole
+    {
+        static int normalizedRole(int role)
+        {
+            return role == Qt::EditRole ? Qt::DisplayRole : role;
+        }
+
+       bool operator()(const QStandardItemData& standardItemData, const std::pair<const int &, const QVariant&>& roleMapIt) const
+       {
+           return standardItemData.role < normalizedRole(roleMapIt.first);
+       }
+       bool operator()(const std::pair<const int&, const QVariant &>& roleMapIt, const QStandardItemData& standardItemData) const
+       {
+           return normalizedRole(roleMapIt.first) < standardItemData.role;
+       }
+
+    };
+
+    /*
+        Based on std::transform with a twist. The inputs are iterators of <int, QVariant> pair.
+        The variant is checked for validity and if not valid, that element is not taken into account
+        which means that the resulting output might be shorter than the input.
+    */
+    template<class Input, class OutputIt>
+    OutputIt roleMapStandardItemDataTransform(Input first1, Input last1, OutputIt d_first)
+    {
+        while (first1 != last1) {
+            if ((*first1).second.isValid())
+                *d_first++ = QStandardItemData(*first1);
+            ++first1;
+        }
+        return d_first;
+    }
+
+
+    /*
+        Based on std::set_union with a twist. The idea is to create a union of both inputs
+        with an additional constraint: if an input contains an invalid variant, it means
+        that this one should not be taken into account for generating the output.
+    */
+    template<class Input1, class Input2,
+             class OutputIt, class Compare>
+    OutputIt roleMapStandardItemDataUnion(Input1 first1, Input1 last1,
+                                          Input2 first2, Input2 last2,
+                                          OutputIt d_first, Compare comp)
+    {
+        for (; first1 != last1; ++d_first) {
+            if (first2 == last2) {
+                return roleMapStandardItemDataTransform(first1, last1, d_first);
+            }
+            if (comp(*first2, *first1)) {
+                *d_first = *first2++;
+            } else {
+                if ((*first1).second.isValid())
+                    *d_first = QStandardItemData(*first1);
+                if (!comp(*first1, *first2))
+                    ++first2;
+                ++first1;
+            }
+        }
+        return std::copy(first2, last2, d_first);
+    }
+}
+
 /*!
   \internal
 */
@@ -192,18 +258,25 @@ void QStandardItemPrivate::setItemData(const QMap<int, QVariant> &roles)
 {
     Q_Q(QStandardItem);
 
-    //let's build the vector of new values
-    QVector<QStandardItemData> newValues;
-    for (auto it = roles.begin(), end = roles.end(); it != end; ++it) {
-        const QVariant &value = it.value();
-        if (value.isValid()) {
-            int role = it.key();
-            role = (role == Qt::EditRole) ? Qt::DisplayRole : role;
-            newValues.append(QStandardItemData(role, value));
-        }
-    }
+    auto byRole = [](const QStandardItemData& item1, const QStandardItemData& item2) {
+        return item1.role < item2.role;
+    };
 
-    if (values!=newValues) {
+    std::sort(values.begin(), values.end(), byRole);
+
+    /*
+        Create a vector of QStandardItemData that will contain the original values
+        if the matching role is not contained in roles, the new value if it is and
+        if the new value is an invalid QVariant, it will be removed.
+    */
+    QVector<QStandardItemData> newValues;
+    newValues.reserve(values.size());
+    roleMapStandardItemDataUnion(roles.keyValueBegin(),
+                                 roles.keyValueEnd(),
+                                 values.cbegin(), values.cend(),
+                                 std::back_inserter(newValues), ByNormalizedRole());
+
+    if (newValues != values) {
         values.swap(newValues);
         if (model)
             model->d_func()->itemChanged(q);

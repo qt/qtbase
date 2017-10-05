@@ -130,6 +130,8 @@ private slots:
     void getMimeDataWithInvalidModelIndex();
     void supportedDragDropActions();
 
+    void taskQTBUG_45114_setItemData();
+
 private:
     QAbstractItemModel *m_model;
     QPersistentModelIndex persistent;
@@ -1699,6 +1701,66 @@ void tst_QStandardItemModel::supportedDragDropActions()
     QStandardItemModel model;
     QCOMPARE(model.supportedDragActions(), Qt::CopyAction | Qt::MoveAction);
     QCOMPARE(model.supportedDropActions(), Qt::CopyAction | Qt::MoveAction);
+}
+
+void tst_QStandardItemModel::taskQTBUG_45114_setItemData()
+{
+    QStandardItemModel model;
+    QSignalSpy spy(&model, &QStandardItemModel::itemChanged);
+
+    QStandardItem *item = new QStandardItem("item");
+    item->setData(1, Qt::UserRole + 1);
+    item->setData(2, Qt::UserRole + 2);
+    model.appendRow(item);
+
+    QModelIndex index = item->index();
+    QCOMPARE(model.itemData(index).size(), 3);
+
+    QCOMPARE(spy.count(), 0);
+
+    QMap<int, QVariant> roles;
+
+    roles.insert(Qt::UserRole + 1, 1);
+    roles.insert(Qt::UserRole + 2, 2);
+    model.setItemData(index, roles);
+
+    QCOMPARE(spy.count(), 0);
+
+    roles.insert(Qt::UserRole + 1, 1);
+    roles.insert(Qt::UserRole + 2, 2);
+    roles.insert(Qt::UserRole + 3, QVariant());
+    model.setItemData(index, roles);
+
+    QCOMPARE(spy.count(), 0);
+
+    roles.clear();
+    roles.insert(Qt::UserRole + 1, 10);
+    roles.insert(Qt::UserRole + 3, 12);
+    model.setItemData(index, roles);
+
+    QCOMPARE(spy.count(), 1);
+    QMap<int, QVariant> itemRoles = model.itemData(index);
+
+    QCOMPARE(itemRoles.size(), 4);
+    QCOMPARE(itemRoles[Qt::UserRole + 1].toInt(), 10);
+    QCOMPARE(itemRoles[Qt::UserRole + 2].toInt(), 2);
+    QCOMPARE(itemRoles[Qt::UserRole + 3].toInt(), 12);
+
+    roles.clear();
+    roles.insert(Qt::UserRole + 3, 1);
+    model.setItemData(index, roles);
+
+    QCOMPARE(spy.count(), 2);
+
+    roles.clear();
+    roles.insert(Qt::UserRole + 3, QVariant());
+    model.setItemData(index, roles);
+
+    QCOMPARE(spy.count(), 3);
+
+    itemRoles = model.itemData(index);
+    QCOMPARE(itemRoles.size(), 3);
+    QVERIFY(!itemRoles.keys().contains(Qt::UserRole + 3));
 }
 
 QTEST_MAIN(tst_QStandardItemModel)
