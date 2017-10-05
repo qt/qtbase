@@ -56,6 +56,7 @@
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatformaccessibility.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qplatformoffscreensurface.h>
 #include <QtCore/qcoreapplication.h>
 
 #include <QtGui/private/qcoregraphics_p.h>
@@ -329,6 +330,24 @@ QPlatformWindow *QCocoaIntegration::createPlatformWindow(QWindow *window) const
 QPlatformWindow *QCocoaIntegration::createForeignWindow(QWindow *window, WId nativeHandle) const
 {
     return new QCocoaWindow(window, nativeHandle);
+}
+
+class QCocoaOffscreenSurface : public QPlatformOffscreenSurface
+{
+public:
+    QCocoaOffscreenSurface(QOffscreenSurface *offscreenSurface) : QPlatformOffscreenSurface(offscreenSurface) {}
+
+    QSurfaceFormat format() const override
+    {
+        Q_ASSERT(offscreenSurface());
+        return offscreenSurface()->requestedFormat();
+    }
+    bool isValid() const override { return true; }
+};
+
+QPlatformOffscreenSurface *QCocoaIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    return new QCocoaOffscreenSurface(surface);
 }
 
 #ifndef QT_NO_OPENGL
