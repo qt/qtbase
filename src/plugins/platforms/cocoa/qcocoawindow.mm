@@ -38,6 +38,7 @@
 ****************************************************************************/
 #include "qcocoawindow.h"
 #include "qcocoaintegration.h"
+#include "qcocoascreen.h"
 #include "qnswindowdelegate.h"
 #include "qcocoaeventdispatcher.h"
 #ifndef QT_NO_OPENGL
