@@ -117,20 +117,14 @@ defineTest(pathIsAbsolute) {
 ##### This requires fixing, so that the feature system works with cmake as well
 CMAKE_DISABLED_FEATURES = $$join(QT_DISABLED_FEATURES, "$$escape_expand(\\n)    ")
 
-CMAKE_HOST_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA/src], $$[QT_INSTALL_PREFIX])
-pathIsAbsolute($$CMAKE_HOST_DATA_DIR) {
-    CMAKE_HOST_DATA_DIR = $$[QT_HOST_DATA/src]/
+    CMAKE_HOST_DATA_DIR = $$[QT_INSTALL_PREFIX]/
     CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = True
-}
 
 cmake_extras_mkspec_dir.input = $$PWD/Qt5CoreConfigExtrasMkspecDir.cmake.in
 cmake_extras_mkspec_dir.output = $$DESTDIR/cmake/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake
 
-CMAKE_INSTALL_DATA_DIR = $$cmakeRelativePath($$[QT_HOST_DATA], $$[QT_INSTALL_PREFIX])
-pathIsAbsolute($$CMAKE_INSTALL_DATA_DIR) {
-    CMAKE_INSTALL_DATA_DIR = $$[QT_HOST_DATA]/
+    CMAKE_INSTALL_DATA_DIR = $$[QT_INSTALL_PREFIX]/
     CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = True
-}
 
 cmake_extras_mkspec_dir_for_install.input = $$PWD/Qt5CoreConfigExtrasMkspecDirForInstall.cmake.in
 cmake_extras_mkspec_dir_for_install.output = $$DESTDIR/cmake/install/Qt5Core/Qt5CoreConfigExtrasMkspecDir.cmake
