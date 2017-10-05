@@ -1638,7 +1638,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
                     QPointF p = lines[i].p1();
                     QLineF line = s->matrix.map(QLineF(QPointF(p.x() - width*0.5, p.y()),
                                                        QPointF(p.x() + width*0.5, p.y())));
-                    d->rasterizer->rasterizeLine(line.p1(), line.p2(), 1);
+                    d->rasterizer->rasterizeLine(line.p1(), line.p2(), width / line.length());
                 }
                 continue;
             }
