@@ -689,7 +689,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
         }
     }
     if (testDir.isEmpty())
-        QSKIP("This test requires to have an unique directory of at least six ascii characters under c:/");
+        QSKIP("This test requires to have a unique directory of at least six ascii characters under c:/");
 #else
     fd.setFilter(QDir::Hidden | QDir::AllDirs | QDir::Files | QDir::System);
     fd.setDirectory("/");
