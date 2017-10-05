@@ -78,6 +78,16 @@ QImage::Format qt_xcb_imageFormatForVisual(QXcbConnection *connection, uint8_t d
         && visual->green_mask == 0xff00 && visual->blue_mask == 0xff)
         return QImage::Format_RGB32;
 
+    if (QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+        if (depth == 24 && format->bits_per_pixel == 32 && visual->blue_mask == 0xff0000
+            && visual->green_mask == 0xff00 && visual->red_mask == 0xff)
+            return QImage::Format_RGBX8888;
+    } else {
+        if (depth == 24 && format->bits_per_pixel == 32 && visual->blue_mask == 0xff00
+            && visual->green_mask == 0xff0000 && visual->red_mask == 0xff000000)
+            return QImage::Format_RGBX8888;
+    }
+
     if (depth == 16 && format->bits_per_pixel == 16 && visual->red_mask == 0xf800
         && visual->green_mask == 0x7e0 && visual->blue_mask == 0x1f)
         return QImage::Format_RGB16;
@@ -128,8 +138,9 @@ QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap
                     }
                     break;
                 }
-                case QImage::Format_RGB32: // fall-through
-                case QImage::Format_ARGB32_Premultiplied: {
+                case QImage::Format_RGB32:
+                case QImage::Format_ARGB32_Premultiplied:
+                case QImage::Format_RGBX8888: {
                     uint *p = (uint*)image.scanLine(i);
                     uint *end = p + image.width();
                     while (p < end) {
@@ -146,7 +157,7 @@ QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap
         }
 
         // fix-up alpha channel
-        if (format == QImage::Format_RGB32) {
+        if (format == QImage::Format_RGB32 || format == QImage::Format_RGBX8888) {
             QRgb *p = (QRgb *)image.bits();
             for (int y = 0; y < height; ++y) {
                 for (int x = 0; x < width; ++x)
