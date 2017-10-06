@@ -201,7 +201,6 @@ Component selection:
   -dbus-runtime ........ Build Qt D-Bus and dynamically load libdbus-1 [no]
   -accessibility ....... Enable accessibility support [yes]
                          Note: Disabling accessibility is not recommended.
-  -qml-debug ........... Enable QML debugging support [yes]
 
 Qt comes with bundled copies of some 3rd party libraries. These are used
 by default if auto-detection of the respective system library fails.

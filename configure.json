@@ -102,7 +102,6 @@
             "platform": "string",
             "plugin-manifests": "boolean",
             "profile": "boolean",
-            "qml-debug": "boolean",
             "qreal": "string",
             "qtlibinfix": { "type": "string", "name": "qt_libinfix" },
             "qtnamespace": { "type": "string", "name": "qt_namespace" },
@@ -1235,13 +1234,6 @@
             "condition": "libs.libudev",
             "output": [ "privateFeature" ]
         },
-        "qml-debug": {
-            "label": "QML debugging",
-            "output": [
-                "privateFeature",
-                { "type": "publicQtConfig", "negative": true }
-            ]
-        },
         "compile_examples": {
             "label": "Compile examples",
             "output": [ "privateConfig" ]
@@ -1454,7 +1446,6 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
             "section": "Support enabled for",
             "entries": [
                 "pkg-config",
-                "qml-debug",
                 "libudev",
                 "system-zlib"
             ]
