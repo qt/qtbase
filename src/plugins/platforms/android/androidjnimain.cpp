@@ -450,6 +450,17 @@ static jboolean startQtAndroidPlugin(JNIEnv* /*env*/, jobject /*object*//*, jobj
 
 static void *startMainMethod(void */*data*/)
 {
+    {
+        JNIEnv* env = nullptr;
+        JavaVMAttachArgs args;
+        args.version = JNI_VERSION_1_6;
+        args.name = "QtMainThread";
+        args.group = NULL;
+        JavaVM *vm = QtAndroidPrivate::javaVM();
+        if (vm != 0)
+            vm->AttachCurrentThread(&env, &args);
+    }
+
     QVarLengthArray<const char *> params(m_applicationParams.size());
     for (int i = 0; i < m_applicationParams.size(); i++)
         params[i] = static_cast<const char *>(m_applicationParams[i].constData());
