@@ -6259,6 +6259,8 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
         QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
         if (theme)
             underlineStyle = QTextCharFormat::UnderlineStyle(theme->themeHint(QPlatformTheme::SpellCheckUnderlineStyle).toInt());
+        if (underlineStyle == QTextCharFormat::SpellCheckUnderline) // still not resolved
+            underlineStyle = QTextCharFormat::WaveUnderline;
     }
 
     if (underlineStyle == QTextCharFormat::WaveUnderline) {
