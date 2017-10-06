@@ -1240,7 +1240,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if (m_windowModality != window()->modality())
         recreateReason |= WindowModalityChanged;
 
-    const bool shouldBeContentView = !parentWindow && !m_viewIsEmbedded;
+    const bool shouldBeContentView = !parentWindow && !(m_viewIsToBeEmbedded || m_viewIsEmbedded);
     if (isContentView() != shouldBeContentView)
         recreateReason |= ContentViewChanged;
 
