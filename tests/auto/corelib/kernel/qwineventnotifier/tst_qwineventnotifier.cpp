@@ -41,6 +41,7 @@ protected slots:
     void simple_activated();
     void simple_timerSet();
 private slots:
+    void simple_data();
     void simple();
     void manyNotifiers();
 
@@ -61,9 +62,17 @@ void tst_QWinEventNotifier::simple_timerSet()
     SetEvent((HANDLE)simpleHEvent);
 }
 
+void tst_QWinEventNotifier::simple_data()
+{
+    QTest::addColumn<bool>("resetManually");
+    QTest::newRow("manual_reset") << true;
+    QTest::newRow("auto_reset") << false;
+}
+
 void tst_QWinEventNotifier::simple()
 {
-    simpleHEvent = CreateEvent(0, true, false, 0);
+    QFETCH(bool, resetManually);
+    simpleHEvent = CreateEvent(0, resetManually, false, 0);
     QVERIFY(simpleHEvent);
 
     QWinEventNotifier n(simpleHEvent);

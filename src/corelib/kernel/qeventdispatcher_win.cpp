@@ -942,7 +942,8 @@ void QEventDispatcherWin32::activateEventNotifiers()
     for (int i = d->winEventNotifierList.count(); --i >= 0;) {
         QWinEventNotifier *notifier = d->winEventNotifierList.at(i);
         QWinEventNotifierPrivate *nd = QWinEventNotifierPrivate::get(notifier);
-        if (WaitForSingleObject(nd->handleToEvent, 0) == WAIT_OBJECT_0) {
+        if (nd->signaledCount.load() != 0) {
+            --nd->signaledCount;
             nd->unregisterWaitObject();
             d->activateEventNotifier(notifier);
         }
