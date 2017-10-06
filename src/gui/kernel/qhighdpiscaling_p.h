@@ -74,16 +74,6 @@ typedef QPair<qreal, qreal> QDpi;
 class Q_GUI_EXPORT QHighDpiScaling {
     Q_GADGET
 public:
-    enum class HighDpiScaleFactorRoundingPolicy {
-        Unset,
-        Round,
-        Ceil,
-        Floor,
-        RoundPreferFloor,
-        PassThrough
-    };
-    Q_ENUM(HighDpiScaleFactorRoundingPolicy)
-
     enum class DpiAdjustmentPolicy {
         Unset,
         Enabled,

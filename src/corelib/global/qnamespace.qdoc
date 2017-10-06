@@ -3275,3 +3275,25 @@
 
   \value ChecksumItuV41 Checksum calculation based on ITU-V.41.
 */
+
+/*!
+  \enum Qt::HighDpiScaleFactorRoundingPolicy
+  \since 5.14
+
+  This enum describes the possible High-DPI scale factor rounding policies, which
+  decide how non-integer scale factors (such as Windows 150%) are handled.
+
+  The active policy is set by calling QGuiApplication::setHighDdpiScaleFactorRoundingPolicy() before
+  the application object is created, or by setting the QT_SCALE_FACTOR_ROUNDING_POLICY
+  environment variable.
+
+  \sa QGuiApplication::setHighDdpiScaleFactorRoundingPolicy()
+  \sa AA_EnableHighDpiScaling.
+
+  \omitvalue Unset
+  \value Round Round up for .5 and above.
+  \value Ceil Always round up.
+  \value Floor Always round down.
+  \value RoundPreferFloor Round up for .75 and above.
+  \value PassThrough Don't round.
+*/
