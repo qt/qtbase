@@ -56,6 +56,10 @@
 #endif
 #include <net/if.h>
 
+#ifndef QT_NO_IPV6IFNAME
+#include <net/if.h>
+#endif
+
 #if defined(QT_LINUXBASE)
 #  define QT_NO_GETIFADDRS
 #endif

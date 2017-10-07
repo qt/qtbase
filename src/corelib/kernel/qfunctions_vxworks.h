@@ -62,9 +62,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
-#ifndef QT_NO_IPV6IFNAME
-#include <net/if.h>
-#endif
 
 // VxWorks has public header mbuf.h which defines following variables for DKM.
 // Let's undef those to because they overlap with Qt variable names-

@@ -71,10 +71,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#ifndef QT_NO_IPV6IFNAME
-#include <net/if.h>
-#endif
-
 #ifndef _GNU_SOURCE
 #  define _GNU_SOURCE
 #endif

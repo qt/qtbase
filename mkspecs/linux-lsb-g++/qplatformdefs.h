@@ -77,9 +77,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
-#ifndef QT_NO_IPV6IFNAME
-#include <net/if.h>
-#endif
 
 // LSB 3.1 defines htonl and friends here
 #include <arpa/inet.h>

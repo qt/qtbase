@@ -73,9 +73,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
-#ifndef QT_NO_IPV6IFNAME
-#include <net/if.h>
-#endif
 
 // for htonl
 #include <arpa/inet.h>
