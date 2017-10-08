@@ -2959,10 +2959,10 @@
 
     This enum specifies the coordinate system.
 
-    \value DeviceCoordinates Coordinates are relative to the upper-left corner
+    \value DeviceCoordinates Coordinates are relative to the top-left corner
     of the object's paint device.
 
-    \value LogicalCoordinates Coordinates are relative to the upper-left corner
+    \value LogicalCoordinates Coordinates are relative to the top-left corner
     of the object.
 */
 

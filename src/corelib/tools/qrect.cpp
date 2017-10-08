@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     \brief The QRect class defines a rectangle in the plane using
     integer precision.
 
-    A rectangle is normally expressed as an upper-left corner and a
+    A rectangle is normally expressed as a top-left corner and a
     size.  The size (width and height) of a QRect is always equivalent
     to the mathematical rectangle that forms the basis for its
     rendering.
@@ -1317,7 +1317,7 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     \brief The QRectF class defines a rectangle in the plane using floating
     point precision.
 
-    A rectangle is normally expressed as an upper-left corner and a
+    A rectangle is normally expressed as a top-left corner and a
     size.  The size (width and height) of a QRectF is always equivalent
     to the mathematical rectangle that forms the basis for its
     rendering.
