@@ -77,9 +77,6 @@ public:
 
     static QMimeDatabasePrivate *instance();
 
-    QMimeProviderBase *provider();
-    void setProvider(QMimeProviderBase *theProvider);
-
     inline QString defaultMimeType() const { return m_defaultMimeType; }
 
     bool inherits(const QString &mime, const QString &parent);
@@ -91,8 +88,22 @@ public:
     QMimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device, int *priorityPtr);
     QMimeType findByData(const QByteArray &data, int *priorityPtr);
     QStringList mimeTypeForFileName(const QString &fileName);
+    QMimeGlobMatchResult findByFileName(const QString &fileName);
+
+    // API for QMimeType. Takes care of locking the mutex.
+    void loadMimeTypePrivate(QMimeTypePrivate &mimePrivate);
+    void loadGenericIcon(QMimeTypePrivate &mimePrivate);
+    void loadIcon(QMimeTypePrivate &mimePrivate);
+    QStringList parents(const QString &mimeName);
+    QStringList listAliases(const QString &mimeName);
+    bool mimeInherits(const QString &mime, const QString &parent);
+
+private:
+    QMimeProviderBase *provider();
 
     mutable QMimeProviderBase *m_provider;
+
+public:
     const QString m_defaultMimeType;
     QMutex mutex;
 };

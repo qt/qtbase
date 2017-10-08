@@ -81,6 +81,7 @@ QMimeDatabasePrivate::~QMimeDatabasePrivate()
 
 QMimeProviderBase *QMimeDatabasePrivate::provider()
 {
+    Q_ASSERT(!mutex.tryLock()); // caller should have locked mutex
     if (!m_provider) {
         QMimeProviderBase *binaryProvider = new QMimeBinaryProvider(this);
         if (binaryProvider->isValid()) {
@@ -91,12 +92,6 @@ QMimeProviderBase *QMimeDatabasePrivate::provider()
         }
     }
     return m_provider;
-}
-
-void QMimeDatabasePrivate::setProvider(QMimeProviderBase *theProvider)
-{
-    delete m_provider;
-    m_provider = theProvider;
 }
 
 /*!
@@ -116,6 +111,47 @@ QStringList QMimeDatabasePrivate::mimeTypeForFileName(const QString &fileName)
     QStringList matchingMimeTypes = provider()->findByFileName(QFileInfo(fileName).fileName()).m_matchingMimeTypes;
     matchingMimeTypes.sort(); // make it deterministic
     return matchingMimeTypes;
+}
+
+QMimeGlobMatchResult QMimeDatabasePrivate::findByFileName(const QString &fileName)
+{
+    return provider()->findByFileName(fileName);
+}
+
+void QMimeDatabasePrivate::loadMimeTypePrivate(QMimeTypePrivate &mimePrivate)
+{
+    QMutexLocker locker(&mutex);
+    provider()->loadMimeTypePrivate(mimePrivate);
+}
+
+void QMimeDatabasePrivate::loadGenericIcon(QMimeTypePrivate &mimePrivate)
+{
+    QMutexLocker locker(&mutex);
+    provider()->loadGenericIcon(mimePrivate);
+}
+
+void QMimeDatabasePrivate::loadIcon(QMimeTypePrivate &mimePrivate)
+{
+    QMutexLocker locker(&mutex);
+    provider()->loadIcon(mimePrivate);
+}
+
+QStringList QMimeDatabasePrivate::parents(const QString &mimeName)
+{
+    QMutexLocker locker(&mutex);
+    return provider()->parents(mimeName);
+}
+
+QStringList QMimeDatabasePrivate::listAliases(const QString &mimeName)
+{
+    QMutexLocker locker(&mutex);
+    return provider()->listAliases(mimeName);
+}
+
+bool QMimeDatabasePrivate::mimeInherits(const QString &mime, const QString &parent)
+{
+    QMutexLocker locker(&mutex);
+    return inherits(mime, parent);
 }
 
 static inline bool isTextFile(const QByteArray &data)
@@ -460,7 +496,7 @@ QList<QMimeType> QMimeDatabase::mimeTypesForFileName(const QString &fileName) co
 QString QMimeDatabase::suffixForFileName(const QString &fileName) const
 {
     QMutexLocker locker(&d->mutex);
-    return d->provider()->findByFileName(QFileInfo(fileName).fileName()).m_foundSuffix;
+    return d->findByFileName(QFileInfo(fileName).fileName()).m_foundSuffix;
 }
 
 /*!
@@ -550,6 +586,7 @@ QMimeType QMimeDatabase::mimeTypeForUrl(const QUrl &url) const
 */
 QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device) const
 {
+    QMutexLocker locker(&d->mutex);
     int accuracy = 0;
     const bool openedByUs = !device->isOpen() && device->open(QIODevice::ReadOnly);
     const QMimeType result = d->mimeTypeForFileNameAndData(fileName, device, &accuracy);
@@ -576,6 +613,7 @@ QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, QIO
 */
 QMimeType QMimeDatabase::mimeTypeForFileNameAndData(const QString &fileName, const QByteArray &data) const
 {
+    QMutexLocker locker(&d->mutex);
     QBuffer buffer(const_cast<QByteArray *>(&data));
     buffer.open(QIODevice::ReadOnly);
     int accuracy = 0;
