@@ -82,15 +82,6 @@ QMimeProviderBase::QMimeProviderBase(QMimeDatabasePrivate *db)
 {
 }
 
-Q_CORE_EXPORT int qmime_secondsBetweenChecks = 5; // exported for the unit test
-
-bool QMimeProviderBase::shouldCheck()
-{
-    if (m_lastCheck.isValid() && m_lastCheck.elapsed() < qmime_secondsBetweenChecks * 1000)
-        return false;
-    m_lastCheck.start();
-    return true;
-}
 
 QMimeBinaryProvider::QMimeBinaryProvider(QMimeDatabasePrivate *db)
     : QMimeProviderBase(db), m_mimetypeListLoaded(false)
@@ -197,7 +188,7 @@ bool QMimeBinaryProvider::isValid()
         return false;
 
     Q_ASSERT(m_cacheFiles.isEmpty()); // this method is only ever called once
-    checkCache();
+    ensureLoaded();
 
     if (m_cacheFiles.count() > 1)
         return true;
@@ -238,11 +229,8 @@ bool QMimeBinaryProvider::CacheFileList::checkCacheChanged()
     return somethingChanged;
 }
 
-void QMimeBinaryProvider::checkCache()
+void QMimeBinaryProvider::ensureLoaded()
 {
-    if (!shouldCheck())
-        return;
-
     // First iterate over existing known cache files and check for uptodate
     if (m_cacheFiles.checkCacheChanged())
         m_mimetypeListLoaded = false;
@@ -279,7 +267,6 @@ static QMimeType mimeTypeForNameUnchecked(const QString &name)
 
 QMimeType QMimeBinaryProvider::mimeTypeForName(const QString &name)
 {
-    checkCache();
     if (!m_mimetypeListLoaded)
         loadMimeTypeList();
     if (!m_mimetypeNames.contains(name))
@@ -289,7 +276,6 @@ QMimeType QMimeBinaryProvider::mimeTypeForName(const QString &name)
 
 QMimeGlobMatchResult QMimeBinaryProvider::findByFileName(const QString &fileName)
 {
-    checkCache();
     QMimeGlobMatchResult result;
     if (fileName.isEmpty())
         return result;
@@ -408,7 +394,6 @@ bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFi
 
 QMimeType QMimeBinaryProvider::findByMagic(const QByteArray &data, int *accuracyPtr)
 {
-    checkCache();
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
         const int magicListOffset = cacheFile->getUint32(PosMagicListOffset);
         const int numMatches = cacheFile->getUint32(magicListOffset);
@@ -434,7 +419,6 @@ QMimeType QMimeBinaryProvider::findByMagic(const QByteArray &data, int *accuracy
 
 QStringList QMimeBinaryProvider::parents(const QString &mime)
 {
-    checkCache();
     const QByteArray mimeStr = mime.toLatin1();
     QStringList result;
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
@@ -475,7 +459,6 @@ QStringList QMimeBinaryProvider::parents(const QString &mime)
 
 QString QMimeBinaryProvider::resolveAlias(const QString &name)
 {
-    checkCache();
     const QByteArray input = name.toLatin1();
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
         const int aliasListOffset = cacheFile->getUint32(PosAliasListOffset);
@@ -505,7 +488,6 @@ QString QMimeBinaryProvider::resolveAlias(const QString &name)
 
 QStringList QMimeBinaryProvider::listAliases(const QString &name)
 {
-    checkCache();
     QStringList result;
     const QByteArray input = name.toLatin1();
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
@@ -681,7 +663,6 @@ QLatin1String QMimeBinaryProvider::iconForMime(CacheFile *cacheFile, int posList
 
 void QMimeBinaryProvider::loadIcon(QMimeTypePrivate &data)
 {
-    checkCache();
     const QByteArray inputMime = data.name.toLatin1();
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
         const QLatin1String icon = iconForMime(cacheFile, PosIconsListOffset, inputMime);
@@ -694,7 +675,6 @@ void QMimeBinaryProvider::loadIcon(QMimeTypePrivate &data)
 
 void QMimeBinaryProvider::loadGenericIcon(QMimeTypePrivate &data)
 {
-    checkCache();
     const QByteArray inputMime = data.name.toLatin1();
     for (CacheFile *cacheFile : qAsConst(m_cacheFiles)) {
         const QLatin1String icon = iconForMime(cacheFile, PosGenericIconsListOffset, inputMime);
@@ -708,7 +688,7 @@ void QMimeBinaryProvider::loadGenericIcon(QMimeTypePrivate &data)
 ////
 
 QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db)
-    : QMimeProviderBase(db), m_loaded(false)
+    : QMimeProviderBase(db)
 {
     initResources();
 }
@@ -724,22 +704,16 @@ bool QMimeXMLProvider::isValid()
 
 QMimeType QMimeXMLProvider::mimeTypeForName(const QString &name)
 {
-    ensureLoaded();
-
     return m_nameMimeTypeMap.value(name);
 }
 
 QMimeGlobMatchResult QMimeXMLProvider::findByFileName(const QString &fileName)
 {
-    ensureLoaded();
-
     return m_mimeTypeGlobs.matchingGlobs(fileName);
 }
 
 QMimeType QMimeXMLProvider::findByMagic(const QByteArray &data, int *accuracyPtr)
 {
-    ensureLoaded();
-
     QString candidate;
 
     for (const QMimeMagicRuleMatcher &matcher : qAsConst(m_magicMatchers)) {
@@ -756,44 +730,42 @@ QMimeType QMimeXMLProvider::findByMagic(const QByteArray &data, int *accuracyPtr
 
 void QMimeXMLProvider::ensureLoaded()
 {
-    if (!m_loaded || shouldCheck()) {
-        bool fdoXmlFound = false;
-        QStringList allFiles;
+    bool fdoXmlFound = false;
+    QStringList allFiles;
 
-        const QStringList packageDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime/packages"), QStandardPaths::LocateDirectory);
-        //qDebug() << "packageDirs=" << packageDirs;
-        for (const QString &packageDir : packageDirs) {
-            QDir dir(packageDir);
-            const QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-            //qDebug() << static_cast<const void *>(this) << packageDir << files;
-            if (!fdoXmlFound)
-                fdoXmlFound = files.contains(QLatin1String("freedesktop.org.xml"));
-            QStringList::const_iterator endIt(files.constEnd());
-            for (QStringList::const_iterator it(files.constBegin()); it != endIt; ++it) {
-                allFiles.append(packageDir + QLatin1Char('/') + *it);
-            }
+    const QStringList packageDirs = QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, QLatin1String("mime/packages"), QStandardPaths::LocateDirectory);
+    //qDebug() << "packageDirs=" << packageDirs;
+    for (const QString &packageDir : packageDirs) {
+        QDir dir(packageDir);
+        const QStringList files = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+        //qDebug() << static_cast<const void *>(this) << packageDir << files;
+        if (!fdoXmlFound)
+            fdoXmlFound = files.contains(QLatin1String("freedesktop.org.xml"));
+        QStringList::const_iterator endIt(files.constEnd());
+        for (QStringList::const_iterator it(files.constBegin()); it != endIt; ++it) {
+            allFiles.append(packageDir + QLatin1Char('/') + *it);
         }
-
-        if (!fdoXmlFound) {
-            // We could instead install the file as part of installing Qt?
-            allFiles.prepend(QLatin1String(":/qt-project.org/qmime/freedesktop.org.xml"));
-        }
-
-        if (m_allFiles == allFiles)
-            return;
-        m_allFiles = allFiles;
-
-        m_nameMimeTypeMap.clear();
-        m_aliases.clear();
-        m_parents.clear();
-        m_mimeTypeGlobs.clear();
-        m_magicMatchers.clear();
-
-        //qDebug() << "Loading" << m_allFiles;
-
-        for (const QString &file : qAsConst(allFiles))
-            load(file);
     }
+
+    if (!fdoXmlFound) {
+        // We could instead install the file as part of installing Qt?
+        allFiles.prepend(QLatin1String(":/qt-project.org/qmime/freedesktop.org.xml"));
+    }
+
+    if (m_allFiles == allFiles)
+        return;
+    m_allFiles = allFiles;
+
+    m_nameMimeTypeMap.clear();
+    m_aliases.clear();
+    m_parents.clear();
+    m_mimeTypeGlobs.clear();
+    m_magicMatchers.clear();
+
+    //qDebug() << "Loading" << m_allFiles;
+
+    for (const QString &file : qAsConst(allFiles))
+        load(file);
 }
 
 void QMimeXMLProvider::load(const QString &fileName)
@@ -805,8 +777,6 @@ void QMimeXMLProvider::load(const QString &fileName)
 
 bool QMimeXMLProvider::load(const QString &fileName, QString *errorMessage)
 {
-    m_loaded = true;
-
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         if (errorMessage)
@@ -833,7 +803,6 @@ void QMimeXMLProvider::addMimeType(const QMimeType &mt)
 
 QStringList QMimeXMLProvider::parents(const QString &mime)
 {
-    ensureLoaded();
     QStringList result = m_parents.value(mime);
     if (result.isEmpty()) {
         const QString parent = fallbackParent(mime);
@@ -850,14 +819,12 @@ void QMimeXMLProvider::addParent(const QString &child, const QString &parent)
 
 QStringList QMimeXMLProvider::listAliases(const QString &name)
 {
-    ensureLoaded();
     // Iterate through the whole hash. This method is rarely used.
     return m_aliases.keys(name);
 }
 
 QString QMimeXMLProvider::resolveAlias(const QString &name)
 {
-    ensureLoaded();
     return m_aliases.value(name, name);
 }
 
@@ -868,7 +835,6 @@ void QMimeXMLProvider::addAlias(const QString &alias, const QString &name)
 
 QList<QMimeType> QMimeXMLProvider::allMimeTypes()
 {
-    ensureLoaded();
     return m_nameMimeTypeMap.values();
 }
 

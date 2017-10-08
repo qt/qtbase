@@ -60,6 +60,7 @@
 #include "qmimeglobpattern_p.h"
 
 #include <QtCore/qmutex.h>
+#include <QtCore/qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -100,8 +101,10 @@ public:
 
 private:
     QMimeProviderBase *provider();
+    bool shouldCheck();
 
     mutable QMimeProviderBase *m_provider;
+    QElapsedTimer m_lastCheck;
 
 public:
     const QString m_defaultMimeType;

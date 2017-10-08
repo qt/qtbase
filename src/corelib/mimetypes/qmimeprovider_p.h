@@ -59,7 +59,6 @@
 #include "qmimeglobpattern_p.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qset.h>
-#include <QtCore/qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -82,11 +81,9 @@ public:
     virtual void loadMimeTypePrivate(QMimeTypePrivate &) {}
     virtual void loadIcon(QMimeTypePrivate &) {}
     virtual void loadGenericIcon(QMimeTypePrivate &) {}
+    virtual void ensureLoaded() {}
 
     QMimeDatabasePrivate *m_db;
-protected:
-    bool shouldCheck();
-    QElapsedTimer m_lastCheck;
 };
 
 /*
@@ -109,6 +106,7 @@ public:
     virtual void loadMimeTypePrivate(QMimeTypePrivate &) override;
     virtual void loadIcon(QMimeTypePrivate &) override;
     virtual void loadGenericIcon(QMimeTypePrivate &) override;
+    void ensureLoaded() override;
 
 private:
     struct CacheFile;
@@ -118,7 +116,6 @@ private:
     bool matchMagicRule(CacheFile *cacheFile, int numMatchlets, int firstOffset, const QByteArray &data);
     QLatin1String iconForMime(CacheFile *cacheFile, int posListOffset, const QByteArray &inputMime);
     void loadMimeTypeList();
-    void checkCache();
 
     class CacheFileList : public QList<CacheFile *>
     {
@@ -149,6 +146,7 @@ public:
     virtual QStringList listAliases(const QString &name) override;
     virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr) override;
     virtual QList<QMimeType> allMimeTypes() override;
+    void ensureLoaded() override;
 
     bool load(const QString &fileName, QString *errorMessage);
 
@@ -160,10 +158,7 @@ public:
     void addMagicMatcher(const QMimeMagicRuleMatcher &matcher);
 
 private:
-    void ensureLoaded();
     void load(const QString &fileName);
-
-    bool m_loaded;
 
     typedef QHash<QString, QMimeType> NameMimeTypeMap;
     NameMimeTypeMap m_nameMimeTypeMap;

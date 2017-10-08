@@ -79,6 +79,16 @@ QMimeDatabasePrivate::~QMimeDatabasePrivate()
     m_provider = 0;
 }
 
+Q_CORE_EXPORT int qmime_secondsBetweenChecks = 5; // exported for the unit test
+
+bool QMimeDatabasePrivate::shouldCheck()
+{
+    if (m_lastCheck.isValid() && m_lastCheck.elapsed() < qmime_secondsBetweenChecks * 1000)
+        return false;
+    m_lastCheck.start();
+    return true;
+}
+
 QMimeProviderBase *QMimeDatabasePrivate::provider()
 {
     Q_ASSERT(!mutex.tryLock()); // caller should have locked mutex
@@ -90,6 +100,11 @@ QMimeProviderBase *QMimeDatabasePrivate::provider()
             delete binaryProvider;
             m_provider = new QMimeXMLProvider(this);
         }
+        m_provider->ensureLoaded();
+        m_lastCheck.start();
+    } else {
+        if (shouldCheck())
+            m_provider->ensureLoaded();
     }
     return m_provider;
 }
