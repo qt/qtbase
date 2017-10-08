@@ -47,6 +47,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QLoggingCategory>
 
+#include <errno.h>
+
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 QT_BEGIN_NAMESPACE
