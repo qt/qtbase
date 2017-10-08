@@ -294,7 +294,7 @@ void VulkanRenderer::ensureTexture()
 
         barrier.oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
         barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+        barrier.srcAccessMask = 0; // VK_ACCESS_HOST_WRITE_BIT ### no, keep validation layer happy (??)
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         barrier.image = m_texImage;
 
@@ -453,6 +453,7 @@ void VulkanRenderer::initResources()
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.maxAnisotropy = 1.0f;
     err = m_devFuncs->vkCreateSampler(dev, &samplerInfo, nullptr, &m_sampler);
     if (err != VK_SUCCESS)
         qFatal("Failed to create sampler: %d", err);
@@ -528,7 +529,7 @@ void VulkanRenderer::initResources()
         VkDescriptorImageInfo descImageInfo = {
             m_sampler,
             m_texView,
-            VK_IMAGE_LAYOUT_GENERAL
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
         };
 
         descWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
