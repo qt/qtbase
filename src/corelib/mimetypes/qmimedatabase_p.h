@@ -59,8 +59,9 @@
 #include "qmimetype_p.h"
 #include "qmimeglobpattern_p.h"
 
-#include <QtCore/qmutex.h>
 #include <QtCore/qelapsedtimer.h>
+#include <QtCore/qmutex.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,7 +85,8 @@ public:
 
     QList<QMimeType> allMimeTypes();
 
-
+    QString resolveAlias(const QString &nameOrAlias);
+    QStringList parents(const QString &mimeName);
     QMimeType mimeTypeForName(const QString &nameOrAlias);
     QMimeType mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device, int *priorityPtr);
     QMimeType findByData(const QByteArray &data, int *priorityPtr);
@@ -95,15 +97,16 @@ public:
     void loadMimeTypePrivate(QMimeTypePrivate &mimePrivate);
     void loadGenericIcon(QMimeTypePrivate &mimePrivate);
     void loadIcon(QMimeTypePrivate &mimePrivate);
-    QStringList parents(const QString &mimeName);
+    QStringList mimeParents(const QString &mimeName);
     QStringList listAliases(const QString &mimeName);
     bool mimeInherits(const QString &mime, const QString &parent);
 
 private:
-    QMimeProviderBase *provider();
+    QVector<QMimeProviderBase *> providers();
     bool shouldCheck();
+    void loadProviders();
 
-    mutable QMimeProviderBase *m_provider;
+    mutable QVector<QMimeProviderBase *> m_providers;
     QElapsedTimer m_lastCheck;
 
 public:

@@ -152,7 +152,7 @@ public:
 
     void addGlob(const QMimeGlobPattern &glob);
     void removeMimeType(const QString &mimeType);
-    QMimeGlobMatchResult matchingGlobs(const QString &fileName) const;
+    void matchingGlobs(const QString &fileName, QMimeGlobMatchResult &result) const;
     void clear();
 
     PatternsMap m_fastPatterns; // example: "doc" -> "application/msword", "text/plain"

@@ -57,7 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 QMimeTypePrivate::QMimeTypePrivate()
-    : loaded(false)
+    : loaded(false), fromCache(false)
 {}
 
 QMimeTypePrivate::QMimeTypePrivate(const QMimeType &other)
@@ -76,7 +76,6 @@ void QMimeTypePrivate::clear()
     genericIconName.clear();
     iconName.clear();
     globPatterns.clear();
-    loaded = false;
 }
 
 void QMimeTypePrivate::addGlobPattern(const QString &pattern)
@@ -368,12 +367,12 @@ QStringList QMimeType::globPatterns() const
 */
 QStringList QMimeType::parentMimeTypes() const
 {
-    return QMimeDatabasePrivate::instance()->parents(d->name);
+    return QMimeDatabasePrivate::instance()->mimeParents(d->name);
 }
 
 static void collectParentMimeTypes(const QString &mime, QStringList &allParents)
 {
-    const QStringList parents = QMimeDatabasePrivate::instance()->parents(mime);
+    const QStringList parents = QMimeDatabasePrivate::instance()->mimeParents(mime);
     for (const QString &parent : parents) {
         // I would use QSet, but since order matters I better not
         if (!allParents.contains(parent))
