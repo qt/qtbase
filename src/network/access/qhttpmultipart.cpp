@@ -483,6 +483,8 @@ bool QHttpMultiPartIODevice::isSequential() const
 
 bool QHttpMultiPartIODevice::reset()
 {
+    // Reset QIODevice's data
+    QIODevice::reset();
     for (int a = 0; a < multiPart->parts.count(); a++)
         if (!multiPart->parts[a].d->reset())
             return false;

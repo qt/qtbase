@@ -1115,10 +1115,15 @@ QNetworkAccessManager::Operation QNetworkReplyHttpImplPrivate::getRedirectOperat
     switch (currentOp) {
     case QNetworkAccessManager::HeadOperation:
         return QNetworkAccessManager::HeadOperation;
+    case QNetworkAccessManager::PostOperation:
+        // We MUST keep using POST when being redirected with 307 or 308.
+        if (statusCode == 307 || statusCode == 308)
+            return QNetworkAccessManager::PostOperation;
+        break;
     default:
         break;
     }
-    // For now, we're always returning GET for anything other than HEAD
+    // Use GET for everything else.
     return QNetworkAccessManager::GetOperation;
 }
 
