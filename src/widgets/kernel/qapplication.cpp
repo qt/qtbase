@@ -3272,6 +3272,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
                                wheel->modifiers(), phase, wheel->source(), wheel->inverted());
+                we.setTimestamp(wheel->timestamp());
                 bool eventAccepted;
                 do {
                     we.spont = spontaneous && w == receiver;
@@ -3308,6 +3309,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPos());
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
                                wheel->modifiers(), wheel->phase(), wheel->source());
+                we.setTimestamp(wheel->timestamp());
                 we.spont = true;
                 we.ignore();
                 d->notify_helper(QApplicationPrivate::wheel_widget, &we);

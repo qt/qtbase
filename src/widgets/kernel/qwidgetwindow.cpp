@@ -840,6 +840,7 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
     QPoint mapped = widget->mapFrom(rootWidget, pos);
 
     QWheelEvent translated(mapped, event->globalPos(), event->pixelDelta(), event->angleDelta(), event->delta(), event->orientation(), event->buttons(), event->modifiers(), event->phase(), event->source(), event->inverted());
+    translated.setTimestamp(event->timestamp());
     QGuiApplication::forwardEvent(widget, &translated, event);
 }
 
