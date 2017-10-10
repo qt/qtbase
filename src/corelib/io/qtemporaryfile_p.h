@@ -74,8 +74,8 @@ QT_BEGIN_NAMESPACE
 struct QTemporaryFileName
 {
     QFileSystemEntry::NativePath path;
-    qssize_t pos;
-    qssize_t length;
+    qsizetype pos;
+    qsizetype length;
 
     QTemporaryFileName(const QString &templateName);
     QFileSystemEntry::NativePath generateNext();

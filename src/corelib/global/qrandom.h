@@ -55,10 +55,10 @@ public:
     QRandomGenerator(quint32 seedValue = 1)
         : QRandomGenerator(&seedValue, 1)
     {}
-    template <qssize_t N> QRandomGenerator(const quint32 (&seedBuffer)[N])
+    template <qsizetype N> QRandomGenerator(const quint32 (&seedBuffer)[N])
         : QRandomGenerator(seedBuffer, seedBuffer + N)
     {}
-    QRandomGenerator(const quint32 *seedBuffer, qssize_t len)
+    QRandomGenerator(const quint32 *seedBuffer, qsizetype len)
         : QRandomGenerator(seedBuffer, seedBuffer + len)
     {}
     Q_CORE_EXPORT QRandomGenerator(std::seed_seq &sseq) Q_DECL_NOTHROW;
@@ -131,7 +131,7 @@ public:
     }
 
     template <typename UInt, IfValidUInt<UInt> = true>
-    void fillRange(UInt *buffer, qssize_t count)
+    void fillRange(UInt *buffer, qsizetype count)
     {
         _fillRange(buffer, buffer + count);
     }
@@ -215,10 +215,10 @@ public:
     QRandomGenerator64(quint32 seedValue = 1)
         : QRandomGenerator(seedValue)
     {}
-    template <qssize_t N> QRandomGenerator64(const quint32 (&seedBuffer)[N])
+    template <qsizetype N> QRandomGenerator64(const quint32 (&seedBuffer)[N])
         : QRandomGenerator(seedBuffer)
     {}
-    QRandomGenerator64(const quint32 *seedBuffer, qssize_t len)
+    QRandomGenerator64(const quint32 *seedBuffer, qsizetype len)
         : QRandomGenerator(seedBuffer, len)
     {}
     QRandomGenerator64(std::seed_seq &sseq) Q_DECL_NOTHROW

@@ -217,7 +217,7 @@ public:
 #if QT_DEPRECATED_SINCE(5, 10)
     QT_DEPRECATED int byteCount() const;
 #endif
-    qssize_t sizeInBytes() const;
+    qsizetype sizeInBytes() const;
 
     uchar *scanLine(int);
     const uchar *scanLine(int) const;
