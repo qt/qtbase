@@ -69,8 +69,8 @@ class QPagePreview;
 class QPageSetupWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit QPageSetupWidget(QWidget *parent = 0);
-    explicit QPageSetupWidget(QPrinter *printer, QWidget *parent = 0);
+    explicit QPageSetupWidget(QWidget *parent = nullptr);
+    explicit QPageSetupWidget(QPrinter *printer, QWidget *parent = nullptr);
 
     void setPrinter(QPrinter *printer);
     void selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName);

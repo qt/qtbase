@@ -79,7 +79,7 @@ class QPrintPreviewMainWindow : public QMainWindow
 {
 public:
     QPrintPreviewMainWindow(QWidget *parent) : QMainWindow(parent) {}
-    QMenu *createPopupMenu() Q_DECL_OVERRIDE { return 0; }
+    QMenu *createPopupMenu() Q_DECL_OVERRIDE { return nullptr; }
 };
 
 class ZoomFactorValidator : public QDoubleValidator

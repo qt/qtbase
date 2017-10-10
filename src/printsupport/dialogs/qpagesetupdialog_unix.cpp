@@ -230,8 +230,8 @@ void QUnixPageSetupDialogPrivate::init()
 
 QPageSetupWidget::QPageSetupWidget(QWidget *parent)
     : QWidget(parent),
-      m_pagePreview(0),
-      m_printer(0),
+      m_pagePreview(nullptr),
+      m_printer(nullptr),
       m_outputFormat(QPrinter::PdfFormat),
       m_units(QPageLayout::Point),
       m_blockSignals(false)

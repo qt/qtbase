@@ -608,7 +608,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     Constructs a print dialog with the given \a parent.
 */
 QPrintDialog::QPrintDialog(QWidget *parent)
-    : QAbstractPrintDialog(*(new QPrintDialogPrivate), 0, parent)
+    : QAbstractPrintDialog(*(new QPrintDialogPrivate), nullptr, parent)
 {
     Q_D(QPrintDialog);
     d->init();
@@ -656,7 +656,7 @@ void QPrintDialog::accept()
 /*! \internal
 */
 QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *prn)
-    : parent(p), propertiesDialog(0), printer(prn), optionsPane(0),
+    : parent(p), propertiesDialog(nullptr), printer(prn), optionsPane(0),
       filePrintersAdded(false), propertiesDialogShown(false)
 {
     q = 0;
@@ -788,7 +788,7 @@ void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
     QString filename = widget.filename->text();
 #if QT_CONFIG(filedialog)
     filename = QFileDialog::getSaveFileName(parent, QPrintDialog::tr("Print To File ..."), filename,
-                                            QString(), 0, QFileDialog::DontConfirmOverwrite);
+                                            QString(), nullptr, QFileDialog::DontConfirmOverwrite);
 #else
     filename.clear();
 #endif
