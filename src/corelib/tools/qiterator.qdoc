@@ -1395,3 +1395,123 @@
 
     \sa key(), value(), remove()
 */
+
+/*! \class QKeyValueIterator
+    \inmodule QtCore
+    \since 5.10
+
+    \brief Iterator over the key/value pairs of an associative container.
+
+    The QKeyValueIterator class provides an STL-style iterator for returning
+    key/value pairs from associative containers like QHash and QMap. It
+    supports the same API as the STL associative containers, i.e. getting a
+    key/value pair when iterating through the container.
+
+    This will allow for better interoperability between QMap, QHash and friends
+    and STL-style algorithms.
+
+    \warning Iterators on implicitly shared containers do not work
+    exactly like STL-iterators. You should avoid copying a container
+    while iterators are active on that container. For more information,
+    read \l{Implicit sharing iterator problem}.
+*/
+
+/*! \typedef QKeyValueIterator::iterator_category
+    \internal
+*/
+
+/*! \typedef QKeyValueIterator::difference_type
+    \internal
+*/
+
+/*! \typedef QKeyValueIterator::value_type
+    \internal
+*/
+
+/*! \typedef QKeyValueIterator::pointer
+    \internal
+*/
+
+/*! \typedef QKeyValueIterator::reference
+    \internal
+*/
+
+/*! \fn QKeyValueIterator::QKeyValueIterator()
+
+    Constructs a default QKeyValueIterator.
+*/
+
+/*! \fn QKeyValueIterator::QKeyValueIterator(Iterator o)
+
+    Constructs a QKeyValueIterator on top of \a o.
+*/
+
+/*! \fn const T &QKeyValueIterator::operator*() const
+
+    Returns the current entry as a pair.
+*/
+
+/*! \fn bool QKeyValueIterator::operator==(QKeyValueIterator lhs, QKeyValueIterator rhs)
+
+    Returns \c true if \a rhs points to the same item as \a lhs otherwise returns
+    \c false.
+
+    \sa operator!=()
+*/
+
+/*! \fn bool QKeyValueIterator::operator!=(QKeyValueIterator lhs, QKeyValueIterator rhs) const
+
+    Returns \c true if \a rhs points to a different item than \a lhs otherwise
+    returns \c false.
+
+    \sa operator==()
+*/
+
+/*!
+    \fn QKeyValueIterator &QKeyValueIterator::operator++()
+
+    The prefix ++ operator (\c{++i}) advances the iterator to the
+    next item in the container and returns the iterator.
+
+    \note Advancing the iterator past its container's end() constitutes
+    undefined behavior.
+
+    \sa operator--()
+*/
+
+/*! \fn QKeyValueIterator QKeyValueIterator::operator++(int)
+
+    \overload
+
+    The postfix ++ operator (\c{i++}) advances the iterator to the
+    next item in the container and returns the iterator's prior value.
+
+    \note Advancing the iterator past its container's end() constitutes
+    undefined behavior.
+*/
+
+/*! \fn QKeyValueIterator &QKeyValueIterator::operator--()
+
+    The prefix -- operator (\c{--i}) backs the iterator up to the previous item
+    in the container and returns the iterator.
+
+    \note Backing up an iterator to before its container's begin() constitutes
+    undefined behavior.
+
+    \sa operator++()
+*/
+
+/*! \fn QKeyValueIterator QKeyValueIterator::operator--(int)
+
+    \overload
+
+    The postfix -- operator (\c{i--}) backs the iterator up to the previous item
+    in the container and returns the iterator's prior value.
+
+    \note Backing up an iterator to before its container's begin() constitutes
+    undefined behavior.
+*/
+
+/*! \fn Iterator QKeyValueIterator::base() const
+    Returns the underlying iterator this QKeyValueIterator is based on.
+*/
