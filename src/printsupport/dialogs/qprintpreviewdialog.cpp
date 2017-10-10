@@ -119,7 +119,7 @@ public:
         : QLineEdit(parent)
     {
         setContextMenuPolicy(Qt::NoContextMenu);
-        connect(this, SIGNAL(returnPressed()), SLOT(handleReturnPressed()));
+        connect(this, &LineEdit::returnPressed, this, &LineEdit::handleReturnPressed);
     }
 
 protected:

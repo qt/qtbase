@@ -104,7 +104,7 @@ void QCupsJobWidget::initJobHold()
     m_ui.jobHoldComboBox->addItem(tr("Weekend (Saturday to Sunday)"),  QVariant::fromValue(QCUPSSupport::Weekend));
     m_ui.jobHoldComboBox->addItem(tr("Specific Time"),                 QVariant::fromValue(QCUPSSupport::SpecificTime));
 
-    connect(m_ui.jobHoldComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(toggleJobHoldTime()));
+    connect(m_ui.jobHoldComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &QCupsJobWidget::toggleJobHoldTime);
 
     setJobHold(QCUPSSupport::NoHold, QTime());
     toggleJobHoldTime();
