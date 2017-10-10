@@ -1430,7 +1430,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                                                                       verticalTitleBar ? titleRect.height() : titleRect.width());
                 const int indent = 4;
                 drawItemText(painter, rect.adjusted(indent + 1, 1, -indent - 1, -1),
-                                Qt::AlignLeft | Qt::AlignVCenter, dwOpt->palette,
+                                Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic,
+                                dwOpt->palette,
                                 dwOpt->state & State_Enabled, titleText,
                                 QPalette::WindowText);
                 }
