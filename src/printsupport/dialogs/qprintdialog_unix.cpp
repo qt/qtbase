@@ -895,8 +895,7 @@ bool QUnixPrintWidgetPrivate::checkFields()
 
 void QUnixPrintWidgetPrivate::setupPrinterProperties()
 {
-    if (propertiesDialog)
-        delete propertiesDialog;
+    delete propertiesDialog;
 
     propertiesDialog = new QPrintPropertiesDialog(q);
     propertiesDialog->setResult(QDialog::Rejected);
