@@ -681,7 +681,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int
     \overload
     \since 5.0
 
-    Returns the index position of the first match of \a re in
+    Returns the index position of the first exact match of \a re in
     the list, searching forward from index position \a from. Returns
     -1 if no item matched.
 
