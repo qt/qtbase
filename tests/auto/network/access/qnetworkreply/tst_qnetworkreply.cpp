@@ -490,6 +490,7 @@ private Q_SLOTS:
     void ioHttpCookiesDuringRedirect();
     void ioHttpRedirect_data();
     void ioHttpRedirect();
+    void ioHttpRedirectFromLocalToRemote();
 #ifndef QT_NO_SSL
     void putWithServerClosingConnectionImmediately();
 #endif
@@ -8488,6 +8489,33 @@ void tst_QNetworkReply::ioHttpRedirect()
     QCOMPARE(waitForFinish(reply), int(Success));
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
     QVERIFY(validateRedirectedResponseHeaders(reply));
+}
+
+void tst_QNetworkReply::ioHttpRedirectFromLocalToRemote()
+{
+    QUrl targetUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+
+    QString redirectReply = tempRedirectReplyStr().arg(targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1(), false);
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+
+    QFile reference(testDataDir + "/rfc3252.txt");
+    QVERIFY(reference.open(QIODevice::ReadOnly));
+    QNetworkRequest request(url);
+
+    auto oldRedirectPolicy = manager.redirectPolicy();
+    manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
+    QNetworkReplyPtr reply(manager.get(request));
+    // Restore previous policy
+    manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+
+    QCOMPARE(reply->url(), targetUrl);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
+    QCOMPARE(reply->readAll(), reference.readAll());
 }
 
 #ifndef QT_NO_SSL

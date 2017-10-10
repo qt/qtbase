@@ -160,6 +160,8 @@ signals:
 
 class QNetworkReplyHttpImplPrivate: public QNetworkReplyPrivate
 {
+    bool startWaitForSession(QSharedPointer<QNetworkSession> &session);
+
 public:
 
     static QHttpNetworkRequest::Priority convert(const QNetworkRequest::Priority& prio);

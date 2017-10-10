@@ -165,6 +165,16 @@ static QHash<QByteArray, QByteArray> parseHttpOptionHeader(const QByteArray &hea
     }
 }
 
+#if QT_CONFIG(bearermanagement)
+static bool isSessionNeeded(const QUrl &url)
+{
+    // Connections to the local machine does not require a session
+    QString host = url.host().toLower();
+    return !QHostAddress(host).isLoopback() && host != QLatin1String("localhost")
+           && host != QSysInfo::machineHostName().toLower();
+}
+#endif // bearer management
+
 QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manager,
                                              const QNetworkRequest& request,
                                              QNetworkAccessManager::Operation& operation,
@@ -1189,6 +1199,24 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
     if (managerPrivate->thread)
         managerPrivate->thread->disconnect();
 
+#if QT_CONFIG(bearermanagement)
+    // If the original request didn't need a session (i.e. it was to localhost)
+    // then we might not have a session open, to which to redirect, if the
+    // new URL is remote.  When this happens, we need to open the session now:
+    if (managerPrivate && isSessionNeeded(url)) {
+        if (auto session = managerPrivate->getNetworkSession()) {
+            if (session->state() != QNetworkSession::State::Connected || !session->isOpen()) {
+                startWaitForSession(session);
+                // Need to set 'request' to the redirectRequest so that when QNAM restarts
+                // the request after the session starts it will not repeat the previous request.
+                request = redirectRequest;
+                // Return now, QNAM will start the request when the session has started.
+                return;
+            }
+        }
+    }
+#endif // bearer management
+
     QMetaObject::invokeMethod(q, "start", Qt::QueuedConnection,
                               Q_ARG(QNetworkRequest, redirectRequest));
 }
@@ -1770,10 +1798,8 @@ bool QNetworkReplyHttpImplPrivate::start(const QNetworkRequest &newHttpRequest)
     }
 
     // This is not ideal.
-    const QString host = url.host();
-    if (host == QLatin1String("localhost") ||
-        QHostAddress(host).isLoopback()) {
-        // Don't need an open session for localhost access.
+    if (!isSessionNeeded(url)) {
+        // Don't need to check for an open session if we don't need one.
         postRequest(newHttpRequest);
         return true;
     }
@@ -1795,6 +1821,32 @@ bool QNetworkReplyHttpImplPrivate::start(const QNetworkRequest &newHttpRequest)
     }
     return false;
 #endif
+}
+
+bool QNetworkReplyHttpImplPrivate::startWaitForSession(QSharedPointer<QNetworkSession> &session)
+{
+    Q_Q(QNetworkReplyHttpImpl);
+    state = WaitingForSession;
+
+    if (session) {
+        QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
+                         q, SLOT(_q_networkSessionFailed()), Qt::QueuedConnection);
+
+        if (!session->isOpen()) {
+            QVariant isBackground = request.attribute(QNetworkRequest::BackgroundRequestAttribute,
+                                                      QVariant::fromValue(false));
+            session->setSessionProperty(QStringLiteral("ConnectInBackground"), isBackground);
+            session->open();
+        }
+        return true;
+    }
+    const Qt::ConnectionType connection = synchronous ? Qt::DirectConnection : Qt::QueuedConnection;
+    qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
+    QMetaObject::invokeMethod(q, "_q_error", connection,
+        Q_ARG(QNetworkReply::NetworkError, QNetworkReply::NetworkSessionFailedError),
+        Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "Network session error.")));
+    QMetaObject::invokeMethod(q, "_q_finished", connection);
+    return false;
 }
 
 void QNetworkReplyHttpImplPrivate::_q_startOperation()
@@ -1824,24 +1876,8 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
         // backend failed to start because the session state is not Connected.
         // QNetworkAccessManager will call reply->backend->start() again for us when the session
         // state changes.
-        state = WaitingForSession;
-
-        if (session) {
-            QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
-                             q, SLOT(_q_networkSessionFailed()), Qt::QueuedConnection);
-
-            if (!session->isOpen()) {
-                session->setSessionProperty(QStringLiteral("ConnectInBackground"), isBackground);
-                session->open();
-            }
-        } else {
-            qWarning("Backend is waiting for QNetworkSession to connect, but there is none!");
-            QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
-                Q_ARG(QNetworkReply::NetworkError, QNetworkReply::NetworkSessionFailedError),
-                Q_ARG(QString, QCoreApplication::translate("QNetworkReply", "Network session error.")));
-            QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
+        if (!startWaitForSession(session))
             return;
-        }
     } else if (session) {
         QObject::connect(session.data(), SIGNAL(stateChanged(QNetworkSession::State)),
                          q, SLOT(_q_networkSessionStateChanged(QNetworkSession::State)),
