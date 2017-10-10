@@ -239,7 +239,6 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
     m_ui.setupUi(this);
 
     QVBoxLayout *lay = new QVBoxLayout(m_ui.preview);
-    m_ui.preview->setLayout(lay);
     m_pagePreview = new QPagePreview(m_ui.preview);
     m_pagePreview->setPagePreviewLayout(1, 1);
 

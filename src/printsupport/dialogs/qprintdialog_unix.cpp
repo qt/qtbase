@@ -337,7 +337,6 @@ void QPrintDialogPrivate::init()
     printButton->setDefault(true);
 
     QVBoxLayout *lay = new QVBoxLayout(q);
-    q->setLayout(lay);
     lay->addWidget(top);
     lay->addWidget(bottom);
     lay->addWidget(buttons);
