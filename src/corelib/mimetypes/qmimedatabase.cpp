@@ -104,14 +104,15 @@ void QMimeDatabasePrivate::loadProviders()
         mimeDirs.prepend(QLatin1String(":/qt-project.org/qmime"));
     //qDebug() << "mime dirs:" << mimeDirs;
 
+    QVector<QMimeProviderBase *> currentProviders = m_providers;
+    m_providers.clear();
     m_providers.reserve(mimeDirs.size());
     for (const QString &mimeDir : qAsConst(mimeDirs)) {
         const QString cacheFile = mimeDir + QStringLiteral("/mime.cache");
         QFileInfo fileInfo(cacheFile);
         // Check if we already have a provider for this dir
-        // [This could be optimized by keeping a copy of mimeDirs and comparing the stringlists]
-        const auto it = std::find_if(m_providers.begin(), m_providers.end(), [mimeDir](QMimeProviderBase *prov) { return prov->directory() == mimeDir; });
-        if (it == m_providers.end()) {
+        const auto it = std::find_if(currentProviders.begin(), currentProviders.end(), [mimeDir](QMimeProviderBase *prov) { return prov->directory() == mimeDir; });
+        if (it == currentProviders.end()) {
             QMimeProviderBase *provider = nullptr;
 #if defined(QT_USE_MMAP)
             if (qEnvironmentVariableIsEmpty("QT_NO_MIME_CACHE") && fileInfo.exists()) {
@@ -130,15 +131,17 @@ void QMimeDatabasePrivate::loadProviders()
             m_providers.append(provider);
         } else {
             QMimeProviderBase *provider = *it;
+            currentProviders.erase(it);
             provider->ensureLoaded();
             if (!provider->isValid()) {
                 delete provider;
                 provider = new QMimeXMLProvider(this, mimeDir);
                 //qDebug() << "Created XML provider to replace binary provider for" << mimeDir;
-                *it = provider;
             }
+            m_providers.append(provider);
         }
     }
+    qDeleteAll(currentProviders);
 }
 
 QVector<QMimeProviderBase *> QMimeDatabasePrivate::providers()

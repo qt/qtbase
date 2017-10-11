@@ -1042,17 +1042,21 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QCOMPARE(db.mimeTypeForFile(qmlTestFile).name(),
              QString::fromLatin1("text/x-qml"));
 
-    // Now test removing the local mimetypes again (note, this leaves a mostly-empty mime.cache file)
-    for (int i = 0; i < m_additionalMimeFileNames.size(); ++i)
-        QFile::remove(destDir + m_additionalMimeFileNames.at(i));
+    // Now test removing local mimetypes
+    for (int i = 1 ; i <= 3 ; ++i)
+        QFile::remove(destDir + QStringLiteral("invalid-magic%1.xml").arg(i));
     if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(m_localMimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
-    QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
-             QString::fromLatin1("application/octet-stream"));
-    QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
+    QVERIFY(!db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid()); // deleted
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid()); // still present
 
-    // And now the user goes wild and uses rm -rf
+    // The user deletes the cache -> the XML provider makes things still work
     QFile::remove(m_localMimeDir + QString::fromLatin1("/mime.cache"));
+    QVERIFY(!db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid()); // deleted
+    QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid()); // still present
+
+    // Finally, the user deletes the whole local dir
+    QVERIFY2(QDir(m_localMimeDir).removeRecursively(), qPrintable(m_localMimeDir + ": " + qt_error_string()));
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
