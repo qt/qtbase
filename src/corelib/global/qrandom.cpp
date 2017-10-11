@@ -95,7 +95,7 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-static qssize_t qt_random_cpu(void *buffer, qssize_t count);
+static qssize_t qt_random_cpu(void *buffer, qssize_t count) Q_DECL_NOTHROW;
 
 #  ifdef Q_PROCESSOR_X86_64
 #    define _rdrandXX_step _rdrand64_step
@@ -103,7 +103,7 @@ static qssize_t qt_random_cpu(void *buffer, qssize_t count);
 #    define _rdrandXX_step _rdrand32_step
 #  endif
 
-static QT_FUNCTION_TARGET(RDRND) qssize_t qt_random_cpu(void *buffer, qssize_t count)
+static QT_FUNCTION_TARGET(RDRND) qssize_t qt_random_cpu(void *buffer, qssize_t count) Q_DECL_NOTHROW
 {
     unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
     unsigned *end = ptr + count;
@@ -213,7 +213,7 @@ class SystemRandom
 {
 public:
     enum { EfficientBufferFill = true };
-    static qssize_t fillBuffer(void *buffer, qssize_t count)
+    static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
     {
         auto RtlGenRandom = SystemFunction036;
         return RtlGenRandom(buffer, ULONG(count)) ? count: 0;
@@ -224,7 +224,7 @@ class SystemRandom
 {
 public:
     enum { EfficientBufferFill = false };
-    static qssize_t fillBuffer(void *, qssize_t)
+    static qssize_t fillBuffer(void *, qssize_t) Q_DECL_NOTHROW
     {
         // always use the fallback
         return 0;
@@ -351,7 +351,7 @@ static Q_NORETURN void fallback_fill(quint32 *, qssize_t)
 }
 #endif
 
-static qssize_t fill_cpu(quint32 *buffer, qssize_t count)
+static qssize_t fill_cpu(quint32 *buffer, qssize_t count) Q_DECL_NOTHROW
 {
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
     if (qCpuHasFeature(RDRND) && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
@@ -364,6 +364,7 @@ static qssize_t fill_cpu(quint32 *buffer, qssize_t count)
 }
 
 static void fill_internal(quint32 *buffer, qssize_t count)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(SystemRandom::fillBuffer(buffer, count)))
 {
     if (Q_UNLIKELY(uint(qt_randomdevice_control) & SetRandomData)) {
         uint value = uint(qt_randomdevice_control) & RandomDataMask;
@@ -387,6 +388,7 @@ static void fill_internal(quint32 *buffer, qssize_t count)
 }
 
 static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(fill_internal(static_cast<quint32 *>(buffer), 1)))
 {
     struct ThreadState {
         enum {
