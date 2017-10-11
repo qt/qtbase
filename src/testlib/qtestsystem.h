@@ -57,7 +57,7 @@ namespace QTest
     template <typename Functor>
     Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
     {
-        // We should not spint the event loop in case the predicate is already true,
+        // We should not spin the event loop in case the predicate is already true,
         // otherwise we might send new events that invalidate the predicate.
         if (predicate())
             return true;
