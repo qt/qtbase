@@ -1262,20 +1262,56 @@ void QRandomGenerator::_fillRange(void *buffer, void *bufferEnd)
     std::generate(begin, end, [this]() { return storage.engine()(); });
 }
 
-#if defined(Q_OS_ANDROID) && (__ANDROID_API__ < 21)
-typedef QThreadStorage<QJNIObjectPrivate> AndroidRandomStorage;
-Q_GLOBAL_STATIC(AndroidRandomStorage, randomTLS)
+namespace {
+struct QRandEngine
+{
+    std::minstd_rand engine;
+    QRandEngine() : engine(1) {}
 
-#elif defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
-using SeedStorageType = QtPrivate::FunctionPointer<decltype(&srand)>::Arguments::Car;
+    int generate()
+    {
+        std::minstd_rand::result_type v = engine();
+        if (std::numeric_limits<int>::max() != RAND_MAX)
+            v %= uint(RAND_MAX) + 1;
 
-typedef QThreadStorage<SeedStorageType *> SeedStorage;
-Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
+        return int(v);
+    }
 
+    void seed(std::minstd_rand::result_type q)
+    {
+        engine.seed(q);
+    }
+};
+}
+
+#if defined(QT_NO_THREAD) || defined(Q_OS_WIN)
+// On Windows srand() and rand() already use Thread-Local-Storage
+// to store the seed between calls
+static inline QRandEngine *randTLS()
+{
+    return nullptr;
+}
+#elif defined(Q_COMPILER_THREAD_LOCAL)
+static inline QRandEngine *randTLS()
+{
+    thread_local QRandEngine r;
+    return &r;
+}
+#else
+Q_GLOBAL_STATIC(QThreadStorage<QRandEngine>, g_randTLS)
+static inline QRandEngine *randTLS()
+{
+    auto tls = g_randTLS();
+    if (!tls)
+        return nullptr;
+    return &tls->localData();
+
+}
 #endif
 
 /*!
     \relates <QtGlobal>
+    \deprecated
     \since 4.2
 
     Thread-safe version of the standard C++ \c srand() function.
@@ -1287,49 +1323,23 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
     if two threads call qsrand(1) and subsequently call qrand(), the threads will get
     the same random number sequence.
 
+    \note This function is deprecated. In new applications, use
+    QRandomGenerator instead.
+
     \sa qrand(), QRandomGenerator
 */
 void qsrand(uint seed)
 {
-#if defined(Q_OS_ANDROID) && (__ANDROID_API__ < 21)
-    if (randomTLS->hasLocalData()) {
-        randomTLS->localData().callMethod<void>("setSeed", "(J)V", jlong(seed));
-        return;
-    }
-
-    QJNIObjectPrivate random("java/util/Random",
-                             "(J)V",
-                             jlong(seed));
-    if (!random.isValid()) {
+    auto prng = randTLS();
+    if (prng)
+        prng->seed(seed);
+    else
         srand(seed);
-        return;
-    }
-
-    randomTLS->setLocalData(random);
-#elif defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
-    SeedStorage *seedStorage = randTLS();
-    if (seedStorage) {
-        SeedStorageType *pseed = seedStorage->localData();
-        if (!pseed)
-            seedStorage->setLocalData(pseed = new SeedStorageType);
-        *pseed = seed;
-    } else {
-        //global static seed storage should always exist,
-        //except after being deleted by QGlobalStaticDeleter.
-        //But since it still can be called from destructor of another
-        //global static object, fallback to srand(seed)
-        srand(seed);
-    }
-#else
-    // On Windows srand() and rand() already use Thread-Local-Storage
-    // to store the seed between calls
-    // this is also valid for QT_NO_THREAD
-    srand(seed);
-#endif
 }
 
 /*!
     \relates <QtGlobal>
+    \deprecated
     \since 4.2
 
     Thread-safe version of the standard C++ \c rand() function.
@@ -1343,52 +1353,18 @@ void qsrand(uint seed)
     step is skipped, then the sequence will be pre-seeded with a constant
     value.
 
-    \sa qsrand(), QRandomGenerator
+    \note This function is deprecated. In new applications, use
+    QRandomGenerator instead.
+
+    \sa qrand(), QRandomGenerator
 */
 int qrand()
 {
-#if defined(Q_OS_ANDROID) && (__ANDROID_API__ < 21)
-    AndroidRandomStorage *randomStorage = randomTLS();
-    if (!randomStorage)
+    auto prng = randTLS();
+    if (prng)
+        return prng->generate();
+    else
         return rand();
-
-    if (randomStorage->hasLocalData()) {
-        return randomStorage->localData().callMethod<jint>("nextInt",
-                                                           "(I)I",
-                                                           RAND_MAX);
-    }
-
-    QJNIObjectPrivate random("java/util/Random",
-                             "(J)V",
-                             jlong(1));
-
-    if (!random.isValid())
-        return rand();
-
-    randomStorage->setLocalData(random);
-    return random.callMethod<jint>("nextInt", "(I)I", RAND_MAX);
-#elif defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS - 0 > 0)
-    SeedStorage *seedStorage = randTLS();
-    if (seedStorage) {
-        SeedStorageType *pseed = seedStorage->localData();
-        if (!pseed) {
-            seedStorage->setLocalData(pseed = new SeedStorageType);
-            *pseed = 1;
-        }
-        return rand_r(pseed);
-    } else {
-        //global static seed storage should always exist,
-        //except after being deleted by QGlobalStaticDeleter.
-        //But since it still can be called from destructor of another
-        //global static object, fallback to rand()
-        return rand();
-    }
-#else
-    // On Windows srand() and rand() already use Thread-Local-Storage
-    // to store the seed between calls
-    // this is also valid for QT_NO_THREAD
-    return rand();
-#endif
 }
 
 QT_END_NAMESPACE
