@@ -461,7 +461,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 
     The class can generate 32-bit or 64-bit quantities, or fill an array of
     those. The most common way of generating new values is to call the generate(),
-    get64() or fillRange() functions. One would use it as:
+    generate64() or fillRange() functions. One would use it as:
 
     \code
         quint32 value = QRandomGenerator::generate();
@@ -626,7 +626,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     quantities, one can write:
 
     \code
-        std::generate(begin, end, []() { return get64(); });
+        std::generate(begin, end, []() { return QRandomGenerator::generate64(); });
     \endcode
 
     If the range refers to contiguous memory (such as an array or the data from
@@ -678,14 +678,14 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
         QRandomGenerator::fillRange(array);
     \endcode
 
-    It would have also been possible to make one call to get64() and then split
+    It would have also been possible to make one call to generate64() and then split
     the two halves of the 64-bit value.
 
     \sa generate()
  */
 
 /*!
-    \fn qreal QRandomGenerator::generateReal()
+    \fn qreal QRandomGenerator::generateDouble()
 
     Generates one random qreal in the canonical range [0, 1) (that is,
     inclusive of zero and exclusive of 1).
@@ -700,7 +700,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \c{\l{http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution}{std::uniform_real_distribution}}
     with parameters 0 and 1.
 
-    \sa generate(), get64(), bounded()
+    \sa generate(), generate64(), bounded()
  */
 
 /*!
@@ -738,7 +738,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Note that this function cannot be used to obtain values in the full 32-bit
     range of quint32. Instead, use generate().
 
-    \sa generate(), get64(), generateDouble()
+    \sa generate(), generate64(), generateDouble()
  */
 
 /*!
@@ -751,7 +751,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
 
-    \sa generate(), get64(), generateDouble()
+    \sa generate(), generate64(), generateDouble()
  */
 
 /*!
@@ -775,7 +775,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Note that this function cannot be used to obtain values in the full 32-bit
     range of quint32. Instead, use generate().
 
-    \sa generate(), get64(), generateDouble()
+    \sa generate(), generate64(), generateDouble()
  */
 
 /*!
@@ -788,7 +788,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
 
-    \sa generate(), get64(), generateDouble()
+    \sa generate(), generate64(), generateDouble()
  */
 
 /*!
@@ -896,7 +896,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
         int value = QRandomGenerator::generate() & std::numeric_limits<int>::max();
     \endcode
 
-    \sa get64(), generateDouble()
+    \sa generate64(), generateDouble()
  */
 quint32 QRandomGenerator::generate()
 {
