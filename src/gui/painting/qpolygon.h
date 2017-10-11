@@ -51,7 +51,9 @@ class QTransform;
 class QRect;
 class QVariant;
 
-class Q_GUI_EXPORT QPolygon : public QList<QPoint>
+// We export each out-of-line method invidually to prevent MSVC from
+// exporting the whole QList class.
+class QPolygon : public QList<QPoint>
 {
 public:
     inline QPolygon() {}
@@ -59,41 +61,41 @@ public:
     inline explicit QPolygon(int size);
     inline /*implicit*/ QPolygon(const QList<QPoint> &v) : QList<QPoint>(v) { }
     /*implicit*/ QPolygon(QList<QPoint> &&v) noexcept : QList<QPoint>(std::move(v)) { }
-    QPolygon(const QRect &r, bool closed=false);
-    QPolygon(int nPoints, const int *points);
+    Q_GUI_EXPORT QPolygon(const QRect &r, bool closed=false);
+    Q_GUI_EXPORT QPolygon(int nPoints, const int *points);
     QPolygon(const QPolygon &other) : QList<QPoint>(other) { }
     QPolygon(QPolygon &&other) noexcept : QList<QPoint>(std::move(other)) { }
     QPolygon &operator=(QPolygon &&other) noexcept { swap(other); return *this; }
     QPolygon &operator=(const QPolygon &other) { QList<QPoint>::operator=(other); return *this; }
     void swap(QPolygon &other) noexcept { QList<QPoint>::swap(other); } // prevent QList<QPoint><->QPolygon swaps
 
-    operator QVariant() const;
+    Q_GUI_EXPORT operator QVariant() const;
 
-    void translate(int dx, int dy);
+    Q_GUI_EXPORT void translate(int dx, int dy);
     void translate(const QPoint &offset);
 
-    Q_REQUIRED_RESULT QPolygon translated(int dx, int dy) const;
+    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygon translated(int dx, int dy) const;
     Q_REQUIRED_RESULT inline QPolygon translated(const QPoint &offset) const;
 
-    QRect boundingRect() const;
+    Q_GUI_EXPORT QRect boundingRect() const;
 
-    void point(int i, int *x, int *y) const;
+    Q_GUI_EXPORT void point(int i, int *x, int *y) const;
     QPoint point(int i) const;
     void setPoint(int index, int x, int y);
     void setPoint(int index, const QPoint &p);
-    void setPoints(int nPoints, const int *points);
-    void setPoints(int nPoints, int firstx, int firsty, ...);
-    void putPoints(int index, int nPoints, const int *points);
-    void putPoints(int index, int nPoints, int firstx, int firsty, ...);
-    void putPoints(int index, int nPoints, const QPolygon & from, int fromIndex=0);
+    Q_GUI_EXPORT void setPoints(int nPoints, const int *points);
+    Q_GUI_EXPORT void setPoints(int nPoints, int firstx, int firsty, ...);
+    Q_GUI_EXPORT void putPoints(int index, int nPoints, const int *points);
+    Q_GUI_EXPORT void putPoints(int index, int nPoints, int firstx, int firsty, ...);
+    Q_GUI_EXPORT void putPoints(int index, int nPoints, const QPolygon & from, int fromIndex=0);
 
-    bool containsPoint(const QPoint &pt, Qt::FillRule fillRule) const;
+    Q_GUI_EXPORT bool containsPoint(const QPoint &pt, Qt::FillRule fillRule) const;
 
-    Q_REQUIRED_RESULT QPolygon united(const QPolygon &r) const;
-    Q_REQUIRED_RESULT QPolygon intersected(const QPolygon &r) const;
-    Q_REQUIRED_RESULT QPolygon subtracted(const QPolygon &r) const;
+    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygon united(const QPolygon &r) const;
+    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygon intersected(const QPolygon &r) const;
+    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygon subtracted(const QPolygon &r) const;
 
-    bool intersects(const QPolygon &r) const;
+    Q_GUI_EXPORT bool intersects(const QPolygon &r) const;
 };
 Q_DECLARE_SHARED(QPolygon)
 
@@ -132,7 +134,7 @@ inline QPolygon QPolygon::translated(const QPoint &offset) const
 
 class QRectF;
 
-class Q_GUI_EXPORT QPolygonF : public QList<QPointF>
+class QPolygonF : public QList<QPointF>
 {
 public:
     inline QPolygonF() {}
@@ -140,35 +142,35 @@ public:
     inline explicit QPolygonF(int size);
     inline /*implicit*/ QPolygonF(const QList<QPointF> &v) : QList<QPointF>(v) { }
     /* implicit */ QPolygonF(QList<QPointF> &&v) noexcept : QList<QPointF>(std::move(v)) { }
-    QPolygonF(const QRectF &r);
-    /*implicit*/ QPolygonF(const QPolygon &a);
+    Q_GUI_EXPORT QPolygonF(const QRectF &r);
+    /*implicit*/ Q_GUI_EXPORT QPolygonF(const QPolygon &a);
     inline QPolygonF(const QPolygonF &a) : QList<QPointF>(a) { }
     QPolygonF(QPolygonF &&other) noexcept : QList<QPointF>(std::move(other)) { }
     QPolygonF &operator=(QPolygonF &&other) noexcept { swap(other); return *this; }
     QPolygonF &operator=(const QPolygonF &other) { QList<QPointF>::operator=(other); return *this; }
     inline void swap(QPolygonF &other) { QList<QPointF>::swap(other); } // prevent QList<QPointF><->QPolygonF swaps
 
-    operator QVariant() const;
+    Q_GUI_EXPORT operator QVariant() const;
 
     inline void translate(qreal dx, qreal dy);
-    void translate(const QPointF &offset);
+    void Q_GUI_EXPORT translate(const QPointF &offset);
 
     inline QPolygonF translated(qreal dx, qreal dy) const;
-    Q_REQUIRED_RESULT QPolygonF translated(const QPointF &offset) const;
+    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygonF translated(const QPointF &offset) const;
 
-    QPolygon toPolygon() const;
+    QPolygon Q_GUI_EXPORT toPolygon() const;
 
     bool isClosed() const { return !isEmpty() && first() == last(); }
 
-    QRectF boundingRect() const;
+    QRectF Q_GUI_EXPORT boundingRect() const;
 
-    bool containsPoint(const QPointF &pt, Qt::FillRule fillRule) const;
+    Q_GUI_EXPORT bool containsPoint(const QPointF &pt, Qt::FillRule fillRule) const;
 
-    Q_REQUIRED_RESULT QPolygonF united(const QPolygonF &r) const;
-    Q_REQUIRED_RESULT QPolygonF intersected(const QPolygonF &r) const;
-    Q_REQUIRED_RESULT QPolygonF subtracted(const QPolygonF &r) const;
+    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygonF united(const QPolygonF &r) const;
+    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygonF intersected(const QPolygonF &r) const;
+    Q_REQUIRED_RESULT Q_GUI_EXPORT QPolygonF subtracted(const QPolygonF &r) const;
 
-    bool intersects(const QPolygonF &r) const;
+    Q_GUI_EXPORT bool intersects(const QPolygonF &r) const;
 };
 Q_DECLARE_SHARED(QPolygonF)
 

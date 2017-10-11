@@ -207,37 +207,21 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QItemSelectionModel::SelectionFlags)
 
-#ifdef Q_CC_MSVC
-
-/*
-   ### Qt 6:
-   ### This needs to be removed for next releases of Qt. It is a workaround for vc++ because
-   ### Qt exports QItemSelection that inherits QList<QItemSelectionRange>.
-*/
-
-# ifndef Q_TEMPLATE_EXTERN
-#  if defined(QT_BUILD_CORE_LIB)
-#   define Q_TEMPLATE_EXTERN
-#  else
-#   define Q_TEMPLATE_EXTERN extern
-#  endif
-# endif
-Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QList<QItemSelectionRange>;
-#endif // Q_CC_MSVC
-
-class Q_CORE_EXPORT QItemSelection : public QList<QItemSelectionRange>
+// We export each out-of-line method invidually to prevent MSVC from
+// exporting the whole QList class.
+class QItemSelection : public QList<QItemSelectionRange>
 {
 public:
     QItemSelection() noexcept : QList<QItemSelectionRange>() {}
-    QItemSelection(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    Q_CORE_EXPORT QItemSelection(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
     // reusing QList::swap() here is OK!
 
-    void select(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    bool contains(const QModelIndex &index) const;
-    QModelIndexList indexes() const;
-    void merge(const QItemSelection &other, QItemSelectionModel::SelectionFlags command);
-    static void split(const QItemSelectionRange &range,
+    Q_CORE_EXPORT void select(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    Q_CORE_EXPORT bool contains(const QModelIndex &index) const;
+    Q_CORE_EXPORT QModelIndexList indexes() const;
+    Q_CORE_EXPORT void merge(const QItemSelection &other, QItemSelectionModel::SelectionFlags command);
+    Q_CORE_EXPORT static void split(const QItemSelectionRange &range,
                       const QItemSelectionRange &other,
                       QItemSelection *result);
 };

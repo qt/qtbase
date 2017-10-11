@@ -110,17 +110,19 @@ public:
 
 Q_DECLARE_TYPEINFO(QXmlStreamAttribute, Q_MOVABLE_TYPE);
 
-class Q_CORE_EXPORT QXmlStreamAttributes : public QList<QXmlStreamAttribute>
+// We export each out-of-line method invidually to prevent MSVC from
+// exporting the whole QList class.
+class QXmlStreamAttributes : public QList<QXmlStreamAttribute>
 {
 public:
     inline QXmlStreamAttributes() {}
-    QStringRef value(const QString &namespaceUri, const QString &name) const;
-    QStringRef value(const QString &namespaceUri, QLatin1String name) const;
-    QStringRef value(QLatin1String namespaceUri, QLatin1String name) const;
-    QStringRef value(const QString &qualifiedName) const;
-    QStringRef value(QLatin1String qualifiedName) const;
-    void append(const QString &namespaceUri, const QString &name, const QString &value);
-    void append(const QString &qualifiedName, const QString &value);
+    Q_CORE_EXPORT QStringRef value(const QString &namespaceUri, const QString &name) const;
+    Q_CORE_EXPORT QStringRef value(const QString &namespaceUri, QLatin1String name) const;
+    Q_CORE_EXPORT QStringRef value(QLatin1String namespaceUri, QLatin1String name) const;
+    Q_CORE_EXPORT QStringRef value(const QString &qualifiedName) const;
+    Q_CORE_EXPORT QStringRef value(QLatin1String qualifiedName) const;
+    Q_CORE_EXPORT void append(const QString &namespaceUri, const QString &name, const QString &value);
+    Q_CORE_EXPORT void append(const QString &qualifiedName, const QString &value);
 
     inline bool hasAttribute(const QString &qualifiedName) const
     {

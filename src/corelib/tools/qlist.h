@@ -832,21 +832,6 @@ auto operator>=(const QList<T> &lhs, const QList<T> &rhs)
     return !(lhs < rhs);
 }
 
-/*
-   ### Qt 5:
-   ### This needs to be removed for next releases of Qt. It is a workaround for vc++ because
-   ### Qt exports QPolygon and QPolygonF that inherit QList<QPoint> and
-   ### QList<QPointF> respectively.
-*/
-
-#if defined(Q_CC_MSVC) && !defined(QT_BUILD_CORE_LIB)
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <QtCore/qpoint.h>
-QT_END_INCLUDE_NAMESPACE
-extern template class Q_CORE_EXPORT QList<QPointF>;
-extern template class Q_CORE_EXPORT QList<QPoint>;
-#endif
-
 QList<uint> QStringView::toUcs4() const { return QtPrivate::convertToUcs4(*this); }
 
 QT_END_NAMESPACE
