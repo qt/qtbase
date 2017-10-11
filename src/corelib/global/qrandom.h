@@ -42,6 +42,7 @@
 
 #include <QtCore/qglobal.h>
 #include <algorithm>    // for std::generate
+#include <random>       // for std::mt19937
 
 QT_BEGIN_NAMESPACE
 
@@ -51,19 +52,37 @@ class QRandomGenerator
     template <typename UInt> using IfValidUInt =
         typename std::enable_if<std::is_unsigned<UInt>::value && sizeof(UInt) >= sizeof(uint), bool>::type;
 public:
-    static QRandomGenerator system() { return {}; }
-    static QRandomGenerator global() { return {}; }
-    QRandomGenerator() = default;
+    QRandomGenerator(quint32 seed = 1)
+        : QRandomGenerator(&seed, 1)
+    {}
+    template <qssize_t N> QRandomGenerator(const quint32 (&seedBuffer)[N])
+        : QRandomGenerator(seedBuffer, seedBuffer + N)
+    {}
+    QRandomGenerator(const quint32 *seedBuffer, qssize_t len)
+        : QRandomGenerator(seedBuffer, seedBuffer + len)
+    {}
+    Q_CORE_EXPORT QRandomGenerator(std::seed_seq &sseq) Q_DECL_NOTHROW;
+    Q_CORE_EXPORT QRandomGenerator(const quint32 *begin, const quint32 *end);
 
-    // ### REMOVE BEFORE 5.10
-    QRandomGenerator *operator->() { return this; }
-    static quint32 get32() { return generate(); }
-    static quint64 get64() { return generate64(); }
-    static qreal getReal() { return generateDouble(); }
+    // copy constructor & assignment operator (move unnecessary)
+    Q_CORE_EXPORT QRandomGenerator(const QRandomGenerator &other);
+    Q_CORE_EXPORT QRandomGenerator &operator=(const QRandomGenerator &other);
 
-    static Q_CORE_EXPORT quint32 generate();
-    static Q_CORE_EXPORT quint64 generate64();
-    static double generateDouble()
+    quint32 generate()
+    {
+        quint32 ret;
+        fillRange(&ret, 1);
+        return ret;
+    }
+
+    quint64 generate64()
+    {
+        quint32 buf[2];
+        fillRange(buf);
+        return buf[0] | (quint64(buf[1]) << 32);
+    }
+
+    double generateDouble()
     {
         // IEEE 754 double precision has:
         //   1 bit      sign
@@ -77,87 +96,144 @@ public:
         return double(x) / double(limit);
     }
 
-    static qreal bounded(qreal sup)
+    double bounded(double highest)
     {
-        return generateDouble() * sup;
+        return generateDouble() * highest;
     }
 
-    static quint32 bounded(quint32 sup)
+    quint32 bounded(quint32 highest)
     {
         quint64 value = generate();
-        value *= sup;
+        value *= highest;
         value /= (max)() + quint64(1);
         return quint32(value);
     }
 
-    static int bounded(int sup)
+    int bounded(int highest)
     {
-        return int(bounded(quint32(sup)));
+        return int(bounded(quint32(highest)));
     }
 
-    static quint32 bounded(quint32 min, quint32 sup)
+    quint32 bounded(quint32 lowest, quint32 highest)
     {
-        return bounded(sup - min) + min;
+        return bounded(highest - lowest) + lowest;
     }
 
-    static int bounded(int min, int sup)
+    int bounded(int lowest, int highest)
     {
-        return bounded(sup - min) + min;
+        return bounded(highest - lowest) + lowest;
     }
 
     template <typename UInt, IfValidUInt<UInt> = true>
-    static void fillRange(UInt *buffer, qssize_t count)
+    void fillRange(UInt *buffer, qssize_t count)
     {
-        fillRange_helper(buffer, buffer + count);
+        _fillRange(buffer, buffer + count);
     }
 
     template <typename UInt, size_t N, IfValidUInt<UInt> = true>
-    static void fillRange(UInt (&buffer)[N])
+    void fillRange(UInt (&buffer)[N])
     {
-        fillRange_helper(buffer, buffer + N);
+        _fillRange(buffer, buffer + N);
     }
 
     // API like std::seed_seq
     template <typename ForwardIterator>
     void generate(ForwardIterator begin, ForwardIterator end)
     {
-        auto generator = static_cast<quint32 (*)()>(&QRandomGenerator::generate);
-        std::generate(begin, end, generator);
+        std::generate(begin, end, [this]() { return generate(); });
     }
 
     void generate(quint32 *begin, quint32 *end)
     {
-        fillRange_helper(begin, end);
+        _fillRange(begin, end);
     }
 
-    // API like std::random_device
+    // API like std:: random engines
     typedef quint32 result_type;
     result_type operator()() { return generate(); }
-    double entropy() const Q_DECL_NOTHROW { return 0.0; }
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
+
+    static inline QRandomGenerator *system();
+    static inline QRandomGenerator *global();
+
+protected:
+    enum System {};
+    QRandomGenerator(System);
 
 private:
-    static Q_CORE_EXPORT void fillRange_helper(void *buffer, void *bufferEnd);
+    Q_CORE_EXPORT void _fillRange(void *buffer, void *bufferEnd);
+
+    friend class QRandomGenerator64;
+    struct SystemGeneratorBase {};
+    struct SystemGenerator;
+    typedef std::mt19937 RandomEngine;
+
+    union Storage {
+        SystemGeneratorBase sys;
+#ifdef Q_COMPILER_UNRESTRICTED_UNIONS
+        RandomEngine twister;
+        RandomEngine &engine() { return twister; }
+        const RandomEngine &engine() const { return twister; }
+#else
+        std::aligned_storage<sizeof(RandomEngine), Q_ALIGNOF(RandomEngine)>::type buffer;
+        RandomEngine &engine() { return reinterpret_cast<RandomEngine &>(buffer); }
+        const RandomEngine &engine() const { return reinterpret_cast<const RandomEngine &>(buffer); }
+#endif
+
+        Q_STATIC_ASSERT_X(std::is_trivially_destructible<RandomEngine>::value,
+                          "std::mersenne_twister not trivially destructible as expected");
+        Storage();
+    };
+    uint type;
+    Storage storage;
 };
 
-class QRandomGenerator64
+class QRandomGenerator64 : public QRandomGenerator
 {
+    QRandomGenerator64(System);
 public:
-    static QRandomGenerator64 system() { return {}; }
-    static QRandomGenerator64 global() { return {}; }
-    QRandomGenerator64() = default;
+    // unshadow generate() overloads, since we'll override.
+    using QRandomGenerator::generate;
+    quint64 generate() { return generate64(); }
 
-    static quint64 generate() { return QRandomGenerator::generate64(); }
-
-    // API like std::random_device
     typedef quint64 result_type;
-    result_type operator()() { return QRandomGenerator::generate64(); }
-    double entropy() const Q_DECL_NOTHROW { return 0.0; }
+    result_type operator()() { return generate64(); }
+
+#ifndef Q_QDOC
+    QRandomGenerator64(quint32 seed = 1)
+        : QRandomGenerator(seed)
+    {}
+    template <qssize_t N> QRandomGenerator64(const quint32 (&seedBuffer)[N])
+        : QRandomGenerator(seedBuffer)
+    {}
+    QRandomGenerator64(const quint32 *seedBuffer, qssize_t len)
+        : QRandomGenerator(seedBuffer, len)
+    {}
+    QRandomGenerator64(std::seed_seq &sseq) Q_DECL_NOTHROW
+        : QRandomGenerator(sseq)
+    {}
+    QRandomGenerator64(const quint32 *begin, const quint32 *end)
+        : QRandomGenerator(begin, end)
+    {}
+    QRandomGenerator64(const QRandomGenerator &other) : QRandomGenerator(other) {}
+
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
+    static Q_CORE_EXPORT QRandomGenerator64 *system();
+    static Q_CORE_EXPORT QRandomGenerator64 *global();
+#endif // Q_QDOC
 };
 
+inline QRandomGenerator *QRandomGenerator::system()
+{
+    return QRandomGenerator64::system();
+}
+
+inline QRandomGenerator *QRandomGenerator::global()
+{
+    return QRandomGenerator64::global();
+}
 
 QT_END_NAMESPACE
 

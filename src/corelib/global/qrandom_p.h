@@ -52,16 +52,23 @@
 //
 
 #include "qglobal_p.h"
+#include <private/qsimd_p.h>
 
 QT_BEGIN_NAMESPACE
 
 enum QRandomGeneratorControl {
+    UseSystemRNG = 1,
     SkipSystemRNG = 2,
     SkipHWRNG = 4,
     SetRandomData = 8,
 
     // 28 bits
     RandomDataMask = 0xfffffff0
+};
+
+enum RNGType {
+    SystemRNG = 0,
+    MersenneTwister = 1
 };
 
 #if defined(QT_BUILD_INTERNAL) && defined(QT_BUILD_CORE_LIB)
@@ -71,6 +78,16 @@ extern Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control;
 #else
 enum { qt_randomdevice_control = 0 };
 #endif
+
+inline bool qt_has_hwrng()
+{
+#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
+    return qCpuHasFeature(RDRND);
+#else
+    return false;
+#endif
+}
+
 
 QT_END_NAMESPACE
 
