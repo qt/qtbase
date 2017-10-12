@@ -161,8 +161,6 @@ bool sum_will_overflow(qint32 windowSize, qint32 delta)
 using namespace Http2;
 
 const std::deque<quint32>::size_type QHttp2ProtocolHandler::maxRecycledStreams = 10000;
-const qint32 QHttp2ProtocolHandler::sessionMaxRecvWindowSize;
-const qint32 QHttp2ProtocolHandler::streamInitialRecvWindowSize;
 const quint32 QHttp2ProtocolHandler::maxAcceptableTableSize;
 
 QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *channel)
@@ -374,12 +372,10 @@ bool QHttp2ProtocolHandler::sendClientPreface()
     if (!frameWriter.write(*m_socket))
         return false;
 
-    sessionRecvWindowSize = sessionMaxRecvWindowSize;
-    if (defaultSessionWindowSize < sessionMaxRecvWindowSize) {
-        const auto delta = sessionMaxRecvWindowSize - defaultSessionWindowSize;
-        if (!sendWINDOW_UPDATE(connectionStreamID, delta))
-            return false;
-    }
+    sessionRecvWindowSize = Http2::initialSessionReceiveWindowSize;
+    const auto delta = Http2::initialSessionReceiveWindowSize - Http2::defaultSessionWindowSize;
+    if (!sendWINDOW_UPDATE(Http2::connectionStreamID, delta))
+        return false;
 
     prefaceSent = true;
     waitingForSettingsACK = true;
@@ -549,20 +545,20 @@ void QHttp2ProtocolHandler::handleDATA()
             if (inboundFrame.flags().testFlag(FrameFlag::END_STREAM)) {
                 finishStream(stream);
                 deleteActiveStream(stream.streamID);
-            } else if (stream.recvWindow < streamInitialRecvWindowSize / 2) {
+            } else if (stream.recvWindow < Http2::initialStreamReceiveWindowSize / 2) {
                 QMetaObject::invokeMethod(this, "sendWINDOW_UPDATE", Qt::QueuedConnection,
                                           Q_ARG(quint32, stream.streamID),
-                                          Q_ARG(quint32, streamInitialRecvWindowSize - stream.recvWindow));
-                stream.recvWindow = streamInitialRecvWindowSize;
+                                          Q_ARG(quint32, Http2::initialStreamReceiveWindowSize - stream.recvWindow));
+                stream.recvWindow = Http2::initialStreamReceiveWindowSize;
             }
         }
     }
 
-    if (sessionRecvWindowSize < sessionMaxRecvWindowSize / 2) {
+    if (sessionRecvWindowSize < Http2::initialSessionReceiveWindowSize / 2) {
         QMetaObject::invokeMethod(this, "sendWINDOW_UPDATE", Qt::QueuedConnection,
                                   Q_ARG(quint32, connectionStreamID),
-                                  Q_ARG(quint32, sessionMaxRecvWindowSize - sessionRecvWindowSize));
-        sessionRecvWindowSize = sessionMaxRecvWindowSize;
+                                  Q_ARG(quint32, Http2::initialSessionReceiveWindowSize - sessionRecvWindowSize));
+        sessionRecvWindowSize = Http2::initialSessionReceiveWindowSize;
     }
 }
 
@@ -1203,7 +1199,7 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, b
 
     const Stream newStream(message, newStreamID,
                            streamInitialSendWindowSize,
-                           streamInitialRecvWindowSize);
+                           Http2::initialStreamReceiveWindowSize);
 
     if (!uploadDone) {
         if (auto src = newStream.data()) {
@@ -1398,7 +1394,8 @@ bool QHttp2ProtocolHandler::tryReserveStream(const Http2::Frame &pushPromiseFram
     promise.reservedID = reservedID;
     promise.pushHeader = requestHeader;
 
-    activeStreams.insert(reservedID, Stream(urlKey, reservedID, streamInitialRecvWindowSize));
+    activeStreams.insert(reservedID, Stream(urlKey, reservedID,
+                                            Http2::initialStreamReceiveWindowSize));
     return true;
 }
 
@@ -1432,7 +1429,7 @@ void QHttp2ProtocolHandler::initReplyFromPushPromise(const HttpMessagePair &mess
         // Let's pretent we're sending a request now:
         Stream closedStream(message, promise.reservedID,
                             streamInitialSendWindowSize,
-                            streamInitialRecvWindowSize);
+                            Http2::initialStreamReceiveWindowSize);
         closedStream.state = Stream::halfClosedLocal;
         activeStreams.insert(promise.reservedID, closedStream);
         promisedStream = &activeStreams[promise.reservedID];

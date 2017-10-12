@@ -216,6 +216,8 @@ Frame default_SETTINGS_frame()
     // MAX frame size (16 kb), disable/enable PUSH_PROMISE
     builder.append(Settings::MAX_FRAME_SIZE_ID);
     builder.append(quint32(maxFrameSize));
+    builder.append(Settings::INITIAL_WINDOW_SIZE_ID);
+    builder.append(initialStreamReceiveWindowSize);
     builder.append(Settings::ENABLE_PUSH_ID);
     builder.append(quint32(is_PUSH_PROMISE_enabled()));
 
