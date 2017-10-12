@@ -736,7 +736,7 @@ void QKmsDevice::discoverPlanes()
             continue;
         }
 
-        enumerateProperties(objProps, [this, &plane](drmModePropertyPtr prop, quint64 value) {
+        enumerateProperties(objProps, [&plane](drmModePropertyPtr prop, quint64 value) {
             if (!strcmp(prop->name, "type")) {
                 plane.type = QKmsPlane::Type(value);
             } else if (!strcmp(prop->name, "rotation")) {
