@@ -105,7 +105,7 @@ void WriteDeclaration::acceptUI(DomUI *node)
     QString qualifiedClassName = node->elementClass() + m_option.postfix;
     QString className = qualifiedClassName;
 
-    QString varName = m_driver->findOrInsertWidget(node->elementWidget());
+    m_driver->findOrInsertWidget(node->elementWidget());
     QString widgetClassName = node->elementWidget()->attributeClass();
 
     QString exportMacro = node->elementExportMacro();
