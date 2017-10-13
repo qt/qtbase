@@ -808,7 +808,7 @@ QVulkanFunctions *QVulkanInstance::functions() const
  */
 QVulkanDeviceFunctions *QVulkanInstance::deviceFunctions(VkDevice device)
 {
-    QVulkanDeviceFunctions *&f(d_ptr->deviceFuncs[device]);
+    QVulkanDeviceFunctions *&f = d_ptr->deviceFuncs[device];
     if (!f)
         f = new QVulkanDeviceFunctions(this, device);
     return f;
@@ -829,7 +829,7 @@ QVulkanDeviceFunctions *QVulkanInstance::deviceFunctions(VkDevice device)
  */
 void QVulkanInstance::resetDeviceFunctions(VkDevice device)
 {
-    QVulkanDeviceFunctions *&f(d_ptr->deviceFuncs[device]);
+    QVulkanDeviceFunctions *&f = d_ptr->deviceFuncs[device];
     delete f;
     f = nullptr;
 }
