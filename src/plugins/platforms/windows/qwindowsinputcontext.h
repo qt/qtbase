@@ -79,6 +79,9 @@ public:
     void invokeAction(QInputMethod::Action, int cursorPosition) override;
     void setFocusObject(QObject *object) override;
 
+    QRectF keyboardRect() const override;
+    bool isInputPanelVisible() const override;
+
     bool startComposition(HWND hwnd);
     bool composition(HWND hwnd, LPARAM lParam);
     bool endComposition(HWND hwnd);
@@ -98,6 +101,7 @@ private:
     void startContextComposition();
     void endContextComposition();
     void updateEnabled();
+    HWND getVirtualKeyboardWindowHandle() const;
 
     const DWORD m_WM_MSIME_MOUSE;
     static HIMC m_defaultContext;
