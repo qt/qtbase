@@ -8167,7 +8167,9 @@ void tst_QNetworkReply::ioHttpRedirectErrors_data()
                                         "location: http://localhost:%1\r\n\r\n");
 
     QTest::newRow("too-many-redirects") << "http://localhost" << tempRedirectReply << QNetworkReply::TooManyRedirectsError;
+#if QT_CONFIG(ssl)
     QTest::newRow("insecure-redirect") << "https://localhost" << tempRedirectReply << QNetworkReply::InsecureRedirectError;
+#endif
     QTest::newRow("unknown-redirect") << "http://localhost"<< tempRedirectReply.replace("http", "bad_protocol") << QNetworkReply::ProtocolUnknownError;
 }
 
@@ -8178,7 +8180,7 @@ void tst_QNetworkReply::ioHttpRedirectErrors()
     QFETCH(QNetworkReply::NetworkError, error);
 
     QUrl localhost(url);
-    MiniHttpServer server("", localhost.scheme() == "https");
+    MiniHttpServer server("", localhost.scheme() == QLatin1String("https"));
 
     localhost.setPort(server.serverPort());
 
@@ -8228,11 +8230,13 @@ void tst_QNetworkReply::ioHttpRedirectPolicy_data()
     QTest::addColumn<int>("statusCode");
 
     QTest::newRow("manual-nossl") << QNetworkRequest::ManualRedirectPolicy << false << 0 << 307;
-    QTest::newRow("manual-ssl") << QNetworkRequest::ManualRedirectPolicy << true << 0 << 307;
     QTest::newRow("nolesssafe-nossl") << QNetworkRequest::NoLessSafeRedirectPolicy << false << 1 << 200;
-    QTest::newRow("nolesssafe-ssl") << QNetworkRequest::NoLessSafeRedirectPolicy << true << 1 << 200;
     QTest::newRow("same-origin-nossl") << QNetworkRequest::SameOriginRedirectPolicy << false << 1 << 200;
+#if QT_CONFIG(ssl)
+    QTest::newRow("manual-ssl") << QNetworkRequest::ManualRedirectPolicy << true << 0 << 307;
+    QTest::newRow("nolesssafe-ssl") << QNetworkRequest::NoLessSafeRedirectPolicy << true << 1 << 200;
     QTest::newRow("same-origin-ssl") << QNetworkRequest::SameOriginRedirectPolicy << true << 1 << 200;
+#endif
 }
 
 void tst_QNetworkReply::ioHttpRedirectPolicy()
@@ -8240,10 +8244,6 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     QFETCH(const QNetworkRequest::RedirectPolicy, policy);
 
     QFETCH(const bool, ssl);
-#ifdef QT_NO_SSL
-    if (ssl)
-        QSKIP("SSL is not supported");
-#endif
 
     QFETCH(const int, redirectCount);
     QFETCH(const int, statusCode);
@@ -8251,11 +8251,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     // Setup HTTP server.
     SameOriginRedirector redirectServer("", ssl);
 
-    QUrl url(QLatin1String(
-#ifndef QT_NO_SSL
-      ssl ? "https://localhost" :
-#endif
-      "http://localhost"));
+    QUrl url(QLatin1String(ssl ? "https://localhost" : "http://localhost"));
 
     url.setPort(redirectServer.serverPort());
     redirectServer.responses.push_back(httpEmpty200Response);
@@ -8291,27 +8287,35 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors_data()
     // 1. NoLessSafeRedirectsPolicy
     QTest::newRow("nolesssafe-nossl-nossl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
+#if QT_CONFIG(ssl)
     QTest::newRow("nolesssafe-ssl-ssl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("https:/localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
     QTest::newRow("nolesssafe-ssl-nossl-insecure-redirect") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif
     // 2. SameOriginRedirectsPolicy
     QTest::newRow("same-origin-nossl-nossl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
+#if QT_CONFIG(ssl)
     QTest::newRow("same-origin-ssl-ssl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
     QTest::newRow("same-origin-https-http-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif
     QTest::newRow("same-origin-http-https-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("https://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
     QTest::newRow("same-origin-http-http-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#if QT_CONFIG(ssl)
     QTest::newRow("same-origin-https-https-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif
     QTest::newRow("same-origin-http-http-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
+#if QT_CONFIG(ssl)
     QTest::newRow("same-origin-https-https-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif
 }
 
 void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
@@ -8325,20 +8329,11 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
     QFETCH(const int, maxRedirects);
     QFETCH(const QNetworkReply::NetworkError, expectedError);
 
-#ifdef QT_NO_SSL
-    if (ssl || location.contains("https"))
-        QSKIP("SSL required to run this test");
-#endif
-
     // Setup the server.
     MiniHttpServer server("", ssl);
     server.setDataToTransmit(tempRedirectReplyStr().arg(location.arg(server.serverPort())).toLatin1());
 
-    QUrl url(QLatin1String(
-#ifndef QT_NO_SSL
-      ssl ? "https://localhost" :
-#endif
-      "http://localhost"));
+    QUrl url(QLatin1String(ssl ? "https://localhost" : "http://localhost"));
     url.setPort(server.serverPort());
 
     QNetworkRequest request(url);
