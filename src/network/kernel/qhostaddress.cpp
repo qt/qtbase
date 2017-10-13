@@ -519,49 +519,6 @@ QHostAddress::QHostAddress(SpecialAddress address)
 }
 
 /*!
-    \overload
-    \since 5.8
-
-    Sets the special address specified by \a address.
-*/
-void QHostAddress::setAddress(SpecialAddress address)
-{
-    d->clear();
-
-    Q_IPV6ADDR ip6;
-    memset(&ip6, 0, sizeof ip6);
-    quint32 ip4 = INADDR_ANY;
-
-    switch (address) {
-    case Null:
-        return;
-
-    case Broadcast:
-        ip4 = INADDR_BROADCAST;
-        break;
-    case LocalHost:
-        ip4 = INADDR_LOOPBACK;
-        break;
-    case AnyIPv4:
-        break;
-
-    case LocalHostIPv6:
-        ip6[15] = 1;
-        Q_FALLTHROUGH();
-    case AnyIPv6:
-        d->setAddress(ip6);
-        return;
-
-    case Any:
-        d->protocol = QAbstractSocket::AnyIPProtocol;
-        return;
-    }
-
-    // common IPv4 part
-    d->setAddress(ip4);
-}
-
-/*!
     Destroys the host address object.
 */
 QHostAddress::~QHostAddress()
@@ -722,6 +679,49 @@ void QHostAddress::setAddress(const struct sockaddr *sockaddr)
 #else
     Q_UNUSED(sockaddr)
 #endif
+}
+
+/*!
+    \overload
+    \since 5.8
+
+    Sets the special address specified by \a address.
+*/
+void QHostAddress::setAddress(SpecialAddress address)
+{
+    clear();
+
+    Q_IPV6ADDR ip6;
+    memset(&ip6, 0, sizeof ip6);
+    quint32 ip4 = INADDR_ANY;
+
+    switch (address) {
+    case Null:
+        return;
+
+    case Broadcast:
+        ip4 = INADDR_BROADCAST;
+        break;
+    case LocalHost:
+        ip4 = INADDR_LOOPBACK;
+        break;
+    case AnyIPv4:
+        break;
+
+    case LocalHostIPv6:
+        ip6[15] = 1;
+        Q_FALLTHROUGH();
+    case AnyIPv6:
+        d->setAddress(ip6);
+        return;
+
+    case Any:
+        d->protocol = QAbstractSocket::AnyIPProtocol;
+        return;
+    }
+
+    // common IPv4 part
+    d->setAddress(ip4);
 }
 
 /*!
