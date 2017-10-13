@@ -129,7 +129,6 @@ namespace {
 class SystemRandom
 {
 public:
-    enum { EfficientBufferFill = true };
     static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
     {
         // getentropy can read at most 256 bytes, so break the reading
@@ -217,7 +216,6 @@ qssize_t SystemRandom::fillBuffer(void *buffer, qssize_t count)
 class SystemRandom
 {
 public:
-    enum { EfficientBufferFill = true };
     static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
     {
         auto RtlGenRandom = SystemFunction036;
@@ -228,7 +226,6 @@ public:
 class SystemRandom
 {
 public:
-    enum { EfficientBufferFill = false };
     static qssize_t fillBuffer(void *, qssize_t) Q_DECL_NOTHROW
     {
         // always use the fallback
@@ -362,9 +359,15 @@ static qssize_t fill_cpu(quint32 *buffer, qssize_t count) Q_DECL_NOTHROW
     return 0;
 }
 
-static void fill_internal(quint32 *buffer, qssize_t count)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(SystemRandom::fillBuffer(buffer, count)))
+static Q_NEVER_INLINE void fill(void *begin, void *end)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(SystemRandom::fillBuffer(nullptr, 1)))
 {
+    // Verify that the pointers are properly aligned for 32-bit
+    Q_ASSERT(quintptr(begin) % sizeof(quint32) == 0);
+    Q_ASSERT(quintptr(end) % sizeof(quint32) == 0);
+    quint32 *buffer = reinterpret_cast<quint32 *>(begin);
+    qssize_t count = reinterpret_cast<quint32 *>(end) - buffer;
+
     if (Q_UNLIKELY(uint(qt_randomdevice_control) & SetRandomData)) {
         uint value = uint(qt_randomdevice_control) & RandomDataMask;
         std::fill_n(buffer, count, value);
@@ -383,65 +386,6 @@ static void fill_internal(quint32 *buffer, qssize_t count)
     if (Q_UNLIKELY(filled != count)) {
         // failed to fill the entire buffer, try the faillback mechanism
         fallback_fill(buffer + filled, count - filled);
-    }
-}
-
-static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(fill_internal(static_cast<quint32 *>(buffer), 1)))
-{
-    struct ThreadState {
-        enum {
-            DesiredBufferByteSize = 32,
-            BufferCount = DesiredBufferByteSize / sizeof(quint32)
-        };
-        quint32 buffer[BufferCount];
-        int idx = BufferCount;
-    };
-
-    // Verify that the pointers are properly aligned for 32-bit
-    Q_ASSERT(quintptr(buffer) % sizeof(quint32) == 0);
-    Q_ASSERT(quintptr(bufferEnd) % sizeof(quint32) == 0);
-
-    quint32 *ptr = reinterpret_cast<quint32 *>(buffer);
-    quint32 * const end = reinterpret_cast<quint32 *>(bufferEnd);
-
-#if defined(Q_COMPILER_THREAD_LOCAL) && !defined(QT_BOOTSTRAPPED)
-    if (SystemRandom::EfficientBufferFill && (end - ptr) < ThreadState::BufferCount
-            && uint(qt_randomdevice_control) == 0) {
-        thread_local ThreadState state;
-        qssize_t itemsAvailable = ThreadState::BufferCount - state.idx;
-
-        // copy as much as we already have
-        qssize_t itemsToCopy = qMin(qssize_t(end - ptr), itemsAvailable);
-        memcpy(ptr, state.buffer + state.idx, size_t(itemsToCopy) * sizeof(*ptr));
-        ptr += itemsToCopy;
-
-        if (ptr != end) {
-            // refill the buffer and try again
-            fill_internal(state.buffer, ThreadState::BufferCount);
-            state.idx = 0;
-
-            itemsToCopy = end - ptr;
-            memcpy(ptr, state.buffer + state.idx, size_t(itemsToCopy) * sizeof(*ptr));
-            ptr = end;
-        }
-
-        // erase what we copied and advance
-#  ifdef Q_OS_WIN
-        // Microsoft recommends this
-        SecureZeroMemory(state.buffer + state.idx, size_t(itemsToCopy) * sizeof(*ptr));
-#  else
-        // We're quite confident the compiler will not optimize this out because
-        // we're writing to a thread-local buffer
-        memset(state.buffer + state.idx, 0, size_t(itemsToCopy) * sizeof(*ptr));
-#  endif
-        state.idx += itemsToCopy;
-    }
-#endif // Q_COMPILER_THREAD_LOCAL && !QT_BOOTSTRAPPED
-
-    if (ptr != end) {
-        // fill directly in the user buffer
-        fill_internal(ptr, end - ptr);
     }
 }
 

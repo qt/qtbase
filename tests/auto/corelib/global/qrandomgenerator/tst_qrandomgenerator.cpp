@@ -119,7 +119,6 @@ void tst_QRandomGenerator::generate32_data()
     QTest::addColumn<uint>("control");
     QTest::newRow("default") << 0U;
 #ifdef QT_BUILD_INTERNAL
-    QTest::newRow("direct") << uint(SkipMemfill);
     QTest::newRow("system") << uint(SkipHWRNG);
 #  ifdef HAVE_FALLBACK_ENGINE
     QTest::newRow("fallback") << uint(SkipHWRNG | SkipSystemRNG);
