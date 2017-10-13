@@ -195,6 +195,7 @@ public:
 
     HANDLE winEventNotifierActivatedEvent;
     QList<QWinEventNotifier *> winEventNotifierList;
+    bool winEventNotifierListModified = false;
     void activateEventNotifier(QWinEventNotifier * wen);
 
     QList<MSG> queuedUserInputEvents;
