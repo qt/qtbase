@@ -323,7 +323,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     if(!project->isEmpty("QMAKE_PRE_LINK"))
         t << "\n\t" <<var("QMAKE_PRE_LINK");
     if(project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
-        t << "\n\t-$(DEL_FILE) $(DESTDIR_TARGET) 2>$$QMAKE_SHELL_NULL_DEVICE";
+        t << "\n\t-$(DEL_FILE) $(DESTDIR_TARGET) 2>" << var("QMAKE_SHELL_NULL_DEVICE");
         if (project->values("OBJECTS").count() < var("QMAKE_LINK_OBJECT_MAX").toInt()) {
             t << "\n\t$(LIB) $(DESTDIR_TARGET) " << objectsLinkLine << " " ;
         } else {
