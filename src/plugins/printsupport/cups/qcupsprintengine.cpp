@@ -293,7 +293,7 @@ void QCupsPrintEnginePrivate::changePrinter(const QString &newPrinter)
 
     // Try create the printer, only use it if it returns valid
     QPrintDevice printDevice = ps->createPrintDevice(newPrinter);
-    if (!m_printDevice.isValid())
+    if (!printDevice.isValid())
         return;
     m_printDevice.swap(printDevice);
     printerName = m_printDevice.id();

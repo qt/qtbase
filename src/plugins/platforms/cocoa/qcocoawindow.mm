@@ -1669,6 +1669,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     if (!m_drawContentBorderGradient) {
         window.styleMask = window.styleMask & ~NSTexturedBackgroundWindowMask;
         [window.contentView.superview setNeedsDisplay:YES];
+        window.titlebarAppearsTransparent = NO;
         return;
     }
 
@@ -1693,6 +1694,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     int effectiveBottomContentBorderThickness = m_bottomContentBorderThickness;
 
     [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
+    window.titlebarAppearsTransparent = YES;
 
     [window setContentBorderThickness:effectiveTopContentBorderThickness forEdge:NSMaxYEdge];
     [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];

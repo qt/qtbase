@@ -1374,6 +1374,7 @@ void tst_QMenuBar::menubarSizeHint()
 void tst_QMenuBar::taskQTBUG4965_escapeEaten()
 {
     QMenuBar menubar;
+    menubar.setNativeMenuBar(false);
     QMenu menu("menu1");
     QAction *first = menubar.addMenu(&menu);
     menu.addAction("quit", &menubar, SLOT(close()), QKeySequence("ESC"));

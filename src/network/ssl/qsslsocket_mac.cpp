@@ -92,7 +92,7 @@ EphemeralSecKeychain::EphemeralSecKeychain()
 {
     const auto uuid = QUuid::createUuid();
     if (uuid.isNull()) {
-        qCWarning(lcSsl) << "Failed to create an unique keychain name";
+        qCWarning(lcSsl) << "Failed to create a unique keychain name";
         return;
     }
 
