@@ -267,6 +267,7 @@ int runMoc(int argc, char **argv)
     QCommandLineOption prependIncludeOption(QStringLiteral("b"));
     prependIncludeOption.setDescription(QStringLiteral("Prepend #include <file> (preserve default include)."));
     prependIncludeOption.setValueName(QStringLiteral("file"));
+    prependIncludeOption.setFlags(QCommandLineOption::ShortOptionStyle);
     parser.addOption(prependIncludeOption);
 
     QCommandLineOption includeOption(QStringLiteral("include"));
