@@ -59,6 +59,25 @@ struct TabletPoint
     qreal angle;
 };
 
+class ProximityEventFilter : public QObject
+{
+public:
+    explicit ProximityEventFilter(QObject *parent) : QObject(parent) { }
+
+    bool eventFilter(QObject *, QEvent *event) override
+    {
+        switch (event->type()) {
+        case QEvent::TabletEnterProximity:
+        case QEvent::TabletLeaveProximity:
+            qDebug() << event;
+            break;
+        default:
+            break;
+        }
+        return false;
+    }
+};
+
 class EventReportWidget : public QWidget
 {
     Q_OBJECT
@@ -149,10 +168,6 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
     QWidget::tabletEvent(event);
     bool isMove = false;
     switch (event->type()) {
-    case QEvent::TabletEnterProximity:
-    case QEvent::TabletLeaveProximity:
-        qDebug() << "proximity" << event;
-        break;
     case QEvent::TabletMove:
         m_points.push_back(TabletPoint(event->pos(), TabletMove, m_lastButton, event->pointerType(), event->pressure(), event->rotation()));
         update();
@@ -203,6 +218,7 @@ void EventReportWidget::timerEvent(QTimerEvent *)
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    app.installEventFilter(new ProximityEventFilter(&app));
     QMainWindow mainWindow;
     mainWindow.setWindowTitle(QString::fromLatin1("Tablet Test %1").arg(QT_VERSION_STR));
     EventReportWidget *widget = new EventReportWidget;
