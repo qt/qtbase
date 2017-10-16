@@ -39,6 +39,8 @@ SOURCES += \
         global/qrandom.cpp \
         global/qhooks.cpp
 
+F16C_SOURCES += global/qfloat16_f16c.c
+
 VERSIONTAGGING_SOURCES = global/qversiontagging.cpp
 
 darwin: SOURCES += global/qoperatingsystemversion_darwin.mm

@@ -71,6 +71,12 @@ void tst_GlobalTypes()
 
     qreal qr;
     Q_UNUSED(qr);
+
+    qssize_t qs;
+    qptrdiff qp;
+    qintptr qip;
+    quintptr qup;
+    Q_UNUSED(qs); Q_UNUSED(qp); Q_UNUSED(qip); Q_UNUSED(qup);
 }
 
 /* Qt version */

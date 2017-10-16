@@ -79,6 +79,9 @@ private:
 
 Q_DECLARE_TYPEINFO(qfloat16, Q_PRIMITIVE_TYPE);
 
+Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *, const float *, qssize_t length) Q_DECL_NOTHROW;
+Q_CORE_EXPORT void qFloatFromFloat16(float *, const qfloat16 *, qssize_t length) Q_DECL_NOTHROW;
+
 Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsInf(qfloat16 f) Q_DECL_NOTHROW;    // complements qnumeric.h
 Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsNaN(qfloat16 f) Q_DECL_NOTHROW;    // complements qnumeric.h
 Q_REQUIRED_RESULT Q_CORE_EXPORT bool qIsFinite(qfloat16 f) Q_DECL_NOTHROW; // complements qnumeric.h
