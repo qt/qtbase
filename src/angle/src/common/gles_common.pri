@@ -585,7 +585,7 @@ angle_d3d11: SHADERS = VS_Passthrough2D \
 for (SHADER, SHADERS) {
     INPUT = $$eval($${SHADER}.input)
     OUT_DIR = $$OUT_PWD/libANGLE/$$relative_path($$dirname($$INPUT), $$ANGLE_DIR/src/libANGLE)/compiled
-    fxc_$${SHADER}.commands = $$FXC /nologo /E $${SHADER} /T $$eval($${SHADER}.type) /Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    fxc_$${SHADER}.commands = $$FXC -nologo -E $${SHADER} -T $$eval($${SHADER}.type) -Fh ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     fxc_$${SHADER}.output = $$OUT_DIR/$$eval($${SHADER}.output)
     fxc_$${SHADER}.input = $$INPUT
     fxc_$${SHADER}.dependency_type = TYPE_C
