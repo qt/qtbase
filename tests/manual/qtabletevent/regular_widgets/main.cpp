@@ -63,45 +63,35 @@ class EventReportWidget : public QWidget
 {
     Q_OBJECT
 public:
-    EventReportWidget();
+    EventReportWidget() { startTimer(1000); }
 
 public slots:
     void clearPoints() { m_points.clear(); update(); }
 
 signals:
-    void stats(QString s);
+    void stats(QString s, int timeOut = 0);
 
 protected:
-    void mouseDoubleClickEvent(QMouseEvent *event) { outputMouseEvent(event); }
-    void mouseMoveEvent(QMouseEvent *event) { outputMouseEvent(event); }
-    void mousePressEvent(QMouseEvent *event) { outputMouseEvent(event); }
-    void mouseReleaseEvent(QMouseEvent *event) { outputMouseEvent(event); }
+    void mouseDoubleClickEvent(QMouseEvent *event) override { outputMouseEvent(event); }
+    void mouseMoveEvent(QMouseEvent *event) override { outputMouseEvent(event); }
+    void mousePressEvent(QMouseEvent *event) override { outputMouseEvent(event); }
+    void mouseReleaseEvent(QMouseEvent *event) override { outputMouseEvent(event); }
 
-    void tabletEvent(QTabletEvent *);
+    void tabletEvent(QTabletEvent *) override;
 
-    void paintEvent(QPaintEvent *);
-    void timerEvent(QTimerEvent *);
+    void paintEvent(QPaintEvent *) override;
+    void timerEvent(QTimerEvent *) override;
 
 private:
     void outputMouseEvent(QMouseEvent *event);
 
-    bool m_lastIsMouseMove;
-    bool m_lastIsTabletMove;
-    Qt::MouseButton m_lastButton;
+    bool m_lastIsMouseMove = false;
+    bool m_lastIsTabletMove = false;
+    Qt::MouseButton m_lastButton = Qt::NoButton;
     QVector<TabletPoint> m_points;
-    int m_tabletMoveCount;
-    int m_paintEventCount;
+    int m_tabletMoveCount = 0;
+    int m_paintEventCount = 0;
 };
-
-EventReportWidget::EventReportWidget()
-    : m_lastIsMouseMove(false)
-    , m_lastIsTabletMove(false)
-    , m_lastButton(Qt::NoButton)
-    , m_tabletMoveCount(0)
-    , m_paintEventCount(0)
-{
-    startTimer(1000);
-}
 
 void EventReportWidget::paintEvent(QPaintEvent *)
 {
@@ -114,7 +104,7 @@ void EventReportWidget::paintEvent(QPaintEvent *)
     p.setPen(Qt::white);
     QPainterPath ellipse;
     ellipse.addEllipse(0, 0, halfLineSpacing * 5, halfLineSpacing);
-    foreach (const TabletPoint &t, m_points) {
+    for (const TabletPoint &t : qAsConst(m_points)) {
         if (geom.contains(t.pos)) {
               QPainterPath pp;
               pp.addEllipse(t.pos, halfLineSpacing, halfLineSpacing);
@@ -218,10 +208,10 @@ int main(int argc, char *argv[])
     EventReportWidget *widget = new EventReportWidget;
     widget->setMinimumSize(640, 480);
     QMenu *fileMenu = mainWindow.menuBar()->addMenu("File");
-    QObject::connect(fileMenu->addAction("Clear"), SIGNAL(triggered()), widget, SLOT(clearPoints()));
-    QObject::connect(widget, SIGNAL(stats(QString)), mainWindow.statusBar(), SLOT(showMessage(QString)));
-    QAction *quitAction = fileMenu->addAction("Quit");
-    QObject::connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    fileMenu->addAction("Clear", widget, &EventReportWidget::clearPoints);
+    QObject::connect(widget, &EventReportWidget::stats,
+                     mainWindow.statusBar(), &QStatusBar::showMessage);
+    QAction *quitAction = fileMenu->addAction("Quit", qApp, &QCoreApplication::quit);
     quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
     mainWindow.setCentralWidget(widget);
     mainWindow.show();
