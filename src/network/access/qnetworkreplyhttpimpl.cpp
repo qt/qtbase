@@ -1183,6 +1183,7 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
 {
     Q_Q(QNetworkReplyHttpImpl);
 
+    rawHeaders.clear();
     cookedHeaders.clear();
 
     if (managerPrivate->thread)

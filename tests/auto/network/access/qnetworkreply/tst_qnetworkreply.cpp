@@ -516,6 +516,17 @@ bool tst_QNetworkReply::seedCreated = false;
             QFAIL(qPrintable(errorMsg));        \
     } while (0)
 
+static bool validateRedirectedResponseHeaders(QNetworkReplyPtr reply)
+{
+    // QTBUG-61300: previously we were mixing 'raw' headers from all responses
+    // along the redirect chain. The simplest test is to check/verify we have
+    // no 'location' header anymore.
+    Q_ASSERT(reply.data());
+
+    return !reply->hasRawHeader("location")
+           && !reply->header(QNetworkRequest::LocationHeader).isValid();
+}
+
 #ifndef QT_NO_SSL
 static void setupSslServer(QSslSocket* serverSocket)
 {
@@ -8106,6 +8117,7 @@ void tst_QNetworkReply::ioHttpSingleRedirect()
     // Reply url is set to the redirect url
     QCOMPARE(reply->url(), redirectUrl);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(validateRedirectedResponseHeaders(reply));
 }
 
 void tst_QNetworkReply::ioHttpChangeMaxRedirects()
@@ -8154,6 +8166,7 @@ void tst_QNetworkReply::ioHttpChangeMaxRedirects()
     QCOMPARE(redSpy2.count(), 2);
     QCOMPARE(reply2->url(), server3Url);
     QCOMPARE(reply2->error(), QNetworkReply::NoError);
+    QVERIFY(validateRedirectedResponseHeaders(reply2));
 }
 
 void tst_QNetworkReply::ioHttpRedirectErrors_data()
@@ -8274,6 +8287,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(redirectSpy.count(), redirectCount);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), statusCode);
+    QVERIFY(validateRedirectedResponseHeaders(reply) || statusCode != 200);
 }
 
 void tst_QNetworkReply::ioHttpRedirectPolicyErrors_data()
@@ -8406,6 +8420,7 @@ void tst_QNetworkReply::ioHttpUserVerifiedRedirect()
     waitForFinish(reply);
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), statusCode);
+    QVERIFY(validateRedirectedResponseHeaders(reply) || statusCode != 200);
 }
 
 void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
@@ -8433,6 +8448,7 @@ void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
 
     QVERIFY(waitForFinish(reply) == Success);
     QVERIFY(target.receivedData.contains("\r\nCookie: hello=world\r\n"));
+    QVERIFY(validateRedirectedResponseHeaders(reply));
 }
 
 void tst_QNetworkReply::ioHttpRedirect_data()
@@ -8471,6 +8487,7 @@ void tst_QNetworkReply::ioHttpRedirect()
 
     QCOMPARE(waitForFinish(reply), int(Success));
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QVERIFY(validateRedirectedResponseHeaders(reply));
 }
 
 #ifndef QT_NO_SSL
