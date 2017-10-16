@@ -352,16 +352,26 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
 {
     PACKET proximityBuffer[1]; // we are only interested in the first packet in this case
     const int totalPacks = QWindowsTabletSupport::m_winTab32DLL.wTPacketsGet(m_context, 1, proximityBuffer);
-    if (!totalPacks)
-        return false;
+
     if (!LOWORD(lParam)) {
         qCDebug(lcQpaTablet) << "leave proximity for device #" << m_currentDevice;
-        QWindowSystemInterface::handleTabletLeaveProximityEvent(proximityBuffer[0].pkTime,
-                                                                m_devices.at(m_currentDevice).currentDevice,
-                                                                m_devices.at(m_currentDevice).currentPointerType,
-                                                                m_devices.at(m_currentDevice).uniqueId);
+        if (totalPacks > 0) {
+            QWindowSystemInterface::handleTabletLeaveProximityEvent(proximityBuffer[0].pkTime,
+                                                                    m_devices.at(m_currentDevice).currentDevice,
+                                                                    m_devices.at(m_currentDevice).currentPointerType,
+                                                                    m_devices.at(m_currentDevice).uniqueId);
+        } else {
+            QWindowSystemInterface::handleTabletLeaveProximityEvent(m_devices.at(m_currentDevice).currentDevice,
+                                                                    m_devices.at(m_currentDevice).currentPointerType,
+                                                                    m_devices.at(m_currentDevice).uniqueId);
+
+        }
         return true;
     }
+
+    if (!totalPacks)
+        return false;
+
     const UINT currentCursor = proximityBuffer[0].pkCursor;
     UINT physicalCursorId;
     QWindowsTabletSupport::m_winTab32DLL.wTInfo(WTI_CURSORS + currentCursor, CSR_PHYSID, &physicalCursorId);
