@@ -899,7 +899,7 @@ void QWindowsBaseWindow::raise_sys()
     const Qt::WindowType type = window()->type();
     if (type == Qt::Popup
         || type == Qt::SubWindow // Special case for QTBUG-63121: MDI subwindows with WindowStaysOnTopHint
-        || (window()->flags() & (Qt::WindowStaysOnTopHint | Qt::WindowStaysOnBottomHint)) == 0) {
+        || !(window()->flags() & Qt::WindowStaysOnBottomHint)) {
         SetWindowPos(handle(), HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     }
 }
@@ -907,7 +907,7 @@ void QWindowsBaseWindow::raise_sys()
 void QWindowsBaseWindow::lower_sys()
 {
     qCDebug(lcQpaWindows) << __FUNCTION__ << this << window();
-    if ((window()->flags() & (Qt::WindowStaysOnTopHint | Qt::WindowStaysOnBottomHint)) == 0)
+    if (!(window()->flags() & Qt::WindowStaysOnTopHint))
         SetWindowPos(handle(), HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 }
 

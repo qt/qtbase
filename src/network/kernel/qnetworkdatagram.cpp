@@ -124,9 +124,7 @@ QT_BEGIN_NAMESPACE
       \row      \li Linux               \li Supported       \li Supported       \li Supported
       \row      \li OS X                \li Supported       \li Supported       \li Only for IPv6
       \row      \li Other Unix supporting RFC 3542 \li Only for IPv6 \li Only for IPv6 \li Only for IPv6
-      \row      \li Windows XP and older \li Not supported  \li Not supported   \li Not supported
-      \row      \li Windows Vista & up  \li Supported       \li Supported       \li Supported
-      \row      \li Windows CE          \li Not supported   \li Not supported   \li Not supported
+      \row      \li Windows (desktop)   \li Supported       \li Supported       \li Supported
       \row      \li Windows RT          \li Not supported   \li Not supported   \li Not supported
     \endtable
 

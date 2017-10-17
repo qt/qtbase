@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// internal helper. Converts an integer value to an unique string token
+// internal helper. Converts an integer value to a unique string token
 template <typename T>
         struct HexString
 {

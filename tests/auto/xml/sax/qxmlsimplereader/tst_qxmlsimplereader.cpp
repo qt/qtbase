@@ -562,7 +562,7 @@ void tst_QXmlSimpleReader::inputFromSocket()
     QSKIP("WinRT does not support connecting to localhost");
 #endif
 
-    QTRY_VERIFY(server->listening);
+    QTRY_VERIFY_WITH_TIMEOUT(server->listening, 15000);
 
     QTcpSocket sock;
     sock.connectToHost(QHostAddress::LocalHost, TEST_PORT);

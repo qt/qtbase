@@ -1124,7 +1124,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     The event is propagated up the parent widget chain until a widget
     accepts it or an event filter consumes it.
 
-    The QWidget::setEnable() function can be used to enable or disable
+    The QWidget::setEnabled() function can be used to enable or disable
     mouse and keyboard events for a widget.
 
     The event handlers QWidget::keyPressEvent(), QWidget::keyReleaseEvent(),

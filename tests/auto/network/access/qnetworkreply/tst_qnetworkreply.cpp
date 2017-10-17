@@ -488,6 +488,8 @@ private Q_SLOTS:
     void ioHttpUserVerifiedRedirect_data();
     void ioHttpUserVerifiedRedirect();
     void ioHttpCookiesDuringRedirect();
+    void ioHttpRedirect_data();
+    void ioHttpRedirect();
 #ifndef QT_NO_SSL
     void putWithServerClosingConnectionImmediately();
 #endif
@@ -8436,6 +8438,44 @@ void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
 
     QVERIFY(waitForFinish(reply) == Success);
     QVERIFY(target.receivedData.contains("\r\nCookie: hello=world\r\n"));
+}
+
+void tst_QNetworkReply::ioHttpRedirect_data()
+{
+    QTest::addColumn<QString>("status");
+
+    QTest::addRow("301") << "301 Moved Permanently";
+    QTest::addRow("302") << "302 Found";
+    QTest::addRow("303") << "303 See Other";
+    QTest::addRow("305") << "305 Use Proxy";
+    QTest::addRow("307") << "307 Temporary Redirect";
+    QTest::addRow("308") << "308 Permanent Redirect";
+}
+
+void tst_QNetworkReply::ioHttpRedirect()
+{
+    QFETCH(QString, status);
+
+    MiniHttpServer target(httpEmpty200Response, false);
+    QUrl targetUrl("http://localhost/");
+    targetUrl.setPort(target.serverPort());
+
+    QString redirectReply = QStringLiteral("HTTP/1.1 %1\r\n"
+                                           "Content-Type: text/plain\r\n"
+                                           "location: %2\r\n"
+                                           "\r\n").arg(status, targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1(), false);
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+    QNetworkRequest request(url);
+    auto oldRedirectPolicy = manager.redirectPolicy();
+    manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
+    QNetworkReplyPtr reply(manager.get(request));
+    // Set policy back to what it was
+    manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
 }
 
 #ifndef QT_NO_SSL

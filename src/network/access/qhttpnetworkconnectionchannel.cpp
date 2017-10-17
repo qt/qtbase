@@ -600,7 +600,8 @@ void QHttpNetworkConnectionChannel::handleStatus()
     case 302:
     case 303:
     case 305:
-    case 307: {
+    case 307:
+    case 308: {
         // Parse the response headers and get the "location" url
         QUrl redirectUrl = connection->d_func()->parseRedirectResponse(socket, reply);
         if (redirectUrl.isValid())
