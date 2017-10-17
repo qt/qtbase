@@ -1004,7 +1004,7 @@ Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPointF>;
 Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QPoint>;
 #endif
 
-QVector<uint> QStringView::toUcs4() const { return qConvertToUcs4(*this); }
+QVector<uint> QStringView::toUcs4() const { return QtPrivate::convertToUcs4(*this); }
 
 QT_END_NAMESPACE
 

@@ -160,7 +160,7 @@ static inline bool qt_ends_with(QStringView haystack, QStringView needle, Qt::Ca
 static inline bool qt_ends_with(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
 
-qssize_t qustrlen(const ushort *str) Q_DECL_NOTHROW
+qssize_t QtPrivate::qustrlen(const ushort *str) Q_DECL_NOTHROW
 {
     qssize_t result = 0;
 
@@ -758,6 +758,7 @@ static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
 
 /*!
     \relates QStringView
+    \internal
     \since 5.10
 
     Returns an integer that compares to 0 as \a lhs compares to \a rhs.
@@ -771,13 +772,14 @@ static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
 
     \snippet qstring/main.cpp qCompareStrings-QSV-QSV
 */
-int qCompareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_compare_strings(lhs, rhs, cs);
 }
 
 /*!
     \relates QStringView
+    \internal
     \since 5.10
     \overload
 
@@ -790,13 +792,14 @@ int qCompareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
 */
-int qCompareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+int QtPrivate::compareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_compare_strings(lhs, rhs, cs);
 }
 
 /*!
     \relates QStringView
+    \internal
     \since 5.10
     \overload
 
@@ -809,13 +812,14 @@ int qCompareStrings(QStringView lhs, QLatin1String rhs, Qt::CaseSensitivity cs) 
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
 */
-int qCompareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+int QtPrivate::compareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_compare_strings(lhs, rhs, cs);
 }
 
 /*!
     \relates QStringView
+    \internal
     \since 5.10
     \overload
 
@@ -828,7 +832,7 @@ int qCompareStrings(QLatin1String lhs, QStringView rhs, Qt::CaseSensitivity cs) 
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
 */
-int qCompareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+int QtPrivate::compareStrings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_compare_strings(lhs, rhs, cs);
 }
@@ -4732,15 +4736,17 @@ QByteArray QString::toLatin1_helper(const QChar *data, int length)
 
 /*!
     \since 5.10
+    \internal
     \relates QStringView
 
     Returns a Latin-1 representation of \a string as a QByteArray.
 
     The behavior is undefined if \a string contains non-Latin1 characters.
 
-    \sa QString::toLatin1(), QStringView::toLatin1(), qConvertToUtf8(), qConvertToLocal8Bit(), qConvertToUcs4()
+    \sa QString::toLatin1(), QStringView::toLatin1(), QtPrivate::convertToUtf8(),
+    QtPrivate::convertToLocal8Bit(), QtPrivate::convertToUcs4()
 */
-QByteArray qConvertToLatin1(QStringView string)
+QByteArray QtPrivate::convertToLatin1(QStringView string)
 {
     return qt_convert_to_latin1(string);
 }
@@ -4853,6 +4859,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
 
 /*!
     \since 5.10
+    \internal
     \relates QStringView
 
     Returns a local 8-bit representation of \a string as a QByteArray.
@@ -4864,9 +4871,10 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
     The behavior is undefined if \a string contains characters not
     supported by the locale's 8-bit encoding.
 
-    \sa QString::toLocal8Bit(), QStringView::toLocal8Bit(), qConvertToLatin1(), qConvertToUtf8(), qConvertToUcs4()
+    \sa QString::toLocal8Bit(), QStringView::toLocal8Bit(), QtPrivate::vonvertToLatin1(),
+    QtPrivate::convertToUtf8(), QtPrivate::convertToUcs4()
 */
-QByteArray qConvertToLocal8Bit(QStringView string)
+QByteArray QtPrivate::convertToLocal8Bit(QStringView string)
 {
     return qt_convert_to_local_8bit(string);
 }
@@ -4899,6 +4907,7 @@ static QByteArray qt_convert_to_utf8(QStringView str)
 
 /*!
     \since 5.10
+    \internal
     \relates QStringView
 
     Returns a UTF-8 representation of \a string as a QByteArray.
@@ -4906,9 +4915,10 @@ static QByteArray qt_convert_to_utf8(QStringView str)
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QStringView.
 
-    \sa QString::toUtf8(), QStringView::toUtf8(), qConvertToLatin1(), qConvertToLocal8Bit(), qConvertToUcs4()
+    \sa QString::toUtf8(), QStringView::toUtf8(), QtPrivate::convertToLatin1(),
+    QtPrivate::convertToLocal8Bit(), QtPrivate::convertToUcs4()
 */
-QByteArray qConvertToUtf8(QStringView string)
+QByteArray QtPrivate::convertToUtf8(QStringView string)
 {
     return qt_convert_to_utf8(string);
 }
@@ -4947,6 +4957,7 @@ static QVector<uint> qt_convert_to_ucs4(QStringView string)
 
 /*!
     \since 5.10
+    \internal
     \relates QStringView
 
     Returns a UCS-4/UTF-32 representation of \a string as a QVector<uint>.
@@ -4958,9 +4969,10 @@ static QVector<uint> qt_convert_to_ucs4(QStringView string)
 
     The returned vector is not NUL terminated.
 
-    \sa QString::toUcs4(), QStringView::toUcs4(), qConvertToLatin1(), qConvertToLocal8Bit(), qConvertToUtf8()
+    \sa QString::toUcs4(), QStringView::toUcs4(), QtPrivate::convertToLatin1(),
+    QtPrivate::convertToLocal8Bit(), QtPrivate::convertToUtf8()
 */
-QVector<uint> qConvertToUcs4(QStringView string)
+QVector<uint> QtPrivate::convertToUcs4(QStringView string)
 {
     return qt_convert_to_ucs4(string);
 }
@@ -5269,6 +5281,7 @@ namespace {
 /*!
     \fn QStringView qTrimmed(QStringView s)
     \fn QLatin1String qTrimmed(QLatin1String s)
+    \internal
     \relates QStringView
     \since 5.10
 
@@ -5280,12 +5293,12 @@ namespace {
 
     \sa QString::trimmed(), QStringView::trimmed(), QLatin1String::trimmed()
 */
-QStringView qTrimmed(QStringView s) Q_DECL_NOTHROW
+QStringView QtPrivate::trimmed(QStringView s) Q_DECL_NOTHROW
 {
     return qt_trimmed(s);
 }
 
-QLatin1String qTrimmed(QLatin1String s) Q_DECL_NOTHROW
+QLatin1String QtPrivate::trimmed(QLatin1String s) Q_DECL_NOTHROW
 {
     return qt_trimmed(s);
 }
@@ -5646,8 +5659,6 @@ QString& QString::fill(QChar ch, int size)
     Note that no string is equal to \a s1 being 0.
 
     Equivalent to \c {s1 != 0 && compare(s1, s2) == 0}.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -5659,8 +5670,6 @@ QString& QString::fill(QChar ch, int size)
 
     For \a s1 != 0, this is equivalent to \c {compare(} \a s1, \a s2
     \c {) != 0}. Note that no string is equal to \a s1 being 0.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -5675,8 +5684,6 @@ QString& QString::fill(QChar ch, int size)
     of the characters and is very fast, but is not what a human would
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -5691,8 +5698,6 @@ QString& QString::fill(QChar ch, int size)
     of the characters and is very fast, but is not what a human would
     expect. Consider sorting user-interface strings with
     QString::localeAwareCompare().
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -5706,8 +5711,6 @@ QString& QString::fill(QChar ch, int size)
     of the characters and is very fast, but is not what a human would
     expect. Consider sorting user-interface strings using the
     QString::localeAwareCompare() function.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -5788,7 +5791,7 @@ QString& QString::fill(QChar ch, int size)
 
     \snippet qstring/main.cpp 16
 
-    \sa qCompareStrings(), operator==(), operator<(), operator>()
+    \sa operator==(), operator<(), operator>()
 */
 
 /*!
@@ -5798,8 +5801,6 @@ QString& QString::fill(QChar ch, int size)
 
     Performs a comparison of \a s1 and \a s2, using the case
     sensitivity setting \a cs.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -5810,8 +5811,6 @@ QString& QString::fill(QChar ch, int size)
 
     Performs a comparison of \a s1 and \a s2, using the case
     sensitivity setting \a cs.
-
-    \sa qCompareStrings()
 */
 
 
@@ -5825,8 +5824,6 @@ QString& QString::fill(QChar ch, int size)
     string.
 
     Same as compare(*this, \a other, \a cs).
-
-    \sa qCompareStrings()
 */
 int QString::compare(const QString &other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 {
@@ -5852,8 +5849,6 @@ int QString::compare_helper(const QChar *data1, int length1, const QChar *data2,
     \since 4.2
 
     Same as compare(*this, \a other, \a cs).
-
-    \sa qCompareStrings()
 */
 int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
 {
@@ -5867,8 +5862,6 @@ int QString::compare(QLatin1String other, Qt::CaseSensitivity cs) const Q_DECL_N
   Compares the string reference, \a ref, with the string and returns
   an integer less than, equal to, or greater than zero if the string
   is less than, equal to, or greater than \a ref.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -5894,8 +5887,6 @@ int QString::compare_helper(const QChar *data1, int length1, const char *data2, 
 /*!
   \fn int QString::compare(const QString &s1, const QStringRef &s2, Qt::CaseSensitivity cs = Qt::CaseSensitive)
   \overload compare()
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -10218,8 +10209,6 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
     otherwise the comparison is case insensitive.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -10233,8 +10222,6 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
     otherwise the comparison is case insensitive.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -10248,8 +10235,6 @@ QStringRef QStringRef::appendTo(QString *string) const
 
     If \a cs is Qt::CaseSensitive, the comparison is case sensitive;
     otherwise the comparison is case insensitive.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -10265,8 +10250,6 @@ QStringRef QStringRef::appendTo(QString *string) const
     otherwise the comparison is case insensitive.
 
     Equivalent to \c {compare(*this, other, cs)}.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -10282,8 +10265,6 @@ QStringRef QStringRef::appendTo(QString *string) const
     otherwise the comparison is case insensitive.
 
     Equivalent to \c {compare(*this, other, cs)}.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -10299,8 +10280,6 @@ QStringRef QStringRef::appendTo(QString *string) const
     otherwise the comparison is case insensitive.
 
     Equivalent to \c {compare(*this, other, cs)}.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -10317,8 +10296,6 @@ QStringRef QStringRef::appendTo(QString *string) const
     otherwise the comparison is case insensitive.
 
     Equivalent to \c {compare(*this, other, cs)}.
-
-    \sa qCompareStrings()
 */
 
 /*!
@@ -11107,14 +11084,15 @@ static inline bool qt_starts_with(QStringView haystack, QChar needle, Qt::CaseSe
 }
 
 /*!
-    \fn bool qStartsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::startsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
     \since 5.10
-    \fn bool qStartsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::startsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
     \since 5.10
-    \fn bool qStartsWith(QLatin1String haystack, QStringview needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::startsWith(QLatin1String haystack, QStringview needle, Qt::CaseSensitivity cs)
     \since 5.10
-    \fn bool qStartsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::startsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
     \since 5.10
+    \internal
     \relates QStringView
 
     Returns \c true if \a haystack starts with \a needle,
@@ -11123,25 +11101,25 @@ static inline bool qt_starts_with(QStringView haystack, QChar needle, Qt::CaseSe
     If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
     otherwise the search is case-insensitive.
 
-    \sa qEndsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1String::endsWith()
+    \sa QtPrivate::endsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1String::endsWith()
 */
 
-bool qStartsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::startsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_starts_with_impl(haystack, needle, cs);
 }
 
-bool qStartsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::startsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_starts_with_impl(haystack, needle, cs);
 }
 
-bool qStartsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::startsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_starts_with_impl(haystack, needle, cs);
 }
 
-bool qStartsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::startsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_starts_with_impl(haystack, needle, cs);
 }
@@ -11179,14 +11157,15 @@ static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSens
 }
 
 /*!
-    \fn bool qEndsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::endsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs)
     \since 5.10
-    \fn bool qEndsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::endsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
     \since 5.10
-    \fn bool qEndsWith(QLatin1String haystack, QStringview needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::endsWith(QLatin1String haystack, QStringview needle, Qt::CaseSensitivity cs)
     \since 5.10
-    \fn bool qEndsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
     \since 5.10
+    \internal
     \relates QStringView
 
     Returns \c true if \a haystack ends with \a needle,
@@ -11195,25 +11174,25 @@ static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSens
     If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
     otherwise the search is case-insensitive.
 
-    \sa qEndsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1String::endsWith()
+    \sa QtPrivate::startsWith(), QString::endsWith(), QStringView::endsWith(), QLatin1String::endsWith()
 */
 
-bool qEndsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::endsWith(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
-bool qEndsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::endsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
-bool qEndsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::endsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_ends_with_impl(haystack, needle, cs);
 }
 
-bool qEndsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
+bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
     return qt_ends_with_impl(haystack, needle, cs);
 }

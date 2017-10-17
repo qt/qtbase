@@ -113,22 +113,22 @@ public:
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char back() const { return at(size() - 1); }
 
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qStartsWith(*this, s, cs); }
+    { return QtPrivate::startsWith(*this, s, cs); }
     Q_REQUIRED_RESULT bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qStartsWith(*this, s, cs); }
+    { return QtPrivate::startsWith(*this, s, cs); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR bool startsWith(QChar c) const Q_DECL_NOTHROW
     { return !isEmpty() && front() == c; }
     Q_REQUIRED_RESULT inline bool startsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
-    { return qStartsWith(*this, QStringView(&c, 1), cs); }
+    { return QtPrivate::startsWith(*this, QStringView(&c, 1), cs); }
 
     Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qEndsWith(*this, s, cs); }
+    { return QtPrivate::endsWith(*this, s, cs); }
     Q_REQUIRED_RESULT bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qEndsWith(*this, s, cs); }
+    { return QtPrivate::endsWith(*this, s, cs); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR bool endsWith(QChar c) const Q_DECL_NOTHROW
     { return !isEmpty() && back() == c; }
     Q_REQUIRED_RESULT inline bool endsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
-    { return qEndsWith(*this, QStringView(&c, 1), cs); }
+    { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
 
     using value_type = const char;
     using reference = value_type&;
@@ -167,7 +167,7 @@ public:
     Q_DECL_RELAXED_CONSTEXPR void truncate(int n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
 
-    Q_REQUIRED_RESULT QLatin1String trimmed() const Q_DECL_NOTHROW { return qTrimmed(*this); }
+    Q_REQUIRED_RESULT QLatin1String trimmed() const Q_DECL_NOTHROW { return QtPrivate::trimmed(*this); }
 
     inline bool operator==(const QString &s) const Q_DECL_NOTHROW;
     inline bool operator!=(const QString &s) const Q_DECL_NOTHROW;
@@ -205,9 +205,9 @@ typedef QLatin1String QLatin1Literal;
 // QStringView members that require QLatin1String:
 //
 bool QStringView::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
-{ return qStartsWith(*this, s, cs); }
+{ return QtPrivate::startsWith(*this, s, cs); }
 bool QStringView::endsWith(QLatin1String s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
-{ return qEndsWith(*this, s, cs); }
+{ return QtPrivate::endsWith(*this, s, cs); }
 
 class Q_CORE_EXPORT QString
 {
@@ -390,7 +390,7 @@ public:
     bool startsWith(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qStartsWith(*this, s, cs); }
+    { return QtPrivate::startsWith(*this, s, cs); }
     bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
@@ -399,7 +399,7 @@ public:
     bool endsWith(const QStringRef &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #endif
     Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qEndsWith(*this, s, cs); }
+    { return QtPrivate::endsWith(*this, s, cs); }
     bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
@@ -1485,7 +1485,7 @@ public:
     bool isRightToLeft() const;
 
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qStartsWith(*this, s, cs); }
+    { return QtPrivate::startsWith(*this, s, cs); }
     bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #if QT_STRINGVIEW_LEVEL < 2
@@ -1494,7 +1494,7 @@ public:
 #endif
 
     Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qEndsWith(*this, s, cs); }
+    { return QtPrivate::endsWith(*this, s, cs); }
     bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 #if QT_STRINGVIEW_LEVEL < 2
@@ -1715,12 +1715,12 @@ inline bool operator<=(QLatin1String lhs, QChar rhs) Q_DECL_NOTHROW { return !(r
 inline bool operator>=(QLatin1String lhs, QChar rhs) Q_DECL_NOTHROW { return !(rhs >  lhs); }
 
 // QStringView <> QStringView
-inline bool operator==(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && qCompareStrings(lhs, rhs) == 0; }
+inline bool operator==(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && QtPrivate::compareStrings(lhs, rhs) == 0; }
 inline bool operator!=(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
-inline bool operator< (QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <  0; }
-inline bool operator<=(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <= 0; }
-inline bool operator> (QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >  0; }
-inline bool operator>=(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >= 0; }
+inline bool operator< (QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) <  0; }
+inline bool operator<=(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
+inline bool operator> (QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) >  0; }
+inline bool operator>=(QStringView lhs, QStringView rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
 
 // QStringView <> QChar
 inline bool operator==(QStringView lhs, QChar rhs) Q_DECL_NOTHROW { return lhs == QStringView(&rhs, 1); }
@@ -1738,19 +1738,19 @@ inline bool operator> (QChar lhs, QStringView rhs) Q_DECL_NOTHROW { return QStri
 inline bool operator>=(QChar lhs, QStringView rhs) Q_DECL_NOTHROW { return QStringView(&lhs, 1) >= rhs; }
 
 // QStringView <> QLatin1String
-inline bool operator==(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && qCompareStrings(lhs, rhs) == 0; }
+inline bool operator==(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && QtPrivate::compareStrings(lhs, rhs) == 0; }
 inline bool operator!=(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
-inline bool operator< (QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <  0; }
-inline bool operator<=(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <= 0; }
-inline bool operator> (QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >  0; }
-inline bool operator>=(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >= 0; }
+inline bool operator< (QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) <  0; }
+inline bool operator<=(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
+inline bool operator> (QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) >  0; }
+inline bool operator>=(QStringView lhs, QLatin1String rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
 
-inline bool operator==(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && qCompareStrings(lhs, rhs) == 0; }
+inline bool operator==(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return lhs.size() == rhs.size() && QtPrivate::compareStrings(lhs, rhs) == 0; }
 inline bool operator!=(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return !(lhs == rhs); }
-inline bool operator< (QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <  0; }
-inline bool operator<=(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) <= 0; }
-inline bool operator> (QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >  0; }
-inline bool operator>=(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return qCompareStrings(lhs, rhs) >= 0; }
+inline bool operator< (QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) <  0; }
+inline bool operator<=(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
+inline bool operator> (QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) >  0; }
+inline bool operator>=(QLatin1String lhs, QStringView rhs) Q_DECL_NOTHROW { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 // QStringRef <> QByteArray
