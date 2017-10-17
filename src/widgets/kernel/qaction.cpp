@@ -1118,6 +1118,8 @@ void
 QAction::setData(const QVariant &data)
 {
     Q_D(QAction);
+    if (d->userData == data)
+        return;
     d->userData = data;
     d->sendDataChanged();
 }

@@ -62,6 +62,7 @@ private slots:
     void task229128TriggeredSignalWithoutActiongroup();
     void task229128TriggeredSignalWhenInActiongroup();
     void repeat();
+    void setData();
 
 private:
     int m_lastEventType;
@@ -406,6 +407,21 @@ void tst_QAction::repeat()
     QTest::simulateEvent(&testWidget, true, Qt::Key_F, Qt::NoModifier, QString("f"), true);
     QTest::keyRelease(&testWidget, Qt::Key_F);
     QCOMPARE(spy.count(), 2);
+}
+
+void tst_QAction::setData() // QTBUG-62006
+{
+    QAction act(nullptr);
+    QSignalSpy spy(&act, &QAction::changed);
+    QCOMPARE(act.data(), QVariant());
+    QCOMPARE(spy.count(), 0);
+    act.setData(QVariant());
+    QCOMPARE(spy.count(), 0);
+
+    act.setData(-1);
+    QCOMPARE(spy.count(), 1);
+    act.setData(-1);
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QAction)
