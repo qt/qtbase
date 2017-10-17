@@ -3963,6 +3963,40 @@ QWindowsXPStyle::QWindowsXPStyle(QWindowsXPStylePrivate &dd) : QWindowsStyle(dd)
 {
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const XPThemeData &t)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "XPThemeData(" << t.widget << ", theme=#" << t.theme << ", " << t.htheme
+        << ", partId=" << t.partId << ", stateId=" << t.stateId << ", rect=" << t.rect
+        << ", mirrorHorizontally=" << t.mirrorHorizontally << ", mirrorVertically="
+        << t.mirrorVertically << ", noBorder=" << t.noBorder << ", noContent=" << t.noContent
+        << ", rotate=" << t.rotate << ')';
+    return d;
+}
+
+QDebug operator<<(QDebug d, const ThemeMapKey &k)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "ThemeMapKey(theme=#" << k.theme
+        << ", partId=" << k.partId << ", stateId=" << k.stateId
+        << ", noBorder=" << k.noBorder << ", noContent=" << k.noContent << ')';
+    return d;
+}
+
+QDebug operator<<(QDebug d, const ThemeMapData &td)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "ThemeMapData(alphaType=" << td.alphaType
+      << ", dataValid=" << td.dataValid << ", partIsTransparent=" << td.partIsTransparent
+      << ", hasAlphaChannel=" << td.hasAlphaChannel << ", wasAlphaSwapped=" << td.wasAlphaSwapped
+      << ", hadInvalidAlpha=" << td.hadInvalidAlpha << ')';
+    return d;
+}
+#endif // QT_NO_DEBUG_STREAM
 
 // Debugging code ---------------------------------------------------------------------[ START ]---
 // The code for this point on is not compiled by default, but only used as assisting

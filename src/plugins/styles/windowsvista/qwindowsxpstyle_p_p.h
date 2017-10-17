@@ -64,6 +64,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDebug;
+
 // TMT_TEXTSHADOWCOLOR is wrongly defined in mingw
 #if TMT_TEXTSHADOWCOLOR != 3818
 #undef TMT_TEXTSHADOWCOLOR
@@ -180,6 +182,12 @@ struct ThemeMapData {
     ThemeMapData() : dataValid(false), partIsTransparent(false),
                      hasAlphaChannel(false), wasAlphaSwapped(false), hadInvalidAlpha(false) {}
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const XPThemeData &t);
+QDebug operator<<(QDebug d, const ThemeMapKey &k);
+QDebug operator<<(QDebug d, const ThemeMapData &td);
+#endif
 
 class QWindowsXPStylePrivate : public QWindowsStylePrivate
 {
