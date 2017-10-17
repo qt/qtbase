@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -59,7 +59,7 @@ Receiver::Receiver(QWidget *parent)
     statusLabel = new QLabel(tr("Listening for broadcasted messages"));
     statusLabel->setWordWrap(true);
 
-    quitButton = new QPushButton(tr("&Quit"));
+    auto quitButton = new QPushButton(tr("&Quit"));
 
 //! [0]
     udpSocket = new QUdpSocket(this);
@@ -72,12 +72,12 @@ Receiver::Receiver(QWidget *parent)
 //! [1]
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
+    auto buttonLayout = new QHBoxLayout;
     buttonLayout->addStretch(1);
     buttonLayout->addWidget(quitButton);
     buttonLayout->addStretch(1);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    auto mainLayout = new QVBoxLayout;
     mainLayout->addWidget(statusLabel);
     mainLayout->addLayout(buttonLayout);
     setLayout(mainLayout);
@@ -87,13 +87,13 @@ Receiver::Receiver(QWidget *parent)
 
 void Receiver::processPendingDatagrams()
 {
+    QByteArray datagram;
 //! [2]
     while (udpSocket->hasPendingDatagrams()) {
-        QByteArray datagram;
-        datagram.resize(udpSocket->pendingDatagramSize());
+        datagram.resize(int(udpSocket->pendingDatagramSize()));
         udpSocket->readDatagram(datagram.data(), datagram.size());
         statusLabel->setText(tr("Received datagram: \"%1\"")
-                             .arg(datagram.data()));
+                             .arg(datagram.constData()));
     }
 //! [2]
 }

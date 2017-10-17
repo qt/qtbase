@@ -326,7 +326,7 @@ void tst_GraphicsViewBenchmark::initTestCase()
     currentListSize = -1;
     currentListType = None;
 
-    QTest::qWaitForWindowShown(mMainView);
+    QVERIFY(QTest::qWaitForWindowShown(mMainView));
 }
 
 void tst_GraphicsViewBenchmark::cleanupTestCase()

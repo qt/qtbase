@@ -75,7 +75,7 @@ public:
 
     QImage toImage() const override;
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                         QPlatformTextureList *textures, QOpenGLContext *context,
+                         QPlatformTextureList *textures,
                          bool translucentBackground) override;
 
     const QPlatformTextureList *textures() const { return m_textures; }

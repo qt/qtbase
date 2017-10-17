@@ -40,7 +40,9 @@
 
 #include "qplatformdefs.h"
 #include "private/qdatetime_p.h"
+#if QT_CONFIG(datetimeparser)
 #include "private/qdatetimeparser_p.h"
+#endif
 
 #include "qdatastream.h"
 #include "qset.h"
@@ -1337,7 +1339,7 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
 QDate QDate::fromString(const QString &string, const QString &format)
 {
     QDate date;
-#if QT_CONFIG(timezone)
+#if QT_CONFIG(datetimeparser)
     QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
@@ -2055,7 +2057,7 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
 QTime QTime::fromString(const QString &string, const QString &format)
 {
     QTime time;
-#if QT_CONFIG(timezone)
+#if QT_CONFIG(datetimeparser)
     QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
@@ -5055,7 +5057,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
 
 QDateTime QDateTime::fromString(const QString &string, const QString &format)
 {
-#if QT_CONFIG(timezone)
+#if QT_CONFIG(datetimeparser)
     QTime time;
     QDate date;
 

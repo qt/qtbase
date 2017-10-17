@@ -2,6 +2,7 @@
 **
 ** Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -42,18 +43,12 @@
 #include "private/qfilesystementry_p.h"
 #include <qt_windows.h>
 
-#include "QtCore/qcoreapplication.h"
 #include "QtCore/qfileinfo.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qdebug.h"
 #include "QtCore/qthread.h"
 
 QT_BEGIN_NAMESPACE
-
-static inline QByteArray localHostName()
-{
-    return qgetenv("COMPUTERNAME");
-}
 
 static inline bool fileExists(const wchar_t *fileName)
 {
@@ -107,15 +102,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 
     // We hold the lock, continue.
     fileHandle = fh;
-    // Assemble data, to write in a single call to write
-    // (otherwise we'd have to check every write call)
-    QByteArray fileData;
-    fileData += QByteArray::number(QCoreApplication::applicationPid());
-    fileData += '\n';
-    fileData += QCoreApplication::applicationName().toUtf8();
-    fileData += '\n';
-    fileData += localHostName();
-    fileData += '\n';
+    QByteArray fileData = lockFileContents();
     DWORD bytesWritten = 0;
     QLockFile::LockError error = QLockFile::NoError;
     if (!WriteFile(fh, fileData.constData(), fileData.size(), &bytesWritten, NULL) || !FlushFileBuffers(fh))
@@ -129,38 +116,33 @@ bool QLockFilePrivate::removeStaleLock()
     return QFile::remove(fileName);
 }
 
-bool QLockFilePrivate::isApparentlyStale() const
+bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
 {
-    qint64 pid;
-    QString hostname, appname;
-
     // On WinRT there seems to be no way of obtaining information about other
     // processes due to sandboxing
 #ifndef Q_OS_WINRT
-    if (getLockInfo(&pid, &hostname, &appname)) {
-        if (hostname.isEmpty() || hostname == QString::fromLocal8Bit(localHostName())) {
-            HANDLE procHandle = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-            if (!procHandle)
-                return true;
-            // We got a handle but check if process is still alive
-            DWORD exitCode = 0;
-            if (!::GetExitCodeProcess(procHandle, &exitCode))
-                exitCode = 0;
-            ::CloseHandle(procHandle);
-            if (exitCode != STILL_ACTIVE)
-                return true;
-            const QString processName = processNameByPid(pid);
-            if (!processName.isEmpty() && processName != appname)
-                return true; // PID got reused by a different application.
-        }
-    }
+    HANDLE procHandle = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+    if (!procHandle)
+        return false;
+
+    // We got a handle but check if process is still alive
+    DWORD exitCode = 0;
+    if (!::GetExitCodeProcess(procHandle, &exitCode))
+        exitCode = 0;
+    ::CloseHandle(procHandle);
+    if (exitCode != STILL_ACTIVE)
+        return false;
+
+    const QString processName = processNameByPid(pid);
+    if (!processName.isEmpty() && processName != appname)
+        return false; // PID got reused by a different application.
+
 #else // !Q_OS_WINRT
     Q_UNUSED(pid);
-    Q_UNUSED(hostname);
     Q_UNUSED(appname);
 #endif // Q_OS_WINRT
-    const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
-    return staleLockTime > 0 && qAbs(age) > staleLockTime;
+
+    return true;
 }
 
 QString QLockFilePrivate::processNameByPid(qint64 pid)

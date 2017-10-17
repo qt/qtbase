@@ -1063,6 +1063,13 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         if (platformWindow->frameStrutEventsEnabled())
             return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
         break;
+    case QtWindows::EnterSizeMoveEvent:
+        platformWindow->setFlag(QWindowsWindow::ResizeMoveActive);
+        return true;
+    case QtWindows::ExitSizeMoveEvent:
+        platformWindow->clearFlag(QWindowsWindow::ResizeMoveActive);
+        platformWindow->checkForScreenChanged();
+        return true;
     case QtWindows::ScrollEvent:
         return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
     case QtWindows::MouseWheelEvent:

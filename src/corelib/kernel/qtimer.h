@@ -165,37 +165,31 @@ Q_SIGNALS:
 
 public:
 #if QT_HAS_INCLUDE(<chrono>) || defined(Q_QDOC)
-    Q_ALWAYS_INLINE
     void setInterval(std::chrono::milliseconds value)
     {
         setInterval(int(value.count()));
     }
 
-    Q_ALWAYS_INLINE
     std::chrono::milliseconds intervalAsDuration() const
     {
         return std::chrono::milliseconds(interval());
     }
 
-    Q_ALWAYS_INLINE
     std::chrono::milliseconds remainingTimeAsDuration() const
     {
         return std::chrono::milliseconds(remainingTime());
     }
 
-    Q_ALWAYS_INLINE
     static void singleShot(std::chrono::milliseconds value, const QObject *receiver, const char *member)
     {
         singleShot(int(value.count()), receiver, member);
     }
 
-    Q_ALWAYS_INLINE
     static void singleShot(std::chrono::milliseconds value, Qt::TimerType timerType, const QObject *receiver, const char *member)
     {
         singleShot(int(value.count()), timerType, receiver, member);
     }
 
-    Q_ALWAYS_INLINE
     void start(std::chrono::milliseconds value)
     {
         start(int(value.count()));

@@ -55,11 +55,13 @@ bool QIOSServices::openUrl(const QUrl &url)
         return openDocument(url);
 
     NSURL *nsUrl = url.toNSURL();
+    UIApplication *application = [UIApplication sharedApplication];
 
-    if (![[UIApplication sharedApplication] canOpenURL:nsUrl])
+    if (![application canOpenURL:nsUrl])
         return false;
 
-    return [[UIApplication sharedApplication] openURL:nsUrl];
+    [application openURL:nsUrl options:@{} completionHandler:nil];
+    return true;
 }
 
 bool QIOSServices::openDocument(const QUrl &url)

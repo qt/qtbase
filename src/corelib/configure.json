@@ -251,6 +251,18 @@
                 ]
             }
         },
+        "cxx11_future": {
+            "label": "C++11 <future>",
+            "type": "compile",
+            "test": {
+                "include": "future",
+                "main": [
+                    "std::future<int> f = std::async([]() { return 42; });",
+                    "(void)f.get();"
+                ],
+                "qmake": "unix:LIBS += -lpthread"
+            }
+        },
         "cxx11_random": {
             "label": "C++11 <random>",
             "type": "compile",
@@ -442,10 +454,10 @@
             "condition": "features.doubleconversion && libs.doubleconversion",
             "output": [ "privateFeature" ]
         },
-        "cxx11_random": {
-            "label": "C++11 <random>",
-            "condition": "tests.cxx11_random",
-            "output": [ "privateFeature" ]
+        "cxx11_future": {
+            "label": "C++11 <future>",
+            "condition": "tests.cxx11_future",
+            "output": [ "publicFeature" ]
         },
         "eventfd": {
             "label": "eventfd",
@@ -815,9 +827,15 @@
         },
         "timezone": {
             "label": "QTimeZone",
-            "purpose": "Provides support for timezone handling.",
+            "purpose": "Provides support for time-zone handling.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
+        },
+        "datetimeparser": {
+            "label": "QDateTimeParser",
+            "purpose": "Provides support for parsing date-time texts.",
+            "section": "Utilities",
+            "output": [ "privateFeature" ]
         },
         "commandlineparser": {
             "label": "QCommandlineParser",
@@ -846,9 +864,9 @@ ensure that the IDEs they use either set QT_LOGGING_TO_CONSOLE to 1
 or are able to read the logged output from journald, syslog or slog2."
         },
         {
-            "type": "warning",
-            "condition": "!config.win32 && !config.darwin && !config.bsd && !features.cxx11_random",
-            "message": "No high-quality PRNG available for QRandomGenerator fallback.\nIf the HW or OS RNG fails, Qt will abort execution."
+            "type": "error",
+            "condition": "!tests.cxx11_random",
+            "message": "C++11 <random> is required and is missing or failed to compile."
         },
         {
             "type": "error",

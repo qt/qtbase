@@ -46,16 +46,15 @@
 #include <qthreadstorage.h>
 #include <private/qsimd_p.h>
 
+#include <random>
+
 #include <errno.h>
 
 #if QT_CONFIG(getentropy)
 #  include <sys/random.h>
-#else
-#  if QT_CONFIG(cxx11_random)
-#    include <random>
-#    include "qdeadlinetimer.h"
-#    include "qhashfunctions.h"
-#  endif
+#elif !defined(Q_OS_BSD4) && !defined(Q_OS_WIN)
+#  include "qdeadlinetimer.h"
+#  include "qhashfunctions.h"
 
 #  if QT_CONFIG(getauxval)
 #    include <sys/auxv.h>
@@ -95,7 +94,7 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-static qssize_t qt_random_cpu(void *buffer, qssize_t count);
+static qssize_t qt_random_cpu(void *buffer, qssize_t count) Q_DECL_NOTHROW;
 
 #  ifdef Q_PROCESSOR_X86_64
 #    define _rdrandXX_step _rdrand64_step
@@ -103,7 +102,7 @@ static qssize_t qt_random_cpu(void *buffer, qssize_t count);
 #    define _rdrandXX_step _rdrand32_step
 #  endif
 
-static QT_FUNCTION_TARGET(RDRND) qssize_t qt_random_cpu(void *buffer, qssize_t count)
+static QT_FUNCTION_TARGET(RDRND) qssize_t qt_random_cpu(void *buffer, qssize_t count) Q_DECL_NOTHROW
 {
     unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
     unsigned *end = ptr + count;
@@ -215,7 +214,7 @@ class SystemRandom
 {
 public:
     enum { EfficientBufferFill = true };
-    static qssize_t fillBuffer(void *buffer, qssize_t count)
+    static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
     {
         auto RtlGenRandom = SystemFunction036;
         return RtlGenRandom(buffer, ULONG(count)) ? count: 0;
@@ -226,7 +225,7 @@ class SystemRandom
 {
 public:
     enum { EfficientBufferFill = false };
-    static qssize_t fillBuffer(void *, qssize_t)
+    static qssize_t fillBuffer(void *, qssize_t) Q_DECL_NOTHROW
     {
         // always use the fallback
         return 0;
@@ -260,7 +259,7 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
     // BSDs have arc4random(4) and these work even in chroot(2)
     arc4random_buf(ptr, left * sizeof(*ptr));
 }
-#elif QT_CONFIG(cxx11_random)
+#else
 static QBasicAtomicInteger<unsigned> seed = Q_BASIC_ATOMIC_INITIALIZER(0U);
 static void fallback_update_seed(unsigned value)
 {
@@ -314,7 +313,7 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
     // (other ELF-based systems don't seem to have AT_RANDOM)
     ulong auxvSeed = getauxval(AT_RANDOM);
     if (auxvSeed) {
-        memcpy(scratch, reinterpret_cast<void *>(auxvSeed), 16);
+        memcpy(end, reinterpret_cast<void *>(auxvSeed), 16);
         end += 4;   // 7 to 10
     }
 #  endif
@@ -345,15 +344,9 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
 
     fallback_update_seed(*ptr);
 }
-#else
-static void fallback_update_seed(unsigned) {}
-static Q_NORETURN void fallback_fill(quint32 *, qssize_t)
-{
-    qFatal("Random number generator failed and no high-quality backup available");
-}
 #endif
 
-static qssize_t fill_cpu(quint32 *buffer, qssize_t count)
+static qssize_t fill_cpu(quint32 *buffer, qssize_t count) Q_DECL_NOTHROW
 {
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
     if (qCpuHasFeature(RDRND) && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
@@ -366,6 +359,7 @@ static qssize_t fill_cpu(quint32 *buffer, qssize_t count)
 }
 
 static void fill_internal(quint32 *buffer, qssize_t count)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(SystemRandom::fillBuffer(buffer, count)))
 {
     if (Q_UNLIKELY(uint(qt_randomdevice_control) & SetRandomData)) {
         uint value = uint(qt_randomdevice_control) & RandomDataMask;
@@ -389,6 +383,7 @@ static void fill_internal(quint32 *buffer, qssize_t count)
 }
 
 static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
+    Q_DECL_NOEXCEPT_EXPR(noexcept(fill_internal(static_cast<quint32 *>(buffer), 1)))
 {
     struct ThreadState {
         enum {
@@ -461,7 +456,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 
     The class can generate 32-bit or 64-bit quantities, or fill an array of
     those. The most common way of generating new values is to call the generate(),
-    get64() or fillRange() functions. One would use it as:
+    generate64() or fillRange() functions. One would use it as:
 
     \code
         quint32 value = QRandomGenerator::generate();
@@ -626,7 +621,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     quantities, one can write:
 
     \code
-        std::generate(begin, end, []() { return get64(); });
+        std::generate(begin, end, []() { return QRandomGenerator::generate64(); });
     \endcode
 
     If the range refers to contiguous memory (such as an array or the data from
@@ -678,14 +673,14 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
         QRandomGenerator::fillRange(array);
     \endcode
 
-    It would have also been possible to make one call to get64() and then split
+    It would have also been possible to make one call to generate64() and then split
     the two halves of the 64-bit value.
 
     \sa generate()
  */
 
 /*!
-    \fn qreal QRandomGenerator::generateReal()
+    \fn qreal QRandomGenerator::generateDouble()
 
     Generates one random qreal in the canonical range [0, 1) (that is,
     inclusive of zero and exclusive of 1).
@@ -700,7 +695,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \c{\l{http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution}{std::uniform_real_distribution}}
     with parameters 0 and 1.
 
-    \sa generate(), get64(), bounded()
+    \sa generate(), generate64(), bounded()
  */
 
 /*!
@@ -738,7 +733,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Note that this function cannot be used to obtain values in the full 32-bit
     range of quint32. Instead, use generate().
 
-    \sa generate(), get64(), generateDouble()
+    \sa generate(), generate64(), generateDouble()
  */
 
 /*!
@@ -751,7 +746,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
 
-    \sa generate(), get64(), generateDouble()
+    \sa generate(), generate64(), generateDouble()
  */
 
 /*!
@@ -775,7 +770,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Note that this function cannot be used to obtain values in the full 32-bit
     range of quint32. Instead, use generate().
 
-    \sa generate(), get64(), generateDouble()
+    \sa generate(), generate64(), generateDouble()
  */
 
 /*!
@@ -788,7 +783,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
 
-    \sa generate(), get64(), generateDouble()
+    \sa generate(), generate64(), generateDouble()
  */
 
 /*!
@@ -896,7 +891,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
         int value = QRandomGenerator::generate() & std::numeric_limits<int>::max();
     \endcode
 
-    \sa get64(), generateDouble()
+    \sa generate64(), generateDouble()
  */
 quint32 QRandomGenerator::generate()
 {

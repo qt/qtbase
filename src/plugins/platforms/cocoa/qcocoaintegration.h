@@ -58,59 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaScreen : public QPlatformScreen
-{
-public:
-    QCocoaScreen(int screenIndex);
-    ~QCocoaScreen();
-
-    // ----------------------------------------------------
-    // Virtual methods overridden from QPlatformScreen
-    QPixmap grabWindow(WId window, int x, int y, int width, int height) const override;
-    QRect geometry() const override { return m_geometry; }
-    QRect availableGeometry() const override { return m_availableGeometry; }
-    int depth() const override { return m_depth; }
-    QImage::Format format() const override { return m_format; }
-    qreal devicePixelRatio() const override;
-    QSizeF physicalSize() const override { return m_physicalSize; }
-    QDpi logicalDpi() const override { return m_logicalDpi; }
-    qreal refreshRate() const override { return m_refreshRate; }
-    QString name() const override { return m_name; }
-    QPlatformCursor *cursor() const override { return m_cursor; }
-    QWindow *topLevelAt(const QPoint &point) const override;
-    QList<QPlatformScreen *> virtualSiblings() const override { return m_siblings; }
-    QPlatformScreen::SubpixelAntialiasingType subpixelAntialiasingTypeHint() const override;
-
-    // ----------------------------------------------------
-    // Additional methods
-    void setVirtualSiblings(const QList<QPlatformScreen *> &siblings) { m_siblings = siblings; }
-    NSScreen *nativeScreen() const;
-    void updateGeometry();
-
-    QPointF mapToNative(const QPointF &pos) const { return flipCoordinate(pos); }
-    QRectF mapToNative(const QRectF &rect) const { return flipCoordinate(rect); }
-    QPointF mapFromNative(const QPointF &pos) const { return flipCoordinate(pos); }
-    QRectF mapFromNative(const QRectF &rect) const { return flipCoordinate(rect); }
-
-    static QCocoaScreen *primaryScreen();
-
-private:
-    QPointF flipCoordinate(const QPointF &pos) const;
-    QRectF flipCoordinate(const QRectF &rect) const;
-
-public:
-    int m_screenIndex;
-    QRect m_geometry;
-    QRect m_availableGeometry;
-    QDpi m_logicalDpi;
-    qreal m_refreshRate;
-    int m_depth;
-    QString m_name;
-    QImage::Format m_format;
-    QSizeF m_physicalSize;
-    QCocoaCursor *m_cursor;
-    QList<QPlatformScreen *> m_siblings;
-};
+class QCocoaScreen;
 
 class QCocoaIntegration : public QPlatformIntegration
 {
@@ -129,6 +77,7 @@ public:
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
     QPlatformWindow *createForeignWindow(QWindow *window, WId nativeHandle) const override;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 #ifndef QT_NO_OPENGL
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
 #endif

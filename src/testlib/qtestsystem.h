@@ -55,9 +55,9 @@ QT_BEGIN_NAMESPACE
 namespace QTest
 {
     template <typename Functor>
-    static Q_REQUIRED_RESULT bool qWaitFor(Functor predicate, int timeout = 5000)
+    Q_REQUIRED_RESULT static bool qWaitFor(Functor predicate, int timeout = 5000)
     {
-        // We should not spint the event loop in case the predicate is already true,
+        // We should not spin the event loop in case the predicate is already true,
         // otherwise we might send new events that invalidate the predicate.
         if (predicate())
             return true;
@@ -90,14 +90,27 @@ namespace QTest
 
     Q_DECL_UNUSED inline static void qWait(int ms)
     {
+        // Ideally this method would be implemented in terms of qWaitFor, with
+        // a predicate that always returns false, but due to a compiler bug in
+        // GCC 6 we can't do that.
+
         Q_ASSERT(QCoreApplication::instance());
-        auto unconditionalWait = []() { return false; };
-        bool timedOut = !qWaitFor(unconditionalWait, ms);
-        Q_UNUSED(timedOut);
+
+        QDeadlineTimer timer(ms, Qt::PreciseTimer);
+        int remaining = ms;
+        do {
+            QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
+            QCoreApplication::sendPostedEvents(Q_NULLPTR, QEvent::DeferredDelete);
+            remaining = timer.remainingTime();
+            if (remaining <= 0)
+                break;
+            QTest::qSleep(qMin(10, remaining));
+            remaining = timer.remainingTime();
+        } while (remaining > 0);
     }
 
 #ifdef QT_GUI_LIB
-    inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
+    Q_REQUIRED_RESULT inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
     {
         bool becameActive = qWaitFor([&]() { return window->isActive(); }, timeout);
 
@@ -118,21 +131,21 @@ namespace QTest
         return window->isActive();
     }
 
-    inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)
+    Q_REQUIRED_RESULT inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)
     {
         return qWaitFor([&]() { return window->isExposed(); }, timeout);
     }
 #endif
 
 #ifdef QT_WIDGETS_LIB
-    inline static bool qWaitForWindowActive(QWidget *widget, int timeout = 5000)
+    Q_REQUIRED_RESULT inline static bool qWaitForWindowActive(QWidget *widget, int timeout = 5000)
     {
         if (QWindow *window = widget->window()->windowHandle())
             return qWaitForWindowActive(window, timeout);
         return false;
     }
 
-    inline static bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000)
+    Q_REQUIRED_RESULT inline static bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000)
     {
         if (QWindow *window = widget->window()->windowHandle())
             return qWaitForWindowExposed(window, timeout);
@@ -142,7 +155,8 @@ namespace QTest
 
 #if QT_DEPRECATED_SINCE(5, 0)
 #  ifdef QT_WIDGETS_LIB
-    QT_DEPRECATED inline static bool qWaitForWindowShown(QWidget *widget, int timeout = 5000)
+
+    QT_DEPRECATED Q_REQUIRED_RESULT inline static bool qWaitForWindowShown(QWidget *widget, int timeout = 5000)
     {
         return qWaitForWindowExposed(widget, timeout);
     }

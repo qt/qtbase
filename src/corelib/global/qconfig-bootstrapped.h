@@ -66,8 +66,7 @@
 #define QT_NO_USING_NAMESPACE
 #define QT_NO_DEPRECATED
 
-#define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
-#define QT_NO_DATASTREAM
+// Keep feature-test macros in alphabetic order by feature name:
 #define QT_FEATURE_alloca 1
 #define QT_FEATURE_alloca_h -1
 #ifdef _WIN32
@@ -75,9 +74,13 @@
 #else
 # define QT_FEATURE_alloca_malloc_h -1
 #endif
+#define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 #define QT_FEATURE_cxx11_random (QT_HAS_INCLUDE(<random>) ? 1 : -1)
+#define QT_NO_DATASTREAM
+#define QT_FEATURE_datetimeparser -1
 #define QT_FEATURE_getauxval (QT_HAS_INCLUDE(<sys/auxv.h>) ? 1 : -1)
 #define QT_FEATURE_getentropy -1
+#define QT_NO_GEOM_VARIANT
 #define QT_FEATURE_iconv -1
 #define QT_FEATURE_icu -1
 #define QT_FEATURE_journald -1
@@ -86,20 +89,19 @@
 #define QT_FEATURE_library -1
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1
-#define QT_NO_SYSTEMLOCALE
 #define QT_FEATURE_renameat2 -1
+#define QT_FEATURE_sharedmemory -1
 #define QT_FEATURE_slog2 -1
 #define QT_FEATURE_statx -1
 #define QT_FEATURE_syslog -1
+#define QT_NO_SYSTEMLOCALE
+#define QT_FEATURE_systemsemaphore -1
 #define QT_FEATURE_temporaryfile 1
 #define QT_NO_THREAD
 #define QT_FEATURE_timezone -1
 #define QT_FEATURE_topleveldomain -1
 #define QT_NO_TRANSLATION
 #define QT_FEATURE_translation -1
-#define QT_NO_GEOM_VARIANT
-#define QT_FEATURE_sharedmemory -1
-#define QT_FEATURE_systemsemaphore -1
 
 #ifdef QT_BUILD_QMAKE
 #define QT_FEATURE_commandlineparser -1

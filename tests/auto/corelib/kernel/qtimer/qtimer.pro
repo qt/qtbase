@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qtimer
-QT = core testlib
+QT = core core-private testlib
 SOURCES = tst_qtimer.cpp
 
 # Force C++17 if available

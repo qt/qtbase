@@ -409,13 +409,17 @@ void tst_QWindow::exposeEventOnShrink_QTBUG54040()
 
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
-    const int initialExposeCount = window.received(QEvent::Expose);
+    int exposeCount = window.received(QEvent::Expose);
     window.resize(window.width(), window.height() - 5);
-    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 1);
+    QTRY_VERIFY(window.received(QEvent::Expose) > exposeCount);
+
+    exposeCount = window.received(QEvent::Expose);
     window.resize(window.width() - 5, window.height());
-    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 2);
+    QTRY_VERIFY(window.received(QEvent::Expose) > exposeCount);
+
+    exposeCount = window.received(QEvent::Expose);
     window.resize(window.width() - 5, window.height() - 5);
-    QTRY_COMPARE(window.received(QEvent::Expose), initialExposeCount + 3);
+    QTRY_VERIFY(window.received(QEvent::Expose) > exposeCount);
 }
 
 void tst_QWindow::positioning_data()
@@ -486,7 +490,7 @@ void tst_QWindow::positioning()
     window.showNormal();
     QCoreApplication::processEvents();
 
-    QTest::qWaitForWindowExposed(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     QMargins originalMargins = window.frameMargins();
 
@@ -1479,7 +1483,7 @@ void tst_QWindow::activateAndClose()
        window.showNormal();
 #if defined(Q_OS_QNX) // We either need to create a eglSurface or a create a backing store
                       // and then post the window in order for screen to show the window
-       QTest::qWaitForWindowExposed(&window);
+       QVERIFY(QTest::qWaitForWindowExposed(&window));
        QOpenGLContext context;
        context.create();
        context.makeCurrent(&window);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -50,16 +50,13 @@
 
 #include <QtWidgets>
 #include <QtNetwork>
-
-#include <stdlib.h>
+#include <QtCore>
 
 #include "server.h"
 
 Server::Server(QWidget *parent)
     : QDialog(parent)
     , statusLabel(new QLabel)
-    , tcpServer(nullptr)
-    , networkSession(0)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     statusLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
@@ -89,46 +86,46 @@ Server::Server(QWidget *parent)
     }
 
     //! [2]
-        fortunes << tr("You've been leading a dog's life. Stay off the furniture.")
-                 << tr("You've got to think about tomorrow.")
-                 << tr("You will be surprised by a loud noise.")
-                 << tr("You will feel hungry again in another hour.")
-                 << tr("You might have mail.")
-                 << tr("You cannot kill time without injuring eternity.")
-                 << tr("Computers are not intelligent. They only think they are.");
+    fortunes << tr("You've been leading a dog's life. Stay off the furniture.")
+             << tr("You've got to think about tomorrow.")
+             << tr("You will be surprised by a loud noise.")
+             << tr("You will feel hungry again in another hour.")
+             << tr("You might have mail.")
+             << tr("You cannot kill time without injuring eternity.")
+             << tr("Computers are not intelligent. They only think they are.");
     //! [2]
-        QPushButton *quitButton = new QPushButton(tr("Quit"));
-        quitButton->setAutoDefault(false);
-        connect(quitButton, &QAbstractButton::clicked, this, &QWidget::close);
+    auto quitButton = new QPushButton(tr("Quit"));
+    quitButton->setAutoDefault(false);
+    connect(quitButton, &QAbstractButton::clicked, this, &QWidget::close);
     //! [3]
-        connect(tcpServer, &QTcpServer::newConnection, this, &Server::sendFortune);
+    connect(tcpServer, &QTcpServer::newConnection, this, &Server::sendFortune);
     //! [3]
 
-        QHBoxLayout *buttonLayout = new QHBoxLayout;
-        buttonLayout->addStretch(1);
-        buttonLayout->addWidget(quitButton);
-        buttonLayout->addStretch(1);
+    auto buttonLayout = new QHBoxLayout;
+    buttonLayout->addStretch(1);
+    buttonLayout->addWidget(quitButton);
+    buttonLayout->addStretch(1);
 
-        QVBoxLayout *mainLayout = nullptr;
-        if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
-            QVBoxLayout *outerVerticalLayout = new QVBoxLayout(this);
-            outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
-            QHBoxLayout *outerHorizontalLayout = new QHBoxLayout;
-            outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
-            QGroupBox *groupBox = new QGroupBox(QGuiApplication::applicationDisplayName());
-            mainLayout = new QVBoxLayout(groupBox);
-            outerHorizontalLayout->addWidget(groupBox);
-            outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
-            outerVerticalLayout->addLayout(outerHorizontalLayout);
-            outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
-        } else {
-            mainLayout = new QVBoxLayout(this);
-        }
+    QVBoxLayout *mainLayout = nullptr;
+    if (QGuiApplication::styleHints()->showIsFullScreen() || QGuiApplication::styleHints()->showIsMaximized()) {
+        auto outerVerticalLayout = new QVBoxLayout(this);
+        outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+        auto outerHorizontalLayout = new QHBoxLayout;
+        outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+        auto groupBox = new QGroupBox(QGuiApplication::applicationDisplayName());
+        mainLayout = new QVBoxLayout(groupBox);
+        outerHorizontalLayout->addWidget(groupBox);
+        outerHorizontalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
+        outerVerticalLayout->addLayout(outerHorizontalLayout);
+        outerVerticalLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
+    } else {
+        mainLayout = new QVBoxLayout(this);
+    }
 
-        mainLayout->addWidget(statusLabel);
-        mainLayout->addLayout(buttonLayout);
+    mainLayout->addWidget(statusLabel);
+    mainLayout->addLayout(buttonLayout);
 
-        setWindowTitle(QGuiApplication::applicationDisplayName());
+    setWindowTitle(QGuiApplication::applicationDisplayName());
 }
 
 void Server::sessionOpened()
@@ -183,9 +180,9 @@ void Server::sendFortune()
 //! [5]
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_4_0);
+    out.setVersion(QDataStream::Qt_5_10);
 
-    out << fortunes.at(qrand() % fortunes.size());
+    out << fortunes[QRandomGenerator::bounded(fortunes.size())];
 //! [4] //! [7]
 
     QTcpSocket *clientConnection = tcpServer->nextPendingConnection();

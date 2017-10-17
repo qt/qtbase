@@ -116,7 +116,7 @@ void tst_QVulkan::vulkanPlainWindow()
     w.setVulkanInstance(&inst);
     w.resize(1024, 768);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     QCOMPARE(w.vulkanInstance(), &inst);
 
@@ -182,7 +182,7 @@ void tst_QVulkan::vulkanWindow()
     QVERIFY(!w.isValid());
     w.resize(1024, 768);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QVERIFY(!w.isValid());
 
     // Now set it. A simple hide - show should be enough to correct, this, no
@@ -194,7 +194,7 @@ void tst_QVulkan::vulkanWindow()
     if (pdevs.isEmpty())
         QSKIP("No Vulkan physical devices; skip");
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QVERIFY(w.isValid());
     QCOMPARE(w.vulkanInstance(), &inst);
     QVulkanInfoVector<QVulkanExtension> exts = w.supportedDeviceExtensions();
@@ -208,7 +208,7 @@ void tst_QVulkan::vulkanWindow()
     // supported lists can be queried before expose too
     QVERIFY(w.supportedDeviceExtensions() == exts);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QVERIFY(w.isValid());
     QVERIFY(w.flags().testFlag(QVulkanWindow::PersistentResources));
 
@@ -355,7 +355,7 @@ void tst_QVulkan::vulkanWindowRenderer()
     w.setVulkanInstance(&inst);
     w.resize(1024, 768);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     if (w.availablePhysicalDevices().isEmpty())
         QSKIP("No Vulkan physical devices; skip");
@@ -389,7 +389,7 @@ void tst_QVulkan::vulkanWindowGrab()
     w.setVulkanInstance(&inst);
     w.resize(1024, 768);
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     if (w.availablePhysicalDevices().isEmpty())
         QSKIP("No Vulkan physical devices; skip");

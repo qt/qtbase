@@ -258,6 +258,7 @@ protected:
     QVariant lastInsertId() const override;
     bool execBatch(bool arrayBind = false) override;
     void virtual_hook(int id, void *data) override;
+    bool fetchNext() override;
 };
 
 class QOCIResultPrivate: public QSqlCachedResultPrivate
@@ -2132,6 +2133,14 @@ void QOCIResult::virtual_hook(int id, void *data)
     Q_ASSERT(data);
 
     QSqlCachedResult::virtual_hook(id, data);
+}
+
+bool QOCIResult::fetchNext()
+{
+    Q_D(QOCIResult);
+    if (isForwardOnly())
+        d->cache.clear();
+    return QSqlCachedResult::fetchNext();
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -262,7 +262,7 @@ void tst_QLockFile::staleLockFromCrashedProcess()
     QFETCH(int, staleLockTime);
     const QString fileName = dir.path() + "/staleLockFromCrashedProcess";
 
-    int ret = QProcess::execute(m_helperApp, QStringList() << fileName << "-crash");
+    int ret = QProcess::execute(m_helperApp, QStringList() << fileName << "-uncleanexit");
     QCOMPARE(ret, int(QLockFile::NoError));
     QTRY_VERIFY(QFile::exists(fileName));
 
@@ -288,7 +288,7 @@ void tst_QLockFile::staleLockFromCrashedProcessReusedPid()
 #else
     const QString fileName = dir.path() + "/staleLockFromCrashedProcessReusedPid";
 
-    int ret = QProcess::execute(m_helperApp, QStringList() << fileName << "-crash");
+    int ret = QProcess::execute(m_helperApp, QStringList() << fileName << "-uncleanexit");
     QCOMPARE(ret, int(QLockFile::NoError));
     QVERIFY(QFile::exists(fileName));
     QVERIFY(overwritePidInLockFile(fileName, QCoreApplication::applicationPid()));
@@ -397,7 +397,7 @@ void tst_QLockFile::staleLockRace()
     // Only one thread should delete it, otherwise a race will ensue
     const QString fileName = dir.path() + "/sharedFile";
     const QString lockName = fileName + ".lock";
-    int ret = QProcess::execute(m_helperApp, QStringList() << lockName << "-crash");
+    int ret = QProcess::execute(m_helperApp, QStringList() << lockName << "-uncleanexit");
     QCOMPARE(ret, int(QLockFile::NoError));
     QTRY_VERIFY(QFile::exists(lockName));
 

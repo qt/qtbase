@@ -160,7 +160,7 @@ void tst_QBoxLayout::sizeHint()
     lay1->addLayout(lay2);
     window.setLayout(lay1);
     window.show();
-    QTest::qWaitForWindowExposed(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
     label->setText("foooooooo baaaaaaar");
     QSize sh = lay1->sizeHint();
     QApplication::processEvents();
@@ -181,7 +181,7 @@ void tst_QBoxLayout::sizeConstraints()
     lay->setSizeConstraint(QLayout::SetFixedSize);
     window.setLayout(lay);
     window.show();
-    QTest::qWaitForWindowExposed(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
     QSize sh = window.sizeHint();
     delete lay->takeAt(1);
     QVERIFY(sh.width() >= window.sizeHint().width() &&
@@ -228,7 +228,7 @@ void tst_QBoxLayout::setStyleShouldChangeSpacing()
     style1->hspacing = 6;
     window.setStyle(style1.data());
     window.show();
-    QTest::qWaitForWindowExposed(&window);
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     int spacing = pb2->geometry().left() - pb1->geometry().right() - 1;
     QCOMPARE(spacing, 6);

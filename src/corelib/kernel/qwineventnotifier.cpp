@@ -157,6 +157,7 @@ void QWinEventNotifier::setHandle(HANDLE hEvent)
     Q_D(QWinEventNotifier);
     setEnabled(false);
     d->handleToEvent = hEvent;
+    d->signaledCount = 0;
 }
 
 /*!
@@ -254,6 +255,7 @@ static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/)
     QAbstractEventDispatcher *eventDispatcher = nd->threadData->eventDispatcher.load();
     QEventDispatcherWin32Private *edp = QEventDispatcherWin32Private::get(
                 static_cast<QEventDispatcherWin32 *>(eventDispatcher));
+    ++nd->signaledCount;
     SetEvent(edp->winEventNotifierActivatedEvent);
 }
 

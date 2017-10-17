@@ -45,6 +45,7 @@
 #ifndef QT_NO_OPENGL
 #include <qpa/qplatformopenglcontext.h>
 #include "qopenglcontext.h"
+#include "qopenglcontext_p.h"
 #endif
 #include "qscreen.h"
 
@@ -971,6 +972,11 @@ QString QWindow::filePath() const
 
     The window icon might be used by the windowing system for example to
     decorate the window, and/or in the task switcher.
+
+    \note On \macos, the window title bar icon is meant for windows representing
+    documents, and will only show up if a file path is also set.
+
+    \sa setFilePath()
 */
 void QWindow::setIcon(const QIcon &icon)
 {
@@ -983,7 +989,7 @@ void QWindow::setIcon(const QIcon &icon)
 }
 
 /*!
-    \brief Sets the window's icon in the windowing system
+    \brief Returns the window's icon in the windowing system
 
     \sa setIcon()
 */
@@ -1882,11 +1888,16 @@ void QWindowPrivate::destroy()
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
     QGuiApplication::sendEvent(q, &e);
 
-    delete platformWindow;
+    // Unset platformWindow before deleting, so that the destructor of the
+    // platform window does not recurse back into the platform window via
+    // this window during destruction (e.g. as a result of platform events).
+    QPlatformWindow *pw = platformWindow;
+    platformWindow = nullptr;
+    delete pw;
+
     resizeEventPending = true;
     receivedExpose = false;
     exposed = false;
-    platformWindow = 0;
 
     if (wasVisible)
         maybeQuitOnLastWindowClosed();
@@ -2622,6 +2633,13 @@ QWindow *QWindowPrivate::topLevelWindow() const
 
     return window;
 }
+
+#if QT_CONFIG(opengl)
+QOpenGLContext *QWindowPrivate::shareContext() const
+{
+    return qt_gl_global_share_context();
+};
+#endif
 
 /*!
     Creates a local representation of a window created by another process or by

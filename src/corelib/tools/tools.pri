@@ -21,7 +21,6 @@ HEADERS +=  \
         tools/qcryptographichash.h \
         tools/qdatetime.h \
         tools/qdatetime_p.h \
-        tools/qdatetimeparser_p.h \
         tools/qdoublescanprint_p.h \
         tools/qeasingcurve.h \
         tools/qfreelist_p.h \
@@ -84,7 +83,6 @@ SOURCES += \
         tools/qcollator.cpp \
         tools/qcryptographichash.cpp \
         tools/qdatetime.cpp \
-        tools/qdatetimeparser.cpp \
         tools/qeasingcurve.cpp \
         tools/qfreelist.cpp \
         tools/qhash.cpp \
@@ -171,6 +169,11 @@ qtConfig(timezone) {
         SOURCES += tools/qtimezoneprivate_win.cpp
     qtConfig(icu): \
         SOURCES += tools/qtimezoneprivate_icu.cpp
+}
+
+qtConfig(datetimeparser) {
+    HEADERS += tools/qdatetimeparser_p.h
+    SOURCES += tools/qdatetimeparser.cpp
 }
 
 qtConfig(regularexpression) {

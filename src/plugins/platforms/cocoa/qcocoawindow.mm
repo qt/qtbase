@@ -38,6 +38,7 @@
 ****************************************************************************/
 #include "qcocoawindow.h"
 #include "qcocoaintegration.h"
+#include "qcocoascreen.h"
 #include "qnswindowdelegate.h"
 #include "qcocoaeventdispatcher.h"
 #ifndef QT_NO_OPENGL
@@ -97,34 +98,30 @@ static void qRegisterNotificationCallbacks()
         [center addObserverForName:notificationName.toNSString() object:nil queue:nil
             usingBlock:^(NSNotification *notification) {
 
-            NSView *view = nullptr;
+            QVarLengthArray<QCocoaWindow *, 32> cocoaWindows;
             if ([notification.object isKindOfClass:[NSWindow class]]) {
-                NSWindow *window = notification.object;
-                if (!window.contentView)
-                    return;
-
-                view = window.contentView;
+                NSWindow *nsWindow = notification.object;
+                for (const QWindow *window : QGuiApplication::allWindows()) {
+                    if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle()))
+                        if (cocoaWindow->nativeWindow() == nsWindow)
+                            cocoaWindows += cocoaWindow;
+                }
             } else if ([notification.object isKindOfClass:[NSView class]]) {
-                view = notification.object;
+                if (QNSView *qnsView = qnsview_cast(notification.object))
+                    cocoaWindows += qnsView.platformWindow;
             } else {
                 qCWarning(lcQpaCocoaWindow) << "Unhandled notifcation"
                     << notification.name << "for" << notification.object;
                 return;
             }
-            Q_ASSERT(view);
-
-            QCocoaWindow *cocoaWindow = nullptr;
-            if (QNSView *qnsView = qnsview_cast(view))
-                cocoaWindow = qnsView.platformWindow;
 
             // FIXME: Could be a foreign window, look up by iterating top level QWindows
 
-            if (!cocoaWindow)
-                return;
-
-            if (!method.invoke(cocoaWindow, Qt::DirectConnection)) {
-                qCWarning(lcQpaCocoaWindow) << "Failed to invoke NSNotification callback for"
-                    << notification.name << "on" << cocoaWindow;
+            for (QCocoaWindow *cocoaWindow : cocoaWindows) {
+                if (!method.invoke(cocoaWindow, Qt::DirectConnection)) {
+                    qCWarning(lcQpaCocoaWindow) << "Failed to invoke NSNotification callback for"
+                        << notification.name << "on" << cocoaWindow;
+                }
             }
         }];
     }
@@ -161,7 +158,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_drawContentBorderGradient(false)
     , m_topContentBorderThickness(0)
     , m_bottomContentBorderThickness(0)
-    , m_hasWindowFilePath(false)
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::QCocoaWindow" << window();
 
@@ -598,6 +594,11 @@ void QCocoaWindow::setWindowTitle(const QString &title)
 
     QMacAutoReleasePool pool;
     m_view.window.title = title.toNSString();
+
+    if (title.isEmpty() && !window()->filePath().isEmpty()) {
+        // Clearing the title should restore the default filename
+        setWindowFilePath(window()->filePath());
+    }
 }
 
 void QCocoaWindow::setWindowFilePath(const QString &filePath)
@@ -606,9 +607,14 @@ void QCocoaWindow::setWindowFilePath(const QString &filePath)
         return;
 
     QMacAutoReleasePool pool;
-    QFileInfo fi(filePath);
-    [m_view.window setRepresentedFilename:fi.exists() ? filePath.toNSString() : @""];
-    m_hasWindowFilePath = fi.exists();
+
+    if (window()->title().isNull())
+        [m_view.window setTitleWithRepresentedFilename:filePath.toNSString()];
+    else
+        m_view.window.representedFilename = filePath.toNSString();
+
+    // Changing the file path may affect icon visibility
+    setWindowIcon(window()->icon());
 }
 
 void QCocoaWindow::setWindowIcon(const QIcon &icon)
@@ -616,23 +622,21 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
     if (!isContentView())
         return;
 
+    NSButton *iconButton = [m_view.window standardWindowButton:NSWindowDocumentIconButton];
+    if (!iconButton) {
+        // Window icons are only supported on macOS in combination with a document filePath
+        return;
+    }
+
     QMacAutoReleasePool pool;
 
-    NSButton *iconButton = [m_view.window standardWindowButton:NSWindowDocumentIconButton];
-    if (iconButton == nil) {
-        if (icon.isNull())
-            return;
-        NSString *title = window()->title().toNSString();
-        [m_view.window setRepresentedURL:[NSURL fileURLWithPath:title]];
-        iconButton = [m_view.window standardWindowButton:NSWindowDocumentIconButton];
-    }
     if (icon.isNull()) {
-        [iconButton setImage:nil];
+        NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+        [iconButton setImage:[workspace iconForFile:m_view.window.representedFilename]];
     } else {
         QPixmap pixmap = icon.pixmap(QSize(22, 22));
         NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(pixmap));
-        [iconButton setImage:image];
-        [image release];
+        [iconButton setImage:[image autorelease]];
     }
 }
 
@@ -844,32 +848,7 @@ void QCocoaWindow::setEmbeddedInForeignView(bool embedded)
     m_nsWindow = 0;
 }
 
-// ----------------------- NSWindow notifications -----------------------
-
-void QCocoaWindow::windowWillMove()
-{
-    // Close any open popups on window move
-    qt_closePopups();
-}
-
-void QCocoaWindow::windowDidMove()
-{
-    handleGeometryChange();
-
-    // Moving a window might bring it out of maximized state
-    handleWindowStateChanged();
-}
-
-void QCocoaWindow::windowDidResize()
-{
-    if (!isContentView())
-        return;
-
-    handleGeometryChange();
-
-    if (!m_view.inLiveResize)
-        handleWindowStateChanged();
-}
+// ----------------------- NSView notifications -----------------------
 
 void QCocoaWindow::viewDidChangeFrame()
 {
@@ -888,13 +867,54 @@ void QCocoaWindow::viewDidChangeGlobalFrame()
     [m_view setNeedsDisplay:YES];
 }
 
+// ----------------------- NSWindow notifications -----------------------
+
+// Note: The following notifications are delivered to every QCocoaWindow
+// that is a child of the NSWindow that triggered the notification. Each
+// callback should make sure to filter out notifications if they do not
+// apply to that QCocoaWindow, e.g. if the window is not a content view.
+
+void QCocoaWindow::windowWillMove()
+{
+    // Close any open popups on window move
+    qt_closePopups();
+}
+
+void QCocoaWindow::windowDidMove()
+{
+    if (!isContentView())
+        return;
+
+    handleGeometryChange();
+
+    // Moving a window might bring it out of maximized state
+    handleWindowStateChanged();
+}
+
+void QCocoaWindow::windowDidResize()
+{
+    if (!isContentView())
+        return;
+
+    handleGeometryChange();
+
+    if (!m_view.inLiveResize)
+        handleWindowStateChanged();
+}
+
 void QCocoaWindow::windowDidEndLiveResize()
 {
+    if (!isContentView())
+        return;
+
     handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowDidBecomeKey()
 {
+    if (!isContentView())
+        return;
+
     if (isForeignWindow())
         return;
 
@@ -911,6 +931,9 @@ void QCocoaWindow::windowDidBecomeKey()
 
 void QCocoaWindow::windowDidResignKey()
 {
+    if (!isContentView())
+        return;
+
     if (isForeignWindow())
         return;
 
@@ -927,16 +950,25 @@ void QCocoaWindow::windowDidResignKey()
 
 void QCocoaWindow::windowDidMiniaturize()
 {
+    if (!isContentView())
+        return;
+
     handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowDidDeminiaturize()
 {
+    if (!isContentView())
+        return;
+
     handleWindowStateChanged();
 }
 
 void QCocoaWindow::windowWillEnterFullScreen()
 {
+    if (!isContentView())
+        return;
+
     // The NSWindow needs to be resizable, otherwise we'll end up with
     // the normal window geometry, centered in the middle of the screen
     // on a black background. The styleMask will be reset below.
@@ -945,6 +977,9 @@ void QCocoaWindow::windowWillEnterFullScreen()
 
 void QCocoaWindow::windowDidEnterFullScreen()
 {
+    if (!isContentView())
+        return;
+
     Q_ASSERT_X(m_view.window.qt_fullScreen, "QCocoaWindow",
         "FullScreen category processes window notifications first");
 
@@ -956,6 +991,9 @@ void QCocoaWindow::windowDidEnterFullScreen()
 
 void QCocoaWindow::windowWillExitFullScreen()
 {
+    if (!isContentView())
+        return;
+
     // The NSWindow needs to be resizable, otherwise we'll end up with
     // a weird zoom animation. The styleMask will be reset below.
     m_view.window.styleMask |= NSResizableWindowMask;
@@ -963,6 +1001,9 @@ void QCocoaWindow::windowWillExitFullScreen()
 
 void QCocoaWindow::windowDidExitFullScreen()
 {
+    if (!isContentView())
+        return;
+
     Q_ASSERT_X(!m_view.window.qt_fullScreen, "QCocoaWindow",
         "FullScreen category processes window notifications first");
 
@@ -981,14 +1022,14 @@ void QCocoaWindow::windowDidExitFullScreen()
     }
 }
 
-void QCocoaWindow::windowDidOrderOffScreen()
-{
-    handleExposeEvent(QRegion());
-}
-
 void QCocoaWindow::windowDidOrderOnScreen()
 {
     [m_view setNeedsDisplay:YES];
+}
+
+void QCocoaWindow::windowDidOrderOffScreen()
+{
+    handleExposeEvent(QRegion());
 }
 
 void QCocoaWindow::windowDidChangeOcclusionState()
@@ -1079,6 +1120,8 @@ void QCocoaWindow::handleGeometryChange()
 
 void QCocoaWindow::handleExposeEvent(const QRegion &region)
 {
+    const bool wasExposed = isExposed();
+
     // Ideally we'd implement isExposed() in terms of these properties,
     // plus the occlusionState of the NSWindow, and let the expose event
     // pull the exposed state out when needed. However, when the window
@@ -1096,13 +1139,21 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
         && !region.isEmpty()
         && !m_view.hiddenOrHasHiddenAncestor;
 
-
     QWindowPrivate *windowPrivate = qt_window_private(window());
-    if (m_isExposed && windowPrivate->updateRequestPending) {
-        // FIXME: Should this logic for expose events be in QGuiApplication?
-        qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
-        windowPrivate->deliverUpdateRequest();
-        return;
+    if (windowPrivate->updateRequestPending) {
+        // We can only deliver update request events when the window is exposed,
+        // and we also have to make sure we deliver the first expose event after
+        // becoming exposed as a real expose event, otherwise the exposed state
+        // of the QWindow is never updated.
+        // FIXME: Should this logic live in QGuiApplication?
+        if (wasExposed && m_isExposed) {
+            qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
+            windowPrivate->deliverUpdateRequest();
+            return;
+        }
+
+        // FIXME: Should we re-trigger setNeedsDisplay in case of !wasExposed && m_isExposed?
+        // Or possibly send the expose event first, and then the update request?
     }
 
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
@@ -1189,7 +1240,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if (m_windowModality != window()->modality())
         recreateReason |= WindowModalityChanged;
 
-    const bool shouldBeContentView = !parentWindow && !m_viewIsEmbedded;
+    const bool shouldBeContentView = !parentWindow && !(m_viewIsToBeEmbedded || m_viewIsEmbedded);
     if (isContentView() != shouldBeContentView)
         recreateReason |= ContentViewChanged;
 
@@ -1249,6 +1300,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
         propagateSizeHints();
         setWindowFlags(window()->flags());
         setWindowTitle(window()->title());
+        setWindowFilePath(window()->filePath());
         setWindowState(window()->windowState());
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
@@ -1412,13 +1464,13 @@ QRect QCocoaWindow::nativeWindowGeometry() const
 */
 void QCocoaWindow::applyWindowState(Qt::WindowStates requestedState)
 {
+    if (!isContentView())
+        return;
+
     const Qt::WindowState currentState = windowState();
     const Qt::WindowState newState = QWindowPrivate::effectiveState(requestedState);
 
     if (newState == currentState)
-        return;
-
-    if (!isContentView())
         return;
 
     const NSSize contentSize = m_view.frame.size;

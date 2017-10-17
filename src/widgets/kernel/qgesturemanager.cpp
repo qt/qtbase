@@ -244,6 +244,36 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
     return state;
 }
 
+static bool logIgnoredEvent(QEvent::Type t)
+{
+    bool result = false;
+    switch (t) {
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseMove:
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchCancel:
+    case QEvent::TouchEnd:
+    case QEvent::TabletEnterProximity:
+    case QEvent::TabletLeaveProximity:
+    case QEvent::TabletMove:
+    case QEvent::TabletPress:
+    case QEvent::TabletRelease:
+    case QEvent::GraphicsSceneMouseDoubleClick:
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseRelease:
+    case QEvent::GraphicsSceneMouseMove:
+        result = true;
+        break;
+    default:
+        break;
+
+    }
+    return result;
+}
+
 bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
                                                  Qt::GestureType> &contexts,
                                                  QEvent *event)
@@ -289,10 +319,13 @@ bool QGestureManager::filterEventThroughContexts(const QMultiMap<QObject *,
                 qCDebug(lcGestureManager) << "QGestureManager:Recognizer: not gesture: " << state << event;
                 notGestures << state;
             } else if (recognizerState == QGestureRecognizer::Ignore) {
-                qCDebug(lcGestureManager) << "QGestureManager:Recognizer: ignored the event: " << state << event;
+                if (logIgnoredEvent(event->type()))
+                    qCDebug(lcGestureManager) << "QGestureManager:Recognizer: ignored the event: " << state << event;
             } else {
-                qCDebug(lcGestureManager) << "QGestureManager:Recognizer: hm, lets assume the recognizer"
+                if (logIgnoredEvent(event->type())) {
+                    qCDebug(lcGestureManager) << "QGestureManager:Recognizer: hm, lets assume the recognizer"
                         << "ignored the event: " << state << event;
+                }
             }
             if (resultHint & QGestureRecognizer::ConsumeEventHint) {
                 qCDebug(lcGestureManager) << "QGestureManager: we were asked to consume the event: "

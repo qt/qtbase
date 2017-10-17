@@ -324,8 +324,7 @@ void QPrintPreviewWidgetPrivate::init()
     scene->setBackgroundBrush(Qt::gray);
     graphicsView->setScene(scene);
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    q->setLayout(layout);
+    QVBoxLayout *layout = new QVBoxLayout(q);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(graphicsView);
 }

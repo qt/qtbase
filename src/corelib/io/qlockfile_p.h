@@ -78,16 +78,14 @@ public:
     }
     QLockFile::LockError tryLock_sys();
     bool removeStaleLock();
-    bool getLockInfo(qint64 *pid, QString *hostname, QString *appname) const;
+    QByteArray lockFileContents() const;
     // Returns \c true if the lock belongs to dead PID, or is old.
     // The attempt to delete it will tell us if it was really stale or not, though.
     bool isApparentlyStale() const;
+
     // used in dbusmenu
     Q_CORE_EXPORT static QString processNameByPid(qint64 pid);
-
-#ifdef Q_OS_UNIX
-    static int checkFcntlWorksAfterFlock(const QString &fn);
-#endif
+    static bool isProcessRunning(qint64 pid, const QString &appname);
 
     QString fileName;
 #ifdef Q_OS_WIN

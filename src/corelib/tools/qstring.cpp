@@ -165,28 +165,37 @@ qssize_t qustrlen(const ushort *str) Q_DECL_NOTHROW
     qssize_t result = 0;
 
 #ifdef __SSE2__
-    // progress until we get an aligned pointer
-    const ushort *ptr = str;
-    while (*ptr && quintptr(ptr) % 16)
-        ++ptr;
-    if (*ptr == 0)
-        return ptr - str;
+    // find the 16-byte alignment immediately prior or equal to str
+    quintptr misalignment = quintptr(str) & 0xf;
+    Q_ASSERT((misalignment & 1) == 0);
+    const ushort *ptr = str - (misalignment / 2);
 
     // load 16 bytes and see if we have a null
     // (aligned loads can never segfault)
-    int mask;
     const __m128i zeroes = _mm_setzero_si128();
-    do {
-        __m128i data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
-        ptr += 8;
+    __m128i data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
+    __m128i comparison = _mm_cmpeq_epi16(data, zeroes);
+    quint32 mask = _mm_movemask_epi8(comparison);
 
-        __m128i comparison = _mm_cmpeq_epi16(data, zeroes);
+    // ignore the result prior to the beginning of str
+    mask >>= misalignment;
+
+    // Have we found something in the first block? Need to handle it now
+    // because of the left shift above.
+    if (mask)
+        return qCountTrailingZeroBits(quint32(mask)) / 2;
+
+    do {
+        ptr += 8;
+        data = _mm_load_si128(reinterpret_cast<const __m128i *>(ptr));
+
+        comparison = _mm_cmpeq_epi16(data, zeroes);
         mask = _mm_movemask_epi8(comparison);
     } while (mask == 0);
 
     // found a null
     uint idx = qCountTrailingZeroBits(quint32(mask));
-    return ptr - str - 8 + idx / 2;
+    return ptr - str + idx / 2;
 #endif
 
     if (sizeof(wchar_t) == sizeof(ushort))

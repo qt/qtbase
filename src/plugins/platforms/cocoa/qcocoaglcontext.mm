@@ -218,6 +218,9 @@ void QCocoaGLContext::windowWasHidden()
 
 void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
 {
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        return; // Nothing to do
+
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
 
@@ -229,11 +232,13 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
     Q_ASSERT(surface->surface()->supportsOpenGL());
 
     QMacAutoReleasePool pool;
+    [m_context makeCurrentContext];
+
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        return true;
 
     QWindow *window = static_cast<QCocoaWindow *>(surface)->window();
     setActiveWindow(window);
-
-    [m_context makeCurrentContext];
     update();
     return true;
 }

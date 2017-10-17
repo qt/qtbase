@@ -2763,11 +2763,15 @@ Qt::MouseButtons QTabletEvent::buttons() const
 #if QT_DEPRECATED_SINCE(5, 10)
 QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
                                          const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
-    : QInputEvent(QEvent::NativeGesture), mGestureType(type), mTouchDeviceId(255),
+    : QInputEvent(QEvent::NativeGesture), mGestureType(type),
       mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
       mSequenceId(sequenceId), mIntValue(intValue)
 { }
 #endif
+
+typedef QHash<const QNativeGestureEvent*, const QTouchDevice*> NativeGestureEventDataHash;
+// ### Qt6: move this to a member in QNativeGestureEvent
+Q_GLOBAL_STATIC(NativeGestureEventDataHash, g_nativeGestureEventDataHash)
 
 /*!
     Constructs a native gesture event of type \a type originating from \a device.
@@ -2779,13 +2783,19 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPoin
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
     \since 5.10
 */
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *device, const QPointF &localPos, const QPointF &windowPos,
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
                                          const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
     : QInputEvent(QEvent::NativeGesture), mGestureType(type),
-      mTouchDeviceId(QTouchDevicePrivate::get(const_cast<QTouchDevice *>(device))->id),
       mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
       mSequenceId(sequenceId), mIntValue(intValue)
-{ }
+{
+    g_nativeGestureEventDataHash->insert(this, dev);
+}
+
+QNativeGestureEvent::~QNativeGestureEvent()
+{
+    g_nativeGestureEventDataHash->remove(this);
+}
 
 /*!
     \since 5.10
@@ -2795,7 +2805,7 @@ QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouc
 
 const QTouchDevice *QNativeGestureEvent::device() const
 {
-    return QTouchDevicePrivate::deviceById(mTouchDeviceId);
+    return g_nativeGestureEventDataHash->value(this);
 }
 
 /*!

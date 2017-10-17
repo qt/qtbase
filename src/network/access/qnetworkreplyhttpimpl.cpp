@@ -1175,6 +1175,14 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
     redirectRequest = createRedirectRequest(originalRequest, url, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
 
+    if (const QNetworkCookieJar *const cookieJar = (manager ? manager->cookieJar() : nullptr)) {
+        auto cookies = cookieJar->cookiesForUrl(url);
+        if (!cookies.empty()) {
+            redirectRequest.setHeader(QNetworkRequest::KnownHeaders::CookieHeader,
+                                      QVariant::fromValue(cookies));
+        }
+    }
+
     if (httpRequest.redirectPolicy() != QNetworkRequest::UserVerifiedRedirectPolicy)
         followRedirect();
 

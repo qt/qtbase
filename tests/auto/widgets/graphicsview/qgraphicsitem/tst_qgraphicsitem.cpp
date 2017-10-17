@@ -11419,7 +11419,7 @@ void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
     item2->setParentItem(item);
     scene.addItem(item);
     view.show();
-    QTest::qWaitForWindowActive(view.windowHandle());
+    QVERIFY(QTest::qWaitForWindowActive(view.windowHandle()));
     view.activateWindow();
     QTRY_VERIFY(view.isActiveWindow());
     QTRY_VERIFY(view.repaints >= 1);

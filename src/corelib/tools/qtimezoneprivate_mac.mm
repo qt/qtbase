@@ -295,7 +295,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
             break;
     }
     if (prevSecs < endSecs) // i.e. we did make it into that while loop
-        return data(qint64(prevSecs) * 1000);
+        return data(qint64(prevSecs * 1e3));
 
     // No transition data; or first transition later than requested time.
     return invalidData();

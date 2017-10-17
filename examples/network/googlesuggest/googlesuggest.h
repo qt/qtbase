@@ -53,14 +53,7 @@
 
 #include <QtWidgets>
 #include <QtNetwork>
-#include <QObject>
-
-QT_BEGIN_NAMESPACE
-class QLineEdit;
-class QNetworkReply;
-class QTimer;
-class QTreeWidget;
-QT_END_NAMESPACE
+#include <QtCore>
 
 //! [1]
 class GSuggestCompletion : public QObject
@@ -68,10 +61,10 @@ class GSuggestCompletion : public QObject
     Q_OBJECT
 
 public:
-    GSuggestCompletion(QLineEdit *parent = 0);
+    explicit GSuggestCompletion(QLineEdit *parent = nullptr);
     ~GSuggestCompletion();
     bool eventFilter(QObject *obj, QEvent *ev) override;
-    void showCompletion(const QStringList &choices);
+    void showCompletion(const QVector<QString> &choices);
 
 public slots:
 
@@ -81,9 +74,9 @@ public slots:
     void handleNetworkData(QNetworkReply *networkReply);
 
 private:
-    QLineEdit *editor;
-    QTreeWidget *popup;
-    QTimer *timer;
+    QLineEdit *editor = nullptr;
+    QTreeWidget *popup = nullptr;
+    QTimer timer;
     QNetworkAccessManager networkManager;
 };
 //! [1]

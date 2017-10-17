@@ -110,8 +110,8 @@
     size hints of its contents widgets.
 
     To ensure that the window isn't automatically resized every time
-    we change a property of the QCalendarWidget (e.g., hiding the
-    navigation bar, trhe vertical header, or the grid), we set the
+    we change a property of the QCalendarWidget (for example, hiding the
+    navigation bar, the vertical header, or the grid), we set the
     minimum height of row 0 and the minimum width of column 0 to the
     initial size of the QCalendarWidget.
 
@@ -126,8 +126,8 @@
     the formatting specified by the user.
 
     The \c createGeneralOptionsGroupBox() function is somewhat large
-    and several widgets are set up the same way; we look at parts of
-    its implementation here and skip the rest:
+    and several widgets are set up in the same way. We will look at
+    parts of its implementation here and skip the rest:
 
     \snippet widgets/calendarwidget/window.cpp 10
     \dots
@@ -146,7 +146,7 @@
     \snippet widgets/calendarwidget/window.cpp 11
     \dots
 
-    After creating the widgets, we connect the signals and slots. We
+    After having created the widgets, we connect the signals and slots. We
     connect the comboboxes to private slots of \c Window or to
     public slots provided by QComboBox.
 

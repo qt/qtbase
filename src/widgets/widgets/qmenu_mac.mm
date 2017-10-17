@@ -135,6 +135,11 @@ void QMenuPrivate::moveWidgetToPlatformItem(QWidget *widget, QPlatformMenuItem* 
     containerWindow->setFlags(wf | Qt::SubWindow);
     [(NSView *)widget->winId() setAutoresizingMask:NSViewWidthSizable];
 
+    if (QPlatformNativeInterface::NativeResourceForIntegrationFunction function = resolvePlatformFunction("setEmbeddedInForeignView")) {
+        typedef void (*SetEmbeddedInForeignViewFunction)(QPlatformWindow *window, bool embedded);
+        reinterpret_cast<SetEmbeddedInForeignViewFunction>(function)(containerWindow->handle(), true);
+    }
+
     item->setNativeContents((WId)containerView);
     container->show();
 }

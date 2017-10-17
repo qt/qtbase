@@ -52,16 +52,12 @@ public:
     QCocoaBackingStore(QWindow *window);
     ~QCocoaBackingStore();
 
-    void beginPaint(const QRegion &) override;
-    void endPaint() override;
-
     void flush(QWindow *, const QRegion &, const QPoint &) override;
 
 private:
     bool windowHasUnifiedToolbar() const;
     QImage::Format format() const override;
     void redrawRoundedBottomCorners(CGRect) const;
-    QCFType<CGImageRef> m_cgImage;
 };
 
 QT_END_NAMESPACE

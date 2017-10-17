@@ -48,7 +48,6 @@ Q_LOGGING_CATEGORY(lcCocoaBackingStore, "qt.qpa.cocoa.backingstore");
 
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QRasterBackingStore(window)
-    , m_cgImage(nullptr)
 {
 }
 
@@ -68,26 +67,6 @@ QImage::Format QCocoaBackingStore::format() const
         return QImage::Format_ARGB32_Premultiplied;
 
     return QRasterBackingStore::format();
-}
-
-void QCocoaBackingStore::beginPaint(const QRegion &region)
-{
-    m_cgImage = nullptr;
-    QRasterBackingStore::beginPaint(region);
-}
-
-void QCocoaBackingStore::endPaint()
-{
-    QRasterBackingStore::endPaint();
-
-    // Prevent potentially costly color conversion by assiging the display
-    // color space to the backingstore image.
-    NSView *view = static_cast<QCocoaWindow *>(window()->handle())->view();
-    CGColorSpaceRef displayColorSpace = view.window.screen.colorSpace.CGColorSpace;
-    QCFType<CGImageRef> displayColorSpaceImage =
-        CGImageCreateCopyWithColorSpace(m_image.toCGImage(), displayColorSpace);
-
-    m_cgImage = displayColorSpaceImage;
 }
 
 #if !QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
@@ -111,6 +90,9 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
     if (m_image.isNull())
         return;
 
+    // Use local pool so that any stale image references are cleaned up after flushing
+    QMacAutoReleasePool pool;
+
     const QWindow *topLevelWindow = this->window();
 
     Q_ASSERT(topLevelWindow->handle() && window->handle());
@@ -128,6 +110,12 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
         qCDebug(lcCocoaBackingStore) << "Flushing" << region << "of" << view << qPrintable(targetViewDescription);
     }
 
+    // Prevent potentially costly color conversion by assigning the display color space
+    // to the backingstore image. This does not copy the underlying image data.
+    CGColorSpaceRef displayColorSpace = view.window.screen.colorSpace.CGColorSpace;
+    QCFType<CGImageRef> cgImage = CGImageCreateCopyWithColorSpace(
+        QCFType<CGImageRef>(m_image.toCGImage()), displayColorSpace);
+
     if (view.layer) {
         // In layer-backed mode, locking focus on a view does not give the right
         // view transformation, and doesn't give us a graphics context to render
@@ -137,7 +125,7 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
         // we then directly set the layer's backingstore (content) to our backingstore,
         // masked to the part of the subview that is relevant.
         // FIXME: Figure out if there's a way to do partial updates
-        view.layer.contents = (__bridge id)static_cast<CGImageRef>(m_cgImage);
+        view.layer.contents = (__bridge id)static_cast<CGImageRef>(cgImage);
         if (view != topLevelView) {
             view.layer.contentsRect = CGRectApplyAffineTransform(
                 [view convertRect:view.bounds toView:topLevelView],
@@ -196,7 +184,7 @@ void QCocoaBackingStore::flush(QWindow *window, const QRegion &region, const QPo
         "Focusing the view should give us a current graphics context");
 
     // Create temporary image to use for blitting, without copying image data
-    NSImage *backingStoreImage = [[[NSImage alloc] initWithCGImage:m_cgImage size:NSZeroSize] autorelease];
+    NSImage *backingStoreImage = [[[NSImage alloc] initWithCGImage:cgImage size:NSZeroSize] autorelease];
 
     QRegion clippedRegion = region;
     for (QWindow *w = window; w; w = w->parent()) {

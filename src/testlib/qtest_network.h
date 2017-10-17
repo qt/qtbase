@@ -67,7 +67,8 @@ namespace QTest
 /*!
     \internal
  */
-inline char *toString(const QHostAddress &addr)
+template<>
+inline char *toString<QHostAddress>(const QHostAddress &addr)
 {
     switch (addr.protocol()) {
     case QAbstractSocket::UnknownNetworkLayerProtocol:

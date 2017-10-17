@@ -688,7 +688,7 @@ void tst_QGraphicsView::openGLViewport()
     view.setViewport(glw);
 
     view.show();
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(spy1.count() > 0);
     QTRY_VERIFY(spy2.count() >= spy1.count());
     spy1.clear();

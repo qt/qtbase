@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -51,9 +51,9 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <QDataStream>
 #include <QDialog>
 #include <QTcpSocket>
-#include <QDataStream>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -80,16 +80,16 @@ private slots:
     void sessionOpened();
 
 private:
-    QComboBox *hostCombo;
-    QLineEdit *portLineEdit;
-    QLabel *statusLabel;
-    QPushButton *getFortuneButton;
+    QComboBox *hostCombo = nullptr;
+    QLineEdit *portLineEdit = nullptr;
+    QLabel *statusLabel = nullptr;
+    QPushButton *getFortuneButton = nullptr;
 
-    QTcpSocket *tcpSocket;
+    QTcpSocket *tcpSocket = nullptr;
     QDataStream in;
     QString currentFortune;
 
-    QNetworkSession *networkSession;
+    QNetworkSession *networkSession = nullptr;
 };
 //! [0]
 

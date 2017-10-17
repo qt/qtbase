@@ -2163,7 +2163,7 @@ void tst_QListView::draggablePaintPairs()
     view.setModel(&model);
 
     view.show();
-    QTest::qWaitForWindowExposed(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QModelIndex expectedIndex = model.index(row, 0);
     QListViewPrivate *privateClass = static_cast<QListViewPrivate *>(QListViewPrivate::get(&view));
@@ -2207,7 +2207,7 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
     lv.setSpacing(spacing);
     lv.setModel(&model);
     lv.show();
-    QTest::qWaitForWindowExposed(&lv);
+    QVERIFY(QTest::qWaitForWindowExposed(&lv));
 
     // hide every odd number row
     for (int i = 1; i < model.rowCount(); i+=2)
@@ -2279,7 +2279,7 @@ void tst_QListView::spacing()
     lv.setModel(&model);
     lv.setSpacing(spacing);
     lv.show();
-    QTest::qWaitForWindowExposed(&lv);
+    QVERIFY(QTest::qWaitForWindowExposed(&lv));
 
     // check size and position of first two items
     QRect item1 = lv.visualRect(lv.model()->index(0, 0));
@@ -2310,7 +2310,7 @@ void tst_QListView::testScrollToWithHidden()
     lv.setSpacing(5);
 
     lv.showNormal();
-    QTest::qWaitForWindowExposed(&lv);
+    QVERIFY(QTest::qWaitForWindowExposed(&lv));
 
     QCOMPARE(lv.verticalScrollBar()->value(), 0);
 
@@ -2455,7 +2455,7 @@ void tst_QListView::horizontalScrollingByVerticalWheelEvents()
 
     lv.resize(300, 300);
     lv.show();
-    QTest::qWaitForWindowExposed(&lv);
+    QVERIFY(QTest::qWaitForWindowExposed(&lv));
 
     QPoint globalPos = lv.geometry().center();
     QPoint pos = lv.viewport()->geometry().center();

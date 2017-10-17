@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -50,11 +50,15 @@
 
 #include <QCoreApplication>
 #include <QStringList>
+
 #include "downloadmanager.h"
-#include <stdio.h>
+
+#include <cstdio>
 
 int main(int argc, char **argv)
 {
+    using namespace std;
+
     QCoreApplication app(argc, argv);
     QStringList arguments = app.arguments();
     arguments.takeFirst();      // remove the first argument, which is the program's name

@@ -176,13 +176,9 @@ private:
     quint32 maxConcurrentStreams = Http2::maxConcurrentStreams;
 
     // Control flow:
-    static const qint32 sessionMaxRecvWindowSize = Http2::defaultSessionWindowSize * 10;
-    // Signed integer, it can become negative (it's still a valid window size):
-    qint32 sessionRecvWindowSize = sessionMaxRecvWindowSize;
 
-    // We do not negotiate this window size
-    // We have to send WINDOW_UPDATE frames to our peer also.
-    static const qint32 streamInitialRecvWindowSize = Http2::defaultSessionWindowSize;
+    // Signed integer, it can become negative (it's still a valid window size):
+    qint32 sessionRecvWindowSize = Http2::initialSessionReceiveWindowSize;
 
     // Updated by SETTINGS and WINDOW_UPDATE.
     qint32 sessionSendWindowSize = Http2::defaultSessionWindowSize;

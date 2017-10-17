@@ -54,6 +54,7 @@
 #include "qwineventnotifier.h"
 
 #include <private/qobject_p.h>
+#include <QtCore/qatomic.h>
 #include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
@@ -73,6 +74,7 @@ public:
 
     HANDLE handleToEvent;
     HANDLE waitHandle = NULL;
+    QAtomicInt signaledCount;
     bool enabled;
 };
 

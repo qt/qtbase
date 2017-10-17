@@ -124,6 +124,7 @@ private:
 
 const Http2Settings tst_Http2::defaultServerSettings{{Http2::Settings::MAX_CONCURRENT_STREAMS_ID, 100}};
 const Http2Settings tst_Http2::defaultClientSettings{{Http2::Settings::MAX_FRAME_SIZE_ID, quint32(Http2::maxFrameSize)},
+                                                     {Http2::Settings::INITIAL_WINDOW_SIZE_ID, quint32(Http2::initialStreamReceiveWindowSize)},
                                                      {Http2::Settings::ENABLE_PUSH_ID, quint32(0)}};
 
 namespace {
@@ -274,7 +275,7 @@ void tst_Http2::flowControlClientSide()
 
     ServerPtr srv(newServer(serverSettings));
 
-    const QByteArray respond(int(Http2::defaultSessionWindowSize * 50), 'x');
+    const QByteArray respond(int(Http2::initialStreamReceiveWindowSize * 5), 'x');
     srv->setResponseBody(respond);
 
     QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
@@ -342,6 +343,7 @@ void tst_Http2::pushPromise()
 
     const EnvVarGuard env("QT_HTTP2_ENABLE_PUSH_PROMISE", "1");
     const Http2Settings clientSettings{{Settings::MAX_FRAME_SIZE_ID, quint32(Http2::maxFrameSize)},
+                                       {Http2::Settings::INITIAL_WINDOW_SIZE_ID, quint32(Http2::initialStreamReceiveWindowSize)},
                                        {Settings::ENABLE_PUSH_ID, quint32(1)}};
 
     ServerPtr srv(newServer(defaultServerSettings, clientSettings));

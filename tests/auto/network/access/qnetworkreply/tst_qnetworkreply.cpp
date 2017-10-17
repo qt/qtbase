@@ -488,6 +488,7 @@ private Q_SLOTS:
     void ioHttpRedirectPolicyErrors();
     void ioHttpUserVerifiedRedirect_data();
     void ioHttpUserVerifiedRedirect();
+    void ioHttpCookiesDuringRedirect();
 #ifndef QT_NO_SSL
     void putWithServerClosingConnectionImmediately();
 #endif
@@ -8454,6 +8455,33 @@ void tst_QNetworkReply::ioHttpUserVerifiedRedirect()
     waitForFinish(reply);
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), statusCode);
+}
+
+void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
+{
+    MiniHttpServer target(httpEmpty200Response, false);
+
+    const QString cookieHeader = QStringLiteral("Set-Cookie: hello=world; Path=/;\r\n");
+    QString redirect = tempRedirectReplyStr();
+    // Insert 'cookieHeader' before the final \r\n
+    redirect.insert(redirect.length() - 2, cookieHeader);
+
+    QUrl url("http://localhost/");
+    url.setPort(target.serverPort());
+    redirect = redirect.arg(url.toString());
+    MiniHttpServer redirectServer(redirect.toLatin1(), false);
+
+    url = QUrl("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+    QNetworkRequest request(url);
+    auto oldRedirectPolicy = manager.redirectPolicy();
+    manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
+    QNetworkReplyPtr reply(manager.get(request));
+    // Set policy back to whatever it was
+    manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QVERIFY(waitForFinish(reply) == Success);
+    QVERIFY(target.receivedData.contains("\r\nCookie: hello=world\r\n"));
 }
 
 #ifndef QT_NO_SSL

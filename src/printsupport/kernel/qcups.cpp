@@ -148,7 +148,7 @@ static inline QString bannerPageToString(const QCUPSSupport::BannerPage bannerPa
     }
     Q_UNREACHABLE();
     return QString();
-};
+}
 
 void QCUPSSupport::setBannerPages(QPrinter *printer, const BannerPage startBannerPage, const BannerPage endBannerPage)
 {

@@ -227,7 +227,7 @@ void tst_QGuiApplication::focusObject()
     QOpenGLContext context;
     context.create();
     context.makeCurrent(&window1);
-    QTest::qWaitForWindowExposed(&window1); // Buffer swap only succeeds with exposed window
+    QVERIFY(QTest::qWaitForWindowExposed(&window1)); // Buffer swap only succeeds with exposed window
     context.swapBuffers(&window1);
 #endif
 
@@ -392,7 +392,7 @@ void tst_QGuiApplication::changeFocusWindow()
     QOpenGLContext context;
     context.create();
     context.makeCurrent(&window1);
-    QTest::qWaitForWindowExposed(&window1); // Buffer swap only succeeds with exposed window
+    QVERIFY(QTest::qWaitForWindowExposed(&window1)); // Buffer swap only succeeds with exposed window
     context.swapBuffers(&window1);
 #endif
     FocusChangeWindow window2;
@@ -406,7 +406,7 @@ void tst_QGuiApplication::changeFocusWindow()
 #if defined(Q_OS_QNX) // We either need to create a eglSurface or a create a backing store
                       // and then post the window in order for screen to show the window
     context.makeCurrent(&window2);
-    QTest::qWaitForWindowExposed(&window2); // Buffer swap only succeeds with exposed window
+    QVERIFY(QTest::qWaitForWindowExposed(&window2)); // Buffer swap only succeeds with exposed window
     context.swapBuffers(&window2);
 #endif
     QVERIFY(QTest::qWaitForWindowExposed(&window1));

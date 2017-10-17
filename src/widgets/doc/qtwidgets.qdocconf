@@ -47,3 +47,5 @@ imagedirs   += images \
 
 navigation.landingpage = "Qt Widgets"
 navigation.cppclassespage = "Qt Widgets C++ Classes"
+manifestmeta.highlighted.names = "QtWidgets/Calendar Widget Example" \
+                                 "QtWidgets/Simple Tree Model Example"

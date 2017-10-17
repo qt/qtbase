@@ -355,9 +355,9 @@ void QNetworkAddressEntry::setBroadcast(const QHostAddress &newBroadcast)
     contain zero or more IP addresses, each of which is optionally
     associated with a netmask and/or a broadcast address. The list of
     such trios can be obtained with addressEntries(). Alternatively,
-    when the netmask or the broadcast addresses aren't necessary, use
-    the allAddresses() convenience function to obtain just the IP
-    addresses.
+    when the netmask or the broadcast addresses or other information aren't
+    necessary, use the allAddresses() convenience function to obtain just the
+    IP addresses of the active interfaces.
 
     QNetworkInterface also reports the interface's hardware address with
     hardwareAddress().
@@ -516,9 +516,9 @@ QString QNetworkInterface::hardwareAddress() const
     Returns the list of IP addresses that this interface possesses
     along with their associated netmasks and broadcast addresses.
 
-    If the netmask or broadcast address information is not necessary,
-    you can call the allAddresses() function to obtain just the IP
-    addresses.
+    If the netmask or broadcast address or other information is not necessary,
+    you can call the allAddresses() function to obtain just the IP addresses of
+    the active interfaces.
 */
 QList<QNetworkAddressEntry> QNetworkInterface::addressEntries() const
 {
@@ -624,16 +624,21 @@ QList<QNetworkInterface> QNetworkInterface::allInterfaces()
 }
 
 /*!
-    This convenience function returns all IP addresses found on the
-    host machine. It is equivalent to calling addressEntries() on all the
-    objects returned by allInterfaces() to obtain lists of QHostAddress
-    objects then calling QHostAddress::ip() on each of these.
+    This convenience function returns all IP addresses found on the host
+    machine. It is equivalent to calling addressEntries() on all the objects
+    returned by allInterfaces() that are in the QNetworkInterface::IsUp state
+    to obtain lists of QNetworkAddressEntry objects then calling
+    QNetworkAddressEntry::ip() on each of these.
 */
 QList<QHostAddress> QNetworkInterface::allAddresses()
 {
     const QList<QSharedDataPointer<QNetworkInterfacePrivate> > privs = manager()->allInterfaces();
     QList<QHostAddress> result;
     for (const auto &p : privs) {
+        // skip addresses if the interface isn't up
+        if ((p->flags & QNetworkInterface::IsUp) == 0)
+            continue;
+
         for (const QNetworkAddressEntry &entry : qAsConst(p->addressEntries))
             result += entry.ip();
     }

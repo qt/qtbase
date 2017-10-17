@@ -44,6 +44,8 @@
 #include <qpa/qplatformscreen.h>
 #include <qpa/qwindowsysteminterface.h>
 
+static QRegExp whitespaceRegex = QRegExp(QStringLiteral("\\s*"));
+
 @implementation QNSWindowDelegate
 
 - (id)initWithQCocoaWindow:(QCocoaWindow *)cocoaWindow
@@ -98,7 +100,10 @@
 {
     Q_UNUSED(window);
     Q_UNUSED(menu);
-    return m_cocoaWindow && m_cocoaWindow->m_hasWindowFilePath;
+
+    // Only pop up document path if the filename is non-empty. We allow whitespace, to
+    // allow faking a window icon by setting the file path to a single space character.
+    return !whitespaceRegex.exactMatch(m_cocoaWindow->window()->filePath());
 }
 
 - (BOOL)window:(NSWindow *)window shouldDragDocumentWithEvent:(NSEvent *)event from:(NSPoint)dragImageLocation withPasteboard:(NSPasteboard *)pasteboard
@@ -107,6 +112,9 @@
     Q_UNUSED(event);
     Q_UNUSED(dragImageLocation);
     Q_UNUSED(pasteboard);
-    return m_cocoaWindow && m_cocoaWindow->m_hasWindowFilePath;
+
+    // Only allow drag if the filename is non-empty. We allow whitespace, to
+    // allow faking a window icon by setting the file path to a single space.
+    return !whitespaceRegex.exactMatch(m_cocoaWindow->window()->filePath());
 }
 @end

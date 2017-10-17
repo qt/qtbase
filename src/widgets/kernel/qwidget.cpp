@@ -1876,39 +1876,15 @@ static void deleteBackingStore(QWidgetPrivate *d)
 {
     QTLWExtra *topData = d->topData();
 
-    // The context must be current when destroying the backing store as it may attempt to
-    // release resources like textures and shader programs. The window may not be suitable
-    // anymore as there will often not be a platform window underneath at this stage. Fall
-    // back to a QOffscreenSurface in this case.
-    QScopedPointer<QOffscreenSurface> tempSurface;
-#ifndef QT_NO_OPENGL
-    if (d->textureChildSeen && topData->shareContext) {
-        if (topData->window->handle()) {
-            topData->shareContext->makeCurrent(topData->window);
-        } else {
-            tempSurface.reset(new QOffscreenSurface);
-            tempSurface->setFormat(topData->shareContext->format());
-            tempSurface->create();
-            topData->shareContext->makeCurrent(tempSurface.data());
-        }
-    }
-#endif
-
     delete topData->backingStore;
     topData->backingStore = 0;
-
-#ifndef QT_NO_OPENGL
-    if (d->textureChildSeen && topData->shareContext)
-        topData->shareContext->doneCurrent();
-#endif
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
 {
     if (extra && extra->topextra) {
         //the qplatformbackingstore may hold a reference to the window, so the backingstore
-        //needs to be deleted first. If the backingstore holds GL resources, we need to
-        // make the context current here. This is taken care of by deleteBackingStore().
+        //needs to be deleted first.
 
         extra->topextra->backingStoreTracker.destroy();
         deleteBackingStore(this);
@@ -5912,7 +5888,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     pixmapOffset -= effectRect.topLeft();
 
-    const qreal dpr = context->painter->device()->devicePixelRatio();
+    const qreal dpr = context->painter->device()->devicePixelRatioF();
     QPixmap pixmap(effectRect.size() * dpr);
     pixmap.setDevicePixelRatio(dpr);
 
@@ -6945,6 +6921,9 @@ bool QWidget::isActiveWindow() const
 /*!
     Puts the \a second widget after the \a first widget in the focus order.
 
+    It effectively removes the \a second widget from its focus chain and
+    inserts it after the \a first widget.
+
     Note that since the tab order of the \a second widget is changed, you
     should order a chain like this:
 
@@ -6957,11 +6936,19 @@ bool QWidget::isActiveWindow() const
     If \a first or \a second has a focus proxy, setTabOrder()
     correctly substitutes the proxy.
 
+    \note Since Qt 5.10: A widget that has a child as focus proxy is understood as
+    a compound widget. When setting a tab order between one or two compound widgets, the
+    local tab order inside each will be preserved. This means that if both widgets are
+    compound widgets, the resulting tab order will be from the last child inside
+    \a first, to the first child inside \a second.
+
     \sa setFocusPolicy(), setFocusProxy(), {Keyboard Focus in Widgets}
 */
 void QWidget::setTabOrder(QWidget* first, QWidget *second)
 {
-    if (!first || !second || first->focusPolicy() == Qt::NoFocus || second->focusPolicy() == Qt::NoFocus)
+    if (!first || !second || first == second
+            || first->focusPolicy() == Qt::NoFocus
+            || second->focusPolicy() == Qt::NoFocus)
         return;
 
     if (Q_UNLIKELY(first->window() != second->window())) {
@@ -6969,54 +6956,56 @@ void QWidget::setTabOrder(QWidget* first, QWidget *second)
         return;
     }
 
-    QWidget *fp = first->focusProxy();
-    if (fp) {
-        // If first is redirected, set first to the last child of first
-        // that can take keyboard focus so that second is inserted after
-        // that last child, and the focus order within first is (more
-        // likely to be) preserved.
-        QList<QWidget *> l = first->findChildren<QWidget *>();
-        for (int i = l.size()-1; i >= 0; --i) {
-            QWidget * next = l.at(i);
-            if (next->window() == fp->window()) {
-                fp = next;
-                if (fp->focusPolicy() != Qt::NoFocus)
-                    break;
-            }
+    auto determineLastFocusChild = [](QWidget *target, QWidget *&lastFocusChild)
+    {
+        // Since we need to repeat the same logic for both 'first' and 'second', we add a function that
+        // determines the last focus child for a widget, taking proxies and compound widgets into account.
+        // If the target is not a compound widget (it doesn't have a focus proxy that points to a child),
+        // 'lastFocusChild' will be set to the target itself.
+        lastFocusChild = target;
+
+        QWidget *focusProxy = target->d_func()->deepestFocusProxy();
+        if (!focusProxy || !target->isAncestorOf(focusProxy))
+            return;
+
+        lastFocusChild = focusProxy;
+
+        for (QWidget *focusNext = lastFocusChild->d_func()->focus_next;
+             focusNext != focusProxy && target->isAncestorOf(focusNext) && focusNext->window() == focusProxy->window();
+             focusNext = focusNext->d_func()->focus_next) {
+            if (focusNext->focusPolicy() != Qt::NoFocus)
+                lastFocusChild = focusNext;
         }
-        first = fp;
-    }
+    };
 
-    if (fp == second)
+    QWidget *lastFocusChildOfFirst, *lastFocusChildOfSecond;
+    determineLastFocusChild(first, lastFocusChildOfFirst);
+    determineLastFocusChild(second, lastFocusChildOfSecond);
+
+    // If the tab order is already correct, exit early
+    if (lastFocusChildOfFirst->d_func()->focus_next == second)
         return;
 
-    if (QWidget *sp = second->focusProxy())
-        second = sp;
+    // Note that we need to handle two different sections in the tab chain; The section
+    // that 'first' belongs to (firstSection), where we are about to insert 'second', and
+    // the section that 'second' used be a part of (secondSection). When we pull 'second'
+    // out of the second section and insert it into the first, we also need to ensure
+    // that we leave the second section in a connected state.
+    QWidget *firstChainOldSecond = lastFocusChildOfFirst->d_func()->focus_next;
+    QWidget *secondChainNewFirst = second->d_func()->focus_prev;
+    QWidget *secondChainNewSecond = lastFocusChildOfSecond->d_func()->focus_next;
 
-//    QWidget *fp = first->d_func()->focus_prev;
-    QWidget *fn = first->d_func()->focus_next;
+    // Insert 'second' after 'first'
+    lastFocusChildOfFirst->d_func()->focus_next = second;
+    second->d_func()->focus_prev = lastFocusChildOfFirst;
 
-    if (fn == second || first == second)
-        return;
+    // The widget that used to be 'second' in the first section, should now become 'third'
+    lastFocusChildOfSecond->d_func()->focus_next = firstChainOldSecond;
+    firstChainOldSecond->d_func()->focus_prev = lastFocusChildOfSecond;
 
-    QWidget *sp = second->d_func()->focus_prev;
-    QWidget *sn = second->d_func()->focus_next;
-
-    fn->d_func()->focus_prev = second;
-    first->d_func()->focus_next = second;
-
-    second->d_func()->focus_next = fn;
-    second->d_func()->focus_prev = first;
-
-    sp->d_func()->focus_next = sn;
-    sn->d_func()->focus_prev = sp;
-
-
-    Q_ASSERT(first->d_func()->focus_next->d_func()->focus_prev == first);
-    Q_ASSERT(first->d_func()->focus_prev->d_func()->focus_next == first);
-
-    Q_ASSERT(second->d_func()->focus_next->d_func()->focus_prev == second);
-    Q_ASSERT(second->d_func()->focus_prev->d_func()->focus_next == second);
+    // Repair the second section after we pulled 'second' out of it
+    secondChainNewFirst->d_func()->focus_next = secondChainNewSecond;
+    secondChainNewSecond->d_func()->focus_prev = secondChainNewFirst;
 }
 
 /*!\internal

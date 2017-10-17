@@ -129,9 +129,19 @@ enum Http2PredefinedParameters
     maxConcurrentStreams = 100 // HTTP/2, 6.5.2
 };
 
-// It's int, it has internal linkage, it's ok to have it in headers -
-// no ODR violation is possible.
+// These are ints, const, they have internal linkage, it's ok to have them in
+// headers - no ODR violation.
 const quint32 lastValidStreamID((quint32(1) << 31) - 1); // HTTP/2, 5.1.1
+
+// The default size of 64K is too small and limiting: if we use it, we end up
+// sending WINDOW_UPDATE frames on a stream/session all the time, for each
+// 2 DATE frames of size 16K (also default) we'll send a WINDOW_UPDATE frame
+// for a given stream and have a download speed order of magnitude lower than
+// our own HTTP/1.1 protocol handler. We choose a bigger window size (normally,
+// HTTP/2 servers are not afraid to immediately set it to possible max anyway)
+// and split this window size between our concurrent streams.
+const qint32 initialSessionReceiveWindowSize = defaultSessionWindowSize * 10000;
+const qint32 initialStreamReceiveWindowSize = initialSessionReceiveWindowSize / maxConcurrentStreams;
 
 extern const Q_AUTOTEST_EXPORT char Http2clientPreface[clientPrefaceLength];
 void prepare_for_protocol_upgrade(QHttpNetworkRequest &request);

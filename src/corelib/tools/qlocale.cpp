@@ -54,7 +54,9 @@
 #include "qlocale.h"
 #include "qlocale_p.h"
 #include "qlocale_tools_p.h"
+#if QT_CONFIG(datetimeparser)
 #include "qdatetimeparser_p.h"
+#endif
 #include "qnamespace.h"
 #include "qdatetime.h"
 #include "qstringlist.h"
@@ -2084,7 +2086,7 @@ QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
 QTime QLocale::toTime(const QString &string, const QString &format) const
 {
     QTime time;
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(datetimeparser)
     QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
@@ -2115,7 +2117,7 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
 QDate QLocale::toDate(const QString &string, const QString &format) const
 {
     QDate date;
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(datetimeparser)
     QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
@@ -2145,7 +2147,7 @@ QDate QLocale::toDate(const QString &string, const QString &format) const
 #ifndef QT_NO_DATESTRING
 QDateTime QLocale::toDateTime(const QString &string, const QString &format) const
 {
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(datetimeparser)
     QTime time;
     QDate date;
 

@@ -55,7 +55,6 @@ QT_BEGIN_NAMESPACE
 */
 QIOSBackingStore::QIOSBackingStore(QWindow *window)
     : QRasterBackingStore(window)
-    , m_context(new QOpenGLContext)
 {
     // We use the surface both for raster operations and for GL drawing (when
     // we blit the raster image), so the type needs to cover both use cases.
@@ -64,22 +63,10 @@ QIOSBackingStore::QIOSBackingStore(QWindow *window)
 
     Q_ASSERT_X(window->surfaceType() != QSurface::OpenGLSurface, "QIOSBackingStore",
         "QBackingStore on iOS can only be used with raster-enabled surfaces.");
-
-    m_context->setFormat(window->requestedFormat());
-    m_context->setScreen(window->screen());
-    Q_ASSERT(QOpenGLContext::globalShareContext());
-    m_context->setShareContext(QOpenGLContext::globalShareContext());
-    m_context->create();
 }
 
 QIOSBackingStore::~QIOSBackingStore()
 {
-    // We're using composeAndFlush from QPlatformBackingStore, which
-    // need to clean up any textures in its destructor, so make the
-    // context current and keep it alive until QPlatformBackingStore
-    // has cleaned up everything.
-    m_context->makeCurrent(window());
-    m_context->deleteLater();
 }
 
 void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
@@ -98,7 +85,7 @@ void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     }
 
     static QPlatformTextureList emptyTextureList;
-    composeAndFlush(window, region, offset, &emptyTextureList, m_context, false);
+    composeAndFlush(window, region, offset, &emptyTextureList, false);
 }
 
 QT_END_NAMESPACE

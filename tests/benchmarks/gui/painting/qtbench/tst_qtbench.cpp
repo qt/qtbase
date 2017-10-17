@@ -224,7 +224,7 @@ void tst_QtBench::qtBench()
 
     BenchWidget widget(reinterpret_cast<Benchmark *>(benchmark));
     widget.show();
-    QTest::qWaitForWindowExposed(&widget);
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     while (!widget.done()) {
         widget.update();

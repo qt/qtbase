@@ -356,7 +356,7 @@ void tst_QAccessibility::customWidget()
     {
     QtTestAccessibleWidget* widget = new QtTestAccessibleWidget(0, "Heinz");
     widget->show();
-    QTest::qWaitForWindowExposed(widget);
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
     // By default we create QAccessibleWidget
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(iface != 0);
@@ -372,7 +372,7 @@ void tst_QAccessibility::customWidget()
     QAccessible::installFactory(QtTestAccessibleWidgetIface::ifaceFactory);
     QtTestAccessibleWidget* widget = new QtTestAccessibleWidget(0, "Heinz");
     widget->show();
-    QTest::qWaitForWindowExposed(widget);
+    QVERIFY(QTest::qWaitForWindowExposed(widget));
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
     QVERIFY(iface != 0);
     QVERIFY(iface->isValid());
@@ -1753,7 +1753,7 @@ void tst_QAccessibility::textEditTest()
         }
 
         edit.show();
-        QTest::qWaitForWindowExposed(&edit);
+        QVERIFY(QTest::qWaitForWindowExposed(&edit));
         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&edit);
         QCOMPARE(iface->text(QAccessible::Value), edit.toPlainText());
         QVERIFY(iface->state().focusable);
@@ -2165,7 +2165,7 @@ void tst_QAccessibility::lineEditTest()
         QLineEdit le(QStringLiteral("My characters have geometries."), toplevel);
         // characterRect()
         le.show();
-        QTest::qWaitForWindowExposed(&le);
+        QVERIFY(QTest::qWaitForWindowExposed(&le));
         QAccessibleInterface *iface(QAccessible::queryAccessibleInterface(&le));
         QAccessibleTextInterface* textIface = iface->textInterface();
         QVERIFY(textIface);
@@ -3075,7 +3075,7 @@ void tst_QAccessibility::tableTest()
 
     tableView->resize(600,600);
     tableView->show();
-    QTest::qWaitForWindowExposed(tableView);
+    QVERIFY(QTest::qWaitForWindowExposed(tableView));
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(tableView);
     QCOMPARE(verifyHierarchy(iface), 0);
@@ -3449,7 +3449,7 @@ void tst_QAccessibility::dockWidgetTest()
 
     mw->resize(600,400);
     mw->show();
-    QTest::qWaitForWindowExposed(mw);
+    QVERIFY(QTest::qWaitForWindowExposed(mw));
 
     QAccessibleInterface *accMainWindow = QAccessible::queryAccessibleInterface(mw);
     // 4 children: menu bar, dock1, dock2, and central widget
@@ -3632,7 +3632,7 @@ void tst_QAccessibility::labelTest()
     window->resize(320, 200);
     window->show();
 
-    QTest::qWaitForWindowExposed(window);
+    QVERIFY(QTest::qWaitForWindowExposed(window));
 #if defined(Q_OS_UNIX)
     QCoreApplication::processEvents();
 #endif

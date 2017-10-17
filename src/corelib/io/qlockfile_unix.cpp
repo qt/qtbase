@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -42,7 +42,6 @@
 #include "private/qlockfile_p.h"
 
 #include "QtCore/qtemporaryfile.h"
-#include "QtCore/qcoreapplication.h"
 #include "QtCore/qfileinfo.h"
 #include "QtCore/qdebug.h"
 #include "QtCore/qdatetime.h"
@@ -94,91 +93,59 @@ static qint64 qt_write_loop(int fd, const char *data, qint64 len)
     return pos;
 }
 
-int QLockFilePrivate::checkFcntlWorksAfterFlock(const QString &fn)
+/*
+ * Details about file locking on Unix.
+ *
+ * There are three types of advisory locks on Unix systems:
+ *  1) POSIX process-wide locks using fcntl(F_SETLK)
+ *  2) BSD flock(2) system call
+ *  3) Linux-specific file descriptor locks using fcntl(F_OFD_SETLK)
+ * There's also a mandatory locking feature by POSIX, which is deprecated on
+ * Linux and users are advised not to use it.
+ *
+ * The first problem is that the POSIX API is braindead. POSIX.1-2008 says:
+ *
+ *   All locks associated with a file for a given process shall be removed when
+ *   a file descriptor for that file is closed by that process or the process
+ *   holding that file descriptor terminates.
+ *
+ * The Linux manpage is clearer:
+ *
+ *  * If a process closes _any_ file descriptor referring to a file, then all
+ *    of the process's locks on that file are released, regardless of the file
+ *    descriptor(s) on which the locks were obtained. This is bad: [...]
+ *
+ *  * The threads in a process share locks. In other words, a multithreaded
+ *    program can't use record locking to ensure that threads don't
+ *    simultaneously access the same region of a file.
+ *
+ * So in order to use POSIX locks, we'd need a global mutex that stays locked
+ * while the QLockFile is locked. For that reason, Qt does not use POSIX
+ * advisory locks anymore.
+ *
+ * The next problem is that POSIX leaves undefined the relationship between
+ * locks with fcntl(), flock() and lockf(). In some systems (like the BSDs),
+ * all three use the same record set, while on others (like Linux) the locks
+ * are independent, except if locking over NFS mounts, in which case they're
+ * actually the same. Therefore, it's a very bad idea to mix them in the same
+ * process.
+ *
+ * We therefore use only flock(2).
+ */
+
+static bool setNativeLocks(int fd)
 {
-#ifndef QT_NO_TEMPORARYFILE
-    QTemporaryFile file(fn);
-    if (!file.open())
-        return 0;
-    const int fd = file.d_func()->engine()->handle();
 #if defined(LOCK_EX) && defined(LOCK_NB)
     if (flock(fd, LOCK_EX | LOCK_NB) == -1) // other threads, and other processes on a local fs
-        return 0;
-#endif
-    struct flock flockData;
-    flockData.l_type = F_WRLCK;
-    flockData.l_whence = SEEK_SET;
-    flockData.l_start = 0;
-    flockData.l_len = 0; // 0 = entire file
-    flockData.l_pid = getpid();
-    if (fcntl(fd, F_SETLK, &flockData) == -1) // for networked filesystems
-        return 0;
-    return 1;
+        return false;
 #else
-    Q_UNUSED(fn);
-    return 0;
+    Q_UNUSED(fd);
 #endif
-}
-
-// Cache the result of checkFcntlWorksAfterFlock for each directory a lock
-// file is created in because in some filesystems, like NFS, both locks
-// are the same.  This does not take into account a filesystem changing.
-// QCache is set to hold a maximum of 10 entries, this is to avoid unbounded
-// growth, this is caching directories of files and it is assumed a low number
-// will be sufficient.
-typedef QCache<QString, bool> CacheType;
-Q_GLOBAL_STATIC_WITH_ARGS(CacheType, fcntlOK, (10));
-static QBasicMutex fcntlLock;
-
-/*!
-  \internal
-  Checks that the OS isn't using POSIX locks to emulate flock().
-  \macos is one of those.
-*/
-static bool fcntlWorksAfterFlock(const QString &fn)
-{
-    QMutexLocker lock(&fcntlLock);
-    if (fcntlOK.isDestroyed())
-        return QLockFilePrivate::checkFcntlWorksAfterFlock(fn);
-    bool *worksPtr = fcntlOK->object(fn);
-    if (worksPtr)
-        return *worksPtr;
-
-    const bool val = QLockFilePrivate::checkFcntlWorksAfterFlock(fn);
-    worksPtr = new bool(val);
-    fcntlOK->insert(fn, worksPtr);
-
-    return val;
-}
-
-static bool setNativeLocks(const QString &fileName, int fd)
-{
-#if defined(LOCK_EX) && defined(LOCK_NB)
-    if (flock(fd, LOCK_EX | LOCK_NB) == -1) // other threads, and other processes on a local fs
-        return false;
-#endif
-    struct flock flockData;
-    flockData.l_type = F_WRLCK;
-    flockData.l_whence = SEEK_SET;
-    flockData.l_start = 0;
-    flockData.l_len = 0; // 0 = entire file
-    flockData.l_pid = getpid();
-    if (fcntlWorksAfterFlock(QDir::cleanPath(QFileInfo(fileName).absolutePath()) + QString('/'))
-        && fcntl(fd, F_SETLK, &flockData) == -1) { // for networked filesystems
-        return false;
-    }
     return true;
 }
 
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
-    // Assemble data, to write in a single call to write
-    // (otherwise we'd have to check every write call)
-    // Use operator% from the fast builder to avoid multiple memory allocations.
-    QByteArray fileData = QByteArray::number(QCoreApplication::applicationPid()) % '\n'
-                          % QCoreApplication::applicationName().toUtf8() % '\n'
-                          % QSysInfo::machineHostName().toUtf8() % '\n';
-
     const QByteArray lockFileName = QFile::encodeName(fileName);
     const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY | O_CREAT | O_EXCL, 0666);
     if (fd < 0) {
@@ -193,11 +160,12 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
         }
     }
     // Ensure nobody else can delete the file while we have it
-    if (!setNativeLocks(fileName, fd)) {
+    if (!setNativeLocks(fd)) {
         const int errnoSaved = errno;
         qWarning() << "setNativeLocks failed:" << qt_error_string(errnoSaved);
     }
 
+    QByteArray fileData = lockFileContents();
     if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size()) {
         qt_safe_close(fd);
         if (!QFile::remove(fileName))
@@ -224,31 +192,26 @@ bool QLockFilePrivate::removeStaleLock()
     const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY, 0666);
     if (fd < 0) // gone already?
         return false;
-    bool success = setNativeLocks(fileName, fd) && (::unlink(lockFileName) == 0);
+    bool success = setNativeLocks(fd) && (::unlink(lockFileName) == 0);
     close(fd);
     return success;
 }
 
-bool QLockFilePrivate::isApparentlyStale() const
+bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
 {
-    qint64 pid;
-    QString hostname, appname;
-    if (getLockInfo(&pid, &hostname, &appname)) {
-        if (hostname.isEmpty() || hostname == QSysInfo::machineHostName()) {
-            if (::kill(pid, 0) == -1 && errno == ESRCH)
-                return true; // PID doesn't exist anymore
-            const QString processName = processNameByPid(pid);
-            if (!processName.isEmpty()) {
-                QFileInfo fi(appname);
-                if (fi.isSymLink())
-                    fi.setFile(fi.symLinkTarget());
-                if (processName != fi.fileName())
-                    return true; // PID got reused by a different application.
-            }
-        }
+    if (::kill(pid, 0) == -1 && errno == ESRCH)
+        return false; // PID doesn't exist anymore
+
+    const QString processName = processNameByPid(pid);
+    if (!processName.isEmpty()) {
+        QFileInfo fi(appname);
+        if (fi.isSymLink())
+            fi.setFile(fi.symLinkTarget());
+        if (processName != fi.fileName())
+            return false;   // PID got reused by a different application.
     }
-    const qint64 age = QFileInfo(fileName).lastModified().msecsTo(QDateTime::currentDateTime());
-    return staleLockTime > 0 && qAbs(age) > staleLockTime;
+
+    return true;
 }
 
 QString QLockFilePrivate::processNameByPid(qint64 pid)

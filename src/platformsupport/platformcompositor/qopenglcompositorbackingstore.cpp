@@ -202,14 +202,13 @@ void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region
 }
 
 void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                               QPlatformTextureList *textures, QOpenGLContext *context,
+                                               QPlatformTextureList *textures,
                                                bool translucentBackground)
 {
     // QOpenGLWidget/QQuickWidget content provided as textures. The raster content goes on top.
 
     Q_UNUSED(region);
     Q_UNUSED(offset);
-    Q_UNUSED(context);
     Q_UNUSED(translucentBackground);
 
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
@@ -218,7 +217,7 @@ void QOpenGLCompositorBackingStore::composeAndFlush(QWindow *window, const QRegi
 
     // The compositor's context and the context to which QOpenGLWidget/QQuickWidget
     // textures belong are not the same. They share resources, though.
-    Q_ASSERT(context->shareGroup() == dstCtx->shareGroup());
+    Q_ASSERT(qt_window_private(window)->shareContext()->shareGroup() == dstCtx->shareGroup());
 
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)

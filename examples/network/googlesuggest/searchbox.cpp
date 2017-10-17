@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -54,7 +54,7 @@
 #include "searchbox.h"
 #include "googlesuggest.h"
 
-#define GSEARCH_URL "http://www.google.com/search?q=%1"
+const QString gsearchUrl = QStringLiteral("http://www.google.com/search?q=%1");
 
 //! [1]
 SearchBox::SearchBox(QWidget *parent): QLineEdit(parent)
@@ -75,8 +75,8 @@ SearchBox::SearchBox(QWidget *parent): QLineEdit(parent)
 void SearchBox::doSearch()
 {
     completer->preventSuggest();
-    QString url = QString(GSEARCH_URL).arg(text());
-    QDesktopServices::openUrl(QUrl(url));
+    QString url = gsearchUrl.arg(text());
+    QDesktopServices::openUrl(url);
 }
 //! [2]
 

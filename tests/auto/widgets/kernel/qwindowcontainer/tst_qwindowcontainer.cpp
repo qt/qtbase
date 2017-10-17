@@ -74,6 +74,7 @@ private slots:
     void testOwnership();
     void testBehindTheScenesDeletion();
     void testUnparenting();
+    void testUnparentReparent();
     void testActivation();
     void testAncestorChange();
     void testDockWidget();
@@ -239,6 +240,31 @@ void tst_QWindowContainer::testUnparenting()
 
     // Window should not be made visible by container..
     QVERIFY(!window->isVisible());
+}
+
+void tst_QWindowContainer::testUnparentReparent()
+{
+    QWidget root;
+
+    QWindow *window = new QWindow();
+    QScopedPointer<QWidget> container(QWidget::createWindowContainer(window, &root));
+    container->setWindowTitle(QTest::currentTestFunction());
+    container->setGeometry(m_availableGeometry.x() + 100, m_availableGeometry.y() + 100, 200, 100);
+
+    root.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&root));
+
+    QTRY_VERIFY(window->isVisible());
+
+    container->setParent(nullptr);
+    QTRY_VERIFY(!window->isVisible());
+
+    container->show();
+    QVERIFY(QTest::qWaitForWindowExposed(window));
+    QTRY_VERIFY(window->isVisible());
+
+    container->setParent(&root); // This should not crash (QTBUG-63168)
 }
 
 void tst_QWindowContainer::testAncestorChange()

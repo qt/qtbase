@@ -2,6 +2,7 @@ TARGET = qcocoa
 
 OBJECTIVE_SOURCES += main.mm \
     qcocoaintegration.mm \
+    qcocoascreen.mm \
     qcocoatheme.mm \
     qcocoabackingstore.mm \
     qcocoawindow.mm \
@@ -36,6 +37,7 @@ OBJECTIVE_SOURCES += main.mm \
 SOURCES += messages.cpp
 
 HEADERS += qcocoaintegration.h \
+    qcocoascreen.h \
     qcocoatheme.h \
     qcocoabackingstore.h \
     qcocoawindow.h \

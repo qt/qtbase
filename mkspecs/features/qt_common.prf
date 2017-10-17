@@ -58,6 +58,15 @@ clang {
     clang_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
     versionAtLeast(clang_ver, 3.5): \
         QMAKE_CXXFLAGS_WARN_ON += -Wdate-time
+
+    # Clang/LLVM 5.0 and Xcode 9.0 introduced unguarded availability warnings.
+    # The same construct has been a hard error in Swift from the very beginning.
+    apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
+    darwin:if(versionAtLeast(clang_ver, 5.0)|versionAtLeast(apple_ver, 9.0)): \
+        QMAKE_CXXFLAGS_WARN_ON += \
+            -Werror=unguarded-availability \
+            -Werror=unguarded-availability-new \
+            -Werror=unsupported-availability-guard
 } else: gcc:!intel_icc {
     QMAKE_CXXFLAGS_WARN_ON += -Wvla
     # GCC 5 introduced -Wdate-time

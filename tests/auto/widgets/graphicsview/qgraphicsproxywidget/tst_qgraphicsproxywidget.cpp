@@ -824,7 +824,7 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     QApplication::setActiveWindow(&view);
     view.activateWindow();
     view.setFocus();
-    QTest::qWaitForWindowActive(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.isVisible());
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 

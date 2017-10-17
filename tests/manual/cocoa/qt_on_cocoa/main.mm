@@ -87,8 +87,6 @@
             options:NSTrackingActiveInActiveApp | NSTrackingInVisibleRect | NSTrackingCursorUpdate
             owner:contentView userInfo:nil]];
 
-    window.contentView = contentView;
-
     // Create the QWindow, add its NSView to the content view
     m_window = new RasterWindow;
     m_window->setObjectName("RasterWindow");
@@ -104,10 +102,15 @@
     NSTextField *textField = [[NSTextField alloc] initWithFrame:NSMakeRect(10, 10, 80, 25)];
     [(NSView*)childWindow->winId() addSubview:textField];
 
-    [window.contentView addSubview:reinterpret_cast<NSView *>(m_window->winId())];
+    [contentView addSubview:reinterpret_cast<NSView *>(m_window->winId())];
 
-    // Show the NSWindow
-    [window makeKeyAndOrderFront:NSApp];
+    window.contentView = contentView;
+
+    // Show the NSWindow delayed, so that we can verify that Qt picks up the right
+    // notifications to expose the window when it does become visible.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [window makeKeyAndOrderFront:NSApp];
+    });
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification

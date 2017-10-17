@@ -49,7 +49,7 @@ public:
     {
         layout()->addWidget(widget);
         widget->show();
-        QTest::qWaitForWindowExposed(widget);
+        QVERIFY(QTest::qWaitForWindowExposed(widget));
     }
 
     void clearChildren()
@@ -84,7 +84,7 @@ void tst_QAccessibilityMac::init()
     m_window->show();
     m_window->resize(400, 400);
 
-    QTest::qWaitForWindowExposed(m_window);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
 }
 
 void tst_QAccessibilityMac::cleanup()

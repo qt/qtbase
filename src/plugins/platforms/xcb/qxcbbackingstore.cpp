@@ -600,10 +600,10 @@ void QXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
 #ifndef QT_NO_OPENGL
 void QXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
-                                       QPlatformTextureList *textures, QOpenGLContext *context,
+                                       QPlatformTextureList *textures,
                                        bool translucentBackground)
 {
-    QPlatformBackingStore::composeAndFlush(window, region, offset, textures, context, translucentBackground);
+    QPlatformBackingStore::composeAndFlush(window, region, offset, textures, translucentBackground);
 
     QXcbWindow *platformWindow = static_cast<QXcbWindow *>(window->handle());
     if (platformWindow->needsSync()) {

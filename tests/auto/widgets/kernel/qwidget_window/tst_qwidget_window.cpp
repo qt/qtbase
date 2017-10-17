@@ -851,7 +851,7 @@ void tst_QWidget_window::QTBUG_50561_QCocoaBackingStore_paintDevice_crash()
     QMainWindow w;
     w.addToolBar(new QToolBar(&w));
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     // Simulate window system close
     QCloseEvent *e = new QCloseEvent;
@@ -907,7 +907,8 @@ void tst_QWidget_window::setWindowState()
     w.show();
     QCOMPARE(w.windowState(), state);
     QCOMPARE(w.windowHandle()->windowStates(), state);
-    QTest::qWaitForWindowExposed(&w);
+    if (!(state & Qt::WindowMinimized))
+        QVERIFY(QTest::qWaitForWindowExposed(&w));
     QTRY_COMPARE(w.windowState(), state);
     QCOMPARE(w.windowHandle()->windowStates(), state);
 
@@ -925,7 +926,7 @@ void tst_QWidget_window::nativeShow()
     QWidget w;
     w.winId();
     w.windowHandle()->setVisible(true);
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QVERIFY(w.isVisible());
 
     // ... and that we can hide it

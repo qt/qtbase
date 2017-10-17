@@ -34,11 +34,9 @@
 #include <private/qrandom_p.h>
 
 #include <algorithm>
-#if QT_CONFIG(cxx11_random)
-#  include <random>
-#endif
+#include <random>
 
-#if !QT_CONFIG(getentropy) && (QT_CONFIG(cxx11_random) || defined(Q_OS_BSD4) || defined(Q_OS_WIN))
+#if !QT_CONFIG(getentropy) && (defined(Q_OS_BSD4) || defined(Q_OS_WIN))
 #  define HAVE_FALLBACK_ENGINE
 #endif
 
@@ -468,9 +466,6 @@ template <typename Engine> void seedStdRandomEngine()
 
 void tst_QRandomGenerator::seedStdRandomEngines()
 {
-#if !QT_CONFIG(cxx11_random)
-    QSKIP("<random> not found");
-#else
     seedStdRandomEngine<std::default_random_engine>();
     seedStdRandomEngine<std::minstd_rand0>();
     seedStdRandomEngine<std::minstd_rand>();
@@ -480,7 +475,6 @@ void tst_QRandomGenerator::seedStdRandomEngines()
     seedStdRandomEngine<std::ranlux48_base>();
     seedStdRandomEngine<std::ranlux24>();
     seedStdRandomEngine<std::ranlux48>();
-#endif
 }
 
 void tst_QRandomGenerator::stdUniformIntDistribution_data()
@@ -511,9 +505,6 @@ void tst_QRandomGenerator::stdUniformIntDistribution_data()
 
 void tst_QRandomGenerator::stdUniformIntDistribution()
 {
-#if !QT_CONFIG(cxx11_random)
-    QSKIP("<random> not found");
-#else
     QFETCH(uint, control);
     QFETCH(quint32, max);
     setRNGControl(control & (SkipHWRNG|SkipSystemRNG|SkipMemfill));
@@ -575,14 +566,11 @@ void tst_QRandomGenerator::stdUniformIntDistribution()
             QVERIFY(value <= dist.max());
         }
     }
-#endif
 }
 
 void tst_QRandomGenerator::stdGenerateCanonical()
 {
-#if !QT_CONFIG(cxx11_random)
-    QSKIP("<random> not found");
-#elif defined(Q_CC_MSVC) && Q_CC_MSVC < 1900
+#if defined(Q_CC_MSVC) && Q_CC_MSVC < 1900
     // see https://connect.microsoft.com/VisualStudio/feedback/details/811611
     QSKIP("MSVC 2013's std::generate_canonical is broken");
 #else
@@ -634,9 +622,6 @@ void tst_QRandomGenerator::stdUniformRealDistribution_data()
 
 void tst_QRandomGenerator::stdUniformRealDistribution()
 {
-#if !QT_CONFIG(cxx11_random)
-    QSKIP("<random> not found");
-#else
     QFETCH(uint, control);
     QFETCH(double, min);
     QFETCH(double, sup);
@@ -663,14 +648,10 @@ void tst_QRandomGenerator::stdUniformRealDistribution()
                 QVERIFY(value < dist.max());
         }
     }
-#endif
 }
 
 void tst_QRandomGenerator::stdRandomDistributions()
 {
-#if !QT_CONFIG(cxx11_random)
-    QSKIP("<random> not found");
-#else
     // just a compile check for some of the distributions, besides
     // std::uniform_int_distribution and std::uniform_real_distribution (tested
     // above)
@@ -695,7 +676,6 @@ void tst_QRandomGenerator::stdRandomDistributions()
         QVERIFY(discrete(rd) != 0);
         QVERIFY_3TIMES(discrete(rd) == 3);
     }
-#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QRandomGenerator)

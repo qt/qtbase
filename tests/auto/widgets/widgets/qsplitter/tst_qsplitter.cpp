@@ -828,7 +828,7 @@ void tst_QSplitter::handleMinimumWidth()
     split.addWidget(new QLabel("Number Too"));
 
     split.show();
-    QTest::qWaitForWindowExposed(&split);
+    QVERIFY(QTest::qWaitForWindowExposed(&split));
     for (int i = 0; i < 10; i++) {
         split.setHandleWidth(i);
         QTest::qWait(100); // resizing

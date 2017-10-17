@@ -50,6 +50,7 @@
 #include <QtGui/QOpenGLFunctions>
 #ifndef QT_NO_OPENGL
 #include <QtGui/qopengltextureblitter.h>
+#include <QtGui/qoffscreensurface.h>
 #endif
 #include <qpa/qplatformgraphicsbuffer.h>
 #include <qpa/qplatformgraphicsbufferhelper.h>
@@ -95,14 +96,15 @@ public:
     ~QPlatformBackingStorePrivate()
     {
 #ifndef QT_NO_OPENGL
-        QOpenGLContext *ctx = QOpenGLContext::currentContext();
-        if (ctx) {
+        if (context) {
+            QOffscreenSurface offscreenSurface;
+            offscreenSurface.setFormat(context->format());
+            offscreenSurface.create();
+            context->makeCurrent(&offscreenSurface);
             if (textureId)
-                ctx->functions()->glDeleteTextures(1, &textureId);
+                context->functions()->glDeleteTextures(1, &textureId);
             if (blitter)
                 blitter->destroy();
-        } else if (textureId || blitter) {
-            qWarning("No context current during QPlatformBackingStore destruction, OpenGL resources not released");
         }
         delete blitter;
 #endif
@@ -110,6 +112,7 @@ public:
     QWindow *window;
     QBackingStore *backingStore;
 #ifndef QT_NO_OPENGL
+    QScopedPointer<QOpenGLContext> context;
     mutable GLuint textureId;
     mutable QSize textureSize;
     mutable bool needsSwizzle;
@@ -316,20 +319,31 @@ static void blitTextureForWidget(const QPlatformTextureList *textures, int idx, 
 
 void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region,
                                             const QPoint &offset,
-                                            QPlatformTextureList *textures, QOpenGLContext *context,
+                                            QPlatformTextureList *textures,
                                             bool translucentBackground)
 {
     if (!qt_window_private(window)->receivedExpose)
         return;
 
-    if (!context->makeCurrent(window)) {
+    if (!d_ptr->context) {
+        d_ptr->context.reset(new QOpenGLContext);
+        d_ptr->context->setFormat(d_ptr->window->requestedFormat());
+        d_ptr->context->setScreen(d_ptr->window->screen());
+        d_ptr->context->setShareContext(qt_window_private(d_ptr->window)->shareContext());
+        if (!d_ptr->context->create()) {
+            qWarning("composeAndFlush: QOpenGLContext creation failed");
+            return;
+        }
+    }
+
+    if (!d_ptr->context->makeCurrent(window)) {
         qWarning("composeAndFlush: makeCurrent() failed");
         return;
     }
 
     QWindowPrivate::get(window)->lastComposeTime.start();
 
-    QOpenGLFunctions *funcs = context->functions();
+    QOpenGLFunctions *funcs = d_ptr->context->functions();
     funcs->glViewport(0, 0, window->width() * window->devicePixelRatio(), window->height() * window->devicePixelRatio());
     funcs->glClearColor(0, 0, 0, translucentBackground ? 0 : 1);
     funcs->glClear(GL_COLOR_BUFFER_BIT);
@@ -435,7 +449,7 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     funcs->glDisable(GL_BLEND);
     d_ptr->blitter->release();
 
-    context->swapBuffers(window);
+    d_ptr->context->swapBuffers(window);
 }
 #endif
 /*!

@@ -256,21 +256,21 @@ public:
 #    define Q_REQUIRED_RESULT
 #    define Q_REQUIRED_RESULT_pushed
 #  endif
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QByteArray toLower() const &
+    Q_REQUIRED_RESULT QByteArray toLower() const &
     { return toLower_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QByteArray toLower() &&
+    Q_REQUIRED_RESULT QByteArray toLower() &&
     { return toLower_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QByteArray toUpper() const &
+    Q_REQUIRED_RESULT QByteArray toUpper() const &
     { return toUpper_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QByteArray toUpper() &&
+    Q_REQUIRED_RESULT QByteArray toUpper() &&
     { return toUpper_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QByteArray trimmed() const &
+    Q_REQUIRED_RESULT QByteArray trimmed() const &
     { return trimmed_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QByteArray trimmed() &&
+    Q_REQUIRED_RESULT QByteArray trimmed() &&
     { return trimmed_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QByteArray simplified() const &
+    Q_REQUIRED_RESULT QByteArray simplified() const &
     { return simplified_helper(*this); }
-    Q_REQUIRED_RESULT Q_ALWAYS_INLINE QByteArray simplified() &&
+    Q_REQUIRED_RESULT QByteArray simplified() &&
     { return simplified_helper(*this); }
 #  ifdef Q_REQUIRED_RESULT_pushed
 #    pragma pop_macro("Q_REQUIRED_RESULT")

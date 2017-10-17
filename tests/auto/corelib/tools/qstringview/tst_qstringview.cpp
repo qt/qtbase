@@ -364,14 +364,21 @@ void tst_QStringView::basics() const
 void tst_QStringView::literals() const
 {
 #if !defined(Q_OS_WIN) || defined(Q_COMPILER_UNICODE_STRINGS)
-    // the + ensures it's a pointer, not an array
-    QCOMPARE(QStringView(+u"Hello").size(), 5);
-    QStringView sv = u"Hello";
+    const char16_t hello[] = u"Hello";
+    const char16_t longhello[] =
+            u"Hello World. This is a much longer message, to exercise qustrlen.";
+    const char16_t withnull[] = u"a\0zzz";
 #else // storage_type is wchar_t
-    // the + ensures it's a pointer, not an array
-    QCOMPARE(QStringView(+L"Hello").size(), 5);
-    QStringView sv = L"Hello";
+    const wchar_t hello[] = L"Hello";
+    const wchar_t longhello[] =
+            L"Hello World. This is a much longer message, to exercise qustrlen.";
+    const wchar_t withnull[] = L"a\0zzz";
 #endif
+    Q_STATIC_ASSERT(sizeof(longhello) >= 16);
+
+    QCOMPARE(QStringView(hello).size(), 5);
+    QCOMPARE(QStringView(hello + 0).size(), 5); // forces decay to pointer
+    QStringView sv = hello;
     QCOMPARE(sv.size(), 5);
     QVERIFY(!sv.empty());
     QVERIFY(!sv.isEmpty());
@@ -390,6 +397,24 @@ void tst_QStringView::literals() const
     QVERIFY(!sv2.isNull());
     QVERIFY(!sv2.empty());
     QCOMPARE(sv2.size(), 5);
+
+    QStringView sv3(longhello);
+    QCOMPARE(size_t(sv3.size()), sizeof(longhello)/sizeof(longhello[0]) - 1);
+    QCOMPARE(sv3.last(), QLatin1Char('.'));
+    sv3 = longhello;
+    QCOMPARE(size_t(sv3.size()), sizeof(longhello)/sizeof(longhello[0]) - 1);
+
+    for (int i = 0; i < sv3.size(); ++i) {
+        QStringView sv4(longhello + i);
+        QCOMPARE(size_t(sv4.size()), sizeof(longhello)/sizeof(longhello[0]) - 1 - i);
+        QCOMPARE(sv4.last(), QLatin1Char('.'));
+        sv4 = longhello + i;
+        QCOMPARE(size_t(sv4.size()), sizeof(longhello)/sizeof(longhello[0]) - 1 - i);
+    }
+
+    // these are different results
+    QCOMPARE(size_t(QStringView(withnull).size()), sizeof(withnull)/sizeof(withnull[0]) - 1);
+    QCOMPARE(QStringView(withnull + 0).size(), 1);
 }
 
 void tst_QStringView::at() const

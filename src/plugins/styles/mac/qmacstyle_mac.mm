@@ -663,14 +663,6 @@ HIMutableShapeRef qt_mac_toHIMutableShape(const QRegion &region)
     return shape;
 }
 
-QRegion qt_mac_fromHIShapeRef(HIShapeRef shape)
-{
-    QRegion returnRegion;
-    //returnRegion.detach();
-    HIShapeEnumerate(shape, kHIShapeParseFromTopLeft, qt_mac_shape2QRegionHelper, &returnRegion);
-    return returnRegion;
-}
-
 bool qt_macWindowIsTextured(const QWidget *window)
 {
     if (QWindow *w = window->windowHandle())
@@ -928,24 +920,15 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         break;
     }
     case QStyle::CT_SizeGrip:
+        // Not HIG kosher: mimic what we were doing earlier until we support 4-edge resizing in MDI subwindows
         if (sz == QStyleHelper::SizeLarge || sz == QStyleHelper::SizeSmall) {
-            CGRect r;
-            CGPoint p = { 0, 0 };
-            HIThemeGrowBoxDrawInfo gbi;
-            gbi.version = 0;
-            gbi.state = kThemeStateActive;
-            gbi.kind = kHIThemeGrowBoxKindNormal;
-            gbi.direction = QApplication::isRightToLeft() ? kThemeGrowLeft | kThemeGrowDown
-                                                          : kThemeGrowRight | kThemeGrowDown;
-            gbi.size = sz == QStyleHelper::SizeSmall ? kHIThemeGrowBoxSizeSmall : kHIThemeGrowBoxSizeNormal;
-            if (HIThemeGetGrowBoxBounds(&p, &gbi, &r) == noErr) {
-                int width = 0;
+            int s = sz == QStyleHelper::SizeSmall ? 16 : 22; // large: pixel measured from HITheme, small: from my hat
+            int width = 0;
 #if QT_CONFIG(mdiarea)
             if (widg && qobject_cast<QMdiSubWindow *>(widg->parentWidget()))
-                width = r.size.width;
+                width = s;
 #endif
-                ret = QSize(width, r.size.height);
-            }
+            ret = QSize(width, s);
         }
         break;
     case QStyle::CT_ComboBox:
@@ -1922,85 +1905,94 @@ static QCocoaWidget cocoaWidgetFromHIThemeButtonKind(ThemeButtonKind kind)
     return w;
 }
 
+static NSButton *makeButton(NSButtonType type, NSBezelStyle style)
+{
+    NSButton *b = [[NSButton alloc] init];
+    b.title = @"";
+    b.buttonType = type;
+    b.bezelStyle = style;
+    return b;
+}
+
 NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
 {
-    NSView *bv = cocoaControls[widget];
-    if (!bv) {
+    NSView *bv = cocoaControls.value(widget, nil);
 
-        if (widget.first == QCocoaPopupButton
-            || widget.first == QCocoaPullDownButton)
-            bv = [[NSPopUpButton alloc] init];
-        else if (widget.first == QCocoaComboBox)
+    if (!bv) {
+        switch (widget.first) {
+        case QCocoaBox: {
+            NSBox *bc = [[NSBox alloc] init];
+            bc.title = @"";
+            bc.titlePosition = NSNoTitle;
+            bc.boxType = NSBoxPrimary;
+            bc.borderType = NSBezelBorder;
+            bv = bc;
+            break;
+        }
+        case QCocoaCheckBox:
+            bv = makeButton(NSSwitchButton, NSRegularSquareBezelStyle);
+            break;
+        case QCocoaDisclosureButton:
+            bv = makeButton(NSOnOffButton, NSDisclosureBezelStyle);
+            break;
+        case QCocoaPopupButton:
+        case QCocoaPullDownButton: {
+            NSPopUpButton *bc = [[NSPopUpButton alloc] init];
+            bc.title = @"";
+            if (widget.first == QCocoaPullDownButton)
+                bc.pullsDown = YES;
+            bv = bc;
+            break;
+        }
+        case QCocoaPushButton:
+            bv = makeButton(NSMomentaryLightButton, NSRoundedBezelStyle);
+            break;
+        case QCocoaRadioButton:
+            bv = makeButton(NSRadioButton, NSRegularSquareBezelStyle);
+            break;
+        case QCocoaComboBox:
             bv = [[NSComboBox alloc] init];
-        else if (widget.first == QCocoaProgressIndicator)
+            break;
+        case QCocoaProgressIndicator:
             bv = [[NSProgressIndicator alloc] init];
-        else if (widget.first == QCocoaIndeterminateProgressIndicator)
+            break;
+        case QCocoaIndeterminateProgressIndicator:
             bv = [[QIndeterminateProgressIndicator alloc] init];
-        else if (widget.first == QCocoaHorizontalScroller)
+            break;
+        case QCocoaHorizontalScroller:
             bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
-        else if (widget.first == QCocoaVerticalScroller)
+            break;
+        case QCocoaVerticalScroller:
             // Cocoa sets the orientation from the view's frame
             // at construction time, and it cannot be changed later.
             bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
-        else if (widget.first == QCocoaHorizontalSlider)
+            break;
+        case QCocoaHorizontalSlider:
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
-        else if (widget.first == QCocoaVerticalSlider)
+            break;
+        case QCocoaVerticalSlider:
             // Cocoa sets the orientation from the view's frame
             // at construction time, and it cannot be changed later.
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
-        else
-            bv = [[NSButton alloc] init];
-
-        switch (widget.first) {
-        case QCocoaDisclosureButton: {
-            NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSOnOffButton;
-            bc.bezelStyle = NSDisclosureBezelStyle;
             break;
-        }
-        case QCocoaCheckBox: {
-            NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSSwitchButton;
-            break;
-        }
-        case QCocoaRadioButton: {
-            NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSRadioButton;
-            break;
-        }
-        case QCocoaPushButton: {
-            NSButton *bc = (NSButton *)bv;
-            bc.buttonType = NSMomentaryLightButton;
-            bc.bezelStyle = NSRoundedBezelStyle;
-            break;
-        }
-        case QCocoaPullDownButton: {
-            NSPopUpButton *bc = (NSPopUpButton *)bv;
-            bc.pullsDown = YES;
-            break;
-        }
         default:
             break;
         }
 
-        if ([bv isKindOfClass:[NSButton class]]) {
-            NSButton *bc = (NSButton *)bv;
-            bc.title = @"";
-        }
-
         if ([bv isKindOfClass:[NSControl class]]) {
-            NSCell *bcell = [(NSControl *)bv cell];
+            auto *ctrl = static_cast<NSControl *>(bv);
             switch (widget.second) {
             case QStyleHelper::SizeSmall:
-                bcell.controlSize = NSSmallControlSize;
+                ctrl.controlSize = NSSmallControlSize;
                 break;
             case QStyleHelper::SizeMini:
-                bcell.controlSize = NSMiniControlSize;
+                ctrl.controlSize = NSMiniControlSize;
                 break;
             default:
                 break;
             }
-        } else if ([bv isKindOfClass:[NSProgressIndicator class]]) {
+        } else if (widget.first == QCocoaProgressIndicator ||
+                   widget.first == QCocoaIndeterminateProgressIndicator) {
             auto *pi = static_cast<NSProgressIndicator *>(bv);
             pi.indeterminate = (widget.first == QCocoaIndeterminateProgressIndicator);
             switch (widget.second) {
@@ -2015,7 +2007,7 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
             }
         }
 
-        const_cast<QMacStylePrivate *>(this)->cocoaControls.insert(widget, bv);
+        cocoaControls.insert(widget, bv);
     }
 
     return bv;
@@ -2051,7 +2043,7 @@ NSCell *QMacStylePrivate::cocoaCell(QCocoaWidget widget) const
             break;
         }
 
-        const_cast<QMacStylePrivate *>(this)->cocoaCells.insert(widget, cell);
+        cocoaCells.insert(widget, cell);
     }
 
     return cell;
@@ -2089,7 +2081,7 @@ void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const
 
     CGContextTranslateCTM(ctx, offset.x(), offset.y());
 
-    const CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
+    const CGRect rect = CGRectMake(qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
 
     [backingStoreNSView addSubview:view];
     view.frame = rect;
@@ -2291,24 +2283,7 @@ void QMacStyle::polish(QWidget* w)
             || qobject_cast<QComboBoxPrivateContainer *>(w)
 #endif
             ) {
-        w->setWindowOpacity(0.985);
-        if (!w->testAttribute(Qt::WA_SetPalette)) {
-            QPixmap px(64, 64);
-            px.fill(Qt::white);
-            HIThemeMenuDrawInfo mtinfo;
-            mtinfo.version = qt_mac_hitheme_version;
-            mtinfo.menuType = kThemeMenuTypePopUp;
-            // HIRect rect = CGRectMake(0, 0, px.width(), px.height());
-            // ###
-            //HIThemeDrawMenuBackground(&rect, &mtinfo, QMacCGContext(&px)),
-            //                          kHIThemeOrientationNormal);
-            QPalette pal = w->palette();
-            QBrush background(px);
-            pal.setBrush(QPalette::All, QPalette::Window, background);
-            pal.setBrush(QPalette::All, QPalette::Button, background);
-            w->setPalette(pal);
-            w->setAttribute(Qt::WA_SetPalette, false);
-        }
+        w->setAttribute(Qt::WA_TranslucentBackground, true);
     }
 #endif
 
@@ -3023,7 +2998,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = Qt::AlignRight;
         break;
     case SH_ComboBox_PopupFrameStyle:
-        ret = QFrame::NoFrame | QFrame::Plain;
+        ret = QFrame::NoFrame;
         break;
     case SH_MessageBox_TextInteractionFlags:
         ret = Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse | Qt::TextSelectableByKeyboard;
@@ -3056,27 +3031,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         break;
     case SH_Menu_FadeOutOnHide:
         ret = true;
-        break;
-    case SH_Menu_Mask:
-        if (opt) {
-            if (QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask*>(hret)) {
-                ret = true;
-                CGRect menuRect = CGRectMake(opt->rect.x(), opt->rect.y() + 4,
-                                             opt->rect.width(), opt->rect.height() - 8);
-                HIThemeMenuDrawInfo mdi;
-                mdi.version = 0;
-#if QT_CONFIG(menu)
-                if (w && qobject_cast<QMenu *>(w->parentWidget()))
-                    mdi.menuType = kThemeMenuTypeHierarchical;
-                else
-#endif
-                    mdi.menuType = kThemeMenuTypePopUp;
-                QCFType<HIShapeRef> shape;
-                HIThemeGetMenuBackgroundShape(&menuRect, &mdi, &shape);
-
-                mask->region = qt_mac_fromHIShapeRef(shape);
-            }
-        }
         break;
     case SH_ItemView_PaintAlternatingRowColorsForEmptyArea:
         ret = true;
@@ -3257,17 +3211,13 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             if (groupBox->features & QStyleOptionFrame::Flat) {
                 QCommonStyle::drawPrimitive(pe, groupBox, p, w);
             } else {
-                HIThemeGroupBoxDrawInfo gdi;
-                gdi.version = qt_mac_hitheme_version;
-                gdi.state = tds;
-#if QT_CONFIG(groupbox)
-                if (w && qobject_cast<QGroupBox *>(w->parentWidget()))
-                    gdi.kind = kHIThemeGroupBoxKindSecondary;
-                else
-#endif
-                    gdi.kind = kHIThemeGroupBoxKindPrimary;
-                CGRect cgRect = opt->rect.toCGRect();
-                HIThemeDrawGroupBox(&cgRect, &gdi, cg, kHIThemeOrientationNormal);
+                const auto cw = QCocoaWidget(QCocoaBox, QStyleHelper::SizeDefault);
+                auto *box = static_cast<NSBox *>(d->cocoaControl(cw));
+                d->drawNSViewInRect(cw, box, groupBox->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+                    CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
+                    CGContextScaleCTM(ctx, 1, -1);
+                    [box drawRect:rect];
+                });
             }
         }
         break;
@@ -3591,6 +3541,40 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
 
         break;
     }
+    case PE_PanelMenu: {
+        p->save();
+        p->fillRect(opt->rect, Qt::transparent);
+        p->setPen(Qt::transparent);
+        p->setBrush(opt->palette.window());
+        p->setRenderHint(QPainter::Antialiasing, true);
+        QPainterPath path;
+        static const qreal CornerPointOffset = 5.5;
+        static const qreal CornerControlOffset = 2.1;
+        QRectF r = opt->rect;
+        // Top-left corner
+        path.moveTo(r.left(), r.top() + CornerPointOffset);
+        path.cubicTo(r.left(), r.top() + CornerControlOffset,
+                     r.left() + CornerControlOffset, r.top(),
+                     r.left() + CornerPointOffset, r.top());
+        // Top-right corner
+        path.lineTo(r.right() - CornerPointOffset, r.top());
+        path.cubicTo(r.right() - CornerControlOffset, r.top(),
+                     r.right(), r.top() + CornerControlOffset,
+                     r.right(), r.top() + CornerPointOffset);
+        // Bottom-right corner
+        path.lineTo(r.right(), r.bottom() - CornerPointOffset);
+        path.cubicTo(r.right(), r.bottom() - CornerControlOffset,
+                     r.right() - CornerControlOffset, r.bottom(),
+                     r.right() - CornerPointOffset, r.bottom());
+        // Bottom-right corner
+        path.lineTo(r.left() + CornerPointOffset, r.bottom());
+        path.cubicTo(r.left() + CornerControlOffset, r.bottom(),
+                     r.left(), r.bottom() - CornerControlOffset,
+                     r.left(), r.bottom() - CornerPointOffset);
+        path.lineTo(r.left(), r.top() + CornerPointOffset);
+        p->drawPath(path);
+        p->restore();
+        } break;
 
     default:
         QCommonStyle::drawPrimitive(pe, opt, p, w);
@@ -4273,16 +4257,18 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt, w);
         d->drawFocusRing(p, opt->rect, hMargin, vMargin);
         break; }
+    case CE_MenuEmptyArea:
+        // Skip: PE_PanelMenu fills in everything
+        break;
     case CE_MenuItem:
     case CE_MenuHMargin:
     case CE_MenuVMargin:
-    case CE_MenuEmptyArea:
     case CE_MenuTearoff:
     case CE_MenuScroller:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
             const bool active = mi->state & State_Selected;
-            const QBrush bg = active ? mi->palette.highlight() : mi->palette.background();
-            p->fillRect(mi->rect, bg);
+            if (active)
+                p->fillRect(mi->rect, mi->palette.highlight());
 
             const QStyleHelper::WidgetSizePolicy widgetSize = d->aquaSizeConstrain(opt, w);
 
@@ -4505,39 +4491,35 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_SizeGrip: {
-        if (w && w->testAttribute(Qt::WA_MacOpaqueSizeGrip)) {
-            HIThemeGrowBoxDrawInfo gdi;
-            gdi.version = qt_mac_hitheme_version;
-            gdi.state = tds;
-            gdi.kind = kHIThemeGrowBoxKindNormal;
-            gdi.direction = kThemeGrowRight | kThemeGrowDown;
-            gdi.size = kHIThemeGrowBoxSizeNormal;
-            CGPoint pt = CGPointMake(opt->rect.x(), opt->rect.y());
-            HIThemeDrawGrowBox(&pt, &gdi, cg, kHIThemeOrientationNormal);
-        } else {
-            // It isn't possible to draw a transparent size grip with the
-            // native API, so we do it ourselves here.
-            QPen lineColor = QColor(82, 82, 82, 192);
-            lineColor.setWidth(1);
-            p->save();
-            p->setRenderHint(QPainter::Antialiasing);
-            p->setPen(lineColor);
-            const Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : qApp->layoutDirection();
-            const int NumLines = 3;
-            for (int l = 0; l < NumLines; ++l) {
-                const int offset = (l * 4 + 3);
-                QPoint start, end;
-                if (layoutDirection == Qt::LeftToRight) {
-                    start = QPoint(opt->rect.width() - offset, opt->rect.height() - 1);
-                    end = QPoint(opt->rect.width() - 1, opt->rect.height() - offset);
-                } else {
-                    start = QPoint(offset, opt->rect.height() - 1);
-                    end = QPoint(1, opt->rect.height() - offset);
-                }
-                p->drawLine(start, end);
+        // This is not HIG kosher: Fall back to the old stuff until we decide what to do.
+#ifndef QT_NO_MDIAREA
+        if (!w || !qobject_cast<QMdiSubWindow *>(w->parentWidget()))
+#endif
+            break;
+
+        if (w->testAttribute(Qt::WA_MacOpaqueSizeGrip))
+            p->fillRect(opt->rect, opt->palette.window());
+
+        QPen lineColor = QColor(82, 82, 82, 192);
+        lineColor.setWidth(1);
+        p->save();
+        p->setRenderHint(QPainter::Antialiasing);
+        p->setPen(lineColor);
+        const Qt::LayoutDirection layoutDirection = w ? w->layoutDirection() : qApp->layoutDirection();
+        const int NumLines = 3;
+        for (int l = 0; l < NumLines; ++l) {
+            const int offset = (l * 4 + 3);
+            QPoint start, end;
+            if (layoutDirection == Qt::LeftToRight) {
+                start = QPoint(opt->rect.width() - offset, opt->rect.height() - 1);
+                end = QPoint(opt->rect.width() - 1, opt->rect.height() - offset);
+            } else {
+                start = QPoint(offset, opt->rect.height() - 1);
+                end = QPoint(1, opt->rect.height() - offset);
             }
-            p->restore();
+            p->drawLine(start, end);
         }
+        p->restore();
         break;
         }
     case CE_Splitter:

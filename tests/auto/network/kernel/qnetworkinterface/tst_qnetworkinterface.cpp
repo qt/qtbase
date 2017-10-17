@@ -195,7 +195,7 @@ void tst_QNetworkInterface::localAddress()
 
     QHostAddress local = socket.localAddress();
 
-    // test that we can find the address that QTcpSocket reported
+    // test that we can find the address that QUdpSocket reported
     QList<QHostAddress> all = QNetworkInterface::allAddresses();
     QVERIFY(all.contains(local));
 }
