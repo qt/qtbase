@@ -177,8 +177,8 @@ void drawTriangle(qint32 *bits, int width, int height, const QPoint *center,
     const int y2 = clip == Clip ? qBound(0, v2->y() >> 8, height) : v2->y() >> 8;
     const int yC = clip == Clip ? qBound(0, center->y() >> 8, height) : center->y() >> 8;
 
-    const int v1Frac = clip == Clip ? (y1 << 8) + 0xff - v1->y() : ~v2->y() & 0xff;
-    const int v2Frac = clip == Clip ? (y2 << 8) + 0xff - v2->y() : ~v1->y() & 0xff;
+    const int v1Frac = clip == Clip ? (y1 << 8) + 0xff - v1->y() : ~v1->y() & 0xff;
+    const int v2Frac = clip == Clip ? (y2 << 8) + 0xff - v2->y() : ~v2->y() & 0xff;
     const int centerFrac = clip == Clip ? (yC << 8) + 0xff - center->y() : ~center->y() & 0xff;
 
     int dx1 = 0, x1 = 0, dx2 = 0, x2 = 0;
