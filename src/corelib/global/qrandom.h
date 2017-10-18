@@ -163,8 +163,8 @@ public:
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
 
-    static inline QRandomGenerator *system();
-    static inline QRandomGenerator *global();
+    static inline Q_DECL_CONST_FUNCTION QRandomGenerator *system();
+    static inline Q_DECL_CONST_FUNCTION QRandomGenerator *global();
     static inline QRandomGenerator securelySeeded();
 
 protected:
@@ -175,12 +175,12 @@ private:
     Q_CORE_EXPORT void _fillRange(void *buffer, void *bufferEnd);
 
     friend class QRandomGenerator64;
-    struct SystemGeneratorBase {};
     struct SystemGenerator;
+    struct SystemAndGlobalGenerators;
     typedef std::mt19937 RandomEngine;
 
     union Storage {
-        SystemGeneratorBase sys;
+        uint dummy;
 #ifdef Q_COMPILER_UNRESTRICTED_UNIONS
         RandomEngine twister;
         RandomEngine &engine() { return twister; }
@@ -193,7 +193,7 @@ private:
 
         Q_STATIC_ASSERT_X(std::is_trivially_destructible<RandomEngine>::value,
                           "std::mersenne_twister not trivially destructible as expected");
-        Storage();
+        Q_DECL_CONSTEXPR Storage();
     };
     uint type;
     Storage storage;
@@ -237,8 +237,8 @@ public:
 
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
-    static Q_CORE_EXPORT QRandomGenerator64 *system();
-    static Q_CORE_EXPORT QRandomGenerator64 *global();
+    static Q_DECL_CONST_FUNCTION Q_CORE_EXPORT QRandomGenerator64 *system();
+    static Q_DECL_CONST_FUNCTION Q_CORE_EXPORT QRandomGenerator64 *global();
     static Q_CORE_EXPORT QRandomGenerator64 securelySeeded();
 #endif // Q_QDOC
 };

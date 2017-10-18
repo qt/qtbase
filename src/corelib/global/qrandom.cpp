@@ -128,32 +128,12 @@ static qssize_t qt_random_cpu(void *, qssize_t)
 }
 #endif
 
-namespace {
-static QBasicMutex globalPRNGMutex;
-
-struct PRNGLocker
-{
-    const bool locked;
-    PRNGLocker(const QRandomGenerator *that)
-        : locked(that == nullptr || that == QRandomGenerator::global())
-    {
-        if (locked)
-            globalPRNGMutex.lock();
-    }
-    ~PRNGLocker()
-    {
-        if (locked)
-            globalPRNGMutex.unlock();
-    }
-};
-}
-
 enum {
     // may be "overridden" by a member enum
     FillBufferNoexcept = true
 };
 
-struct QRandomGenerator::SystemGenerator : public QRandomGenerator::SystemGeneratorBase
+struct QRandomGenerator::SystemGenerator
 {
 #if QT_CONFIG(getentropy)
     static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
@@ -175,6 +155,8 @@ struct QRandomGenerator::SystemGenerator : public QRandomGenerator::SystemGenera
     }
 
 #elif defined(Q_OS_UNIX)
+    enum { FillBufferNoexcept = false };
+
     QBasicAtomicInt fdp1;   // "file descriptor plus 1"
     int openDevice()
     {
@@ -206,12 +188,12 @@ struct QRandomGenerator::SystemGenerator : public QRandomGenerator::SystemGenera
 #endif
     static void closeDevice()
     {
-        int fd = static_cast<SystemGenerator &>(system()->storage.sys).fdp1.load() - 1;
+        int fd = self().fdp1.load() - 1;
         if (fd >= 0)
             qt_safe_close(fd);
     }
 
-    SystemGenerator() : fdp1 Q_BASIC_ATOMIC_INITIALIZER(0) {}
+    Q_DECL_CONSTEXPR SystemGenerator() : fdp1 Q_BASIC_ATOMIC_INITIALIZER(0) {}
 
     qssize_t fillBuffer(void *buffer, qssize_t count)
     {
@@ -237,10 +219,7 @@ struct QRandomGenerator::SystemGenerator : public QRandomGenerator::SystemGenera
     }
 #endif // Q_OS_WINRT
 
-    static SystemGenerator &self()
-    {
-        return static_cast<SystemGenerator &>(QRandomGenerator::system()->storage.sys);
-    }
+    static SystemGenerator &self();
     void generate(quint32 *begin, quint32 *end) Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept);
 
     // For std::mersenne_twister_engine implementations that use something
@@ -403,6 +382,99 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
         // failed to fill the entire buffer, try the faillback mechanism
         fallback_fill(buffer + filled, count - filled);
     }
+}
+
+struct QRandomGenerator::SystemAndGlobalGenerators
+{
+    // Construction notes:
+    // 1) The global PRNG state is in a different cacheline compared to the
+    //    mutex that protects it. This avoids any false cacheline sharing of
+    //    the state in case another thread tries to lock the mutex. It's not
+    //    a common scenario, but since sizeof(QRandomGenerator) >= 2560, the
+    //    overhead is actually acceptable.
+    // 2) We use both Q_DECL_ALIGN and std::aligned_storage<..., 64> because
+    //    some implementations of std::aligned_storage can't align to more
+    //    than a primitive type's alignment.
+    // 3) We don't store the entire system QRandomGenerator, only the space
+    //    used by the QRandomGenerator::type member. This is fine because we
+    //    (ab)use the common initial sequence exclusion to aliasing rules.
+    QBasicMutex globalPRNGMutex;
+    struct ShortenedSystem { uint type; } system_;
+    SystemGenerator sys;
+    Q_DECL_ALIGN(64) std::aligned_storage<sizeof(QRandomGenerator64), 64>::type global_;
+
+#ifdef Q_COMPILER_CONSTEXPR
+    constexpr SystemAndGlobalGenerators()
+        : globalPRNGMutex{}, system_{0}, sys{}, global_{}
+    {}
+#endif
+
+    void confirmLiteral()
+    {
+#if defined(Q_COMPILER_CONSTEXPR) && !defined(Q_CC_MSVC)
+        // Currently fails to compile with MSVC 2017, saying QBasicMutex is not
+        // a literal type. Disassembly with MSVC 2013 and 2015 shows it is
+        // actually a literal; MSVC 2017 has a bug relating to this, so we're
+        // withhold judgement for now.
+
+        constexpr SystemAndGlobalGenerators g = {};
+        Q_UNUSED(g);
+        Q_STATIC_ASSERT(std::is_literal_type<SystemAndGlobalGenerators>::value);
+#endif
+    }
+
+    static SystemAndGlobalGenerators *self()
+    {
+        static SystemAndGlobalGenerators g;
+        Q_STATIC_ASSERT(sizeof(g) > sizeof(QRandomGenerator64));
+        return &g;
+    }
+
+    static QRandomGenerator64 *system()
+    {
+        // Though we never call the constructor, the system QRandomGenerator is
+        // properly initialized by the zero initialization performed in self().
+        // Though QRandomGenerator is has non-vacuous initialization, we
+        // consider it initialized because of the common initial sequence.
+        return reinterpret_cast<QRandomGenerator64 *>(&self()->system_);
+    }
+
+    static QRandomGenerator64 *globalNoInit()
+    {
+        // This function returns the pointer to the global QRandomGenerator,
+        // but does not initialize it. Only call it directly if you meant to do
+        // a pointer comparison.
+        return reinterpret_cast<QRandomGenerator64 *>(&self()->global_);
+    }
+
+    static void securelySeed(QRandomGenerator *rng)
+    {
+        // force reconstruction, just to be pedantic
+        new (rng) QRandomGenerator{System{}};
+
+        rng->type = MersenneTwister;
+        new (&rng->storage.engine()) RandomEngine(self()->sys);
+    }
+
+    struct PRNGLocker {
+        const bool locked;
+        PRNGLocker(const QRandomGenerator *that)
+            : locked(that == globalNoInit())
+        {
+            if (locked)
+                self()->globalPRNGMutex.lock();
+        }
+        ~PRNGLocker()
+        {
+            if (locked)
+                self()->globalPRNGMutex.unlock();
+        }
+    };
+};
+
+inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::self()
+{
+    return SystemAndGlobalGenerators::self()->sys;
 }
 
 /*!
@@ -1053,7 +1125,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     \sa QRandomGenerator::generate(), QRandomGenerator::generate64()
  */
 
-inline QRandomGenerator::Storage::Storage()
+Q_DECL_CONSTEXPR QRandomGenerator::Storage::Storage()
+    : dummy(0)
 {
     // nothing
 }
@@ -1065,30 +1138,33 @@ inline QRandomGenerator64::QRandomGenerator64(System s)
 
 QRandomGenerator64 *QRandomGenerator64::system()
 {
-    static QRandomGenerator64 system(System{});
-    return &system;
+    auto self = SystemAndGlobalGenerators::system();
+    Q_ASSERT(self->type == SystemRNG);
+    return self;
 }
 
 QRandomGenerator64 *QRandomGenerator64::global()
 {
-    PRNGLocker lock(nullptr);
-    static QRandomGenerator64 global(System{});
-    if (global.type == SystemRNG) {
-        // seed with the system CSPRNG and change the type
-        new (&global.storage.engine()) RandomEngine(static_cast<SystemGenerator &>(system()->storage.sys));
-        global.type = MersenneTwister;
-    }
+    auto self = SystemAndGlobalGenerators::globalNoInit();
 
-    return &global;
+    // Yes, this is a double-checked lock.
+    // We can return even if the type is not completely initialized yet:
+    // any thread trying to actually use the contents of the random engine
+    // will necessarily wait on the lock.
+    if (Q_LIKELY(self->type != SystemRNG))
+        return self;
+
+    SystemAndGlobalGenerators::PRNGLocker locker(self);
+    if (self->type == SystemRNG)
+        SystemAndGlobalGenerators::securelySeed(self);
+
+    return self;
 }
 
 QRandomGenerator64 QRandomGenerator64::securelySeeded()
 {
     QRandomGenerator64 result(System{});
-    result.type = MersenneTwister;
-
-    // seed with the system CSPRNG
-    new (&result.storage.engine()) RandomEngine(static_cast<SystemGenerator &>(system()->storage.sys));
+    SystemAndGlobalGenerators::securelySeed(&result);
     return result;
 }
 
@@ -1096,30 +1172,29 @@ QRandomGenerator64 QRandomGenerator64::securelySeeded()
 inline QRandomGenerator::QRandomGenerator(System)
     : type(SystemRNG)
 {
-    Q_STATIC_ASSERT(sizeof(storage) >= sizeof(SystemGenerator));
-    new (&storage) SystemGenerator();
+    // don't touch storage
 }
-
 
 QRandomGenerator::QRandomGenerator(const QRandomGenerator &other)
     : type(other.type)
 {
+    Q_ASSERT(this != system());
+    Q_ASSERT(this != SystemAndGlobalGenerators::globalNoInit());
+
     if (type != SystemRNG) {
-        PRNGLocker lock(&other);
+        SystemAndGlobalGenerators::PRNGLocker lock(&other);
         storage.engine() = other.storage.engine();
     }
 }
 
 QRandomGenerator &QRandomGenerator::operator=(const QRandomGenerator &other)
 {
-    if (this != &other) {
-        if (Q_UNLIKELY(this == system()) || Q_UNLIKELY(this == global()))
-            qFatal("Attempted to overwrite a QRandomGenerator to system() or global().");
+    if (Q_UNLIKELY(this == system()) || Q_UNLIKELY(this == SystemAndGlobalGenerators::globalNoInit()))
+        qFatal("Attempted to overwrite a QRandomGenerator to system() or global().");
 
-        if ((type = other.type) != SystemRNG) {
-            PRNGLocker lock(&other);
-            storage.engine() = other.storage.engine();
-        }
+    if ((type = other.type) != SystemRNG) {
+        SystemAndGlobalGenerators::PRNGLocker lock(&other);
+        storage.engine() = other.storage.engine();
     }
     return *this;
 }
@@ -1127,12 +1202,18 @@ QRandomGenerator &QRandomGenerator::operator=(const QRandomGenerator &other)
 QRandomGenerator::QRandomGenerator(std::seed_seq &sseq) Q_DECL_NOTHROW
     : type(MersenneTwister)
 {
+    Q_ASSERT(this != system());
+    Q_ASSERT(this != SystemAndGlobalGenerators::globalNoInit());
+
     new (&storage.engine()) RandomEngine(sseq);
 }
 
 QRandomGenerator::QRandomGenerator(const quint32 *begin, const quint32 *end)
     : type(MersenneTwister)
 {
+    Q_ASSERT(this != system());
+    Q_ASSERT(this != SystemAndGlobalGenerators::globalNoInit());
+
     std::seed_seq s(begin, end);
     new (&storage.engine()) RandomEngine(s);
 }
@@ -1142,7 +1223,7 @@ void QRandomGenerator::discard(unsigned long long z)
     if (Q_UNLIKELY(type == SystemRNG))
         return;
 
-    PRNGLocker lock(this);
+    SystemAndGlobalGenerators::PRNGLocker lock(this);
     storage.engine().discard(z);
 }
 
@@ -1154,6 +1235,7 @@ bool operator==(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
         return true;
 
     // Lock global() if either is it (otherwise this locking is a no-op)
+    using PRNGLocker = QRandomGenerator::SystemAndGlobalGenerators::PRNGLocker;
     PRNGLocker locker(&rng1 == QRandomGenerator::global() ? &rng1 : &rng2);
     return rng1.storage.engine() == rng2.storage.engine();
 }
@@ -1175,7 +1257,7 @@ void QRandomGenerator::_fillRange(void *buffer, void *bufferEnd)
     if (type == SystemRNG || Q_UNLIKELY(uint(qt_randomdevice_control) & (UseSystemRNG|SetRandomData)))
         return SystemGenerator::self().generate(begin, end);
 
-    PRNGLocker lock(this);
+    SystemAndGlobalGenerators::PRNGLocker lock(this);
     std::generate(begin, end, [this]() { return storage.engine()(); });
 }
 
