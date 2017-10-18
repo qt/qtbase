@@ -222,7 +222,7 @@ bool QComposeInputContext::checkComposeTable()
     int next = 1;
     do {
         // if we are at the end of the table, then we have nothing to do here
-        if (it + next != m_composeTable.end()) {
+        if (it + next != m_composeTable.constEnd()) {
             QComposeTableElement nextElem = *(it + next);
             if (isDuplicate(elem, nextElem)) {
                 elem = nextElem;
