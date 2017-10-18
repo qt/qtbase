@@ -1437,6 +1437,23 @@ void QHttpNetworkConnection::setConnectionType(ConnectionType type)
     d->connectionType = type;
 }
 
+Http2::ProtocolParameters QHttpNetworkConnection::http2Parameters() const
+{
+    Q_D(const QHttpNetworkConnection);
+    return d->http2Parameters;
+}
+
+void QHttpNetworkConnection::setHttp2Parameters(const Http2::ProtocolParameters &params)
+{
+    Q_D(QHttpNetworkConnection);
+    if (params.validate()) {
+        d->http2Parameters = params;
+    } else {
+        qCWarning(QT_HTTP2)
+            << "invalid HTTP/2 parameters, falling back to defaults instead";
+    }
+}
+
 // SSL support below
 #ifndef QT_NO_SSL
 void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config)

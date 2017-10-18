@@ -67,6 +67,7 @@
 #include <private/qhttpnetworkheader_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 #include <private/qhttpnetworkreply_p.h>
+#include <private/http2protocol_p.h>
 
 #include <private/qhttpnetworkconnectionchannel_p.h>
 
@@ -138,6 +139,9 @@ public:
 
     ConnectionType connectionType();
     void setConnectionType(ConnectionType type);
+
+    Http2::ProtocolParameters http2Parameters() const;
+    void setHttp2Parameters(const Http2::ProtocolParameters &params);
 
 #ifndef QT_NO_SSL
     void setSslConfiguration(const QSslConfiguration &config);
@@ -281,6 +285,8 @@ public:
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;
 #endif
+
+    Http2::ProtocolParameters http2Parameters;
 
     friend class QHttpNetworkConnectionChannel;
 };

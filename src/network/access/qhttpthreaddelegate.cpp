@@ -292,7 +292,6 @@ void QHttpThreadDelegate::startRequest()
     QHttpNetworkConnection::ConnectionType connectionType
         = httpRequest.isHTTP2Allowed() ? QHttpNetworkConnection::ConnectionTypeHTTP2
                                        : QHttpNetworkConnection::ConnectionTypeHTTP;
-
 #ifndef QT_NO_SSL
     if (ssl && !incomingSslConfiguration.data())
         incomingSslConfiguration.reset(new QSslConfiguration);
@@ -334,7 +333,11 @@ void QHttpThreadDelegate::startRequest()
         httpConnection = new QNetworkAccessCachedHttpConnection(urlCopy.host(), urlCopy.port(), ssl,
                                                                 connectionType,
                                                                 networkSession);
-#endif
+#endif // QT_NO_BEARERMANAGEMENT
+        if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
+            && http2Parameters.validate()) {
+            httpConnection->setHttp2Parameters(http2Parameters);
+        } // else we ignore invalid parameters and use our own defaults.
 #ifndef QT_NO_SSL
         // Set the QSslConfiguration from this QNetworkRequest.
         if (ssl)
@@ -359,7 +362,6 @@ void QHttpThreadDelegate::startRequest()
             }
         }
     }
-
 
     // Send the request to the connection
     httpReply = httpConnection->sendRequest(httpRequest);
