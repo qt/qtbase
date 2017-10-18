@@ -907,7 +907,9 @@ void QXcbWindow::hide()
             if (QWindow *childWindow = childWindowAt(enterWindow, cursorPos))
                 enterWindow = childWindow;
             const QPoint localPos = enterWindow->mapFromGlobal(cursorPos);
-            QWindowSystemInterface::handleEnterEvent(enterWindow, localPos, cursorPos);
+            QWindowSystemInterface::handleEnterEvent(enterWindow,
+                                                     localPos * QHighDpiScaling::factor(enterWindow),
+                                                     nativePos);
         }
     }
 }
