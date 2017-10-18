@@ -1828,6 +1828,7 @@ bool QNetworkReplyHttpImplPrivate::start(const QNetworkRequest &newHttpRequest)
 #endif
 }
 
+#if QT_CONFIG(bearermanagement)
 bool QNetworkReplyHttpImplPrivate::startWaitForSession(QSharedPointer<QNetworkSession> &session)
 {
     Q_Q(QNetworkReplyHttpImpl);
@@ -1853,6 +1854,7 @@ bool QNetworkReplyHttpImplPrivate::startWaitForSession(QSharedPointer<QNetworkSe
     QMetaObject::invokeMethod(q, "_q_finished", connection);
     return false;
 }
+#endif // QT_CONFIG(bearermanagement)
 
 void QNetworkReplyHttpImplPrivate::_q_startOperation()
 {

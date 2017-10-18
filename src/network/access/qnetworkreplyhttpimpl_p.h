@@ -160,7 +160,9 @@ signals:
 
 class QNetworkReplyHttpImplPrivate: public QNetworkReplyPrivate
 {
+#if QT_CONFIG(bearermanagement)
     bool startWaitForSession(QSharedPointer<QNetworkSession> &session);
+#endif
 
 public:
 
