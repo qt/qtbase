@@ -1211,10 +1211,13 @@ float QImageReader::gamma() const
     see if the image data is valid. read() may still return false
     after canRead() returns \c true, if the image data is corrupt.
 
+    \note A QMimeDatabase lookup is normally a better approach than this
+    function for identifying potentially non-image files or data.
+
     For images that support animation, canRead() returns \c false when
     all frames have been read.
 
-    \sa read(), supportedImageFormats()
+    \sa read(), supportedImageFormats(), QMimeDatabase
 */
 bool QImageReader::canRead() const
 {
