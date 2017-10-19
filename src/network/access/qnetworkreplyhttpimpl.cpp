@@ -1110,16 +1110,14 @@ QNetworkAccessManager::Operation QNetworkReplyHttpImplPrivate::getRedirectOperat
     // HTTP status code can be used to decide if we can redirect with a GET
     // operation or not. See http://www.ietf.org/rfc/rfc2616.txt [Sec 10.3] for
     // more details
-    Q_UNUSED(httpStatus);
+
+    // We MUST keep using the verb that was used originally when being redirected with 307 or 308.
+    if (httpStatus == 307 || httpStatus == 308)
+        return currentOp;
 
     switch (currentOp) {
     case QNetworkAccessManager::HeadOperation:
         return QNetworkAccessManager::HeadOperation;
-    case QNetworkAccessManager::PostOperation:
-        // We MUST keep using POST when being redirected with 307 or 308.
-        if (statusCode == 307 || statusCode == 308)
-            return QNetworkAccessManager::PostOperation;
-        break;
     default:
         break;
     }
