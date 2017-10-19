@@ -2,8 +2,10 @@ TARGET = qdirect2d
 
 QT += \
     core-private gui-private \
-    eventdispatcher_support-private accessibility_support-private \
+    eventdispatcher_support-private \
     fontdatabase_support-private theme_support-private
+
+qtConfig(accessibility): QT += accessibility_support-private
 
 LIBS += -ldwmapi -ld2d1 -ld3d11 -ldwrite -lVersion -lgdi32
 
