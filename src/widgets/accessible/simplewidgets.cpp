@@ -170,7 +170,7 @@ QAccessible::State QAccessibleButton::state() const
     if (b->isChecked())
         state.checked = true;
 #if QT_CONFIG(checkbox)
-    else if (cb && cb->checkState() == Qt::PartiallyChecked)
+    if (cb && cb->checkState() == Qt::PartiallyChecked)
         state.checkStateMixed = true;
 #endif
     if (b->isDown())
