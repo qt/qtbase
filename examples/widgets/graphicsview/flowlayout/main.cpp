@@ -47,7 +47,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+//! [1]
 #include "window.h"
 
 #include <QApplication>
@@ -68,3 +68,4 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
+//! [1]
