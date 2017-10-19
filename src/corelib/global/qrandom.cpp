@@ -152,15 +152,15 @@ class SystemRandom
 {
     static QBasicAtomicInt s_fdp1;  // "file descriptor plus 1"
     static int openDevice();
+    static __attribute__((destructor)) void closeDevice(); // assume GCC or a compiler able to understand GCC extensions
     SystemRandom() {}
-    ~SystemRandom();
 public:
     enum { EfficientBufferFill = true };
     static qssize_t fillBuffer(void *buffer, qssize_t count);
 };
 QBasicAtomicInt SystemRandom::s_fdp1 = Q_BASIC_ATOMIC_INITIALIZER(0);
 
-SystemRandom::~SystemRandom()
+void SystemRandom::closeDevice()
 {
     int fd = s_fdp1.loadAcquire() - 1;
     if (fd >= 0)
