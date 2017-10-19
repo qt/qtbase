@@ -295,6 +295,9 @@ public:
     QPlatformMenu *createPlatformMenu();
     void setPlatformMenu(QPlatformMenu *menu);
     void syncPlatformMenu();
+    void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item);
+    QPlatformMenuItem *insertActionInPlatformMenu(const QAction *action, QPlatformMenuItem *beforeItem);
+
 #ifdef Q_OS_OSX
     void moveWidgetToPlatformItem(QWidget *w, QPlatformMenuItem* item);
 #endif
