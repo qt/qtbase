@@ -2783,13 +2783,13 @@ Q_GLOBAL_STATIC(NativeGestureEventDataHash, g_nativeGestureEventDataHash)
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
     \since 5.10
 */
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *device, const QPointF &localPos, const QPointF &windowPos,
                                          const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
     : QInputEvent(QEvent::NativeGesture), mGestureType(type),
       mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
       mSequenceId(sequenceId), mIntValue(intValue)
 {
-    g_nativeGestureEventDataHash->insert(this, dev);
+    g_nativeGestureEventDataHash->insert(this, device);
 }
 
 QNativeGestureEvent::~QNativeGestureEvent()
