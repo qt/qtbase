@@ -14,6 +14,7 @@ SOURCES += main.mm \
     qcocoaeventdispatcher.mm \
     qcocoaapplicationdelegate.mm \
     qcocoaapplication.mm \
+    qcocoansmenu.mm \
     qcocoamenu.mm \
     qcocoamenuitem.mm \
     qcocoamenubar.mm \
@@ -47,6 +48,7 @@ HEADERS += qcocoaintegration.h \
     qcocoaeventdispatcher.h \
     qcocoaapplicationdelegate.h \
     qcocoaapplication.h \
+    qcocoansmenu.h \
     qcocoamenu.h \
     qcocoamenuitem.h \
     qcocoamenubar.h \

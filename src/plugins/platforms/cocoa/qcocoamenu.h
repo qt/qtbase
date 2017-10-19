@@ -45,6 +45,8 @@
 #include <qpa/qplatformmenu.h>
 #include "qcocoamenuitem.h"
 
+Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaNSMenu));
+
 QT_BEGIN_NAMESPACE
 
 class QCocoaMenuBar;
@@ -74,8 +76,7 @@ public:
     void setMinimumWidth(int width) override;
     void setFont(const QFont &font) override;
 
-    inline NSMenu *nsMenu() const
-        { return m_nativeMenu; }
+    NSMenu *nsMenu() const;
 
     inline bool isVisible() const { return m_visible; }
 
@@ -101,7 +102,7 @@ private:
     void scheduleUpdate();
 
     QList<QCocoaMenuItem *> m_menuItems;
-    NSMenu *m_nativeMenu;
+    QT_MANGLE_NAMESPACE(QCocoaNSMenu) *m_nativeMenu;
     NSMenuItem *m_attachedItem;
     int m_updateTimer;
     bool m_enabled:1;
