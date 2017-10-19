@@ -152,7 +152,11 @@ class SystemRandom
 {
     static QBasicAtomicInt s_fdp1;  // "file descriptor plus 1"
     static int openDevice();
-    static __attribute__((destructor)) void closeDevice(); // assume GCC or a compiler able to understand GCC extensions
+#ifdef Q_CC_GNU
+     // If it's not GCC or GCC-like, then we'll leak the file descriptor
+    __attribute__((destructor))
+#endif
+    static void closeDevice();
     SystemRandom() {}
 public:
     enum { EfficientBufferFill = true };
