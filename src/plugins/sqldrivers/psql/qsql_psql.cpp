@@ -187,7 +187,7 @@ public:
 void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
 {
     QString query;
-    if (pro >= QPSQLDriver::Version73) {
+    if (pro >= QPSQLDriver::Version7_3) {
         query = QString::fromLatin1("select pg_class.relname, pg_namespace.nspname from pg_class "
                   "left join pg_namespace on (pg_class.relnamespace = pg_namespace.oid) "
                   "where (pg_class.relkind = '%1') and (pg_class.relname !~ '^Inv') "
@@ -525,7 +525,7 @@ int QPSQLResult::numRowsAffected()
 QVariant QPSQLResult::lastInsertId() const
 {
     Q_D(const QPSQLResult);
-    if (d->drv_d_func()->pro >= QPSQLDriver::Version81) {
+    if (d->drv_d_func()->pro >= QPSQLDriver::Version8_1) {
         QSqlQuery qry(driver()->createResult());
         // Most recent sequence value obtained from nextval
         if (qry.exec(QLatin1String("SELECT lastval();")) && qry.next())
@@ -697,7 +697,7 @@ void QPSQLDriverPrivate::detectBackslashEscape()
 {
     // standard_conforming_strings option introduced in 8.2
     // http://www.postgresql.org/docs/8.2/static/runtime-config-compatible.html
-    if (pro < QPSQLDriver::Version82) {
+    if (pro < QPSQLDriver::Version8_2) {
         hasBackslashEscape = true;
     } else {
         hasBackslashEscape = false;
@@ -719,11 +719,11 @@ static QPSQLDriver::Protocol qMakePSQLVersion(int vMaj, int vMin)
     {
         switch (vMin) {
         case 1:
-            return QPSQLDriver::Version71;
+            return QPSQLDriver::Version7_1;
         case 3:
-            return QPSQLDriver::Version73;
+            return QPSQLDriver::Version7_3;
         case 4:
-            return QPSQLDriver::Version74;
+            return QPSQLDriver::Version7_4;
         default:
             return QPSQLDriver::Version7;
         }
@@ -733,24 +733,68 @@ static QPSQLDriver::Protocol qMakePSQLVersion(int vMaj, int vMin)
     {
         switch (vMin) {
         case 1:
-            return QPSQLDriver::Version81;
+            return QPSQLDriver::Version8_1;
         case 2:
-            return QPSQLDriver::Version82;
+            return QPSQLDriver::Version8_2;
         case 3:
-            return QPSQLDriver::Version83;
+            return QPSQLDriver::Version8_3;
         case 4:
-            return QPSQLDriver::Version84;
+            return QPSQLDriver::Version8_4;
         default:
             return QPSQLDriver::Version8;
         }
         break;
     }
     case 9:
-        return QPSQLDriver::Version9;
-        break;
-    default:
+    {
+        switch (vMin) {
+        case 1:
+            return QPSQLDriver::Version9_1;
+        case 2:
+            return QPSQLDriver::Version9_2;
+        case 3:
+            return QPSQLDriver::Version9_3;
+        case 4:
+            return QPSQLDriver::Version9_4;
+        case 5:
+            return QPSQLDriver::Version9_5;
+        case 6:
+            return QPSQLDriver::Version9_6;
+        default:
+            return QPSQLDriver::Version9;
+        }
         break;
     }
+    case 10:
+        return QPSQLDriver::Version10;
+    default:
+        if (vMaj > 10)
+            return QPSQLDriver::UnknownLaterVersion;
+        break;
+    }
+    return QPSQLDriver::VersionUnknown;
+}
+
+static QPSQLDriver::Protocol qFindPSQLVersion(const QString &versionString)
+{
+    const QRegExp rx(QStringLiteral("(\\d+)(?:\\.(\\d+))?"));
+    if (rx.indexIn(versionString) != -1) {
+        // Beginning with PostgreSQL version 10, a major release is indicated by
+        // increasing the first part of the version, e.g. 10 to 11.
+        // Before version 10, a major release was indicated by increasing either
+        // the first or second part of the version number, e.g. 9.5 to 9.6.
+        int vMaj = rx.cap(1).toInt();
+        int vMin;
+        if (vMaj >= 10) {
+            vMin = 0;
+        } else {
+            if (rx.cap(2).isEmpty())
+                return QPSQLDriver::VersionUnknown;
+            vMin = rx.cap(2).toInt();
+        }
+        return qMakePSQLVersion(vMaj, vMin);
+    }
+
     return QPSQLDriver::VersionUnknown;
 }
 
@@ -760,49 +804,38 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
     PGresult* result = exec("select version()");
     int status = PQresultStatus(result);
     if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK) {
-        QString val = QString::fromLatin1(PQgetvalue(result, 0, 0));
-
-        QRegExp rx(QLatin1String("(\\d+)\\.(\\d+)"));
-        rx.setMinimal(true); // enforce non-greedy RegExp
-
-        if (rx.indexIn(val) != -1) {
-            int vMaj = rx.cap(1).toInt();
-            int vMin = rx.cap(2).toInt();
-            serverVersion = qMakePSQLVersion(vMaj, vMin);
-#if defined(PG_MAJORVERSION)
-            if (rx.indexIn(QLatin1String(PG_MAJORVERSION)) != -1)
-#elif defined(PG_VERSION)
-            if (rx.indexIn(QLatin1String(PG_VERSION)) != -1)
-#else
-            if (0)
-#endif
-            {
-                vMaj = rx.cap(1).toInt();
-                vMin = rx.cap(2).toInt();
-                QPSQLDriver::Protocol clientVersion = qMakePSQLVersion(vMaj, vMin);
-
-                if (serverVersion >= QPSQLDriver::Version9 && clientVersion < QPSQLDriver::Version9) {
-                    //Client version before QPSQLDriver::Version9 only supports escape mode for bytea type,
-                    //but bytea format is set to hex by default in PSQL 9 and above. So need to force the
-                    //server use the old escape mode when connects to the new server with old client library.
-                    PQclear(result);
-                    result = exec("SET bytea_output=escape; ");
-                    status = PQresultStatus(result);
-                } else if (serverVersion == QPSQLDriver::VersionUnknown) {
-                    serverVersion = clientVersion;
-                    if (serverVersion != QPSQLDriver::VersionUnknown)
-                        qWarning("The server version of this PostgreSQL is unknown, falling back to the client version.");
-                }
-            }
-        }
+        serverVersion = qFindPSQLVersion(
+            QString::fromLatin1(PQgetvalue(result, 0, 0)));
     }
     PQclear(result);
 
-    //keep the old behavior unchanged
+    QPSQLDriver::Protocol clientVersion =
+#if defined(PG_MAJORVERSION)
+        qFindPSQLVersion(QLatin1String(PG_MAJORVERSION));
+#elif defined(PG_VERSION)
+        qFindPSQLVersion(QLatin1String(PG_VERSION));
+#else
+        QPSQLDriver::VersionUnknown;
+#endif
+
+    if (serverVersion >= QPSQLDriver::Version9 && clientVersion < QPSQLDriver::Version9) {
+        // Client version before QPSQLDriver::Version9 only supports escape mode for bytea type,
+        // but bytea format is set to hex by default in PSQL 9 and above. So need to force the
+        // server use the old escape mode when connects to the new server with old client library.
+        result = exec("SET bytea_output=escape; ");
+        status = PQresultStatus(result);
+        PQclear(result);
+    } else if (serverVersion == QPSQLDriver::VersionUnknown) {
+        serverVersion = clientVersion;
+        if (serverVersion != QPSQLDriver::VersionUnknown)
+            qWarning("The server version of this PostgreSQL is unknown, falling back to the client version.");
+    }
+
+    // Keep the old behavior unchanged
     if (serverVersion == QPSQLDriver::VersionUnknown)
         serverVersion = QPSQLDriver::Version6;
 
-    if (serverVersion < QPSQLDriver::Version71) {
+    if (serverVersion < QPSQLDriver::Version7_1) {
         qWarning("This version of PostgreSQL is not supported and may not work.");
     }
 
@@ -852,7 +885,7 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
         return true;
     case PreparedQueries:
     case PositionalPlaceholders:
-        return d->pro >= QPSQLDriver::Version82;
+        return d->pro >= QPSQLDriver::Version8_2;
     case BatchOperations:
     case NamedPlaceholders:
     case SimpleLocking:
@@ -861,7 +894,7 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
     case CancelQuery:
         return false;
     case BLOB:
-        return d->pro >= QPSQLDriver::Version71;
+        return d->pro >= QPSQLDriver::Version7_1;
     case Unicode:
         return d->isUtf8;
     }
@@ -988,12 +1021,7 @@ bool QPSQLDriver::commitTransaction()
     // This hack is used to tell if the transaction has succeeded for the protocol versions of
     // PostgreSQL below. For 7.x and other protocol versions we are left in the dark.
     // This hack can dissapear once there is an API to query this sort of information.
-    if (d->pro == QPSQLDriver::Version8 ||
-        d->pro == QPSQLDriver::Version81 ||
-        d->pro == QPSQLDriver::Version82 ||
-        d->pro == QPSQLDriver::Version83 ||
-        d->pro == QPSQLDriver::Version84 ||
-        d->pro == QPSQLDriver::Version9) {
+    if (d->pro >= QPSQLDriver::Version8) {
         transaction_failed = qstrcmp(PQcmdStatus(res), "ROLLBACK") == 0;
     }
 
@@ -1080,8 +1108,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     else
         schema = std::move(schema).toLower();
 
-    switch(d->pro) {
-    case QPSQLDriver::Version6:
+    if (d->pro == QPSQLDriver::Version6) {
         stmt = QLatin1String("select pg_att1.attname, int(pg_att1.atttypid), pg_cl.relname "
                 "from pg_attribute pg_att1, pg_attribute pg_att2, pg_class pg_cl, pg_index pg_ind "
                 "where pg_cl.relname = '%1_pkey' "
@@ -1090,9 +1117,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
                 "and pg_att1.attrelid = pg_ind.indrelid "
                 "and pg_att1.attnum = pg_ind.indkey[pg_att2.attnum-1] "
                 "order by pg_att2.attnum");
-        break;
-    case QPSQLDriver::Version7:
-    case QPSQLDriver::Version71:
+    } else if (d->pro == QPSQLDriver::Version7 || d->pro == QPSQLDriver::Version7_1) {
         stmt = QLatin1String("select pg_att1.attname, pg_att1.atttypid::int, pg_cl.relname "
                 "from pg_attribute pg_att1, pg_attribute pg_att2, pg_class pg_cl, pg_index pg_ind "
                 "where pg_cl.relname = '%1_pkey' "
@@ -1101,15 +1126,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
                 "and pg_att1.attrelid = pg_ind.indrelid "
                 "and pg_att1.attnum = pg_ind.indkey[pg_att2.attnum-1] "
                 "order by pg_att2.attnum");
-        break;
-    case QPSQLDriver::Version73:
-    case QPSQLDriver::Version74:
-    case QPSQLDriver::Version8:
-    case QPSQLDriver::Version81:
-    case QPSQLDriver::Version82:
-    case QPSQLDriver::Version83:
-    case QPSQLDriver::Version84:
-    case QPSQLDriver::Version9:
+    } else if (d->pro >= QPSQLDriver::Version7_3) {
         stmt = QLatin1String("SELECT pg_attribute.attname, pg_attribute.atttypid::int, "
                 "pg_class.relname "
                 "FROM pg_attribute, pg_class "
@@ -1124,10 +1141,8 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
         else
             stmt = stmt.arg(QString::fromLatin1("pg_class.relnamespace = (select oid from "
                    "pg_namespace where pg_namespace.nspname = '%1') AND ").arg(schema));
-        break;
-    case QPSQLDriver::VersionUnknown:
-        qFatal("PSQL version is unknown");
-        break;
+    } else {
+        qFatal("QPSQLDriver::primaryIndex(tablename): unknown PSQL version, query statement not set");
     }
 
     i.exec(stmt.arg(tbl));
@@ -1161,8 +1176,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
         schema = std::move(schema).toLower();
 
     QString stmt;
-    switch(d->pro) {
-    case QPSQLDriver::Version6:
+    if (d->pro == QPSQLDriver::Version6) {
         stmt = QLatin1String("select pg_attribute.attname, int(pg_attribute.atttypid), "
                 "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
                 "int(pg_attribute.attrelid), pg_attribute.attnum "
@@ -1170,8 +1184,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "where pg_class.relname = '%1' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid ");
-        break;
-    case QPSQLDriver::Version7:
+    } else if (d->pro == QPSQLDriver::Version7) {
         stmt = QLatin1String("select pg_attribute.attname, pg_attribute.atttypid::int, "
                 "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
                 "pg_attribute.attrelid::int, pg_attribute.attnum "
@@ -1179,8 +1192,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "where pg_class.relname = '%1' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid ");
-        break;
-    case QPSQLDriver::Version71:
+    } else if (d->pro == QPSQLDriver::Version7_1) {
         stmt = QLatin1String("select pg_attribute.attname, pg_attribute.atttypid::int, "
                 "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
                 "pg_attrdef.adsrc "
@@ -1191,15 +1203,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid "
                 "order by pg_attribute.attnum ");
-        break;
-    case QPSQLDriver::Version73:
-    case QPSQLDriver::Version74:
-    case QPSQLDriver::Version8:
-    case QPSQLDriver::Version81:
-    case QPSQLDriver::Version82:
-    case QPSQLDriver::Version83:
-    case QPSQLDriver::Version84:
-    case QPSQLDriver::Version9:
+    } else if (d->pro >= QPSQLDriver::Version7_3) {
         stmt = QLatin1String("select pg_attribute.attname, pg_attribute.atttypid::int, "
                 "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
                 "pg_attrdef.adsrc "
@@ -1217,15 +1221,13 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
         else
             stmt = stmt.arg(QString::fromLatin1("pg_class.relnamespace = (select oid from "
                    "pg_namespace where pg_namespace.nspname = '%1')").arg(schema));
-        break;
-    case QPSQLDriver::VersionUnknown:
-        qFatal("PSQL version is unknown");
-        break;
+    } else {
+        qFatal("QPSQLDriver::record(tablename): unknown PSQL version, query statement not set");
     }
 
     QSqlQuery query(createResult());
     query.exec(stmt.arg(tbl));
-    if (d->pro >= QPSQLDriver::Version71) {
+    if (d->pro >= QPSQLDriver::Version7_1) {
         while (query.next()) {
             int len = query.value(3).toInt();
             int precision = query.value(4).toInt();
