@@ -197,12 +197,25 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
 
     CHECK_MENU_CLASS(menu);
 
-    // Change the private unicode keys to the ones used in setting the "Key Equivalents"
-    NSString *characters = qt_mac_removePrivateUnicode([event characters]);
     // Interested only in Shift, Cmd, Ctrl & Alt Keys, so ignoring masks like, Caps lock, Num Lock ...
-    const NSUInteger mask = NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask;
-    if (NSMenuItem *menuItem = [self findItem:menu forKey:characters forModifiers:([event modifierFlags] & mask)]) {
-        if (!menuItem.target) {
+    static const NSUInteger mask = NSShiftKeyMask | NSControlKeyMask | NSCommandKeyMask | NSAlternateKeyMask;
+
+    // Change the private unicode keys to the ones used in setting the "Key Equivalents"
+    NSString *characters = qt_mac_removePrivateUnicode(event.charactersIgnoringModifiers);
+    const auto modifiers = event.modifierFlags & mask;
+    NSMenuItem *keyEquivalentItem = [self findItemInMenu:menu
+                                                  forKey:characters
+                                               modifiers:modifiers];
+    if (!keyEquivalentItem) {
+        // Maybe the modified character is what we're looking for after all
+        characters = qt_mac_removePrivateUnicode(event.characters);
+        keyEquivalentItem = [self findItemInMenu:menu
+                                          forKey:characters
+                                       modifiers:modifiers];
+    }
+
+    if (keyEquivalentItem) {
+        if (!keyEquivalentItem.target) {
             // This item was modified by QCocoaMenuBar::redirectKnownMenuItemsToFirstResponder
             // and it looks like we're running a modal session for NSOpenPanel/NSSavePanel.
             // QCocoaFileDialogHelper is actually the only place we use this and we run NSOpenPanel modal
@@ -211,7 +224,7 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
             // and do not touch the Qt's focusObject (which is different from some native view
             // having a focus inside NSSave/OpenPanel.
             *target = nil;
-            *action = menuItem.action;
+            *action = keyEquivalentItem.action;
             return YES;
         }
 
@@ -249,25 +262,32 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
             }
         }
     }
+
     return NO;
 }
 
-- (NSMenuItem *)findItem:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier
+- (NSMenuItem *)findItemInMenu:(NSMenu *)menu
+                        forKey:(NSString *)key
+                     modifiers:(NSUInteger)modifiers
 {
-    for (NSMenuItem *item in [menu itemArray]) {
-        if (![item isEnabled] || [item isHidden] || [item isSeparatorItem])
-            continue;
-        if ([item hasSubmenu]) {
-            if (NSMenuItem *nested = [self findItem:[item submenu] forKey:key forModifiers:modifier])
-                return nested;
-        }
+    // Find an item in 'menu' that has the same key equivalent as specified by
+    // 'key' and 'modifiers'. We ignore disabled, hidden and separator items.
+    // In a similar fashion, we don't need to recurse into submenus because their
+    // delegate will have [menuHasKeyEquivalent:...] invoked at some point.
 
-        NSString *menuKey = [item keyEquivalent];
-        if (menuKey
-            && NSOrderedSame == [menuKey compare:key]
-            && modifier == [item keyEquivalentModifierMask])
-            return item;
+    for (NSMenuItem *item in menu.itemArray) {
+        if (!item.enabled || item.hidden || item.separatorItem)
+            continue;
+
+        if (item.hasSubmenu)
+            continue;
+
+        NSString *menuKey = item.keyEquivalent;
+        if (menuKey && NSOrderedSame == [menuKey compare:key]
+            && modifiers == item.keyEquivalentModifierMask)
+                return item;
     }
+
     return nil;
 }
 

@@ -64,7 +64,9 @@ typedef QPointer<QCocoaMenu> QCocoaMenuPointer;
 
 + (instancetype)sharedMenuDelegate;
 
-- (NSMenuItem *)findItem:(NSMenu *)menu forKey:(NSString *)key forModifiers:(NSUInteger)modifier;
+- (NSMenuItem *)findItemInMenu:(NSMenu *)menu
+                        forKey:(NSString *)key
+                     modifiers:(NSUInteger)modifiers;
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item; // NSMenuValidation
 
