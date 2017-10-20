@@ -13,5 +13,6 @@
     }
 
     $$add_plist: \
-        QMAKE_LFLAGS += -Wl,-sectcreate,__TEXT,__info_plist,$$shell_quote($$QMAKE_INFO_PLIST)
+        QMAKE_LFLAGS += -Wl,-sectcreate,__TEXT,__info_plist,$$shell_quote( \
+            $$relative_path($$absolute_path($$QMAKE_INFO_PLIST, $$_PRO_FILE_PWD_), $$OUT_PWD))
 }
