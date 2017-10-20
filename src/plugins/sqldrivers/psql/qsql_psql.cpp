@@ -843,7 +843,7 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
     if (serverVersion == QPSQLDriver::VersionUnknown)
         serverVersion = QPSQLDriver::Version6;
 
-    if (serverVersion < QPSQLDriver::Version7_1) {
+    if (serverVersion < QPSQLDriver::Version7_3) {
         qWarning("This version of PostgreSQL is not supported and may not work.");
     }
 
