@@ -1994,6 +1994,16 @@ void tst_QNetworkReply::getErrors_data()
                                          << int(QNetworkReply::AuthenticationRequiredError) << 401 << false;
 }
 
+static QByteArray msgGetErrors(int waitResult, const QNetworkReplyPtr &reply)
+{
+    QByteArray result ="waitResult=" + QByteArray::number(waitResult);
+    if (reply->isFinished())
+        result += ", finished";
+    if (reply->error() != QNetworkReply::NoError)
+        result += ", error: " + QByteArray::number(int(reply->error()));
+    return result;
+}
+
 void tst_QNetworkReply::getErrors()
 {
     QFETCH(QString, url);
@@ -2023,7 +2033,8 @@ void tst_QNetworkReply::getErrors()
         QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     // now run the request:
-    QVERIFY(waitForFinish(reply) != Timeout);
+    const int waitResult = waitForFinish(reply);
+    QVERIFY2(waitResult != Timeout, msgGetErrors(waitResult, reply));
 
     QFETCH(int, error);
     QEXPECT_FAIL("ftp-is-dir", "QFtp cannot provide enough detail", Abort);
