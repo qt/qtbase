@@ -675,7 +675,9 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
 
         widget.printers->addItems(printers);
 
-        const int idx = printers.indexOf(defaultPrinter);
+        const QString selectedPrinter = prn && !prn->printerName().isEmpty() ? prn->printerName() : defaultPrinter;
+        const int idx = printers.indexOf(selectedPrinter);
+
         if (idx >= 0)
             currentPrinterIndex = idx;
     }
