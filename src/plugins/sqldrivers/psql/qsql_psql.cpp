@@ -181,6 +181,7 @@ public:
     QPSQLDriver::Protocol getPSQLVersion();
     bool setEncodingUtf8();
     void setDatestyle();
+    void setByteaOutput();
     void detectBackslashEscape();
 };
 
@@ -693,6 +694,20 @@ void QPSQLDriverPrivate::setDatestyle()
     PQclear(result);
 }
 
+void QPSQLDriverPrivate::setByteaOutput()
+{
+    if (pro >= QPSQLDriver::Version9) {
+        // Server version before QPSQLDriver::Version9 only supports escape mode for bytea type,
+        // but bytea format is set to hex by default in PSQL 9 and above. So need to force the
+        // server to use the old escape mode when connects to the new server.
+        PGresult *result = exec("SET bytea_output TO escape");
+        int status = PQresultStatus(result);
+        if (status != PGRES_COMMAND_OK)
+            qWarning("%s", PQerrorMessage(connection));
+        PQclear(result);
+    }
+}
+
 void QPSQLDriverPrivate::detectBackslashEscape()
 {
     // standard_conforming_strings option introduced in 8.2
@@ -818,14 +833,7 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
         QPSQLDriver::VersionUnknown;
 #endif
 
-    if (serverVersion >= QPSQLDriver::Version9 && clientVersion < QPSQLDriver::Version9) {
-        // Client version before QPSQLDriver::Version9 only supports escape mode for bytea type,
-        // but bytea format is set to hex by default in PSQL 9 and above. So need to force the
-        // server use the old escape mode when connects to the new server with old client library.
-        result = exec("SET bytea_output=escape; ");
-        status = PQresultStatus(result);
-        PQclear(result);
-    } else if (serverVersion == QPSQLDriver::VersionUnknown) {
+    if (serverVersion == QPSQLDriver::VersionUnknown) {
         serverVersion = clientVersion;
         if (serverVersion != QPSQLDriver::VersionUnknown)
             qWarning("The server version of this PostgreSQL is unknown, falling back to the client version.");
@@ -957,6 +965,7 @@ bool QPSQLDriver::open(const QString & db,
     d->detectBackslashEscape();
     d->isUtf8 = d->setEncodingUtf8();
     d->setDatestyle();
+    d->setByteaOutput();
 
     setOpen(true);
     setOpenError(false);
