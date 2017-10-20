@@ -189,6 +189,7 @@ public:
 
     QMainWindowLayout *mainWindowLayout() const;
 
+    QSize restoredSizeHint;
     const int *sep;
     mutable QVector<QWidget*> separatorWidgets;
     QInternal::DockPosition dockPos;
