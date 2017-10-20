@@ -98,6 +98,8 @@ public:
 
     void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
 
+    void syncMenuItem_helper(QPlatformMenuItem *menuItem, bool menubarUpdate);
+
 private:
     QCocoaMenuItem *itemOrNull(int index) const;
     void insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem);

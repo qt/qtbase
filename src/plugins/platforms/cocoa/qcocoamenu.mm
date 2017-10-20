@@ -435,6 +435,11 @@ void QCocoaMenu::timerEvent(QTimerEvent *e)
 
 void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 {
+    syncMenuItem_helper(menuItem, false /*menubarUpdate*/);
+}
+
+void QCocoaMenu::syncMenuItem_helper(QPlatformMenuItem *menuItem, bool menubarUpdate)
+{
     QMacAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
     if (!m_menuItems.contains(cocoaItem)) {
@@ -444,8 +449,9 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 
     const bool wasMerged = cocoaItem->isMerged();
     NSMenuItem *oldItem = cocoaItem->nsItem();
+    NSMenuItem *syncedItem = cocoaItem->sync();
 
-    if (cocoaItem->sync() != oldItem) {
+    if (syncedItem != oldItem) {
         // native item was changed for some reason
         if (oldItem) {
             if (wasMerged) {
@@ -463,6 +469,14 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
         // when an item's enabled state changes after menuWillOpen:
         scheduleUpdate();
     }
+
+    // This may be a good moment to attach this item's eventual submenu to the
+    // synced item, but only on the condition we're all currently hooked to the
+    // menunbar. A good indicator of this being the right moment is knowing that
+    // we got called from QCocoaMenuBar::updateMenuBarImmediately().
+    if (menubarUpdate)
+        if (QCocoaMenu *submenu = cocoaItem->menu())
+            submenu->setAttachedItem(syncedItem);
 }
 
 void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
