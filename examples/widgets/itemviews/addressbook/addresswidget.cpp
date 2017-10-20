@@ -192,6 +192,12 @@ void AddressWidget::setupTabs()
             &QItemSelectionModel::selectionChanged,
             this, &AddressWidget::selectionChanged);
 
+        connect(this, &QTabWidget::currentChanged, this, [this](int tabIndex) {
+            auto *tableView = qobject_cast<QTableView *>(widget(tabIndex));
+            if (tableView)
+                emit selectionChanged(tableView->selectionModel()->selection());
+        });
+
         addTab(tableView, str);
     }
 }

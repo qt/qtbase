@@ -220,11 +220,12 @@
     The QItemSelectionModel class provides a
     \l{QItemSelectionModel::selectionChanged()}{selectionChanged}
     signal that is connected to \c{AddressWidget}'s
-    \c selectionChanged() signal. This signal to signal connection
-    is necessary to enable the \uicontrol{Edit Entry...} and
-    \uicontrol{Remove Entry} actions in \c MainWindow's Tools menu. This
-    connection is further explained in \c MainWindow's
-    implementation.
+    \c selectionChanged() signal. We also connect
+    QTabWidget::currentChanged() signal to the lambda expression which
+    emits \c{AddressWidget}'s \c selectionChanged() as well. These
+    connections are necessary to enable the \uicontrol{Edit Entry...} and
+    \uicontrol{Remove Entry} actions in \c MainWindow's Tools menu.
+    It is further explained in \c MainWindow's implementation.
 
     Each table view in the address book is added as a tab to the
     QTabWidget with the relevant label, obtained from the QStringList
