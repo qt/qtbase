@@ -1248,7 +1248,7 @@ void tst_QSqlDatabase::psql_schemas()
     QString table = schemaName + '.' + qTableName("qtesttable", __FILE__, db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + table + " (id int primary key, name varchar(20))"));
 
-    QVERIFY(db.tables().contains(table));
+    QVERIFY(db.tables().contains(table, Qt::CaseInsensitive));
 
     QSqlRecord rec = db.record(table);
     QCOMPARE(rec.count(), 2);
