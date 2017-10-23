@@ -88,7 +88,8 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
     if (size.second > maxHeaderListSize)
         return HttpHeader(); // Bad, we cannot send this request ...
 
-    for (const auto &field : request.header()) {
+    const auto requestHeader = request.header();
+    for (const auto &field : requestHeader) {
         const HeaderSize delta = entry_size(field.first, field.second);
         if (!delta.first) // Overflow???
             break;
