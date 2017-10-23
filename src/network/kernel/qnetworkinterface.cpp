@@ -59,19 +59,15 @@ static QList<QNetworkInterfacePrivate *> postProcess(QList<QNetworkInterfacePriv
     // The math is:
     //    broadcast = IP | ~netmask
 
-    QList<QNetworkInterfacePrivate *>::Iterator it = list.begin();
-    const QList<QNetworkInterfacePrivate *>::Iterator end = list.end();
-    for ( ; it != end; ++it) {
-        QList<QNetworkAddressEntry>::Iterator addr_it = (*it)->addressEntries.begin();
-        const QList<QNetworkAddressEntry>::Iterator addr_end = (*it)->addressEntries.end();
-        for ( ; addr_it != addr_end; ++addr_it) {
-            if (addr_it->ip().protocol() != QAbstractSocket::IPv4Protocol)
+    for (QNetworkInterfacePrivate *interface : list) {
+        for (QNetworkAddressEntry &address : interface->addressEntries) {
+            if (address.ip().protocol() != QAbstractSocket::IPv4Protocol)
                 continue;
 
-            if (!addr_it->netmask().isNull() && addr_it->broadcast().isNull()) {
-                QHostAddress bcast = addr_it->ip();
-                bcast = QHostAddress(bcast.toIPv4Address() | ~addr_it->netmask().toIPv4Address());
-                addr_it->setBroadcast(bcast);
+            if (!address.netmask().isNull() && address.broadcast().isNull()) {
+                QHostAddress bcast = address.ip();
+                bcast = QHostAddress(bcast.toIPv4Address() | ~address.netmask().toIPv4Address());
+                address.setBroadcast(bcast);
             }
         }
     }
