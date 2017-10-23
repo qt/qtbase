@@ -2495,7 +2495,6 @@ void QTreeView::scrollContentsBy(int dx, int dy)
         int previousScrollbarValue = currentScrollbarValue + dy; // -(-dy)
         int currentViewIndex = currentScrollbarValue; // the first visible item
         int previousViewIndex = previousScrollbarValue;
-        const QVector<QTreeViewItem> viewItems = d->viewItems;
         dy = 0;
         if (previousViewIndex < currentViewIndex) { // scrolling down
             for (int i = previousViewIndex; i < currentViewIndex; ++i) {
