@@ -67,18 +67,6 @@ HeaderSize header_size(const HttpHeader &header)
 
 struct BitPattern
 {
-    BitPattern()
-        : value(),
-          bitLength()
-    {
-    }
-
-    BitPattern(uchar v, uchar len)
-        : value(v),
-          bitLength(len)
-    {
-    }
-
     uchar value;
     uchar bitLength;
 };
@@ -102,11 +90,11 @@ using StreamError = BitIStream::Error;
 
 // It's always 1 or 0 actually, but the number of bits to extract
 // from the input stream - differs.
-const BitPattern Indexed(1, 1);
-const BitPattern LiteralIncrementalIndexing(1, 2);
-const BitPattern LiteralNoIndexing(0, 4);
-const BitPattern LiteralNeverIndexing(1, 4);
-const BitPattern SizeUpdate(1, 3);
+const BitPattern Indexed = {1, 1};
+const BitPattern LiteralIncrementalIndexing = {1, 2};
+const BitPattern LiteralNoIndexing = {0, 4};
+const BitPattern LiteralNeverIndexing = {1, 4};
+const BitPattern SizeUpdate = {1, 3};
 
 bool is_literal_field(const BitPattern &pattern)
 {
