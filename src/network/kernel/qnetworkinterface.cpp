@@ -91,17 +91,16 @@ QNetworkInterfaceManager::~QNetworkInterfaceManager()
 
 QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interfaceFromName(const QString &name)
 {
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> > interfaceList = allInterfaces();
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> >::ConstIterator it = interfaceList.constBegin();
+    const auto interfaceList = allInterfaces();
 
     bool ok;
     uint index = name.toUInt(&ok);
 
-    for ( ; it != interfaceList.constEnd(); ++it) {
-        if (ok && (*it)->index == int(index))
-            return *it;
-        else if ((*it)->name == name)
-            return *it;
+    for (const auto &interface : interfaceList) {
+        if (ok && interface->index == int(index))
+            return interface;
+        else if (interface->name == name)
+            return interface;
     }
 
     return empty;
@@ -109,11 +108,11 @@ QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interface
 
 QSharedDataPointer<QNetworkInterfacePrivate> QNetworkInterfaceManager::interfaceFromIndex(int index)
 {
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> > interfaceList = allInterfaces();
-    QList<QSharedDataPointer<QNetworkInterfacePrivate> >::ConstIterator it = interfaceList.constBegin();
-    for ( ; it != interfaceList.constEnd(); ++it)
-        if ((*it)->index == index)
-            return *it;
+    const auto interfaceList = allInterfaces();
+    for (const auto &interface : interfaceList) {
+        if (interface->index == index)
+            return interface;
+    }
 
     return empty;
 }
