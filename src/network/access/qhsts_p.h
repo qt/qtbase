@@ -61,7 +61,8 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qurl.h>
-#include <QtCore/qmap.h>
+
+#include <map>
 
 QT_BEGIN_NAMESPACE
 
@@ -117,7 +118,7 @@ private:
         QStringRef fragment;
     };
 
-    mutable QMap<HostName, QHstsPolicy> knownHosts;
+    mutable std::map<HostName, QHstsPolicy> knownHosts;
     QHstsStore *hstsStore = nullptr;
 };
 
