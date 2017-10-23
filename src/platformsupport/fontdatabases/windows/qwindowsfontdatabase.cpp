@@ -76,8 +76,6 @@ typedef HRESULT (WINAPI *DWriteCreateFactoryType)(DWRITE_FACTORY_TYPE, const IID
 
 static inline DWriteCreateFactoryType resolveDWriteCreateFactory()
 {
-    if (QSysInfo::windowsVersion() < QSysInfo::WV_VISTA)
-        return nullptr;
     QSystemLibrary library(QStringLiteral("dwrite"));
     QFunctionPointer result = library.resolve("DWriteCreateFactory");
     if (Q_UNLIKELY(!result)) {
@@ -1719,11 +1717,8 @@ LOGFONT QWindowsFontDatabase::fontDefToLOGFONT(const QFontDef &request, const QS
         qual = PROOF_QUALITY;
 
     if (request.styleStrategy & QFont::PreferAntialias) {
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && !(request.styleStrategy & QFont::NoSubpixelAntialias)) {
-            qual = CLEARTYPE_QUALITY;
-        } else {
-            qual = ANTIALIASED_QUALITY;
-        }
+        qual = (request.styleStrategy & QFont::NoSubpixelAntialias) == 0
+            ? CLEARTYPE_QUALITY : ANTIALIASED_QUALITY;
     } else if (request.styleStrategy & QFont::NoAntialias) {
         qual = NONANTIALIASED_QUALITY;
     } else if ((request.styleStrategy & QFont::NoSubpixelAntialias) && sharedFontData()->clearTypeEnabled) {
