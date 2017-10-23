@@ -43,3 +43,8 @@ else:!qtConfig(process):                    SUBDIRS -= tools
         SUBDIRS -= dbus
     }
 }
+
+# QTBUG-63915
+boot2qt: {
+    contains(QT_ARCH, arm64): SUBDIRS -= dbus
+}

@@ -104,11 +104,11 @@ namespace QtAndroidAccessibility
     static jintArray childIdListForAccessibleObject(JNIEnv *env, jobject /*thiz*/, jint objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
-        if (iface) {
+        if (iface && iface->isValid()) {
             jintArray jArray = env->NewIntArray(jsize(iface->childCount()));
             for (int i = 0; i < iface->childCount(); ++i) {
                 QAccessibleInterface *child = iface->child(i);
-                if (child) {
+                if (child && child->isValid()) {
                     QAccessible::Id ifaceId = QAccessible::uniqueId(child);
                     jint jid = ifaceId;
                     env->SetIntArrayRegion(jArray, i, 1, &jid);
@@ -123,9 +123,9 @@ namespace QtAndroidAccessibility
     static jint parentId(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
-        if (iface) {
+        if (iface && iface->isValid()) {
             QAccessibleInterface *parent = iface->parent();
-            if (parent) {
+            if (parent && parent->isValid()) {
                 if (parent->role() == QAccessible::Application)
                     return -1;
                 return QAccessible::uniqueId(parent);
@@ -151,7 +151,7 @@ namespace QtAndroidAccessibility
     static jint hitTest(JNIEnv */*env*/, jobject /*thiz*/, jfloat x, jfloat y)
     {
         QAccessibleInterface *root = interfaceFromId(-1);
-        if (root) {
+        if (root && root->isValid()) {
             QPoint pos = QHighDpi::fromNativePixels(QPoint(int(x), int(y)), root->window());
 
             QAccessibleInterface *child = root->childAt(pos.x(), pos.y());
@@ -170,7 +170,7 @@ namespace QtAndroidAccessibility
     {
 //        qDebug() << "A11Y: CLICK: " << objectId;
         QAccessibleInterface *iface = interfaceFromId(objectId);
-        if (iface && iface->actionInterface()) {
+        if (iface && iface->isValid() && iface->actionInterface()) {
             if (iface->actionInterface()->actionNames().contains(QAccessibleActionInterface::pressAction()))
                 iface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
             else
@@ -182,13 +182,17 @@ namespace QtAndroidAccessibility
     static jboolean scrollForward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
-        return QAccessibleBridgeUtils::performEffectiveAction(iface, QAccessibleActionInterface::increaseAction());
+        if (iface && iface->isValid())
+            return QAccessibleBridgeUtils::performEffectiveAction(iface, QAccessibleActionInterface::increaseAction());
+        return false;
     }
 
     static jboolean scrollBackward(JNIEnv */*env*/, jobject /*thiz*/, jint objectId)
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
-        return QAccessibleBridgeUtils::performEffectiveAction(iface, QAccessibleActionInterface::decreaseAction());
+        if (iface && iface->isValid())
+            return QAccessibleBridgeUtils::performEffectiveAction(iface, QAccessibleActionInterface::decreaseAction());
+        return false;
     }
 
 

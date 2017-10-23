@@ -445,6 +445,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 /*!
     \macro qCDebug(category)
     \relates QLoggingCategory
+    \threadsafe
     \since 5.2
 
     Returns an output stream for debug messages in the logging category
@@ -469,6 +470,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 /*!
     \macro qCDebug(category, const char *message, ...)
     \relates QLoggingCategory
+    \threadsafe
     \since 5.3
 
     Logs a debug message \a message in the logging category \a category.
@@ -490,6 +492,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 /*!
     \macro qCInfo(category)
     \relates QLoggingCategory
+    \threadsafe
     \since 5.5
 
     Returns an output stream for informational messages in the logging category
@@ -514,6 +517,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 /*!
     \macro qCInfo(category, const char *message, ...)
     \relates QLoggingCategory
+    \threadsafe
     \since 5.5
 
     Logs an informational message \a message in the logging category \a category.
@@ -535,6 +539,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 /*!
     \macro qCWarning(category)
     \relates QLoggingCategory
+    \threadsafe
     \since 5.2
 
     Returns an output stream for warning messages in the logging category
@@ -559,6 +564,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 /*!
     \macro qCWarning(category, const char *message, ...)
     \relates QLoggingCategory
+    \threadsafe
     \since 5.3
 
     Logs a warning message \a message in the logging category \a category.
@@ -580,6 +586,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 /*!
     \macro qCCritical(category)
     \relates QLoggingCategory
+    \threadsafe
     \since 5.2
 
     Returns an output stream for critical messages in the logging category
@@ -604,6 +611,7 @@ void QLoggingCategory::setFilterRules(const QString &rules)
 /*!
     \macro qCCritical(category, const char *message, ...)
     \relates QLoggingCategory
+    \threadsafe
     \since 5.3
 
     Logs a critical message \a message in the logging category \a category.

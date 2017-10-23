@@ -490,6 +490,11 @@ private Q_SLOTS:
     void ioHttpCookiesDuringRedirect();
     void ioHttpRedirect_data();
     void ioHttpRedirect();
+    void ioHttpRedirectFromLocalToRemote();
+    void ioHttpRedirectPost_data();
+    void ioHttpRedirectPost();
+    void ioHttpRedirectMultipartPost_data();
+    void ioHttpRedirectMultipartPost();
 #ifndef QT_NO_SSL
     void putWithServerClosingConnectionImmediately();
 #endif
@@ -516,6 +521,17 @@ bool tst_QNetworkReply::seedCreated = false;
             QFAIL(qPrintable(errorMsg));        \
     } while (0)
 
+static bool validateRedirectedResponseHeaders(QNetworkReplyPtr reply)
+{
+    // QTBUG-61300: previously we were mixing 'raw' headers from all responses
+    // along the redirect chain. The simplest test is to check/verify we have
+    // no 'location' header anymore.
+    Q_ASSERT(reply.data());
+
+    return !reply->hasRawHeader("location")
+           && !reply->header(QNetworkRequest::LocationHeader).isValid();
+}
+
 #ifndef QT_NO_SSL
 static void setupSslServer(QSslSocket* serverSocket)
 {
@@ -530,7 +546,7 @@ static void setupSslServer(QSslSocket* serverSocket)
 }
 #endif
 
-// Does not work for POST/PUT!
+// Does not work for PUT! Limited support for POST.
 class MiniHttpServer: public QTcpServer
 {
     Q_OBJECT
@@ -544,6 +560,10 @@ public:
     bool ipv6;
     bool multiple;
     int totalConnections;
+
+    bool hasContent = false;
+    int contentRead = 0;
+    int contentLength = 0;
 
     MiniHttpServer(const QByteArray &data, bool ssl = false, QThread *thread = 0, bool useipv6 = false)
         : dataToTransmit(data), doClose(true), doSsl(ssl), ipv6(useipv6),
@@ -621,6 +641,18 @@ private:
                 this, SLOT(slotError(QAbstractSocket::SocketError)));
     }
 
+    void parseContentLength()
+    {
+        int index = receivedData.indexOf("Content-Length:");
+        index += sizeof("Content-Length:") - 1;
+        const auto end = std::find(receivedData.cbegin() + index, receivedData.cend(), '\r');
+        auto num = receivedData.mid(index, std::distance(receivedData.cbegin() + index, end));
+        bool ok;
+        contentLength = num.toInt(&ok);
+        if (!ok)
+            contentLength = -1;
+    }
+
 private slots:
 #ifndef QT_NO_SSL
     void slotSslErrors(const QList<QSslError>& errors)
@@ -642,12 +674,20 @@ public slots:
     {
         Q_ASSERT(!client.isNull());
         receivedData += client->readAll();
-        int doubleEndlPos = receivedData.indexOf("\r\n\r\n");
+        const int doubleEndlPos = receivedData.indexOf("\r\n\r\n");
 
         if (doubleEndlPos != -1) {
+            const int endOfHeader = doubleEndlPos + 4;
+            hasContent = receivedData.startsWith("POST");
+            if (hasContent && contentLength == 0)
+                parseContentLength();
+            contentRead = receivedData.length() - endOfHeader;
+            if (hasContent && contentRead < contentLength)
+                return;
+
             // multiple requests incoming. remove the bytes of the current one
             if (multiple)
-                receivedData.remove(0, doubleEndlPos+4);
+                receivedData.remove(0, endOfHeader);
 
             reply();
         }
@@ -8106,6 +8146,7 @@ void tst_QNetworkReply::ioHttpSingleRedirect()
     // Reply url is set to the redirect url
     QCOMPARE(reply->url(), redirectUrl);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(validateRedirectedResponseHeaders(reply));
 }
 
 void tst_QNetworkReply::ioHttpChangeMaxRedirects()
@@ -8154,6 +8195,7 @@ void tst_QNetworkReply::ioHttpChangeMaxRedirects()
     QCOMPARE(redSpy2.count(), 2);
     QCOMPARE(reply2->url(), server3Url);
     QCOMPARE(reply2->error(), QNetworkReply::NoError);
+    QVERIFY(validateRedirectedResponseHeaders(reply2));
 }
 
 void tst_QNetworkReply::ioHttpRedirectErrors_data()
@@ -8167,7 +8209,9 @@ void tst_QNetworkReply::ioHttpRedirectErrors_data()
                                         "location: http://localhost:%1\r\n\r\n");
 
     QTest::newRow("too-many-redirects") << "http://localhost" << tempRedirectReply << QNetworkReply::TooManyRedirectsError;
+#if QT_CONFIG(ssl)
     QTest::newRow("insecure-redirect") << "https://localhost" << tempRedirectReply << QNetworkReply::InsecureRedirectError;
+#endif
     QTest::newRow("unknown-redirect") << "http://localhost"<< tempRedirectReply.replace("http", "bad_protocol") << QNetworkReply::ProtocolUnknownError;
 }
 
@@ -8178,7 +8222,7 @@ void tst_QNetworkReply::ioHttpRedirectErrors()
     QFETCH(QNetworkReply::NetworkError, error);
 
     QUrl localhost(url);
-    MiniHttpServer server("", localhost.scheme() == "https");
+    MiniHttpServer server("", localhost.scheme() == QLatin1String("https"));
 
     localhost.setPort(server.serverPort());
 
@@ -8228,11 +8272,13 @@ void tst_QNetworkReply::ioHttpRedirectPolicy_data()
     QTest::addColumn<int>("statusCode");
 
     QTest::newRow("manual-nossl") << QNetworkRequest::ManualRedirectPolicy << false << 0 << 307;
-    QTest::newRow("manual-ssl") << QNetworkRequest::ManualRedirectPolicy << true << 0 << 307;
     QTest::newRow("nolesssafe-nossl") << QNetworkRequest::NoLessSafeRedirectPolicy << false << 1 << 200;
-    QTest::newRow("nolesssafe-ssl") << QNetworkRequest::NoLessSafeRedirectPolicy << true << 1 << 200;
     QTest::newRow("same-origin-nossl") << QNetworkRequest::SameOriginRedirectPolicy << false << 1 << 200;
+#if QT_CONFIG(ssl)
+    QTest::newRow("manual-ssl") << QNetworkRequest::ManualRedirectPolicy << true << 0 << 307;
+    QTest::newRow("nolesssafe-ssl") << QNetworkRequest::NoLessSafeRedirectPolicy << true << 1 << 200;
     QTest::newRow("same-origin-ssl") << QNetworkRequest::SameOriginRedirectPolicy << true << 1 << 200;
+#endif
 }
 
 void tst_QNetworkReply::ioHttpRedirectPolicy()
@@ -8240,10 +8286,6 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     QFETCH(const QNetworkRequest::RedirectPolicy, policy);
 
     QFETCH(const bool, ssl);
-#ifdef QT_NO_SSL
-    if (ssl)
-        QSKIP("SSL is not supported");
-#endif
 
     QFETCH(const int, redirectCount);
     QFETCH(const int, statusCode);
@@ -8251,11 +8293,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     // Setup HTTP server.
     SameOriginRedirector redirectServer("", ssl);
 
-    QUrl url(QLatin1String(
-#ifndef QT_NO_SSL
-      ssl ? "https://localhost" :
-#endif
-      "http://localhost"));
+    QUrl url(QLatin1String(ssl ? "https://localhost" : "http://localhost"));
 
     url.setPort(redirectServer.serverPort());
     redirectServer.responses.push_back(httpEmpty200Response);
@@ -8278,6 +8316,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(redirectSpy.count(), redirectCount);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), statusCode);
+    QVERIFY(validateRedirectedResponseHeaders(reply) || statusCode != 200);
 }
 
 void tst_QNetworkReply::ioHttpRedirectPolicyErrors_data()
@@ -8291,27 +8330,35 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors_data()
     // 1. NoLessSafeRedirectsPolicy
     QTest::newRow("nolesssafe-nossl-nossl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
+#if QT_CONFIG(ssl)
     QTest::newRow("nolesssafe-ssl-ssl-too-many") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("https:/localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
     QTest::newRow("nolesssafe-ssl-nossl-insecure-redirect") << QNetworkRequest::NoLessSafeRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif
     // 2. SameOriginRedirectsPolicy
     QTest::newRow("same-origin-nossl-nossl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
+#if QT_CONFIG(ssl)
     QTest::newRow("same-origin-ssl-ssl-too-many") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost:%1") << 0 << QNetworkReply::TooManyRedirectsError;
     QTest::newRow("same-origin-https-http-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("http://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif
     QTest::newRow("same-origin-http-https-wrong-protocol") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("https://localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
     QTest::newRow("same-origin-http-http-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#if QT_CONFIG(ssl)
     QTest::newRow("same-origin-https-https-wrong-host") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://not-so-localhost:%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif
     QTest::newRow("same-origin-http-http-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << false << QString("http://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
+#if QT_CONFIG(ssl)
     QTest::newRow("same-origin-https-https-wrong-port") << QNetworkRequest::SameOriginRedirectPolicy
             << true << QString("https://localhost/%1") << 50 << QNetworkReply::InsecureRedirectError;
+#endif
 }
 
 void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
@@ -8325,20 +8372,11 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
     QFETCH(const int, maxRedirects);
     QFETCH(const QNetworkReply::NetworkError, expectedError);
 
-#ifdef QT_NO_SSL
-    if (ssl || location.contains("https"))
-        QSKIP("SSL required to run this test");
-#endif
-
     // Setup the server.
     MiniHttpServer server("", ssl);
     server.setDataToTransmit(tempRedirectReplyStr().arg(location.arg(server.serverPort())).toLatin1());
 
-    QUrl url(QLatin1String(
-#ifndef QT_NO_SSL
-      ssl ? "https://localhost" :
-#endif
-      "http://localhost"));
+    QUrl url(QLatin1String(ssl ? "https://localhost" : "http://localhost"));
     url.setPort(server.serverPort());
 
     QNetworkRequest request(url);
@@ -8411,6 +8449,7 @@ void tst_QNetworkReply::ioHttpUserVerifiedRedirect()
     waitForFinish(reply);
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), statusCode);
+    QVERIFY(validateRedirectedResponseHeaders(reply) || statusCode != 200);
 }
 
 void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
@@ -8438,6 +8477,7 @@ void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
 
     QVERIFY(waitForFinish(reply) == Success);
     QVERIFY(target.receivedData.contains("\r\nCookie: hello=world\r\n"));
+    QVERIFY(validateRedirectedResponseHeaders(reply));
 }
 
 void tst_QNetworkReply::ioHttpRedirect_data()
@@ -8476,6 +8516,152 @@ void tst_QNetworkReply::ioHttpRedirect()
 
     QCOMPARE(waitForFinish(reply), int(Success));
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+    QVERIFY(validateRedirectedResponseHeaders(reply));
+}
+
+void tst_QNetworkReply::ioHttpRedirectFromLocalToRemote()
+{
+    QUrl targetUrl("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+
+    QString redirectReply = tempRedirectReplyStr().arg(targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1(), false);
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+
+    QFile reference(testDataDir + "/rfc3252.txt");
+    QVERIFY(reference.open(QIODevice::ReadOnly));
+    QNetworkRequest request(url);
+
+    auto oldRedirectPolicy = manager.redirectPolicy();
+    manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
+    QNetworkReplyPtr reply(manager.get(request));
+    // Restore previous policy
+    manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+
+    QCOMPARE(reply->url(), targetUrl);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
+    QCOMPARE(reply->readAll(), reference.readAll());
+}
+
+void tst_QNetworkReply::ioHttpRedirectPost_data()
+{
+    QTest::addColumn<QString>("status");
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QString>("contentType");
+
+    QByteArray data;
+    data = "hello world";
+    QTest::addRow("307") << "307 Temporary Redirect" << data << "text/plain";
+    QString permanentRedirect = "308 Permanent Redirect";
+    QTest::addRow("308") << permanentRedirect << data << "text/plain";
+
+    // Some data from ::putToFile_data
+    data = "";
+    QTest::newRow("empty") << permanentRedirect << data << "application/octet-stream";
+
+    data = QByteArray("abcd\0\1\2\abcd",12);
+    QTest::newRow("with-nul") << permanentRedirect << data << "application/octet-stream";
+
+    data = QByteArray(4097, '\4');
+    QTest::newRow("4k+1") << permanentRedirect << data << "application/octet-stream";
+
+    data = QByteArray(128*1024+1, '\177');
+    QTest::newRow("128k+1") << permanentRedirect << data << "application/octet-stream";
+
+    data = QByteArray(2*1024*1024+1, '\177');
+    QTest::newRow("2MB+1") << permanentRedirect << data << "application/octet-stream";
+}
+
+void tst_QNetworkReply::ioHttpRedirectPost()
+{
+    QFETCH(QString, status);
+    QFETCH(QByteArray, data);
+    QFETCH(QString, contentType);
+
+    QUrl targetUrl("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
+
+    QString redirectReply = QStringLiteral("HTTP/1.1 %1\r\n"
+                                           "Content-Type: text/plain\r\n"
+                                           "location: %2\r\n"
+                                           "\r\n").arg(status, targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1());
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::KnownHeaders::ContentTypeHeader, contentType);
+    auto oldRedirectPolicy = manager.redirectPolicy();
+    manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
+
+    QNetworkReplyPtr reply(manager.post(request, data));
+    // Restore previous policy:
+    manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+    QCOMPARE(reply->readAll().trimmed(), md5sum(data).toHex());
+}
+
+void tst_QNetworkReply::ioHttpRedirectMultipartPost_data()
+{
+    postToHttpMultipart_data();
+}
+
+void tst_QNetworkReply::ioHttpRedirectMultipartPost()
+{
+    // Note: This code is heavily based on postToHttpMultipart
+    QFETCH(QUrl, url);
+
+    static QSet<QByteArray> boundaries;
+
+    QNetworkReplyPtr reply;
+
+    QFETCH(QHttpMultiPart *, multiPart);
+    QFETCH(QByteArray, expectedReplyData);
+    QFETCH(QByteArray, contentType);
+
+    QString redirectReply = tempRedirectReplyStr().arg(url.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1());
+    QUrl redirectUrl("http://localhost/");
+    redirectUrl.setPort(redirectServer.serverPort());
+    QNetworkRequest request(redirectUrl);
+
+    // Restore policy when we leave this scope:
+    struct PolicyRestorer
+    {
+        QNetworkAccessManager &qnam;
+        QNetworkRequest::RedirectPolicy policy;
+        PolicyRestorer(QNetworkAccessManager &qnam)
+            : qnam(qnam), policy(qnam.redirectPolicy())
+        { qnam.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy); }
+        ~PolicyRestorer() { qnam.setRedirectPolicy(policy); }
+    } policyRestorer(manager);
+
+    // hack for testing the setting of the content-type header by hand:
+    if (contentType == "custom") {
+        QByteArray contentType("multipart/custom; boundary=\"" + multiPart->boundary() + "\"");
+        request.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
+    }
+
+    QVERIFY2(! boundaries.contains(multiPart->boundary()), "boundary '" + multiPart->boundary() + "' has been created twice");
+    boundaries.insert(multiPart->boundary());
+
+    RUN_REQUEST(runMultipartRequest(request, reply, multiPart, "POST"));
+    multiPart->deleteLater();
+
+    QCOMPARE(reply->url(), url);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200); // 200 OK
+
+    QVERIFY(multiPart->boundary().count() > 20); // check that there is randomness after the "boundary_.oOo._" string
+    QVERIFY(multiPart->boundary().count() < 70);
+    QByteArray replyData = reply->readAll();
+
+    expectedReplyData.prepend("content type: multipart/" + contentType + "; boundary=\"" + multiPart->boundary() + "\"\n");
+//    QEXPECT_FAIL("nested", "the server does not understand nested multipart messages", Continue); // see above
+    QCOMPARE(replyData, expectedReplyData);
 }
 
 #ifndef QT_NO_SSL
