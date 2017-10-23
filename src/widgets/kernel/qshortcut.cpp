@@ -289,8 +289,10 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
             // not the QMenu.) Since we can also reach this code by climbing the menu
             // hierarchy (see below), or when the shortcut is not a key-equivalent, we
             // need to check whether the QPA menu is actually disabled.
+            // When there is no QPA menu, there will be no QCocoaMenuDelegate checking
+            // for the actual shortcuts. We can then fallback to our own logic.
             QPlatformMenu *pm = menu->platformMenu();
-            if (!pm || !pm->isEnabled())
+            if (pm && !pm->isEnabled())
                 continue;
 #endif
             QAction *a = menu->menuAction();

@@ -1,6 +1,6 @@
 TARGET = qcocoa
 
-OBJECTIVE_SOURCES += main.mm \
+SOURCES += main.mm \
     qcocoaintegration.mm \
     qcocoascreen.mm \
     qcocoatheme.mm \
@@ -32,9 +32,8 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoasystemtrayicon.mm \
     qcocoaintrospection.mm \
     qcocoakeymapper.mm \
-    qcocoamimetypes.mm
-
-SOURCES += messages.cpp
+    qcocoamimetypes.mm \
+    messages.cpp
 
 HEADERS += qcocoaintegration.h \
     qcocoascreen.h \
@@ -70,7 +69,7 @@ HEADERS += qcocoaintegration.h \
     qcocoamimetypes.h
 
 qtConfig(opengl.*) {
-    OBJECTIVE_SOURCES += qcocoaglcontext.mm
+    SOURCES += qcocoaglcontext.mm
 
     HEADERS += qcocoaglcontext.h
 }
@@ -89,7 +88,7 @@ CONFIG += no_app_extension_api_only
 qtHaveModule(widgets) {
     QT_FOR_CONFIG += widgets
 
-    OBJECTIVE_SOURCES += \
+    SOURCES += \
         qpaintengine_mac.mm \
         qprintengine_mac.mm \
         qcocoaprintersupport.mm \

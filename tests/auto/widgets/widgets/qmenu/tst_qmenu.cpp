@@ -135,6 +135,7 @@ private slots:
     void menuSize_Scrolling_data();
     void menuSize_Scrolling();
     void tearOffMenuNotDisplayed();
+    void QTBUG_61039_menu_shortcuts();
 
 protected slots:
     void onActivated(QAction*);
@@ -1642,6 +1643,33 @@ void tst_QMenu::tearOffMenuNotDisplayed()
     menu->hideTearOffMenu();
     QVERIFY(!menu->isTearOffMenuVisible());
     QVERIFY(!torn->isVisible());
+}
+
+void tst_QMenu::QTBUG_61039_menu_shortcuts()
+{
+    QAction *actionKamen = new QAction("Action Kamen");
+    actionKamen->setShortcut(QKeySequence(QLatin1String("K")));
+
+    QAction *actionJoe = new QAction("Action Joe");
+    actionJoe->setShortcut(QKeySequence(QLatin1String("Ctrl+J")));
+
+    QMenu menu;
+    menu.addAction(actionKamen);
+    menu.addAction(actionJoe);
+    QVERIFY(!menu.platformMenu());
+
+    QWidget widget;
+    widget.addAction(menu.menuAction());
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+
+    QSignalSpy actionKamenSpy(actionKamen, &QAction::triggered);
+    QTest::keyClick(&widget, Qt::Key_K);
+    QTRY_COMPARE(actionKamenSpy.count(), 1);
+
+    QSignalSpy actionJoeSpy(actionJoe, &QAction::triggered);
+    QTest::keyClick(&widget, Qt::Key_J, Qt::ControlModifier);
+    QTRY_COMPARE(actionJoeSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QMenu)

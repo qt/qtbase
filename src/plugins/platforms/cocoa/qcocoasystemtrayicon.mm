@@ -92,7 +92,6 @@
 
 QT_USE_NAMESPACE
 
-@class QT_MANGLE_NAMESPACE(QNSMenu);
 @class QT_MANGLE_NAMESPACE(QNSImageView);
 
 @interface QT_MANGLE_NAMESPACE(QNSStatusItem) : NSObject <NSUserNotificationCenterDelegate>
@@ -123,16 +122,8 @@ QT_USE_NAMESPACE
 -(void)mousePressed:(NSEvent *)mouseEvent button:(Qt::MouseButton)mouseButton;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSMenu) : NSMenu <NSMenuDelegate> {
-    QPlatformMenu *qmenu;
-}
--(QPlatformMenu*)menu;
--(id)initWithQMenu:(QPlatformMenu*)qmenu;
-@end
-
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSStatusItem);
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSImageView);
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSMenu);
 
 QT_BEGIN_NAMESPACE
 class QSystemTrayIconSys
@@ -445,28 +436,6 @@ QT_END_NAMESPACE
     emit systray->messageClicked();
 }
 
-@end
-
-class QSystemTrayIconQMenu : public QPlatformMenu
-{
-public:
-    void doAboutToShow() { emit aboutToShow(); }
-private:
-    QSystemTrayIconQMenu();
-};
-
-@implementation QNSMenu
--(id)initWithQMenu:(QPlatformMenu*)qm {
-    self = [super init];
-    if (self) {
-        self->qmenu = qm;
-        [self setDelegate:self];
-    }
-    return self;
-}
--(QPlatformMenu*)menu {
-    return qmenu;
-}
 @end
 
 #endif // QT_NO_SYSTEMTRAYICON
