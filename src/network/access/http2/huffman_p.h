@@ -62,19 +62,6 @@ namespace HPack
 
 struct CodeEntry
 {
-    CodeEntry() : byteValue(),
-                  huffmanCode(),
-                  bitLength()
-    {
-    }
-
-    CodeEntry(quint32 val, quint32 code, quint32 len)
-        : byteValue(val),
-          huffmanCode(code),
-          bitLength(len)
-    {
-    }
-
     quint32 byteValue;
     quint32 huffmanCode;
     quint32 bitLength;
