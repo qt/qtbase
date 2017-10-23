@@ -182,6 +182,7 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
     : QNetworkReply(*new QNetworkReplyHttpImplPrivate, manager)
 {
     Q_D(QNetworkReplyHttpImpl);
+    Q_ASSERT(manager);
     d->manager = manager;
     d->managerPrivate = manager->d_func();
     d->request = request;
@@ -394,9 +395,9 @@ bool QNetworkReplyHttpImpl::canReadLine () const
 void QNetworkReplyHttpImpl::ignoreSslErrors()
 {
     Q_D(QNetworkReplyHttpImpl);
+    Q_ASSERT(d->managerPrivate);
 
-    if (d->managerPrivate && d->managerPrivate->stsEnabled
-        && d->managerPrivate->stsCache.isKnownHost(url())) {
+    if (d->managerPrivate->stsEnabled && d->managerPrivate->stsCache.isKnownHost(url())) {
         // We cannot ignore any Security Transport-related errors for this host.
         return;
     }
@@ -407,9 +408,9 @@ void QNetworkReplyHttpImpl::ignoreSslErrors()
 void QNetworkReplyHttpImpl::ignoreSslErrorsImplementation(const QList<QSslError> &errors)
 {
     Q_D(QNetworkReplyHttpImpl);
+    Q_ASSERT(d->managerPrivate);
 
-    if (d->managerPrivate && d->managerPrivate->stsEnabled
-        && d->managerPrivate->stsCache.isKnownHost(url())) {
+    if (d->managerPrivate->stsEnabled && d->managerPrivate->stsCache.isKnownHost(url())) {
         // We cannot ignore any Security Transport-related errors for this host.
         return;
     }
@@ -1144,6 +1145,8 @@ QNetworkRequest QNetworkReplyHttpImplPrivate::createRedirectRequest(const QNetwo
 void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int httpStatus, int maxRedirectsRemaining)
 {
     Q_Q(QNetworkReplyHttpImpl);
+    Q_ASSERT(manager);
+    Q_ASSERT(managerPrivate);
 
     if (isFinished)
         return;
@@ -1178,7 +1181,7 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
     redirectRequest = createRedirectRequest(originalRequest, url, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
 
-    if (const QNetworkCookieJar *const cookieJar = (manager ? manager->cookieJar() : nullptr)) {
+    if (const QNetworkCookieJar *const cookieJar = manager->cookieJar()) {
         auto cookies = cookieJar->cookiesForUrl(url);
         if (!cookies.empty()) {
             redirectRequest.setHeader(QNetworkRequest::KnownHeaders::CookieHeader,
@@ -1195,6 +1198,7 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
 void QNetworkReplyHttpImplPrivate::followRedirect()
 {
     Q_Q(QNetworkReplyHttpImpl);
+    Q_ASSERT(managerPrivate);
 
     rawHeaders.clear();
     cookedHeaders.clear();
@@ -1206,7 +1210,7 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
     // If the original request didn't need a session (i.e. it was to localhost)
     // then we might not have a session open, to which to redirect, if the
     // new URL is remote.  When this happens, we need to open the session now:
-    if (managerPrivate && isSessionNeeded(url)) {
+    if (isSessionNeeded(url)) {
         if (auto session = managerPrivate->getNetworkSession()) {
             if (session->state() != QNetworkSession::State::Connected || !session->isOpen()) {
                 startWaitForSession(session);
@@ -2039,9 +2043,7 @@ void QNetworkReplyHttpImplPrivate::_q_bufferOutgoingData()
 void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
 {
     Q_Q(QNetworkReplyHttpImpl);
-
-    if (!manager)
-        return;
+    Q_ASSERT(managerPrivate);
 
     QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
     if (!session)
@@ -2171,28 +2173,27 @@ void QNetworkReplyHttpImplPrivate::finished()
     if (preMigrationDownloaded != Q_INT64_C(-1))
         totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
-    if (manager) {
 #ifndef QT_NO_BEARERMANAGEMENT
-        QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
-        if (session && session->state() == QNetworkSession::Roaming &&
-            state == Working && errorCode != QNetworkReply::OperationCanceledError) {
-            // only content with a known size will fail with a temporary network failure error
-            if (!totalSize.isNull()) {
-                if (bytesDownloaded != totalSize) {
-                    if (migrateBackend()) {
-                        // either we are migrating or the request is finished/aborted
-                        if (state == Reconnecting || state == WaitingForSession) {
-                            return; // exit early if we are migrating.
-                        }
-                    } else {
-                        error(QNetworkReply::TemporaryNetworkFailureError,
-                              QNetworkReply::tr("Temporary network failure."));
+    Q_ASSERT(managerPrivate);
+    QSharedPointer<QNetworkSession> session = managerPrivate->getNetworkSession();
+    if (session && session->state() == QNetworkSession::Roaming &&
+        state == Working && errorCode != QNetworkReply::OperationCanceledError) {
+        // only content with a known size will fail with a temporary network failure error
+        if (!totalSize.isNull()) {
+            if (bytesDownloaded != totalSize) {
+                if (migrateBackend()) {
+                    // either we are migrating or the request is finished/aborted
+                    if (state == Reconnecting || state == WaitingForSession) {
+                        return; // exit early if we are migrating.
                     }
+                } else {
+                    error(QNetworkReply::TemporaryNetworkFailureError,
+                            QNetworkReply::tr("Temporary network failure."));
                 }
             }
         }
-#endif
     }
+#endif
 
     // if we don't know the total size of or we received everything save the cache
     if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)
@@ -2250,17 +2251,16 @@ void QNetworkReplyHttpImplPrivate::_q_metaDataChanged()
     Q_Q(QNetworkReplyHttpImpl);
     // 1. do we have cookies?
     // 2. are we allowed to set them?
-    if (manager) {
-        const auto it = cookedHeaders.constFind(QNetworkRequest::SetCookieHeader);
-        if (it != cookedHeaders.cend()
-            && request.attribute(QNetworkRequest::CookieSaveControlAttribute,
-                                 QNetworkRequest::Automatic).toInt() == QNetworkRequest::Automatic) {
-            QNetworkCookieJar *jar = manager->cookieJar();
-            if (jar) {
-                QList<QNetworkCookie> cookies =
-                    qvariant_cast<QList<QNetworkCookie> >(it.value());
-                jar->setCookiesFromUrl(cookies, url);
-            }
+    Q_ASSERT(manager);
+    const auto it = cookedHeaders.constFind(QNetworkRequest::SetCookieHeader);
+    if (it != cookedHeaders.cend()
+        && request.attribute(QNetworkRequest::CookieSaveControlAttribute,
+                                QNetworkRequest::Automatic).toInt() == QNetworkRequest::Automatic) {
+        QNetworkCookieJar *jar = manager->cookieJar();
+        if (jar) {
+            QList<QNetworkCookie> cookies =
+                qvariant_cast<QList<QNetworkCookie> >(it.value());
+            jar->setCookiesFromUrl(cookies, url);
         }
     }
     emit q->metaDataChanged();
