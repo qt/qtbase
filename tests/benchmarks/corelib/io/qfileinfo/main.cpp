@@ -94,7 +94,9 @@ void qfileinfo::symLinkTargetPerformanceMounpoint()
     QString rootVolume = QString::fromWCharArray(buffer);
     QString mountpoint = "mountpoint";
     rootVolume.replace("\\\\?\\","\\??\\");
-    FileSystem::createNtfsJunction(rootVolume, mountpoint);
+    QString errorMessage;
+    QVERIFY2(FileSystem::createNtfsJunction(rootVolume, mountpoint, &errorMessage) == ERROR_SUCCESS,
+             qPrintable(errorMessage));
 
     QFileInfo info(mountpoint);
     info.setCaching(false);

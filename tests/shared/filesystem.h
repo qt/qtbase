@@ -80,7 +80,7 @@ public:
     }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && !defined(Q_OS_WINRT)
-    static void createNtfsJunction(QString target, QString linkName)
+    static DWORD createNtfsJunction(QString target, QString linkName, QString *errorMessage)
     {
         typedef struct {
             DWORD   ReparseTag;
@@ -97,14 +97,22 @@ public:
         DWORD   returnedLength;
         wchar_t fileSystem[MAX_PATH] = L"";
         PREPARSE_MOUNTPOINT_DATA_BUFFER reparseInfo = (PREPARSE_MOUNTPOINT_DATA_BUFFER) reparseBuffer;
+        DWORD result = ERROR_SUCCESS;
 
         QFileInfo junctionInfo(linkName);
         linkName = QDir::toNativeSeparators(junctionInfo.absoluteFilePath());
-
-        GetVolumeInformationW( (wchar_t*)linkName.left(3).utf16(), NULL, 0, NULL, NULL, NULL,
-                               fileSystem, sizeof(fileSystem)/sizeof(WCHAR));
-        if(QString().fromWCharArray(fileSystem) != "NTFS")
-            QSKIP("This seems not to be an NTFS volume. Junctions are not allowed.");
+        const QString drive = linkName.left(3);
+        if (GetVolumeInformationW(reinterpret_cast<const wchar_t *>(drive.utf16()),
+                                  NULL, 0, NULL, NULL, NULL,
+                                  fileSystem, sizeof(fileSystem)/sizeof(WCHAR)) == FALSE) {
+            result = GetLastError();
+            *errorMessage = "GetVolumeInformationW() failed: " + qt_error_string(int(result));
+            return result;
+        }
+        if (QString::fromWCharArray(fileSystem) != "NTFS") {
+            *errorMessage = "This seems not to be an NTFS volume. Junctions are not allowed.";
+            return ERROR_NOT_SUPPORTED;
+        }
 
         if (!target.startsWith("\\??\\") && !target.startsWith("\\\\?\\")) {
             QFileInfo targetInfo(target);
@@ -116,7 +124,11 @@ public:
         QDir().mkdir(linkName);
         hFile = CreateFileW( (wchar_t*)linkName.utf16(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
                              FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL );
-        QVERIFY(hFile != INVALID_HANDLE_VALUE );
+        if (hFile == INVALID_HANDLE_VALUE) {
+            result = GetLastError();
+            *errorMessage = "CreateFileW(" + linkName + ") failed: " + qt_error_string(int(result));
+            return result;
+        }
 
         memset( reparseInfo, 0, sizeof( *reparseInfo ));
         reparseInfo->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
@@ -128,8 +140,12 @@ public:
         bool ioc = DeviceIoControl(hFile, FSCTL_SET_REPARSE_POINT, reparseInfo,
                                  reparseInfo->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE,
                                  NULL, 0, &returnedLength, NULL);
+        if (!ioc) {
+            result = GetLastError();
+            *errorMessage = "DeviceIoControl() failed: " + qt_error_string(int(result));
+        }
         CloseHandle( hFile );
-        QVERIFY(ioc);
+        return result;
     }
 #endif
 
