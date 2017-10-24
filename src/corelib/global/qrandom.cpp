@@ -558,7 +558,15 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
 
     QRandomGenerator is modeled after the requirements for random number
     engines in the C++ Standard Library and may be used in almost all contexts
-    that the Standard Library engines can.
+    that the Standard Library engines can. Exceptions to the requirements are
+    the following:
+
+    \list
+      \li QRandomGenerator does not support seeding from another seed
+          sequence-like class besides std::seed_seq itself;
+      \li QRandomGenerator is not comparable (but is copyable) or
+          streamable to \c{std::ostream} or from \c{std::istream}.
+    \endlist
 
     QRandomGenerator is also compatible with the uniform distribution classes
     \c{std::uniform_int_distribution} and \c{std:uniform_real_distribution}, as
@@ -575,13 +583,13 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
  */
 
 /*!
-    \fn QRandomGenerator::QRandomGenerator(quint32 seed)
+    \fn QRandomGenerator::QRandomGenerator(quint32 seedValue)
 
-    Initializes this QRandomGenerator object with the value \a seed as
-    the seed. Two objects constructed with the same seed value will
+    Initializes this QRandomGenerator object with the value \a seedValue as
+    the seed. Two objects constructed or reseeded with the same seed value will
     produce the same number sequence.
 
-    \sa securelySeeded()
+    \sa seed(), securelySeeded()
  */
 
 /*!
@@ -592,7 +600,7 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     array \a seedBuffer as the seed. Two objects constructed or reseeded with
     the same seed value will produce the same number sequence.
 
-    \sa securelySeeded()
+    \sa seed(), securelySeeded()
  */
 
 /*!
@@ -609,7 +617,7 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
         QRandomGenerator generator(sseq);
     \endcode
 
-    \sa securelySeeded()
+    \sa seed(), securelySeeded()
  */
 
 /*!
@@ -626,7 +634,7 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
         QRandomGenerator generator(sseq);
     \endcode
 
-    \sa securelySeeded()
+    \sa seed(), securelySeeded()
  */
 
 /*!
@@ -637,7 +645,7 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     sseq as the seed. Two objects constructed or reseeded with the same seed
     value will produce the same number sequence.
 
-    \sa securelySeeded()
+    \sa seed(), securelySeeded()
  */
 
 /*!
@@ -657,6 +665,24 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
    generator, consider instead using securelySeeded() to obtain a new object
    that shares no relationship with the QRandomGenerator::global().
  */
+
+/*!
+    \fn bool operator==(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
+    \relates QRandomGenerator
+
+    Returns true if the two the two engines \a rng1 and \a rng2 are at the same
+    state or if they are both reading from the operating system facilities,
+    false otherwise.
+*/
+
+/*!
+    \fn bool operator!=(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
+    \relates QRandomGenerator
+
+    Returns true if the two the two engines \a rng1 and \a rng2 are at
+    different states or if one of them is reading from the operating system
+    facilities and the other is not, false otherwise.
+*/
 
 /*!
     \typedef QRandomGenerator::result_type
@@ -690,6 +716,31 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
 
     \sa min(), QRandomGenerator64::max()
  */
+
+/*!
+    \fn void QRandomGenerator::seed(quint32 seed)
+
+    Reseeds this object using the value \a seed as the seed.
+ */
+
+/*!
+    \fn void QRandomGenerator::seed(std::seed_seq &seed)
+    \overload
+
+    Reseeds this object using the seed sequence \a sseq as the seed.
+ */
+
+/*!
+    \fn void QRandomGenerator::discard(unsigned long long z)
+
+    Discards the next \a z entries from the sequence. This method is equivalent
+    to calling generate() \a z times and discarding the result, as in:
+
+    \code
+        while (z--)
+            generator.generate();
+    \endcode
+*/
 
 /*!
     \fn void QRandomGenerator::generate(ForwardIterator begin, ForwardIterator end)
@@ -1084,6 +1135,27 @@ QRandomGenerator::QRandomGenerator(const quint32 *begin, const quint32 *end)
 {
     std::seed_seq s(begin, end);
     new (&storage.engine()) RandomEngine(s);
+}
+
+void QRandomGenerator::discard(unsigned long long z)
+{
+    if (Q_UNLIKELY(type == SystemRNG))
+        return;
+
+    PRNGLocker lock(this);
+    storage.engine().discard(z);
+}
+
+bool operator==(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
+{
+    if (rng1.type != rng2.type)
+        return false;
+    if (rng1.type == SystemRNG)
+        return true;
+
+    // Lock global() if either is it (otherwise this locking is a no-op)
+    PRNGLocker locker(&rng1 == QRandomGenerator::global() ? &rng1 : &rng2);
+    return rng1.storage.engine() == rng2.storage.engine();
 }
 
 /*!

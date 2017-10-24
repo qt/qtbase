@@ -73,6 +73,7 @@ public slots:
 private slots:
     void basics();
     void knownSequence();
+    void discard();
     void copying();
     void copyingGlobal();
     void copyingSystem();
@@ -191,32 +192,63 @@ void tst_QRandomGenerator::knownSequence()
     QRandomGenerator rng;
     for (quint32 x : defaultRngResults)
         QCOMPARE(rng(), x);
+
+    // should work again if we reseed it
+    rng.seed();
+    for (quint32 x : defaultRngResults)
+        QCOMPARE(rng(), x);
+}
+
+void tst_QRandomGenerator::discard()
+{
+    QRandomGenerator rng;
+    rng.discard(1);
+    QCOMPARE(rng(), defaultRngResults[1]);
+
+    rng.discard(9);
+    QCOMPARE(rng(), defaultRngResults[11]);
 }
 
 void tst_QRandomGenerator::copying()
 {
     QRandomGenerator rng1;
     QRandomGenerator rng2 = rng1;
+    QCOMPARE(rng1, rng2);
 
     quint32 samples[20];
     rng1.fillRange(samples);
 
+    // not equal anymore
+    QVERIFY(rng1 != rng2);
+
     // should produce the same sequence, whichever it was
     for (quint32 x : samples)
         QCOMPARE(rng2(), x);
+
+    // now they should compare equal again
+    QCOMPARE(rng1, rng2);
 }
 
 void tst_QRandomGenerator::copyingGlobal()
 {
     QRandomGenerator &global = *QRandomGenerator::global();
     QRandomGenerator copy = global;
+    QCOMPARE(copy, global);
+    QCOMPARE(global, copy);
 
     quint32 samples[20];
     global.fillRange(samples);
 
+    // not equal anymore
+    QVERIFY(copy != global);
+
     // should produce the same sequence, whichever it was
     for (quint32 x : samples)
         QCOMPARE(copy(), x);
+
+    // equal again
+    QCOMPARE(copy, global);
+    QCOMPARE(global, copy);
 }
 
 void tst_QRandomGenerator::copyingSystem()
@@ -225,15 +257,24 @@ void tst_QRandomGenerator::copyingSystem()
     QRandomGenerator copy = system;
     QRandomGenerator copy2 = copy;
     copy2 = copy;
+    QCOMPARE(system, copy);
+    QCOMPARE(copy, copy2);
 
     quint32 samples[20];
     copy2.fillRange(samples);
+
+    // they still compre equally
+    QCOMPARE(system, copy);
+    QCOMPARE(copy, copy2);
 
     // should NOT produce the same sequence, whichever it was
     int sameCount = 0;
     for (quint32 x : samples)
         sameCount += (copy() == x);
     QVERIFY(sameCount < 20);
+
+    QCOMPARE(system, copy);
+    QCOMPARE(copy, copy2);
 }
 
 void tst_QRandomGenerator::systemRng()

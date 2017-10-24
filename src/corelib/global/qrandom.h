@@ -52,8 +52,8 @@ class QRandomGenerator
     template <typename UInt> using IfValidUInt =
         typename std::enable_if<std::is_unsigned<UInt>::value && sizeof(UInt) >= sizeof(uint), bool>::type;
 public:
-    QRandomGenerator(quint32 seed = 1)
-        : QRandomGenerator(&seed, 1)
+    QRandomGenerator(quint32 seedValue = 1)
+        : QRandomGenerator(&seedValue, 1)
     {}
     template <qssize_t N> QRandomGenerator(const quint32 (&seedBuffer)[N])
         : QRandomGenerator(seedBuffer, seedBuffer + N)
@@ -67,6 +67,12 @@ public:
     // copy constructor & assignment operator (move unnecessary)
     Q_CORE_EXPORT QRandomGenerator(const QRandomGenerator &other);
     Q_CORE_EXPORT QRandomGenerator &operator=(const QRandomGenerator &other);
+
+    friend Q_CORE_EXPORT bool operator==(const QRandomGenerator &rng1, const QRandomGenerator &rng2);
+    friend bool operator!=(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
+    {
+        return !(rng1 == rng2);
+    }
 
     quint32 generate()
     {
@@ -151,6 +157,9 @@ public:
     // API like std:: random engines
     typedef quint32 result_type;
     result_type operator()() { return generate(); }
+    void seed(quint32 s = 1) { *this = { s }; }
+    void seed(std::seed_seq &sseq) Q_DECL_NOTHROW { *this = { sseq }; }
+    Q_CORE_EXPORT void discard(unsigned long long z);
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
 
@@ -202,8 +211,8 @@ public:
     result_type operator()() { return generate64(); }
 
 #ifndef Q_QDOC
-    QRandomGenerator64(quint32 seed = 1)
-        : QRandomGenerator(seed)
+    QRandomGenerator64(quint32 seedValue = 1)
+        : QRandomGenerator(seedValue)
     {}
     template <qssize_t N> QRandomGenerator64(const quint32 (&seedBuffer)[N])
         : QRandomGenerator(seedBuffer)
@@ -218,6 +227,13 @@ public:
         : QRandomGenerator(begin, end)
     {}
     QRandomGenerator64(const QRandomGenerator &other) : QRandomGenerator(other) {}
+
+    void discard(unsigned long long z)
+    {
+        Q_ASSERT_X(z * 2 > z, "QRandomGenerator64::discard",
+                   "Overflow. Are you sure you want to skip over 9 quintillion samples?");
+        QRandomGenerator::discard(z * 2);
+    }
 
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
