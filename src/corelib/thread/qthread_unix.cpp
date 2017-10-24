@@ -109,6 +109,10 @@
 #define QT_HAS_THREAD_PRIORITY_SCHEDULING
 #endif
 
+#if defined(Q_OS_QNX)
+#include <sys/neutrino.h>
+#endif
+
 
 QT_BEGIN_NAMESPACE
 
@@ -552,6 +556,55 @@ void QThread::usleep(unsigned long usecs)
 }
 
 #ifdef QT_HAS_THREAD_PRIORITY_SCHEDULING
+#if defined(Q_OS_QNX)
+static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_priority)
+{
+    // On QNX, NormalPriority is mapped to 10.  A QNX system could use a value different
+    // than 10 for the "normal" priority but it's difficult to achieve this so we'll
+    // assume that no one has ever created such a system.  This makes the mapping from
+    // Qt priorities to QNX priorities lopsided.   There's usually more space available
+    // to map into above the "normal" priority than below it.  QNX also has a privileged
+    // priority range (for threads that assist the kernel).  We'll assume that no Qt
+    // thread needs to use priorities in that range.
+    int priority_norm = 10;
+    // _sched_info::priority_priv isn't documented.  You'd think that it's the start of the
+    // privileged priority range but it's actually the end of the unpriviledged range.
+    struct _sched_info info;
+    if (SchedInfo_r(0, *sched_policy, &info) != EOK)
+        return false;
+
+    if (priority == QThread::IdlePriority) {
+        *sched_priority = info.priority_min;
+        return true;
+    }
+
+    if (priority_norm < info.priority_min)
+        priority_norm = info.priority_min;
+    if (priority_norm > info.priority_priv)
+        priority_norm = info.priority_priv;
+
+    int to_min, to_max;
+    int from_min, from_max;
+    int prio;
+    if (priority < QThread::NormalPriority) {
+        to_min = info.priority_min;
+        to_max = priority_norm;
+        from_min = QThread::LowestPriority;
+        from_max = QThread::NormalPriority;
+    } else {
+        to_min = priority_norm;
+        to_max = info.priority_priv;
+        from_min = QThread::NormalPriority;
+        from_max = QThread::TimeCriticalPriority;
+    }
+
+    prio = ((priority - from_min) * (to_max - to_min)) / (from_max - from_min) + to_min;
+    prio = qBound(to_min, prio, to_max);
+
+    *sched_priority = prio;
+    return true;
+}
+#else
 // Does some magic and calculate the Unix scheduler priorities
 // sched_policy is IN/OUT: it must be set to a valid policy before calling this function
 // sched_priority is OUT only
@@ -594,6 +647,7 @@ static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_pr
     *sched_priority = prio;
     return true;
 }
+#endif
 #endif
 
 void QThread::start(Priority priority)
