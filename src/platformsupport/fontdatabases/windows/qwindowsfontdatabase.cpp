@@ -1980,12 +1980,6 @@ QFont QWindowsFontDatabase::systemDefaultFont()
     // long deprecated; the message font of the NONCLIENTMETRICS structure obtained by
     // SystemParametersInfo(SPI_GETNONCLIENTMETRICS) should be used instead (see
     // QWindowsTheme::refreshFonts(), typically "Segoe UI, 9pt"), which is larger.
-    // In single monitor setups, the point sizes revolve around 8 (depending on UI
-    // scale factor, but not proportional to it). However, in multi monitor setups,
-    // where the DPI of the primary monitor are smaller than those of the secondary,
-    // large bogus values are returned. Limit to 8.25 in that case.
-    if (GetSystemMetrics(SM_CMONITORS) > 1 && systemFont.pointSizeF() > 8.25)
-        systemFont.setPointSizeF(8.25);
 #endif // Qt 5
     qCDebug(lcQpaFonts) << __FUNCTION__ << systemFont;
     return systemFont;

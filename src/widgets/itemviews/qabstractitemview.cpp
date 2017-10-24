@@ -2194,7 +2194,7 @@ QAbstractItemViewPrivate::position(const QPoint &pos, const QRect &rect, const Q
 {
     QAbstractItemView::DropIndicatorPosition r = QAbstractItemView::OnViewport;
     if (!overwrite) {
-        const int margin = 2;
+        const int margin = qBound(2, qRound(qreal(rect.height()) / 5.5), 12);
         if (pos.y() - rect.top() < margin) {
             r = QAbstractItemView::AboveItem;
         } else if (rect.bottom() - pos.y() < margin) {

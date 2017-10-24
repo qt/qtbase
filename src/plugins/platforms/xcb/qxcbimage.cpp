@@ -184,7 +184,7 @@ QPixmap qt_xcb_pixmapFromXPixmap(QXcbConnection *connection, xcb_pixmap_t pixmap
             image = std::move(image).rgbSwapped();
 
         // fix-up alpha channel
-        if (format == QImage::Format_RGB32) {
+        if (format == QImage::Format_RGB32 || format == QImage::Format_RGBX8888) {
             QRgb *p = (QRgb *)image.bits();
             for (int y = 0; y < height; ++y) {
                 for (int x = 0; x < width; ++x)

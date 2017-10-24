@@ -454,10 +454,12 @@ QNetworkDatagram QUdpSocket::receiveDatagram(qint64 maxSize)
                                                      QAbstractSocketEngine::WantAll);
     d->hasPendingData = false;
     d->socketEngine->setReadNotificationEnabled(true);
-    if (readBytes < 0)
+    if (readBytes < 0) {
         d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
-    else if (readBytes != result.d->data.size())
-        result.d->data.truncate(readBytes);
+        readBytes = 0;
+    }
+
+    result.d->data.truncate(readBytes);
     return result;
 }
 

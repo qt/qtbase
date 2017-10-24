@@ -97,6 +97,8 @@ private slots:
 
     void generateReal_data() { generate32_data(); }
     void generateReal();
+    void qualityReal_data() { generate32_data(); }
+    void qualityReal();
 
     void seedStdRandomEngines();
     void stdUniformIntDistribution_data();
@@ -445,13 +447,59 @@ void tst_QRandomGenerator::generateReal()
     for (int i = 0; i < 4; ++i) {
         QVERIFY_3TIMES([] {
             qreal value = QRandomGenerator::generateDouble();
-            return value > 0 && value < 1 && value != RandomValueFP;
+            return value >= 0 && value < 1 && value != RandomValueFP;
         }());
     }
 
     // and should hopefully be different from repeated calls
     for (int i = 0; i < 4; ++i)
         QVERIFY_3TIMES(QRandomGenerator::generateDouble() != QRandomGenerator::generateDouble());
+}
+
+void tst_QRandomGenerator::qualityReal()
+{
+    QFETCH(uint, control);
+    setRNGControl(control);
+
+    enum {
+        SampleSize = 160,
+
+        // Expected value: sample size times proportion of the range:
+        PerfectOctile = SampleSize / 8,
+        PerfectHalf = SampleSize / 2,
+
+        // Variance is (1 - proportion of range) * expected; sqrt() for standard deviations.
+        // Should usually be within twice that and almost never outside four times:
+        RangeHalf = 25,         // floor(4 * sqrt((1 - 0.5) * PerfectHalf))
+        RangeOctile = 16        // floor(4 * sqrt((1 - 0.125) * PerfectOctile))
+    };
+
+    double data[SampleSize];
+    std::generate(std::begin(data), std::end(data), &QRandomGenerator::generateDouble);
+
+    int aboveHalf = 0;
+    int belowOneEighth = 0;
+    int aboveSevenEighths = 0;
+    for (double x : data) {
+        aboveHalf += x >= 0.5;
+        belowOneEighth += x < 0.125;
+        aboveSevenEighths += x >= 0.875;
+
+        // these are strict requirements
+        QVERIFY(x >= 0);
+        QVERIFY(x < 1);
+    }
+
+    qInfo("Halfway distribution: %.1f - %.1f", 100. * aboveHalf / SampleSize, 100 - 100. * aboveHalf / SampleSize);
+    qInfo("%.1f below 1/8 (expected 12.5%% ideally)", 100. * belowOneEighth / SampleSize);
+    qInfo("%.1f above 7/8 (expected 12.5%% ideally)", 100. * aboveSevenEighths / SampleSize);
+
+    QVERIFY(aboveHalf < PerfectHalf + RangeHalf);
+    QVERIFY(aboveHalf > PerfectHalf - RangeHalf);
+    QVERIFY(aboveSevenEighths < PerfectOctile + RangeOctile);
+    QVERIFY(aboveSevenEighths > PerfectOctile - RangeOctile);
+    QVERIFY(belowOneEighth < PerfectOctile + RangeOctile);
+    QVERIFY(belowOneEighth > PerfectOctile - RangeOctile);
 }
 
 template <typename Engine> void seedStdRandomEngine()

@@ -340,6 +340,17 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QTest::newRow("no-match-domain-dot") << allCookies << "http://example.com" << result;
     result += cookieDot;
     QTest::newRow("match-domain-dot") << allCookies << "http://example.com." << result;
+
+    // Root path in cookie, empty url path
+    allCookies.clear();
+    QNetworkCookie rootCookie;
+    rootCookie.setName("a");
+    rootCookie.setPath("/");
+    rootCookie.setDomain("qt-project.org");
+    allCookies += rootCookie;
+    result.clear();
+    result += rootCookie;
+    QTest::newRow("root-path-match") << allCookies << "http://qt-project.org" << result;
 }
 
 void tst_QNetworkCookieJar::cookiesForUrl()

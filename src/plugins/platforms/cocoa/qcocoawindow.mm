@@ -150,7 +150,6 @@ QCocoaWindow::QCocoaWindow(QWindow *win, WId nativeHandle)
     , m_needsInvalidateShadow(false)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
-    , m_isExposed(false)
     , m_registerTouchCount(0)
     , m_resizableTransientParent(false)
     , m_alertRequest(NoAlertRequest)
@@ -692,7 +691,7 @@ void QCocoaWindow::lower()
 
 bool QCocoaWindow::isExposed() const
 {
-    return m_isExposed;
+    return !m_exposedRect.isEmpty();
 }
 
 bool QCocoaWindow::isOpaque() const
@@ -1120,7 +1119,7 @@ void QCocoaWindow::handleGeometryChange()
 
 void QCocoaWindow::handleExposeEvent(const QRegion &region)
 {
-    const bool wasExposed = isExposed();
+    const QRect previouslyExposedRect = m_exposedRect;
 
     // Ideally we'd implement isExposed() in terms of these properties,
     // plus the occlusionState of the NSWindow, and let the expose event
@@ -1133,27 +1132,29 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
     // a window being obscured is an empty region, and in the case of
     // a drawRect call is a non-null region, even if occlusionState
     // is still hidden. This ensures the window is prepared for display.
-    m_isExposed = m_view.window.visible
-        && m_view.window.screen
-        && !geometry().size().isEmpty()
-        && !region.isEmpty()
-        && !m_view.hiddenOrHasHiddenAncestor;
+    if (m_view.window.visible && m_view.window.screen
+            && !geometry().size().isEmpty() && !region.isEmpty()
+            && !m_view.hiddenOrHasHiddenAncestor) {
+        m_exposedRect = region.boundingRect();
+    } else {
+        m_exposedRect = QRect();
+    }
 
     QWindowPrivate *windowPrivate = qt_window_private(window());
     if (windowPrivate->updateRequestPending) {
         // We can only deliver update request events when the window is exposed,
-        // and we also have to make sure we deliver the first expose event after
-        // becoming exposed as a real expose event, otherwise the exposed state
-        // of the QWindow is never updated.
-        // FIXME: Should this logic live in QGuiApplication?
-        if (wasExposed && m_isExposed) {
+        // and we also have to make sure we deliver any change to the exposed
+        // rect as a real expose event (including going from non-exposed to
+        // exposed). FIXME: Should this logic live in QGuiApplication?
+        if (isExposed() && m_exposedRect == previouslyExposedRect) {
             qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
             windowPrivate->deliverUpdateRequest();
             return;
+        } else {
+            // Since updateRequestPending is still set, we will issue a deferred setNeedsDisplay
+            // from drawRect and get back into this code on the next display cycle, delivering
+            // the pending update request.
         }
-
-        // FIXME: Should we re-trigger setNeedsDisplay in case of !wasExposed && m_isExposed?
-        // Or possibly send the expose event first, and then the update request?
     }
 
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
@@ -1669,6 +1670,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     if (!m_drawContentBorderGradient) {
         window.styleMask = window.styleMask & ~NSTexturedBackgroundWindowMask;
         [window.contentView.superview setNeedsDisplay:YES];
+        window.titlebarAppearsTransparent = NO;
         return;
     }
 
@@ -1693,6 +1695,7 @@ void QCocoaWindow::applyContentBorderThickness(NSWindow *window)
     int effectiveBottomContentBorderThickness = m_bottomContentBorderThickness;
 
     [window setStyleMask:[window styleMask] | NSTexturedBackgroundWindowMask];
+    window.titlebarAppearsTransparent = YES;
 
     [window setContentBorderThickness:effectiveTopContentBorderThickness forEdge:NSMaxYEdge];
     [window setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];

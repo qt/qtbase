@@ -324,12 +324,13 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
     m_platformWindow->handleExposeEvent(exposedRegion);
 
-    // A call to QWindow::requestUpdate was issued during the expose event, but
-    // AppKit will reset the needsDisplay state of the view after completing the
-    // current display cycle, so we need to defer the request to redisplay.
-    // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
     if (qt_window_private(m_platformWindow->window())->updateRequestPending) {
-        qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:] deferring setNeedsDisplay";
+        // A call to QWindow::requestUpdate was issued during the expose event, or we
+        // had to deliver a real expose event and still need to deliver the update.
+        // But AppKit will reset the needsDisplay state of the view after completing
+        // the current display cycle, so we need to defer the request to redisplay.
+        // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
+        qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
         dispatch_async(dispatch_get_main_queue (), ^{
             [self setNeedsDisplay:YES];
         });

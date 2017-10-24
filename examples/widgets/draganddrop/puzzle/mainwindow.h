@@ -51,8 +51,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QPixmap>
 #include <QMainWindow>
+#include <QPixmap>
 
 class PiecesList;
 class PuzzleWidget;
@@ -65,7 +65,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     void loadImage(const QString &path);
 
 public slots:

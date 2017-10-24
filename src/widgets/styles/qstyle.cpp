@@ -1840,9 +1840,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SH_UnderlineShortcut  Whether shortcuts are underlined.
 
-    \value SH_SpellCheckUnderlineStyle  A
-        QTextCharFormat::UnderlineStyle value that specifies the way
-        misspelled words should be underlined.
+    \value SH_SpellCheckUnderlineStyle  Obsolete. Use SpellCheckUnderlineStyle
+    hint in QPlatformTheme instead.
 
     \value SH_SpinBox_AnimateButton  Animate a click when up or down is
     pressed in a spin box.

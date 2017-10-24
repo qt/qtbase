@@ -595,6 +595,9 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
     params.dwSize = sizeof(params);
     params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
     params.dwFileFlags = FILE_FLAG_BACKUP_SEMANTICS;
+    params.dwSecurityQosFlags = SECURITY_ANONYMOUS;
+    params.lpSecurityAttributes = NULL;
+    params.hTemplateFile = NULL;
     const HANDLE handle =
         CreateFile2((const wchar_t*)entry.nativeFilePath().utf16(), 0,
                     FILE_SHARE_READ, OPEN_EXISTING, &params);

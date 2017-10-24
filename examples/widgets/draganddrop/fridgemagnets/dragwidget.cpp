@@ -167,7 +167,7 @@ void DragWidget::dropEvent(QDropEvent *event)
                              QString::SkipEmptyParts);
         QPoint position = event->pos();
 
-        foreach (const QString &piece, pieces) {
+        for (const QString &piece : pieces) {
             DragLabel *newLabel = new DragLabel(piece, this);
             newLabel->move(position);
             newLabel->show();

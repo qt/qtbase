@@ -28,6 +28,7 @@
 /src/corelib/global/qconfig_p.h
 /bin/qt.conf
 /bin/qmake
+/bin/qvkgen
 /qmake/qmake
 qt*-config.h
 qt*-config_p.h

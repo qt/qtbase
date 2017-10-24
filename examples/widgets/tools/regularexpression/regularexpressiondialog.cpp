@@ -129,6 +129,10 @@ PatternLineEdit::PatternLineEdit(QWidget *parent) :
     connect(escapeSelectionAction, &QAction::triggered, this, &PatternLineEdit::escapeSelection);
     connect(copyToCodeAction, &QAction::triggered, this, &PatternLineEdit::copyToCode);
     connect(pasteFromCodeAction, &QAction::triggered, this, &PatternLineEdit::pasteFromCode);
+#if !QT_CONFIG(clipboard)
+    copyToCodeAction->setEnabled(false);
+    pasteFromCodeAction->setEnabled(false);
+#endif
 }
 
 void PatternLineEdit::escapeSelection()
@@ -144,12 +148,16 @@ void PatternLineEdit::escapeSelection()
 
 void PatternLineEdit::copyToCode()
 {
+#if QT_CONFIG(clipboard)
     QGuiApplication::clipboard()->setText(patternToCode(text()));
+#endif
 }
 
 void PatternLineEdit::pasteFromCode()
 {
+#if QT_CONFIG(clipboard)
     setText(codeToPattern(QGuiApplication::clipboard()->text()));
+#endif
 }
 
 void PatternLineEdit::contextMenuEvent(QContextMenuEvent *event)
@@ -316,7 +324,7 @@ void RegularExpressionDialog::refresh()
 
 void RegularExpressionDialog::copyEscapedPatternToClipboard()
 {
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     QClipboard *clipboard = QGuiApplication::clipboard();
     if (clipboard)
         clipboard->setText(escapedPatternLineEdit->text());
@@ -361,7 +369,7 @@ QWidget *RegularExpressionDialog::setupLeftUi()
     palette.setBrush(QPalette::Base, palette.brush(QPalette::Disabled, QPalette::Base));
     escapedPatternLineEdit->setPalette(palette);
 
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard)
     QAction *copyEscapedPatternAction = new QAction(this);
     copyEscapedPatternAction->setText(tr("Copy to clipboard"));
     copyEscapedPatternAction->setIcon(QIcon(QStringLiteral(":/images/copy.png")));

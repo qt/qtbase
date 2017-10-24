@@ -59,6 +59,25 @@ struct TabletPoint
     qreal angle;
 };
 
+class ProximityEventFilter : public QObject
+{
+public:
+    explicit ProximityEventFilter(QObject *parent) : QObject(parent) { }
+
+    bool eventFilter(QObject *, QEvent *event) override
+    {
+        switch (event->type()) {
+        case QEvent::TabletEnterProximity:
+        case QEvent::TabletLeaveProximity:
+            qDebug() << event;
+            break;
+        default:
+            break;
+        }
+        return false;
+    }
+};
+
 class EventReportWidget : public QWidget
 {
     Q_OBJECT
@@ -69,39 +88,34 @@ public slots:
     void clearPoints() { m_points.clear(); update(); }
 
 signals:
-    void stats(QString s);
+    void stats(QString s, int timeOut = 0);
 
 protected:
-    void mouseDoubleClickEvent(QMouseEvent *event) { outputMouseEvent(event); }
-    void mouseMoveEvent(QMouseEvent *event) { outputMouseEvent(event); }
-    void mousePressEvent(QMouseEvent *event) { outputMouseEvent(event); }
-    void mouseReleaseEvent(QMouseEvent *event) { outputMouseEvent(event); }
+    void mouseDoubleClickEvent(QMouseEvent *event) override { outputMouseEvent(event); }
+    void mouseMoveEvent(QMouseEvent *event) override { outputMouseEvent(event); }
+    void mousePressEvent(QMouseEvent *event) override { outputMouseEvent(event); }
+    void mouseReleaseEvent(QMouseEvent *event) override { outputMouseEvent(event); }
 
-    void tabletEvent(QTabletEvent *);
+    void tabletEvent(QTabletEvent *) override;
 
-    bool event(QEvent *event);
+    bool event(QEvent *event) override;
 
-    void paintEvent(QPaintEvent *);
-    void timerEvent(QTimerEvent *);
+    void paintEvent(QPaintEvent *) override;
+    void timerEvent(QTimerEvent *) override;
 
 private:
     void outputMouseEvent(QMouseEvent *event);
 
-    bool m_lastIsMouseMove;
-    bool m_lastIsTabletMove;
-    Qt::MouseButton m_lastButton;
+    bool m_lastIsMouseMove = false;
+    bool m_lastIsTabletMove = false;
+    Qt::MouseButton m_lastButton = Qt::NoButton;
     QVector<TabletPoint> m_points;
     QVector<QPointF> m_touchPoints;
-    int m_tabletMoveCount;
-    int m_paintEventCount;
+    int m_tabletMoveCount = 0;
+    int m_paintEventCount = 0;
 };
 
 EventReportWidget::EventReportWidget()
-    : m_lastIsMouseMove(false)
-    , m_lastIsTabletMove(false)
-    , m_lastButton(Qt::NoButton)
-    , m_tabletMoveCount(0)
-    , m_paintEventCount(0)
 {
     setAttribute(Qt::WA_AcceptTouchEvents);
     startTimer(1000);
@@ -118,7 +132,7 @@ void EventReportWidget::paintEvent(QPaintEvent *)
     p.setPen(Qt::white);
     QPainterPath ellipse;
     ellipse.addEllipse(0, 0, halfLineSpacing * 5, halfLineSpacing);
-    foreach (const TabletPoint &t, m_points) {
+    for (const TabletPoint &t : qAsConst(m_points)) {
         if (geom.contains(t.pos)) {
               QPainterPath pp;
               pp.addEllipse(t.pos, halfLineSpacing, halfLineSpacing);
@@ -168,10 +182,6 @@ void EventReportWidget::tabletEvent(QTabletEvent *event)
     QWidget::tabletEvent(event);
     bool isMove = false;
     switch (event->type()) {
-    case QEvent::TabletEnterProximity:
-    case QEvent::TabletLeaveProximity:
-        qDebug() << "proximity" << event;
-        break;
     case QEvent::TabletMove:
         m_points.push_back(TabletPoint(event->pos(), TabletMove, m_lastButton, event->pointerType(), event->pressure(), event->rotation()));
         update();
@@ -243,15 +253,16 @@ void EventReportWidget::timerEvent(QTimerEvent *)
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    app.installEventFilter(new ProximityEventFilter(&app));
     QMainWindow mainWindow;
     mainWindow.setWindowTitle(QString::fromLatin1("Tablet Test %1").arg(QT_VERSION_STR));
     EventReportWidget *widget = new EventReportWidget;
     widget->setMinimumSize(640, 480);
     QMenu *fileMenu = mainWindow.menuBar()->addMenu("File");
-    QObject::connect(fileMenu->addAction("Clear"), SIGNAL(triggered()), widget, SLOT(clearPoints()));
-    QObject::connect(widget, SIGNAL(stats(QString)), mainWindow.statusBar(), SLOT(showMessage(QString)));
-    QAction *quitAction = fileMenu->addAction("Quit");
-    QObject::connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    fileMenu->addAction("Clear", widget, &EventReportWidget::clearPoints);
+    QObject::connect(widget, &EventReportWidget::stats,
+                     mainWindow.statusBar(), &QStatusBar::showMessage);
+    QAction *quitAction = fileMenu->addAction("Quit", qApp, &QCoreApplication::quit);
     quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
     mainWindow.setCentralWidget(widget);
     mainWindow.show();
