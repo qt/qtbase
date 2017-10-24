@@ -44,6 +44,7 @@
 
 #ifdef Q_OS_WIN
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QThread>
 #include <QtCore/QAbstractEventDispatcher>
 #include <QtCore/QElapsedTimer>
