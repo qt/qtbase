@@ -574,6 +574,7 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
                 menuBar->setCornerWidget(cornerWidget, Qt::TopRightCorner);
         }
         oldMenuBar->hide();
+        oldMenuBar->setParent(nullptr);
         oldMenuBar->deleteLater();
     }
     topLayout->setMenuBar(menuBar);
