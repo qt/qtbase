@@ -77,6 +77,7 @@ private slots:
     void copyingGlobal();
     void copyingSystem();
     void systemRng();
+    void securelySeeding();
 
     void generate32_data();
     void generate32();
@@ -160,6 +161,9 @@ void tst_QRandomGenerator::basics()
     rng64 = rng;
     rng = std::move(rng64);
     rng64 = std::move(rng);
+
+    rng = QRandomGenerator64::securelySeeded();
+    rng64 = QRandomGenerator::securelySeeded();
 
     // access global
     QRandomGenerator *global = QRandomGenerator::global();
@@ -252,6 +256,21 @@ void tst_QRandomGenerator::systemRng()
     QCOMPARE(rng->generateDouble(), ldexp(setpoint64, -64));
     QCOMPARE(rng->bounded(100), 50);
 #endif
+}
+
+void tst_QRandomGenerator::securelySeeding()
+{
+    QRandomGenerator rng1 = QRandomGenerator::securelySeeded();
+    QRandomGenerator rng2 = QRandomGenerator::securelySeeded();
+
+    quint32 samples[20];
+    rng1.fillRange(samples);
+
+    // should NOT produce the same sequence, whichever it was
+    int sameCount = 0;
+    for (quint32 x : samples)
+        sameCount += (rng2() == x);
+    QVERIFY(sameCount < 20);
 }
 
 void tst_QRandomGenerator::generate32_data()

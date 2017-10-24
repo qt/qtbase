@@ -156,6 +156,7 @@ public:
 
     static inline QRandomGenerator *system();
     static inline QRandomGenerator *global();
+    static inline QRandomGenerator securelySeeded();
 
 protected:
     enum System {};
@@ -222,6 +223,7 @@ public:
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
     static Q_CORE_EXPORT QRandomGenerator64 *system();
     static Q_CORE_EXPORT QRandomGenerator64 *global();
+    static Q_CORE_EXPORT QRandomGenerator64 securelySeeded();
 #endif // Q_QDOC
 };
 
@@ -233,6 +235,11 @@ inline QRandomGenerator *QRandomGenerator::system()
 inline QRandomGenerator *QRandomGenerator::global()
 {
     return QRandomGenerator64::global();
+}
+
+QRandomGenerator QRandomGenerator::securelySeeded()
+{
+    return QRandomGenerator64::securelySeeded();
 }
 
 QT_END_NAMESPACE

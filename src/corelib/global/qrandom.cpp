@@ -422,6 +422,9 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     QRandomGenerator will generate the same sequence of numbers. But given
     different seeds, the results should be considerably different.
 
+    QRandomGenerator::securelySeeded() can be used to create a QRandomGenerator
+    that is securely seeded with QRandomGenerator::system(), meaning that the
+    sequence of numbers it generates cannot be easily predicted. Additionally,
     QRandomGenerator::global() returns a global instance of QRandomGenerator
     that Qt will ensure to be securely seeded. This object is thread-safe, may
     be shared for most uses, and is always seeded from
@@ -462,7 +465,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     itself. Due to mixing of the seed data, QRandomGenerator cannot guarantee
     that distinct seeds will produce different sequences.
 
-    QRandomGenerator::global() is always seeded from
+    QRandomGenerator::global(), like all generators created by
+    QRandomGenerator::securelySeeded(), is always seeded from
     QRandomGenerator::system(), so it's not possible to make it produce
     identical sequences.
 
@@ -576,6 +580,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     Initializes this QRandomGenerator object with the value \a seed as
     the seed. Two objects constructed with the same seed value will
     produce the same number sequence.
+
+    \sa securelySeeded()
  */
 
 /*!
@@ -585,6 +591,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     Initializes this QRandomGenerator object with the values found in the
     array \a seedBuffer as the seed. Two objects constructed or reseeded with
     the same seed value will produce the same number sequence.
+
+    \sa securelySeeded()
  */
 
 /*!
@@ -600,6 +608,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
         std::seed_seq sseq(seedBuffer, seedBuffer + len);
         QRandomGenerator generator(sseq);
     \endcode
+
+    \sa securelySeeded()
  */
 
 /*!
@@ -615,6 +625,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
         std::seed_seq sseq(begin, end);
         QRandomGenerator generator(sseq);
     \endcode
+
+    \sa securelySeeded()
  */
 
 /*!
@@ -624,6 +636,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     Initializes this QRandomGenerator object with the seed sequence \a
     sseq as the seed. Two objects constructed or reseeded with the same seed
     value will produce the same number sequence.
+
+    \sa securelySeeded()
  */
 
 /*!
@@ -640,8 +654,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
 
    For that reason, it is not adviseable to create a copy of
    QRandomGenerator::global(). If one needs an exclusive deterministic
-   generator, consider instead creating a new object and seeding it from
-   QRandomGenerator::system().
+   generator, consider instead using securelySeeded() to obtain a new object
+   that shares no relationship with the QRandomGenerator::global().
  */
 
 /*!
@@ -882,7 +896,7 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     QRandomGenerator will also access the operating system facilities, but they
     will not generate the same sequence.
 
-    \sa global()
+    \sa securelySeeded(), global()
 */
 
 /*!
@@ -890,10 +904,9 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     \threadsafe
 
     Returns a pointer to a shared QRandomGenerator that was seeded using
-    QRandomGenerator::system(). This function should be used to create random data
-    without the expensive creation of a securely-seeded QRandomGenerator for a
-    specific use or storing the rather large QRandomGenerator object.
-    large QRandomGenerator object.
+    securelySeeded(). This function should be used to create random data
+    without the expensive creation of a securely-seeded QRandomGenerator
+    for a specific use or storing the rather large QRandomGenerator object.
 
     For example, the following creates a random RGB color:
 
@@ -907,8 +920,27 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     Note, however, that if there are other threads accessing the global object,
     those threads may obtain samples at unpredictable intervals.
 
-    \sa system()
+    \sa securelySeeded(), system()
 */
+
+/*!
+    \fn QRandomGenerator QRandomGenerator::securelySeeded()
+
+    Returns a new QRandomGenerator object that was securely seeded with
+    QRandomGenerator::system(). This function will obtain the ideal seed size
+    for the algorithm that QRandomGenerator uses and is therefore the
+    recommended way for creating a new QRandomGenerator object that will be
+    kept for some time.
+
+    Given the amount of data required to securely seed the deterministic
+    engine, this function is somewhat expensive and should not be used for
+    short-term uses of QRandomGenerator (using it to generate fewer than 2600
+    bytes of random data is effectively a waste of resources). If the use
+    doesn't require that much data, consider using QRandomGenerator::global()
+    and not storing a QRandomGenerator object instead.
+
+    \sa global(), system()
+ */
 
 /*!
     \class QRandomGenerator64
@@ -997,6 +1029,16 @@ QRandomGenerator64 *QRandomGenerator64::global()
     }
 
     return &global;
+}
+
+QRandomGenerator64 QRandomGenerator64::securelySeeded()
+{
+    QRandomGenerator64 result(System{});
+    result.type = MersenneTwister;
+
+    // seed with the system CSPRNG
+    new (&result.storage.engine()) RandomEngine(static_cast<SystemGenerator &>(system()->storage.sys));
+    return result;
 }
 
 /// \internal
