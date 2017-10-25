@@ -185,6 +185,10 @@ static bool isMouseEvent(NSEvent *ev)
     if (!self.platformWindow)
         return;
 
+    // Prevent deallocation of this NSWindow during event delivery, as we
+    // have logic further below that depends on the window being alive.
+    [[self retain] autorelease];
+
     const char *eventType = object_getClassName(theEvent);
     if (QWindowSystemInterface::handleNativeEvent(self.platformWindow->window(),
         QByteArray::fromRawData(eventType, qstrlen(eventType)), theEvent, nullptr)) {
@@ -221,6 +225,7 @@ static bool isMouseEvent(NSEvent *ev)
 #pragma clang diagnostic ignored "-Wobjc-missing-super-calls"
 - (void)dealloc
 {
+    qCDebug(lcQpaCocoaWindow) << "dealloc" << self;
     qt_objcDynamicSuper();
 }
 #pragma clang diagnostic pop
