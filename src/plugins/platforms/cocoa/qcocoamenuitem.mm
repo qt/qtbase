@@ -150,10 +150,6 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
     QMacAutoReleasePool pool;
     m_menu = static_cast<QCocoaMenu *>(menu);
     if (m_menu) {
-        if (m_native) {
-            // Skip automatic menu item validation
-            m_native.action = nil;
-        }
         m_menu->setMenuParent(this);
         m_menu->propagateEnabledState(isEnabled());
     } else {
