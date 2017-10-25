@@ -79,6 +79,8 @@ static void qt_closePopups()
     }
 }
 
+Q_LOGGING_CATEGORY(lcCocoaNotifications, "qt.qpa.cocoa.notifications");
+
 static void qRegisterNotificationCallbacks()
 {
     static const QLatin1String notificationHandlerPrefix(Q_NOTIFICATION_PREFIX);
@@ -110,9 +112,22 @@ static void qRegisterNotificationCallbacks()
                 if (QNSView *qnsView = qnsview_cast(notification.object))
                     cocoaWindows += qnsView.platformWindow;
             } else {
-                qCWarning(lcQpaCocoaWindow) << "Unhandled notifcation"
+                qCWarning(lcCocoaNotifications) << "Unhandled notifcation"
                     << notification.name << "for" << notification.object;
                 return;
+            }
+
+            if (lcCocoaNotifications().isDebugEnabled()) {
+                if (cocoaWindows.isEmpty()) {
+                    qCDebug(lcCocoaNotifications) << "Could not find forwarding target for" <<
+                        qPrintable(notificationName) << "from" << notification.object;
+                } else {
+                    QVector<QCocoaWindow *> debugWindows;
+                    for (QCocoaWindow *cocoaWindow : cocoaWindows)
+                        debugWindows += cocoaWindow;
+                    qCDebug(lcCocoaNotifications) << "Forwarding" << qPrintable(notificationName) <<
+                        "to" << debugWindows;
+                }
             }
 
             // FIXME: Could be a foreign window, look up by iterating top level QWindows
