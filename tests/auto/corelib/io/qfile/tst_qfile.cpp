@@ -1615,6 +1615,27 @@ void tst_QFile::writeTextFile()
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+// Helper for executing QFile::open() with warning in QTRY_VERIFY(), which evaluates the condition
+// multiple times
+static bool qFileOpen(QFile &file, QIODevice::OpenMode ioFlags)
+{
+    const bool result = file.isOpen() || file.open(ioFlags);
+    if (!result)
+        qWarning() << "Cannot open" << file.fileName() << ':' << file.errorString();
+    return result;
+}
+
+// Helper for executing fopen() with warning in QTRY_VERIFY(), which evaluates the condition
+// multiple times
+static bool fOpen(const QByteArray &fileName, const char *mode, FILE **file)
+{
+    if (*file == nullptr)
+        *file = fopen(fileName.constData(), mode);
+    if (*file == nullptr)
+        qWarning("Cannot open %s: %s", fileName.constData(), strerror(errno));
+    return *file != nullptr;
+}
+
 void tst_QFile::largeUncFileSupport()
 {
     qint64 size = Q_INT64_C(8589934592);
@@ -1629,15 +1650,18 @@ void tst_QFile::largeUncFileSupport()
         QVERIFY2(file.exists(), msgFileDoesNotExist(largeFile));
 
         QCOMPARE(file.size(), size);
-        QVERIFY2(file.open(QIODevice::ReadOnly), msgOpenFailed(file).constData());
+        // Retry in case of sharing violation
+        QTRY_VERIFY2(qFileOpen(file, QIODevice::ReadOnly), msgOpenFailed(file).constData());
         QCOMPARE(file.size(), size);
         QVERIFY(file.seek(dataOffset));
         QCOMPARE(file.read(knownData.size()), knownData);
     }
     {
         // 2) stdlib file handling.
-        StdioFileGuard fh(fopen(largeFileEncoded.constData(), "rb"));
-        QVERIFY(fh);
+        FILE *fhF = nullptr;
+        // Retry in case of sharing violation
+        QTRY_VERIFY(fOpen(largeFileEncoded, "rb", &fhF));
+        StdioFileGuard fh(fhF);
         QFile file;
         QVERIFY(file.open(fh, QIODevice::ReadOnly));
         QCOMPARE(file.size(), size);
@@ -1646,8 +1670,10 @@ void tst_QFile::largeUncFileSupport()
     }
     {
         // 3) stdio file handling.
-        StdioFileGuard fh(fopen(largeFileEncoded.constData(), "rb"));
-        QVERIFY(fh);
+        FILE *fhF = nullptr;
+        // Retry in case of sharing violation
+        QTRY_VERIFY(fOpen(largeFileEncoded, "rb", &fhF));
+        StdioFileGuard fh(fhF);
         int fd = int(_fileno(fh));
         QFile file;
         QVERIFY(file.open(fd, QIODevice::ReadOnly));
