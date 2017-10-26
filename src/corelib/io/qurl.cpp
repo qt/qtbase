@@ -499,9 +499,10 @@ public:
 
         InvalidFragmentError = Fragment << 8,
 
-        // the following two cases are only possible in combination
-        // with presence/absence of the authority and scheme. See validityError().
+        // the following three cases are only possible in combination with
+        // presence/absence of the path, authority and scheme. See validityError().
         AuthorityPresentAndPathIsRelative = Authority << 8 | Path << 8 | 0x10000,
+        AuthorityAbsentAndPathIsDoubleSlash,
         RelativeUrlPathContainsColonBeforeSlash = Scheme << 8 | Authority << 8 | Path << 8 | 0x10000,
 
         NoError = 0
@@ -1627,19 +1628,32 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *p
         return error->code;
     }
 
-    // There are two more cases of invalid URLs that QUrl recognizes and they
+    // There are three more cases of invalid URLs that QUrl recognizes and they
     // are only possible with constructed URLs (setXXX methods), not with
     // parsing. Therefore, they are tested here.
     //
-    // The two cases are a non-empty path that doesn't start with a slash and:
+    // Two cases are a non-empty path that doesn't start with a slash and:
     //  - with an authority
     //  - without an authority, without scheme but the path with a colon before
     //    the first slash
+    // The third case is an empty authority and a non-empty path that starts
+    // with "//".
     // Those cases are considered invalid because toString() would produce a URL
     // that wouldn't be parsed back to the same QUrl.
 
-    if (path.isEmpty() || path.at(0) == QLatin1Char('/'))
+    if (path.isEmpty())
         return NoError;
+    if (path.at(0) == QLatin1Char('/')) {
+        if (sectionIsPresent & QUrlPrivate::Authority || port != -1 ||
+                path.length() == 1 || path.at(1) != QLatin1Char('/'))
+            return NoError;
+        if (source) {
+            *source = path;
+            *position = 0;
+        }
+        return AuthorityAbsentAndPathIsDoubleSlash;
+    }
+
     if (sectionIsPresent & QUrlPrivate::Host) {
         if (source) {
             *source = path;
@@ -2514,10 +2528,7 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
         mode = TolerantMode;
     }
 
-    int from = 0;
-    while (from < data.length() - 2 && data.midRef(from, 2) == QLatin1String("//"))
-        ++from;
-    d->setPath(data, from, data.length());
+    d->setPath(data, 0, data.length());
 
     // optimized out, since there is no path delimiter
 //    if (path.isNull())
@@ -3989,6 +4000,8 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &err
 
     case QUrlPrivate::AuthorityPresentAndPathIsRelative:
         return QStringLiteral("Path component is relative and authority is present");
+    case QUrlPrivate::AuthorityAbsentAndPathIsDoubleSlash:
+        return QStringLiteral("Path component starts with '//' and authority is absent");
     case QUrlPrivate::RelativeUrlPathContainsColonBeforeSlash:
         return QStringLiteral("Relative URL's path component contains ':' before any '/'");
     }

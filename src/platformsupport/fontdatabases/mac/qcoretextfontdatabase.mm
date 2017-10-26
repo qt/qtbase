@@ -666,7 +666,7 @@ static CTFontUIFontType fontTypeFromTheme(QPlatformTheme::Font f)
         return kCTFontUIFontSystem;
 
     case QPlatformTheme::TipLabelFont:
-        return kCTFontToolTipFontType;
+        return kCTFontUIFontToolTip;
 
     case QPlatformTheme::StatusBarFont:
         return kCTFontUIFontSystem;

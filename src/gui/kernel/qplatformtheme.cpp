@@ -531,7 +531,7 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case UiEffects:
         return QVariant(int(0));
     case SpellCheckUnderlineStyle:
-        return QVariant(int(QTextCharFormat::SpellCheckUnderline));
+        return QVariant(int(QTextCharFormat::WaveUnderline));
     case TabFocusBehavior:
         return QVariant(int(Qt::TabFocusAllControls));
     case IconPixmapSizes:

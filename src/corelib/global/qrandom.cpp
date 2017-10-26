@@ -154,15 +154,19 @@ class SystemRandom
 {
     static QBasicAtomicInt s_fdp1;  // "file descriptor plus 1"
     static int openDevice();
+#ifdef Q_CC_GNU
+     // If it's not GCC or GCC-like, then we'll leak the file descriptor
+    __attribute__((destructor))
+#endif
+    static void closeDevice();
     SystemRandom() {}
-    ~SystemRandom();
 public:
     enum { EfficientBufferFill = true };
     static qssize_t fillBuffer(void *buffer, qssize_t count);
 };
 QBasicAtomicInt SystemRandom::s_fdp1 = Q_BASIC_ATOMIC_INITIALIZER(0);
 
-SystemRandom::~SystemRandom()
+void SystemRandom::closeDevice()
 {
     int fd = s_fdp1.loadAcquire() - 1;
     if (fd >= 0)

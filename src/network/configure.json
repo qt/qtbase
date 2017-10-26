@@ -89,31 +89,6 @@
     },
 
     "tests": {
-        "getaddrinfo": {
-            "label": "getaddrinfo()",
-            "type": "compile",
-            "test": {
-                "head": [
-                    "#include <stdio.h>",
-                    "#include <stdlib.h>",
-                    "#ifdef __MINGW32__",
-                    "#  include <winsock2.h>",
-                    "#  include <ws2tcpip.h>",
-                    "#else",
-                    "#  include <sys/types.h>",
-                    "#  include <sys/socket.h>",
-                    "#  include <netdb.h>",
-                    "#endif"
-                ],
-                "main": [
-                    "addrinfo *res = 0;",
-                    "(void) getaddrinfo(\"foo\", 0, 0, &res);",
-                    "freeaddrinfo(res);",
-                    "gai_strerror(0);"
-                ]
-            },
-            "use": "network"
-        },
         "getifaddrs": {
             "label": "getifaddrs()",
             "type": "compile",
@@ -169,11 +144,6 @@
             "condition": "libs.corewlan",
             "emitIf": "config.darwin",
             "output": [ "feature", "privateFeature" ]
-        },
-        "getaddrinfo": {
-            "label": "getaddrinfo()",
-            "condition": "tests.getaddrinfo",
-            "output": [ "feature" ]
         },
         "getifaddrs": {
             "label": "getifaddrs()",
@@ -337,7 +307,7 @@ For example:
                     "args": "corewlan",
                     "condition": "config.darwin"
                 },
-                "getaddrinfo", "getifaddrs", "ipv6ifname", "libproxy",
+                "getifaddrs", "ipv6ifname", "libproxy",
                 {
                     "type": "feature",
                     "args": "securetransport",

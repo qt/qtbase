@@ -62,8 +62,16 @@ public:
     static Q_CORE_EXPORT quint64 generate64();
     static double generateDouble()
     {
-        // use get64() to get enough bits
-        return double(generate64()) / ((std::numeric_limits<quint64>::max)() + double(1.0));
+        // IEEE 754 double precision has:
+        //   1 bit      sign
+        //  10 bits     exponent
+        //  53 bits     mantissa
+        // In order for our result to be normalized in the range [0, 1), we
+        // need exactly 53 bits of random data. Use generate64() to get enough.
+        quint64 x = generate64();
+        quint64 limit = Q_UINT64_C(1) << std::numeric_limits<double>::digits;
+        x >>= std::numeric_limits<quint64>::digits - std::numeric_limits<double>::digits;
+        return double(x) / double(limit);
     }
 
     static qreal bounded(qreal sup)

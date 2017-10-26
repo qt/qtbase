@@ -96,7 +96,7 @@ void QHttpNetworkReply::setRedirectUrl(const QUrl &url)
 bool QHttpNetworkReply::isHttpRedirect(int statusCode)
 {
     return (statusCode == 301 || statusCode == 302 || statusCode == 303
-            || statusCode == 305 || statusCode == 307);
+            || statusCode == 305 || statusCode == 307 || statusCode == 308);
 }
 
 qint64 QHttpNetworkReply::contentLength() const

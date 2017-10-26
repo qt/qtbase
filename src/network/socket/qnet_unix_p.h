@@ -174,16 +174,6 @@ static inline int qt_safe_ioctl(int sockfd, unsigned long request, T arg)
 #endif
 }
 
-// VxWorks' headers do not specify any const modifiers
-static inline in_addr_t qt_safe_inet_addr(const char *cp)
-{
-#ifdef Q_OS_VXWORKS
-    return ::inet_addr((char *) cp);
-#else
-    return ::inet_addr(cp);
-#endif
-}
-
 static inline int qt_safe_sendmsg(int sockfd, const struct msghdr *msg, int flags)
 {
 #ifdef MSG_NOSIGNAL

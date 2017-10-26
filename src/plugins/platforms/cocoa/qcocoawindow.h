@@ -262,7 +262,7 @@ public: // for QNSView
 
     bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;
-    bool m_isExposed;
+    QRect m_exposedRect;
     int m_registerTouchCount;
     bool m_resizableTransientParent;
 

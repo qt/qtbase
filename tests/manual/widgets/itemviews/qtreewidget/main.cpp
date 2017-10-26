@@ -95,6 +95,18 @@ public:
         item5sl.append("Approver");
         /* QTreeWidgetItem *item4 =*/ new QTreeWidgetItem(item4, item5sl);
 
+        treeWidget->setDragEnabled(true);
+        treeWidget->viewport()->setAcceptDrops(true);
+        treeWidget->setDragDropMode(QAbstractItemView::InternalMove);
+
+        for (int u = 0; u < 12; ++u) {
+            const QString username = QString("Anonymous User %1").arg(u + 1);
+            QStringList info;
+            info << username << username << QString::number(u + 1) << QStringLiteral("Test user");
+            new QTreeWidgetItem(item4, info);
+        }
+
+        treeWidget->expandAll();
         treeWidget->setColumnCount(item2sl.size());
         QStringList itemInfo("First Name");
         itemInfo.append("Last Name");
@@ -133,6 +145,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     ExampleDlg d;
+    d.resize(d.sizeHint() * 3);
     d.show();
     app.exec();
 }

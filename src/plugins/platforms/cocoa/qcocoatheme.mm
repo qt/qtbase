@@ -55,6 +55,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qtextformat.h>
 #include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
 #include <QtThemeSupport/private/qabstractfileiconengine_p.h>
 #include <qpa/qplatformdialoghelper.h>
@@ -344,6 +345,8 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return QVariant(QChar(0x2022));
     case QPlatformTheme::UiEffects:
         return QVariant(int(HoverEffect));
+    case QPlatformTheme::SpellCheckUnderlineStyle:
+        return QVariant(int(QTextCharFormat::DotLine));
     default:
         break;
     }

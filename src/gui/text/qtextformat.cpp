@@ -1333,9 +1333,9 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
     \value DashDotLine          Dashs and dots are drawn using Qt::DashDotLine.
     \value DashDotDotLine       Underlines draw drawn using Qt::DashDotDotLine.
     \value WaveUnderline        The text is underlined using a wave shaped line.
-    \value SpellCheckUnderline  The underline is drawn depending on the QStyle::SH_SpellCeckUnderlineStyle
-                                style hint of the QApplication style. By default this is mapped to
-                                WaveUnderline, on \macos it is mapped to DashDotLine.
+    \value SpellCheckUnderline  The underline is drawn depending on the SpellCheckUnderlineStyle
+                                theme hint of QPlatformTheme. By default this is mapped to
+                                WaveUnderline, on \macos it is mapped to DotLine.
 
     \sa Qt::PenStyle
 */

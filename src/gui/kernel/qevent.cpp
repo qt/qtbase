@@ -1124,7 +1124,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     The event is propagated up the parent widget chain until a widget
     accepts it or an event filter consumes it.
 
-    The QWidget::setEnable() function can be used to enable or disable
+    The QWidget::setEnabled() function can be used to enable or disable
     mouse and keyboard events for a widget.
 
     The event handlers QWidget::keyPressEvent(), QWidget::keyReleaseEvent(),
@@ -2335,6 +2335,13 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
     cursor and touchpad. Qt recognizes these by their names. Otherwise, if the
     tablet is configured to use the evdev driver, there will be only one device
     and applications may not be able to distinguish the stylus from the eraser.
+
+    \section1 Notes for Windows Users
+
+    Tablet support currently requires the WACOM windows driver providing the DLL
+    \c{wintab32.dll} to be installed. It is contained in older packages,
+    for example \c{pentablet_5.3.5-3.exe}.
+
 */
 
 /*!
@@ -2783,13 +2790,13 @@ Q_GLOBAL_STATIC(NativeGestureEventDataHash, g_nativeGestureEventDataHash)
     \a realValue is the \macos event parameter, \a sequenceId and \a intValue are the Windows event parameters.
     \since 5.10
 */
-QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *dev, const QPointF &localPos, const QPointF &windowPos,
+QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QTouchDevice *device, const QPointF &localPos, const QPointF &windowPos,
                                          const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
     : QInputEvent(QEvent::NativeGesture), mGestureType(type),
       mLocalPos(localPos), mWindowPos(windowPos), mScreenPos(screenPos), mRealValue(realValue),
       mSequenceId(sequenceId), mIntValue(intValue)
 {
-    g_nativeGestureEventDataHash->insert(this, dev);
+    g_nativeGestureEventDataHash->insert(this, device);
 }
 
 QNativeGestureEvent::~QNativeGestureEvent()
