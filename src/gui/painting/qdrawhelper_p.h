@@ -1160,23 +1160,23 @@ const uint qt_bayer_matrix[16][16] = {
 
 
 #if Q_PROCESSOR_WORDSIZE == 8 // 64-bit versions
-#define AMIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
-#define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
+#define AMIX(mask) (qMin(((quint64(s)&mask) + (quint64(d)&mask)), quint64(mask)))
+#define MIX(mask) (qMin(((quint64(s)&mask) + (quint64(d)&mask)), quint64(mask)))
 #else // 32 bits
 // The mask for alpha can overflow over 32 bits
-#define AMIX(mask) quint32(qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
+#define AMIX(mask) quint32(qMin(((quint64(s)&mask) + (quint64(d)&mask)), quint64(mask)))
 #define MIX(mask) (qMin(((quint32(s)&mask) + (quint32(d)&mask)), quint32(mask)))
 #endif
 
-inline int comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
+inline uint comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
 {
-    const int result = (AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+    const uint result = (AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
     return INTERPOLATE_PIXEL_255(result, const_alpha, d, one_minus_const_alpha);
 }
 
-inline int comp_func_Plus_one_pixel(uint d, const uint s)
+inline uint comp_func_Plus_one_pixel(uint d, const uint s)
 {
-    const int result = (AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+    const uint result = (AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
     return result;
 }
 
