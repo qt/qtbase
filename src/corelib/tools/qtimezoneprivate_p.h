@@ -431,7 +431,6 @@ public:
 
 private:
     void init(const QByteArray &ianaId);
-    QWinTransitionRule ruleForYear(int year) const;
     QTimeZonePrivate::Data ruleToData(const QWinTransitionRule &rule, qint64 atMSecsSinceEpoch,
                                       QTimeZone::TimeType type) const;
 
