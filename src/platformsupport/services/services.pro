@@ -2,6 +2,8 @@ TARGET = QtServiceSupport
 MODULE = service_support
 
 QT = core-private gui-private
+qtConfig(dbus): QT += dbus
+
 CONFIG += static internal_module
 
 DEFINES += QT_NO_CAST_FROM_ASCII

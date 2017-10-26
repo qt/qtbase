@@ -49,6 +49,24 @@
 #include <QtCore/QStandardPaths>
 #include <QtCore/QUrl>
 
+#if QT_CONFIG(dbus)
+// These QtCore includes are needed for flatpak support
+#include <QtCore/private/qcore_unix_p.h>
+
+#include <QtCore/QFileInfo>
+#include <QtCore/QUrlQuery>
+
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusMessage>
+#include <QtDBus/QDBusPendingCall>
+#include <QtDBus/QDBusPendingCallWatcher>
+#include <QtDBus/QDBusPendingReply>
+#include <QtDBus/QDBusUnixFileDescriptor>
+
+#include <fcntl.h>
+
+#endif // QT_CONFIG(dbus)
+
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -153,6 +171,83 @@ static inline bool launch(const QString &launcher, const QUrl &url)
     return ok;
 }
 
+#if QT_CONFIG(dbus)
+static inline bool checkRunningUnderFlatpak()
+{
+    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty();
+}
+
+static inline bool flatpakOpenUrl(const QUrl &url)
+{
+    // DBus signature:
+    // OpenURI (IN   s      parent_window,
+    //          IN   s      uri,
+    //          IN   a{sv}  options,
+    //          OUT  o      handle)
+    // Options:
+    // writable (b) - Whether to allow the chosen application to write to the file.
+    //                This key only takes effect the uri points to a local file that is exported in the document portal,
+    //                and the chosen application is sandboxed itself.
+
+    QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
+                                                          QLatin1String("/org/freedesktop/portal/desktop"),
+                                                          QLatin1String("org.freedesktop.portal.OpenURI"),
+                                                          QLatin1String("OpenURI"));
+    // FIXME parent_window_id and handle writable option
+    message << QString() << url.toString() << QVariantMap();
+
+    QDBusPendingReply<QDBusObjectPath> reply = QDBusConnection::sessionBus().call(message);
+    return !reply.isError();
+}
+
+static inline bool flatpakSendEmail(const QUrl &url)
+{
+    // DBus signature:
+    // ComposeEmail (IN   s      parent_window,
+    //               IN   a{sv}  options,
+    //               OUT  o      handle)
+    // Options:
+    // address (s) - The email address to send to.
+    // subject (s) - The subject for the email.
+    // body (s) - The body for the email.
+    // attachment_fds (ah) - File descriptors for files to attach.
+
+    QUrlQuery urlQuery(url);
+    QVariantMap options;
+    options.insert(QLatin1String("address"), url.path());
+    options.insert(QLatin1String("subject"), urlQuery.queryItemValue(QLatin1String("subject")));
+    options.insert(QLatin1String("body"), urlQuery.queryItemValue(QLatin1String("body")));
+
+    // O_PATH seems to be present since Linux 2.6.39, which is not case of RHEL 6
+#ifdef O_PATH
+    QList<QDBusUnixFileDescriptor> attachments;
+    const QStringList attachmentUris = urlQuery.allQueryItemValues(QLatin1String("attachment"));
+
+    for (const QString &attachmentUri : attachmentUris) {
+        const int fd = qt_safe_open(QFile::encodeName(attachmentUri), O_PATH);
+        if (fd != -1) {
+            QDBusUnixFileDescriptor descriptor(fd);
+            attachments << descriptor;
+            qt_safe_close(fd);
+        }
+    }
+
+    options.insert(QLatin1String("attachment_fds"), QVariant::fromValue(attachments));
+#endif
+
+    QDBusMessage message = QDBusMessage::createMethodCall(QLatin1String("org.freedesktop.portal.Desktop"),
+                                                          QLatin1String("/org/freedesktop/portal/desktop"),
+                                                          QLatin1String("org.freedesktop.portal.Email"),
+                                                          QLatin1String("ComposeEmail"));
+
+    // FIXME parent_window_id
+    message << QString() << options;
+
+    QDBusPendingReply<QDBusObjectPath> reply = QDBusConnection::sessionBus().call(message);
+    return !reply.isError();
+}
+#endif // QT_CONFIG(dbus)
+
 QByteArray QGenericUnixServices::desktopEnvironment() const
 {
     static const QByteArray result = detectDesktopEnvironment();
@@ -161,8 +256,18 @@ QByteArray QGenericUnixServices::desktopEnvironment() const
 
 bool QGenericUnixServices::openUrl(const QUrl &url)
 {
-    if (url.scheme() == QLatin1String("mailto"))
+    if (url.scheme() == QLatin1String("mailto")) {
+#if QT_CONFIG(dbus)
+        if (checkRunningUnderFlatpak())
+            return flatpakSendEmail(url);
+#endif
         return openDocument(url);
+    }
+
+#if QT_CONFIG(dbus)
+    if (checkRunningUnderFlatpak())
+        return flatpakOpenUrl(url);
+#endif
 
     if (m_webBrowser.isEmpty() && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {
         qWarning("Unable to detect a web browser to launch '%s'", qPrintable(url.toString()));
