@@ -56,6 +56,7 @@
 #endif
 #include <qpainter.h>
 #include <qpropertyanimation.h>
+#include <qstylehints.h>
 #include <qvalidator.h>
 
 QT_BEGIN_NAMESPACE
@@ -232,6 +233,13 @@ void QLineEditPrivate::init(const QString& txt)
     q->setAcceptDrops(true);
 
     q->setAttribute(Qt::WA_MacShowFocusRect);
+
+    initMouseYThreshold();
+}
+
+void QLineEditPrivate::initMouseYThreshold()
+{
+    mouseYThreshold = QGuiApplication::styleHints()->mouseQuickSelectionThreshold();
 }
 
 QRect QLineEditPrivate::adjustedContentsRect() const

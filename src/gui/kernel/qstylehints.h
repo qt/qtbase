@@ -73,6 +73,7 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(bool singleClickActivation READ singleClickActivation STORED false CONSTANT FINAL)
     Q_PROPERTY(bool useHoverEffects READ useHoverEffects WRITE setUseHoverEffects NOTIFY useHoverEffectsChanged FINAL)
     Q_PROPERTY(int wheelScrollLines READ wheelScrollLines NOTIFY wheelScrollLinesChanged FINAL)
+    Q_PROPERTY(int mouseQuickSelectionThreshold READ mouseQuickSelectionThreshold WRITE setMouseQuickSelectionThreshold NOTIFY mouseQuickSelectionThresholdChanged FINAL)
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
@@ -104,6 +105,8 @@ public:
     void setUseHoverEffects(bool useHoverEffects);
     int wheelScrollLines() const;
     void setWheelScrollLines(int scrollLines);
+    void setMouseQuickSelectionThreshold(int threshold);
+    int mouseQuickSelectionThreshold() const;
 
 Q_SIGNALS:
     void cursorFlashTimeChanged(int cursorFlashTime);
@@ -115,6 +118,7 @@ Q_SIGNALS:
     void tabFocusBehaviorChanged(Qt::TabFocusBehavior tabFocusBehavior);
     void useHoverEffectsChanged(bool useHoverEffects);
     void wheelScrollLinesChanged(int scrollLines);
+    void mouseQuickSelectionThresholdChanged(int threshold);
 
 private:
     friend class QGuiApplication;

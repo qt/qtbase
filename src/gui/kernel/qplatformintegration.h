@@ -164,6 +164,7 @@ public:
         UiEffects,
         WheelScrollLines,
         ShowShortcutsInContextMenus,
+        MouseQuickSelectionThreshold
     };
 
     virtual QVariant styleHint(StyleHint hint) const;
