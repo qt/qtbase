@@ -356,30 +356,33 @@ static inline qint64 timeToMSecs(const QDate &date, const QTime &time)
            + time.msecsSinceStartOfDay();
 }
 
-static void calculateTransitionsForYear(const QWinTimeZonePrivate::QWinTransitionRule &rule, int year,
-                                       qint64 *stdMSecs, qint64 *dstMSecs)
+static qint64 calculateTransitionForYear(const SYSTEMTIME &rule, int year, int bias)
 {
     // TODO Consider caching the calculated values
-    // The local time in Daylight Time when switches to Standard Time
-    QDate standardDate = calculateTransitionLocalDate(rule.standardTimeRule, year);
-    QTime standardTime = QTime(rule.standardTimeRule.wHour, rule.standardTimeRule.wMinute,
-                               rule.standardTimeRule.wSecond);
-    if (standardDate.isValid() && standardTime.isValid()) {
-        *stdMSecs = timeToMSecs(standardDate, standardTime)
-                    + ((rule.standardTimeBias + rule.daylightTimeBias)  * 60000);
-    } else {
-        *stdMSecs = QTimeZonePrivate::invalidMSecs();
-    }
-
-    // The local time in Standard Time when switches to Daylight Time
-    QDate daylightDate = calculateTransitionLocalDate(rule.daylightTimeRule, year);
-    QTime daylightTime = QTime(rule.daylightTimeRule.wHour, rule.daylightTimeRule.wMinute,
-                               rule.daylightTimeRule.wSecond);
-    if (daylightDate.isValid() && daylightTime.isValid())
-        *dstMSecs = timeToMSecs(daylightDate, daylightTime) + (rule.standardTimeBias * 60000);
-    else
-        *dstMSecs = QTimeZonePrivate::invalidMSecs();
+    const QDate date = calculateTransitionLocalDate(rule, year);
+    const QTime time = QTime(rule.wHour, rule.wMinute, rule.wSecond);
+    if (date.isValid() && time.isValid())
+        return timeToMSecs(date, time) + bias * 60000;
+    return QTimeZonePrivate::invalidMSecs();
 }
+
+namespace {
+struct TransitionTimePair
+{
+    // Transition times after the epoch, in ms:
+    qint64 std, dst;
+    TransitionTimePair()
+        : std(QTimeZonePrivate::invalidMSecs()), dst(QTimeZonePrivate::invalidMSecs())
+    {}
+    TransitionTimePair(const QWinTimeZonePrivate::QWinTransitionRule &rule, int year)
+        // The local time in Daylight Time of the switch to Standard Time
+        : std(calculateTransitionForYear(rule.standardTimeRule, year,
+                                         rule.standardTimeBias + rule.daylightTimeBias)),
+          // The local time in Standard Time of the switch to Daylight Time
+          dst(calculateTransitionForYear(rule.daylightTimeRule, year, rule.standardTimeBias))
+    {}
+};
+} // anonymous namespace
 
 static QLocale::Country userCountry()
 {
@@ -575,8 +578,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
     qint64 first;
     qint64 second;
     qint64 next = maxMSecs();
-    qint64 stdMSecs;
-    qint64 dstMSecs;
+    TransitionTimePair pair;
     QWinTransitionRule rule;
     do {
         // Convert the transition rules into msecs for the year we want to try
@@ -584,13 +586,14 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
         // If no transition rules to calculate then no DST, so just use rule for std
         if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
             break;
-        calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
-        if (stdMSecs < dstMSecs) {
-            first = stdMSecs;
-            second = dstMSecs;
+
+        pair = TransitionTimePair(rule, year);
+        if (pair.std < pair.dst) {
+            first = pair.std;
+            second = pair.dst;
         } else {
-            first = dstMSecs;
-            second = stdMSecs;
+            first = pair.dst;
+            second = pair.std;
         }
         if (forMSecsSinceEpoch >= second && second != invalidMSecs())
             next = second;
@@ -600,7 +603,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
         --year;
     } while (next == maxMSecs() && year >= MIN_YEAR);
 
-    return ruleToData(rule, forMSecsSinceEpoch, (next == dstMSecs) ? QTimeZone::DaylightTime : QTimeZone::StandardTime);
+    return ruleToData(rule, forMSecsSinceEpoch, (next == pair.dst) ? QTimeZone::DaylightTime : QTimeZone::StandardTime);
 }
 
 bool QWinTimeZonePrivate::hasTransitions() const
@@ -634,22 +637,21 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     qint64 first;
     qint64 second;
     qint64 next = minMSecs();
-    qint64 stdMSecs;
-    qint64 dstMSecs;
+    TransitionTimePair pair;
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = ruleForYear(year);
         // If no transition rules to calculate then no next transition
         if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
             return invalidData();
-        calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
+        pair = TransitionTimePair(rule, year);
         // Find the first and second transition for the year
-        if (stdMSecs < dstMSecs) {
-            first = stdMSecs;
-            second = dstMSecs;
+        if (pair.std < pair.dst) {
+            first = pair.std;
+            second = pair.dst;
         } else {
-            first = dstMSecs;
-            second = stdMSecs;
+            first = pair.dst;
+            second = pair.std;
         }
         if (afterMSecsSinceEpoch < first)
             next = first;
@@ -662,7 +664,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     if (next == minMSecs() || next == invalidMSecs())
         return invalidData();
 
-    return ruleToData(rule, next, (next == dstMSecs) ? QTimeZone::DaylightTime : QTimeZone::StandardTime);
+    return ruleToData(rule, next, (next == pair.dst) ? QTimeZone::DaylightTime : QTimeZone::StandardTime);
 }
 
 QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
@@ -685,21 +687,20 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
     qint64 first;
     qint64 second;
     qint64 next = maxMSecs();
-    qint64 stdMSecs;
-    qint64 dstMSecs;
+    TransitionTimePair pair;
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = ruleForYear(year);
         // If no transition rules to calculate then no previous transition
         if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
             return invalidData();
-        calculateTransitionsForYear(rule, year, &stdMSecs, &dstMSecs);
-        if (stdMSecs < dstMSecs) {
-            first = stdMSecs;
-            second = dstMSecs;
+        pair = TransitionTimePair(rule, year);
+        if (pair.std < pair.dst) {
+            first = pair.std;
+            second = pair.dst;
         } else {
-            first = dstMSecs;
-            second = stdMSecs;
+            first = pair.dst;
+            second = pair.std;
         }
         if (beforeMSecsSinceEpoch > second && second != invalidMSecs())
             next = second;
@@ -712,7 +713,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
     if (next == maxMSecs())
         return invalidData();
 
-    return ruleToData(rule, next, (next == dstMSecs) ? QTimeZone::DaylightTime : QTimeZone::StandardTime);
+    return ruleToData(rule, next, (next == pair.dst) ? QTimeZone::DaylightTime : QTimeZone::StandardTime);
 }
 
 QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
