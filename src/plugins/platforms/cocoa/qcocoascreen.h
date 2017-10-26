@@ -102,6 +102,10 @@ public:
     QList<QPlatformScreen *> m_siblings;
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QCocoaScreen *screen);
+#endif
+
 QT_END_NAMESPACE
 
 #endif

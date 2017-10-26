@@ -222,6 +222,8 @@ QCocoaIntegration::Options QCocoaIntegration::options() const
     return mOptions;
 }
 
+Q_LOGGING_CATEGORY(lcCocoaScreen, "qt.qpa.cocoa.screens");
+
 /*!
     \brief Synchronizes the screen list, adds new screens, removes deleted ones
 */
@@ -261,9 +263,11 @@ void QCocoaIntegration::updateScreens()
         if (screen) {
             remainingScreens.remove(screen);
             screen->updateGeometry();
+            qCDebug(lcCocoaScreen) << "Updated properties of" << screen;
         } else {
             screen = new QCocoaScreen(i);
             mScreens.append(screen);
+            qCDebug(lcCocoaScreen) << "Adding" << screen;
             screenAdded(screen);
         }
         siblings << screen;
@@ -280,6 +284,7 @@ void QCocoaIntegration::updateScreens()
         mScreens.removeOne(screen);
         // Prevent stale references to NSScreen during destroy
         screen->m_screenIndex = -1;
+        qCDebug(lcCocoaScreen) << "Removing" << screen;
         destroyScreen(screen);
     }
 }
