@@ -277,6 +277,20 @@ readDynamicRule(DYNAMIC_TIME_ZONE_INFORMATION &dtzi, int year, bool *ok)
 }
 #endif // QT_USE_REGISTRY_TIMEZONE
 
+static bool isSameRule(const QWinTimeZonePrivate::QWinTransitionRule &last,
+                       const QWinTimeZonePrivate::QWinTransitionRule &rule)
+{
+    // In particular, when this is true and either wYear is 0, so is the other;
+    // so if one rule is recurrent and they're equal, so is the other.  If
+    // either rule *isn't* recurrent, it has non-0 wYear which shall be
+    // different from the other's.  Note that we don't compare .startYear, since
+    // that will always be different.
+    return equalSystemtime(last.standardTimeRule, rule.standardTimeRule)
+        && equalSystemtime(last.daylightTimeRule, rule.daylightTimeRule)
+        && last.standardTimeBias == rule.standardTimeBias
+        && last.daylightTimeBias == rule.daylightTimeBias;
+}
+
 static QList<QByteArray> availableWindowsIds()
 {
 #ifdef QT_USE_REGISTRY_TIMEZONE
@@ -500,7 +514,10 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                     QWinTransitionRule rule = readRegistryRule(dynamicKey,
                                                                (LPCWSTR)QString::number(year).utf16(),
                                                                &ruleOk);
-                    if (ruleOk) {
+                    if (ruleOk
+                        // Don't repeat a recurrent rule:
+                        && (m_tranRules.isEmpty()
+                            || !isSameRule(m_tranRules.last(), rule))) {
                         rule.startYear = m_tranRules.isEmpty() ? MIN_YEAR : year;
                         m_tranRules.append(rule);
                     }
@@ -532,7 +549,10 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                 for (DWORD year = firstYear; year <= lastYear; ++year) {
                     bool ok = false;
                     QWinTransitionRule rule = readDynamicRule(dtzi, year, &ok);
-                    if (ok) {
+                    if (ok
+                        // Don't repeat a recurrent rule
+                        && (m_tranRules.isEmpty()
+                            || !isSameRule(m_tranRules.last(), rule))) {
                         rule.startYear = m_tranRules.isEmpty() ? MIN_YEAR : year;
                         m_tranRules.append(rule);
                     }
