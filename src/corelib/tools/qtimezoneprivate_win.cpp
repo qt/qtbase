@@ -360,25 +360,33 @@ QDate calculateTransitionLocalDate(const SYSTEMTIME &rule, int year)
     if (rule.wMonth == 0)
         return QDate();
 
-    SYSTEMTIME time = rule;
-    // If the year isn't set, then the rule date is relative
-    if (time.wYear == 0) {
-        if (time.wDayOfWeek == 0)
-            time.wDayOfWeek = 7;
-        QDate date(year, time.wMonth, 1);
-        int startDow = date.dayOfWeek();
-        if (startDow <= time.wDayOfWeek)
-            date = date.addDays(time.wDayOfWeek - startDow - 7);
-        else
-            date = date.addDays(time.wDayOfWeek - startDow);
-        date = date.addDays(time.wDay * 7);
-        while (date.month() != time.wMonth)
-            date = date.addDays(-7);
-        return date;
-    }
+    // Interpret SYSTEMTIME according to the slightly quirky rules in:
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms725481(v=vs.85).aspx
 
-    // If the year is set then is an absolute date
-    return QDate(time.wYear, time.wMonth, time.wDay);
+    // If the year is set, the rule gives an absolute date:
+    if (rule.wYear)
+        return QDate(rule.wYear, rule.wMonth, rule.wDay);
+
+    // Otherwise, the rule date is annual and relative:
+    const int dayOfWeek = rule.wDayOfWeek == 0 ? 7 : rule.wDayOfWeek;
+    QDate date(year, rule.wMonth, 1);
+    // How many days before was last dayOfWeek before target month ?
+    int adjust = dayOfWeek - date.dayOfWeek(); // -6 <= adjust < 7
+    if (adjust >= 0) // Ensure -7 <= adjust < 0:
+        adjust -= 7;
+    // Normally, wDay is day-within-month; but here it is 1 for the first
+    // of the given dayOfWeek in the month, through 4 for the fourth or ...
+    adjust += (rule.wDay < 1 ? 1 : rule.wDay > 4 ? 5 : rule.wDay) * 7;
+    date = date.addDays(adjust);
+    // ... 5 for the last; so back up by weeks to get within the month:
+    if (date.month() != rule.wMonth) {
+        Q_ASSERT(rule.wDay > 4);
+        // (Note that, with adjust < 0, date <= 28th of our target month
+        // is guaranteed when wDay <= 4, or after our first -7 here.)
+        date = date.addDays(-7);
+        Q_ASSERT(date.month() == rule.wMonth);
+    }
+    return date;
 }
 
 // Converts a date/time value into msecs
@@ -390,7 +398,8 @@ inline qint64 timeToMSecs(const QDate &date, const QTime &time)
 
 qint64 calculateTransitionForYear(const SYSTEMTIME &rule, int year, int bias)
 {
-    // TODO Consider caching the calculated values
+    // TODO Consider caching the calculated values - i.e. replace SYSTEMTIME in
+    // WinTransitionRule; do this in init() once and store the results.
     const QDate date = calculateTransitionLocalDate(rule, year);
     const QTime time = QTime(rule.wHour, rule.wMinute, rule.wSecond);
     if (date.isValid() && time.isValid())
