@@ -1419,7 +1419,7 @@ QList<QUrl> QWindowsNativeOpenFileDialog::dialogResult() const
         for (IShellItem *item : QWindowsShellItem::itemsFromItemArray(items)) {
             QWindowsShellItem qItem(item);
             const QString path = qItem.path();
-            if (path.isEmpty()) {
+            if (path.isEmpty() && !qItem.isDir()) {
                 const QString temporaryCopy = createTemporaryItemCopy(qItem);
                 if (temporaryCopy.isEmpty())
                     qWarning() << "Unable to create a local copy of" << qItem;
