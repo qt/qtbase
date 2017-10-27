@@ -491,6 +491,7 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
         m_id = ianaId;
     }
 
+    bool badMonth = false; // Only warn once per zone, if at all.
     if (!m_windowsId.isEmpty()) {
 #ifdef QT_USE_REGISTRY_TIMEZONE
         // Open the base TZI for the time zone
@@ -518,6 +519,14 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                         // Don't repeat a recurrent rule:
                         && (m_tranRules.isEmpty()
                             || !isSameRule(m_tranRules.last(), rule))) {
+                        if (!badMonth
+                            && (rule.standardTimeRule.wMonth == 0)
+                            != (rule.daylightTimeRule.wMonth == 0)) {
+                            badMonth = true;
+                            qWarning("MS registry TZ API violated its wMonth constraint;"
+                                     "this may cause mistakes for %s from %d",
+                                     ianaId.constData(), year);
+                        }
                         rule.startYear = m_tranRules.isEmpty() ? MIN_YEAR : year;
                         m_tranRules.append(rule);
                     }
@@ -553,6 +562,14 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                         // Don't repeat a recurrent rule
                         && (m_tranRules.isEmpty()
                             || !isSameRule(m_tranRules.last(), rule))) {
+                        if (!badMonth
+                            && (rule.standardTimeRule.wMonth == 0)
+                            != (rule.daylightTimeRule.wMonth == 0)) {
+                            badMonth = true;
+                            qWarning("MS dynamic TZ API violated its wMonth constraint;"
+                                     "this may cause mistakes for %s from %d",
+                                     ianaId.constData(), year);
+                        }
                         rule.startYear = m_tranRules.isEmpty() ? MIN_YEAR : year;
                         m_tranRules.append(rule);
                     }
@@ -650,6 +667,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
     qint64 second;
     qint64 next = maxMSecs();
     TransitionTimePair pair;
+    Q_ASSERT(next != pair.dst); // so break on first iteration gets standard time
     QWinTransitionRule rule;
     do {
         // Convert the transition rules into msecs for the year we want to try
@@ -712,9 +730,11 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = m_tranRules.at(ruleIndexForYear(m_tranRules, year));
-        // If no transition rules to calculate then no next transition
-        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
-            return invalidData();
+        // If there's no transition this year, check for a later year:
+        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0) {
+            ++year;
+            continue;
+        }
         pair = TransitionTimePair(rule, year);
         // Find the first and second transition for the year
         if (pair.std < pair.dst) {
@@ -762,9 +782,11 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
     do {
         // Convert the transition rules into msecs for the year we want to try
         rule = m_tranRules.at(ruleIndexForYear(m_tranRules, year));
-        // If no transition rules to calculate then no previous transition
-        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0)
-            return invalidData();
+        // If there's no transition this year, check for an earlier year:
+        if (rule.standardTimeRule.wMonth == 0 && rule.daylightTimeRule.wMonth == 0) {
+            --year;
+            continue;
+        }
         pair = TransitionTimePair(rule, year);
         if (pair.std < pair.dst) {
             first = pair.std;
