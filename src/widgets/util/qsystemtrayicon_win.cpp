@@ -313,9 +313,8 @@ HICON QSystemTrayIconSys::createIcon()
     const QIcon icon = q->icon();
     if (icon.isNull())
         return oldIcon;
-    const QSize requestedSize = QSysInfo::windowsVersion() >= QSysInfo::WV_VISTA
-        ? QSize(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON))
-        : QSize(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
+    // When merging this to 5.10, change at src/plugins/platforms/windows/qwindowssystemtrayicon.cpp:351.
+    const QSize requestedSize = QSize(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
     const QSize size = icon.actualSize(requestedSize);
     const QPixmap pm = icon.pixmap(size);
     if (pm.isNull())
