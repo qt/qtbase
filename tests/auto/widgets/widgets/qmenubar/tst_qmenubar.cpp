@@ -719,9 +719,7 @@ void tst_QMenuBar::taskQTBUG56860_focus()
 #endif
     QMainWindow w;
     QMenuBar *mb = w.menuBar();
-
-    if (mb->platformMenuBar())
-        QSKIP("This test requires the Qt menubar.");
+    mb->setNativeMenuBar(false);
 
     QMenu *em = mb->addMenu("&Edit");
     em->setObjectName("EditMenu");
