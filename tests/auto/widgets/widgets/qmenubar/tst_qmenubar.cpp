@@ -763,8 +763,7 @@ void tst_QMenuBar::check_homeKey()
 {
     // I'm temporarily shutting up this testcase.
     // Seems like the behaviour i'm expecting isn't ok.
-    QVERIFY( true );
-    return;
+    QSKIP("This test has been \"temporarily\" disabled at least since 2009 :)");
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to a Home key", Abort );
 
@@ -805,8 +804,7 @@ void tst_QMenuBar::check_endKey()
 {
     // I'm temporarily silenting this testcase.
     // Seems like the behaviour i'm expecting isn't ok.
-    QVERIFY( true );
-    return;
+    QSKIP("This test has been \"temporarily\" disabled at least since 2009 :)");
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to an End key", Abort );
 
