@@ -153,7 +153,8 @@ static QBasicAtomicInteger<quint32> *futexLow32(QBasicAtomicInteger<quintptr> *p
 }
 
 #ifdef FUTEX_OP
-static const quintptr futexMultiWaiterBit = Q_UINT64_C(1) << 63;
+// quintptr might be 32bit, in which case we want this to be 0, without implicitly casting.
+static const quintptr futexMultiWaiterBit = static_cast<quintptr>(Q_UINT64_C(1) << 63);
 static QBasicAtomicInteger<quint32> *futexHigh32(QBasicAtomicInteger<quintptr> *ptr)
 {
     auto result = reinterpret_cast<QBasicAtomicInteger<quint32> *>(ptr);
