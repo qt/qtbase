@@ -432,7 +432,7 @@ public:
 private:
     void init(const QByteArray &ianaId);
     QTimeZonePrivate::Data ruleToData(const QWinTransitionRule &rule, qint64 atMSecsSinceEpoch,
-                                      QTimeZone::TimeType type) const;
+                                      QTimeZone::TimeType type, bool fakeDst = false) const;
 
     QByteArray m_windowsId;
     QString m_displayName;
