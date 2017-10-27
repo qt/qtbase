@@ -66,6 +66,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QLibraryInfo>
 
 #include <dwmapi.h>
 
@@ -1473,7 +1474,7 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         // achieve that size (for example, window title minimal constraint),
         // notify and warn.
         setGeometry_sys(rect);
-        if (m_data.geometry != rect) {
+        if (m_data.geometry != rect && (isVisible() || QLibraryInfo::isDebugBuild())) {
             qWarning("%s: Unable to set geometry %dx%d+%d+%d on %s/'%s'."
                      " Resulting geometry:  %dx%d+%d+%d "
                      "(frame: %d, %d, %d, %d, custom margin: %d, %d, %d, %d"
