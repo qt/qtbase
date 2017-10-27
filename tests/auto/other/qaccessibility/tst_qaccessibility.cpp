@@ -876,6 +876,10 @@ void tst_QAccessibility::applicationTest()
     QCOMPARE(interface->child(1), static_cast<QAccessibleInterface*>(0));
     QCOMPARE(interface->childCount(), 0);
 
+    // Check that asking for the application interface twice returns the same object
+    QAccessibleInterface *app2 = QAccessible::queryAccessibleInterface(qApp);
+    QCOMPARE(interface, app2);
+
     QWidget widget;
     widget.show();
     qApp->setActiveWindow(&widget);

@@ -57,6 +57,12 @@ static void cleanupAccessibleCache()
     accessibleCache = nullptr;
 }
 
+QAccessibleCache::~QAccessibleCache()
+{
+    for (QAccessibleInterface *iface: idToInterface.values())
+        delete iface;
+}
+
 QAccessibleCache *QAccessibleCache::instance()
 {
     if (!accessibleCache) {

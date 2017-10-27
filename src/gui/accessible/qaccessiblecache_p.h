@@ -68,6 +68,7 @@ class Q_GUI_EXPORT QAccessibleCache  :public QObject
     Q_OBJECT
 
 public:
+    ~QAccessibleCache() override;
     static QAccessibleCache *instance();
     QAccessibleInterface *interfaceForId(QAccessible::Id id) const;
     QAccessible::Id idForInterface(QAccessibleInterface *iface) const;
