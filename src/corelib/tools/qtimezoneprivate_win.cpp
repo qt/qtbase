@@ -757,7 +757,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::ruleToData(const QWinTransitionRule 
                                                        qint64 atMSecsSinceEpoch,
                                                        QTimeZone::TimeType type) const
 {
-    QTimeZonePrivate::Data tran = QTimeZonePrivate::invalidData();
+    Data tran = invalidData();
     tran.atMSecsSinceEpoch = atMSecsSinceEpoch;
     tran.standardTimeOffset = rule.standardTimeBias * -60;
     if (type == QTimeZone::DaylightTime) {
