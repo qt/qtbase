@@ -80,11 +80,10 @@ QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor)
     qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 #endif
 
-//    m_raster = (w->surfaceType() == QSurface::RasterSurface);
-//    if (m_raster)
-    w->setSurfaceType(QSurface::OpenGLSurface);
-
     mCompositor->addWindow(this);
+
+    // Pure OpenGL windows draw directly using egl, disable the compositor.
+    mCompositor->setEnabled(w->surfaceType() != QSurface::OpenGLSurface);
 }
 
 QHtml5Window::~QHtml5Window()

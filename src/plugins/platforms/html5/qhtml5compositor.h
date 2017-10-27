@@ -69,6 +69,8 @@ public:
     QHtml5Compositor();
     ~QHtml5Compositor();
 
+    void setEnabled(bool enabled);
+
     void addWindow(QHtml5Window *window, QHtml5Window *parentWindow = 0);
     void removeWindow(QHtml5Window *window);
     void setScreen(QHTML5Screen *screen);
@@ -121,6 +123,7 @@ private:
     bool m_needComposit;
     bool m_inFlush;
     bool m_inResize;
+    bool m_isEnabled;
     QSize m_targetSize;
     qreal m_targetDevicePixelRatio;
 

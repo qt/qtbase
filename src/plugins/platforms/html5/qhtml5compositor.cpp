@@ -69,6 +69,7 @@ QHtml5Compositor::QHtml5Compositor()
     , m_needComposit(false)
     , m_inFlush(false)
     , m_inResize(false)
+    , m_isEnabled(true)
     , m_targetDevicePixelRatio(1)
 {
     qDebug() << Q_FUNC_INFO;
@@ -81,6 +82,11 @@ QHtml5Compositor::~QHtml5Compositor()
 //    delete m_context2D;
 //    delete m_imageData2D;
     delete m_frameBuffer;
+}
+
+void QHtml5Compositor::setEnabled(bool enabled)
+{
+    m_isEnabled = enabled;
 }
 
 void QHtml5Compositor::addWindow(QHtml5Window *window, QHtml5Window *parentWindow)
@@ -358,7 +364,8 @@ void QHtml5Compositor::composit()
 bool QHtml5Compositor::event(QEvent *ev)
 {
     if (ev->type() == QEvent::UpdateRequest) {
-        frame();
+        if (m_isEnabled)
+            frame();
         return true;
     }
 
