@@ -214,12 +214,14 @@ public:
     QtTestModel(int _rows, int _cols, QObject *parent = 0): QAbstractItemModel(parent),
        fetched(false), rows(_rows), cols(_cols), levels(INT_MAX), wrongIndex(false) { init(); }
 
-    void init() {
+    void init()
+    {
         decorationsEnabled = false;
         statusTipsEnabled = false;
     }
 
-    inline qint32 level(const QModelIndex &index) const {
+    inline qint32 level(const QModelIndex &index) const
+    {
         return index.isValid() ? qint32(index.internalId()) : qint32(-1);
     }
 
@@ -251,7 +253,8 @@ public:
         return cols;
     }
 
-    bool isEditable(const QModelIndex &index) const {
+    bool isEditable(const QModelIndex &index) const
+    {
         if (index.isValid())
             return true;
         return false;
