@@ -1761,7 +1761,6 @@ QAccessibleTextSelectionEvent::~QAccessibleTextSelectionEvent()
 
 /*!
     Returns the QAccessibleInterface associated with the event.
-    The caller of this function takes ownership of the returned interface.
 */
 QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 {
