@@ -633,12 +633,9 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 
     QWidget *receiver = QApplicationPrivate::pickMouseReceiver(m_widget, event->windowPos().toPoint(), &mapped, event->type(), event->buttons(),
                                                                qt_button_down, widget);
-
-    if (!receiver) {
-        if (event->type() == QEvent::MouseButtonRelease)
-            QApplicationPrivate::mouse_buttons &= ~event->button();
+    if (!receiver)
         return;
-    }
+
     if ((event->type() != QEvent::MouseButtonPress)
         || !(event->flags().testFlag(Qt::MouseEventCreatedDoubleClick))) {
 
