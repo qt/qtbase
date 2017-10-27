@@ -1456,12 +1456,6 @@ void QCoreApplication::exit(int returnCode)
 */
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
-    if (event->type() == QEvent::Quit)
-    {
-        std::cout << "Quit event posted" << std::endl;
-        return;
-    }
-
     if (receiver == 0) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
         delete event;
