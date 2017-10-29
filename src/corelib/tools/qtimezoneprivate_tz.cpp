@@ -1050,7 +1050,18 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
     if (ianaId == "/etc/localtime")
         ianaId.clear();
 
-    // On Debian Etch and later /etc/localtime is real file with name held in /etc/timezone
+    // On most distros /etc/localtime is a symlink to a real file so extract name from the path
+    if (ianaId.isEmpty()) {
+        const QString path = QFile::symLinkTarget(QStringLiteral("/etc/localtime"));
+        if (!path.isEmpty()) {
+            // /etc/localtime is a symlink to the current TZ file, so extract from path
+            int index = path.indexOf(QLatin1String("/zoneinfo/"));
+            if (index != -1)
+                ianaId = path.mid(index + 10).toUtf8();
+        }
+    }
+
+    // On Debian Etch up to Jessie, /etc/localtime is a regular file while the actual name is in /etc/timezone
     if (ianaId.isEmpty()) {
         QFile tzif(QStringLiteral("/etc/timezone"));
         if (tzif.open(QIODevice::ReadOnly)) {
@@ -1058,16 +1069,6 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
             QTextStream ts(&tzif);
             if (!ts.atEnd())
                 ianaId = ts.readLine().toUtf8();
-        }
-    }
-
-    // On other distros /etc/localtime is symlink to real file so can extract name from the path
-    if (ianaId.isEmpty()) {
-        const QString path = QFile::symLinkTarget(QStringLiteral("/etc/localtime"));
-        if (!path.isEmpty()) {
-            // /etc/localtime is a symlink to the current TZ file, so extract from path
-            int index = path.indexOf(QLatin1String("/zoneinfo/")) + 10;
-            ianaId = path.mid(index).toUtf8();
         }
     }
 
