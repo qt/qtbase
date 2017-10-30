@@ -633,6 +633,9 @@ void tst_QMenuBar::check_accelKeys()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys1()
 {
+    if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
+        QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -667,6 +670,9 @@ void tst_QMenuBar::check_cursorKeys1()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys2()
 {
+    if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
+        QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -700,6 +706,9 @@ void tst_QMenuBar::check_cursorKeys2()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys3()
 {
+    if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
+        QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
