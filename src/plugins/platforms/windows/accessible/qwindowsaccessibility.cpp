@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtConfig>
+#include <QtCore/qglobal.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 

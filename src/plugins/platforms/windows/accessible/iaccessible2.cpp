@@ -36,7 +36,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore/QtConfig>
+#include <QtCore/qglobal.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "iaccessible2.h"

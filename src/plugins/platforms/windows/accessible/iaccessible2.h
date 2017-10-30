@@ -39,7 +39,7 @@
 #ifndef IACCESSIBLE2_H
 #define IACCESSIBLE2_H
 
-#include <QtCore/QtConfig>
+#include <QtCore/qglobal.h>
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "qwindowscombase.h"

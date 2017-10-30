@@ -39,9 +39,8 @@
 #ifndef QWINDOWSMSAAACCESSIBLE_H
 #define QWINDOWSMSAAACCESSIBLE_H
 
-#include <QtCore/QtConfig>
-#ifndef QT_NO_ACCESSIBILITY
 #include <QtCore/qglobal.h>
+#ifndef QT_NO_ACCESSIBILITY
 
 #include <QtCore/qt_windows.h>
 #include <QtCore/qsharedpointer.h>
