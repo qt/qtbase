@@ -2722,32 +2722,18 @@ void tst_QComboBox::resetModel()
 
 }
 
-static inline void centerCursor(const QWidget *w)
-{
-#ifndef QT_NO_CURSOR
-    // Force cursor movement to prevent QCursor::setPos() from returning prematurely on QPA:
-    const QPoint target(w->mapToGlobal(w->rect().center()));
-    QCursor::setPos(QPoint(target.x() + 1, target.y()));
-    QCursor::setPos(target);
-#else // !QT_NO_CURSOR
-    Q_UNUSED(w)
-#endif
-}
-
 void tst_QComboBox::keyBoardNavigationWithMouse()
 {
     QComboBox combo;
     combo.setEditable(false);
     setFrameless(&combo);
-    combo.move(200, 200);
-    for (int i = 0; i < 80; i++)
-        combo.addItem( QString::number(i));
+    for (int i = 0; i < 200; i++)
+        combo.addItem(QString::number(i));
 
+    combo.move(200, 200);
     combo.showNormal();
-    centerCursor(&combo); // QTBUG-33973, cursor needs to be within view from start on Mac.
     QApplication::setActiveWindow(&combo);
     QVERIFY(QTest::qWaitForWindowActive(&combo));
-    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
     QCOMPARE(combo.currentText(), QLatin1String("0"));
 
@@ -2755,18 +2741,12 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     QTRY_VERIFY(combo.hasFocus());
 
     QTest::keyClick(combo.lineEdit(), Qt::Key_Space);
-    QTest::qWait(30);
     QTRY_VERIFY(combo.view());
     QTRY_VERIFY(combo.view()->isVisible());
-    QTest::qWait(130);
 
     QCOMPARE(combo.currentText(), QLatin1String("0"));
 
-    // When calling cursor function, Windows CE responds with: This function is not supported on this system.
-#if !defined Q_OS_QNX
-    // Force cursor movement to prevent QCursor::setPos() from returning prematurely on QPA:
-    centerCursor(combo.view());
-    QTest::qWait(200);
+    QTest::mouseMove(&combo, combo.rect().center());
 
 #define GET_SELECTION(SEL) \
     QCOMPARE(combo.view()->selectionModel()->selection().count(), 1); \
@@ -2774,23 +2754,19 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     SEL = combo.view()->selectionModel()->selection().indexes().first().row()
 
     int selection;
-    GET_SELECTION(selection);
+    GET_SELECTION(selection); // get initial selection
 
-    //since we moved the mouse is in the middle it should even be around 5;
-    QVERIFY2(selection > 3, (QByteArrayLiteral("selection=") + QByteArray::number(selection)).constData());
-
-    static const int final = 40;
+    const int final = 40;
     for (int i = selection + 1;  i <= final; i++)
     {
         QTest::keyClick(combo.view(), Qt::Key_Down);
-        QTest::qWait(20);
         GET_SELECTION(selection);
         QCOMPARE(selection, i);
     }
 
     QTest::keyClick(combo.view(), Qt::Key_Enter);
     QTRY_COMPARE(combo.currentText(), QString::number(final));
-#endif
+#undef GET_SELECTION
 }
 
 void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
