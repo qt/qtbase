@@ -400,11 +400,10 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
             return hwnd;
 
     // Find top level with native window (there might be dialogs that do not have one).
-    const auto topLevels = QApplication::topLevelWidgets();
-    for (const QWidget *toplevel : topLevels) {
-        if (toplevel->windowHandle() && toplevel->windowHandle()->handle())
-            if (const HWND topLevelHwnd = QApplicationPrivate::getHWNDForWidget(toplevel))
-                return topLevelHwnd;
+    const auto allWindows = QGuiApplication::allWindows();
+    for (const QWindow *window : allWindows) {
+        if (window->isTopLevel() && window->type() != Qt::Desktop && window->handle() != nullptr)
+            return reinterpret_cast<HWND>(window->winId());
     }
 
     return GetDesktopWindow();
