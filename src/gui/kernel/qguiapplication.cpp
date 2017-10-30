@@ -1852,7 +1852,7 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     only see a press in a new location without any intervening moves. This could
     confuse code that is written for a real mouse. The same is true for mouse
     release events that change position, see tst_QWidget::touchEventSynthesizedMouseEvent()
-    auto test.
+    and tst_QWindow::generatedMouseMove() auto tests.
 */
 void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e)
 {
@@ -1874,7 +1874,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
         if (!mouseMove && positionChanged) {
             QWindowSystemInterfacePrivate::MouseEvent moveEvent(window, e->timestamp,
-                e->localPos, e->globalPos, e->buttons & ~button, e->modifiers, Qt::NoButton,
+                e->localPos, e->globalPos, e->buttons ^ button, e->modifiers, Qt::NoButton,
                 e->nonClientArea ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove,
                 e->source, e->nonClientArea);
             if (e->synthetic())
@@ -1977,14 +1977,14 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
                 const QPointF nativeLocalPoint = QHighDpi::toNativePixels(localPoint, screen);
                 const QPointF nativeGlobalPoint = QHighDpi::toNativePixels(globalPoint, screen);
                 QMouseEvent ev(type, nativeLocalPoint, nativeLocalPoint, nativeGlobalPoint,
-                                          button, mouse_buttons, e->modifiers, e->source);
+                                          button, e->buttons, e->modifiers, e->source);
                 ev.setTimestamp(e->timestamp);
                 cursor->pointerEvent(ev);
             }
     }
 #endif
 
-    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, mouse_buttons, e->modifiers, e->source);
+    QMouseEvent ev(type, localPoint, localPoint, globalPoint, button, e->buttons, e->modifiers, e->source);
     ev.setTimestamp(e->timestamp);
 
     if (window->d_func()->blockedByModalWindow && !qApp->d_func()->popupActive()) {
@@ -2018,7 +2018,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             point.state = Qt::TouchPointPressed;
         } else if (type == QEvent::MouseButtonRelease && button == Qt::LeftButton) {
             point.state = Qt::TouchPointReleased;
-        } else if (type == QEvent::MouseMove && (mouse_buttons & Qt::LeftButton)) {
+        } else if (type == QEvent::MouseMove && (e->buttons & Qt::LeftButton)) {
             point.state = Qt::TouchPointMoved;
         } else {
             return;
@@ -2039,7 +2039,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         if (!e->window.isNull() || e->nullWindow()) { // QTBUG-36364, check if window closed in response to press
             const QEvent::Type doubleClickType = e->nonClientArea ? QEvent::NonClientAreaMouseButtonDblClick : QEvent::MouseButtonDblClick;
             QMouseEvent dblClickEvent(doubleClickType, localPoint, localPoint, globalPoint,
-                                      button, mouse_buttons, e->modifiers, e->source);
+                                      button, e->buttons, e->modifiers, e->source);
             dblClickEvent.setTimestamp(e->timestamp);
             QGuiApplication::sendSpontaneousEvent(window, &dblClickEvent);
         }

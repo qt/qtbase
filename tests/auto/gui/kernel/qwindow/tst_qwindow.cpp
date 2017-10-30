@@ -106,6 +106,7 @@ private slots:
     void flags();
     void cleanup();
     void testBlockingWindowShownAfterModalDialog();
+    void generatedMouseMove();
 
 private:
     QPoint m_availableTopLeft;
@@ -918,6 +919,7 @@ public:
         }
     }
     void mouseMoveEvent(QMouseEvent *event) {
+        buttonStateInGeneratedMove = event->buttons();
         if (ignoreMouse) {
             event->ignore();
         } else {
@@ -999,6 +1001,7 @@ public:
     bool ignoreMouse, ignoreTouch;
 
     bool spinLoopWhenPressed;
+    Qt::MouseButtons buttonStateInGeneratedMove;
 };
 
 void tst_QWindow::testInputEvents()
@@ -2314,6 +2317,56 @@ void tst_QWindow::testBlockingWindowShownAfterModalDialog()
     normalWindowAfter.show();
     QVERIFY(QTest::qWaitForWindowExposed(&normalWindowAfter));
     QVERIFY(normalWindowAfter.gotBlocked);
+}
+
+void tst_QWindow::generatedMouseMove()
+{
+    InputTestWindow w;
+    w.setGeometry(QRect(m_availableTopLeft + QPoint(100, 100), m_testWindowSize));
+    w.show();
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QPoint point(10, 10);
+    QPoint step(2, 2);
+
+    QVERIFY(w.mouseMovedCount == 0);
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::NoButton, Qt::NoButton, QEvent::MouseMove);
+    QCoreApplication::processEvents();
+    QVERIFY(w.mouseMovedCount == 1);
+    // Press that does not change position should not generate mouse move
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::LeftButton, Qt::LeftButton, QEvent::MouseButtonPress);
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::LeftButton | Qt::RightButton, Qt::RightButton, QEvent::MouseButtonPress);
+    QCoreApplication::processEvents();
+    QVERIFY(w.mouseMovedCount == 1);
+
+    // Test moves generated for mouse release
+    point += step;
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::RightButton, Qt::LeftButton, QEvent::MouseButtonRelease);
+    QCoreApplication::processEvents();
+    QVERIFY(w.mouseMovedCount == 2);
+    QVERIFY(w.buttonStateInGeneratedMove == (Qt::LeftButton | Qt::RightButton));
+    point += step;
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::NoButton, Qt::RightButton, QEvent::MouseButtonRelease);
+    QCoreApplication::processEvents();
+    QVERIFY(w.mouseMovedCount == 3);
+    QVERIFY(w.buttonStateInGeneratedMove == Qt::RightButton);
+
+    // Test moves generated for mouse press
+    point += step;
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::LeftButton, Qt::LeftButton, QEvent::MouseButtonPress);
+    QCoreApplication::processEvents();
+    QVERIFY(w.mouseMovedCount == 4);
+    QVERIFY(w.buttonStateInGeneratedMove == Qt::NoButton);
+    point += step;
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::LeftButton | Qt::RightButton, Qt::RightButton, QEvent::MouseButtonPress);
+    QCoreApplication::processEvents();
+    QVERIFY(w.mouseMovedCount == 5);
+    QVERIFY(w.buttonStateInGeneratedMove == Qt::LeftButton);
+
+    // Release that does not change position should not generate mouse move
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::LeftButton, Qt::RightButton, QEvent::MouseButtonRelease);
+    QWindowSystemInterface::handleMouseEvent(&w, point, point, Qt::NoButton, Qt::LeftButton, QEvent::MouseButtonRelease);
+    QCoreApplication::processEvents();
+    QVERIFY(w.mouseMovedCount == 5);
 }
 
 #include <tst_qwindow.moc>
