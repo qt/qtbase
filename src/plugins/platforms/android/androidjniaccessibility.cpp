@@ -105,15 +105,15 @@ namespace QtAndroidAccessibility
     {
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (iface && iface->isValid()) {
-            jintArray jArray = env->NewIntArray(jsize(iface->childCount()));
-            for (int i = 0; i < iface->childCount(); ++i) {
+            const int childCount = iface->childCount();
+            QVarLengthArray<jint, 8> ifaceIdArray(childCount);
+            for (int i = 0; i < childCount; ++i) {
                 QAccessibleInterface *child = iface->child(i);
-                if (child && child->isValid()) {
-                    QAccessible::Id ifaceId = QAccessible::uniqueId(child);
-                    jint jid = ifaceId;
-                    env->SetIntArrayRegion(jArray, i, 1, &jid);
-                }
+                if (child && child->isValid())
+                    ifaceIdArray.append(QAccessible::uniqueId(child));
             }
+            jintArray jArray = env->NewIntArray(jsize(ifaceIdArray.count()));
+            env->SetIntArrayRegion(jArray, 0, ifaceIdArray.count(), ifaceIdArray.data());
             return jArray;
         }
 

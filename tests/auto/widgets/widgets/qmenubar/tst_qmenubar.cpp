@@ -719,9 +719,7 @@ void tst_QMenuBar::taskQTBUG56860_focus()
 #endif
     QMainWindow w;
     QMenuBar *mb = w.menuBar();
-
-    if (mb->platformMenuBar())
-        QSKIP("This test requires the Qt menubar.");
+    mb->setNativeMenuBar(false);
 
     QMenu *em = mb->addMenu("&Edit");
     em->setObjectName("EditMenu");
@@ -765,8 +763,7 @@ void tst_QMenuBar::check_homeKey()
 {
     // I'm temporarily shutting up this testcase.
     // Seems like the behaviour i'm expecting isn't ok.
-    QVERIFY( true );
-    return;
+    QSKIP("This test has been \"temporarily\" disabled at least since 2009 :)");
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to a Home key", Abort );
 
@@ -807,8 +804,7 @@ void tst_QMenuBar::check_endKey()
 {
     // I'm temporarily silenting this testcase.
     // Seems like the behaviour i'm expecting isn't ok.
-    QVERIFY( true );
-    return;
+    QSKIP("This test has been \"temporarily\" disabled at least since 2009 :)");
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to an End key", Abort );
 

@@ -491,10 +491,12 @@ private Q_SLOTS:
     void ioHttpRedirect_data();
     void ioHttpRedirect();
     void ioHttpRedirectFromLocalToRemote();
-    void ioHttpRedirectPost_data();
-    void ioHttpRedirectPost();
+    void ioHttpRedirectPostPut_data();
+    void ioHttpRedirectPostPut();
     void ioHttpRedirectMultipartPost_data();
     void ioHttpRedirectMultipartPost();
+    void ioHttpRedirectDelete();
+    void ioHttpRedirectCustom();
 #ifndef QT_NO_SSL
     void putWithServerClosingConnectionImmediately();
 #endif
@@ -546,7 +548,7 @@ static void setupSslServer(QSslSocket* serverSocket)
 }
 #endif
 
-// Does not work for PUT! Limited support for POST.
+// Limited support for POST and PUT.
 class MiniHttpServer: public QTcpServer
 {
     Q_OBJECT
@@ -678,7 +680,7 @@ public slots:
 
         if (doubleEndlPos != -1) {
             const int endOfHeader = doubleEndlPos + 4;
-            hasContent = receivedData.startsWith("POST");
+            hasContent = receivedData.startsWith("POST") || receivedData.startsWith("PUT");
             if (hasContent && contentLength == 0)
                 parseContentLength();
             contentRead = receivedData.length() - endOfHeader;
@@ -8546,37 +8548,46 @@ void tst_QNetworkReply::ioHttpRedirectFromLocalToRemote()
     QCOMPARE(reply->readAll(), reference.readAll());
 }
 
-void tst_QNetworkReply::ioHttpRedirectPost_data()
+void tst_QNetworkReply::ioHttpRedirectPostPut_data()
 {
+    QTest::addColumn<bool>("usePost");
     QTest::addColumn<QString>("status");
     QTest::addColumn<QByteArray>("data");
     QTest::addColumn<QString>("contentType");
 
     QByteArray data;
     data = "hello world";
-    QTest::addRow("307") << "307 Temporary Redirect" << data << "text/plain";
+    QTest::addRow("post-307") << true << "307 Temporary Redirect" << data << "text/plain";
+    QTest::addRow("put-307") << false << "307 Temporary Redirect" << data << "text/plain";
     QString permanentRedirect = "308 Permanent Redirect";
-    QTest::addRow("308") << permanentRedirect << data << "text/plain";
+    QTest::addRow("post-308") << true << permanentRedirect << data << "text/plain";
+    QTest::addRow("put-308") << false << permanentRedirect << data << "text/plain";
 
     // Some data from ::putToFile_data
     data = "";
-    QTest::newRow("empty") << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("post-empty") << true << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("put-empty") << false << permanentRedirect << data << "application/octet-stream";
 
     data = QByteArray("abcd\0\1\2\abcd",12);
-    QTest::newRow("with-nul") << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("post-with-nul") << true << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("put-with-nul") << false << permanentRedirect << data << "application/octet-stream";
 
     data = QByteArray(4097, '\4');
-    QTest::newRow("4k+1") << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("post-4k+1") << true << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("put-4k+1") << false << permanentRedirect << data << "application/octet-stream";
 
     data = QByteArray(128*1024+1, '\177');
-    QTest::newRow("128k+1") << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("post-128k+1") << true << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("put-128k+1") << false << permanentRedirect << data << "application/octet-stream";
 
     data = QByteArray(2*1024*1024+1, '\177');
-    QTest::newRow("2MB+1") << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("post-2MB+1") << true << permanentRedirect << data << "application/octet-stream";
+    QTest::newRow("put-2MB+1") << false << permanentRedirect << data << "application/octet-stream";
 }
 
-void tst_QNetworkReply::ioHttpRedirectPost()
+void tst_QNetworkReply::ioHttpRedirectPostPut()
 {
+    QFETCH(bool, usePost);
     QFETCH(QString, status);
     QFETCH(QByteArray, data);
     QFETCH(QString, contentType);
@@ -8595,7 +8606,7 @@ void tst_QNetworkReply::ioHttpRedirectPost()
     auto oldRedirectPolicy = manager.redirectPolicy();
     manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
 
-    QNetworkReplyPtr reply(manager.post(request, data));
+    QNetworkReplyPtr reply(usePost ? manager.post(request, data) : manager.put(request, data));
     // Restore previous policy:
     manager.setRedirectPolicy(oldRedirectPolicy);
 
@@ -8662,6 +8673,50 @@ void tst_QNetworkReply::ioHttpRedirectMultipartPost()
     expectedReplyData.prepend("content type: multipart/" + contentType + "; boundary=\"" + multiPart->boundary() + "\"\n");
 //    QEXPECT_FAIL("nested", "the server does not understand nested multipart messages", Continue); // see above
     QCOMPARE(replyData, expectedReplyData);
+}
+
+void tst_QNetworkReply::ioHttpRedirectDelete()
+{
+    MiniHttpServer target(httpEmpty200Response, false);
+    QUrl targetUrl("http://localhost/");
+    targetUrl.setPort(target.serverPort());
+
+    QString redirectReply = tempRedirectReplyStr().arg(targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1());
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+    QNetworkRequest request(url);
+    auto oldRedirectPolicy = manager.redirectPolicy();
+    manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
+
+    QNetworkReplyPtr reply(manager.deleteResource(request));
+    // Restore previous policy:
+    manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+    QVERIFY2(target.receivedData.startsWith("DELETE"), "Target server called with the wrong method");
+}
+
+void tst_QNetworkReply::ioHttpRedirectCustom()
+{
+    MiniHttpServer target(httpEmpty200Response, false);
+    QUrl targetUrl("http://localhost/");
+    targetUrl.setPort(target.serverPort());
+
+    QString redirectReply = tempRedirectReplyStr().arg(targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1());
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+    QNetworkRequest request(url);
+    auto oldRedirectPolicy = manager.redirectPolicy();
+    manager.setRedirectPolicy(QNetworkRequest::RedirectPolicy::NoLessSafeRedirectPolicy);
+
+    QNetworkReplyPtr reply(manager.sendCustomRequest(request, QByteArrayLiteral("CUSTOM")));
+    // Restore previous policy:
+    manager.setRedirectPolicy(oldRedirectPolicy);
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+    QVERIFY2(target.receivedData.startsWith("CUSTOM"), "Target server called with the wrong method");
 }
 
 #ifndef QT_NO_SSL

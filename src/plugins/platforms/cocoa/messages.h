@@ -45,6 +45,17 @@
 
 QT_BEGIN_NAMESPACE
 
+enum {
+    ServicesAppMenuItem = 0,
+    HideAppMenuItem,
+    HideOthersAppMenuItem,
+    ShowAllAppMenuItem,
+    PreferencesAppMenuItem,
+    QuitAppMenuItem,
+    AboutAppMenuItem
+};
+
+
 QString msgAboutQt();
 
 QString qt_mac_applicationmenu_string(int type);

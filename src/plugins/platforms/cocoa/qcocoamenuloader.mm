@@ -47,13 +47,7 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/qcoreapplication.h>
-#include <QtCore/qdir.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qdebug.h>
 #include <QtGui/private/qguiapplication_p.h>
-
-QT_FORWARD_DECLARE_CLASS(QCFString)
-QT_FORWARD_DECLARE_CLASS(QString)
 
 @implementation QCocoaMenuLoader
 
@@ -314,13 +308,13 @@ QT_FORWARD_DECLARE_CLASS(QString)
 {
 
 #ifndef QT_NO_TRANSLATION
-    [servicesItem setTitle:qt_mac_applicationmenu_string(0).toNSString()];
-    [hideItem setTitle:qt_mac_applicationmenu_string(1).arg(qt_mac_applicationName()).toNSString()];
-    [hideAllOthersItem setTitle:qt_mac_applicationmenu_string(2).toNSString()];
-    [showAllItem setTitle:qt_mac_applicationmenu_string(3).toNSString()];
-    [preferencesItem setTitle:qt_mac_applicationmenu_string(4).toNSString()];
-    [quitItem setTitle:qt_mac_applicationmenu_string(5).arg(qt_mac_applicationName()).toNSString()];
-    [aboutItem setTitle:qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName()).toNSString()];
+    [servicesItem setTitle:qt_mac_applicationmenu_string(ServicesAppMenuItem).toNSString()];
+    [hideItem setTitle:qt_mac_applicationmenu_string(HideAppMenuItem).arg(qt_mac_applicationName()).toNSString()];
+    [hideAllOthersItem setTitle:qt_mac_applicationmenu_string(HideOthersAppMenuItem).toNSString()];
+    [showAllItem setTitle:qt_mac_applicationmenu_string(ShowAllAppMenuItem).toNSString()];
+    [preferencesItem setTitle:qt_mac_applicationmenu_string(PreferencesAppMenuItem).toNSString()];
+    [quitItem setTitle:qt_mac_applicationmenu_string(QuitAppMenuItem).arg(qt_mac_applicationName()).toNSString()];
+    [aboutItem setTitle:qt_mac_applicationmenu_string(AboutAppMenuItem).arg(qt_mac_applicationName()).toNSString()];
 #endif
 }
 
