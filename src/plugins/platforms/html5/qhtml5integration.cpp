@@ -169,7 +169,6 @@ QPlatformFontDatabase *QHTML5Integration::fontDatabase() const
 
 QAbstractEventDispatcher *QHTML5Integration::createEventDispatcher() const
 {
- //   return createUnixEventDispatcher();
     return new QHtml5EventDispatcher();
 }
 
@@ -192,16 +191,9 @@ int QHTML5Integration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, voi
     QHTML5Integration::get()->mScreen->invalidateSize();
     //QHTML5Integration::get()->mScreen->resizeMaximizedWindows();
     QHTML5Integration::get()->mCompositor->requestRedraw();
-    //QHtml5Window::get()->setGeometry(windowRect);
 
     return 0;
 }
-
-//QHtml5Window *QHTML5Integration::topLevelWindow()
-//{
-    //return m_topLevelWindow;
-    //return nullptr;
-//}
 
 
 QT_END_NAMESPACE

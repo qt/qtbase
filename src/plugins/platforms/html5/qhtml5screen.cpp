@@ -174,11 +174,6 @@ void QHTML5Screen::createAndSetPlatformContext()
     eglQuerySurface(m_dpy, m_surface, EGL_HEIGHT, &h);
 
     m_geometry = QRect(0,0,w,h);
-
-    //m_context.reset(new QOpenGLContext);
-    //m_context->setFormat(platformFormat);
-    //m_context->setScreen(screen);
-    //m_context->create();
 }
 
 QRect QHTML5Screen::geometry() const
@@ -217,93 +212,13 @@ void QHTML5Screen::resizeMaximizedWindows()
     QPlatformScreen::resizeMaximizedWindows();
 }
 
-/*
-void QHTML5Screen::addWindow(QHtml5Window *window)
-{
-    mWindowStack.prepend(window);
-    if (!mPendingBackingStores.isEmpty()) {
-        //check if we have a backing store for this window
-        for (int i = 0; i < mPendingBackingStores.size(); ++i) {
-            QHTML5BackingStore *bs = mPendingBackingStores.at(i);
-            // this gets called during QWindow::create() at a point where the
-            // invariant (window->handle()->window() == window) is broken
-            if (bs->window() == window->window()) {
-                window->setBackingStore(bs);
-                mPendingBackingStores.removeAt(i);
-                break;
-            }
-        }
-    }
-    setDirty(window->geometry());
-    QWindow *w = topWindow();
-    QWindowSystemInterface::handleWindowActivated(w);
-    topWindowChanged(w);
-}
-*/
-
-/*
-void QHTML5Screen::removeWindow(QHtml5Window *window)
-{
-    mWindowStack.removeOne(window);
-    setDirty(window->geometry());
-    QWindow *w = topWindow();
-    QWindowSystemInterface::handleWindowActivated(w);
-    topWindowChanged(w);
-}
-*/
-
-/*
-void QHTML5Screen::raise(QHtml5Window *window)
-{
-    int index = mWindowStack.indexOf(window);
-    if (index <= 0)
-        return;
-    mWindowStack.move(index, 0);
-    setDirty(window->geometry());
-    QWindow *w = topWindow();
-    QWindowSystemInterface::handleWindowActivated(w);
-    topWindowChanged(w);
-}
-*/
-
-/*
-void QHTML5Screen::lower(QHtml5Window *window)
-{
-    int index = mWindowStack.indexOf(window);
-    if (index == -1 || index == (mWindowStack.size() - 1))
-        return;
-    mWindowStack.move(index, mWindowStack.size() - 1);
-    setDirty(window->geometry());
-    QWindow *w = topWindow();
-    QWindowSystemInterface::handleWindowActivated(w);
-    topWindowChanged(w);
-}
-*/
-
 QWindow *QHTML5Screen::topWindow() const
 {
-    /*
-    for (QHtml5Window *fbw : mWindowStack) {
-        if (fbw->window()->type() == Qt::Window || fbw->window()->type() == Qt::Dialog)
-            return fbw->window();
-    }
-    return nullptr;
-    */
-
     return mCompositor->keyWindow();
 }
 
 QWindow *QHTML5Screen::topLevelAt(const QPoint & p) const
 {
-    /*
-    for (QHtml5Window *fbw : mWindowStack) {
-        if (fbw->geometry().contains(p, false) && fbw->window()->isVisible())
-        {
-            return fbw->window();
-        }
-    }
-    return nullptr;
-    */
     return mCompositor->windowAt(p);
 }
 
@@ -312,29 +227,5 @@ void QHTML5Screen::invalidateSize()
     m_geometry = QRect();
 }
 
-/*
-int QHTML5Screen::windowCount() const
-{
-    return mWindowStack.count();
-}
-*/
-
-/*
-void QHTML5Screen::setDirty(const QRect &rect)
-{
-    const QRect intersection = rect.intersected(m_geometry);
-    const QPoint screenOffset = m_geometry.topLeft();
-    mRepaintRegion += intersection.translated(-screenOffset); // global to local translation
-    scheduleUpdate();
-}
-
-void QHTML5Screen::scheduleUpdate()
-{
-    if (!mUpdatePending) {
-        mUpdatePending = true;
-        QCoreApplication::postEvent(this, new QEvent(QEvent::UpdateRequest));
-    }
-}
-*/
 
 QT_END_NAMESPACE
