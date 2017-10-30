@@ -36,6 +36,8 @@
 #include <qset.h>
 #include <qtextcodec.h>
 
+#include <QtTest/private/qtesthelpers_p.h>
+
 #if defined(Q_OS_WIN)
 # include <windows.h>
 #endif
@@ -141,16 +143,6 @@ void tst_QTemporaryFile::getSetCheck()
     QCOMPARE(true, obj1.autoRemove());
 }
 
-static inline bool canHandleUnicodeFileNames()
-{
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    return true;
-#else
-    // Check for UTF-8 by converting the Euro symbol (see tst_utf8)
-    return QFile::encodeName(QString(QChar(0x20AC))) == QByteArrayLiteral("\342\202\254");
-#endif
-}
-
 static QString hanTestText()
 {
     QString text;
@@ -199,7 +191,7 @@ void tst_QTemporaryFile::fileTemplate_data()
     QTest::newRow("set template, with xxx") << "" << "qt_" << ".xxx" << "qt_XXXXXX.xxx";
     QTest::newRow("set template, with >6 X's") << "" << "qt_" << ".xxx" << "qt_XXXXXXXXXXXXXX.xxx";
     QTest::newRow("set template, with >6 X's, no suffix") << "" << "qt_" << "" << "qt_XXXXXXXXXXXXXX";
-    if (canHandleUnicodeFileNames()) {
+    if (QTestPrivate::canHandleUnicodeFileNames()) {
         // Test Umlauts (contained in Latin1)
         QString prefix = "qt_" + umlautTestText();
         QTest::newRow("Umlauts") << (prefix + "XXXXXX") << prefix << QString() << QString();
@@ -761,7 +753,7 @@ void tst_QTemporaryFile::QTBUG_4796_data()
     QTest::newRow("XXXXXXbla") << QString() << QString("bla") << true;
     QTest::newRow("does-not-exist/qt_temp.XXXXXX") << QString("does-not-exist/qt_temp") << QString() << false;
 
-    if (canHandleUnicodeFileNames()) {
+    if (QTestPrivate::canHandleUnicodeFileNames()) {
         QTest::newRow("XXXXXX<unicode>") << QString() << unicode << true;
         QTest::newRow("<unicode>XXXXXX") << unicode << QString() << true;
         QTest::newRow("<unicode>XXXXXX<unicode>") << unicode << unicode << true;

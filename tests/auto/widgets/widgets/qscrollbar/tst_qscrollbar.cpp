@@ -33,16 +33,9 @@
 #include <QScrollArea>
 #include <QScreen>
 
-static inline void centerOnScreen(QWidget *w, const QSize &size)
-{
-    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
+#include <QtTest/private/qtesthelpers_p.h>
 
-static inline void centerOnScreen(QWidget *w)
-{
-    centerOnScreen(w, w->geometry().size());
-}
+using namespace QTestPrivate;
 
 class tst_QScrollBar : public QObject
 {

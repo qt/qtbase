@@ -3,7 +3,7 @@ testcase.timeout = 500 # this test is slow
 TARGET = tst_qgraphicsview
 
 QT += widgets widgets-private testlib
-QT += core-private gui-private
+QT += core-private gui-private testlib-private
 
 SOURCES  += tst_qgraphicsview.cpp tst_qgraphicsview_2.cpp
 HEADERS +=  tst_qgraphicsview.h

@@ -46,6 +46,10 @@
 #include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QVBoxLayout>
 
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
+
 #if defined(Q_OS_WIN)
 #  include <windows.h>
 #  include <QtGui/QGuiApplication>
@@ -63,16 +67,6 @@ static inline HWND getHWNDForWidget(const QWidget *widget)
 Q_DECLARE_METATYPE(QAbstractItemView::ScrollMode)
 Q_DECLARE_METATYPE(QMargins)
 Q_DECLARE_METATYPE(QSize)
-
-// Make a widget frameless to prevent size constraints of title bars
-// from interfering (Windows).
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
 
 static QStringList generateList(const QString &prefix, int size)
 {

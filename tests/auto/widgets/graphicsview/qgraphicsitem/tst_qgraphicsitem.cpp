@@ -28,6 +28,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicsview_p.h>
@@ -125,17 +126,6 @@ static void sendKeyClick(QGraphicsScene *scene, Qt::Key key)
 {
     sendKeyPress(scene, key);
     sendKeyRelease(scene, key);
-}
-
-static inline void centerOnScreen(QWidget *w, const QSize &size)
-{
-    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    centerOnScreen(w, w->geometry().size());
 }
 
 class EventSpy : public QGraphicsWidget
@@ -4211,7 +4201,7 @@ void tst_QGraphicsItem::cursor()
 
     QWidget topLevel;
     topLevel.resize(250, 150);
-    centerOnScreen(&topLevel);
+    QTestPrivate::centerOnScreen(&topLevel);
     QGraphicsView view(&scene,&topLevel);
     view.setFixedSize(200, 100);
     topLevel.show();

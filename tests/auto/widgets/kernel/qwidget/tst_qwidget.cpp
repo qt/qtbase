@@ -72,6 +72,9 @@
 #endif
 
 #include <QtTest/QTest>
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <QtCore/qt_windows.h>
@@ -107,22 +110,6 @@ bool macHasAccessToWindowsServer()
     return (sessionInfo & sessionHasGraphicAccess);
 }
 #endif
-
-// Make a widget frameless to prevent size constraints of title bars
-// from interfering (Windows).
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 static inline void setWindowsAnimationsEnabled(bool enabled)

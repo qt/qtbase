@@ -48,6 +48,10 @@ QT_FORWARD_DECLARE_CLASS(QMainWindow)
 
 #include <qmenubar.h>
 
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
+
 // Helper to calculate the action position in window coordinates
 static inline QPoint widgetToWindowPos(const QWidget *w, const QPoint &pos)
 {
@@ -72,12 +76,6 @@ class Menu : public QMenu
                 addAction("action2");
             }
 };
-
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
 
 struct TestMenu
 {
