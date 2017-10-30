@@ -77,12 +77,19 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
     if (!dir)
         return false;
 
-    dirEntry = QT_READDIR(dir);
+    for (;;) {
+        dirEntry = QT_READDIR(dir);
 
-    if (dirEntry) {
-        fileEntry = QFileSystemEntry(nativePath + QByteArray(dirEntry->d_name), QFileSystemEntry::FromNativePath());
-        metaData.fillFromDirEnt(*dirEntry);
-        return true;
+        if (dirEntry) {
+            // process entries with correct UTF-8 names only
+            if (QFile::encodeName(QFile::decodeName(dirEntry->d_name)) == dirEntry->d_name) {
+                fileEntry = QFileSystemEntry(nativePath + QByteArray(dirEntry->d_name), QFileSystemEntry::FromNativePath());
+                metaData.fillFromDirEnt(*dirEntry);
+                return true;
+            }
+        } else {
+            break;
+        }
     }
 
     lastError = errno;
