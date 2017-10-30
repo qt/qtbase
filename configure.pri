@@ -260,7 +260,7 @@ defineTest(qtConfTest_architecture) {
     else: android:exists($$test_out_dir/libarch.so): \
         content = $$cat($$test_out_dir/libarch.so, blob)
     else: html5:exists($$test_out_dir/arch.js): \
-        content = $$system(node $$test_out_dir/arch.js, blob)
+        content = $$system(cd $$test_out_dir && node arch.js && cd -, blob)
     else: \
         error("$$eval($${1}.label) detection binary not found.")
 
