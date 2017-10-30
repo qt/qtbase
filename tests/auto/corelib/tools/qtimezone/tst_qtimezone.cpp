@@ -45,6 +45,8 @@ private slots:
     void dataStreamTest();
     void isTimeZoneIdAvailable();
     void availableTimeZoneIds();
+    void specificTransition_data();
+    void specificTransition();
     void transitionEachZone_data();
     void transitionEachZone();
     void checkOffset_data();
@@ -396,6 +398,66 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
     QCOMPARE(QTimeZonePrivate::isValidId("123456789012345/12345678901234"), false);
     QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/123456789012345"), false);
 #endif // QT_BUILD_INTERNAL
+}
+
+void tst_QTimeZone::specificTransition_data()
+{
+    QTest::addColumn<QByteArray>("zone");
+    QTest::addColumn<QDate>("start");
+    QTest::addColumn<QDate>("stop");
+    QTest::addColumn<int>("count");
+    QTest::addColumn<QDateTime>("atUtc");
+    // In minutes:
+    QTest::addColumn<int>("offset");
+    QTest::addColumn<int>("stdoff");
+    QTest::addColumn<int>("dstoff");
+
+    // Moscow ditched DST on 2010-10-31 but has since changed standard offset twice.
+#ifdef Q_OS_WIN
+    // Win7 is too old to know about this transition:
+    if (QOperatingSystemVersion::current() > QOperatingSystemVersion::Windows7)
+#endif
+    {
+        QTest::newRow("Moscow/2014") // From original bug-report
+            << QByteArray("Europe/Moscow")
+            << QDate(2011, 4, 1) << QDate(2017, 12,31) << 1
+            << QDateTime(QDate(2014, 10, 26), QTime(2, 0, 0),
+                         Qt::OffsetFromUTC, 4 * 3600).toUTC()
+            << 3 * 3600 << 3 * 3600 << 0;
+    }
+    QTest::newRow("Moscow/2011") // Transition on 2011-03-27
+        << QByteArray("Europe/Moscow")
+        << QDate(2010, 11, 1) << QDate(2014, 10, 25) << 1
+        << QDateTime(QDate(2011, 3, 27), QTime(2, 0, 0),
+                     Qt::OffsetFromUTC, 3 * 3600).toUTC()
+        << 4 * 3600 << 4 * 3600 << 0;
+}
+
+void tst_QTimeZone::specificTransition()
+{
+    // Regression test for QTBUG-42021 (on MS-Win)
+    QFETCH(QByteArray, zone);
+    QFETCH(QDate, start);
+    QFETCH(QDate, stop);
+    QFETCH(int, count);
+    // No attempt to check abbreviations; to much cross-platform variation.
+    QFETCH(QDateTime, atUtc);
+    QFETCH(int, offset);
+    QFETCH(int, stdoff);
+    QFETCH(int, dstoff);
+
+    QTimeZone timeZone(zone);
+    if (!timeZone.isValid())
+        QSKIP("Missing time-zone data");
+    QTimeZone::OffsetDataList transits =
+        timeZone.transitions(QDateTime(start, QTime(0, 0), timeZone),
+                             QDateTime(stop, QTime(23, 59), timeZone));
+    QCOMPARE(transits.length(), count);
+    const QTimeZone::OffsetData &transition = transits.at(0);
+    QCOMPARE(transition.offsetFromUtc, offset);
+    QCOMPARE(transition.standardTimeOffset, stdoff);
+    QCOMPARE(transition.daylightTimeOffset, dstoff);
+    QCOMPARE(transition.atUtc, atUtc);
 }
 
 void tst_QTimeZone::transitionEachZone_data()
