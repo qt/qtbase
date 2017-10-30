@@ -42,7 +42,7 @@ contains(TEMPLATE, .*app) {
 }
 
 # Creates the stand-alone version of the library from bitcode
-contains(TEMPLATE, .*lib) {
+!static:contains(TEMPLATE, .*lib): {
     load(resolve_target)
     QMAKE_POST_LINK += $$QMAKE_LINK_SHLIB $$QMAKE_RESOLVED_TARGET -o $${QMAKE_RESOLVED_TARGET}.js
 
