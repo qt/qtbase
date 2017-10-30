@@ -111,6 +111,9 @@
 
 #include <qtwidgets_tracepoints_p.h>
 
+#include <algorithm>
+#include <iterator>
+
 //#define ALIEN_DEBUG
 
 static void initResources()
@@ -1658,12 +1661,12 @@ void QApplicationPrivate::notifyWindowIconChanged()
 QWidgetList QApplication::topLevelWidgets()
 {
     QWidgetList list;
-    QWidgetList all = allWidgets();
-
-    for (QWidgetList::ConstIterator it = all.constBegin(), cend = all.constEnd(); it != cend; ++it) {
-        QWidget *w = *it;
-        if (w->isWindow() && w->windowType() != Qt::Desktop)
-            list.append(w);
+    if (QWidgetPrivate::allWidgets != nullptr) {
+        const auto isTopLevelWidget = [] (const QWidget *w) {
+            return w->isWindow() && w->windowType() != Qt::Desktop;
+        };
+        std::copy_if(QWidgetPrivate::allWidgets->cbegin(), QWidgetPrivate::allWidgets->cend(),
+                     std::back_inserter(list), isTopLevelWidget);
     }
     return list;
 }
