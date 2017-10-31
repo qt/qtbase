@@ -1825,7 +1825,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                                     titleRect.height(), titleRect.width());
                 }
                 proxy()->drawItemText(p, titleRect,
-                            Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, palette,
+                            Qt::AlignLeft | Qt::AlignVCenter, palette,
                             dwOpt->state & State_Enabled, dwOpt->title,
                             floating ? (active ? QPalette::BrightText : QPalette::Window) : QPalette::WindowText);
                 p->setFont(oldFont);

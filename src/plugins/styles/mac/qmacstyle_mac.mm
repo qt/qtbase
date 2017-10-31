@@ -3922,7 +3922,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                       titleRect.width());
 
                 const auto text = p->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight, titleRect.width());
-                proxy()->drawItemText(p, titleRect, Qt::AlignCenter | Qt::TextShowMnemonic, dwOpt->palette,
+                proxy()->drawItemText(p, titleRect, Qt::AlignCenter, dwOpt->palette,
                                       dwOpt->state & State_Enabled, text, QPalette::WindowText);
             }
             p->restore();

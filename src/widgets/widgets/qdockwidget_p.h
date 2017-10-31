@@ -108,6 +108,7 @@ public:
 //    QMainWindow *findMainWindow(QWidget *widget) const;
     QRect undockedGeometry;
     QString fixedWindowTitle;
+    QString dockedWindowTitle;
 
     bool mousePressEvent(QMouseEvent *event);
     bool mouseDoubleClickEvent(QMouseEvent *event);

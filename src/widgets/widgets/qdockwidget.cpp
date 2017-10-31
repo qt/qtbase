@@ -55,6 +55,7 @@
 
 #include <private/qwidgetresizehandler_p.h>
 #include <private/qstylesheetstyle_p.h>
+#include <qpa/qplatformtheme.h>
 
 #include "qdockwidget_p.h"
 #include "qmainwindowlayout_p.h"

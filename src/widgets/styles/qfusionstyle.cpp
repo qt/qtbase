@@ -1256,7 +1256,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                                                             Qt::ElideRight, titleRect.width());
                 proxy()->drawItemText(painter,
                                       titleRect,
-                                      Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, dwOpt->palette,
+                                      Qt::AlignLeft | Qt::AlignVCenter, dwOpt->palette,
                                       dwOpt->state & State_Enabled, titleText,
                                       QPalette::WindowText);
             }
