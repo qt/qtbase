@@ -259,6 +259,22 @@ static DYNAMIC_TIME_ZONE_INFORMATION dynamicInfoForId(const QByteArray &windowsI
     }
     return dtzInfo;
 }
+
+static QWinTimeZonePrivate::QWinTransitionRule
+readDynamicRule(DYNAMIC_TIME_ZONE_INFORMATION &dtzi, int year, bool *ok)
+{
+    TIME_ZONE_INFORMATION tzi;
+    QWinTimeZonePrivate::QWinTransitionRule rule;
+    *ok = GetTimeZoneInformationForYear(year, &dtzi, &tzi);
+    if (*ok) {
+        rule.startYear = 0;
+        rule.standardTimeBias = tzi.Bias + tzi.StandardBias;
+        rule.daylightTimeBias = tzi.Bias + tzi.DaylightBias - rule.standardTimeBias;
+        rule.standardTimeRule = tzi.StandardDate;
+        rule.daylightTimeRule = tzi.DaylightDate;
+    }
+    return rule;
+}
 #endif // QT_USE_REGISTRY_TIMEZONE
 
 static QList<QByteArray> availableWindowsIds()
@@ -484,16 +500,17 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
                     QWinTransitionRule rule = readRegistryRule(dynamicKey,
                                                                (LPCWSTR)QString::number(year).utf16(),
                                                                &ruleOk);
-                    rule.startYear = year;
-                    if (ruleOk)
+                    if (ruleOk) {
+                        rule.startYear = m_tranRules.isEmpty() ? MIN_YEAR : year;
                         m_tranRules.append(rule);
+                    }
                 }
                 RegCloseKey(dynamicKey);
             } else {
                 // No dynamic data so use the base data
                 bool ruleOk;
                 QWinTransitionRule rule = readRegistryRule(baseKey, L"TZI", &ruleOk);
-                rule.startYear = 1970;
+                rule.startYear = MIN_YEAR;
                 if (ruleOk)
                     m_tranRules.append(rule);
             }
@@ -510,20 +527,25 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
             DWORD firstYear = 0;
             DWORD lastYear = 0;
             DYNAMIC_TIME_ZONE_INFORMATION dtzi = dynamicInfoForId(m_windowsId);
-            GetDynamicTimeZoneInformationEffectiveYears(&dtzi, &firstYear, &lastYear);
-            // If there is no dynamic information, you can still query for
-            // year 0, which helps simplifying following part
-            for (DWORD year = firstYear; year <= lastYear; ++year) {
-                TIME_ZONE_INFORMATION tzi;
-                if (!GetTimeZoneInformationForYear(year, &dtzi, &tzi))
-                    continue;
-                QWinTransitionRule rule;
-                rule.standardTimeBias = tzi.Bias + tzi.StandardBias;
-                rule.daylightTimeBias = tzi.Bias + tzi.DaylightBias - rule.standardTimeBias;
-                rule.standardTimeRule = tzi.StandardDate;
-                rule.daylightTimeRule = tzi.DaylightDate;
-                rule.startYear = year;
-                m_tranRules.append(rule);
+            if (GetDynamicTimeZoneInformationEffectiveYears(&dtzi, &firstYear, &lastYear)
+                == ERROR_SUCCESS && firstYear < lastYear) {
+                for (DWORD year = firstYear; year <= lastYear; ++year) {
+                    bool ok = false;
+                    QWinTransitionRule rule = readDynamicRule(dtzi, year, &ok);
+                    if (ok) {
+                        rule.startYear = m_tranRules.isEmpty() ? MIN_YEAR : year;
+                        m_tranRules.append(rule);
+                    }
+                }
+            } else {
+                // At least try to get the non-dynamic data:
+                dtzi.DynamicDaylightTimeDisabled = false;
+                bool ok = false;
+                QWinTransitionRule rule = readDynamicRule(dtzi, 1970, &ok);
+                if (ok) {
+                    rule.startYear = MIN_YEAR;
+                    m_tranRules.append(rule);
+                }
             }
         }
 #endif // QT_USE_REGISTRY_TIMEZONE
