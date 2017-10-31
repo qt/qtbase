@@ -47,6 +47,8 @@ private slots:
     void availableTimeZoneIds();
     void transitionEachZone_data();
     void transitionEachZone();
+    void checkOffset_data();
+    void checkOffset();
     void stressTest();
     void windowsId();
     void isValidId_data();
@@ -444,6 +446,51 @@ void tst_QTimeZone::transitionEachZone()
         QCOMPARE(stamp % 1000, 0);
         QCOMPARE(here - stamp / 1000, 0);
     }
+}
+
+void tst_QTimeZone::checkOffset_data()
+{
+    QTest::addColumn<QByteArray>("zoneName");
+    QTest::addColumn<QDateTime>("when");
+    QTest::addColumn<int>("netOffset");
+    QTest::addColumn<int>("stdOffset");
+    QTest::addColumn<int>("dstOffset");
+
+    struct {
+        const char *zone, *nick;
+        int year, month, day, hour, min, sec;
+        int std, dst;
+    } table[] = {
+        // Kiev: regression test for QTBUG-64122 (on MS):
+        { "Europe/Kiev", "summer", 2017, 10, 27, 12, 0, 0, 2 * 3600, 3600 },
+        { "Europe/Kiev", "winter", 2017, 10, 29, 12, 0, 0, 2 * 3600, 0 }
+    };
+    for (const auto &entry : table) {
+        QTimeZone zone(entry.zone);
+        if (zone.isValid()) {
+            QTest::addRow("%s@%s", entry.zone, entry.nick)
+                << QByteArray(entry.zone)
+                << QDateTime(QDate(entry.year, entry.month, entry.day),
+                             QTime(entry.hour, entry.min, entry.sec), zone)
+                << entry.dst + entry.std << entry.std << entry.dst;
+        }
+    }
+}
+
+void tst_QTimeZone::checkOffset()
+{
+    QFETCH(QByteArray, zoneName);
+    QFETCH(QDateTime, when);
+    QFETCH(int, netOffset);
+    QFETCH(int, stdOffset);
+    QFETCH(int, dstOffset);
+
+    QTimeZone zone(zoneName);
+    QVERIFY(zone.isValid()); // It was when _data() added the row !
+    QCOMPARE(zone.offsetFromUtc(when), netOffset);
+    QCOMPARE(zone.standardTimeOffset(when), stdOffset);
+    QCOMPARE(zone.daylightTimeOffset(when), dstOffset);
+    QCOMPARE(zone.isDaylightTime(when), dstOffset != 0);
 }
 
 void tst_QTimeZone::availableTimeZoneIds()
