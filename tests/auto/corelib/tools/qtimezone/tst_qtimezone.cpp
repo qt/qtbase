@@ -1177,7 +1177,8 @@ void tst_QTimeZone::testEpochTranPrivate(const QTimeZonePrivate &tzp)
     // Pre-epoch time-zones might not be supported at all:
     tran = tzp.nextTransition(QDateTime(QDate(1601, 1, 1), QTime(0, 0),
                                         Qt::UTC).toMSecsSinceEpoch());
-    if (tran.atMSecsSinceEpoch != QTimeZonePrivate::invalidSeconds()
+    if (tran.atMSecsSinceEpoch != QTimeZonePrivate::invalidMSecs()
+        // Toronto *did* have a transition before 1970 (DST since 1918):
         && tran.atMSecsSinceEpoch < 0) {
         // ... but, if they are, we should be able to search back to them:
         tran = tzp.previousTransition(0); // i.e. last before epoch
