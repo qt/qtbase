@@ -239,13 +239,15 @@ private slots:
     void testStreamWithHide();
     void testStylePosition();
     void stretchAndRestoreLastSection();
-
+    void testMinMaxSectionSizeStretched();
+    void testMinMaxSectionSizeNotStretched();
     void sizeHintCrash();
 
 protected:
     void setupTestData(bool use_reset_model = false);
     void additionalInit();
     void calculateAndCheck(int cppline, const int precalced_comparedata[]);
+    void testMinMaxSectionSize(bool stretchLastSection);
 
     QWidget *topLevel;
     QHeaderView *view;
@@ -402,6 +404,7 @@ void tst_QHeaderView::init()
     QCOMPARE(view->length(), 0);
     QCOMPARE(view->sizeHint(), QSize(0,0));
     QCOMPARE(view->sectionSizeHint(0), -1);
+    view->setMinimumSectionSize(0);    // system default min size can be to large
 
     /*
     model = new QStandardItemModel(1, 1);
@@ -1604,6 +1607,7 @@ static QByteArray savedState()
     QStandardItemModel m(4, 4);
     QHeaderView h1(Qt::Horizontal);
     h1.setModel(&m);
+    h1.setMinimumSectionSize(0);    // system default min size can be to large
     h1.swapSections(0, 2);
     h1.resizeSection(1, 10);
     h1.setSortIndicatorShown(true);
@@ -2194,6 +2198,7 @@ void tst_QHeaderView::task248050_hideRow()
     //this is the sequence of events that make the task fail
     protected_QHeaderView header(Qt::Vertical);
     QStandardItemModel model(0, 1);
+    header.setMinimumSectionSize(0);    // system default min size can be to large
     header.setStretchLastSection(false);
     header.setDefaultSectionSize(17);
     header.setModel(&model);
@@ -3181,6 +3186,77 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     header.setStretchLastSection(false);
     QCOMPARE(header.sectionSize(9), someOtherSectionSize);
 }
+
+void tst_QHeaderView::testMinMaxSectionSizeStretched()
+{
+    testMinMaxSectionSize(true);
+}
+
+void tst_QHeaderView::testMinMaxSectionSizeNotStretched()
+{
+    testMinMaxSectionSize(false);
+}
+
+static void waitFor(const std::function<bool()> &func)
+{
+    for (int i = 0; i < 100; i++)
+    {
+        if (func())
+          return;
+        QTest::qWait(10);
+    }
+}
+
+void tst_QHeaderView::testMinMaxSectionSize(bool stretchLastSection)
+{
+    QStandardItemModel m(5, 5);
+    QTableView tv;
+    tv.setModel(&m);
+    tv.show();
+
+    const int sectionSizeMin = 20;
+    const int sectionSizeMax = 40;
+    const int defaultSectionSize = 30;
+
+    QVERIFY(QTest::qWaitForWindowExposed(&tv));
+
+    QHeaderView &header = *tv.horizontalHeader();
+    header.setMinimumSectionSize(sectionSizeMin);
+    header.setMaximumSectionSize(sectionSizeMax);
+    header.setDefaultSectionSize(defaultSectionSize);
+    header.setStretchLastSection(stretchLastSection);
+
+    // check defaults
+    QCOMPARE(header.sectionSize(0), defaultSectionSize);
+    QCOMPARE(header.sectionSize(3), defaultSectionSize);
+
+    // do not go above maxSectionSize
+    header.resizeSection(0, sectionSizeMax + 1);
+    QCOMPARE(header.sectionSize(0), sectionSizeMax);
+
+    // do not go below minSectionSize
+    header.resizeSection(0, sectionSizeMin - 1);
+    QCOMPARE(header.sectionSize(0), sectionSizeMin);
+
+    // change section size on max change
+    header.setMinimumSectionSize(sectionSizeMin);
+    header.setMaximumSectionSize(sectionSizeMax);
+    header.resizeSection(0, sectionSizeMax);
+    QCOMPARE(header.sectionSize(0), sectionSizeMax);
+    header.setMaximumSectionSize(defaultSectionSize);
+    waitFor([this, &header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
+    QCOMPARE(header.sectionSize(0), defaultSectionSize);
+
+    // change section size on min change
+    header.setMinimumSectionSize(sectionSizeMin);
+    header.setMaximumSectionSize(sectionSizeMax);
+    header.resizeSection(0, sectionSizeMin);
+    QCOMPARE(header.sectionSize(0), sectionSizeMin);
+    header.setMinimumSectionSize(defaultSectionSize);
+    waitFor([this, &header, defaultSectionSize]() { return header.sectionSize(0) == defaultSectionSize; });
+    QCOMPARE(header.sectionSize(0), defaultSectionSize);
+}
+
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"

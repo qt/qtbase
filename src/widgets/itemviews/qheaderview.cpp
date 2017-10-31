@@ -886,6 +886,10 @@ void QHeaderView::resizeSection(int logical, int size)
     if (logical < 0 || logical >= count() || size < 0 || size > maxSizeSection)
         return;
 
+    // make sure to not exceed bounds when setting size programmatically
+    if (size > 0)
+        size = qBound(minimumSectionSize(), size, maximumSectionSize());
+
     if (isSectionHidden(logical)) {
         d->hiddenSectionSize.insert(logical, size);
         return;
@@ -1661,9 +1665,25 @@ void QHeaderView::setMinimumSectionSize(int size)
     Q_D(QHeaderView);
     if (size < -1 || size > maxSizeSection)
         return;
+    // larger new min size - check current section sizes
+    const bool needSizeCheck = size > d->minimumSectionSize;
     d->minimumSectionSize = size;
     if (d->minimumSectionSize > maximumSectionSize())
-        d->maximumSectionSize = size;
+        setMaximumSectionSize(size);
+
+    if (needSizeCheck) {
+        if (d->hasAutoResizeSections()) {
+            d->doDelayedResizeSections();
+        } else {
+            for (int visual = 0; visual < d->sectionCount(); ++visual) {
+                if (d->isVisualIndexHidden(visual))
+                    continue;
+                if (d->headerSectionSize(visual) < d->minimumSectionSize)
+                    resizeSection(logicalIndex(visual), size);
+            }
+        }
+    }
+
 }
 
 /*!
@@ -1700,7 +1720,22 @@ void QHeaderView::setMaximumSectionSize(int size)
     if (minimumSectionSize() > size)
         d->minimumSectionSize = size;
 
+    // smaller new max size - check current section sizes
+    const bool needSizeCheck = size < d->maximumSectionSize;
     d->maximumSectionSize = size;
+
+    if (needSizeCheck) {
+        if (d->hasAutoResizeSections()) {
+            d->doDelayedResizeSections();
+        } else {
+            for (int visual = 0; visual < d->sectionCount(); ++visual) {
+                if (d->isVisualIndexHidden(visual))
+                    continue;
+                if (d->headerSectionSize(visual) > d->maximumSectionSize)
+                    resizeSection(logicalIndex(visual), size);
+            }
+        }
+    }
 }
 
 
@@ -3431,9 +3466,11 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
             int logicalIndex = q->logicalIndex(i);
             sectionSize = qMax(viewSectionSizeHint(logicalIndex),
                                q->sectionSizeHint(logicalIndex));
-            if (sectionSize > q->maximumSectionSize())
-                sectionSize = q->maximumSectionSize();
         }
+        sectionSize = qBound(q->minimumSectionSize(),
+                             sectionSize,
+                             q->maximumSectionSize());
+
         section_sizes.append(sectionSize);
         lengthToStretch -= sectionSize;
     }

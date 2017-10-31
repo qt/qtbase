@@ -426,6 +426,9 @@ public:
                      this, SLOT(slotCurrentChanged(QModelIndex,QModelIndex)));
         connect(selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
                      this, SLOT(itemSelectionChanged(QItemSelection,QItemSelection)));
+        // Allow small sections in this test, since this test was made before we correctly enforced minimum sizes.
+        horizontalHeader()->setMinimumSectionSize(0);
+        verticalHeader()->setMinimumSectionSize(0);
     }
 
     // enum CursorAction and moveCursor() are protected in QTableView.
@@ -738,6 +741,8 @@ void tst_QTableView::headerSections()
     QHeaderView *vheader = view.verticalHeader();
 
     view.setModel(&model);
+    hheader->setMinimumSectionSize(columnWidth);
+    vheader->setMinimumSectionSize(rowHeight);
     view.show();
 
     hheader->doItemsLayout();
@@ -1147,6 +1152,9 @@ void tst_QTableView::moveCursor()
     QtTestTableView view;
 
     view.setModel(&model);
+    // we have to make sure that PgUp/PgDown can scroll to the bottom/top
+    view.resize(view.horizontalHeader()->length() + 50,
+                view.verticalHeader()->length() + 50);
     view.hideRow(hideRow);
     view.hideColumn(hideColumn);
     if (moveColumn.first != moveColumn.second)
@@ -2085,6 +2093,8 @@ void tst_QTableView::visualRect()
 
     QTableView view;
     view.setModel(&model);
+    view.horizontalHeader()->setMinimumSectionSize(0);
+    view.verticalHeader()->setMinimumSectionSize(0);
     // Make sure that it has 1 pixel between each cell.
     view.setGridStyle(Qt::SolidLine);
     for (int i = 0; i < view.verticalHeader()->count(); ++i)
@@ -3533,6 +3543,9 @@ void tst_QTableView::editSpanFromDirections()
 
     TableViewWithCursorExposed view;
     view.setModel(model.data());
+    // we have to make sure that PgUp/PgDown can scroll to the bottom/top
+    view.resize(view.horizontalHeader()->length() + 50,
+                view.verticalHeader()->length() + 50);
     view.setSpan(row, column, rowSpan, columnSpan);
     view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
@@ -3978,7 +3991,7 @@ void tst_QTableView::mouseWheel_data()
             << 10 + qApp->wheelScrollLines() << 10 + qApp->wheelScrollLines();
     QTest::newRow("scroll down per pixel")
             << int(QAbstractItemView::ScrollPerPixel) << -120
-            << 10 + qApp->wheelScrollLines() * 89 << 10 + qApp->wheelScrollLines() * 28;
+            << 10 + qApp->wheelScrollLines() * 91 << 10 + qApp->wheelScrollLines() * 46;
 }
 
 void tst_QTableView::mouseWheel()
@@ -3992,15 +4005,16 @@ void tst_QTableView::mouseWheel()
     QWidget topLevel;
     QtTestTableView view(&topLevel);
     view.resize(500, 500);
-    for (int r = 0; r < 100; ++r)
-        view.setRowHeight(r, 50);
-    for (int c = 0; c < 100; ++c)
-        view.setColumnWidth(c, 100);
     topLevel.show();
 
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     view.setModel(&model);
+
+    for (int r = 0; r < 100; ++r)
+        view.setRowHeight(r, 50);
+    for (int c = 0; c < 100; ++c)
+        view.setColumnWidth(c, 100);
 
     view.setHorizontalScrollMode((QAbstractItemView::ScrollMode)scrollMode);
     view.setVerticalScrollMode((QAbstractItemView::ScrollMode)scrollMode);
