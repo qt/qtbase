@@ -3539,6 +3539,8 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
 
         // cascade the section size change
         for (int i = visual + 1; i < sectionCount(); ++i) {
+            if (isVisualIndexHidden(i))
+                continue;
             if (!sectionIsCascadable(i))
                 continue;
             int currentSectionSize = headerSectionSize(i);
@@ -3581,6 +3583,8 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
         // cascade the section size change
         if (delta < 0 && newSize < minimumSize) {
             for (int i = visual - 1; i >= 0; --i) {
+                if (isVisualIndexHidden(i))
+                    continue;
                 if (!sectionIsCascadable(i))
                     continue;
                 int sectionSize = headerSectionSize(i);
@@ -3595,6 +3599,8 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
         // let the next section get the space from the resized section
         if (!sectionResized) {
             for (int i = visual + 1; i < sectionCount(); ++i) {
+                if (isVisualIndexHidden(i))
+                    continue;
                 if (!sectionIsCascadable(i))
                     continue;
                 int currentSectionSize = headerSectionSize(i);
