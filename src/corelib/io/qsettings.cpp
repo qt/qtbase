@@ -1451,7 +1451,7 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
             Files that we can't read (because of permissions or
             because they don't exist) are treated as empty files.
         */
-        if (file.isReadable() && fileInfo.size() != 0) {
+        if (file.isReadable() && file.size() != 0) {
             bool ok = false;
 #ifdef Q_OS_MAC
             if (format == QSettings::NativeFormat) {
