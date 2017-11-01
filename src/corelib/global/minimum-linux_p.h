@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
  * - inotify_init1              before 2.6.12-rc12
  * - futex(2)                   before 2.6.12-rc12
  * - FUTEX_WAKE_OP              2.6.14                  FUTEX_OP
- * - linkat(2)                  2.6.17                  O_TMPFILE
+ * - linkat(2)                  2.6.17                  O_TMPFILE && QT_CONFIG(linkat)
  * - FUTEX_PRIVATE_FLAG         2.6.22
  * - O_CLOEXEC                  2.6.23
  * - eventfd                    2.6.23

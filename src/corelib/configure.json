@@ -349,6 +349,15 @@
                 "qmake": "linux: LIBS += -lpthread -lrt"
             }
         },
+        "linkat": {
+            "label": "linkat()",
+            "type": "compile",
+            "test": {
+                "head": "#define _ATFILE_SOURCE 1",
+                "include": [ "fcntl.h", "unistd.h" ],
+                "main": "linkat(AT_FDCWD, \"foo\", AT_FDCWD, \"bar\", AT_SYMLINK_FOLLOW);"
+            }
+        },
         "ppoll": {
             "label": "ppoll()",
             "type": "compile",
@@ -538,6 +547,12 @@
             "label": "journald",
             "autoDetect": false,
             "condition": "libs.journald",
+            "output": [ "privateFeature" ]
+        },
+        "linkat": {
+            "label": "linkat()",
+            "autoDetect": "config.linux",
+            "condition": "tests.linkat",
             "output": [ "privateFeature" ]
         },
         "std-atomic64": {

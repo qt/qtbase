@@ -58,7 +58,7 @@
 #include "private/qfile_p.h"
 #include "qtemporaryfile.h"
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && QT_CONFIG(linkat)
 #  include <fcntl.h>
 #  ifdef O_TMPFILE
 // some early libc support had the wrong values for O_TMPFILE
