@@ -1067,6 +1067,103 @@ void tst_QTreeView::keyboardSearch()
     // The item that starts with B is selected.
     view.keyboardSearch(QLatin1String("B"));
     QVERIFY(view.selectionModel()->isSelected(model.index(1, 0)));
+
+    // Test that it wraps round
+    model.appendRow(new QStandardItem("Andy"));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(3, 0)));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(0, 0)));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(3, 0)));
+
+    // Test that it handles the case where the first item is hidden correctly
+    model.insertRow(0, new QStandardItem("Hidden item"));
+    view.setRowHidden(0, QModelIndex(), true);
+
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(1, 0)));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(4, 0)));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(1, 0)));
+
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    model.clear();
+    view.setCurrentIndex(QModelIndex());
+    QList<QStandardItem *> items = { new QStandardItem("Andreas"), new QStandardItem("Alicia") };
+    model.appendRow(items);
+    items = { new QStandardItem("Baldrian"), new QStandardItem("Belinda") };
+    model.appendRow(items);
+    items = { new QStandardItem("Cecilie"), new QStandardItem("Claire") };
+    model.appendRow(items);
+    QVERIFY(!view.selectionModel()->hasSelection());
+    QVERIFY(!view.selectionModel()->isSelected(model.index(0, 0)));
+
+    // We want to search on the 2nd column so we have to force it to have
+    // an index in that column as a starting point
+    view.setCurrentIndex(QModelIndex(model.index(0, 1)));
+    // Second item in first row is selected
+    view.keyboardSearch(QLatin1String("A"));
+    QTRY_VERIFY(view.selectionModel()->isSelected(model.index(0, 1)));
+    QVERIFY(view.currentIndex() == model.index(0, 1));
+
+    // Second item in first row is still selected
+    view.keyboardSearch(QLatin1String("l"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(0, 1)));
+    QCOMPARE(view.currentIndex(), model.index(0, 1));
+
+    // No "AnB" item - keep the same selection.
+    view.keyboardSearch(QLatin1String("B"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(0, 1)));
+    QCOMPARE(view.currentIndex(), model.index(0, 1));
+
+    // Wait a bit.
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+
+    // The item that starts with B is selected.
+    view.keyboardSearch(QLatin1String("B"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(1, 1)));
+    QCOMPARE(view.currentIndex(), model.index(1, 1));
+
+    // Test that it wraps round
+    items = { new QStandardItem("Andy"), new QStandardItem("Adele") };
+    model.appendRow(items);
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(3, 1)));
+    QCOMPARE(view.currentIndex(), model.index(3, 1));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(0, 1)));
+    QCOMPARE(view.currentIndex(), model.index(0, 1));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(3, 1)));
+    QCOMPARE(view.currentIndex(), model.index(3, 1));
+
+    // Test that it handles the case where the first item is hidden correctly
+    model.insertRow(0, new QStandardItem("Hidden item"));
+    view.setRowHidden(0, QModelIndex(), true);
+
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(1, 1)));
+    QCOMPARE(view.currentIndex(), model.index(1, 1));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(4, 1)));
+    QCOMPARE(view.currentIndex(), model.index(4, 1));
+    QTest::qWait(QApplication::keyboardInputInterval() * 2);
+    view.keyboardSearch(QLatin1String("A"));
+    QVERIFY(view.selectionModel()->isSelected(model.index(1, 1)));
+    QCOMPARE(view.currentIndex(), model.index(1, 1));
 }
 
 void tst_QTreeView::keyboardSearchMultiColumn()
