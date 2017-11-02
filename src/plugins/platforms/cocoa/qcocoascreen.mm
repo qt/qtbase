@@ -103,6 +103,38 @@ QRectF QCocoaScreen::flipCoordinate(const QRectF &rect) const
     return QRectF(flipCoordinate(rect.topLeft() + QPoint(0, rect.height())), rect.size());
 }
 
+static QString displayName(CGDirectDisplayID displayID)
+{
+    QIOType<io_iterator_t> iterator;
+    if (IOServiceGetMatchingServices(kIOMasterPortDefault,
+        IOServiceMatching("IODisplayConnect"), &iterator))
+        return QString();
+
+    QIOType<io_service_t> display;
+    while ((display = IOIteratorNext(iterator)) != 0)
+    {
+        NSDictionary *info = [(__bridge NSDictionary*)IODisplayCreateInfoDictionary(
+            display, kIODisplayOnlyPreferredName) autorelease];
+
+        if ([[info objectForKey:@kDisplayVendorID] longValue] != CGDisplayVendorNumber(displayID))
+            continue;
+
+        if ([[info objectForKey:@kDisplayProductID] longValue] != CGDisplayModelNumber(displayID))
+            continue;
+
+        if ([[info objectForKey:@kDisplaySerialNumber] longValue] != CGDisplaySerialNumber(displayID))
+            continue;
+
+        NSDictionary *localizedNames = [info objectForKey:@kDisplayProductName];
+        if (![localizedNames count])
+            break; // Correct screen, but no name in dictionary
+
+        return QString::fromNSString([localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]]);
+    }
+
+    return QString();
+}
+
 void QCocoaScreen::updateGeometry()
 {
     NSScreen *nsScreen = nativeScreen();
@@ -139,12 +171,7 @@ void QCocoaScreen::updateGeometry()
     if (refresh > 0)
         m_refreshRate = refresh;
 
-    // Get m_name (brand/model of the monitor)
-    NSDictionary *deviceInfo = (NSDictionary *)IODisplayCreateInfoDictionary(CGDisplayIOServicePort(dpy), kIODisplayOnlyPreferredName);
-    NSDictionary *localizedNames = [deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
-    if ([localizedNames count] > 0)
-        m_name = QString::fromUtf8([[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String]);
-    [deviceInfo release];
+    m_name = displayName(dpy);
 
     QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry(), availableGeometry());
     QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), m_logicalDpi.first, m_logicalDpi.second);

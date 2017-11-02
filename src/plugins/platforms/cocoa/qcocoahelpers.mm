@@ -408,4 +408,19 @@ QT_END_NAMESPACE
     [super layout];
 }
 
+// -------------------------------------------------------------------------
+
+io_object_t q_IOObjectRetain(io_object_t obj)
+{
+    kern_return_t ret = IOObjectRetain(obj);
+    Q_ASSERT(!ret);
+    return obj;
+}
+
+void q_IOObjectRelease(io_object_t obj)
+{
+    kern_return_t ret = IOObjectRelease(obj);
+    Q_ASSERT(!ret);
+}
+
 @end
