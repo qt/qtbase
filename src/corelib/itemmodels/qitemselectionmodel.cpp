@@ -1577,8 +1577,12 @@ bool QItemSelectionModel::isColumnSelected(int column, const QModelIndex &parent
     for (int row = 0; row < rowCount; ++row) {
          for (it = joined.constBegin(); it != joined.constEnd(); ++it) {
              if ((*it).contains(row, column, parent)) {
-                 Qt::ItemFlags flags = d->model->index(row, column, parent).flags();
-                 if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled)) {
+                 bool selectable = false;
+                 for (int i = row; !selectable && i <= (*it).bottom(); ++i) {
+                     Qt::ItemFlags flags = d->model->index(i, column, parent).flags();
+                     selectable = flags & Qt::ItemIsSelectable;
+                 }
+                 if (selectable){
                      row = qMax(row, (*it).bottom());
                      break;
                  }
