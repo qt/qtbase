@@ -1776,15 +1776,25 @@ QFixed QFontEngineFT::scaledBitmapMetrics(QFixed m) const
     return m * scalableBitmapScaleFactor;
 }
 
-glyph_metrics_t QFontEngineFT::scaledBitmapMetrics(const glyph_metrics_t &m) const
+glyph_metrics_t QFontEngineFT::scaledBitmapMetrics(const glyph_metrics_t &m, const QTransform &t) const
 {
+    QTransform trans(t);
+    const qreal scaleFactor = scalableBitmapScaleFactor.toReal();
+    trans.scale(scaleFactor, scaleFactor);
+
+    QRectF rect(m.x.toReal(), m.y.toReal(), m.width.toReal(), m.height.toReal());
+    QPointF offset(m.xoff.toReal(), m.yoff.toReal());
+
+    rect = trans.mapRect(rect);
+    offset = trans.map(offset);
+
     glyph_metrics_t metrics;
-    metrics.x = scaledBitmapMetrics(m.x);
-    metrics.y = scaledBitmapMetrics(m.y);
-    metrics.width = scaledBitmapMetrics(m.width);
-    metrics.height = scaledBitmapMetrics(m.height);
-    metrics.xoff = scaledBitmapMetrics(m.xoff);
-    metrics.yoff = scaledBitmapMetrics(m.yoff);
+    metrics.x = QFixed::fromReal(rect.x());
+    metrics.y = QFixed::fromReal(rect.y());
+    metrics.width = QFixed::fromReal(rect.width());
+    metrics.height = QFixed::fromReal(rect.height());
+    metrics.xoff = QFixed::fromReal(offset.x());
+    metrics.yoff = QFixed::fromReal(offset.y());
     return metrics;
 }
 
@@ -1878,7 +1888,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(const QGlyphLayout &glyphs)
         unlockFace();
 
     if (isScalableBitmap())
-        overall = scaledBitmapMetrics(overall);
+        overall = scaledBitmapMetrics(overall, QTransform());
     return overall;
 }
 
@@ -1917,7 +1927,7 @@ glyph_metrics_t QFontEngineFT::boundingBox(glyph_t glyph)
         unlockFace();
 
     if (isScalableBitmap())
-        overall = scaledBitmapMetrics(overall);
+        overall = scaledBitmapMetrics(overall, QTransform());
     return overall;
 }
 
@@ -1955,7 +1965,7 @@ glyph_metrics_t QFontEngineFT::alphaMapBoundingBox(glyph_t glyph, QFixed subPixe
     }
 
     if (isScalableBitmap())
-        overall = scaledBitmapMetrics(overall);
+        overall = scaledBitmapMetrics(overall, matrix);
     return overall;
 }
 
