@@ -2575,7 +2575,7 @@ QPoint QWindowPrivate::globalPosition() const
     QPoint offset = q->position();
     for (const QWindow *p = q->parent(); p; p = p->parent()) {
         QPlatformWindow *pw = p->handle();
-        if (pw && pw->isForeignWindow()) {
+        if (pw && (pw->isForeignWindow() || pw->isEmbedded())) {
             // Use mapToGlobal() for foreign windows
             offset += p->mapToGlobal(QPoint(0, 0));
             break;
