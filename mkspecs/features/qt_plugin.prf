@@ -95,6 +95,8 @@ TARGET = $$qt5LibraryTarget($$TARGET)
 
 CONFIG += create_cmake
 
+DEFINES *= QT_DEPRECATED_WARNINGS
+
 load(qt_targets)
 load(qt_common)
 
