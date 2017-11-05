@@ -32,3 +32,5 @@ linux
 windows
 [qtbug28035browserDoesNotLoadQtProjectOrgCorrectly]
 windows
+[getFromUnreachableIp]
+windows msvc-2017
