@@ -59,7 +59,6 @@
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qhash.h>
-#include <QtCore/qmutex.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qreadwritelock.h>
@@ -198,7 +197,6 @@ public:
     ~QDBusConnectionPrivate();
 
     void createBusService();
-    void setDispatchEnabled(bool enable);
     void setPeer(DBusConnection *connection, const QDBusErrorInternal &error);
     void setConnection(DBusConnection *connection, const QDBusErrorInternal &error);
     void setServer(QDBusServer *object, DBusServer *server, const QDBusErrorInternal &error);
@@ -275,6 +273,7 @@ protected:
 
 public slots:
     // public slots
+    void setDispatchEnabled(bool enable);
     void doDispatch();
     void socketRead(int);
     void socketWrite(int);
@@ -312,9 +311,6 @@ public:
         QDBusServer *serverObject;
     };
 
-    // the dispatch lock protects everything related to the DBusConnection or DBusServer
-    // including the timeouts and watches
-    QMutex dispatchLock;
     union {
         DBusConnection *connection;
         DBusServer *server;
@@ -390,7 +386,9 @@ public:
 public slots:
     void execute()
     {
-        con->setDispatchEnabled(true);
+        // This call cannot race with something disabling dispatch only because dispatch is
+        // never re-disabled from Qt code on an in-use connection once it has been enabled.
+        QMetaObject::invokeMethod(con, "setDispatchEnabled", Qt::QueuedConnection, Q_ARG(bool, true));
         if (!con->ref.deref())
             con->deleteLater();
         deleteLater();

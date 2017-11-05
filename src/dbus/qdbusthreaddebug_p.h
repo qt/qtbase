@@ -95,17 +95,6 @@ enum ThreadAction {
     PendingCallBlockAction = 28,
     SendMessageAction = 29,
     HuntAndEmitAction = 30,
-
-    AddTimeoutAction = 50,
-    RealAddTimeoutAction = 51,
-    RemoveTimeoutAction = 52,
-    KillTimerAction = 58,
-    TimerEventAction = 59,
-    AddWatchAction = 60,
-    RemoveWatchAction = 61,
-    ToggleWatchAction = 62,
-    SocketReadAction = 63,
-    SocketWriteAction = 64
 };
 
 struct QDBusLockerBase
@@ -174,35 +163,6 @@ struct QDBusWriteLocker: QDBusLockerBase
         self->lock.unlock();
         reportThreadAction(action, AfterUnlock, self);
     }
-};
-
-struct QDBusMutexLocker: QDBusLockerBase
-{
-    QDBusConnectionPrivate *self;
-    QMutex *mutex;
-    ThreadAction action;
-    inline QDBusMutexLocker(ThreadAction a, QDBusConnectionPrivate *s,
-                            QMutex *m)
-        : self(s), mutex(m), action(a)
-    {
-        reportThreadAction(action, BeforeLock, self);
-        mutex->lock();
-        reportThreadAction(action, AfterLock, self);
-    }
-
-    inline ~QDBusMutexLocker()
-    {
-        reportThreadAction(action, BeforeUnlock, self);
-        mutex->unlock();
-        reportThreadAction(action, AfterUnlock, self);
-    }
-};
-
-struct QDBusDispatchLocker: QDBusMutexLocker
-{
-    inline QDBusDispatchLocker(ThreadAction a, QDBusConnectionPrivate *s)
-        : QDBusMutexLocker(a, s, &s->dispatchLock)
-    { }
 };
 
 #if QDBUS_THREAD_DEBUG
