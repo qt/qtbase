@@ -73,6 +73,7 @@ linux:!static {
     } else {
         SOURCES += global/minimum-linux.S
     }
+    HEADERS += global/minimum-linux_p.h
 }
 
 qtConfig(slog2): \

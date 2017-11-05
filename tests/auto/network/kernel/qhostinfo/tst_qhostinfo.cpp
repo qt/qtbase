@@ -187,7 +187,7 @@ void tst_QHostInfo::initTestCase()
     networkSession.reset(new QNetworkSession(networkConfiguration));
     if (!networkSession->isOpen()) {
         networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
+        networkSession->waitForOpened(30000);
     }
 #endif
 

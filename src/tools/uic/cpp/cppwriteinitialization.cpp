@@ -1265,7 +1265,7 @@ void WriteInitialization::writeProperties(const QString &varName,
 
         if (stdset) {
             setFunction = QLatin1String("->set")
-                        + propertyName.left(1).toUpper()
+                        + propertyName.at(0).toUpper()
                         + propertyName.midRef(1)
                         + QLatin1Char('(');
         } else {

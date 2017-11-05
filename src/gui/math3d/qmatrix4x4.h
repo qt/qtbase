@@ -859,8 +859,8 @@ inline QPointF operator*(const QPointF& point, const QMatrix4x4& matrix)
 {
     float xin, yin;
     float x, y, w;
-    xin = point.x();
-    yin = point.y();
+    xin = float(point.x());
+    yin = float(point.y());
     x = xin * matrix.m[0][0] +
         yin * matrix.m[0][1] +
         matrix.m[0][3];
@@ -1094,7 +1094,7 @@ inline float *QMatrix4x4::data()
 
 inline void QMatrix4x4::viewport(const QRectF &rect)
 {
-    viewport(rect.x(), rect.y(), rect.width(), rect.height());
+    viewport(float(rect.x()), float(rect.y()), float(rect.width()), float(rect.height()));
 }
 
 QT_WARNING_POP

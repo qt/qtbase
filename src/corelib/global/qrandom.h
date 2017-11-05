@@ -51,9 +51,12 @@ class QRandomGenerator
     template <typename UInt> using IfValidUInt =
         typename std::enable_if<std::is_unsigned<UInt>::value && sizeof(UInt) >= sizeof(uint), bool>::type;
 public:
+    static QRandomGenerator system() { return {}; }
+    static QRandomGenerator global() { return {}; }
     QRandomGenerator() = default;
 
     // ### REMOVE BEFORE 5.10
+    QRandomGenerator *operator->() { return this; }
     static quint32 get32() { return generate(); }
     static quint64 get64() { return generate64(); }
     static qreal getReal() { return generateDouble(); }
@@ -135,13 +138,14 @@ public:
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
 
 private:
-    Q_DISABLE_COPY(QRandomGenerator)
     static Q_CORE_EXPORT void fillRange_helper(void *buffer, void *bufferEnd);
 };
 
 class QRandomGenerator64
 {
 public:
+    static QRandomGenerator64 system() { return {}; }
+    static QRandomGenerator64 global() { return {}; }
     QRandomGenerator64() = default;
 
     static quint64 generate() { return QRandomGenerator::generate64(); }
@@ -152,9 +156,6 @@ public:
     double entropy() const Q_DECL_NOTHROW { return 0.0; }
     static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
     static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
-
-private:
-    Q_DISABLE_COPY(QRandomGenerator64)
 };
 
 

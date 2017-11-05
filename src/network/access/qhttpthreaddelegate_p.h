@@ -66,6 +66,7 @@
 #include <QScopedPointer>
 #include "private/qnoncontiguousbytedevice_p.h"
 #include "qnetworkaccessauthenticationmanager_p.h"
+#include <QtNetwork/private/http2protocol_p.h>
 
 #ifndef QT_NO_HTTP
 
@@ -115,6 +116,7 @@ public:
     qint64 removedContentLength;
     QNetworkReply::NetworkError incomingErrorCode;
     QString incomingErrorDetail;
+    Http2::ProtocolParameters http2Parameters;
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;
 #endif

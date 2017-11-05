@@ -37,45 +37,62 @@
 **
 ****************************************************************************/
 
-#include "minimum-linux_p.h"
+#ifndef MINIMUMLINUX_P_H
+#define MINIMUMLINUX_P_H
 
-/* Copied from #include <elf.h>:
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+// EXTRA WARNING
+// -------------
+//
+// This file must also be valid assembler source.
+//
+
+#include "private/qglobal_p.h"
+
+QT_BEGIN_NAMESPACE
+
+/* Minimum Linux kernel version:
+ * We require the following features in Qt (unconditional, no fallback):
+ *   Feature                    Added in version        Macro
+ * - inotify_init1              before 2.6.12-rc12
+ * - futex(2)                   before 2.6.12-rc12
+ * - FUTEX_WAKE_OP              2.6.14                  FUTEX_OP
+ * - linkat(2)                  2.6.17                  O_TMPFILE
+ * - FUTEX_PRIVATE_FLAG         2.6.22
+ * - O_CLOEXEC                  2.6.23
+ * - eventfd                    2.6.23
+ * - pipe2 & dup3               2.6.27
+ * - accept4                    2.6.28
+ * - renameat2                  3.16                    QT_CONFIG(renameat2)
+ * - getrandom                  3.17                    QT_CONFIG(getentropy)
  */
-#define ELF_NOTE_GNU            "GNU"
-#define NT_GNU_ABI_TAG          1
-#define ELF_NOTE_OS_LINUX       0
 
-#ifdef __arm__
-#  define progbits              %progbits
-#  define note                  %note
+#if QT_CONFIG(getentropy)
+#  define MINLINUX_MAJOR        3
+#  define MINLINUX_MINOR        17
+#  define MINLINUX_PATCH        0
+#elif QT_CONFIG(renameat2)
+#  define MINLINUX_MAJOR        3
+#  define MINLINUX_MINOR        16
+#  define MINLINUX_PATCH        0
 #else
-#  define progbits              @progbits
-#  define note                  @note
+#  define MINLINUX_MAJOR        2
+#  define MINLINUX_MINOR        6
+#  define MINLINUX_PATCH        28
 #endif
 
-/* Add information for the ELF dynamic linker what the minimum Linux version
- * required for Qt is.
- *
- * The .note.ABI-tag note section is defined at
- *  https://refspecs.linuxfoundation.org/LSB_5.0.0/LSB-Core-generic/LSB-Core-generic/noteabitag.html
- */
+#define MINIMUM_LINUX_VERSION  QT_VERSION_CHECK(MINLINUX_MAJOR, MINLINUX_MINOR, MINLINUX_PATCH)
 
-    .section    ".note.GNU-stack", "", progbits
-    .section    ".note.ABI-tag", "a", note
-    .align      4       /* we have 32-bit data */
+QT_END_NAMESPACE
 
-/*  * For the format of the note section's contents, see Elf32_Nhdr / Elf64_Nhdr */
-    .long       .Lnameend-.Lname        /* n_namesz */
-    .long       16                      /* n_descsz(16 bytes, normative) */
-    .long       NT_GNU_ABI_TAG          /* n_type */
-
-.Lname:
-    .asciz      ELF_NOTE_GNU
-.Lnameend:
-
-/* Operating systems: */
-    .long       ELF_NOTE_OS_LINUX
-
-    .long       MINLINUX_MAJOR
-    .long       MINLINUX_MINOR
-    .long       MINLINUX_PATCH
+#endif // MINIMUMLINUX_P_H

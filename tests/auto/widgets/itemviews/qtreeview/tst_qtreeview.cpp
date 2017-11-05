@@ -224,15 +224,12 @@ public:
         return index.isValid() ? qint32(index.internalId()) : qint32(-1);
     }
 
-    bool canFetchMore(const QModelIndex &) const {
-        return !fetched;
-    }
+    bool canFetchMore(const QModelIndex &) const override { return !fetched; }
 
-    void fetchMore(const QModelIndex &) {
-        fetched = true;
-    }
+    void fetchMore(const QModelIndex &) override { fetched = true; }
 
-    bool hasChildren(const QModelIndex &parent = QModelIndex()) const {
+    bool hasChildren(const QModelIndex &parent = QModelIndex()) const override
+    {
         bool hasFetched = fetched;
         fetched = true;
         bool r = QAbstractItemModel::hasChildren(parent);
@@ -240,14 +237,16 @@ public:
         return r;
     }
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const {
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override
+    {
         if (!fetched)
             qFatal("%s: rowCount should not be called before fetching", Q_FUNC_INFO);
         if ((parent.column() > 0) || (level(parent) > levels))
             return 0;
         return rows;
     }
-    int columnCount(const QModelIndex& parent = QModelIndex()) const {
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override
+    {
         if ((parent.column() > 0) || (level(parent) > levels))
             return 0;
         return cols;
@@ -259,7 +258,7 @@ public:
         return false;
     }
 
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override
     {
         if (row < 0 || column < 0 || (level(parent) > levels) || column >= cols || row >= rows) {
             return QModelIndex();
@@ -269,14 +268,14 @@ public:
         return i;
     }
 
-    QModelIndex parent(const QModelIndex &index) const
+    QModelIndex parent(const QModelIndex &index) const override
     {
         if (!parentHash.contains(index))
             return QModelIndex();
         return parentHash[index];
     }
 
-    QVariant data(const QModelIndex &idx, int role) const
+    QVariant data(const QModelIndex &idx, int role) const override
     {
         if (!idx.isValid())
             return QVariant();
