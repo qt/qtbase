@@ -96,7 +96,9 @@ public:
     }
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const override;
+#if QT_CONFIG(opengl)
     QOpenGLContext *shareContext() const override;
+#endif
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
@@ -128,12 +130,14 @@ QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const
     return result;
 }
 
+#if QT_CONFIG(opengl)
 QOpenGLContext *QWidgetWindowPrivate::shareContext() const
 {
     Q_Q(const QWidgetWindow);
     const QWidgetPrivate *widgetPrivate = QWidgetPrivate::get(q->widget());
     return widgetPrivate->shareContext();
 }
+#endif // opengl
 
 QWidgetWindow::QWidgetWindow(QWidget *widget)
     : QWindow(*new QWidgetWindowPrivate(), 0)

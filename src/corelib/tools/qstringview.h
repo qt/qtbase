@@ -154,11 +154,11 @@ private:
                 ++result;
         }
 #endif
-        return qustrlen(reinterpret_cast<const ushort *>(str));
+        return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
     }
     static qssize_t lengthHelperPointer(const QChar *str) Q_DECL_NOTHROW
     {
-        return qustrlen(reinterpret_cast<const ushort *>(str));
+        return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
     }
 
     template <typename Char>
@@ -224,9 +224,9 @@ public:
     // QString API
     //
 
-    Q_REQUIRED_RESULT QByteArray toLatin1() const { return qConvertToLatin1(*this); }
-    Q_REQUIRED_RESULT QByteArray toUtf8() const { return qConvertToUtf8(*this); }
-    Q_REQUIRED_RESULT QByteArray toLocal8Bit() const { return qConvertToLocal8Bit(*this); }
+    Q_REQUIRED_RESULT QByteArray toLatin1() const { return QtPrivate::convertToLatin1(*this); }
+    Q_REQUIRED_RESULT QByteArray toUtf8() const { return QtPrivate::convertToUtf8(*this); }
+    Q_REQUIRED_RESULT QByteArray toLocal8Bit() const { return QtPrivate::convertToLocal8Bit(*this); }
     Q_REQUIRED_RESULT inline QVector<uint> toUcs4() const; // defined in qvector.h
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar at(qssize_t n) const { return (*this)[n]; }
@@ -247,23 +247,23 @@ public:
     Q_DECL_RELAXED_CONSTEXPR void chop(qssize_t n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
 
-    Q_REQUIRED_RESULT QStringView trimmed() const Q_DECL_NOTHROW { return qTrimmed(*this); }
+    Q_REQUIRED_RESULT QStringView trimmed() const Q_DECL_NOTHROW { return QtPrivate::trimmed(*this); }
 
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qStartsWith(*this, s, cs); }
+    { return QtPrivate::startsWith(*this, s, cs); }
     Q_REQUIRED_RESULT inline bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
     Q_REQUIRED_RESULT bool startsWith(QChar c) const Q_DECL_NOTHROW
     { return !empty() && front() == c; }
     Q_REQUIRED_RESULT bool startsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
-    { return qStartsWith(*this, QStringView(&c, 1), cs); }
+    { return QtPrivate::startsWith(*this, QStringView(&c, 1), cs); }
 
     Q_REQUIRED_RESULT bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW
-    { return qEndsWith(*this, s, cs); }
+    { return QtPrivate::endsWith(*this, s, cs); }
     Q_REQUIRED_RESULT inline bool endsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const Q_DECL_NOTHROW;
     Q_REQUIRED_RESULT bool endsWith(QChar c) const Q_DECL_NOTHROW
     { return !empty() && back() == c; }
     Q_REQUIRED_RESULT bool endsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
-    { return qEndsWith(*this, QStringView(&c, 1), cs); }
+    { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
 
     //
     // STL compatibility API:

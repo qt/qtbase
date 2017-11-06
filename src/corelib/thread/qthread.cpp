@@ -78,6 +78,13 @@ QThreadData::~QThreadData()
        QThreadData::clearCurrentThreadData();
     }
 
+    // ~QThread() sets thread to nullptr, so if it isn't null here, it's
+    // because we're being run before the main object itself. This can only
+    // happen for QAdoptedThread. Note that both ~QThreadPrivate() and
+    // ~QObjectPrivate() will deref this object again, but that is acceptable
+    // because this destructor is still running (the _ref sub-object has not
+    // been destroyed) and there's no reentrancy. The refcount will become
+    // negative, but that's acceptable.
     QThread *t = thread;
     thread = 0;
     delete t;

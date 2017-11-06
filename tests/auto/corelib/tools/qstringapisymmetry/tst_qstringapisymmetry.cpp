@@ -483,32 +483,6 @@ struct has_qCompareStrings {
 };
 
 template <typename LHS, typename RHS>
-using if_has_qCompareStrings = typename std::enable_if<has_qCompareStrings<LHS, RHS>::value, bool>::type;
-
-template <typename LHS, typename RHS>
-using if_lacks_qCompareStrings = typename std::enable_if<!has_qCompareStrings<LHS, RHS>::value, bool>::type;
-
-static inline Q_DECL_CONSTEXPR int sign(int x) Q_DECL_NOTHROW
-{
-    return x < 0 ? -1 :
-           x > 0 ? +1 :
-           /*else*/ 0 ;
-}
-
-template <typename LHS, typename RHS, if_has_qCompareStrings<LHS, RHS> = true>
-int qCompareStringsWrapper(const LHS &lhs, const RHS &rhs, Qt::CaseSensitivity cs, int)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(qCompareStrings(lhs, rhs, cs)))
-{
-    return qCompareStrings(lhs, rhs, cs);
-}
-
-template <typename LHS, typename RHS, if_lacks_qCompareStrings<LHS, RHS> = true>
-int qCompareStringsWrapper(const LHS &, const RHS &, Qt::CaseSensitivity, int result)
-{
-    return result;
-}
-
-template <typename LHS, typename RHS>
 void tst_QStringApiSymmetry::compare_impl() const
 {
     QFETCH(QStringRef, lhsUnicode);
@@ -517,6 +491,7 @@ void tst_QStringApiSymmetry::compare_impl() const
     QFETCH(QLatin1String, rhsLatin1);
     QFETCH(int, caseSensitiveCompareResult);
     QFETCH(const int, caseInsensitiveCompareResult);
+    Q_UNUSED(caseInsensitiveCompareResult);
 
     const auto lhsU8 = lhsUnicode.toUtf8();
     const auto rhsU8 = rhsUnicode.toUtf8();
@@ -533,10 +508,6 @@ void tst_QStringApiSymmetry::compare_impl() const
 # define QVERIFY_NOEXCEPT(expr)
 #endif
 
-    QCOMPARE(sign(qCompareStringsWrapper(lhs, rhs, Qt::CaseSensitive, caseSensitiveCompareResult)),
-             sign(caseSensitiveCompareResult));
-    QCOMPARE(sign(qCompareStringsWrapper(lhs, rhs, Qt::CaseInsensitive, caseInsensitiveCompareResult)),
-             sign(caseInsensitiveCompareResult));
 #define CHECK(op) \
     QVERIFY_NOEXCEPT(lhs op rhs); \
     do { if (caseSensitiveCompareResult op 0) { \

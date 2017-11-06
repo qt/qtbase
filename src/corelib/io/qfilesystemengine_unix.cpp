@@ -1261,7 +1261,8 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 
     // If we're using syscall(), check for ENOSYS;
     // if renameat2 came from libc, we don't accept ENOSYS.
-    if (QT_CONFIG(renameat2) || errno != ENOSYS) {
+    // We can also get EINVAL for some non-local filesystems.
+    if ((QT_CONFIG(renameat2) || errno != ENOSYS) && errno != EINVAL) {
         error = QSystemError(errno, QSystemError::StandardLibraryError);
         return false;
     }

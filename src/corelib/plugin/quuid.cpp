@@ -945,7 +945,7 @@ QUuid QUuid::createUuid()
     QUuid result(Qt::Uninitialized);
     uint *data = &(result.data1);
     enum { AmountToRead = 4 };
-    QRandomGenerator::fillRange(data, AmountToRead);
+    QRandomGenerator::system()->fillRange(data, AmountToRead);
 
     result.data4[0] = (result.data4[0] & 0x3F) | 0x80;        // UV_DCE
     result.data3 = (result.data3 & 0x0FFF) | 0x4000;        // UV_Random

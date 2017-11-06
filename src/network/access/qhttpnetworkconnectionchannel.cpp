@@ -917,7 +917,9 @@ void QHttpNetworkConnectionChannel::_q_connected()
             if (tryProtocolUpgrade) {
                 // Let's augment our request with some magic headers and try to
                 // switch to HTTP/2.
-                Http2::prepare_for_protocol_upgrade(request);
+                const Http2::ProtocolParameters params(connection->http2Parameters());
+                Q_ASSERT(params.validate());
+                params.addProtocolUpgradeHeaders(&request);
             }
             sendRequest();
         }

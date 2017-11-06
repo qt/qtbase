@@ -364,7 +364,7 @@ void tst_QRandomGenerator::bounded()
     QCOMPARE(ivalue, int(expected));
 
     // confirm only the bound now
-    setRNGControl(control & (SkipHWRNG|SkipSystemRNG|SkipMemfill));
+    setRNGControl(control & (SkipHWRNG|SkipSystemRNG));
     value = QRandomGenerator::bounded(sup);
     QVERIFY(value < sup);
 
@@ -536,7 +536,6 @@ void tst_QRandomGenerator::stdUniformIntDistribution_data()
 
     auto newRow = [](quint32 max) {
         QTest::addRow("default:%u", max) << 0U << max;
-        QTest::addRow("direct:%u", max) << uint(SkipMemfill) << max;
         QTest::addRow("system:%u", max) << uint(SkipHWRNG) << max;
     #ifdef HAVE_FALLBACK_ENGINE
         QTest::addRow("fallback:%u", max) << uint(SkipHWRNG | SkipSystemRNG) << max;
@@ -555,7 +554,7 @@ void tst_QRandomGenerator::stdUniformIntDistribution()
 {
     QFETCH(uint, control);
     QFETCH(quint32, max);
-    setRNGControl(control & (SkipHWRNG|SkipSystemRNG|SkipMemfill));
+    setRNGControl(control & (SkipHWRNG|SkipSystemRNG));
 
     {
         QRandomGenerator rd;
@@ -653,7 +652,6 @@ void tst_QRandomGenerator::stdUniformRealDistribution_data()
 
     auto newRow = [](double min, double sup) {
         QTest::addRow("default:%g-%g", min, sup) << 0U << min << sup;
-        QTest::addRow("direct:%g-%g", min, sup) << uint(SkipMemfill) << min << sup;
         QTest::addRow("system:%g-%g", min, sup) << uint(SkipHWRNG) << min << sup;
     #ifdef HAVE_FALLBACK_ENGINE
         QTest::addRow("fallback:%g-%g", min, sup) << uint(SkipHWRNG | SkipSystemRNG) << min << sup;
@@ -673,7 +671,7 @@ void tst_QRandomGenerator::stdUniformRealDistribution()
     QFETCH(uint, control);
     QFETCH(double, min);
     QFETCH(double, sup);
-    setRNGControl(control & (SkipHWRNG|SkipSystemRNG|SkipMemfill));
+    setRNGControl(control & (SkipHWRNG|SkipSystemRNG));
 
     {
         QRandomGenerator rd;

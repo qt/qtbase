@@ -333,11 +333,11 @@ void Widget::compareSensitiveFunction()
     int z = QString::compare("auto", "Car", Qt::CaseInsensitive);   // z < 0
     //! [16]
 
-    //! [qCompareStrings-QSV-QSV]
-    int x = qCompareStrings(u"aUtO", u"AuTo", Qt::CaseInsensitive);  // x == 0
-    int y = qCompareStrings(u"auto", u"Car", Qt::CaseSensitive);     // y > 0
-    int z = qCompareStrings(u"auto", u"Car", Qt::CaseInsensitive);   // z < 0
-    //! [qCompareStrings-QSV-QSV]
+    //! [QtPrivate::compareStrings-QSV-QSV]
+    int x = QtPrivate::compareStrings(u"aUtO", u"AuTo", Qt::CaseInsensitive);  // x == 0
+    int y = QtPrivate::compareStrings(u"auto", u"Car", Qt::CaseSensitive);     // y > 0
+    int z = QtPrivate::compareStrings(u"auto", u"Car", Qt::CaseInsensitive);   // z < 0
+    //! [QtPrivate::compareStrings-QSV-QSV]
 }
 
 void Widget::containsFunction()
