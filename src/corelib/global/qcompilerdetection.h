@@ -651,6 +651,12 @@
 #        undef Q_COMPILER_CONSTEXPR
 #      endif
 #    endif
+#  elif defined(__STDC_VERSION__) && __STDC_VERSION__ > 199901L s
+//   C11 features supported. Only tested with ICC 17 and up.
+#    define Q_COMPILER_STATIC_ASSERT
+#    if __has_include(<threads.h>)
+#      define Q_COMPILER_THREAD_LOCAL
+#    endif
 #  endif
 #endif
 
@@ -803,6 +809,17 @@
 #    endif
 #  endif
 
+#  if defined(__STDC_VERSION__)
+#    if __has_feature(c_static_assert)
+#      define Q_COMPILER_STATIC_ASSERT
+#    endif
+#    if __has_feature(c_thread_local) && __has_include(<threads.h>)
+#      if !defined(__FreeBSD__) /* FreeBSD clang fails on __cxa_thread_atexit */
+#        define Q_COMPILER_THREAD_LOCAL
+#      endif
+#    endif
+#  endif
+
 #  if defined(__has_warning)
 #    if __has_warning("-Wunused-private-field")
 #      define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
@@ -896,6 +913,18 @@
 //#    define Q_COMPILER_BINARY_LITERALS   // already supported since GCC 4.3 as an extension
 #      define Q_COMPILER_LAMBDA_CAPTURES
 #      define Q_COMPILER_RETURN_TYPE_DEDUCTION
+#    endif
+#  endif
+#  if defined(__STDC_VERSION__) && __STDC_VERSION__ > 199901L
+#    if Q_CC_GNU >= 407
+       /* C11 features supported in GCC 4.7: */
+#      define Q_COMPILER_STATIC_ASSERT
+#    endif
+#    if Q_CC_GNU >= 409
+       /* C11 features supported in GCC 4.9: */
+#      if __has_include(<threads.h>)
+#        define Q_COMPILER_THREAD_LOCAL
+#      endif
 #    endif
 #  endif
 #endif

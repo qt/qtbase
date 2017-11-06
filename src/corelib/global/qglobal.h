@@ -47,6 +47,7 @@
 #  include <utility>
 #endif
 #ifndef __ASSEMBLER__
+#  include <assert.h>
 #  include <stddef.h>
 #endif
 
@@ -103,6 +104,32 @@
 #endif
 #if defined (__MACH__) && defined (__APPLE__)
 #  define Q_OF_MACH_O
+#endif
+
+/*
+   Avoid "unused parameter" warnings
+*/
+#define Q_UNUSED(x) (void)x;
+
+#if defined(__cplusplus) && defined(Q_COMPILER_STATIC_ASSERT)
+#  define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
+#  define Q_STATIC_ASSERT_X(Condition, Message) static_assert(bool(Condition), Message)
+#elif defined(Q_COMPILER_STATIC_ASSERT)
+// C11 mode - using the _S version in case <assert.h> doesn't do the right thing
+#  define Q_STATIC_ASSERT(Condition) _Static_assert(!!(Condition), #Condition)
+#  define Q_STATIC_ASSERT_X(Condition, Message) _Static_assert(!!(Condition), Message)
+#else
+// C89 & C99 version
+#  define Q_STATIC_ASSERT_PRIVATE_JOIN(A, B) Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
+#  define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
+#  ifdef __COUNTER__
+#  define Q_STATIC_ASSERT(Condition) \
+    typedef char Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __COUNTER__) [(Condition) ? 1 : -1];
+#  else
+#  define Q_STATIC_ASSERT(Condition) \
+    typedef char Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) [(Condition) ? 1 : -1];
+#  endif /* __COUNTER__ */
+#  define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
 #endif
 
 #ifdef __cplusplus
@@ -688,11 +715,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() Q_DECL_NOTHROW;
 #endif
 
 /*
-   Avoid "unused parameter" warnings
-*/
-#define Q_UNUSED(x) (void)x;
-
-/*
    Debugging and error handling
 */
 
@@ -748,27 +770,6 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #  else
 #    define Q_ASSERT_X(cond, where, what) ((cond) ? static_cast<void>(0) : qt_assert_x(where, what, __FILE__, __LINE__))
 #  endif
-#endif
-
-
-#ifdef Q_COMPILER_STATIC_ASSERT
-#define Q_STATIC_ASSERT(Condition) static_assert(bool(Condition), #Condition)
-#define Q_STATIC_ASSERT_X(Condition, Message) static_assert(bool(Condition), Message)
-#else
-// Intentionally undefined
-template <bool Test> class QStaticAssertFailure;
-template <> class QStaticAssertFailure<true> {};
-
-#define Q_STATIC_ASSERT_PRIVATE_JOIN(A, B) Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B)
-#define Q_STATIC_ASSERT_PRIVATE_JOIN_IMPL(A, B) A ## B
-#ifdef __COUNTER__
-#define Q_STATIC_ASSERT(Condition) \
-    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __COUNTER__) = sizeof(QStaticAssertFailure<!!(Condition)>)}
-#else
-#define Q_STATIC_ASSERT(Condition) \
-    enum {Q_STATIC_ASSERT_PRIVATE_JOIN(q_static_assert_result, __LINE__) = sizeof(QStaticAssertFailure<!!(Condition)>)}
-#endif /* __COUNTER__ */
-#define Q_STATIC_ASSERT_X(Condition, Message) Q_STATIC_ASSERT(Condition)
 #endif
 
 Q_NORETURN Q_CORE_EXPORT void qt_check_pointer(const char *, int) Q_DECL_NOTHROW;

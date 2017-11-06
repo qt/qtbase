@@ -39,6 +39,7 @@ class tst_QGlobal: public QObject
     Q_OBJECT
 
 private slots:
+    void cMode();
     void qIsNull();
     void for_each();
     void qassert();
@@ -55,6 +56,22 @@ private slots:
     void buildAbiEndianness();
     void testqOverload();
 };
+
+extern "C" {        // functions in qglobal.c
+void tst_GlobalTypes();
+int tst_QtVersion();
+const char *tst_qVersion();
+}
+
+void tst_QGlobal::cMode()
+{
+    tst_GlobalTypes();
+    QCOMPARE(tst_QtVersion(), QT_VERSION);
+
+#ifndef QT_NAMESPACE
+    QCOMPARE(tst_qVersion(), qVersion());
+#endif
+}
 
 void tst_QGlobal::qIsNull()
 {
