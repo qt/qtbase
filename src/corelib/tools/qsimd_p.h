@@ -53,7 +53,6 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include <qatomic.h>
 
 /*
  * qt_module_config.prf defines the QT_COMPILER_SUPPORTS_XXX macros.
@@ -333,8 +332,10 @@
 #  include <arm_acle.h>
 #endif
 
-QT_BEGIN_NAMESPACE
+#ifdef __cplusplus
+#include <qatomic.h>
 
+QT_BEGIN_NAMESPACE
 
 enum CPUFeatures {
 #if defined(Q_PROCESSOR_ARM)
@@ -512,9 +513,11 @@ static inline quint64 qCpuFeatures()
 #define ALIGNMENT_PROLOGUE_32BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((8 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x7)) & 0x7))); ++i)
 
+QT_END_NAMESPACE
+
+#endif // __cplusplus
+
 #define SIMD_EPILOGUE(i, length, max) \
     for (int _i = 0; _i < max && i < length; ++i, ++_i)
-
-QT_END_NAMESPACE
 
 #endif // QSIMD_P_H
