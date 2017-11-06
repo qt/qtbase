@@ -1372,6 +1372,8 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
         d->setWindowIconText_helper(d->topData()->iconText);
     if (isWindow() && !d->topData()->caption.isEmpty())
         d->setWindowTitle_helper(d->topData()->caption);
+    if (isWindow() && !d->topData()->filePath.isEmpty())
+        d->setWindowFilePath_helper(d->topData()->filePath);
     if (windowType() != Qt::Desktop) {
         d->updateSystemBackground();
 
