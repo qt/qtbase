@@ -2877,57 +2877,53 @@ enum {
 */
 QByteArray QSysInfo::machineUniqueId()
 {
-    // the machine unique ID cannot change
-    static const QByteArray cache = []() {
 #ifdef Q_OS_BSD4
-        char uuid[UuidStringLen];
-        size_t uuidlen = sizeof(uuid);
+    char uuid[UuidStringLen];
+    size_t uuidlen = sizeof(uuid);
 #  ifdef KERN_HOSTUUID
-        int name[] = { CTL_KERN, KERN_HOSTUUID };
-        if (sysctl(name, sizeof name / sizeof name[0], &uuid, &uuidlen, nullptr, 0) == 0
-                && uuidlen == sizeof(uuid))
-            return QByteArray(uuid, uuidlen);
+    int name[] = { CTL_KERN, KERN_HOSTUUID };
+    if (sysctl(name, sizeof name / sizeof name[0], &uuid, &uuidlen, nullptr, 0) == 0
+            && uuidlen == sizeof(uuid))
+        return QByteArray(uuid, uuidlen);
 
 #  else
-        // Darwin: no fixed value, we need to search by name
-        if (sysctlbyname("kern.uuid", uuid, &uuidlen, nullptr, 0) == 0 && uuidlen == sizeof(uuid))
-                return QByteArray(uuid, uuidlen);
+    // Darwin: no fixed value, we need to search by name
+    if (sysctlbyname("kern.uuid", uuid, &uuidlen, nullptr, 0) == 0 && uuidlen == sizeof(uuid))
+        return QByteArray(uuid, uuidlen);
 #  endif
 #elif defined(Q_OS_UNIX)
-        // The modern name on Linux is /etc/machine-id, but that path is
-        // unlikely to exist on non-Linux (non-systemd) systems. The old
-        // path is more than enough.
-        static const char fullfilename[] = "/usr/local/var/lib/dbus/machine-id";
-        const char *firstfilename = fullfilename + sizeof("/usr/local") - 1;
-        int fd = qt_safe_open(firstfilename, O_RDONLY);
-        if (fd == -1 && errno == ENOENT)
-            fd = qt_safe_open(fullfilename, O_RDONLY);
+    // The modern name on Linux is /etc/machine-id, but that path is
+    // unlikely to exist on non-Linux (non-systemd) systems. The old
+    // path is more than enough.
+    static const char fullfilename[] = "/usr/local/var/lib/dbus/machine-id";
+    const char *firstfilename = fullfilename + sizeof("/usr/local") - 1;
+    int fd = qt_safe_open(firstfilename, O_RDONLY);
+    if (fd == -1 && errno == ENOENT)
+        fd = qt_safe_open(fullfilename, O_RDONLY);
 
-        if (fd != -1) {
-            char buffer[32];    // 128 bits, hex-encoded
-            qint64 len = qt_safe_read(fd, buffer, sizeof(buffer));
-            qt_safe_close(fd);
+    if (fd != -1) {
+        char buffer[32];    // 128 bits, hex-encoded
+        qint64 len = qt_safe_read(fd, buffer, sizeof(buffer));
+        qt_safe_close(fd);
 
-            if (len != -1)
-                return QByteArray(buffer, len);
-        }
+        if (len != -1)
+            return QByteArray(buffer, len);
+    }
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-        // Let's poke at the registry
-        HKEY key = NULL;
-        if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key)
-                == ERROR_SUCCESS) {
-            wchar_t buffer[UuidStringLen + 1];
-            DWORD size = sizeof(buffer);
-            bool ok = (RegQueryValueEx(key, L"MachineGuid", NULL, NULL, (LPBYTE)buffer, &size) ==
-                       ERROR_SUCCESS);
-            RegCloseKey(key);
-            if (ok)
-                return QStringView(buffer, (size - 1) / 2).toLatin1();
-        }
+    // Let's poke at the registry
+    HKEY key = NULL;
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key)
+            == ERROR_SUCCESS) {
+        wchar_t buffer[UuidStringLen + 1];
+        DWORD size = sizeof(buffer);
+        bool ok = (RegQueryValueEx(key, L"MachineGuid", NULL, NULL, (LPBYTE)buffer, &size) ==
+                   ERROR_SUCCESS);
+        RegCloseKey(key);
+        if (ok)
+            return QStringView(buffer, (size - 1) / 2).toLatin1();
+    }
 #endif
-        return QByteArray();
-    }();
-    return cache;
+    return QByteArray();
 }
 
 /*!
@@ -2945,29 +2941,25 @@ QByteArray QSysInfo::machineUniqueId()
 */
 QByteArray QSysInfo::bootUniqueId()
 {
-    // the boot unique ID cannot change
-    static const QByteArray cache = []() {
 #ifdef Q_OS_LINUX
-        // use low-level API here for simplicity
-        int fd = qt_safe_open("/proc/sys/kernel/random/boot_id", O_RDONLY);
-        if (fd != -1) {
-            char uuid[UuidStringLen];
-            qint64 len = qt_safe_read(fd, uuid, sizeof(uuid));
-            qt_safe_close(fd);
-            if (len == UuidStringLen)
-                return QByteArray(uuid, UuidStringLen);
-        }
-#elif defined(Q_OS_DARWIN)
-        // "kern.bootsessionuuid" is only available by name
+    // use low-level API here for simplicity
+    int fd = qt_safe_open("/proc/sys/kernel/random/boot_id", O_RDONLY);
+    if (fd != -1) {
         char uuid[UuidStringLen];
-        size_t uuidlen = sizeof(uuid);
-        if (sysctlbyname("kern.bootsessionuuid", uuid, &uuidlen, nullptr, 0) == 0
-                && uuidlen == sizeof(uuid))
-            return QByteArray(uuid, uuidlen);
+        qint64 len = qt_safe_read(fd, uuid, sizeof(uuid));
+        qt_safe_close(fd);
+        if (len == UuidStringLen)
+            return QByteArray(uuid, UuidStringLen);
+    }
+#elif defined(Q_OS_DARWIN)
+    // "kern.bootsessionuuid" is only available by name
+    char uuid[UuidStringLen];
+    size_t uuidlen = sizeof(uuid);
+    if (sysctlbyname("kern.bootsessionuuid", uuid, &uuidlen, nullptr, 0) == 0
+            && uuidlen == sizeof(uuid))
+        return QByteArray(uuid, uuidlen);
 #endif
-        return QByteArray();
-    }();
-    return cache;
+    return QByteArray();
 };
 
 /*!
