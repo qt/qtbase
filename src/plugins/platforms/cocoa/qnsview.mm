@@ -2068,6 +2068,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     }
     else {
         NSImage *nsimage = qt_mac_create_nsimage(pixmapCursor);
+        nsimage.size = NSSizeFromCGSize((pixmapCursor.size() / pixmapCursor.devicePixelRatioF()).toCGSize());
         nativeCursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSZeroPoint];
         [nsimage release];
     }
