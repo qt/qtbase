@@ -1849,36 +1849,36 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return tds;
 }
 
-static QCocoaWidget cocoaWidgetFromHIThemeButtonKind(ThemeButtonKind kind)
+ QMacStylePrivate::CocoaControl QMacStylePrivate::cocoaControlFromHIThemeButtonKind(ThemeButtonKind kind)
 {
-    QCocoaWidget w;
+    CocoaControl w;
 
     switch (kind) {
     case kThemePopupButton:
     case kThemePopupButtonSmall:
     case kThemePopupButtonMini:
-        w.first = QCocoaPopupButton;
+        w.first = Button_PopupButton;
         break;
     case kThemeComboBox:
-        w.first = QCocoaComboBox;
+        w.first = ComboBox;
         break;
     case kThemeArrowButton:
-        w.first = QCocoaDisclosureButton;
+        w.first = Button_Disclosure;
         break;
     case kThemeCheckBox:
     case kThemeCheckBoxSmall:
     case kThemeCheckBoxMini:
-        w.first = QCocoaCheckBox;
+        w.first = Button_CheckBox;
         break;
     case kThemeRadioButton:
     case kThemeRadioButtonSmall:
     case kThemeRadioButtonMini:
-        w.first = QCocoaRadioButton;
+        w.first = Button_RadioButton;
         break;
     case kThemePushButton:
     case kThemePushButtonSmall:
     case kThemePushButtonMini:
-        w.first = QCocoaPushButton;
+        w.first = Button_PushButton;
         break;
     default:
         break;
@@ -1914,13 +1914,13 @@ static NSButton *makeButton(NSButtonType type, NSBezelStyle style)
     return b;
 }
 
-NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
+NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
 {
     NSView *bv = cocoaControls.value(widget, nil);
 
     if (!bv) {
         switch (widget.first) {
-        case QCocoaBox: {
+        case Box: {
             NSBox *bc = [[NSBox alloc] init];
             bc.title = @"";
             bc.titlePosition = NSNoTitle;
@@ -1929,48 +1929,48 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
             bv = bc;
             break;
         }
-        case QCocoaCheckBox:
+        case Button_CheckBox:
             bv = makeButton(NSSwitchButton, NSRegularSquareBezelStyle);
             break;
-        case QCocoaDisclosureButton:
+        case Button_Disclosure:
             bv = makeButton(NSOnOffButton, NSDisclosureBezelStyle);
             break;
-        case QCocoaPopupButton:
-        case QCocoaPullDownButton: {
+        case Button_PopupButton:
+        case Button_PullDown: {
             NSPopUpButton *bc = [[NSPopUpButton alloc] init];
             bc.title = @"";
-            if (widget.first == QCocoaPullDownButton)
+            if (widget.first == Button_PullDown)
                 bc.pullsDown = YES;
             bv = bc;
             break;
         }
-        case QCocoaPushButton:
+        case Button_PushButton:
             bv = makeButton(NSMomentaryLightButton, NSRoundedBezelStyle);
             break;
-        case QCocoaRadioButton:
+        case Button_RadioButton:
             bv = makeButton(NSRadioButton, NSRegularSquareBezelStyle);
             break;
-        case QCocoaComboBox:
+        case ComboBox:
             bv = [[NSComboBox alloc] init];
             break;
-        case QCocoaProgressIndicator:
+        case ProgressIndicator_Determinate:
             bv = [[NSProgressIndicator alloc] init];
             break;
-        case QCocoaIndeterminateProgressIndicator:
+        case ProgressIndicator_Indeterminate:
             bv = [[QIndeterminateProgressIndicator alloc] init];
             break;
-        case QCocoaHorizontalScroller:
+        case Scroller_Horizontal:
             bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
             break;
-        case QCocoaVerticalScroller:
+        case Scroller_Vertical:
             // Cocoa sets the orientation from the view's frame
             // at construction time, and it cannot be changed later.
             bv = [[NSScroller alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
             break;
-        case QCocoaHorizontalSlider:
+        case Slider_Horizontal:
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 200, 20)];
             break;
-        case QCocoaVerticalSlider:
+        case Slider_Vertical:
             // Cocoa sets the orientation from the view's frame
             // at construction time, and it cannot be changed later.
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
@@ -1991,10 +1991,10 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
             default:
                 break;
             }
-        } else if (widget.first == QCocoaProgressIndicator ||
-                   widget.first == QCocoaIndeterminateProgressIndicator) {
+        } else if (widget.first == ProgressIndicator_Determinate ||
+                   widget.first == ProgressIndicator_Indeterminate) {
             auto *pi = static_cast<NSProgressIndicator *>(bv);
-            pi.indeterminate = (widget.first == QCocoaIndeterminateProgressIndicator);
+            pi.indeterminate = (widget.first == ProgressIndicator_Indeterminate);
             switch (widget.second) {
             case QStyleHelper::SizeSmall:
                 pi.controlSize = NSSmallControlSize;
@@ -2013,15 +2013,15 @@ NSView *QMacStylePrivate::cocoaControl(QCocoaWidget widget) const
     return bv;
 }
 
-NSCell *QMacStylePrivate::cocoaCell(QCocoaWidget widget) const
+NSCell *QMacStylePrivate::cocoaCell(CocoaControl widget) const
 {
     NSCell *cell = cocoaCells[widget];
     if (!cell) {
         switch (widget.first) {
-        case QCocoaStepper:
+        case Stepper:
             cell = [[NSStepperCell alloc] init];
             break;
-        case QCocoaDisclosureButton: {
+        case Button_Disclosure: {
             NSButtonCell *bc = [[NSButtonCell alloc] init];
             bc.buttonType = NSOnOffButton;
             bc.bezelStyle = NSDisclosureBezelStyle;
@@ -2049,31 +2049,31 @@ NSCell *QMacStylePrivate::cocoaCell(QCocoaWidget widget) const
     return cell;
 }
 
-void QMacStylePrivate::drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, QCocoaDrawRectBlock drawRectBlock) const
+void QMacStylePrivate::drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, DrawRectBlock drawRectBlock) const
 {
     QPoint offset;
-    if (widget == QCocoaWidget(QCocoaRadioButton, QStyleHelper::SizeLarge))
+    if (widget == CocoaControl(Button_RadioButton, QStyleHelper::SizeLarge))
         offset.setY(2);
-    else if (widget == QCocoaWidget(QCocoaRadioButton, QStyleHelper::SizeSmall))
+    else if (widget == CocoaControl(Button_RadioButton, QStyleHelper::SizeSmall))
         offset = QPoint(-1, 2);
-    else if (widget == QCocoaWidget(QCocoaRadioButton, QStyleHelper::SizeMini))
+    else if (widget == CocoaControl(Button_RadioButton, QStyleHelper::SizeMini))
         offset.setY(2);
-    else if (widget == QCocoaWidget(QCocoaPopupButton, QStyleHelper::SizeSmall)
-             || widget == QCocoaWidget(QCocoaCheckBox, QStyleHelper::SizeLarge))
+    else if (widget == CocoaControl(Button_PopupButton, QStyleHelper::SizeSmall)
+             || widget == CocoaControl(Button_CheckBox, QStyleHelper::SizeLarge))
         offset.setY(1);
-    else if (widget == QCocoaWidget(QCocoaCheckBox, QStyleHelper::SizeSmall))
+    else if (widget == CocoaControl(Button_CheckBox, QStyleHelper::SizeSmall))
         offset.setX(-1);
-    else if (widget == QCocoaWidget(QCocoaCheckBox, QStyleHelper::SizeMini))
+    else if (widget == CocoaControl(Button_CheckBox, QStyleHelper::SizeMini))
         offset = QPoint(7, 5);
-    else if (widget == QCocoaWidget(QCocoaPopupButton, QStyleHelper::SizeMini))
+    else if (widget == CocoaControl(Button_PopupButton, QStyleHelper::SizeMini))
         offset = QPoint(2, -1);
-    else if (widget == QCocoaWidget(QCocoaPullDownButton, QStyleHelper::SizeLarge))
+    else if (widget == CocoaControl(Button_PullDown, QStyleHelper::SizeLarge))
         offset = isQWidget ? QPoint(3, -1) : QPoint(-1, -3);
-    else if (widget == QCocoaWidget(QCocoaPullDownButton, QStyleHelper::SizeSmall))
+    else if (widget == CocoaControl(Button_PullDown, QStyleHelper::SizeSmall))
         offset = QPoint(2, 1);
-    else if (widget == QCocoaWidget(QCocoaPullDownButton, QStyleHelper::SizeMini))
+    else if (widget == CocoaControl(Button_PullDown, QStyleHelper::SizeMini))
         offset = QPoint(5, 0);
-    else if (widget == QCocoaWidget(QCocoaComboBox, QStyleHelper::SizeLarge))
+    else if (widget == CocoaControl(ComboBox, QStyleHelper::SizeLarge))
         offset = QPoint(3, 0);
 
     QMacCGContext ctx(p);
@@ -2162,7 +2162,7 @@ void QMacStylePrivate::drawColorlessButton(const CGRect &macRect, HIThemeButtonD
         if (!combo && !button && bdi->value == kThemeButtonOff) {
             pm = activePixmap;
         } else if ((combo && !editableCombo) || button) {
-            QCocoaWidget cw = cocoaWidgetFromHIThemeButtonKind(bdi->kind);
+            CocoaControl cw = cocoaControlFromHIThemeButtonKind(bdi->kind);
             NSButton *bc = (NSButton *)cocoaControl(cw);
             [bc highlight:pressed];
             bc.enabled = bdi->state != kThemeStateUnavailable && bdi->state != kThemeStateUnavailableInactive;
@@ -3211,7 +3211,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             if (groupBox->features & QStyleOptionFrame::Flat) {
                 QCommonStyle::drawPrimitive(pe, groupBox, p, w);
             } else {
-                const auto cw = QCocoaWidget(QCocoaBox, QStyleHelper::SizeDefault);
+                const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::Box, QStyleHelper::SizeDefault);
                 auto *box = static_cast<NSBox *>(d->cocoaControl(cw));
                 d->drawNSViewInRect(cw, box, groupBox->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
                     CGContextTranslateCTM(ctx, 0, rect.origin.y + rect.size.height);
@@ -3397,7 +3397,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorBranch: {
         if (!(opt->state & State_Children))
             break;
-        NSButtonCell *triangleCell = static_cast<NSButtonCell *>(d->cocoaCell(QCocoaWidget(QCocoaDisclosureButton, QStyleHelper::SizeLarge)));
+        const auto cw =  QMacStylePrivate::CocoaControl(QMacStylePrivate::Button_Disclosure, QStyleHelper::SizeLarge);
+        NSButtonCell *triangleCell = static_cast<NSButtonCell *>(d->cocoaCell(cw));
         [triangleCell setState:(opt->state & State_Open) ? NSOnState : NSOffState];
         bool viewHasFocus = (w && w->hasFocus()) || (opt->state & State_HasFocus);
         [triangleCell setBackgroundStyle:((opt->state & State_Selected) && viewHasFocus) ? NSBackgroundStyleDark : NSBackgroundStyleLight];
@@ -3884,8 +3885,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             }
 
             if (hasMenu && bdi.kind != kThemeBevelButton) {
-                QCocoaWidget cw = cocoaWidgetFromHIThemeButtonKind(bdi.kind);
-                cw.first = QCocoaPullDownButton;
+                auto cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
+                cw.first = QMacStylePrivate::Button_PullDown;
                 NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(cw);
                 [pdb highlight:(bdi.state == kThemeStatePressed)];
                 pdb.enabled = bdi.state != kThemeStateUnavailable && bdi.state != kThemeStateUnavailableInactive;
@@ -4451,7 +4452,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject));
             QIndeterminateProgressIndicator *ipi = nil;
             if (isIndeterminate || animation)
-                ipi = static_cast<QIndeterminateProgressIndicator *>(d->cocoaControl({ QCocoaIndeterminateProgressIndicator, aquaSize }));
+                ipi = static_cast<QIndeterminateProgressIndicator *>(d->cocoaControl({ QMacStylePrivate::ProgressIndicator_Indeterminate, aquaSize }));
             if (isIndeterminate) {
                 // QIndeterminateProgressIndicator derives from NSProgressIndicator. We use a single
                 // instance that we start animating as soon as one of the progress bars is indeterminate.
@@ -4478,7 +4479,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     [ipi stopAnimation];
                 }
 
-                const QCocoaWidget cw = { QCocoaProgressIndicator, aquaSize };
+                const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::ProgressIndicator_Determinate, aquaSize);
                 auto *pi = static_cast<NSProgressIndicator *>(d->cocoaControl(cw));
                 d->drawNSViewInRect(cw, pi, rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
                     d->setupVerticalInvertedXform(ctx, reverse, vertical, rect);
@@ -5265,7 +5266,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
             d->setupNSGraphicsContext(cg, NO /* flipped */);
 
-            const QCocoaWidget cw(isHorizontal ? QCocoaHorizontalScroller : QCocoaVerticalScroller, cocoaSize);
+            const auto controlType = isHorizontal ? QMacStylePrivate::Scroller_Horizontal : QMacStylePrivate::Scroller_Vertical;
+            const auto cw = QMacStylePrivate::CocoaControl(controlType, cocoaSize);
             NSScroller *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
 
             if (isTransient) {
@@ -5347,8 +5349,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_Slider:
         if (const QStyleOptionSlider *sl = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             const bool isHorizontal = sl->orientation == Qt::Horizontal;
+            const auto ct = isHorizontal ? QMacStylePrivate::Slider_Horizontal : QMacStylePrivate::Slider_Vertical;
             const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
-            const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider, cs);
+            const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *slider = static_cast<NSSlider *>(d->cocoaControl(cw));
             if (!setupSlider(slider, sl))
                 break;
@@ -5483,7 +5486,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 d->setupNSGraphicsContext(cg, NO);
 
                 const auto aquaSize = d->effectiveAquaSizeConstrain(opt, widget);
-                NSStepperCell *cell = static_cast<NSStepperCell *>(d->cocoaCell(QCocoaWidget(QCocoaStepper, aquaSize)));
+                const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::Stepper, aquaSize);
+                NSStepperCell *cell = static_cast<NSStepperCell *>(d->cocoaCell(cw));
                 cell.enabled = (sb->state & State_Enabled);
 
                 const CGRect newRect = [cell drawingRectForBounds:updown.toCGRect()];
@@ -5518,7 +5522,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             if (tds != kThemeStateInactive)
                 QMacStylePrivate::drawCombobox(rect, bdi, p);
             else if (!widget && combo->editable) {
-                QCocoaWidget cw = cocoaWidgetFromHIThemeButtonKind(bdi.kind);
+                const auto cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
                 NSView *cb = d->cocoaControl(cw);
                 QRect r = combo->rect.adjusted(3, 0, 0, 0);
                 d->drawNSViewInRect(cw, cb, r, p, widget != 0);
@@ -5822,8 +5826,9 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
 
             const bool hasTicks = sl->tickPosition != QSlider::NoTicks;
             const bool isHorizontal = sl->orientation == Qt::Horizontal;
+            const auto ct = isHorizontal ? QMacStylePrivate::Slider_Horizontal : QMacStylePrivate::Slider_Vertical;
             const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
-            const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider, cs);
+            const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *slider = static_cast<NSSlider *>(d->cocoaControl(cw));
             if (!setupSlider(slider, sl))
                 break;
@@ -5848,9 +5853,10 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
                 break;
             }
 
-            const auto controlSize = d->effectiveAquaSizeConstrain(opt, widget);
             const bool isHorizontal = sb->orientation == Qt::Horizontal;
-            const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalScroller : QCocoaVerticalScroller, controlSize);
+            const auto ct = isHorizontal ? QMacStylePrivate::Scroller_Horizontal : QMacStylePrivate::Scroller_Vertical;
+            const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
+            const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
             if (!setupScroller(scroller, sb)) {
                 sc = SC_None;
@@ -5956,8 +5962,9 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             // And nothing else since 10.7
 
             if (part != NSScrollerNoPart) {
-                const auto controlSize = d->effectiveAquaSizeConstrain(opt, widget);
-                const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalScroller : QCocoaVerticalScroller, controlSize);
+                const auto ct = isHorizontal ? QMacStylePrivate::Scroller_Horizontal : QMacStylePrivate::Scroller_Vertical;
+                const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
+                const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
                 auto *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
                 if (setupScroller(scroller, sb))
                     ret = QRectF::fromCGRect([scroller rectForPart:part]).toRect();
@@ -5968,8 +5975,9 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
         if (const QStyleOptionSlider *sl = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             const bool hasTicks = sl->tickPosition != QSlider::NoTicks;
             const bool isHorizontal = sl->orientation == Qt::Horizontal;
+            const auto ct = isHorizontal ? QMacStylePrivate::Slider_Horizontal : QMacStylePrivate::Slider_Vertical;
             const auto cs = d->effectiveAquaSizeConstrain(opt, widget);
-            const auto cw = QCocoaWidget(isHorizontal ? QCocoaHorizontalSlider : QCocoaVerticalSlider, cs);
+            const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *slider = static_cast<NSSlider *>(d->cocoaControl(cw));
             if (!setupSlider(slider, sl))
                 break;
@@ -6230,7 +6238,8 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                     Q_UNREACHABLE();
                 }
 
-                NSStepperCell *cell = static_cast<NSStepperCell *>(d->cocoaCell(QCocoaWidget(QCocoaStepper, aquaSize)));
+                const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::Stepper, aquaSize);
+                NSStepperCell *cell = static_cast<NSStepperCell *>(d->cocoaCell(cw));
                 const CGRect outRect = [cell drawingRectForBounds:ret.toCGRect()];
                 ret = QRectF::fromCGRect(outRect).toRect();
 

@@ -167,28 +167,6 @@ QT_BEGIN_NAMESPACE
 #define CT1(c) CT2(c, c)
 #define CT2(c1, c2) ((uint(c1) << 16) | uint(c2))
 
-enum QCocoaWidgetKind {
-    QCocoaBox,          // QGroupBox
-    QCocoaCheckBox,
-    QCocoaComboBox,     // Editable QComboBox
-    QCocoaDisclosureButton,  // Disclosure triangle, like in QTreeView
-    QCocoaPopupButton,  // Non-editable QComboBox
-    QCocoaProgressIndicator,
-    QCocoaIndeterminateProgressIndicator,
-    QCocoaPullDownButton, // QPushButton with menu
-    QCocoaPushButton,
-    QCocoaRadioButton,
-    QCocoaHorizontalScroller,
-    QCocoaVerticalScroller,
-    QCocoaHorizontalSlider,
-    QCocoaVerticalSlider,
-    QCocoaStepper       // QSpinBox buttons
-};
-
-typedef QPair<QCocoaWidgetKind, QStyleHelper::WidgetSizePolicy> QCocoaWidget;
-
-typedef void (^QCocoaDrawRectBlock)(CGContextRef, const CGRect &);
-
 #define SIZE(large, small, mini) \
     (controlSize == QStyleHelper::SizeLarge ? (large) : controlSize == QStyleHelper::SizeSmall ? (small) : (mini))
 
@@ -207,6 +185,28 @@ class QMacStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QMacStyle)
 public:
+    enum CocoaControlType {
+        Box,          // QGroupBox
+        Button_CheckBox,
+        Button_Disclosure,  // Disclosure triangle, like in QTreeView
+        Button_PopupButton,  // Non-editable QComboBox
+        Button_PullDown, // QPushButton with menu
+        Button_PushButton,
+        Button_RadioButton,
+        ComboBox,     // Editable QComboBox
+        ProgressIndicator_Determinate,
+        ProgressIndicator_Indeterminate,
+        Scroller_Horizontal,
+        Scroller_Vertical,
+        Slider_Horizontal,
+        Slider_Vertical,
+        Stepper       // QSpinBox buttons
+    };
+
+    typedef QPair<CocoaControlType, QStyleHelper::WidgetSizePolicy> CocoaControl;
+
+    typedef void (^DrawRectBlock)(CGContextRef, const CGRect &);
+
     QMacStylePrivate();
     ~QMacStylePrivate();
 
@@ -260,15 +260,17 @@ public:
 
     void setAutoDefaultButton(QObject *button) const;
 
-    NSView *cocoaControl(QCocoaWidget widget) const;
-    NSCell *cocoaCell(QCocoaWidget widget) const;
+    NSView *cocoaControl(CocoaControl widget) const;
+    NSCell *cocoaCell(CocoaControl widget) const;
+
+    static CocoaControl cocoaControlFromHIThemeButtonKind(ThemeButtonKind kind);
 
     void setupNSGraphicsContext(CGContextRef cg, bool flipped) const;
     void restoreNSGraphicsContext(CGContextRef cg) const;
 
     void setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const;
 
-    void drawNSViewInRect(QCocoaWidget widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, QCocoaDrawRectBlock drawRectBlock = nil) const;
+    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, DrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window);
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
@@ -284,8 +286,8 @@ public:
     mutable QPointer<QFocusFrame> focusWidget;
     QT_MANGLE_NAMESPACE(NotificationReceiver) *receiver;
     NSView *backingStoreNSView;
-    mutable QHash<QCocoaWidget, NSView *> cocoaControls;
-    mutable QHash<QCocoaWidget, NSCell *> cocoaCells;
+    mutable QHash<CocoaControl, NSView *> cocoaControls;
+    mutable QHash<CocoaControl, NSCell *> cocoaCells;
 
     QFont smallSystemFont;
     QFont miniSystemFont;
