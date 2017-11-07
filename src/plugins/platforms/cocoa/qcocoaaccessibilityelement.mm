@@ -40,6 +40,7 @@
 #include "qcocoaaccessibility.h"
 #include "qcocoahelpers.h"
 #include "qcocoawindow.h"
+#include "qcocoascreen.h"
 #include "private/qaccessiblecache_p.h"
 #include <QtAccessibilitySupport/private/qaccessiblebridgeutils_p.h>
 #include <QtGui/qaccessible.h>
@@ -298,9 +299,9 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         // We're in the same top level element as our parent.
         return [[self parentElement] accessibilityAttributeValue:NSAccessibilityTopLevelUIElementAttribute];
     } else if ([attribute isEqualToString:NSAccessibilityPositionAttribute]) {
-        QPoint qtPosition = iface->rect().topLeft();
-        QSize qtSize = iface->rect().size();
-        return [NSValue valueWithPoint: NSMakePoint(qtPosition.x(), qt_mac_flipYCoordinate(qtPosition.y() + qtSize.height()))];
+        // The position in points of the element's lower-left corner in screen-relative coordinates
+        QPointF qtPosition = QRectF(iface->rect()).bottomLeft();
+        return [NSValue valueWithPoint:QCocoaScreen::mapToNative(qtPosition)];
     } else if ([attribute isEqualToString:NSAccessibilitySizeAttribute]) {
         QSize qtSize = iface->rect().size();
         return [NSValue valueWithSize: NSMakeSize(qtSize.width(), qtSize.height())];
@@ -430,7 +431,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if ([attribute isEqualToString: NSAccessibilityBoundsForRangeParameterizedAttribute]) {
         NSRange range = [parameter rangeValue];
         QRect firstRect = iface->textInterface()->characterRect(range.location);
-        QRect rect;
+        QRectF rect;
         if (range.length > 0) {
             NSUInteger position = range.location + range.length - 1;
             if (position > range.location && iface->textInterface()->text(position, position + 1) == QStringLiteral("\n"))
@@ -441,15 +442,14 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             rect = firstRect;
             rect.setWidth(1);
         }
-        return [NSValue valueWithRect: NSMakeRect((CGFloat) rect.x(),(CGFloat) qt_mac_flipYCoordinate(rect.y() + rect.height()), rect.width(), rect.height())];
+        return [NSValue valueWithRect:QCocoaScreen::mapToNative(rect)];
     }
     if ([attribute isEqualToString: NSAccessibilityAttributedStringForRangeParameterizedAttribute]) {
         NSRange range = [parameter rangeValue];
         QString text = iface->textInterface()->text(range.location, range.location + range.length);
         return [[NSAttributedString alloc] initWithString:text.toNSString()];
     } else if ([attribute isEqualToString: NSAccessibilityRangeForPositionParameterizedAttribute]) {
-        NSPoint nsPoint = [parameter pointValue];
-        QPoint point(static_cast<int>(nsPoint.x), static_cast<int>(qt_mac_flipYCoordinate(nsPoint.y)));
+        QPoint point = QCocoaScreen::mapFromNative([parameter pointValue]).toPoint();
         int offset = iface->textInterface()->offsetAtPoint(point);
         return [NSValue valueWithRange:NSMakeRange(static_cast<NSUInteger>(offset), 1)];
     } else if ([attribute isEqualToString: NSAccessibilityStyleRangeForIndexParameterizedAttribute]) {
@@ -566,8 +566,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         return NSAccessibilityUnignoredAncestor(self);
     }
 
-    int y = qt_mac_flipYCoordinate(point.y);
-    QAccessibleInterface *childInterface = iface->childAt(point.x, y);
+    QPointF screenPoint = QCocoaScreen::mapFromNative(point);
+    QAccessibleInterface *childInterface = iface->childAt(screenPoint.x(), screenPoint.y());
     // No child found, meaning we hit this element.
     if (!childInterface || !childInterface->isValid())
         return NSAccessibilityUnignoredAncestor(self);
@@ -575,7 +575,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     // find the deepest child at the point
     QAccessibleInterface *childOfChildInterface = 0;
     do {
-        childOfChildInterface = childInterface->childAt(point.x, y);
+        childOfChildInterface = childInterface->childAt(screenPoint.x(), screenPoint.y());
         if (childOfChildInterface && childOfChildInterface->isValid())
             childInterface = childOfChildInterface;
     } while (childOfChildInterface && childOfChildInterface->isValid());

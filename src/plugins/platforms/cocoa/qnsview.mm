@@ -42,6 +42,7 @@
 #include "qnsview.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
+#include "qcocoascreen.h"
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
 #include "qcocoainputcontext.h"
@@ -436,8 +437,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     nsWindowPoint = windowRect.origin;                    // NSWindow coordinates
     NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
     *qtWindowPoint = QPointF(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
-
-    *qtScreenPoint = QPointF(mouseLocation.x, qt_mac_flipYCoordinate(mouseLocation.y)); // Qt screen coordinates
+    *qtScreenPoint = QCocoaScreen::mapFromNative(mouseLocation);
 }
 
 - (void)resetMouseButtons
@@ -548,7 +548,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
     QPoint qtWindowPoint = QPoint(nsViewPoint.x, titleBarHeight + nsViewPoint.y);
     NSPoint screenPoint = [window convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 0, 0)].origin;
-    QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+    QPoint qtScreenPoint = QCocoaScreen::mapFromNative(screenPoint).toPoint();
 
     ulong timestamp = [theEvent timestamp] * 1000;
     QWindowSystemInterface::handleFrameStrutMouseEvent(m_platformWindow->window(), timestamp, qtWindowPoint, qtScreenPoint, m_frameStrutButtons);
@@ -640,7 +640,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if (!popups->isEmpty()) {
         // Check if the click is outside all popups.
         bool inside = false;
-        QPointF qtScreenPoint = qt_mac_flipPoint([self screenMousePoint:theEvent]);
+        QPointF qtScreenPoint = QCocoaScreen::mapFromNative([self screenMousePoint:theEvent]);
         for (QList<QCocoaWindow *>::const_iterator it = popups->begin(); it != popups->end(); ++it) {
             if ((*it)->geometry().contains(qtScreenPoint.toPoint())) {
                 inside = true;
@@ -1730,14 +1730,8 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
 
     // The returned rect is always based on the internal cursor.
     QRect mr = qApp->inputMethod()->cursorRectangle().toRect();
-    QPoint mp = m_platformWindow->window()->mapToGlobal(mr.bottomLeft());
-
-    NSRect rect;
-    rect.origin.x = mp.x();
-    rect.origin.y = qt_mac_flipYCoordinate(mp.y());
-    rect.size.width = mr.width();
-    rect.size.height = mr.height();
-    return rect;
+    mr.moveBottomLeft(m_platformWindow->window()->mapToGlobal(mr.bottomLeft()));
+    return QCocoaScreen::mapToNative(mr);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)aPoint
@@ -2022,8 +2016,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     NSPoint windowPoint = [self.window convertRectFromScreen:NSMakeRect(screenPoint.x, screenPoint.y, 1, 1)].origin;
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil]; // NSView/QWindow coordinates
     QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);
-
-    QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+    QPoint qtScreenPoint = QCocoaScreen::mapFromNative(screenPoint).toPoint();
 
     QWindowSystemInterface::handleMouseEvent(target, mapWindowCoordinates(m_platformWindow->window(), target, qtWindowPoint), qtScreenPoint, m_buttons);
 }

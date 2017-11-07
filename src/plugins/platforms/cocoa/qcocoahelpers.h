@@ -85,13 +85,8 @@ QT_MANGLE_NAMESPACE(QNSView) *qnsview_cast(NSView *view);
 void qt_mac_transformProccessToForegroundApplication();
 QString qt_mac_applicationName();
 
-int qt_mac_flipYCoordinate(int y);
-qreal qt_mac_flipYCoordinate(qreal y);
-QPointF qt_mac_flipPoint(const NSPoint &p);
-NSPoint qt_mac_flipPoint(const QPoint &p);
-NSPoint qt_mac_flipPoint(const QPointF &p);
-
-NSRect qt_mac_flipRect(const QRect &rect);
+QPointF qt_mac_flip(const QPointF &pos, const QRectF &reference);
+QRectF qt_mac_flip(const QRectF &rect, const QRectF &reference);
 
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 

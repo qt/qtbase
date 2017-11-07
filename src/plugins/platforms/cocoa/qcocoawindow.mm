@@ -271,7 +271,7 @@ QRect QCocoaWindow::geometry() const
         NSPoint windowPoint = [m_view convertPoint:NSMakePoint(0, 0) toView:nil];
         NSRect screenRect = [[m_view window] convertRectToScreen:NSMakeRect(windowPoint.x, windowPoint.y, 1, 1)];
         NSPoint screenPoint = screenRect.origin;
-        QPoint position = qt_mac_flipPoint(screenPoint).toPoint();
+        QPoint position = QCocoaScreen::mapFromNative(screenPoint).toPoint();
         QSize size = QRectF::fromCGRect(NSRectToCGRect([m_view bounds])).toRect().size();
         return QRect(position, size);
     }
@@ -294,7 +294,7 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
     }
 
     if (isContentView()) {
-        NSRect bounds = qt_mac_flipRect(rect);
+        NSRect bounds = QCocoaScreen::mapToNative(rect);
         [m_view.window setFrame:[m_view.window frameRectForContentRect:bounds] display:YES animate:NO];
     } else {
         [m_view setFrame:NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height())];
@@ -387,7 +387,7 @@ void QCocoaWindow::setVisible(bool visible)
                     if (!(parentCocoaWindow && window()->transientParent()->isActive()) && window()->type() == Qt::Popup) {
                         removeMonitor();
                         monitor = [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask|NSRightMouseDownMask|NSOtherMouseDownMask|NSMouseMovedMask handler:^(NSEvent *e) {
-                            QPointF localPoint = qt_mac_flipPoint([NSEvent mouseLocation]);
+                            QPointF localPoint = QCocoaScreen::mapFromNative([NSEvent mouseLocation]);
                             QWindowSystemInterface::handleMouseEvent(window(), window()->mapFromGlobal(localPoint.toPoint()), localPoint,
                                                                      cocoaButton2QtButton([e buttonNumber]));
                         }];
@@ -1100,7 +1100,7 @@ void QCocoaWindow::handleGeometryChange()
         CGRect contentRect = [m_view.window contentRectForFrameRect:m_view.window.frame];
 
         // The result above is in native screen coordinates, so remap to the Qt coordinate system
-        newGeometry = QCocoaScreen::primaryScreen()->mapFromNative(QRectF::fromCGRect(contentRect)).toRect();
+        newGeometry = QCocoaScreen::mapFromNative(contentRect).toRect();
     } else {
         // QNSView has isFlipped set, so no need to remap the geometry
         newGeometry = QRectF::fromCGRect(m_view.frame).toRect();
@@ -1362,7 +1362,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     rect.translate(-targetScreen->geometry().topLeft());
     QCocoaScreen *cocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
-    NSRect frame = NSRectFromCGRect(cocoaScreen->mapToNative(rect).toCGRect());
+    NSRect frame = QCocoaScreen::mapToNative(rect, cocoaScreen);
 
     // Note: The macOS window manager has a bug, where if a screen is rotated, it will not allow
     // a window to be created within the area of the screen that has a Y coordinate (I quadrant)

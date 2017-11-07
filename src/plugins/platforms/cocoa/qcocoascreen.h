@@ -77,16 +77,12 @@ public:
     NSScreen *nativeScreen() const;
     void updateGeometry();
 
-    QPointF mapToNative(const QPointF &pos) const { return flipCoordinate(pos); }
-    QRectF mapToNative(const QRectF &rect) const { return flipCoordinate(rect); }
-    QPointF mapFromNative(const QPointF &pos) const { return flipCoordinate(pos); }
-    QRectF mapFromNative(const QRectF &rect) const { return flipCoordinate(rect); }
-
     static QCocoaScreen *primaryScreen();
 
-private:
-    QPointF flipCoordinate(const QPointF &pos) const;
-    QRectF flipCoordinate(const QRectF &rect) const;
+    static CGPoint mapToNative(const QPointF &pos, QCocoaScreen *screen = QCocoaScreen::primaryScreen());
+    static CGRect mapToNative(const QRectF &rect, QCocoaScreen *screen = QCocoaScreen::primaryScreen());
+    static QPointF mapFromNative(CGPoint pos, QCocoaScreen *screen = QCocoaScreen::primaryScreen());
+    static QRectF mapFromNative(CGRect rect, QCocoaScreen *screen = QCocoaScreen::primaryScreen());
 
 public:
     int m_screenIndex;

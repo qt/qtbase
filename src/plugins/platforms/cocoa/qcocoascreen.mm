@@ -75,34 +75,6 @@ NSScreen *QCocoaScreen::nativeScreen() const
     return [screens objectAtIndex:m_screenIndex];
 }
 
-/*!
-    Flips the Y coordinate of the point between quadrant I and IV.
-
-    The native coordinate system on macOS uses quadrant I, with origin
-    in bottom left, and Qt uses quadrant IV, with origin in top left.
-
-    By flippig the Y coordinate, we can map the position between the
-    two coordinate systems.
-*/
-QPointF QCocoaScreen::flipCoordinate(const QPointF &pos) const
-{
-    return QPointF(pos.x(), m_geometry.height() - pos.y());
-}
-
-/*!
-    Flips the Y coordinate of the rectangle between quadrant I and IV.
-
-    The native coordinate system on macOS uses quadrant I, with origin
-    in bottom left, and Qt uses quadrant IV, with origin in top left.
-
-    By flippig the Y coordinate, we can map the rectangle between the
-    two coordinate systems.
-*/
-QRectF QCocoaScreen::flipCoordinate(const QRectF &rect) const
-{
-    return QRectF(flipCoordinate(rect.topLeft() + QPoint(0, rect.height())), rect.size());
-}
-
 static QString displayName(CGDirectDisplayID displayID)
 {
     QIOType<io_iterator_t> iterator;
@@ -141,20 +113,10 @@ void QCocoaScreen::updateGeometry()
     if (!nsScreen)
         return;
 
-    // At this point the geometry is in native coordinates, but the size
-    // is correct, which we take advantage of next when we map the native
-    // coordinates to the Qt coordinate system.
-    m_geometry = QRectF::fromCGRect(NSRectToCGRect(nsScreen.frame)).toRect();
-    m_availableGeometry = QRectF::fromCGRect(NSRectToCGRect(nsScreen.visibleFrame)).toRect();
-
-    // The reference screen for the geometry is always the primary screen, but since
-    // we may be in the process of creating and registering the primary screen, we
-    // must special-case that and assign it direcly.
-    QCocoaScreen *primaryScreen = (nsScreen == [[NSScreen screens] firstObject]) ?
-        this : QCocoaScreen::primaryScreen();
-
-    m_geometry = primaryScreen->mapFromNative(m_geometry).toRect();
-    m_availableGeometry = primaryScreen->mapFromNative(m_availableGeometry).toRect();
+    // The reference screen for the geometry is always the primary screen
+    QRectF primaryScreenGeometry = QRectF::fromCGRect([[NSScreen screens] firstObject].frame);
+    m_geometry = qt_mac_flip(QRectF::fromCGRect(nsScreen.frame), primaryScreenGeometry).toRect();
+    m_availableGeometry = qt_mac_flip(QRectF::fromCGRect(nsScreen.visibleFrame), primaryScreenGeometry).toRect();
 
     m_format = QImage::Format_RGB32;
     m_depth = NSBitsPerPixelFromDepth([nsScreen depth]);
@@ -197,7 +159,7 @@ QPlatformScreen::SubpixelAntialiasingType QCocoaScreen::subpixelAntialiasingType
 
 QWindow *QCocoaScreen::topLevelAt(const QPoint &point) const
 {
-    NSPoint screenPoint = qt_mac_flipPoint(point);
+    NSPoint screenPoint = mapToNative(point);
 
     // Search (hit test) for the top-level window. [NSWidow windowNumberAtPoint:
     // belowWindowWithWindowNumber] may return windows that are not interesting
@@ -300,6 +262,30 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
 QCocoaScreen *QCocoaScreen::primaryScreen()
 {
     return static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
+}
+
+CGPoint QCocoaScreen::mapToNative(const QPointF &pos, QCocoaScreen *screen)
+{
+    Q_ASSERT(screen);
+    return qt_mac_flip(pos, screen->geometry()).toCGPoint();
+}
+
+CGRect QCocoaScreen::mapToNative(const QRectF &rect, QCocoaScreen *screen)
+{
+    Q_ASSERT(screen);
+    return qt_mac_flip(rect, screen->geometry()).toCGRect();
+}
+
+QPointF QCocoaScreen::mapFromNative(CGPoint pos, QCocoaScreen *screen)
+{
+    Q_ASSERT(screen);
+    return qt_mac_flip(QPointF::fromCGPoint(pos), screen->geometry());
+}
+
+QRectF QCocoaScreen::mapFromNative(CGRect rect, QCocoaScreen *screen)
+{
+    Q_ASSERT(screen);
+    return qt_mac_flip(QRectF::fromCGRect(rect), screen->geometry());
 }
 
 QT_END_NAMESPACE
