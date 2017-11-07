@@ -177,10 +177,6 @@ QT_BEGIN_NAMESPACE
         return sizes[controlSize]; \
     } while (false)
 
-#if QT_CONFIG(pushbutton)
-bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
-#endif
-
 class QMacStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QMacStyle)

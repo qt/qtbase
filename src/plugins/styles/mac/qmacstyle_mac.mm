@@ -569,7 +569,6 @@ static inline ThemeTabDirection getTabDirection(QTabBar::Shape shape)
     case QTabBar::TriangularSouth:
         ttd = kThemeTabSouth;
         break;
-    default:  // Added to remove the warning, since all values are taken care of, really!
     case QTabBar::RoundedNorth:
     case QTabBar::TriangularNorth:
         ttd = kThemeTabNorth;
@@ -620,47 +619,6 @@ static QString qt_mac_removeMnemonics(const QString &original)
     }
     returnText.truncate(finalDest);
     return returnText;
-}
-
-OSStatus qt_mac_shape2QRegionHelper(int inMessage, HIShapeRef, const CGRect *inRect, void *inRefcon)
-{
-    QRegion *region = static_cast<QRegion *>(inRefcon);
-    if (!region)
-        return paramErr;
-
-    switch (inMessage) {
-    case kHIShapeEnumerateRect:
-        *region += QRect(inRect->origin.x, inRect->origin.y,
-                         inRect->size.width, inRect->size.height);
-        break;
-    case kHIShapeEnumerateInit:
-        // Assume the region is already setup correctly
-    case kHIShapeEnumerateTerminate:
-    default:
-        break;
-    }
-    return noErr;
-}
-
-/*!
-    \internal
-     Create's a mutable shape, it's the caller's responsibility to release.
-     WARNING: this function clamps the coordinates to SHRT_MIN/MAX on 10.4 and below.
-*/
-HIMutableShapeRef qt_mac_toHIMutableShape(const QRegion &region)
-{
-    HIMutableShapeRef shape = HIShapeCreateMutable();
-    if (region.rectCount() < 2 ) {
-        QRect qtRect = region.boundingRect();
-        CGRect cgRect = CGRectMake(qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
-        HIShapeUnionWithRect(shape, &cgRect);
-    } else {
-        for (const QRect &qtRect : region) {
-            CGRect cgRect = CGRectMake(qtRect.x(), qtRect.y(), qtRect.width(), qtRect.height());
-            HIShapeUnionWithRect(shape, &cgRect);
-        }
-    }
-    return shape;
 }
 
 bool qt_macWindowIsTextured(const QWidget *window)
@@ -1517,18 +1475,6 @@ void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
         }
     }
 }
-
-#if QT_CONFIG(pushbutton)
-bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option)
-{
-    QMacStyle *macStyle = qobject_cast<QMacStyle *>(pushButton->style());
-    if (!macStyle)
-        return false;
-    HIThemeButtonDrawInfo bdi;
-    macStyle->d_func()->initHIThemePushButton(option, pushButton, kThemeStateActive, &bdi);
-    return bdi.kind == kThemeBevelButton;
-}
-#endif
 
 /**
     Creates a HIThemeButtonDrawInfo structure that specifies the correct button
@@ -6817,16 +6763,4 @@ int QMacStyle::layoutSpacing(QSizePolicy::ControlType control1,
     return_SIZE(10, 8, 6);  // guess
 }
 
-/*
-FontHash::FontHash()
-{
-    QHash<QByteArray, QFont>::operator=(QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFonts());
-}
-
-Q_GLOBAL_STATIC(FontHash, app_fonts)
-FontHash *qt_app_fonts_hash()
-{
-    return app_fonts();
-}
-*/
 QT_END_NAMESPACE
