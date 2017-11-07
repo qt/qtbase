@@ -815,6 +815,10 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
 
 QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
+    const qint64 startOfTime = invalidMSecs() + 1;
+    if (beforeMSecsSinceEpoch <= startOfTime)
+        return invalidData();
+
     int year = msecsToDate(beforeMSecsSinceEpoch).year();
     for (int ruleIndex = ruleIndexForYear(m_tranRules, year);
          ruleIndex >= 0; --ruleIndex) {
@@ -841,6 +845,11 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSec
                 return ruleToData(rule, pair.std, QTimeZone::StandardTime, pair.fakesDst());
             }
             // Fell off start of rule, try previous rule.
+        } else if (ruleIndex == 0) {
+            // Treat a no-transition first rule as a transition at the start of
+            // time, so that a scan through all rules *does* see it as the first
+            // rule:
+            return ruleToData(rule, startOfTime, QTimeZone::StandardTime, false);
         } // else: no transition during rule's period
         if (year >= rule.startYear)
             year = rule.startYear - 1; // Seek last transition in new rule
