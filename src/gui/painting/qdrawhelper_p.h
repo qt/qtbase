@@ -1170,13 +1170,13 @@ const uint qt_bayer_matrix[16][16] = {
 
 inline uint comp_func_Plus_one_pixel_const_alpha(uint d, const uint s, const uint const_alpha, const uint one_minus_const_alpha)
 {
-    const uint result = (AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+    const uint result = uint(AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
     return INTERPOLATE_PIXEL_255(result, const_alpha, d, one_minus_const_alpha);
 }
 
 inline uint comp_func_Plus_one_pixel(uint d, const uint s)
 {
-    const uint result = (AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
+    const uint result = uint(AMIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
     return result;
 }
 
