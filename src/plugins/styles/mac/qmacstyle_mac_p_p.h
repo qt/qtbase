@@ -231,6 +231,7 @@ public:
 
     // Utility functions
     void drawColorlessButton(const CGRect &macRect, HIThemeButtonDrawInfo *bdi,
+                             const CocoaControl &cw,
                              QPainter *p, const QStyleOption *opt) const;
 
     QSize pushButtonSizeFromContents(const QStyleOptionButton *btn) const;
@@ -239,13 +240,14 @@ public:
                                    const HIThemeButtonDrawInfo *bdi) const;
 
     void initComboboxBdi(const QStyleOptionComboBox *combo, HIThemeButtonDrawInfo *bdi,
+                         CocoaControl *cw,
                         const QWidget *widget, const ThemeDrawState &tds) const;
 
-    static CGRect comboboxInnerBounds(const CGRect &outerBounds, int buttonKind);
+    static CGRect comboboxInnerBounds(const CGRect &outerBounds, const CocoaControl &cocoaWidget);
 
     static QRect comboboxEditBounds(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi);
 
-    static void drawCombobox(const CGRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p);
+    static void drawCombobox(const CGRect &outerBounds, const HIThemeButtonDrawInfo &bdi, const CocoaControl &cw, QPainter *p);
     static void drawTableHeader(const CGRect &outerBounds, bool drawTopBorder, bool drawLeftBorder,
                                      const HIThemeButtonDrawInfo &bdi, QPainter *p);
     bool contentFitsInPushButton(const QStyleOptionButton *btn, HIThemeButtonDrawInfo *bdi,

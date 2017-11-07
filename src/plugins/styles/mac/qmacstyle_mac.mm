@@ -1483,6 +1483,7 @@ void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
     explicit user style settings, etc.
 */
 void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThemeButtonDrawInfo *bdi,
+                                       CocoaControl *cw,
                                     const QWidget *widget, const ThemeDrawState &tds) const
 {
     bdi->version = qt_mac_hitheme_version;
@@ -1496,6 +1497,8 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
         bdi->state = tds;
 
     QStyleHelper::WidgetSizePolicy aSize = aquaSizeConstrain(combo, widget);
+    cw->first = combo->editable ? ComboBox : Button_PopupButton;
+    cw->second = aSize;
     switch (aSize) {
     case QStyleHelper::SizeMini:
         bdi->kind = combo->editable ? ThemeButtonKind(kThemeComboBoxMini)
@@ -1525,21 +1528,29 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
                 // them forever). So anyway, the height threshold should be smaller
                 // in this case, or the style gets confused when it needs to render
                 // or return any subcontrol size of the poor thing.
-                if (h < 9)
+                if (h < 9) {
                     bdi->kind = kThemeComboBoxMini;
-                else if (h < 22)
+                    cw->second = QStyleHelper::SizeMini;
+                } else if (h < 22) {
                     bdi->kind = kThemeComboBoxSmall;
-                else
+                    cw->second = QStyleHelper::SizeSmall;
+                } else {
                     bdi->kind = kThemeComboBox;
+                    cw->second = QStyleHelper::SizeLarge;
+                }
             } else
 #endif
             {
-                if (h < 21)
+                if (h < 21) {
                     bdi->kind = kThemeComboBoxMini;
-                else if (h < 26)
+                    cw->second = QStyleHelper::SizeMini;
+                } else if (h < 26) {
                     bdi->kind = kThemeComboBoxSmall;
-                else
+                    cw->second = QStyleHelper::SizeSmall;
+                } else {
                     bdi->kind = kThemeComboBox;
+                    cw->second = QStyleHelper::SizeLarge;
+                }
             }
         } else {
             // Even if we specify that we want the kThemePopupButton, Carbon
@@ -1547,12 +1558,16 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
             // do the same size check explicit to have the size of the inner
             // text field be correct. Therefore, do this even if the user specifies
             // the use of LargeButtons explicit.
-            if (h < 21)
+            if (h < 21) {
                 bdi->kind = kThemePopupButtonMini;
-            else if (h < 26)
+                cw->second = QStyleHelper::SizeMini;
+            } else if (h < 26) {
                 bdi->kind = kThemePopupButtonSmall;
-            else
+                cw->second = QStyleHelper::SizeSmall;
+            } else {
                 bdi->kind = kThemePopupButton;
+                cw->second = QStyleHelper::SizeLarge;
+            }
         }
         break;
     }
@@ -1562,51 +1577,54 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
     Carbon draws comboboxes (and other views) outside the rect given as argument. Use this function to obtain
     the corresponding inner rect for drawing the same combobox so that it stays inside the given outerBounds.
 */
-CGRect QMacStylePrivate::comboboxInnerBounds(const CGRect &outerBounds, int buttonKind)
+CGRect QMacStylePrivate::comboboxInnerBounds(const CGRect &outerBounds, const CocoaControl &cocoaWidget)
 {
     CGRect innerBounds = outerBounds;
     // Carbon draw parts of the view outside the rect.
     // So make the rect a bit smaller to compensate
     // (I wish HIThemeGetButtonBackgroundBounds worked)
-    switch (buttonKind){
-    case kThemePopupButton:
-        innerBounds.origin.x += 2;
-        innerBounds.origin.y += 2;
-        innerBounds.size.width -= 5;
-        innerBounds.size.height -= 6;
-        break;
-    case kThemePopupButtonSmall:
-        innerBounds.origin.x += 3;
-        innerBounds.origin.y += 3;
-        innerBounds.size.width -= 6;
-        innerBounds.size.height -= 7;
-        break;
-    case kThemePopupButtonMini:
-        innerBounds.origin.x += 2;
-        innerBounds.origin.y += 2;
-        innerBounds.size.width -= 5;
-        innerBounds.size.height -= 6;
-        break;
-    case kThemeComboBox:
-        innerBounds.origin.x += 3;
-        innerBounds.origin.y += 2;
-        innerBounds.size.width -= 6;
-        innerBounds.size.height -= 8;
-        break;
-    case kThemeComboBoxSmall:
-        innerBounds.origin.x += 3;
-        innerBounds.origin.y += 3;
-        innerBounds.size.width -= 7;
-        innerBounds.size.height -= 8;
-        break;
-    case kThemeComboBoxMini:
-        innerBounds.origin.x += 3;
-        innerBounds.origin.y += 3;
-        innerBounds.size.width -= 4;
-        innerBounds.size.height -= 8;
-        break;
-    default:
-        break;
+    if (cocoaWidget.first == Button_PopupButton) {
+        switch (cocoaWidget.second) {
+        case QStyleHelper::SizeSmall:
+            innerBounds.origin.x += 3;
+            innerBounds.origin.y += 3;
+            innerBounds.size.width -= 6;
+            innerBounds.size.height -= 7;
+            break;
+        case QStyleHelper::SizeMini:
+            innerBounds.origin.x += 2;
+            innerBounds.origin.y += 2;
+            innerBounds.size.width -= 5;
+            innerBounds.size.height -= 6;
+            break;
+        case QStyleHelper::SizeLarge:
+        case QStyleHelper::SizeDefault:
+            innerBounds.origin.x += 2;
+            innerBounds.origin.y += 2;
+            innerBounds.size.width -= 5;
+            innerBounds.size.height -= 6;
+        }
+    } else if (cocoaWidget.first == ComboBox) {
+        switch (cocoaWidget.second) {
+        case QStyleHelper::SizeSmall:
+            innerBounds.origin.x += 3;
+            innerBounds.origin.y += 3;
+            innerBounds.size.width -= 7;
+            innerBounds.size.height -= 8;
+            break;
+        case QStyleHelper::SizeMini:
+            innerBounds.origin.x += 3;
+            innerBounds.origin.y += 3;
+            innerBounds.size.width -= 4;
+            innerBounds.size.height -= 8;
+            break;
+        case QStyleHelper::SizeLarge:
+        case QStyleHelper::SizeDefault:
+            innerBounds.origin.x += 3;
+            innerBounds.origin.y += 2;
+            innerBounds.size.width -= 6;
+            innerBounds.size.height -= 8;
+        }
     }
 
     return innerBounds;
@@ -1650,11 +1668,11 @@ QRect QMacStylePrivate::comboboxEditBounds(const QRect &outerBounds, const HIThe
     create it manually by drawing a small Carbon combo onto a pixmap (use pixmap cache), chop
     it up, and copy it back onto the widget. Othervise, draw the combobox supplied by Carbon directly.
 */
-void QMacStylePrivate::drawCombobox(const CGRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p)
+void QMacStylePrivate::drawCombobox(const CGRect &outerBounds, const HIThemeButtonDrawInfo &bdi, const CocoaControl &cw, QPainter *p)
 {
     if (!(bdi.kind == kThemeComboBox && outerBounds.size.height > 28)){
         // We have an unscaled combobox, or popup-button; use Carbon directly.
-        const CGRect innerBounds = QMacStylePrivate::comboboxInnerBounds(outerBounds, bdi.kind);
+        const CGRect innerBounds = QMacStylePrivate::comboboxInnerBounds(outerBounds, cw);
         HIThemeDrawButton(&innerBounds, &bdi, QMacCGContext(p), kHIThemeOrientationNormal, 0);
     } else {
         QPixmap buffer;
@@ -2045,7 +2063,7 @@ void QMacStylePrivate::resolveCurrentNSView(QWindow *window)
     backingStoreNSView = window ? (NSView *)window->winId() : nil;
 }
 
-void QMacStylePrivate::drawColorlessButton(const CGRect &macRect, HIThemeButtonDrawInfo *bdi,
+void QMacStylePrivate::drawColorlessButton(const CGRect &macRect, HIThemeButtonDrawInfo *bdi, const CocoaControl &cw,
                                            QPainter *p, const QStyleOption *opt) const
 {
     int xoff = 0,
@@ -2093,7 +2111,7 @@ void QMacStylePrivate::drawColorlessButton(const CGRect &macRect, HIThemeButtonD
                 // Carbon combos don't scale. Therefore we draw it
                 // ourselves, if a scaled version is needed.
                 QPainter tmpPainter(&activePixmap);
-                QMacStylePrivate::drawCombobox(macRect, *bdi, &tmpPainter);
+                QMacStylePrivate::drawCombobox(macRect, *bdi, cw, &tmpPainter);
             } else {
                 QMacCGContext cg(&activePixmap);
                 CGRect newRect = CGRectMake(xoff, yoff, macRect.size.width, macRect.size.height);
@@ -3332,10 +3350,11 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         else
             bdi.value = kThemeButtonOff;
         CGRect macRect = opt->rect.toCGRect();
+        const QMacStylePrivate::CocoaControl cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
         if (!drawColorless)
             HIThemeDrawButton(&macRect, &bdi, cg, kHIThemeOrientationNormal, 0);
         else
-            d->drawColorlessButton(macRect, &bdi, p, opt);
+            d->drawColorlessButton(macRect, &bdi, cw, p, opt);
         break; }
     case PE_FrameFocusRect:
         // Use the our own focus widget stuff.
@@ -3830,9 +3849,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 newRect.size.width -= QMacStylePrivate::PushButtonRightOffset - 4;
             }
 
-            if (hasMenu && bdi.kind != kThemeBevelButton) {
-                auto cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
+            QMacStylePrivate::CocoaControl cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
+            if (hasMenu)
                 cw.first = QMacStylePrivate::Button_PullDown;
+            if (hasMenu && bdi.kind != kThemeBevelButton) {
                 NSPopUpButton *pdb = (NSPopUpButton *)d->cocoaControl(cw);
                 [pdb highlight:(bdi.state == kThemeStatePressed)];
                 pdb.enabled = bdi.state != kThemeStateUnavailable && bdi.state != kThemeStateUnavailableInactive;
@@ -3840,7 +3860,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 rect.adjust(0, 0, cw.second == QStyleHelper::SizeSmall ? -4 : cw.second == QStyleHelper::SizeMini ? -9 : -6, 0);
                 d->drawNSViewInRect(cw, pdb, rect, p, w != 0);
             } else if (hasMenu && bdi.state == kThemeStatePressed)
-                d->drawColorlessButton(newRect, &bdi, p, opt);
+                d->drawColorlessButton(newRect, &bdi, cw, p, opt);
             else
                 HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
 
@@ -5461,19 +5481,20 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
             HIThemeButtonDrawInfo bdi;
-            d->initComboboxBdi(combo, &bdi, widget, tds);
+            QMacStylePrivate::CocoaControl cw;
+            d->initComboboxBdi(combo, &bdi, &cw, widget, tds);
             CGRect rect = combo->rect.toCGRect();
             if (combo->editable)
                 rect.origin.y += tds == kThemeStateInactive ? 1 : 2;
             if (tds != kThemeStateInactive)
-                QMacStylePrivate::drawCombobox(rect, bdi, p);
+                QMacStylePrivate::drawCombobox(rect, bdi, cw, p);
             else if (!widget && combo->editable) {
                 const auto cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
                 NSView *cb = d->cocoaControl(cw);
                 QRect r = combo->rect.adjusted(3, 0, 0, 0);
                 d->drawNSViewInRect(cw, cb, r, p, widget != 0);
             } else
-                d->drawColorlessButton(rect, &bdi, p, opt);
+                d->drawColorlessButton(rect, &bdi, cw, p, opt);
         }
         break;
     case CC_TitleBar:
@@ -6017,7 +6038,8 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             HIThemeButtonDrawInfo bdi;
-            d->initComboboxBdi(combo, &bdi, widget, d->getDrawState(opt->state));
+            QMacStylePrivate::CocoaControl cw;
+            d->initComboboxBdi(combo, &bdi, &cw, widget, d->getDrawState(opt->state));
 
             switch (sc) {
             case SC_ComboBoxEditField:{
@@ -6032,7 +6054,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 break; }
             case SC_ComboBoxListBoxPopup:{
                 if (combo->editable) {
-                    const CGRect inner = QMacStylePrivate::comboboxInnerBounds(combo->rect.toCGRect(), bdi.kind);
+                    const CGRect inner = QMacStylePrivate::comboboxInnerBounds(combo->rect.toCGRect(), cw);
                     QRect editRect = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
                     const int comboTop = combo->rect.top();
                     ret = QRect(qRound(inner.origin.x),
@@ -6509,20 +6531,10 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     // We compensate for this by adding some extra space here to make room for the frame when drawing:
     if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
         const auto widgetSize = d->aquaSizeConstrain(opt, widget);
-        int bkind = 0;
-        switch (widgetSize) {
-        default:
-        case QStyleHelper::SizeLarge:
-            bkind = combo->editable ? kThemeComboBox : kThemePopupButton;
-            break;
-        case QStyleHelper::SizeSmall:
-            bkind = combo->editable ? int(kThemeComboBoxSmall) : int(kThemePopupButtonSmall);
-            break;
-        case QStyleHelper::SizeMini:
-            bkind = combo->editable ? kThemeComboBoxMini : kThemePopupButtonMini;
-            break;
-        }
-        const CGRect diffRect = QMacStylePrivate::comboboxInnerBounds(CGRectZero, bkind);
+        QMacStylePrivate::CocoaControl cw;
+        cw.first = combo->editable ? QMacStylePrivate::ComboBox : QMacStylePrivate::Button_PopupButton;
+        cw.second = widgetSize;
+        const CGRect diffRect = QMacStylePrivate::comboboxInnerBounds(CGRectZero, cw);
         sz.rwidth() -= qRound(diffRect.size.width);
         sz.rheight() -= qRound(diffRect.size.height);
     } else if (ct == CT_PushButton || ct == CT_ToolButton){
