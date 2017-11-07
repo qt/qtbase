@@ -45,5 +45,8 @@ excludedirs += snippets
 excludefiles += ../../../examples/widgets/tools/customcompleter/doc/src/customcompleter.qdoc \
                 ../../../examples/widgets/tools/codecs/doc/src/codecs.qdoc
 
+manifestmeta.highlighted.names      = "QtCore/JSON Save Game Example" \
+                                      "QtCore/Local Fortune*"
+
 navigation.landingpage = "Qt Core"
 navigation.cppclassespage = "Qt Core C++ Classes"

@@ -56,5 +56,7 @@ imagedirs   += images \
                ../../../examples/gui/doc/images \
                ../../../doc/src/images \
 
+manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example"
+
 navigation.landingpage = "Qt GUI"
 navigation.cppclassespage = "Qt GUI C++ Classes"
