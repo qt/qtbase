@@ -140,7 +140,7 @@ public:
 
     enum MaterializationMode { Overwrite, DontOverwrite, NameIsTemplate };
     bool materializeUnnamedFile(const QString &newName, MaterializationMode mode);
-    bool isUnnamedFile() const;
+    bool isUnnamedFile() const override final;
 
     const QString &templateName;
     quint32 fileMode;

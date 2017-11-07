@@ -503,7 +503,8 @@ bool
 QFile::remove()
 {
     Q_D(QFile);
-    if (d->fileName.isEmpty()) {
+    if (d->fileName.isEmpty() &&
+            !static_cast<QFSFileEngine *>(d->engine())->isUnnamedFile()) {
         qWarning("QFile::remove: Empty or null file name");
         return false;
     }

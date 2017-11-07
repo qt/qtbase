@@ -393,7 +393,9 @@ bool QTemporaryFileEngine::remove()
     // we must explicitly call QFSFileEngine::close() before we remove it.
     d->unmapAll();
     QFSFileEngine::close();
-    if (isUnnamedFile() || QFSFileEngine::remove()) {
+    if (isUnnamedFile())
+        return true;
+    if (!filePathIsTemplate && QFSFileEngine::remove()) {
         d->fileEntry.clear();
         // If a QTemporaryFile is constructed using a template file path, the path
         // is generated in QTemporaryFileEngine::open() and then filePathIsTemplate
@@ -511,7 +513,10 @@ bool QTemporaryFileEngine::materializeUnnamedFile(const QString &newName, QTempo
 bool QTemporaryFileEngine::isUnnamedFile() const
 {
 #ifdef LINUX_UNNAMED_TMPFILE
-    Q_ASSERT(unnamedFile == d_func()->fileEntry.isEmpty());
+    if (unnamedFile) {
+        Q_ASSERT(d_func()->fileEntry.isEmpty());
+        Q_ASSERT(filePathIsTemplate);
+    }
     return unnamedFile;
 #else
     return false;
@@ -749,9 +754,20 @@ bool QTemporaryFile::autoRemove() const
 }
 
 /*!
-    Sets the QTemporaryFile into auto-remove mode if \a b is true.
+    Sets the QTemporaryFile into auto-remove mode if \a b is \c true.
 
     Auto-remove is on by default.
+
+    If you set this property to \c false, ensure the application provides a way
+    to remove the file once it is no longer needed, including passing the
+    responsibility on to another process. Always use the fileName() function to
+    obtain the name and never try to guess the name that QTemporaryFile has
+    generated.
+
+    On some systems, if fileName() is not called before closing the file, the
+    temporary file may be removed regardless of the state of this property.
+    This behavior should not be relied upon, so application code should either
+    call fileName() or leave the auto removal functionality enabled.
 
     \sa autoRemove(), remove()
 */
