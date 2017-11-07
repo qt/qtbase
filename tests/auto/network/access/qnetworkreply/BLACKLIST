@@ -25,9 +25,11 @@ windows
 [ioHttpRedirectMultipartPost]
 linux
 [ioHttpRedirectPolicy]
-b2qt linux 64bit
+b2qt 64bit
+linux
 [ioHttpRedirectPostPut]
 linux
+windows
 [putWithServerClosingConnectionImmediately]
 windows
 [qtbug28035browserDoesNotLoadQtProjectOrgCorrectly]
