@@ -2058,7 +2058,7 @@ void QMacStylePrivate::drawNSViewInRect(CocoaControl widget, NSView *view, const
     restoreNSGraphicsContext(ctx);
 }
 
-void QMacStylePrivate::resolveCurrentNSView(QWindow *window)
+void QMacStylePrivate::resolveCurrentNSView(QWindow *window) const
 {
     backingStoreNSView = window ? (NSView *)window->winId() : nil;
 }
@@ -3095,7 +3095,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
-    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
+    d->resolveCurrentNSView(window);
     switch (pe) {
     case PE_IndicatorArrowUp:
     case PE_IndicatorArrowDown:
@@ -3593,7 +3593,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
-    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
+    d->resolveCurrentNSView(window);
     switch (ce) {
     case CE_HeaderSection:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
@@ -5126,7 +5126,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     QMacCGContext cg(p);
     QWindow *window = widget && widget->window() ? widget->window()->windowHandle() :
                      QStyleHelper::styleObjectWindow(opt->styleObject);
-    const_cast<QMacStylePrivate *>(d)->resolveCurrentNSView(window);
+    d->resolveCurrentNSView(window);
     switch (cc) {
     case CC_ScrollBar:
         if (const QStyleOptionSlider *sb = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {

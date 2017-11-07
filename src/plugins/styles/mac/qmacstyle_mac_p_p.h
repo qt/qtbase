@@ -269,7 +269,7 @@ public:
     void setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const;
 
     void drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, DrawRectBlock drawRectBlock = nil) const;
-    void resolveCurrentNSView(QWindow *window);
+    void resolveCurrentNSView(QWindow *window) const;
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
 
@@ -283,7 +283,7 @@ public:
 
     mutable QPointer<QFocusFrame> focusWidget;
     QT_MANGLE_NAMESPACE(NotificationReceiver) *receiver;
-    NSView *backingStoreNSView;
+    mutable NSView *backingStoreNSView;
     mutable QHash<CocoaControl, NSView *> cocoaControls;
     mutable QHash<CocoaControl, NSCell *> cocoaCells;
 
