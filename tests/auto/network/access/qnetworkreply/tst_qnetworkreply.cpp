@@ -6766,9 +6766,9 @@ void tst_QNetworkReply::getFromUnreachableIp()
 {
     QNetworkAccessManager manager;
 
-#ifdef Q_OS_WIN32
+#ifdef Q_OS_WIN
     // This test assumes that attempt to connect to 255.255.255.255 fails more
-    // or less fast/immediately. This is not what we observe on Windows x86:
+    // or less fast/immediately. This is not what we observe on Windows:
     // WSAConnect on non-blocking socket returns SOCKET_ERROR, WSAGetLastError
     // returns WSAEWOULDBLOCK (expected) and getsockopt most of the time returns
     // NOERROR; so socket engine starts a timer (30 s.) and waits for a timeout/
@@ -6806,7 +6806,7 @@ void tst_QNetworkReply::getFromUnreachableIp()
 #else // bearermanagement
     QSKIP("This test is non-deterministic on Windows x86");
 #endif // !bearermanagement
-#endif // Q_OS_WIN32
+#endif // Q_OS_WIN
 
     QNetworkRequest request(QUrl("http://255.255.255.255/42/23/narf/narf/narf"));
     QNetworkReplyPtr reply(manager.get(request));
