@@ -2190,12 +2190,20 @@ public:
         if (fileName.startsWith(":!")) {
             QDir dir;
 
-            QString realFile = QFINDTESTDATA(fileName.mid(2));
+#ifndef BUILTIN_TESTDATA
+            const QString realFile = QFINDTESTDATA(fileName.mid(2));
+#else
+            const QString realFile = m_dataDir->filePath(fileName.mid(2));
+#endif
             if (dir.exists(realFile))
                 return new QFSFileEngine(realFile);
         }
         return 0;
     }
+
+#ifdef BUILTIN_TESTDATA
+    QSharedPointer<QTemporaryDir> m_dataDir;
+#endif
 };
 #endif
 
@@ -2204,6 +2212,9 @@ void tst_QFile::useQFileInAFileHandler()
 {
     // This test should not dead-lock
     MyRecursiveHandler handler;
+#ifdef BUILTIN_TESTDATA
+    handler.m_dataDir = m_dataDir;
+#endif
     QFile file(":!tst_qfile.cpp");
     QVERIFY(file.exists());
 }
