@@ -445,8 +445,6 @@ void tst_QFile::initTestCase()
     m_stdinProcessDir = QFINDTESTDATA("stdinprocess");
     QVERIFY(!m_stdinProcessDir.isEmpty());
 #endif
-    m_testSourceFile = QFINDTESTDATA("tst_qfile.cpp");
-    QVERIFY(!m_testSourceFile.isEmpty());
     m_testLogFile = QFINDTESTDATA("testlog.txt");
     QVERIFY(!m_testLogFile.isEmpty());
     m_dosFile = QFINDTESTDATA("dosfile.txt");
@@ -459,12 +457,15 @@ void tst_QFile::initTestCase()
     QVERIFY(!m_twoDotsFile.isEmpty());
 
 #ifndef BUILTIN_TESTDATA
+    m_testSourceFile = QFINDTESTDATA("tst_qfile.cpp");
+    QVERIFY(!m_testSourceFile.isEmpty());
     m_testFile = QFINDTESTDATA("testfile.txt");
     QVERIFY(!m_testFile.isEmpty());
 #else
     m_dataDir = QEXTRACTTESTDATA("/");
     QVERIFY2(!m_dataDir.isNull(), qPrintable("Could not extract test data"));
     m_testFile = m_dataDir->path() + "/testfile.txt";
+    m_testSourceFile = m_dataDir->path() + "/tst_qfile.cpp";
 #endif
     m_resourcesDir = QFINDTESTDATA("resources");
     QVERIFY(!m_resourcesDir.isEmpty());
