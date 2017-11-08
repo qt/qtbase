@@ -1443,19 +1443,6 @@ void QCocoaWindow::removeMonitor()
     monitor = nil;
 }
 
-// Returns the current global screen geometry for the nswindow associated with this window.
-QRect QCocoaWindow::nativeWindowGeometry() const
-{
-    if (!isContentView())
-        return geometry();
-
-    NSRect rect = m_view.window.frame;
-    QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window());
-    int flippedY = onScreen->geometry().height() - rect.origin.y - rect.size.height;  // account for nswindow inverted y.
-    QRect qRect = QRect(rect.origin.x, flippedY, rect.size.width, rect.size.height);
-    return qRect;
-}
-
 /*!
     Applies the given state to the NSWindow, going in/out of minimize/zoomed/fullscreen
 
