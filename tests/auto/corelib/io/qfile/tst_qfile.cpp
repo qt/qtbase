@@ -405,6 +405,8 @@ void tst_QFile::cleanup()
                 QDir remainingDir(absoluteFilePath);
                 QVERIFY2(remainingDir.removeRecursively(), qPrintable(absoluteFilePath));
             } else {
+                if (!(QFile::permissions(absoluteFilePath) & QFile::WriteUser))
+                    QVERIFY2(QFile::setPermissions(absoluteFilePath, QFile::WriteUser), qPrintable(absoluteFilePath));
                 QVERIFY2(QFile::remove(absoluteFilePath), qPrintable(absoluteFilePath));
             }
         }
