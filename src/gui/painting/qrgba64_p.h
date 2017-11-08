@@ -51,10 +51,11 @@
 // We mean it.
 //
 
+#include "qrgba64.h"
+#include "qdrawhelper_p.h"
+
+#include <QtCore/private/qsimd_p.h>
 #include <QtGui/private/qtguiglobal_p.h>
-#include <QtGui/qrgba64.h>
-#include <QtGui/private/qdrawhelper_p.h>
-#include <private/qsimd_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -159,7 +160,7 @@ Q_ALWAYS_INLINE __m128i interpolate65535(__m128i x, uint alpha1, __m128i y, uint
 {
     return _mm_add_epi32(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
 }
-// alpha2 below is const-ref because otherwise MSVC2013 complains that it can't 16-byte align the argument.
+// alpha2 below is const-ref because otherwise MSVC2015 complains that it can't 16-byte align the argument.
 Q_ALWAYS_INLINE __m128i interpolate65535(__m128i x, __m128i alpha1, __m128i y, const __m128i &alpha2)
 {
     return _mm_add_epi32(multiplyAlpha65535(x, alpha1), multiplyAlpha65535(y, alpha2));
@@ -238,20 +239,6 @@ inline uint toRgba8888(QRgba64 rgba64)
     return ARGB2RGBA(toArgb32(rgba64));
 #endif
 }
-
-#if defined(__SSE2__)
-Q_ALWAYS_INLINE __m128i addWithSaturation(__m128i a, __m128i b)
-{
-    return _mm_adds_epu16(a, b);
-}
-#endif
-
-#if defined(__ARM_NEON__)
-Q_ALWAYS_INLINE uint16x4_t addWithSaturation(uint16x4_t a, uint16x4_t b)
-{
-    return vqmovn_u32(vaddl_u16(a, b));
-}
-#endif
 
 inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
 {
