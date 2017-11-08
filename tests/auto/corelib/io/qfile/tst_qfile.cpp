@@ -461,14 +461,15 @@ void tst_QFile::initTestCase()
     QVERIFY(!m_testSourceFile.isEmpty());
     m_testFile = QFINDTESTDATA("testfile.txt");
     QVERIFY(!m_testFile.isEmpty());
+    m_resourcesDir = QFINDTESTDATA("resources");
+    QVERIFY(!m_resourcesDir.isEmpty());
 #else
     m_dataDir = QEXTRACTTESTDATA("/");
     QVERIFY2(!m_dataDir.isNull(), qPrintable("Could not extract test data"));
     m_testFile = m_dataDir->path() + "/testfile.txt";
     m_testSourceFile = m_dataDir->path() + "/tst_qfile.cpp";
+    m_resourcesDir = m_dataDir->path() + "/resources";
 #endif
-    m_resourcesDir = QFINDTESTDATA("resources");
-    QVERIFY(!m_resourcesDir.isEmpty());
     m_noEndOfLineFile = QFINDTESTDATA("noendofline.txt");
     QVERIFY(!m_noEndOfLineFile.isEmpty());
 
