@@ -43,14 +43,12 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace {
-    void registerEnums()
-    {
-        qRegisterMetaType<QShaderLanguage::StorageQualifier>();
-        qRegisterMetaType<QShaderLanguage::VariableType>();
-    }
+// Note: to be invoked explicitly. Relying for example on
+// Q_COREAPP_STARTUP_FUNCTION would not be acceptable in static builds.
+void qt_register_ShaderLanguage_enums()
+{
+    qRegisterMetaType<QShaderLanguage::StorageQualifier>();
+    qRegisterMetaType<QShaderLanguage::VariableType>();
 }
-
-Q_COREAPP_STARTUP_FUNCTION(registerEnums)
 
 QT_END_NAMESPACE

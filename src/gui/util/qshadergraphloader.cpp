@@ -48,10 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
+void qt_register_ShaderLanguage_enums();
+
 QShaderGraphLoader::QShaderGraphLoader() Q_DECL_NOTHROW
     : m_status(Null),
       m_device(nullptr)
 {
+    qt_register_ShaderLanguage_enums();
 }
 
 QShaderGraphLoader::Status QShaderGraphLoader::status() const Q_DECL_NOTHROW
