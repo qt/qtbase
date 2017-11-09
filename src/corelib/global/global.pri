@@ -39,7 +39,26 @@ SOURCES += \
         global/qrandom.cpp \
         global/qhooks.cpp
 
-F16C_SOURCES += global/qfloat16_f16c.c
+# Only add global/qfloat16_f16.c if qfloat16.cpp can't #include it.
+# Any compiler: if it is already generating F16C code, let qfloat16.cpp do it
+# Clang: ICE if not generating F16C code, so use qfloat16_f16c.c
+# ICC: miscompiles if not generating F16C code, so use qfloat16_f16c.c
+# GCC: if it can use F16C intrinsics, let qfloat16.cpp do it
+# MSVC: if it is already generating AVX code, let qfloat16.cpp do it
+# MSVC: otherwise, it generates poorly-performing code, so use qfloat16_f16c.c
+contains(QT_CPU_FEATURES.$$QT_ARCH, f16c): \
+    f16c_cxx = true
+else: clang|intel_icl: \
+    f16c_cxx = false
+else: gcc:f16c:x86SimdAlways: \
+    f16c_cxx = true
+else: msvc:contains(QT_CPU_FEATURES.$$QT_ARCH, avx): \
+    f16c_cxx = true
+else: \
+    f16c_cxx = false
+$$f16c_cxx: DEFINES += QFLOAT16_INCLUDE_FAST
+else: F16C_SOURCES += global/qfloat16_f16c.c
+unset(f16c_cxx)
 
 VERSIONTAGGING_SOURCES = global/qversiontagging.cpp
 

@@ -44,7 +44,7 @@
 // have been compiled if the support was missing in the first place, and not
 // all compilers define it. Technically, we didn't need to check for __AVX__
 // either.
-#if !defined(__AVX__)
+#if !QT_COMPILER_SUPPORTS_HERE(AVX)
 #  error "AVX support required"
 #endif
 
@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 extern "C" {
 #endif
 
+QT_FUNCTION_TARGET(F16C)
 void qFloatToFloat16_fast(quint16 *out, const float *in, qssize_t len) Q_DECL_NOTHROW
 {
     qssize_t i = 0;
@@ -67,6 +68,7 @@ void qFloatToFloat16_fast(quint16 *out, const float *in, qssize_t len) Q_DECL_NO
         out[i] = _mm_extract_epi16(_mm_cvtps_ph(_mm_set_ss(in[i]), 0), 0);
 }
 
+QT_FUNCTION_TARGET(F16C)
 void qFloatFromFloat16_fast(float *out, const quint16 *in, qssize_t len) Q_DECL_NOTHROW
 {
     qssize_t i = 0;

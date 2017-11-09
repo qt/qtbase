@@ -123,8 +123,16 @@ static inline bool hasFastF16()
 }
 
 extern "C" {
-extern void qFloatToFloat16_fast(quint16 *out, const float *in, qssize_t len) Q_DECL_NOTHROW;
-extern void qFloatFromFloat16_fast(float *out, const quint16 *in, qssize_t len) Q_DECL_NOTHROW;
+#ifdef QFLOAT16_INCLUDE_FAST
+#  define f16cextern    static
+#else
+#  define f16cextern    extern
+#endif
+
+f16cextern void qFloatToFloat16_fast(quint16 *out, const float *in, qssize_t len) Q_DECL_NOTHROW;
+f16cextern void qFloatFromFloat16_fast(float *out, const quint16 *in, qssize_t len) Q_DECL_NOTHROW;
+
+#undef f16cextern
 }
 
 #elif defined(__ARM_FP16_FORMAT_IEEE) && defined(__ARM_NEON__)
@@ -199,3 +207,7 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qssize_t le
 }
 
 QT_END_NAMESPACE
+
+#ifdef QFLOAT16_INCLUDE_FAST
+#  include "qfloat16_f16c.c"
+#endif
