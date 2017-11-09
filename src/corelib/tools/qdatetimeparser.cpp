@@ -1155,7 +1155,8 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
                 // Synchronize with what findTimeZone() found:
                 QStringRef zoneName = input->midRef(pos, sect.used);
                 Q_ASSERT(!zoneName.isEmpty()); // sect.used > 0
-                const QByteArray latinZone(zoneName.toLatin1());
+                const QByteArray latinZone(zoneName == QLatin1String("Z")
+                                           ? QByteArray("UTC") : zoneName.toLatin1());
                 timeZone = QTimeZone(latinZone);
                 tspec = timeZone.isValid()
                     ? (QTimeZone::isTimeZoneIdAvailable(latinZone)
@@ -1595,6 +1596,10 @@ QDateTimeParser::findTimeZone(QStringRef str, const QDateTime &when,
 
         while (index > 0) {
             str.truncate(index);
+            if (str == QLatin1String("Z")) {
+                offset = 0; // "Zulu" time - a.k.a. UTC
+                break;
+            }
             QTimeZone zone(str.toLatin1());
             if (zone.isValid()) {
                 offset = zone.offsetFromUtc(when);

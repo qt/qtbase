@@ -2396,8 +2396,8 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("data14") << QString("32.01.2004") << QString("dd.MM.yyyy") << invalidDateTime();
     QTest::newRow("data15") << QString("Thu January 2004") << QString("ddd MMMM yyyy") << QDateTime(QDate(2004, 1, 1), QTime());
     QTest::newRow("data16") << QString("2005-06-28T07:57:30.001Z")
-                            << QString("yyyy-MM-ddThh:mm:ss.zZ")
-                            << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1));
+                            << QString("yyyy-MM-ddThh:mm:ss.zt")
+                            << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), Qt::UTC);
 }
 
 void tst_QDateTime::fromStringStringFormat()
