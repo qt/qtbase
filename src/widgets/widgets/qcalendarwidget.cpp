@@ -982,7 +982,7 @@ QCalendarModel::QCalendarModel(QObject *parent)
       m_firstRow(1),
       m_date(QDate::currentDate()),
       m_minimumDate(QDate::fromJulianDay(1)),
-      m_maximumDate(7999, 12, 31),
+      m_maximumDate(9999, 12, 31),
       m_shownYear(m_date.year()),
       m_shownMonth(m_date.month()),
       m_firstDay(QLocale().firstDayOfWeek()),

@@ -152,6 +152,9 @@ void tst_QDate::isValid_data()
     QTest::newRow("400-years leap 1600") << 1600 <<  2 << 29 << qint64(2305507) << true;
     QTest::newRow("year 0")              <<    0 <<  2 << 27 << nullJd  << false;
 
+    // Test end of four-digit years:
+    QTest::newRow("late") << 9999 << 12 << 31 << qint64(5373484) << true;
+
     // test the number of days in months:
     QTest::newRow("jan") << 2000 <<  1 << 31 << qint64(2451575) << true;
     QTest::newRow("feb") << 2000 <<  2 << 29 << qint64(2451604) << true; // same data as 400-years leap
@@ -1098,6 +1101,8 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("data41") << QString("21/5/06") << QString("d/M/yy") << QDate(1906,5,21);
     QTest::newRow("data42") << QString("20060521") << QString("yyyyMMdd") << QDate(2006,5,21);
     QTest::newRow("data43") << QString("060521") << QString("yyMMdd") << QDate(1906,5,21);
+    QTest::newRow("lateMarch") << QString("9999-03-06") << QString("yyyy-MM-dd") << QDate(9999, 3, 6);
+    QTest::newRow("late") << QString("9999-12-31") << QString("yyyy-MM-dd") << QDate(9999, 12, 31);
 }
 
 
