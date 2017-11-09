@@ -1130,7 +1130,7 @@ static inline void convertARGBToARGB32PM_neon(uint *buffer, const uint *src, int
             } else {
                 if (RGBA) {
 #if defined(Q_PROCESSOR_ARM_64)
-                    srcVector = vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(srcVector), rgbaMask))
+                    srcVector = vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(srcVector), rgbaMask));
 #else
                     // no vqtbl1q_u8
                     const uint8x8_t low = vtbl1_u8(vreinterpret_u8_u32(vget_low_u32(srcVector)), rgbaMask);
