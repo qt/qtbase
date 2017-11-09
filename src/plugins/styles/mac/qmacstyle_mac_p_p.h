@@ -248,8 +248,6 @@ public:
     static QRect comboboxEditBounds(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi);
 
     static void drawCombobox(const CGRect &outerBounds, const HIThemeButtonDrawInfo &bdi, const CocoaControl &cw, QPainter *p);
-    static void drawTableHeader(const CGRect &outerBounds, bool drawTopBorder, bool drawLeftBorder,
-                                     const HIThemeButtonDrawInfo &bdi, QPainter *p);
     bool contentFitsInPushButton(const QStyleOptionButton *btn, HIThemeButtonDrawInfo *bdi,
                                  ThemeButtonKind buttonKindToCheck) const;
     void initHIThemePushButton(const QStyleOptionButton *btn, const QWidget *widget,

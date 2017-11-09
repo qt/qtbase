@@ -311,6 +311,9 @@ static const QColor tabBarCloseButtonCrossSelected(115, 115, 115);
 static const int closeButtonSize = 14;
 static const qreal closeButtonCornerRadius = 2.0;
 
+static const int headerSectionArrowHeight = 6;
+static const int headerSectionSeparatorInset = 2;
+
 #if QT_CONFIG(tabbar)
 static bool isVerticalTabs(const QTabBar::Shape shape) {
     return (shape == QTabBar::RoundedEast
@@ -1715,69 +1718,6 @@ void QMacStylePrivate::drawCombobox(const CGRect &outerBounds, const HIThemeButt
     }
 }
 
-/**
-    Carbon tableheaders don't scale (sight). So create it manually by drawing a small Carbon header
-    onto a pixmap (use pixmap cache), chop it up, and copy it back onto the widget.
-*/
-void QMacStylePrivate::drawTableHeader(const CGRect &outerBounds,
-    bool drawTopBorder, bool drawLeftBorder, const HIThemeButtonDrawInfo &bdi, QPainter *p)
-{
-    static int headerHeight = qt_mac_aqua_get_metric(ListHeaderHeight);
-
-    QPixmap buffer;
-    QString key = QString(QLatin1String("$qt_tableh%1-%2-%3")).arg(int(bdi.state)).arg(int(bdi.adornment)).arg(int(bdi.value));
-    if (!QPixmapCache::find(key, buffer)) {
-        CGRect headerNormalRect = {{0., 0.}, {16., CGFloat(headerHeight)}};
-        buffer = QPixmap(headerNormalRect.size.width, headerNormalRect.size.height);
-        buffer.fill(Qt::transparent);
-        QPainter buffPainter(&buffer);
-        HIThemeDrawButton(&headerNormalRect, &bdi, QMacCGContext(&buffPainter), kHIThemeOrientationNormal, 0);
-        buffPainter.end();
-        QPixmapCache::insert(key, buffer);
-    }
-    const int buttonw = qRound(outerBounds.size.width);
-    const int buttonh = qRound(outerBounds.size.height);
-    const int framew = 1;
-    const int frameh_n = 4;
-    const int frameh_s = 3;
-    const int transh = buffer.height() - frameh_n - frameh_s;
-    int center = buttonh - frameh_s - int(transh / 2.0f) + 1; // Align bottom;
-
-    int skipTopBorder = 0;
-    if (!drawTopBorder)
-        skipTopBorder = 1;
-
-    p->translate(outerBounds.origin.x, outerBounds.origin.y);
-
-    p->drawPixmap(QRect(QRect(0, -skipTopBorder, buttonw - framew , frameh_n)), buffer, QRect(framew, 0, 1, frameh_n));
-    p->drawPixmap(QRect(0, buttonh - frameh_s, buttonw - framew, frameh_s), buffer, QRect(framew, buffer.height() - frameh_s, 1, frameh_s));
-    // Draw upper and lower center blocks
-    p->drawPixmap(QRect(0, frameh_n - skipTopBorder, buttonw - framew, center - frameh_n + skipTopBorder), buffer, QRect(framew, frameh_n, 1, 1));
-    p->drawPixmap(QRect(0, center, buttonw - framew, buttonh - center - frameh_s), buffer, QRect(framew, buffer.height() - frameh_s, 1, 1));
-    // Draw right center block borders
-    p->drawPixmap(QRect(buttonw - framew, frameh_n - skipTopBorder, framew, center - frameh_n), buffer, QRect(buffer.width() - framew, frameh_n, framew, 1));
-    p->drawPixmap(QRect(buttonw - framew, center, framew, buttonh - center - 1), buffer, QRect(buffer.width() - framew, buffer.height() - frameh_s, framew, 1));
-    // Draw right corners
-    p->drawPixmap(QRect(buttonw - framew, -skipTopBorder, framew, frameh_n), buffer, QRect(buffer.width() - framew, 0, framew, frameh_n));
-    p->drawPixmap(QRect(buttonw - framew, buttonh - frameh_s, framew, frameh_s), buffer, QRect(buffer.width() - framew, buffer.height() - frameh_s, framew, frameh_s));
-    // Draw center transition block
-    p->drawPixmap(QRect(0, center - qRound(transh / 2.0f), buttonw - framew, buffer.height() - frameh_n - frameh_s), buffer, QRect(framew, frameh_n + 1, 1, transh));
-    // Draw right center transition block border
-    p->drawPixmap(QRect(buttonw - framew, center - qRound(transh / 2.0f), framew, buffer.height() - frameh_n - frameh_s), buffer, QRect(buffer.width() - framew, frameh_n + 1, framew, transh));
-    if (drawLeftBorder){
-        // Draw left center block borders
-        p->drawPixmap(QRect(0, frameh_n - skipTopBorder, framew, center - frameh_n + skipTopBorder), buffer, QRect(0, frameh_n, framew, 1));
-        p->drawPixmap(QRect(0, center, framew, buttonh - center - 1), buffer, QRect(0, buffer.height() - frameh_s, framew, 1));
-        // Draw left corners
-        p->drawPixmap(QRect(0, -skipTopBorder, framew, frameh_n), buffer, QRect(0, 0, framew, frameh_n));
-        p->drawPixmap(QRect(0, buttonh - frameh_s, framew, frameh_s), buffer, QRect(0, buffer.height() - frameh_s, framew, frameh_s));
-        // Draw left center transition block border
-        p->drawPixmap(QRect(0, center - qRound(transh / 2.0f), framew, buffer.height() - frameh_n - frameh_s), buffer, QRect(0, frameh_n + 1, framew, transh));
-    }
-
-    p->translate(-outerBounds.origin.x, -outerBounds.origin.y);
-}
-
 QMacStylePrivate::QMacStylePrivate()
     : backingStoreNSView(nil)
 {
@@ -3103,7 +3043,17 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorArrowLeft: {
         p->save();
         p->setRenderHint(QPainter::Antialiasing);
-        int xOffset = opt->direction == Qt::LeftToRight ? 2 : -1;
+        const int xOffset = 1; // FIXME: opt->direction == Qt::LeftToRight ? 2 : -1;
+        qreal halfSize = 0.5 * qMin(opt->rect.width(), opt->rect.height());
+        const qreal penWidth = qMax(halfSize / 3.0, 1.25);
+#if QT_CONFIG(toolbutton)
+        if (const QToolButton *tb = qobject_cast<const QToolButton *>(w)) {
+            // When stroking the arrow, make sure it fits in the tool button
+            if (tb->arrowType() != Qt::NoArrow)
+                halfSize -= penWidth;
+        }
+#endif
+
         QMatrix matrix;
         matrix.translate(opt->rect.center().x() + xOffset, opt->rect.center().y() + 2);
         QPainterPath path;
@@ -3121,13 +3071,15 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             matrix.rotate(-90);
             break;
         }
-        path.moveTo(0, 5);
-        path.lineTo(-4, -3);
-        path.lineTo(4, -3);
         p->setMatrix(matrix);
-        p->setPen(Qt::NoPen);
-        p->setBrush(QColor(0, 0, 0, 135));
-        p->drawPath(path);
+
+        path.moveTo(-halfSize, -halfSize * 0.5);
+        path.lineTo(0.0, halfSize * 0.5);
+        path.lineTo(halfSize, -halfSize * 0.5);
+
+        const QPen arrowPen(opt->palette.text(), penWidth,
+                            Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        p->strokePath(path, arrowPen);
         p->restore();
         break; }
 #if QT_CONFIG(tabbar)
@@ -3597,66 +3549,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     switch (ce) {
     case CE_HeaderSection:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-            HIThemeButtonDrawInfo bdi;
-            bdi.version = qt_mac_hitheme_version;
             State flags = header->state;
             QRect ir = header->rect;
-            bdi.kind = kThemeListHeaderButton;
-            bdi.adornment = kThemeAdornmentNone;
-            bdi.state = kThemeStateActive;
 
-            if (flags & State_On)
-                bdi.value = kThemeButtonOn;
-            else
-                bdi.value = kThemeButtonOff;
 
-            if (header->orientation == Qt::Horizontal){
-                switch (header->position) {
-                case QStyleOptionHeader::Beginning:
-                    ir.adjust(-1, -1, 0, 0);
-                    break;
-                case QStyleOptionHeader::Middle:
-                    ir.adjust(-1, -1, 0, 0);
-                    break;
-                case QStyleOptionHeader::OnlyOneSection:
-                case QStyleOptionHeader::End:
-                    ir.adjust(-1, -1, 1, 0);
-                    break;
-                default:
-                    break;
-                }
-
-                if (header->position != QStyleOptionHeader::Beginning
-                    && header->position != QStyleOptionHeader::OnlyOneSection) {
-                    bdi.adornment = header->direction == Qt::LeftToRight
-                        ? kThemeAdornmentHeaderButtonLeftNeighborSelected
-                        : kThemeAdornmentHeaderButtonRightNeighborSelected;
-                }
-            }
-
-            if (flags & State_Active) {
-                if (!(flags & State_Enabled))
-                    bdi.state = kThemeStateUnavailable;
-                else if (flags & State_Sunken)
-                    bdi.state = kThemeStatePressed;
-            } else {
-                if (flags & State_Enabled)
-                    bdi.state = kThemeStateInactive;
-                else
-                    bdi.state = kThemeStateUnavailableInactive;
-            }
-
-            if (header->sortIndicator != QStyleOptionHeader::None) {
-                bdi.value = kThemeButtonOn;
-                if (header->sortIndicator == QStyleOptionHeader::SortDown)
-                    bdi.adornment = kThemeAdornmentHeaderButtonSortUp;
-            }
-            if (flags & State_HasFocus)
-                bdi.adornment = kThemeAdornmentFocus;
-
-            ir = visualRect(header->direction, header->rect, ir);
-            CGRect bounds = ir.toCGRect();
-
+#if 0 // FIXME: What's this solving exactly?
             bool noVerticalHeader = true;
 #if QT_CONFIG(tableview)
             if (w)
@@ -3664,12 +3561,22 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     noVerticalHeader = !table->verticalHeader()->isVisible();
 #endif
 
-            bool drawTopBorder = header->orientation == Qt::Horizontal;
-            bool drawLeftBorder = header->orientation == Qt::Vertical
-                || header->position == QStyleOptionHeader::OnlyOneSection
-                || (header->position == QStyleOptionHeader::Beginning && noVerticalHeader);
-            d->drawTableHeader(bounds, drawTopBorder, drawLeftBorder, bdi, p);
+            const bool drawLeftBorder = header->orientation == Qt::Vertical
+                    || header->position == QStyleOptionHeader::OnlyOneSection
+                    || (header->position == QStyleOptionHeader::Beginning && noVerticalHeader);
+#endif
+
+            const bool pressed = (flags & State_Sunken) && !(flags & State_On);
+            p->fillRect(ir, pressed ? header->palette.dark() : header->palette.button());
+            p->setPen(QPen(header->palette.dark(), 1.0));
+            if (header->orientation == Qt::Horizontal)
+                p->drawLine(QLineF(ir.right() + 0.5, ir.top() + headerSectionSeparatorInset,
+                                   ir.right() + 0.5, ir.bottom() - headerSectionSeparatorInset));
+            else
+                p->drawLine(QLineF(ir.left() + headerSectionSeparatorInset, ir.bottom(),
+                                   ir.right() - headerSectionSeparatorInset, ir.bottom()));
         }
+
         break;
     case CE_HeaderLabel:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
@@ -4657,10 +4564,27 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             // Subtract width needed for arrow, if there is one
             if (header->sortIndicator != QStyleOptionHeader::None) {
                 if (opt->state & State_Horizontal)
-                    rect.setWidth(rect.width() - (opt->rect.height() / 2) - (margin * 2));
+                    rect.setWidth(rect.width() - (headerSectionArrowHeight) - (margin * 2));
                 else
-                    rect.setHeight(rect.height() - (opt->rect.width() / 2) - (margin * 2));
+                    rect.setHeight(rect.height() - (headerSectionArrowHeight) - (margin * 2));
             }
+        }
+        rect = visualRect(opt->direction, opt->rect, rect);
+        break;
+    }
+    case SE_HeaderArrow: {
+        int h = opt->rect.height();
+        int w = opt->rect.width();
+        int x = opt->rect.x();
+        int y = opt->rect.y();
+        int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
+
+        if (opt->state & State_Horizontal) {
+            rect.setRect(x + w - margin * 2 - headerSectionArrowHeight, y + 5,
+                      headerSectionArrowHeight, h - margin * 2 - 5);
+        } else {
+            rect.setRect(x + 5, y + h - margin * 2 - headerSectionArrowHeight,
+                      w - margin * 2 - 5, headerSectionArrowHeight);
         }
         rect = visualRect(opt->direction, opt->rect, rect);
         break;
