@@ -3786,12 +3786,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 } else {
                     QCommonStyle::drawControl(ce, &myTb, p, w);
                 }
-            } else {
+            } else
+#endif // QT_NO_ACCESSIBILITY
+            {
                 QCommonStyle::drawControl(ce, &myTb, p, w);
             }
-#else
-            Q_UNUSED(tb)
-#endif
         }
         break;
     case CE_ToolBoxTabShape:
@@ -5674,7 +5673,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     p->fillPath(path, brush);
                 }
                 proxy()->drawControl(CE_ToolButtonLabel, opt, p, widget);
-            } else {
+            } else
+#endif // QT_NO_ACCESSIBILITY
+            {
                 ThemeButtonKind bkind = kThemeBevelButton;
                 switch (d->aquaSizeConstrain(opt, widget)) {
                 case QStyleHelper::SizeDefault:
@@ -5757,7 +5758,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 label.rect = buttonRect.adjusted(fw, fw, -fw, -fw);
                 proxy()->drawControl(CE_ToolButtonLabel, &label, p, widget);
             }
-#endif
         }
         break;
 #if QT_CONFIG(dial)
