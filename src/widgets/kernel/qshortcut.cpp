@@ -205,7 +205,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 #if defined(DEBUG_QSHORTCUTMAP)
     qDebug().nospace() << "..true [Pass-through]";
 #endif
-    return true;
+    return QApplicationPrivate::tryModalHelper(w, nullptr);
 }
 
 #if QT_CONFIG(graphicsview)

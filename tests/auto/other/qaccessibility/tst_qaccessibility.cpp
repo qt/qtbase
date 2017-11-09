@@ -59,15 +59,9 @@
 
 #include "accessiblewidgets.h"
 
-// Make a widget frameless to prevent size constraints of title bars
-// from interfering (Windows).
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
 
 static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
                                int index, const QRect &domain)

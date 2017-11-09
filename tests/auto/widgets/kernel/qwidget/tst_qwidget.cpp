@@ -73,6 +73,9 @@
 #endif
 
 #include <QtTest/QTest>
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 #  include <QtCore/qt_windows.h>
@@ -108,22 +111,6 @@ bool macHasAccessToWindowsServer()
     return (sessionInfo & sessionHasGraphicAccess);
 }
 #endif
-
-// Make a widget frameless to prevent size constraints of title bars
-// from interfering (Windows).
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 static inline void setWindowsAnimationsEnabled(bool enabled)
@@ -5397,19 +5384,22 @@ void tst_QWidget::multipleToplevelFocusCheck()
     TopLevelFocusCheck w1;
     TopLevelFocusCheck w2;
 
+    const QString title = QLatin1String(QTest::currentTestFunction());
+    w1.setWindowTitle(title + QLatin1String("_W1"));
+    w1.move(m_availableTopLeft + QPoint(20, 20));
     w1.resize(200, 200);
     w1.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w1));
+    w2.setWindowTitle(title + QLatin1String("_W2"));
+    w2.move(w1.frameGeometry().topRight() + QPoint(20, 0));
     w2.resize(200,200);
     w2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w2));
-    QTest::qWait(50);
 
     QApplication::setActiveWindow(&w1);
     w1.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&w1));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&w1));
-    QTest::qWait(50);
     QTest::mouseDClick(&w1, Qt::LeftButton);
     QTRY_COMPARE(QApplication::focusWidget(), static_cast<QWidget *>(w1.edit));
 

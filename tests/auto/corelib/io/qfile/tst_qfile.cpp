@@ -405,6 +405,8 @@ void tst_QFile::cleanup()
                 QDir remainingDir(absoluteFilePath);
                 QVERIFY2(remainingDir.removeRecursively(), qPrintable(absoluteFilePath));
             } else {
+                if (!(QFile::permissions(absoluteFilePath) & QFile::WriteUser))
+                    QVERIFY2(QFile::setPermissions(absoluteFilePath, QFile::WriteUser), qPrintable(absoluteFilePath));
                 QVERIFY2(QFile::remove(absoluteFilePath), qPrintable(absoluteFilePath));
             }
         }
@@ -443,8 +445,6 @@ void tst_QFile::initTestCase()
     m_stdinProcessDir = QFINDTESTDATA("stdinprocess");
     QVERIFY(!m_stdinProcessDir.isEmpty());
 #endif
-    m_testSourceFile = QFINDTESTDATA("tst_qfile.cpp");
-    QVERIFY(!m_testSourceFile.isEmpty());
     m_testLogFile = QFINDTESTDATA("testlog.txt");
     QVERIFY(!m_testLogFile.isEmpty());
     m_dosFile = QFINDTESTDATA("dosfile.txt");
@@ -457,15 +457,19 @@ void tst_QFile::initTestCase()
     QVERIFY(!m_twoDotsFile.isEmpty());
 
 #ifndef BUILTIN_TESTDATA
+    m_testSourceFile = QFINDTESTDATA("tst_qfile.cpp");
+    QVERIFY(!m_testSourceFile.isEmpty());
     m_testFile = QFINDTESTDATA("testfile.txt");
     QVERIFY(!m_testFile.isEmpty());
+    m_resourcesDir = QFINDTESTDATA("resources");
+    QVERIFY(!m_resourcesDir.isEmpty());
 #else
     m_dataDir = QEXTRACTTESTDATA("/");
     QVERIFY2(!m_dataDir.isNull(), qPrintable("Could not extract test data"));
     m_testFile = m_dataDir->path() + "/testfile.txt";
+    m_testSourceFile = m_dataDir->path() + "/tst_qfile.cpp";
+    m_resourcesDir = m_dataDir->path() + "/resources";
 #endif
-    m_resourcesDir = QFINDTESTDATA("resources");
-    QVERIFY(!m_resourcesDir.isEmpty());
     m_noEndOfLineFile = QFINDTESTDATA("noendofline.txt");
     QVERIFY(!m_noEndOfLineFile.isEmpty());
 
@@ -2189,12 +2193,20 @@ public:
         if (fileName.startsWith(":!")) {
             QDir dir;
 
-            QString realFile = QFINDTESTDATA(fileName.mid(2));
+#ifndef BUILTIN_TESTDATA
+            const QString realFile = QFINDTESTDATA(fileName.mid(2));
+#else
+            const QString realFile = m_dataDir->filePath(fileName.mid(2));
+#endif
             if (dir.exists(realFile))
                 return new QFSFileEngine(realFile);
         }
         return 0;
     }
+
+#ifdef BUILTIN_TESTDATA
+    QSharedPointer<QTemporaryDir> m_dataDir;
+#endif
 };
 #endif
 
@@ -2203,6 +2215,9 @@ void tst_QFile::useQFileInAFileHandler()
 {
     // This test should not dead-lock
     MyRecursiveHandler handler;
+#ifdef BUILTIN_TESTDATA
+    handler.m_dataDir = m_dataDir;
+#endif
     QFile file(":!tst_qfile.cpp");
     QVERIFY(file.exists());
 }

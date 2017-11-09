@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author James Turner <james.turner@kdab.com>
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins module of the Qt Toolkit.
+** This file is part of the QtTest module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,56 +37,76 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOAMENUBAR_H
-#define QCOCOAMENUBAR_H
+#ifndef QTESTHELPERS_P_H
+#define QTESTHELPERS_P_H
 
-#include <QtCore/QList>
-#include <qpa/qplatformmenu.h>
-#include "qcocoamenu.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/QFile>
+#include <QtCore/QString>
+#include <QtCore/QChar>
+#include <QtCore/QPoint>
+
+#ifdef QT_GUI_LIB
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
+#endif
+
+#ifdef QT_WIDGETS_LIB
+#include <QtWidgets/QWidget>
+#endif
 
 QT_BEGIN_NAMESPACE
 
-class QCocoaWindow;
+namespace QTestPrivate {
 
-class QCocoaMenuBar : public QPlatformMenuBar
+static inline bool canHandleUnicodeFileNames()
 {
-    Q_OBJECT
-public:
-    QCocoaMenuBar();
-    ~QCocoaMenuBar();
+#if defined(Q_OS_WIN)
+    return true;
+#else
+    // Check for UTF-8 by converting the Euro symbol (see tst_utf8)
+    return QFile::encodeName(QString(QChar(0x20AC))) == QByteArrayLiteral("\342\202\254");
+#endif
+}
 
-    void insertMenu(QPlatformMenu *menu, QPlatformMenu* before) Q_DECL_OVERRIDE;
-    void removeMenu(QPlatformMenu *menu) Q_DECL_OVERRIDE;
-    void syncMenu(QPlatformMenu *menuItem) Q_DECL_OVERRIDE;
-    void handleReparent(QWindow *newParentWindow) Q_DECL_OVERRIDE;
-    QPlatformMenu *menuForTag(quintptr tag) const Q_DECL_OVERRIDE;
+#ifdef QT_WIDGETS_LIB
+static inline void centerOnScreen(QWidget *w, const QSize &size)
+{
+    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
+    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
+}
 
-    inline NSMenu *nsMenu() const
-        { return m_nativeMenu; }
+static inline void centerOnScreen(QWidget *w)
+{
+    centerOnScreen(w, w->geometry().size());
+}
 
-    static void redirectKnownMenuItemsToFirstResponder();
-    static void resetKnownMenuItemsToQt();
-    static void updateMenuBarImmediately();
+/*! \internal
 
-    QList<QCocoaMenuItem*> merged() const;
-    NSMenuItem *itemForRole(QPlatformMenuItem::MenuRole r);
+    Make a widget frameless to prevent size constraints of title bars from interfering (Windows).
+*/
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+             | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+#endif // QT_WIDGETS_LIB
 
-    void syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate);
-
-private:
-    static QCocoaWindow *findWindowForMenubar();
-    static QCocoaMenuBar *findGlobalMenubar();
-
-    bool needsImmediateUpdate();
-    bool shouldDisable(QCocoaWindow *active) const;
-
-    NSMenuItem *nativeItemForMenu(QCocoaMenu *menu) const;
-
-    QList<QPointer<QCocoaMenu> > m_menus;
-    NSMenu *m_nativeMenu;
-    QPointer<QCocoaWindow> m_window;
-};
+} // namespace QTestPrivate
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QTESTHELPERS_P_H

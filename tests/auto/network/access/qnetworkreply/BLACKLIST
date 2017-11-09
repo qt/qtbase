@@ -1,5 +1,7 @@
 # See qtbase/src/testlib/qtestblacklist.cpp for format
 osx
+[authenticationCacheAfterCancel]
+windows
 [ioGetFromBuiltinHttp:http+limited]
 ubuntu-14.04
 [ioGetFromBuiltinHttp:https+limited]
@@ -8,3 +10,29 @@ ubuntu-14.04
 *
 [backgroundRequestInterruption:ftp, bg, nobg]
 *
+[getErrors:ftp-host]
+linux
+[getFromHttpIntoBuffer]
+windows
+[getFromHttpIntoBuffer2]
+windows
+[headFromHttp]
+windows
+[ioGetFromHttpWithSocksProxy]
+windows
+[ioPostToHttpFromSocket]
+windows
+[ioHttpRedirectMultipartPost]
+linux
+[ioHttpRedirectPolicy]
+b2qt 64bit
+linux
+[ioHttpRedirectPostPut]
+linux
+windows
+[putWithServerClosingConnectionImmediately]
+windows
+[qtbug28035browserDoesNotLoadQtProjectOrgCorrectly]
+windows
+[getFromUnreachableIp]
+windows msvc-2017

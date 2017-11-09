@@ -6,7 +6,7 @@ INCLUDEPATH += $$PWD
 HEADERS += kernel/qtnetworkglobal.h \
            kernel/qtnetworkglobal_p.h \
            kernel/qauthenticator.h \
-	   kernel/qauthenticator_p.h \
+           kernel/qauthenticator_p.h \
            kernel/qdnslookup.h \
            kernel/qdnslookup_p.h \
            kernel/qhostaddress.h \
