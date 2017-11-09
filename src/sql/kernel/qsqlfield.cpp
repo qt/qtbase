@@ -588,7 +588,6 @@ void QSqlField::setAutoValue(bool autoVal)
 
     \sa tableName()
 */
-
 void QSqlField::setTableName(const QString &table)
 {
     detach();
@@ -598,9 +597,12 @@ void QSqlField::setTableName(const QString &table)
 /*!
     Returns the tableName of the field.
 
+    \note When using the QPSQL driver, due to limitations in the libpq library,
+    the \c tableName() field is not populated in a QSqlField resulting
+    from a QSqlRecord obtained by QSqlQuery::record() of a forward-only query.
+
     \sa setTableName()
 */
-
 QString QSqlField::tableName() const
 {
     return d->table;

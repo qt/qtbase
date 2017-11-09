@@ -94,6 +94,10 @@ private slots:
     // forwardOnly mode need special treatment
     void forwardOnly_data() { generic_data(); }
     void forwardOnly();
+    void forwardOnlyMultipleResultSet_data() { generic_data(); }
+    void forwardOnlyMultipleResultSet();
+    void psql_forwardOnlyQueryResultsLost_data() { generic_data("QPSQL"); }
+    void psql_forwardOnlyQueryResultsLost();
 
     // bug specific tests
     void tds_bitField_data() { generic_data("QTDS"); }
@@ -1359,6 +1363,8 @@ void tst_QSqlQuery::forwardOnly()
     QVERIFY( q.isForwardOnly() );
     QVERIFY( q.at() == QSql::BeforeFirstRow );
     QVERIFY_SQL( q, exec( "select * from " + qtest + " order by id" ) );
+    if (!q.isForwardOnly())
+        QSKIP("DBMS doesn't support forward-only queries");
     QVERIFY( q.at() == QSql::BeforeFirstRow );
     QVERIFY( q.first() );
     QCOMPARE( q.at(), 0 );
@@ -1430,6 +1436,209 @@ void tst_QSqlQuery::forwardOnly()
     QVERIFY( q.next() == false );
 
     QCOMPARE( q.at(), int( QSql::AfterLastRow ) );
+}
+
+void tst_QSqlQuery::forwardOnlyMultipleResultSet()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+
+    if (!db.driver()->hasFeature(QSqlDriver::MultipleResultSets))
+        QSKIP("DBMS doesn't support multiple result sets");
+
+    QSqlQuery q(db);
+    q.setForwardOnly(true);
+    QVERIFY_SQL(q, exec("select id, t_varchar from " + qtest + " order by id;"  // 1.
+                        "select id, t_varchar, t_char from " + qtest + " where id<4 order by id;"  // 2.
+                        "update " + qtest + " set t_varchar='VarChar555' where id=5;"  // 3.
+                        "select * from " + qtest + " order by id;"              // 4.
+                        "select * from " + qtest + " where id=5 order by id;"   // 5.
+                        "select * from " + qtest + " where id=-1 order by id;"  // 6.
+                        "select * from " + qtest + " order by id"));            // 7.
+
+    if (!q.isForwardOnly())
+        QSKIP("DBMS doesn't support forward-only queries");
+
+    // 1. Result set with 2 columns and 5 rows
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), true);
+    QCOMPARE(q.isSelect(), true);
+
+    // Test record() of first result set
+    QSqlRecord record = q.record();
+    QCOMPARE(record.count(), 2);
+    QCOMPARE(record.indexOf("id"), 0);
+    QCOMPARE(record.indexOf("t_varchar"), 1);
+    if (dbType != QSqlDriver::PostgreSQL) {  // tableName() is not available in forward-only mode of QPSQL
+        QCOMPARE(record.field(0).tableName(), qtest);  // BUG: This fails for Microsoft SQL Server 2016 (QODBC), need fix
+        QCOMPARE(record.field(1).tableName(), qtest);
+    }
+
+    // Test navigation
+    QVERIFY(q.first());
+    QCOMPARE(q.at(), 0);
+    QCOMPARE(q.value(0).toInt(), 1);
+
+    QVERIFY(q.next());
+    QCOMPARE(q.at(), 1);
+    QCOMPARE(q.value(0).toInt(), 2);
+
+    QVERIFY(q.seek(3));
+    QCOMPARE(q.at(), 3);
+    QCOMPARE(q.value(0).toInt(), 4);
+
+    QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query");
+    QVERIFY(q.first() == false);
+    QCOMPARE(q.at(), 3);
+    QCOMPARE(q.value(0).toInt(), 4);
+
+    QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query");
+    QVERIFY(q.previous() == false);
+    QCOMPARE(q.at(), 3);
+    QCOMPARE(q.value(0).toInt(), 4);
+
+    QTest::ignoreMessage(QtWarningMsg, "QSqlQuery::seek: cannot seek backwards in a forward only query");
+    QVERIFY(q.seek(1) == false);
+    QCOMPARE(q.at(), 3);
+    QCOMPARE(q.value(0).toInt(), 4);
+
+    QVERIFY(q.last());
+    QCOMPARE(q.at(), 4);
+
+    // Try move after last row
+    QVERIFY(q.next() == false);
+    QCOMPARE(q.at(), QSql::AfterLastRow);
+    QCOMPARE(q.isActive(), true);
+
+    // 2. Result set with 3 columns and 3 rows
+    QVERIFY(q.nextResult());
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), true);
+    QCOMPARE(q.isSelect(), true);
+
+    // Test record() of second result set
+    record = q.record();
+    QCOMPARE(record.count(), 3);
+    QCOMPARE(record.indexOf("id"), 0);
+    QCOMPARE(record.indexOf("t_varchar"), 1);
+    QCOMPARE(record.indexOf("t_char"), 2);
+
+    // Test iteration
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    int index = 0;
+    while (q.next()) {
+        QCOMPARE(q.at(), index);
+        QCOMPARE(q.value(0).toInt(), index+1);
+        index++;
+    }
+    QVERIFY(q.at() == QSql::AfterLastRow);
+    QCOMPARE(index, 3);
+
+    // 3. Update statement
+    QVERIFY(q.nextResult());
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), true);
+    QCOMPARE(q.isSelect(), false);
+    QCOMPARE(q.numRowsAffected(), 1);
+
+    // 4. Result set with 5 rows
+    QVERIFY(q.nextResult());
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), true);
+    QCOMPARE(q.isSelect(), true);
+
+    // Test forward seek(n)
+    QVERIFY(q.seek(2));
+    QCOMPARE(q.at(), 2);
+    QCOMPARE(q.value(0).toInt(), 3);
+
+    // Test value(string)
+    QCOMPARE(q.value("id").toInt(), 3);
+    QCOMPARE(q.value("t_varchar").toString(), "VarChar3");
+    QCOMPARE(q.value("t_char").toString().trimmed(), "Char3");
+
+    // Next 2 rows of current result set will be
+    // discarded by next call of nextResult()
+
+    // 5. Result set with 1 row
+    QVERIFY(q.nextResult());
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), true);
+    QCOMPARE(q.isSelect(), true);
+    QVERIFY(q.first());
+    QCOMPARE(q.at(), 0);
+    QCOMPARE(q.value(0).toInt(), 5);
+    QVERIFY(q.next() == false);
+    QVERIFY(q.at() == QSql::AfterLastRow);
+
+    // 6. Result set without rows
+    QVERIFY(q.nextResult());
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), true);
+    QCOMPARE(q.isSelect(), true);
+    QVERIFY(q.next() == false);
+
+    // 7. Result set with 5 rows
+    QVERIFY(q.nextResult());
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), true);
+    QCOMPARE(q.isSelect(), true);
+
+    // Just skip it, so we move after last result set.
+    QVERIFY(q.nextResult() == false);
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), false);
+
+    // See if we can execute another query
+    QVERIFY_SQL(q, exec("select id from " + qtest + " where id=5"));
+    QVERIFY(q.at() == QSql::BeforeFirstRow);
+    QCOMPARE(q.isActive(), true);
+    QCOMPARE(q.isSelect(), true);
+    QVERIFY(q.first());
+    QCOMPARE(q.at(), 0);
+    QCOMPARE(q.value("id").toInt(), 5);
+    QCOMPARE(q.record().count(), 1);
+    QCOMPARE(q.record().indexOf("id"), 0);
+}
+
+void tst_QSqlQuery::psql_forwardOnlyQueryResultsLost()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q1(db);
+    q1.setForwardOnly(true);
+    QVERIFY_SQL(q1, exec("select * from " + qtest + " where id<=3 order by id"));
+    if (!q1.isForwardOnly())
+        QSKIP("DBMS doesn't support forward-only queries");
+
+    // Read first row of q1
+    QVERIFY(q1.next());
+    QCOMPARE(q1.at(), 0);
+    QCOMPARE(q1.value(0).toInt(), 1);
+
+    // Executing another query on the same db connection
+    // will cause the query results of q1 to be lost.
+    QSqlQuery q2(db);
+    q2.setForwardOnly(true);
+    QVERIFY_SQL(q2, exec("select * from " + qtest + " where id>3 order by id"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QPSQLDriver::getResult: Query results lost - "
+                                       "probably discarded on executing another SQL query.");
+
+    // Reading next row of q1 will not possible.
+    QVERIFY(!q1.next());
+    QCOMPARE(q1.at(), QSql::AfterLastRow);
+    QVERIFY(q1.lastError().type() != QSqlError::NoError);
+
+    // See if we can read rows from q2
+    QVERIFY(q2.seek(1));
+    QCOMPARE(q2.at(), 1);
+    QCOMPARE(q2.value(0).toInt(), 5);
 }
 
 void tst_QSqlQuery::query_exec()

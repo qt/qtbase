@@ -380,6 +380,45 @@
     Binary Large Objects are supported through the \c BYTEA field type in
     PostgreSQL server versions >= 7.1.
 
+    \section3 QPSQL Forward-only query support
+
+    To use forward-only queries, you must build the QPSQL plugin with
+    PostreSQL client library version 9.2 or later. If the plugin is
+    built with an older version, then forward-only mode will not be
+    available - calling QSqlQuery::setForwardOnly() with \c true will
+    have no effect.
+
+    \warning If you build the QPSQL plugin with PostgreSQL version 9.2 or later,
+    then you must distribute your application with libpq version 9.2 or later.
+    Otherwise, loading the QPSQL plugin will fail with the following message:
+
+    \snippet code/doc_src_sql-driver.qdoc 35
+
+    While navigating the results in forward-only mode, the handle of
+    QSqlResult may change. Applications that use the low-level handle of
+    SQL result must get a new handle after each call to any of QSqlResult
+    fetch functions. Example:
+
+    \snippet code/doc_src_sql-driver.cpp 36
+
+    While reading the results of a forward-only query with PostgreSQL,
+    the database connection cannot be used to execute other queries.
+    This is a limitation of libpq library. Example:
+
+    \snippet code/doc_src_sql-driver.cpp 37
+
+    This problem will not occur if query1 and query2 use different
+    database connections, or if we execute query2 after the while loop.
+
+    \note Some methods of QSqlDatabase like tables(), primaryIndex()
+    implicity execute SQL queries, so these also cannot be used while
+    navigating the results of forward-only query.
+
+    \note QPSQL will print the following warning if it detects a loss of
+    query results:
+
+    \snippet code/doc_src_sql-driver.qdoc 38
+
     \section3 How to Build the QPSQL Plugin on Unix and \macos
 
     You need the PostgreSQL client library and headers installed.

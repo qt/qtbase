@@ -225,3 +225,15 @@ cd $QTDIR/qtbase/src/plugins/sqldrivers
 qmake -- OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib "OCI_LIBS=-Wl,-rpath,/usr/lib/oracle/10.1.0.3/client/lib -lclntsh -lnnz10"
 make sub-oci
 //! [33]
+
+
+//! [35]
+QSqlDatabase: QPSQL driver not loaded
+QSqlDatabase: available drivers: QSQLITE QMYSQL QMYSQL3 QODBC QODBC3 QPSQL QPSQL7
+Could not create database object
+//! [35]
+
+
+//! [38]
+QPSQLDriver::getResult: Query results lost - probably discarded on executing another SQL query.
+//! [38]

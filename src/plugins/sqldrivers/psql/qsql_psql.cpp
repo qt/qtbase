@@ -125,6 +125,14 @@ inline void qPQfreemem(void *buffer)
     PQfreemem(buffer);
 }
 
+/* Missing declaration of PGRES_SINGLE_TUPLE for PSQL below 9.2 */
+#if !defined PG_VERSION_NUM || PG_VERSION_NUM-0 < 90200
+static const int PGRES_SINGLE_TUPLE = 9;
+#endif
+
+typedef int StatementId;
+static const StatementId InvalidStatementId = 0;
+
 class QPSQLResultPrivate;
 
 class QPSQLResult: public QSqlResult
@@ -143,6 +151,7 @@ protected:
     bool fetch(int i) override;
     bool fetchFirst() override;
     bool fetchLast() override;
+    bool fetchNext() override;
     QVariant data(int i) override;
     bool isNull(int field) override;
     bool reset (const QString &query) override;
@@ -164,7 +173,9 @@ public:
         pro(QPSQLDriver::Version6),
         sn(0),
         pendingNotifyCheck(false),
-        hasBackslashEscape(false)
+        hasBackslashEscape(false),
+        stmtCount(0),
+        currentStmtId(InvalidStatementId)
     { dbmsType = QSqlDriver::PostgreSQL; }
 
     PGconn *connection;
@@ -174,10 +185,19 @@ public:
     QStringList seid;
     mutable bool pendingNotifyCheck;
     bool hasBackslashEscape;
+    int stmtCount;
+    StatementId currentStmtId;
 
     void appendTables(QStringList &tl, QSqlQuery &t, QChar type);
-    PGresult * exec(const char * stmt) const;
-    PGresult * exec(const QString & stmt) const;
+    PGresult *exec(const char *stmt);
+    PGresult *exec(const QString &stmt);
+    StatementId sendQuery(const QString &stmt);
+    bool setSingleRowMode() const;
+    PGresult *getResult(StatementId stmtId) const;
+    void finishQuery(StatementId stmtId);
+    void discardResults() const;
+    StatementId generateStatementId();
+    void checkPendingNotifications() const;
     QPSQLDriver::Protocol getPSQLVersion();
     bool setEncodingUtf8();
     void setDatestyle();
@@ -202,20 +222,89 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
     }
 }
 
-PGresult * QPSQLDriverPrivate::exec(const char * stmt) const
+PGresult *QPSQLDriverPrivate::exec(const char *stmt)
+{
+    // PQexec() silently discards any prior query results that the application didn't eat.
+    PGresult *result = PQexec(connection, stmt);
+    currentStmtId = result ? generateStatementId() : InvalidStatementId;
+    checkPendingNotifications();
+    return result;
+}
+
+PGresult *QPSQLDriverPrivate::exec(const QString &stmt)
+{
+    return exec((isUtf8 ? stmt.toUtf8() : stmt.toLocal8Bit()).constData());
+}
+
+StatementId QPSQLDriverPrivate::sendQuery(const QString &stmt)
+{
+    // Discard any prior query results that the application didn't eat.
+    // This is required for PQsendQuery()
+    discardResults();
+    const int result = PQsendQuery(connection,
+                                   (isUtf8 ? stmt.toUtf8() : stmt.toLocal8Bit()).constData());
+    currentStmtId = result ? generateStatementId() : InvalidStatementId;
+    return currentStmtId;
+}
+
+bool QPSQLDriverPrivate::setSingleRowMode() const
+{
+    // Activates single-row mode for last sent query, see:
+    // https://www.postgresql.org/docs/9.2/static/libpq-single-row-mode.html
+    // This method should be called immediately after the sendQuery() call.
+#if defined PG_VERSION_NUM && PG_VERSION_NUM-0 >= 90200
+    return PQsetSingleRowMode(connection) > 0;
+#else
+    return false;
+#endif
+}
+
+PGresult *QPSQLDriverPrivate::getResult(StatementId stmtId) const
+{
+    // Make sure the results of stmtId weren't discaded. This might
+    // happen for forward-only queries if somebody executed another
+    // SQL query on the same db connection.
+    if (stmtId != currentStmtId) {
+        // If you change the following warning, remember to update it
+        // on sql-driver.html page too.
+        qWarning("QPSQLDriver::getResult: Query results lost - "
+                 "probably discarded on executing another SQL query.");
+        return nullptr;
+    }
+    PGresult *result = PQgetResult(connection);
+    checkPendingNotifications();
+    return result;
+}
+
+void QPSQLDriverPrivate::finishQuery(StatementId stmtId)
+{
+    if (stmtId != InvalidStatementId && stmtId == currentStmtId) {
+        discardResults();
+        currentStmtId = InvalidStatementId;
+    }
+}
+
+void QPSQLDriverPrivate::discardResults() const
+{
+    while (PGresult *result = PQgetResult(connection))
+        PQclear(result);
+}
+
+StatementId QPSQLDriverPrivate::generateStatementId()
+{
+    int stmtId = ++stmtCount;
+    if (stmtId <= 0)
+        stmtId = stmtCount = 1;
+    return stmtId;
+}
+
+void QPSQLDriverPrivate::checkPendingNotifications() const
 {
     Q_Q(const QPSQLDriver);
-    PGresult *result = PQexec(connection, stmt);
     if (seid.size() && !pendingNotifyCheck) {
         pendingNotifyCheck = true;
         QMetaObject::invokeMethod(const_cast<QPSQLDriver*>(q), "_q_handleNotification", Qt::QueuedConnection, Q_ARG(int,0));
     }
-    return result;
-}
-
-PGresult * QPSQLDriverPrivate::exec(const QString & stmt) const
-{
-    return exec(isUtf8 ? stmt.toUtf8().constData() : stmt.toLocal8Bit().constData());
 }
 
 class QPSQLResultPrivate : public QSqlResultPrivate
@@ -227,6 +316,8 @@ public:
       : QSqlResultPrivate(q, drv),
         result(0),
         currentSize(-1),
+        canFetchMoreRows(false),
+        stmtId(InvalidStatementId),
         preparedQueriesEnabled(false)
     { }
 
@@ -235,6 +326,8 @@ public:
 
     PGresult *result;
     int currentSize;
+    bool canFetchMoreRows;
+    StatementId stmtId;
     bool preparedQueriesEnabled;
     QString preparedStmtId;
 
@@ -257,21 +350,45 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 bool QPSQLResultPrivate::processResults()
 {
     Q_Q(QPSQLResult);
-    if (!result)
+    if (!result) {
+        q->setSelect(false);
+        q->setActive(false);
+        currentSize = -1;
+        canFetchMoreRows = false;
+        if (stmtId != drv_d_func()->currentStmtId) {
+            q->setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
+                            "Query results lost - probably discarded on executing "
+                            "another SQL query."), QSqlError::StatementError, drv_d_func(), result));
+        }
         return false;
-
+    }
     int status = PQresultStatus(result);
-    if (status == PGRES_TUPLES_OK) {
+    switch (status) {
+    case PGRES_TUPLES_OK:
         q->setSelect(true);
         q->setActive(true);
-        currentSize = PQntuples(result);
+        currentSize = q->isForwardOnly() ? -1 : PQntuples(result);
+        canFetchMoreRows = false;
         return true;
-    } else if (status == PGRES_COMMAND_OK) {
+    case PGRES_SINGLE_TUPLE:
+        q->setSelect(true);
+        q->setActive(true);
+        currentSize = -1;
+        canFetchMoreRows = true;
+        return true;
+    case PGRES_COMMAND_OK:
         q->setSelect(false);
         q->setActive(true);
         currentSize = -1;
+        canFetchMoreRows = false;
         return true;
+    default:
+        break;
     }
+    q->setSelect(false);
+    q->setActive(false);
+    currentSize = -1;
+    canFetchMoreRows = false;
     q->setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
                     "Unable to create query"), QSqlError::StatementError, drv_d_func(), result));
     return false;
@@ -361,9 +478,13 @@ void QPSQLResult::cleanup()
     Q_D(QPSQLResult);
     if (d->result)
         PQclear(d->result);
-    d->result = 0;
+    d->result = nullptr;
+    if (d->stmtId != InvalidStatementId)
+        d->drv_d_func()->finishQuery(d->stmtId);
+    d->stmtId = InvalidStatementId;
     setAt(QSql::BeforeFirstRow);
     d->currentSize = -1;
+    d->canFetchMoreRows = false;
     setActive(false);
 }
 
@@ -374,23 +495,117 @@ bool QPSQLResult::fetch(int i)
         return false;
     if (i < 0)
         return false;
-    if (i >= d->currentSize)
-        return false;
     if (at() == i)
         return true;
+
+    if (isForwardOnly()) {
+        if (i < at())
+            return false;
+        bool ok = true;
+        while (ok && i > at())
+            ok = fetchNext();
+        return ok;
+    }
+
+    if (i >= d->currentSize)
+        return false;
     setAt(i);
     return true;
 }
 
 bool QPSQLResult::fetchFirst()
 {
+    Q_D(const QPSQLResult);
+    if (!isActive())
+        return false;
+    if (at() == 0)
+        return true;
+
+    if (isForwardOnly()) {
+        if (at() == QSql::BeforeFirstRow) {
+            // First result has been already fetched by exec() or
+            // nextResult(), just check it has at least one row.
+            if (d->result && PQntuples(d->result) > 0) {
+                setAt(0);
+                return true;
+            }
+        }
+        return false;
+    }
+
     return fetch(0);
 }
 
 bool QPSQLResult::fetchLast()
 {
     Q_D(const QPSQLResult);
-    return fetch(PQntuples(d->result) - 1);
+    if (!isActive())
+        return false;
+
+    if (isForwardOnly()) {
+        // Cannot seek to last row in forwardOnly mode, so we have to use brute force
+        int i = at();
+        if (i == QSql::AfterLastRow)
+            return false;
+        if (i == QSql::BeforeFirstRow)
+            i = 0;
+        while (fetchNext())
+            ++i;
+        setAt(i);
+        return true;
+    }
+
+    return fetch(d->currentSize - 1);
+}
+
+bool QPSQLResult::fetchNext()
+{
+    Q_D(QPSQLResult);
+    if (!isActive())
+        return false;
+
+    const int currentRow = at();  // Small optimalization
+    if (currentRow == QSql::BeforeFirstRow)
+        return fetchFirst();
+    if (currentRow == QSql::AfterLastRow)
+        return false;
+
+    if (isForwardOnly()) {
+        if (!d->canFetchMoreRows)
+            return false;
+        PQclear(d->result);
+        d->result = d->drv_d_func()->getResult(d->stmtId);
+        if (!d->result) {
+            setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
+                                    "Unable to get result"), QSqlError::StatementError, d->drv_d_func(), d->result));
+            d->canFetchMoreRows = false;
+            return false;
+        }
+        int status = PQresultStatus(d->result);
+        switch (status) {
+        case PGRES_SINGLE_TUPLE:
+            // Fetched next row of current result set
+            Q_ASSERT(PQntuples(d->result) == 1);
+            Q_ASSERT(d->canFetchMoreRows);
+            setAt(currentRow + 1);
+            return true;
+        case PGRES_TUPLES_OK:
+            // In single-row mode PGRES_TUPLES_OK means end of current result set
+            Q_ASSERT(PQntuples(d->result) == 0);
+            d->canFetchMoreRows = false;
+            return false;
+        default:
+            setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
+                                    "Unable to get result"), QSqlError::StatementError, d->drv_d_func(), d->result));
+            d->canFetchMoreRows = false;
+            return false;
+        }
+    }
+
+    if (currentRow + 1 >= d->currentSize)
+        return false;
+    setAt(currentRow + 1);
+    return true;
 }
 
 QVariant QPSQLResult::data(int i)
@@ -400,10 +615,11 @@ QVariant QPSQLResult::data(int i)
         qWarning("QPSQLResult::data: column %d out of range", i);
         return QVariant();
     }
+    const int currentRow = isForwardOnly() ? 0 : at();
     int ptype = PQftype(d->result, i);
     QVariant::Type type = qDecodePSQLType(ptype);
-    const char *val = PQgetvalue(d->result, at(), i);
-    if (PQgetisnull(d->result, at(), i))
+    const char *val = PQgetvalue(d->result, currentRow, i);
+    if (PQgetisnull(d->result, currentRow, i))
         return QVariant(type);
     switch (type) {
     case QVariant::Bool:
@@ -488,8 +704,9 @@ QVariant QPSQLResult::data(int i)
 bool QPSQLResult::isNull(int field)
 {
     Q_D(const QPSQLResult);
-    PQgetvalue(d->result, at(), field);
-    return PQgetisnull(d->result, at(), field);
+    const int currentRow = isForwardOnly() ? 0 : at();
+    PQgetvalue(d->result, currentRow, field);
+    return PQgetisnull(d->result, currentRow, field);
 }
 
 bool QPSQLResult::reset (const QString& query)
@@ -500,7 +717,18 @@ bool QPSQLResult::reset (const QString& query)
         return false;
     if (!driver()->isOpen() || driver()->isOpenError())
         return false;
-    d->result = d->drv_d_func()->exec(query);
+
+    d->stmtId = d->drv_d_func()->sendQuery(query);
+    if (d->stmtId == InvalidStatementId) {
+        setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
+                                "Unable to send query"), QSqlError::StatementError, d->drv_d_func()));
+        return false;
+    }
+
+    if (isForwardOnly())
+        setForwardOnly(d->drv_d_func()->setSingleRowMode());
+
+    d->result = d->drv_d_func()->getResult(d->stmtId);
     return d->processResults();
 }
 
@@ -546,10 +774,17 @@ QSqlRecord QPSQLResult::record() const
             f.setName(QString::fromUtf8(PQfname(d->result, i)));
         else
             f.setName(QString::fromLocal8Bit(PQfname(d->result, i)));
-        QSqlQuery qry(driver()->createResult());
-        if (qry.exec(QStringLiteral("SELECT relname FROM pg_class WHERE pg_class.oid = %1")
-                     .arg(PQftable(d->result, i))) && qry.next()) {
-            f.setTableName(qry.value(0).toString());
+
+        // WARNING: We cannot execute any other SQL queries on
+        // the same db connection while forward-only mode is active
+        // (this would discard all results of forward-only query).
+        // So we just skip this...
+        if (!isForwardOnly()) {
+            QSqlQuery qry(driver()->createResult());
+            if (qry.exec(QStringLiteral("SELECT relname FROM pg_class WHERE pg_class.oid = %1")
+                         .arg(PQftable(d->result, i))) && qry.next()) {
+                f.setTableName(qry.value(0).toString());
+            }
         }
         int ptype = PQftype(d->result, i);
         f.setType(qDecodePSQLType(ptype));
@@ -668,8 +903,17 @@ bool QPSQLResult::exec()
     else
         stmt = QString::fromLatin1("EXECUTE %1 (%2)").arg(d->preparedStmtId, params);
 
-    d->result = d->drv_d_func()->exec(stmt);
+    d->stmtId = d->drv_d_func()->sendQuery(stmt);
+    if (d->stmtId == InvalidStatementId) {
+        setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
+                                "Unable to send query"), QSqlError::StatementError, d->drv_d_func()));
+        return false;
+    }
 
+    if (isForwardOnly())
+        setForwardOnly(d->drv_d_func()->setSingleRowMode());
+
+    d->result = d->drv_d_func()->getResult(d->stmtId);
     return d->processResults();
 }
 
@@ -996,7 +1240,7 @@ QSqlResult *QPSQLDriver::createResult() const
 
 bool QPSQLDriver::beginTransaction()
 {
-    Q_D(const QPSQLDriver);
+    Q_D(QPSQLDriver);
     if (!isOpen()) {
         qWarning("QPSQLDriver::beginTransaction: Database not open");
         return false;
