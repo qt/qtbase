@@ -1904,19 +1904,21 @@ void QWidgetPrivate::deleteTLSysExtra()
 }
 
 /*
-  Returns \c true if there are widgets above this which overlap with
+  Returns \c region of widgets above this which overlap with
   \a rect, which is in parent's coordinate system (same as crect).
 */
 
-bool QWidgetPrivate::isOverlapped(const QRect &rect) const
+QRegion QWidgetPrivate::overlappedRegion(const QRect &rect, bool breakAfterFirst) const
 {
     Q_Q(const QWidget);
 
     const QWidget *w = q;
     QRect r = rect;
+    QPoint p;
+    QRegion region;
     while (w) {
         if (w->isWindow())
-            return false;
+            break;
         QWidgetPrivate *pd = w->parentWidget()->d_func();
         bool above = false;
         for (int i = 0; i < pd->children.size(); ++i) {
@@ -1928,19 +1930,23 @@ bool QWidgetPrivate::isOverlapped(const QRect &rect) const
                 continue;
             }
 
-            if (qRectIntersects(sibling->d_func()->effectiveRectFor(sibling->data->crect), r)) {
+            const QRect siblingRect = sibling->d_func()->effectiveRectFor(sibling->data->crect);
+            if (qRectIntersects(siblingRect, r)) {
                 const QWExtra *siblingExtra = sibling->d_func()->extra;
                 if (siblingExtra && siblingExtra->hasMask && !sibling->d_func()->graphicsEffect
                     && !siblingExtra->mask.translated(sibling->data->crect.topLeft()).intersects(r)) {
                     continue;
                 }
-                return true;
+                region += siblingRect.translated(-p);
+                if (breakAfterFirst)
+                    break;
             }
         }
         w = w->parentWidget();
         r.translate(pd->data.crect.topLeft());
+        p += pd->data.crect.topLeft();
     }
-    return false;
+    return region;
 }
 
 void QWidgetPrivate::syncBackingStore()

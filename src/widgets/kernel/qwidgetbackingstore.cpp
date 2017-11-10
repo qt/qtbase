@@ -59,6 +59,7 @@
 #include <private/qgraphicseffect_p.h>
 #endif
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <qpa/qplatformbackingstore.h>
 
@@ -793,6 +794,24 @@ QWidgetBackingStore::~QWidgetBackingStore()
     delete dirtyOnScreenWidgets;
 }
 
+static QVector<QRect> getSortedRectsToScroll(const QRegion &region, int dx, int dy)
+{
+    QVector<QRect> rects = region.rects();
+    if (rects.count() > 1) {
+        std::sort(rects.begin(), rects.end(), [=](const QRect &r1, const QRect &r2) {
+            if (r1.y() == r2.y()) {
+                if (dx > 0)
+                    return r1.x() > r2.x();
+                return r1.x() < r2.x();
+            }
+            if (dy > 0)
+                return r1.y() > r2.y();
+            return r1.y() < r2.y();
+        });
+    }
+    return rects;
+}
+
 //parent's coordinates; move whole rect; update parent and widget
 //assume the screen blt has already been done, so we don't need to refresh that part
 void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
@@ -820,12 +839,12 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     const QRect parentRect(rect & clipR);
     const bool nativeWithTextureChild = textureChildSeen && q->internalWinId();
 
-    bool accelerateMove = accelEnv && isOpaque && !nativeWithTextureChild
+    const bool accelerateMove = accelEnv && isOpaque && !nativeWithTextureChild
 #if QT_CONFIG(graphicsview)
                           // No accelerate move for proxy widgets.
                           && !tlw->d_func()->extra->proxyWidget
 #endif
-                          && !isOverlapped(sourceRect) && !isOverlapped(destRect);
+            ;
 
     if (!accelerateMove) {
         QRegion parentR(effectiveRectFor(parentRect));
@@ -841,18 +860,39 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
 
         QWidgetBackingStore *wbs = x->backingStoreTracker.data();
         QRegion childExpose(newRect & clipR);
+        QRegion overlappedExpose;
 
-        if (sourceRect.isValid() && wbs->bltRect(sourceRect, dx, dy, pw))
-            childExpose -= destRect;
+        if (sourceRect.isValid()) {
+            overlappedExpose = (overlappedRegion(sourceRect) | overlappedRegion(destRect)) & clipR;
+
+            const qreal factor = QHighDpiScaling::factor(q->windowHandle());
+            if (overlappedExpose.isEmpty() || qFloor(factor) == factor) {
+                const QVector<QRect> rectsToScroll
+                        = getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
+                for (QRect rect : rectsToScroll) {
+                    if (wbs->bltRect(rect, dx, dy, pw)) {
+                        childExpose -= rect.translated(dx, dy);
+                    }
+                }
+            }
+
+            childExpose -= overlappedExpose;
+        }
 
         if (!pw->updatesEnabled())
             return;
 
         const bool childUpdatesEnabled = q->updatesEnabled();
-        if (childUpdatesEnabled && !childExpose.isEmpty()) {
-            childExpose.translate(-data.crect.topLeft());
-            wbs->markDirty(childExpose, q);
-            isMoved = true;
+        if (childUpdatesEnabled) {
+            if (!overlappedExpose.isEmpty()) {
+                overlappedExpose.translate(-data.crect.topLeft());
+                invalidateBuffer(overlappedExpose);
+            }
+            if (!childExpose.isEmpty()) {
+                childExpose.translate(-data.crect.topLeft());
+                wbs->markDirty(childExpose, q);
+                isMoved = true;
+            }
         }
 
         QRegion parentExpose(parentRect);
@@ -888,13 +928,12 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
 
     static const bool accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_SCROLL") == 0;
 
-    QRect scrollRect = rect & clipRect();
-    bool overlapped = false;
-    bool accelerateScroll = accelEnv && isOpaque && !q_func()->testAttribute(Qt::WA_WState_InPaintEvent)
-                            && !(overlapped = isOverlapped(scrollRect.translated(data.crect.topLeft())));
+    const QRect clipR = clipRect();
+    const QRect scrollRect = rect & clipR;
+    const bool accelerateScroll = accelEnv && isOpaque && !q_func()->testAttribute(Qt::WA_WState_InPaintEvent);
 
     if (!accelerateScroll) {
-        if (overlapped) {
+        if (!overlappedRegion(scrollRect.translated(data.crect.topLeft()), true).isEmpty()) {
             QRegion region(scrollRect);
             subtractOpaqueSiblings(region);
             invalidateBuffer(region);
@@ -906,11 +945,22 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
         const QRect destRect = scrollRect.translated(dx, dy) & scrollRect;
         const QRect sourceRect = destRect.translated(-dx, -dy);
 
+        const QRegion overlappedExpose = (overlappedRegion(scrollRect.translated(data.crect.topLeft())))
+                .translated(-data.crect.topLeft()) & clipR;
         QRegion childExpose(scrollRect);
-        if (sourceRect.isValid()) {
-            if (wbs->bltRect(sourceRect, dx, dy, q))
-                childExpose -= destRect;
+
+        const qreal factor = QHighDpiScaling::factor(q->windowHandle());
+        if (overlappedExpose.isEmpty() || qFloor(factor) == factor) {
+            const QVector<QRect> rectsToScroll
+                    = getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
+            for (const QRect &rect : rectsToScroll) {
+                if (wbs->bltRect(rect, dx, dy, q)) {
+                    childExpose -= rect.translated(dx, dy);
+                }
+            }
         }
+
+        childExpose -= overlappedExpose;
 
         if (inDirtyList) {
             if (rect == q->rect()) {
@@ -928,6 +978,8 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
         if (!q->updatesEnabled())
             return;
 
+        if (!overlappedExpose.isEmpty())
+            invalidateBuffer(overlappedExpose);
         if (!childExpose.isEmpty()) {
             wbs->markDirty(childExpose, q);
             isScrolled = true;

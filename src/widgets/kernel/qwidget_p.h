@@ -453,7 +453,7 @@ public:
     // ### Qt 4.6: Merge into a template function (after MSVC isn't supported anymore).
     void invalidateBuffer(const QRegion &);
     void invalidateBuffer(const QRect &);
-    bool isOverlapped(const QRect&) const;
+    QRegion overlappedRegion(const QRect &rect, bool breakAfterFirst = false) const;
     void syncBackingStore();
     void syncBackingStore(const QRegion &region);
 
