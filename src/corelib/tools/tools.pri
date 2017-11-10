@@ -181,7 +181,9 @@ qtConfig(datetimeparser) {
 qtConfig(regularexpression) {
     QMAKE_USE_PRIVATE += pcre2
 
-    HEADERS += tools/qregularexpression.h
+    HEADERS += \
+        tools/qregularexpression.h \
+        tools/qregularexpression_p.h
     SOURCES += tools/qregularexpression.cpp
 }
 

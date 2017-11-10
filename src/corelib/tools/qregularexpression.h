@@ -96,6 +96,7 @@ public:
 
     QString pattern() const;
     void setPattern(const QString &pattern);
+    void setWildcardPattern(const QString &pattern);
 
     bool isValid() const;
     int patternErrorOffset() const;

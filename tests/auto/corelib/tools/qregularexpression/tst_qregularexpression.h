@@ -69,6 +69,11 @@ private slots:
     void JOptionUsage();
     void QStringAndQStringRefEquivalence();
 
+    void wildcard_data();
+    void wildcard();
+    void testInvalidWildcard_data();
+    void testInvalidWildcard();
+
 private:
     void provideRegularExpressions();
 };

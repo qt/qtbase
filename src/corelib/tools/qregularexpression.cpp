@@ -798,6 +798,83 @@ Q_AUTOTEST_EXPORT unsigned int qt_qregularexpression_optimize_after_use_count = 
 static const unsigned int qt_qregularexpression_optimize_after_use_count = 10;
 #endif // QT_BUILD_INTERNAL
 
+
+namespace QtPrivate {
+/*!
+    internal
+*/
+QString wildcardToRegularExpression(const QString &wildcardString)
+{
+    const int wclen = wildcardString.length();
+    QString rx;
+    int i = 0;
+    bool hasNegativeBracket = false;
+    const QChar *wc = wildcardString.unicode();
+
+    while (i < wclen) {
+        const QChar c = wc[i++];
+        switch (c.unicode()) {
+        case '*':
+            rx += QLatin1String(".*");
+            break;
+        case '?':
+            rx += QLatin1Char('.');
+            break;
+        case '$':
+        case '(':
+        case ')':
+        case '+':
+        case '.':
+        case '^':
+        case '{':
+        case '|':
+        case '}':
+            rx += QLatin1Char('\\');
+            rx += c;
+            break;
+        case '[':
+            // Support for the [!abc] or [!a-c] syntax
+            // Implements a negative look-behind for one char.
+            if (wc[i] == QLatin1Char(']')) {
+                rx += c;
+                rx += wc[i++];
+            } else if (wc[i] == QLatin1Char('!')) {
+                rx += QLatin1String(".(?<");
+                rx += wc[i++];
+                rx += c;
+                hasNegativeBracket = true;
+            } else {
+                rx += c;
+            }
+
+            if (i < wclen) {
+                if (rx[i] == QLatin1Char(']'))
+                    rx += wc[i++];
+                while (i < wclen && wc[i] != QLatin1Char(']')) {
+                    if (wc[i] == QLatin1Char('\\'))
+                        rx += QLatin1Char('\\');
+                    rx += wc[i++];
+                }
+            }
+            break;
+        case ']':
+            rx += c;
+            // Closes the negative look-behind expression.
+            if (hasNegativeBracket) {
+                rx += QLatin1Char(')');
+                hasNegativeBracket = false;
+            }
+            break;
+        default:
+            rx += c;
+            break;
+        }
+    }
+
+    return rx;
+}
+}
+
 /*!
     \internal
 */
@@ -1552,6 +1629,47 @@ void QRegularExpression::setPattern(const QString &pattern)
     d->isDirty = true;
     d->pattern = pattern;
 }
+
+/*!
+    \since 5.12
+
+    Sets the pattern string of the regular expression to \a wildcard pattern.
+    The pattern options are left unchanged.
+
+    \warning Unlike QRegExp, this implementation follows closely the definition
+    of wildcard for glob patterns:
+    \table
+    \row \li \b{c}
+         \li Any character represents itself apart from those mentioned
+         below. Thus \b{c} matches the character \e c.
+    \row \li \b{?}
+         \li Matches any single character. It is the same as
+         \b{.} in full regexps.
+    \row \li \b{*}
+         \li Matches zero or more of any characters. It is the
+         same as \b{.*} in full regexps.
+    \row \li \b{[abc]}
+         \li Matches one character given in the bracket.
+    \row \li \b{[a-c]}
+         \li Matches one character from the range given in the bracket.
+    \row \li \b{[!abc]}
+         \li Matches one character that is not given in the bracket.
+    \row \li \b{[!a-c]}
+         \li matches one character that is not from the range given in the
+         bracket.
+    \endtable
+
+    \note This function generates a regular expression that will act following
+    the wildcard pattern given. However the content of the regular expression
+    will not be the same as the one set.
+
+    \sa pattern(), setPattern()
+*/
+void QRegularExpression::setWildcardPattern(const QString &pattern)
+{
+    setPattern(QtPrivate::wildcardToRegularExpression(pattern));
+}
+
 
 /*!
     Returns the pattern options for the regular expression.

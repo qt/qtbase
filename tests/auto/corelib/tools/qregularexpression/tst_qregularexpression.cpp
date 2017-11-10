@@ -2066,3 +2066,80 @@ void tst_QRegularExpression::QStringAndQStringRefEquivalence()
         }
     }
 }
+
+void tst_QRegularExpression::wildcard_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<int>("foundIndex");
+
+    auto addRow = [](const char *pattern, const char *string, int foundIndex) {
+        QTest::addRow(pattern) << pattern << string << foundIndex;
+    };
+
+    addRow("*.html", "test.html", 0);
+    addRow("*.html", "test.htm", -1);
+    addRow("bar*", "foobarbaz", 3);
+    addRow("*", "Qt Rocks!", 0);
+    addRow(".html", "test.html", 4);
+    addRow(".h", "test.cpp", -1);
+    addRow(".???l", "test.html", 4);
+    addRow("?", "test.html", 0);
+    addRow("?m", "test.html", 6);
+    addRow(".h[a-z]ml", "test.html", 4);
+    addRow(".h[A-Z]ml", "test.html", -1);
+    addRow(".h[A-Z]ml", "test.hTml", 4);
+    addRow(".h[!A-Z]ml", "test.hTml", -1);
+    addRow(".h[!A-Z]ml", "test.html", 4);
+    addRow(".h[!T]ml", "test.hTml", -1);
+    addRow(".h[!T]ml", "test.html", 4);
+    addRow(".h[!T]m[!L]", "test.htmL", -1);
+    addRow(".h[!T]m[!L]", "test.html", 4);
+    addRow(".h[][!]", "test.h]ml", 4);
+    addRow(".h[][!]", "test.h[ml", 4);
+    addRow(".h[][!]", "test.h!ml", 4);
+}
+
+void tst_QRegularExpression::wildcard()
+{
+    QFETCH(QString, pattern);
+    QFETCH(QString, string);
+    QFETCH(int, foundIndex);
+
+    QRegularExpression re;
+    re.setWildcardPattern(pattern);
+    if (forceOptimize)
+        re.optimize();
+
+    QRegularExpressionMatch match = re.match(string);
+
+    QCOMPARE(match.capturedStart(), foundIndex);
+}
+
+void tst_QRegularExpression::testInvalidWildcard_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<bool>("isValid");
+
+    QTest::newRow("valid []") << "[abc]" << true;
+    QTest::newRow("valid ending ]") << "abc]" << true;
+    QTest::newRow("invalid [") << "[abc" << false;
+    QTest::newRow("ending [") << "abc[" << false;
+    QTest::newRow("ending [^") << "abc[^" << false;
+    QTest::newRow("ending [\\") << "abc[\\" << false;
+    QTest::newRow("ending []") << "abc[]" << false;
+    QTest::newRow("ending [[") << "abc[[" << false;
+}
+
+void tst_QRegularExpression::testInvalidWildcard()
+{
+    QFETCH(QString, pattern);
+
+    QRegularExpression re;
+    re.setWildcardPattern(pattern);
+    if (forceOptimize)
+        re.optimize();
+
+    QFETCH(bool, isValid);
+    QCOMPARE(re.isValid(), isValid);
+}
