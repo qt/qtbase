@@ -152,6 +152,7 @@ protected:
     bool fetchFirst() override;
     bool fetchLast() override;
     bool fetchNext() override;
+    bool nextResult() override;
     QVariant data(int i) override;
     bool isNull(int field) override;
     bool reset (const QString &query) override;
@@ -325,6 +326,7 @@ public:
     void deallocatePreparedStmt();
 
     PGresult *result;
+    QList<PGresult*> nextResultSets;
     int currentSize;
     bool canFetchMoreRows;
     StatementId stmtId;
@@ -479,6 +481,8 @@ void QPSQLResult::cleanup()
     if (d->result)
         PQclear(d->result);
     d->result = nullptr;
+    while (!d->nextResultSets.isEmpty())
+        PQclear(d->nextResultSets.takeFirst());
     if (d->stmtId != InvalidStatementId)
         d->drv_d_func()->finishQuery(d->stmtId);
     d->stmtId = InvalidStatementId;
@@ -608,6 +612,39 @@ bool QPSQLResult::fetchNext()
     return true;
 }
 
+bool QPSQLResult::nextResult()
+{
+    Q_D(QPSQLResult);
+    if (!isActive())
+        return false;
+
+    setAt(QSql::BeforeFirstRow);
+
+    if (isForwardOnly()) {
+        if (d->canFetchMoreRows) {
+            // Skip all rows from current result set
+            while (d->result && PQresultStatus(d->result) == PGRES_SINGLE_TUPLE) {
+                PQclear(d->result);
+                d->result = d->drv_d_func()->getResult(d->stmtId);
+            }
+            d->canFetchMoreRows = false;
+            // Check for unexpected errors
+            if (d->result && PQresultStatus(d->result) == PGRES_FATAL_ERROR)
+                return d->processResults();
+        }
+        // Fetch first result from next result set
+        if (d->result)
+            PQclear(d->result);
+        d->result = d->drv_d_func()->getResult(d->stmtId);
+        return d->processResults();
+    }
+
+    if (d->result)
+        PQclear(d->result);
+    d->result = d->nextResultSets.isEmpty() ? nullptr : d->nextResultSets.takeFirst();
+    return d->processResults();
+}
+
 QVariant QPSQLResult::data(int i)
 {
     Q_D(const QPSQLResult);
@@ -729,6 +766,11 @@ bool QPSQLResult::reset (const QString& query)
         setForwardOnly(d->drv_d_func()->setSingleRowMode());
 
     d->result = d->drv_d_func()->getResult(d->stmtId);
+    if (!isForwardOnly()) {
+        // Fetch all result sets right away
+        while (PGresult *nextResultSet = d->drv_d_func()->getResult(d->stmtId))
+            d->nextResultSets.append(nextResultSet);
+    }
     return d->processResults();
 }
 
@@ -914,6 +956,11 @@ bool QPSQLResult::exec()
         setForwardOnly(d->drv_d_func()->setSingleRowMode());
 
     d->result = d->drv_d_func()->getResult(d->stmtId);
+    if (!isForwardOnly()) {
+        // Fetch all result sets right away
+        while (PGresult *nextResultSet = d->drv_d_func()->getResult(d->stmtId))
+            d->nextResultSets.append(nextResultSet);
+    }
     return d->processResults();
 }
 
@@ -1132,6 +1179,7 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
     case LastInsertId:
     case LowPrecisionNumbers:
     case EventNotifications:
+    case MultipleResultSets:
     case BLOB:
         return true;
     case PreparedQueries:
@@ -1141,7 +1189,6 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
     case NamedPlaceholders:
     case SimpleLocking:
     case FinishQuery:
-    case MultipleResultSets:
     case CancelQuery:
         return false;
     case Unicode:

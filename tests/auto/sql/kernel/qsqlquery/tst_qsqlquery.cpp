@@ -2892,8 +2892,8 @@ void tst_QSqlQuery::nextResult()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if ( !db.driver()->hasFeature( QSqlDriver::MultipleResultSets ) || !db.driver()->hasFeature( QSqlDriver::BatchOperations ) )
-        QSKIP( "DBMS does not support multiple result sets or batch operations");
+    if (!db.driver()->hasFeature(QSqlDriver::MultipleResultSets))
+        QSKIP("DBMS does not support multiple result sets");
 
     QSqlQuery q( db );
 
@@ -3006,7 +3006,10 @@ void tst_QSqlQuery::nextResult()
     // Stored procedure with multiple result sets
     const QString procName(qTableName("proc_more_res", __FILE__, db));
 
-    q.exec( QString( "DROP PROCEDURE %1;" ).arg( procName ) );
+    if (dbType == QSqlDriver::PostgreSQL)
+        q.exec(QString("DROP FUNCTION %1(refcursor, refcursor);").arg(procName));
+    else
+        q.exec(QString("DROP PROCEDURE %1;").arg(procName));
 
     if (dbType == QSqlDriver::MySqlServer)
         QVERIFY_SQL( q, exec( QString( "CREATE PROCEDURE %1()"
@@ -3024,6 +3027,16 @@ void tst_QSqlQuery::nextResult()
                                          "\nOPEN cursor1;"
                                          "\nOPEN cursor2;"
                                          "\nEND p1" ).arg( procName ).arg( tableName ).arg( tableName ) ) );
+    else if (dbType == QSqlDriver::PostgreSQL)
+        QVERIFY_SQL(q, exec(QString("CREATE FUNCTION %1(ref1 refcursor, ref2 refcursor)"
+                                    "\nRETURNS SETOF refcursor AS $$"
+                                    "\nBEGIN"
+                                    "\nOPEN ref1 FOR SELECT id, text FROM %2;"
+                                    "\nRETURN NEXT ref1;"
+                                    "\nOPEN ref2 FOR SELECT empty, num, text, id FROM %2;"
+                                    "\nRETURN NEXT ref2;"
+                                    "\nEND;"
+                                    "\n$$ LANGUAGE plpgsql").arg(procName).arg(tableName)));
     else
         QVERIFY_SQL( q, exec( QString( "CREATE PROCEDURE %1"
                                          "\nAS"
@@ -3033,8 +3046,30 @@ void tst_QSqlQuery::nextResult()
     if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::DB2) {
         q.setForwardOnly( true );
         QVERIFY_SQL( q, exec( QString( "CALL %1()" ).arg( procName ) ) );
+    } else if (dbType == QSqlDriver::PostgreSQL) {
+        // Returning multiple result sets from PostgreSQL stored procedure:
+        // http://sqlines.com/postgresql/how-to/return_result_set_from_stored_procedure
+        QVERIFY_SQL(q, exec(QString("BEGIN;"
+                                    "SELECT %1('cur1', 'cur2');"
+                                    "FETCH ALL IN cur1;"
+                                    "FETCH ALL IN cur2;"
+                                    "COMMIT;").arg(procName)));
     } else {
         QVERIFY_SQL( q, exec( QString( "EXEC %1" ).arg( procName ) ) );
+    }
+
+    if (dbType == QSqlDriver::PostgreSQL) {
+        // First result set - start of transaction
+        QVERIFY(!q.isSelect());
+        QCOMPARE(q.numRowsAffected(), 0);
+        QVERIFY(q.nextResult());
+        // Second result set contains cursor names
+        QVERIFY(q.isSelect());
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toString(), "cur1");
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toString(), "cur2");
+        QVERIFY(q.nextResult());
     }
 
     for ( int i = 0; i < 4; i++ ) {
@@ -3061,12 +3096,21 @@ void tst_QSqlQuery::nextResult()
         QVERIFY( !q.isSelect() );           // ... but it's not a select
         QCOMPARE( q.numRowsAffected(), 0 ); // ... and no rows are affected (at least not with this procedure)
     }
+    if (dbType == QSqlDriver::PostgreSQL) {
+        // Last result set - commit transaction
+        QVERIFY(q.nextResult());
+        QVERIFY(!q.isSelect());
+        QCOMPARE(q.numRowsAffected(), 0);
+    }
 
     QVERIFY( !q.nextResult() );
 
     QVERIFY( !q.isActive() );
 
-    q.exec( QString( "DROP PROCEDURE %1;" ).arg( procName ) );
+    if (dbType == QSqlDriver::PostgreSQL)
+        q.exec(QString("DROP FUNCTION %1(refcursor, refcursor);").arg(procName));
+    else
+        q.exec(QString("DROP PROCEDURE %1;").arg(procName));
 }
 
 
