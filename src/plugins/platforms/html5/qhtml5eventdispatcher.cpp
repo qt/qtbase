@@ -72,3 +72,55 @@ bool QHtml5EventDispatcher::hasPendingEvents()
 {
     return QUnixEventDispatcherQPA::hasPendingEvents();
 }
+
+//void QHtml5EventDispatcher::timerCallback(int32_t result, int32_t timerSerial)
+//{
+//    Q_UNUSED(result);
+//    qCDebug(QT_PLATFORM_PEPPER_EVENTDISPATHCER) << "timerCallback" << timerSerial;
+
+//    // The timer might have been unregistered. In that case don't fire.
+//    if (!m_activeTimerIds.contains(timerSerial))
+//        return;
+
+//    // Get the timer info for the timerSerial/timerID.
+//    int timerId = m_activeTimerIds.value(timerSerial);
+//    const PepperTimerInfo &info = m_timerDetails.value(timerId);
+
+//    // Send the timer event
+//    QTimerEvent e(info.timerId);
+//    QCoreApplication::sendEvent(info.object, &e);
+//    processEvents();
+
+//    // After running Qt and application code the timer may have been unregistered,
+//    // and the timer id may have been reused. The timerSerial will hower not
+//    // be reused; use that to determine if the timer is active.
+//    if (m_activeTimerIds.contains(timerSerial))
+//        startTimer(info);
+
+//    // one serial number per callback, we are done with this one.
+//    m_activeTimerIds.remove(timerSerial);
+//}
+
+//void QHtml5EventDispatcher::scheduleProcessEvents()
+//{
+//    qDebug()  << "scheduleProcessEvents" << m_hasPendingProcessEvents;
+//    if (!m_hasPendingProcessEvents) {
+//        m_hasPendingProcessEvents = true;
+//        pp::CompletionCallback processEvents
+//            = m_completionCallbackFactory.NewCallback(&QHtml5EventDispatcher::processEventsCallback);
+//        int32_t result = m_messageLoop.PostWork(processEvents);
+//        if (result != PP_OK)
+//            qDebug()  << "scheduleProcessEvents PostWork error"
+//                                                        << result;
+//    }
+//}
+
+//void QHtml5EventDispatcher::processEventsCallback(int32_t status)
+//{
+//    Q_UNUSED(status);
+//   qDebug()  << "processEvents";
+//    m_hasPendingProcessEvents = false;
+
+//    processEvents();
+//}
+

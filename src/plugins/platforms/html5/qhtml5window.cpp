@@ -39,8 +39,6 @@
 
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qguiapplication_p.h>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QStyle>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLContext>
 
@@ -53,17 +51,12 @@
 #include <iostream>
 
 //#include "qhtml5compositor.h"
+Q_GUI_EXPORT int qt_defaultDpiX();
 
 QT_BEGIN_NAMESPACE
 
 //static QHtml5Window *globalHtml5Window;
 //QHtml5Window *QHtml5Window::get() { return globalHtml5Window; }
-
-QStyle *getAppStyle()
-{
-    QApplication *app = static_cast<QApplication*>(QApplication::instance());
-    return app->style();
-}
 
 QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor)
     : QPlatformWindow(w),
@@ -71,7 +64,8 @@ QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor)
       mWindowState(Qt::WindowNoState),
       mCompositor(compositor),
       m_raster(false),
-      mActiveControl(QStyle::SC_None)
+      mActiveControl(QHtml5Compositor::SC_None),
+      mNormalGeometry(0,0,0,0)
 {
     //globalHtml5Window = this;
     static int serialNo = 0;
@@ -116,6 +110,7 @@ void QHtml5Window::create()
 
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
+    mNormalGeometry = rect;
 }
 
 QHTML5Screen *QHtml5Window::platformScreen() const
@@ -154,7 +149,6 @@ void QHtml5Window::setVisible(bool visible)
         else if (mWindowState & Qt::WindowMaximized)
             newGeom = platformScreen()->availableGeometry();
     }
-
     QPlatformWindow::setVisible(visible);
 
     mCompositor->setVisible(this, visible);
@@ -169,18 +163,15 @@ void QHtml5Window::setVisible(bool visible)
 
 QMargins QHtml5Window::frameMargins() const
 {
-    QApplication *app = static_cast<QApplication*>(QApplication::instance());
-    QStyle *style = app->style();
-
     bool hasTitle = window()->flags().testFlag(Qt::WindowTitleHint);
 
-    int border = hasTitle ? style->pixelMetric(QStyle::PM_MDIFrameWidth) : 0;
-    int titleHeight = hasTitle ? style->pixelMetric(QStyle::PM_TitleBarHeight, nullptr, nullptr) : 0;
+    int border = hasTitle ? 4. * (qreal(qt_defaultDpiX()) / 96.0) : 0;
+    int titleBarHeight = hasTitle ? titleHeight() : 0;
 
     QMargins margins;
     margins.setLeft(border);
     margins.setRight(border);
-    margins.setTop(2*border + titleHeight);
+    margins.setTop(2*border + titleBarHeight);
     margins.setBottom(border);
 
     return margins;
@@ -220,11 +211,13 @@ void QHtml5Window::injectMousePressed(const QPoint &local, const QPoint &global,
         return;
 
     if (maxButtonRect().contains(global))
-        mActiveControl = QStyle::SC_TitleBarMaxButton;
+        mActiveControl = QHtml5Compositor::SC_TitleBarMaxButton;
     else if (minButtonRect().contains(global))
-        mActiveControl = QStyle::SC_TitleBarMinButton;
+        mActiveControl = QHtml5Compositor::SC_TitleBarMinButton;
     else if (closeButtonRect().contains(global))
-        mActiveControl = QStyle::SC_TitleBarCloseButton;
+        mActiveControl = QHtml5Compositor::SC_TitleBarCloseButton;
+    else if (normButtonRect().contains(global))
+        mActiveControl = QHtml5Compositor::SC_TitleBarNormalButton;
 
     invalidate();
 }
@@ -233,28 +226,37 @@ void QHtml5Window::injectMouseReleased(const QPoint &local, const QPoint &global
                                        Qt::MouseButton button, Qt::KeyboardModifiers mods)
 {
     Q_UNUSED(local);
-    Q_UNUSED(global);
     Q_UNUSED(mods);
 
     if (button != Qt::LeftButton)
         return;
 
-    if (closeButtonRect().contains(global) && mActiveControl == QStyle::SC_TitleBarCloseButton)
+    if (closeButtonRect().contains(global) && mActiveControl == QHtml5Compositor::SC_TitleBarCloseButton)
         window()->close();
 
-    mActiveControl = QStyle::SC_None;
+    if (maxButtonRect().contains(global) && mActiveControl == QHtml5Compositor::SC_TitleBarMaxButton) {
+        window()->setWindowState(Qt::WindowMaximized);
+        platformScreen()->resizeMaximizedWindows();
+    }
+
+    if (normButtonRect().contains(global) && mActiveControl == QHtml5Compositor::SC_TitleBarNormalButton) {
+        window()->setWindowState(Qt::WindowNoState);
+        setGeometry(normalGeometry());
+    }
+
+    mActiveControl = QHtml5Compositor::SC_None;
 
     invalidate();
 }
 
 int QHtml5Window::titleHeight() const
 {
-    return getAppStyle()->pixelMetric(QStyle::PM_TitleBarHeight, nullptr, nullptr);
+    return 18. * (qreal(qt_defaultDpiX()) / 96.0);//dpiScaled(18.);
 }
 
 int QHtml5Window::borderWidth() const
 {
-    return getAppStyle()->pixelMetric(QStyle::PM_MDIFrameWidth, nullptr, nullptr);
+    return  4. * (qreal(qt_defaultDpiX()) / 96.0);// dpiScaled(4.);
 }
 
 QRegion QHtml5Window::titleGeometry() const
@@ -282,7 +284,8 @@ QRegion QHtml5Window::resizeRegion() const
 
 bool QHtml5Window::isPointOnTitle(QPoint point) const
 {
-    return titleGeometry().contains(point);
+    bool ok = titleGeometry().contains(point);
+    return ok;
 }
 
 bool QHtml5Window::isPointOnResizeRegion(QPoint point) const
@@ -331,35 +334,39 @@ QHtml5Window::ResizeMode QHtml5Window::resizeModeAtPoint(QPoint point) const
     return ResizeNone;
 }
 
-QRect getSubControlRect(const QHtml5Window *window, QStyle::ComplexControl control, QStyle::SubControl subControl)
+QRect getSubControlRect(const QHtml5Window *window, QHtml5Compositor::SubControls subControl)
 {
-    QStyle *style = getAppStyle();
-    QStyleOptionTitleBar options = makeTitleBarOptions(window);
+   QHtml5Compositor::QHtml5TitleBarOptions options = QHtml5Compositor::makeTitleBarOptions(window);
 
-    QRect r = style->subControlRect(control, &options, subControl, nullptr);
-    r.translate(window->window()->frameGeometry().x(), window->window()->frameGeometry().y());;
+   QRect r = QHtml5Compositor::titlebarRect(options, subControl);
+   r.translate(window->window()->frameGeometry().x(), window->window()->frameGeometry().y());
 
-    return r;
+   return r;
 }
 
 QRect QHtml5Window::maxButtonRect() const
 {
-    return getSubControlRect(this, QStyle::CC_TitleBar, QStyle::SC_TitleBarMaxButton);
+    return getSubControlRect(this, QHtml5Compositor::SC_TitleBarMaxButton);
 }
 
 QRect QHtml5Window::minButtonRect() const
 {
-    return getSubControlRect(this, QStyle::CC_TitleBar, QStyle::SC_TitleBarMinButton);
+    return getSubControlRect(this, QHtml5Compositor::SC_TitleBarMinButton);
 }
 
 QRect QHtml5Window::closeButtonRect() const
 {
-    return getSubControlRect(this, QStyle::CC_TitleBar, QStyle::SC_TitleBarCloseButton);
+    return getSubControlRect(this, QHtml5Compositor::SC_TitleBarCloseButton);
+}
+
+QRect QHtml5Window::normButtonRect() const
+{
+    return getSubControlRect(this, QHtml5Compositor::SC_TitleBarNormalButton);
 }
 
 QRect QHtml5Window::sysMenuRect() const
 {
-    return getSubControlRect(this, QStyle::CC_TitleBar, QStyle::SC_TitleBarSysMenu);
+    return getSubControlRect(this, QHtml5Compositor::SC_TitleBarSysMenu);
 }
 
 QRegion QHtml5Window::titleControlRegion() const
@@ -378,9 +385,26 @@ void QHtml5Window::invalidate()
     mCompositor->requestRedraw();
 }
 
-QStyle::SubControl QHtml5Window::activeSubControl() const
+QHtml5Compositor::SubControls QHtml5Window::activeSubControl() const
 {
     return mActiveControl;
 }
 
+void QHtml5Window::setWindowState(Qt::WindowStates states)
+{
+    mWindowState = Qt::WindowNoState;
+    if (states & Qt::WindowMinimized)
+        mWindowState = Qt::WindowMinimized;
+#warning FIXME ShowFullScreen
+    else if (states & Qt::WindowFullScreen) // someone sets this initially as default
+        mWindowState = Qt::WindowFullScreen;
+    else if (states & Qt::WindowMaximized)
+        mWindowState = Qt::WindowMaximized;
+// update?
+}
+
+QRect QHtml5Window::normalGeometry() const
+{
+    return mNormalGeometry;
+}
 QT_END_NAMESPACE

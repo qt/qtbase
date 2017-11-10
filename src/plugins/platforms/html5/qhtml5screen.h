@@ -88,7 +88,7 @@ public:
 
 public slots:
     //virtual void setDirty(const QRect &rect);
-
+    void setGeometry(const QRect &rect);
 protected:
     //QList<QHtml5Window *> mWindowStack;
     //QRegion mRepaintRegion;

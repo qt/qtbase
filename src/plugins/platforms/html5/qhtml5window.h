@@ -45,7 +45,7 @@
 #include <emscripten/html5.h>
 #include "qhtml5backingstore.h"
 #include "qhtml5screen.h"
-#include <QtWidgets/QStyle>
+#include "qhtml5compositor.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -80,6 +80,7 @@ public:
     void propagateSizeHints() Q_DECL_OVERRIDE;
     void raise() Q_DECL_OVERRIDE;
     void lower() Q_DECL_OVERRIDE;
+    QRect normalGeometry() const override;
 
     QHTML5Screen *platformScreen() const;
     void setBackingStore(QHTML5BackingStore *store) { mBackingStore = store; }
@@ -102,8 +103,11 @@ public:
     QRect minButtonRect() const;
     QRect closeButtonRect() const;
     QRect sysMenuRect() const;
+    QRect normButtonRect() const;
     QRegion titleControlRegion() const;
-    QStyle::SubControl activeSubControl() const;
+    QHtml5Compositor::SubControls activeSubControl() const;
+
+    void setWindowState(Qt::WindowStates state);
 
 protected:
     void invalidate();
@@ -122,7 +126,8 @@ protected:
     QHtml5Compositor *mCompositor;
     bool m_raster;
 
-    QStyle::SubControl mActiveControl;
+    QHtml5Compositor::SubControls mActiveControl;
+    QRect mNormalGeometry;
 };
 QT_END_NAMESPACE
 #endif // QHTML5WINDOW_H

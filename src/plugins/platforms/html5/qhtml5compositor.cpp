@@ -35,23 +35,26 @@
 
 #include "qhtml5compositor.h"
 #include "qhtml5window.h"
+#include "qhtml5stylepixmaps_p.h"
 
 #include <QOpenGLTexture>
-#include <QtWidgets/QStyle>
-#include <QtWidgets/QStyleOptionTitleBar>
+
 #include <QtGui/private/qwindow_p.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/qopengltextureblitter.h>
 #include <QtGui/QPainter>
+#include <private/qpixmapcache_p.h>
+#include <QFontMetrics>
 
 #include <private/qguiapplication_p.h>
 
 #include <qpa/qwindowsysteminterface.h>
-#include <QtWidgets/QApplication>
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QDebug>
+
+Q_GUI_EXPORT int qt_defaultDpiX();
 
 QHtml5CompositedWindow::QHtml5CompositedWindow()
     : window(0)
@@ -70,8 +73,6 @@ QHtml5Compositor::QHtml5Compositor()
     , m_isEnabled(true)
     , m_targetDevicePixelRatio(1)
 {
-    qDebug() << Q_FUNC_INFO;
-
 }
 
 QHtml5Compositor::~QHtml5Compositor()
@@ -86,8 +87,6 @@ void QHtml5Compositor::setEnabled(bool enabled)
 
 void QHtml5Compositor::addWindow(QHtml5Window *window, QHtml5Window *parentWindow)
 {
-    qDebug() << "window: " << window->window()->flags();
-
     QHtml5CompositedWindow compositedWindow;
     compositedWindow.window = window;
     compositedWindow.parentWindow = parentWindow;
@@ -104,8 +103,6 @@ void QHtml5Compositor::addWindow(QHtml5Window *window, QHtml5Window *parentWindo
 
 void QHtml5Compositor::removeWindow(QHtml5Window *window)
 {
-    qDebug() << Q_FUNC_INFO;
-
     QHtml5Window *platformWindow = m_compositedWindows[window].parentWindow;
 
     if (platformWindow) {
@@ -126,7 +123,6 @@ void QHtml5Compositor::setScreen(QHTML5Screen *screen)
 
 void QHtml5Compositor::setVisible(QHtml5Window *window, bool visible)
 {
-    qDebug() << Q_FUNC_INFO;
     QHtml5CompositedWindow &compositedWindow = m_compositedWindows[window];
     if (compositedWindow.visible == visible)
         return;
@@ -143,8 +139,6 @@ void QHtml5Compositor::setVisible(QHtml5Window *window, bool visible)
 
 void QHtml5Compositor::raise(QHtml5Window *window)
 {
-    qDebug() << Q_FUNC_INFO;
-
     if (m_compositedWindows.size() <= 1)
         return;
 
@@ -158,8 +152,6 @@ void QHtml5Compositor::raise(QHtml5Window *window)
 
 void QHtml5Compositor::lower(QHtml5Window *window)
 {
-    qDebug() << Q_FUNC_INFO;
-
     if (m_compositedWindows.size() <= 1)
         return;
 
@@ -173,7 +165,6 @@ void QHtml5Compositor::lower(QHtml5Window *window)
 
 void QHtml5Compositor::setParent(QHtml5Window *window, QHtml5Window *parent)
 {
-    qDebug() << Q_FUNC_INFO;
     m_compositedWindows[window].parentWindow = parent;
 
     requestRedraw();
@@ -181,7 +172,6 @@ void QHtml5Compositor::setParent(QHtml5Window *window, QHtml5Window *parent)
 
 void QHtml5Compositor::flush(QHtml5Window *window, const QRegion &region)
 {
-
     QHtml5CompositedWindow &compositedWindow = m_compositedWindows[window];
     compositedWindow.flushPending = true;
     compositedWindow.damage = region;
@@ -211,8 +201,6 @@ QWindow *QHtml5Compositor::windowAt(QPoint p, int padding) const
     while (index >= 0) {
         const QHtml5CompositedWindow &compositedWindow = m_compositedWindows[m_windowStack.at(index)];
         //qDebug() << "windwAt testing" << compositedWindow.window <<
-        //compositedWindow.window->geometry();
-
 
         QRect geometry = compositedWindow.window->windowFrameGeometry()
                          .adjusted(-padding, -padding, padding, padding);
@@ -241,7 +229,7 @@ bool QHtml5Compositor::event(QEvent *ev)
     return QObject::event(ev);
 }
 
-void blit(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, const QOpenGLTexture *texture, QRect targetGeometry)
+void QHtml5Compositor::blit(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, const QOpenGLTexture *texture, QRect targetGeometry)
 {
     QMatrix4x4 m;
     m.translate(-1.0f, -1.0f);
@@ -260,7 +248,7 @@ void blit(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, const QOpenGLTex
     blitter->blit(texture->textureId(), m, QOpenGLTextureBlitter::OriginTopLeft);
 }
 
-void drawWindowContent(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
+void QHtml5Compositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
 {
     QHTML5BackingStore* backingStore = window->backingStore();
 
@@ -269,7 +257,7 @@ void drawWindowContent(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHt
     blit(blitter, screen, texture, window->geometry());
 }
 
-QPalette makeWindowPalette()
+QPalette QHtml5Compositor::makeWindowPalette()
 {
     QPalette palette;
     palette.setColor(QPalette::Active, QPalette::Highlight,
@@ -286,55 +274,135 @@ QPalette makeWindowPalette()
     return palette;
 }
 
-QStyleOptionTitleBar makeTitleBarOptions(const QHtml5Window *window)
+QRect QHtml5Compositor::titlebarRect(QHtml5TitleBarOptions tb, QHtml5Compositor::SubControls subcontrol)
+{
+    QRect ret;
+    const int controlMargin = 2;
+    const int controlHeight = tb.rect.height() - controlMargin *2;
+    const int delta = controlHeight + controlMargin;
+    int offset = 0;
+
+    bool isMinimized = tb.state & Qt::WindowMinimized;
+    bool isMaximized = tb.state & Qt::WindowMaximized;
+
+    ret = tb.rect;
+    switch (subcontrol) {
+    case SC_TitleBarLabel:
+        if (tb.flags & Qt::WindowSystemMenuHint)
+            ret.adjust(delta, 0, -delta, 0);
+        break;
+    case  SC_TitleBarCloseButton:
+        if (tb.flags & Qt::WindowSystemMenuHint) {
+            ret.adjust(0, 0, -delta, 0);
+            offset += delta;
+        }
+        break;
+    case SC_TitleBarMaxButton:
+        if (!isMaximized && tb.flags & Qt::WindowMaximizeButtonHint) {
+            ret.adjust(0, 0, -delta*2, 0);
+            offset += (delta +delta);
+        }
+        break;
+    case SC_TitleBarNormalButton:
+        if (isMinimized && (tb.flags & Qt::WindowMinimizeButtonHint))
+            offset += delta;
+        else if (isMaximized && (tb.flags & Qt::WindowMaximizeButtonHint))
+            ret.adjust(0, 0, -delta*2, 0);
+            offset += (delta +delta);
+//            offset += delta;
+        break;
+    case SC_TitleBarSysMenu:
+        if (tb.flags & Qt::WindowSystemMenuHint) {
+            ret.setRect(tb.rect.left() + controlMargin, tb.rect.top() + controlMargin,
+                        controlHeight, controlHeight);
+        }
+        break;
+    default:
+        break;
+    };
+
+    if (subcontrol != SC_TitleBarLabel && subcontrol != SC_TitleBarSysMenu)  {
+        ret.setRect(tb.rect.right() - offset, tb.rect.top() + controlMargin,
+                    controlHeight, controlHeight);
+    }
+
+    if (qApp->layoutDirection() == Qt::LeftToRight)
+        return ret;
+
+    QRect rect = ret;
+    rect.translate(2 * (tb.rect.right() - ret.right()) +
+                   ret.width() - tb.rect.width(), 0);
+
+    return rect;
+}
+
+int dpiScaled(qreal value)
+{
+    return value * (qreal(qt_defaultDpiX()) / 96.0);
+}
+
+QHtml5Compositor::QHtml5TitleBarOptions QHtml5Compositor::makeTitleBarOptions(const QHtml5Window *window)
 {
     int width = window->windowFrameGeometry().width();
+    int border = window->borderWidth();
 
-    QApplication *app = static_cast<QApplication*>(QApplication::instance());
-    QStyle *style = app->style();
+    QHtml5TitleBarOptions titleBarOptions;
 
-    int border = style->pixelMetric(QStyle::PM_MDIFrameWidth);
+    titleBarOptions.rect = QRect(border, border, width - 2 * border, window->titleHeight());
+    titleBarOptions.flags = window->window()->flags();
+    titleBarOptions.state = window->window()->windowState();
 
-    QStyleOptionTitleBar titleBarOptions;
-    int titleHeight = style->pixelMetric(QStyle::PM_TitleBarHeight, &titleBarOptions, nullptr);
-    titleBarOptions.rect = QRect(border, border, width - 2*border, titleHeight);
-    titleBarOptions.titleBarFlags = window->window()->flags();
-    titleBarOptions.titleBarState = window->window()->windowState();
+   // bool isMinimized = titleBarOptions.flags & Qt::WindowMinimized;
+    bool isMaximized = titleBarOptions.state & Qt::WindowMaximized; // this gets reset when maximized
+
+    if (titleBarOptions.flags & (Qt::WindowTitleHint))
+        titleBarOptions.subControls |= SC_TitleBarLabel;
+    if (titleBarOptions.flags & Qt::WindowMaximizeButtonHint) {
+        if (isMaximized) {
+            titleBarOptions.subControls |= SC_TitleBarNormalButton;
+        } else {
+            titleBarOptions.subControls |= SC_TitleBarMaxButton;
+        }
+    }
+    if (titleBarOptions.flags & Qt::WindowSystemMenuHint) {
+        titleBarOptions.subControls |= SC_TitleBarCloseButton;
+        titleBarOptions.subControls |= SC_TitleBarSysMenu;
+    }
 
     // Disable minimize button
-    titleBarOptions.titleBarFlags.setFlag(Qt::WindowMinimizeButtonHint, false);
+    //   titleBarOptions.flags.setFlag(Qt::WindowMinimizeButtonHint, false);
 
-    titleBarOptions.palette = makeWindowPalette();
+    titleBarOptions.palette = QHtml5Compositor::makeWindowPalette();
 
     if (window->window()->isActive()) {
-        titleBarOptions.state |= QStyle::State_Active;
-        titleBarOptions.titleBarState |= QStyle::State_Active;
+        //  titleBarOptions.state |= QHtml5Compositor::State_Active;
+        //  titleBarOptions.state |= QHtml5Compositor::State_Active;
         titleBarOptions.palette.setCurrentColorGroup(QPalette::Active);
     } else {
-        titleBarOptions.state &= ~QStyle::State_Active;
+        //        titleBarOptions.state &= ~QHtml5Compositor::State_Active;
         titleBarOptions.palette.setCurrentColorGroup(QPalette::Inactive);
     }
 
-    if (window->activeSubControl() != QStyle::SC_None) {
-        titleBarOptions.activeSubControls = window->activeSubControl();
-        titleBarOptions.state |= QStyle::State_Sunken;
-    }
+        if (window->activeSubControl() != QHtml5Compositor::SC_None) {
+            titleBarOptions.subControls = window->activeSubControl();
+       //     titleBarOptions.state |= QHtml5Compositor::State_Sunken;
+        }
 
     if (!window->window()->title().isEmpty()) {
-        int titleWidth = style->subControlRect(QStyle::CC_TitleBar, &titleBarOptions,
-                                               QStyle::SC_TitleBarLabel, nullptr).width();
-        titleBarOptions.text = titleBarOptions.fontMetrics
-                               .elidedText(window->window()->title(), Qt::ElideRight, titleWidth);
+
+        titleBarOptions.titleBarOptionsString = window->window()->title();
+
+#warning FIXME QFontMetrics
+//        QFont font = QApplication::font("QMdiSubWindowTitleBar");
+//        QFontMetrics fontMetrics = QFontMetrics(font);
+//        fontMetrics.elidedText(window->window()->title(), Qt::ElideRight, titleWidth);
     }
 
     return titleBarOptions;
 }
 
-void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
+void QHtml5Compositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
 {
-    QApplication *app = static_cast<QApplication*>(QApplication::instance());
-    QStyle *style = app->style();
-
     int width = window->windowFrameGeometry().width();
     int height = window->windowFrameGeometry().height();
 
@@ -342,16 +410,15 @@ void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen,
     QPainter painter(&image);
     painter.fillRect(QRect(0, 0, width, height), painter.background());
 
-    QStyleOptionTitleBar titleBarOptions = makeTitleBarOptions(window);
+    QHtml5TitleBarOptions titleBarOptions = makeTitleBarOptions(window);
 
-    style->drawComplexControl(QStyle::CC_TitleBar, &titleBarOptions, &painter);
+    drawTitlebarWindow(titleBarOptions, &painter);
 
-    QStyleOptionFrame frameOptions;
+    QHtml5FrameOptions frameOptions;
     frameOptions.rect = QRect(0, 0, width, height);
-    frameOptions.lineWidth = style->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, 0, nullptr);
-    frameOptions.state.setFlag(QStyle::State_Active, window->window()->isActive());
+    frameOptions.lineWidth = dpiScaled(4.);
 
-    style->drawPrimitive(QStyle::PE_FrameWindow, &frameOptions, &painter, nullptr);
+    drawFrameWindow(frameOptions, &painter);
 
     painter.end();
 
@@ -369,7 +436,334 @@ void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen,
     blit(blitter, screen, &texture, QRect(window->windowFrameGeometry().topLeft(), QSize(width, height)));
 }
 
-void drawWindow(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
+void QHtml5Compositor::drawFrameWindow(QHtml5FrameOptions options, QPainter *painter)
+{
+    int x = options.rect.x();
+    int y = options.rect.y();
+    int w = options.rect.width();
+    int h = options.rect.height();
+    const QColor &c1 = options.palette.light().color();
+    const QColor &c2 = options.palette.shadow().color();
+    const QColor &c3 = options.palette.midlight().color();
+    const QColor &c4 = options.palette.dark().color();
+    const QBrush *fill = 0;
+
+    const qreal devicePixelRatio = painter->device()->devicePixelRatioF();
+    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+        painter->save();
+        const qreal inverseScale = qreal(1) / devicePixelRatio;
+        painter->scale(inverseScale, inverseScale);
+        x = qRound(devicePixelRatio * x);
+        y = qRound(devicePixelRatio * y);
+        w = qRound(devicePixelRatio * w);
+        h = qRound(devicePixelRatio * h);
+    }
+
+    QPen oldPen = painter->pen();
+    QPoint a[3] = { QPoint(x, y+h-2), QPoint(x, y), QPoint(x+w-2, y) };
+    painter->setPen(c1);
+    painter->drawPolyline(a, 3);
+    QPoint b[3] = { QPoint(x, y+h-1), QPoint(x+w-1, y+h-1), QPoint(x+w-1, y) };
+    painter->setPen(c2);
+    painter->drawPolyline(b, 3);
+    if (w > 4 && h > 4) {
+        QPoint c[3] = { QPoint(x+1, y+h-3), QPoint(x+1, y+1), QPoint(x+w-3, y+1) };
+        painter->setPen(c3);
+        painter->drawPolyline(c, 3);
+        QPoint d[3] = { QPoint(x+1, y+h-2), QPoint(x+w-2, y+h-2), QPoint(x+w-2, y+1) };
+        painter->setPen(c4);
+        painter->drawPolyline(d, 3);
+        if (fill)
+            painter->fillRect(QRect(x+2, y+2, w-4, h-4), *fill);
+    }
+    painter->setPen(oldPen);
+}
+
+//from commonstyle.cpp
+static QPixmap cachedPixmapFromXPM(const char * const *xpm)
+{
+    QPixmap result;
+    const QString tag = QString::asprintf("xpm:0x%p", static_cast<const void*>(xpm));
+    if (!QPixmapCache::find(tag, &result)) {
+        result = QPixmap(xpm);
+        QPixmapCache::insert(tag, result);
+    }
+    return result;
+}
+
+void QHtml5Compositor::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
+                                      const QPixmap &pixmap) const
+{
+    qreal scale = pixmap.devicePixelRatio();
+    QSize size =  pixmap.size() / scale;
+    int x = rect.x();
+    int y = rect.y();
+    int w = size.width();
+    int h = size.height();
+    if ((alignment & Qt::AlignVCenter) == Qt::AlignVCenter)
+        y += rect.size().height()/2 - h/2;
+    else if ((alignment & Qt::AlignBottom) == Qt::AlignBottom)
+        y += rect.size().height() - h;
+    if ((alignment & Qt::AlignRight) == Qt::AlignRight)
+        x += rect.size().width() - w;
+    else if ((alignment & Qt::AlignHCenter) == Qt::AlignHCenter)
+        x += rect.size().width()/2 - w/2;
+
+    QRect aligned = QRect(x, y, w, h);
+    QRect inter = aligned.intersected(rect);
+
+    painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), inter.width() * scale, inter.height() *scale);
+}
+
+
+void QHtml5Compositor::drawTitlebarWindow(QHtml5TitleBarOptions tb, QPainter *painter)
+{
+    QRect ir;
+    if (tb.subControls.testFlag(SC_TitleBarLabel)) {
+        QColor left = tb.palette.highlight().color();
+        QColor right = tb.palette.base().color();
+
+        QBrush fillBrush(left);
+        if (left != right) {
+            QPoint p1(tb.rect.x(), tb.rect.top() + tb.rect.height()/2);
+            QPoint p2(tb.rect.right(), tb.rect.top() + tb.rect.height()/2);
+            QLinearGradient lg(p1, p2);
+            lg.setColorAt(0, left);
+            lg.setColorAt(1, right);
+            fillBrush = lg;
+        }
+
+        painter->fillRect(tb.rect, fillBrush);
+        ir = titlebarRect(tb, SC_TitleBarLabel);
+        painter->setPen(tb.palette.highlightedText().color());
+        painter->drawText(ir.x() + 2, ir.y(), ir.width() - 2, ir.height(),
+                          Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, tb.titleBarOptionsString);
+    } // SC_TitleBarLabel
+
+    bool down = false;
+    QPixmap pixmap;
+
+    if (tb.subControls.testFlag(SC_TitleBarCloseButton)
+            && tb.flags & Qt::WindowSystemMenuHint) {
+        ir = titlebarRect(tb, SC_TitleBarCloseButton);
+        down = tb.subControls & SC_TitleBarCloseButton && (tb.state & State_Sunken);
+        pixmap = cachedPixmapFromXPM(qt_close_xpm).scaled(QSize(10, 10));
+        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+    } //SC_TitleBarCloseButton
+
+    if (tb.subControls.testFlag(SC_TitleBarMaxButton)
+            && tb.flags & Qt::WindowMaximizeButtonHint
+            && !(tb.state & Qt::WindowMaximized)) {
+        ir = titlebarRect(tb, SC_TitleBarMaxButton);
+        down = tb.subControls & SC_TitleBarMaxButton && (tb.state & State_Sunken);
+        pixmap = cachedPixmapFromXPM(qt_maximize_xpm).scaled(QSize(10, 10));
+        drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+    } //SC_TitleBarMaxButton
+
+//    QHtml5TitleBarOptions tool = tb;
+//    tool.rect = ir;
+//    tool.state = down ? State_Sunken : State_Raised;
+
+    // FIXME
+
+    //        painter->save();
+    //        if (down)
+    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
+    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
+
+    //        painter->restore();
+    //    }
+
+    //    if (tb->subControls & SC_TitleBarMinButton
+    //            && tb->titleBarFlags & Qt::WindowMinimizeButtonHint
+    //            && !(tb->titleBarState & Qt::WindowMinimized)) {
+    //        ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarMinButton, widget);
+    //        down = tb->activeSubControls & SC_TitleBarMinButton && (opt->state & State_Sunken);
+    //        pm = proxy()->standardIcon(SP_TitleBarMinButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+    //        tool.rect = ir;
+    //        tool.state = down ? State_Sunken : State_Raised;
+    //        proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
+
+    //        painter->save();
+    //        if (down)
+    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
+    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
+    //        proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
+    //        painter->restore();
+    //    }
+
+        bool drawNormalButton = (tb.subControls & SC_TitleBarNormalButton)
+                                && (((tb.flags & Qt::WindowMinimizeButtonHint)
+                                && (tb.flags & Qt::WindowMinimized))
+                                || ((tb.flags & Qt::WindowMaximizeButtonHint)
+                                && (tb.flags & Qt::WindowMaximized)));
+
+        if (drawNormalButton) {
+            ir = titlebarRect(tb, SC_TitleBarNormalButton);
+            down = tb.subControls & SC_TitleBarNormalButton && (tb.state & State_Sunken);
+            pixmap = cachedPixmapFromXPM(qt_normalizeup_xpm).scaled( QSize(10, 10));
+
+//            tool.rect = ir;
+//            tool.state = down ? State_Sunken : State_Raised;
+            drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+
+            //        painter->save();
+            //        if (down)
+            //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
+            //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
+
+            //      painter->restore();
+        } // SC_TitleBarNormalButton
+
+    //    if (tb->subControls & SC_TitleBarShadeButton
+    //            && tb->titleBarFlags & Qt::WindowShadeButtonHint
+    //            && !(tb->titleBarState & Qt::WindowMinimized)) {
+    //        ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarShadeButton, widget);
+    //        down = (tb->activeSubControls & SC_TitleBarShadeButton && (opt->state & State_Sunken));
+    //        pm = proxy()->standardIcon(SP_TitleBarShadeButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+    //        tool.rect = ir;
+    //        tool.state = down ? State_Sunken : State_Raised;
+    //        proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
+    //        painter->save();
+    //        if (down)
+    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
+    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
+    //        proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
+    //        painter->restore();
+    //    }
+
+    //    if (tb->subControls & SC_TitleBarUnshadeButton
+    //            && tb->titleBarFlags & Qt::WindowShadeButtonHint
+    //            && tb->titleBarState & Qt::WindowMinimized) {
+    //        ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarUnshadeButton, widget);
+
+    //        down = tb->activeSubControls & SC_TitleBarUnshadeButton  && (opt->state & State_Sunken);
+    //        pm = proxy()->standardIcon(SP_TitleBarUnshadeButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+    //        tool.rect = ir;
+    //        tool.state = down ? State_Sunken : State_Raised;
+    //        proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
+    //        painter->save();
+    //        if (down)
+    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
+    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
+    //        proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
+    //        painter->restore();
+    //    }
+
+
+    //    if (tb->subControls & SC_TitleBarContextHelpButton
+    //            && tb->titleBarFlags & Qt::WindowContextHelpButtonHint) {
+    //        ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarContextHelpButton, widget);
+
+    //        down = tb->activeSubControls & SC_TitleBarContextHelpButton  && (opt->state & State_Sunken);
+    //        pm = proxy()->standardIcon(SP_TitleBarContextHelpButton, &tool, widget).pixmap(qt_getWindow(widget), QSize(10, 10));
+    //        tool.rect = ir;
+    //        tool.state = down ? State_Sunken : State_Raised;
+    //        proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
+    //        painter->save();
+    //        if (down)
+    //            painter->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
+    //                         proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
+    //        proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
+    //        painter->restore();
+    //    }
+
+        if (tb.subControls & SC_TitleBarSysMenu && tb.flags & Qt::WindowSystemMenuHint) {
+            ir = titlebarRect(tb, SC_TitleBarSysMenu);
+//            if (!tb.icon.isNull()) {
+//                tb.icon.paint(p, ir);
+//            } else {
+          //      int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
+                pixmap = cachedPixmapFromXPM(qt_menu_xpm).scaled(QSize(10, 10));
+        //        tool.rect = ir;
+            //    painter->save();
+                drawItemPixmap(painter, ir, Qt::AlignCenter, pixmap);
+              //  painter->restore();
+//            }
+        }
+    //}
+}
+
+void QHtml5Compositor::drawShadePanel(QHtml5TitleBarOptions options, QPainter *painter)
+{
+    int lineWidth = 1;
+    QPalette palette = options.palette;
+    const QBrush *fill = &options.palette.brush(QPalette::Button);
+
+    int x = options.rect.x();
+    int y = options.rect.y();
+    int w = options.rect.width();
+    int h = options.rect.height();
+
+    const qreal devicePixelRatio = painter->device()->devicePixelRatioF();
+    if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
+        //  painter->save();
+        const qreal inverseScale = qreal(1) / devicePixelRatio;
+        painter->scale(inverseScale, inverseScale);
+
+        x = qRound(devicePixelRatio * x);
+        y = qRound(devicePixelRatio * y);
+        w = qRound(devicePixelRatio * w);
+        h = qRound(devicePixelRatio * h);
+        lineWidth = qRound(devicePixelRatio * lineWidth);
+    }
+
+    QColor shade = palette.dark().color();
+    QColor light = palette.light().color();
+
+    if (fill) {
+        if (fill->color() == shade)
+            shade = palette.shadow().color();
+        if (fill->color() == light)
+            light = palette.midlight().color();
+    }
+    QPen oldPen = painter->pen();                        // save pen
+    QVector<QLineF> lines;
+    lines.reserve(2*lineWidth);
+
+    //    if (sunken)
+    //        painter->setPen(shade);
+    //    else
+    painter->setPen(light);
+    int x1, y1, x2, y2;
+    int i;
+    x1 = x;
+    y1 = y2 = y;
+    x2 = x+w-2;
+    for (i=0; i<lineWidth; i++) {                // top shadow
+        lines << QLineF(x1, y1++, x2--, y2++);
+    }
+    x2 = x1;
+    y1 = y+h-2;
+    for (i=0; i<lineWidth; i++) {                // left shado
+        lines << QLineF(x1++, y1, x2++, y2--);
+    }
+    painter->drawLines(lines);
+    lines.clear();
+    //    if (sunken)
+    //        painter->setPen(light);
+    //    else
+    painter->setPen(shade);
+    x1 = x;
+    y1 = y2 = y+h-1;
+    x2 = x+w-1;
+    for (i=0; i<lineWidth; i++) {                // bottom shadow
+        lines << QLineF(x1++, y1--, x2, y2--);
+    }
+    x1 = x2;
+    y1 = y;
+    y2 = y+h-lineWidth-1;
+    for (i=0; i<lineWidth; i++) {                // right shadow
+        lines << QLineF(x1--, y1++, x2--, y2);
+    }
+    painter->drawLines(lines);
+    if (fill)                                // fill with fill color
+        painter->fillRect(x+lineWidth, y+lineWidth, w-lineWidth*2, h-lineWidth*2, *fill);
+    painter->setPen(oldPen);                        // restore pen
+
+}
+
+void QHtml5Compositor::drawWindow(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
 {
     drawWindowDecorations(blitter, screen, window);
     drawWindowContent(blitter, screen, window);
@@ -389,7 +783,7 @@ void QHtml5Compositor::frame()
 
     foreach (QHtml5Window *window, m_windowStack) {
         if (window->window()->surfaceClass() == QSurface::Window
-            && qt_window_private(static_cast<QWindow *>(window->window()))->receivedExpose) {
+                && qt_window_private(static_cast<QWindow *>(window->window()))->receivedExpose) {
             someWindow = window;
             break;
         }
@@ -443,9 +837,8 @@ void QHtml5Compositor::notifyTopWindowChanged(QHtml5Window* window)
     }
 
     //if (keyWindow()->handle() == window)
-        //return;
+    //return;
 
     requestRedraw();
     QWindowSystemInterface::handleWindowActivated(window->window());
 }
-

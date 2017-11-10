@@ -110,6 +110,7 @@ QHTML5Integration::QHTML5Integration()
 
 QHTML5Integration::~QHTML5Integration()
 {
+    qDebug() << Q_FUNC_INFO;
     delete mCompositor;
     destroyScreen(mScreen);
     delete mFontDb;
@@ -174,26 +175,24 @@ QAbstractEventDispatcher *QHTML5Integration::createEventDispatcher() const
 
 QVariant QHTML5Integration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
-    if (hint == QPlatformIntegration::ShowIsFullScreen)
-        return true;
-
     return QPlatformIntegration::styleHint(hint);
 }
 
 int QHTML5Integration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void */*userData*/)
 {
-    Q_UNUSED(eventType)
     Q_UNUSED(e)
+//    qDebug() << __FUNCTION__ << eventType << e;
+//    qDebug() << e->documentBodyClientWidth
+//             << e->documentBodyClientHeight;
 
-    //QSize windowSize(e->documentBodyClientWidth, e->documentBodyClientHeight);
-    //QRect windowRect(QPoint(0, 0), windowSize);
-
-    QHTML5Integration::get()->mScreen->invalidateSize();
-    //QHTML5Integration::get()->mScreen->resizeMaximizedWindows();
-    QHTML5Integration::get()->mCompositor->requestRedraw();
+    if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
+        QHTML5Integration::get()->mScreen->invalidateSize();
+//        QRect newRect(0,0,e->documentBodyClientWidth,e->documentBodyClientHeight);
+//        QHTML5Integration::get()->mScreen->setGeometry(newRect);
+        QHTML5Integration::get()->mCompositor->requestRedraw();
+    }
 
     return 0;
 }
-
 
 QT_END_NAMESPACE

@@ -26,7 +26,8 @@ HEADERS =   qhtml5integration.h \
             qhtml5fontdatabase.h \
             qhtml5eventtranslator.h \
             qhtml5eventdispatcher.h \
-            qhtml5compositor.h
+            qhtml5compositor.h \
+            qhtml5stylepixmaps_p.h
 
 RESOURCES += fonts/html5fonts.qrc
 

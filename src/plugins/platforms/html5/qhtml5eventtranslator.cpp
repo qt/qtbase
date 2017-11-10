@@ -39,12 +39,11 @@
 #include "qhtml5eventtranslator.h"
 #include "qhtml5compositor.h"
 #include "qhtml5integration.h"
+
 #include <QDebug>
 #include <QEvent>
 #include <qpa/qwindowsysteminterface.h>
 #include <QCoreApplication>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QStyle>
 #include <QtGlobal>
 
 #include <iostream>

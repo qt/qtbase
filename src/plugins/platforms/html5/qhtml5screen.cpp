@@ -48,6 +48,8 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/QCoreApplication>
 #include <QDebug>
+#include <QGuiApplication>
+#include <private/qhighdpiscaling_p.h>
 
 #ifdef Q_OPENKODE
 #include <KD/kd.h>
@@ -174,6 +176,11 @@ void QHTML5Screen::createAndSetPlatformContext()
     eglQuerySurface(m_dpy, m_surface, EGL_HEIGHT, &h);
 
     m_geometry = QRect(0,0,w,h);
+
+    //m_context.reset(new QOpenGLContext);
+    //m_context->setFormat(platformFormat);
+    //m_context->setScreen(screen);
+    //m_context->create();
 }
 
 QRect QHTML5Screen::geometry() const
@@ -209,7 +216,31 @@ QPlatformOpenGLContext *QHTML5Screen::platformContext() const
 
 void QHTML5Screen::resizeMaximizedWindows()
 {
-    QPlatformScreen::resizeMaximizedWindows();
+    QList<QWindow*> windows = QGuiApplication::allWindows();
+    // 'screen()' still has the old geometry info while 'this' has the new geometry info
+    const QRect oldGeometry = screen()->geometry();
+    const QRect oldAvailableGeometry = screen()->availableGeometry();
+
+    const QRect newGeometry = deviceIndependentGeometry();
+    const QRect newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
+
+    // make sure maximized and fullscreen windows are updated
+    for (int i = 0; i < windows.size(); ++i) {
+        QWindow *w = windows.at(i);
+
+        // Skip non-platform windows, e.g., offscreen windows.
+        if (!w->handle())
+            continue;
+
+        if (platformScreenForWindow(w) != this)
+            continue;
+
+        if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry)
+            w->setGeometry(newAvailableGeometry);
+
+        else if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry)
+            w->setGeometry(newGeometry);
+    }
 }
 
 QWindow *QHTML5Screen::topWindow() const
@@ -227,5 +258,11 @@ void QHTML5Screen::invalidateSize()
     m_geometry = QRect();
 }
 
+void QHTML5Screen::setGeometry(const QRect &rect)
+{
+    m_geometry = rect;
+    QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
+    resizeMaximizedWindows();
+}
 
 QT_END_NAMESPACE

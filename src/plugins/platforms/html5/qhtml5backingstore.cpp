@@ -80,6 +80,41 @@ void QHTML5BackingStore::flush(QWindow *window, const QRegion &region, const QPo
     Q_UNUSED(offset);
 
     mCompositor->requestRedraw();
+
+    /*
+    auto* screen = static_cast<QHTML5Screen *>(window->screen()->handle());
+
+    mContext->makeCurrent(window);
+
+    int dx = window->handle()->winId() == 1 ? 100 : 0;
+    int dy = window->handle()->winId() == 1 ? 100 : 0;
+
+    //glViewport(0, 0, screen->geometry().width(), screen->geometry().height());
+    glViewport(offset.x() + dx, window->screen()->geometry().height() - offset.y() - window->height() - dy, window->width(), window->height());
+
+
+    updateTexture();
+
+    if (!mBlitter->isCreated())
+        mBlitter->create();
+
+    float x = (float)window->x() / (float)screen->geometry().width();
+    float y = 1.0f - (float)window->y() / (float)screen->geometry().height();
+
+    QMatrix4x4 m;
+    //m.translate(offset.x(), offset.y());
+    //m.translate(-0.5f + 1.0f * (float)(window->handle()->winId() - 1), 0.0f);
+    //m.translate(x, y);
+    //m.translate(0, y);
+    //m.scale(0.5f, 0.5f);
+
+    mBlitter->bind();
+    mBlitter->setRedBlueSwizzle(true);
+    mBlitter->blit(mTexture->textureId(), m, QOpenGLTextureBlitter::OriginTopLeft);
+    mBlitter->release();
+
+    mContext->swapBuffers(window);
+    */
 }
 
 void QHTML5BackingStore::updateTexture()
@@ -148,8 +183,14 @@ void QHTML5BackingStore::resize(const QSize &size, const QRegion &staticContents
 
     mImage = QImage(size, QImage::Format_RGB32);
 
+    //mContext->makeCurrent(window());
+
     if (mTexture->isCreated())
         mTexture->destroy();
+
+    /*
+    updateTexture();
+    */
 }
 
 QImage QHTML5BackingStore::toImage() const

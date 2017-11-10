@@ -38,7 +38,12 @@
 
 #include <QtGui/QRegion>
 #include <qpa/qplatformwindow.h>
-#include <QtWidgets/QStyleOptionTitleBar>
+
+#include <QOpenGLTextureBlitter>
+#include <QOpenGLTexture>
+#include <QPalette>
+#include <QRect>
+#include <QFontMetrics>
 
 QT_BEGIN_NAMESPACE
 
@@ -47,8 +52,7 @@ class QHTML5Screen;
 class QOpenGLContext;
 class QOpenGLTextureBlitter;
 
-QStyleOptionTitleBar makeTitleBarOptions(const QHtml5Window *window);
-
+//
 class QHtml5CompositedWindow
 {
 public:
@@ -69,6 +73,42 @@ public:
     QHtml5Compositor();
     ~QHtml5Compositor();
 
+    enum QHtml5SubControl {
+        SC_None =                  0x00000000,
+        SC_TitleBarSysMenu =       0x00000001,
+        SC_TitleBarMinButton =     0x00000002,
+        SC_TitleBarMaxButton =     0x00000004,
+        SC_TitleBarCloseButton =   0x00000008,
+        SC_TitleBarNormalButton =  0x00000010,
+        SC_TitleBarLabel =         0x00000100
+    };
+    Q_DECLARE_FLAGS(SubControls, QHtml5SubControl)
+
+    enum QHtml5StateFlag {
+        State_None =                0x00000000,
+        State_Enabled =             0x00000001,
+        State_Raised =              0x00000002,
+        State_Sunken =              0x00000004
+    };
+    Q_DECLARE_FLAGS(StateFlags, QHtml5StateFlag)
+
+    struct QHtml5TitleBarOptions {
+        QRect rect;
+        Qt::WindowFlags flags;
+        int state;
+        QPalette palette;
+        QString titleBarOptionsString;
+        QHtml5Compositor::SubControls subControls;
+    //    QFontMetrics fontMetrics;
+        // Qt::LayoutDirection direction; ??
+    };
+
+    struct QHtml5FrameOptions {
+        QRect rect;
+        int lineWidth;
+        QPalette palette;
+    };
+
     void setEnabled(bool enabled);
 
     void addWindow(QHtml5Window *window, QHtml5Window *parentWindow = 0);
@@ -80,35 +120,33 @@ public:
     void lower(QHtml5Window *window);
     void setParent(QHtml5Window *window, QHtml5Window *parent);
 
-    //void setFrameBuffer(QWindow *window, QImage *frameBuffer);
     void flush(QHtml5Window *surface, const QRegion &region);
-    //void waitForFlushed(QWindow *surface);
-
-    /*
-    void beginResize(QSize newSize,
-                     qreal newDevicePixelRatio); // call when the frame buffer geometry changes
-    void endResize();
-    */
 
     int windowCount() const;
     void requestRedraw();
 
     QWindow *windowAt(QPoint p, int padding = 0) const;
     QWindow *keyWindow() const;
-    //void maybeComposit();
-    //void composit();
 
     bool event(QEvent *event);
+
+    static QHtml5TitleBarOptions makeTitleBarOptions(const QHtml5Window *window);
+    static QRect titlebarRect(QHtml5TitleBarOptions tb, QHtml5Compositor::SubControls subcontrol);
 
 private slots:
     void frame();
 
 private:
-    //void createFrameBuffer();
+    void createFrameBuffer();
     void flush2(const QRegion &region);
     void flushCompletedCallback(int32_t);
     void notifyTopWindowChanged(QHtml5Window* window);
+    void drawWindow(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window);
+    void drawWindowContent(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window);
+    void blit(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, const QOpenGLTexture *texture, QRect targetGeometry);
 
+    void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window);
+    void drwPanelButton();
 private:
     QImage *m_frameBuffer;
     QScopedPointer<QOpenGLContext> mContext;
@@ -117,8 +155,6 @@ private:
 
     QHash<QHtml5Window *, QHtml5CompositedWindow> m_compositedWindows;
     QList<QHtml5Window *> m_windowStack;
-//    pp::Graphics2D *m_context2D;
-//    pp::ImageData *m_imageData2D;
     QRegion globalDamage; // damage caused by expose, window close, etc.
     bool m_needComposit;
     bool m_inFlush;
@@ -127,8 +163,17 @@ private:
     QSize m_targetSize;
     qreal m_targetDevicePixelRatio;
 
-//    pp::CompletionCallbackFactory<QPepperCompositor> m_callbackFactory;
+////////////////////////
+
+    static QPalette makeWindowPalette();
+
+    void drawFrameWindow(QHtml5FrameOptions options, QPainter *painter);
+    void drawTitlebarWindow(QHtml5TitleBarOptions options, QPainter *painter);
+    void drawShadePanel(QHtml5TitleBarOptions options, QPainter *painter);
+    void drawItemPixmap(QPainter *painter, const QRect &rect,
+                                    int alignment, const QPixmap &pixmap) const;
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QHtml5Compositor::SubControls)
 
 QT_END_NAMESPACE
 
