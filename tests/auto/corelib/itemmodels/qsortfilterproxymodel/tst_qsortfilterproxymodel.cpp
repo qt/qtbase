@@ -152,6 +152,7 @@ private slots:
     void emitLayoutChangedOnlyIfSortingChanged_data();
     void emitLayoutChangedOnlyIfSortingChanged();
 
+    void checkSetNewModel();
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -4227,6 +4228,10 @@ public:
 
     QModelIndex index(int, int, const QModelIndex& parent = QModelIndex()) const override
     {
+        // QTBUG-44962: Would we always expect the parent to belong to the model
+        qDebug() << parent.model() << this;
+        Q_ASSERT(!parent.isValid() || parent.model() == this);
+
         quintptr parentId = (parent.isValid()) ? parent.internalId() : 0;
         if (parentId >= m_depth)
             return QModelIndex();
@@ -4505,6 +4510,22 @@ void tst_QSortFilterProxyModel::dynamicFilterWithoutSort()
     QCOMPARE(model.stringList(), QStringList() << "Monday" << "Tuesday" << "Wednesday" << "Thursday" << "Friday");
 
     QCOMPARE(resetSpy.count(), 1);
+}
+
+void tst_QSortFilterProxyModel::checkSetNewModel()
+{
+    QTreeView tv;
+    StepTreeModel model1;
+    model1.setDepth(4);
+    StepTreeModel model2;
+    model2.setDepth(4);
+
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model1);
+    tv.setModel(&proxy);
+    tv.show();
+    tv.expandAll(); // create persistent indexes
+    proxy.setSourceModel(&model2);
 }
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
