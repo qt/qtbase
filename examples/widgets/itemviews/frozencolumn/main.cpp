@@ -51,6 +51,7 @@
 #include <QApplication>
 #include <QStandardItemModel>
 #include <QFile>
+#include <QTextStream>
 
 #include "freezetablewidget.h"
 
@@ -63,14 +64,16 @@ int main(int argc, char* argv[])
 
     QFile file(":/grades.txt");
     if (file.open(QFile::ReadOnly)) {
-        QString line = file.readLine(200);
+        QTextStream stream(&file);
+
+        QString line = stream.readLine();
         QStringList list = line.simplified().split(',');
         model->setHorizontalHeaderLabels(list);
 
         int row = 0;
         QStandardItem *newItem = 0;
-        while (file.canReadLine()) {
-            line = file.readLine(200);
+        while (!stream.atEnd()) {
+            line = stream.readLine();
             if (!line.startsWith('#') && line.contains(',')) {
                 list = line.simplified().split(',');
                 for (int col = 0; col < list.length(); ++col){
