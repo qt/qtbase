@@ -1069,7 +1069,7 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
             QByteArray binder(", ");
             if (name == "set-cookie")
                 binder = "\n";
-            httpReply->setHeaderField(name, value.replace('\0', binder));
+            httpReplyPrivate->fields.append(qMakePair(name, value.replace('\0', binder)));
         }
     }
 
