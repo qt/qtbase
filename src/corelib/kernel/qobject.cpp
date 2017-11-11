@@ -1445,8 +1445,9 @@ QThread *QObject::thread() const
 
     \snippet code/src_corelib_kernel_qobject.cpp 7
 
-    If \a targetThread is zero, all event processing for this object
-    and its children stops.
+    If \a targetThread is \nullptr, all event processing for this object
+    and its children stops, as they are no longer associated with any
+    thread.
 
     Note that all active timers for the object will be reset. The
     timers are first stopped in the current thread and restarted (with
@@ -1457,13 +1458,18 @@ QThread *QObject::thread() const
     A QEvent::ThreadChange event is sent to this object just before
     the thread affinity is changed. You can handle this event to
     perform any special processing. Note that any new events that are
-    posted to this object will be handled in the \a targetThread.
+    posted to this object will be handled in the \a targetThread,
+    provided it is non-null: when it is \nullptr, no event processing
+    for this object or its children can happen, as they are no longer
+    associated with any thread.
 
     \warning This function is \e not thread-safe; the current thread
     must be same as the current thread affinity. In other words, this
     function can only "push" an object from the current thread to
     another thread, it cannot "pull" an object from any arbitrary
-    thread to the current thread.
+    thread to the current thread. There is one exception to this rule
+    however: objects with no thread affinity can be "pulled" to the
+    current thread.
 
     \sa thread()
  */
