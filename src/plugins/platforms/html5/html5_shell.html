@@ -5,11 +5,11 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Qt for WebAssembly</title>
     <style>
-      .emscripten { padding-right: 150; margin-left: auto; margin-right: auto; display: block; }
-      div.emscripten { text-align: center; }
-      div.emscripten_border { border: 1px solid white; }
+      html, body { padding: 0; margin : 0; overflow:hidden; height: 100% }
+      div#status.emscripten { margin : 0; display: block;  float: none }
+      progress#progress.emscripten { margin : 0; display: block; float: none; visibility: hidden }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; background-color: white; }
+      canvas.emscripten { border: 0px none; background-color: white; height:100%; width:100%; }
 
       .spinner {
         height: 250px;
@@ -58,25 +58,21 @@
     </style>
   </head>
   <body>
-    <figure style="overflow:visible;" id="spinner"><div class="spinner"></div><center style="margin-top:0.5em"><strong>Qt for WebAssembly</strong></center></figure>
-    <div class="emscripten" id="status">Downloading...</div>
-    <div class="emscripten">
-      <progress value="0" max="100" id="progress" hidden=1></progress>
-    </div>
-    <div class="emscripten_border">
-      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-    </div>
+    <figure style="overflow:visible;" id="spinner">
+      <div class="spinner"></div>
+      <center style="margin-top:0.5em">
+        <strong>Qt for WebAssembly</strong>
+        <div class="emscripten" id="status">Downloading...</div>
+        <progress class="emscripten" value="0" max="100" id="progress" hidden=1></progress>
+      </center>
+    </figure>
+
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
-
-      function resize_canvas() {
-          var app_canvas = document.getElementById('canvas');
-          app_canvas.width = window.innerWidth - 20; //some arbitrary size to get rid of scrollbars.
-          app_canvas.height = window.innerHeight - 20;
-      }
-      window.addEventListener('resize', resize_canvas, false);
 
       var Module = {
         preRun: [],
