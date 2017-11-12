@@ -33,12 +33,9 @@
 #include <QMetaObject>
 
 #include <private/qstylesheetstyle_p.h>
+#include <QtTest/private/qtesthelpers_p.h>
 
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
+using namespace QTestPrivate;
 
 class tst_QStyleSheetStyle : public QObject
 {

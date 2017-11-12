@@ -77,6 +77,8 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
         doubleField = "more_data double";
     else if (dbType == QSqlDriver::Oracle)
         doubleField = "more_data number(8,7)";
+    else if (dbType == QSqlDriver::PostgreSQL)
+        doubleField = "more_data double precision";
     else
         doubleField = "more_data double(8,7)";
     QVERIFY_SQL( q, exec("create table " + relTEST1 +

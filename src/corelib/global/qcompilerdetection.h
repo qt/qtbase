@@ -1347,12 +1347,12 @@
     } while (false)
 
 #if defined(__cplusplus)
-#if QT_HAS_CPP_ATTRIBUTE(fallthrough)
-#  define Q_FALLTHROUGH() [[fallthrough]]
-#elif QT_HAS_CPP_ATTRIBUTE(clang::fallthrough)
+#if QT_HAS_CPP_ATTRIBUTE(clang::fallthrough)
 #    define Q_FALLTHROUGH() [[clang::fallthrough]]
 #elif QT_HAS_CPP_ATTRIBUTE(gnu::fallthrough)
 #    define Q_FALLTHROUGH() [[gnu::fallthrough]]
+#elif QT_HAS_CPP_ATTRIBUTE(fallthrough)
+#  define Q_FALLTHROUGH() [[fallthrough]]
 #endif
 #endif
 #ifndef Q_FALLTHROUGH
