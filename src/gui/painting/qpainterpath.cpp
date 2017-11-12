@@ -184,7 +184,7 @@ static void qt_debug_path(const QPainterPath &path)
     only calls to the QPainter::drawPath() function.
 
     QPainterPath provides a collection of functions that can be used
-    to obtain information about the path and its elements. In addition
+    to obtain information about the path and its elements. In addition,
     it is possible to reverse the order of the elements using the
     toReversed() function. There are also several functions to convert
     this painter path object into a polygon representation.
@@ -198,13 +198,13 @@ static void qt_debug_path(const QPainterPath &path)
     Once created, lines and curves can be added to the path using the
     lineTo(), arcTo(), cubicTo() and quadTo() functions. The lines and
     curves stretch from the currentPosition() to the position passed
-    as argument.
+    as an argument.
 
     The currentPosition() of the QPainterPath object is always the end
     position of the last subpath that was added (or the initial start
     point). Use the moveTo() function to move the currentPosition()
     without adding a component. The moveTo() function implicitly
-    starts a new subpath, and closes the previous one.  Another way of
+    starts a new subpath and closes the previous one.  Another way of
     starting a new subpath is to call the closeSubpath() function
     which closes the current path by adding a line from the
     currentPosition() back to the path's start position. Note that the
@@ -234,7 +234,7 @@ static void qt_debug_path(const QPainterPath &path)
     The painter path is initially empty when constructed. We first add
     a rectangle, which is a closed subpath. Then we add two bezier
     curves which together form a closed subpath even though they are
-    not closed individually. Finally we draw the entire path. The path
+    not closed individually. Finally, we draw the entire path. The path
     is filled using the default fill rule, Qt::OddEvenFill. Qt
     provides two methods for filling paths:
 
@@ -255,7 +255,7 @@ static void qt_debug_path(const QPainterPath &path)
     \section1 QPainterPath Information
 
     The QPainterPath class provides a collection of functions that
-    returns information about the path and its elements.
+    return information about the path and its elements.
 
     The currentPosition() function returns the end point of the last
     subpath that was added (or the initial start point). The
@@ -291,7 +291,7 @@ static void qt_debug_path(const QPainterPath &path)
     is the \e number of polygons they return: The toSubpathPolygons()
     creates one polygon for each subpath regardless of intersecting
     subpaths (i.e. overlapping bounding rectangles), while the
-    toFillPolygons() functions creates only one polygon for
+    toFillPolygons() functions create only one polygon for
     overlapping subpaths.
 
     The toFillPolygon() and toFillPolygons() functions first convert
@@ -890,7 +890,7 @@ void QPainterPath::quadTo(const QPointF &c, const QPointF &e)
 
     Note that this function connects the starting point of the arc to
     the current position if they are not already connected. After the
-    arc has been added, the current position is the last point in
+    arc has been added, the current position is the last point in the
     arc. To draw a line back to the first point, use the
     closeSubpath() function.
 
@@ -946,7 +946,7 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
     \since 4.2
 
     Creates a move to that lies on the arc that occupies the
-    QRectF(\a x, \a y, \a width, \a height) at \a angle.
+    QRectF(\a x, \a y, \a width, \a height) at the given \a angle.
 */
 
 
@@ -955,7 +955,7 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
     \since 4.2
 
     Creates a move to that lies on the arc that occupies the given \a
-    rectangle at \a angle.
+    rectangle at the given \a angle.
 
     Angles are specified in degrees. Clockwise arcs can be specified
     using negative angles.
@@ -1284,7 +1284,7 @@ void QPainterPath::connectPath(const QPainterPath &other)
 
 /*!
     Adds the given \a region to the path by adding each rectangle in
-    the region as a separate closed subpath.
+    the region as a separately closed subpath.
 
     \sa addRect(), {QPainterPath#Composing a QPainterPath}{Composing
     a QPainterPath}
@@ -1618,12 +1618,12 @@ QList<QPolygonF> QPainterPath::toSubpathPolygons(const QMatrix &matrix) const
     polygon, even though the total number of points drawn is the same.
 
     The toFillPolygons() function differs from the toSubpathPolygons()
-    function in that it create only polygon for subpaths that have
+    function in that it creates only polygon for subpaths that have
     overlapping bounding rectangles.
 
     Like the toFillPolygon() function, this function uses a rewinding
     technique to make sure that overlapping subpaths can be filled
-    using the correct fill rule. Note that rewinding inserts addition
+    using the correct fill rule. Note that rewinding inserts additional
     lines in the polygons so the outline of the fill polygon does not
     match the outline of the path.
 
@@ -2813,7 +2813,7 @@ void QPainterPathStroker::setDashOffset(qreal offset)
   polygons, then using a rewinding technique to make sure that
   overlapping subpaths can be filled using the correct fill rule.
 
-  Note that rewinding inserts addition lines in the polygon so
+  Note that rewinding inserts additional lines in the polygon so
   the outline of the fill polygon does not match the outline of
   the path.
 
@@ -3122,9 +3122,9 @@ qreal QPainterPath::slopeAtPercent(qreal t) const
 
   The \a xRadius and \a yRadius arguments specify the radii of
   the ellipses defining the corners of the rounded rectangle.
-  When \a mode is Qt::RelativeSize, \a xRadius and
+  When the \a mode is Qt::RelativeSize, \a xRadius and
   \a yRadius are specified in percentage of half the rectangle's
-  width and height respectively, and should be in the range 0.0 to 100.0.
+  width and height respectively and should be in the range 0.0 to 100.0.
 
   \sa addRect()
 */
