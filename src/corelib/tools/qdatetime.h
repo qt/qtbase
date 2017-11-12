@@ -81,7 +81,7 @@ public:
     int daysInYear() const;
     int weekNumber(int *yearNum = Q_NULLPTR) const;
 
-#if QT_DEPRECATED_SINCE(5, 11) && !defined QT_NO_TEXTDATE
+#if QT_DEPRECATED_SINCE(5, 10) && !defined QT_NO_TEXTDATE
     QT_DEPRECATED_X("Use QLocale::monthName or QLocale::standaloneMonthName")
         static QString shortMonthName(int month, MonthNameType type = DateFormat);
     QT_DEPRECATED_X("Use QLocale::dayName or QLocale::standaloneDayName")
