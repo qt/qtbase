@@ -184,6 +184,8 @@ void tst_QNetworkInterface::consistencyCheck()
         if (iface.index())
             interfaceIndexes << iface.index();
 
+        QVERIFY(iface.maxTransmissionUnit() >= 0);
+
         const QList<QNetworkAddressEntry> addresses = iface.addressEntries();
         for (auto entry : addresses) {
             QVERIFY(entry.ip().protocol() != QAbstractSocket::UnknownNetworkLayerProtocol);

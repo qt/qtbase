@@ -151,7 +151,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
         else if (ptr->IfIndex != 0)
             iface->index = ptr->IfIndex;
 
-        iface->mtu = ptr->Mtu;
+        iface->mtu = qMin<qint64>(ptr->Mtu, INT_MAX);
         iface->flags = QNetworkInterface::CanBroadcast;
         if (ptr->OperStatus == IfOperStatusUp)
             iface->flags |= QNetworkInterface::IsUp | QNetworkInterface::IsRunning;
