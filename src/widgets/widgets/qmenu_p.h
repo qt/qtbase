@@ -272,6 +272,7 @@ public:
     QMenuPrivate() :
         itemsDirty(false),
         hasCheckableItems(false),
+        lastContextMenu(false),
         collapsibleSeparators(true),
         toolTipsVisible(false),
         delayedPopupGuard(false),
@@ -464,6 +465,7 @@ public:
 
     mutable bool itemsDirty : 1;
     mutable bool hasCheckableItems : 1;
+    bool lastContextMenu : 1;
     bool collapsibleSeparators : 1;
     bool toolTipsVisible : 1;
     bool delayedPopupGuard : 1;

@@ -2339,6 +2339,12 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->updateLayoutDirection();
     d->adjustMenuScreen(p);
 
+    const bool contextMenu = d->isContextMenu();
+    if (d->lastContextMenu != contextMenu) {
+        d->itemsDirty = true;
+        d->lastContextMenu = contextMenu;
+    }
+
 #if QT_CONFIG(menubar)
     // if this menu is part of a chain attached to a QMenuBar, set the
     // _NET_WM_WINDOW_TYPE_DROPDOWN_MENU X11 window type
