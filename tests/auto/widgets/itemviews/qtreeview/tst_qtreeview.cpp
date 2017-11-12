@@ -193,6 +193,7 @@ private slots:
     void taskQTBUG_37813_crash();
     void taskQTBUG_45697_crash();
     void taskQTBUG_7232_AllowUserToControlSingleStep();
+    void taskQTBUG_8376();
     void testInitialFocus();
 };
 
@@ -4398,6 +4399,52 @@ void tst_QTreeView::taskQTBUG_7232_AllowUserToControlSingleStep()
     QCOMPARE(vStep1, t.verticalScrollBar()->singleStep());
     QCOMPARE(hStep1, t.horizontalScrollBar()->singleStep());
 }
+
+static void fillModeltaskQTBUG_8376(QAbstractItemModel &model)
+{
+    model.insertRow(0);
+    model.insertColumn(0);
+    model.insertColumn(1);
+    QModelIndex index = model.index(0, 0);
+    model.setData(index, "Level0");
+    {
+        model.insertRow(0, index);
+        model.insertRow(1, index);
+        model.insertColumn(0, index);
+        model.insertColumn(1, index);
+
+        QModelIndex idx;
+        idx = model.index(0, 0, index);
+        model.setData(idx, "Level1");
+
+        idx = model.index(0, 1, index);
+        model.setData(idx, "very\nvery\nhigh\ncell");
+    }
+}
+
+void tst_QTreeView::taskQTBUG_8376()
+{
+    QTreeView tv;
+    QStandardItemModel model;
+    fillModeltaskQTBUG_8376(model);
+    tv.setModel(&model);
+    tv.expandAll(); // init layout
+
+    QModelIndex idxLvl0 = model.index(0, 0);
+    QModelIndex idxLvl1 = model.index(0, 1, idxLvl0);
+    const int rowHeightLvl0 = tv.rowHeight(idxLvl0);
+    const int rowHeightLvl1Visible = tv.rowHeight(idxLvl1);
+    QVERIFY(rowHeightLvl0 < rowHeightLvl1Visible);
+
+    tv.hideColumn(1);
+    const int rowHeightLvl1Hidden = tv.rowHeight(idxLvl1);
+    QCOMPARE(rowHeightLvl0, rowHeightLvl1Hidden);
+
+    tv.showColumn(1);
+    const int rowHeightLvl1Visible2 = tv.rowHeight(idxLvl1);
+    QCOMPARE(rowHeightLvl1Visible, rowHeightLvl1Visible2);
+}
+
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

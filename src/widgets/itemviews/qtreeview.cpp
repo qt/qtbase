@@ -736,7 +736,10 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
 void QTreeView::hideColumn(int column)
 {
     Q_D(QTreeView);
+    if (d->header->isSectionHidden(column))
+        return;
     d->header->hideSection(column);
+    doItemsLayout();
 }
 
 /*!
@@ -747,7 +750,10 @@ void QTreeView::hideColumn(int column)
 void QTreeView::showColumn(int column)
 {
     Q_D(QTreeView);
+    if (!d->header->isSectionHidden(column))
+        return;
     d->header->showSection(column);
+    doItemsLayout();
 }
 
 /*!
