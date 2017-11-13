@@ -82,7 +82,4 @@ osx
 [activateWindow]
 osx-10.12 ci
 [multipleToplevelFocusCheck]
-opensuse-42.3
-ubuntu-16.04
-[setToolTip]
-opensuse-42.3
+linux
