@@ -862,8 +862,7 @@ void QMenuPrivate::adjustMenuScreen(const QPoint &p)
     // so a wrong screen would often cause wrong sizes (on high DPI)
     const QScreen *primaryScreen = QApplication::primaryScreen();
     const QScreen *currentScreen = q->windowHandle() ? q->windowHandle()->screen() : primaryScreen;
-    const int screenNumberForPoint = QApplication::desktop()->screenNumber(p);
-    QScreen *actualScreen = QGuiApplication::screens().at(screenNumberForPoint);
+    QScreen *actualScreen = QGuiApplication::screenAt(p);
     if (actualScreen && currentScreen != actualScreen) {
         if (!q->windowHandle()) // Try to create a window handle if not created.
             createWinId();

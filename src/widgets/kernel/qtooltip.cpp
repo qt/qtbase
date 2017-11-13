@@ -501,7 +501,10 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
 #ifdef Q_OS_WIN32
         // On windows, we can't use the widget as parent otherwise the window will be
         // raised when the tooltip will be shown
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         new QTipLabel(text, QApplication::desktop()->screen(QTipLabel::getTipScreen(pos, w)), msecDisplayTime);
+QT_WARNING_POP
 #else
         new QTipLabel(text, w, msecDisplayTime); // sets QTipLabel::instance to itself
 #endif
