@@ -68,6 +68,7 @@ mac {
     !uikit: LIBS_PRIVATE += -framework CoreServices -framework SystemConfiguration
 }
 
+uikit:HEADERS += kernel/qnetworkinterface_uikit_p.h
 osx:SOURCES += kernel/qnetworkproxy_mac.cpp
 else:win32:!winrt: SOURCES += kernel/qnetworkproxy_win.cpp
 else: qtConfig(libproxy) {
