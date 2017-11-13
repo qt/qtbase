@@ -30,6 +30,8 @@ linux
 [ioHttpRedirectPostPut]
 linux
 windows
+[putToFtp]
+windows ci
 [putWithServerClosingConnectionImmediately]
 windows
 [qtbug28035browserDoesNotLoadQtProjectOrgCorrectly]
