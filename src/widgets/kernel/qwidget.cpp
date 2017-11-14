@@ -1677,6 +1677,7 @@ QWidget::~QWidget()
         }
     }
 
+    d->wasDeleted = true;
     if (d->declarativeData) {
         if (static_cast<QAbstractDeclarativeDataImpl*>(d->declarativeData)->ownedByQml1) {
             if (QAbstractDeclarativeData::destroyed_qml1)
@@ -8476,7 +8477,7 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
     data.is_closing = 1;
 
     QPointer<QWidget> that = q;
-    QPointer<QWidget> parentWidget = q->parentWidget();
+    QPointer<QWidget> parentWidget = (q->parentWidget() && !QObjectPrivate::get(q->parentWidget())->wasDeleted) ? q->parentWidget() : nullptr;
 
     bool quitOnClose = q->testAttribute(Qt::WA_QuitOnClose);
     if (mode != CloseNoEvent) {
