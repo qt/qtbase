@@ -74,10 +74,13 @@ QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor)
     qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_winid));
 #endif
 
+    // Save surface type which may be changed by the QHTML5BackingStore constructor
+    QWindow::SurfaceType surfaceType = w->surfaceType();
+
     mCompositor->addWindow(this);
 
     // Pure OpenGL windows draw directly using egl, disable the compositor.
-    mCompositor->setEnabled(w->surfaceType() != QSurface::OpenGLSurface);
+    mCompositor->setEnabled(surfaceType != QSurface::OpenGLSurface);
 }
 
 QHtml5Window::~QHtml5Window()
