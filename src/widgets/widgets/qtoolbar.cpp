@@ -1120,6 +1120,8 @@ static bool waitForPopup(QToolBar *tb, QWidget *popup)
 static void enableMacToolBar(QToolBar *toolbar, bool enable)
 {
     QPlatformNativeInterface *nativeInterface = QApplication::platformNativeInterface();
+    if (!nativeInterface)
+        return;
     QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
         nativeInterface->nativeResourceFunctionForIntegration("setContentBorderAreaEnabled");
     if (!function)
