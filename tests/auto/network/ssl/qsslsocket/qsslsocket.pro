@@ -14,6 +14,9 @@ win32 {
   }
 }
 
+RESOURCES += \
+    qsslsocket.qrc
+
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 requires(qtConfig(private_tests))
