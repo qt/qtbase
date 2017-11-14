@@ -2834,6 +2834,10 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     If QCoreApplication is deleted and another QCoreApplication is created,
     the startup function will be invoked again.
+
+    \note This macro is not suitable for use in library code that is then
+    statically linked into an application since the function may not be called
+    at all due to being eliminated by the linker.
 */
 
 /*!
