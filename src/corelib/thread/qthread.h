@@ -270,6 +270,8 @@ public:
 
     bool isFinished() const { return true; }
     bool isRunning() const{ return true; }
+    static void yieldCurrentThread() {}
+    void exit(int retcode = 0);
 
 public Q_SLOTS:
     void start(Priority = InheritPriority){}
@@ -281,6 +283,7 @@ Q_SIGNALS:
     void finished(QPrivateSignal);
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = nullptr);
+    int exec();
 
 private:
     virtual void run();

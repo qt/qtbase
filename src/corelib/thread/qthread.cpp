@@ -548,7 +548,6 @@ void QThread::exit(int returnCode)
     d->exited = true;
     d->returnCode = returnCode;
     d->data->quitNow = true;
-    std::cout << "qthread exit quit now: " << data->quitNow << std::endl;
     for (int i = 0; i < d->data->eventLoops.size(); ++i) {
         QEventLoop *eventLoop = d->data->eventLoops.at(i);
         eventLoop->exit(returnCode);
@@ -808,6 +807,23 @@ void QThread::run()
     //(void) exec();
 }
 
+int QThread::exec()
+{
+    Q_D(QThread);
+    d->data->quitNow = false;
+    if (d->exited) {
+        d->exited = false;
+        return d->returnCode;
+    }
+
+    QEventLoop eventLoop;
+    int returnCode = eventLoop.exec();
+
+    d->exited = false;
+    d->returnCode = -1;
+    return returnCode;
+}
+
 #endif // QT_NO_THREAD
 
 /*!
@@ -844,6 +860,20 @@ void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
             qWarning("QThread::setEventDispatcher: Could not move event dispatcher to target thread");
     }
 }
+
+void QThread::exit(int returnCode)
+{
+    Q_D(QThread);
+    d->exited = true;
+    d->returnCode = returnCode;
+    d->data->quitNow = true;
+    qDebug() << "qthread exit quit now: " << d->data->quitNow;
+    for (int i = 0; i < d->data->eventLoops.size(); ++i) {
+        QEventLoop *eventLoop = d->data->eventLoops.at(i);
+        eventLoop->exit(returnCode);
+    }
+}
+
 #ifndef QT_NO_THREAD
 /*!
     \reimp
