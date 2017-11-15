@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the configuration of the Qt Toolkit.
@@ -39,15 +39,18 @@
 
 #include <immintrin.h>
 
-#ifndef AVX512WANT
-#  error ".pro file must define AVX512WANT macro to the AVX-512 feature to be tested"
+#ifndef __AVX512F__
+#  error "There doesn't seem to be AVX-512 support in this compiler"
+#endif
+#ifndef WANT_AVX512
+#  error ".pro file must define WANT_AVX512 macro to the AVX-512 feature to be tested"
 #endif
 
 // The following checks if __AVXx__ is defined, where x is the value in
-// AVX512WANT
+// WANT_AVX512
 #define HAS2(x)             __AVX512 ## x ## __
 #define HAS(x)              HAS2(x)
-#if !HAS(AVX512WANT)
+#if !HAS(WANT_AVX512)
 #  error "Feature not supported"
 #endif
 
@@ -62,36 +65,36 @@ int main(int, char**argv)
     d = _mm512_loadu_pd((double *)argv + 64);
     f = _mm512_loadu_ps((float *)argv + 128);
 
-#ifdef __AVX512ER__
+#ifdef WANT_AVX512ER
     /* AVX512 Exponential and Reciprocal */
     f =  _mm512_exp2a23_round_ps(f, 8);
 #endif
-#ifdef __AVX512CD__
+#ifdef WANT_AVX512CD
     /* AVX512 Conflict Detection */
     i = _mm512_maskz_conflict_epi32(m, i);
 #endif
-#ifdef __AVX512PF__
+#ifdef WANT_AVX512PF
     /* AVX512 Prefetch */
     _mm512_mask_prefetch_i64scatter_pd(argv, 0xf, i, 2, 2);
 #endif
-#ifdef __AVX512DQ__
+#ifdef WANT_AVX512DQ
     /* AVX512 Doubleword and Quadword support */
     m = _mm512_movepi32_mask(i);
 #endif
-#ifdef __AVX512BW__
+#ifdef WANT_AVX512BW
     /* AVX512 Byte and Word support */
     i =  _mm512_mask_loadu_epi8(i, m, argv - 8);
 #endif
-#ifdef __AVX512VL__
+#ifdef WANT_AVX512VL
     /* AVX512 Vector Length */
     __m256i i2 = _mm256_maskz_loadu_epi32(0, argv);
     _mm256_mask_storeu_epi32(argv + 1, m, i2);
 #endif
-#ifdef __AVX512IFMA__
+#ifdef WANT_AVX512IFMA
     /* AVX512 Integer Fused Multiply-Add */
     i = _mm512_madd52lo_epu64(i, i, i);
 #endif
-#ifdef __AVX512VBMI__
+#ifdef WANT_AVX512VBMI
     /* AVX512 Vector Byte Manipulation Instructions */
     i = _mm512_permutexvar_epi8(i, i);
 #endif
