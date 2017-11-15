@@ -765,7 +765,8 @@ void QHtml5Compositor::drawShadePanel(QHtml5TitleBarOptions options, QPainter *p
 
 void QHtml5Compositor::drawWindow(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
 {
-    drawWindowDecorations(blitter, screen, window);
+    if (window->window()->type() != Qt::Popup)
+        drawWindowDecorations(blitter, screen, window);
     drawWindowContent(blitter, screen, window);
 }
 
