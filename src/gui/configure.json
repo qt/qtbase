@@ -705,6 +705,17 @@
             },
             "use": "egl"
         },
+        "egl-openwfd": {
+            "label": "OpenWFD EGL",
+            "type": "compile",
+            "test": {
+                "include": [ "wfd.h" ],
+                "main": [
+                    "wfdEnumerateDevices(nullptr, 0, nullptr);"
+                ]
+            },
+            "use": "egl"
+        },
         "evdev": {
             "label": "evdev",
             "type": "compile",
@@ -1086,6 +1097,11 @@
         "eglfs_viv_wl": {
             "label": "EGLFS i.Mx6 Wayland",
             "condition": "features.eglfs_viv && libs.wayland_server",
+            "output": [ "privateFeature" ]
+        },
+        "eglfs_openwfd": {
+            "label": "EGLFS OpenWFD",
+            "condition": "config.integrity && features.eglfs && tests.egl-openwfd",
             "output": [ "privateFeature" ]
         },
         "gif": {
@@ -1560,7 +1576,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "EGLFS details",
                     "condition": "features.eglfs",
                     "entries": [
-                        "eglfs_viv", "eglfs_viv_wl", "eglfs_egldevice", "eglfs_gbm", "eglfs_mali", "eglfs_brcm", "egl_x11"
+                        "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_egldevice", "eglfs_gbm", "eglfs_mali", "eglfs_brcm", "egl_x11"
                     ]
                 },
                 "linuxfb", "vnc", "mirclient",
