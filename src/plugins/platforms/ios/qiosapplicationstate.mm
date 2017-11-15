@@ -39,6 +39,8 @@
 
 #include "qiosapplicationstate.h"
 
+#include "qiosglobal.h"
+
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
 
@@ -72,8 +74,8 @@ static Qt::ApplicationState qtApplicationState(UIApplicationState uiApplicationS
 static void handleApplicationStateChanged(UIApplicationState uiApplicationState)
 {
     Qt::ApplicationState state = qtApplicationState(uiApplicationState);
-    QWindowSystemInterface::handleApplicationStateChanged(state);
-    QWindowSystemInterface::flushWindowSystemEvents();
+    qCDebug(lcQpaApplication) << "moved to" << state;
+    QWindowSystemInterface::handleApplicationStateChanged<QWindowSystemInterface::SynchronousDelivery>(state);
 }
 
 QT_BEGIN_NAMESPACE

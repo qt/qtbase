@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaApplication);
 Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods);
 
 #if !defined(QT_NO_DEBUG)
