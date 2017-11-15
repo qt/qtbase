@@ -1167,6 +1167,9 @@ protected slots:
 
 void tst_QSslSocket::protocolServerSide_data()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QTest::addColumn<QSsl::SslProtocol>("serverProtocol");
     QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
     QTest::addColumn<bool>("works");
@@ -1347,6 +1350,9 @@ void tst_QSslSocket::protocolServerSide()
 
 void tst_QSslSocket::serverCipherPreferences()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl()) {
         qWarning("SSL not supported, skipping test");
         return;
@@ -1449,6 +1455,9 @@ void tst_QSslSocket::localCertificateChain()
 
 void tst_QSslSocket::setLocalCertificateChain()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl())
         return;
 
@@ -1486,6 +1495,9 @@ void tst_QSslSocket::setPrivateKey()
 
 void tst_QSslSocket::setSocketDescriptor()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl())
         return;
 
@@ -1803,6 +1815,9 @@ protected:
 
 void tst_QSslSocket::setEmptyKey()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl())
         return;
 
@@ -1824,6 +1839,9 @@ void tst_QSslSocket::setEmptyKey()
 
 void tst_QSslSocket::spontaneousWrite()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -1869,6 +1887,9 @@ void tst_QSslSocket::spontaneousWrite()
 
 void tst_QSslSocket::setReadBufferSize()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2129,6 +2150,9 @@ void tst_QSslSocket::waitForMinusOne()
 #ifdef Q_OS_WIN
     QSKIP("QTBUG-24451 - indefinite wait may hang");
 #endif
+#ifdef Q_OS_WINRT // This can stay in case the one above goes away
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2207,6 +2231,9 @@ protected:
 
 void tst_QSslSocket::verifyMode()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2425,6 +2452,9 @@ void tst_QSslSocket::ignoreSslErrorsListWithSlot()
 
 void tst_QSslSocket::abortOnSslErrors()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2521,6 +2551,9 @@ void tst_QSslSocket::writeBigChunk()
 
 void tst_QSslSocket::blacklistedCertificates()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2778,6 +2811,9 @@ protected:
 
 void tst_QSslSocket::qtbug18498_peek()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2845,6 +2881,9 @@ protected:
 
 void tst_QSslSocket::qtbug18498_peek2()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;
@@ -2959,6 +2998,9 @@ void tst_QSslSocket::qtbug18498_peek2()
 
 void tst_QSslSocket::dhServer()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl())
         QSKIP("No SSL support");
 
@@ -3068,6 +3110,9 @@ void tst_QSslSocket::dhServerCustomParams()
 
 void tst_QSslSocket::ecdhServer()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     if (!QSslSocket::supportsSsl()) {
         qWarning("SSL not supported, skipping test");
         return;
@@ -3173,6 +3218,9 @@ void tst_QSslSocket::verifyClientCertificate()
     // keychain thus making tests fail (wrong number of certificates,
     // success instead of failure etc.).
     QSKIP("This test can not work with Secure Transport");
+#endif
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
 #endif
     if (!QSslSocket::supportsSsl()) {
         qWarning("SSL not supported, skipping test");
@@ -3684,6 +3732,9 @@ void tst_QSslSocket::simplePskConnect()
 
 void tst_QSslSocket::ephemeralServerKey_data()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QTest::addColumn<QString>("cipher");
     QTest::addColumn<bool>("emptyKey");
 
@@ -3758,6 +3809,9 @@ void tst_QSslSocket::allowedProtocolNegotiation()
 
 void tst_QSslSocket::pskServer()
 {
+#ifdef Q_OS_WINRT
+    QSKIP("Server-side encryption is not implemented on WinRT.");
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (!QSslSocket::supportsSsl() || setProxy)
         return;
