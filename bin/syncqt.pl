@@ -1037,7 +1037,8 @@ foreach my $lib (@modules_to_sync) {
 
                         my $clean_header;
                         my $requires;
-                        my $iheader = $subdir . "/" . $header;
+                        my $iheader_src = $subdir . "/" . $header;
+                        my $iheader = $iheader_src;
                         $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
                         if ($check_includes) {
                             # We need both $public_header and $private_header because QPA headers count as neither
@@ -1079,7 +1080,7 @@ foreach my $lib (@modules_to_sync) {
                             }
                             $header_copies++ if (!$shadow && syncHeader($lib, $oheader, $iheader, $copy_headers, $ts));
 
-                            my $pri_install_iheader = fixPaths($iheader, $dir);
+                            my $pri_install_iheader = fixPaths($iheader_src, $dir);
                             my $injection = "";
                             if ($public_header) {
                                 foreach my $class (@classes) {
