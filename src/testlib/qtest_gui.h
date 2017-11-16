@@ -62,10 +62,7 @@
 #include <QtGui/qvector2d.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
-
-#ifdef QT_WIDGETS_LIB
 #include <QtGui/qicon.h>
-#endif
 
 #if 0
 // inform syncqt
