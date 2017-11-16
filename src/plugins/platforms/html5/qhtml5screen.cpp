@@ -70,7 +70,7 @@ public:
     {
     }
 
-    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) Q_DECL_OVERRIDE
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override
     {
         QHtml5Window *window = static_cast<QHtml5Window *>(surface);
         QHTML5Screen *screen = static_cast<QHTML5Screen *>(window->screen());

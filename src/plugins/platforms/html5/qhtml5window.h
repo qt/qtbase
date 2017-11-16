@@ -71,15 +71,15 @@ public:
 
     void create();
 
-    void setGeometry(const QRect &) Q_DECL_OVERRIDE;
-    void setVisible(bool visible) Q_DECL_OVERRIDE;
-    QMargins frameMargins() const Q_DECL_OVERRIDE;
+    void setGeometry(const QRect &) override;
+    void setVisible(bool visible) override;
+    QMargins frameMargins() const override;
 
-    WId winId() const Q_DECL_OVERRIDE;
+    WId winId() const override;
 
-    void propagateSizeHints() Q_DECL_OVERRIDE;
-    void raise() Q_DECL_OVERRIDE;
-    void lower() Q_DECL_OVERRIDE;
+    void propagateSizeHints() override;
+    void raise() override;
+    void lower() override;
     QRect normalGeometry() const override;
 
     QHTML5Screen *platformScreen() const;
@@ -107,7 +107,9 @@ public:
     QRegion titleControlRegion() const;
     QHtml5Compositor::SubControls activeSubControl() const;
 
-    void setWindowState(Qt::WindowStates state);
+    void setWindowState(Qt::WindowStates state) override;
+    bool setKeyboardGrabEnabled(bool) override { return false; }
+    bool setMouseGrabEnabled(bool) override { return false; }
 
 protected:
     void invalidate();

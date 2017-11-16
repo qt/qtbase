@@ -47,7 +47,7 @@ class QHTML5IntegrationPlugin : public QPlatformIntegrationPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "html5.json")
 public:
-    QPlatformIntegration *create(const QString&, const QStringList&) Q_DECL_OVERRIDE;
+    QPlatformIntegration *create(const QString&, const QStringList&) override;
 };
 
 QPlatformIntegration* QHTML5IntegrationPlugin::create(const QString& system, const QStringList& paramList)

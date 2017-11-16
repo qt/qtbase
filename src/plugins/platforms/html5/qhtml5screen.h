@@ -63,15 +63,15 @@ public:
     QHTML5Screen(EGLNativeDisplayType display, QHtml5Compositor *compositor);
     ~QHTML5Screen();
 
-    QRect geometry() const Q_DECL_OVERRIDE;
-    int depth() const Q_DECL_OVERRIDE;
-    QImage::Format format() const Q_DECL_OVERRIDE;
+    QRect geometry() const override;
+    int depth() const override;
+    QImage::Format format() const override;
     QPlatformOpenGLContext *platformContext() const;
     EGLSurface surface() const { return m_surface; }
 
     void resizeMaximizedWindows();
     QWindow *topWindow() const;
-    QWindow *topLevelAt(const QPoint & p) const Q_DECL_OVERRIDE;
+    QWindow *topLevelAt(const QPoint & p) const override;
 
     //virtual void addWindow(QHtml5Window *window);
     //virtual void removeWindow(QHtml5Window *window);
