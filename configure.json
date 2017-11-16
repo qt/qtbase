@@ -218,7 +218,7 @@
     },
 
     "testTypeAliases": {
-        "compile": [ "library", "architecture", "x86SimdAlways" ]
+        "compile": [ "library", "architecture", "x86Simd", "x86SimdAlways" ]
     },
 
     "tests": {
@@ -362,206 +362,83 @@
         },
         "sse2": {
             "label": "SSE2 instructions",
-            "type": "compile",
-            "test": {
-                "include": "emmintrin.h",
-                "main": [
-                    "__m128i a = _mm_setzero_si128();",
-                    "_mm_maskmoveu_si128(a, _mm_setzero_si128(), 0);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSE2, var): error(\"This compiler does not support SSE2\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE2"
-                ]
-            }
+            "type": "x86Simd"
         },
         "sse3": {
             "label": "SSE3 instructions",
-            "type": "compile",
-            "test": {
-                "include": "pmmintrin.h",
-                "main": [
-                    "__m128d a = _mm_set1_pd(6.28);",
-                    "__m128d b = _mm_set1_pd(3.14);",
-                    "__m128d result = _mm_addsub_pd(a, b);",
-                    "(void) _mm_movedup_pd(result);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSE3, var): error(\"This compiler does not support SSE3\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE3"
-                ]
-            }
+            "type": "x86Simd"
         },
         "ssse3": {
             "label": "SSSE3 instructions",
-            "type": "compile",
-            "test": {
-                "include": "tmmintrin.h",
-                "main": [
-                    "__m128i a = _mm_set1_epi32(42);",
-                    "_mm_abs_epi8(a);",
-                    "(void) _mm_sign_epi16(a, _mm_set1_epi32(64));"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSSE3, var): error(\"This compiler does not support SSSE3\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSSE3"
-                ]
-            }
+            "type": "x86Simd"
         },
         "sse4_1": {
             "label": "SSE4.1 instructions",
-            "type": "compile",
-            "test": {
-                "include": "smmintrin.h",
-                "main": [
-                    "__m128 a = _mm_setzero_ps();",
-                    "_mm_ceil_ps(a);",
-                    "__m128i result = _mm_mullo_epi32(_mm_set1_epi32(42), _mm_set1_epi32(64));",
-                    "(void)result;"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSE4_1, var): error(\"This compiler does not support SSE4.1\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE4_1"
-                ]
-            }
+            "type": "x86Simd"
         },
         "sse4_2": {
             "label": "SSE4.2 instructions",
-            "type": "compile",
-            "test": {
-                "include": "nmmintrin.h",
-                "main": [
-                    "__m128i a = _mm_setzero_si128();",
-                    "__m128i b = _mm_set1_epi32(42);",
-                    "(void) _mm_cmpestrm(a, 16, b, 16, 0);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_SSE4_2, var): error(\"This compiler does not support SSE4.2\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_SSE4_2"
-                ]
-            }
+            "type": "x86Simd"
         },
         "aesni": {
             "label": "AES new instructions",
-            "type": "compile",
-            "test": "common/aesni"
+            "type": "x86Simd"
         },
         "f16c": {
             "label": "F16C instructions",
-            "type": "compile",
-            "test": {
-                "include": "immintrin.h",
-                "main": [
-                    "__m128i a = _mm_setzero_si128();",
-                    "__m128 b = _mm_cvtph_ps(a);",
-                    "__m256 b256 = _mm256_cvtph_ps(a);",
-                    "(void) _mm_cvtps_ph(b, 0);",
-                    "(void) _mm256_cvtps_ph(b256, 0);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_F16C, var): error(\"This compiler does not support F16C\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_F16C"
-                ]
-            }
+            "type": "x86Simd"
         },
         "rdrnd": {
             "label": "RDRAND instruction",
-            "type": "compile",
-            "test": "common/rdrnd"
+            "type": "x86Simd"
         },
         "shani": {
             "label": "SHA new instructions",
-            "type": "compile",
-            "test": "common/shani"
+            "type": "x86Simd"
         },
         "avx": {
             "label": "AVX instructions",
-            "type": "compile",
-            "test": {
-                "include": "immintrin.h",
-                "main": [
-                    "__m256d a = _mm256_setzero_pd();",
-                    "__m256d b = _mm256_set1_pd(42.42);",
-                    "(void) _mm256_add_pd(a, b);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_AVX, var): error(\"This compiler does not support AVX\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX"
-                ]
-            }
+            "type": "x86Simd"
         },
         "avx2": {
             "label": "AVX2 instructions",
-            "type": "compile",
-            "test": {
-                "include": "immintrin.h",
-                "main": [
-                    "// AVX",
-                    "_mm256_zeroall();",
-                    "__m256i a = _mm256_setzero_si256();",
-                    "// AVX2",
-                    "__m256i b = _mm256_and_si256(a, a);",
-                    "(void) _mm256_add_epi8(a, b);"
-                ],
-                "qmake": [
-                    "!defined(QMAKE_CFLAGS_AVX2, var): error(\"This compiler does not support AVX2\")",
-                    "QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_AVX2"
-                ]
-            }
+            "type": "x86Simd"
         },
         "avx512f": {
             "label": "AVX512 F instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=F"
+            "type": "x86Simd"
         },
         "avx512er": {
             "label": "AVX512 ER instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=ER"
+            "type": "x86Simd"
         },
         "avx512cd": {
             "label": "AVX512 CD instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=CD"
+            "type": "x86Simd"
         },
         "avx512pf": {
             "label": "AVX512 PF instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=PF"
+            "type": "x86Simd"
         },
         "avx512dq": {
             "label": "AVX512 DQ instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=DQ"
+            "type": "x86Simd"
         },
         "avx512bw": {
             "label": "AVX512 BW instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=BW"
+            "type": "x86Simd"
         },
         "avx512vl": {
             "label": "AVX512 VL instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=VL"
+            "type": "x86Simd"
         },
         "avx512ifma": {
             "label": "AVX512 IFMA instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=IFMA"
+            "type": "x86Simd"
         },
         "avx512vbmi": {
             "label": "AVX512 VBMI instructions",
-            "type": "compile",
-            "test": "avx512",
-            "args": "AVX512=VBMI"
+            "type": "x86Simd"
         },
         "x86SimdAlways": {
             "label": "Intrinsics without -mXXX argument",

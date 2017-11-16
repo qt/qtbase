@@ -41,7 +41,7 @@
 #include <immintrin.h>
 #define T(x)                      (QT_COMPILER_SUPPORTS_ ## x)
 
-#if !defined(__INTEL_COMPILER) && !defined(_MSC_VER)
+#if !defined(__INTEL_COMPILER) && !defined(_MSC_VER) && !defined(NO_ATTRIBUTE)
 /* GCC requires attributes for a function */
 #  define attribute_target(x)     __attribute__((__target__(x)))
 #else

@@ -395,12 +395,22 @@ defineTest(qtConfTest_buildParts) {
     return(true)
 }
 
+defineTest(qtConfTest_x86Simd) {
+    simd = $$section(1, ".", -1)    # last component
+    $${1}.args = CONFIG+=add_cflags DEFINES+=NO_ATTRIBUTE SIMD=$$simd
+    $${1}.test = x86_simd
+    qtConfTest_compile($${1})
+}
+
 defineTest(qtConfTest_x86SimdAlways) {
     configs =
     fpfx = $${currentConfig}.features
-    simd = sse2 sse3 ssse3 sse4_1 sse4_2 rdrnd aesni shani avx avx2 avx512f \
-        avx512er avx512cd avx512pf avx512dq avx512bw avx512vl avx512ifma avx512vbmi
-    for (f, simd) {
+    tpfx = $${currentConfig}.tests
+
+    # Make a list of all passing features whose tests have type=x86Simd
+    for (f, $${tpfx}._KEYS_) {
+        !equals($${tpfx}.$${f}.type, "x86Simd"): \
+            next()
         qtConfCheckFeature($$f)
         equals($${fpfx}.$${f}.available, true): configs += $$f
     }
