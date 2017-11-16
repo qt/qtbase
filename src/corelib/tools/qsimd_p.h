@@ -164,11 +164,7 @@
 #  if !defined(__MIPS_DSPR2__) && defined(__mips_dspr2) && defined(Q_PROCESSOR_MIPS_32)
 #    define __MIPS_DSPR2__
 #  endif
-#elif (defined(Q_CC_INTEL) || defined(Q_CC_MSVC) \
-    || (defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && Q_CC_GNU >= 409) \
-    || (defined(Q_CC_CLANG) && Q_CC_CLANG >= 308)) \
-    && !defined(QT_BOOTSTRAPPED)
-#  define QT_COMPILER_SUPPORTS_SIMD_ALWAYS
+#elif defined(Q_PROCESSOR_X86) && defined(QT_COMPILER_SUPPORTS_SIMD_ALWAYS)
 #  define QT_COMPILER_SUPPORTS_HERE(x)    ((__ ## x ## __) || QT_COMPILER_SUPPORTS(x))
 #  if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
      /* GCC requires attributes for a function */

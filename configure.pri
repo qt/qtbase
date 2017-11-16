@@ -395,6 +395,19 @@ defineTest(qtConfTest_buildParts) {
     return(true)
 }
 
+defineTest(qtConfTest_x86SimdAlways) {
+    configs =
+    fpfx = $${currentConfig}.features
+    simd = sse2 sse3 ssse3 sse4_1 sse4_2 rdrnd aesni shani avx avx2 avx512f \
+        avx512er avx512cd avx512pf avx512dq avx512bw avx512vl avx512ifma avx512vbmi
+    for (f, simd) {
+        qtConfCheckFeature($$f)
+        equals($${fpfx}.$${f}.available, true): configs += $$f
+    }
+    $${1}.literal_args = $$system_quote(SIMD=$$join(configs, " "))
+    qtConfTest_compile($${1})
+}
+
 # custom outputs
 
 # this reloads the qmakespec as completely as reasonably possible.

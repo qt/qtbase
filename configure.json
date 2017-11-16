@@ -218,7 +218,7 @@
     },
 
     "testTypeAliases": {
-        "compile": [ "library", "architecture" ]
+        "compile": [ "library", "architecture", "x86SimdAlways" ]
     },
 
     "tests": {
@@ -562,6 +562,11 @@
             "type": "compile",
             "test": "avx512",
             "args": "AVX512=VBMI"
+        },
+        "x86SimdAlways": {
+            "label": "Intrinsics without -mXXX argument",
+            "type": "x86SimdAlways",
+            "test": "x86_simd"
         },
         "mips_dsp": {
             "label": "MIPS DSP instructions",
@@ -1111,6 +1116,14 @@
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_SHA", "value": 1 }
             ]
         },
+        "x86SimdAlways": {
+            "label": "Intrinsics without -mXXX option",
+            "condition": "(arch.i386 || arch.x86_64) && tests.x86SimdAlways",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_SIMD_ALWAYS", "value": 1 }
+            ]
+        },
         "mips_dsp": {
             "label": "DSP",
             "condition": "arch.mips && tests.mips_dsp",
@@ -1396,6 +1409,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                             "type": "featureList",
                             "args": "aesni f16c rdrnd shani",
                             "condition": "(arch.i386 || arch.x86_64)"
+                        },
+                        {
+                            "type": "feature",
+                            "args": "x86SimdAlways",
+                            "condition": "(arch.i386 || arch.x86_64) && !config.msvc"
                         },
                         {
                             "type": "feature",
