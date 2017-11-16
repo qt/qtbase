@@ -675,8 +675,12 @@ public:
         : d(fromAscii_helper(ch, N - 1))
     {}
     template <int N>
+    QString(char (&)[N]) = delete;
+    template <int N>
     inline QString &operator=(const char (&ch)[N])
     { return (*this = fromUtf8(ch, N - 1)); }
+    template <int N>
+    QString &operator=(char (&)[N]) = delete;
 #endif
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     inline QT_ASCII_CAST_WARN QString(const char *ch)
