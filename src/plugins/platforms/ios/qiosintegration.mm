@@ -94,10 +94,6 @@ QIOSIntegration::QIOSIntegration()
                "'applicationDidFinishLaunching' inside your UIApplication delegate.\n");
     }
 
-    // The backingstore needs a global share context in order to support composition in
-    // QPlatformBackingStore.
-    qApp->setAttribute(Qt::AA_ShareOpenGLContexts, true);
-
     // Set current directory to app bundle folder
     QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
 
