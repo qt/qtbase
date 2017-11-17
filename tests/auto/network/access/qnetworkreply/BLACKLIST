@@ -30,9 +30,13 @@ linux
 [ioHttpRedirectPostPut]
 linux
 windows
+[putToFtp]
+windows ci
 [putWithServerClosingConnectionImmediately]
 windows
 [qtbug28035browserDoesNotLoadQtProjectOrgCorrectly]
 windows
 [getFromUnreachableIp]
 windows msvc-2017
+[ioHttpRedirectErrors:too-many-redirects]
+rhel-6.6 ci

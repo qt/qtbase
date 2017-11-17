@@ -2603,7 +2603,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
     QString stmt(QLatin1String("select b.column_name, b.index_name, a.table_name, a.owner "
                   "from all_constraints a, all_ind_columns b "
                   "where a.constraint_type='P' "
-                  "and b.index_name = a.constraint_name "
+                  "and b.index_name = a.index_name "
                   "and b.index_owner = a.owner"));
 
     bool buildIndex = false;
