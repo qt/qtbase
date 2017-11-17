@@ -53,11 +53,23 @@
 #include <qpa/qplatformwindow.h>
 #include <QtGui/QScreen>
 #include <qpa/qwindowsysteminterface.h>
+#include <QCoreApplication>
+
+#include <emscripten/bind.h>
 
 // this is where EGL headers are pulled in, make sure it is last
 #include "qhtml5screen.h"
 
+using namespace emscripten;
 QT_BEGIN_NAMESPACE
+
+void browserBeforeUnload() {
+    QHTML5Integration::QHTML5BrowserExit();
+}
+
+EMSCRIPTEN_BINDINGS(my_module) {
+    function("browserBeforeUnload", &browserBeforeUnload);
+}
 
 static QHTML5Integration *globalHtml5Integration;
 QHTML5Integration *QHTML5Integration::get() { return globalHtml5Integration; }
@@ -106,6 +118,11 @@ QHTML5Integration::QHTML5Integration()
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QHTML5Integration\n");
 #endif
+    EM_ASM(// exit app if browser closes
+           window.onbeforeunload = function () {
+           Module.browserBeforeUnload();
+           };
+     );
 }
 
 QHTML5Integration::~QHTML5Integration()
@@ -115,6 +132,12 @@ QHTML5Integration::~QHTML5Integration()
     destroyScreen(mScreen);
     delete mFontDb;
     delete m_eventTranslator;
+}
+
+void QHTML5Integration::QHTML5BrowserExit()
+{
+    QCoreApplication *app = QCoreApplication::instance();
+    app->quit();
 }
 
 bool QHTML5Integration::hasCapability(QPlatformIntegration::Capability cap) const

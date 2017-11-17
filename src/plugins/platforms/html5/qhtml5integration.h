@@ -78,6 +78,7 @@ public:
     static QHTML5Integration *get();
     QHTML5Screen *screen() { return mScreen; }
     QHtml5Compositor *compositor() { return mCompositor; }
+    static void QHTML5BrowserExit();
 
 private:
     mutable QHtml5FontDatabase *mFontDb;
