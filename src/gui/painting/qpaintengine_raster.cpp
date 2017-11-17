@@ -4186,7 +4186,7 @@ static void qt_span_fill_clipped(int spanCount, const QSpan *spans, void *userDa
     Clip spans to \a{clip}-rectangle.
     Returns number of unclipped spans
 */
-static int qt_intersect_spans(QT_FT_Span *spans, int numSpans,
+static int qt_intersect_spans(QT_FT_Span *&spans, int numSpans,
                               const QRect &clip)
 {
     const short minx = clip.left();
@@ -4194,29 +4194,32 @@ static int qt_intersect_spans(QT_FT_Span *spans, int numSpans,
     const short maxx = clip.right();
     const short maxy = clip.bottom();
 
-    int n = 0;
-    for (int i = 0; i < numSpans; ++i) {
-        if (spans[i].y > maxy)
+    QT_FT_Span *end = spans + numSpans;
+    while (spans < end) {
+        if (spans->y >= miny)
             break;
-        if (spans[i].y < miny
-            || spans[i].x > maxx
-            || spans[i].x + spans[i].len <= minx) {
-            continue;
-        }
-        if (spans[i].x < minx) {
-            spans[n].len = qMin(spans[i].len - (minx - spans[i].x), maxx - minx + 1);
-            spans[n].x = minx;
-        } else {
-            spans[n].x = spans[i].x;
-            spans[n].len = qMin(spans[i].len, ushort(maxx - spans[n].x + 1));
-        }
-        if (spans[n].len == 0)
-            continue;
-        spans[n].y = spans[i].y;
-        spans[n].coverage = spans[i].coverage;
-        ++n;
+        ++spans;
     }
-    return n;
+
+    QT_FT_Span *s = spans;
+    while (s < end) {
+        if (s->y > maxy)
+            break;
+        if (s->x > maxx || s->x + s->len <= minx) {
+            s->len = 0;
+            ++s;
+            continue;
+        }
+        if (s->x < minx) {
+            s->len = qMin(s->len - (minx - s->x), maxx - minx + 1);
+            s->x = minx;
+        } else {
+            s->len = qMin(s->len, ushort(maxx - s->x + 1));
+        }
+        ++s;
+    }
+
+    return s - spans;
 }
 
 
@@ -4229,11 +4232,12 @@ static void qt_span_fill_clipRect(int count, const QSpan *spans,
     Q_ASSERT(fillData->clip);
     Q_ASSERT(!fillData->clip->clipRect.isEmpty());
 
+    QSpan *s = const_cast<QSpan *>(spans);
     // hw: check if this const_cast<> is safe!!!
-    count = qt_intersect_spans(const_cast<QSpan*>(spans), count,
+    count = qt_intersect_spans(s, count,
                                fillData->clip->clipRect);
     if (count > 0)
-        fillData->unclipped_blend(count, spans, fillData);
+        fillData->unclipped_blend(count, s, fillData);
 }
 
 static void qt_span_clip(int count, const QSpan *spans, void *userData)
@@ -4844,7 +4848,8 @@ static inline void drawEllipsePoints(int x, int y, int length,
     if (length == 0)
         return;
 
-    QT_FT_Span outline[4];
+    QT_FT_Span _outline[4];
+    QT_FT_Span *outline = _outline;
     const int midx = rect.x() + (rect.width() + 1) / 2;
     const int midy = rect.y() + (rect.height() + 1) / 2;
 
@@ -4876,7 +4881,8 @@ static inline void drawEllipsePoints(int x, int y, int length,
     outline[3].coverage = 255;
 
     if (brush_func && outline[0].x + outline[0].len < outline[1].x) {
-        QT_FT_Span fill[2];
+        QT_FT_Span _fill[2];
+        QT_FT_Span *fill = _fill;
 
         // top fill
         fill[0].x = outline[0].x + outline[0].len - 1;
