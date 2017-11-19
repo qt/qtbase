@@ -472,8 +472,10 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             break;
         if (option->state & State_Open)
             drawPrimitive(PE_IndicatorArrowDown, option, painter, widget);
-        else
-            drawPrimitive(PE_IndicatorArrowRight, option, painter, widget);
+        else {
+            const bool reverse = (option->direction == Qt::RightToLeft);
+            drawPrimitive(reverse ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight, option, painter, widget);
+        }
         break;
     }
 #if QT_CONFIG(tabbar)
