@@ -1,6 +1,8 @@
 TEMPLATE = subdirs
-CONFIG += ordered
 
-!winrt: SUBDIRS+= signalbug
+!winrt {
+    test.depends = signalbug
+    SUBDIRS += signalbug
+}
 
 SUBDIRS += test

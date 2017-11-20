@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-CONFIG += ordered
+test.depends = testProcessLoopback
 SUBDIRS = testProcessLoopback test

@@ -1,6 +1,7 @@
 QT = core
 TEMPLATE    =	subdirs
-CONFIG  += ordered
+
+tst.depends = lib lib2
 
 SUBDIRS =   lib \
             lib2 \

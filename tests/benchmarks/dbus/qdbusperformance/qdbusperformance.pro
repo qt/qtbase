@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-CONFIG += ordered
+test.depends = server
 SUBDIRS = server test

@@ -1,6 +1,7 @@
 QT = core-private
 TEMPLATE = subdirs
-CONFIG  += ordered
+
+test.depends = plugin1 plugin2
 SUBDIRS = \
     plugin1 \
     plugin2 \
