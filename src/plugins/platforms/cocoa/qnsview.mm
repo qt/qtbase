@@ -353,6 +353,12 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
 }
 
+- (void)viewDidChangeBackingProperties
+{
+    if (self.layer)
+        self.layer.contentsScale = self.window.backingScaleFactor;
+}
+
 - (BOOL)isFlipped
 {
     return YES;
