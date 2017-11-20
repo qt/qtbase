@@ -2070,9 +2070,17 @@ void QWindowsWindow::propagateSizeHints()
 
 bool QWindowsWindow::handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &margins)
 {
+    WINDOWPOS *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
+    if ((windowPos->flags & SWP_NOZORDER) == 0) {
+        if (QWindowsWindow *platformWindow = QWindowsWindow::windowsWindowOf(qWindow)) {
+            QWindow *parentWindow = qWindow->parent();
+            HWND parentHWND = GetAncestor(windowPos->hwnd, GA_PARENT);
+            HWND desktopHWND = GetDesktopWindow();
+            platformWindow->m_data.embedded = !parentWindow && parentHWND && (parentHWND != desktopHWND);
+        }
+    }
     if (!qWindow->isTopLevel()) // Implement hasHeightForWidth().
         return false;
-    WINDOWPOS *windowPos = reinterpret_cast<WINDOWPOS *>(message->lParam);
     if ((windowPos->flags & (SWP_NOCOPYBITS | SWP_NOSIZE)))
         return false;
     const QRect suggestedFrameGeometry(windowPos->x, windowPos->y,
