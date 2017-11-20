@@ -225,7 +225,7 @@ void QIOSWindow::applyGeometry(const QRect &rect)
 
 bool QIOSWindow::isExposed() const
 {
-    return qApp->applicationState() >= Qt::ApplicationActive
+    return qApp->applicationState() != Qt::ApplicationSuspended
         && window()->isVisible() && !window()->geometry().isEmpty();
 }
 

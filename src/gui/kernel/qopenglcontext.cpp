@@ -937,7 +937,9 @@ GLuint QOpenGLContext::defaultFramebufferObject() const
 
 /*!
     Makes the context current in the current thread, against the given
-    \a surface. Returns \c true if successful.
+    \a surface. Returns \c true if successful; otherwise returns \c false.
+    The latter may happen if the surface is not exposed, or the graphics
+    hardware is not available due to e.g. the application being suspended.
 
     If \a surface is 0 this is equivalent to calling doneCurrent().
 
