@@ -310,6 +310,8 @@ QT_BEGIN_NAMESPACE
         Http2DirectAttribute are set, Http2DirectAttribute takes priority.
         (This value was introduced in 5.10.)
 
+    \omitvalue ResourceTypeAttribute
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
