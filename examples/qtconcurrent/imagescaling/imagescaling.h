@@ -57,9 +57,9 @@ class Images : public QWidget
 {
 Q_OBJECT
 public:
-    Images(QWidget *parent = 0);
+    Images(QWidget *parent = nullptr);
     ~Images();
-public Q_SLOTS:
+public slots:
     void open();
     void showImage(int num);
     void finished();

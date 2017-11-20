@@ -41,6 +41,7 @@
 
 #include <qpainter.h>
 #include <qimage.h>
+#include <qrandom.h>
 #include <qscreen.h>
 
 #include <private/qguiapplication_p.h>
@@ -252,7 +253,7 @@ QImage *QBlittablePlatformPixmap::overlay()
         m_rasterOverlay->size() != QSize(w,h)){
         m_rasterOverlay = new QImage(w,h,QImage::Format_ARGB32_Premultiplied);
         m_rasterOverlay->fill(0x00000000);
-        uint color = (qrand() % 11)+7;
+        uint color = QRandomGenerator::global()->bounded(11)+7;
         m_overlayColor = QColor(Qt::GlobalColor(color));
         m_overlayColor.setAlpha(0x88);
 

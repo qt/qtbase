@@ -179,6 +179,9 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
     QMacInternalPasteboardMime::initializeMimeTypes();
     QCocoaMimeTypes::initializeMimeTypes();
     QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
+
+    connect(qGuiApp, &QGuiApplication::focusWindowChanged,
+        this, &QCocoaIntegration::focusWindowChanged);
 }
 
 QCocoaIntegration::~QCocoaIntegration()
@@ -509,5 +512,34 @@ void QCocoaIntegration::beep() const
 {
     NSBeep();
 }
+
+void QCocoaIntegration::focusWindowChanged(QWindow *focusWindow)
+{
+    // Don't revert icon just because we lost focus
+    if (!focusWindow)
+        return;
+
+    static bool hasDefaultApplicationIcon = [](){
+        NSImage *genericApplicationIcon = [[NSWorkspace sharedWorkspace]
+            iconForFileType:NSFileTypeForHFSTypeCode(kGenericApplicationIcon)];
+        NSImage *applicationIcon = [NSImage imageNamed:NSImageNameApplicationIcon];
+
+        NSRect rect = NSMakeRect(0, 0, 32, 32);
+        return [applicationIcon CGImageForProposedRect:&rect context:nil hints:nil]
+            == [genericApplicationIcon CGImageForProposedRect:&rect context:nil hints:nil];
+    }();
+
+    // Don't let the window icon override an explicit application icon set in the Info.plist
+    if (!hasDefaultApplicationIcon)
+        return;
+
+    // Or an explicit application icon set on QGuiApplication
+    if (!qGuiApp->windowIcon().isNull())
+        return;
+
+    setApplicationIcon(focusWindow->icon());
+}
+
+#include "moc_qcocoaintegration.cpp"
 
 QT_END_NAMESPACE

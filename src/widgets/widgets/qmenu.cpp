@@ -234,9 +234,6 @@ void QMenuPrivate::setPlatformMenu(QPlatformMenu *menu)
     }
 }
 
-// forward declare function
-static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item, QPlatformMenu *itemsMenu);
-
 void QMenuPrivate::syncPlatformMenu()
 {
     Q_Q(QMenu);
@@ -246,17 +243,62 @@ void QMenuPrivate::syncPlatformMenu()
     QPlatformMenuItem *beforeItem = Q_NULLPTR;
     const QList<QAction*> actions = q->actions();
     for (QList<QAction*>::const_reverse_iterator it = actions.rbegin(), end = actions.rend(); it != end; ++it) {
-        QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
-        QAction *action = *it;
-        menuItem->setTag(reinterpret_cast<quintptr>(action));
-        QObject::connect(menuItem, SIGNAL(activated()), action, SLOT(trigger()), Qt::QueuedConnection);
-        QObject::connect(menuItem, SIGNAL(hovered()), action, SIGNAL(hovered()), Qt::QueuedConnection);
-        copyActionToPlatformItem(action, menuItem, platformMenu.data());
-        platformMenu->insertMenuItem(menuItem, beforeItem);
+        QPlatformMenuItem *menuItem = insertActionInPlatformMenu(*it, beforeItem);
         beforeItem = menuItem;
     }
     platformMenu->syncSeparatorsCollapsible(collapsibleSeparators);
     platformMenu->setEnabled(q->isEnabled());
+}
+
+void QMenuPrivate::copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item)
+{
+    item->setText(action->text());
+    item->setIsSeparator(action->isSeparator());
+    if (action->isIconVisibleInMenu()) {
+        item->setIcon(action->icon());
+        if (QWidget *w = action->parentWidget()) {
+            QStyleOption opt;
+            opt.init(w);
+            item->setIconSize(w->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, w));
+        } else {
+            QStyleOption opt;
+            item->setIconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, 0));
+        }
+    } else {
+        item->setIcon(QIcon());
+    }
+    item->setVisible(action->isVisible());
+#if QT_CONFIG(shortcut)
+    item->setShortcut(action->shortcut());
+#endif
+    item->setCheckable(action->isCheckable());
+    item->setChecked(action->isChecked());
+    item->setHasExclusiveGroup(action->actionGroup() && action->actionGroup()->isExclusive());
+    item->setFont(action->font());
+    item->setRole((QPlatformMenuItem::MenuRole) action->menuRole());
+    item->setEnabled(action->isEnabled());
+
+    if (action->menu()) {
+        if (!action->menu()->platformMenu())
+            action->menu()->setPlatformMenu(platformMenu->createSubMenu());
+        item->setMenu(action->menu()->platformMenu());
+    } else {
+        item->setMenu(0);
+    }
+}
+
+QPlatformMenuItem * QMenuPrivate::insertActionInPlatformMenu(const QAction *action, QPlatformMenuItem *beforeItem)
+{
+    QPlatformMenuItem *menuItem = platformMenu->createMenuItem();
+    Q_ASSERT(menuItem);
+
+    menuItem->setTag(reinterpret_cast<quintptr>(action));
+    QObject::connect(menuItem, &QPlatformMenuItem::activated, action, &QAction::trigger, Qt::QueuedConnection);
+    QObject::connect(menuItem, &QPlatformMenuItem::hovered, action, &QAction::hovered, Qt::QueuedConnection);
+    copyActionToPlatformItem(action, menuItem);
+    platformMenu->insertMenuItem(menuItem, beforeItem);
+
+    return menuItem;
 }
 
 int QMenuPrivate::scrollerHeight() const
@@ -2339,6 +2381,12 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->updateLayoutDirection();
     d->adjustMenuScreen(p);
 
+    const bool contextMenu = d->isContextMenu();
+    if (d->lastContextMenu != contextMenu) {
+        d->itemsDirty = true;
+        d->lastContextMenu = contextMenu;
+    }
+
 #if QT_CONFIG(menubar)
     // if this menu is part of a chain attached to a QMenuBar, set the
     // _NET_WM_WINDOW_TYPE_DROPDOWN_MENU X11 window type
@@ -3477,43 +3525,6 @@ QMenu::timerEvent(QTimerEvent *e)
     }
 }
 
-static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem *item, QPlatformMenu *itemsMenu)
-{
-    item->setText(action->text());
-    item->setIsSeparator(action->isSeparator());
-    if (action->isIconVisibleInMenu()) {
-        item->setIcon(action->icon());
-        if (QWidget *w = action->parentWidget()) {
-            QStyleOption opt;
-            opt.init(w);
-            item->setIconSize(w->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, w));
-        } else {
-            QStyleOption opt;
-            item->setIconSize(qApp->style()->pixelMetric(QStyle::PM_SmallIconSize, &opt, 0));
-        }
-    } else {
-        item->setIcon(QIcon());
-    }
-    item->setVisible(action->isVisible());
-#ifndef QT_NO_SHORTCUT
-    item->setShortcut(action->shortcut());
-#endif
-    item->setCheckable(action->isCheckable());
-    item->setChecked(action->isChecked());
-    item->setHasExclusiveGroup(action->actionGroup() && action->actionGroup()->isExclusive());
-    item->setFont(action->font());
-    item->setRole((QPlatformMenuItem::MenuRole) action->menuRole());
-    item->setEnabled(action->isEnabled());
-
-    if (action->menu()) {
-        if (!action->menu()->platformMenu())
-            action->menu()->setPlatformMenu(itemsMenu->createSubMenu());
-        item->setMenu(action->menu()->platformMenu());
-    } else {
-        item->setMenu(0);
-    }
-}
-
 /*!
   \reimp
 */
@@ -3567,15 +3578,10 @@ void QMenu::actionEvent(QActionEvent *e)
 
     if (!d->platformMenu.isNull()) {
         if (e->type() == QEvent::ActionAdded) {
-            QPlatformMenuItem *menuItem = d->platformMenu->createMenuItem();
-            menuItem->setTag(reinterpret_cast<quintptr>(e->action()));
-            QObject::connect(menuItem, SIGNAL(activated()), e->action(), SLOT(trigger()));
-            QObject::connect(menuItem, SIGNAL(hovered()), e->action(), SIGNAL(hovered()));
-            copyActionToPlatformItem(e->action(), menuItem, d->platformMenu);
             QPlatformMenuItem *beforeItem = e->before()
                 ? d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()))
                 : nullptr;
-            d->platformMenu->insertMenuItem(menuItem, beforeItem);
+            d->insertActionInPlatformMenu(e->action(), beforeItem);
         } else if (e->type() == QEvent::ActionRemoved) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             d->platformMenu->removeMenuItem(menuItem);
@@ -3583,7 +3589,7 @@ void QMenu::actionEvent(QActionEvent *e)
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             if (menuItem) {
-                copyActionToPlatformItem(e->action(), menuItem, d->platformMenu);
+                d->copyActionToPlatformItem(e->action(), menuItem);
                 d->platformMenu->syncMenuItem(menuItem);
             }
         }

@@ -991,12 +991,13 @@ void QAbstractButton::mousePressEvent(QMouseEvent *e)
 void QAbstractButton::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_D(QAbstractButton);
-    d->pressed = false;
 
     if (e->button() != Qt::LeftButton) {
         e->ignore();
         return;
     }
+
+    d->pressed = false;
 
     if (!d->down) {
         // refresh is required by QMacStyle to resume the default button animation

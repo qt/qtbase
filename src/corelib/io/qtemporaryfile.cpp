@@ -165,7 +165,7 @@ QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
 
         Char *rIter = placeholderEnd;
         while (rIter != placeholderStart) {
-            quint32 rnd = QRandomGenerator::generate();
+            quint32 rnd = QRandomGenerator::global()->generate();
             auto applyOne = [&]() {
                 quint32 v = rnd & ((1 << BitsPerCharacter) - 1);
                 rnd >>= BitsPerCharacter;

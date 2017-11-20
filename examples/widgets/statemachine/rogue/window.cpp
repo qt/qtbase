@@ -248,11 +248,9 @@ void Window::movePlayer(Direction direction)
 
 void Window::setupMap()
 {
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-
     for (int x = 0; x < WIDTH; ++x)
         for (int y = 0; y < HEIGHT; ++y) {
-        if (x == 0 || x == WIDTH - 1 || y == 0 || y == HEIGHT - 1 || qrand() % 40 == 0)
+        if (x == 0 || x == WIDTH - 1 || y == 0 || y == HEIGHT - 1 || QRandomGenerator::global()->bounded(40) == 0)
             map[x][y] = '#';
         else
             map[x][y] = '.';

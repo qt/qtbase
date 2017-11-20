@@ -30,6 +30,7 @@
 #include <QDialog>
 #include <QFontDatabase>
 #include <QPainter>
+#include <QRandomGenerator>
 #include <QTime>
 #include <QTimer>
 
@@ -93,17 +94,17 @@ public:
         static const QString text = QLatin1String("Qt rocks!!!");
         static const int textsPerPaint = 30;
         for (int i = 0; i < textsPerPaint; i++) {
-            const int fontSize = 4 + (qrand() % 5);
-            const int fontWeight = (qrand() % 2) == 1 ? QFont::Normal : QFont::Bold;
-            const bool fontItalic = (qrand() % 2) == 1;
+            const int fontSize = 4 + QRandomGenerator::global()->bounded(5);
+            const int fontWeight = QRandomGenerator::global()->bounded(2) == 1 ? QFont::Normal : QFont::Bold;
+            const bool fontItalic = QRandomGenerator::global()->bounded(2) == 1;
             const QFont font("Default", fontSize, fontWeight, fontItalic);
             p.setFont(font);
-            p.setPen(QColor::fromHsv(qrand() % 359, 155 + qrand() % 100,
-                                     155 + qrand() % 100, 100 + qrand() % 155));
+            p.setPen(QColor::fromHsv(QRandomGenerator::global()->bounded(359), 155 + QRandomGenerator::global()->bounded(100),
+                                     155 + QRandomGenerator::global()->bounded(100), 100 + QRandomGenerator::global()->bounded(155)));
             const QSize textSize(p.fontMetrics().boundingRect(text).size());
             const QPoint position(
-                -textSize.width() / 2 + (qrand() % size.width()),
-                textSize.height() / 2 + (qrand() % size.height()));
+                -textSize.width() / 2 + QRandomGenerator::global()->bounded(size.width()),
+                textSize.height() / 2 + QRandomGenerator::global()->bounded(size.height()));
             p.drawText(position, text);
         }
     }
@@ -126,8 +127,8 @@ public:
 
         QString text;
         for (int i = 0; i < piecesPerPaint; ++i) {
-            QString piece = QLatin1String(pieces[qrand() % piecesCount]);
-            if (i == 0 || qrand() % 2) {
+            QString piece = QLatin1String(pieces[QRandomGenerator::global()->bounded(piecesCount)]);
+            if (i == 0 || QRandomGenerator::global()->bounded(2)) {
                 // Make this piece the beginning of a new sentence.
                 piece[0] = piece[0].toUpper();
                 if (i > 0)
@@ -160,7 +161,7 @@ public:
         for (int i = 0; i < systemsPerPaint; i++) {
             if (i > 0)
                 text.append(QLatin1Char(' '));
-            text.append(samples.at(qrand() % samples.count()));
+            text.append(samples.at(QRandomGenerator::global()->bounded(samples.count())));
         }
         p.drawText(QRectF(QPointF(0, 0), QSizeF(size)),
                    Qt::AlignTop | Qt::AlignAbsolute | Qt::TextWordWrap, text);

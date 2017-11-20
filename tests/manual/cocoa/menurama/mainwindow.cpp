@@ -37,6 +37,11 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    auto *a = ui->menuStuff->addAction("Enabled Submenu (QTBUG-63172)");
+    auto *qtbug63172_Menu = new QMenu;
+    qtbug63172_Menu->addAction("We're Good!");
+    a->setMenu(qtbug63172_Menu);
+
     startTimer(1000);
 
     connect(ui->menuAfter_aboutToShow, &QMenu::aboutToShow, [=] {

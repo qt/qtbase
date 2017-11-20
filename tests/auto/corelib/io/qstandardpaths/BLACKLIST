@@ -1,0 +1,3 @@
+[testFindExecutable]
+# QTBUG-64404
+b2qt 64bit

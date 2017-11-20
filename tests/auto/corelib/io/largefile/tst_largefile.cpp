@@ -31,6 +31,7 @@
 #include <QtAlgorithms>
 #include <QFile>
 #include <QFileInfo>
+#include <QRandomGenerator>
 #include <qplatformdefs.h>
 
 #include <QDebug>
@@ -174,8 +175,7 @@ static inline QByteArray generateDataBlock(int blockSize, QString text, qint64 u
 
     static qint64 counter = 0;
 
-    qint64 randomBits = ((qint64)qrand() << 32)
-            | ((qint64)qrand() & 0x00000000ffffffff);
+    qint64 randomBits = QRandomGenerator::global()->generate64();
 
     appendRaw(block, randomBits);
     appendRaw(block, userBits);

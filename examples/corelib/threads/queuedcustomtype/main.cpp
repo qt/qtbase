@@ -126,7 +126,6 @@ int main(int argc, char *argv[])
 //! [main start] //! [register meta-type for queued communications]
     qRegisterMetaType<Block>();
 //! [register meta-type for queued communications]
-    qsrand(QTime::currentTime().elapsed());
 
     Window window;
     window.show();

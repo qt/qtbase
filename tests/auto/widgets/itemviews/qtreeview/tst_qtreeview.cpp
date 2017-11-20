@@ -33,6 +33,10 @@
 #include <QtWidgets/QtWidgets>
 #include <private/qtreeview_p.h>
 
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
+
 #ifndef QT_NO_DRAGANDDROP
 Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)
 #endif
@@ -55,16 +59,6 @@ static void initStandardTreeModel(QStandardItemModel *model)
     item = new QStandardItem(QLatin1String("Row 3 Item"));
     item->setIcon(QIcon());
     model->insertRow(2, item);
-}
-
-// Make a widget frameless to prevent size constraints of title bars
-// from interfering (Windows).
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
 }
 
 class tst_QTreeView : public QObject

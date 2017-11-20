@@ -81,3 +81,5 @@ ubuntu-14.04
 osx
 [activateWindow]
 osx-10.12 ci
+[multipleToplevelFocusCheck]
+linux

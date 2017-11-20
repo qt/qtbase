@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -29,6 +29,7 @@
 #include <QByteArray>
 #include <QCryptographicHash>
 #include <QFile>
+#include <QRandomGenerator>
 #include <QString>
 #include <QtTest>
 
@@ -102,9 +103,8 @@ tst_bench_QCryptographicHash::tst_bench_QCryptographicHash()
     } else
 #endif
     {
-        qsrand(time(NULL));
         for (int i = 0; i < MaxBlockSize; ++i)
-            blockOfData[i] = qrand();
+            blockOfData[i] = QRandomGenerator::global()->generate();
     }
 }
 

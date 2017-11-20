@@ -28,10 +28,12 @@
 
 
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicsview_p.h>
 #include <private/qgraphicsscene_p.h>
+#include <QRandomGenerator>
 #include <QStyleOptionGraphicsItem>
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
@@ -125,17 +127,6 @@ static void sendKeyClick(QGraphicsScene *scene, Qt::Key key)
 {
     sendKeyPress(scene, key);
     sendKeyRelease(scene, key);
-}
-
-static inline void centerOnScreen(QWidget *w, const QSize &size)
-{
-    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    centerOnScreen(w, w->geometry().size());
 }
 
 class EventSpy : public QGraphicsWidget
@@ -3595,12 +3586,12 @@ void tst_QGraphicsItem::group()
     QList<QGraphicsItem *> newItems;
     for (int i = 0; i < 100; ++i) {
         QGraphicsItem *item = scene.addRect(QRectF(-25, -25, 50, 50), QPen(Qt::black, 0),
-                                            QBrush(QColor(rand() % 255, rand() % 255,
-                                                          rand() % 255, rand() % 255)));
+                                            QBrush(QColor(QRandomGenerator::global()->bounded(255), QRandomGenerator::global()->bounded(255),
+                                                          QRandomGenerator::global()->bounded(255), QRandomGenerator::global()->bounded(255))));
         newItems << item;
-        item->setPos(-1000 + rand() % 2000,
-                     -1000 + rand() % 2000);
-        item->setTransform(QTransform().rotate(rand() % 90), true);
+        item->setPos(-1000 + QRandomGenerator::global()->bounded(2000),
+                     -1000 + QRandomGenerator::global()->bounded(2000));
+        item->setTransform(QTransform().rotate(QRandomGenerator::global()->bounded(90)), true);
     }
 
     view.fitInView(scene.itemsBoundingRect());
@@ -4143,8 +4134,8 @@ void tst_QGraphicsItem::ensureVisible()
 
     for (int x = -100; x < 100; x += 25) {
         for (int y = -100; y < 100; y += 25) {
-            int xmargin = rand() % 75;
-            int ymargin = rand() % 75;
+            int xmargin = QRandomGenerator::global()->bounded(75);
+            int ymargin = QRandomGenerator::global()->bounded(75);
             item->ensureVisible(x, y, 25, 25, xmargin, ymargin);
             QApplication::processEvents();
 
@@ -4211,7 +4202,7 @@ void tst_QGraphicsItem::cursor()
 
     QWidget topLevel;
     topLevel.resize(250, 150);
-    centerOnScreen(&topLevel);
+    QTestPrivate::centerOnScreen(&topLevel);
     QGraphicsView view(&scene,&topLevel);
     view.setFixedSize(200, 100);
     topLevel.show();
@@ -7137,7 +7128,7 @@ public:
         : QGraphicsRectItem(QRectF(-10, -10, 20, 20))
     {
         setPen(QPen(Qt::black, 0));
-        setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
+        setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
     }
 
     QTransform x;

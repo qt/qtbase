@@ -33,6 +33,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QEventLoop>
 #include <QtCore/QFile>
+#include <QtCore/QRandomGenerator>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QTemporaryFile>
@@ -120,12 +121,11 @@ class tst_QNetworkReply: public QObject
     static QString createUniqueExtension()
     {
         if (!seedCreated) {
-            qsrand(QTime(0,0,0).msecsTo(QTime::currentTime()) + QCoreApplication::applicationPid());
             seedCreated = true; // not thread-safe, but who cares
         }
         return QString::number(QTime(0, 0, 0).msecsTo(QTime::currentTime()))
             + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid())
-            + QLatin1Char('-') + QString::number(qrand());
+            + QLatin1Char('-') + QString::number(QRandomGenerator::global()->generate());
     }
 
     static QString tempRedirectReplyStr() {
@@ -1994,6 +1994,16 @@ void tst_QNetworkReply::getErrors_data()
                                          << int(QNetworkReply::AuthenticationRequiredError) << 401 << false;
 }
 
+static QByteArray msgGetErrors(int waitResult, const QNetworkReplyPtr &reply)
+{
+    QByteArray result ="waitResult=" + QByteArray::number(waitResult);
+    if (reply->isFinished())
+        result += ", finished";
+    if (reply->error() != QNetworkReply::NoError)
+        result += ", error: " + QByteArray::number(int(reply->error()));
+    return result;
+}
+
 void tst_QNetworkReply::getErrors()
 {
     QFETCH(QString, url);
@@ -2023,7 +2033,8 @@ void tst_QNetworkReply::getErrors()
         QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     // now run the request:
-    QVERIFY(waitForFinish(reply) != Timeout);
+    const int waitResult = waitForFinish(reply);
+    QVERIFY2(waitResult != Timeout, msgGetErrors(waitResult, reply));
 
     QFETCH(int, error);
     QEXPECT_FAIL("ftp-is-dir", "QFtp cannot provide enough detail", Abort);
@@ -4852,7 +4863,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     // server send the data much faster than expected.
     // So better provide random data that cannot be compressed.
     for (int i = 0; i < wantedSize; ++i)
-        sourceFile += (char)qrand();
+        sourceFile += (char)QRandomGenerator::global()->generate();
 
     // emulate a minimal https server
     SslServer server;
@@ -4932,7 +4943,7 @@ void tst_QNetworkReply::ioGetFromBuiltinHttp()
     // server send the data much faster than expected.
     // So better provide random data that cannot be compressed.
     for (int i = 0; i < wantedSize; ++i)
-        testData += (char)qrand();
+        testData += (char)QRandomGenerator::global()->generate();
 
     QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
     httpResponse += QByteArray::number(testData.size());
@@ -6754,6 +6765,48 @@ void tst_QNetworkReply::compressedHttpReplyBrokenGzip()
 void tst_QNetworkReply::getFromUnreachableIp()
 {
     QNetworkAccessManager manager;
+
+#ifdef Q_OS_WIN
+    // This test assumes that attempt to connect to 255.255.255.255 fails more
+    // or less fast/immediately. This is not what we observe on Windows:
+    // WSAConnect on non-blocking socket returns SOCKET_ERROR, WSAGetLastError
+    // returns WSAEWOULDBLOCK (expected) and getsockopt most of the time returns
+    // NOERROR; so socket engine starts a timer (30 s.) and waits for a timeout/
+    // error/success. Unfortunately, the test itself is waiting only for 5 s.
+    // So we have to adjust the connection timeout or skip the test completely
+    // if the 'bearermanagement' feature is not available.
+#if QT_CONFIG(bearermanagement)
+    class ConfigurationGuard
+    {
+    public:
+        explicit ConfigurationGuard(QNetworkAccessManager *m)
+            : manager(m)
+        {
+            Q_ASSERT(m);
+            auto conf = manager->configuration();
+            previousTimeout = conf.connectTimeout();
+            conf.setConnectTimeout(1500);
+            manager->setConfiguration(conf);
+        }
+        ~ConfigurationGuard()
+        {
+            Q_ASSERT(manager);
+            auto conf = manager->configuration();
+            conf.setConnectTimeout(previousTimeout);
+            manager->setConfiguration(conf);
+        }
+    private:
+        QNetworkAccessManager *manager = nullptr;
+        int previousTimeout = 0;
+
+        Q_DISABLE_COPY(ConfigurationGuard)
+    };
+
+    const ConfigurationGuard restorer(&manager);
+#else // bearermanagement
+    QSKIP("This test is non-deterministic on Windows x86");
+#endif // !bearermanagement
+#endif // Q_OS_WIN
 
     QNetworkRequest request(QUrl("http://255.255.255.255/42/23/narf/narf/narf"));
     QNetworkReplyPtr reply(manager.get(request));
@@ -8748,7 +8801,7 @@ public slots:
         m_receivedData += data;
         if (!m_parsedHeaders && m_receivedData.contains("\r\n\r\n")) {
             m_parsedHeaders = true;
-            QTimer::singleShot(qrand()%60, this, SLOT(closeDelayed())); // simulate random network latency
+            QTimer::singleShot(QRandomGenerator::global()->bounded(60), this, SLOT(closeDelayed())); // simulate random network latency
             // This server simulates a web server connection closing, e.g. because of Apaches MaxKeepAliveRequests or KeepAliveTimeout
             // In this case QNAM needs to re-send the upload data but it had a bug which then corrupts the upload
             // This test catches that.

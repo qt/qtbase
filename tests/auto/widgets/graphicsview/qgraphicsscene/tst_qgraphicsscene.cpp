@@ -1507,10 +1507,10 @@ void tst_QGraphicsScene::mouseGrabberItem()
             QCOMPARE(scene.mouseGrabberItem(), topMostItem);
 
             // Geometrical changes should not affect the mouse grabber.
-            item->setZValue(rand() % 500);
-            item2->setZValue(rand() % 500);
-            item->setPos(rand() % 50000, rand() % 50000);
-            item2->setPos(rand() % 50000, rand() % 50000);
+            item->setZValue(QRandomGenerator::global()->bounded(500));
+            item2->setZValue(QRandomGenerator::global()->bounded(500));
+            item->setPos(QRandomGenerator::global()->bounded(50000), QRandomGenerator::global()->bounded(50000));
+            item2->setPos(QRandomGenerator::global()->bounded(50000), QRandomGenerator::global()->bounded(50000));
         }
 
         QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
@@ -3424,7 +3424,7 @@ void tst_QGraphicsScene::task139710_bspTreeCrash()
         // add 1000 more items - the BSP tree is now resized
         for (int i = 0; i < 1000; ++i) {
             QGraphicsRectItem *item = scene.addRect(QRectF(0, 0, 200, 200));
-            item->setPos(qrand() % 10000, qrand() % 10000);
+            item->setPos(QRandomGenerator::global()->bounded(10000), QRandomGenerator::global()->bounded(10000));
         }
 
         // trigger delayed item indexing for the first 1000 items
@@ -3433,7 +3433,7 @@ void tst_QGraphicsScene::task139710_bspTreeCrash()
         // add 1000 more items - the BSP tree is now resized
         for (int i = 0; i < 1000; ++i) {
             QGraphicsRectItem *item = scene.addRect(QRectF(0, 0, 200, 200));
-            item->setPos(qrand() % 10000, qrand() % 10000);
+            item->setPos(QRandomGenerator::global()->bounded(10000), QRandomGenerator::global()->bounded(10000));
         }
 
         // get items from the BSP tree and use them. there was junk in the tree
@@ -3543,15 +3543,15 @@ void tst_QGraphicsScene::sorting()
     QGraphicsRectItem *c_2_1 = new QGraphicsRectItem(0, 0, 30, 30, c_2);
     QGraphicsRectItem *c_2_1_1 = new QGraphicsRectItem(0, 0, 20, 20, c_2_1);
     QGraphicsRectItem *c_2_2 = new QGraphicsRectItem(0, 0, 30, 30, c_2);
-    t_1->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    c_1->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    c_1_1->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    c_1_1_1->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    c_1_2->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    c_2->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    c_2_1->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    c_2_1_1->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
-    c_2_2->setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
+    t_1->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    c_1->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    c_1_1->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    c_1_1_1->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    c_1_2->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    c_2->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    c_2_1->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    c_2_1_1->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
+    c_2_2->setBrush(QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
 
     c_1->setPos(23, 18);
     c_1_1->setPos(24, 28);

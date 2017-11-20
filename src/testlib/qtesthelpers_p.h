@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Intel Corporation.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtTest module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QRANDOM_P_H
-#define QRANDOM_P_H
+#ifndef QTESTHELPERS_P_H
+#define QTESTHELPERS_P_H
 
 //
 //  W A R N I N G
@@ -51,44 +51,62 @@
 // We mean it.
 //
 
-#include "qglobal_p.h"
-#include <private/qsimd_p.h>
+#include <QtCore/QFile>
+#include <QtCore/QString>
+#include <QtCore/QChar>
+#include <QtCore/QPoint>
+
+#ifdef QT_GUI_LIB
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
+#endif
+
+#ifdef QT_WIDGETS_LIB
+#include <QtWidgets/QWidget>
+#endif
 
 QT_BEGIN_NAMESPACE
 
-enum QRandomGeneratorControl {
-    UseSystemRNG = 1,
-    SkipSystemRNG = 2,
-    SkipHWRNG = 4,
-    SetRandomData = 8,
+namespace QTestPrivate {
 
-    // 28 bits
-    RandomDataMask = 0xfffffff0
-};
-
-enum RNGType {
-    SystemRNG = 0,
-    MersenneTwister = 1
-};
-
-#if defined(QT_BUILD_INTERNAL) && defined(QT_BUILD_CORE_LIB)
-Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control = Q_BASIC_ATOMIC_INITIALIZER(0U);
-#elif defined(QT_BUILD_INTERNAL)
-extern Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control;
-#else
-enum { qt_randomdevice_control = 0 };
-#endif
-
-inline bool qt_has_hwrng()
+static inline bool canHandleUnicodeFileNames()
 {
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-    return qCpuHasFeature(RDRND);
+#if defined(Q_OS_WIN)
+    return true;
 #else
-    return false;
+    // Check for UTF-8 by converting the Euro symbol (see tst_utf8)
+    return QFile::encodeName(QString(QChar(0x20AC))) == QByteArrayLiteral("\342\202\254");
 #endif
 }
 
+#ifdef QT_WIDGETS_LIB
+static inline void centerOnScreen(QWidget *w, const QSize &size)
+{
+    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
+    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
+}
+
+static inline void centerOnScreen(QWidget *w)
+{
+    centerOnScreen(w, w->geometry().size());
+}
+
+/*! \internal
+
+    Make a widget frameless to prevent size constraints of title bars from interfering (Windows).
+*/
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+             | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+#endif // QT_WIDGETS_LIB
+
+} // namespace QTestPrivate
 
 QT_END_NAMESPACE
 
-#endif // QRANDOM_P_H
+#endif // QTESTHELPERS_P_H

@@ -68,6 +68,7 @@ private slots:
     void shortcutEvents();
     void stopRepeatTimer();
 
+    void mouseReleased(); // QTBUG-53244
 #ifdef QT_KEYPAD_NAVIGATION
     void keyNavigation();
 #endif
@@ -561,6 +562,37 @@ void tst_QAbstractButton::stopRepeatTimer()
     button.resetTimerEvents();
     QTest::qWait(1000);
     QCOMPARE(button.timerEventCount(), 0);
+}
+
+void tst_QAbstractButton::mouseReleased() // QTBUG-53244
+{
+    MyButton button(nullptr);
+    button.setObjectName("button");
+    button.setGeometry(0, 0, 20, 20);
+    QSignalSpy spyPress(&button, &QAbstractButton::pressed);
+    QSignalSpy spyRelease(&button, &QAbstractButton::released);
+
+    QTest::mousePress(&button, Qt::LeftButton);
+    QCOMPARE(spyPress.count(), 1);
+    QCOMPARE(button.isDown(), true);
+    QCOMPARE(spyRelease.count(), 0);
+
+    QTest::mouseClick(&button, Qt::RightButton);
+    QCOMPARE(spyPress.count(), 1);
+    QCOMPARE(button.isDown(), true);
+    QCOMPARE(spyRelease.count(), 0);
+
+    QPointF posOutOfWidget = QPointF(30, 30);
+    QMouseEvent me(QEvent::MouseMove,
+                     posOutOfWidget, Qt::NoButton,
+                     Qt::MouseButtons(Qt::LeftButton),
+                     Qt::NoModifier); // mouse press and move
+
+    qApp->sendEvent(&button, &me);
+    // should emit released signal once mouse is dragging out of boundary
+    QCOMPARE(spyPress.count(), 1);
+    QCOMPARE(button.isDown(), false);
+    QCOMPARE(spyRelease.count(), 1);
 }
 
 #ifdef QT_KEYPAD_NAVIGATION

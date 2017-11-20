@@ -51,23 +51,15 @@
 #include <QtWidgets>
 #include <QtConcurrent>
 
+#include <functional>
+
 using namespace QtConcurrent;
-
-const int iterations = 20;
-
-void spin(int &iteration)
-{
-    const int work = 1000 * 1000 * 40;
-    volatile int v = 0;
-    for (int j = 0; j < work; ++j)
-        ++v;
-
-    qDebug() << "iteration" << iteration << "in thread" << QThread::currentThreadId();
-}
 
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
+
+    const int iterations = 20;
 
     // Prepare the vector.
     QVector<int> vector;
@@ -80,10 +72,20 @@ int main(int argc, char **argv)
 
     // Create a QFutureWatcher and connect signals and slots.
     QFutureWatcher<void> futureWatcher;
-    QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
-    QObject::connect(&dialog, SIGNAL(canceled()), &futureWatcher, SLOT(cancel()));
-    QObject::connect(&futureWatcher, SIGNAL(progressRangeChanged(int,int)), &dialog, SLOT(setRange(int,int)));
-    QObject::connect(&futureWatcher, SIGNAL(progressValueChanged(int)), &dialog, SLOT(setValue(int)));
+    QObject::connect(&futureWatcher, &QFutureWatcher<void>::finished, &dialog, &QProgressDialog::reset);
+    QObject::connect(&dialog, &QProgressDialog::canceled, &futureWatcher, &QFutureWatcher<void>::cancel);
+    QObject::connect(&futureWatcher,  &QFutureWatcher<void>::progressRangeChanged, &dialog, &QProgressDialog::setRange);
+    QObject::connect(&futureWatcher, &QFutureWatcher<void>::progressValueChanged,  &dialog, &QProgressDialog::setValue);
+
+    // Our function to compute
+    std::function<void(int&)> spin = [](int &iteration) {
+        const int work = 1000 * 1000 * 40;
+        volatile int v = 0;
+        for (int j = 0; j < work; ++j)
+            ++v;
+
+        qDebug() << "iteration" << iteration << "in thread" << QThread::currentThreadId();
+    };
 
     // Start the computation.
     futureWatcher.setFuture(QtConcurrent::map(vector, spin));

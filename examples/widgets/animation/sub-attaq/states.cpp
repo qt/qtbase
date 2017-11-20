@@ -64,6 +64,7 @@
 #include <QtCore/QStateMachine>
 #include <QtWidgets/QKeyEventTransition>
 #include <QtCore/QFinalState>
+#include <QtCore/QRandomGenerator>
 
 PlayState::PlayState(GraphicsScene *scene, QState *parent)
     : QState(parent),
@@ -193,12 +194,12 @@ void LevelState::initializeLevel()
         for (int j = 0; j < subContent.second; ++j ) {
             SubMarine *sub = new SubMarine(submarineDesc.type, submarineDesc.name, submarineDesc.points);
             scene->addItem(sub);
-            int random = (qrand() % 15 + 1);
+            int random = QRandomGenerator::global()->bounded(15) + 1;
             qreal x = random == 13 || random == 5 ? 0 : scene->width() - sub->size().width();
-            qreal y = scene->height() -(qrand() % 150 + 1) - sub->size().height();
+            qreal y = scene->height() -(QRandomGenerator::global()->bounded(150) + 1) - sub->size().height();
             sub->setPos(x,y);
             sub->setCurrentDirection(x == 0 ? SubMarine::Right : SubMarine::Left);
-            sub->setCurrentSpeed(qrand() % 3 + 1);
+            sub->setCurrentSpeed(QRandomGenerator::global()->bounded(3) + 1);
         }
     }
 }
