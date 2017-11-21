@@ -63,6 +63,7 @@
 #include "private/qobject_p.h"
 
 #include <algorithm>
+#include <atomic>
 
 #ifdef Q_OS_WINRT
 namespace ABI {
@@ -165,7 +166,7 @@ public:
     bool running;
     bool finished;
     bool isInFinish; //when in QThreadPrivate::finish
-    bool interruptionRequested;
+    std::atomic<bool> interruptionRequested;
 
     bool exited;
     int returnCode;

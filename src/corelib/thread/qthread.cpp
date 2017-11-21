@@ -849,10 +849,12 @@ void QThread::requestInterruption()
         return;
     }
     Q_D(QThread);
+    // ### Qt 6: use std::atomic_flag, and document that
+    // requestInterruption/isInterruptionRequested do not synchronize with each other
     QMutexLocker locker(&d->mutex);
     if (!d->running || d->finished || d->isInFinish)
         return;
-    d->interruptionRequested = true;
+    d->interruptionRequested.store(true, std::memory_order_relaxed);
 }
 
 /*!
@@ -881,10 +883,12 @@ void QThread::requestInterruption()
 bool QThread::isInterruptionRequested() const
 {
     Q_D(const QThread);
-    QMutexLocker locker(&d->mutex);
-    if (!d->running || d->finished || d->isInFinish)
+    // fast path: check that the flag is not set:
+    if (!d->interruptionRequested.load(std::memory_order_relaxed))
         return false;
-    return d->interruptionRequested;
+    // slow path: if the flag is set, take into account run status:
+    QMutexLocker locker(&d->mutex);
+    return d->running && !d->finished && !d->isInFinish;
 }
 
 /*
