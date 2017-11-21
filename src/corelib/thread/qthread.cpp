@@ -844,14 +844,14 @@ bool QThread::event(QEvent *event)
 
 void QThread::requestInterruption()
 {
-    Q_D(QThread);
-    QMutexLocker locker(&d->mutex);
-    if (!d->running || d->finished || d->isInFinish)
-        return;
     if (this == QCoreApplicationPrivate::theMainThread) {
         qWarning("QThread::requestInterruption has no effect on the main thread");
         return;
     }
+    Q_D(QThread);
+    QMutexLocker locker(&d->mutex);
+    if (!d->running || d->finished || d->isInFinish)
+        return;
     d->interruptionRequested = true;
 }
 
