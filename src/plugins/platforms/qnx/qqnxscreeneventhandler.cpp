@@ -381,6 +381,8 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
         if (m_lastGlobalMousePoint != globalPoint ||
             m_lastLocalMousePoint != localPoint ||
             m_lastButtonState != buttons) {
+            if (m_lastButtonState != 0 && buttons == 0)
+                (static_cast<QQnxWindow *>(w->handle()))->handleActivationEvent();
             QWindowSystemInterface::handleMouseEvent(w, localPoint, globalPoint, buttons);
             qScreenEventDebug() << "Qt mouse, w=" << w << ", (" << localPoint.x() << "," << localPoint.y() << "), b=" << static_cast<int>(buttons);
         }
@@ -457,6 +459,9 @@ void QQnxScreenEventHandler::handleTouchEvent(screen_event_t event, int qnxType)
         m_lastMouseWindow = qnxWindow;
 
         if (w) {
+            if (qnxType == SCREEN_EVENT_MTOUCH_RELEASE)
+                (static_cast<QQnxWindow *>(w->handle()))->handleActivationEvent();
+
             // get size of screen which contains window
             QPlatformScreen *platformScreen = QPlatformScreen::platformScreenForWindow(w);
             QSizeF screenSize = platformScreen->geometry().size();

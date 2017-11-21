@@ -113,6 +113,7 @@ public:
     bool shouldMakeFullScreen() const;
 
     void windowPosted();
+    void handleActivationEvent();
 
 protected:
     virtual int pixelFormat() const = 0;
@@ -131,6 +132,8 @@ private:
     void updateZorder(screen_window_t window, int &zOrder);
     void applyWindowState();
     void setFocus(screen_window_t newFocusWindow);
+    bool showWithoutActivating() const;
+    bool focusable() const;
 
     screen_window_t m_window;
     QSize m_bufferSize;
@@ -152,6 +155,7 @@ private:
     QByteArray m_parentGroupName;
 
     bool m_isTopLevel;
+    bool m_firstActivateHandled;
 };
 
 QT_END_NAMESPACE
