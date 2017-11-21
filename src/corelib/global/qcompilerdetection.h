@@ -243,6 +243,7 @@
 #  define Q_REQUIRED_RESULT __attribute__ ((__warn_unused_result__))
 #  define Q_DECL_PURE_FUNCTION __attribute__((pure))
 #  define Q_DECL_CONST_FUNCTION __attribute__((const))
+#  define Q_DECL_COLD_FUNCTION __attribute__((cold))
 #  if !defined(QT_MOC_CPP)
 #    define Q_PACKED __attribute__ ((__packed__))
 #    ifndef __ARM_EABI__
@@ -1274,6 +1275,9 @@
 #endif
 #ifndef Q_DECL_CONST_FUNCTION
 #  define Q_DECL_CONST_FUNCTION Q_DECL_PURE_FUNCTION
+#endif
+#ifndef Q_DECL_COLD_FUNCTION
+#  define Q_DECL_COLD_FUNCTION
 #endif
 #ifndef QT_MAKE_UNCHECKED_ARRAY_ITERATOR
 #  define QT_MAKE_UNCHECKED_ARRAY_ITERATOR(x) (x)
