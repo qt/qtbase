@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 #include <qapplication.h>
 #include <QPushButton>
 #include <QMainWindow>
@@ -48,14 +49,10 @@
 
 #include <qpa/qplatformtheme.h>
 
+using namespace QTestPrivate;
+
 Q_DECLARE_METATYPE(Qt::Key);
 Q_DECLARE_METATYPE(Qt::KeyboardModifiers);
-
-static inline void centerOnScreen(QWidget *w, const QSize &size)
-{
-    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
 
 struct MenuMetrics {
     int fw;
@@ -70,11 +67,6 @@ struct MenuMetrics {
         tearOffHeight = menu->style()->pixelMetric(QStyle::PM_MenuTearoffHeight, nullptr, menu);
     }
 };
-
-static inline void centerOnScreen(QWidget *w)
-{
-    centerOnScreen(w, w->geometry().size());
-}
 
 class tst_QMenu : public QObject
 {

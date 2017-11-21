@@ -41,6 +41,7 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qgl_p.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qrandom.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -130,7 +131,7 @@ GLuint QGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient &gra
 {
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
     if (cache.size() == maxCacheSize()) {
-        int elem_to_remove = qrand() % maxCacheSize();
+        int elem_to_remove = QRandomGenerator::global()->bounded(maxCacheSize());
         quint64 key = cache.keys()[elem_to_remove];
 
         // need to call glDeleteTextures on each removed cache entry:

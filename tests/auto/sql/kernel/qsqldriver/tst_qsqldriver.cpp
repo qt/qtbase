@@ -77,6 +77,8 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
         doubleField = "more_data double";
     else if (dbType == QSqlDriver::Oracle)
         doubleField = "more_data number(8,7)";
+    else if (dbType == QSqlDriver::PostgreSQL)
+        doubleField = "more_data double precision";
     else
         doubleField = "more_data double(8,7)";
     QVERIFY_SQL( q, exec("create table " + relTEST1 +
@@ -98,6 +100,9 @@ void tst_QSqlDriver::cleanupTestCase()
     foreach (const QString &dbName, dbs.dbNames) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
         tst_Databases::safeDropTable(db, qTableName("relTEST1", __FILE__, db));
+        const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+        if (dbType == QSqlDriver::Oracle)
+            tst_Databases::safeDropTable(db, qTableName("clobTable", __FILE__, db));
     }
     dbs.close();
 }
@@ -212,6 +217,20 @@ void tst_QSqlDriver::primaryIndex()
         QCOMPARE(index.count(), 1); //mysql will always find the table name regardless of casing
     else
         QCOMPARE(index.count(), 0);
+
+    // Test getting a primary index for a table with a clob in it - QTBUG-64427
+    if (dbType == QSqlDriver::Oracle) {
+        const QString clobTable(qTableName("clobTable", __FILE__, db));
+        QSqlQuery qry(db);
+        QVERIFY_SQL(qry, exec("CREATE TABLE " + clobTable + " (id INTEGER, clobField CLOB)"));
+        QVERIFY_SQL(qry, exec("CREATE UNIQUE INDEX " + clobTable + "IDX ON " + clobTable + " (id)"));
+        QVERIFY_SQL(qry, exec("ALTER TABLE " + clobTable + " ADD CONSTRAINT " + clobTable +
+                              "PK PRIMARY KEY(id)"));
+        QVERIFY_SQL(qry, exec("ALTER TABLE " + clobTable + " MODIFY (id NOT NULL ENABLE)"));
+        const QSqlIndex primaryIndex = db.driver()->primaryIndex(clobTable);
+        QCOMPARE(primaryIndex.count(), 1);
+        QCOMPARE(primaryIndex.fieldName(0), QStringLiteral("ID"));
+    }
 }
 
 void tst_QSqlDriver::formatValue()

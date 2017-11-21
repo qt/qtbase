@@ -72,6 +72,11 @@
     that occurred, or errorString() to get a human readable
     description of what went wrong.
 
+    \note QImageReader assumes exclusive control over the file or
+    device that is assigned. Any attempts to modify the assigned file
+    or device during the lifetime of the QImageReader object will
+    yield undefined results.
+
     \section1 Formats
 
     Call supportedImageFormats() for a list of formats that
@@ -1220,10 +1225,13 @@ float QImageReader::gamma() const
     see if the image data is valid. read() may still return false
     after canRead() returns \c true, if the image data is corrupt.
 
+    \note A QMimeDatabase lookup is normally a better approach than this
+    function for identifying potentially non-image files or data.
+
     For images that support animation, canRead() returns \c false when
     all frames have been read.
 
-    \sa read(), supportedImageFormats()
+    \sa read(), supportedImageFormats(), QMimeDatabase
 */
 bool QImageReader::canRead() const
 {

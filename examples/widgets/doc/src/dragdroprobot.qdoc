@@ -257,7 +257,7 @@
     \snippet graphicsview/dragdroprobot/coloritem.cpp 0
 
     \c ColorItem's constructor assigns an opaque random color to its color
-    member by making use of qrand(). For improved usability, it assigns a
+    member by making use of \l QRandomGenerator. For improved usability, it assigns a
     tooltip that provides a useful hint to the user, and it also sets a
     suitable cursor. This ensures that the cursor will chance to
     Qt::OpenHandCursor when the mouse pointer hovers over the item.

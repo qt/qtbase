@@ -136,9 +136,17 @@ lib_bundle {
            if(if(!debug_and_release|CONFIG(release, debug|release))) {
         FRAMEWORK_HEADERS.version = Versions
         FRAMEWORK_HEADERS.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
+        # Non-existing paths (yet, they will be generated) are used verbatim.
+        for (injected_header, SYNCQT.INJECTED_HEADER_FILES): \
+            FRAMEWORK_HEADERS.files += \
+                $$relative_path($$absolute_path($$injected_header, $$_PRO_FILE_PWD_), $$OUT_PWD)
+
         FRAMEWORK_HEADERS.path = Headers
         FRAMEWORK_PRIVATE_HEADERS.version = Versions
-        FRAMEWORK_PRIVATE_HEADERS.files = $$SYNCQT.PRIVATE_HEADER_FILES $$SYNCQT.INJECTED_PRIVATE_HEADER_FILES
+        FRAMEWORK_PRIVATE_HEADERS.files = $$SYNCQT.PRIVATE_HEADER_FILES
+        for (injected_header, SYNCQT.INJECTED_PRIVATE_HEADER_FILES): \
+            FRAMEWORK_PRIVATE_HEADERS.files += \
+                $$relative_path($$absolute_path($$injected_header, $$_PRO_FILE_PWD_), $$OUT_PWD)
         FRAMEWORK_PRIVATE_HEADERS.path = Headers/$$VERSION/$$MODULE_INCNAME/private
         FRAMEWORK_QPA_HEADERS.version = Versions
         FRAMEWORK_QPA_HEADERS.files = $$SYNCQT.QPA_HEADER_FILES

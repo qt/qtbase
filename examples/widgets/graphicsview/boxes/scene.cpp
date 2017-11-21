@@ -50,6 +50,7 @@
 
 #include <QDebug>
 #include "scene.h"
+#include <QtCore/QRandomGenerator>
 #include <QtGui/qmatrix4x4.h>
 #include <QtGui/qvector3d.h>
 #include <qmath.h>
@@ -1072,13 +1073,16 @@ void Scene::newItem(ItemDialog::ItemType type)
     QSize size = sceneRect().size().toSize();
     switch (type) {
     case ItemDialog::QtBoxItem:
-        addItem(new QtBox(64, rand() % (size.width() - 64) + 32, rand() % (size.height() - 64) + 32));
+        addItem(new QtBox(64, QRandomGenerator::global()->bounded(size.width() - 64) + 32,
+                          QRandomGenerator::global()->bounded(size.height() - 64) + 32));
         break;
     case ItemDialog::CircleItem:
-        addItem(new CircleItem(64, rand() % (size.width() - 64) + 32, rand() % (size.height() - 64) + 32));
+        addItem(new CircleItem(64, QRandomGenerator::global()->bounded(size.width() - 64) + 32,
+                               QRandomGenerator::global()->bounded(size.height() - 64) + 32));
         break;
     case ItemDialog::SquareItem:
-        addItem(new SquareItem(64, rand() % (size.width() - 64) + 32, rand() % (size.height() - 64) + 32));
+        addItem(new SquareItem(64, QRandomGenerator::global()->bounded(size.width() - 64) + 32,
+                               QRandomGenerator::global()->bounded(size.height() - 64) + 32));
         break;
     default:
         break;

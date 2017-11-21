@@ -55,11 +55,11 @@
 #include <private/qabstractprotocolhandler_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
-#include "http2/http2protocol_p.h"
-#include "http2/http2streams_p.h"
-#include "http2/http2frames_p.h"
-#include "http2/hpacktable_p.h"
-#include "http2/hpack_p.h"
+#include <private/http2protocol_p.h>
+#include <private/http2streams_p.h>
+#include <private/http2frames_p.h>
+#include <private/hpacktable_p.h>
+#include <private/hpack_p.h>
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>

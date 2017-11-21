@@ -43,10 +43,8 @@
 #include "qrandom.h"
 #include "qrandom_p.h"
 #include <qobjectdefs.h>
+#include <qmutex.h>
 #include <qthreadstorage.h>
-#include <private/qsimd_p.h>
-
-#include <random>
 
 #include <errno.h>
 
@@ -86,6 +84,7 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 #undef Q_ASSERT_X
 #undef Q_ASSERT
 #define Q_ASSERT(cond) assert(cond)
+#define Q_ASSERT_X(cond, x, msg) assert(cond && msg)
 #if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
 #  define NDEBUG    1
 #endif
@@ -122,14 +121,21 @@ static QT_FUNCTION_TARGET(RDRND) qssize_t qt_random_cpu(void *buffer, qssize_t c
 out:
     return ptr - reinterpret_cast<unsigned *>(buffer);
 }
+#else
+static qssize_t qt_random_cpu(void *, qssize_t)
+{
+    return 0;
+}
 #endif
 
-namespace {
-#if QT_CONFIG(getentropy)
-class SystemRandom
+enum {
+    // may be "overridden" by a member enum
+    FillBufferNoexcept = true
+};
+
+struct QRandomGenerator::SystemGenerator
 {
-public:
-    enum { EfficientBufferFill = true };
+#if QT_CONFIG(getentropy)
     static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
     {
         // getentropy can read at most 256 bytes, so break the reading
@@ -147,96 +153,93 @@ public:
         Q_UNUSED(ret);
         return count;
     }
-};
 
 #elif defined(Q_OS_UNIX)
-class SystemRandom
-{
-    static QBasicAtomicInt s_fdp1;  // "file descriptor plus 1"
-    static int openDevice();
+    enum { FillBufferNoexcept = false };
+
+    QBasicAtomicInt fdp1;   // "file descriptor plus 1"
+    int openDevice()
+    {
+        int fd = fdp1.loadAcquire() - 1;
+        if (fd != -1)
+            return fd;
+
+        fd = qt_safe_open("/dev/urandom", O_RDONLY);
+        if (fd == -1)
+            fd = qt_safe_open("/dev/random", O_RDONLY | O_NONBLOCK);
+        if (fd == -1) {
+            // failed on both, set to -2 so we won't try again
+            fd = -2;
+        }
+
+        int opened_fdp1;
+        if (fdp1.testAndSetOrdered(0, fd + 1, opened_fdp1))
+            return fd;
+
+        // failed, another thread has opened the file descriptor
+        if (fd >= 0)
+            qt_safe_close(fd);
+        return opened_fdp1 - 1;
+    }
+
 #ifdef Q_CC_GNU
      // If it's not GCC or GCC-like, then we'll leak the file descriptor
     __attribute__((destructor))
 #endif
-    static void closeDevice();
-    SystemRandom() {}
-public:
-    enum { EfficientBufferFill = true };
-    static qssize_t fillBuffer(void *buffer, qssize_t count);
-};
-QBasicAtomicInt SystemRandom::s_fdp1 = Q_BASIC_ATOMIC_INITIALIZER(0);
-
-void SystemRandom::closeDevice()
-{
-    int fd = s_fdp1.loadAcquire() - 1;
-    if (fd >= 0)
-        qt_safe_close(fd);
-}
-
-int SystemRandom::openDevice()
-{
-    int fd = s_fdp1.loadAcquire() - 1;
-    if (fd != -1)
-        return fd;
-
-    fd = qt_safe_open("/dev/urandom", O_RDONLY);
-    if (fd == -1)
-        fd = qt_safe_open("/dev/random", O_RDONLY | O_NONBLOCK);
-    if (fd == -1) {
-        // failed on both, set to -2 so we won't try again
-        fd = -2;
+    static void closeDevice()
+    {
+        int fd = self().fdp1.load() - 1;
+        if (fd >= 0)
+            qt_safe_close(fd);
     }
 
-    int opened_fdp1;
-    if (s_fdp1.testAndSetOrdered(0, fd + 1, opened_fdp1)) {
-        if (fd >= 0) {
-            static const SystemRandom closer;
-            Q_UNUSED(closer);
-        }
-        return fd;
+    Q_DECL_CONSTEXPR SystemGenerator() : fdp1 Q_BASIC_ATOMIC_INITIALIZER(0) {}
+
+    qssize_t fillBuffer(void *buffer, qssize_t count)
+    {
+        int fd = openDevice();
+        if (Q_UNLIKELY(fd < 0))
+            return 0;
+
+        qint64 n = qt_safe_read(fd, buffer, count);
+        return qMax<qssize_t>(n, 0);        // ignore any errors
     }
 
-    // failed, another thread has opened the file descriptor
-    if (fd >= 0)
-        qt_safe_close(fd);
-    return opened_fdp1 - 1;
-}
-
-qssize_t SystemRandom::fillBuffer(void *buffer, qssize_t count)
-{
-    int fd = openDevice();
-    if (Q_UNLIKELY(fd < 0))
-        return 0;
-
-    qint64 n = qt_safe_read(fd, buffer, count);
-    return qMax<qssize_t>(n, 0);        // ignore any errors
-}
-#endif // Q_OS_UNIX
-
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-class SystemRandom
-{
-public:
-    enum { EfficientBufferFill = true };
-    static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+    qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
     {
         auto RtlGenRandom = SystemFunction036;
         return RtlGenRandom(buffer, ULONG(count)) ? count: 0;
     }
-};
 #elif defined(Q_OS_WINRT)
-class SystemRandom
-{
-public:
-    enum { EfficientBufferFill = false };
-    static qssize_t fillBuffer(void *, qssize_t) Q_DECL_NOTHROW
+    qssize_t fillBuffer(void *, qssize_t) Q_DECL_NOTHROW
     {
         // always use the fallback
         return 0;
     }
-};
 #endif // Q_OS_WINRT
-} // unnamed namespace
+
+    static SystemGenerator &self();
+    void generate(quint32 *begin, quint32 *end) Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept);
+
+    // For std::mersenne_twister_engine implementations that use something
+    // other than quint32 (unsigned int) to fill their buffers.
+    template <typename T> void generate(T *begin, T *end)
+    {
+        Q_STATIC_ASSERT(sizeof(T) >= sizeof(quint32));
+        if (sizeof(T) == sizeof(quint32)) {
+            // Microsoft Visual Studio uses unsigned long, but that's still 32-bit
+            generate(reinterpret_cast<quint32 *>(begin), reinterpret_cast<quint32 *>(end));
+        } else {
+            // Slow path. Fix your C++ library.
+            std::generate(begin, end, [this]() {
+                quint32 datum;
+                generate(&datum, &datum + 1);
+                return datum;
+            });
+        }
+    }
+};
 
 #if defined(Q_OS_WIN)
 static void fallback_update_seed(unsigned) {}
@@ -255,6 +258,7 @@ static void fallback_update_seed(unsigned) {}
 static void fallback_fill(quint32 *, qssize_t) Q_DECL_NOTHROW
 {
     // no fallback necessary, getentropy cannot fail under normal circumstances
+    Q_UNREACHABLE();
 }
 #elif defined(Q_OS_BSD4)
 static void fallback_update_seed(unsigned) {}
@@ -350,31 +354,25 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
 }
 #endif
 
-static qssize_t fill_cpu(quint32 *buffer, qssize_t count) Q_DECL_NOTHROW
+Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, quint32 *end)
+    Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept)
 {
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-    if (qCpuHasFeature(RDRND) && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
-        return qt_random_cpu(buffer, count);
-#else
-    Q_UNUSED(buffer);
-    Q_UNUSED(count);
-#endif
-    return 0;
-}
+    quint32 *buffer = begin;
+    qssize_t count = end - begin;
 
-static void fill_internal(quint32 *buffer, qssize_t count)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(SystemRandom::fillBuffer(buffer, count)))
-{
     if (Q_UNLIKELY(uint(qt_randomdevice_control) & SetRandomData)) {
         uint value = uint(qt_randomdevice_control) & RandomDataMask;
         std::fill_n(buffer, count, value);
         return;
     }
 
-    qssize_t filled = fill_cpu(buffer, count);
+    qssize_t filled = 0;
+    if (qt_has_hwrng() && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
+        filled += qt_random_cpu(buffer, count);
+
     if (filled != count && (uint(qt_randomdevice_control) & SkipSystemRNG) == 0) {
         qssize_t bytesFilled =
-                SystemRandom::fillBuffer(buffer + filled, (count - filled) * qssize_t(sizeof(*buffer)));
+                fillBuffer(buffer + filled, (count - filled) * qssize_t(sizeof(*buffer)));
         filled += bytesFilled / qssize_t(sizeof(*buffer));
     }
     if (filled)
@@ -386,147 +384,262 @@ static void fill_internal(quint32 *buffer, qssize_t count)
     }
 }
 
-static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
-    Q_DECL_NOEXCEPT_EXPR(noexcept(fill_internal(static_cast<quint32 *>(buffer), 1)))
+struct QRandomGenerator::SystemAndGlobalGenerators
 {
-    struct ThreadState {
-        enum {
-            DesiredBufferByteSize = 32,
-            BufferCount = DesiredBufferByteSize / sizeof(quint32)
-        };
-        quint32 buffer[BufferCount];
-        int idx = BufferCount;
-    };
+    // Construction notes:
+    // 1) The global PRNG state is in a different cacheline compared to the
+    //    mutex that protects it. This avoids any false cacheline sharing of
+    //    the state in case another thread tries to lock the mutex. It's not
+    //    a common scenario, but since sizeof(QRandomGenerator) >= 2560, the
+    //    overhead is actually acceptable.
+    // 2) We use both Q_DECL_ALIGN and std::aligned_storage<..., 64> because
+    //    some implementations of std::aligned_storage can't align to more
+    //    than a primitive type's alignment.
+    // 3) We don't store the entire system QRandomGenerator, only the space
+    //    used by the QRandomGenerator::type member. This is fine because we
+    //    (ab)use the common initial sequence exclusion to aliasing rules.
+    QBasicMutex globalPRNGMutex;
+    struct ShortenedSystem { uint type; } system_;
+    SystemGenerator sys;
+    Q_DECL_ALIGN(64) std::aligned_storage<sizeof(QRandomGenerator64), 64>::type global_;
 
-    // Verify that the pointers are properly aligned for 32-bit
-    Q_ASSERT(quintptr(buffer) % sizeof(quint32) == 0);
-    Q_ASSERT(quintptr(bufferEnd) % sizeof(quint32) == 0);
+#ifdef Q_COMPILER_CONSTEXPR
+    constexpr SystemAndGlobalGenerators()
+        : globalPRNGMutex{}, system_{0}, sys{}, global_{}
+    {}
+#endif
 
-    quint32 *ptr = reinterpret_cast<quint32 *>(buffer);
-    quint32 * const end = reinterpret_cast<quint32 *>(bufferEnd);
+    void confirmLiteral()
+    {
+#if defined(Q_COMPILER_CONSTEXPR) && !defined(Q_CC_MSVC) && !defined(Q_OS_INTEGRITY)
+        // Currently fails to compile with MSVC 2017, saying QBasicMutex is not
+        // a literal type. Disassembly with MSVC 2013 and 2015 shows it is
+        // actually a literal; MSVC 2017 has a bug relating to this, so we're
+        // withhold judgement for now.  Integrity's compiler is unable to
+        // guarantee g's alignment for some reason.
 
-#if defined(Q_COMPILER_THREAD_LOCAL) && !defined(QT_BOOTSTRAPPED)
-    if (SystemRandom::EfficientBufferFill && (end - ptr) < ThreadState::BufferCount
-            && uint(qt_randomdevice_control) == 0) {
-        thread_local ThreadState state;
-        qssize_t itemsAvailable = ThreadState::BufferCount - state.idx;
+        constexpr SystemAndGlobalGenerators g = {};
+        Q_UNUSED(g);
+        Q_STATIC_ASSERT(std::is_literal_type<SystemAndGlobalGenerators>::value);
+#endif
+    }
 
-        // copy as much as we already have
-        qssize_t itemsToCopy = qMin(qssize_t(end - ptr), itemsAvailable);
-        memcpy(ptr, state.buffer + state.idx, size_t(itemsToCopy) * sizeof(*ptr));
-        ptr += itemsToCopy;
+    static SystemAndGlobalGenerators *self()
+    {
+        static SystemAndGlobalGenerators g;
+        Q_STATIC_ASSERT(sizeof(g) > sizeof(QRandomGenerator64));
+        return &g;
+    }
 
-        if (ptr != end) {
-            // refill the buffer and try again
-            fill_internal(state.buffer, ThreadState::BufferCount);
-            state.idx = 0;
+    static QRandomGenerator64 *system()
+    {
+        // Though we never call the constructor, the system QRandomGenerator is
+        // properly initialized by the zero initialization performed in self().
+        // Though QRandomGenerator is has non-vacuous initialization, we
+        // consider it initialized because of the common initial sequence.
+        return reinterpret_cast<QRandomGenerator64 *>(&self()->system_);
+    }
 
-            itemsToCopy = end - ptr;
-            memcpy(ptr, state.buffer + state.idx, size_t(itemsToCopy) * sizeof(*ptr));
-            ptr = end;
+    static QRandomGenerator64 *globalNoInit()
+    {
+        // This function returns the pointer to the global QRandomGenerator,
+        // but does not initialize it. Only call it directly if you meant to do
+        // a pointer comparison.
+        return reinterpret_cast<QRandomGenerator64 *>(&self()->global_);
+    }
+
+    static void securelySeed(QRandomGenerator *rng)
+    {
+        // force reconstruction, just to be pedantic
+        new (rng) QRandomGenerator{System{}};
+
+        rng->type = MersenneTwister;
+        new (&rng->storage.engine()) RandomEngine(self()->sys);
+    }
+
+    struct PRNGLocker {
+        const bool locked;
+        PRNGLocker(const QRandomGenerator *that)
+            : locked(that == globalNoInit())
+        {
+            if (locked)
+                self()->globalPRNGMutex.lock();
         }
+        ~PRNGLocker()
+        {
+            if (locked)
+                self()->globalPRNGMutex.unlock();
+        }
+    };
+};
 
-        // erase what we copied and advance
-#  ifdef Q_OS_WIN
-        // Microsoft recommends this
-        SecureZeroMemory(state.buffer + state.idx, size_t(itemsToCopy) * sizeof(*ptr));
-#  else
-        // We're quite confident the compiler will not optimize this out because
-        // we're writing to a thread-local buffer
-        memset(state.buffer + state.idx, 0, size_t(itemsToCopy) * sizeof(*ptr));
-#  endif
-        state.idx += itemsToCopy;
-    }
-#endif // Q_COMPILER_THREAD_LOCAL && !QT_BOOTSTRAPPED
-
-    if (ptr != end) {
-        // fill directly in the user buffer
-        fill_internal(ptr, end - ptr);
-    }
+inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::self()
+{
+    return SystemAndGlobalGenerators::self()->sys;
 }
 
 /*!
     \class QRandomGenerator
     \inmodule QtCore
+    \reentrant
     \since 5.10
 
     \brief The QRandomGenerator class allows one to obtain random values from a
-    high-quality, seed-less Random Number Generator.
+    high-quality Random Number Generator.
 
     QRandomGenerator may be used to generate random values from a high-quality
-    random number generator. Unlike qrand(), QRandomGenerator does not need to be
-    seeded. That also means it is not possible to force it to produce a
-    reliable sequence, which may be needed for debugging.
+    random number generator. Like the C++ random engines, QRandomGenerator can
+    be seeded with user-provided values through the constructor.
+    When seeded, the sequence of numbers generated by this
+    class is deterministic. That is to say, given the same seed data,
+    QRandomGenerator will generate the same sequence of numbers. But given
+    different seeds, the results should be considerably different.
+
+    QRandomGenerator::securelySeeded() can be used to create a QRandomGenerator
+    that is securely seeded with QRandomGenerator::system(), meaning that the
+    sequence of numbers it generates cannot be easily predicted. Additionally,
+    QRandomGenerator::global() returns a global instance of QRandomGenerator
+    that Qt will ensure to be securely seeded. This object is thread-safe, may
+    be shared for most uses, and is always seeded from
+    QRandomGenerator::system()
+
+    QRandomGenerator::system() may be used to access the system's
+    cryptographically-safe random generator. On Unix systems, it's equivalent
+    to reading from \c {/dev/urandom} or the \c {getrandom()} or \c
+    {getentropy()} system calls.
 
     The class can generate 32-bit or 64-bit quantities, or fill an array of
     those. The most common way of generating new values is to call the generate(),
     generate64() or fillRange() functions. One would use it as:
 
     \code
-        quint32 value = QRandomGenerator::generate();
+        quint32 value = QRandomGenerator::global()->generate();
     \endcode
 
-    Additionally, it provides a floating-point function generateDouble() that returns
-    a number in the range [0, 1) (that is, inclusive of zero and exclusive of
-    1). There's also a set of convenience functions that facilitate obtaining a
-    random number in a bounded, integral range.
+    Additionally, it provides a floating-point function generateDouble() that
+    returns a number in the range [0, 1) (that is, inclusive of zero and
+    exclusive of 1). There's also a set of convenience functions that
+    facilitate obtaining a random number in a bounded, integral range.
 
-    \warning This class is not suitable for bulk data creation. See below for the
-    technical reasons.
+    \section1 Seeding and determinism
 
-    \section1 Frequency and entropy exhaustion
+    QRandomGenerator may be seeded with specific seed data. When that is done,
+    the numbers generated by the object will always be the same, as in the
+    following example:
 
-    QRandomGenerator does not need to be seeded and instead uses operating system
-    or hardware facilities to generate random numbers. On some systems and with
-    certain hardware, those facilities are true Random Number Generators.
-    However, if they are true RNGs, those facilities have finite entropy source
-    and thus may fail to produce any results if the entropy pool is exhausted.
+    \code
+        QRandomGenerator prng1(1234), prng2(1234);
+        Q_ASSERT(prng1.generate32() == prng2.generate32());
+        Q_ASSERT(prng1.generate64() == prng2.generate64());
+    \endcode
+
+    The seed data takes the form of one or more 32-bit words. The ideal seed
+    size is approximately equal to the size of the QRandomGenerator class
+    itself. Due to mixing of the seed data, QRandomGenerator cannot guarantee
+    that distinct seeds will produce different sequences.
+
+    QRandomGenerator::global(), like all generators created by
+    QRandomGenerator::securelySeeded(), is always seeded from
+    QRandomGenerator::system(), so it's not possible to make it produce
+    identical sequences.
+
+    \section1 Bulk data
+
+    When operating in deterministic mode, QRandomGenerator may be used for bulk
+    data generation. In fact, applications that do not need
+    cryptographically-secure or true random data are advised to use a regular
+    QRandomGenerator instead of QRandomGenerator::system() for their random
+    data needs.
+
+    For ease of use, QRandomGenerator provides a global object that can
+    be easily used, as in the following example:
+
+    \code
+        int x = QRandomGenerator::global()->generate32();
+        int y = QRandomGenerator::global()->generate32();
+        int w = QRandomGenerator::global()->bounded(16384);
+        int h = QRandomGenerator::global()->bounded(16384);
+    \endcode
+
+    \section1 System-wide random number generator
+
+    QRandomGenerator::system() may be used to access the system-wide random
+    number generator, which is cryptographically-safe on all systems that Qt
+    runs on. This function will use hardware facilities to generate random
+    numbers where available. On such systems, those facilities are true Random
+    Number Generators. However, if they are true RNGs, those facilities have
+    finite entropy sources and thus may fail to produce any results if their
+    entropy pool is exhausted.
 
     If that happens, first the operating system then QRandomGenerator will fall
     back to Pseudo Random Number Generators of decreasing qualities (Qt's
-    fallback generator being the simplest). Therefore, QRandomGenerator should
-    not be used for high-frequency random number generation, lest the entropy
-    pool become empty. As a rule of thumb, this class should not be called upon
-    to generate more than a kilobyte per second of random data (note: this may
-    vary from system to system).
+    fallback generator being the simplest). Whether those generators are still
+    of cryptographic quality is implementation-defined. Therefore,
+    QRandomGenerator::system() should not be used for high-frequency random
+    number generation, lest the entropy pool become empty. As a rule of thumb,
+    this class should not be called upon to generate more than a kilobyte per
+    second of random data (note: this may vary from system to system).
 
     If an application needs true RNG data in bulk, it should use the operating
-    system facilities (such as \c{/dev/random} on Unix systems) directly and
-    wait for entropy to become available. If true RNG is not required,
-    applications should instead use a PRNG engines and can use QRandomGenerator to
-    seed those.
+    system facilities (such as \c{/dev/random} on Linux) directly and wait for
+    entropy to become available. If the application requires PRNG engines of
+    cryptographic quality but not of true randomness,
+    QRandomGenerator::system() may still be used (see section below).
+
+    If neither a true RNG nor a cryptographically secure PRNG are required,
+    applications should instead use PRNG engines like QRandomGenerator's
+    deterministic mode and those from the C++ Standard Library.
+    QRandomGenerator::system() can be used to seed those.
+
+    \section2 Fallback quality
+
+    QRandomGenerator::system() uses the operating system facilities to obtain
+    random numbers, which attempt to collect real entropy from the surrounding
+    environment to produce true random numbers. However, it's possible that the
+    entropy pool becomes exhausted, in which case the operating system will
+    fall back to a pseudo-random engine for a time. Under no circumstances will
+    QRandomGenerator::system() block, waiting for more entropy to be collected.
+
+    The following operating systems guarantee that the results from their
+    random-generation API will be of at least cryptographically-safe quality,
+    even if the entropy pool is exhausted: Apple OSes (Darwin), BSDs, Linux,
+    Windows. Barring a system installation problem (such as \c{/dev/urandom}
+    not being readable by the current process), QRandomGenerator::system() will
+    therefore have the same guarantees.
+
+    On other operating systems, QRandomGenerator will fall back to a PRNG of
+    good numeric distribution, but it cannot guarantee proper seeding in all
+    cases. Please consult the OS documentation for more information.
+
+    Applications that require QRandomGenerator not to fall back to
+    non-cryptographic quality generators are advised to check their operating
+    system documentation or restrict their deployment to one of the above.
+
+    \section1 Reentrancy and thread-safety
+
+    QRandomGenerator is reentrant, meaning that multiple threads can operate on
+    this class at the same time, so long as they operate on different objects.
+    If multiple threads need to share one PRNG sequence, external locking by a
+    mutex is required.
+
+    The exceptions are the objects returned by QRandomGenerator::global() and
+    QRandomGenerator::system(): those objects are thread-safe and may be used
+    by any thread without external locking. Note that thread-safety does not
+    extend to copying those objects: they should always be used by reference.
 
     \section1 Standard C++ Library compatibility
 
-    QRandomGenerator is modeled after
-    \c{\l{http://en.cppreference.com/w/cpp/numeric/random/random_device}{std::random_device}}
-    and may be used in almost all contexts that the Standard Library can.
-    QRandomGenerator attempts to use either the same engine that backs
-    \c{std::random_device} or a better one. Note that \c{std::random_device} is
-    also allowed to fail if the source entropy pool becomes exhausted, in which
-    case it will throw an exception. QRandomGenerator never throws, but may abort
-    program execution instead.
+    QRandomGenerator is modeled after the requirements for random number
+    engines in the C++ Standard Library and may be used in almost all contexts
+    that the Standard Library engines can. Exceptions to the requirements are
+    the following:
 
-    Like the Standard Library class, QRandomGenerator can be used to seed Standard
-    Library deterministic random engines from \c{<random>}, such as the
-    Mersenne Twister. Unlike \c{std::random_device}, QRandomGenerator also
-    implements the API of
-    \c{\l{http://en.cppreference.com/w/cpp/numeric/random/seed_seq}{std::seed_seq}},
-    allowing it to seed the deterministic engines directly.
-
-    The following code can be used to create and seed the
-    implementation-defined default deterministic PRNG, then use it to fill a
-    block range:
-
-    \code
-        QRandomGenerator rd;
-        std::default_random_engine rng(rd);
-        std::generate(block.begin(), block.end(), rng);
-
-        // equivalent to:
-        for (auto &v : block)
-            v = rng();
-    \endcode
+    \list
+      \li QRandomGenerator does not support seeding from another seed
+          sequence-like class besides std::seed_seq itself;
+      \li QRandomGenerator is not comparable (but is copyable) or
+          streamable to \c{std::ostream} or from \c{std::istream}.
+    \endlist
 
     QRandomGenerator is also compatible with the uniform distribution classes
     \c{std::uniform_int_distribution} and \c{std:uniform_real_distribution}, as
@@ -535,25 +648,114 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     [1, 2.5):
 
     \code
-        QRandomGenerator64 rd;
         std::uniform_real_distribution dist(1, 2.5);
-        return dist(rd);
+        return dist(*QRandomGenerator::global());
     \endcode
-
-    Note the use of the QRandomGenerator64 class instead of QRandomGenerator to
-    obtain 64 bits of random data in a single call, though it is not required
-    to make the algorithm work (the Standard Library functions will make as
-    many calls as required to obtain enough bits of random data for the desired
-    range).
 
     \sa QRandomGenerator64, qrand()
  */
 
 /*!
-    \fn QRandomGenerator::QRandomGenerator()
-    \internal
-    Defaulted constructor, does nothing.
+    \fn QRandomGenerator::QRandomGenerator(quint32 seedValue)
+
+    Initializes this QRandomGenerator object with the value \a seedValue as
+    the seed. Two objects constructed or reseeded with the same seed value will
+    produce the same number sequence.
+
+    \sa seed(), securelySeeded()
  */
+
+/*!
+    \fn QRandomGenerator::QRandomGenerator(const quint32 (&seedBuffer)[N])
+    \overload
+
+    Initializes this QRandomGenerator object with the values found in the
+    array \a seedBuffer as the seed. Two objects constructed or reseeded with
+    the same seed value will produce the same number sequence.
+
+    \sa seed(), securelySeeded()
+ */
+
+/*!
+    \fn QRandomGenerator::QRandomGenerator(const quint32 *seedBuffer, qssize_t len)
+    \overload
+
+    Initializes this QRandomGenerator object with \a len values found in
+    the array \a seedBuffer as the seed. Two objects constructed or reseeded
+    with the same seed value will produce the same number sequence.
+
+    This constructor is equivalent to:
+    \code
+        std::seed_seq sseq(seedBuffer, seedBuffer + len);
+        QRandomGenerator generator(sseq);
+    \endcode
+
+    \sa seed(), securelySeeded()
+ */
+
+/*!
+    \fn QRandomGenerator::QRandomGenerator(const quint32 *begin, const quin32 *end)
+    \overload
+
+    Initializes this QRandomGenerator object with the values found in the range
+    from \a begin to \a end as the seed. Two objects constructed or reseeded
+    with the same seed value will produce the same number sequence.
+
+    This constructor is equivalent to:
+    \code
+        std::seed_seq sseq(begin, end);
+        QRandomGenerator generator(sseq);
+    \endcode
+
+    \sa seed(), securelySeeded()
+ */
+
+/*!
+    \fn QRandomGenerator::QRandomGenerator(std::seed_seq &sseq)
+    \overload
+
+    Initializes this QRandomGenerator object with the seed sequence \a
+    sseq as the seed. Two objects constructed or reseeded with the same seed
+    value will produce the same number sequence.
+
+    \sa seed(), securelySeeded()
+ */
+
+/*!
+   \fn QRandomGenerator::QRandomGenerator(const QRandomGenerator &other)
+
+   Creates a copy of the generator state in the \a other object. If \a other is
+   QRandomGenerator::system() or a copy of that, this object will also read
+   from the operating system random-generating facilities. In that case, the
+   sequences generated by the two objects will be different.
+
+   In all other cases, the new QRandomGenerator object will start at the same
+   position in the deterministic sequence as the \a other object was. Both
+   objects will generate the same sequence from this point on.
+
+   For that reason, it is not adviseable to create a copy of
+   QRandomGenerator::global(). If one needs an exclusive deterministic
+   generator, consider instead using securelySeeded() to obtain a new object
+   that shares no relationship with the QRandomGenerator::global().
+ */
+
+/*!
+    \fn bool operator==(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
+    \relates QRandomGenerator
+
+    Returns true if the two the two engines \a rng1 and \a rng2 are at the same
+    state or if they are both reading from the operating system facilities,
+    false otherwise.
+*/
+
+/*!
+    \fn bool operator!=(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
+    \relates QRandomGenerator
+
+    Returns true if the two the two engines \a rng1 and \a rng2 are at
+    different states or if one of them is reading from the operating system
+    facilities and the other is not, false otherwise.
+*/
 
 /*!
     \typedef QRandomGenerator::result_type
@@ -568,24 +770,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 
     Generates a 32-bit random quantity and returns it.
 
-    \sa QRandomGenerator::generate(), QRandomGenerator::generate64()
- */
-
-/*!
-    \fn double QRandomGenerator::entropy() const
-
-    Returns the estimate of the entropy in the random generator source.
-
-    This function exists to comply with the Standard Library requirements for
-    \c{\l{http://en.cppreference.com/w/cpp/numeric/random/random_device}{std::random_device}}
-    but it does not and cannot ever work. It is not possible to obtain a
-    reliable entropy value in a shared entropy pool in a multi-tasking system,
-    as other processes or threads may use that entropy. Any value non-zero
-    value that this function could return would be obsolete by the time the
-    user code reached it.
-
-    Since QRandomGenerator attempts to use a hardware Random Number Generator,
-    this function always returns 0.0.
+    \sa generate(), generate64()
  */
 
 /*!
@@ -593,7 +778,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 
     Returns the minimum value that QRandomGenerator may ever generate. That is, 0.
 
-    \sa max(), QRandomGenerator64::max()
+    \sa max(), QRandomGenerator64::min()
  */
 
 /*!
@@ -606,13 +791,38 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
  */
 
 /*!
+    \fn void QRandomGenerator::seed(quint32 seed)
+
+    Reseeds this object using the value \a seed as the seed.
+ */
+
+/*!
+    \fn void QRandomGenerator::seed(std::seed_seq &seed)
+    \overload
+
+    Reseeds this object using the seed sequence \a sseq as the seed.
+ */
+
+/*!
+    \fn void QRandomGenerator::discard(unsigned long long z)
+
+    Discards the next \a z entries from the sequence. This method is equivalent
+    to calling generate() \a z times and discarding the result, as in:
+
+    \code
+        while (z--)
+            generator.generate();
+    \endcode
+*/
+
+/*!
     \fn void QRandomGenerator::generate(ForwardIterator begin, ForwardIterator end)
 
     Generates 32-bit quantities and stores them in the range between \a begin
     and \a end. This function is equivalent to (and is implemented as):
 
     \code
-        std::generate(begin, end, []() { return generate(); });
+        std::generate(begin, end, [this]() { return generate(); });
     \endcode
 
     This function complies with the requirements for the function
@@ -625,7 +835,7 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     quantities, one can write:
 
     \code
-        std::generate(begin, end, []() { return QRandomGenerator::generate64(); });
+        std::generate(begin, end, []() { return QRandomGenerator::global()->generate64(); });
     \endcode
 
     If the range refers to contiguous memory (such as an array or the data from
@@ -703,26 +913,26 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
  */
 
 /*!
-    \fn qreal QRandomGenerator::bounded(qreal sup)
+    \fn qreal QRandomGenerator::bounded(qreal highest)
 
     Generates one random qreal in the range between 0 (inclusive) and \a
-    sup (exclusive). This function is equivalent to and is implemented as:
+    highest (exclusive). This function is equivalent to and is implemented as:
 
     \code
-        return generateDouble() * sup;
+        return generateDouble() * highest;
     \endcode
 
     \sa generateDouble(), bounded()
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(quint32 sup)
+    \fn quint32 QRandomGenerator::bounded(quint32 highest)
     \overload
 
     Generates one random 32-bit quantity in the range between 0 (inclusive) and
-    \a sup (exclusive). The same result may also be obtained by using
+    \a highest (exclusive). The same result may also be obtained by using
     \c{\l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{std::uniform_int_distribution}}
-    with parameters 0 and \c{sup - 1}. That class can also be used to obtain
+    with parameters 0 and \c{highest - 1}. That class can also be used to obtain
     quantities larger than 32 bits.
 
     For example, to obtain a value between 0 and 255 (inclusive), one would write:
@@ -741,11 +951,11 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int sup)
+    \fn quint32 QRandomGenerator::bounded(int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between 0 (inclusive) and
-    \a sup (exclusive). \a sup must not be negative.
+    \a highest (exclusive). \a highest must not be negative.
 
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
@@ -754,13 +964,13 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(quint32 min, quint32 sup)
+    \fn quint32 QRandomGenerator::bounded(quint32 lowest, quint32 highest)
     \overload
 
-    Generates one random 32-bit quantity in the range between \a min (inclusive)
-    and \a sup (exclusive). The same result may also be obtained by using
+    Generates one random 32-bit quantity in the range between \a lowest (inclusive)
+    and \a highest (exclusive). The same result may also be obtained by using
     \c{\l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{std::uniform_int_distribution}}
-    with parameters \a min and \c{\a sup - 1}. That class can also be used to
+    with parameters \a lowest and \c{\a highest - 1}. That class can also be used to
     obtain quantities larger than 32 bits.
 
     For example, to obtain a value between 1000 (incl.) and 2000 (excl.), one
@@ -778,16 +988,82 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int min, int sup)
+    \fn quint32 QRandomGenerator::bounded(int lowest, int highest)
     \overload
 
-    Generates one random 32-bit quantity in the range between \a min
-    (inclusive) and \a sup (exclusive), both of which may be negative.
+    Generates one random 32-bit quantity in the range between \a lowest
+    (inclusive) and \a highest (exclusive), both of which may be negative.
 
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
 
     \sa generate(), generate64(), generateDouble()
+ */
+
+/*!
+    \fn QRandomGenerator *QRandomGenerator::system()
+    \threadsafe
+
+    Returns a pointer to a shared QRandomGenerator that always uses the
+    facilities provided by the operating system to generate random numbers. The
+    system facilities are considered to be cryptographically safe on at least
+    the following operating systems: Apple OSes (Darwin), BSDs, Linux, Windows.
+    That may also be the case on other operating systems.
+
+    They are also possibly backed by a true hardware random number generator.
+    For that reason, the QRandomGenerator returned by this function should not
+    be used for bulk data generation. Instead, use it to seed QRandomGenerator
+    or a random engine from the <random> header.
+
+    The object returned by this function is thread-safe and may be used in any
+    thread without locks. It may also be copied and the resulting
+    QRandomGenerator will also access the operating system facilities, but they
+    will not generate the same sequence.
+
+    \sa securelySeeded(), global()
+*/
+
+/*!
+    \fn QRandomGenerator *QRandomGenerator::global()
+    \threadsafe
+
+    Returns a pointer to a shared QRandomGenerator that was seeded using
+    securelySeeded(). This function should be used to create random data
+    without the expensive creation of a securely-seeded QRandomGenerator
+    for a specific use or storing the rather large QRandomGenerator object.
+
+    For example, the following creates a random RGB color:
+
+    \code
+        return QColor::fromRgb(QRandomGenerator::global()->generate());
+    \endcode
+
+    Accesses to this object are thread-safe and it may therefore be used in any
+    thread without locks. The object may also be copied and the sequence
+    produced by the copy will be the same as the shared object will produce.
+    Note, however, that if there are other threads accessing the global object,
+    those threads may obtain samples at unpredictable intervals.
+
+    \sa securelySeeded(), system()
+*/
+
+/*!
+    \fn QRandomGenerator QRandomGenerator::securelySeeded()
+
+    Returns a new QRandomGenerator object that was securely seeded with
+    QRandomGenerator::system(). This function will obtain the ideal seed size
+    for the algorithm that QRandomGenerator uses and is therefore the
+    recommended way for creating a new QRandomGenerator object that will be
+    kept for some time.
+
+    Given the amount of data required to securely seed the deterministic
+    engine, this function is somewhat expensive and should not be used for
+    short-term uses of QRandomGenerator (using it to generate fewer than 2600
+    bytes of random data is effectively a waste of resources). If the use
+    doesn't require that much data, consider using QRandomGenerator::global()
+    and not storing a QRandomGenerator object instead.
+
+    \sa global(), system()
  */
 
 /*!
@@ -811,10 +1087,11 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
 */
 
 /*!
-    \fn QRandomGenerator64::QRandomGenerator64()
-    \internal
-    Defaulted constructor, does nothing.
- */
+   \fn QRandomGenerator64::QRandomGenerator64(const QRandomGenerator &other)
+   \internal
+
+   Creates a copy.
+*/
 
 /*!
     \typedef QRandomGenerator64::result_type
@@ -849,80 +1126,119 @@ static Q_NEVER_INLINE void fill(void *buffer, void *bufferEnd)
     \sa QRandomGenerator::generate(), QRandomGenerator::generate64()
  */
 
-/*!
-    \fn double QRandomGenerator64::entropy() const
-
-    Returns the estimate of the entropy in the random generator source.
-
-    This function exists to comply with the Standard Library requirements for
-    \c{\l{http://en.cppreference.com/w/cpp/numeric/random/random_device}{std::random_device}}
-    but it does not and cannot ever work. It is not possible to obtain a
-    reliable entropy value in a shared entropy pool in a multi-tasking system,
-    as other processes or threads may use that entropy. Any value non-zero
-    value that this function could return would be obsolete by the time the
-    user code reached it.
-
-    Since QRandomGenerator64 attempts to use a hardware Random Number Generator,
-    this function always returns 0.0.
- */
-
-/*!
-    \fn result_type QRandomGenerator64::min()
-
-    Returns the minimum value that QRandomGenerator64 may ever generate. That is, 0.
-
-    \sa max(), QRandomGenerator::max()
- */
-
-/*!
-    \fn result_type QRandomGenerator64::max()
-
-    Returns the maximum value that QRandomGenerator64 may ever generate. That is,
-    \c {std::numeric_limits<result_type>::max()}.
-
-    \sa min(), QRandomGenerator::max()
- */
-
-/*!
-    Generates one 32-bit random value and returns it.
-
-    Note about casting to a signed integer: all bits returned by this function
-    are random, so there's a 50% chance that the most significant bit will be
-    set. If you wish to cast the returned value to int and keep it positive,
-    you should mask the sign bit off:
-
-    \code
-        int value = QRandomGenerator::generate() & std::numeric_limits<int>::max();
-    \endcode
-
-    \sa generate64(), generateDouble()
- */
-quint32 QRandomGenerator::generate()
+Q_DECL_CONSTEXPR QRandomGenerator::Storage::Storage()
+    : dummy(0)
 {
-    quint32 ret;
-    fill(&ret, &ret + 1);
-    return ret;
+    // nothing
 }
 
-/*!
-    Generates one 64-bit random value and returns it.
-
-    Note about casting to a signed integer: all bits returned by this function
-    are random, so there's a 50% chance that the most significant bit will be
-    set. If you wish to cast the returned value to qint64 and keep it positive,
-    you should mask the sign bit off:
-
-    \code
-        qint64 value = QRandomGenerator::generate64() & std::numeric_limits<qint64>::max();
-    \endcode
-
-    \sa generate(), generateDouble(), QRandomGenerator64
- */
-quint64 QRandomGenerator::generate64()
+inline QRandomGenerator64::QRandomGenerator64(System s)
+    : QRandomGenerator(s)
 {
-    quint64 ret;
-    fill(&ret, &ret + 1);
-    return ret;
+}
+
+QRandomGenerator64 *QRandomGenerator64::system()
+{
+    auto self = SystemAndGlobalGenerators::system();
+    Q_ASSERT(self->type == SystemRNG);
+    return self;
+}
+
+QRandomGenerator64 *QRandomGenerator64::global()
+{
+    auto self = SystemAndGlobalGenerators::globalNoInit();
+
+    // Yes, this is a double-checked lock.
+    // We can return even if the type is not completely initialized yet:
+    // any thread trying to actually use the contents of the random engine
+    // will necessarily wait on the lock.
+    if (Q_LIKELY(self->type != SystemRNG))
+        return self;
+
+    SystemAndGlobalGenerators::PRNGLocker locker(self);
+    if (self->type == SystemRNG)
+        SystemAndGlobalGenerators::securelySeed(self);
+
+    return self;
+}
+
+QRandomGenerator64 QRandomGenerator64::securelySeeded()
+{
+    QRandomGenerator64 result(System{});
+    SystemAndGlobalGenerators::securelySeed(&result);
+    return result;
+}
+
+/// \internal
+inline QRandomGenerator::QRandomGenerator(System)
+    : type(SystemRNG)
+{
+    // don't touch storage
+}
+
+QRandomGenerator::QRandomGenerator(const QRandomGenerator &other)
+    : type(other.type)
+{
+    Q_ASSERT(this != system());
+    Q_ASSERT(this != SystemAndGlobalGenerators::globalNoInit());
+
+    if (type != SystemRNG) {
+        SystemAndGlobalGenerators::PRNGLocker lock(&other);
+        storage.engine() = other.storage.engine();
+    }
+}
+
+QRandomGenerator &QRandomGenerator::operator=(const QRandomGenerator &other)
+{
+    if (Q_UNLIKELY(this == system()) || Q_UNLIKELY(this == SystemAndGlobalGenerators::globalNoInit()))
+        qFatal("Attempted to overwrite a QRandomGenerator to system() or global().");
+
+    if ((type = other.type) != SystemRNG) {
+        SystemAndGlobalGenerators::PRNGLocker lock(&other);
+        storage.engine() = other.storage.engine();
+    }
+    return *this;
+}
+
+QRandomGenerator::QRandomGenerator(std::seed_seq &sseq) Q_DECL_NOTHROW
+    : type(MersenneTwister)
+{
+    Q_ASSERT(this != system());
+    Q_ASSERT(this != SystemAndGlobalGenerators::globalNoInit());
+
+    new (&storage.engine()) RandomEngine(sseq);
+}
+
+QRandomGenerator::QRandomGenerator(const quint32 *begin, const quint32 *end)
+    : type(MersenneTwister)
+{
+    Q_ASSERT(this != system());
+    Q_ASSERT(this != SystemAndGlobalGenerators::globalNoInit());
+
+    std::seed_seq s(begin, end);
+    new (&storage.engine()) RandomEngine(s);
+}
+
+void QRandomGenerator::discard(unsigned long long z)
+{
+    if (Q_UNLIKELY(type == SystemRNG))
+        return;
+
+    SystemAndGlobalGenerators::PRNGLocker lock(this);
+    storage.engine().discard(z);
+}
+
+bool operator==(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
+{
+    if (rng1.type != rng2.type)
+        return false;
+    if (rng1.type == SystemRNG)
+        return true;
+
+    // Lock global() if either is it (otherwise this locking is a no-op)
+    using PRNGLocker = QRandomGenerator::SystemAndGlobalGenerators::PRNGLocker;
+    PRNGLocker locker(&rng1 == QRandomGenerator::global() ? &rng1 : &rng2);
+    return rng1.storage.engine() == rng2.storage.engine();
 }
 
 /*!
@@ -931,9 +1247,19 @@ quint64 QRandomGenerator::generate64()
     Fills the range pointed by \a buffer and \a bufferEnd with 32-bit random
     values. The buffer must be correctly aligned.
  */
-void QRandomGenerator::fillRange_helper(void *buffer, void *bufferEnd)
+void QRandomGenerator::_fillRange(void *buffer, void *bufferEnd)
 {
-    fill(buffer, bufferEnd);
+    // Verify that the pointers are properly aligned for 32-bit
+    Q_ASSERT(quintptr(buffer) % sizeof(quint32) == 0);
+    Q_ASSERT(quintptr(bufferEnd) % sizeof(quint32) == 0);
+    quint32 *begin = static_cast<quint32 *>(buffer);
+    quint32 *end = static_cast<quint32 *>(bufferEnd);
+
+    if (type == SystemRNG || Q_UNLIKELY(uint(qt_randomdevice_control) & (UseSystemRNG|SetRandomData)))
+        return SystemGenerator::self().generate(begin, end);
+
+    SystemAndGlobalGenerators::PRNGLocker lock(this);
+    std::generate(begin, end, [this]() { return storage.engine()(); });
 }
 
 #if defined(Q_OS_ANDROID) && (__ANDROID_API__ < 21)

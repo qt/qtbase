@@ -2362,8 +2362,8 @@ void tst_QObject::testUserData()
 
     // Randomize the table a bit
     for (int i=0; i<100; ++i) {
-        int p1 = rand() % USER_DATA_COUNT;
-        int p2 = rand() % USER_DATA_COUNT;
+        int p1 = QRandomGenerator::global()->bounded(USER_DATA_COUNT);
+        int p2 = QRandomGenerator::global()->bounded(USER_DATA_COUNT);
 
         int tmp = user_data_ids[p1];
         user_data_ids[p1] = user_data_ids[p2];

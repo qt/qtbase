@@ -149,10 +149,6 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
     QMacAutoReleasePool pool;
     m_menu = static_cast<QCocoaMenu *>(menu);
     if (m_menu) {
-        if (m_native) {
-            // Skip automatic menu item validation
-            m_native.action = nil;
-        }
         m_menu->setMenuParent(this);
         m_menu->propagateEnabledState(isEnabled());
     } else {
@@ -369,24 +365,20 @@ NSMenuItem *QCocoaMenuItem::sync()
     return m_native;
 }
 
-QT_BEGIN_NAMESPACE
-extern QString qt_mac_applicationmenu_string(int type);
-QT_END_NAMESPACE
-
 QString QCocoaMenuItem::mergeText()
 {
     QCocoaMenuLoader *loader = [QCocoaMenuLoader sharedMenuLoader];
     if (m_native == [loader aboutMenuItem]) {
-        return qt_mac_applicationmenu_string(6).arg(qt_mac_applicationName());
+        return qt_mac_applicationmenu_string(AboutAppMenuItem).arg(qt_mac_applicationName());
     } else if (m_native== [loader aboutQtMenuItem]) {
         if (m_text == QString("About Qt"))
             return msgAboutQt();
         else
             return m_text;
     } else if (m_native == [loader preferencesMenuItem]) {
-        return qt_mac_applicationmenu_string(4);
+        return qt_mac_applicationmenu_string(PreferencesAppMenuItem);
     } else if (m_native == [loader quitMenuItem]) {
-        return qt_mac_applicationmenu_string(5).arg(qt_mac_applicationName());
+        return qt_mac_applicationmenu_string(QuitAppMenuItem).arg(qt_mac_applicationName());
     } else if (m_text.contains('\t')) {
         return m_text.left(m_text.indexOf('\t'));
     }

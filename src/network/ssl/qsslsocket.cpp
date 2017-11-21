@@ -1686,7 +1686,8 @@ bool QSslSocket::waitForDisconnected(int msecs)
 
     if (!d->plainSocket)
         return false;
-    if (d->mode == UnencryptedMode)
+    // Forward to the plain socket unless the connection is secure.
+    if (d->mode == UnencryptedMode && !d->autoStartHandshake)
         return d->plainSocket->waitForDisconnected(msecs);
 
     QElapsedTimer stopWatch;
@@ -1697,6 +1698,17 @@ bool QSslSocket::waitForDisconnected(int msecs)
         if (!waitForEncrypted(msecs))
             return false;
     }
+    // We are delaying the disconnect, if the write buffer is not empty.
+    // So, start the transmission.
+    if (!d->writeBuffer.isEmpty())
+        d->transmit();
+
+    // At this point, the socket might be disconnected, if disconnectFromHost()
+    // was called just after the connectToHostEncrypted() call. Also, we can
+    // lose the connection as a result of the transmit() call.
+    if (state() == UnconnectedState)
+        return true;
+
     bool retVal = d->plainSocket->waitForDisconnected(qt_subtract_from_timeout(msecs, stopWatch.elapsed()));
     if (!retVal) {
         setSocketState(d->plainSocket->state());

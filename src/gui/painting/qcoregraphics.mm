@@ -110,6 +110,7 @@ NSImage *qt_mac_create_nsimage(const QPixmap &pm)
     QImage image = pm.toImage();
     CGImageRef cgImage = qt_mac_toCGImage(image);
     NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
+    nsImage.size = (pm.size() / pm.devicePixelRatioF()).toCGSize();
     CGImageRelease(cgImage);
     return nsImage;
 }

@@ -96,6 +96,7 @@ private slots:
     void task248107_backButton();
     void task255350_fieldObjectDestroyed();
     void taskQTBUG_25691_fieldObjectDestroyed2();
+    void taskQTBUG_46894_nextButtonShortcut();
 
     /*
         Things that could be added:
@@ -2698,6 +2699,25 @@ void taskQTBUG_25691_fieldObjectDestroyed2(void);
 void tst_QWizard::taskQTBUG_25691_fieldObjectDestroyed2()
 {
     ::taskQTBUG_25691_fieldObjectDestroyed2();
+}
+
+void tst_QWizard::taskQTBUG_46894_nextButtonShortcut()
+{
+    for (int i = 0; i < QWizard::NStyles; ++i) {
+        QWizard wizard;
+        QWizard::WizardStyle style = static_cast<QWizard::WizardStyle>(i);
+        wizard.setWizardStyle(style);
+        wizard.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&wizard));
+
+        if (wizard.button(QWizard::NextButton)->text() == "&Next") {
+            QCOMPARE(wizard.button(QWizard::NextButton)->shortcut(),
+                     QKeySequence(Qt::ALT | Qt::Key_Right));
+        } else {
+            QCOMPARE(wizard.button(QWizard::NextButton)->shortcut(),
+                     QKeySequence::mnemonic(wizard.button(QWizard::NextButton)->text()));
+        }
+    }
 }
 
 QTEST_MAIN(tst_QWizard)

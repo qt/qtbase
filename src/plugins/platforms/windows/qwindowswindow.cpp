@@ -74,6 +74,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QLibraryInfo>
 
 #include <dwmapi.h>
 
@@ -1579,7 +1580,7 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         setFlag(WithinSetGeometry);
         setGeometry_sys(rect);
         clearFlag(WithinSetGeometry);
-        if (m_data.geometry != rect) {
+        if (m_data.geometry != rect && (isVisible() || QLibraryInfo::isDebugBuild())) {
             qWarning("%s: Unable to set geometry %dx%d+%d+%d on %s/'%s'."
                      " Resulting geometry:  %dx%d+%d+%d "
                      "(frame: %d, %d, %d, %d, custom margin: %d, %d, %d, %d"

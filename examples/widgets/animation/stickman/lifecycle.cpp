@@ -91,13 +91,12 @@ public:
         : QEventTransition(this, QEvent::Timer)
     {
         setTargetState(target);
-        qsrand((uint)QDateTime::currentSecsSinceEpoch());
         startTimer(1000);
     }
 
     bool eventTest(QEvent *e) override
     {
-        return QEventTransition::eventTest(e) && ((qrand() % 50) == 0);
+        return QEventTransition::eventTest(e) && QRandomGenerator::global()->bounded(50) == 0;
     }
 };
 //! [4]

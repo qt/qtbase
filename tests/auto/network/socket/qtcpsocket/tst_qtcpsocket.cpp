@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -57,6 +57,7 @@
 #if QT_CONFIG(process)
 # include <QProcess>
 #endif
+#include <QRandomGenerator>
 #include <QStringList>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -305,8 +306,6 @@ public:
 tst_QTcpSocket::tst_QTcpSocket()
     : firstFailName("qt-test-server-first-fail")
 {
-    qsrand(time(NULL));
-
     tmpSocket = 0;
 
     //This code relates to the socketsConstructedBeforeEventLoop test case
@@ -581,8 +580,7 @@ void tst_QTcpSocket::bind()
                 // try to get a random port number
                 // we do this to ensure we're not trying to bind to the same port as we've just used in
                 // a previous run - race condition with the OS actually freeing the port
-                Q_STATIC_ASSERT(RAND_MAX > 1024);
-                port = qrand() & USHRT_MAX;
+                port = QRandomGenerator::global()->generate() & USHRT_MAX;
                 if (port < 1024)
                     continue;
             }

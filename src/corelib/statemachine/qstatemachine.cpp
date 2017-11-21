@@ -411,7 +411,7 @@ QStateMachinePrivate::~QStateMachinePrivate()
     qDeleteAll(internalEventQueue);
     qDeleteAll(externalEventQueue);
 
-    for (QHash<int, DelayedEvent>::const_iterator it = delayedEvents.begin(), eit = delayedEvents.end(); it != eit; ++it) {
+    for (QHash<int, DelayedEvent>::const_iterator it = delayedEvents.cbegin(), eit = delayedEvents.cend(); it != eit; ++it) {
         delete it.value().event;
     }
 }

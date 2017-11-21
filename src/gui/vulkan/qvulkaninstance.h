@@ -42,6 +42,10 @@
 
 #include <QtGui/qtguiglobal.h>
 
+#if 0
+#pragma qt_no_master_include
+#endif
+
 #if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
 
 #ifndef VK_NO_PROTOTYPES

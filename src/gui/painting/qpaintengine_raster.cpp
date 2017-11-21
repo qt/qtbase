@@ -50,6 +50,7 @@
 #include <qdebug.h>
 #include <qbitmap.h>
 #include <qmath.h>
+#include <qrandom.h>
 
 //   #include <private/qdatabuffer_p.h>
 //   #include <private/qpainter_p.h>
@@ -4229,7 +4230,7 @@ protected:
     QSharedPointer<const CacheInfo> addCacheElement(quint64 hash_val, const QGradient &gradient, int opacity) {
         if (cache.size() == maxCacheSize()) {
             // may remove more than 1, but OK
-            cache.erase(cache.begin() + (qrand() % maxCacheSize()));
+            cache.erase(cache.begin() + QRandomGenerator::global()->bounded(maxCacheSize()));
         }
         auto cache_entry = QSharedPointer<CacheInfo>::create(gradient.stops(), opacity, gradient.interpolationMode());
         generateGradientColorTable(gradient, cache_entry->buffer64, paletteSize(), opacity);

@@ -32,7 +32,7 @@ qt_install_headers {
     class_headers.path = $$[QT_INSTALL_HEADERS]/$$MODULE_INCNAME
     INSTALLS += class_headers
 
-    targ_headers.files = $$SYNCQT.HEADER_FILES
+    targ_headers.files = $$SYNCQT.HEADER_FILES $$SYNCQT.INJECTED_HEADER_FILES
     targ_headers.path = $$[QT_INSTALL_HEADERS]/$$MODULE_INCNAME
     INSTALLS += targ_headers
 

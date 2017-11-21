@@ -287,7 +287,7 @@ QByteArray QSslKeyPrivate::toPem(const QByteArray &passPhrase) const
 
     if (type == QSsl::PrivateKey && !passPhrase.isEmpty()) {
         // ### use a cryptographically secure random number generator
-        quint64 random = QRandomGenerator::generate64();
+        quint64 random = QRandomGenerator::system()->generate64();
         QByteArray iv = QByteArray::fromRawData(reinterpret_cast<const char *>(&random), sizeof(random));
 
         Cipher cipher = DesEde3Cbc;

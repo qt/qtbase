@@ -37,6 +37,7 @@
 #include <qalgorithms.h>
 #include <QStringList>
 #include <QString>
+#include <QRandomGenerator>
 #include <QVector>
 
 #define Q_TEST_PERFORMANCE 0
@@ -133,7 +134,7 @@ QVector<DataType> generateData(QString dataSetType, const int length)
     QVector<DataType> container;
     if (dataSetType == "Random") {
         for (int i = 0; i < length; ++i)
-            container.append(rand());
+            container.append(QRandomGenerator::global()->generate());
     } else if (dataSetType == "Ascending") {
         for (int i = 0; i < length; ++i)
             container.append(i);
@@ -1082,12 +1083,12 @@ void tst_QAlgorithms::popCount_data_impl(size_t sizeof_T_Int)
     // and some random ones:
     if (sizeof_T_Int >= 8)
         for (size_t i = 0; i < 1000; ++i) {
-            const quint64 input = quint64(qrand()) << 32 | quint32(qrand());
+            const quint64 input = QRandomGenerator::global()->generate64();
             QTest::addRow("0x%016llx", input) << input << bitsSetInInt64(input);
         }
         else if (sizeof_T_Int >= 2)
             for (size_t i = 0; i < 1000 ; ++i) {
-                const quint32 input = qrand();
+                const quint32 input = QRandomGenerator::global()->generate();
                 if (sizeof_T_Int >= 4)
                     QTest::addRow("0x%08x", input) << quint64(input) << bitsSetInInt(input);
                 else
@@ -1129,7 +1130,7 @@ void tst_QAlgorithms::countTrailing_data_impl(size_t sizeof_T_Int)
     // and some random ones:
     for (uint i = 0; i < sizeof_T_Int*8; ++i) {
         for (uint j = 0; j < sizeof_T_Int*3; ++j) {  // 3 is arbitrary
-            const quint64 r = quint64(qrand()) << 32 | quint32(qrand());
+            const quint64 r = QRandomGenerator::global()->generate64();
             const quint64 b = Q_UINT64_C(1) << i;
             const quint64 mask = ((~(b-1)) ^ b) & type_mask;
             const quint64 input = (r&mask) | b;
@@ -1166,7 +1167,7 @@ void tst_QAlgorithms::countLeading_data_impl(size_t sizeof_T_Int)
     // and some random ones:
     for (uint i = 0; i < sizeof_T_Int*8; ++i) {
         for (uint j = 0; j < sizeof_T_Int*3; ++j) {  // 3 is arbitrary
-            const quint64 r = quint64(qrand()) << 32 | quint32(qrand());
+            const quint64 r = QRandomGenerator::global()->generate64();
             const quint64 b = Q_UINT64_C(1) << i;
             const quint64 mask = b-1;
             const quint64 input = (r&mask) | b;

@@ -354,7 +354,7 @@ HICON QWindowsSystemTrayIcon::createIcon(const QIcon &icon)
     m_hIcon = nullptr;
     if (icon.isNull())
         return oldIcon;
-    const QSize requestedSize(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+    const QSize requestedSize = QSize(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
     const QSize size = icon.actualSize(requestedSize);
     const QPixmap pm = icon.pixmap(size);
     if (!pm.isNull())

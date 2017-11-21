@@ -414,7 +414,7 @@ void QtBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
 
 CircleItem::CircleItem(int size, int x, int y) : ItemBase(size, x, y)
 {
-     m_color = QColor::fromHsv(rand() % 360, 255, 255);
+     m_color = QColor::fromHsv(QRandomGenerator::global()->bounded(360), 255, 255);
 }
 
 void CircleItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)

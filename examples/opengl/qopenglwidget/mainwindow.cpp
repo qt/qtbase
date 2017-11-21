@@ -56,6 +56,7 @@
 #include <QSlider>
 #include <QLabel>
 #include <QCheckBox>
+#include <QRandomGenerator>
 #include <QSpinBox>
 #include <QScrollArea>
 
@@ -155,7 +156,9 @@ void MainWindow::addNew()
 {
     if (m_nextY == 4)
         return;
-    GLWidget *w = new GLWidget(this, false, qRgb(qrand() % 256, qrand() % 256, qrand() % 256));
+    GLWidget *w = new GLWidget(this, false, qRgb(QRandomGenerator::global()->bounded(256),
+                                                 QRandomGenerator::global()->bounded(256),
+                                                 QRandomGenerator::global()->bounded(256)));
     m_glWidgets << w;
     connect(m_timer, &QTimer::timeout, w, QOverload<>::of(&QWidget::update));
     m_layout->addWidget(w, m_nextY, m_nextX, 1, 1);

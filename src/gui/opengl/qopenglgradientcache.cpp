@@ -42,6 +42,7 @@
 #include <private/qopenglcontext_p.h>
 #include <private/qrgba64_p.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/qrandom.h>
 #include "qopenglfunctions.h"
 #include "qopenglextensions_p.h"
 
@@ -137,7 +138,7 @@ GLuint QOpenGL2GradientCache::addCacheElement(quint64 hash_val, const QGradient 
 {
     QOpenGLFunctions *funcs = QOpenGLContext::currentContext()->functions();
     if (cache.size() == maxCacheSize()) {
-        int elem_to_remove = qrand() % maxCacheSize();
+        int elem_to_remove = QRandomGenerator::global()->bounded(maxCacheSize());
         quint64 key = cache.keys()[elem_to_remove];
 
         // need to call glDeleteTextures on each removed cache entry:

@@ -53,6 +53,7 @@
 #include <QPaintEngine>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
+#include <QRandomGenerator>
 #include <QCoreApplication>
 #include <qmath.h>
 
@@ -420,11 +421,11 @@ void GLWidget::paintGL()
 void GLWidget::createBubbles(int number)
 {
     for (int i = 0; i < number; ++i) {
-        QPointF position(width()*(0.1 + (0.8*qrand()/(RAND_MAX+1.0))),
-                         height()*(0.1 + (0.8*qrand()/(RAND_MAX+1.0))));
-        qreal radius = qMin(width(), height())*(0.0175 + 0.0875*qrand()/(RAND_MAX+1.0));
-        QPointF velocity(width()*0.0175*(-0.5 + qrand()/(RAND_MAX+1.0)),
-                         height()*0.0175*(-0.5 + qrand()/(RAND_MAX+1.0)));
+        QPointF position(width()*(0.1 + QRandomGenerator::global()->bounded(0.8)),
+                         height()*(0.1 + QRandomGenerator::global()->bounded(0.8)));
+        qreal radius = qMin(width(), height())*(0.0175 + QRandomGenerator::global()->bounded(0.0875));
+        QPointF velocity(width()*0.0175*(-0.5 + QRandomGenerator::global()->bounded(1.0)),
+                         height()*0.0175*(-0.5 + QRandomGenerator::global()->bounded(1.0)));
 
         m_bubbles.append(new Bubble(position, radius, velocity));
     }

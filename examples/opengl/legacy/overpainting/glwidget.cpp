@@ -53,6 +53,7 @@
 #include "glwidget.h"
 
 #include <QMouseEvent>
+#include <QRandomGenerator>
 #include <QTime>
 
 #include <math.h>
@@ -67,7 +68,6 @@ GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
     QTime midnight(0, 0, 0);
-    qsrand(midnight.secsTo(QTime::currentTime()));
 
     logo = 0;
     xRot = 0;
@@ -234,11 +234,11 @@ QSize GLWidget::sizeHint() const
 void GLWidget::createBubbles(int number)
 {
     for (int i = 0; i < number; ++i) {
-        QPointF position(width()*(0.1 + (0.8*qrand()/(RAND_MAX+1.0))),
-                        height()*(0.1 + (0.8*qrand()/(RAND_MAX+1.0))));
-        qreal radius = qMin(width(), height())*(0.0125 + 0.0875*qrand()/(RAND_MAX+1.0));
-        QPointF velocity(width()*0.0125*(-0.5 + qrand()/(RAND_MAX+1.0)),
-                        height()*0.0125*(-0.5 + qrand()/(RAND_MAX+1.0)));
+        QPointF position(width()*(0.1 + QRandomGenerator::global()->bounded(0.8)),
+                        height()*(0.1 + QRandomGenerator::global()->bounded(0.8)));
+        qreal radius = qMin(width(), height())*(0.0125 + QRandomGenerator::global()->bounded(0.0875));
+        QPointF velocity(width()*0.0125*(-0.5 + QRandomGenerator::global()->bounded(1.0)),
+                        height()*0.0125*(-0.5 + QRandomGenerator::global()->bounded(1.0)));
 
         bubbles.append(new Bubble(position, radius, velocity));
     }

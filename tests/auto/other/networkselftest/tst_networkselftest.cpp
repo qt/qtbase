@@ -30,6 +30,7 @@
 #include <QtNetwork/QtNetwork>
 #include <QtCore/QDateTime>
 #include <QtCore/QTextStream>
+#include <QtCore/QRandomGenerator>
 #include <QtCore/QStandardPaths>
 #include <QtCore/private/qiodevice_p.h>
 
@@ -538,7 +539,7 @@ void tst_NetworkSelfTest::imapServer()
 void tst_NetworkSelfTest::httpServer()
 {
     QByteArray uniqueExtension = QByteArray::number((qulonglong)this) +
-                                 QByteArray::number((qulonglong)qrand()) +
+                                 QByteArray::number((qulonglong)QRandomGenerator::global()->generate()) +
                                  QByteArray::number(QDateTime::currentSecsSinceEpoch());
 
     netChat(80, QList<Chat>()

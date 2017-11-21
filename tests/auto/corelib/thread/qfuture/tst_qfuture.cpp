@@ -36,6 +36,7 @@
 #include <qresultstore.h>
 #include <qthreadpool.h>
 #include <qexception.h>
+#include <qrandom.h>
 #include <private/qfutureinterface_p.h>
 
 // COM interface macro.
@@ -1456,7 +1457,7 @@ void tst_QFuture::nonGlobalThreadPool()
 
         void run() override
         {
-            const int ms = 100 + (qrand() % 100 - 100/2);
+            const int ms = 100 + (QRandomGenerator::global()->bounded(100) - 100/2);
             QThread::msleep(ms);
             reportResult(Answer);
             reportFinished();

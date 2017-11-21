@@ -45,6 +45,7 @@
 #include <qdesktopwidget.h>
 #endif
 #include <qpixmap.h>
+#include <qrandom.h>
 
 #include <private/qdrawhelper_p.h>
 #include <qpainter.h>
@@ -3052,7 +3053,7 @@ void tst_QPainter::fpe_steepSlopes_data()
 
 qreal randf()
 {
-    return rand() / (RAND_MAX + 1.0);
+    return QRandomGenerator::global()->bounded(1.0);
 }
 
 QPointF randInRect(const QRectF &rect)

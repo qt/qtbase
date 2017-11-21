@@ -32,6 +32,8 @@
 #include <qtcpserver.h>
 #include <qtcpsocket.h>
 #include <QtTest/QtTest>
+#include <QtCore/qatomic.h>
+#include <QtCore/qsemaphore.h>
 #include <qfile.h>
 #include <qstring.h>
 #include <qdir.h>
@@ -47,10 +49,11 @@ class XmlServer : public QThread
 {
     Q_OBJECT
 public:
-    XmlServer(QObject *parent = 0) : QThread(parent), quit_soon(false), listening(false) {}
+    XmlServer(QObject *parent = 0) : QThread(parent) {}
 
-    bool quit_soon;
-    bool listening;
+    QSemaphore threadStarted;
+    bool listening = false;
+    QAtomicInt quitSoon;
 
 protected:
     virtual void run();
@@ -63,6 +66,8 @@ void XmlServer::run()
     QTcpServer srv;
 
     listening = srv.listen(QHostAddress::Any, TEST_PORT);
+    threadStarted.release();
+
     if (!listening) {
         qWarning() << "Failed to listen on" << TEST_PORT << srv.errorString();
         return;
@@ -95,14 +100,13 @@ void XmlServer::run()
 
             QByteArray data = file.readAll();
             for (int i = 0; i < data.size();) {
-//                sock->putChar(data.at(i));
                 int cnt = qMin(CHUNK_SIZE, data.size() - i);
                 sock->write(data.constData() + i, cnt);
                 i += cnt;
                 sock->flush();
                 QTest::qSleep(1);
 
-                if (quit_soon) {
+                if (quitSoon.loadAcquire()) {
                     sock->abort();
                     break;
                 }
@@ -112,7 +116,7 @@ void XmlServer::run()
             delete sock;
         }
 
-        if (quit_soon)
+        if (quitSoon.loadAcquire())
             break;
     }
 
@@ -162,7 +166,7 @@ tst_QXmlSimpleReader::tst_QXmlSimpleReader() : server(new XmlServer(this))
 
 tst_QXmlSimpleReader::~tst_QXmlSimpleReader()
 {
-    server->quit_soon = true;
+    server->quitSoon.storeRelease(1);
     server->wait();
 }
 
@@ -562,7 +566,19 @@ void tst_QXmlSimpleReader::inputFromSocket()
     QSKIP("WinRT does not support connecting to localhost");
 #endif
 
-    QTRY_VERIFY_WITH_TIMEOUT(server->listening, 15000);
+    if (!server->threadStarted.tryAcquire(1, 15000)) {
+        // If something is wrong with QThreads, it's not a reason to fail
+        // XML-test, we are not testing QThread here after all!
+        QSKIP("XmlServer/thread has not started yet");
+    }
+
+    // Subsequent runs should be able to acquire the semaphore.
+    server->threadStarted.release(1);
+
+    if (!server->listening) {
+        // Again, QTcpServer is not the subject of this test!
+        QSKIP("QTcpServer::listen failed, bailing out");
+    }
 
     QTcpSocket sock;
     sock.connectToHost(QHostAddress::LocalHost, TEST_PORT);

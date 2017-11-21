@@ -106,7 +106,7 @@ void Server::sendFortune()
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_10);
-    const int fortuneIndex = QRandomGenerator::bounded(0, fortunes.size());
+    const int fortuneIndex = QRandomGenerator::global()->bounded(0, fortunes.size());
     const QString &message = fortunes.at(fortuneIndex);
     out << quint32(message.size());
     out << message;

@@ -74,8 +74,6 @@ private:
 
 class QSemaphoreReleaser
 {
-    QSemaphore *m_sem = nullptr;
-    int m_n;
 public:
     QSemaphoreReleaser() = default;
     explicit QSemaphoreReleaser(QSemaphore &sem, int n = 1) Q_DECL_NOTHROW
@@ -109,6 +107,10 @@ public:
         m_sem = nullptr;
         return old;
     }
+
+private:
+    QSemaphore *m_sem = nullptr;
+    int m_n;
 };
 
 #endif // QT_NO_THREAD

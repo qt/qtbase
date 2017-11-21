@@ -544,6 +544,38 @@ void QStorageInfoPrivate::initRootPath()
     }
 }
 
+#ifdef Q_OS_LINUX
+// udev encodes the labels with ID_LABEL_FS_ENC which is done with
+// blkid_encode_string(). Within this function some 1-byte utf-8
+// characters not considered safe (e.g. '\' or ' ') are encoded as hex
+static QString decodeFsEncString(const QString &str)
+{
+    QString decoded;
+    decoded.reserve(str.size());
+
+    int i = 0;
+    while (i < str.size()) {
+        if (i <= str.size() - 4) {    // we need at least four characters \xAB
+            if (str.at(i) == QLatin1Char('\\') &&
+                str.at(i+1) == QLatin1Char('x')) {
+                bool bOk;
+                const int code = str.midRef(i+2, 2).toInt(&bOk, 16);
+                // only decode characters between 0x20 and 0x7f but not
+                // the backslash to prevent collisions
+                if (bOk && code >= 0x20 && code < 0x80 && code != '\\') {
+                    decoded += QChar(code);
+                    i += 4;
+                    continue;
+                }
+            }
+        }
+        decoded += str.at(i);
+        ++i;
+    }
+    return decoded;
+}
+#endif
+
 static inline QString retrieveLabel(const QByteArray &device)
 {
 #ifdef Q_OS_LINUX
@@ -557,7 +589,7 @@ static inline QString retrieveLabel(const QByteArray &device)
         it.next();
         QFileInfo fileInfo(it.fileInfo());
         if (fileInfo.isSymLink() && fileInfo.symLinkTarget() == devicePath)
-            return fileInfo.fileName();
+            return decodeFsEncString(fileInfo.fileName());
     }
 #elif defined Q_OS_HAIKU
     fs_info fsInfo;

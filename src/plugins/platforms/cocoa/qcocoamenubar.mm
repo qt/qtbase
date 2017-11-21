@@ -155,7 +155,7 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
         }
     }
 
-    syncMenu(menu);
+    syncMenu_helper(menu, false /*internaCall*/);
 
     if (needsImmediateUpdate())
         updateMenuBarImmediately();
@@ -183,11 +183,16 @@ void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 
 void QCocoaMenuBar::syncMenu(QPlatformMenu *menu)
 {
+    syncMenu_helper(menu, false /*internaCall*/);
+}
+
+void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
+{
     QMacAutoReleasePool pool;
 
     QCocoaMenu *cocoaMenu = static_cast<QCocoaMenu *>(menu);
     Q_FOREACH (QCocoaMenuItem *item, cocoaMenu->items())
-        cocoaMenu->syncMenuItem(item);
+        cocoaMenu->syncMenuItem_helper(item, menubarUpdate);
 
     BOOL shouldHide = YES;
     if (cocoaMenu->isVisible()) {
@@ -357,7 +362,7 @@ void QCocoaMenuBar::updateMenuBarImmediately()
         menu->setAttachedItem(item);
         menu->setMenuParent(mb);
         // force a sync?
-        mb->syncMenu(menu);
+        mb->syncMenu_helper(menu, true /*menubarUpdate*/);
         menu->propagateEnabledState(!disableForModal);
     }
 

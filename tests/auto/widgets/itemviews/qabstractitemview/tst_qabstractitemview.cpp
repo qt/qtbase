@@ -28,6 +28,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 
 #include <qabstractitemview.h>
 #include <qstandarditemmodel.h>
@@ -57,19 +58,7 @@
 
 Q_DECLARE_METATYPE(Qt::ItemFlags);
 
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
+using namespace QTestPrivate;
 
 // Move cursor out of widget area to avoid undesired interaction on Mac.
 static inline void moveCursorAway(const QWidget *topLevel)

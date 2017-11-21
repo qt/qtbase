@@ -925,6 +925,7 @@ foreach my $lib (@modules_to_sync) {
     #information used after the syncing
     my $pri_install_classes = "";
     my $pri_install_files = "";
+    my $pri_install_ifiles = "";
     my $pri_install_pfiles = "";
     my $pri_install_ipfiles = "";
     my $pri_install_qpafiles = "";
@@ -1080,11 +1081,7 @@ foreach my $lib (@modules_to_sync) {
 
                             my $pri_install_iheader = fixPaths($iheader, $dir);
                             my $injection = "";
-                            if($public_header) {
-                                #put it into the master file
-                                $master_contents{$public_header} = $requires if (!$shadow && shouldMasterInclude($iheader));
-
-                                #deal with the install directives
+                            if ($public_header) {
                                 foreach my $class (@classes) {
                                     # Strip namespaces:
                                     $class =~ s/^.*:://;
@@ -1096,8 +1093,17 @@ foreach my $lib (@modules_to_sync) {
                                                                 unless($pri_install_classes =~ $class_header);
                                     $injection .= ":$class";
                                 }
-                                $pri_install_files.= "$pri_install_iheader ";;
-                                $pri_clean_files .= "$pri_install_iheader".($requires ? ":".$requires : "")." " if ($clean_header);
+
+                                if ($shadow) {
+                                    $pri_install_ifiles .= "$pri_install_iheader ";
+                                } else {
+                                    # put it into the master file
+                                    $master_contents{$public_header} = $requires if (shouldMasterInclude($iheader));
+
+                                    # deal with the install directives
+                                    $pri_install_files .= "$pri_install_iheader ";
+                                    $pri_clean_files .= "$pri_install_iheader".($requires ? ":".$requires : "")." " if ($clean_header);
+                                }
                             }
                             elsif ($qpa_header) {
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
@@ -1247,6 +1253,7 @@ foreach my $lib (@modules_to_sync) {
         #handle the headers.pri for each module
         my $headers_pri_contents = "";
         $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
+        $headers_pri_contents .= "SYNCQT.INJECTED_HEADER_FILES = $pri_install_ifiles\n";
         $headers_pri_contents .= "SYNCQT.HEADER_CLASSES = $pri_install_classes\n";
         $headers_pri_contents .= "SYNCQT.PRIVATE_HEADER_FILES = $pri_install_pfiles\n";
         $headers_pri_contents .= "SYNCQT.INJECTED_PRIVATE_HEADER_FILES = $pri_install_ipfiles\n";

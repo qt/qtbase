@@ -67,6 +67,12 @@ class QMutexData;
 class Q_CORE_EXPORT QBasicMutex
 {
 public:
+#ifdef Q_COMPILER_CONSTEXPR
+    constexpr QBasicMutex()
+        : d_ptr(nullptr)
+    {}
+#endif
+
     // BasicLockable concept
     inline void lock() QT_MUTEX_LOCK_NOEXCEPT {
         if (!fastTryLock())

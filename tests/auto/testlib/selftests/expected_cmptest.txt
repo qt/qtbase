@@ -61,9 +61,14 @@ FAIL!  : tst_Cmptest::compareQListDouble() Compared lists differ at index 0.
    Actual   (double1): 1.5
    Expected (double2): 1
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
-FAIL!  : tst_Cmptest::compareQColor() Compared values are not the same
-   Actual   (yellow): #ffff00
-   Expected (green) : #00ff00
+PASS   : tst_Cmptest::compareQColor(Qt::yellow vs "yellow")
+FAIL!  : tst_Cmptest::compareQColor(Qt::yellow vs Qt::green) Compared values are not the same
+   Actual   (colorA): #ffffff00
+   Expected (colorB): #ff00ff00
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQColor(0x88ff0000 vs 0xffff0000) Compared values are not the same
+   Actual   (colorA): #88ff0000
+   Expected (colorB): #ffff0000
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::compareQPixmaps(both null)
 FAIL!  : tst_Cmptest::compareQPixmaps(one null) Compared QPixmaps differ.
@@ -133,5 +138,5 @@ FAIL!  : tst_Cmptest::tryVerify2() 'opaqueFunc() < 2' returned FALSE. (42)
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::verifyExplicitOperatorBool()
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 15 passed, 33 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 16 passed, 34 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Cmptest *********
