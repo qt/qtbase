@@ -244,12 +244,25 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
         applyGeometry(m_normalGeometry);
         break;
     case Qt::WindowMaximized:
-        applyGeometry(window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint ?
-            screen()->geometry() : screen()->availableGeometry());
+    case Qt::WindowFullScreen: {
+        // When an application is in split-view mode, the UIScreen still has the
+        // same geometry, but the UIWindow is resized to the area reserved for the
+        // application. We use this to constrain the geometry used when applying the
+        // fullscreen or maximized window states. Note that we do not do this
+        // in applyGeometry(), as we don't want to artificially limit window
+        // placement "outside" of the screen bounds if that's what the user wants.
+
+        QRect uiWindowBounds = QRectF::fromCGRect(m_view.window.bounds).toRect();
+        QRect fullscreenGeometry = screen()->geometry().intersected(uiWindowBounds);
+        QRect maximizedGeometry = window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint ?
+            fullscreenGeometry : screen()->availableGeometry().intersected(uiWindowBounds);
+
+        if (state & Qt::WindowFullScreen)
+            applyGeometry(fullscreenGeometry);
+        else
+            applyGeometry(maximizedGeometry);
         break;
-    case Qt::WindowFullScreen:
-        applyGeometry(screen()->geometry());
-        break;
+    }
     case Qt::WindowMinimized:
         applyGeometry(QRect());
         break;
