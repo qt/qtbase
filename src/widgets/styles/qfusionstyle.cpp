@@ -786,7 +786,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->drawRect(rect);
 
             QColor checkMarkColor = option->palette.text().color().darker(120);
-            const int checkMarkPadding = QStyleHelper::dpiScaled(3);
+            const int checkMarkPadding = 1 + rect.width() * 0.2; // at least one pixel padding
 
             if (checkbox->state & State_NoChange) {
                 gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft());
@@ -800,18 +800,20 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 painter->drawRect(rect.adjusted(checkMarkPadding, checkMarkPadding, -checkMarkPadding, -checkMarkPadding));
 
             } else if (checkbox->state & (State_On)) {
-                QPen checkPen = QPen(checkMarkColor, QStyleHelper::dpiScaled(1.8));
+                qreal penWidth = QStyleHelper::dpiScaled(1.8);
+                penWidth = qMax(penWidth , 0.18 * rect.height());
+                penWidth = qMin(penWidth , 0.30 * rect.height());
+                QPen checkPen = QPen(checkMarkColor, penWidth);
                 checkMarkColor.setAlpha(210);
-                painter->translate(-1, 0.5);
+                painter->translate(-0.8, 0.5);
                 painter->setPen(checkPen);
                 painter->setBrush(Qt::NoBrush);
-                painter->translate(0.2, 0.0);
 
                 // Draw checkmark
                 QPainterPath path;
-                path.moveTo(2 + checkMarkPadding, rect.height() / 2.0);
+                path.moveTo(1.33 * checkMarkPadding, rect.height() / 2.0);
                 path.lineTo(rect.width() / 2.0, rect.height() - checkMarkPadding);
-                path.lineTo(rect.width() - checkMarkPadding - 0.5, checkMarkPadding);
+                path.lineTo(rect.width() - checkMarkPadding * 0.92, checkMarkPadding);
                 painter->drawPath(path.translated(rect.topLeft()));
             }
         }
@@ -1580,8 +1582,9 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             bool enabled = menuItem->state & State_Enabled;
 
             bool ignoreCheckMark = false;
-            int checkcol = qMax(menuItem->maxIconWidth, 20);
-
+            const int checkColHOffset = windowsItemHMargin + windowsItemFrame - 1;
+            int checkcol = qMax(menuItem->rect.height() * 0.7,
+                                      qMax(menuItem->maxIconWidth * 1.0, dpiScaled(17))); // icon checkbox's highlihgt column width
             if (
 #if QT_CONFIG(combobox)
                 qobject_cast<const QComboBox*>(widget) ||
@@ -1591,7 +1594,9 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
 
             if (!ignoreCheckMark) {
                 // Check
-                QRect checkRect(option->rect.left() + 7, option->rect.center().y() - 6, 14, 14);
+                const int boxMargin = dpiScaled(4);
+                const int boxWidth = checkcol - 2 * boxMargin;
+                QRect checkRect(option->rect.left() + boxMargin + checkColHOffset, option->rect.center().y() - boxWidth/2 + 1, boxWidth, boxWidth);
                 checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);
                 if (checkable) {
                     if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) {
@@ -1603,7 +1608,8 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                             QPalette::ColorRole textRole = !enabled ? QPalette::Text:
                                                                       selected ? QPalette::HighlightedText : QPalette::ButtonText;
                             painter->setBrush(option->palette.brush( option->palette.currentColorGroup(), textRole));
-                            painter->drawEllipse(checkRect.adjusted(4, 4, -4, -4));
+                            const int adjustment = checkRect.height() * 0.3;
+                            painter->drawEllipse(checkRect.adjusted(adjustment, adjustment, -adjustment, -adjustment));
                         }
                     } else {
                         // Check box
@@ -1632,7 +1638,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
 
             QPainter *p = painter;
             QRect vCheckRect = visualRect(opt->direction, menuitem->rect,
-                                          QRect(menuitem->rect.x() + 4, menuitem->rect.y(),
+                                          QRect(menuitem->rect.x() + checkColHOffset, menuitem->rect.y(),
                                                 checkcol, menuitem->rect.height()));
             if (!menuItem->icon.isNull()) {
                 QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
@@ -1683,7 +1689,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 discol = menuitem->palette.text().color();
                 p->setPen(discol);
             }
-            int xm = windowsItemFrame + checkcol + windowsItemHMargin + 2;
+            int xm = checkColHOffset + checkcol + windowsItemHMargin;
             int xpos = menuitem->rect.x() + xm;
 
             QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
