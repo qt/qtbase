@@ -65,7 +65,7 @@ static const char magicRuleTypes_string[] =
     "\0";
 
 static const int magicRuleTypes_indices[] = {
-    0, 8, 15, 22, 29, 35, 41, 50, 59, 65, 0
+    0, 8, 15, 22, 29, 35, 41, 50, 59, 64, 0
 };
 
 QMimeMagicRule::Type QMimeMagicRule::type(const QByteArray &theTypeName)
