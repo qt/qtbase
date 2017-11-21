@@ -405,11 +405,15 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
 # elif defined(Q_OS_BSD4)
 QT_BEGIN_INCLUDE_NAMESPACE
 #  include <net/if_dl.h>
-#  include <net/if_types.h>
 #if defined(QT_PLATFORM_UIKIT)
 #  include "qnetworkinterface_uikit_p.h"
+#if !defined(QT_WATCHOS_OUTDATED_SDK_WORKAROUND)
+// TODO: remove it as soon as SDK is updated on CI!!!
+#  include <net/if_types.h>
+#endif
 #else
 #  include <net/if_media.h>
+#  include <net/if_types.h>
 #  include <netinet/in_var.h>
 #endif // QT_PLATFORM_UIKIT
 QT_END_INCLUDE_NAMESPACE
