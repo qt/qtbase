@@ -245,6 +245,7 @@ tags
 *.gcda
 *.gcno
 *.lib
+!Info.plist.lib
 *.o
 *.obj
 *.orig
