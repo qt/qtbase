@@ -42,7 +42,7 @@
 
 #include <QtCore/qobject.h>
 
-#ifndef __EMSCRIPTEN__
+#ifndef Q_OS_HTML5
 QT_REQUIRE_CONFIG(library);
 #endif
 QT_BEGIN_NAMESPACE

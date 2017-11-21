@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_TEXTCODEC
 
-#if defined(Q_OS_MAC) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(__EMSCRIPTEN__)
+#if defined(Q_OS_MAC) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_HTML5)
 #define QT_LOCALE_IS_UTF8
 #endif
 

@@ -71,7 +71,7 @@ public:
     void processEvents(ProcessEventsFlags flags, int maximumTime);
 
 
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
     void processEvents_emscripten();
     static void processEvents(void *eventloop);
     bool firstRun;

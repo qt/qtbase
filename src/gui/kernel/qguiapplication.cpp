@@ -110,7 +110,7 @@
 #  include <QtCore/QLibraryInfo>
 #endif // Q_OS_WIN
 
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
 #include <emscripten.h>
 #endif
 
@@ -249,7 +249,7 @@ static inline void clearFontUnlocked()
 }
 
 // Using aggregate initialization instead of ctor so we can have a POD global static
-#ifdef __EMSCRIPTEN__ //this keeps the screen on screen for whatever reason
+#ifdef Q_OS_HTML5 //this keeps the screen on screen for whatever reason
 #define Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER { Qt::TopLeftCorner, 4, 0, -1, -1 }
 #else
 #define Q_WINDOW_GEOMETRY_SPECIFICATION_INITIALIZER { Qt::TopLeftCorner, -1, -1, -1, -1 }
@@ -1547,7 +1547,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
         qt_gl_set_global_share_context(0);
     }
 #endif
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
         EM_ASM(
         //unmount persistent directory as IDBFS
               FS.unmount('/home/web_user');

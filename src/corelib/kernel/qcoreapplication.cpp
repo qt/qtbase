@@ -116,7 +116,7 @@
 #  include <taskLib.h>
 #endif
 
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
 #include <emscripten.h>
 #endif
 
@@ -498,7 +498,7 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
         EM_ASM(
         //unmount persistent directory as IDBFS
               FS.unmount('/home/web_user');
@@ -807,7 +807,7 @@ void QCoreApplicationPrivate::init()
     Q_ASSERT_X(!QCoreApplication::self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = q;
 
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
         EM_ASM(
               Module.print("mount persistent directory as IDBFS");
               FS.mount(IDBFS,{},'/home/web_user');

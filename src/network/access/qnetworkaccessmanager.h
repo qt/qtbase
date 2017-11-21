@@ -191,7 +191,7 @@ private:
     friend class QNetworkReplyHttpImpl;
     friend class QNetworkReplyHttpImplPrivate;
     friend class QNetworkReplyFileImpl;
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
     friend class QNetworkReplyEmscriptenImpl;
 #endif
     Q_DECLARE_PRIVATE(QNetworkAccessManager)

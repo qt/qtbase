@@ -277,7 +277,7 @@ EGLSurface QEGLPlatformContext::createTemporaryOffscreenSurface()
         EGL_LARGEST_PBUFFER, EGL_FALSE,
         EGL_NONE
     };
-#ifndef __EMSCRIPTEN__
+#ifndef Q_OS_HTML5
     // eglCreateWindowSurface is not supported by emscripten
 
     // Cannot just pass m_eglConfig because it may not be suitable for pbuffers. Instead,

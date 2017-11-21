@@ -80,7 +80,7 @@
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <Security/SecKeychain.h>
 #endif
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
 #include <QDebug>
 #include "qnetworkreplyemscriptenimpl_p.h"
 #endif
@@ -1340,7 +1340,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     bool isLocalFile = req.url().isLocalFile();
     QString scheme = req.url().scheme();
     qDebug() << Q_FUNC_INFO << scheme;
-#ifdef __EMSCRIPTEN__
+#ifdef Q_OS_HTML5
     if (scheme == QLatin1String("http") || scheme == QLatin1String("https")) {
         //        return new QNetworkReplyEmscriptenImpl(this, req, op);
 
