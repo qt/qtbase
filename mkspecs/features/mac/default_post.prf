@@ -47,6 +47,29 @@ app_extension_api_only {
 }
 
 macx-xcode {
+    qmake_pkginfo_typeinfo.name = QMAKE_PKGINFO_TYPEINFO
+    !isEmpty(QMAKE_PKGINFO_TYPEINFO): \
+        qmake_pkginfo_typeinfo.value = $$QMAKE_PKGINFO_TYPEINFO
+    else: \
+        qmake_pkginfo_typeinfo.value = "????"
+    QMAKE_MAC_XCODE_SETTINGS += qmake_pkginfo_typeinfo
+
+    !isEmpty(VERSION) {
+        l = $$split(VERSION, '.') 0 0  # make sure there are at least three
+        VER_MAJ = $$member(l, 0, 0)
+        VER_MIN = $$member(l, 1, 1)
+        VER_PAT = $$member(l, 2, 2)
+        unset(l)
+
+        qmake_full_version.name = QMAKE_FULL_VERSION
+        qmake_full_version.value = $${VER_MAJ}.$${VER_MIN}.$${VER_PAT}
+        QMAKE_MAC_XCODE_SETTINGS += qmake_full_version
+
+        qmake_short_version.name = QMAKE_SHORT_VERSION
+        qmake_short_version.value = $${VER_MAJ}.$${VER_MIN}
+        QMAKE_MAC_XCODE_SETTINGS += qmake_short_version
+    }
+
     !isEmpty(QMAKE_XCODE_DEBUG_INFORMATION_FORMAT) {
         debug_information_format.name = DEBUG_INFORMATION_FORMAT
         debug_information_format.value = $$QMAKE_XCODE_DEBUG_INFORMATION_FORMAT
