@@ -541,6 +541,12 @@ Windows
      bitmap fonts and not rendered correctly in Qt Quick. This has now been
      fixed.
 
+X11
+---
+
+ - Native painting (instead of software rasterization) has been experimentally
+   re-introduced. Enabled by the configure option -xcb-native-painting.
+
 ****************************************************************************
 *                                Tools                                     *
 ****************************************************************************
@@ -553,12 +559,19 @@ moc
 qmake
 -----
 
+ - [QTBUG-1581] Introduced the variable OBJECTIVE_HEADERS.
+ - [QTBUG-11117][nmake] Added support for precompiled header also for
+   plain C files.
+ - Added versionAtLeast() and versionAtMost() test functions.
  - If you use CONFIG+=qmltestcase with no SOURCES, 'make check' will now
    run qmltestrunner for you.
+ - [Darwin] Added support for Info.plist in non-bundle apps and libs.
 
 uic
 ---
 
+ - [QTBUG-51602] Added the no-stringliteral option, to be used for building
+   shared objects which are meant to be unloadable.
  - Old images embedded in ui files, imported from Qt 3, are now ignored.
    uic will now behave consistently with Qt Designer - both will ignore
    them.
