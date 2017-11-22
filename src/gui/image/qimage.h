@@ -96,6 +96,7 @@ typedef void (*QImageCleanupFunction)(void*);
 
 class Q_GUI_EXPORT QImage : public QPaintDevice
 {
+    Q_GADGET
 public:
     enum InvertMode { InvertRgb, InvertRgba };
     enum Format {
@@ -132,6 +133,7 @@ public:
         NImageFormats
 #endif
     };
+    Q_ENUM(Format)
 
     QImage() Q_DECL_NOEXCEPT;
     QImage(const QSize &size, Format format);
