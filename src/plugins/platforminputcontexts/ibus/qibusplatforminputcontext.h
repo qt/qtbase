@@ -100,6 +100,7 @@ public:
 public Q_SLOTS:
     void commitText(const QDBusVariant &text);
     void updatePreeditText(const QDBusVariant &text, uint cursor_pos, bool visible);
+    void forwardKeyEvent(uint keyval, uint keycode, uint state);
     void cursorRectChanged();
     void deleteSurroundingText(int offset, uint n_chars);
     void surroundingTextRequired();
