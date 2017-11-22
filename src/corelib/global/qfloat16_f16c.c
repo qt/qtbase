@@ -62,7 +62,7 @@ void qFloatToFloat16_fast(quint16 *out, const float *in, qssize_t len) Q_DECL_NO
         _mm_storel_epi64((__m128i *)(out + i), _mm_cvtps_ph(_mm_loadu_ps(in + i), 0));
         i += 4;
     }
-    // Inlining "quint16::quint16(float f)" to avoid getting the fallback version.
+    // Inlining "qfloat16::qfloat16(float f)":
     SIMD_EPILOGUE(i, len, 3)
         out[i] = _mm_extract_epi16(_mm_cvtps_ph(_mm_set_ss(in[i]), 0), 0);
 }
@@ -76,7 +76,7 @@ void qFloatFromFloat16_fast(float *out, const quint16 *in, qssize_t len) Q_DECL_
         _mm_storeu_ps(out + i, _mm_cvtph_ps(_mm_loadl_epi64((const __m128i *)(in + i))));
         i += 4;
     }
-    // Inlining "quint16::operator float()" to avoid getting the fallback version.
+    // Inlining "qfloat16::operator float()":
     SIMD_EPILOGUE(i, len, 3)
         out[i] = _mm_cvtss_f32(_mm_cvtph_ps(_mm_cvtsi32_si128(in[i])));
 }
