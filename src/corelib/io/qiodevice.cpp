@@ -1879,7 +1879,7 @@ QByteArray QIODevice::peek(qint64 maxSize)
 }
 
 /*!
-    \since 5.11
+    \since 5.10
 
     Skips up to \a maxSize bytes from the device. Returns the number of bytes
     actually skipped, or -1 on error.
