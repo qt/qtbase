@@ -246,7 +246,7 @@ private:
 
     typedef QMap<Qt::DropAction, CursorEntry> ActionCursorMap;
 
-    const Mode m_mode;
+    Mode m_mode;
     QWindowsDrag *m_drag;
     Qt::MouseButtons m_currentButtons;
     ActionCursorMap m_cursors;
@@ -300,6 +300,15 @@ void QWindowsOleDropSource::createCursors()
     }
     Q_ASSERT(platformScreen);
     QPlatformCursor *platformCursor = platformScreen->cursor();
+
+    if (GetSystemMetrics (SM_REMOTESESSION) != 0) {
+        /* Workaround for RDP issues with large cursors.
+         * Touch drag window seems to work just fine...
+         * 96 pixel is a 'large' mouse cursor, according to RDP spec */
+        const int rdpLargeCursor = qRound(qreal(96) / QHighDpiScaling::factor(platformScreen));
+        if (pixmap.width() > rdpLargeCursor || pixmap.height() > rdpLargeCursor)
+            m_mode = TouchDrag;
+    }
 
     qreal pixmapScaleFactor = 1;
     qreal hotSpotScaleFactor = 1;
@@ -433,6 +442,9 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
             SetCursor(e.cursor->handle());
             break;
         case TouchDrag:
+            // "Touch drag" with an unsuppressed cursor may happen with RDP (see createCursors())
+            if (QWindowsCursor::cursorState() != QWindowsCursor::CursorSuppressed)
+                SetCursor(nullptr);
             if (!m_touchDragWindow)
                 m_touchDragWindow = new QWindowsDragCursorWindow;
             m_touchDragWindow->setPixmap(e.pixmap);
