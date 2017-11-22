@@ -26,6 +26,7 @@ HEADERS +=  \
         text/qstringliteral.h \
         text/qstringmatcher.h \
         text/qstringview.h \
+        text/qstringtokenizer.h \
         text/qtextboundaryfinder.h \
         text/qunicodetables_p.h \
         text/qunicodetools_p.h
@@ -44,6 +45,7 @@ SOURCES += \
         text/qstringconverter.cpp \
         text/qstringlist.cpp \
         text/qstringview.cpp \
+        text/qstringtokenizer.cpp \
         text/qtextboundaryfinder.cpp \
         text/qunicodetools.cpp \
         text/qvsnprintf.cpp

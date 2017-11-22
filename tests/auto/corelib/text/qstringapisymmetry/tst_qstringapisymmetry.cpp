@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 ** Copyright (C) 2019 Mail.ru Group.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -33,6 +33,7 @@
 
 #include <QString>
 #include <QStringView>
+#include <QStringTokenizer>
 #include <QChar>
 #include <QScopedArrayPointer>
 #include <QStringRef>
@@ -512,6 +513,116 @@ private Q_SLOTS:
     void split_QStringRef_char16_t() { split_impl<QStringRef, char16_t>(); }
 
 private:
+    void tok_data(bool rhsHasVariableLength = true);
+    template <typename Haystack, typename Needle> void tok_impl() const;
+
+private Q_SLOTS:
+    // let Splittable = {QString, QStringRef, QStringView, QLatin1String, const char16_t*, std::u16string}
+    // let Separators = Splittable ∪ {QChar, char16_t}
+    // test Splittable × Separators:
+    void tok_QString_QString_data() { tok_data(); }
+    void tok_QString_QString() { tok_impl<QString, QString>(); }
+    void tok_QString_QStringRef_data() { tok_data(); }
+    void tok_QString_QStringRef() { tok_impl<QString, QStringRef>(); }
+    void tok_QString_QStringView_data() { tok_data(); }
+    void tok_QString_QStringView() { tok_impl<QString, QStringView>(); }
+    void tok_QString_QLatin1String_data() { tok_data(); }
+    void tok_QString_QLatin1String() { tok_impl<QString, QLatin1String>(); }
+    void tok_QString_const_char16_t_star_data() { tok_data(); }
+    void tok_QString_const_char16_t_star() { tok_impl<QString, const char16_t*>(); }
+    void tok_QString_stdu16string_data() { tok_data(); }
+    void tok_QString_stdu16string() { tok_impl<QString, std::u16string>(); }
+    void tok_QString_QChar_data() { tok_data(false); }
+    void tok_QString_QChar() { tok_impl<QString, QChar>(); }
+    void tok_QString_char16_t_data() { tok_data(false); }
+    void tok_QString_char16_t() { tok_impl<QString, char16_t>(); }
+
+    void tok_QStringRef_QString_data() { tok_data(); }
+    void tok_QStringRef_QString() { tok_impl<QStringRef, QString>(); }
+    void tok_QStringRef_QStringRef_data() { tok_data(); }
+    void tok_QStringRef_QStringRef() { tok_impl<QStringRef, QStringRef>(); }
+    void tok_QStringRef_QStringView_data() { tok_data(); }
+    void tok_QStringRef_QStringView() { tok_impl<QStringRef, QStringView>(); }
+    void tok_QStringRef_QLatin1String_data() { tok_data(); }
+    void tok_QStringRef_QLatin1String() { tok_impl<QStringRef, QLatin1String>(); }
+    void tok_QStringRef_const_char16_t_star_data() { tok_data(); }
+    void tok_QStringRef_const_char16_t_star() { tok_impl<QStringRef, const char16_t*>(); }
+    void tok_QStringRef_stdu16string_data() { tok_data(); }
+    void tok_QStringRef_stdu16string() { tok_impl<QStringRef, std::u16string>(); }
+    void tok_QStringRef_QChar_data() { tok_data(false); }
+    void tok_QStringRef_QChar() { tok_impl<QStringRef, QChar>(); }
+    void tok_QStringRef_char16_t_data() { tok_data(false); }
+    void tok_QStringRef_char16_t() { tok_impl<QStringRef, char16_t>(); }
+
+    void tok_QStringView_QString_data() { tok_data(); }
+    void tok_QStringView_QString() { tok_impl<QStringView, QString>(); }
+    void tok_QStringView_QStringRef_data() { tok_data(); }
+    void tok_QStringView_QStringRef() { tok_impl<QStringView, QStringRef>(); }
+    void tok_QStringView_QStringView_data() { tok_data(); }
+    void tok_QStringView_QStringView() { tok_impl<QStringView, QStringView>(); }
+    void tok_QStringView_QLatin1String_data() { tok_data(); }
+    void tok_QStringView_QLatin1String() { tok_impl<QStringView, QLatin1String>(); }
+    void tok_QStringView_const_char16_t_star_data() { tok_data(); }
+    void tok_QStringView_const_char16_t_star() { tok_impl<QStringView, const char16_t*>(); }
+    void tok_QStringView_stdu16string_data() { tok_data(); }
+    void tok_QStringView_stdu16string() { tok_impl<QStringView, std::u16string>(); }
+    void tok_QStringView_QChar_data() { tok_data(false); }
+    void tok_QStringView_QChar() { tok_impl<QStringView, QChar>(); }
+    void tok_QStringView_char16_t_data() { tok_data(false); }
+    void tok_QStringView_char16_t() { tok_impl<QStringView, char16_t>(); }
+
+    void tok_QLatin1String_QString_data() { tok_data(); }
+    void tok_QLatin1String_QString() { tok_impl<QLatin1String, QString>(); }
+    void tok_QLatin1String_QStringRef_data() { tok_data(); }
+    void tok_QLatin1String_QStringRef() { tok_impl<QLatin1String, QStringRef>(); }
+    void tok_QLatin1String_QStringView_data() { tok_data(); }
+    void tok_QLatin1String_QStringView() { tok_impl<QLatin1String, QStringView>(); }
+    void tok_QLatin1String_QLatin1String_data() { tok_data(); }
+    void tok_QLatin1String_QLatin1String() { tok_impl<QLatin1String, QLatin1String>(); }
+    void tok_QLatin1String_const_char16_t_star_data() { tok_data(); }
+    void tok_QLatin1String_const_char16_t_star() { tok_impl<QLatin1String, const char16_t*>(); }
+    void tok_QLatin1String_stdu16string_data() { tok_data(); }
+    void tok_QLatin1String_stdu16string() { tok_impl<QLatin1String, std::u16string>(); }
+    void tok_QLatin1String_QChar_data() { tok_data(false); }
+    void tok_QLatin1String_QChar() { tok_impl<QLatin1String, QChar>(); }
+    void tok_QLatin1String_char16_t_data() { tok_data(false); }
+    void tok_QLatin1String_char16_t() { tok_impl<QLatin1String, char16_t>(); }
+
+    void tok_const_char16_t_star_QString_data() { tok_data(); }
+    void tok_const_char16_t_star_QString() { tok_impl<const char16_t*, QString>(); }
+    void tok_const_char16_t_star_QStringRef_data() { tok_data(); }
+    void tok_const_char16_t_star_QStringRef() { tok_impl<const char16_t*, QStringRef>(); }
+    void tok_const_char16_t_star_QStringView_data() { tok_data(); }
+    void tok_const_char16_t_star_QStringView() { tok_impl<const char16_t*, QStringView>(); }
+    void tok_const_char16_t_star_QLatin1String_data() { tok_data(); }
+    void tok_const_char16_t_star_QLatin1String() { tok_impl<const char16_t*, QLatin1String>(); }
+    void tok_const_char16_t_star_const_char16_t_star_data() { tok_data(); }
+    void tok_const_char16_t_star_const_char16_t_star() { tok_impl<const char16_t*, const char16_t*>(); }
+    void tok_const_char16_t_star_stdu16string_data() { tok_data(); }
+    void tok_const_char16_t_star_stdu16string() { tok_impl<const char16_t*, std::u16string>(); }
+    void tok_const_char16_t_star_QChar_data() { tok_data(false); }
+    void tok_const_char16_t_star_QChar() { tok_impl<const char16_t*, QChar>(); }
+    void tok_const_char16_t_star_char16_t_data() { tok_data(false); }
+    void tok_const_char16_t_star_char16_t() { tok_impl<const char16_t*, char16_t>(); }
+
+    void tok_stdu16string_QString_data() { tok_data(); }
+    void tok_stdu16string_QString() { tok_impl<std::u16string, QString>(); }
+    void tok_stdu16string_QStringRef_data() { tok_data(); }
+    void tok_stdu16string_QStringRef() { tok_impl<std::u16string, QStringRef>(); }
+    void tok_stdu16string_QStringView_data() { tok_data(); }
+    void tok_stdu16string_QStringView() { tok_impl<std::u16string, QStringView>(); }
+    void tok_stdu16string_QLatin1String_data() { tok_data(); }
+    void tok_stdu16string_QLatin1String() { tok_impl<std::u16string, QLatin1String>(); }
+    void tok_stdu16string_const_char16_t_star_data() { tok_data(); }
+    void tok_stdu16string_const_char16_t_star() { tok_impl<std::u16string, const char16_t*>(); }
+    void tok_stdu16string_stdu16string_data() { tok_data(); }
+    void tok_stdu16string_stdu16string() { tok_impl<std::u16string, std::u16string>(); }
+    void tok_stdu16string_QChar_data() { tok_data(false); }
+    void tok_stdu16string_QChar() { tok_impl<std::u16string, QChar>(); }
+    void tok_stdu16string_char16_t_data() { tok_data(false); }
+    void tok_stdu16string_char16_t() { tok_impl<std::u16string, char16_t>(); }
+
+private:
     void mid_data();
     template <typename String> void mid_impl();
 
@@ -901,6 +1012,8 @@ template <> QStringView   make(const QStringRef &sf, QLatin1String,    const QBy
 template <> QLatin1String make(const QStringRef &,   QLatin1String l1, const QByteArray &)   { return l1; }
 template <> QByteArray    make(const QStringRef &,   QLatin1String,    const QByteArray &u8) { return u8; }
 template <> const char *  make(const QStringRef &,   QLatin1String,    const QByteArray &u8) { return u8.data(); }
+template <> const char16_t* make(const QStringRef &sf, QLatin1String,  const QByteArray &)   { return QStringView{sf}.utf16(); } // assumes `sf` doesn't represent a substring
+template <> std::u16string  make(const QStringRef &sf, QLatin1String,  const QByteArray &)   { return sf.toString().toStdU16String(); }
 
 template <typename> struct is_utf8_encoded              : std::false_type {};
 template <>         struct is_utf8_encoded<const char*> : std::true_type {};
@@ -1278,6 +1391,10 @@ static QStringList skipped(const QStringList &sl)
     return result;
 }
 
+template <typename T> T deepCopied(T s) { return s; }
+template <> QString deepCopied(QString s) { return detached(s); }
+template <> QByteArray deepCopied(QByteArray s) { return detached(s); }
+
 template <typename Haystack, typename Needle>
 void tst_QStringApiSymmetry::split_impl() const
 {
@@ -1302,6 +1419,59 @@ void tst_QStringApiSymmetry::split_impl() const
     QCOMPARE(toQStringList(haystack.split(needle, Qt::KeepEmptyParts, Qt::CaseInsensitive)), resultCIS);
     QCOMPARE(toQStringList(haystack.split(needle, Qt::SkipEmptyParts, Qt::CaseSensitive)), skippedResultCS);
     QCOMPARE(toQStringList(haystack.split(needle, Qt::SkipEmptyParts, Qt::CaseInsensitive)), skippedResultCIS);
+}
+
+void tst_QStringApiSymmetry::tok_data(bool rhsHasVariableLength)
+{
+    split_data(rhsHasVariableLength);
+}
+
+template <typename Haystack, typename Needle>
+void tst_QStringApiSymmetry::tok_impl() const
+{
+    QFETCH(const QStringRef, haystackU16);
+    QFETCH(const QLatin1String, haystackL1);
+    QFETCH(const QStringRef, needleU16);
+    QFETCH(const QLatin1String, needleL1);
+    QFETCH(const QStringList, resultCS);
+    QFETCH(const QStringList, resultCIS);
+
+    const QStringList skippedResultCS = skipped(resultCS);
+    const QStringList skippedResultCIS = skipped(resultCIS);
+
+    const auto haystackU8 = haystackU16.toUtf8();
+    const auto needleU8 = needleU16.toUtf8();
+
+    const auto haystack = make<Haystack>(haystackU16, haystackL1, haystackU8);
+    const auto needle = make<Needle>(needleU16, needleL1, needleU8);
+
+    QCOMPARE(toQStringList(qTokenize(haystack, needle)), resultCS);
+    QCOMPARE(toQStringList(qTokenize(haystack, needle, Qt::KeepEmptyParts, Qt::CaseSensitive)), resultCS);
+    QCOMPARE(toQStringList(qTokenize(haystack, needle, Qt::CaseInsensitive, Qt::KeepEmptyParts)), resultCIS);
+    QCOMPARE(toQStringList(qTokenize(haystack, needle, Qt::SkipEmptyParts, Qt::CaseSensitive)), skippedResultCS);
+    QCOMPARE(toQStringList(qTokenize(haystack, needle, Qt::CaseInsensitive, Qt::SkipEmptyParts)), skippedResultCIS);
+
+    {
+        const auto tok = qTokenize(deepCopied(haystack), deepCopied(needle));
+        // here, the temporaries returned from deepCopied() have already been destroyed,
+        // yet `tok` should have kept a copy alive as needed:
+        QCOMPARE(toQStringList(tok), resultCS);
+    }
+
+#ifdef __cpp_deduction_guides
+    QCOMPARE(toQStringList(QStringTokenizer{haystack, needle}), resultCS);
+    QCOMPARE(toQStringList(QStringTokenizer{haystack, needle, Qt::KeepEmptyParts, Qt::CaseSensitive}), resultCS);
+    QCOMPARE(toQStringList(QStringTokenizer{haystack, needle, Qt::CaseInsensitive, Qt::KeepEmptyParts}), resultCIS);
+    QCOMPARE(toQStringList(QStringTokenizer{haystack, needle, Qt::SkipEmptyParts, Qt::CaseSensitive}), skippedResultCS);
+    QCOMPARE(toQStringList(QStringTokenizer{haystack, needle, Qt::CaseInsensitive, Qt::SkipEmptyParts}), skippedResultCIS);
+
+    {
+        const auto tok = QStringTokenizer{deepCopied(haystack), deepCopied(needle)};
+        // here, the temporaries returned from deepCopied() have already been destroyed,
+        // yet `tok` should have kept a copy alive as needed:
+        QCOMPARE(toQStringList(tok), resultCS);
+    }
+#endif // __cpp_deduction_guides
 }
 
 void tst_QStringApiSymmetry::mid_data()

@@ -20,5 +20,6 @@ SUBDIRS = \
     qstringlist \
     qstringmatcher \
     qstringref \
+    qstringtokenizer \
     qstringview \
     qtextboundaryfinder
