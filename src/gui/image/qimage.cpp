@@ -4811,8 +4811,8 @@ bool QImageData::convertInPlace(QImage::Format newFormat, Qt::ImageConversionFla
 QDebug operator<<(QDebug dbg, const QImage &i)
 {
     QDebugStateSaver saver(dbg);
-    dbg.resetFormat();
     dbg.nospace();
+    dbg.noquote();
     dbg << "QImage(";
     if (i.isNull()) {
         dbg << "null";
@@ -4820,8 +4820,15 @@ QDebug operator<<(QDebug dbg, const QImage &i)
         dbg << i.size() << ",format=" << i.format() << ",depth=" << i.depth();
         if (i.colorCount())
             dbg << ",colorCount=" << i.colorCount();
+        const int bytesPerLine = i.bytesPerLine();
         dbg << ",devicePixelRatio=" << i.devicePixelRatio()
-            << ",bytesPerLine=" << i.bytesPerLine() << ",sizeInBytes=" << i.sizeInBytes();
+            << ",bytesPerLine=" << bytesPerLine << ",sizeInBytes=" << i.sizeInBytes();
+        if (dbg.verbosity() > 2 && i.height() > 0) {
+            const int outputLength = qMin(bytesPerLine, 24);
+            dbg << ",line0="
+                << QByteArray(reinterpret_cast<const char *>(i.scanLine(0)), outputLength).toHex()
+                << "...";
+        }
     }
     dbg << ')';
     return dbg;
