@@ -1327,10 +1327,6 @@
 
 // Internals of qtestmouse.h:
 
-/*! \fn void QTest::waitForEvents()
-    \internal
-*/
-
 /*! \fn void QTest::mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     \internal
 */

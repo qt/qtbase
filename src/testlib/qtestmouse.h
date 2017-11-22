@@ -80,15 +80,13 @@ namespace QTest
     // to depend on platform themes.
     static const int mouseDoubleClickInterval = 500;
 
-    static void waitForEvents()
-    {
-#ifdef Q_OS_MAC
-        QTest::qWait(20);
-#else
-        qApp->processEvents();
-#endif
-    }
+/*! \internal
 
+    This function mocks all mouse events by bypassing the windowing system. The
+    result is that the mouse events do not come from the system via Qt platform
+    plugins, but are created on the spot and immediately available for processing
+    by Qt.
+*/
     static void mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     {
@@ -144,13 +142,11 @@ namespace QTest
         case MouseMove:
             qt_handleMouseEvent(w, pos, global, lastMouseButton, Qt::NoButton, QEvent::MouseMove,
                                 stateKey, ++lastMouseTimestamp);
-            // No QCursor::setPos() call here. That could potentially result in mouse events sent by the windowing system
-            // which is highly undesired here. Tests must avoid relying on QCursor.
             break;
         default:
             QTEST_ASSERT(false);
         }
-        waitForEvents();
+        qApp->processEvents();
     }
 
     inline void mousePress(QWindow *window, Qt::MouseButton button,
