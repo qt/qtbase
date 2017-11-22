@@ -143,7 +143,7 @@ static void qFloatToFloat16_fast(quint16 *out, const float *in, qssize_t len) Q_
         out_f16[i] = __fp16(in[i]);
 }
 
-static void qFloatFromFloat16_fast(quint16 *out, const quint16 *in, qssize_t len) Q_DECL_NOTHROW
+static void qFloatFromFloat16_fast(float *out, const quint16 *in, qssize_t len) Q_DECL_NOTHROW
 {
     const __fp16 *in_f16 = reinterpret_cast<const __fp16 *>(in);
     qssize_t i = 0;
