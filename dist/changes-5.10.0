@@ -499,23 +499,6 @@ iOS
 Linux
 -----
 
- - XInput device property changes are now detected at runtime (no
-   application restart required).
- - [QTBUG-60513][QTBUG-29278][QTBUG-43768][QTBUG-18380] The _NET_WORKAREA
-   atom is used for calculating QScreen::availableGeometry() only on systems
-   with one monitor. In all other cases QScreen::availableGeometry() is
-   equal to QScreen::geometry(). To restore the legacy behavior with
-   untrustworthy values in QScreen::availableGeometry() set
-   QT_RELY_ON_NET_WORKAREA_ATOM=1 in the environment.
- - The QT_XCB_NO_XI2_MOUSE environment variable is deprecated and will be
-   removed in Qt 6. If your application relies on behavior set by
-   QT_XCB_NO_XI2_MOUSE, it should be updated accordingly.
-
- - Pointer event delivery on X11 is now done starting from XInput version
-   2.0 (when available) instead of 2.2. XInput support can be disabled by
-   setting QT_XCB_NO_XI2=1 in the environment; note that doing so will also
-   disable tablet and touch support.
-
  - Qt uses the statx(2) system call for obtaining file information on
    kernels 4.12 and later. Some older container systems install system call
    protection rules that do not include this system call. If you experience
@@ -546,6 +529,22 @@ X11
 
  - Native painting (instead of software rasterization) has been experimentally
    re-introduced. Enabled by the configure option -xcb-native-painting.
+ - XInput device property changes are now detected at runtime (no
+   application restart required).
+ - [QTBUG-60513][QTBUG-29278][QTBUG-43768][QTBUG-18380] The _NET_WORKAREA
+   atom is used for calculating QScreen::availableGeometry() only on systems
+   with one monitor. In all other cases QScreen::availableGeometry() is
+   equal to QScreen::geometry(). To restore the legacy behavior with
+   untrustworthy values in QScreen::availableGeometry() set
+   QT_RELY_ON_NET_WORKAREA_ATOM=1 in the environment.
+ - The QT_XCB_NO_XI2_MOUSE environment variable is deprecated and will be
+   removed in Qt 6. If your application relies on behavior set by
+   QT_XCB_NO_XI2_MOUSE, it should be updated accordingly.
+
+ - Pointer event delivery on X11 is now done starting from XInput version
+   2.0 (when available) instead of 2.2. XInput support can be disabled by
+   setting QT_XCB_NO_XI2=1 in the environment; note that doing so will also
+   disable tablet and touch support.
 
 ****************************************************************************
 *                                Tools                                     *
