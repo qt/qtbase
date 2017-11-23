@@ -509,20 +509,24 @@ defineTest(qtConfLibrary_inline) {
     vars =
     any = false
     all = true
-    for (b, $${1}.builds._KEYS_) {
+    for (b, $$list(debug release)) {
         iv = $${input}.libs.$${b}
         vars += $$eval(config.commandline.rev_assignments.$${iv})
         defined(config.input.$${iv}, var) {
             $${1}.builds.$${b} = $$eval(config.input.$${iv})
             export($${1}.builds.$${b})
+            $${1}.builds._KEYS_ *= $${b}
             any = true
         } else {
             all = false
         }
     }
-    $$any:!$$all {
-        qtConfAddError("Either none or all of $$join(vars, ", ", [, ]) must be specified.")
-        return(false)
+    $$any {
+        !$$all {
+            qtConfAddError("Either none or all of $$join(vars, ", ", [, ]) must be specified.")
+            return(false)
+        }
+        export($${1}.builds._KEYS_)
     }
 
     # prefix. prepends to (possibly overwritten) inline libs.
