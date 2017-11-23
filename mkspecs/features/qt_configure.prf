@@ -670,9 +670,10 @@ defineTest(qtConfExportLibrary) {
     NAME = $$upper($$name)
     # LIBS is emitted even if empty, as this allows the library to be "seen".
     qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
-    for (b, $${spfx}.builds._KEYS_): \
-        qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), \
-                                          $$eval($${spfx}.builds.$${b}))
+    for (b, $${spfx}.builds._KEYS_) {
+        eval(blibs = $$eval($${spfx}.builds.$${b}))
+        qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), $$blibs)
+    }
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
     !isEmpty($${currentConfig}.module): \
