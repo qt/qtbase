@@ -624,19 +624,33 @@ defineTest(qtConfTest_getPkgConfigVariable) {
 }
 
 defineReplace(qtConfLibraryArgs) {
-    qmake_args =
-    libs = $$eval($${1}.libs)
-    !isEmpty(libs): \
-        qmake_args += "LIBS += $$libs"
+    NAME = $$upper($$eval($${1}.library))
+    qmake_args = "QMAKE_LIBS_$${NAME} = $$eval($${1}.libs)"
     for (b, $${1}.builds._KEYS_): \
-        qmake_args += "LIBS_$$upper($$b) += $$eval($${1}.builds.$${b})"
+        qmake_args += "QMAKE_LIBS_$${NAME}_$$upper($$b) = $$eval($${1}.builds.$${b})"
     includedir = $$eval($${1}.includedir)
     !isEmpty(includedir): \
-        qmake_args += "INCLUDEPATH *= $$includedir"
+        qmake_args += "QMAKE_INCDIR_$${NAME} = $$includedir"
     cflags = $$eval($${1}.cflags)
     !isEmpty(cflags): \
         qmake_args += "QMAKE_CFLAGS += $$cflags" "QMAKE_CXXFLAGS += $$cflags"
     return($$qmake_args)
+}
+
+defineReplace(qtConfAllLibraryArgs) {
+    isEmpty(1): return()
+    dep_uses =
+    dep_args =
+    for (use, 1) {
+        use_cfg = $$section(use, :, 0, 0)
+        use_lib = $$section(use, :, 1, 1)
+        dep_uses += $$use_lib
+        !isEmpty(use_cfg) {
+            lpfx = $${use_cfg}.libraries.$$use_lib
+            dep_args += $$qtConfLibraryArgs($${lpfx}.sources.$$eval($${lpfx}.source))
+        }
+    }
+    return("QMAKE_USE += $$dep_uses" $$dep_args)
 }
 
 defineTest(qtConfExportLibrary) {
@@ -708,7 +722,7 @@ defineTest(qtConfHandleLibrary) {
         export($${lpfx}.result)
         return()
     }
-    use_args = $$eval($${lpfx}.literal_args)
+    resolved_uses = $$eval($${lpfx}.resolved_uses)
 
     qtConfLoadResult($${lpfx}, $$1, "library") {
         $$eval($${lpfx}.result): \
@@ -741,9 +755,12 @@ defineTest(qtConfHandleLibrary) {
             next()
         }
 
+        $${lpfx}.source = $$s
+        export($${lpfx}.source)
+
         # if the library defines a test, use it to verify the source.
         !isEmpty($${lpfx}.test)|!isEmpty($${lpfx}.test._KEYS_) {
-            $${lpfx}.literal_args = $$qtConfLibraryArgs($$spfx) $$use_args
+            $${lpfx}.resolved_uses = $$currentConfig:$$1 $$resolved_uses
             $${lpfx}.host = $$eval($${spfx}.host)
             !qtConfTest_compile($$lpfx) {
                 qtLog(" => source failed verification.")
@@ -758,9 +775,6 @@ defineTest(qtConfHandleLibrary) {
             $${lpfx}.cache += sources.$${s}.$${v}
         for (b, $${spfx}.builds._KEYS_): \
             $${lpfx}.cache += sources.$${s}.builds.$${b}
-
-        $${lpfx}.source = $$s
-        export($${lpfx}.source)
 
         # immediately output the library as well.
         qtConfExportLibrary($$1)
@@ -855,15 +869,15 @@ defineTest(qtConfTestPrepare_compile) {
             !defined(QMAKE_LIBS_$$nu, var): \
                 error("Test $$1 tries to use undeclared library '$$u'")
             # using an external library by exported name.
-            $${1}.literal_args += $$system_quote(QMAKE_USE += $$u)
+            $${1}.resolved_uses += :$$u
         } else {
             lpfx = $${libConfig}.libraries.$${u}
-            isEmpty($${lpfx}.source): \
+            !equals($${lpfx}.result, true): \
                 return(false)
-            $${1}.literal_args += $$qtConfLibraryArgs($${lpfx}.sources.$$eval($${lpfx}.source))
+            $${1}.resolved_uses += $$libConfig:$$u
         }
     }
-    export($${1}.literal_args)
+    export($${1}.resolved_uses)
     return(true)
 }
 
@@ -990,6 +1004,8 @@ defineTest(qtConfTest_compile) {
 
     mkpath($$test_out_dir)|error()
     write_file($$test_base_out_dir/.qmake.cache)|error()
+
+    $${1}.literal_args += $$qtConfAllLibraryArgs($$eval($${1}.resolved_uses))
 
     # add possible command line args
     qmake_args += \

@@ -168,14 +168,7 @@
             "label": "D-Bus >= 1.2",
             "test": {
                 "include": "dbus/dbus.h",
-                "main": "(void) dbus_bus_get_private(DBUS_BUS_SYSTEM, (DBusError *)NULL);",
-                "qmake": [
-                    "CONFIG += build_all",
-                    "CONFIG(debug, debug|release): \\",
-                    "    LIBS += $$LIBS_DEBUG",
-                    "else: \\",
-                    "    LIBS += $$LIBS_RELEASE"
-                ]
+                "main": "(void) dbus_bus_get_private(DBUS_BUS_SYSTEM, (DBusError *)NULL);"
             },
             "sources": [
                 { "type": "pkgConfig", "args": "dbus-1 >= 1.2" },

@@ -64,13 +64,6 @@
                     "UCollator *collator = ucol_open(\"ru_RU\", &status);",
                     "if (!U_FAILURE(status))",
                     "    ucol_close(collator);"
-                ],
-                "qmake": [
-                    "CONFIG += build_all",
-                    "CONFIG(debug, debug|release): \\",
-                    "    LIBS += $$LIBS_DEBUG",
-                    "else: \\",
-                    "    LIBS += $$LIBS_RELEASE"
                 ]
             },
             "sources": [
