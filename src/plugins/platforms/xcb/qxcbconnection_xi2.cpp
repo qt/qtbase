@@ -953,10 +953,12 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     double delta = scrollingDevice.lastScrollPosition.y() - value;
                     scrollingDevice.lastScrollPosition.setY(value);
                     angleDelta.setY((delta / scrollingDevice.verticalIncrement) * 120);
-                    // We do not set "pixel" delta if it is only measured in ticks.
-                    if (scrollingDevice.verticalIncrement > 1)
+                    // With most drivers the increment is 1 for wheels.
+                    // For libinput it is hardcoded to a useless 15.
+                    // For a proper touchpad driver it should be in the same order of magnitude as 120
+                    if (scrollingDevice.verticalIncrement > 15)
                         rawDelta.setY(delta);
-                    else if (scrollingDevice.verticalIncrement < -1)
+                    else if (scrollingDevice.verticalIncrement < -15)
                         rawDelta.setY(-delta);
                 }
             }
@@ -965,10 +967,10 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                     double delta = scrollingDevice.lastScrollPosition.x() - value;
                     scrollingDevice.lastScrollPosition.setX(value);
                     angleDelta.setX((delta / scrollingDevice.horizontalIncrement) * 120);
-                    // We do not set "pixel" delta if it is only measured in ticks.
-                    if (scrollingDevice.horizontalIncrement > 1)
+                    // See comment under vertical
+                    if (scrollingDevice.horizontalIncrement > 15)
                         rawDelta.setX(delta);
-                    else if (scrollingDevice.horizontalIncrement < -1)
+                    else if (scrollingDevice.horizontalIncrement < -15)
                         rawDelta.setX(-delta);
                 }
             }
