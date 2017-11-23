@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QtWidgets/QtWidgets>
 #include <QtCore/qmath.h>
 #include <QtCore/qrandom.h>
 #include <QtCore/qstate.h>
@@ -236,25 +236,25 @@ int main(int argc, char **argv)
         anim->setEasingCurve(QEasingCurve::InOutBack);
         group->addAnimation(anim);
     }
-    QAbstractTransition *trans = rootState->addTransition(ellipseButton, SIGNAL(pressed()), ellipseState);
+    QAbstractTransition *trans = rootState->addTransition(ellipseButton, &Button::pressed, ellipseState);
     trans->addAnimation(group);
 
-    trans = rootState->addTransition(figure8Button, SIGNAL(pressed()), figure8State);
+    trans = rootState->addTransition(figure8Button, &Button::pressed, figure8State);
     trans->addAnimation(group);
 
-    trans = rootState->addTransition(randomButton, SIGNAL(pressed()), randomState);
+    trans = rootState->addTransition(randomButton, &Button::pressed, randomState);
     trans->addAnimation(group);
 
-    trans = rootState->addTransition(tiledButton, SIGNAL(pressed()), tiledState);
+    trans = rootState->addTransition(tiledButton, &Button::pressed, tiledState);
     trans->addAnimation(group);
 
-    trans = rootState->addTransition(centeredButton, SIGNAL(pressed()), centeredState);
+    trans = rootState->addTransition(centeredButton, &Button::pressed, centeredState);
     trans->addAnimation(group);
 
     QTimer timer;
     timer.start(125);
     timer.setSingleShot(true);
-    trans = rootState->addTransition(&timer, SIGNAL(timeout()), ellipseState);
+    trans = rootState->addTransition(&timer, &QTimer::timeout, ellipseState);
     trans->addAnimation(group);
 
     states.start();
