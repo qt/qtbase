@@ -214,13 +214,15 @@ bool QSemaphore::tryAcquire(int n)
 bool QSemaphore::tryAcquire(int n, int timeout)
 {
     Q_ASSERT_X(n >= 0, "QSemaphore::tryAcquire", "parameter 'n' must be non-negative");
-    if (timeout < 0)
-        return tryAcquire(n);
+
+    // We're documented to accept any negative value as "forever"
+    // but QDeadlineTimer only accepts -1.
+    timeout = qMax(timeout, -1);
 
     QDeadlineTimer timer(timeout);
     QMutexLocker locker(&d->mutex);
     qint64 remainingTime = timer.remainingTime();
-    while (n > d->avail && remainingTime > 0) {
+    while (n > d->avail && remainingTime != 0) {
         if (!d->cond.wait(locker.mutex(), remainingTime))
             return false;
         remainingTime = timer.remainingTime();
