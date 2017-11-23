@@ -499,12 +499,6 @@ defineTest(qtConfLibrary_inline) {
     # to make them recognize the same input variables.
     input = $$eval($${2}.alias)
 
-    # direct libs. overwrites inline libs.
-    defined(config.input.$${input}.libs, var) {
-        $${1}.libs = $$eval(config.input.$${input}.libs)
-        export($${1}.libs)
-    }
-
     # build-specific direct libs. overwrites inline libs.
     vars =
     any = false
@@ -527,6 +521,15 @@ defineTest(qtConfLibrary_inline) {
             return(false)
         }
         export($${1}.builds._KEYS_)
+        # we also reset the generic libs, to avoid surprises.
+        $${1}.libs =
+        export($${1}.libs)
+    }
+
+    # direct libs. overwrites inline libs.
+    defined(config.input.$${input}.libs, var) {
+        $${1}.libs = $$eval(config.input.$${input}.libs)
+        export($${1}.libs)
     }
 
     # prefix. prepends to (possibly overwritten) inline libs.
