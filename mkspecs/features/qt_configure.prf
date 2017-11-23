@@ -513,8 +513,8 @@ defineTest(qtConfLibrary_inline) {
         iv = $${input}.libs.$${b}
         vars += $$eval(config.commandline.rev_assignments.$${iv})
         defined(config.input.$${iv}, var) {
-            $${1}.builds.$${b}.libs = $$eval(config.input.$${iv})
-            export($${1}.builds.$${b}.libs)
+            $${1}.builds.$${b} = $$eval(config.input.$${iv})
+            export($${1}.builds.$${b})
             any = true
         } else {
             all = false
