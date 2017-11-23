@@ -1397,6 +1397,9 @@ void QTableView::paintEvent(QPaintEvent *event)
         } else {
             dirtyArea.setRight(qMin(dirtyArea.right(), int(x)));
         }
+        // dirtyArea may be invalid when the horizontal header is not stretched
+        if (!dirtyArea.isValid())
+            continue;
 
         // get the horizontal start and end visual sections
         int left = horizontalHeader->visualIndexAt(dirtyArea.left());

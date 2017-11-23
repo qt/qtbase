@@ -161,6 +161,7 @@
     QWindow *window = m_qioswindow->window();
     QRect lastReportedGeometry = qt_window_private(window)->geometry;
     QRect currentGeometry = QRectF::fromCGRect(self.frame).toRect();
+    qCDebug(lcQpaWindow) << m_qioswindow->window() << "new geometry is" << currentGeometry;
     QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(window, currentGeometry);
 
     if (currentGeometry.size() != lastReportedGeometry.size()) {
@@ -193,6 +194,7 @@
         region = QRect(QPoint(), bounds);
     }
 
+    qCDebug(lcQpaWindow) << m_qioswindow->window() << region << "isExposed" << m_qioswindow->isExposed();
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), region);
 }
 

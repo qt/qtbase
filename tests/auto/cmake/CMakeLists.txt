@@ -157,7 +157,13 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.11 AND NOT NO_WIDGETS)
     expect_pass(test_interface)
 endif()
 
-if (NOT CMAKE_VERSION VERSION_LESS 2.8.12)
-    expect_pass(test_interface_link_libraries)
-    expect_pass(test_moc_macro_target)
+expect_pass(test_interface_link_libraries)
+expect_pass(test_moc_macro_target)
+
+if (NOT CMAKE_VERSION VERSION_LESS 3.8)
+    # With earlier CMake versions, this test would simply run moc multiple times and lead to:
+    # /usr/bin/ld: error: CMakeFiles/mywidget.dir/mywidget_automoc.cpp.o: multiple definition of 'MyWidget::qt_static_metacall(QObject*, QMetaObject::Call, int, void**)'
+    # /usr/bin/ld: CMakeFiles/mywidget.dir/moc_mywidget.cpp.o: previous definition here
+    # Reason: SKIP_* properties were added in CMake 3.8 only
+    expect_pass(test_QTBUG-63422)
 endif()

@@ -165,8 +165,6 @@ bool QIOSContext::makeCurrent(QPlatformSurface *surface)
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
                     framebufferObject.depthRenderbuffer);
         }
-
-        connect(static_cast<QIOSWindow *>(surface), SIGNAL(destroyed(QObject*)), this, SLOT(windowDestroyed(QObject*)));
     } else {
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
     }
@@ -249,8 +247,13 @@ QIOSContext::FramebufferObject &QIOSContext::backingFramebufferObjectFor(QPlatfo
     // should probably use QOpenGLMultiGroupSharedResource to track the shared default-FBOs.
     if (m_sharedContext)
         return m_sharedContext->backingFramebufferObjectFor(surface);
-    else
-        return m_framebufferObjects[surface];
+
+    if (!m_framebufferObjects.contains(surface)) {
+        // We're about to create a new FBO, make sure it's cleaned up as well
+        connect(static_cast<QIOSWindow *>(surface), SIGNAL(destroyed(QObject*)), this, SLOT(windowDestroyed(QObject*)));
+    }
+
+    return m_framebufferObjects[surface];
 }
 
 GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const

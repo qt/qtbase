@@ -210,6 +210,7 @@ private slots:
     void QTBUG12268_hiddenMovedSectionSorting();
     void QTBUG14242_hideSectionAutoSize();
     void QTBUG50171_visualRegionForSwappedItems();
+    void QTBUG53221_assertShiftHiddenRow();
     void ensureNoIndexAtLength();
     void offsetConsistent();
 
@@ -2382,6 +2383,54 @@ void tst_QHeaderView::QTBUG50171_visualRegionForSwappedItems()
     headerView.swapSections(1, 2);
     headerView.hideSection(0);
     headerView.testVisualRegionForSelection();
+}
+
+class QTBUG53221_Model : public QAbstractItemModel
+{
+public:
+    void insertRowAtBeginning()
+    {
+        Q_EMIT layoutAboutToBeChanged();
+        m_displayNames.insert(0, QStringLiteral("Item %1").arg(m_displayNames.count()));
+        // Rows are always inserted at the beginning, so move all others.
+        foreach (const QModelIndex &persIndex, persistentIndexList())
+        {
+            // The vertical header view will have a persistent index stored here on the second call to insertRowAtBeginning.
+            changePersistentIndex(persIndex, index(persIndex.row() + 1, persIndex.column(), persIndex.parent()));
+        }
+        Q_EMIT layoutChanged();
+    }
+
+    QVariant data(const QModelIndex &index, int role) const override
+    {
+        return (role == Qt::DisplayRole) ? m_displayNames.at(index.row()) : QVariant();
+    }
+
+    QModelIndex index(int row, int column, const QModelIndex &) const override { return createIndex(row, column); }
+    QModelIndex parent(const QModelIndex &) const override { return QModelIndex(); }
+    int rowCount(const QModelIndex &) const override { return m_displayNames.count(); }
+    int columnCount(const QModelIndex &) const override { return 1; }
+
+private:
+    QStringList m_displayNames;
+};
+
+void tst_QHeaderView::QTBUG53221_assertShiftHiddenRow()
+{
+    QTableView tableView;
+    QTBUG53221_Model modelTableView;
+    tableView.setModel(&modelTableView);
+
+    modelTableView.insertRowAtBeginning();
+    tableView.setRowHidden(0, true);
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(0), true);
+    modelTableView.insertRowAtBeginning();
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(0), false);
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(1), true);
+    modelTableView.insertRowAtBeginning();
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(0), false);
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(1), false);
+    QCOMPARE(tableView.verticalHeader()->isSectionHidden(2), true);
 }
 
 void protected_QHeaderView::testVisualRegionForSelection()
