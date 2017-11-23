@@ -53,6 +53,9 @@ private slots:
     void initializeListInt();
     void initializeListMovable();
     void initializeListComplex();
+    void insertMove();
+    void nonCopyable();
+
 private:
     template<typename T>
     void initializeList();
@@ -287,6 +290,11 @@ struct MyBase
         } else {
             ++errorCount;
         }
+        if (!data) {
+            --movedCount;
+            ++liveCount;
+        }
+        data = this;
 
         return *this;
     }
@@ -294,36 +302,46 @@ struct MyBase
     ~MyBase()
     {
         if (isCopy) {
-            if (!copyCount)
+            if (!copyCount || !data)
                 ++errorCount;
             else
                 --copyCount;
         }
 
-        if (!liveCount)
-            ++errorCount;
-        else
-            --liveCount;
+        if (data) {
+            if (!liveCount)
+                ++errorCount;
+            else
+                --liveCount;
+        } else
+            --movedCount;
     }
 
-    bool hasMoved() const
+    bool wasConstructedAt(const MyBase *that) const
     {
-        return this != data;
+        return that == data;
     }
+
+    bool hasMoved() const { return !wasConstructedAt(this); }
 
 protected:
-    MyBase const * const data;
+    MyBase(const MyBase *data, bool isCopy)
+            : data(data), isCopy(isCopy) {}
+
+    const MyBase *data;
     bool isCopy;
 
 public:
     static int errorCount;
     static int liveCount;
     static int copyCount;
+    static int movedCount;
 };
 
 int MyBase::errorCount = 0;
 int MyBase::liveCount = 0;
 int MyBase::copyCount = 0;
+int MyBase::movedCount = 0;
 
 struct MyPrimitive
     : MyBase
@@ -348,7 +366,39 @@ struct MyPrimitive
 struct MyMovable
     : MyBase
 {
-    MyMovable(char input = 'j') : i(input) {}
+    MyMovable(char input = 'j') : MyBase(), i(input) {}
+
+    MyMovable(MyMovable const &other) : MyBase(other), i(other.i) {}
+
+    MyMovable(MyMovable &&other) : MyBase(other.data, other.isCopy), i(other.i)
+    {
+        ++movedCount;
+        other.isCopy = false;
+        other.data = nullptr;
+    }
+
+    MyMovable & operator=(const MyMovable &other)
+    {
+        MyBase::operator=(other);
+        i = other.i;
+        return *this;
+    }
+
+    MyMovable & operator=(MyMovable &&other)
+    {
+        if (isCopy)
+            --copyCount;
+        ++movedCount;
+        if (other.data)
+            --liveCount;
+        isCopy = other.isCopy;
+        data = other.data;
+        other.isCopy = false;
+        other.data = nullptr;
+
+        return *this;
+    }
+
     bool operator==(const MyMovable &other) const
     {
         return i == other.i;
@@ -896,6 +946,84 @@ void tst_QVarLengthArray::initializeList()
 #else
     QSKIP("This tests requires a compiler that supports initializer lists.");
 #endif
+}
+
+void tst_QVarLengthArray::insertMove()
+{
+    MyBase::errorCount = 0;
+    QCOMPARE(MyBase::liveCount, 0);
+    QCOMPARE(MyBase::copyCount, 0);
+
+    {
+        QVarLengthArray<MyMovable, 4> vec;
+        MyMovable m1;
+        MyMovable m2;
+        MyMovable m3;
+        MyMovable m4;
+        QCOMPARE(MyBase::copyCount, 0);
+        QCOMPARE(MyBase::liveCount, 4);
+
+        vec.append(std::move(m3));
+        QVERIFY(vec.at(0).wasConstructedAt(&m3));
+        QCOMPARE(MyBase::errorCount, 0);
+        QCOMPARE(MyBase::liveCount, 4);
+        QCOMPARE(MyBase::movedCount, 1);
+
+        vec.push_back(std::move(m4));
+        QVERIFY(vec.at(0).wasConstructedAt(&m3));
+        QVERIFY(vec.at(1).wasConstructedAt(&m4));
+        QCOMPARE(MyBase::errorCount, 0);
+        QCOMPARE(MyBase::liveCount, 4);
+        QCOMPARE(MyBase::movedCount, 2);
+
+        vec.prepend(std::move(m1));
+        QVERIFY(vec.at(0).wasConstructedAt(&m1));
+        QVERIFY(vec.at(1).wasConstructedAt(&m3));
+        QVERIFY(vec.at(2).wasConstructedAt(&m4));
+        QCOMPARE(MyBase::errorCount, 0);
+        QCOMPARE(MyBase::liveCount, 4);
+        QCOMPARE(MyBase::movedCount, 3);
+
+        vec.insert(1, std::move(m2));
+        QVERIFY(vec.at(0).wasConstructedAt(&m1));
+        QVERIFY(vec.at(1).wasConstructedAt(&m2));
+        QVERIFY(vec.at(2).wasConstructedAt(&m3));
+
+        QCOMPARE(MyBase::copyCount, 0);
+        QCOMPARE(MyBase::liveCount, 4);
+        QCOMPARE(MyBase::errorCount, 0);
+        QCOMPARE(MyBase::movedCount, 4);
+    }
+    QCOMPARE(MyBase::liveCount, 0);
+    QCOMPARE(MyBase::errorCount, 0);
+    QCOMPARE(MyBase::movedCount, 0);
+}
+
+void tst_QVarLengthArray::nonCopyable()
+{
+    QVarLengthArray<std::unique_ptr<int>> vec;
+    std::unique_ptr<int> val1(new int(1));
+    std::unique_ptr<int> val2(new int(2));
+    std::unique_ptr<int> val3(new int(3));
+    std::unique_ptr<int> val4(new int(4));
+    int *const ptr1 = val1.get();
+    int *const ptr2 = val2.get();
+    int *const ptr3 = val3.get();
+    int *const ptr4 = val4.get();
+
+    vec.append(std::move(val3));
+    QVERIFY(ptr3 == vec.at(0).get());
+    vec.append(std::move(val4));
+    QVERIFY(ptr3 == vec.at(0).get());
+    QVERIFY(ptr4 == vec.at(1).get());
+    vec.prepend(std::move(val1));
+    QVERIFY(ptr1 == vec.at(0).get());
+    QVERIFY(ptr3 == vec.at(1).get());
+    QVERIFY(ptr4 == vec.at(2).get());
+    vec.insert(1, std::move(val2));
+    QVERIFY(ptr1 == vec.at(0).get());
+    QVERIFY(ptr2 == vec.at(1).get());
+    QVERIFY(ptr3 == vec.at(2).get());
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

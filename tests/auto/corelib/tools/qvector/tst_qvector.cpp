@@ -35,16 +35,27 @@
 struct Movable {
     Movable(char input = 'j')
         : i(input)
+        , that(this)
         , state(Constructed)
     {
         counter.fetchAndAddRelaxed(1);
     }
     Movable(const Movable &other)
         : i(other.i)
+        , that(this)
         , state(Constructed)
     {
         check(other.state, Constructed);
         counter.fetchAndAddRelaxed(1);
+    }
+    Movable(Movable &&other)
+        : i(other.i)
+        , that(other.that)
+        , state(Constructed)
+    {
+        check(other.state, Constructed);
+        counter.fetchAndAddRelaxed(1);
+        other.that = nullptr;
     }
 
     ~Movable()
@@ -67,11 +78,27 @@ struct Movable {
         check(state, Constructed);
         check(other.state, Constructed);
         i = other.i;
+        that = this;
         return *this;
+    }
+    Movable &operator=(Movable &&other)
+    {
+        check(state, Constructed);
+        check(other.state, Constructed);
+        i = other.i;
+        that = other.that;
+        other.that = nullptr;
+        return *this;
+    }
+    bool wasConstructedAt(const Movable *other) const
+    {
+        return that == other;
     }
     char i;
     static QAtomicInt counter;
 private:
+    Movable *that;       // used to check if an instance was moved
+
     enum State { Constructed = 106, Destructed = 110 };
     State state;
 
@@ -296,6 +323,8 @@ private slots:
     void detachThreadSafetyInt() const;
     void detachThreadSafetyMovable() const;
     void detachThreadSafetyCustom() const;
+
+    void insertMove() const;
 
 private:
     template<typename T> void copyConstructor() const;
@@ -2861,6 +2890,34 @@ void tst_QVector::detachThreadSafetyCustom() const
     }
 }
 
+void tst_QVector::insertMove() const
+{
+    const int instancesCount = Movable::counter.loadAcquire();
+    {
+        QVector<Movable> vec;
+        Movable m1;
+        Movable m2;
+        Movable m3;
+        Movable m4;
+
+        vec.append(std::move(m3));
+        QVERIFY(vec.at(0).wasConstructedAt(&m3));
+        vec.push_back(std::move(m4));
+        QVERIFY(vec.at(0).wasConstructedAt(&m3));
+        QVERIFY(vec.at(1).wasConstructedAt(&m4));
+        vec.prepend(std::move(m1));
+        QVERIFY(vec.at(0).wasConstructedAt(&m1));
+        QVERIFY(vec.at(1).wasConstructedAt(&m3));
+        QVERIFY(vec.at(2).wasConstructedAt(&m4));
+        vec.insert(1, std::move(m2));
+        QVERIFY(vec.at(0).wasConstructedAt(&m1));
+        QVERIFY(vec.at(1).wasConstructedAt(&m2));
+        QVERIFY(vec.at(2).wasConstructedAt(&m3));
+
+        QCOMPARE(Movable::counter.loadAcquire(), instancesCount + 8);
+    }
+    QCOMPARE(Movable::counter.loadAcquire(), instancesCount);
+}
 
 QTEST_MAIN(tst_QVector)
 #include "tst_qvector.moc"
