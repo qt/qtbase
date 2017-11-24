@@ -439,12 +439,12 @@ defineTest(qtConfSetupLibraries) {
         lpfx = $${currentConfig}.libraries.$${l}
         # 'export' may be omitted, in which case it falls back to the library's name
         !defined($${lpfx}.export, var) {
-            $${lpfx}.export = $$l
+            $${lpfx}.export = $$replace(l, -, _)
             export($${lpfx}.export)
         }
         # 'export' may also be empty, but we need a derived identifier
         alias = $$eval($${lpfx}.export)
-        isEmpty(alias): alias = $$l
+        isEmpty(alias): alias = $$replace(l, -, _)
         $${lpfx}.alias = $$alias
         export($${lpfx}.alias)
         # make it easy to refer to the library by its export name.
@@ -804,7 +804,7 @@ defineTest(qtConfLibrary_pkgConfig) {
     largs = $$qtConfAllLibraryArgs($$eval($${2}.dependencies))
     for (la, largs): \
         eval("$$la")
-    USES = $$eval($$list($$upper($$QMAKE_USE)))
+    USES = $$eval($$list($$upper($$replace(QMAKE_USE, -, _))))
     # _CC == _LD for configure's library sources, so pick first arbitrarily.
     DEPS = $$resolve_depends(USES, QMAKE_DEPENDS_, _CC)
     for (DEP, DEPS) {
@@ -837,7 +837,7 @@ defineTest(qtConfTest_getPkgConfigVariable) {
 }
 
 defineReplace(qtConfLibraryArgs) {
-    NAME = $$upper($$eval($${1}.library))
+    NAME = $$upper($$replace($${1}.library, -, _))
     qmake_args = "QMAKE_LIBS_$${NAME} = $$val_escape($${1}.libs)"
     for (b, $${1}.builds._KEYS_): \
         qmake_args += "QMAKE_LIBS_$${NAME}_$$upper($$b) = $$val_escape($${1}.builds.$${b})"
@@ -853,8 +853,8 @@ defineReplace(qtConfLibraryArgs) {
         for (use, depends): \
             dep_uses += $$section(use, :, 1, 1)
         qmake_args += \
-            "QMAKE_DEPENDS_$${NAME}_CC = $$upper($$dep_uses)" \
-            "QMAKE_DEPENDS_$${NAME}_LD = $$upper($$dep_uses)"
+            "QMAKE_DEPENDS_$${NAME}_CC = $$upper($$replace(dep_uses, -, _))" \
+            "QMAKE_DEPENDS_$${NAME}_LD = $$upper($$replace(dep_uses, -, _))"
     }
     return($$qmake_args)
 }
@@ -917,7 +917,7 @@ defineTest(qtConfExportLibrary) {
             !isEmpty(use_cfg): \
                 depends += $$upper($$eval($${use_cfg}.libraries.$${use_lib}.export))
             else: \
-                depends += $$upper($$use_lib)
+                depends += $$upper($$replace(use_lib, -, _))
         }
         # we use suffixes instead of infixes, because $$resolve_depends() demands it.
         qtConfOutputVar(assign, $$output, QMAKE_DEPENDS_$${NAME}_CC, $$depends)
@@ -1092,7 +1092,7 @@ defineTest(qtConfTestPrepare_compile) {
             }
         }
         isEmpty(libConfig) {
-            nu = $$upper($$u)
+            nu = $$upper($$replace(u, -, _))
             !defined(QMAKE_LIBS_$$nu, var): \
                 error("Test $$1 tries to use undeclared library '$$u'")
             # using an external library by exported name.

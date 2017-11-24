@@ -31,6 +31,7 @@ THE_TARGET = $$qt5LibraryTarget($$TARGET)
 
 !build_pass {
     MODULE = $$replace(TARGET, ^qt, )
+    MODULE ~= s,-,_,
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_ext_$${MODULE}.pri
     ucmodule = $$upper($$MODULE)
 
@@ -46,7 +47,7 @@ THE_TARGET = $$qt5LibraryTarget($$TARGET)
     for (use, QMAKE_USE) {
         use = $$split(use, /)
         name = $$take_first(use)
-        nu = $$upper($$name)
+        nu = $$upper($$replace(name, -, _))
         !contains(use, linkonly): CC_USES += $$nu
         !contains(use, nolink): LD_USES += $$nu
     }
