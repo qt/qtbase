@@ -102,6 +102,10 @@ static int statx(int dirfd, const char *pathname, int flag, unsigned mask, struc
 #  endif
 #endif
 
+#ifndef STATX_BASIC_STATS
+struct statx { mode_t stx_mode; };
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #define emptyFileEntryWarning() emptyFileEntryWarning_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
@@ -390,7 +394,6 @@ inline void QFileSystemMetaData::fillFromStatxBuf(const struct statx &statxBuffe
     groupId_ = statxBuffer.stx_gid;
 }
 #else
-struct statx { mode_t stx_mode; };
 static int qt_statx(const char *, struct statx *)
 { return -ENOSYS; }
 
