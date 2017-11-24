@@ -263,7 +263,7 @@ static bool getCaptionQFont(int dpi, QFont *result)
     QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface();
     return ni && QMetaObject::invokeMethod(ni, "logFontToQFont", Qt::DirectConnection,
                                            Q_RETURN_ARG(QFont, *result),
-                                           Q_ARG(const void *, &logFont),
+                                           Q_ARG(const void*, &logFont),
                                            Q_ARG(int, dpi));
 }
 

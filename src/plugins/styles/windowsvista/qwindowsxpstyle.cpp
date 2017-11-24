@@ -286,10 +286,10 @@ static inline HWND createTreeViewHelperWindow()
         void *hwnd = 0;
         void *wndProc = reinterpret_cast<void *>(DefWindowProc);
         if (QMetaObject::invokeMethod(ni, "createMessageWindow", Qt::DirectConnection,
-                                  Q_RETURN_ARG(void *, hwnd),
+                                  Q_RETURN_ARG(void*, hwnd),
                                   Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindowClass")),
                                   Q_ARG(QString, QStringLiteral("QTreeViewThemeHelperWindow")),
-                                  Q_ARG(void *, wndProc)) && hwnd) {
+                                  Q_ARG(void*, wndProc)) && hwnd) {
             return reinterpret_cast<HWND>(hwnd);
         }
     }
