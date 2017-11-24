@@ -523,9 +523,9 @@ void Generator::generateCode()
 // Finally create and initialize the static meta object
 //
     if (isQt)
-        fprintf(out, "const QMetaObject QObject::staticQtMetaObject = {\n");
+        fprintf(out, "QT_INIT_METAOBJECT const QMetaObject QObject::staticQtMetaObject = {\n");
     else
-        fprintf(out, "const QMetaObject %s::staticMetaObject = {\n", cdef->qualified.constData());
+        fprintf(out, "QT_INIT_METAOBJECT const QMetaObject %s::staticMetaObject = {\n", cdef->qualified.constData());
 
     if (isQObject)
         fprintf(out, "    { nullptr, ");
