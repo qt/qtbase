@@ -1,5 +1,7 @@
 CONFIG += testcase
 
+requires(qtConfig(private_tests))
+
 TARGET = tst_qmimedatabase-xml
 
 QT = core testlib concurrent

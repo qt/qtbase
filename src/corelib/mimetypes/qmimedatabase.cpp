@@ -79,7 +79,12 @@ QMimeDatabasePrivate::~QMimeDatabasePrivate()
     qDeleteAll(m_providers);
 }
 
-Q_CORE_EXPORT int qmime_secondsBetweenChecks = 5; // exported for the unit test
+#ifdef QT_BUILD_INTERNAL
+Q_CORE_EXPORT
+#else
+static const
+#endif
+int qmime_secondsBetweenChecks = 5;
 
 bool QMimeDatabasePrivate::shouldCheck()
 {
