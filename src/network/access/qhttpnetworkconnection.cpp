@@ -1204,20 +1204,20 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
         if (dequeueRequest(channels[0].socket)) {
             emitReplyError(channels[0].socket, channels[0].reply, QNetworkReply::HostNotFoundError);
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
-        }
-#ifndef QT_NO_SSL
-        else if (connectionType == QHttpNetworkConnection::ConnectionTypeSPDY) {
+        } else if (connectionType == QHttpNetworkConnection::ConnectionTypeSPDY
+                   || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2) {
             for (const HttpMessagePair &spdyPair : qAsConst(channels[0].spdyRequestsToSend)) {
                 // emit error for all replies
                 QHttpNetworkReply *currentReply = spdyPair.second;
                 Q_ASSERT(currentReply);
                 emitReplyError(channels[0].socket, currentReply, QNetworkReply::HostNotFoundError);
             }
-        }
-#endif // QT_NO_SSL
-        else {
-            // Should not happen
-            qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not de-queue request");
+        } else {
+            // Should not happen: we start a host lookup before sending a request,
+            // so it's natural to have requests either in SPDY/HTTP/2 queue,
+            // or in low/high priority queues.
+            qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished"
+                     " could not de-queue request, failed to report HostNotFoundError");
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         }
     }
