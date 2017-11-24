@@ -201,6 +201,10 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     return result;
 }
 
+#ifndef QT_BOOTSTRAPPED
+extern QString qAppFileName();
+#endif
+
 QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
     QStringList dirs;
@@ -217,8 +221,13 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
             dirs.append(programData);
         }
 #ifndef QT_BOOTSTRAPPED
-        dirs.append(QCoreApplication::applicationDirPath());
-        const QString dataDir = QCoreApplication::applicationDirPath() + QLatin1String("/data");
+        // Note: QCoreApplication::applicationDirPath(), while static, requires
+        // an application instance. But we might need to resolve the standard
+        // locations earlier than that, so we fall back to qAppFileName().
+        QString applicationDirPath = qApp ? QCoreApplication::applicationDirPath()
+            : QFileInfo(qAppFileName()).path();
+        dirs.append(applicationDirPath);
+        const QString dataDir = applicationDirPath + QLatin1String("/data");
         dirs.append(dataDir);
 
         if (!isGenericConfigLocation(type)) {

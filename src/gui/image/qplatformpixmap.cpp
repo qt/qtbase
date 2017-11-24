@@ -58,6 +58,9 @@ QT_BEGIN_NAMESPACE
  */
 QPlatformPixmap *QPlatformPixmap::create(int w, int h, PixelType type)
 {
+    if (Q_UNLIKELY(!QGuiApplicationPrivate::platformIntegration()))
+        qFatal("QPlatformPixmap: QGuiApplication required");
+
     QPlatformPixmap *data = QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(static_cast<QPlatformPixmap::PixelType>(type));
     data->resize(w, h);
     return data;

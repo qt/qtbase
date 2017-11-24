@@ -704,7 +704,7 @@
         },
         "optimize_debug": {
             "label": "Optimize debug build",
-            "condition": "!config.msvc && (features.debug || features.debug_and_release) && tests.optimize_debug",
+            "condition": "!config.msvc && !config.clang && (features.debug || features.debug_and_release) && tests.optimize_debug",
             "output": [ "privateConfig" ]
         },
         "optimize_size": {
@@ -1352,7 +1352,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 {
                     "type": "feature",
                     "args": "optimize_debug",
-                    "condition": "!config.msvc && (features.debug || features.debug_and_release)"
+                    "condition": "!config.msvc && !config.clang && (features.debug || features.debug_and_release)"
                 },
                 {
                     "type": "feature",
