@@ -175,6 +175,21 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 @end
 
+@interface UIScreen (Compatibility)
+@property (nonatomic, readonly) CGRect qt_applicationFrame;
+@end
+
+@implementation UIScreen (Compatibility)
+- (CGRect)qt_applicationFrame
+{
+#ifdef Q_OS_IOS
+    return self.applicationFrame;
+#else
+    return self.bounds;
+#endif
+}
+@end
+
 // -------------------------------------------------------------------------
 
 QT_BEGIN_NAMESPACE
@@ -271,11 +286,15 @@ void QIOSScreen::updateProperties()
     QRect previousAvailableGeometry = m_availableGeometry;
 
     m_geometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
-#ifdef Q_OS_TVOS
-    m_availableGeometry = m_geometry;
-#else
-    m_availableGeometry = QRectF::fromCGRect(m_uiScreen.applicationFrame).toRect();
-#endif
+
+    // The application frame doesn't take safe area insets into account, and
+    // the safe area insets are not available before the UIWindow is shown,
+    // and do not take split-view constraints into account, so we have to
+    // combine the two to get the correct available geometry.
+    QRect applicationFrame = QRectF::fromCGRect(m_uiScreen.qt_applicationFrame).toRect();
+    UIEdgeInsets safeAreaInsets = m_uiWindow.qt_safeAreaInsets;
+    m_availableGeometry = m_geometry.adjusted(safeAreaInsets.left, safeAreaInsets.top,
+        -safeAreaInsets.right, -safeAreaInsets.bottom).intersected(applicationFrame);
 
 #ifndef Q_OS_TVOS
     if (m_uiScreen == [UIScreen mainScreen]) {

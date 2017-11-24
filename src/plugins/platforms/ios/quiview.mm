@@ -545,6 +545,22 @@
     return nil;
 }
 
+- (UIEdgeInsets)qt_safeAreaInsets
+{
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, 110000, 110000, __WATCHOS_NA)
+    if (__builtin_available(iOS 11, tvOS 11, *))
+        return self.safeAreaInsets;
+#endif
+
+    // Fallback for iOS < 11
+    UIEdgeInsets safeAreaInsets = UIEdgeInsetsZero;
+    CGPoint topInset = [self convertPoint:CGPointMake(0, self.viewController.topLayoutGuide.length) fromView:nil];
+    CGPoint bottomInset = [self convertPoint:CGPointMake(0, self.viewController.bottomLayoutGuide.length) fromView:nil];
+    safeAreaInsets.top = topInset.y;
+    safeAreaInsets.bottom = bottomInset.y;
+    return safeAreaInsets;
+}
+
 @end
 
 #ifndef QT_NO_ACCESSIBILITY
