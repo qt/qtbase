@@ -672,8 +672,6 @@ QT_BEGIN_NAMESPACE
     Whitespace means any character for which QChar::isSpace() returns
     \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
     '\\f', '\\r', and ' '.
-
-    \sa qTrimmed()
 */
 
 /*!
@@ -689,7 +687,7 @@ QT_BEGIN_NAMESPACE
     If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
     otherwise the search is case-insensitive.
 
-    \sa endsWith(), qStartsWith()
+    \sa endsWith()
 */
 
 /*!
@@ -705,7 +703,7 @@ QT_BEGIN_NAMESPACE
     If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
     otherwise the search is case-insensitive.
 
-    \sa startsWith(), qEndsWith()
+    \sa startsWith()
 */
 
 /*!
@@ -730,7 +728,7 @@ QT_BEGIN_NAMESPACE
     The behavior is undefined if the string contains characters not
     supported by the locale's 8-bit encoding.
 
-    \sa toLatin1(), toUtf8(), QTextCodec, qConvertToLocal8Bit()
+    \sa toLatin1(), toUtf8(), QTextCodec
 */
 
 /*!

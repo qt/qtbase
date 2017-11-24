@@ -656,6 +656,11 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
+    \enum QRandomGenerator::System
+    \internal
+*/
+
+/*!
     \fn QRandomGenerator::QRandomGenerator(quint32 seedValue)
 
     Initializes this QRandomGenerator object with the value \a seedValue as
@@ -694,7 +699,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn QRandomGenerator::QRandomGenerator(const quint32 *begin, const quin32 *end)
+    \fn QRandomGenerator::QRandomGenerator(const quint32 *begin, const quint32 *end)
     \overload
 
     Initializes this QRandomGenerator object with the values found in the range
@@ -762,7 +767,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     A typedef to the type that operator()() returns. That is, quint32.
 
-    \sa operator()()
+    \sa {QRandomGenerator::operator()}{operator()()}
  */
 
 /*!
@@ -771,6 +776,22 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     Generates a 32-bit random quantity and returns it.
 
     \sa generate(), generate64()
+ */
+
+/*!
+    \fn quint32 QRandomGenerator::generate()
+
+    Generates a 32-bit random quantity and returns it.
+
+    \sa {QRandomGenerator::operator()}{operator()()}, generate64()
+ */
+
+/*!
+    \fn quint64 QRandomGenerator::generate64()
+
+    Generates a 64-bit random quantity and returns it.
+
+    \sa {QRandomGenerator::operator()}{operator()()}, generate()
  */
 
 /*!
@@ -800,7 +821,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \fn void QRandomGenerator::seed(std::seed_seq &seed)
     \overload
 
-    Reseeds this object using the seed sequence \a sseq as the seed.
+    Reseeds this object using the seed sequence \a seed as the seed.
  */
 
 /*!
@@ -913,9 +934,9 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn qreal QRandomGenerator::bounded(qreal highest)
+    \fn double QRandomGenerator::bounded(double highest)
 
-    Generates one random qreal in the range between 0 (inclusive) and \a
+    Generates one random double in the range between 0 (inclusive) and \a
     highest (exclusive). This function is equivalent to and is implemented as:
 
     \code
@@ -1098,7 +1119,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     A typedef to the type that operator()() returns. That is, quint64.
 
-    \sa operator()()
+    \sa {QRandomGenerator64::operator()}{operator()()}
  */
 
 /*!

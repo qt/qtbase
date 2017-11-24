@@ -769,8 +769,6 @@ static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSens
     Case-sensitive comparison is based exclusively on the numeric Unicode values
     of the characters and is very fast, but is not what a human would expect.
     Consider sorting user-visible strings with QString::localeAwareCompare().
-
-    \snippet qstring/main.cpp qCompareStrings-QSV-QSV
 */
 int QtPrivate::compareStrings(QStringView lhs, QStringView rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
@@ -4837,7 +4835,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string);
     locale, the returned byte array is undefined. Those characters may be
     suppressed or replaced by another.
 
-    \sa fromLocal8Bit(), toLatin1(), toUtf8(), QTextCodec, qConvertToLocal8Bit()
+    \sa fromLocal8Bit(), toLatin1(), toUtf8(), QTextCodec
 */
 
 QByteArray QString::toLocal8Bit_helper(const QChar *data, int size)
@@ -4871,8 +4869,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
     The behavior is undefined if \a string contains characters not
     supported by the locale's 8-bit encoding.
 
-    \sa QString::toLocal8Bit(), QStringView::toLocal8Bit(), QtPrivate::vonvertToLatin1(),
-    QtPrivate::convertToUtf8(), QtPrivate::convertToUcs4()
+    \sa QString::toLocal8Bit(), QStringView::toLocal8Bit()
 */
 QByteArray QtPrivate::convertToLocal8Bit(QStringView string)
 {
@@ -4915,8 +4912,7 @@ static QByteArray qt_convert_to_utf8(QStringView str)
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QStringView.
 
-    \sa QString::toUtf8(), QStringView::toUtf8(), QtPrivate::convertToLatin1(),
-    QtPrivate::convertToLocal8Bit(), QtPrivate::convertToUcs4()
+    \sa QString::toUtf8(), QStringView::toUtf8()
 */
 QByteArray QtPrivate::convertToUtf8(QStringView string)
 {
@@ -5279,8 +5275,8 @@ namespace {
 }
 
 /*!
-    \fn QStringView qTrimmed(QStringView s)
-    \fn QLatin1String qTrimmed(QLatin1String s)
+    \fn QStringView QtPrivate::trimmed(QStringView s)
+    \fn QLatin1String QtPrivate::trimmed(QLatin1String s)
     \internal
     \relates QStringView
     \since 5.10
@@ -8996,7 +8992,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
     otherwise the search is case-insensitive.
 
-    \sa endsWith(), qStartsWith()
+    \sa endsWith()
 */
 
 /*!
@@ -9016,7 +9012,7 @@ QString &QString::setRawData(const QChar *unicode, int size)
     If \a cs is Qt::CaseSensitive (the default), the search is case-sensitive;
     otherwise the search is case-insensitive.
 
-    \sa startsWith(), qEndsWith()
+    \sa startsWith()
 */
 
 /*!
