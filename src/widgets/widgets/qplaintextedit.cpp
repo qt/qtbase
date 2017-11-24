@@ -2892,6 +2892,7 @@ void QPlainTextEdit::setCenterOnScroll(bool enabled)
     if (enabled == d->centerOnScroll)
         return;
     d->centerOnScroll = enabled;
+    d->_q_adjustScrollbars();
 }
 
 

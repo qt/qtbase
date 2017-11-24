@@ -147,6 +147,9 @@ private slots:
     void contextMenu();
 #endif
     void inputMethodCursorRect();
+#if QT_CONFIG(scrollbar)
+    void updateAfterChangeCenterOnScroll();
+#endif
 
 private:
     void createSelection();
@@ -1726,6 +1729,21 @@ void tst_QPlainTextEdit::inputMethodCursorRect()
     QCOMPARE(cursorRectV.type(), QVariant::RectF);
     QCOMPARE(cursorRectV.toRect(), cursorRect.toRect());
 }
+
+#if QT_CONFIG(scrollbar)
+// QTBUG-64730: Verify that the scrollbar is updated after center on scroll was set
+void tst_QPlainTextEdit::updateAfterChangeCenterOnScroll()
+{
+    ed->setPlainText("Line1\nLine2Line3\nLine3");
+    ed->show();
+    ed->setCenterOnScroll(true);
+    const int maxWithCenterOnScroll = ed->verticalScrollBar()->maximum();
+    ed->setCenterOnScroll(false);
+    const int maxWithoutCenterOnScroll = ed->verticalScrollBar()->maximum();
+    QVERIFY(maxWithCenterOnScroll > maxWithoutCenterOnScroll);
+}
+
+#endif
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"
