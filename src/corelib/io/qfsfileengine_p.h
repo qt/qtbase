@@ -131,6 +131,9 @@ public:
 
 protected:
     QFSFileEngine(QFSFileEnginePrivate &dd);
+
+private:
+    inline bool processOpenModeFlags(QIODevice::OpenMode *mode);
 };
 
 class Q_AUTOTEST_EXPORT QFSFileEnginePrivate : public QAbstractFileEnginePrivate
@@ -219,6 +222,12 @@ public:
     int sysOpen(const QString &, int flags);
 #endif
 
+    static bool openModeCanCreate(QIODevice::OpenMode openMode)
+    {
+        // WriteOnly can create, but only when ExistingOnly isn't specified.
+        // ReadOnly by itself never creates.
+        return (openMode & QFile::WriteOnly) && !(openMode & QFile::ExistingOnly);
+    }
 protected:
     QFSFileEnginePrivate();
 

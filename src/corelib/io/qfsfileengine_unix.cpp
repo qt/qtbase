@@ -74,11 +74,13 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
     oflags |= QT_OPEN_LARGEFILE;
 #endif
 
-    if ((mode & QFile::ReadWrite) == QFile::ReadWrite) {
-        oflags = QT_OPEN_RDWR | QT_OPEN_CREAT;
-    } else if (mode & QFile::WriteOnly) {
-        oflags = QT_OPEN_WRONLY | QT_OPEN_CREAT;
-    }
+    if ((mode & QFile::ReadWrite) == QFile::ReadWrite)
+        oflags = QT_OPEN_RDWR;
+    else if (mode & QFile::WriteOnly)
+        oflags = QT_OPEN_WRONLY;
+
+    if (QFSFileEnginePrivate::openModeCanCreate(mode))
+        oflags |= QT_OPEN_CREAT;
 
     if (mode & QFile::Append) {
         oflags |= QT_OPEN_APPEND;
@@ -86,6 +88,9 @@ static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
         if ((mode & QFile::Truncate) || !(mode & QFile::ReadOnly))
             oflags |= QT_OPEN_TRUNC;
     }
+
+    if (mode & QFile::NewOnly)
+        oflags |= QT_OPEN_EXCL;
 
     return oflags;
 }

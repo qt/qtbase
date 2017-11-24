@@ -324,6 +324,23 @@ QIODevicePrivate::~QIODevicePrivate()
                      terminators are translated to the local encoding, for
                      example '\\r\\n' for Win32.
     \value Unbuffered Any buffer in the device is bypassed.
+    \value NewOnly   Fail if the file to be opened already exists. Create and
+                     open the file only if it does not exist. There is a
+                     guarantee from the operating system that you are the only
+                     one creating and opening the file. Note that this mode
+                     implies WriteOnly, and combining it with ReadWrite is
+                     allowed. This flag currently only affects QFile. Other
+                     classes might use this flag in the future, but until then
+                     using this flag with any classes other than QFile may
+                     result in undefined behavior.
+    \value ExistingOnly Fail if the file to be opened does not exist. This flag
+                     must be specified alongside ReadOnly, WriteOnly, or
+                     ReadWrite. Note that using this flag with ReadOnly alone
+                     is redundant, as ReadOnly already fails when the file does
+                     not exist. This flag currently only affects QFile. Other
+                     classes might use this flag in the future, but until then
+                     using this flag with any classes other than QFile may
+                     result in undefined behavior.
 
     Certain flags, such as \c Unbuffered and \c Truncate, are
     meaningless when used with some subclasses. Some of these

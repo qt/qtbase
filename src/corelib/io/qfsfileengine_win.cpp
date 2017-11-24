@@ -117,9 +117,12 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     if (openMode & QIODevice::WriteOnly)
         accessRights |= GENERIC_WRITE;
 
-
     // WriteOnly can create files, ReadOnly cannot.
-    DWORD creationDisp = (openMode & QIODevice::WriteOnly) ? OPEN_ALWAYS : OPEN_EXISTING;
+    DWORD creationDisp = (openMode & QIODevice::NewOnly)
+                            ? CREATE_NEW
+                            : openModeCanCreate(openMode)
+                                ? OPEN_ALWAYS
+                                : OPEN_EXISTING;
     // Create the file handle.
 #ifndef Q_OS_WINRT
     SECURITY_ATTRIBUTES securityAtts = { sizeof(SECURITY_ATTRIBUTES), NULL, FALSE };

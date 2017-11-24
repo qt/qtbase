@@ -168,6 +168,8 @@ private slots:
     void getch();
     void ungetChar();
     void createFile();
+    void createFileNewOnly();
+    void openFileExistingOnly();
     void append();
     void permissions_data();
     void permissions();
@@ -1209,6 +1211,48 @@ void tst_QFile::createFile()
     QVERIFY2( f.open(QIODevice::WriteOnly), msgOpenFailed(f).constData());
     f.close();
     QVERIFY( QFile::exists( "createme.txt" ) );
+}
+
+void tst_QFile::createFileNewOnly()
+{
+    QFile::remove("createme.txt");
+    QVERIFY(!QFile::exists("createme.txt"));
+
+    QFile f("createme.txt");
+    QVERIFY2(f.open(QIODevice::NewOnly), msgOpenFailed(f).constData());
+    f.close();
+    QVERIFY(QFile::exists("createme.txt"));
+
+    QVERIFY(!f.open(QIODevice::NewOnly));
+    QVERIFY(QFile::exists("createme.txt"));
+    QFile::remove("createme.txt");
+}
+
+void tst_QFile::openFileExistingOnly()
+{
+    QFile::remove("dontcreateme.txt");
+    QVERIFY(!QFile::exists("dontcreateme.txt"));
+
+    QFile f("dontcreateme.txt");
+    QVERIFY(!f.open(QIODevice::ExistingOnly | QIODevice::ReadOnly));
+    QVERIFY(!f.open(QIODevice::ExistingOnly | QIODevice::WriteOnly));
+    QVERIFY(!f.open(QIODevice::ExistingOnly | QIODevice::ReadWrite));
+    QVERIFY(!f.open(QIODevice::ExistingOnly));
+    QVERIFY(!QFile::exists("dontcreateme.txt"));
+
+    QVERIFY2(f.open(QIODevice::NewOnly), msgOpenFailed(f).constData());
+    f.close();
+    QVERIFY(QFile::exists("dontcreateme.txt"));
+
+    QVERIFY2(f.open(QIODevice::ExistingOnly | QIODevice::ReadOnly), msgOpenFailed(f).constData());
+    f.close();
+    QVERIFY2(f.open(QIODevice::ExistingOnly | QIODevice::WriteOnly), msgOpenFailed(f).constData());
+    f.close();
+    QVERIFY2(f.open(QIODevice::ExistingOnly | QIODevice::ReadWrite), msgOpenFailed(f).constData());
+    f.close();
+    QVERIFY(!f.open(QIODevice::ExistingOnly));
+    QVERIFY(QFile::exists("dontcreateme.txt"));
+    QFile::remove("dontcreateme.txt");
 }
 
 void tst_QFile::append()

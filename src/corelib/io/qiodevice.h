@@ -76,7 +76,9 @@ public:
         Append = 0x0004,
         Truncate = 0x0008,
         Text = 0x0010,
-        Unbuffered = 0x0020
+        Unbuffered = 0x0020,
+        NewOnly = 0x0040,
+        ExistingOnly = 0x0080
     };
     Q_DECLARE_FLAGS(OpenMode, OpenModeFlag)
 
