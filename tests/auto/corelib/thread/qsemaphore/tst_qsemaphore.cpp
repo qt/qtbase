@@ -41,6 +41,8 @@ private slots:
     void tryAcquireWithTimeout_data();
     void tryAcquireWithTimeout();
     void tryAcquireWithTimeoutStarvation();
+    void tryAcquireWithTimeoutForever_data();
+    void tryAcquireWithTimeoutForever();
     void producerConsumer();
 };
 
@@ -155,21 +157,25 @@ void tst_QSemaphore::tryAcquire()
     semaphore.release();
     QCOMPARE(semaphore.available(), 1);
     QVERIFY(!semaphore.tryAcquire(2));
+    QVERIFY(!semaphore.tryAcquire(2, 0));
     QCOMPARE(semaphore.available(), 1);
 
     semaphore.release();
     QCOMPARE(semaphore.available(), 2);
     QVERIFY(!semaphore.tryAcquire(3));
+    QVERIFY(!semaphore.tryAcquire(3, 0));
     QCOMPARE(semaphore.available(), 2);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 12);
     QVERIFY(!semaphore.tryAcquire(100));
+    QVERIFY(!semaphore.tryAcquire(100, 0));
     QCOMPARE(semaphore.available(), 12);
 
     semaphore.release(10);
     QCOMPARE(semaphore.available(), 22);
     QVERIFY(!semaphore.tryAcquire(100));
+    QVERIFY(!semaphore.tryAcquire(100, 0));
     QCOMPARE(semaphore.available(), 22);
 
     QVERIFY(semaphore.tryAcquire());
@@ -178,7 +184,18 @@ void tst_QSemaphore::tryAcquire()
     QVERIFY(semaphore.tryAcquire());
     QCOMPARE(semaphore.available(), 20);
 
+    semaphore.release(2);
+    QVERIFY(semaphore.tryAcquire(1, 0));
+    QCOMPARE(semaphore.available(), 21);
+
+    QVERIFY(semaphore.tryAcquire(1, 0));
+    QCOMPARE(semaphore.available(), 20);
+
     QVERIFY(semaphore.tryAcquire(10));
+    QCOMPARE(semaphore.available(), 10);
+
+    semaphore.release(10);
+    QVERIFY(semaphore.tryAcquire(10, 0));
     QCOMPARE(semaphore.available(), 10);
 
     QVERIFY(semaphore.tryAcquire(10));
@@ -186,15 +203,19 @@ void tst_QSemaphore::tryAcquire()
 
     // should not be able to acquire more
     QVERIFY(!semaphore.tryAcquire());
+    QVERIFY(!semaphore.tryAcquire(1, 0));
     QCOMPARE(semaphore.available(), 0);
 
     QVERIFY(!semaphore.tryAcquire());
+    QVERIFY(!semaphore.tryAcquire(1, 0));
     QCOMPARE(semaphore.available(), 0);
 
     QVERIFY(!semaphore.tryAcquire(10));
+    QVERIFY(!semaphore.tryAcquire(10, 0));
     QCOMPARE(semaphore.available(), 0);
 
     QVERIFY(!semaphore.tryAcquire(10));
+    QVERIFY(!semaphore.tryAcquire(10, 0));
     QCOMPARE(semaphore.available(), 0);
 }
 
@@ -342,6 +363,48 @@ void tst_QSemaphore::tryAcquireWithTimeoutStarvation()
     // acquire, and wait for smallConsumer to timeout
     semaphore.acquire();
     QVERIFY(consumer.wait());
+}
+
+void tst_QSemaphore::tryAcquireWithTimeoutForever_data()
+{
+    QTest::addColumn<int>("timeout");
+    QTest::newRow("-1") << -1;
+
+    // tryAcquire is documented to take any negative value as "forever"
+    QTest::newRow("INT_MIN") << INT_MIN;
+}
+
+void tst_QSemaphore::tryAcquireWithTimeoutForever()
+{
+    enum { WaitTime = 1000 };
+    struct Thread : public QThread {
+        QSemaphore sem;
+
+        void run() override
+        {
+            QTest::qWait(WaitTime);
+            sem.release(2);
+        }
+    };
+
+    QFETCH(int, timeout);
+    Thread t;
+
+    // sanity check it works if we can immediately acquire
+    t.sem.release(11);
+    QVERIFY(t.sem.tryAcquire(1, timeout));
+    QVERIFY(t.sem.tryAcquire(10, timeout));
+
+    // verify that we do wait for at least WaitTime if we can't acquire immediately
+    QElapsedTimer timer;
+    timer.start();
+    t.start();
+    QVERIFY(t.sem.tryAcquire(1, timeout));
+    QVERIFY(timer.elapsed() >= WaitTime);
+
+    QVERIFY(t.wait());
+
+    QCOMPARE(t.sem.available(), 1);
 }
 
 const char alphabet[] = "ACGTH";

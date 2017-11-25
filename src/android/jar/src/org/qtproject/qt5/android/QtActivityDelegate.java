@@ -720,184 +720,189 @@ public class QtActivityDelegate
 
             Bundle extras = m_activity.getIntent().getExtras();
             if (extras != null) {
-                if ( /*(ai.flags&ApplicationInfo.FLAG_DEBUGGABLE) != 0
-                        &&*/ extras.containsKey("debug_ping")
-                        && extras.getString("debug_ping").equals("true")) {
-                    try {
-                        final String dc = "--Added-by-androiddeployqt--/debugger.command";
-                        String debuggerCommand =
-                            new BufferedReader(new InputStreamReader(m_activity.getAssets().open(dc))).readLine();
-                        String packagePath =
-                            m_activity.getPackageManager().getApplicationInfo(m_activity.getPackageName(),
-                                                                              PackageManager.GET_CONFIGURATIONS).dataDir + "/";
+                try {
+                    final String dc = "--Added-by-androiddeployqt--/debugger.command";
+                    String debuggerCommand =
+                        new BufferedReader(new InputStreamReader(m_activity.getAssets().open(dc))).readLine();
+                    if ( /*(ai.flags&ApplicationInfo.FLAG_DEBUGGABLE) != 0
+                            &&*/ extras.containsKey("debug_ping")
+                            && extras.getString("debug_ping").equals("true")) {
+                        try {
+                            String packagePath =
+                                m_activity.getPackageManager().getApplicationInfo(m_activity.getPackageName(),
+                                                                                PackageManager.GET_CONFIGURATIONS).dataDir + "/";
 
-                        debugLog("extra parameters: " + extras);
-                        String packageName = m_activity.getPackageName();
-                        String pingFile = extras.getString("ping_file");
-                        String pongFile = extras.getString("pong_file");
-                        String gdbserverSocket = extras.getString("gdbserver_socket");
-                        String gdbserverCommand = packagePath + debuggerCommand + gdbserverSocket;
-                        String pingSocket = extras.getString("ping_socket");
-                        boolean usePing = pingFile != null;
-                        boolean usePong = pongFile != null;
-                        boolean useSocket = gdbserverSocket != null;
-                        boolean usePingSocket = pingSocket != null;
-                        int napTime = 200; // milliseconds between file accesses
-                        int timeOut = 30000; // ms until we give up on ping and pong
-                        int maxAttempts = timeOut / napTime;
+                            debugLog("extra parameters: " + extras);
+                            String packageName = m_activity.getPackageName();
+                            String pingFile = extras.getString("ping_file");
+                            String pongFile = extras.getString("pong_file");
+                            String gdbserverSocket = extras.getString("gdbserver_socket");
+                            String gdbserverCommand = packagePath + debuggerCommand + gdbserverSocket;
+                            String pingSocket = extras.getString("ping_socket");
+                            boolean usePing = pingFile != null;
+                            boolean usePong = pongFile != null;
+                            boolean useSocket = gdbserverSocket != null;
+                            boolean usePingSocket = pingSocket != null;
+                            int napTime = 200; // milliseconds between file accesses
+                            int timeOut = 30000; // ms until we give up on ping and pong
+                            int maxAttempts = timeOut / napTime;
 
-                        if (gdbserverSocket != null) {
-                            debugLog("removing gdb socket " + gdbserverSocket);
-                            new File(gdbserverSocket).delete();
-                        }
-
-                        if (usePing) {
-                            debugLog("removing ping file " + pingFile);
-                            File ping = new File(pingFile);
-                            if (ping.exists()) {
-                                if (!ping.delete())
-                                    debugLog("ping file cannot be deleted");
+                            if (gdbserverSocket != null) {
+                                debugLog("removing gdb socket " + gdbserverSocket);
+                                new File(gdbserverSocket).delete();
                             }
-                        }
 
-                        if (usePong) {
-                            debugLog("removing pong file " + pongFile);
-                            File pong = new File(pongFile);
-                            if (pong.exists()) {
-                                if (!pong.delete())
-                                    debugLog("pong file cannot be deleted");
-                            }
-                        }
-
-                        debugLog("starting " + gdbserverCommand);
-                        m_debuggerProcess = Runtime.getRuntime().exec(gdbserverCommand);
-                        debugLog("gdbserver started");
-
-                        if (useSocket) {
-                            int i;
-                            for (i = 0; i < maxAttempts; ++i) {
-                                debugLog("waiting for socket at " + gdbserverSocket + ", attempt " + i);
-                                File file = new File(gdbserverSocket);
-                                if (file.exists()) {
-                                    file.setReadable(true, false);
-                                    file.setWritable(true, false);
-                                    file.setExecutable(true, false);
-                                    break;
+                            if (usePing) {
+                                debugLog("removing ping file " + pingFile);
+                                File ping = new File(pingFile);
+                                if (ping.exists()) {
+                                    if (!ping.delete())
+                                        debugLog("ping file cannot be deleted");
                                 }
-                                Thread.sleep(napTime);
                             }
 
-                            if (i == maxAttempts) {
-                                debugLog("time out when waiting for debug socket");
-                                return false;
+                            if (usePong) {
+                                debugLog("removing pong file " + pongFile);
+                                File pong = new File(pongFile);
+                                if (pong.exists()) {
+                                    if (!pong.delete())
+                                        debugLog("pong file cannot be deleted");
+                                }
                             }
 
-                            debugLog("socket ok");
-                        } else {
-                            debugLog("socket not used");
-                        }
+                            debugLog("starting " + gdbserverCommand);
+                            m_debuggerProcess = Runtime.getRuntime().exec(gdbserverCommand);
+                            debugLog("gdbserver started");
 
-                        if (usePingSocket) {
-                            DebugWaitRunnable runnable = new DebugWaitRunnable(pingSocket);
-                            Thread waitThread = new Thread(runnable);
-                            waitThread.start();
+                            if (useSocket) {
+                                int i;
+                                for (i = 0; i < maxAttempts; ++i) {
+                                    debugLog("waiting for socket at " + gdbserverSocket + ", attempt " + i);
+                                    File file = new File(gdbserverSocket);
+                                    if (file.exists()) {
+                                        file.setReadable(true, false);
+                                        file.setWritable(true, false);
+                                        file.setExecutable(true, false);
+                                        break;
+                                    }
+                                    Thread.sleep(napTime);
+                                }
 
-                            int i;
-                            for (i = 0; i < maxAttempts && waitThread.isAlive(); ++i) {
-                                debugLog("Waiting for debug socket connect");
-                                debugLog("go to sleep");
-                                Thread.sleep(napTime);
-                            }
+                                if (i == maxAttempts) {
+                                    debugLog("time out when waiting for debug socket");
+                                    return false;
+                                }
 
-                            if (i == maxAttempts) {
-                                debugLog("time out when waiting for ping socket");
-                                runnable.shutdown();
-                                return false;
-                            }
-
-                            if (runnable.wasFailure) {
-                                debugLog("Could not connect to debug client");
-                                return false;
+                                debugLog("socket ok");
                             } else {
-                                debugLog("Got pid acknowledgment");
+                                debugLog("socket not used");
                             }
-                        }
 
-                        if (usePing) {
-                            // Tell we are ready.
-                            debugLog("writing ping at " + pingFile);
-                            FileWriter writer = new FileWriter(pingFile);
-                            writer.write("" + android.os.Process.myPid());
-                            writer.close();
-                            File file = new File(pingFile);
-                            file.setReadable(true, false);
-                            file.setWritable(true, false);
-                            file.setExecutable(true, false);
-                            debugLog("wrote ping");
-                        } else {
-                            debugLog("ping not requested");
-                        }
+                            if (usePingSocket) {
+                                DebugWaitRunnable runnable = new DebugWaitRunnable(pingSocket);
+                                Thread waitThread = new Thread(runnable);
+                                waitThread.start();
 
-                        // Wait until other side is ready.
-                        if (usePong) {
-                            int i;
-                            for (i = 0; i < maxAttempts; ++i) {
-                                debugLog("waiting for pong at " + pongFile + ", attempt " + i);
-                                File file = new File(pongFile);
-                                if (file.exists()) {
-                                    file.delete();
-                                    break;
+                                int i;
+                                for (i = 0; i < maxAttempts && waitThread.isAlive(); ++i) {
+                                    debugLog("Waiting for debug socket connect");
+                                    debugLog("go to sleep");
+                                    Thread.sleep(napTime);
                                 }
-                                debugLog("go to sleep");
-                                Thread.sleep(napTime);
-                            }
-                            debugLog("Removing pingFile " + pingFile);
-                            new File(pingFile).delete();
 
-                            if (i == maxAttempts) {
-                                debugLog("time out when waiting for pong file");
-                                return false;
+                                if (i == maxAttempts) {
+                                    debugLog("time out when waiting for ping socket");
+                                    runnable.shutdown();
+                                    return false;
+                                }
+
+                                if (runnable.wasFailure) {
+                                    debugLog("Could not connect to debug client");
+                                    return false;
+                                } else {
+                                    debugLog("Got pid acknowledgment");
+                                }
                             }
 
-                            debugLog("got pong " + pongFile);
-                        } else {
-                            debugLog("pong not requested");
+                            if (usePing) {
+                                // Tell we are ready.
+                                debugLog("writing ping at " + pingFile);
+                                FileWriter writer = new FileWriter(pingFile);
+                                writer.write("" + android.os.Process.myPid());
+                                writer.close();
+                                File file = new File(pingFile);
+                                file.setReadable(true, false);
+                                file.setWritable(true, false);
+                                file.setExecutable(true, false);
+                                debugLog("wrote ping");
+                            } else {
+                                debugLog("ping not requested");
+                            }
+
+                            // Wait until other side is ready.
+                            if (usePong) {
+                                int i;
+                                for (i = 0; i < maxAttempts; ++i) {
+                                    debugLog("waiting for pong at " + pongFile + ", attempt " + i);
+                                    File file = new File(pongFile);
+                                    if (file.exists()) {
+                                        file.delete();
+                                        break;
+                                    }
+                                    debugLog("go to sleep");
+                                    Thread.sleep(napTime);
+                                }
+                                debugLog("Removing pingFile " + pingFile);
+                                new File(pingFile).delete();
+
+                                if (i == maxAttempts) {
+                                    debugLog("time out when waiting for pong file");
+                                    return false;
+                                }
+
+                                debugLog("got pong " + pongFile);
+                            } else {
+                                debugLog("pong not requested");
+                            }
+
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        } catch (SecurityException se) {
+                            se.printStackTrace();
                         }
-
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
-                    } catch (SecurityException se) {
-                        se.printStackTrace();
                     }
-                }
 
-                if (/*(ai.flags&ApplicationInfo.FLAG_DEBUGGABLE) != 0
-                        &&*/ extras.containsKey("qml_debug")
-                        && extras.getString("qml_debug").equals("true")) {
-                    String qmljsdebugger;
-                    if (extras.containsKey("qmljsdebugger")) {
-                        qmljsdebugger = extras.getString("qmljsdebugger");
-                        qmljsdebugger.replaceAll("\\s", ""); // remove whitespace for security
-                    } else {
-                        qmljsdebugger = "port:3768";
+                    if (/*(ai.flags&ApplicationInfo.FLAG_DEBUGGABLE) != 0
+                            &&*/ extras.containsKey("qml_debug")
+                            && extras.getString("qml_debug").equals("true")) {
+                        String qmljsdebugger;
+                        if (extras.containsKey("qmljsdebugger")) {
+                            qmljsdebugger = extras.getString("qmljsdebugger");
+                            qmljsdebugger.replaceAll("\\s", ""); // remove whitespace for security
+                        } else {
+                            qmljsdebugger = "port:3768";
+                        }
+                        m_applicationParameters += "\t-qmljsdebugger=" + qmljsdebugger;
                     }
-                    m_applicationParameters += "\t-qmljsdebugger=" + qmljsdebugger;
-                }
 
-                if (extras.containsKey("extraenvvars")) {
-                    try {
-                        m_environmentVariables += "\t" + new String(Base64.decode(extras.getString("extraenvvars"), Base64.DEFAULT), "UTF-8");
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (extras.containsKey("extraenvvars")) {
+                        try {
+                            m_environmentVariables += "\t" + new String(Base64.decode(extras.getString("extraenvvars"), Base64.DEFAULT), "UTF-8");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
 
-                if (extras.containsKey("extraappparams")) {
-                    try {
-                        m_applicationParameters += "\t" + new String(Base64.decode(extras.getString("extraappparams"), Base64.DEFAULT), "UTF-8");
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (extras.containsKey("extraappparams")) {
+                        try {
+                            m_applicationParameters += "\t" + new String(Base64.decode(extras.getString("extraappparams"), Base64.DEFAULT), "UTF-8");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
+                } catch (Exception e) {
+                    // This is not an error, so keep it silent
+                    // e.printStackTrace();
                 }
             } // extras != null
 
