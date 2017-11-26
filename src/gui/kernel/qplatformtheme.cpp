@@ -747,8 +747,7 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
     int currPos = 0;
     int l = original.length();
     while (l) {
-        if (original.at(currPos) == QLatin1Char('&')
-            && (l == 1 || original.at(currPos + 1) != QLatin1Char('&'))) {
+        if (original.at(currPos) == QLatin1Char('&')) {
             ++currPos;
             --l;
             if (l == 0)
