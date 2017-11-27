@@ -16,7 +16,7 @@ qtConfig(evdev)|qtConfig(tslib)|qtConfig(libinput)|qtConfig(integrityhid) {
     input.depends += devicediscovery
 }
 
-unix:!darwin: \
+if(unix:!darwin)|qtConfig(xcb): \
     SUBDIRS += services
 
 qtConfig(opengl): \

@@ -4,6 +4,8 @@ QT += core-private gui-private xcb_qpa_lib-private
 
 DEFINES += QT_NO_FOREACH
 
+macos: CONFIG += no_app_extension_api_only
+
 SOURCES = \
     qxcbmain.cpp
 OTHER_FILES += xcb.json README

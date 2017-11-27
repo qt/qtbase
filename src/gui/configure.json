@@ -928,7 +928,8 @@
         },
         "fontconfig": {
             "label": "Fontconfig",
-            "condition": "!config.win32 && !config.darwin && features.system-freetype && libs.fontconfig",
+            "autoDetect": "!config.darwin",
+            "condition": "!config.win32 && features.system-freetype && libs.fontconfig",
             "output": [ "privateFeature", "feature" ]
         },
         "gbm": {
@@ -1498,6 +1499,13 @@
             "condition": "features.xcb && !features.xkbcommon-system && !features.xkb-config-root",
             "message": "Could not find XKB config root, use -xkb-config-root to set a path to
 XKB configuration data. This is required for keyboard input support."
+        },
+        {
+            "type": "note",
+            "condition": "features.xcb && config.darwin",
+            "message": "XCB support on macOS is minimal and untested. Some features will
+not work properly or at all (e.g. OpenGL, desktop services or accessibility),
+or may depend on your system and XQuartz setup."
         },
         {
             "type": "note",
