@@ -220,6 +220,20 @@ private slots:
     void QTBUG4435_keepSelectionOnCheck();
 
     void QTBUG16469_textForRole();
+    void dateTextForRole_data();
+    void dateTextForRole();
+
+#ifdef QT_BUILD_INTERNAL
+private:
+    struct RoleDelegate : public QItemDelegate
+    {
+        QString textForRole(Qt::ItemDataRole role, const QVariant &value, const QLocale &locale)
+        {
+            QAbstractItemDelegatePrivate *d = reinterpret_cast<QAbstractItemDelegatePrivate *>(qGetPtrHelper(d_ptr));
+            return d->textForRole(role, value, locale);
+        }
+    };
+#endif
 };
 
 
@@ -1530,14 +1544,7 @@ void tst_QItemDelegate::QTBUG16469_textForRole()
 #ifndef QT_BUILD_INTERNAL
     QSKIP("This test requires a developer build");
 #else
-    struct TestDelegate : public QItemDelegate
-    {
-        QString textForRole(Qt::ItemDataRole role, const QVariant &value, const QLocale &locale)
-        {
-            QAbstractItemDelegatePrivate *d = reinterpret_cast<QAbstractItemDelegatePrivate *>(qGetPtrHelper(d_ptr));
-            return d->textForRole(role, value, locale);
-        }
-    } delegate;
+    RoleDelegate delegate;
     QLocale locale;
 
     const float f = 123.456f;
@@ -1559,20 +1566,6 @@ void tst_QItemDelegate::QTBUG16469_textForRole()
     QCOMPARE(delegate.textForRole(Qt::DisplayRole, ull, locale), locale.toString(ull));
     QCOMPARE(delegate.textForRole(Qt::ToolTipRole, ull, locale), locale.toString(ull));
 
-    const QDateTime dateTime = QDateTime::currentDateTime();
-    const QDate date = dateTime.date();
-    const QTime time = dateTime.time();
-    const QString shortDate = locale.toString(date, QLocale::ShortFormat);
-    const QString longDate = locale.toString(date, QLocale::LongFormat);
-    const QString shortTime = locale.toString(time, QLocale::ShortFormat);
-    const QString longTime = locale.toString(time, QLocale::LongFormat);
-    QCOMPARE(delegate.textForRole(Qt::DisplayRole, date, locale), shortDate);
-    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, date, locale), longDate);
-    QCOMPARE(delegate.textForRole(Qt::DisplayRole, time, locale), shortTime);
-    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, time, locale), longTime);
-    QCOMPARE(delegate.textForRole(Qt::DisplayRole, dateTime, locale), shortDate + QLatin1Char(' ') + shortTime);
-    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, dateTime, locale), longDate + QLatin1Char(' ') + longTime);
-
     const QString text("text");
     QCOMPARE(delegate.textForRole(Qt::DisplayRole, text, locale), text);
     QCOMPARE(delegate.textForRole(Qt::ToolTipRole, text, locale), text);
@@ -1581,6 +1574,41 @@ void tst_QItemDelegate::QTBUG16469_textForRole()
     multipleLines2.replace(QLatin1Char('\n'), QChar::LineSeparator);
     QCOMPARE(delegate.textForRole(Qt::DisplayRole, multipleLines, locale), multipleLines2);
     QCOMPARE(delegate.textForRole(Qt::ToolTipRole, multipleLines, locale), multipleLines);
+#endif
+}
+
+void tst_QItemDelegate::dateTextForRole_data()
+{
+#ifdef QT_BUILD_INTERNAL
+    QTest::addColumn<QDateTime>("when");
+
+    QTest::newRow("now") << QDateTime::currentDateTime(); // It's a local time
+    QDate date(2013, 12, 11);
+    QTime time(10, 9, 8, 765);
+    // Ensure we exercise every time-spec variant:
+    QTest::newRow("local") << QDateTime(date, time, Qt::LocalTime);
+    QTest::newRow("UTC") << QDateTime(date, time, Qt::UTC);
+    QTest::newRow("zone") << QDateTime(date, time, QTimeZone("Europe/Dublin"));
+    QTest::newRow("offset") << QDateTime(date, time, Qt::OffsetFromUTC, 36000);
+#endif
+}
+
+void tst_QItemDelegate::dateTextForRole()
+{
+#ifndef QT_BUILD_INTERNAL
+    QSKIP("This test requires a developer build");
+#else
+    QFETCH(QDateTime, when);
+    RoleDelegate delegate;
+    QLocale locale;
+# define CHECK(value) \
+    QCOMPARE(delegate.textForRole(Qt::DisplayRole, value, locale), locale.toString(value, QLocale::ShortFormat)); \
+    QCOMPARE(delegate.textForRole(Qt::ToolTipRole, value, locale), locale.toString(value, QLocale::LongFormat))
+
+    CHECK(when);
+    CHECK(when.date());
+    CHECK(when.time());
+# undef CHECK
 #endif
 }
 

@@ -585,12 +585,9 @@ QString QAbstractItemDelegatePrivate::textForRole(Qt::ItemDataRole role, const Q
     case QVariant::Time:
         text = locale.toString(value.toTime(), formatType);
         break;
-    case QVariant::DateTime: {
-        const QDateTime dateTime = value.toDateTime();
-        text = locale.toString(dateTime.date(), formatType)
-             + QLatin1Char(' ')
-             + locale.toString(dateTime.time(), formatType);
-        break; }
+    case QVariant::DateTime:
+        text = locale.toString(value.toDateTime(), formatType);
+        break;
     default:
         text = value.toString();
         if (role == Qt::DisplayRole)
