@@ -75,7 +75,7 @@ static void handleApplicationStateChanged(UIApplicationState uiApplicationState)
 {
     Qt::ApplicationState state = qtApplicationState(uiApplicationState);
     qCDebug(lcQpaApplication) << "moved to" << state;
-    QWindowSystemInterface::handleApplicationStateChanged<QWindowSystemInterface::SynchronousDelivery>(state);
+    QWindowSystemInterface::handleApplicationStateChanged(state);
 }
 
 QT_BEGIN_NAMESPACE

@@ -422,6 +422,8 @@ QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
     , m_processEventLevel(0)
     , m_runLoopExitObserver(this, &QIOSEventDispatcher::handleRunLoopExit, kCFRunLoopExit)
 {
+    // We want all delivery of events from the system to be handled synchronously
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
 }
 
 bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
