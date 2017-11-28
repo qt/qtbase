@@ -194,6 +194,13 @@ public:
         DescendingOrder
     };
 
+    enum SplitBehaviorFlags {
+        KeepEmptyParts = 0,
+        SkipEmptyParts = 0x1,
+    };
+    Q_DECLARE_FLAGS(SplitBehavior, SplitBehaviorFlags)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(SplitBehavior)
+
     enum TileRule {
         StretchTile,
         RepeatTile,
@@ -1772,6 +1779,7 @@ public:
     QT_Q_FLAG(Alignment)
     QT_Q_ENUM(TextFlag)
     QT_Q_FLAG(Orientations)
+    QT_Q_FLAG(SplitBehavior)
     QT_Q_FLAG(DropActions)
     QT_Q_FLAG(Edges)
     QT_Q_FLAG(DockWidgetAreas)
