@@ -181,12 +181,12 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Returns the model identifier of the device.
-
-    When running under the simulator, the identifier will not
-    match the simulated device, but will be x86_64 or i386.
 */
 static QString deviceModelIdentifier()
 {
+#if TARGET_OS_SIMULATOR
+    return QString::fromLocal8Bit(qgetenv("SIMULATOR_MODEL_IDENTIFIER"));
+#else
     static const char key[] = "hw.machine";
 
     size_t size;
@@ -196,6 +196,7 @@ static QString deviceModelIdentifier()
     sysctlbyname(key, &value, &size, NULL, 0);
 
     return QString::fromLatin1(value);
+#endif
 }
 
 QIOSScreen::QIOSScreen(UIScreen *screen)
@@ -210,19 +211,24 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
         // Based on https://en.wikipedia.org/wiki/List_of_iOS_devices#Display
 
         // iPhone (1st gen), 3G, 3GS, and iPod Touch (1st–3rd gen) are 18-bit devices
-        if (deviceIdentifier.contains(QRegularExpression("^(iPhone1,[12]|iPhone2,1|iPod[1-3],1)$")))
-            m_depth = 18;
-        else
-            m_depth = 24;
+        static QRegularExpression lowBitDepthDevices("^(iPhone1,[12]|iPhone2,1|iPod[1-3],1)$");
+        m_depth = deviceIdentifier.contains(lowBitDepthDevices) ? 18 : 24;
 
-        if (deviceIdentifier.contains(QRegularExpression("^iPhone(7,1|8,2|9,2|9,4)$"))) {
-            // iPhone Plus models
+        static QRegularExpression iPhoneXModels("^iPhone(10,[36])$");
+        static QRegularExpression iPhonePlusModels("^iPhone(7,1|8,2|9,[24]|10,[25])$");
+        static QRegularExpression iPadMiniModels("^iPad(2,[567]|4,[4-9]|5,[12])$");
+
+        if (deviceIdentifier.contains(iPhoneXModels)) {
+            m_physicalDpi = 458;
+        } else if (deviceIdentifier.contains(iPhonePlusModels)) {
             m_physicalDpi = 401;
-        } else if (deviceIdentifier.contains(QRegularExpression("^iPad(1,1|2,[1-4]|3,[1-6]|4,[1-3]|5,[3-4]|6,[7-8])$"))) {
-            // All iPads except the iPad Mini series
-            m_physicalDpi = 132 * devicePixelRatio();
+        } else if (deviceIdentifier.startsWith("iPad")) {
+            if (deviceIdentifier.contains(iPadMiniModels))
+                m_physicalDpi = 163 * devicePixelRatio();
+            else
+                m_physicalDpi = 132 * devicePixelRatio();
         } else {
-            // All non-Plus iPhones, and iPad Minis
+            // All normal iPhones, and iPods
             m_physicalDpi = 163 * devicePixelRatio();
         }
     } else {
