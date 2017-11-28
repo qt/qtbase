@@ -1723,7 +1723,7 @@ void tst_QUdpSocket::linkLocalIPv4()
             foreach (QNetworkAddressEntry addr, iface.addressEntries()) {
                 if (addr.ip().isInSubnet(localMask, 16)) {
                     addresses << addr.ip();
-                    qDebug() << addr.ip();
+                    qDebug() << "Found IPv4 link local address" << addr.ip();
                 }
             }
         }
@@ -1748,7 +1748,6 @@ void tst_QUdpSocket::linkLocalIPv4()
         QVERIFY(s->writeDatagram(testData, s->localAddress(), neutral.localPort()));
         QVERIFY2(neutral.waitForReadyRead(10000), QtNetworkSettings::msgSocketError(neutral).constData());
 
-        QVERIFY2(s->waitForReadyRead(10000), QtNetworkSettings::msgSocketError(*s).constData());
         QNetworkDatagram dgram = neutral.receiveDatagram(testData.length() * 2);
         QVERIFY(dgram.isValid());
         QCOMPARE(dgram.senderAddress(), s->localAddress());
@@ -1771,7 +1770,7 @@ void tst_QUdpSocket::linkLocalIPv4()
         }
 
         QVERIFY(neutral.writeDatagram(dgram.makeReply(testData)));
-
+        QVERIFY2(s->waitForReadyRead(10000), QtNetworkSettings::msgSocketError(*s).constData());
         dgram = s->receiveDatagram(testData.length() * 2);
         QVERIFY(dgram.isValid());
         QCOMPARE(dgram.data(), testData);
