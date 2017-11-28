@@ -1213,10 +1213,8 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxL
     msg.dwBufferCount = 1;
     msg.name = reinterpret_cast<LPSOCKADDR>(&aa);
     msg.namelen = sizeof(aa);
-    if (options & (QAbstractSocketEngine::WantDatagramHopLimit | QAbstractSocketEngine::WantDatagramDestination)) {
-        msg.Control.buf = cbuf;
-        msg.Control.len = sizeof(cbuf);
-    }
+    msg.Control.buf = cbuf;
+    msg.Control.len = sizeof(cbuf);
 
     DWORD flags = 0;
     DWORD bytesRead = 0;
