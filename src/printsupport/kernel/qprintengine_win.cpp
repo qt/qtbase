@@ -1234,7 +1234,10 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         if (printDevice.isValid()) {
             d->m_printDevice = printDevice;
             d->initialize();
-            setProperty(PPK_QPageSize, pageSize);
+            if (d->m_printDevice.supportedPageSize(pageSize.value<QPageSize>()).isValid())
+                setProperty(PPK_QPageSize, pageSize);
+            else
+                setProperty(PPK_CustomPaperSize, pageSize.value<QPageSize>().size(QPageSize::Point));
             setProperty(PPK_FullPage, QVariant(isFullPage));
             setProperty(PPK_Orientation, orientation);
             setProperty(PPK_QPageMargins, margins);

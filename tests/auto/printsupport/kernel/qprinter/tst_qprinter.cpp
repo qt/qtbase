@@ -122,6 +122,7 @@ private slots:
 
     void testPageMetrics_data();
     void testPageMetrics();
+    void reusePageMetrics();
 #endif
 private:
     QString testFileName(const QString &prefix, const QString &suffix);
@@ -1953,6 +1954,50 @@ QString tst_QPrinter::testFileName(const QString &prefix, const QString &suffix)
     if (!suffix.isEmpty())
         result += QLatin1Char('.') + suffix;
     return result;
+}
+
+void tst_QPrinter::reusePageMetrics()
+{
+    QList<QPrinterInfo> availablePrinters = QPrinterInfo::availablePrinters();
+    if (availablePrinters.size() < 2)
+        QSKIP("Not enough printers to do this test with, need at least 2 setup");
+    QPrinter defaultP;
+    QPrinterInfo info(defaultP);
+    QString otherPrinterName;
+    for (QPrinterInfo i : qAsConst(availablePrinters)) {
+        if (i.printerName() != defaultP.printerName()) {
+            otherPrinterName = i.printerName();
+            break;
+        }
+    }
+    QPrinter otherP(QPrinterInfo::printerInfo(otherPrinterName));
+    QList<QPageSize> defaultPageSizes = info.supportedPageSizes();
+    QList<QPageSize> otherPageSizes = QPrinterInfo(otherP).supportedPageSizes();
+    QPageSize unavailableSizeToSet;
+    for (QPageSize s : qAsConst(defaultPageSizes)) {
+        bool found = false;
+        for (QPageSize os : qAsConst(otherPageSizes)) {
+            if (os.isEquivalentTo(s)) {
+                found = true;
+                break;
+            }
+        }
+        const QPageSize tmpSize(s.size(QPageSize::Point), QPageSize::Point);
+        if (!tmpSize.name().startsWith("Custom"))
+            found = true;
+        if (!found) {
+            unavailableSizeToSet = s;
+            break;
+        }
+    }
+    if (!unavailableSizeToSet.isValid())
+        QSKIP("Could not find a size that was not available on the non default printer. The test "
+              "requires this");
+    defaultP.setPageSize(unavailableSizeToSet);
+    defaultP.setPrinterName(otherP.printerName());
+    QVERIFY(defaultP.pageLayout().pageSize().isEquivalentTo(unavailableSizeToSet));
+    QVERIFY(defaultP.pageLayout().pageSize().name() != unavailableSizeToSet.name());
+    QCOMPARE(defaultP.pageLayout().pageSize().sizePoints(), unavailableSizeToSet.sizePoints());
 }
 
 #endif // QT_CONFIG(printer)
