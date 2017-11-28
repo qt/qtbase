@@ -95,7 +95,6 @@
             #define colorWithBrightness(br) \
                 [UIColor colorWithHue:hue saturation:0.5 brightness:br alpha:1.0].CGColor
 
-            self.layer.backgroundColor = colorWithBrightness(0.5);
             self.layer.borderColor = colorWithBrightness(1.0);
             self.layer.borderWidth = 1.0;
         }
