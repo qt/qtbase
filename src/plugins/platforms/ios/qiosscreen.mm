@@ -205,9 +205,9 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     , m_uiWindow(0)
     , m_orientationListener(0)
 {
-    if (screen == [UIScreen mainScreen]) {
-        QString deviceIdentifier = deviceModelIdentifier();
+    QString deviceIdentifier = deviceModelIdentifier();
 
+    if (screen == [UIScreen mainScreen] && !deviceIdentifier.startsWith("AppleTV")) {
         // Based on https://en.wikipedia.org/wiki/List_of_iOS_devices#Display
 
         // iPhone (1st gen), 3G, 3GS, and iPod Touch (1st–3rd gen) are 18-bit devices
