@@ -405,15 +405,6 @@ index ea84783..62badcc 100644
  
      if (mD3d11Module)
      {
-@@ -2618,7 +2642,7 @@ bool Renderer11::getShareHandleSupport() const
- 
-     if (deviceType == d3d11::ANGLE_D3D11_DEVICE_TYPE_WARP)
-     {
--#ifndef ANGLE_ENABLE_WINDOWS_STORE
-+#if !defined(ANGLE_ENABLE_WINDOWS_STORE) && !defined(__GNUC__)
-         if (!IsWindows8OrGreater())
-         {
-             // WARP on Windows 7 doesn't support shared handles
 diff --git a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.h b/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.h
 index 62e9816..b4e7761 100644
 --- a/src/3rdparty/angle/src/libANGLE/renderer/d3d/d3d11/Renderer11.h
