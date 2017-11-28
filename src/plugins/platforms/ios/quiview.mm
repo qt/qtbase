@@ -86,7 +86,7 @@
         self.multipleTouchEnabled = YES;
 #endif
 
-        if (QIOSIntegration::instance()->debugWindowManagement()) {
+        if (qEnvironmentVariableIntValue("QT_IOS_DEBUG_WINDOW_MANAGEMENT")) {
             static CGFloat hue = 0.0;
             CGFloat lastHue = hue;
             for (CGFloat diff = 0; diff < 0.1 || diff > 0.9; diff = fabs(hue - lastHue))

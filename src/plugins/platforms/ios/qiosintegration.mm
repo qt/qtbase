@@ -85,7 +85,6 @@ QIOSIntegration::QIOSIntegration()
     , m_platformServices(new QIOSServices)
     , m_accessibility(0)
     , m_optionalPlugins(new QFactoryLoader(QIosOptionalPluginInterface_iid, QLatin1String("/platforms/darwin")))
-    , m_debugWindowManagement(false)
 {
     if (Q_UNLIKELY(![UIApplication sharedApplication])) {
         qFatal("Error: You are creating QApplication before calling UIApplicationMain.\n" \
@@ -316,16 +315,6 @@ void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWind
         return reinterpret_cast<void *>(platformWindow->winId());
 
     return 0;
-}
-
-void QIOSIntegration::setDebugWindowManagement(bool enabled)
-{
-    m_debugWindowManagement = enabled;
-}
-
-bool QIOSIntegration::debugWindowManagement() const
-{
-    return m_debugWindowManagement;
 }
 
 // ---------------------------------------------------------
