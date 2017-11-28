@@ -34,6 +34,7 @@
 #include <qfileinfo.h>
 #include <qdatastream.h>
 #include <qdebug.h>
+#include <qrandom.h>
 #include <qudpsocket.h>
 #include <qhostaddress.h>
 #include <qhostinfo.h>
@@ -124,6 +125,7 @@ private:
 
     bool m_skipUnsupportedIPv6Tests;
     QList<QHostAddress> allAddresses;
+    QHostAddress multicastGroup4, multicastGroup6;
     QUdpSocket *m_asyncSender;
     QUdpSocket *m_asyncReceiver;
 };
@@ -207,6 +209,20 @@ void tst_QUdpSocket::initTestCase()
         QSKIP("No network test server available");
     allAddresses = QNetworkInterface::allAddresses();
     m_skipUnsupportedIPv6Tests = shouldSkipIpv6TestsForBrokenSetsockopt();
+
+    // Create a pair of random multicast groups so we avoid clashing with any
+    // other tst_qudpsocket running on the same network at the same time.
+    quint64 r[2] = {
+        // ff14:: is temporary, not prefix-based, admin-local
+        qToBigEndian(Q_UINT64_C(0xff14) << 48),
+        QRandomGenerator64::global()->generate64()
+    };
+    multicastGroup6.setAddress(*reinterpret_cast<Q_IPV6ADDR *>(&r));
+
+    // 239.0.0.0/8 is "Organization-Local Scope"
+    multicastGroup4.setAddress((239U << 24) | (r[1] & 0xffffff));
+
+    qDebug() << "Will use multicast groups" << multicastGroup4 << multicastGroup6;
 
     if (EmulationDetector::isRunningArmOnX86())
         QSKIP("This test is unreliable due to QEMU emulation shortcomings.");
@@ -1232,9 +1248,9 @@ void tst_QUdpSocket::multicastLoopbackOption()
 void tst_QUdpSocket::multicastJoinBeforeBind_data()
 {
     QTest::addColumn<QHostAddress>("groupAddress");
-    QTest::newRow("valid ipv4 group address") << QHostAddress("239.255.118.62");
+    QTest::newRow("valid ipv4 group address") << multicastGroup4;
     QTest::newRow("invalid ipv4 group address") << QHostAddress(QHostAddress::Broadcast);
-    QTest::newRow("valid ipv6 group address") << QHostAddress("FF01::114");
+    QTest::newRow("valid ipv6 group address") << multicastGroup6;
     QTest::newRow("invalid ipv6 group address") << QHostAddress(QHostAddress::AnyIPv6);
 }
 
@@ -1254,8 +1270,8 @@ void tst_QUdpSocket::multicastJoinBeforeBind()
 void tst_QUdpSocket::multicastLeaveAfterClose_data()
 {
     QTest::addColumn<QHostAddress>("groupAddress");
-    QTest::newRow("ipv4") << QHostAddress("239.255.118.62");
-    QTest::newRow("ipv6") << QHostAddress("FF01::114");
+    QTest::newRow("ipv4") << multicastGroup4;
+    QTest::newRow("ipv6") << multicastGroup6;
 }
 
 void tst_QUdpSocket::multicastLeaveAfterClose()
@@ -1342,9 +1358,9 @@ void tst_QUdpSocket::setMulticastInterface()
 void tst_QUdpSocket::multicast_data()
 {
     QHostAddress anyAddress = QHostAddress(QHostAddress::AnyIPv4);
-    QHostAddress groupAddress = QHostAddress("239.255.118.62");
+    QHostAddress groupAddress = multicastGroup4;
     QHostAddress any6Address = QHostAddress(QHostAddress::AnyIPv6);
-    QHostAddress group6Address = QHostAddress("FF01::114");
+    QHostAddress group6Address = multicastGroup6;
     QHostAddress dualAddress = QHostAddress(QHostAddress::Any);
 
     QTest::addColumn<QHostAddress>("bindAddress");
