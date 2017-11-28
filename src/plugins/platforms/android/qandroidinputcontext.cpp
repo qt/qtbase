@@ -526,6 +526,10 @@ void QAndroidInputContext::updateCursorPosition()
 
 void QAndroidInputContext::updateSelectionHandles()
 {
+    static bool noHandles = qEnvironmentVariableIntValue("QT_QPA_NO_TEXT_HANDLES");
+    if (noHandles)
+        return;
+
     auto im = qGuiApp->inputMethod();
     if (!m_focusObject || (m_cursorHandleShown == CursorHandleNotShown)) {
         // Hide the handles
