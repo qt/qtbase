@@ -60,6 +60,13 @@
 #include <errno.h>
 #endif
 
+#ifdef Q_OS_UNIX
+#  include <sys/socket.h>
+#endif
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(SO_NREAD)
+#  define RELIABLE_BYTES_AVAILABLE
+#endif
+
 Q_DECLARE_METATYPE(QHostAddress)
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
@@ -1806,7 +1813,9 @@ void tst_QUdpSocket::readyRead()
     // make sure only one signal was emitted
     QCOMPARE(spy.count(), 1);
     QVERIFY(receiver.hasPendingDatagrams());
+#ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(receiver.bytesAvailable(), qint64(2));
+#endif
     QCOMPARE(receiver.pendingDatagramSize(), qint64(2));
 
     // write another datagram
@@ -1828,7 +1837,9 @@ void tst_QUdpSocket::readyRead()
     QTest::qWait(100);
     QCOMPARE(spy.count(), 2);
     QVERIFY(receiver.hasPendingDatagrams());
+#ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(receiver.bytesAvailable(), qint64(3));
+#endif
     QCOMPARE(receiver.pendingDatagramSize(), qint64(3));
 }
 
@@ -1860,7 +1871,9 @@ void tst_QUdpSocket::readyReadForEmptyDatagram()
     char buf[1];
     QVERIFY(receiver.hasPendingDatagrams());
     QCOMPARE(receiver.pendingDatagramSize(), qint64(0));
+#ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(receiver.bytesAvailable(), qint64(0));
+#endif
     QCOMPARE(receiver.readDatagram(buf, sizeof buf), qint64(0));
 }
 
@@ -1869,7 +1882,9 @@ void tst_QUdpSocket::async_readDatagramSlot()
     char buf[1];
     QVERIFY(m_asyncReceiver->hasPendingDatagrams());
     QCOMPARE(m_asyncReceiver->pendingDatagramSize(), qint64(1));
+#ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(m_asyncReceiver->bytesAvailable(), qint64(1));
+#endif
     QCOMPARE(m_asyncReceiver->readDatagram(buf, sizeof(buf)), qint64(1));
 
     if (buf[0] == '2') {
