@@ -6878,6 +6878,16 @@ static ResultList splitString(const StringSource &source, const QChar *sep,
 
     \snippet qstring/main.cpp 62
 
+    If \a sep is empty, split() returns an empty string, followed
+    by each of the string's characters, followed by another empty string:
+
+    \snippet qstring/main.cpp 62-empty
+
+    To understand this behavior, recall that the empty string matches
+    everywhere, so the above is qualitatively the same as:
+
+    \snippet qstring/main.cpp 62-slashes
+
     \sa QStringList::join(), section()
 */
 QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseSensitivity cs) const
@@ -6887,15 +6897,10 @@ QStringList QString::split(const QString &sep, SplitBehavior behavior, Qt::CaseS
 
 /*!
     Splits the string into substring references wherever \a sep occurs, and
-    returns the list of those strings. If \a sep does not match
-    anywhere in the string, splitRef() returns a single-element vector
-    containing this string reference.
+    returns the list of those strings.
 
-    \a cs specifies whether \a sep should be matched case
-    sensitively or case insensitively.
-
-    If \a behavior is QString::SkipEmptyParts, empty entries don't
-    appear in the result. By default, empty entries are kept.
+    See QString::split() for how \a sep, \a behavior and \a cs interact to form
+    the result.
 
     \note All references are valid as long this string is alive. Destroying this
     string will cause all references be dangling pointers.
@@ -6926,15 +6931,10 @@ QVector<QStringRef> QString::splitRef(QChar sep, SplitBehavior behavior, Qt::Cas
 
 /*!
     Splits the string into substrings references wherever \a sep occurs, and
-    returns the list of those strings. If \a sep does not match
-    anywhere in the string, split() returns a single-element vector
-    containing this string reference.
+    returns the list of those strings.
 
-    \a cs specifies whether \a sep should be matched case
-    sensitively or case insensitively.
-
-    If \a behavior is QString::SkipEmptyParts, empty entries don't
-    appear in the result. By default, empty entries are kept.
+    See QString::split() for how \a sep, \a behavior and \a cs interact to form
+    the result.
 
     \note All references are valid as long this string is alive. Destroying this
     string will cause all references be dangling pointers.
