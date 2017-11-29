@@ -122,7 +122,10 @@ public:
     bool intersects(const QRect &r) const;
 
     QRect boundingRect() const Q_DECL_NOTHROW;
+#if QT_DEPRECATED_SINCE(5, 11)
+    QT_DEPRECATED_X("Use begin()/end() instead")
     QVector<QRect> rects() const;
+#endif
     void setRects(const QRect *rect, int num);
     int rectCount() const Q_DECL_NOTHROW;
 #ifdef Q_COMPILER_MANGLES_RETURN_TYPE
