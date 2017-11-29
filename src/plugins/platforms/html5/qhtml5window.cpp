@@ -55,7 +55,8 @@ QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor)
       mCompositor(compositor),
       m_raster(false),
       mActiveControl(QHtml5Compositor::SC_None),
-      mNormalGeometry(0,0,0,0)
+      mNormalGeometry(0,0,0,0),
+      hasTitle(false)
 {
     //globalHtml5Window = this;
     static int serialNo = 0;
@@ -100,6 +101,7 @@ void QHtml5Window::create()
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
     setWindowTitle(window()->title());
+    hasTitle = window()->flags().testFlag(Qt::WindowTitleHint);
 
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
@@ -156,8 +158,6 @@ void QHtml5Window::setVisible(bool visible)
 
 QMargins QHtml5Window::frameMargins() const
 {
-    bool hasTitle = window()->flags().testFlag(Qt::WindowTitleHint);
-
     int border = hasTitle ? 4. * (qreal(qt_defaultDpiX()) / 96.0) : 0;
     int titleBarHeight = hasTitle ? titleHeight() : 0;
 
@@ -200,7 +200,7 @@ void QHtml5Window::injectMousePressed(const QPoint &local, const QPoint &global,
     Q_UNUSED(local);
     Q_UNUSED(mods);
 
-    if (button != Qt::LeftButton)
+    if (!hasTitle || button != Qt::LeftButton)
         return;
 
     if (maxButtonRect().contains(global))
@@ -221,7 +221,7 @@ void QHtml5Window::injectMouseReleased(const QPoint &local, const QPoint &global
     Q_UNUSED(local);
     Q_UNUSED(mods);
 
-    if (button != Qt::LeftButton)
+    if (!hasTitle || button != Qt::LeftButton)
         return;
 
     if (closeButtonRect().contains(global) && mActiveControl == QHtml5Compositor::SC_TitleBarCloseButton)

@@ -320,7 +320,7 @@ void QHTML5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
         if (mouseEvent->button == 0) {
             pressedWindow = window2;
 
-            if (htmlWindow && htmlWindow->isPointOnTitle(point))
+            if (htmlWindow && window2->flags().testFlag(Qt::WindowTitleHint) && htmlWindow->isPointOnTitle(point))
                 draggedWindow = window2;
             else if (htmlWindow && htmlWindow->isPointOnResizeRegion(point)) {
                 draggedWindow = window2;

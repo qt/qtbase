@@ -120,6 +120,7 @@ protected:
 
     QHtml5Compositor::SubControls mActiveControl;
     QRect mNormalGeometry;
+    bool hasTitle;
 };
 QT_END_NAMESPACE
 #endif // QHTML5WINDOW_H
