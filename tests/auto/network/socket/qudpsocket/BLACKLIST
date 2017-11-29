@@ -1,5 +1,3 @@
-[multicast]
-osx
 [writeDatagramToNonExistingPeer]
 windows
 osx

@@ -122,6 +122,7 @@ private:
 #ifdef SHOULD_CHECK_SYSCALL_SUPPORT
     bool ipv6SetsockoptionMissing(int level, int optname);
 #endif
+    QNetworkInterface interfaceForGroup(const QHostAddress &multicastGroup);
 
     bool m_skipUnsupportedIPv6Tests;
     QList<QHostAddress> allAddresses;
@@ -165,6 +166,33 @@ bool tst_QUdpSocket::shouldSkipIpv6TestsForBrokenSetsockopt()
 #endif //SHOULD_CHECK_SYSCALL_SUPPORT
 
     return false;
+}
+
+QNetworkInterface tst_QUdpSocket::interfaceForGroup(const QHostAddress &multicastGroup)
+{
+    if (multicastGroup.protocol() == QAbstractSocket::IPv4Protocol)
+        return QNetworkInterface();
+
+    static QNetworkInterface ipv6if = [=]() {
+        // find any link local address in the allAddress list
+        for (const QHostAddress &addr: qAsConst(allAddresses)) {
+            if (addr.isLoopback())
+                continue;
+
+            QString scope = addr.scopeId();
+            if (!scope.isEmpty()) {
+                QNetworkInterface iface = QNetworkInterface::interfaceFromName(scope);
+                qDebug() << "Will bind IPv6 sockets to" << iface;
+                return iface;
+            }
+        }
+
+        qWarning("interfaceForGroup(%s) could not find any link-local IPv6 address! "
+                 "Make sure this test is behind a check of QtNetworkSettings::hasIPv6().",
+                 qUtf8Printable(multicastGroup.toString()));
+        return QNetworkInterface();
+    }();
+    return ipv6if;
 }
 
 static QHostAddress makeNonAny(const QHostAddress &address, QHostAddress::SpecialAddress preferForAny = QHostAddress::LocalHost)
@@ -1299,7 +1327,7 @@ void tst_QUdpSocket::multicastLeaveAfterClose()
         bindAddress = QHostAddress::AnyIPv6;
     QVERIFY2(udpSocket.bind(bindAddress, 0),
              qPrintable(udpSocket.errorString()));
-    QVERIFY2(udpSocket.joinMulticastGroup(groupAddress),
+    QVERIFY2(udpSocket.joinMulticastGroup(groupAddress, interfaceForGroup(groupAddress)),
              qPrintable(udpSocket.errorString()));
     udpSocket.close();
     QTest::ignoreMessage(QtWarningMsg, "QUdpSocket::leaveMulticastGroup() called on a QUdpSocket when not in QUdpSocket::BoundState");
@@ -1413,7 +1441,7 @@ void tst_QUdpSocket::multicast()
                              "QAbstractSocket: cannot bind to QHostAddress::Any (or an IPv6 address) and join an IPv4 multicast group;"
                              " bind to QHostAddress::AnyIPv4 instead if you want to do this");
     }
-    QVERIFY2(receiver.joinMulticastGroup(groupAddress) == joinResult,
+    QVERIFY2(receiver.joinMulticastGroup(groupAddress, interfaceForGroup(groupAddress)) == joinResult,
              qPrintable(receiver.errorString()));
     if (!joinResult)
         return;
@@ -1427,7 +1455,9 @@ void tst_QUdpSocket::multicast()
     QUdpSocket sender;
     sender.bind();
     foreach (const QByteArray &datagram, datagrams) {
-        QCOMPARE(int(sender.writeDatagram(datagram, groupAddress, receiver.localPort())),
+        QNetworkDatagram dgram(datagram, groupAddress, receiver.localPort());
+        dgram.setInterfaceIndex(interfaceForGroup(groupAddress).index());
+        QCOMPARE(int(sender.writeDatagram(dgram)),
                  int(datagram.size()));
     }
 
@@ -1452,7 +1482,8 @@ void tst_QUdpSocket::multicast()
     }
     QCOMPARE(receivedDatagrams, datagrams);
 
-    QVERIFY2(receiver.leaveMulticastGroup(groupAddress), qPrintable(receiver.errorString()));
+    QVERIFY2(receiver.leaveMulticastGroup(groupAddress, interfaceForGroup(groupAddress)),
+             qPrintable(receiver.errorString()));
 }
 
 void tst_QUdpSocket::echo_data()
