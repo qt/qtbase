@@ -32,6 +32,8 @@ linux
 windows
 [putToFtp]
 windows ci
+[putToFtpWithInvalidCredentials]
+windows ci
 [putWithServerClosingConnectionImmediately]
 windows
 [qtbug28035browserDoesNotLoadQtProjectOrgCorrectly]
