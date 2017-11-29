@@ -592,7 +592,7 @@ void QtAndroidPrivate::setOnBindListener(QtAndroidPrivate::OnBindListener *liste
 {
     QMutexLocker lock(g_onBindListenerMutex);
     *g_onBindListener = listener;
-    if (!(*g_serviceSetupLockers)--)
+    if (!g_serviceSetupLockers->deref())
         g_waitForServiceSetupSemaphore->release();
 }
 
