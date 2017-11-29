@@ -127,6 +127,7 @@ private:
     bool m_skipUnsupportedIPv6Tests;
     QList<QHostAddress> allAddresses;
     QHostAddress multicastGroup4, multicastGroup6;
+    QVector<QHostAddress> linklocalMulticastGroups;
     QUdpSocket *m_asyncSender;
     QUdpSocket *m_asyncReceiver;
 };
@@ -172,6 +173,10 @@ QNetworkInterface tst_QUdpSocket::interfaceForGroup(const QHostAddress &multicas
 {
     if (multicastGroup.protocol() == QAbstractSocket::IPv4Protocol)
         return QNetworkInterface();
+
+    QString scope = multicastGroup.scopeId();
+    if (!scope.isEmpty())
+        return QNetworkInterface::interfaceFromName(scope);
 
     static QNetworkInterface ipv6if = [=]() {
         // find any link local address in the allAddress list
@@ -250,7 +255,19 @@ void tst_QUdpSocket::initTestCase()
     // 239.0.0.0/8 is "Organization-Local Scope"
     multicastGroup4.setAddress((239U << 24) | (r[1] & 0xffffff));
 
-    qDebug() << "Will use multicast groups" << multicastGroup4 << multicastGroup6;
+    // figure out some link-local IPv6 multicast groups
+    // ff12:: is temporary, not prefix-based, link-local
+    r[0] = qToBigEndian(Q_UINT64_C(0xff12) << 48);
+    QHostAddress llbase(*reinterpret_cast<Q_IPV6ADDR *>(&r));
+    for (const QHostAddress &a : qAsConst(allAddresses)) {
+        QString scope = a.scopeId();
+        if (scope.isEmpty())
+            continue;
+        llbase.setScopeId(scope);
+        linklocalMulticastGroups << llbase;
+    }
+
+    qDebug() << "Will use multicast groups" << multicastGroup4 << multicastGroup6 << linklocalMulticastGroups;
 
     if (EmulationDetector::isRunningArmOnX86())
         QSKIP("This test is unreliable due to QEMU emulation shortcomings.");
@@ -1279,6 +1296,8 @@ void tst_QUdpSocket::multicastJoinBeforeBind_data()
     QTest::newRow("valid ipv4 group address") << multicastGroup4;
     QTest::newRow("invalid ipv4 group address") << QHostAddress(QHostAddress::Broadcast);
     QTest::newRow("valid ipv6 group address") << multicastGroup6;
+    for (const QHostAddress &a : qAsConst(linklocalMulticastGroups))
+        QTest::addRow("valid ipv6 %s-link group address", a.scopeId().toLatin1().constData()) << a;
     QTest::newRow("invalid ipv6 group address") << QHostAddress(QHostAddress::AnyIPv6);
 }
 
@@ -1300,6 +1319,8 @@ void tst_QUdpSocket::multicastLeaveAfterClose_data()
     QTest::addColumn<QHostAddress>("groupAddress");
     QTest::newRow("ipv4") << multicastGroup4;
     QTest::newRow("ipv6") << multicastGroup6;
+    for (const QHostAddress &a : qAsConst(linklocalMulticastGroups))
+        QTest::addRow("ipv6-link-%s", a.scopeId().toLatin1().constData()) << a;
 }
 
 void tst_QUdpSocket::multicastLeaveAfterClose()
@@ -1398,9 +1419,15 @@ void tst_QUdpSocket::multicast_data()
     QTest::newRow("valid bind, group ipv4 address") << anyAddress << true << groupAddress << true;
     QTest::newRow("valid bind, invalid group ipv4 address") << anyAddress << true << anyAddress << false;
     QTest::newRow("valid bind, group ipv6 address") << any6Address << true << group6Address << true;
+    for (const QHostAddress &a : qAsConst(linklocalMulticastGroups))
+        QTest::addRow("valid bind, %s-link group ipv6 address", a.scopeId().toLatin1().constData())
+                << any6Address << true << a << true;
     QTest::newRow("valid bind, invalid group ipv6 address") << any6Address << true << any6Address << false;
     QTest::newRow("dual bind, group ipv4 address") << dualAddress << true << groupAddress << false;
     QTest::newRow("dual bind, group ipv6 address") << dualAddress << true << group6Address << true;
+    for (const QHostAddress &a : qAsConst(linklocalMulticastGroups))
+        QTest::addRow("dual bind, %s-link group ipv6 address", a.scopeId().toLatin1().constData())
+                << dualAddress << true << a << true;
 }
 
 void tst_QUdpSocket::multicast()
