@@ -1,5 +1,3 @@
-[multicast:same bind, group ipv6 address]
-*
 [multicast]
 osx
 [writeDatagramToNonExistingPeer]

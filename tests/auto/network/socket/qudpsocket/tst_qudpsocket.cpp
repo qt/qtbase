@@ -1353,10 +1353,8 @@ void tst_QUdpSocket::multicast_data()
     QTest::addColumn<bool>("joinResult");
     QTest::newRow("valid bind, group ipv4 address") << anyAddress << true << groupAddress << true;
     QTest::newRow("valid bind, invalid group ipv4 address") << anyAddress << true << anyAddress << false;
-    QTest::newRow("same bind, group ipv4 address") << groupAddress << true << groupAddress << true;
     QTest::newRow("valid bind, group ipv6 address") << any6Address << true << group6Address << true;
     QTest::newRow("valid bind, invalid group ipv6 address") << any6Address << true << any6Address << false;
-    QTest::newRow("same bind, group ipv6 address") << group6Address << false << group6Address << false;
     QTest::newRow("dual bind, group ipv4 address") << dualAddress << true << groupAddress << false;
     QTest::newRow("dual bind, group ipv6 address") << dualAddress << true << group6Address << true;
 }
