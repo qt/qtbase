@@ -54,9 +54,15 @@
 #  endif
 #elif defined(Q_OS_DARWIN)
 #  include <QtFontDatabaseSupport/private/qcoretextfontdatabase_p.h>
-#elif QT_CONFIG(fontconfig)
+#endif
+
+#if QT_CONFIG(fontconfig)
 #  include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #  include <qpa/qplatformfontdatabase.h>
+#endif
+
+#if QT_CONFIG(freetype)
+#include <QtFontDatabaseSupport/private/qfontengine_ft_p.h>
 #endif
 
 #if !defined(Q_OS_WIN)
@@ -81,6 +87,8 @@ static inline unsigned parseOptions(const QStringList &paramList)
             options |= QMinimalIntegration::EnableFonts;
         else if (param == QLatin1String("freetype"))
             options |= QMinimalIntegration::FreeTypeFontDatabase;
+        else if (param == QLatin1String("fontconfig"))
+            options |= QMinimalIntegration::FontconfigDatabase;
     }
     return options;
 }
@@ -129,9 +137,7 @@ public:
 QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
 {
     if (!m_fontDatabase && (m_options & EnableFonts)) {
-#if QT_CONFIG(fontconfig)
-        m_fontDatabase = new QGenericUnixFontDatabase;
-#elif defined(Q_OS_WINRT)
+#if defined(Q_OS_WINRT)
         m_fontDatabase = new QWinRTFontDatabase;
 #elif defined(Q_OS_WIN)
         if (m_options & FreeTypeFontDatabase) {
@@ -142,10 +148,24 @@ QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
             m_fontDatabase = new QWindowsFontDatabase;
         }
 #elif defined(Q_OS_DARWIN)
-        m_fontDatabase = new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>;
-#else
-        m_fontDatabase = QPlatformIntegration::fontDatabase();
+        if (!(m_options & FontconfigDatabase)) {
+            if (m_options & FreeTypeFontDatabase) {
+#  if QT_CONFIG(freetype)
+                m_fontDatabase = new QCoreTextFontDatabaseEngineFactory<QFontEngineFT>;
+#  endif // freetype
+            } else {
+                m_fontDatabase = new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>;
+            }
+        }
 #endif
+
+        if (!m_fontDatabase) {
+#if QT_CONFIG(fontconfig)
+            m_fontDatabase = new QGenericUnixFontDatabase;
+#else
+            m_fontDatabase = QPlatformIntegration::fontDatabase();
+#endif
+        }
     }
     if (!m_fontDatabase)
         m_fontDatabase = new DummyFontDatabase;
