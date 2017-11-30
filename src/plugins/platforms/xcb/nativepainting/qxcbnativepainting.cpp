@@ -105,7 +105,7 @@ void qt_xcb_native_x11_info_init(QXcbConnection *conn)
 QVector<XRectangle> qt_region_to_xrectangles(const QRegion &r)
 {
     const int numRects = r.rectCount();
-    const QVector<QRect> input = r.rects();
+    const auto input = r.begin();
     QVector<XRectangle> output(numRects);
     for (int i = 0; i < numRects; ++i) {
         const QRect &in = input[i];
