@@ -727,11 +727,9 @@ void QFont::setFamily(const QString &family)
 /*!
     \since 4.8
 
-    Returns the requested font style name, it will be used to match the
+    Returns the requested font style name. This can be used to match the
     font with irregular styles (that can't be normalized in other style
-    properties). It depends on system font support, thus only works for
-    \macos and X11 so far. On Windows irregular styles will be added
-    as separate font families so there is no need for this.
+    properties).
 
     \sa setFamily(), setStyle()
 */
@@ -744,7 +742,12 @@ QString QFont::styleName() const
     \since 4.8
 
     Sets the style name of the font to \a styleName. When set, other style properties
-    like \l style() and \l weight() will be ignored for font matching.
+    like \l style() and \l weight() will be ignored for font matching, though they may be
+    simulated afterwards if supported by the platform's font engine.
+
+    Due to the lower quality of artificially simulated styles, and the lack of full cross
+    platform support, it is not recommended to use matching by style name together with
+    matching by style properties
 
     \sa styleName()
 */
@@ -985,6 +988,10 @@ int QFont::pixelSize() const
   Sets the style() of the font to QFont::StyleItalic if \a enable is true;
   otherwise the style is set to QFont::StyleNormal.
 
+  \note If styleName() is set, this value may be ignored, or if supported
+  on the platform, the font may be rendered tilted instead of picking a
+  designed italic font-variant.
+
   \sa italic(), QFontInfo
 */
 
@@ -1050,6 +1057,8 @@ int QFont::weight() const
     Sets the weight of the font to \a weight, using the scale defined by
     \l QFont::Weight enumeration.
 
+    \note If styleName() is set, this value may be ignored for font selection.
+
     \sa weight(), QFontInfo
 */
 void QFont::setWeight(int weight)
@@ -1082,6 +1091,9 @@ void QFont::setWeight(int weight)
     otherwise sets the weight to \l{Weight}{QFont::Normal}.
 
     For finer boldness control use setWeight().
+
+    \note If styleName() is set, this value may be ignored, or if supported
+    on the platform, the font artificially embolded.
 
     \sa bold(), setWeight()
 */

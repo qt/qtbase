@@ -61,6 +61,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatforminputcontext.h>
+#include <qpa/qplatformtheme.h>
 
 #include <qpa/qplatformservices.h>
 
@@ -165,6 +166,37 @@ QAbstractEventDispatcher *QOffscreenIntegration::createEventDispatcher() const
 #else
     return 0;
 #endif
+}
+
+static QString themeName() { return QStringLiteral("offscreen"); }
+
+QStringList QOffscreenIntegration::themeNames() const
+{
+    return QStringList(themeName());
+}
+
+// Restrict the styles to "fusion" to prevent native styles requiring native
+// window handles (eg Windows Vista style) from being used.
+class OffscreenTheme : public QPlatformTheme
+{
+public:
+    OffscreenTheme() {}
+
+    QVariant themeHint(ThemeHint h) const override
+    {
+        switch (h) {
+        case StyleNames:
+            return QVariant(QStringList(QStringLiteral("fusion")));
+        default:
+            break;
+        }
+        return QPlatformTheme::themeHint(h);
+    }
+};
+
+QPlatformTheme *QOffscreenIntegration::createPlatformTheme(const QString &name) const
+{
+    return name == themeName() ? new OffscreenTheme() : nullptr;
 }
 
 QPlatformFontDatabase *QOffscreenIntegration::fontDatabase() const

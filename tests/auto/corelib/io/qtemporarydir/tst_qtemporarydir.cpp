@@ -35,6 +35,7 @@
 #include <qdir.h>
 #include <qset.h>
 #include <qtextcodec.h>
+#include <QtTest/private/qtesthelpers_p.h>
 #ifdef Q_OS_WIN
 # include <windows.h>
 #endif
@@ -112,16 +113,6 @@ void tst_QTemporaryDir::getSetCheck()
     QCOMPARE(true, obj1.autoRemove());
 }
 
-static inline bool canHandleUnicodeFileNames()
-{
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    return true;
-#else
-    // Check for UTF-8 by converting the Euro symbol (see tst_utf8)
-    return QFile::encodeName(QString(QChar(0x20AC))) == QByteArrayLiteral("\342\202\254");
-#endif
-}
-
 static QString hanTestText()
 {
     QString text;
@@ -159,7 +150,7 @@ void tst_QTemporaryDir::fileTemplate_data()
     QTest::newRow("4Xsuffix") << "qt_XXXXXX_XXXX" << "qt_" << "_XXXX";
     QTest::newRow("4Xprefix") << "qt_XXXX" << "qt_XXXX" << "";
     QTest::newRow("5Xprefix") << "qt_XXXXX" << "qt_XXXXX" << "";
-    if (canHandleUnicodeFileNames()) {
+    if (QTestPrivate::canHandleUnicodeFileNames()) {
         // Test Umlauts (contained in Latin1)
         QString prefix = "qt_" + umlautTestText();
         QTest::newRow("Umlauts") << (prefix + "XXXXXX") << prefix << "";

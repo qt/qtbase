@@ -132,7 +132,9 @@ public:
 
     QBasicTimer autoReleaseTimer;
     QPlatformMenuBar *platformMenuBar;
-    QPlatformMenu *getPlatformMenu(QAction *action);
+    QPlatformMenu *getPlatformMenu(const QAction *action);
+    QPlatformMenu *findInsertionPlatformMenu(const QAction *action);
+    void copyActionToPlatformMenu(const QAction *e, QPlatformMenu *menu);
 
     inline int indexOf(QAction *act) const { return q_func()->actions().indexOf(act); }
 };

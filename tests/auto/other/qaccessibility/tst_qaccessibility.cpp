@@ -45,6 +45,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformaccessibility.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 #if defined(Q_OS_WIN) && defined(interface)
 #   undef interface
@@ -56,15 +57,9 @@
 
 #include "accessiblewidgets.h"
 
-// Make a widget frameless to prevent size constraints of title bars
-// from interfering (Windows).
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
 
 static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
                                int index, const QRect &domain)
@@ -299,6 +294,7 @@ void tst_QAccessibility::cleanup()
                      qAccessibleEventString(list.at(i)->type()), list.at(i)->child());
     }
     QTestAccessibility::clearEvents();
+    QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QAccessibility::eventTest()
@@ -3741,14 +3737,14 @@ void tst_QAccessibility::bridgeTest()
     // Ideally it should be extended to test all aspects of the bridge.
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
-    QWidget *window = new QWidget;
-    QVBoxLayout *lay = new QVBoxLayout(window);
-    QPushButton *button = new QPushButton(tr("Push me"), window);
-    QTextEdit *te = new QTextEdit(window);
+    QWidget window;
+    QVBoxLayout *lay = new QVBoxLayout(&window);
+    QPushButton *button = new QPushButton(tr("Push me"), &window);
+    QTextEdit *te = new QTextEdit(&window);
     te->setText(QLatin1String("hello world\nhow are you today?\n"));
 
     // Add QTableWidget
-    QTableWidget *tableWidget = new QTableWidget(3, 3, window);
+    QTableWidget *tableWidget = new QTableWidget(3, 3, &window);
     tableWidget->setColumnCount(3);
     QStringList hHeader;
     hHeader << "h1" << "h2" << "h3";
@@ -3774,8 +3770,8 @@ void tst_QAccessibility::bridgeTest()
     lay->addWidget(tableWidget);
     lay->addWidget(label);
 
-    window->show();
-    QVERIFY(QTest::qWaitForWindowExposed(window));
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     // Validate button position through the accessible interface.
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(button);
@@ -3784,9 +3780,8 @@ void tst_QAccessibility::bridgeTest()
     QCOMPARE(buttonRect.topLeft(), buttonPos);
 
     // All set, now test the bridge.
-    POINT pt;
-    pt.x = buttonRect.center().x();
-    pt.y = buttonRect.center().y();
+    const QPoint nativePos = QHighDpi::toNativePixels(buttonRect.center(), window.windowHandle());
+    POINT pt{nativePos.x(), nativePos.y()};
 
     // Initialize COM stuff.
     HRESULT hr = CoInitialize(nullptr);
@@ -3817,7 +3812,7 @@ void tst_QAccessibility::bridgeTest()
     buttonElement->Release();
 
     // Get native window handle.
-    QWindow *windowHandle = window->windowHandle();
+    QWindow *windowHandle = window.windowHandle();
     QVERIFY(windowHandle != 0);
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
     QVERIFY(platform != 0);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -45,6 +45,7 @@
 
 #include <qstringlist.h>
 #include "../../../network-settings.h"
+#include "emulationdetector.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfigmanager.h>
@@ -227,6 +228,9 @@ void tst_QUdpSocket::initTestCase()
         QSKIP("No network test server available");
     allAddresses = QNetworkInterface::allAddresses();
     m_skipUnsupportedIPv6Tests = shouldSkipIpv6TestsForBrokenSetsockopt();
+
+    if (EmulationDetector::isRunningArmOnX86())
+        QSKIP("This test is unreliable due to QEMU emulation shortcomings.");
 }
 
 void tst_QUdpSocket::init()
@@ -445,31 +449,58 @@ void tst_QUdpSocket::loop()
     paul.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
 
-    QVERIFY2(peter.bind(), peter.errorString().toLatin1().constData());
-    QVERIFY2(paul.bind(), paul.errorString().toLatin1().constData());
+    // make sure we bind to IPv4
+    QHostAddress localhost = QHostAddress::LocalHost;
+    QVERIFY2(peter.bind(localhost), peter.errorString().toLatin1().constData());
+    QVERIFY2(paul.bind(localhost), paul.errorString().toLatin1().constData());
 
     QHostAddress peterAddress = makeNonAny(peter.localAddress());
-    QHostAddress pualAddress = makeNonAny(paul.localAddress());
+    QHostAddress paulAddress = makeNonAny(paul.localAddress());
 
     QCOMPARE(peter.writeDatagram(peterMessage.data(), peterMessage.length(),
-                                pualAddress, paul.localPort()), qint64(peterMessage.length()));
+                                paulAddress, paul.localPort()), qint64(peterMessage.length()));
     QCOMPARE(paul.writeDatagram(paulMessage.data(), paulMessage.length(),
                                peterAddress, peter.localPort()), qint64(paulMessage.length()));
 
     QVERIFY2(peter.waitForReadyRead(9000), QtNetworkSettings::msgSocketError(peter).constData());
     QVERIFY2(paul.waitForReadyRead(9000), QtNetworkSettings::msgSocketError(paul).constData());
-    char peterBuffer[16*1024];
-    char paulBuffer[16*1024];
+
+    QNetworkDatagram peterDatagram = peter.receiveDatagram(paulMessage.length() * 2);
+    QNetworkDatagram paulDatagram = paul.receiveDatagram(peterMessage.length() * 2);
     if (success) {
-        QCOMPARE(peter.readDatagram(peterBuffer, sizeof(peterBuffer)), qint64(paulMessage.length()));
-        QCOMPARE(paul.readDatagram(paulBuffer, sizeof(peterBuffer)), qint64(peterMessage.length()));
+        QCOMPARE(peterDatagram.data().length(), qint64(paulMessage.length()));
+        QCOMPARE(paulDatagram.data().length(), qint64(peterMessage.length()));
     } else {
-        QVERIFY(peter.readDatagram(peterBuffer, sizeof(peterBuffer)) != paulMessage.length());
-        QVERIFY(paul.readDatagram(paulBuffer, sizeof(peterBuffer)) != peterMessage.length());
+        // this code path seems to never be executed
+        QVERIFY(peterDatagram.data().length() != paulMessage.length());
+        QVERIFY(paulDatagram.data().length() != peterMessage.length());
     }
 
-    QCOMPARE(QByteArray(peterBuffer, paulMessage.length()), paulMessage);
-    QCOMPARE(QByteArray(paulBuffer, peterMessage.length()), peterMessage);
+    QCOMPARE(peterDatagram.data().left(paulMessage.length()), paulMessage);
+    QCOMPARE(paulDatagram.data().left(peterMessage.length()), peterMessage);
+
+    QCOMPARE(peterDatagram.senderAddress(), paulAddress);
+    QCOMPARE(paulDatagram.senderAddress(), peterAddress);
+    QCOMPARE(paulDatagram.senderPort(), int(peter.localPort()));
+    QCOMPARE(peterDatagram.senderPort(), int(paul.localPort()));
+
+    // Unlike for IPv6 with IPV6_PKTINFO, IPv4 has no standardized way of
+    // obtaining the packet's destination addresses. The destinationAddress and
+    // destinationPort calls could fail, so whitelist the OSes for which we
+    // know we have an implementation.
+#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4) || defined(Q_OS_WIN)
+    QVERIFY(peterDatagram.destinationPort() != -1);
+    QVERIFY(paulDatagram.destinationPort() != -1);
+#endif
+    if (peterDatagram.destinationPort() == -1) {
+        QCOMPARE(peterDatagram.destinationAddress().protocol(), QAbstractSocket::UnknownNetworkLayerProtocol);
+        QCOMPARE(paulDatagram.destinationAddress().protocol(), QAbstractSocket::UnknownNetworkLayerProtocol);
+    } else {
+        QCOMPARE(peterDatagram.destinationAddress(), makeNonAny(peter.localAddress()));
+        QCOMPARE(paulDatagram.destinationAddress(), makeNonAny(paul.localAddress()));
+        QVERIFY(peterDatagram.destinationAddress().isEqual(makeNonAny(peter.localAddress())));
+        QVERIFY(paulDatagram.destinationAddress().isEqual(makeNonAny(paul.localAddress())));
+    }
 }
 
 //----------------------------------------------------------------------------------
@@ -492,8 +523,8 @@ void tst_QUdpSocket::ipv6Loop()
     paul.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
 
-    quint16 peterPort;
-    quint16 paulPort;
+    int peterPort;
+    int paulPort;
 
     if (!peter.bind(QHostAddress(QHostAddress::LocalHostIPv6), 0)) {
         QCOMPARE(peter.error(), QUdpSocket::UnsupportedSocketOperationError);
@@ -502,6 +533,8 @@ void tst_QUdpSocket::ipv6Loop()
 
     QVERIFY(paul.bind(QHostAddress(QHostAddress::LocalHostIPv6), 0));
 
+    QHostAddress peterAddress = makeNonAny(peter.localAddress());
+    QHostAddress paulAddress = makeNonAny(paul.localAddress());
     peterPort = peter.localPort();
     paulPort = paul.localPort();
 
@@ -510,20 +543,33 @@ void tst_QUdpSocket::ipv6Loop()
     QCOMPARE(paul.writeDatagram(paulMessage.data(), paulMessage.length(),
                                    QHostAddress("::1"), peterPort), qint64(paulMessage.length()));
 
-    char peterBuffer[16*1024];
-    char paulBuffer[16*1024];
     QVERIFY(peter.waitForReadyRead(5000));
     QVERIFY(paul.waitForReadyRead(5000));
+    QNetworkDatagram peterDatagram = peter.receiveDatagram(paulMessage.length() * 2);
+    QNetworkDatagram paulDatagram = paul.receiveDatagram(peterMessage.length() * 2);
+
     if (success) {
-        QCOMPARE(peter.readDatagram(peterBuffer, sizeof(peterBuffer)), qint64(paulMessage.length()));
-        QCOMPARE(paul.readDatagram(paulBuffer, sizeof(peterBuffer)), qint64(peterMessage.length()));
+        QCOMPARE(peterDatagram.data().length(), qint64(paulMessage.length()));
+        QCOMPARE(paulDatagram.data().length(), qint64(peterMessage.length()));
     } else {
-        QVERIFY(peter.readDatagram(peterBuffer, sizeof(peterBuffer)) != paulMessage.length());
-        QVERIFY(paul.readDatagram(paulBuffer, sizeof(peterBuffer)) != peterMessage.length());
+        // this code path seems to never be executed
+        QVERIFY(peterDatagram.data().length() != paulMessage.length());
+        QVERIFY(paulDatagram.data().length() != peterMessage.length());
     }
 
-    QCOMPARE(QByteArray(peterBuffer, paulMessage.length()), paulMessage);
-    QCOMPARE(QByteArray(paulBuffer, peterMessage.length()), peterMessage);
+    QCOMPARE(peterDatagram.data().left(paulMessage.length()), paulMessage);
+    QCOMPARE(paulDatagram.data().left(peterMessage.length()), peterMessage);
+
+    QCOMPARE(peterDatagram.senderAddress(), paulAddress);
+    QCOMPARE(paulDatagram.senderAddress(), peterAddress);
+    QCOMPARE(paulDatagram.senderPort(), peterPort);
+    QCOMPARE(peterDatagram.senderPort(), paulPort);
+
+    // For IPv6, IPV6_PKTINFO is a mandatory feature (RFC 3542).
+    QCOMPARE(peterDatagram.destinationAddress(), makeNonAny(peter.localAddress()));
+    QCOMPARE(paulDatagram.destinationAddress(), makeNonAny(paul.localAddress()));
+    QCOMPARE(peterDatagram.destinationPort(), peterPort);
+    QCOMPARE(paulDatagram.destinationPort(), paulPort);
 }
 
 void tst_QUdpSocket::dualStack()
@@ -539,17 +585,23 @@ void tst_QUdpSocket::dualStack()
     QByteArray v4Data("v4");
     QVERIFY(v4Sock.bind(QHostAddress(QHostAddress::AnyIPv4), 0));
 
-    QHostAddress from;
-    quint16 port;
-    QByteArray buffer;
     //test v4 -> dual
     QCOMPARE((int)v4Sock.writeDatagram(v4Data.constData(), v4Data.length(), QHostAddress(QHostAddress::LocalHost), dualSock.localPort()), v4Data.length());
     QVERIFY2(dualSock.waitForReadyRead(5000), QtNetworkSettings::msgSocketError(dualSock).constData());
-    buffer.reserve(100);
-    qint64 size = dualSock.readDatagram(buffer.data(), 100, &from, &port);
-    QCOMPARE((int)size, v4Data.length());
-    buffer.resize(size);
-    QCOMPARE(buffer, v4Data);
+    QNetworkDatagram dgram = dualSock.receiveDatagram(100);
+    QVERIFY(dgram.isValid());
+    QCOMPARE(dgram.data(), v4Data);
+    QCOMPARE(dgram.senderPort(), int(v4Sock.localPort()));
+    // receiving v4 on dual stack will receive as IPv6, so use isEqual()
+    QVERIFY(dgram.senderAddress().isEqual(makeNonAny(v4Sock.localAddress(), QHostAddress::Null)));
+    if (dualSock.localAddress().protocol() == QAbstractSocket::IPv4Protocol)
+        QCOMPARE(dgram.senderAddress(), makeNonAny(v4Sock.localAddress(), QHostAddress::Null));
+    if (dgram.destinationPort() != -1) {
+        QCOMPARE(dgram.destinationPort(), int(dualSock.localPort()));
+        QVERIFY(dgram.destinationAddress().isEqual(dualSock.localAddress()));
+    } else {
+        qInfo("Getting IPv4 destination address failed.");
+    }
 
     if (QtNetworkSettings::hasIPv6()) {
         QUdpSocket v6Sock;
@@ -559,30 +611,41 @@ void tst_QUdpSocket::dualStack()
         //test v6 -> dual
         QCOMPARE((int)v6Sock.writeDatagram(v6Data.constData(), v6Data.length(), QHostAddress(QHostAddress::LocalHostIPv6), dualSock.localPort()), v6Data.length());
         QVERIFY2(dualSock.waitForReadyRead(5000), QtNetworkSettings::msgSocketError(dualSock).constData());
-        buffer.reserve(100);
-        size = dualSock.readDatagram(buffer.data(), 100, &from, &port);
-        QCOMPARE((int)size, v6Data.length());
-        buffer.resize(size);
-        QCOMPARE(buffer, v6Data);
+        dgram = dualSock.receiveDatagram(100);
+        QVERIFY(dgram.isValid());
+        QCOMPARE(dgram.data(), v6Data);
+        QCOMPARE(dgram.senderPort(), int(v6Sock.localPort()));
+        QCOMPARE(dgram.senderAddress(), makeNonAny(v6Sock.localAddress(), QHostAddress::LocalHostIPv6));
+        QCOMPARE(dgram.destinationPort(), int(dualSock.localPort()));
+        QCOMPARE(dgram.destinationAddress(), makeNonAny(dualSock.localAddress(), QHostAddress::LocalHostIPv6));
 
         //test dual -> v6
         QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHostIPv6), v6Sock.localPort()), dualData.length());
         QVERIFY2(v6Sock.waitForReadyRead(5000), QtNetworkSettings::msgSocketError(v6Sock).constData());
-        buffer.reserve(100);
-        size = v6Sock.readDatagram(buffer.data(), 100, &from, &port);
-        QCOMPARE((int)size, dualData.length());
-        buffer.resize(size);
-        QCOMPARE(buffer, dualData);
+        dgram = v6Sock.receiveDatagram(100);
+        QVERIFY(dgram.isValid());
+        QCOMPARE(dgram.data(), dualData);
+        QCOMPARE(dgram.senderPort(), int(dualSock.localPort()));
+        QCOMPARE(dgram.senderAddress(), makeNonAny(dualSock.localAddress(), QHostAddress::LocalHostIPv6));
+        QCOMPARE(dgram.destinationPort(), int(v6Sock.localPort()));
+        QCOMPARE(dgram.destinationAddress(), makeNonAny(v6Sock.localAddress(), QHostAddress::LocalHostIPv6));
     }
 
     //test dual -> v4
     QCOMPARE((int)dualSock.writeDatagram(dualData.constData(), dualData.length(), QHostAddress(QHostAddress::LocalHost), v4Sock.localPort()), dualData.length());
     QVERIFY2(v4Sock.waitForReadyRead(5000), QtNetworkSettings::msgSocketError(v4Sock).constData());
-    buffer.reserve(100);
-    size = v4Sock.readDatagram(buffer.data(), 100, &from, &port);
-    QCOMPARE((int)size, dualData.length());
-    buffer.resize(size);
-    QCOMPARE(buffer, dualData);
+    dgram = v4Sock.receiveDatagram(100);
+    QVERIFY(dgram.isValid());
+    QCOMPARE(dgram.data(), dualData);
+    QCOMPARE(dgram.senderPort(), int(dualSock.localPort()));
+    QCOMPARE(dgram.senderAddress(), makeNonAny(dualSock.localAddress(), QHostAddress::LocalHost));
+#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4) || defined(Q_OS_WIN)
+    QVERIFY(dgram.destinationPort() != -1);
+#endif
+    if (dgram.destinationPort() != -1) {
+        QCOMPARE(dgram.destinationPort(), int(v4Sock.localPort()));
+        QCOMPARE(dgram.destinationAddress(), makeNonAny(v4Sock.localAddress(), QHostAddress::LocalHost));
+    }
 }
 
 void tst_QUdpSocket::dualStackAutoBinding()
@@ -1603,6 +1666,8 @@ void tst_QUdpSocket::linkLocalIPv6()
         QVERIFY(dgram.isValid());
         QCOMPARE(dgram.senderAddress(), s->localAddress());
         QCOMPARE(dgram.senderPort(), int(s->localPort()));
+        QCOMPARE(dgram.destinationAddress(), s->localAddress());
+        QCOMPARE(dgram.destinationPort(), int(neutral.localPort()));
         QCOMPARE(dgram.data().length(), testData.length());
         QCOMPARE(dgram.data(), testData);
 
@@ -1683,6 +1748,20 @@ void tst_QUdpSocket::linkLocalIPv4()
         QCOMPARE(dgram.senderPort(), int(s->localPort()));
         QCOMPARE(dgram.data().length(), testData.length());
         QCOMPARE(dgram.data(), testData);
+
+        // Unlike for IPv6 with IPV6_PKTINFO, IPv4 has no standardized way of
+        // obtaining the packet's destination addresses. The destinationAddress
+        // and destinationPort calls could fail, so whitelist the OSes we know
+        // we have an implementation.
+#if defined(Q_OS_LINUX) || defined(Q_OS_BSD4) || defined(Q_OS_WIN)
+        QVERIFY(dgram.destinationPort() != -1);
+#endif
+        if (dgram.destinationPort() == -1) {
+            QCOMPARE(dgram.destinationAddress().protocol(), QAbstractSocket::UnknownNetworkLayerProtocol);
+        } else {
+            QCOMPARE(dgram.destinationAddress(), s->localAddress());
+            QCOMPARE(dgram.destinationPort(), int(neutral.localPort()));
+        }
 
         QVERIFY(neutral.writeDatagram(dgram.makeReply(testData)));
 

@@ -224,7 +224,7 @@ void tst_Http2::multipleRequests()
     };
 
     for (int i = 0; i < nRequests; ++i)
-        sendRequest(i, priorities[std::rand() % 3]);
+        sendRequest(i, priorities[QRandomGenerator::global()->bounded(3)]);
 
     runEventLoop();
 

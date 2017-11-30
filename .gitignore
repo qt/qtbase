@@ -26,6 +26,9 @@
 /src/corelib/global/qconfig.cpp
 /src/corelib/global/qconfig.h
 /src/corelib/global/qconfig_p.h
+/src/gui/vulkan/qvulkanfunctions.h
+/src/gui/vulkan/qvulkanfunctions_p.cpp
+/src/gui/vulkan/qvulkanfunctions_p.h
 /bin/qt.conf
 /bin/qmake
 /bin/qvkgen
@@ -50,7 +53,8 @@ qt*-config.pri
 /doc/qt*/*
 
 /src/angle/src/QtANGLE/*.def
-/src/angle/src/QtANGLE/libANGLE
+/src/angle/src/QtANGLE/libANGLE/
+/src/angle/src/libGLESv2/libANGLE/
 
 /src/corelib/global/qfloat16tables.cpp
 

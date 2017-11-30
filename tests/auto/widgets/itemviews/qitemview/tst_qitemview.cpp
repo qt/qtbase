@@ -30,16 +30,6 @@
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 #include "viewstotest.cpp"
-#include <stdlib.h>
-
-#if defined(Q_OS_UNIX) || defined(Q_OS_WIN)
-#include <time.h>
-#endif
-
-#if defined(Q_OS_WIN)
-#  define random rand
-#  define srandom srand
-#endif
 
 /*!
     See viewstotest.cpp for instructions on how to have your view tested with these tests.
@@ -410,13 +400,15 @@ void touch(QWidget *widget, Qt::KeyboardModifier modifier, Qt::Key keyPress){
     int width = widget->width();
     int height = widget->height();
     for (int i = 0; i < 5; ++i) {
-        QTest::mouseClick(widget, Qt::LeftButton, modifier, QPoint(random() % width, random() % height));
-        QTest::mouseDClick(widget, Qt::LeftButton, modifier, QPoint(random() % width, random() % height));
-        QPoint press(random() % width, random() % height);
-        QPoint releasePoint(random() % width, random() % height);
+        QTest::mouseClick(widget, Qt::LeftButton, modifier,
+                          QPoint(QRandomGenerator::global()->bounded(width), QRandomGenerator::global()->bounded(height)));
+        QTest::mouseDClick(widget, Qt::LeftButton, modifier,
+                           QPoint(QRandomGenerator::global()->bounded(width), QRandomGenerator::global()->bounded(height)));
+        QPoint press(QRandomGenerator::global()->bounded(width), QRandomGenerator::global()->bounded(height));
+        QPoint releasePoint(QRandomGenerator::global()->bounded(width), QRandomGenerator::global()->bounded(height));
         QTest::mousePress(widget, Qt::LeftButton, modifier, press);
         QTest::mouseMove(widget, releasePoint);
-        if (random() % 1 == 0)
+        if (QRandomGenerator::global()->bounded(1) == 0)
             QTest::mouseRelease(widget, Qt::LeftButton, 0, releasePoint);
         else
             QTest::mouseRelease(widget, Qt::LeftButton, modifier, releasePoint);
@@ -443,7 +435,6 @@ void tst_QItemView::spider()
     view->setModel(treeModel);
     view->show();
     QVERIFY(QTest::qWaitForWindowActive(view));
-    srandom(time(0));
     touch(view->viewport(), Qt::NoModifier, Qt::Key_Left);
     touch(view->viewport(), Qt::ShiftModifier, Qt::Key_Enter);
     touch(view->viewport(), Qt::ControlModifier, Qt::Key_Backspace);

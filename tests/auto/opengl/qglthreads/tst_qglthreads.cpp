@@ -138,7 +138,7 @@ public:
 
         makeCurrent();
         QPainter p(this);
-        p.fillRect(rect(), QColor(rand() % 256, rand() % 256, rand() % 256));
+        p.fillRect(rect(), QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
         p.setPen(Qt::red);
         p.setFont(QFont("SansSerif", 24));
         p.drawText(rect(), Qt::AlignCenter, "This is an autotest");
@@ -229,7 +229,7 @@ public:
             int height = 300;
             QImage image(width, height, QImage::Format_RGB32);
             QPainter p(&image);
-            p.fillRect(image.rect(), QColor(rand() % 256, rand() % 256, rand() % 256));
+            p.fillRect(image.rect(), QColor(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256)));
             p.setPen(Qt::red);
             p.setFont(QFont("SansSerif", 24));
             p.drawText(image.rect(), Qt::AlignCenter, "This is an autotest");
@@ -271,7 +271,7 @@ public:
 public slots:
     void receiveImage(const QImage &image) {
         m_images << image;
-        m_positions << QPoint(-rand() % width() / 2, -rand() % height() / 2);
+        m_positions << QPoint(-QRandomGenerator::global()->bounded(width() / 2), -QRandomGenerator::global()->bounded(height() / 2));
 
         m_semaphore->release(1);
 
@@ -326,7 +326,7 @@ void tst_QGLThreads::textureUploadInThread()
    if that works, we're in good shape..
  */
 
-static inline float qrandom() { return (rand() % 100) / 100.f; }
+static inline float qrandom() { return (QRandomGenerator::global()->bounded(100)) / 100.f; }
 
 void renderAScene(int w, int h)
 {
@@ -345,12 +345,12 @@ void renderAScene(int w, int h)
 
         for (int i=0; i<1000; ++i) {
             GLfloat pos[] = {
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f,
-                (rand() % 100) / 100.f
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f,
+                (QRandomGenerator::global()->bounded(100)) / 100.f
             };
 
             funcs->glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, pos);

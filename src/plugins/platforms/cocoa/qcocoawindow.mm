@@ -79,6 +79,8 @@ static void qt_closePopups()
     }
 }
 
+Q_LOGGING_CATEGORY(lcCocoaNotifications, "qt.qpa.cocoa.notifications");
+
 static void qRegisterNotificationCallbacks()
 {
     static const QLatin1String notificationHandlerPrefix(Q_NOTIFICATION_PREFIX);
@@ -110,9 +112,22 @@ static void qRegisterNotificationCallbacks()
                 if (QNSView *qnsView = qnsview_cast(notification.object))
                     cocoaWindows += qnsView.platformWindow;
             } else {
-                qCWarning(lcQpaCocoaWindow) << "Unhandled notifcation"
+                qCWarning(lcCocoaNotifications) << "Unhandled notifcation"
                     << notification.name << "for" << notification.object;
                 return;
+            }
+
+            if (lcCocoaNotifications().isDebugEnabled()) {
+                if (cocoaWindows.isEmpty()) {
+                    qCDebug(lcCocoaNotifications) << "Could not find forwarding target for" <<
+                        qPrintable(notificationName) << "from" << notification.object;
+                } else {
+                    QVector<QCocoaWindow *> debugWindows;
+                    for (QCocoaWindow *cocoaWindow : cocoaWindows)
+                        debugWindows += cocoaWindow;
+                    qCDebug(lcCocoaNotifications) << "Forwarding" << qPrintable(notificationName) <<
+                        "to" << debugWindows;
+                }
             }
 
             // FIXME: Could be a foreign window, look up by iterating top level QWindows
@@ -1426,6 +1441,21 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     m_windowModality = QPlatformWindow::window()->modality();
 
     applyContentBorderThickness(nsWindow);
+
+    // Prevent CoreGraphics RGB32 -> RGB64 backing store conversions on deep color
+    // displays by forcing 8-bit components, unless a deep color format has been
+    // requested. This conversion uses significant CPU time.
+    QSurface::SurfaceType surfaceType = QPlatformWindow::window()->surfaceType();
+    bool usesCoreGraphics = surfaceType == QSurface::RasterSurface || surfaceType == QSurface::RasterGLSurface;
+    QSurfaceFormat surfaceFormat = QPlatformWindow::window()->format();
+    bool usesDeepColor = surfaceFormat.redBufferSize() > 8 ||
+                         surfaceFormat.greenBufferSize() > 8 ||
+                         surfaceFormat.blueBufferSize() > 8;
+    bool usesLayer = view().layer;
+    if (usesCoreGraphics && !usesDeepColor && !usesLayer) {
+        [nsWindow setDynamicDepthLimit:NO];
+        [nsWindow setDepthLimit:NSWindowDepthTwentyfourBitRGB];
+    }
 
     return nsWindow;
 }

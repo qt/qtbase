@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -802,7 +802,7 @@ void tst_Compiler::cxx11_auto_type()
     QSKIP("Compiler does not support C++11 feature");
 #else
     auto i = 1;
-    auto x = qrand();
+    auto x = QRandomGenerator::global()->generate();
     auto l = 1L;
     auto s = QStringLiteral("Hello World");
 
@@ -851,8 +851,8 @@ void tst_Compiler::cxx11_decltype()
 #ifndef Q_COMPILER_DECLTYPE
     QSKIP("Compiler does not support C++11 feature");
 #else
-    decltype(qrand()) i = 0;
-    QCOMPARE(i, 0);
+    decltype(QRandomGenerator::global()->generate()) i = 0;
+    QCOMPARE(i, 0U);
 #endif
 }
 
@@ -1549,7 +1549,7 @@ void tst_Compiler::runtimeArrays()
 #if __cpp_runtime_arrays-0 < 201304
     QSKIP("Compiler does not support this C++14 feature");
 #else
-    int i[qrand() & 0x1f];
+    int i[QRandomGenerator::global()->generate() & 0x1f];
     Q_UNUSED(i);
 #endif
 }

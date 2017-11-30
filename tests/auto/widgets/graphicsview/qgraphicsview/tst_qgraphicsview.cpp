@@ -61,6 +61,10 @@
 
 #include "tst_qgraphicsview.h"
 
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
+
 Q_DECLARE_METATYPE(ExpectedValueDescription)
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
@@ -129,14 +133,6 @@ class FriendlyGraphicsScene : public QGraphicsScene
     Q_DECLARE_PRIVATE(QGraphicsScene);
 };
 #endif
-
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
 
 class tst_QGraphicsView : public QObject
 {

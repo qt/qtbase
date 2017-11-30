@@ -775,6 +775,7 @@ bool QIODevice::open(OpenMode mode)
     d->writeBuffers.clear();
     d->setReadChannelCount(isReadable() ? 1 : 0);
     d->setWriteChannelCount(isWritable() ? 1 : 0);
+    d->errorString.clear();
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::open(0x%x)\n", this, quint32(mode));
 #endif
@@ -801,7 +802,6 @@ void QIODevice::close()
     emit aboutToClose();
 #endif
     d->openMode = NotOpen;
-    d->errorString.clear();
     d->pos = 0;
     d->transactionStarted = false;
     d->transactionPos = 0;

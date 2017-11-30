@@ -3006,6 +3006,7 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     tv.setModel(&m);
     tv.showMaximized();
 
+    const int minimumSectionSize = 20;
     const int defaultSectionSize = 30;
     const int someOtherSectionSize = 40;
     const int biggerSizeThanAnySection = 50;
@@ -3013,6 +3014,9 @@ void tst_QHeaderView::stretchAndRestoreLastSection()
     QVERIFY(QTest::qWaitForWindowExposed(&tv));
 
     QHeaderView &header = *tv.horizontalHeader();
+    // set minimum size before resizeSections() is called
+    // which is done inside setStretchLastSection
+    header.setMinimumSectionSize(minimumSectionSize);
     header.setDefaultSectionSize(defaultSectionSize);
     header.resizeSection(9, someOtherSectionSize);
     header.setStretchLastSection(true);

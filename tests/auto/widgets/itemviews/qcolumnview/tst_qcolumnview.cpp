@@ -28,6 +28,7 @@
 
 #include "../../../../shared/fakedirmodel.h"
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 #include <qitemdelegate.h>
 #include <qcolumnview.h>
 #include <private/qcolumnviewgrip_p.h>
@@ -369,12 +370,6 @@ void tst_QColumnView::scrollTo_data()
     QTest::newRow("reverse") << true << false;
 }
 
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
-
 void tst_QColumnView::scrollTo()
 {
     QFETCH(bool, reverse);
@@ -386,7 +381,7 @@ void tst_QColumnView::scrollTo()
     view.resize(200, 200);
     topLevel.show();
     topLevel.activateWindow();
-    centerOnScreen(&topLevel);
+    QTestPrivate::centerOnScreen(&topLevel);
     QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     view.scrollTo(QModelIndex(), QAbstractItemView::EnsureVisible);
@@ -1004,7 +999,7 @@ void tst_QColumnView::dynamicModelChanges()
     ColumnView view;
     view.setModel(&model);
     view.setItemDelegate(&delegate);
-    centerOnScreen(&view);
+    QTestPrivate::centerOnScreen(&view);
     view.show();
 
     QStandardItem *item = new QStandardItem(QLatin1String("item"));

@@ -1898,7 +1898,7 @@ class StrongThread: public QThread
 protected:
     void run()
     {
-        usleep(rand() % 2000);
+        usleep(QRandomGenerator::global()->bounded(2000));
         ptr->ref();
         ptr.clear();
     }
@@ -1911,7 +1911,7 @@ class WeakThread: public QThread
 protected:
     void run()
     {
-        usleep(rand() % 2000);
+        usleep(QRandomGenerator::global()->bounded(2000));
         QSharedPointer<ThreadData> ptr = weak;
         if (ptr)
             ptr->ref();
@@ -1973,7 +1973,6 @@ void tst_QSharedPointer::threadStressTest()
 
         base.clear();
 
-        srand(time(NULL));
         // start threads
         for (int i = 0; i < allThreads.count(); ++i)
             if (allThreads[i]) allThreads[i]->start();

@@ -34,15 +34,11 @@
 #include <QList>
 #include <QPointer>
 
+#include <QtTest/private/qtesthelpers_p.h>
+
 #include "../../../../shared/filesystem.h"
 
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
+using namespace QTestPrivate;
 
 class CsvCompleter : public QCompleter
 {

@@ -146,7 +146,7 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     Selectors normally available are
     \list
     \li platform, any of the following strings which match the platform the application is running
-        on (list not exhaustive): android, ios, osx, darwin, mac, linux, wince, unix, windows.
+        on (list not exhaustive): android, ios, osx, darwin, mac, macos, linux, qnx, unix, windows.
         On Linux, if it can be determined, the name of the distribution too, like debian,
         fedora or opensuse.
     \li locale, same as QLocale().name().
@@ -373,8 +373,8 @@ QStringList QFileSelectorPrivate::platformSelectors()
 #  endif
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");
-#  if !defined(Q_OS_ANDROID)
-    // we don't want "linux" for Android
+#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_QNX)
+    // we don't want "linux" for Android or two instances of "qnx" for QNX
     ret << QSysInfo::kernelType();
 #     ifdef Q_OS_MAC
     ret << QStringLiteral("mac"); // compatibility, since kernelType() is "darwin"

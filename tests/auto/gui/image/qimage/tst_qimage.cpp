@@ -33,6 +33,7 @@
 #include <qimagereader.h>
 #include <qlist.h>
 #include <qmatrix.h>
+#include <qrandom.h>
 #include <stdio.h>
 
 #include <qpainter.h>
@@ -1754,7 +1755,7 @@ void tst_QImage::smoothScale2()
 
 static inline int rand8()
 {
-    return int(256. * (qrand() / (RAND_MAX + 1.0)));
+    return QRandomGenerator::global()->bounded(256);
 }
 
 void tst_QImage::smoothScale3_data()

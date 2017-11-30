@@ -37,7 +37,7 @@ class ColorWidget : public QWidget
 
     void changeColor()
     {
-        color.setHsv((qreal(qrand()) / RAND_MAX) * 50 + 200, s, s);
+        color.setHsv(QRandomGenerator::global()->bounded(50) + 200, s, s);
     }
 
 public:

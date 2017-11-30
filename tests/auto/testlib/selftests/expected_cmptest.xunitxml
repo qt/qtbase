@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="33" tests="24" name="tst_Cmptest">
+<testsuite errors="0" failures="34" tests="24" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -64,9 +64,12 @@
    Expected (double2): 1" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQColor">
-    <failure message="Compared values are not the same
-   Actual   (yellow): #ffff00
-   Expected (green) : #00ff00" result="fail"/>
+    <failure tag="Qt::yellow vs Qt::green" message="Compared values are not the same
+   Actual   (colorA): #ffffff00
+   Expected (colorB): #ff00ff00" result="fail"/>
+    <failure tag="0x88ff0000 vs 0xffff0000" message="Compared values are not the same
+   Actual   (colorA): #88ff0000
+   Expected (colorB): #ffff0000" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQPixmaps">
     <failure tag="one null" message="Compared QPixmaps differ.

@@ -145,7 +145,7 @@ void tst_QTextPieceTable::insertion3()
 {
     QString compare;
     for (int i = 0; i < 20000; ++i) {
-        int pos = rand() % (i+1);
+        int pos = QRandomGenerator::global()->bounded(i+1);
         QChar c((unsigned short)(i & 0xff) + 1);
         QString str;
         str += c;
@@ -159,7 +159,7 @@ void tst_QTextPieceTable::insertion4()
 {
     QString compare;
     for (int i = 0; i < 20000; ++i) {
-        int pos = rand() % (i+1);
+        int pos = QRandomGenerator::global()->generate() % (i+1);
         QChar c((unsigned short)((i % 26) + (i>25?'A':'a')));
         QString str;
         str += c;
@@ -178,7 +178,7 @@ void tst_QTextPieceTable::insertion5()
 {
     QString compare;
     for (int i = 0; i < 20000; ++i) {
-        int pos = rand() % (i+1);
+        int pos = QRandomGenerator::global()->generate() % (i+1);
         QChar c((unsigned short)((i % 26) + (i>25?'A':'a')));
         QString str;
         str += c;
@@ -236,8 +236,8 @@ void tst_QTextPieceTable::removal3()
     QString compare;
     int l = 0;
     for (int i = 0; i < 20000; ++i) {
-        bool remove = l && (rand() % 2);
-        int pos = rand() % (remove ? l : (l+1));
+        bool remove = l && (QRandomGenerator::global()->bounded(2));
+        int pos = QRandomGenerator::global()->bounded(remove ? l : (l+1));
         QChar c((unsigned short)((i % 26) + (i>25?'A':'a')));
         QString str;
         str += c;
@@ -263,8 +263,8 @@ void tst_QTextPieceTable::removal4()
     QString compare;
     int l = 0;
     for (int i = 0; i < 20000; ++i) {
-        bool remove = l && (rand() % 2);
-        int pos = (l > 1) ? rand() % (remove ? l-1 : l) : 0;
+        bool remove = l && (QRandomGenerator::global()->bounded(2));
+        int pos = (l > 1) ? QRandomGenerator::global()->bounded(remove ? l-1 : l) : 0;
         QChar c((unsigned short)((i % 26) + (i>25?'A':'a')));
         QString str;
         if (c != 'a') {
@@ -472,13 +472,12 @@ void tst_QTextPieceTable::undoRedo10()
 
 void tst_QTextPieceTable::undoRedo11()
 {
-    srand(3);
     const int loops = 20;
     QString compare;
     int l = 0;
     for (int i = 0; i < loops; ++i) {
-        bool remove = l && (rand() % 2);
-        int pos = (l > 1) ? rand() % (remove ? l-1 : l) : 0;
+        bool remove = l && (QRandomGenerator::global()->bounded(2));
+        int pos = (l > 1) ? QRandomGenerator::global()->bounded(remove ? l-1 : l) : 0;
         QChar c((unsigned short)((i % 26) + (i>25?'A':'a')));
         QString str;
         str += c;

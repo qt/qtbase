@@ -28,6 +28,7 @@
 
 
 #include <QtTest/QtTest>
+#include <QtTest/private/qtesthelpers_p.h>
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
@@ -38,16 +39,6 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
-static inline void centerOnScreen(QWidget *w, const QSize &size)
-{
-    const QPoint offset = QPoint(size.width() / 2, size.height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
-
-static inline void centerOnScreen(QWidget *w)
-{
-    centerOnScreen(w, w->geometry().size());
-}
 
 class tst_QAbstractSpinBox : public QObject
 {
@@ -182,7 +173,7 @@ void tst_QAbstractSpinBox::inputMethodUpdate()
     QSpinBox *testWidget = &box;
     testWidget->setRange(0, 1);
 
-    centerOnScreen(testWidget);
+    QTestPrivate::centerOnScreen(testWidget);
     testWidget->clear();
     testWidget->show();
     QVERIFY(QTest::qWaitForWindowExposed(testWidget));

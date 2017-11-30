@@ -48,15 +48,10 @@
 **
 ****************************************************************************/
 #include "imagescaling.h"
+
 #include <qmath.h>
 
-const int imageSize = 100;
-
-QImage scale(const QString &imageFileName)
-{
-    QImage image(imageFileName);
-    return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-}
+#include <functional>
 
 Images::Images(QWidget *parent)
     : QWidget(parent)
@@ -65,19 +60,19 @@ Images::Images(QWidget *parent)
     resize(800, 600);
 
     imageScaling = new QFutureWatcher<QImage>(this);
-    connect(imageScaling, SIGNAL(resultReadyAt(int)), SLOT(showImage(int)));
-    connect(imageScaling, SIGNAL(finished()), SLOT(finished()));
+    connect(imageScaling, &QFutureWatcher<QImage>::resultReadyAt, this, &Images::showImage);
+    connect(imageScaling, &QFutureWatcher<QImage>::finished, this, &Images::finished);
 
     openButton = new QPushButton(tr("Open Images"));
-    connect(openButton, SIGNAL(clicked()), SLOT(open()));
+    connect(openButton, &QPushButton::clicked, this, &Images::open);
 
     cancelButton = new QPushButton(tr("Cancel"));
     cancelButton->setEnabled(false);
-    connect(cancelButton, SIGNAL(clicked()), imageScaling, SLOT(cancel()));
+    connect(cancelButton, &QPushButton::clicked, imageScaling, &QFutureWatcher<QImage>::cancel);
 
     pauseButton = new QPushButton(tr("Pause/Resume"));
     pauseButton->setEnabled(false);
-    connect(pauseButton, SIGNAL(clicked()), imageScaling, SLOT(togglePaused()));
+    connect(pauseButton, &QPushButton::clicked, imageScaling, &QFutureWatcher<QImage>::togglePaused);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(openButton);
@@ -113,8 +108,10 @@ void Images::open()
                             QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
                             "*.jpg *.png");
 
-    if (files.count() == 0)
+    if (files.isEmpty())
         return;
+
+    const int imageSize = 100;
 
     // Do a simple layout.
     qDeleteAll(labels);
@@ -129,6 +126,11 @@ void Images::open()
             labels.append(imageLabel);
         }
     }
+
+    std::function<QImage(const QString&)> scale = [imageSize](const QString &imageFileName) {
+        QImage image(imageFileName);
+        return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    };
 
     // Use mapped to run the thread safe scale function on the files.
     imageScaling->setFuture(QtConcurrent::mapped(files, scale));

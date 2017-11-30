@@ -2204,13 +2204,13 @@ InstanceCounter slowMap(const InstanceCounter &in)
 
 InstanceCounter fastMap(const InstanceCounter &in)
 {
-    QTest::qSleep(rand() % 2 + 1);
+    QTest::qSleep(QRandomGenerator::global()->bounded(2) + 1);
     return in;
 }
 
 void slowReduce(int &result, const InstanceCounter&)
 {
-    QTest::qSleep(rand() % 4 + 1);
+    QTest::qSleep(QRandomGenerator::global()->bounded(4) + 1);
     ++result;
 }
 

@@ -69,6 +69,9 @@ public:
     QPlatformFontDatabase *fontDatabase() const override;
     QAbstractEventDispatcher *createEventDispatcher() const override;
 
+    QStringList themeNames() const;
+    QPlatformTheme *createPlatformTheme(const QString &name) const;
+
     static QOffscreenIntegration *createOffscreenIntegration();
 
 private:

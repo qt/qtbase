@@ -36,16 +36,12 @@
 #include <QTime>
 #include <QDebug>
 
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
+
 // defined to be 120 by the wheel mouse vendors according to the docs
 #define WHEEL_DELTA 120
-
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
 
 class Slider : public QAbstractSlider
 {

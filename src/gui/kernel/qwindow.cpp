@@ -55,6 +55,7 @@
 #  include "qaccessible.h"
 #endif
 #include "qhighdpiscaling_p.h"
+#include "qshapedpixmapdndwindow_p.h"
 
 #include <private/qevent_p.h>
 
@@ -379,7 +380,9 @@ void QWindowPrivate::setVisible(bool visible)
             QGuiApplicationPrivate::showModalWindow(q);
         else
             QGuiApplicationPrivate::hideModalWindow(q);
-    } else if (visible && QGuiApplication::modalWindow()) {
+    // QShapedPixmapWindow is used on some platforms for showing a drag pixmap, so don't block
+    // input to this window as it is performing a drag - QTBUG-63846
+    } else if (visible && QGuiApplication::modalWindow() && !qobject_cast<QShapedPixmapWindow *>(q)) {
         QGuiApplicationPrivate::updateBlockedStatus(q);
     }
 
@@ -2575,7 +2578,7 @@ QPoint QWindowPrivate::globalPosition() const
     QPoint offset = q->position();
     for (const QWindow *p = q->parent(); p; p = p->parent()) {
         QPlatformWindow *pw = p->handle();
-        if (pw && pw->isForeignWindow()) {
+        if (pw && (pw->isForeignWindow() || pw->isEmbedded())) {
             // Use mapToGlobal() for foreign windows
             offset += p->mapToGlobal(QPoint(0, 0));
             break;

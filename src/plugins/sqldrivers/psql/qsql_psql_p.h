@@ -76,15 +76,23 @@ public:
         VersionUnknown = -1,
         Version6 = 6,
         Version7 = 7,
-        Version71 = 8,
-        Version73 = 9,
-        Version74 = 10,
+        Version7_1 = 8,
+        Version7_3 = 9,
+        Version7_4 = 10,
         Version8 = 11,
-        Version81 = 12,
-        Version82 = 13,
-        Version83 = 14,
-        Version84 = 15,
-        Version9 = 16
+        Version8_1 = 12,
+        Version8_2 = 13,
+        Version8_3 = 14,
+        Version8_4 = 15,
+        Version9 = 16,
+        Version9_1 = 17,
+        Version9_2 = 18,
+        Version9_3 = 19,
+        Version9_4 = 20,
+        Version9_5 = 21,
+        Version9_6 = 22,
+        Version10 = 23,
+        UnknownLaterVersion = 100000
     };
 
     explicit QPSQLDriver(QObject *parent=0);

@@ -31,6 +31,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsWidget>
+#include <QRandomGenerator>
 
 class tst_QGraphicsWidget : public QObject
 {
@@ -72,7 +73,9 @@ void tst_QGraphicsWidget::move()
     QGraphicsView view(&scene);
     view.show();
     QBENCHMARK {
-        widget->setPos(qrand(),qrand());
+        // truncate the random values to 24 bits to
+        // avoid overflowing
+        widget->setPos(QRandomGenerator::global()->generate() & 0xffffff, QRandomGenerator::global()->generate() & 0xffffff);
     }
 }
 

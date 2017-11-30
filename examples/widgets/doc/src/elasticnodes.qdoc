@@ -424,9 +424,8 @@
     \section1 The main() Function
 
     In contrast to the complexity of the rest of this example, the \c main()
-    function is very simple: We create a QApplication instance, seed the
-    randomizer using qsrand(), and then create and show an instance of \c
-    GraphWidget. Because all nodes in the grid are moved initially, the \c
-    GraphWidget timer will start immediately after control has returned to the
-    event loop.
+    function is very simple: We create a QApplication instance, then create and
+    show an instance of \c GraphWidget. Because all nodes in the grid are moved
+    initially, the \c GraphWidget timer will start immediately after control
+    has returned to the event loop.
 */

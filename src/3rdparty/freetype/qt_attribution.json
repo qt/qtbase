@@ -1,13 +1,56 @@
-{
-    "Id": "freetype",
-    "Name": "Freetype 2",
-    "QDocModule": "qtgui",
-    "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+[
+    {
+        "Id": "freetype",
+        "Name": "Freetype 2",
+        "QDocModule": "qtgui",
+        "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
 
-    "Description": "FreeType is a freely available software library to render fonts.",
-    "Homepage": "http://www.freetype.org",
-    "License": "Freetype Project License or GNU General Public License v2.0 only",
-    "LicenseId": "FTL or GPL-2.0",
-    "LicenseFile": "docs/LICENSE.TXT",
-    "Copyright": "Copyright 2006-2015 by David Turner, Robert Wilhelm, and Werner Lemberg."
-}
+        "Description": "FreeType is a freely available software library to render fonts.",
+        "Homepage": "http://www.freetype.org",
+        "License": "Freetype Project License or GNU General Public License v2.0 only",
+        "LicenseId": "FTL OR GPL-2.0",
+        "LicenseFile": "LICENSE.TXT",
+        "Copyright": "Copyright 2006-2015 by David Turner, Robert Wilhelm, and Werner Lemberg."
+    },
+    {
+        "Id": "freetype-zlib",
+        "Name": "Freetype 2 - zlib",
+        "QDocModule": "qtgui",
+        "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+
+        "Description": "FreeType is a freely available software library to render fonts.",
+        "Homepage": "http://www.freetype.org",
+        "License": "zlib License",
+        "LicenseId": "Zlib",
+        "LicenseFile": "ZLIB-LICENSE.TXT",
+        "Copyright": "Copyright (C) 1995-2002 Jean-loup Gailly and Mark Adler"
+    },
+    {
+        "Id": "freetype-bdf",
+        "Name": "Freetype 2 - Bitmap Distribution Format (BDF) support",
+        "QDocModule": "qtgui",
+        "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+
+        "Description": "FreeType is a freely available software library to render fonts.",
+        "Homepage": "http://www.freetype.org",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "BDF-LICENSE.TXT",
+        "Copyright": "Copyright (C) 2001-2002 by Francesco Zappa Nardelli
+Copyright 2000 Computing Research Labs, New Mexico State University
+Copyright 2001-2002, 2011 Francesco Zappa Nardelli"
+    },
+    {
+        "Id": "freetype-pcf",
+        "Name": "Freetype 2 - Portable Compiled Format (PCF) support",
+        "QDocModule": "qtgui",
+        "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+
+        "Description": "FreeType is a freely available software library to render fonts.",
+        "Homepage": "http://www.freetype.org",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "PCF-LICENSE.TXT",
+        "Copyright": "Copyright (C) 2000 by Francesco Zappa Nardelli"
+    }
+]

@@ -13,7 +13,4 @@ RESOURCES += ../qnetworkreply.qrc
 TESTDATA += ../empty ../rfc3252.txt ../resource ../bigfile ../*.jpg ../certs \
             ../index.html ../smb-file.txt
 
-qtConfig(xcb): CONFIG+=insignificant_test  # unstable, QTBUG-21102
-win32:CONFIG += insignificant_test # QTBUG-24226
-
 !winrt: TEST_HELPER_INSTALLS = ../echo/echo

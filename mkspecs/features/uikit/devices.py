@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/python
 
 #############################################################################
 ##
@@ -39,18 +39,44 @@
 ##
 #############################################################################
 
-$output = `xcrun simctl list devices --json 2>&1`;
-$output =~ s/\n//g;
+from __future__ import print_function
 
-BLOCK:
-foreach $block ($output =~ /{.*?}/g) {
-    foreach $filter (@ARGV) {
-        if ($filter =~ /^NOT\s(.*)/) {
-            $block =~ /$1/ && next BLOCK;
-        } else {
-            $block =~ /$filter/ || next BLOCK;
-        }
-    }
-    $block =~ /udid[:|\s|\"]+(.*)\"/;
-    print "$1\n";
-}
+import argparse
+import json
+import subprocess
+from distutils.version import StrictVersion
+
+def is_suitable_runtime(runtimes, runtime_name, platform, min_version):
+    for runtime in runtimes:
+        identifier = runtime["identifier"]
+        if (runtime["name"] == runtime_name or identifier == runtime_name) \
+            and "unavailable" not in runtime["availability"] \
+            and identifier.startswith("com.apple.CoreSimulator.SimRuntime.{}".format(platform)) \
+            and StrictVersion(runtime["version"]) >= min_version:
+            return True
+    return False
+
+def simctl_runtimes():
+    return json.loads(subprocess.check_output(
+        ["/usr/bin/xcrun", "simctl", "list", "runtimes", "--json"]))["runtimes"]
+
+def simctl_devices():
+    return json.loads(subprocess.check_output(
+        ["/usr/bin/xcrun", "simctl", "list", "devices", "--json"]))["devices"]
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--platform', choices=['iOS', 'tvOS', 'watchOS'], required=True)
+    parser.add_argument('--minimum-deployment-target', type=StrictVersion, default='0.0')
+    parser.add_argument('--state',
+        choices=['booted', 'shutdown', 'creating', 'booting', 'shutting-down'], action='append')
+    args = parser.parse_args()
+
+    runtimes = simctl_runtimes()
+    device_dict = simctl_devices()
+    for runtime_name in device_dict:
+        if is_suitable_runtime(runtimes, runtime_name, args.platform, args.minimum_deployment_target):
+            for device in device_dict[runtime_name]:
+                if "unavailable" not in device["availability"] \
+                    and (args.state is None or device["state"].lower() in args.state):
+                    print(device["udid"])

@@ -65,8 +65,7 @@ DiagramItem::DiagramItem(DiagramType diagramType, QGraphicsItem *item)
         setPolygon(trianglePolygon);
     }
 
-    QColor color(static_cast<int>(qrand()) % 256,
-        static_cast<int>(qrand()) % 256, static_cast<int>(qrand()) % 256);
+    QColor color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256));
     QBrush brush(color);
     setBrush(brush);
     setFlag(QGraphicsItem::ItemIsSelectable);

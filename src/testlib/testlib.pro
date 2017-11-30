@@ -37,7 +37,8 @@ HEADERS = qbenchmark.h \
     qtestspontaneevent.h \
     qtestsystem.h \
     qtesttouch.h \
-    qtestblacklist_p.h
+    qtestblacklist_p.h \
+    qtesthelpers_p.h
 
 SOURCES = qtestcase.cpp \
     qtestlog.cpp \

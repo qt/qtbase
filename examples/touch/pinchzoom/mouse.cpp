@@ -52,6 +52,7 @@
 
 #include <QGraphicsScene>
 #include <QPainter>
+#include <QRandomGenerator>
 #include <QStyleOption>
 #include <qmath.h>
 
@@ -70,9 +71,9 @@ static qreal normalizeAngle(qreal angle)
 //! [0]
 Mouse::Mouse()
     : angle(0), speed(0), mouseEyeDirection(0),
-      color(qrand() % 256, qrand() % 256, qrand() % 256)
+      color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256))
 {
-    setTransform(QTransform().rotate(qrand() % (360 * 16)), true);
+    setTransform(QTransform().rotate(QRandomGenerator::global()->bounded(360 * 16)), true);
     startTimer(1000 / 33);
 }
 //! [0]
@@ -184,16 +185,16 @@ void Mouse::timerEvent(QTimerEvent *)
 
     // Add some random movement
 //! [10]
-    if (dangerMice.size() > 1 && (qrand() % 10) == 0) {
-        if (qrand() % 1)
-            angle += (qrand() % 100) / 500.0;
+    if (dangerMice.size() > 1 && QRandomGenerator::global()->bounded(10) == 0) {
+        if (QRandomGenerator::global()->bounded(1))
+            angle += QRandomGenerator::global()->bounded(1 / 500.0);
         else
-            angle -= (qrand() % 100) / 500.0;
+            angle -= QRandomGenerator::global()->bounded(1 / 500.0);
     }
 //! [10]
 
 //! [11]
-    speed += (-50 + qrand() % 100) / 100.0;
+    speed += (-50 + QRandomGenerator::global()->bounded(100)) / 100.0;
 
     qreal dx = ::sin(angle) * 10;
     mouseEyeDirection = (qAbs(dx / 5) < 1) ? 0 : dx / 5;

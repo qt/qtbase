@@ -83,7 +83,7 @@ namespace QTest
  */
 template<> inline char *toString(const QColor &color)
 {
-    return qstrdup(color.name().toLocal8Bit().constData());
+    return qstrdup(color.name(QColor::HexArgb).toLocal8Bit().constData());
 }
 
 template<> inline char *toString(const QRegion &region)

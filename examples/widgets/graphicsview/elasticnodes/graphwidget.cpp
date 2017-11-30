@@ -55,6 +55,7 @@
 #include <math.h>
 
 #include <QKeyEvent>
+#include <QRandomGenerator>
 
 //! [0]
 GraphWidget::GraphWidget(QWidget *parent)
@@ -247,7 +248,7 @@ void GraphWidget::shuffle()
 {
     foreach (QGraphicsItem *item, scene()->items()) {
         if (qgraphicsitem_cast<Node *>(item))
-            item->setPos(-150 + qrand() % 300, -150 + qrand() % 300);
+            item->setPos(-150 + QRandomGenerator::global()->bounded(300), -150 + QRandomGenerator::global()->bounded(300));
     }
 }
 

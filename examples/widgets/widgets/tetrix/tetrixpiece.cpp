@@ -57,7 +57,7 @@
 //! [0]
 void TetrixPiece::setRandomShape()
 {
-    setShape(TetrixShape(qrand() % 7 + 1));
+    setShape(TetrixShape(QRandomGenerator::global()->bounded(7) + 1));
 }
 //! [0]
 

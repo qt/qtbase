@@ -52,6 +52,7 @@
 #include <QUndoStack>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QRandomGenerator>
 #include <QTextStream>
 #include <QToolButton>
 #include "document.h"
@@ -321,7 +322,7 @@ void MainWindow::newDocument()
 
 static QColor randomColor()
 {
-    int r = (int) (3.0*(rand()/(RAND_MAX + 1.0)));
+    int r = QRandomGenerator::global()->bounded(3);
     switch (r) {
         case 0:
             return Qt::red;
@@ -337,10 +338,10 @@ static QRect randomRect(const QSize &s)
 {
     QSize min = Shape::minSize;
 
-    int left = (int) ((0.0 + s.width() - min.width())*(rand()/(RAND_MAX + 1.0)));
-    int top = (int) ((0.0 + s.height() - min.height())*(rand()/(RAND_MAX + 1.0)));
-    int width = (int) ((0.0 + s.width() - left - min.width())*(rand()/(RAND_MAX + 1.0))) + min.width();
-    int height = (int) ((0.0 + s.height() - top - min.height())*(rand()/(RAND_MAX + 1.0))) + min.height();
+    int left = (int) ((0.0 + s.width() - min.width())*(QRandomGenerator::global()->bounded(1.0)));
+    int top = (int) ((0.0 + s.height() - min.height())*(QRandomGenerator::global()->bounded(1.0)));
+    int width = (int) ((0.0 + s.width() - left - min.width())*(QRandomGenerator::global()->bounded(1.0))) + min.width();
+    int height = (int) ((0.0 + s.height() - top - min.height())*(QRandomGenerator::global()->bounded(1.0))) + min.height();
 
     return QRect(left, top, width, height);
 }

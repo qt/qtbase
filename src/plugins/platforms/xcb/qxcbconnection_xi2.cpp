@@ -249,7 +249,7 @@ void QXcbConnection::xi2SetupDevice(void *info, bool removeExisting)
         isTablet = true;
         tabletData.pointerType = QTabletEvent::Eraser;
         dbgType = QLatin1String("eraser");
-    } else if (name.contains("cursor")) {
+    } else if (name.contains("cursor") && !(name.contains("cursor controls") && name.contains("trackball"))) {
         isTablet = true;
         tabletData.pointerType = QTabletEvent::Cursor;
         dbgType = QLatin1String("cursor");

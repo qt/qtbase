@@ -1037,6 +1037,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
 {
     sectionIsPresent &= ~Authority;
     sectionIsPresent |= Host;
+    port = -1;
 
     // we never actually _loop_
     while (from != end) {
@@ -1061,10 +1062,8 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
             }
         }
 
-        if (colonIndex == end - 1) {
-            // found a colon but no digits after it
-            port = -1;
-        } else if (uint(colonIndex) < uint(end)) {
+        if (uint(colonIndex) < uint(end) - 1) {
+            // found a colon with digits after it
             unsigned long x = 0;
             for (int i = colonIndex + 1; i < end; ++i) {
                 ushort c = auth.at(i).unicode();
@@ -1083,8 +1082,6 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
                 if (mode == QUrl::StrictMode)
                     break;
             }
-        } else {
-            port = -1;
         }
 
         setHost(auth, from, qMin<uint>(end, colonIndex), mode);
@@ -1644,8 +1641,7 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *p
     if (path.isEmpty())
         return NoError;
     if (path.at(0) == QLatin1Char('/')) {
-        if (sectionIsPresent & QUrlPrivate::Authority || port != -1 ||
-                path.length() == 1 || path.at(1) != QLatin1Char('/'))
+        if (hasAuthority() || path.length() == 1 || path.at(1) != QLatin1Char('/'))
             return NoError;
         if (source) {
             *source = path;
@@ -2474,6 +2470,8 @@ void QUrl::setPort(int port)
     }
 
     d->port = port;
+    if (port != -1)
+        d->sectionIsPresent |= QUrlPrivate::Host;
 }
 
 /*!

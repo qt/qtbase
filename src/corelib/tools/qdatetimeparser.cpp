@@ -1090,7 +1090,6 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
     int dayofweek = defaultDate.dayOfWeek();
     Qt::TimeSpec tspec = defaultValue.timeSpec();
     int zoneOffset = 0; // In seconds; local - UTC
-    QString zoneName;
     QTimeZone timeZone;
     switch (tspec) {
     case Qt::OffsetFromUTC: // timeZone is ignored

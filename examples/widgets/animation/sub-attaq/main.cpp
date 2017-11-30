@@ -57,8 +57,6 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     Q_INIT_RESOURCE(subattaq);
 
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-
     MainWindow w;
     w.show();
 

@@ -1048,7 +1048,7 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
     QFragmentFindHelper helper(origCellPosition, p->fragmentMap());
     const auto begin = d->cells.cbegin();
     const auto it = std::lower_bound(begin, d->cells.cend(), helper);
-    Q_ASSERT(it != d->cells.end());
+    Q_ASSERT(it != d->cells.cend());
     Q_ASSERT(!(helper < *it));
     Q_ASSERT(*it == cellFragment);
     const int insertCellIndex = it - begin;
@@ -1082,7 +1082,7 @@ void QTextTable::mergeCells(int row, int column, int numRows, int numCols)
                 QFragmentFindHelper helper(pos, p->fragmentMap());
                 const auto begin = d->cells.cbegin();
                 const auto it = std::lower_bound(begin, d->cells.cend(), helper);
-                Q_ASSERT(it != d->cells.end());
+                Q_ASSERT(it != d->cells.cend());
                 Q_ASSERT(!(helper < *it));
                 Q_ASSERT(*it == fragment);
                 firstCellIndex = cellIndex = it - begin;

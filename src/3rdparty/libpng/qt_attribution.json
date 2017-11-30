@@ -6,7 +6,7 @@
 
     "Description": "libpng is the official PNG reference library.",
     "Homepage": "http://www.libpng.org/pub/png/libpng.html",
-    "Version": "1.6.32",
+    "Version": "1.6.34",
     "License": "libpng License",
     "LicenseId": "Libpng",
     "LicenseFile": "LICENSE",

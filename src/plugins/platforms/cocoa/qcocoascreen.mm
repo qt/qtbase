@@ -288,4 +288,22 @@ QRectF QCocoaScreen::mapFromNative(CGRect rect, QCocoaScreen *screen)
     return qt_mac_flip(QRectF::fromCGRect(rect), screen->geometry());
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QCocoaScreen *screen)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QCocoaScreen(" << (const void *)screen;
+    if (screen) {
+        debug << ", index=" << screen->m_screenIndex;
+        debug << ", native=" << screen->nativeScreen();
+        debug << ", geometry=" << screen->geometry();
+        debug << ", dpr=" << screen->devicePixelRatio();
+        debug << ", name=" << screen->name();
+    }
+    debug << ')';
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
+
 QT_END_NAMESPACE

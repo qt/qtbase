@@ -992,7 +992,9 @@ void QWindowsNativeFileDialogBase::setMode(QFileDialogOptions::FileMode mode,
         break;
     case QFileDialogOptions::Directory:
     case QFileDialogOptions::DirectoryOnly:
-        flags |= FOS_PICKFOLDERS | FOS_FILEMUSTEXIST;
+        // QTBUG-63645: Restrict to file system items, as Qt cannot deal with
+        // places like 'Network', etc.
+        flags |= FOS_PICKFOLDERS | FOS_FILEMUSTEXIST | FOS_FORCEFILESYSTEM;
         break;
     case QFileDialogOptions::ExistingFiles:
         flags |= FOS_FILEMUSTEXIST | FOS_ALLOWMULTISELECT;
@@ -1201,6 +1203,8 @@ void QWindowsNativeFileDialogBase::onSelectionChange()
 {
     const QList<QUrl> current = selectedFiles();
     m_data.setSelectedFiles(current);
+    qDebug() << __FUNCTION__ << current << current.size();
+
     if (current.size() == 1)
         emit currentChanged(current.front());
 }
@@ -1397,7 +1401,7 @@ QList<QUrl> QWindowsNativeOpenFileDialog::dialogResult() const
         for (IShellItem *item : QWindowsShellItem::itemsFromItemArray(items)) {
             QWindowsShellItem qItem(item);
             const QString path = qItem.path();
-            if (path.isEmpty()) {
+            if (path.isEmpty() && !qItem.isDir()) {
                 const QString temporaryCopy = createTemporaryItemCopy(qItem);
                 if (temporaryCopy.isEmpty())
                     qWarning() << "Unable to create a local copy of" << qItem;

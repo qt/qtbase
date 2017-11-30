@@ -146,7 +146,7 @@ private slots:
     void batchExec();
     void QTBUG_43874_data() { generic_data(); }
     void QTBUG_43874();
-    void oraArrayBind_data() { generic_data(); }
+    void oraArrayBind_data() { generic_data("QOCI"); }
     void oraArrayBind();
     void lastInsertId_data() { generic_data(); }
     void lastInsertId();

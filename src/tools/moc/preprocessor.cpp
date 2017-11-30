@@ -992,7 +992,7 @@ static void mergeStringLiterals(Symbols *_symbols)
                 mergeSymbolLexem.reserve(literalsLength);
                 mergeSymbolLexem.append('"');
                 mergeSymbolLexem.append(mergeSymbolOriginalLexem);
-                for (Symbols::const_iterator j = mergeSymbol + 1; j != i; ++j)
+                for (Symbols::iterator j = mergeSymbol + 1; j != i; ++j)
                     mergeSymbolLexem.append(j->lex.constData() + j->from + 1, j->len - 2); // append j->unquotedLexem()
                 mergeSymbolLexem.append('"');
                 mergeSymbol->len = mergeSymbol->lex.length();

@@ -35,6 +35,7 @@
 #include <qpolygon.h>
 #include <qdebug.h>
 #include <qpainter.h>
+#include <qrandom.h>
 
 #include <math.h>
 
@@ -423,8 +424,8 @@ void tst_QPathClipper::clip()
 
 static inline QPointF randomPointInRect(const QRectF &rect)
 {
-    qreal rx = qrand() / (RAND_MAX + 1.);
-    qreal ry = qrand() / (RAND_MAX + 1.);
+    qreal rx = QRandomGenerator::global()->bounded(1.0);
+    qreal ry = QRandomGenerator::global()->bounded(1.0);
 
     return QPointF(rect.left() + rx * rect.width(),
                    rect.top() + ry * rect.height());

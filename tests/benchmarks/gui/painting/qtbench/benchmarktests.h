@@ -37,6 +37,7 @@
 #include <QDebug>
 #include <QStaticText>
 #include <QPainter>
+#include <QRandomGenerator>
 
 class Benchmark
 {
@@ -47,9 +48,9 @@ public:
             : m_size(size)
     {
         for (int i=0; i<16; ++i) {
-            m_colors[i] = QColor::fromRgbF((rand() % 4) / 3.0,
-                                           (rand() % 4) / 3.0,
-                                           (rand() % 4) / 3.0,
+            m_colors[i] = QColor::fromRgbF((QRandomGenerator::global()->bounded(4)) / 3.0,
+                                           (QRandomGenerator::global()->bounded(4)) / 3.0,
+                                           (QRandomGenerator::global()->bounded(4)) / 3.0,
                                            1);
         }
     }
@@ -142,7 +143,7 @@ public:
     ImageFillRectBenchmark(int size)
         : Benchmark(QSize(size, size))
     {
-        int s = rand() % 24 + 8;
+        int s = QRandomGenerator::global()->bounded(24) + 8;
         m_content = QImage(s, s, QImage::Format_ARGB32_Premultiplied);
         QPainter p(&m_content);
         p.fillRect(0, 0, s, s, Qt::white);

@@ -48,6 +48,22 @@ QT_FORWARD_DECLARE_CLASS(QMainWindow)
 
 #include <qmenubar.h>
 
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
+
+// Helper to calculate the action position in window coordinates
+static inline QPoint widgetToWindowPos(const QWidget *w, const QPoint &pos)
+{
+    const QWindow *window = w->window()->windowHandle();
+    Q_ASSERT(window);
+    return window->mapFromGlobal(w->mapToGlobal(pos));
+}
+
+static QPoint menuBarActionWindowPos(const QMenuBar *mb, QAction *a)
+{
+    return widgetToWindowPos(mb, mb->actionGeometry(a).center());
+}
 
 class Menu : public QMenu
 {
@@ -60,12 +76,6 @@ class Menu : public QMenu
                 addAction("action2");
             }
 };
-
-static inline void centerOnScreen(QWidget *w)
-{
-    const QPoint offset = QPoint(w->width() / 2, w->height() / 2);
-    w->move(QGuiApplication::primaryScreen()->availableGeometry().center() - offset);
-}
 
 struct TestMenu
 {
@@ -621,6 +631,9 @@ void tst_QMenuBar::check_accelKeys()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys1()
 {
+    if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
+        QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -655,6 +668,9 @@ void tst_QMenuBar::check_cursorKeys1()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys2()
 {
+    if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
+        QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -688,6 +704,9 @@ void tst_QMenuBar::check_cursorKeys2()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_cursorKeys3()
 {
+    if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
+        QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -719,9 +738,7 @@ void tst_QMenuBar::taskQTBUG56860_focus()
 #endif
     QMainWindow w;
     QMenuBar *mb = w.menuBar();
-
-    if (mb->platformMenuBar())
-        QSKIP("This test requires the Qt menubar.");
+    mb->setNativeMenuBar(false);
 
     QMenu *em = mb->addMenu("&Edit");
     em->setObjectName("EditMenu");
@@ -765,8 +782,7 @@ void tst_QMenuBar::check_homeKey()
 {
     // I'm temporarily shutting up this testcase.
     // Seems like the behaviour i'm expecting isn't ok.
-    QVERIFY( true );
-    return;
+    QSKIP("This test has been \"temporarily\" disabled at least since 2009 :)");
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to a Home key", Abort );
 
@@ -807,8 +823,7 @@ void tst_QMenuBar::check_endKey()
 {
     // I'm temporarily silenting this testcase.
     // Seems like the behaviour i'm expecting isn't ok.
-    QVERIFY( true );
-    return;
+    QSKIP("This test has been \"temporarily\" disabled at least since 2009 :)");
 
     QEXPECT_FAIL( "0", "Popupmenu should respond to an End key", Abort );
 
@@ -1198,21 +1213,19 @@ void tst_QMenuBar::check_menuPosition()
         menu.close();
     }
 
-#  ifndef QT_NO_CURSOR
     // QTBUG-28031: Click at bottom-right corner.
     {
         w.move(400, 200);
         LayoutDirectionSaver directionSaver(Qt::RightToLeft);
         QMenuBar *mb = w.menuBar();
-        const QPoint localPos = mb->actionGeometry(menu.menuAction()).bottomRight() - QPoint(1, 1);
-        const QPoint globalPos = mb->mapToGlobal(localPos);
-        QCursor::setPos(globalPos);
-        QTest::mouseClick(mb, Qt::LeftButton, 0, localPos);
+        const QPoint bottomRight = mb->actionGeometry(menu.menuAction()).bottomRight() - QPoint(1, 1);
+        const QPoint localPos = widgetToWindowPos(mb, bottomRight);
+        const QPoint globalPos = w.mapToGlobal(localPos);
+        QTest::mouseClick(w.windowHandle(), Qt::LeftButton, 0, localPos);
         QTRY_VERIFY(menu.isActiveWindow());
         QCOMPARE(menu.geometry().right() - 1, globalPos.x());
         menu.close();
     }
-#  endif // QT_NO_CURSOR
 }
 #endif
 
@@ -1250,10 +1263,8 @@ void tst_QMenuBar::task223138_triggered()
 
 void tst_QMenuBar::task256322_highlight()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)
-        || !QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)) {
-        QSKIP("Highlighting does not work correctly for minimal/offscreen platforms");
-    }
+    if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive))
+        QSKIP("Highlighting does not work correctly for minimal platform");
 
     QMainWindow win;
     win.menuBar()->setNativeMenuBar(false);  //we can't check the geometry of native menubars
@@ -1270,31 +1281,26 @@ void tst_QMenuBar::task256322_highlight()
     QApplication::setActiveWindow(&win);
     QVERIFY(QTest::qWaitForWindowActive(&win));
 
-    QTest::mousePress(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
-    QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file).center());
-    QTest::mouseRelease(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
+    const QPoint filePos = menuBarActionWindowPos(win.menuBar(), file);
+    QWindow *window = win.windowHandle();
+    QTest::mousePress(window, Qt::LeftButton, 0, filePos);
+    QTest::mouseMove(window, filePos);
+    QTest::mouseRelease(window, Qt::LeftButton, 0, filePos);
     QTRY_VERIFY(menu.isVisible());
     QVERIFY(!menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file);
 
-    QTest::mousePress(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file2).center());
-    QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file2).center());
+    const QPoint file2Pos = menuBarActionWindowPos(win.menuBar(), file2);
+    QTest::mouseMove(window, file2Pos);
     QTRY_VERIFY(!menu.isVisible());
-    QVERIFY(menu2.isVisible());
+    QTRY_VERIFY(menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file2);
-    QTest::mouseRelease(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file2).center());
 
-    QPoint nothingCenter = win.menuBar()->actionGeometry(nothing).center();
-    QTest::mousePress(win.menuBar(), Qt::LeftButton, 0, nothingCenter);
-    QTest::mouseMove(win.menuBar(), nothingCenter);
+    QPoint nothingCenter = menuBarActionWindowPos(win.menuBar(), nothing);
+    QTest::mouseMove(window, nothingCenter);
     QTRY_VERIFY(!menu2.isVisible());
     QVERIFY(!menu.isVisible());
-#ifdef Q_OS_MAC
-    if (win.menuBar()->activeAction() != nothing)
-        QEXPECT_FAIL("", "QTBUG-30565: Unstable test", Continue);
-#endif
     QTRY_COMPARE(win.menuBar()->activeAction(), nothing);
-    QTest::mouseRelease(win.menuBar(), Qt::LeftButton, 0, nothingCenter);
 }
 
 void tst_QMenuBar::menubarSizeHint()
@@ -1431,9 +1437,6 @@ void tst_QMenuBar::closeOnSecondClickAndOpenOnThirdClick() // QTBUG-32807, menu 
     QMainWindow mainWindow;
     mainWindow.resize(300, 200);
     centerOnScreen(&mainWindow);
-#ifndef QT_NO_CURSOR
-    QCursor::setPos(mainWindow.geometry().topLeft() - QPoint(100, 0));
-#endif
     QMenuBar *menuBar = mainWindow.menuBar();
     menuBar->setNativeMenuBar(false);
     QMenu *fileMenu = menuBar->addMenu(QStringLiteral("OpenCloseOpen"));
@@ -1441,14 +1444,17 @@ void tst_QMenuBar::closeOnSecondClickAndOpenOnThirdClick() // QTBUG-32807, menu 
     mainWindow.show();
     QApplication::setActiveWindow(&mainWindow);
     QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
-    const QPoint center = menuBar->actionGeometry(fileMenu->menuAction()).center();
-    const QPoint globalPos = menuBar->mapToGlobal(center);
-    QTest::mouseMove(menuBar, center);
-    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+
+    const QPoint center = menuBarActionWindowPos(mainWindow.menuBar(), fileMenu->menuAction());
+    const QPoint globalPos = mainWindow.mapToGlobal(center);
+
+    QWindow *window = mainWindow.windowHandle();
+    QTest::mouseMove(window, center);
+    QTest::mouseClick(window, Qt::LeftButton, 0, center);
     QTRY_VERIFY(fileMenu->isVisible());
-    QTest::mouseClick(fileMenu, Qt::LeftButton, 0, fileMenu->mapFromGlobal(globalPos));
+    QTest::mouseClick(window, Qt::LeftButton, 0, fileMenu->mapFromGlobal(globalPos));
     QTRY_VERIFY(!fileMenu->isVisible());
-    QTest::mouseClick(menuBar, Qt::LeftButton, 0, center);
+    QTest::mouseClick(window, Qt::LeftButton, 0, center);
     QTRY_VERIFY(fileMenu->isVisible());
 }
 

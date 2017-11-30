@@ -41,19 +41,15 @@
 #include <QStyleFactory>
 #include <QSharedPointer>
 
+#include <QtTest/private/qtesthelpers_p.h>
+
+using namespace QTestPrivate;
+
 #include <qformlayout.h>
 
 // ItemRole has enumerators for numerical values 0..2, thus the only
 // valid numerical values for storing into an ItemRole variable are 0..3:
 Q_CONSTEXPR QFormLayout::ItemRole invalidRole = QFormLayout::ItemRole(3);
-
-static inline void setFrameless(QWidget *w)
-{
-    Qt::WindowFlags flags = w->windowFlags();
-    flags |= Qt::FramelessWindowHint;
-    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
-    w->setWindowFlags(flags);
-}
 
 struct QFormLayoutTakeRowResultHolder {
     QFormLayoutTakeRowResultHolder(QFormLayout::TakeRowResult result) Q_DECL_NOTHROW

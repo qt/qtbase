@@ -60,8 +60,9 @@ QT_BEGIN_NAMESPACE
 
 class QCocoaScreen;
 
-class QCocoaIntegration : public QPlatformIntegration
+class QCocoaIntegration : public QObject, public QPlatformIntegration
 {
+    Q_OBJECT
 public:
     enum Option {
         UseFreeTypeFontEngine = 0x1
@@ -119,6 +120,9 @@ public:
     void setApplicationIcon(const QIcon &icon) const override;
 
     void beep() const override;
+
+private Q_SLOTS:
+    void focusWindowChanged(QWindow *);
 
 private:
     static QCocoaIntegration *mInstance;
