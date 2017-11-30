@@ -215,7 +215,7 @@ public:
     const uchar *constBits() const;
 
 #if QT_DEPRECATED_SINCE(5, 10)
-    QT_DEPRECATED int byteCount() const;
+    QT_DEPRECATED_X("Use sizeInBytes") int byteCount() const;
 #endif
     qssize_t sizeInBytes() const;
 

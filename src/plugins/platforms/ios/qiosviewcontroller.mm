@@ -77,8 +77,7 @@
     if (!(self = [super init]))
         return nil;
 
-    QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-    if (iosIntegration && iosIntegration->debugWindowManagement()) {
+    if (qEnvironmentVariableIntValue("QT_IOS_DEBUG_WINDOW_MANAGEMENT")) {
         static UIImage *gridPattern = nil;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{

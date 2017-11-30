@@ -31,4 +31,6 @@
     \ingroup examples-widgets
     \brief The Validators example shows the signal emission behavior of input
     validators.
+
+    \borderedimage validators.png
 */

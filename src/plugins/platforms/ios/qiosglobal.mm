@@ -44,7 +44,9 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
 Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
+Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
 
 bool isQtApplication()
 {

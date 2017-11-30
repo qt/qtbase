@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Kevin Funk <kevin.funk@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -26,22 +26,18 @@
 **
 ****************************************************************************/
 
-#ifndef MENURAMAAPPLICATION_H
-#define MENURAMAAPPLICATION_H
+#include "mywidget.h"
+#include "ui_mywidget.h"
 
-#include <QtWidgets>
-
-#define menuApp (static_cast<MenuramaApplication *>(QCoreApplication::instance()))
-
-class MenuramaApplication : public QApplication
+MyWidget::MyWidget(QWidget *parent)
+    : QWidget(parent)
 {
-public:
-    MenuramaApplication(int &argc, char **argv);
-    void addDynMenu(QLatin1String title, QMenu *parentMenu);
-    QAction *findAction(QLatin1String title, QMenu *parentMenu);
+    emit someSignal();
+}
 
-public slots:
-    void populateMenu(QMenu *menu, bool clear);
-};
-
-#endif // MENURAMAAPPLICATION_H
+int main(int argc, char **argv)
+{
+    QApplication app(argc, argv);
+    MyWidget myWidget;
+    return 0;
+}

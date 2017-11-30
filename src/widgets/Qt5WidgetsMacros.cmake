@@ -59,6 +59,9 @@ function(QT5_WRAP_UI outfiles )
           COMMAND ${Qt5Widgets_UIC_EXECUTABLE}
           ARGS ${ui_options} -o ${outfile} ${infile}
           MAIN_DEPENDENCY ${infile} VERBATIM)
+        set_source_files_properties(${infile} PROPERTIES SKIP_AUTOUIC ON)
+        set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
+        set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
         list(APPEND ${outfiles} ${outfile})
     endforeach()
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)

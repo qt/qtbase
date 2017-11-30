@@ -77,8 +77,8 @@ XFormView::XFormView(QWidget *parent)
     pts->setBoundingRect(QRectF(0, 0, 500, 500));
     ctrlPoints << QPointF(250, 250) << QPointF(350, 250);
     pts->setPoints(ctrlPoints);
-    connect(pts, SIGNAL(pointsChanged(QPolygonF)),
-            this, SLOT(updateCtrlPoints(QPolygonF)));
+    connect(pts, &HoverPoints::pointsChanged,
+            this,&XFormView::updateCtrlPoints);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
@@ -876,29 +876,29 @@ XFormWidget::XFormWidget(QWidget *parent)
 #endif
     mainGroupLayout->addWidget(whatsThisButton);
 
-    connect(rotateSlider, SIGNAL(valueChanged(int)), view, SLOT(changeRotation(int)));
-    connect(shearSlider, SIGNAL(valueChanged(int)), view, SLOT(changeShear(int)));
-    connect(scaleSlider, SIGNAL(valueChanged(int)), view, SLOT(changeScale(int)));
+    connect(rotateSlider, &QSlider::valueChanged, view, &XFormView::changeRotation);
+    connect(shearSlider, &QSlider::valueChanged, view, &XFormView::changeShear);
+    connect(scaleSlider, &QSlider::valueChanged, view, &XFormView::changeScale);
 
-    connect(vectorType, SIGNAL(clicked()), view, SLOT(setVectorType()));
-    connect(pixmapType, SIGNAL(clicked()), view, SLOT(setPixmapType()));
-    connect(textType, SIGNAL(clicked()), view, SLOT(setTextType()));
-    connect(textType, SIGNAL(toggled(bool)), textEditor, SLOT(setEnabled(bool)));
-    connect(textEditor, SIGNAL(textChanged(QString)), view, SLOT(setText(QString)));
+    connect(vectorType, &QRadioButton::clicked, view, &XFormView::setVectorType);
+    connect(pixmapType, &QRadioButton::clicked, view, &XFormView::setPixmapType);
+    connect(textType, &QRadioButton::clicked, view, &XFormView::setTextType);
+    connect(textType, &QRadioButton::toggled, textEditor, &XFormView::setEnabled);
+    connect(textEditor, &QLineEdit::textChanged, view, &XFormView::setText);
 
-    connect(view, SIGNAL(rotationChanged(int)), rotateSlider, SLOT(setValue(int)));
-    connect(view, SIGNAL(scaleChanged(int)), scaleSlider, SLOT(setValue(int)));
-    connect(view, SIGNAL(shearChanged(int)), shearSlider, SLOT(setValue(int)));
+    connect(view, &XFormView::rotationChanged, rotateSlider, &QSlider::setValue);
+    connect(view, &XFormView::scaleChanged, scaleSlider, &QAbstractSlider::setValue);
+    connect(view, &XFormView::shearChanged, shearSlider, &QAbstractSlider::setValue);
 
-    connect(resetButton, SIGNAL(clicked()), view, SLOT(reset()));
-    connect(animateButton, SIGNAL(clicked(bool)), view, SLOT(setAnimation(bool)));
-    connect(whatsThisButton, SIGNAL(clicked(bool)), view, SLOT(setDescriptionEnabled(bool)));
-    connect(whatsThisButton, SIGNAL(clicked(bool)), view->hoverPoints(), SLOT(setDisabled(bool)));
-    connect(view, SIGNAL(descriptionEnabledChanged(bool)), view->hoverPoints(), SLOT(setDisabled(bool)));
-    connect(view, SIGNAL(descriptionEnabledChanged(bool)), whatsThisButton, SLOT(setChecked(bool)));
-    connect(showSourceButton, SIGNAL(clicked()), view, SLOT(showSource()));
+    connect(resetButton, &QPushButton::clicked, view, &XFormView::reset);
+    connect(animateButton, &QPushButton::clicked, view, &XFormView::setAnimation);
+    connect(whatsThisButton, &QPushButton::clicked, view, &ArthurFrame::setDescriptionEnabled);
+    connect(whatsThisButton, &QPushButton::clicked, view->hoverPoints(), &HoverPoints::setDisabled);
+    connect(view, &XFormView::descriptionEnabledChanged, view->hoverPoints(), &HoverPoints::setDisabled);
+    connect(view, &XFormView::descriptionEnabledChanged, whatsThisButton, &QPushButton::setChecked);
+    connect(showSourceButton, &QPushButton::clicked, view, &XFormView::showSource);
 #ifdef QT_OPENGL_SUPPORT
-    connect(enableOpenGLButton, SIGNAL(clicked(bool)), view, SLOT(enableOpenGL(bool)));
+    connect(enableOpenGLButton, &QPushButton::clicked, view, &XFormView::enableOpenGL);
 #endif
     view->loadSourceFile(":res/affine/xform.cpp");
     view->loadDescription(":res/affine/xform.html");

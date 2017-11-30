@@ -88,7 +88,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         self.multipleTouchEnabled = YES;
 #endif
 
-        if (QIOSIntegration::instance()->debugWindowManagement()) {
+        if (qEnvironmentVariableIntValue("QT_IOS_DEBUG_WINDOW_MANAGEMENT")) {
             static CGFloat hue = 0.0;
             CGFloat lastHue = hue;
             for (CGFloat diff = 0; diff < 0.1 || diff > 0.9; diff = fabs(hue - lastHue))
@@ -97,7 +97,6 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
             #define colorWithBrightness(br) \
                 [UIColor colorWithHue:hue saturation:0.5 brightness:br alpha:1.0].CGColor
 
-            self.layer.backgroundColor = colorWithBrightness(0.5);
             self.layer.borderColor = colorWithBrightness(1.0);
             self.layer.borderWidth = 1.0;
         }
@@ -163,6 +162,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     QWindow *window = m_qioswindow->window();
     QRect lastReportedGeometry = qt_window_private(window)->geometry;
     QRect currentGeometry = QRectF::fromCGRect(self.frame).toRect();
+    qCDebug(lcQpaWindow) << m_qioswindow->window() << "new geometry is" << currentGeometry;
     QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(window, currentGeometry);
 
     if (currentGeometry.size() != lastReportedGeometry.size()) {
@@ -195,6 +195,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         region = QRect(QPoint(), bounds);
     }
 
+    qCDebug(lcQpaWindow) << m_qioswindow->window() << region << "isExposed" << m_qioswindow->isExposed();
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), region);
 }
 
