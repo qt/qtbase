@@ -135,6 +135,8 @@ QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other) : ref
     connOptions = other.connOptions;
     driver = other.driver;
     precisionPolicy = other.precisionPolicy;
+    if (driver)
+        driver->setNumericalPrecisionPolicy(other.driver->numericalPrecisionPolicy());
 }
 
 QSqlDatabasePrivate::~QSqlDatabasePrivate()
@@ -253,6 +255,8 @@ void QSqlDatabasePrivate::copy(const QSqlDatabasePrivate *other)
     port = other->port;
     connOptions = other->connOptions;
     precisionPolicy = other->precisionPolicy;
+    if (driver)
+        driver->setNumericalPrecisionPolicy(other->driver->numericalPrecisionPolicy());
 }
 
 void QSqlDatabasePrivate::disable()

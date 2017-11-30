@@ -75,6 +75,8 @@ private slots:
     void addDatabase();
     void errorReporting_data();
     void errorReporting();
+    void cloneDatabase_data() { generic_data(); }
+    void cloneDatabase();
 
     //database specific tests
     void recordMySQL_data() { generic_data("QMYSQL"); }
@@ -2284,6 +2286,35 @@ void tst_QSqlDatabase::sqlite_enableRegexp()
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).toString(), QString("a1"));
     QFAIL_SQL(q, next());
+}
+
+void tst_QSqlDatabase::cloneDatabase()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    {
+        QSqlDatabase clonedDatabase = QSqlDatabase::cloneDatabase(db, "clonedDatabase");
+        QCOMPARE(clonedDatabase.databaseName(), db.databaseName());
+        QCOMPARE(clonedDatabase.userName(), db.userName());
+        QCOMPARE(clonedDatabase.password(), db.password());
+        QCOMPARE(clonedDatabase.hostName(), db.hostName());
+        QCOMPARE(clonedDatabase.driverName(), db.driverName());
+        QCOMPARE(clonedDatabase.port(), db.port());
+        QCOMPARE(clonedDatabase.connectOptions(), db.connectOptions());
+        QCOMPARE(clonedDatabase.numericalPrecisionPolicy(), db.numericalPrecisionPolicy());
+    }
+    {
+        // Now double check numericalPrecisionPolicy after changing it since it
+        // is a special case, as changing it can set it on the driver as well as
+        // the database object. When retrieving the numerical precision policy
+        // it may just get it from the driver so we have to check that the
+        // clone has also ensured the copied driver has the correct precision
+        // policy too.
+        db.setNumericalPrecisionPolicy(QSql::LowPrecisionDouble);
+        QSqlDatabase clonedDatabase = QSqlDatabase::cloneDatabase(db, "clonedDatabaseCopy");
+        QCOMPARE(clonedDatabase.numericalPrecisionPolicy(), db.numericalPrecisionPolicy());
+    }
 }
 
 QTEST_MAIN(tst_QSqlDatabase)
