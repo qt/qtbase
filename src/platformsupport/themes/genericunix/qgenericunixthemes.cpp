@@ -112,9 +112,11 @@ static bool isDBusTrayAvailable() {
 #ifndef QT_NO_DBUS
 static bool checkDBusGlobalMenuAvailable()
 {
-    QDBusConnection connection = QDBusConnection::sessionBus();
-    QString registrarService = QStringLiteral("com.canonical.AppMenu.Registrar");
-    return connection.interface()->isServiceRegistered(registrarService);
+    const QDBusConnection connection = QDBusConnection::sessionBus();
+    static const QString registrarService = QStringLiteral("com.canonical.AppMenu.Registrar");
+    if (const auto iface = connection.interface())
+        return iface->isServiceRegistered(registrarService);
+    return false;
 }
 
 static bool isDBusGlobalMenuAvailable()

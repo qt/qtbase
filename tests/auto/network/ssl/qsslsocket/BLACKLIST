@@ -1,6 +1,4 @@
 windows
-[waitForConnectedEncryptedReadyRead:WithSocks5ProxyAuth]
-*
 [protocolServerSide:ssl3-any]
 rhel-7.2
 [protocolServerSide:tls1.0-any]

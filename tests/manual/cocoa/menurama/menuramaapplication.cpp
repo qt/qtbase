@@ -28,7 +28,7 @@
 
 #include "menuramaapplication.h"
 
-MenuramaApplication::MenuramaApplication(int argc, char **argv)
+MenuramaApplication::MenuramaApplication(int &argc, char **argv)
     : QApplication (argc, argv)
 {
 #if 0

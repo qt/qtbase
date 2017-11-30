@@ -47,7 +47,6 @@ namespace QtAndroidClipboard
 {
     QAndroidPlatformClipboard *m_manager = nullptr;
 
-    static char const *const QtNativeClassName = "org/qtproject/qt5/android/QtNative";
     static JNINativeMethod methods[] = {
         {"onClipboardDataChanged", "()V", (void *)onClipboardDataChanged}
     };

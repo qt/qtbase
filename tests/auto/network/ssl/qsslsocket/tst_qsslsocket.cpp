@@ -1601,7 +1601,12 @@ void tst_QSslSocket::waitForConnectedEncryptedReadyRead()
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy && !socket->waitForEncrypted(10000))
         QSKIP("Skipping flaky test - See QTBUG-29941");
-    QVERIFY(socket->waitForReadyRead(10000));
+
+    // We only do this if we have no bytes available to read already because readyRead will
+    // not be emitted again.
+    if (socket->bytesAvailable() == 0)
+        QVERIFY(socket->waitForReadyRead(10000));
+
     QVERIFY(!socket->peerCertificate().isNull());
     QVERIFY(!socket->peerCertificateChain().isEmpty());
 }

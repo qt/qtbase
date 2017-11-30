@@ -82,7 +82,7 @@ Build options:
   -debug-and-release ... Build two versions of Qt, with and without
                          debugging turned on [yes] (Apple and Windows only)
   -optimize-debug ...... Enable debug-friendly optimizations in debug builds
-                         [auto] (Not supported with MSVC)
+                         [auto] (Not supported with MSVC or Clang toolchains)
   -optimize-size ....... Optimize release builds for size instead of speed [no]
   -optimized-tools ..... Build optimized host tools even in debug build [no]
   -force-debug-info .... Create symbol files for release builds [no]

@@ -652,32 +652,6 @@ Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2] = { Q_BASIC_ATOMI
 
 void qDetectCpuFeatures()
 {
-#if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
-# if Q_CC_GNU < 403
-    // GCC 4.2 (at least the one that comes with Apple's XCode, on Mac) is
-    // known to be broken beyond repair in dealing with the inline assembly
-    // above. It will generate bad code that could corrupt important registers
-    // like the PIC register. The behaviour of code after this function would
-    // be totally unpredictable.
-    //
-    // For that reason, simply forego the CPUID check at all and return the set
-    // of features that we found at compile time, through the #defines from the
-    // compiler. This should at least allow code to execute, even if none of
-    // the specialized code found in Qt GUI and elsewhere will ever be enabled
-    // (it's the user's fault for using a broken compiler).
-    //
-    // This also disables the runtime checking that the processor actually
-    // contains all the features that the code required. Qt 4 ran for years
-    // like that, so it shouldn't be a problem.
-
-    qt_cpu_features[0].store(minFeature | quint32(QSimdInitialized));
-#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
-    qt_cpu_features[1].store(minFeature >> 32);
-#endif
-
-    return;
-# endif
-#endif
     quint64 f = detectProcessorFeatures();
     QByteArray disable = qgetenv("QT_NO_CPU_FEATURE");
     if (!disable.isEmpty()) {

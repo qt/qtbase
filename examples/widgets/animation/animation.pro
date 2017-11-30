@@ -2,7 +2,6 @@ TEMPLATE         = \
                  subdirs
 SUBDIRS          += \
                  animatedtiles \
-                 appchooser \
                  easing \
                  moveblocks \
                  states \
