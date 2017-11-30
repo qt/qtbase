@@ -91,8 +91,8 @@ template<> inline char *toString(const QRegion &region)
     } else if (region.isEmpty()) {
         result += "empty";
     } else {
-        const QVector<QRect> &rects = region.rects();
-        const int rectCount = rects.size();
+        const auto rects = region.begin();
+        const int rectCount = region.rectCount();
         if (rectCount > 1) {
             result += QByteArray::number(rectCount);
             result += " rectangles, ";
@@ -100,7 +100,7 @@ template<> inline char *toString(const QRegion &region)
         for (int i = 0; i < rectCount; ++i) {
             if (i)
                 result += ", ";
-            const QRect &r = rects.at(i);
+            const QRect &r = rects[i];
             result += QByteArray::number(r.width());
             result += 'x';
             result += QByteArray::number(r.height());
