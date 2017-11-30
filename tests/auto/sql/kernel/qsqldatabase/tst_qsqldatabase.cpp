@@ -1344,11 +1344,6 @@ void tst_QSqlDatabase::psql_bug249059()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString version=tst_Databases::getPSQLVersion( db );
-    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
-    if (ver < 7.3)
-        QSKIP("Test requires PostgreSQL >= 7.3");
-
     QSqlQuery q(db);
     const QString tableName(qTableName("bug_249059", __FILE__, db));
     QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dt timestamp, t time)").arg(tableName)));
