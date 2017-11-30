@@ -760,10 +760,8 @@ static QRegion scaleRegion(const QRegion &region, qreal factor)
 {
     if (region.isEmpty() || qFuzzyCompare(factor, qreal(1)))
         return region;
-    if (region.rectCount() == 1)
-        return QRegion(scaleRect(QRectF(region.boundingRect()), factor).toRect());
     QRegion result;
-    foreach (const QRect &rect, region.rects())
+    for (const QRect &rect : region)
         result += QRectF(QPointF(rect.topLeft()) * factor, QSizeF(rect.size() * factor)).toRect();
     return result;
 }
