@@ -3782,8 +3782,8 @@ void QClipData::initialize()
                 }
             } else if (hasRegionClip) {
 
-                const QVector<QRect> rects = clipRegion.rects();
-                const int numRects = rects.size();
+                const auto rects = clipRegion.begin();
+                const int numRects = clipRegion.rectCount();
 
                 { // resize
                     const int maxSpans = (ymax - ymin) * numRects;
@@ -3797,8 +3797,8 @@ void QClipData::initialize()
                 int firstInBand = 0;
                 count = 0;
                 while (firstInBand < numRects) {
-                    const int currMinY = rects.at(firstInBand).y();
-                    const int currMaxY = currMinY + rects.at(firstInBand).height();
+                    const int currMinY = rects[firstInBand].y();
+                    const int currMaxY = currMinY + rects[firstInBand].height();
 
                     while (y < currMinY) {
                         m_clipLines[y].spans = 0;
@@ -3807,7 +3807,7 @@ void QClipData::initialize()
                     }
 
                     int lastInBand = firstInBand;
-                    while (lastInBand + 1 < numRects && rects.at(lastInBand+1).top() == y)
+                    while (lastInBand + 1 < numRects && rects[lastInBand+1].top() == y)
                         ++lastInBand;
 
                     while (y < currMaxY) {
@@ -3816,7 +3816,7 @@ void QClipData::initialize()
                         m_clipLines[y].count = lastInBand - firstInBand + 1;
 
                         for (int r = firstInBand; r <= lastInBand; ++r) {
-                            const QRect &currRect = rects.at(r);
+                            const QRect &currRect = rects[r];
                             QSpan *span = m_spans + count;
                             span->x = currRect.x();
                             span->len = currRect.width();

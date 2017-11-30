@@ -447,19 +447,20 @@ QDebug operator<<(QDebug s, const QRegion &r)
     } else if (r.isEmpty()) {
         s << "empty";
     } else {
-        const QVector<QRect> rects = r.rects();
-        const int count = rects.size();
+        const int count = r.rectCount();
         if (count > 1)
             s << "size=" << count << ", bounds=(";
         QtDebugUtils::formatQRect(s, r.boundingRect());
         if (count > 1) {
             s << ") - [";
-            for (int i = 0; i < count; ++i) {
-                if (i)
+            bool first = true;
+            for (const QRect &rect : r) {
+                if (!first)
                     s << ", ";
                 s << '(';
-                QtDebugUtils::formatQRect(s, rects.at(i));
+                QtDebugUtils::formatQRect(s, rect);
                 s << ')';
+                first = false;
             }
             s << ']';
         }

@@ -619,18 +619,17 @@ void QPaintEngineEx::clip(const QRect &r, Qt::ClipOperation op)
 
 void QPaintEngineEx::clip(const QRegion &region, Qt::ClipOperation op)
 {
-    if (region.rectCount() == 1)
-        clip(region.boundingRect(), op);
-
-    QVector<QRect> rects = region.rects();
-    if (rects.size() <= 32) {
+    const auto rectsInRegion = region.rectCount();
+    if (rectsInRegion == 1) {
+        clip(*region.begin(), op);
+    } else if (rectsInRegion <= 32) {
         qreal pts[2*32*4];
         int pos = 0;
-        for (QVector<QRect>::const_iterator i = rects.constBegin(); i != rects.constEnd(); ++i) {
-            qreal x1 = i->x();
-            qreal y1 = i->y();
-            qreal x2 = i->x() + i->width();
-            qreal y2 = i->y() + i->height();
+        for (QRect r : region) {
+            qreal x1 = r.x();
+            qreal y1 = r.y();
+            qreal x2 = r.x() + r.width();
+            qreal y2 = r.y() + r.height();
 
             pts[pos++] = x1;
             pts[pos++] = y1;
@@ -644,19 +643,19 @@ void QPaintEngineEx::clip(const QRegion &region, Qt::ClipOperation op)
             pts[pos++] = x1;
             pts[pos++] = y2;
         }
-        QVectorPath vp(pts, rects.size() * 4, qpaintengineex_rect4_types_32);
+        QVectorPath vp(pts, rectsInRegion * 4, qpaintengineex_rect4_types_32);
         clip(vp, op);
     } else {
-        QVarLengthArray<qreal> pts(rects.size() * 2 * 4);
-        QVarLengthArray<QPainterPath::ElementType> types(rects.size() * 4);
+        QVarLengthArray<qreal> pts(rectsInRegion * 2 * 4);
+        QVarLengthArray<QPainterPath::ElementType> types(rectsInRegion * 4);
         int ppos = 0;
         int tpos = 0;
 
-        for (QVector<QRect>::const_iterator i = rects.constBegin(); i != rects.constEnd(); ++i) {
-            qreal x1 = i->x();
-            qreal y1 = i->y();
-            qreal x2 = i->x() + i->width();
-            qreal y2 = i->y() + i->height();
+        for (QRect r : region) {
+            qreal x1 = r.x();
+            qreal y1 = r.y();
+            qreal x2 = r.x() + r.width();
+            qreal y2 = r.y() + r.height();
 
             pts[ppos++] = x1;
             pts[ppos++] = y1;
@@ -676,7 +675,7 @@ void QPaintEngineEx::clip(const QRegion &region, Qt::ClipOperation op)
             types[tpos++] = QPainterPath::LineToElement;
         }
 
-        QVectorPath vp(pts.data(), rects.size() * 4, types.data());
+        QVectorPath vp(pts.data(), rectsInRegion * 4, types.data());
         clip(vp, op);
     }
 
