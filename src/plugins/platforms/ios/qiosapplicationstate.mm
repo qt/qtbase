@@ -58,6 +58,7 @@ static void qRegisterApplicationStateNotifications()
     // there's no separate notification for moving to UIApplicationStateInactive,
     // so we use UIApplicationWillResignActiveNotification as an intermediate.
     static QMap<NSNotificationName, UIApplicationState> notifications {
+        { UIApplicationWillEnterForegroundNotification, UIApplicationStateInactive },
         { UIApplicationDidBecomeActiveNotification, UIApplicationStateActive },
         { UIApplicationWillResignActiveNotification, UIApplicationStateInactive },
         { UIApplicationDidEnterBackgroundNotification, UIApplicationStateBackground },
