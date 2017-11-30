@@ -3706,7 +3706,7 @@ public:
         gotPaintEvent = true;
 //        qDebug() << "paint" << e->region();
         // Look for a full update, set partial to false if found.
-        foreach(QRect r, e->region().rects()) {
+        for (QRect r : e->region()) {
             partial = (r != rect());
             if (partial == false)
                 break;
@@ -8222,7 +8222,7 @@ public:
         QPainter p(this);
 
         paintedRegion += event->region();
-        foreach(QRect r, event->region().rects())
+        for (const QRect &r : event->region())
             p.fillRect(r, Qt::red);
     }
 
@@ -8733,7 +8733,7 @@ public:
         QPainter p(this);
 
         paintedRegion += event->region();
-        foreach(QRect r, event->region().rects())
+        for (const QRect &r : event->region())
             p.fillRect(r, Qt::red);
     }
 
