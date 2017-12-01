@@ -77,6 +77,7 @@ private slots:
     void psqlSchemaTest();
     void selectAfterUpdate();
     void relationOnFirstColumn();
+    void setRelation();
 
 private:
     void dropTestTables( QSqlDatabase db );
@@ -1548,6 +1549,28 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
     QCOMPARE(model.data(model.index(2, 0)), QVariant("Annala"));
 
     tst_Databases::safeDropTables(db, QStringList() << testTable1 << testTable2);
+}
+
+void tst_QSqlRelationalTableModel::setRelation()
+{
+    QFETCH_GLOBAL(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    recreateTestTables(db);
+
+    QSqlRelationalTableModel model(0, db);
+    model.setTable(reltest1);
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 2)), QVariant(1));
+
+    model.setRelation(2, QSqlRelation(reltest2, "id", "title"));
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 2)), QVariant("herr"));
+
+    // Check that setting an invalid QSqlRelation() clears the relation
+    model.setRelation(2, QSqlRelation());
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.data(model.index(0, 2)), QVariant(1));
 }
 
 QTEST_MAIN(tst_QSqlRelationalTableModel)
