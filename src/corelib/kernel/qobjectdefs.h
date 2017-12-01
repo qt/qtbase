@@ -614,11 +614,9 @@ public:
     operator RestrictedBool() const { return d_ptr && isConnected_helper() ? &Connection::d_ptr : nullptr; }
 #endif
 
-#ifdef Q_COMPILER_RVALUE_REFS
-    inline Connection(Connection &&o) : d_ptr(o.d_ptr) { o.d_ptr = nullptr; }
-    inline Connection &operator=(Connection &&other)
+    Connection(Connection &&o) Q_DECL_NOTHROW : d_ptr(o.d_ptr) { o.d_ptr = nullptr; }
+    Connection &operator=(Connection &&other) Q_DECL_NOTHROW
     { qSwap(d_ptr, other.d_ptr); return *this; }
-#endif
 };
 
 inline const QMetaObject *QMetaObject::superClass() const
