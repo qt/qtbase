@@ -87,6 +87,13 @@ public:
     }
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const Q_DECL_OVERRIDE;
+
+    void processSafeAreaMarginsChanged() override
+    {
+        Q_Q(QWidgetWindow);
+        if (QWidget *widget = q->widget())
+            QWidgetPrivate::get(widget)->updateContentsRect();
+    }
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const

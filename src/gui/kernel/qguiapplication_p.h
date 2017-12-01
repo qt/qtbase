@@ -133,6 +133,8 @@ public:
     static void processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *e);
     static void processWindowScreenChangedEvent(QWindowSystemInterfacePrivate::WindowScreenChangedEvent *e);
 
+    static void processSafeAreaMarginsChangedEvent(QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent *e);
+
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
     static void updateFilteredScreenOrientation(QScreen *screen);

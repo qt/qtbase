@@ -513,6 +513,9 @@ public:
     void setLayoutItemMargins(int left, int top, int right, int bottom);
     void setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt = 0);
 
+    void updateContentsRect();
+    QMargins safeAreaMargins() const;
+
     // aboutToDestroy() is called just before the contents of
     // QWidget::destroy() is executed. It's used to signal QWidget
     // sub-classes that their internals are about to be released.

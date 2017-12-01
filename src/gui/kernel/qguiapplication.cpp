@@ -1759,6 +1759,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::WindowScreenChanged:
         QGuiApplicationPrivate::processWindowScreenChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowScreenChangedEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::SafeAreaMarginsChanged:
+        QGuiApplicationPrivate::processSafeAreaMarginsChangedEvent(static_cast<QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent *>(e));
+        break;
     case QWindowSystemInterfacePrivate::ApplicationStateChanged: {
         QWindowSystemInterfacePrivate::ApplicationStateChangedEvent * changeEvent = static_cast<QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *>(e);
         QGuiApplicationPrivate::setApplicationState(changeEvent->newState, changeEvent->forcePropagate); }
@@ -2210,6 +2213,17 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
             processGeometryChangeEvent(&gce);
         }
     }
+}
+
+void QGuiApplicationPrivate::processSafeAreaMarginsChangedEvent(QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent *wse)
+{
+    if (wse->window.isNull())
+        return;
+
+    // Handle by forwarding directly to QWindowPrivate, instead of sending spontaneous
+    // QEvent like most other functions, as there's no QEvent type for the safe area
+    // change, and we don't want to add one until we know that this is a good API.
+    qt_window_private(wse->window)->processSafeAreaMarginsChanged();
 }
 
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)

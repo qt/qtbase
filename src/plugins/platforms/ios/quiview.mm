@@ -56,6 +56,24 @@
 
 @implementation QUIView
 
++ (void)load
+{
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::IOS, 11)) {
+        // iOS 11 handles this though [UIView safeAreaInsetsDidChange], but there's no signal for
+        // the corresponding top and bottom layout guides that we use on earlier versions. Note
+        // that we use the _will_ change version of the notification, because we want to react
+        // to the change as early was possible. But since the top and bottom layout guides have
+        // not been updated at this point we use asynchronous delivery of the event, so that the
+        // event is processed by QtGui just after iOS has updated the layout margins.
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationWillChangeStatusBarFrameNotification
+            object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *) {
+                for (QWindow *window : QGuiApplication::allWindows())
+                    QWindowSystemInterface::handleSafeAreaMarginsChanged<QWindowSystemInterface::AsynchronousDelivery>(window);
+            }
+        ];
+    }
+}
+
 + (Class)layerClass
 {
     return [CAEAGLLayer class];
@@ -100,6 +118,22 @@
             self.layer.borderColor = colorWithBrightness(1.0);
             self.layer.borderWidth = 1.0;
         }
+
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, 110000, 110000, __WATCHOS_NA)
+        if (qEnvironmentVariableIsSet("QT_IOS_DEBUG_WINDOW_SAFE_AREAS")) {
+            if (__builtin_available(iOS 11, tvOS 11, *)) {
+                UIView *safeAreaOverlay = [[UIView alloc] initWithFrame:CGRectZero];
+                [safeAreaOverlay setBackgroundColor:[UIColor colorWithRed:0.3 green:0.7 blue:0.9 alpha:0.3]];
+                [self addSubview:safeAreaOverlay];
+
+                safeAreaOverlay.translatesAutoresizingMaskIntoConstraints = NO;
+                [safeAreaOverlay.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor].active = YES;
+                [safeAreaOverlay.leftAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leftAnchor].active = YES;
+                [safeAreaOverlay.rightAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.rightAnchor].active = YES;
+                [safeAreaOverlay.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor].active = YES;
+            }
+        }
+#endif
     }
 
     return self;
@@ -201,6 +235,11 @@
 
     qCDebug(lcQpaWindow) << m_qioswindow->window() << region << "isExposed" << m_qioswindow->isExposed();
     QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
+}
+
+- (void)safeAreaInsetsDidChange
+{
+    QWindowSystemInterface::handleSafeAreaMarginsChanged(m_qioswindow->window());
 }
 
 // -------------------------------------------------------------------------
