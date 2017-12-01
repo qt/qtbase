@@ -19,7 +19,13 @@ defineTest(qtCompilerErrror) {
         what = " host"
     else: \
         what = " target"
-    error("Cannot run$$what compiler '$$1'. Maybe you forgot to setup the environment?")
+    msg = \
+        "Cannot run$$what compiler '$$1'. Output:" \
+        "===================" \
+        $$2 \
+        "===================" \
+        "Maybe you forgot to setup the environment?"
+    error($$join(msg, $$escape_expand(\\n)))
 }
 
 cross_compile:host_build: \
@@ -64,7 +70,7 @@ isEmpty($${target_prefix}.INCDIRS) {
             cxx_flags += -E -v
 
         output = $$system("$$cmd_prefix $$QMAKE_CXX $$qtMakeExpand($$cxx_flags) -xc++ - 2>&1 $$cmd_suffix", lines, ec)
-        !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX)
+        !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX, $$output)
 
         rim_qcc {
             for (line, output) {
@@ -124,7 +130,7 @@ isEmpty($${target_prefix}.INCDIRS) {
             # What's more, -print-search-dirs can't be used on clang on Apple because it
             # won't print all the library paths (only the clang-internal ones).
             output = $$system("$$cmd_prefix $$QMAKE_CXX -print-search-dirs", lines, ec)
-            !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX)
+            !equals(ec, 0): qtCompilerErrror($$QMAKE_CXX, $$output)
 
             for (line, output) {
                 contains(line, "^libraries: .*") {
@@ -166,14 +172,14 @@ isEmpty($${target_prefix}.INCDIRS) {
 
 defineReplace(qtVariablesFromMSVC) {
     ret = $$system("$$1 -nologo -E $$2 $$system_quote($$PWD/data/macros.cpp) <NUL 2>NUL", lines, ec)
-    !equals(ec, 0): qtCompilerErrror($$1)
+    !equals(ec, 0): qtCompilerErrror($$1, $$ret)
     return($$ret)
 }
 
 defineReplace(qtVariablesFromGCC) {
     ret = $$system("$$1 -E $$system_quote($$PWD/data/macros.cpp) \
         <$$QMAKE_SYSTEM_NULL_DEVICE 2>$$QMAKE_SYSTEM_NULL_DEVICE", lines, ec)
-    !equals(ec, 0): qtCompilerErrror($$1)
+    !equals(ec, 0): qtCompilerErrror($$1, $$ret)
     return($$ret)
 }
 
