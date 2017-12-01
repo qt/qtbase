@@ -454,6 +454,19 @@
                 { "type": "pkgConfig", "args": "wayland-server" }
             ]
         },
+        "xlib": {
+            "label": "XLib",
+            "test": {
+                "include": "X11/Xlib.h",
+                "main": [
+                    "Display *d = XOpenDisplay(NULL);",
+                    "XCloseDisplay(d);"
+                ]
+            },
+            "sources": [
+                { "type": "makeSpec", "spec": "X11" }
+            ]
+        },
         "x11sm": {
             "label": "X11 session management",
             "sources": [
@@ -626,7 +639,8 @@
             "test": "x11/xrender",
             "sources": [
                 "-lXrender"
-            ]
+            ],
+            "use": "xlib"
         }
     },
 
@@ -913,18 +927,6 @@
             "pkg-config-variable": "prefix",
             "value": "/usr",
             "log": "value"
-        },
-        "xlib": {
-            "label": "XLib",
-            "type": "compile",
-            "test": {
-                "include": "X11/Xlib.h",
-                "main": [
-                    "Display *d = XOpenDisplay(NULL);",
-                    "XCloseDisplay(d);"
-                ],
-                "qmake": "CONFIG += x11"
-            }
         }
      },
 
@@ -1374,7 +1376,7 @@
         "xlib": {
             "label": "XLib",
             "autoDetect": "!config.darwin || features.xcb",
-            "condition": "tests.xlib",
+            "condition": "libs.xlib",
             "output": [ "privateFeature" ]
         },
         "texthtmlparser": {
