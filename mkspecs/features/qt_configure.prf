@@ -604,12 +604,39 @@ defineTest(qtConfLibrary_pkgConfig) {
     qtRunLoggedCommand("$$pkg_config --modversion $$args", version)|return(false)
     qtRunLoggedCommand("$$pkg_config --libs-only-L $$args", libpaths)|return(false)
     qtRunLoggedCommand("$$pkg_config --libs-only-l $$args", libs)|return(false)
-    qtRunLoggedCommand("$$pkg_config --cflags $$args", $${1}.cflags)|return(false)
     version ~= s/[^0-9.].*$//
     $${1}.version = $$first(version)
     export($${1}.version)
     eval($${1}.libs = $$libpaths $$libs)
     export($${1}.libs)
+
+    qtRunLoggedCommand("$$pkg_config --cflags $$args", $${1}.cflags)|return(false)
+    # Split CFLAGS into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
+    # The compound variable is still set in case something wants to use it outside
+    # regular library exports.
+    defines =
+    includes =
+    ignored =
+    eval(cflags = $$eval($${1}.cflags))
+    for (i, cflags) {
+        contains(i, "-I.*") {
+            i ~= s/^-I//
+            includes += $$i
+        } else: contains(i, "-D.*") {
+            i ~= s/^-D//
+            defines += $$i
+        } else {
+            # Sometimes, pkg-config files include other flags
+            # we really don't need and shouldn't add.
+            ignored += $$i
+        }
+    }
+    !isEmpty(ignored): \
+        qtLog("Note: Dropped compiler flags '$$ignored'.")
+    $${1}.defines = $$defines
+    export($${1}.defines)
+    $${1}.includedir = $$includes
+    export($${1}.includedir)
     return(true)
 }
 
@@ -638,9 +665,9 @@ defineReplace(qtConfLibraryArgs) {
     includedir = $$eval($${1}.includedir)
     !isEmpty(includedir): \
         qmake_args += "QMAKE_INCDIR_$${NAME} = $$val_escape(includedir)"
-    cflags = $$eval($${1}.cflags)
-    !isEmpty(cflags): \
-        qmake_args += "QMAKE_CFLAGS += $$cflags" "QMAKE_CXXFLAGS += $$cflags"
+    defines = $$eval($${1}.defines)
+    !isEmpty(defines): \
+        qmake_args += "QMAKE_DEFINES_$${NAME} = $$val_escape(defines)"
     return($$qmake_args)
 }
 
@@ -671,38 +698,17 @@ defineTest(qtConfExportLibrary) {
     !$$qtConfEvaluate($$eval($${spfx}.export)): return()
 
     output = privatePro
-
-    libs = $$eval($${spfx}.libs)
-    includes = $$eval($${spfx}.includedir)
-    eval(cflags = $$eval($${spfx}.cflags))
-
-    # Split $$cflags into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
-    defines =
-    ignored =
-    for (i, cflags) {
-        contains(i, "-I.*") {
-            i ~= s/^-I//
-            includes += $$i
-        } else: contains(i, "-D.*") {
-            i ~= s/^-D//
-            defines += $$i
-        } else {
-            # Sometimes, pkg-config files or *-config scripts include other flags
-            # we really don't need and shouldn't add (pg_config is really bad).
-            ignored += $$i
-        }
-    }
-    !isEmpty(ignored): \
-        qtConfAddNote("Dropped compiler flags '$$ignored' when detecting library '$$name'.")
-
     NAME = $$upper($$name)
     # LIBS is emitted even if empty, as this allows the library to be "seen".
+    libs = $$eval($${spfx}.libs)
     qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
     for (b, $${spfx}.builds._KEYS_) {
         blibs = $$eval($${spfx}.builds.$${b})
         qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), $$blibs)
     }
+    defines = $$eval($${spfx}.defines)
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
+    includes = $$eval($${spfx}.includedir)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
     !isEmpty($${currentConfig}.module): \
         qtConfExtendVar($$output, "QT.$${currentModule}_private.libraries", $$name)
