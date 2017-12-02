@@ -153,6 +153,7 @@ public:
     QAbstractSocket::SocketType socketType;
     QAbstractSocket::SocketState state;
 
+    // Must be kept in sync with QIODevicePrivate::errorString.
     QAbstractSocket::SocketError socketError;
 
     QAbstractSocket::NetworkLayerProtocol preferredNetworkLayerProtocol;
