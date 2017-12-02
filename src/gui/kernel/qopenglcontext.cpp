@@ -975,8 +975,10 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     if (!surface->surfaceHandle())
         return false;
     if (!surface->supportsOpenGL()) {
+#ifndef Q_OS_HTML5 // ### work around the HTML5 platform plugin using QOpenGLContext with raster surfaces.
         qWarning() << "QOpenGLContext::makeCurrent() called with non-opengl surface" << surface;
         return false;
+#endif
     }
 
     QOpenGLContext *previous = QOpenGLContextPrivate::setCurrentContext(this);
