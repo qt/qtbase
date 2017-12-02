@@ -56,17 +56,11 @@ QT_BEGIN_NAMESPACE
 
 QQnxEglWindow::QQnxEglWindow(QWindow *window, screen_context_t context, bool needRootWindow) :
     QQnxWindow(window, context, needRootWindow),
-    m_platformOpenGLContext(0),
     m_newSurfaceRequested(true),
+    m_eglDisplay(EGL_NO_DISPLAY),
     m_eglSurface(EGL_NO_SURFACE)
 {
     initWindow();
-
-    // Set window usage
-    const int val = SCREEN_USAGE_OPENGL_ES2;
-    const int result = screen_set_window_property_iv(nativeHandle(), SCREEN_PROPERTY_USAGE, &val);
-    if (Q_UNLIKELY(result != 0))
-        qFatal("QQnxEglWindow: failed to set window alpha usage, errno=%d", errno);
 
     m_requestedBufferSize = shouldMakeFullScreen() ? screen()->geometry().size() : window->geometry().size();
 }
@@ -77,13 +71,57 @@ QQnxEglWindow::~QQnxEglWindow()
     destroyEGLSurface();
 }
 
-void QQnxEglWindow::createEGLSurface()
+bool QQnxEglWindow::isInitialized() const
 {
+    return m_eglSurface != EGL_NO_SURFACE;
+}
+
+void QQnxEglWindow::ensureInitialized(QQnxGLContext* context)
+{
+    if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
+        const QMutexLocker locker(&m_mutex); // Set geomety must not reset the requestedBufferSize till
+                                             // the surface is created
+
+        if (m_requestedBufferSize != bufferSize() || m_eglSurface == EGL_NO_SURFACE) {
+            if (m_eglSurface != EGL_NO_SURFACE) {
+                context->doneCurrent();
+                destroyEGLSurface();
+            }
+            createEGLSurface(context);
+        } else {
+            // Must've been a sequence of unprocessed changes returning us to the original size.
+            resetBuffers();
+        }
+    }
+}
+
+void QQnxEglWindow::createEGLSurface(QQnxGLContext *context)
+{
+    if (context->format().renderableType() != QSurfaceFormat::OpenGLES) {
+        qFatal("QQnxEglWindow: renderable type is not OpenGLES");
+        return;
+    }
+
+    // Set window usage
+    int usage = SCREEN_USAGE_OPENGL_ES2;
+#if _SCREEN_VERSION >= _SCREEN_MAKE_VERSION(1, 0, 0)
+    if (context->format().majorVersion() == 3)
+        usage |= SCREEN_USAGE_OPENGL_ES3;
+#endif
+
+    const int result = screen_set_window_property_iv(nativeHandle(), SCREEN_PROPERTY_USAGE, &usage);
+    if (Q_UNLIKELY(result != 0))
+        qFatal("QQnxEglWindow: failed to set window usage, errno=%d", errno);
+
     if (!m_requestedBufferSize.isValid()) {
         qWarning("QQNX: Trying to create 0 size EGL surface. "
                "Please set a valid window size before calling QOpenGLContext::makeCurrent()");
         return;
     }
+
+    m_eglDisplay = context->eglDisplay();
+    m_eglConfig = context->eglConfig();
+    m_format = context->format();
 
     // update the window's buffers before we create the EGL surface
     setBufferSize(m_requestedBufferSize);
@@ -94,24 +132,27 @@ void QQnxEglWindow::createEGLSurface()
         EGL_NONE
     };
 
-    qEglWindowDebug() << "Creating EGL surface" << platformOpenGLContext()->getEglDisplay()
-                   << platformOpenGLContext()->getEglConfig();
+    qEglWindowDebug() << "Creating EGL surface from" << this << context
+        << window()->surfaceType() << window()->type();
 
     // Create EGL surface
-    m_eglSurface = eglCreateWindowSurface(platformOpenGLContext()->getEglDisplay(),
-                                          platformOpenGLContext()->getEglConfig(),
-                                          (EGLNativeWindowType) nativeHandle(), eglSurfaceAttrs);
-    if (m_eglSurface == EGL_NO_SURFACE) {
-        const EGLenum error = QQnxGLContext::checkEGLError("eglCreateWindowSurface");
-        qWarning("QQNX: failed to create EGL surface, err=%d", error);
-    }
+    EGLSurface eglSurface = eglCreateWindowSurface(
+        m_eglDisplay,
+        m_eglConfig,
+        (EGLNativeWindowType) nativeHandle(),
+        eglSurfaceAttrs);
+
+    if (eglSurface == EGL_NO_SURFACE)
+        qWarning("QQNX: failed to create EGL surface, err=%d", eglGetError());
+
+    m_eglSurface = eglSurface;
 }
 
 void QQnxEglWindow::destroyEGLSurface()
 {
     // Destroy EGL surface if it exists
     if (m_eglSurface != EGL_NO_SURFACE) {
-        EGLBoolean eglResult = eglDestroySurface(platformOpenGLContext()->getEglDisplay(), m_eglSurface);
+        EGLBoolean eglResult = eglDestroySurface(m_eglDisplay, m_eglSurface);
         if (Q_UNLIKELY(eglResult != EGL_TRUE))
             qFatal("QQNX: failed to destroy EGL surface, err=%d", eglGetError());
     }
@@ -119,40 +160,8 @@ void QQnxEglWindow::destroyEGLSurface()
     m_eglSurface = EGL_NO_SURFACE;
 }
 
-void QQnxEglWindow::swapEGLBuffers()
+EGLSurface QQnxEglWindow::surface() const
 {
-    qEglWindowDebug();
-    // Set current rendering API
-    EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
-    if (Q_UNLIKELY(eglResult != EGL_TRUE))
-        qFatal("QQNX: failed to set EGL API, err=%d", eglGetError());
-
-    // Post EGL surface to window
-    eglResult = eglSwapBuffers(m_platformOpenGLContext->getEglDisplay(), m_eglSurface);
-    if (Q_UNLIKELY(eglResult != EGL_TRUE))
-        qFatal("QQNX: failed to swap EGL buffers, err=%d", eglGetError());
-
-    windowPosted();
-}
-
-EGLSurface QQnxEglWindow::getSurface()
-{
-    if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {
-        const QMutexLocker locker(&m_mutex); //Set geomety must not reset the requestedBufferSize till
-                                             //the surface is created
-
-        if ((m_requestedBufferSize != bufferSize()) || (m_eglSurface == EGL_NO_SURFACE)) {
-            if (m_eglSurface != EGL_NO_SURFACE) {
-                platformOpenGLContext()->doneCurrent();
-                destroyEGLSurface();
-            }
-            createEGLSurface();
-        } else {
-            // Must've been a sequence of unprocessed changes returning us to the original size.
-            resetBuffers();
-        }
-    }
-
     return m_eglSurface;
 }
 
@@ -169,35 +178,24 @@ void QQnxEglWindow::setGeometry(const QRect &rect)
         // that test.
         const QMutexLocker locker(&m_mutex);
         m_requestedBufferSize = newGeometry.size();
-        if (m_platformOpenGLContext != 0 && bufferSize() != newGeometry.size())
+        if (isInitialized() && bufferSize() != newGeometry.size())
             m_newSurfaceRequested.testAndSetRelease(false, true);
     }
     QQnxWindow::setGeometry(newGeometry);
 }
 
-void QQnxEglWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext)
-{
-    // This function does not take ownership of the platform gl context.
-    // It is owned by the frontend QOpenGLContext
-    m_platformOpenGLContext = platformOpenGLContext;
-}
-
 int QQnxEglWindow::pixelFormat() const
 {
-    if (!m_platformOpenGLContext) //The platform GL context was not set yet
-        return -1;
-
-    const QSurfaceFormat format = m_platformOpenGLContext->format();
     // Extract size of color channels from window format
-    const int redSize = format.redBufferSize();
+    const int redSize = m_format.redBufferSize();
     if (Q_UNLIKELY(redSize == -1))
         qFatal("QQnxWindow: red size not defined");
 
-    const int greenSize = format.greenBufferSize();
+    const int greenSize = m_format.greenBufferSize();
     if (Q_UNLIKELY(greenSize == -1))
         qFatal("QQnxWindow: green size not defined");
 
-    const int blueSize = format.blueBufferSize();
+    const int blueSize = m_format.blueBufferSize();
     if (Q_UNLIKELY(blueSize == -1))
         qFatal("QQnxWindow: blue size not defined");
 

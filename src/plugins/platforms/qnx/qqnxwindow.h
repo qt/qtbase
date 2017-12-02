@@ -112,12 +112,13 @@ public:
 
     bool shouldMakeFullScreen() const;
 
+    void windowPosted();
+
 protected:
     virtual int pixelFormat() const = 0;
     virtual void resetBuffers() = 0;
 
     void initWindow();
-    void windowPosted();
 
     screen_context_t m_screenContext;
 
