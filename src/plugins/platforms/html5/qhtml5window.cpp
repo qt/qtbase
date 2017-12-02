@@ -51,12 +51,7 @@ QT_BEGIN_NAMESPACE
 QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor)
     : QPlatformWindow(w),
       mWindow(w),
-      mWindowState(Qt::WindowNoState),
-      mCompositor(compositor),
-      m_raster(false),
-      mActiveControl(QHtml5Compositor::SC_None),
-      mNormalGeometry(0,0,0,0),
-      hasTitle(false)
+      mCompositor(compositor)
 {
     //globalHtml5Window = this;
     static int serialNo = 0;

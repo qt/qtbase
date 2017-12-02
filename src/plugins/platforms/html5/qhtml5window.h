@@ -107,20 +107,16 @@ protected:
 protected:
     friend class QHtml5Screen;
 
-    QHTML5BackingStore *mBackingStore;
-    QWindow* mWindow;
+    QWindow* mWindow = nullptr;
+    QHtml5Compositor *mCompositor = nullptr;
+    QHTML5BackingStore *mBackingStore = nullptr;
+    QRect mNormalGeometry {0, 0, 0 ,0};
     QRect mOldGeometry;
-    Qt::WindowFlags mWindowFlags;
-    Qt::WindowState mWindowState;
-
-    WId m_winid;
-    bool firstRun;
-    QHtml5Compositor *mCompositor;
-    bool m_raster;
-
-    QHtml5Compositor::SubControls mActiveControl;
-    QRect mNormalGeometry;
-    bool hasTitle;
+    Qt::WindowFlags mWindowFlags = Qt::Window;
+    Qt::WindowState mWindowState = Qt::WindowNoState;
+    QHtml5Compositor::SubControls mActiveControl = QHtml5Compositor::SC_None;
+    WId m_winid = 0;
+    bool hasTitle = false;
 };
 QT_END_NAMESPACE
 #endif // QHTML5WINDOW_H
