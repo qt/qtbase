@@ -104,6 +104,16 @@ static int statx(int dirfd, const char *pathname, int flag, unsigned mask, struc
 
 QT_BEGIN_NAMESPACE
 
+enum {
+#ifdef Q_OS_ANDROID
+    // On Android, the link(2) system call has been observed to always fail
+    // with EACCES, regardless of whether there are permission problems or not.
+    SupportsHardlinking = false
+#else
+    SupportsHardlinking = true
+#endif
+};
+
 #define emptyFileEntryWarning() emptyFileEntryWarning_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
 static void emptyFileEntryWarning_(const char *file, int line, const char *function)
 {
@@ -1278,7 +1288,7 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
     }
 #endif
 
-    if (::link(srcPath, tgtPath) == 0) {
+    if (SupportsHardlinking && ::link(srcPath, tgtPath) == 0) {
         if (::unlink(srcPath) == 0)
             return true;
 
@@ -1292,6 +1302,11 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 
         error = QSystemError(savedErrno, QSystemError::StandardLibraryError);
         return false;
+    } else if (!SupportsHardlinking) {
+        // man 2 link on Linux has:
+        // EPERM  The filesystem containing oldpath and newpath does not
+        //        support the creation of hard links.
+        errno = EPERM;
     }
 
     switch (errno) {
