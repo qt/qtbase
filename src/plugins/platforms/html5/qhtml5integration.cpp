@@ -149,7 +149,7 @@ QPlatformWindow *QHTML5Integration::createPlatformWindow(QWindow *window) const
     qWarning("QHTML5Integration::createPlatformWindow %p\n",window);
 #endif
 
-    QHtml5Window *w = new QHtml5Window(window, mCompositor);
+    QHtml5Window *w = new QHtml5Window(window, mCompositor, m_backingStores.value(window));
     w->create();
 
     return w;
@@ -161,7 +161,9 @@ QPlatformBackingStore *QHTML5Integration::createPlatformBackingStore(QWindow *wi
     qWarning("QHTML5Integration::createWindowSurface %p\n", window);
 //#endif
 #ifndef QT_NO_OPENGL
-    return new QHTML5BackingStore(mCompositor, window);
+    QHTML5BackingStore *backingStore = new QHTML5BackingStore(mCompositor, window);
+    m_backingStores.insert(window, backingStore);
+    return backingStore;
 #else
     return nullptr;
 #endif

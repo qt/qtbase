@@ -48,10 +48,11 @@ QT_BEGIN_NAMESPACE
 //static QHtml5Window *globalHtml5Window;
 //QHtml5Window *QHtml5Window::get() { return globalHtml5Window; }
 
-QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor)
+QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHTML5BackingStore *backingStore)
     : QPlatformWindow(w),
       mWindow(w),
-      mCompositor(compositor)
+      mCompositor(compositor),
+      mBackingStore(backingStore)
 {
     //globalHtml5Window = this;
     static int serialNo = 0;

@@ -35,6 +35,7 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 
+#include <QtCore/qhash.h>
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -47,6 +48,7 @@ class QHtml5Window;
 class QHtml5EventDispatcher;
 class QHTML5Screen;
 class QHtml5Compositor;
+class QHTML5BackingStore;
 
 class QHTML5Integration : public QObject, public QPlatformIntegration
 {
@@ -77,6 +79,7 @@ private:
     mutable QHTML5EventTranslator *m_eventTranslator;
     mutable QHtml5EventDispatcher *m_eventDispatcher;
     static int uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData);
+    mutable QHash<QWindow *, QHTML5BackingStore *> m_backingStores;
 };
 
 QT_END_NAMESPACE

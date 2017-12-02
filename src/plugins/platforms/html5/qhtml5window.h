@@ -56,7 +56,7 @@ public:
         ResizeLeft
     };
 
-    QHtml5Window(QWindow *w, QHtml5Compositor* compositor);
+    QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHTML5BackingStore *backingStore);
     ~QHtml5Window();
 
     void create();

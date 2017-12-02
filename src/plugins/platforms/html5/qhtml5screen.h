@@ -70,8 +70,6 @@ public:
     //virtual void topWindowChanged(QWindow *) {}
     //virtual int windowCount() const;
 
-    void addPendingBackingStore(QHTML5BackingStore *bs) { mPendingBackingStores << bs; }
-
     //void scheduleUpdate();
 
     void invalidateSize();
@@ -99,9 +97,6 @@ private:
 
     EGLDisplay m_dpy;
     EGLSurface m_surface;
-
-    QList<QHTML5BackingStore*> mPendingBackingStores;
-
 };
 //Q_DECLARE_OPERATORS_FOR_FLAGS(QHTML5Screen::Flags)
 

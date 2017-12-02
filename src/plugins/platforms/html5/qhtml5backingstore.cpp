@@ -46,10 +46,9 @@ QHTML5BackingStore::QHTML5BackingStore(QHtml5Compositor *compositor, QWindow *wi
     , mCompositor(compositor)
     , mTexture(new QOpenGLTexture(QOpenGLTexture::Target2D))
 {
-    if (window->handle())
-        (static_cast<QHtml5Window *>(window->handle()))->setBackingStore(this);
-    else
-        (static_cast<QHTML5Screen *>(window->screen()->handle()))->addPendingBackingStore(this);
+    QHtml5Window *html5Window = static_cast<QHtml5Window *>(window->handle());
+    if (html5Window)
+        html5Window->setBackingStore(this);
 }
 
 QHTML5BackingStore::~QHTML5BackingStore()
