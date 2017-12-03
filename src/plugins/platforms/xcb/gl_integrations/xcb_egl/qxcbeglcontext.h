@@ -59,6 +59,14 @@ public:
     void swapBuffers(QPlatformSurface *surface)
     {
         QEGLPlatformContext::swapBuffers(surface);
+        if (surface->surface()->surfaceClass() == QSurface::Window) {
+            QXcbWindow *platformWindow = static_cast<QXcbWindow *>(surface);
+            // OpenGL context might be bound to a non-gui thread use QueuedConnection to sync
+            // the window from the platformWindow's thread as QXcbWindow is no QObject, an
+            // event is sent to QXcbConnection. (this is faster than a metacall)
+            if (platformWindow->needsSync())
+                platformWindow->postSyncWindowRequest();
+        }
     }
 
     bool makeCurrent(QPlatformSurface *surface)
