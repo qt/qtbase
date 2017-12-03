@@ -1370,6 +1370,13 @@ void QCoreApplicationPrivate::execCleanup()
   By convention, a \a returnCode of 0 means success, and any non-zero
   value indicates an error.
 
+  It's good practice to always connect signals to this slot using a
+  \l{Qt::}{QueuedConnection}. If a signal connected (non-queued) to this slot
+  is emitted before control enters the main event loop (such as before
+  "int main" calls \l{QCoreApplication::}{exec()}), the slot has no effect
+  and the application never exits. Using a queued connection ensures that the
+  slot will not be invoked until after control enters the main event loop.
+
   Note that unlike the C library function of the same name, this
   function \e does return to the caller -- it is event processing that
   stops.
@@ -1897,6 +1904,13 @@ void QCoreApplicationPrivate::maybeQuit()
     It's common to connect the QGuiApplication::lastWindowClosed() signal
     to quit(), and you also often connect e.g. QAbstractButton::clicked() or
     signals in QAction, QMenu, or QMenuBar to it.
+
+    It's good practice to always connect signals to this slot using a
+    \l{Qt::}{QueuedConnection}. If a signal connected (non-queued) to this slot
+    is emitted before control enters the main event loop (such as before
+    "int main" calls \l{QCoreApplication::}{exec()}), the slot has no effect
+    and the application never exits. Using a queued connection ensures that the
+    slot will not be invoked until after control enters the main event loop.
 
     Example:
 

@@ -56,7 +56,7 @@ QApplication::sendEvent(mainWindow, &event);
 
 //! [1]
 QPushButton *quitButton = new QPushButton("Quit");
-connect(quitButton, SIGNAL(clicked()), &app, SLOT(quit()));
+connect(quitButton, SIGNAL(clicked()), &app, SLOT(quit()), Qt::QueuedConnection);
 //! [1]
 
 
