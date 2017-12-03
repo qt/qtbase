@@ -798,6 +798,7 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
                                          const QStyleOptionViewItem &option, QBitArray *drawn,
                                          int firstVisualRow, int lastVisualRow, int firstVisualColumn, int lastVisualColumn)
 {
+    Q_Q(const QTableView);
     bool alternateBase = false;
     QRegion region = viewport->rect();
 
@@ -831,6 +832,18 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
         alternateBase = alternatingColors && (span->top() & 1);
         opt.features.setFlag(QStyleOptionViewItem::Alternate, alternateBase);
         drawCell(painter, opt, index);
+        if (showGrid) {
+            // adjust the clip rect to be able to paint the top & left grid lines
+            // if the headers are not visible, see paintEvent()
+            if (horizontalHeader->visualIndex(row) == 0)
+                rect.setTop(rect.top() + 1);
+            if (verticalHeader->visualIndex(row) == 0) {
+                if (q->isLeftToRight())
+                    rect.setLeft(rect.left() + 1);
+                else
+                    rect.setRight(rect.right() - 1);
+            }
+        }
         region -= rect;
         for (int r = span->top(); r <= span->bottom(); ++r) {
             const int vr = visualRow(r);
@@ -1321,10 +1334,10 @@ void QTableView::scrollContentsBy(int dx, int dy)
         //we need to update the first line of the previous top item in the view
         //because it has the grid drawn if the header is invisible.
         //It is strictly related to what's done at then end of the paintEvent
-        if (dy > 0 && d->horizontalHeader->isHidden() && d->verticalScrollMode == ScrollPerItem) {
+        if (dy > 0 && d->horizontalHeader->isHidden()) {
             d->viewport->update(0, dy, d->viewport->width(), dy);
         }
-        if (dx > 0 && d->verticalHeader->isHidden() && d->horizontalScrollMode == ScrollPerItem) {
+        if (dx > 0 && d->verticalHeader->isHidden()) {
             d->viewport->update(dx, 0, dx, d->viewport->height());
         }
     }
@@ -1504,10 +1517,26 @@ void QTableView::paintEvent(QPaintEvent *event)
 
             //draw the top & left grid lines if the headers are not visible.
             //We do update this line when subsequent scroll happen (see scrollContentsBy)
-            if (horizontalHeader->isHidden() && verticalScrollMode() == ScrollPerItem)
-                painter.drawLine(dirtyArea.left(), 0, dirtyArea.right(), 0);
-            if (verticalHeader->isHidden() && horizontalScrollMode() == ScrollPerItem)
-                painter.drawLine(0, dirtyArea.top(), 0, dirtyArea.bottom());
+            if (horizontalHeader->isHidden() && top == 0) {
+                const int row = verticalHeader->logicalIndex(top);
+                if (!verticalHeader->isSectionHidden(row)) {
+                    const int rowY = rowViewportPosition(row) + offset.y();
+                    if (rowY == dirtyArea.top())
+                        painter.drawLine(dirtyArea.left(), rowY, dirtyArea.right(), rowY);
+                }
+            }
+            if (verticalHeader->isHidden() && left == 0) {
+                const int col = horizontalHeader->logicalIndex(left);
+                if (!horizontalHeader->isSectionHidden(col)) {
+                    int colX = columnViewportPosition(col) + offset.x();
+                    if (!isLeftToRight())
+                        colX += columnWidth(left) - 1;
+                    if (isLeftToRight() && colX == dirtyArea.left())
+                        painter.drawLine(colX, dirtyArea.top(), colX, dirtyArea.bottom());
+                    if (!isLeftToRight() && colX == dirtyArea.right())
+                        painter.drawLine(colX, dirtyArea.top(), colX, dirtyArea.bottom());
+                }
+            }
             painter.setPen(old);
         }
     }
