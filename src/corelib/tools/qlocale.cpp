@@ -390,6 +390,13 @@ const QLocaleData *QLocaleData::findLocaleData(QLocale::Language language, QLoca
     QList<QLocaleId> tried;
     tried.push_back(likelyId);
 
+    // No match; try again with raw data:
+    if (!tried.contains(localeId)) {
+        if (const QLocaleData *const data = findLocaleDataById(localeId))
+            return data;
+        tried.push_back(localeId);
+    }
+
     // No match; try again with likely country
     if (country != QLocale::AnyCountry
         && (language != QLocale::AnyLanguage || script != QLocale::AnyScript)) {
