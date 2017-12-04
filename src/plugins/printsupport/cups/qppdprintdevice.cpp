@@ -42,6 +42,8 @@
 #include <QtCore/QMimeDatabase>
 #include <qdebug.h>
 
+#include "private/qcups_p.h" // Only needed for PDPK_*
+
 #ifndef QT_LINUXBASE // LSB merges everything into cups.h
 #include <cups/language.h>
 #endif
@@ -419,6 +421,25 @@ QPrint::ColorMode QPpdPrintDevice::defaultColorMode() const
             return QPrint::Color;
     }
     return QPrint::GrayScale;
+}
+
+QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) const
+{
+    if (key == PDPK_PpdFile)
+        return QVariant::fromValue<ppd_file_t *>(m_ppd);
+
+    return QVariant();
+}
+
+bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value)
+{
+    if (key == PDPK_PpdOption) {
+        const QStringList values = value.toStringList();
+        if (values.count() == 2)
+            return ppdMarkOption(m_ppd, values[0].toLatin1(), values[1].toLatin1()) == 0;
+    }
+
+    return false;
 }
 
 #ifndef QT_NO_MIMETYPE

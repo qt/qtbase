@@ -89,6 +89,9 @@ public:
 
     QPrint::ColorMode defaultColorMode() const override;
 
+    QVariant property(QPrintDevice::PrintDevicePropertyKey key) const override;
+    bool setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value) override;
+
 protected:
     void loadPageSizes() const override;
     void loadResolutions() const override;

@@ -67,6 +67,9 @@ QT_BEGIN_NAMESPACE
 // removed from the dialogs.
 #define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
 
+#define PDPK_PpdFile   QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase)
+#define PDPK_PpdOption QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 1)
+
 class Q_PRINTSUPPORT_EXPORT QCUPSSupport
 {
 public:

@@ -59,6 +59,7 @@
 
 #if (defined Q_OS_MACOS) || (defined Q_OS_UNIX && QT_CONFIG(cups))
 #include <cups/ppd.h>  // Use for type defs only, don't want to actually link in main module
+Q_DECLARE_METATYPE(ppd_file_t *)
 #endif
 
 QT_BEGIN_NAMESPACE
