@@ -233,19 +233,19 @@ QLocaleId QLocaleId::withLikelySubtagsAdded() const
         if (addLikelySubtags(id))
             return id;
     }
-    // language_script
-    if (country_id) {
-        QLocaleId id = QLocaleId::fromIds(language_id, script_id, 0);
-        if (addLikelySubtags(id)) {
-            id.country_id = country_id;
-            return id;
-        }
-    }
     // language_region
     if (script_id) {
         QLocaleId id = QLocaleId::fromIds(language_id, 0, country_id);
         if (addLikelySubtags(id)) {
             id.script_id = script_id;
+            return id;
+        }
+    }
+    // language_script
+    if (country_id) {
+        QLocaleId id = QLocaleId::fromIds(language_id, script_id, 0);
+        if (addLikelySubtags(id)) {
+            id.country_id = country_id;
             return id;
         }
     }
@@ -255,6 +255,14 @@ QLocaleId QLocaleId::withLikelySubtagsAdded() const
         if (addLikelySubtags(id)) {
             id.script_id = script_id;
             id.country_id = country_id;
+            return id;
+        }
+    }
+    // und_script
+    if (language_id) {
+        QLocaleId id = QLocaleId::fromIds(0, script_id, 0);
+        if (addLikelySubtags(id)) {
+            id.language_id = language_id;
             return id;
         }
     }
