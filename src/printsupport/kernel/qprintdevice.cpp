@@ -245,6 +245,16 @@ QList<QPrint::ColorMode> QPrintDevice::supportedColorModes() const
     return isValid() ? d->supportedColorModes() : QList<QPrint::ColorMode>();
 }
 
+QVariant QPrintDevice::property(PrintDevicePropertyKey key) const
+{
+    return isValid() ? d->property(key) : QVariant();
+}
+
+bool QPrintDevice::setProperty(PrintDevicePropertyKey key, const QVariant &value)
+{
+    return isValid() ? d->setProperty(key, value) : false;
+}
+
 #ifndef QT_NO_MIMETYPE
 QList<QMimeType> QPrintDevice::supportedMimeTypes() const
 {

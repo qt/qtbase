@@ -381,6 +381,21 @@ void QPlatformPrintDevice::loadMimeTypes() const
 {
 }
 
+QVariant QPlatformPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) const
+{
+    Q_UNUSED(key)
+
+    return QVariant();
+}
+
+bool QPlatformPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value)
+{
+    Q_UNUSED(key)
+    Q_UNUSED(value)
+
+    return false;
+}
+
 QList<QMimeType> QPlatformPrintDevice::supportedMimeTypes() const
 {
     if (!m_haveMimeTypes)

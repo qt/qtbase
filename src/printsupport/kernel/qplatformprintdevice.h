@@ -53,10 +53,13 @@
 
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #include <private/qprint_p.h>
+#include <private/qprintdevice_p.h>
 
+#include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qmimetype.h>
 #include <QtGui/qpagelayout.h>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -117,6 +120,9 @@ public:
 
     virtual QPrint::ColorMode defaultColorMode() const;
     virtual QList<QPrint::ColorMode> supportedColorModes() const;
+
+    virtual QVariant property(QPrintDevice::PrintDevicePropertyKey key) const;
+    virtual bool setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value);
 
 #ifndef QT_NO_MIMETYPE
     virtual QList<QMimeType> supportedMimeTypes() const;

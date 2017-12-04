@@ -131,6 +131,13 @@ public:
     QPrint::ColorMode defaultColorMode() const;
     QList<QPrint::ColorMode> supportedColorModes() const;
 
+    enum PrintDevicePropertyKey {
+        PDPK_CustomBase = 0xff00
+    };
+
+    QVariant property(PrintDevicePropertyKey key) const;
+    bool setProperty(PrintDevicePropertyKey key, const QVariant &value);
+
 #ifndef QT_NO_MIMETYPE
     QList<QMimeType> supportedMimeTypes() const;
 #endif
