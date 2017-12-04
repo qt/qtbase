@@ -124,10 +124,9 @@ class QPrintPropertiesDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QPrintPropertiesDialog(QPrinter *printer, QAbstractPrintDialog *parent = nullptr);
+    QPrintPropertiesDialog(QPrinter *printer, QPrinter::OutputFormat outputFormat,
+                           const QString &printerName, QAbstractPrintDialog *parent = nullptr);
     ~QPrintPropertiesDialog();
-
-    void selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName);
 
     void setupPrinter() const;
 
@@ -234,7 +233,8 @@ public:
 
 */
 
-QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QAbstractPrintDialog *parent)
+QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrinter::OutputFormat outputFormat,
+                                               const QString &printerName, QAbstractPrintDialog *parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("Printer Properties"));
@@ -249,6 +249,7 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QAbstractPrint
     connect(m_buttons->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
 
     widget.pageSetup->setPrinter(printer);
+    widget.pageSetup->selectPrinter(outputFormat, printerName);
 
 #if QT_CONFIG(cupsjobwidget)
     m_jobOptions = new QCupsJobWidget(printer);
@@ -266,11 +267,6 @@ void QPrintPropertiesDialog::setupPrinter() const
 #if QT_CONFIG(cupsjobwidget)
     m_jobOptions->setupPrinter();
 #endif
-}
-
-void QPrintPropertiesDialog::selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName)
-{
-    widget.pageSetup->selectPrinter(outputFormat, printerName);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -838,16 +834,20 @@ void QUnixPrintWidgetPrivate::setupPrinterProperties()
     if (propertiesDialog)
         delete propertiesDialog;
 
-    propertiesDialog = new QPrintPropertiesDialog(q->printer(), q);
-    propertiesDialog->setResult(QDialog::Rejected);
-    propertiesDialogShown = false;
+    QPrinter::OutputFormat outputFormat;
+    QString printerName;
 
     if (q->isOptionEnabled(QPrintDialog::PrintToFile)
         && (widget.printers->currentIndex() == widget.printers->count() - 1)) {// PDF
-        propertiesDialog->selectPrinter(QPrinter::PdfFormat, QString());
+        outputFormat = QPrinter::PdfFormat;
+    } else {
+        outputFormat = QPrinter::NativeFormat;
+        printerName = widget.printers->currentText();
     }
-    else
-        propertiesDialog->selectPrinter(QPrinter::NativeFormat, widget.printers->currentText());
+
+    propertiesDialog = new QPrintPropertiesDialog(q->printer(), outputFormat, printerName, q);
+    propertiesDialog->setResult(QDialog::Rejected);
+    propertiesDialogShown = false;
 }
 
 void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()
