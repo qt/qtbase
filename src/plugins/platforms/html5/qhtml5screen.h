@@ -30,6 +30,8 @@
 #ifndef QHTML5SCREEN_H
 #define QHTML5SCREEN_H
 
+#include "qhtml5cursor.h"
+
 #include <qpa/qplatformscreen.h>
 
 #include <QScopedPointer>
@@ -56,6 +58,7 @@ public:
     QRect geometry() const override;
     int depth() const override;
     QImage::Format format() const override;
+    QPlatformCursor *cursor() const override;
     QPlatformOpenGLContext *platformContext() const;
     EGLSurface surface() const { return m_surface; }
 
@@ -94,6 +97,7 @@ private:
     QImage::Format m_format;
     QPlatformOpenGLContext *m_platformContext;
     QScopedPointer<QOpenGLContext> m_context;
+    QHtml5Cursor m_cursor;
 
     EGLDisplay m_dpy;
     EGLSurface m_surface;

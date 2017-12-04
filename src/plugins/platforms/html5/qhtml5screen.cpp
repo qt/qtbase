@@ -193,6 +193,11 @@ QImage::Format QHTML5Screen::format() const
     return m_format;
 }
 
+QPlatformCursor *QHTML5Screen::cursor() const
+{
+    return const_cast<QHtml5Cursor *>(&m_cursor);
+}
+
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QHTML5Screen::platformContext() const
 {
