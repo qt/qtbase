@@ -109,6 +109,8 @@ public:
 
     QFactoryLoader *optionalPlugins() { return m_optionalPlugins; }
 
+    QIOSApplicationState applicationState;
+
 private:
     QPlatformFontDatabase *m_fontDatabase;
 #ifndef Q_OS_TVOS
@@ -116,7 +118,6 @@ private:
 #endif
     QPlatformInputContext *m_inputContext;
     QTouchDevice *m_touchDevice;
-    QIOSApplicationState m_applicationState;
     QIOSServices *m_platformServices;
     mutable QPlatformAccessibility *m_accessibility;
     QFactoryLoader *m_optionalPlugins;
