@@ -709,6 +709,13 @@ defineTest(qtConfLibrary_pkgConfig) {
     eval(libs = $$libpaths $$libs)
     !qtConfResolveLibs($${1}.libs, $$libs): \
         return(false)
+    contains($${1}.libs, ".*\\.$${QMAKE_EXTENSION_STATICLIB}$") {
+        qtRunLoggedCommand("$$pkg_config --static --libs-only-L $$args", libpaths)|return(false)
+        qtRunLoggedCommand("$$pkg_config --static --libs-only-l $$args", libs)|return(false)
+        eval(libs = $$libpaths $$libs)
+        !qtConfResolveLibs($${1}.libs, $$libs): \
+            return(false)
+    }
 
     qtRunLoggedCommand("$$pkg_config --cflags $$args", $${1}.cflags)|return(false)
     # Split CFLAGS into stuff that goes into DEFINES, INCLUDEPATH, and other stuff.
