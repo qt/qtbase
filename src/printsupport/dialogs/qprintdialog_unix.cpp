@@ -124,13 +124,11 @@ class QPrintPropertiesDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QPrintPropertiesDialog(QAbstractPrintDialog *parent = nullptr);
+    QPrintPropertiesDialog(QPrinter *printer, QAbstractPrintDialog *parent = nullptr);
     ~QPrintPropertiesDialog();
 
     void selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName);
 
-    /// copy printer properties to the widget
-    void applyPrinterProperties(QPrinter *p);
     void setupPrinter() const;
 
 private:
@@ -236,7 +234,7 @@ public:
 
 */
 
-QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
+QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QAbstractPrintDialog *parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("Printer Properties"));
@@ -250,22 +248,17 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QAbstractPrintDialog *parent)
     connect(m_buttons->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(accept()));
     connect(m_buttons->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
 
+    widget.pageSetup->setPrinter(printer);
+
 #if QT_CONFIG(cupsjobwidget)
     m_jobOptions = new QCupsJobWidget();
+    m_jobOptions->setPrinter(printer);
     widget.tabs->addTab(m_jobOptions, tr("Job Options"));
 #endif
 }
 
 QPrintPropertiesDialog::~QPrintPropertiesDialog()
 {
-}
-
-void QPrintPropertiesDialog::applyPrinterProperties(QPrinter *p)
-{
-    widget.pageSetup->setPrinter(p);
-#if QT_CONFIG(cupsjobwidget)
-    m_jobOptions->setPrinter(p);
-#endif
 }
 
 void QPrintPropertiesDialog::setupPrinter() const
@@ -846,11 +839,9 @@ void QUnixPrintWidgetPrivate::setupPrinterProperties()
     if (propertiesDialog)
         delete propertiesDialog;
 
-    propertiesDialog = new QPrintPropertiesDialog(q);
+    propertiesDialog = new QPrintPropertiesDialog(q->printer(), q);
     propertiesDialog->setResult(QDialog::Rejected);
     propertiesDialogShown = false;
-
-    propertiesDialog->applyPrinterProperties(q->printer());
 
     if (q->isOptionEnabled(QPrintDialog::PrintToFile)
         && (widget.printers->currentIndex() == widget.printers->count() - 1)) {// PDF
