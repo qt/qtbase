@@ -2041,14 +2041,28 @@ qtConfCheckErrors()
 
 QMAKE_CONFIG_CACHE = $$OUT_PWD/config.cache
 QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
+cache_recheck = $$eval(config.input.cache_recheck)
+equals(cache_recheck, yes) {
+    QMAKE_CONFIG_CACHE_USE = positive
+    cache_recheck =
+}
 isEmpty(QMAKE_CONFIG_CACHE_USE): \
     QMAKE_CONFIG_CACHE_USE = all
 !equals(QMAKE_CONFIG_CACHE_USE, none) {
     include($$QMAKE_CONFIG_CACHE, , true)
     # this crudely determines when to discard the cache. this also catches the case
     # of no cache being there in the first place.
-    !equals(cache.platform, $$[QMAKE_SPEC])|!equals(cache.xplatform, $$[QMAKE_XSPEC]): \
+    !equals(cache.platform, $$[QMAKE_SPEC])|!equals(cache.xplatform, $$[QMAKE_XSPEC]) {
         QMAKE_CONFIG_CACHE_USE = none
+    } else: !isEmpty(cache_recheck) {
+        for (cr, $$list($$split(cache_recheck, ","))) {
+            !isEmpty(cache.$${cr}._KEYS_) {
+                cache.$${cr}._KEYS_ =
+            } else {
+                qtConfAddWarning("Attempting to discard non-cached result '$$cr'.")
+            }
+        }
+    }
 }
 equals(QMAKE_CONFIG_CACHE_USE, none) {
     cont = \

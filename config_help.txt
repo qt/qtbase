@@ -66,8 +66,10 @@ Configure meta:
   -redo ................ Re-configure with previously used options.
                          Additional options may be passed, but will not be
                          saved for later use by -redo.
-  -recheck ............. Discard cached negative configure test results.
+  -recheck [test,...] .. Discard cached negative configure test results.
                          Use this after installing missing dependencies.
+                         Alternatively, if tests are specified, only their
+                         results are discarded.
   -recheck-all ......... Discard all cached configure test results.
 
   -feature-<feature> ... Enable <feature>
