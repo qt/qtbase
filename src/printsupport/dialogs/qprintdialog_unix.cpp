@@ -203,8 +203,6 @@ public:
     ~QPrintDialogPrivate();
 
     void init();
-    /// copy printer properties to the widget
-    void applyPrinterProperties();
 
     void selectPrinter(const QPrinter::OutputFormat outputFormat);
 
@@ -388,12 +386,6 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
             options.pageSetCombo->setEnabled(false);
         else
             options.pageSetCombo->setEnabled(true);
-}
-
-void QPrintDialogPrivate::applyPrinterProperties()
-{
-    // apply printer options to property dialog
-    top->d->applyPrinterProperties();
 }
 
 void QPrintDialogPrivate::setupPrinter()
