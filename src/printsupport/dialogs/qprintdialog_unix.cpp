@@ -251,8 +251,7 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QAbstractPrint
     widget.pageSetup->setPrinter(printer);
 
 #if QT_CONFIG(cupsjobwidget)
-    m_jobOptions = new QCupsJobWidget();
-    m_jobOptions->setPrinter(printer);
+    m_jobOptions = new QCupsJobWidget(printer);
     widget.tabs->addTab(m_jobOptions, tr("Job Options"));
 #endif
 }

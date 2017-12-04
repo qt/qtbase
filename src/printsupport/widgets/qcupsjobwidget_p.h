@@ -71,9 +71,8 @@ class QCupsJobWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit QCupsJobWidget(QWidget *parent = 0);
+    explicit QCupsJobWidget(QPrinter *printer, QWidget *parent = nullptr);
     ~QCupsJobWidget();
-    void setPrinter(QPrinter *printer);
     void setupPrinter();
 
 private Q_SLOTS:

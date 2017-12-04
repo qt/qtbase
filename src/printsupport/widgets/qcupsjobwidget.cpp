@@ -64,8 +64,9 @@ QT_BEGIN_NAMESPACE
     \inmodule QtPrintSupport
  */
 
-QCupsJobWidget::QCupsJobWidget(QWidget *parent)
-    : QWidget(parent)
+QCupsJobWidget::QCupsJobWidget(QPrinter *printer, QWidget *parent)
+    : QWidget(parent),
+      m_printer(printer)
 {
     m_ui.setupUi(this);
     //set all the default values
@@ -78,11 +79,6 @@ QCupsJobWidget::QCupsJobWidget(QWidget *parent)
 
 QCupsJobWidget::~QCupsJobWidget()
 {
-}
-
-void QCupsJobWidget::setPrinter(QPrinter *printer)
-{
-    m_printer = printer;
 }
 
 void QCupsJobWidget::setupPrinter()
