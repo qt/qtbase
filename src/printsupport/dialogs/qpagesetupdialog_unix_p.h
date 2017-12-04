@@ -72,8 +72,7 @@ public:
     explicit QPageSetupWidget(QWidget *parent = 0);
     explicit QPageSetupWidget(QPrinter *printer, QWidget *parent = 0);
 
-    void setPrinter(QPrinter *printer);
-    void selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName);
+    void setPrinter(QPrinter *printer, QPrinter::OutputFormat outputFormat, const QString &printerName);
     void setupPrinter() const;
 
 private slots:

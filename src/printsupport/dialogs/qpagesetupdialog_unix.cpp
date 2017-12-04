@@ -210,7 +210,7 @@ void QUnixPageSetupDialogPrivate::init()
     Q_Q(QPageSetupDialog);
 
     widget = new QPageSetupWidget(q);
-    widget->setPrinter(printer);
+    widget->setPrinter(printer, printer->outputFormat(), printer->printerName());
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok
                                                      | QDialogButtonBox::Cancel,
@@ -371,7 +371,7 @@ void QPageSetupWidget::initPageSizes()
 
 // Set the dialog to use the given QPrinter
 // Usually only called on first creation
-void QPageSetupWidget::setPrinter(QPrinter *printer)
+void QPageSetupWidget::setPrinter(QPrinter *printer, QPrinter::OutputFormat outputFormat, const QString &printerName)
 {
     m_printer = printer;
 
@@ -387,14 +387,6 @@ void QPageSetupWidget::setPrinter(QPrinter *printer)
     m_units = m_pageLayout.units();
     m_pagePreview->setPageLayout(m_pageLayout);
 
-    // Then update the widget with the current printer details
-    selectPrinter(m_printer->outputFormat(), m_printer->printerName());
-}
-
-// The printer selected in the QPrintDialog has been changed, update the widget to reflect this
-// Note the QPrinter is not updated at this time in case the user presses the Cancel button in QPrintDialog
-void QPageSetupWidget::selectPrinter(QPrinter::OutputFormat outputFormat, const QString &printerName)
-{
     m_outputFormat = outputFormat;
     m_printerName = printerName;
     initPageSizes();
