@@ -100,6 +100,7 @@ void QXcbConnection::xi2SelectStateEvents()
     XIEventMask xiEventMask;
     bitMask = XI_HierarchyChangedMask;
     bitMask |= XI_DeviceChangedMask;
+    bitMask |= XI_PropertyEventMask;
     xiEventMask.deviceid = XIAllDevices;
     xiEventMask.mask_len = sizeof(bitMask);
     xiEventMask.mask = xiBitMask;
@@ -121,7 +122,6 @@ void QXcbConnection::xi2SelectDeviceEvents(xcb_window_t window)
     // core enter/leave events will be ignored in this case.
     bitMask |= XI_EnterMask;
     bitMask |= XI_LeaveMask;
-    bitMask |= XI_PropertyEventMask;
 #ifdef XCB_USE_XINPUT22
     if (isAtLeastXI22()) {
         bitMask |= XI_TouchBeginMask;
@@ -378,24 +378,25 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
 
     unsigned int mask = 0;
     unsigned char *bitMask = reinterpret_cast<unsigned char *>(&mask);
-    mask |= XI_PropertyEventMask;
+    Display *dpy = static_cast<Display *>(m_xlib_display);
+
 #ifdef XCB_USE_XINPUT22
     if (isAtLeastXI22()) {
         mask |= XI_TouchBeginMask;
         mask |= XI_TouchUpdateMask;
         mask |= XI_TouchEndMask;
+
+        XIEventMask xiMask;
+        xiMask.mask_len = sizeof(mask);
+        xiMask.mask = bitMask;
+        xiMask.deviceid = XIAllMasterDevices;
+        Status result = XISelectEvents(dpy, window, &xiMask, 1);
+        if (result == Success)
+            QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
+        else
+            qCDebug(lcQpaXInput, "failed to select events, window %x, result %d", window, result);
     }
 #endif
-    XIEventMask xiMask;
-    xiMask.mask_len = sizeof(mask);
-    xiMask.mask = bitMask;
-    xiMask.deviceid = XIAllMasterDevices;
-    Display *dpy = static_cast<Display *>(m_xlib_display);
-    Status result = XISelectEvents(dpy, window, &xiMask, 1);
-    if (result == Success)
-        QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
-    else
-        qCDebug(lcQpaXInput, "failed to select events, window %x, result %d", window, result);
 
     mask = XI_ButtonPressMask;
     mask |= XI_ButtonReleaseMask;
@@ -433,6 +434,11 @@ void QXcbConnection::xi2SelectDeviceEventsCompatibility(xcb_window_t window)
         }
         XISelectEvents(dpy, window, xiEventMask.data(), i);
     }
+#endif
+
+#if !QT_CONFIG(tabletevent) && !defined(XCB_USE_XINPUT21)
+    Q_UNUSED(bitMask);
+    Q_UNUSED(dpy);
 #endif
 }
 
