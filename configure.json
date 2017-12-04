@@ -307,6 +307,11 @@
             "type": "linkerSupportsFlag",
             "flag": "--enable-new-dtags"
         },
+        "gdb_index": {
+            "label": "gdb index support",
+            "type": "linkerSupportsFlag",
+            "flag": "--gdb-index"
+        },
         "reduce_exports": {
             "label": "symbol visibility support",
             "type": "compile",
@@ -813,6 +818,12 @@
             "condition": "config.linux && tests.enable_new_dtags",
             "output": [ "privateConfig" ]
         },
+        "enable_gdb_index": {
+            "label": "Generating GDB index",
+            "autoDetect": "features.developer-build",
+            "condition": "config.gcc && !config.clang && (features.debug || features.force_debug_info || features.debug_and_release) && tests.gdb_index",
+            "output": [ "privateConfig" ]
+        },
         "reduce_exports": {
             "label": "Reduce amount of exported symbols",
             "condition": "!config.win32 && tests.reduce_exports",
@@ -1264,6 +1275,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "type": "feature",
                     "args": "enable_new_dtags",
                     "condition": "config.linux"
+                },
+                {
+                    "type": "feature",
+                    "args": "enable_gdb_index",
+                    "condition": "config.gcc && !config.clang && (features.debug || features.force_debug_info || features.debug_and_release)"
                 },
                 "precompile_header",
                 "ltcg",

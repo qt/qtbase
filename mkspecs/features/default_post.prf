@@ -80,6 +80,7 @@ stack_protector_strong {
 !host_build|!cross_compile {
     use_gold_linker: QMAKE_LFLAGS += $$QMAKE_LFLAGS_USE_GOLD
     enable_new_dtags: QMAKE_LFLAGS += $$QMAKE_LFLAGS_NEW_DTAGS
+    enable_gdb_index: QMAKE_LFLAGS += $$QMAKE_LFLAGS_GDB_INDEX
 }
 
 dll:win32: QMAKE_LFLAGS += $$QMAKE_LFLAGS_DLL
