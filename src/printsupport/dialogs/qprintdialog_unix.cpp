@@ -168,8 +168,6 @@ public:
     QUnixPrintWidgetPrivate(QUnixPrintWidget *q, QPrinter *prn);
     ~QUnixPrintWidgetPrivate();
 
-    /// copy printer properties to the widget
-    void applyPrinterProperties();
     bool checkFields();
     void setupPrinter();
     void setOptionsPane(QPrintDialogPrivate *pane);
@@ -790,48 +788,6 @@ void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
     }
 }
 
-void QUnixPrintWidgetPrivate::applyPrinterProperties()
-{
-    if (printer == nullptr)
-        return;
-    if (printer->outputFileName().isEmpty()) {
-        QString home = QDir::homePath();
-        QString cur = QDir::currentPath();
-        if (home.at(home.length()-1) != QLatin1Char('/'))
-            home += QLatin1Char('/');
-        if (!cur.isEmpty() && cur.at(cur.length()-1) != QLatin1Char('/'))
-            cur += QLatin1Char('/');
-        if (!cur.startsWith(home))
-            cur = home;
-        if (QGuiApplication::platformName() == QLatin1String("xcb")) {
-            if (printer->docName().isEmpty()) {
-                cur += QLatin1String("print.pdf");
-            } else {
-                QRegExp re(QString::fromLatin1("(.*)\\.\\S+"));
-                if (re.exactMatch(printer->docName()))
-                    cur += re.cap(1);
-                else
-                    cur += printer->docName();
-                cur += QLatin1String(".pdf");
-            }
-        } // xcb
-
-        widget.filename->setText(cur);
-    }
-    else
-        widget.filename->setText( printer->outputFileName() );
-    QString printerName = printer->printerName();
-    if (!printerName.isEmpty()) {
-        const int i = widget.printers->findText(printerName);
-        if (i >= 0)
-            widget.printers->setCurrentIndex(i);
-    }
-    // PDF printer not added to the dialog yet, we'll handle those cases in QUnixPrintWidgetPrivate::updateWidget
-
-    if (propertiesDialog)
-        propertiesDialog->applyPrinterProperties(printer);
-}
-
 #if QT_CONFIG(messagebox)
 bool QUnixPrintWidgetPrivate::checkFields()
 {
@@ -951,7 +907,41 @@ void QUnixPrintWidgetPrivate::setupPrinter()
 QUnixPrintWidget::QUnixPrintWidget(QPrinter *printer, QWidget *parent)
     : QWidget(parent), d(new QUnixPrintWidgetPrivate(this, printer))
 {
-    d->applyPrinterProperties();
+    if (printer == nullptr)
+        return;
+    if (printer->outputFileName().isEmpty()) {
+        QString home = QDir::homePath();
+        QString cur = QDir::currentPath();
+        if (!home.endsWith(QLatin1Char('/')))
+            home += QLatin1Char('/');
+        if (!cur.startsWith(home))
+            cur = home;
+        else if (!cur.endsWith(QLatin1Char('/')))
+            cur += QLatin1Char('/');
+        if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
+            if (printer->docName().isEmpty()) {
+                cur += QStringLiteral("print.pdf");
+            } else {
+                const QRegExp re(QStringLiteral("(.*)\\.\\S+"));
+                if (re.exactMatch(printer->docName()))
+                    cur += re.cap(1);
+                else
+                    cur += printer->docName();
+                cur += QStringLiteral(".pdf");
+            }
+        } // xcb
+
+        d->widget.filename->setText(cur);
+    }
+    else
+        d->widget.filename->setText(printer->outputFileName());
+    const QString printerName = printer->printerName();
+    if (!printerName.isEmpty()) {
+        const int i = d->widget.printers->findText(printerName);
+        if (i >= 0)
+            d->widget.printers->setCurrentIndex(i);
+    }
+    // PDF printer not added to the dialog yet, we'll handle those cases in QUnixPrintWidgetPrivate::updateWidget
 }
 
 /*! \internal
