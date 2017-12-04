@@ -76,12 +76,12 @@ private slots:
     void help();
 
 private:
-    void createRotableGroupBox();
+    void createRotatableGroupBox();
     void createOptionsGroupBox();
     void createButtonBox();
 
-    QGroupBox *rotableGroupBox;
-    QQueue<QWidget *> rotableWidgets;
+    QGroupBox *rotatableGroupBox;
+    QQueue<QWidget *> rotatableWidgets;
 
     QGroupBox *optionsGroupBox;
     QLabel *buttonsOrientationLabel;
@@ -93,7 +93,7 @@ private:
     QPushButton *rotateWidgetsButton;
 
     QGridLayout *mainLayout;
-    QGridLayout *rotableLayout;
+    QGridLayout *rotatableLayout;
     QGridLayout *optionsLayout;
 };
 
