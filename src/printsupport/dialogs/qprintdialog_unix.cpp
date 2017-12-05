@@ -108,6 +108,11 @@ Print dialog class declarations
                              allow editing of Page and Advanced tabs.
 
                              Layout in qprintpropertieswidget.ui
+
+    QPPDOptionsModel:        Holds the PPD Options for the printer.
+
+    QPPDOptionsEditor:       Edits the PPD Options for the printer.
+
 */
 
 static void initResources()
@@ -124,18 +129,28 @@ class QPrintPropertiesDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QPrintPropertiesDialog(QPrinter *printer, QPrinter::OutputFormat outputFormat,
-                           const QString &printerName, QAbstractPrintDialog *parent = nullptr);
+    QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *currentPrintDevice,
+                           QPrinter::OutputFormat outputFormat, const QString &printerName,
+                           QAbstractPrintDialog *parent);
     ~QPrintPropertiesDialog();
 
     void setupPrinter() const;
 
+    void showEvent(QShowEvent *event) override;
+
 private:
     friend class QUnixPrintWidgetPrivate;
+    QPrinter *m_printer;
     Ui::QPrintPropertiesWidget widget;
     QDialogButtonBox *m_buttons;
 #if QT_CONFIG(cupsjobwidget)
     QCupsJobWidget *m_jobOptions;
+#endif
+
+#if QT_CONFIG(cups)
+    void setCupsOptionsFromItems(QOptionTreeItem *parent) const;
+
+    QPPDOptionsModel *m_cupsOptionsModel;
 #endif
 };
 
@@ -220,6 +235,70 @@ public:
     QPrinter::OutputFormat printerOutputFormat;
 };
 
+#if QT_CONFIG(cups)
+class QOptionTreeItem
+{
+public:
+    enum ItemType { Root, Group, Option, Choice };
+
+    QOptionTreeItem(ItemType t, int i, const void *p, const char *desc, QOptionTreeItem *pi)
+        : type(t),
+          index(i),
+          ptr(p),
+          description(desc),
+          selected(-1),
+          selDescription(nullptr),
+          parentItem(pi) {}
+
+    ~QOptionTreeItem() {
+        qDeleteAll(childItems);
+    }
+
+    ItemType type;
+    int index;
+    const void *ptr;
+    const char *description;
+    int selected;
+    const char *selDescription;
+    QOptionTreeItem *parentItem;
+    QList<QOptionTreeItem*> childItems;
+};
+
+class QPPDOptionsModel : public QAbstractItemModel
+{
+    Q_OBJECT
+
+public:
+    explicit QPPDOptionsModel(QPrintDevice *currentPrintDevice, QObject *parent);
+
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const override;
+
+    QPrintDevice *m_currentPrintDevice;
+    QTextCodec *cupsCodec;
+    QOptionTreeItem *rootItem;
+    void parseGroups(QOptionTreeItem *parent);
+    void parseOptions(QOptionTreeItem *parent);
+    void parseChoices(QOptionTreeItem *parent);
+};
+
+class QPPDOptionsEditor : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    explicit QPPDOptionsEditor(QObject *parent) : QStyledItemDelegate(parent) {}
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
+};
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -233,9 +312,11 @@ public:
 
 */
 
-QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrinter::OutputFormat outputFormat,
-                                               const QString &printerName, QAbstractPrintDialog *parent)
+QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *currentPrintDevice,
+                                               QPrinter::OutputFormat outputFormat, const QString &printerName,
+                                               QAbstractPrintDialog *parent)
     : QDialog(parent)
+    , m_printer(printer)
 {
     setWindowTitle(tr("Printer Properties"));
     QVBoxLayout *lay = new QVBoxLayout(this);
@@ -252,7 +333,29 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrinter::Outp
 
 #if QT_CONFIG(cupsjobwidget)
     m_jobOptions = new QCupsJobWidget(printer);
-    widget.tabs->addTab(m_jobOptions, tr("Job Options"));
+    widget.tabs->insertTab(1, m_jobOptions, tr("Job Options"));
+#endif
+
+    const int advancedTabIndex = widget.tabs->indexOf(widget.cupsPropertiesPage);
+#if QT_CONFIG(cups)
+    m_cupsOptionsModel = new QPPDOptionsModel(currentPrintDevice, this);
+
+    widget.treeView->setItemDelegate(new QPPDOptionsEditor(this));
+
+    if (m_cupsOptionsModel->rowCount() > 0) {
+        widget.treeView->setModel(m_cupsOptionsModel);
+
+        for (int i = 0; i < m_cupsOptionsModel->rowCount(); ++i)
+            widget.treeView->expand(m_cupsOptionsModel->index(i, 0));
+
+        widget.tabs->setTabEnabled(advancedTabIndex, true);
+    } else {
+        widget.treeView->setModel(nullptr);
+        widget.tabs->setTabEnabled(advancedTabIndex, false);
+    }
+#else
+    Q_UNUSED(currentPrintDevice)
+    widget.tabs->setTabEnabled(advancedTabIndex, false);
 #endif
 }
 
@@ -266,7 +369,35 @@ void QPrintPropertiesDialog::setupPrinter() const
 #if QT_CONFIG(cupsjobwidget)
     m_jobOptions->setupPrinter();
 #endif
+
+#if QT_CONFIG(cups)
+    setCupsOptionsFromItems(m_cupsOptionsModel->rootItem);
+#endif
 }
+
+void QPrintPropertiesDialog::showEvent(QShowEvent *event)
+{
+    widget.treeView->resizeColumnToContents(0);
+    QDialog::showEvent(event);
+}
+
+#if QT_CONFIG(cups)
+void QPrintPropertiesDialog::setCupsOptionsFromItems(QOptionTreeItem *parent) const
+{
+    for (QOptionTreeItem *itm : qAsConst(parent->childItems)) {
+        if (itm->type == QOptionTreeItem::Option) {
+            const ppd_option_t *opt = static_cast<const ppd_option_t*>(itm->ptr);
+            if (qstrcmp(opt->defchoice, opt->choices[itm->selected].choice) != 0) {
+                QStringList cupsOptions = QCUPSSupport::cupsOptionsList(m_printer);
+                QCUPSSupport::setCupsOption(cupsOptions, QString::fromLatin1(opt->keyword), QString::fromLatin1(opt->choices[itm->selected].choice));
+                QCUPSSupport::setCupsOptions(m_printer, cupsOptions);
+            }
+        } else {
+            setCupsOptionsFromItems(itm);
+        }
+    }
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -844,7 +975,7 @@ void QUnixPrintWidgetPrivate::setupPrinterProperties()
         printerName = widget.printers->currentText();
     }
 
-    propertiesDialog = new QPrintPropertiesDialog(q->printer(), outputFormat, printerName, q);
+    propertiesDialog = new QPrintPropertiesDialog(q->printer(), &m_currentPrintDevice, outputFormat, printerName, q);
     propertiesDialog->setResult(QDialog::Rejected);
     propertiesDialogShown = false;
 }
@@ -952,6 +1083,264 @@ void QUnixPrintWidget::updatePrinter()
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
+
+    QPPDOptionsModel
+
+    Holds the PPD Options for the printer.
+
+*/
+
+#if QT_CONFIG(cups)
+
+QPPDOptionsModel::QPPDOptionsModel(QPrintDevice *currentPrintDevice, QObject *parent)
+    : QAbstractItemModel(parent)
+    , m_currentPrintDevice(currentPrintDevice)
+{
+    ppd_file_t *ppd = m_currentPrintDevice->property(PDPK_PpdFile).value<ppd_file_t*>();
+    rootItem = new QOptionTreeItem(QOptionTreeItem::Root, 0, ppd, "Root Item", 0);
+
+    if (ppd) {
+        cupsCodec = QTextCodec::codecForName(ppd->lang_encoding);
+        for (int i = 0; i < ppd->num_groups; ++i) {
+            QOptionTreeItem *group = new QOptionTreeItem(QOptionTreeItem::Group, i, &ppd->groups[i], ppd->groups[i].text, rootItem);
+            rootItem->childItems.append(group);
+            parseGroups(group); // parse possible subgroups
+            parseOptions(group); // parse options
+        }
+    }
+
+    if (!cupsCodec)
+        cupsCodec = QTextCodec::codecForLocale();
+}
+
+int QPPDOptionsModel::columnCount(const QModelIndex &) const
+{
+    return 2;
+}
+
+int QPPDOptionsModel::rowCount(const QModelIndex &parent) const
+{
+    QOptionTreeItem *itm;
+    if (!parent.isValid())
+        itm = rootItem;
+    else
+        itm = static_cast<QOptionTreeItem*>(parent.internalPointer());
+
+    if (itm->type == QOptionTreeItem::Option)
+        return 0;
+
+    return itm->childItems.count();
+}
+
+QVariant QPPDOptionsModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid())
+        return QVariant();
+
+    QOptionTreeItem *itm = static_cast<QOptionTreeItem*>(index.internalPointer());
+
+    switch (role) {
+    case Qt::FontRole: {
+        if (itm->type == QOptionTreeItem::Group){
+            QFont font;
+            font.setBold(true);
+            return QVariant(font);
+        }
+        return QVariant();
+    }
+    break;
+
+    case Qt::DisplayRole: {
+        if (index.column() == 0)
+            return cupsCodec->toUnicode(itm->description);
+        else if (itm->type == QOptionTreeItem::Option && itm->selected > -1)
+            return cupsCodec->toUnicode(itm->selDescription);
+        else
+            return QVariant();
+    }
+    break;
+
+    }
+
+    return QVariant();
+}
+
+QModelIndex QPPDOptionsModel::index(int row, int column, const QModelIndex &parent) const
+{
+    QOptionTreeItem *itm;
+    if (!parent.isValid())
+        itm = rootItem;
+    else
+        itm = static_cast<QOptionTreeItem*>(parent.internalPointer());
+
+    return createIndex(row, column, itm->childItems.at(row));
+}
+
+
+QModelIndex QPPDOptionsModel::parent(const QModelIndex &index) const
+{
+    if (!index.isValid())
+        return QModelIndex();
+
+    QOptionTreeItem *itm = static_cast<QOptionTreeItem*>(index.internalPointer());
+
+    if (itm->parentItem && itm->parentItem != rootItem)
+        return createIndex(itm->parentItem->index, 0, itm->parentItem);
+
+    return QModelIndex();
+}
+
+Qt::ItemFlags QPPDOptionsModel::flags(const QModelIndex &index) const
+{
+    if (!index.isValid() || static_cast<QOptionTreeItem*>(index.internalPointer())->type == QOptionTreeItem::Group)
+        return Qt::ItemIsEnabled;
+
+    if (index.column() == 1)
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+}
+
+void QPPDOptionsModel::parseGroups(QOptionTreeItem *parent)
+{
+    const ppd_group_t *group = static_cast<const ppd_group_t*>(parent->ptr);
+
+    if (group) {
+        for (int i = 0; i < group->num_subgroups; ++i) {
+            QOptionTreeItem *subgroup = new QOptionTreeItem(QOptionTreeItem::Group, i, &group->subgroups[i], group->subgroups[i].text, parent);
+            parent->childItems.append(subgroup);
+            parseGroups(subgroup); // parse possible subgroups
+            parseOptions(subgroup); // parse options
+        }
+    }
+}
+
+static bool isBlacklistedOption(const char *keyword) Q_DECL_NOTHROW
+{
+    // We already let the user set these options elsewhere
+    const char *cupsOptionBlacklist[] = {
+        "Collate",
+        "Copies",
+        "OutputOrder",
+        "PageRegion",
+        "PageSize"
+    };
+    auto equals = [](const char *keyword) {
+        return [keyword](const char *candidate) {
+            return qstrcmp(keyword, candidate) == 0;
+        };
+    };
+    return std::any_of(std::begin(cupsOptionBlacklist), std::end(cupsOptionBlacklist), equals(keyword));
+};
+
+void QPPDOptionsModel::parseOptions(QOptionTreeItem *parent)
+{
+    const ppd_group_t *group = static_cast<const ppd_group_t*>(parent->ptr);
+    for (int i = 0; i < group->num_options; ++i) {
+        if (!isBlacklistedOption(group->options[i].keyword)) {
+            QOptionTreeItem *opt = new QOptionTreeItem(QOptionTreeItem::Option, i, &group->options[i], group->options[i].text, parent);
+            parent->childItems.append(opt);
+            parseChoices(opt);
+        }
+    }
+}
+
+void QPPDOptionsModel::parseChoices(QOptionTreeItem *parent)
+{
+    const ppd_option_t *option = static_cast<const ppd_option_t*>(parent->ptr);
+    bool marked = false;
+    for (int i = 0; i < option->num_choices; ++i) {
+        QOptionTreeItem *choice = new QOptionTreeItem(QOptionTreeItem::Choice, i, &option->choices[i], option->choices[i].text, parent);
+        if (static_cast<int>(option->choices[i].marked) == 1) {
+            parent->selected = i;
+            parent->selDescription = option->choices[i].text;
+            marked = true;
+        } else if (!marked && qstrcmp(option->choices[i].choice, option->defchoice) == 0) {
+            parent->selected = i;
+            parent->selDescription = option->choices[i].text;
+        }
+        parent->childItems.append(choice);
+    }
+}
+
+QVariant QPPDOptionsModel::headerData(int section, Qt::Orientation, int role) const
+{
+    if (role != Qt::DisplayRole)
+        return QVariant();
+
+    switch (section) {
+    case 0:
+        return QVariant(tr("Name"));
+    case 1:
+        return QVariant(tr("Value"));
+    }
+
+    return QVariant();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+    QPPDOptionsEditor
+
+    Edits the PPD Options for the printer.
+
+*/
+
+QWidget *QPPDOptionsEditor::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    Q_UNUSED(option)
+
+    if (index.column() == 1 && static_cast<QOptionTreeItem*>(index.internalPointer())->type == QOptionTreeItem::Option)
+        return new QComboBox(parent);
+
+    return nullptr;
+}
+
+void QPPDOptionsEditor::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    if (index.column() != 1)
+        return;
+
+    QComboBox *cb = static_cast<QComboBox*>(editor);
+    QOptionTreeItem *itm = static_cast<QOptionTreeItem*>(index.internalPointer());
+
+    if (itm->selected == -1)
+        cb->addItem(QString());
+
+    const QPPDOptionsModel *m = static_cast<const QPPDOptionsModel*>(index.model());
+    for (auto *childItem : qAsConst(itm->childItems))
+        cb->addItem(m->cupsCodec->toUnicode(childItem->description));
+
+    if (itm->selected > -1)
+        cb->setCurrentIndex(itm->selected);
+}
+
+void QPPDOptionsEditor::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    QComboBox *cb = static_cast<QComboBox*>(editor);
+    QOptionTreeItem *itm = static_cast<QOptionTreeItem*>(index.internalPointer());
+
+    if (itm->selected == cb->currentIndex())
+        return;
+
+    const ppd_option_t *opt = static_cast<const ppd_option_t*>(itm->ptr);
+    QPPDOptionsModel *m = static_cast<QPPDOptionsModel*>(model);
+
+    const auto values = QStringList{} << QString::fromLatin1(opt->keyword) << QString::fromLatin1(opt->choices[cb->currentIndex()].choice);
+    if (m->m_currentPrintDevice->setProperty(PDPK_PpdOption, values)) {
+        itm->selected = cb->currentIndex();
+        itm->selDescription = static_cast<const ppd_option_t*>(itm->ptr)->choices[itm->selected].text;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+#endif // QT_CONFIG(cups)
 #endif // defined (Q_OS_UNIX)
 
 QT_END_NAMESPACE

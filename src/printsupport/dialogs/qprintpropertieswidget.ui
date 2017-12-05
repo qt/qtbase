@@ -32,6 +32,20 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="cupsPropertiesPage" >
+      <attribute name="title" >
+       <string>Advanced</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_2" >
+       <item>
+        <widget class="QTreeView" name="treeView" >
+         <property name="alternatingRowColors" >
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
