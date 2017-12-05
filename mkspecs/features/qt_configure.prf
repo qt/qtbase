@@ -1052,8 +1052,13 @@ defineTest(qtConfSaveResult) {
         return()
     keys = result $$eval($${1}.cache)
     cont = "cache.$${2}._KEYS_ = $$keys"
-    for (k, keys): \
+    cache.$${2}._KEYS_ = $$keys
+    export(cache.$${2}._KEYS_)
+    for (k, keys) {
         cont += "cache.$${2}.$${k} = $$val_escape($${1}.$${k})"
+        cache.$${2}.$${k} = $$eval($${1}.$${k})
+        export(cache.$${2}.$${k})
+    }
     write_file($$QMAKE_CONFIG_CACHE, cont, append)|error()
 }
 
