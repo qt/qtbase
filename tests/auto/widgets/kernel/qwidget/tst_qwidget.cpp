@@ -9120,7 +9120,8 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
          void mouseMoveEvent(QMouseEvent *event)
          {
              QCOMPARE(event->button(), Qt::NoButton);
-             QCOMPARE(event->buttons(), Qt::MouseButtons(Qt::NoButton));
+             QCOMPARE(event->buttons(), QApplication::mouseButtons());
+             QCOMPARE(event->modifiers(), QApplication::keyboardModifiers());
              ++numMouseMoveEvents;
          }
          void reset() { numEnterEvents = numMouseMoveEvents = 0; }
@@ -9154,11 +9155,11 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      child.setMouseTracking(true);
      child.show();
 
-     // Make sure the child gets enter event and mouse move event.
+     // Make sure the child gets enter event.
      // Note that we verify event->button() and event->buttons()
      // in SELChild::mouseMoveEvent().
      QTRY_COMPARE(child.numEnterEvents, 1);
-     QCOMPARE(child.numMouseMoveEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 0);
 
      // Sending synthetic enter/leave trough the parent's mousePressEvent handler.
      parent.child = &child;
@@ -9167,10 +9168,19 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
      child.reset();
      QTest::mouseClick(&parent, Qt::LeftButton);
 
-     // Make sure the child gets enter event and one mouse move event.
+     // Make sure the child gets enter event.
      QTRY_COMPARE(child.numEnterEvents, 1);
-     QCOMPARE(child.numMouseMoveEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 0);
 
+     child.hide();
+     child.reset();
+     QTest::keyPress(&parent, Qt::Key_Shift);
+     QTest::mouseClick(&parent, Qt::LeftButton);
+
+     // Make sure the child gets enter event
+     QTRY_COMPARE(child.numEnterEvents, 1);
+     QCOMPARE(child.numMouseMoveEvents, 0);
+     QTest::keyRelease(&child, Qt::Key_Shift);
      child.hide();
      child.reset();
      child.setMouseTracking(false);

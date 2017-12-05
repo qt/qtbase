@@ -2624,7 +2624,7 @@ QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint
 bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
                                          QWidget *alienWidget, QWidget *nativeWidget,
                                          QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
-                                         bool spontaneous)
+                                         bool spontaneous, bool onlyDispatchEnterLeave)
 {
     Q_ASSERT(receiver);
     Q_ASSERT(event);
@@ -2685,11 +2685,17 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     // We need this quard in case someone opens a modal dialog / popup. If that's the case
     // leaveAfterRelease is set to null, but we shall not update lastMouseReceiver.
     const bool wasLeaveAfterRelease = leaveAfterRelease != 0;
-    bool result;
-    if (spontaneous)
-        result = QApplication::sendSpontaneousEvent(receiver, event);
-    else
-        result = QApplication::sendEvent(receiver, event);
+    bool result = true;
+    // This code is used for sending the synthetic enter/leave events for cases where it is needed
+    // due to other events causing the widget under the mouse to change. However in those cases
+    // we do not want to send the mouse event associated with this call, so this enables us to
+    // not send the unneeded mouse event
+    if (!onlyDispatchEnterLeave) {
+        if (spontaneous)
+            result = QApplication::sendSpontaneousEvent(receiver, event);
+        else
+            result = QApplication::sendEvent(receiver, event);
+    }
 
     if (!graphicsWidget && leaveAfterRelease && event->type() == QEvent::MouseButtonRelease
         && !event->buttons() && QWidget::mouseGrabber() != leaveAfterRelease) {
@@ -2764,9 +2770,10 @@ void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
     if (widget->data->in_destructor && qt_button_down == widget)
         qt_button_down = 0;
 
-    // Send enter/leave events followed by a mouse move on the entered widget.
+    // A mouse move is not actually sent, but we utilize the sendMouseEvent() call to send the
+    // enter/leave events as appropriate
     QMouseEvent e(QEvent::MouseMove, pos, windowPos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
-    sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver);
+    sendMouseEvent(widgetUnderCursor, &e, widgetUnderCursor, tlw, &qt_button_down, qt_last_mouse_receiver, true, true);
 #else // !QT_NO_CURSOR
     Q_UNUSED(widget);
 #endif // QT_NO_CURSOR

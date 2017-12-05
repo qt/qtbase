@@ -226,7 +226,7 @@ public:
                                       QWidget *buttonDown, QWidget *alienWidget);
     static bool sendMouseEvent(QWidget *receiver, QMouseEvent *event, QWidget *alienWidget,
                                QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
-                               bool spontaneous = true);
+                               bool spontaneous = true, bool onlyDispatchEnterLeave = false);
     void sendSyntheticEnterLeave(QWidget *widget);
 
     static QWindow *windowForWidget(const QWidget *widget)
