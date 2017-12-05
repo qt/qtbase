@@ -161,7 +161,7 @@
     QRect lastReportedGeometry = qt_window_private(window)->geometry;
     QRect currentGeometry = QRectF::fromCGRect(self.frame).toRect();
     qCDebug(lcQpaWindow) << m_qioswindow->window() << "new geometry is" << currentGeometry;
-    QWindowSystemInterface::handleGeometryChange<QWindowSystemInterface::SynchronousDelivery>(window, currentGeometry);
+    QWindowSystemInterface::handleGeometryChange(window, currentGeometry);
 
     if (currentGeometry.size() != lastReportedGeometry.size()) {
         // Trigger expose event on resize
@@ -194,7 +194,7 @@
     }
 
     qCDebug(lcQpaWindow) << m_qioswindow->window() << region << "isExposed" << m_qioswindow->isExposed();
-    QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), region);
+    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
 }
 
 // -------------------------------------------------------------------------
@@ -225,7 +225,7 @@
     }
 
     if (qGuiApp->focusWindow() != m_qioswindow->window())
-        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window());
+        QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
     else
         qImDebug() << m_qioswindow->window() << "already active, not sending window activation";
 
@@ -263,7 +263,7 @@
 
     UIResponder *newResponder = FirstResponderCandidate::currentCandidate();
     if ([self responderShouldTriggerWindowDeactivation:newResponder])
-        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(0);
+        QWindowSystemInterface::handleWindowActivated(0);
 
     return YES;
 }
@@ -354,7 +354,7 @@
 - (void)sendTouchEventWithTimestamp:(ulong)timeStamp
 {
     QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
+    QWindowSystemInterface::handleTouchEvent(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -433,7 +433,7 @@
     NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
 
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    QWindowSystemInterface::handleTouchCancelEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
+    QWindowSystemInterface::handleTouchCancelEvent(m_qioswindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
 }
 
 - (int)mapPressTypeToKey:(UIPress*)press
@@ -461,7 +461,7 @@
         int key = [self mapPressTypeToKey:press];
         if (key == Qt::Key_unknown)
             continue;
-        if (QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), type, key, Qt::NoModifier))
+        if (QWindowSystemInterface::handleKeyEvent(m_qioswindow->window(), type, key, Qt::NoModifier))
             handled = true;
     }
 

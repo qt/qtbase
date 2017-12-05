@@ -135,6 +135,10 @@ private:
     QRect source_sameanswer;
     bool waiting_for_status;
 
+    // helpers for setting executed drop action outside application
+    bool dropped;
+    bool canceled;
+
     // top-level window we sent position to last.
     xcb_window_t current_target;
     // window to send events to (always valid if current_target)
