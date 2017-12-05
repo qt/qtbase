@@ -152,6 +152,7 @@ private:
             qssize_t result = 0;
             while (*str++)
                 ++result;
+            return result;
         }
 #endif
         return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
