@@ -757,16 +757,18 @@ private:
 
 #define Q_XCB_REPLY_CONNECTION_ARG(connection, ...) connection
 
+struct QStdFreeDeleter {
+    void operator()(void *p) const Q_DECL_NOTHROW { return std::free(p); }
+};
+
 #define Q_XCB_REPLY(call, ...) \
-    std::unique_ptr<call##_reply_t, decltype(std::free) *>( \
-        call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call(__VA_ARGS__), nullptr), \
-        std::free \
+    std::unique_ptr<call##_reply_t, QStdFreeDeleter>( \
+        call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call(__VA_ARGS__), nullptr) \
     )
 
 #define Q_XCB_REPLY_UNCHECKED(call, ...) \
-    std::unique_ptr<call##_reply_t, decltype(std::free) *>( \
-        call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call##_unchecked(__VA_ARGS__), nullptr), \
-        std::free \
+    std::unique_ptr<call##_reply_t, QStdFreeDeleter>( \
+        call##_reply(Q_XCB_REPLY_CONNECTION_ARG(__VA_ARGS__), call##_unchecked(__VA_ARGS__), nullptr) \
     )
 
 template <typename T>
