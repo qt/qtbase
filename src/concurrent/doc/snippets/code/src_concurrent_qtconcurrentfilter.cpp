@@ -169,5 +169,17 @@ struct StartsWith
 };
 
 QList<QString> strings = ...;
-QFuture<QString> fooString = QtConcurrent::filtered(images, StartsWith(QLatin1String("Foo")));
+QFuture<QString> fooString = QtConcurrent::filtered(strings, StartsWith(QLatin1String("Foo")));
 //! [13]
+
+//! [14]
+struct StringTransform
+{
+    void operator()(QString &result, const QString &value);
+};
+
+QFuture<QString> fooString =
+  QtConcurrent::filteredReduced<QString>(strings,
+                                         StartsWith(QLatin1String("Foo")),
+                                         StringTransform());
+//! [14]

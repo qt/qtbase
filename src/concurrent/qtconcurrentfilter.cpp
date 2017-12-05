@@ -142,11 +142,18 @@
     \section2 Using Function Objects
 
     QtConcurrent::filter(), QtConcurrent::filtered(), and
-    QtConcurrent::filteredReduced() accept function objects, which can be used to
+    QtConcurrent::filteredReduced() accept function objects
+    for the filter function. These function objects can be used to
     add state to a function call. The result_type typedef must define the
     result type of the function call operator:
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 13
+
+    For the reduce function, function objects are not directly
+    supported. Function objects can, however, be used
+    when the type of the reduction result is explicitly specified:
+
+    \snippet code/src_concurrent_qtconcurrentfilter.cpp 14
 
     \section2 Wrapping Functions that Take Multiple Arguments
 

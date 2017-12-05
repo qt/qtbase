@@ -192,11 +192,18 @@
     \section2 Using Function Objects
 
     QtConcurrent::map(), QtConcurrent::mapped(), and
-    QtConcurrent::mappedReduced() accept function objects, which can be used to
+    QtConcurrent::mappedReduced() accept function objects
+    for the map function. These function objects can be used to
     add state to a function call. The result_type typedef must define the
     result type of the function call operator:
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 14
+
+    For the reduce function, function objects are not directly
+    supported. Function objects can, however, be used
+    when the type of the reduction result is explicitly specified:
+
+    \snippet code/src_concurrent_qtconcurrentmap.cpp 11
 
     \section2 Wrapping Functions that Take Multiple Arguments
 
