@@ -52,12 +52,6 @@
 
 void QXcbConnection::initializeXInput2()
 {
-    // TODO Qt 6 (or perhaps earlier): remove these redundant env variables
-    if (qEnvironmentVariableIsSet("QT_XCB_DEBUG_XINPUT"))
-        const_cast<QLoggingCategory&>(lcQpaXInput()).setEnabled(QtDebugMsg, true);
-    if (qEnvironmentVariableIsSet("QT_XCB_DEBUG_XINPUT_DEVICES"))
-        const_cast<QLoggingCategory&>(lcQpaXInputDevices()).setEnabled(QtDebugMsg, true);
-
     Display *xDisplay = static_cast<Display *>(m_xlib_display);
     if (XQueryExtension(xDisplay, "XInputExtension", &m_xiOpCode, &m_xiEventBase, &m_xiErrorBase)) {
         int xiMajor = 2;
