@@ -43,6 +43,7 @@
 #include "qiosintegration.h"
 #include "qiosviewcontroller.h"
 #include "qiostextresponder.h"
+#include "qiosscreen.h"
 #include "qioswindow.h"
 #ifndef Q_OS_TVOS
 #include "qiosmenu.h"
@@ -359,7 +360,21 @@
 - (void)sendTouchEventWithTimestamp:(ulong)timeStamp
 {
     QIOSIntegration *iosIntegration = QIOSIntegration::instance();
-    QWindowSystemInterface::handleTouchEvent(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
+    if (!static_cast<QUIWindow *>(self.window).sendingEvent) {
+        // The event is likely delivered as part of delayed touch delivery, via
+        // _UIGestureEnvironmentSortAndSendDelayedTouches, due to one of the two
+        // _UISystemGestureGateGestureRecognizer instances on the top level window
+        // having its delaysTouchesBegan set to YES. During this delivery, it's not
+        // safe to spin up a recursive event loop, as our calling function is not
+        // reentrant, so any gestures used by the recursive code, e.g. a native
+        // alert dialog, will fail to recognize. To be on the safe side, we deliver
+        // the event asynchronously.
+        QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::AsynchronousDelivery>(
+            m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
+    } else {
+        QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
+            m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
+    }
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

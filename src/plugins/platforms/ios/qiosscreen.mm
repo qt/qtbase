@@ -192,6 +192,26 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 // -------------------------------------------------------------------------
 
+@implementation QUIWindow
+
+- (id)initWithFrame:(CGRect)frame
+{
+    if ((self = [super initWithFrame:frame]))
+        self->_sendingEvent = NO;
+
+    return self;
+}
+
+- (void)sendEvent:(UIEvent *)event
+{
+    QScopedValueRollback<BOOL>(self->_sendingEvent, YES);
+    [super sendEvent:event];
+}
+
+@end
+
+// -------------------------------------------------------------------------
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -261,7 +281,7 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
 
     if (!m_uiWindow) {
         // Create a window and associated view-controller that we can use
-        m_uiWindow = [[UIWindow alloc] initWithFrame:[m_uiScreen bounds]];
+        m_uiWindow = [[QUIWindow alloc] initWithFrame:[m_uiScreen bounds]];
         m_uiWindow.rootViewController = [[[QIOSViewController alloc] initWithQIOSScreen:this] autorelease];
     }
 
