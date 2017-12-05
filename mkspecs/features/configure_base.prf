@@ -23,9 +23,29 @@ QMAKE_MAKE_NAME = $$basename(QMAKE_MAKE)
 # Make sure we don't inherit MAKEFLAGS - -i in particular is fatal.
 QMAKE_MAKE = "$${SETENV_PFX}MAKEFLAGS=$$SETENV_SFX $$QMAKE_MAKE"
 
+QMAKE_PERSIST_LOG = false
+QMAKE_PERSISTED_LOG =
+
 defineTest(qtLog) {
     write_file($$QMAKE_CONFIG_LOG, 1, append)
     $$QMAKE_CONFIG_VERBOSE: for (l, 1): log("$$l$$escape_expand(\\n)")
+    $$QMAKE_PERSIST_LOG {
+        QMAKE_PERSISTED_LOG += $$1
+        export(QMAKE_PERSISTED_LOG)
+    }
+}
+
+defineTest(qtPersistLog) {
+    QMAKE_PERSIST_LOG = true
+    QMAKE_PERSISTED_LOG =
+    export(QMAKE_PERSIST_LOG)
+    export(QMAKE_PERSISTED_LOG)
+}
+
+defineReplace(qtPersistedLog) {
+    QMAKE_PERSIST_LOG = false
+    export(QMAKE_PERSIST_LOG)
+    return($$QMAKE_PERSISTED_LOG)
 }
 
 defineTest(qtRunLoggedCommand) {
