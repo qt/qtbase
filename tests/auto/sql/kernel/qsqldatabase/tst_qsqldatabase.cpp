@@ -126,6 +126,8 @@ private slots:
     void formatValueTrimStrings();
     void precisionPolicy_data() { generic_data(); }
     void precisionPolicy();
+    void multipleThreads_data() { generic_data(); }
+    void multipleThreads();
 
     void db2_valueCacheUpdate_data() { generic_data("QDB2"); }
     void db2_valueCacheUpdate();
@@ -2315,6 +2317,39 @@ void tst_QSqlDatabase::cloneDatabase()
         QSqlDatabase clonedDatabase = QSqlDatabase::cloneDatabase(db, "clonedDatabaseCopy");
         QCOMPARE(clonedDatabase.numericalPrecisionPolicy(), db.numericalPrecisionPolicy());
     }
+}
+
+class DatabaseThreadObject : public QObject
+{
+    Q_OBJECT
+public:
+    DatabaseThreadObject(const QString &name, QObject *parent = nullptr) : QObject(parent), dbName(name)
+    {}
+public slots:
+    void ready()
+    {
+        QTest::ignoreMessage(QtWarningMsg,
+            "QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        QVERIFY(!db.isValid());
+        QThread::currentThread()->exit();
+    }
+private:
+    QString dbName;
+};
+
+void tst_QSqlDatabase::multipleThreads()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    DatabaseThreadObject dto(dbName);
+    QThread t;
+    dto.moveToThread(&t);
+    connect(&t, &QThread::started, &dto, &DatabaseThreadObject::ready);
+    t.start();
+    QTRY_VERIFY(t.isRunning());
+    QTRY_VERIFY(t.isFinished());
 }
 
 QTEST_MAIN(tst_QSqlDatabase)

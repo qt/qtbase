@@ -50,6 +50,7 @@
 #include "private/qsqlnulldriver_p.h"
 #include "qmutex.h"
 #include "qhash.h"
+#include "qthread.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -232,6 +233,11 @@ QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
     dict->lock.lockForRead();
     QSqlDatabase db = dict->value(name);
     dict->lock.unlock();
+    if (db.driver() && db.driver()->thread() != QThread::currentThread()) {
+        qWarning("QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
+        return QSqlDatabase();
+    }
+
     if (db.isValid() && !db.isOpen() && open) {
         if (!db.open())
             qWarning() << "QSqlDatabasePrivate::database: unable to open database:" << db.lastError().text();
