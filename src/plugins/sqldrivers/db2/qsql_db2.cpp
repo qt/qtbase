@@ -156,7 +156,7 @@ static SQLTCHAR* qToTChar(const QString& str)
     return (SQLTCHAR*)str.utf16();
 }
 
-static QString qWarnDB2Handle(int handleType, SQLHANDLE handle)
+static QString qWarnDB2Handle(int handleType, SQLHANDLE handle, int *errorCode)
 {
     SQLINTEGER nativeCode;
     SQLSMALLINT msgLen;
@@ -171,22 +171,51 @@ static QString qWarnDB2Handle(int handleType, SQLHANDLE handle)
                        (SQLTCHAR*) description,
                        SQL_MAX_MESSAGE_LENGTH - 1, /* in bytes, not in characters */
                        &msgLen);
-    if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
+    if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
+        if (errorCode)
+            *errorCode = nativeCode;
         return QString(qFromTChar(description));
+    }
     return QString();
 }
 
-static QString qDB2Warn(const QDB2DriverPrivate* d)
+static QString qDB2Warn(const QDB2DriverPrivate* d, QStringList *errorCodes = nullptr)
 {
-    return (qWarnDB2Handle(SQL_HANDLE_ENV, d->hEnv) + QLatin1Char(' ')
-             + qWarnDB2Handle(SQL_HANDLE_DBC, d->hDbc));
+    int errorCode = 0;
+    QString error = qWarnDB2Handle(SQL_HANDLE_ENV, d->hEnv, &errorCode);
+    if (errorCodes && errorCode != 0) {
+        *errorCodes << QString::number(errorCode);
+        errorCode = 0;
+    }
+    if (!error.isEmpty())
+        error += QLatin1Char(' ');
+    error += qWarnDB2Handle(SQL_HANDLE_DBC, d->hDbc, &errorCode);
+    if (errorCodes && errorCode != 0)
+        *errorCodes << QString::number(errorCode);
+    return error;
 }
 
-static QString qDB2Warn(const QDB2ResultPrivate* d)
+static QString qDB2Warn(const QDB2ResultPrivate* d, QStringList *errorCodes = nullptr)
 {
-    return (qWarnDB2Handle(SQL_HANDLE_ENV, d->drv_d_func()->hEnv) + QLatin1Char(' ')
-             + qWarnDB2Handle(SQL_HANDLE_DBC, d->drv_d_func()->hDbc)
-             + qWarnDB2Handle(SQL_HANDLE_STMT, d->hStmt));
+    int errorCode = 0;
+    QString error = qWarnDB2Handle(SQL_HANDLE_ENV, d->drv_d_func()->hEnv, &errorCode);
+    if (errorCodes && errorCode != 0) {
+        *errorCodes << QString::number(errorCode);
+        errorCode = 0;
+    }
+    if (!error.isEmpty())
+        error += QLatin1Char(' ');
+    error += qWarnDB2Handle(SQL_HANDLE_DBC, d->drv_d_func()->hDbc, &errorCode);
+    if (errorCodes && errorCode != 0) {
+        *errorCodes << QString::number(errorCode);
+        errorCode = 0;
+    }
+    if (!error.isEmpty())
+        error += QLatin1Char(' ');
+    error += qWarnDB2Handle(SQL_HANDLE_STMT, d->hStmt, &errorCode);
+    if (errorCodes && errorCode != 0)
+        *errorCodes << QString::number(errorCode);
+    return error;
 }
 
 static void qSqlWarning(const QString& message, const QDB2DriverPrivate* d)
@@ -204,13 +233,19 @@ static void qSqlWarning(const QString& message, const QDB2ResultPrivate* d)
 static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
                             const QDB2DriverPrivate* p)
 {
-    return QSqlError(QLatin1String("QDB2: ") + err, qDB2Warn(p), type);
+    QStringList errorCodes;
+    const QString error = qDB2Warn(p, &errorCodes);
+    return QSqlError(QStringLiteral("QDB2: ") + err, error, type,
+                     errorCodes.join(QLatin1Char(';')));
 }
 
 static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
                             const QDB2ResultPrivate* p)
 {
-    return QSqlError(QLatin1String("QDB2: ") + err, qDB2Warn(p), type);
+    QStringList errorCodes;
+    const QString error = qDB2Warn(p, &errorCodes);
+    return QSqlError(QStringLiteral("QDB2: ") + err, error, type,
+                     errorCodes.join(QLatin1Char(';')));
 }
 
 static QVariant::Type qDecodeDB2Type(SQLSMALLINT sqltype)
