@@ -56,6 +56,8 @@ public:
     QIOSScreen(UIScreen *screen);
     ~QIOSScreen();
 
+    QString name() const override;
+
     QRect geometry() const Q_DECL_OVERRIDE;
     QRect availableGeometry() const Q_DECL_OVERRIDE;
     int depth() const Q_DECL_OVERRIDE;

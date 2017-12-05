@@ -280,6 +280,16 @@ QIOSScreen::~QIOSScreen()
     [m_uiWindow release];
 }
 
+QString QIOSScreen::name() const
+{
+    if (m_uiScreen == [UIScreen mainScreen]) {
+        return QString::fromNSString([UIDevice currentDevice].model)
+            + QLatin1String(" built-in display");
+    } else {
+        return QLatin1String("External display");
+    }
+}
+
 void QIOSScreen::updateProperties()
 {
     QRect previousGeometry = m_geometry;
