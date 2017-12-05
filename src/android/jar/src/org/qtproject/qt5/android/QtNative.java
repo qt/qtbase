@@ -500,15 +500,16 @@ public class QtNative
         }
     }
 
-    static public void sendGenericMotionEvent(MotionEvent event, int id)
+    static public boolean sendGenericMotionEvent(MotionEvent event, int id)
     {
         if (event.getActionMasked() != MotionEvent.ACTION_SCROLL
                 || (event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != InputDevice.SOURCE_CLASS_POINTER) {
-            return;
+            return false;
         }
 
         mouseWheel(id, (int) event.getX(), (int) event.getY(),
                        event.getAxisValue(MotionEvent.AXIS_HSCROLL), event.getAxisValue(MotionEvent.AXIS_VSCROLL));
+        return true;
     }
 
     public static Context getContext() {

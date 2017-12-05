@@ -229,7 +229,7 @@ class QPSQLResultPrivate : public QSqlResultPrivate
 {
     Q_DECLARE_PUBLIC(QPSQLResult)
 public:
-    Q_DECLARE_SQLDRIVER_PRIVATE(QPSQLDriver);
+    Q_DECLARE_SQLDRIVER_PRIVATE(QPSQLDriver)
     QPSQLResultPrivate(QPSQLResult *q, const QPSQLDriver *drv)
       : QSqlResultPrivate(q, drv),
         result(0),

@@ -294,7 +294,7 @@ static bool rootLevelRunLoopIntegration()
 {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-        selector:@selector(applicationDidFinishLaunching)
+        selector:@selector(applicationDidFinishLaunching:)
         name:UIApplicationDidFinishLaunchingNotification
         object:nil];
 
@@ -320,8 +320,10 @@ static bool rootLevelRunLoopIntegration()
 #  error "Unknown processor family"
 #endif
 
-+ (void)applicationDidFinishLaunching
++ (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    qCDebug(lcQpaApplication) << "Application launched with options" << notification.userInfo;
+
     if (!isQtApplication())
         return;
 
@@ -329,7 +331,7 @@ static bool rootLevelRunLoopIntegration()
         // We schedule the main-redirection for the next run-loop pass, so that we
         // can return from this function and let UIApplicationMain finish its job.
         // This results in running Qt's application eventloop as a nested runloop.
-        qEventDispatcherDebug() << "Scheduling main() on next run-loop pass";
+        qCDebug(lcQpaApplication) << "Scheduling main() on next run-loop pass";
         CFRunLoopTimerRef userMainTimer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault,
              CFAbsoluteTimeGetCurrent(), 0, 0, 0, ^(CFRunLoopTimerRef) { user_main_trampoline(); });
         CFRunLoopAddTimer(CFRunLoopGetMain(), userMainTimer, kCFRunLoopCommonModes);
@@ -339,7 +341,7 @@ static bool rootLevelRunLoopIntegration()
 
     switch (setjmp(processEventEnterJumpPoint)) {
     case kJumpPointSetSuccessfully:
-        qEventDispatcherDebug() << "Running main() on separate stack"; qIndent();
+        qCDebug(lcQpaApplication) << "Running main() on separate stack"; qIndent();
 
         // Redirect the stack pointer to the start of the reserved stack. This ensures
         // that when we longjmp out of the event dispatcher and continue execution, the
@@ -358,7 +360,7 @@ static bool rootLevelRunLoopIntegration()
     case kJumpedFromEventDispatcherProcessEvents:
         // We've returned from the longjmp in the event dispatcher,
         // and the stack has been restored to its old self.
-        qUnIndent(); qEventDispatcherDebug() << "Returned from processEvents";
+        qUnIndent(); qCDebug(lcQpaApplication) << "Returned from processEvents";
 
         if (Q_UNLIKELY(debugStackUsage))
             userMainStack.printUsage();
@@ -422,6 +424,8 @@ QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
     , m_processEventLevel(0)
     , m_runLoopExitObserver(this, &QIOSEventDispatcher::handleRunLoopExit, kCFRunLoopExit)
 {
+    // We want all delivery of events from the system to be handled synchronously
+    QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
 }
 
 bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)

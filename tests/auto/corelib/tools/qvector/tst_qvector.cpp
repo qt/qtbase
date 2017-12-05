@@ -245,6 +245,7 @@ private slots:
     void qhashInt() const { qhash<int>(); }
     void qhashMovable() const { qhash<Movable>(); }
     void qhashCustom() const { qhash<Custom>(); }
+    void removeAllWithAlias() const;
     void removeInt() const;
     void removeMovable() const;
     void removeCustom() const;
@@ -1720,6 +1721,13 @@ void tst_QVector::prependCustom() const
     const int instancesCount = Custom::counter.loadAcquire();
     prepend<Custom>();
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
+}
+
+void tst_QVector::removeAllWithAlias() const
+{
+    QVector<QString> strings;
+    strings << "One" << "Two" << "Three" << "One" /* must be distinct, but equal */;
+    QCOMPARE(strings.removeAll(strings.front()), 2); // will trigger asan/ubsan
 }
 
 template<typename T>

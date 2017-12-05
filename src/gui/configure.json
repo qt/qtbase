@@ -1193,6 +1193,7 @@
             "label": "XCB",
             "section": "Platform plugins",
             "autoDetect": "!config.darwin",
+            "enable": "input.xcb == 'system' || input.xcb == 'qt'",
             "condition": "libs.xcb",
             "output": [ "privateFeature" ]
         },
