@@ -59,8 +59,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QRegion;
-
 template <typename T>
 class QVector
 {
@@ -290,8 +288,6 @@ public:
     inline std::vector<T> toStdVector() const
     { return std::vector<T>(d->begin(), d->end()); }
 private:
-    friend class QRegion; // Optimization for QRegion::rects()
-
     // ### Qt6: remove const from int parameters
     void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
     void reallocData(const int sz) { reallocData(sz, d->alloc); }
