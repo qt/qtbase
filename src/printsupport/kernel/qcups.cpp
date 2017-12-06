@@ -150,6 +150,32 @@ static inline QString bannerPageToString(const QCUPSSupport::BannerPage bannerPa
     return QString();
 }
 
+static inline QCUPSSupport::BannerPage stringToBannerPage(const QString &bannerPage)
+{
+    if (bannerPage == QLatin1String("none")) return QCUPSSupport::NoBanner;
+    else if (bannerPage == QLatin1String("standard")) return QCUPSSupport::Standard;
+    else if (bannerPage == QLatin1String("unclassified")) return QCUPSSupport::Unclassified;
+    else if (bannerPage == QLatin1String("confidential")) return QCUPSSupport::Confidential;
+    else if (bannerPage == QLatin1String("classified")) return QCUPSSupport::Classified;
+    else if (bannerPage == QLatin1String("secret")) return QCUPSSupport::Secret;
+    else if (bannerPage == QLatin1String("topsecret")) return QCUPSSupport::TopSecret;
+
+    return QCUPSSupport::NoBanner;
+}
+
+QCUPSSupport::JobSheets QCUPSSupport::parseJobSheets(const QString &jobSheets)
+{
+    JobSheets result;
+
+    const QStringList parts = jobSheets.split(QLatin1Char(','));
+    if (parts.count() == 2) {
+        result.startBannerPage = stringToBannerPage(parts[0]);
+        result.endBannerPage = stringToBannerPage(parts[1]);
+    }
+
+    return result;
+}
+
 void QCUPSSupport::setBannerPages(QPrinter *printer, const BannerPage startBannerPage, const BannerPage endBannerPage)
 {
     QStringList cupsOptions = cupsOptionsList(printer);

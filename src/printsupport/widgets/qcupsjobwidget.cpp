@@ -196,8 +196,15 @@ void QCupsJobWidget::initBannerPages()
     m_ui.endBannerPageCombo->addItem(tr("Secret", "CUPS Banner page"),       QVariant::fromValue(QCUPSSupport::Secret));
     m_ui.endBannerPageCombo->addItem(tr("Top Secret", "CUPS Banner page"),   QVariant::fromValue(QCUPSSupport::TopSecret));
 
-    setStartBannerPage(QCUPSSupport::NoBanner);
-    setEndBannerPage(QCUPSSupport::NoBanner);
+    QCUPSSupport::JobSheets jobSheets;
+
+    if (m_printDevice) {
+        const QString jobSheetsString = m_printDevice->property(PDPK_CupsJobSheets).toString();
+        jobSheets = QCUPSSupport::parseJobSheets(jobSheetsString);
+    }
+
+    setStartBannerPage(jobSheets.startBannerPage);
+    setEndBannerPage(jobSheets.endBannerPage);
 }
 
 void QCupsJobWidget::setStartBannerPage(const QCUPSSupport::BannerPage bannerPage)

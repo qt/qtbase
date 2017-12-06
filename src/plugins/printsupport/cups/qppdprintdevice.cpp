@@ -429,6 +429,8 @@ QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) con
         return QVariant::fromValue<ppd_file_t *>(m_ppd);
     else if (key == PDPK_CupsJobPriority)
         return printerOption(QStringLiteral("job-priority"));
+    else if (key == PDPK_CupsJobSheets)
+        return printerOption(QStringLiteral("job-sheets"));
 
     return QVariant();
 }

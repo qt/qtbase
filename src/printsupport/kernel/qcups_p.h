@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 #define PDPK_PpdFile         QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase)
 #define PDPK_PpdOption       QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 1)
 #define PDPK_CupsJobPriority QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 2)
+#define PDPK_CupsJobSheets   QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 3)
 
 class Q_PRINTSUPPORT_EXPORT QCUPSSupport
 {
@@ -139,6 +140,13 @@ public:
     static void setPagesPerSheetLayout(QPrinter *printer, const PagesPerSheet pagesPerSheet,
                                        const PagesPerSheetLayout pagesPerSheetLayout);
     static void setPageRange(QPrinter *printer, int pageFrom, int pageTo);
+
+    struct JobSheets
+    {
+        BannerPage startBannerPage = QCUPSSupport::NoBanner;
+        BannerPage endBannerPage = QCUPSSupport::NoBanner;
+    };
+    static JobSheets parseJobSheets(const QString &jobSheets);
 };
 Q_DECLARE_TYPEINFO(QCUPSSupport::JobHoldUntil,        Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QCUPSSupport::BannerPage,          Q_PRIMITIVE_TYPE);
