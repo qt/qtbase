@@ -5145,13 +5145,12 @@ static QPixmap grabWindow(QWindow *window, int x, int y, int width, int height)
 
 bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, unsigned int callerLine)
 {
-    const QRegion r = QRegion(region);
     QWindow *window = child.window()->windowHandle();
     Q_ASSERT(window);
     const QPoint offset = child.mapTo(child.window(), QPoint(0,0));
     bool grabBackingStore = false;
-    for (int i = 0; i < r.rects().size(); ++i) {
-        QRect rect = r.rects().at(i).translated(offset);
+    for (QRect r : region) {
+        QRect rect = r.translated(offset);
         for (int t = 0; t < 6; t++) {
             const QPixmap pixmap = grabBackingStore
                 ? child.grab(rect)
@@ -5176,7 +5175,7 @@ bool verifyColor(QWidget &child, const QRegion &region, const QColor &color, uns
                 } else {
                     if (t == 4) {
                         grabBackingStore = true;
-                        rect = r.rects().at(i);
+                        rect = r;
                     } else {
                         QTest::qWait(200);
                     }
