@@ -65,13 +65,14 @@ QT_BEGIN_NAMESPACE
 class QString;
 class QTime;
 class QPrinter;
+class QPrintDevice;
 
 class QCupsJobWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit QCupsJobWidget(QPrinter *printer, QWidget *parent = nullptr);
+    explicit QCupsJobWidget(QPrinter *printer, QPrintDevice *printDevice, QWidget *parent = nullptr);
     ~QCupsJobWidget();
     void setupPrinter();
 
@@ -102,6 +103,7 @@ private:
     void initBannerPages();
 
     QPrinter *m_printer;
+    QPrintDevice *m_printDevice;
     Ui::QCupsJobWidget m_ui;
 
     Q_DISABLE_COPY(QCupsJobWidget)

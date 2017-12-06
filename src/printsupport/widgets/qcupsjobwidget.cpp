@@ -52,6 +52,8 @@
 #include <QPrinter>
 #include <QPrintEngine>
 
+#include <kernel/qprintdevice_p.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -64,9 +66,10 @@ QT_BEGIN_NAMESPACE
     \inmodule QtPrintSupport
  */
 
-QCupsJobWidget::QCupsJobWidget(QPrinter *printer, QWidget *parent)
+QCupsJobWidget::QCupsJobWidget(QPrinter *printer, QPrintDevice *printDevice, QWidget *parent)
     : QWidget(parent),
-      m_printer(printer)
+      m_printer(printer),
+      m_printDevice(printDevice)
 {
     m_ui.setupUi(this);
     //set all the default values
@@ -151,7 +154,18 @@ QString QCupsJobWidget::jobBilling() const
 
 void QCupsJobWidget::initJobPriority()
 {
-    setJobPriority(50);
+    int priority = -1;
+    if (m_printDevice) {
+        bool ok;
+        priority = m_printDevice->property(PDPK_CupsJobPriority).toInt(&ok);
+        if (!ok)
+            priority = -1;
+    }
+
+    if (priority < 0 || priority > 100)
+        priority = 50;
+
+    setJobPriority(priority);
 }
 
 void QCupsJobWidget::setJobPriority(int jobPriority)

@@ -333,7 +333,7 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *
     widget.pageSetup->setPrinter(printer, outputFormat, printerName);
 
 #if QT_CONFIG(cupsjobwidget)
-    m_jobOptions = new QCupsJobWidget(printer);
+    m_jobOptions = new QCupsJobWidget(printer, currentPrintDevice);
     widget.tabs->insertTab(1, m_jobOptions, tr("Job Options"));
 #endif
 
