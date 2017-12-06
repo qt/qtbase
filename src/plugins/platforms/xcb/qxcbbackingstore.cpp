@@ -520,16 +520,7 @@ void QXcbShmImage::setClip(const QRegion &region)
         static const uint32_t values[] = { XCB_NONE };
         xcb_change_gc(xcb_connection(), m_gc, mask, values);
     } else {
-        const QVector<QRect> qrects = region.rects();
-        QVector<xcb_rectangle_t> xcb_rects(qrects.size());
-
-        for (int i = 0; i < qrects.size(); i++) {
-            xcb_rects[i].x = qrects[i].x();
-            xcb_rects[i].y = qrects[i].y();
-            xcb_rects[i].width = qrects[i].width();
-            xcb_rects[i].height = qrects[i].height();
-        }
-
+        const auto xcb_rects = qRegionToXcbRectangleList(region);
         xcb_set_clip_rectangles(xcb_connection(),
                                 XCB_CLIP_ORDERING_YX_BANDED,
                                 m_gc,

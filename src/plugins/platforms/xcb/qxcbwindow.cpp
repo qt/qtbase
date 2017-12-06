@@ -2776,6 +2776,15 @@ void QXcbWindow::setOpacity(qreal level)
                         (uchar *)&value);
 }
 
+QVector<xcb_rectangle_t> qRegionToXcbRectangleList(const QRegion &region)
+{
+    QVector<xcb_rectangle_t> rects;
+    rects.reserve(region.rectCount());
+    for (const QRect &r : region)
+        rects.push_back(qRectToXCBRectangle(r));
+    return rects;
+}
+
 void QXcbWindow::setMask(const QRegion &region)
 {
     if (!connection()->hasXShape())
@@ -2784,10 +2793,7 @@ void QXcbWindow::setMask(const QRegion &region)
         xcb_shape_mask(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                        XCB_SHAPE_SK_BOUNDING, xcb_window(), 0, 0, XCB_NONE);
     } else {
-        QVector<xcb_rectangle_t> rects;
-        rects.reserve(region.rectCount());
-        for (const QRect &r : region)
-            rects.push_back(qRectToXCBRectangle(r));
+        const auto rects = qRegionToXcbRectangleList(region);
         xcb_shape_rectangles(connection()->xcb_connection(), XCB_SHAPE_SO_SET,
                              XCB_SHAPE_SK_BOUNDING, XCB_CLIP_ORDERING_UNSORTED,
                              xcb_window(), 0, 0, rects.size(), &rects[0]);
