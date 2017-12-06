@@ -583,6 +583,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                         " -plugins dir        : Specify a directory where to search for plugins.\n"
                         " -input dir/file     : Specify the root directory for test cases or a single test case file.\n"
                         " -translation file   : Specify the translation file.\n"
+                        " -file-selector dir  : Specify a file selector for the QML engine.\n"
                         );
             }
 
