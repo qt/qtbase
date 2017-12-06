@@ -139,7 +139,11 @@ QTime QCupsJobWidget::jobHoldTime() const
 
 void QCupsJobWidget::initJobBilling()
 {
-    setJobBilling(QString());
+    QString jobBilling;
+    if (m_printDevice)
+        jobBilling = m_printDevice->property(PDPK_CupsJobBilling).toString();
+
+    setJobBilling(jobBilling);
 }
 
 void QCupsJobWidget::setJobBilling(const QString &jobBilling)
