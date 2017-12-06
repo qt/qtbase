@@ -210,7 +210,7 @@ void QUnixPageSetupDialogPrivate::init()
     Q_Q(QPageSetupDialog);
 
     widget = new QPageSetupWidget(q);
-    widget->setPrinter(printer, printer->outputFormat(), printer->printerName());
+    widget->setPrinter(printer, nullptr, printer->outputFormat(), printer->printerName());
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok
                                                      | QDialogButtonBox::Cancel,
@@ -371,12 +371,17 @@ void QPageSetupWidget::initPageSizes()
 
 // Set the dialog to use the given QPrinter
 // Usually only called on first creation
-void QPageSetupWidget::setPrinter(QPrinter *printer, QPrinter::OutputFormat outputFormat, const QString &printerName)
+void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
+                                  QPrinter::OutputFormat outputFormat, const QString &printerName)
 {
     m_printer = printer;
 
     // Initialize the layout to the current QPrinter layout
     m_pageLayout = m_printer->pageLayout();
+
+    if (printDevice)
+        m_pageLayout.setPageSize(printDevice->defaultPageSize());
+
     // Assume if margins are Points then is by default, so set to locale default units
     if (m_pageLayout.units() == QPageLayout::Point) {
         if (QLocale().measurementSystem() == QLocale::MetricSystem)

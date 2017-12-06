@@ -64,6 +64,7 @@ QT_REQUIRE_CONFIG(printdialog);
 QT_BEGIN_NAMESPACE
 
 class QPrinter;
+class QPrintDevice;
 class QPagePreview;
 
 class QPageSetupWidget : public QWidget {
@@ -71,7 +72,8 @@ class QPageSetupWidget : public QWidget {
 public:
     explicit QPageSetupWidget(QWidget *parent = 0);
 
-    void setPrinter(QPrinter *printer, QPrinter::OutputFormat outputFormat, const QString &printerName);
+    void setPrinter(QPrinter *printer, QPrintDevice *printDevice,
+                    QPrinter::OutputFormat outputFormat, const QString &printerName);
     void setupPrinter() const;
 
 private slots:

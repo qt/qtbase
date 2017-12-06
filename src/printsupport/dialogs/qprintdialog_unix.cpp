@@ -330,7 +330,7 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *
     connect(m_buttons->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(accept()));
     connect(m_buttons->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
 
-    widget.pageSetup->setPrinter(printer, outputFormat, printerName);
+    widget.pageSetup->setPrinter(printer, currentPrintDevice, outputFormat, printerName);
 
 #if QT_CONFIG(cupsjobwidget)
     m_jobOptions = new QCupsJobWidget(printer, currentPrintDevice);
