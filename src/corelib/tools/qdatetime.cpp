@@ -2979,18 +2979,18 @@ inline QDateTime::Data QDateTimePrivate::create(const QDate &toDate, const QTime
 // DST transitions are disambiguated by hint.
 inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QTimeZone &zone,
                                                       DaylightStatus hint,
-                                                      QDate *localDate, QTime *localTime)
+                                                      QDate *zoneDate, QTime *zoneTime)
 {
     // Get the effective data from QTimeZone
     QTimeZonePrivate::Data data = zone.d->dataForLocalTime(zoneMSecs, int(hint));
-    // Docs state any LocalTime before 1970-01-01 will *not* have any DST applied
+    // Docs state any time before 1970-01-01 will *not* have any DST applied
     // but all affected times afterwards will have DST applied.
-    if (data.atMSecsSinceEpoch >= 0) {
-        msecsToTime(data.atMSecsSinceEpoch + (data.offsetFromUtc * 1000), localDate, localTime);
-        return data.atMSecsSinceEpoch;
+    if (data.atMSecsSinceEpoch < 0) {
+        msecsToTime(zoneMSecs, zoneDate, zoneTime);
+        return zoneMSecs - data.standardTimeOffset * 1000;
     } else {
-        msecsToTime(zoneMSecs, localDate, localTime);
-        return zoneMSecs - (data.standardTimeOffset * 1000);
+        msecsToTime(data.atMSecsSinceEpoch + data.offsetFromUtc * 1000, zoneDate, zoneTime);
+        return data.atMSecsSinceEpoch;
     }
 }
 #endif // timezone
