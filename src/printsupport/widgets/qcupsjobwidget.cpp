@@ -73,7 +73,6 @@ QCupsJobWidget::QCupsJobWidget(QPrinter *printer, QPrintDevice *printDevice, QWi
 {
     m_ui.setupUi(this);
     //set all the default values
-    //TODO restore last used values
     initJobHold();
     initJobBilling();
     initJobPriority();
@@ -105,7 +104,14 @@ void QCupsJobWidget::initJobHold()
 
     connect(m_ui.jobHoldComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(toggleJobHoldTime()));
 
-    setJobHold(QCUPSSupport::NoHold, QTime());
+    QCUPSSupport::JobHoldUntilWithTime jobHoldWithTime;
+
+    if (m_printDevice) {
+        const QString jobHoldUntilString = m_printDevice->property(PDPK_CupsJobHoldUntil).toString();
+        jobHoldWithTime = QCUPSSupport::parseJobHoldUntil(jobHoldUntilString);
+    }
+
+    setJobHold(jobHoldWithTime.jobHold, jobHoldWithTime.time);
     toggleJobHoldTime();
 }
 

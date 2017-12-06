@@ -67,11 +67,12 @@ QT_BEGIN_NAMESPACE
 // removed from the dialogs.
 #define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
 
-#define PDPK_PpdFile         QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase)
-#define PDPK_PpdOption       QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 1)
-#define PDPK_CupsJobPriority QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 2)
-#define PDPK_CupsJobSheets   QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 3)
-#define PDPK_CupsJobBilling  QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 4)
+#define PDPK_PpdFile          QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase)
+#define PDPK_PpdOption        QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 1)
+#define PDPK_CupsJobPriority  QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 2)
+#define PDPK_CupsJobSheets    QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 3)
+#define PDPK_CupsJobBilling   QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 4)
+#define PDPK_CupsJobHoldUntil QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 5)
 
 class Q_PRINTSUPPORT_EXPORT QCUPSSupport
 {
@@ -148,6 +149,13 @@ public:
         BannerPage endBannerPage = QCUPSSupport::NoBanner;
     };
     static JobSheets parseJobSheets(const QString &jobSheets);
+
+    struct JobHoldUntilWithTime
+    {
+        JobHoldUntil jobHold;
+        QTime time;
+    };
+    static JobHoldUntilWithTime parseJobHoldUntil(const QString &jobHoldUntil);
 };
 Q_DECLARE_TYPEINFO(QCUPSSupport::JobHoldUntil,        Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QCUPSSupport::BannerPage,          Q_PRIMITIVE_TYPE);

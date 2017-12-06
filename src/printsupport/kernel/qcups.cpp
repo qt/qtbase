@@ -107,6 +107,37 @@ static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, 
     return QString();
 }
 
+QCUPSSupport::JobHoldUntilWithTime QCUPSSupport::parseJobHoldUntil(const QString &jobHoldUntil)
+{
+    if (jobHoldUntil == QLatin1String("indefinite")) {
+        return { QCUPSSupport::Indefinite, QTime() };
+    } else if (jobHoldUntil == QLatin1String("day-time")) {
+        return { QCUPSSupport::DayTime, QTime() };
+    } else if (jobHoldUntil == QLatin1String("night")) {
+        return { QCUPSSupport::Night, QTime() };
+    } else if (jobHoldUntil == QLatin1String("second-shift")) {
+        return { QCUPSSupport::SecondShift, QTime() };
+    } else if (jobHoldUntil == QLatin1String("third-shift")) {
+        return { QCUPSSupport::ThirdShift, QTime() };
+    } else if (jobHoldUntil == QLatin1String("weekend")) {
+        return { QCUPSSupport::Weekend, QTime() };
+    }
+
+
+    QTime parsedTime = QTime::fromString(jobHoldUntil, QStringLiteral("h:m:s"));
+    if (!parsedTime.isValid())
+        parsedTime = QTime::fromString(jobHoldUntil, QStringLiteral("h:m"));
+    if (parsedTime.isValid()) {
+        // CUPS time is in UTC, user expects local time, so get the equivalent
+        QDateTime dateTimeUtc = QDateTime::currentDateTimeUtc();
+        dateTimeUtc.setTime(parsedTime);
+        return { QCUPSSupport::SpecificTime, dateTimeUtc.toLocalTime().time() };
+    }
+
+    return { QCUPSSupport::NoHold, QTime() };
+}
+
+
 void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, const QTime &holdUntilTime)
 {
     QStringList cupsOptions = cupsOptionsList(printer);

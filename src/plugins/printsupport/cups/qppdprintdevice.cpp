@@ -433,6 +433,8 @@ QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) con
         return printerOption(QStringLiteral("job-sheets"));
     else if (key == PDPK_CupsJobBilling)
         return printerOption(QStringLiteral("job-billing"));
+    else if (key == PDPK_CupsJobHoldUntil)
+        return printerOption(QStringLiteral("job-hold-until"));
 
     return QVariant();
 }
