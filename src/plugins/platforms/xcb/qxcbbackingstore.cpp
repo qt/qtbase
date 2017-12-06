@@ -445,12 +445,11 @@ void QXcbShmImage::shmPutImage(xcb_drawable_t drawable, const QRegion &region, c
 
 void QXcbShmImage::flushPixmap(const QRegion &region, bool fullRegion)
 {
-    QVector<QRect> rects;
     if (!fullRegion) {
-        rects = m_pendingFlush.intersected(region).rects();
+        auto actualRegion = m_pendingFlush.intersected(region);
         m_pendingFlush -= region;
-    } else {
-        rects = region.rects();
+        flushPixmap(actualRegion, true);
+        return;
     }
 
     xcb_image_t xcb_subimage;
@@ -467,7 +466,7 @@ void QXcbShmImage::flushPixmap(const QRegion &region, bool fullRegion)
 
     const bool needsByteSwap = xcb_subimage.byte_order != m_xcb_image->byte_order;
 
-    for (const QRect &rect : qAsConst(rects)) {
+    for (const QRect &rect : region) {
         // We must make sure that each request is not larger than max_req_size.
         // Each request takes req_size + m_xcb_image->stride * height bytes.
         static const uint32_t req_size = sizeof(xcb_put_image_request_t);
