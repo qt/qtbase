@@ -101,6 +101,7 @@ Q_OBJECT
     public:
     SignalEmitter(QObject *parent = 0)
         : QObject(parent) {}
+public Q_SLOTS:
     void emitSignalWithNoArg()
         { emit signalWithNoArg(); }
     void emitSignalWithIntArg(int arg)
@@ -251,6 +252,7 @@ private slots:
     void qtbug_46059();
     void qtbug_46703();
     void postEventFromBeginSelectTransitions();
+    void dontProcessSlotsWhenMachineIsNotRunning();
 };
 
 class TestState : public QState
@@ -6656,6 +6658,36 @@ void tst_QStateMachine::postEventFromBeginSelectTransitions()
     QTRY_COMPARE(machine.configuration().contains(&success), true);
 
     QVERIFY(machine.isRunning());
+}
+
+void tst_QStateMachine::dontProcessSlotsWhenMachineIsNotRunning()
+{
+    QStateMachine machine;
+    QState initialState;
+    QFinalState finalState;
+
+    struct Emitter : SignalEmitter
+    {
+        QThread thread;
+        Emitter(QObject *parent = nullptr) : SignalEmitter(parent)
+        {
+            moveToThread(&thread);
+            thread.start();
+        }
+    } emitter;
+
+    initialState.addTransition(&emitter, &Emitter::signalWithNoArg, &finalState);
+    QTimer::singleShot(0, [&]() {
+        metaObject()->invokeMethod(&emitter, "emitSignalWithNoArg");
+        metaObject()->invokeMethod(&emitter, "emitSignalWithNoArg");
+    });
+    machine.addState(&initialState);
+    machine.addState(&finalState);
+    machine.setInitialState(&initialState);
+    machine.start();
+    connect(&machine, &QStateMachine::finished, &emitter.thread, &QThread::quit);
+    QSignalSpy signalSpy(&machine, &QStateMachine::finished);
+    QTRY_COMPARE_WITH_TIMEOUT(signalSpy.count(), 1, 100);
 }
 
 QTEST_MAIN(tst_QStateMachine)
