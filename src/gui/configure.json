@@ -1279,6 +1279,7 @@
         },
         "xlib": {
             "label": "XLib",
+            "autoDetect": "!config.darwin || features.xcb",
             "condition": "tests.xlib",
             "output": [ "privateFeature" ]
         },
