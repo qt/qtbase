@@ -446,17 +446,24 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
 
     m_cursor = new QXcbCursor(connection, this);
 
-    // Parse EDID
-    if (m_edid.parse(getEdid()))
-        qCDebug(lcQpaScreen, "EDID data for output \"%s\": identifier '%s', manufacturer '%s', model '%s', serial '%s', physical size: %.2fx%.2f",
-                name().toLatin1().constData(),
-                m_edid.identifier.toLatin1().constData(),
-                m_edid.manufacturer.toLatin1().constData(),
-                m_edid.model.toLatin1().constData(),
-                m_edid.serialNumber.toLatin1().constData(),
-                m_edid.physicalSize.width(), m_edid.physicalSize.height());
-    else
-        qCDebug(lcQpaScreen) << "Failed to parse EDID data for output" << name(); // keep this debug, not warning
+    if (connection->hasXRandr()) { // Parse EDID
+        QByteArray edid = getEdid();
+        if (m_edid.parse(edid)) {
+            qCDebug(lcQpaScreen, "EDID data for output \"%s\": identifier '%s', manufacturer '%s',"
+                                 "model '%s', serial '%s', physical size: %.2fx%.2f",
+                    name().toLatin1().constData(),
+                    m_edid.identifier.toLatin1().constData(),
+                    m_edid.manufacturer.toLatin1().constData(),
+                    m_edid.model.toLatin1().constData(),
+                    m_edid.serialNumber.toLatin1().constData(),
+                    m_edid.physicalSize.width(), m_edid.physicalSize.height());
+        } else {
+            // This property is defined by the xrandr spec. Parsing failure indicates a valid error,
+            // but keep this as debug, for details see 4f515815efc318ddc909a0399b71b8a684962f38.
+            qCDebug(lcQpaScreen) << "Failed to parse EDID data for output" << name() <<
+                                    "edid data: " << edid;
+        }
+    }
 }
 
 QXcbScreen::~QXcbScreen()
@@ -899,9 +906,13 @@ QByteArray QXcbScreen::getOutputProperty(xcb_atom_t atom) const
 
 QByteArray QXcbScreen::getEdid() const
 {
+    QByteArray result;
+    if (!connection()->hasXRandr())
+        return result;
+
     // Try a bunch of atoms
     xcb_atom_t atom = connection()->internAtom("EDID");
-    QByteArray result = getOutputProperty(atom);
+    result = getOutputProperty(atom);
     if (result.isEmpty()) {
         atom = connection()->internAtom("EDID_DATA");
         result = getOutputProperty(atom);
