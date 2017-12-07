@@ -24,9 +24,9 @@
         "doubleconversion": {
             "label": "DoubleConversion",
             "test": {
-                "include": "double-conversion/double-conversion.h",
                 "main": "(void) double_conversion::StringToDoubleConverter::NO_FLAGS;"
             },
+            "headers": "double-conversion/double-conversion.h",
             "sources": [
                 "-ldouble-conversion"
             ]
@@ -35,7 +35,6 @@
             "label": "GLib",
             "test": {
                 "head": "typedef struct _GMainContext GMainContext;",
-                "include": "glib.h",
                 "main": [
                     "g_thread_init(NULL);",
                     "(void) g_main_context_default();",
@@ -43,6 +42,7 @@
                     "g_source_add_poll(NULL, NULL);"
                 ]
             },
+            "headers": "glib.h",
             "sources": [
                 { "type": "pkgConfig", "args": "glib-2.0 gthread-2.0" }
             ]
@@ -58,7 +58,6 @@
         "icu": {
             "label": "ICU",
             "test": {
-                "include": [ "unicode/utypes.h", "unicode/ucol.h", "unicode/ustring.h" ],
                 "main": [
                     "UErrorCode status = U_ZERO_ERROR;",
                     "UCollator *collator = ucol_open(\"ru_RU\", &status);",
@@ -66,6 +65,7 @@
                     "    ucol_close(collator);"
                 ]
             },
+            "headers": [ "unicode/utypes.h", "unicode/ucol.h", "unicode/ustring.h" ],
             "sources": [
                 {
                     "builds": {
@@ -84,9 +84,9 @@
         "journald": {
             "label": "journald",
             "test": {
-                "include": [ "systemd/sd-journal.h", "syslog.h" ],
                 "main": "sd_journal_send(\"PRIORITY=%i\", LOG_INFO, NULL);"
             },
+            "headers": [ "systemd/sd-journal.h", "syslog.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "libsystemd" },
                 { "type": "pkgConfig", "args": "libsystemd-journal" }
@@ -95,7 +95,6 @@
         "libatomic": {
             "label": "64 bit atomics",
             "test": {
-                "include": [ "atomic", "cstdint" ],
                 "tail": [
                     "void test(volatile std::atomic<std::int64_t> &a)",
                     "{",
@@ -114,6 +113,7 @@
                 ],
                 "qmake": "CONFIG += c++11"
             },
+            "headers": [ "atomic", "cstdint" ],
             "sources": [
                 "",
                 "-latomic"
@@ -122,13 +122,13 @@
         "libdl": {
             "label": "dlopen()",
             "test": {
-                "include": "dlfcn.h",
                 "main": [
                     "dlclose(dlopen(0, 0));",
                     "dlsym(RTLD_DEFAULT, 0);",
                     "dlerror();"
                 ]
             },
+            "headers": "dlfcn.h",
             "sources": [
                 "",
                 "-ldl"
@@ -137,9 +137,9 @@
         "librt": {
             "label": "clock_gettime()",
             "test": {
-                "include": [ "unistd.h", "time.h" ],
                 "main": "timespec ts; clock_gettime(CLOCK_REALTIME, &ts);"
             },
+            "headers": [ "unistd.h", "time.h" ],
             "sources": [
                 "",
                 "-lrt"
@@ -148,9 +148,9 @@
         "lttng-ust": {
             "label": "lttng-ust",
             "test": {
-                "include": "lttng/ust-events.h",
                 "main": "lttng_session_destroy(nullptr);"
             },
+            "headers": "lttng/ust-events.h",
             "sources": [
                 { "type": "pkgConfig", "args": "lttng-ust" },
                 "-llttng-ust"
@@ -161,13 +161,13 @@
             "label": "PCRE2",
             "test": {
                 "head": "#define PCRE2_CODE_UNIT_WIDTH 16",
-                "include": "pcre2.h",
                 "tail": [
                     "#if (PCRE2_MAJOR < 10) || ((PCRE2_MAJOR == 10) && (PCRE2_MINOR < 20))",
                     "#  error This PCRE version is not supported",
                     "#endif"
                 ]
             },
+            "headers": "pcre2.h",
             "sources": [
                 { "type": "pkgConfig", "args": "libpcre2-16" },
                 "-lpcre2-16"
@@ -176,12 +176,12 @@
         "pps": {
             "label": "PPS",
             "test": {
-                "include": "sys/pps.h",
                 "main": [
                     "pps_decoder_t decoder;",
                     "pps_decoder_initialize(&decoder, NULL);"
                 ]
             },
+            "headers": "sys/pps.h",
             "sources": [
                 "-lpps"
             ]
@@ -189,10 +189,10 @@
         "slog2": {
             "label": "slog2",
             "test": {
-                "include": "sys/slog2.h",
                 "main": "slog2_set_default_buffer((slog2_buffer_t)-1);"
             },
             "export": "",
+            "headers": "sys/slog2.h",
             "sources": [
                 "-lslog2"
             ]

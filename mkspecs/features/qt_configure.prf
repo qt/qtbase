@@ -582,7 +582,33 @@ defineTest(qtConfResolvePathLibs) {
     return($$ret)
 }
 
-# includes-var, includes
+defineReplace(qtConfGetTestIncludes) {
+    defined($${1}._KEYS_, var) {
+        1st = $$first($${1}._KEYS_)
+        equals(1st, 0) {
+            # array; recurse for every element
+            ret =
+            for (k, $${1}._KEYS_): \
+                ret += $$qtConfGetTestIncludes($${1}.$$k)
+            return($$ret)
+        }
+        # object; try condition and recurse
+        !defined($${1}.headers, var):!defined($${1}.headers._KEYS_, var): \  # just plain broken without it
+            error("headers object '$$1' has no nested headers entry")
+        cond = $$eval($${1}.condition)
+        isEmpty(cond): \  # would be pointless otherwise
+            error("headers object '$$1' has no condition")
+        !$$qtConfEvaluate($$cond) {
+            qtLog("header entry '$$1' failed condition '$$cond'.")
+            return()
+        }
+        qtLog("header entry '$$1' passed condition.")
+        return($$qtConfGetTestIncludes($${1}.headers))
+    }
+    return($$eval($$1))  # plain string - or nothing (can happen for top-level call only)
+}
+
+# includes-var, in-paths, test-object-var
 defineTest(qtConfResolvePathIncs) {
     ret = true
     for (incdir, 2) {
@@ -594,6 +620,21 @@ defineTest(qtConfResolvePathIncs) {
     2 -= $$QMAKE_DEFAULT_INCDIRS
     $$1 = $$2
     export($$1)
+    wasm {
+        # FIXME: emcc downloads pre-built libraries and adds their include
+        # path to the clang call dynamically. it would be possible to parse
+        # the emcc -s USE_xyz=1 --cflags output to populate xzy_INCDIR and
+        # thus make the code below work.
+        return($$ret)
+    }
+    hdrs = $$qtConfGetTestIncludes($${3}.headers)
+    for (hdr, hdrs) {
+        h = $$qtConfFindInPathList($$hdr, $$2 $$EXTRA_INCLUDEPATH $$QMAKE_DEFAULT_INCDIRS)
+        isEmpty(h) {
+            qtLog("$$hdr not found in [$$val_escape(2)] and global paths.")
+            ret = false
+        }
+    }
     return($$ret)
 }
 
@@ -662,7 +703,7 @@ defineTest(qtConfLibrary_inline) {
     !qtConfResolveAllLibs($$1): \
         return(false)
 
-    !qtConfResolvePathIncs($${1}.includedir, $$includes): \
+    !qtConfResolvePathIncs($${1}.includedir, $$includes, $$2): \
         return(false)
 
     return(true)
@@ -678,7 +719,7 @@ defineTest(qtConfLibrary_makeSpec) {
     !qtConfResolvePathLibs($${1}.libs, $$eval(QMAKE_LIBDIR_$$spec), $$eval(QMAKE_LIBS_$$spec)): \
         return(false)
 
-    !qtConfResolvePathIncs($${1}.includedir, $$eval(QMAKE_INCDIR_$$spec)): \
+    !qtConfResolvePathIncs($${1}.includedir, $$eval(QMAKE_INCDIR_$$spec), $$2): \
         return(false)
 
     # note that the object is re-exported, because we resolve the libraries.
@@ -741,7 +782,7 @@ defineTest(qtConfLibrary_pkgConfig) {
     }
     !isEmpty(ignored): \
         qtLog("Note: Dropped compiler flags '$$ignored'.")
-    !qtConfResolvePathIncs($${1}.includedir, $$includes): \
+    !qtConfResolvePathIncs($${1}.includedir, $$includes, $$2): \
         return(false)
     $${1}.defines = $$defines
 
@@ -1054,7 +1095,7 @@ defineTest(qtConfTestPrepare_compile) {
 }
 
 defineTest(qtConfPrepareCompileTestSource) {
-    test_dir = $$2
+    test_dir = $$3
 
     test_lang = $$eval($${1}.lang)
     isEmpty(test_lang): test_lang = "c++"
@@ -1071,7 +1112,10 @@ defineTest(qtConfPrepareCompileTestSource) {
     for (ent, $$qtConfScalarOrList($${1}.head)): \
         contents += $$ent
     # Includes
-    for (ent, $$qtConfScalarOrList($${1}.include)): \
+    hdrs = $$qtConfGetTestIncludes($${1}.include)
+    isEmpty(hdrs): \
+        hdrs = $$qtConfGetTestIncludes($$2)
+    for (ent, hdrs): \
         contents += "$${LITERAL_HASH}include <$$ent>"
     # Custom code after includes
     for (ent, $$qtConfScalarOrList($${1}.tail)): \
@@ -1107,7 +1151,7 @@ defineTest(qtConfTest_compile) {
     isEmpty(test) {
         test_dir = $$test_base_out_dir/$$section(1, ".", -1)
         test_out_dir = $$test_dir
-        qtConfPrepareCompileTestSource($${1}.test, $$test_dir)
+        qtConfPrepareCompileTestSource($${1}.test, $${1}.headers, $$test_dir)
     } else {
         test_dir = $$QMAKE_CONFIG_TESTS_DIR/$$test
         test_out_dir = $$test_base_out_dir/$$test

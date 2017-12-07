@@ -9,7 +9,7 @@ defineTest(qtConfLibrary_psqlConfig) {
         !qtConfResolvePathLibs($${1}.libs, $$libdir, -lpq): \
             return(false)
         qtRunLoggedCommand("$$pg_config --includedir", includedir)|return(false)
-        !qtConfResolvePathIncs($${1}.includedir, $$includedir): \
+        !qtConfResolvePathIncs($${1}.includedir, $$includedir, $$2): \
             return(false)
         return(true)
     }
@@ -63,7 +63,7 @@ defineTest(qtConfLibrary_mysqlConfig) {
         includedir =
         for (id, rawincludedir): \
             includedir += $$clean_path($$id)
-        !qtConfResolvePathIncs($${1}.includedir, $$includedir): \
+        !qtConfResolvePathIncs($${1}.includedir, $$includedir, $$2): \
             return(false)
         return(true)
     }

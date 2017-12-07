@@ -67,7 +67,6 @@
             "label": "Direct 2D",
             "export": "",
             "test": {
-                "include": [ "d3d11_1.h", "d2d1_1.h", "d2d1_1helper.h", "dxgi1_2.h", "wrl.h", "dwrite.h" ],
                 "tail": "using Microsoft::WRL::ComPtr;",
                 "main": [
                     "ComPtr<ID2D1Factory1> d2dFactory;",
@@ -76,6 +75,7 @@
                     "(void) surface;"
                 ]
             },
+            "headers": [ "d3d11_1.h", "d2d1_1.h", "d2d1_1helper.h", "dxgi1_2.h", "wrl.h", "dwrite.h" ],
             "sources": [
                 "-ld2d1 -ldwrite -ld3d11"
             ]
@@ -83,13 +83,13 @@
         "directfb": {
             "label": "DirectFB",
             "test": {
-                "include": "directfb.h",
                 "tail": [
                     "#ifdef __typeof__",
                     "#  error DirectFB headers are unclean and cannot compile",
                     "#endif"
                 ]
             },
+            "headers": "directfb.h",
             "sources": [
                 { "type": "pkgConfig", "args": "directfb" }
             ]
@@ -98,13 +98,13 @@
             "label": "DirectWrite",
             "export": "",
             "test": {
-                "include": [ "dwrite.h", "d2d1.h" ],
                 "main": [
                     "IDWriteFactory *factory = 0;",
                     "DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),",
                     "                    (IUnknown **)(&factory));"
                 ]
             },
+            "headers": [ "dwrite.h", "d2d1.h" ],
             "sources": [
                 "-ldwrite"
             ]
@@ -117,15 +117,12 @@
                     "#include <stdint.h>",
                     "extern \"C\" {"
                 ],
-                "include": [
-                    "xf86drmMode.h",
-                    "xf86drm.h"
-                ],
                 "tail": [
                     "}"
                 ],
                 "main": "(void) drmModeGetCrtc(0, 0);"
             },
+            "headers": [ "xf86drmMode.h", "xf86drm.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "libdrm" },
                 { "libs": "-ldrm", "condition": "!config.integrity" },
@@ -135,12 +132,12 @@
         "egl": {
             "label": "EGL",
             "test": {
-                "include": "EGL/egl.h",
                 "main": [
                     "EGLint x = 0; EGLDisplay dpy = 0; EGLContext ctx = 0;",
                     "eglDestroyContext(dpy, ctx);"
                 ]
             },
+            "headers": "EGL/egl.h",
             "sources": [
                 { "type": "pkgConfig", "args": "egl" },
                 { "type": "makeSpec", "spec": "EGL" }
@@ -149,7 +146,6 @@
         "freetype": {
             "label": "FreeType",
             "test": {
-                "include": "ft2build.h",
                 "tail": [
                     "#include FT_FREETYPE_H",
                     "#if ((FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) < 20200)",
@@ -160,6 +156,7 @@
                     "FT_Face face = 0;"
                 ]
             },
+            "headers": "ft2build.h",
             "sources": [
                 { "type": "pkgConfig", "args": "freetype2" },
                 { "type": "freetype", "libs": "-lfreetype", "condition": "!config.wasm" },
@@ -172,7 +169,6 @@
         "fontconfig": {
             "label": "Fontconfig",
             "test": {
-                "include": "fontconfig/fontconfig.h",
                 "tail": [
                     "#ifndef FC_RGBA_UNKNOWN",
                     "#  error This version of fontconfig is tool old, it is missing the FC_RGBA_UNKNOWN define",
@@ -182,6 +178,7 @@
                     "FcPattern *pattern = 0;"
                 ]
             },
+            "headers": "fontconfig/fontconfig.h",
             "sources": [
                 { "type": "pkgConfig", "args": "fontconfig" },
                 { "type": "freetype", "libs": "-lfontconfig" }
@@ -196,12 +193,12 @@
                     "#include <stdint.h>",
                     "extern \"C\" {"
                 ],
-                "include": "gbm.h",
                 "tail": [
                     "}"
                 ],
                 "main": "gbm_surface *surface = 0;"
             },
+            "headers": "gbm.h",
             "sources": [
                 { "type": "pkgConfig", "args": "gbm" }
             ]
@@ -209,7 +206,6 @@
         "harfbuzz": {
             "label": "HarfBuzz",
             "test": {
-                "include": "harfbuzz/hb.h",
                 "tail": [
                     "#if !HB_VERSION_ATLEAST(1, 6, 0)",
                     "#  error This version of harfbuzz is too old.",
@@ -224,6 +220,7 @@
                     "hb_buffer_destroy(buffer);"
                 ]
             },
+            "headers": "harfbuzz/hb.h",
             "sources": [
                 "-lharfbuzz"
             ]
@@ -232,9 +229,9 @@
             "label": "IMF",
             "export": "",
             "test": {
-                "include": "imf/imf_client.h",
                 "main": "imf_client_init();"
             },
+            "headers": "imf/imf_client.h",
             "sources": [
                 "-linput_client"
             ]
@@ -242,9 +239,9 @@
         "lgmon": {
             "label": "lgmon",
             "test": {
-                "include": "lgmon.h",
                 "main": "lgmon_supported(getpid());"
             },
+            "headers": "lgmon.h",
             "sources": [
                 "-llgmon"
             ]
@@ -252,9 +249,9 @@
         "libinput": {
             "label": "libinput",
             "test": {
-                "include": "libinput.h",
                 "main": "libinput_udev_create_context(NULL, NULL, NULL);"
             },
+            "headers": "libinput.h",
             "sources": [
                 { "type": "pkgConfig", "args": "libinput" }
             ]
@@ -266,7 +263,6 @@
                     "#include <stdlib.h>",
                     "#include <stdint.h>"
                 ],
-                "include": "device/hiddriver.h",
                 "main": [
                     "HIDDriver *driver;",
                     "uintptr_t devicecontext;",
@@ -274,6 +270,7 @@
                     "gh_hid_enum_devices(driver, &device_id, &devicecontext);"
                 ]
             },
+            "headers": "device/hiddriver.h",
             "sources": [
                 { "libs": "-lhiddev -lusbhid -lusb" }
             ]
@@ -286,7 +283,6 @@
                     "#include <stdio.h>",
                     "extern \"C\" {"
                 ],
-                "include": "jpeglib.h",
                 "tail": [
                     "}",
                     "",
@@ -294,6 +290,7 @@
                 ],
                 "main": "jpeg_create_compress(cinfo);"
             },
+            "headers": "jpeglib.h",
             "sources": [
                 { "libs": "-llibjpeg", "condition": "config.msvc" },
                 "-ljpeg"
@@ -302,9 +299,9 @@
         "libpng": {
             "label": "libpng",
             "test": {
-                "include": "png.h",
                 "main": "(void) png_create_read_struct(PNG_LIBPNG_VER_STRING,0,0,0);"
             },
+            "headers": "png.h",
             "sources": [
                 { "type": "pkgConfig", "args": "libpng" },
                 { "libs": "-llibpng16", "condition": "config.msvc" },
@@ -320,13 +317,13 @@
         "mirclient": {
             "label": "Mir client libraries",
             "test": {
-                "include": [ "mir_toolkit/mir_client_library.h", "ubuntu/application/lifecycle_delegate.h", "EGL/egl.h" ],
                 "tail": "static void surfaceCreateCallback(MirSurface*, void*) {}",
                 "main": [
                     "u_application_lifecycle_delegate_new();",
                     "mir_surface_create(0, surfaceCreateCallback, 0);"
                 ]
             },
+            "headers": [ "mir_toolkit/mir_client_library.h", "ubuntu/application/lifecycle_delegate.h", "EGL/egl.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "egl mirclient ubuntu-platform-api libcontent-hub >= 0.2.0" }
             ]
@@ -334,12 +331,12 @@
         "mtdev": {
             "label": "mtdev",
             "test": {
-                "include": "mtdev.h",
                 "main": [
                     "mtdev m;",
                     "mtdev_open(&m, 0);"
                 ]
             },
+            "headers": "mtdev.h",
             "sources": [
                 { "type": "pkgConfig", "args": "mtdev" }
             ]
@@ -352,7 +349,6 @@
                     "#  include <OpenGL/gl.h>",
                     "#else",
                     "#  define GL_GLEXT_PROTOTYPES",
-                    "#  include <GL/gl.h>",
                     "#endif"
                 ],
                 "main": [
@@ -363,6 +359,12 @@
                     "glEnd();"
                 ]
             },
+            "headers": [
+                {
+                    "condition": "!config.darwin",
+                    "headers": "GL/gl.h"
+                }
+            ],
             "sources": [
                 { "type": "pkgConfig", "args": "gl", "condition": "!config.darwin" },
                 { "type": "makeSpec", "spec": "OPENGL" }
@@ -376,7 +378,6 @@
                     "#  include <OpenGLES/ES2/gl.h>",
                     "#else",
                     "#  define GL_GLEXT_PROTOTYPES",
-                    "#  include <GLES2/gl2.h>",
                     "#endif"
                 ],
                 "main": [
@@ -384,6 +385,12 @@
                     "glClear(GL_COLOR_BUFFER_BIT);"
                 ]
             },
+            "headers": [
+                {
+                    "condition": "!config.darwin",
+                    "headers": "GLES2/gl2.h"
+                }
+            ],
             "sources": [
                 { "type": "pkgConfig", "args": "glesv2", "condition": "!config.darwin" },
                 { "type": "makeSpec", "spec": "OPENGL_ES2" }
@@ -392,9 +399,9 @@
         "openvg": {
             "label": "OpenVG",
             "test": {
-                "include": "VG/openvg.h",
                 "main": "VGint i = 2; vgFlush();"
             },
+            "headers": "VG/openvg.h",
             "sources": [
                 { "type": "pkgConfig", "args": "vg" },
                 { "type": "makeSpec", "spec": "OPENVG" }
@@ -403,9 +410,9 @@
         "tslib": {
             "label": "tslib",
             "test": {
-                "include": "tslib.h",
                 "main": "ts_open(\"foo\", 0);"
             },
+            "headers": "tslib.h",
             "sources": [
                 "-lts"
             ]
@@ -417,10 +424,6 @@
                     "#include <cstddef>",
                     "extern \"C\" {"
                 ],
-                "include": [
-                    "mediactl/mediactl.h",
-                    "mediactl/v4l2subdev.h"
-                ],
                 "tail": [
                     "}"
                 ],
@@ -431,6 +434,7 @@
                     "v4l2_subdev_set_format(nullptr, nullptr, 0, V4L2_SUBDEV_FORMAT_ACTIVE);"
                 ]
             },
+            "headers": [ "mediactl/mediactl.h", "mediactl/v4l2subdev.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "libv4l2 libmediactl" },
                 "-lmediactl -lv4l2 -lv4l2subdev"
@@ -447,9 +451,9 @@
         "wayland_server": {
             "label": "Wayland Server",
             "test": {
-                "include": "wayland-server.h",
                 "main": "wl_display_create();"
             },
+            "headers": "wayland-server.h",
             "sources": [
                 { "type": "pkgConfig", "args": "wayland-server" }
             ]
@@ -457,12 +461,12 @@
         "xlib": {
             "label": "XLib",
             "test": {
-                "include": "X11/Xlib.h",
                 "main": [
                     "Display *d = XOpenDisplay(NULL);",
                     "XCloseDisplay(d);"
                 ]
             },
+            "headers": "X11/Xlib.h",
             "sources": [
                 { "type": "makeSpec", "spec": "X11" }
             ]
@@ -476,7 +480,6 @@
         "xcb": {
             "label": "XCB >= 1.9 (core)",
             "test": {
-                "include": "xcb/xcb.h",
                 "main": [
                     "int primaryScreen = 0;",
                     "(void)xcb_connect(\"\", &primaryScreen);",
@@ -484,6 +487,7 @@
                     "int xcbScreenError = XCB_CONN_CLOSED_INVALID_SCREEN;"
                 ]
             },
+            "headers": "xcb/xcb.h",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb >= 1.9" },
                 "-lxcb"
@@ -517,9 +521,9 @@
         "xcb_xlib": {
             "label": "XCB Xlib",
             "test": {
-                "include": "X11/Xlib-xcb.h",
                 "main": "(void) XGetXCBConnection((Display *)0);"
             },
+            "headers": "X11/Xlib-xcb.h",
             "sources": [
                 { "type": "pkgConfig", "args": "x11-xcb" },
                 "-lX11-xcb"
@@ -533,13 +537,13 @@
                     "// xkb.h is using a variable called 'explicit', which is a reserved keyword in C++",
                     "#define explicit dont_use_cxx_explicit"
                 ],
-                "include": "xcb/xkb.h",
                 "tail": "#undef explicit",
                 "main": [
                     "// This takes more arguments in xcb-xkb < 1.10.",
                     "xcb_xkb_get_kbd_by_name_unchecked(NULL, 0, 0, 0, 0);"
                 ]
             },
+            "headers": "xcb/xkb.h",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-xkb >= 1.10" },
                 "-lxcb-xkb"
@@ -549,7 +553,6 @@
         "xcb_render": {
             "label": "XCB XRender",
             "test": {
-                "include": "xcb/render.h",
                 "tail": [
                     "// 'template' is used as a function argument name in xcb_renderutil.h",
                     "#define template template_param",
@@ -572,6 +575,7 @@
                     "        formatsReply, XCB_PICT_STANDARD_ARGB_32);"
                 ]
             },
+            "headers": "xcb/render.h",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-renderutil xcb-render" },
                 "-lxcb-render-util -lxcb-render"
@@ -581,7 +585,6 @@
         "xcb_glx": {
             "label": "XCB GLX",
             "test": {
-                "include": "xcb/glx.h",
                 "main": [
                     "int primaryScreen = 0;",
                     "xcb_connection_t *connection = 0;",
@@ -591,6 +594,7 @@
                     "xcb_glx_query_version_reply(connection, xglx_query_cookie, &error);"
                 ]
             },
+            "headers": "xcb/glx.h",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-glx" },
                 "-lxcb-glx"
@@ -600,7 +604,6 @@
         "xcb_xinput": {
             "label": "XCB XInput",
             "test": {
-                "include": "xcb/xinput.h",
                 "main": [
                     "xcb_connection_t *connection = 0;",
                     "xcb_generic_error_t *error = 0;",
@@ -609,6 +612,7 @@
                     "xcb_input_xi_query_version_reply(connection, xinput_query_cookie, &error);"
                 ]
             },
+            "headers": "xcb/xinput.h",
             "sources": [
                 { "type": "pkgConfig", "args": "xcb-xinput >= 1.12" },
                 "-lxcb-xinput"
@@ -618,9 +622,9 @@
         "xkbcommon": {
             "label": "xkbcommon >= 0.5.0",
             "test": {
-                "include": [ "xkbcommon/xkbcommon.h" ],
                 "main": "xkb_context_new(XKB_CONTEXT_NO_FLAGS);"
             },
+            "headers": [ "xkbcommon/xkbcommon.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" }
             ]
@@ -628,9 +632,9 @@
         "xkbcommon_x11": {
             "label": "xkbcommon-x11",
             "test": {
-                "include": [ "xkbcommon/xkbcommon-x11.h" ],
                 "main": "xkb_x11_get_core_keyboard_device_id(nullptr);"
             },
+            "headers": [ "xkbcommon/xkbcommon-x11.h" ],
             "sources": [
                 { "type": "pkgConfig", "args": "xkbcommon-x11" }
             ]

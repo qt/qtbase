@@ -39,13 +39,13 @@
         "libproxy": {
             "label": "libproxy",
             "test": {
-                "include": [ "proxy.h" ],
                 "main": [
                     "pxProxyFactory *factory = px_proxy_factory_new();",
                     "px_proxy_factory_get_proxies(factory, \"http://qt-project.org\");",
                     "px_proxy_factory_free(factory);"
                 ]
             },
+            "headers": "proxy.h",
             "sources": [
                 "-lproxy"
             ]
