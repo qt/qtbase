@@ -2358,6 +2358,11 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
         limitations is to store the settings using the IniFormat
         instead of the NativeFormat.
 
+    \li  On Windows, when the Windows system registry is used, QSettings
+         does not preserve the original type of the value. Therefore,
+         the type of the value might change when a new value is set. For
+         example, a value with type \c REG_EXPAND_SZ will change to \c REG_SZ.
+
     \li  On \macos and iOS, allKeys() will return some extra keys for global
         settings that apply to all applications. These keys can be
         read using value() but cannot be changed, only shadowed.
