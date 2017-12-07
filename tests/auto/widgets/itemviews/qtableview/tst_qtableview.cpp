@@ -4364,7 +4364,8 @@ void tst_QTableView::taskQTBUG_7774_RtoLVisualRegionForSelection()
     QItemSelection selection;
     selection << range;
     QRegion region = view.visualRegionForSelection(selection);
-    QCOMPARE(region.rects().at(0), view.visualRect(range.topLeft()) | view.visualRect(range.bottomRight()));
+    QVERIFY(!region.isEmpty());
+    QCOMPARE(region.begin()[0], view.visualRect(range.topLeft()) | view.visualRect(range.bottomRight()));
 }
 
 void tst_QTableView::taskQTBUG_8777_scrollToSpans()
