@@ -847,7 +847,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \endcode
 
     This function complies with the requirements for the function
-    \c{\l{http://en.cppreference.com/w/cpp/numeric/random/seed_seq/generate}{std::seed_seq::generate}},
+    \l{http://en.cppreference.com/w/cpp/numeric/random/seed_seq/generate}{\c std::seed_seq::generate},
     which requires unsigned 32-bit integer values.
 
     Note that if the [begin, end) range refers to an area that can store more
@@ -927,7 +927,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \endcode
 
     The same may also be obtained by using
-    \c{\l{http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution}{std::uniform_real_distribution}}
+    \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution}{\c std::uniform_real_distribution}
     with parameters 0 and 1.
 
     \sa generate(), generate64(), bounded()
@@ -952,7 +952,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     Generates one random 32-bit quantity in the range between 0 (inclusive) and
     \a highest (exclusive). The same result may also be obtained by using
-    \c{\l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{std::uniform_int_distribution}}
+    \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{\c std::uniform_int_distribution}
     with parameters 0 and \c{highest - 1}. That class can also be used to obtain
     quantities larger than 32 bits.
 
@@ -990,7 +990,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     Generates one random 32-bit quantity in the range between \a lowest (inclusive)
     and \a highest (exclusive). The same result may also be obtained by using
-    \c{\l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{std::uniform_int_distribution}}
+    \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{\c std::uniform_int_distribution}
     with parameters \a lowest and \c{\a highest - 1}. That class can also be used to
     obtain quantities larger than 32 bits.
 
@@ -1190,7 +1190,9 @@ QRandomGenerator64 QRandomGenerator64::securelySeeded()
     return result;
 }
 
-/// \internal
+/*!
+    \internal
+*/
 inline QRandomGenerator::QRandomGenerator(System)
     : type(SystemRNG)
 {
