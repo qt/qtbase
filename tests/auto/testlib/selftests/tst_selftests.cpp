@@ -494,6 +494,7 @@ void tst_Selftests::runSubTest_data()
         << "sleep"
         << "strcmp"
         << "subtest"
+        << "tuplediagnostics"
         << "verbose1"
         << "verbose2"
 #ifndef QT_NO_EXCEPTIONS

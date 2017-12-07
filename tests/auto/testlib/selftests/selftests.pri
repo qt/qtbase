@@ -45,6 +45,7 @@ SUBPROGRAMS = \
      sleep \
      strcmp \
      subtest \
+     tuplediagnostics \
      verbose1 \
      verbose2 \
      verifyexceptionthrown \

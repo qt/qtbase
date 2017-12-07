@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="2" tests="5" name="tst_TupleDiagnostics">
+  <properties>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
+    <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
+    <property value="" name="QtBuild"/>
+  </properties>
+  <testcase result="pass" name="initTestCase"/>
+  <testcase result="pass" name="testEmptyTuple"/>
+  <testcase result="fail" name="testSimpleTuple">
+    <failure message="Compared values are not the same
+   Actual   (std::tuple&lt;int&gt;{1}): std::tuple(1)
+   Expected (std::tuple&lt;int&gt;{2}): std::tuple(2)" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="testTuple">
+    <failure message="Compared values are not the same
+   Actual   (tuple1): std::tuple(42, &apos;Y&apos;, &quot;tuple1&quot;)
+   Expected (tuple2): std::tuple(42, &apos;Y&apos;, &quot;tuple2&quot;)" result="fail"/>
+  </testcase>
+  <testcase result="pass" name="cleanupTestCase"/>
+  <system-err/>
+</testsuite>

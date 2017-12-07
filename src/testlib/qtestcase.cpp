@@ -1147,6 +1147,31 @@ void *fetchData(QTestData *data, const char *tagName, int typeId)
 }
 
 /*!
+ * \internal
+ */
+char *formatString(const char *prefix, const char *suffix, size_t numArguments, ...)
+{
+    va_list ap;
+    va_start(ap, numArguments);
+
+    QByteArray arguments;
+    arguments += prefix;
+
+    if (numArguments > 0) {
+        arguments += va_arg(ap, const char *);
+
+        for (size_t i = 1; i < numArguments; ++i) {
+            arguments += ", ";
+            arguments += va_arg(ap, const char *);
+        }
+    }
+
+    va_end(ap);
+    arguments += suffix;
+    return qstrdup(arguments.constData());
+}
+
+/*!
   \fn char* QTest::toHexRepresentation(const char *ba, int length)
 
   Returns a pointer to a string that is the string \a ba represented

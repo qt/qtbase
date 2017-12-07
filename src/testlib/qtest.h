@@ -59,6 +59,8 @@
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -213,6 +215,25 @@ inline char *toString(const std::pair<T1, T2> &pair)
     const QScopedArrayPointer<char> first(toString(pair.first));
     const QScopedArrayPointer<char> second(toString(pair.second));
     return toString(QString::asprintf("std::pair(%s,%s)", first.data(), second.data()));
+}
+
+template <typename Tuple, int... I>
+inline char *toString(const Tuple & tuple, QtPrivate::IndexesList<I...>) {
+    using UP = std::unique_ptr<char[]>;
+    // Generate a table of N + 1 elements where N is the number of
+    // elements in the tuple.
+    // The last element is needed to support the empty tuple use case.
+    const UP data[] = {
+        UP(toString(std::get<I>(tuple)))..., UP{}
+    };
+    return formatString("std::tuple(", ")", sizeof...(I), data[I].get()...);
+}
+
+template <class... Types>
+inline char *toString(const std::tuple<Types...> &tuple)
+{
+    static const std::size_t params_count = sizeof...(Types);
+    return toString(tuple, typename QtPrivate::Indexes<params_count>::Value());
 }
 
 inline char *toString(std::nullptr_t)

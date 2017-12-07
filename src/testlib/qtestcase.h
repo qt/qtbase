@@ -283,6 +283,9 @@ namespace QTest
     template <typename T1, typename T2>
     inline char *toString(const std::pair<T1, T2> &pair);
 
+    template <class... Types>
+    inline char *toString(const std::tuple<Types...> &tuple);
+
     Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, int length);
     Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, int length);
     Q_TESTLIB_EXPORT char *toPrettyUnicode(QStringView string);
@@ -387,6 +390,8 @@ namespace QTest
 
     Q_TESTLIB_EXPORT bool compare_string_helper(const char *t1, const char *t2, const char *actual,
                                       const char *expected, const char *file, int line);
+
+    Q_TESTLIB_EXPORT char *formatString(const char *prefix, const char *suffix, size_t numArguments, ...);
 
 #ifndef Q_QDOC
     QTEST_COMPARE_DECL(short)
