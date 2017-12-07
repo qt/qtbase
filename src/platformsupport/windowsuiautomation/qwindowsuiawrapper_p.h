@@ -53,16 +53,16 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
-#include "uiatypes.h"
-#include "uiaattributeids.h"
-#include "uiacontroltypeids.h"
-#include "uiaerrorids.h"
-#include "uiaeventids.h"
-#include "uiageneralids.h"
-#include "uiapatternids.h"
-#include "uiapropertyids.h"
-#include "uiaserverinterfaces.h"
-#include "uiaclientinterfaces.h"
+#include "uiatypes_p.h"
+#include "uiaattributeids_p.h"
+#include "uiacontroltypeids_p.h"
+#include "uiaerrorids_p.h"
+#include "uiaeventids_p.h"
+#include "uiageneralids_p.h"
+#include "uiapatternids_p.h"
+#include "uiapropertyids_p.h"
+#include "uiaserverinterfaces_p.h"
+#include "uiaclientinterfaces_p.h"
 
 QT_REQUIRE_CONFIG(accessibility);
 

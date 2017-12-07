@@ -6,16 +6,16 @@ CONFIG += static internal_module
 
 HEADERS += \
     qwindowsuiawrapper_p.h \
-    uiaattributeids.h \
-    uiacontroltypeids.h \
-    uiaerrorids.h \
-    uiaeventids.h \
-    uiageneralids.h \
-    uiaserverinterfaces.h \
-    uiaclientinterfaces.h \
-    uiapatternids.h \
-    uiapropertyids.h \
-    uiatypes.h
+    uiaattributeids_p.h \
+    uiacontroltypeids_p.h \
+    uiaerrorids_p.h \
+    uiaeventids_p.h \
+    uiageneralids_p.h \
+    uiaserverinterfaces_p.h \
+    uiaclientinterfaces_p.h \
+    uiapatternids_p.h \
+    uiapropertyids_p.h \
+    uiatypes_p.h
 
 SOURCES += \
     qwindowsuiawrapper.cpp
