@@ -347,11 +347,9 @@ void QLineEditIconButton::paintEvent(QPaintEvent *)
     QWindow *window = nullptr;
     if (const QWidget *nativeParent = nativeParentWidget())
         window = nativeParent->windowHandle();
-    // Note isDown should really use the active state but in most styles
-    // this has no proper feedback
     QIcon::Mode state = QIcon::Disabled;
     if (isEnabled())
-        state = isDown() ? QIcon::Selected : QIcon::Normal;
+        state = isDown() ? QIcon::Active : QIcon::Normal;
     const QLineEditPrivate *lep = lineEditPrivate();
     const int iconWidth = lep ? lep->sideWidgetParameters().iconSize : 16;
     const QSize iconSize(iconWidth, iconWidth);
