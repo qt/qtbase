@@ -817,7 +817,7 @@ void QHtml5Compositor::frame()
 
     mBlitter->release();
 
-    if (someWindow)
+    if (someWindow && someWindow->window()->surfaceType() == QSurface::OpenGLSurface)
         mContext->swapBuffers(someWindow->window());
 }
 
