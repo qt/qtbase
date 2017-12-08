@@ -815,7 +815,7 @@ int QThread::exec()
         d->exited = false;
         return d->returnCode;
     }
-
+    m_running = true;
     QEventLoop eventLoop;
     int returnCode = eventLoop.exec();
 

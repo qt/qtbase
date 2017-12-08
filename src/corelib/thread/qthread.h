@@ -263,20 +263,23 @@ public:
     ~QThread();
     static Qt::HANDLE currentThreadId() { return Qt::HANDLE(currentThread()); }
     static QThread* currentThread();
+
+    static void sleep(unsigned long) {}
     static void msleep(unsigned long) {}
+
     QAbstractEventDispatcher *eventDispatcher() const;
     void setEventDispatcher(QAbstractEventDispatcher *eventDispatcher);
     bool wait(unsigned long time = ULONG_MAX);
 
-    bool isFinished() const { return true; }
-    bool isRunning() const{ return true; }
+    bool isFinished() const { return false; }
+    bool isRunning() const{ return m_running; }
     static void yieldCurrentThread() {}
     void exit(int retcode = 0);
 
 public Q_SLOTS:
-    void start(Priority = InheritPriority){}
-    void terminate(){}
-    void quit() {}
+    void start(Priority = InheritPriority){ m_running = true; }
+    void terminate(){ m_running = false;}
+    void quit() {m_running = false;}
 
 Q_SIGNALS:
     void started(QPrivateSignal);
@@ -284,6 +287,7 @@ Q_SIGNALS:
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = nullptr);
     int exec();
+    bool m_running = false;
 
 private:
     virtual void run();

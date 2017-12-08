@@ -167,7 +167,7 @@ qtConfig(sql) {
 }
 qtConfig(xml): SUBDIRS += src_xml
 qtConfig(testlib): SUBDIRS += src_testlib
-qtConfig(dbus) {
+qtConfig(thread):qtConfig(dbus) {
     force_dbus_bootstrap|qtConfig(private_tests): \
         SUBDIRS += src_tools_bootstrap_dbus
     SUBDIRS += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml

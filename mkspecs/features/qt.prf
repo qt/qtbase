@@ -1,5 +1,6 @@
-CONFIG *= thread
-
+qtConfig(thread)  {
+    CONFIG *= thread
+}
 #handle defines
 win32 {
    qtConfig(shared) {
