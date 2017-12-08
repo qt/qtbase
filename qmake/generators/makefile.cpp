@@ -2164,9 +2164,9 @@ MakefileGenerator::writeExtraVariables(QTextStream &t)
     ProStringList outlist;
     const ProValueMap &vars = project->variables();
     const ProStringList &exports = project->values("QMAKE_EXTRA_VARIABLES");
-    for (ProValueMap::ConstIterator it = vars.begin(); it != vars.end(); ++it) {
-        for (ProStringList::ConstIterator exp_it = exports.begin(); exp_it != exports.end(); ++exp_it) {
-            QRegExp rx((*exp_it).toQString(), Qt::CaseInsensitive, QRegExp::Wildcard);
+    for (ProStringList::ConstIterator exp_it = exports.begin(); exp_it != exports.end(); ++exp_it) {
+        QRegExp rx((*exp_it).toQString(), Qt::CaseInsensitive, QRegExp::Wildcard);
+        for (ProValueMap::ConstIterator it = vars.begin(); it != vars.end(); ++it) {
             if (rx.exactMatch(it.key().toQString()))
                 outlist << ("EXPORT_" + it.key() + " = " + it.value().join(' '));
         }

@@ -160,8 +160,8 @@ Q_STATIC_ASSERT_X(std::numeric_limits<float>::radix == 2,
 
 // not required by the definition of size_t, but we depend on this
 Q_STATIC_ASSERT_X(sizeof(size_t) == sizeof(void *), "size_t and a pointer don't have the same size");
-Q_STATIC_ASSERT(sizeof(size_t) == sizeof(qssize_t)); // implied by the definition
-Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
+Q_STATIC_ASSERT(sizeof(size_t) == sizeof(qsizetype)); // implied by the definition
+Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 
 /*!
     \class QFlag
@@ -824,7 +824,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
 */
 
 /*!
-    \typedef qssize_t
+    \typedef qsizetype
     \relates <QtGlobal>
     \since 5.10
 
@@ -833,7 +833,7 @@ Q_STATIC_ASSERT((std::is_same<qssize_t, qptrdiff>::value));
     This type is guaranteed to be the same size as a \c size_t on all
     platforms supported by Qt.
 
-    Note that qssize_t is signed. Use \c size_t for unsigned values.
+    Note that qsizetype is signed. Use \c size_t for unsigned values.
 
     \sa qptrdiff
 */

@@ -55,10 +55,10 @@ public:
     QRandomGenerator(quint32 seedValue = 1)
         : QRandomGenerator(&seedValue, 1)
     {}
-    template <qssize_t N> QRandomGenerator(const quint32 (&seedBuffer)[N])
+    template <qsizetype N> QRandomGenerator(const quint32 (&seedBuffer)[N])
         : QRandomGenerator(seedBuffer, seedBuffer + N)
     {}
-    QRandomGenerator(const quint32 *seedBuffer, qssize_t len)
+    QRandomGenerator(const quint32 *seedBuffer, qsizetype len)
         : QRandomGenerator(seedBuffer, seedBuffer + len)
     {}
     Q_CORE_EXPORT QRandomGenerator(std::seed_seq &sseq) Q_DECL_NOTHROW;
@@ -131,7 +131,7 @@ public:
     }
 
     template <typename UInt, IfValidUInt<UInt> = true>
-    void fillRange(UInt *buffer, qssize_t count)
+    void fillRange(UInt *buffer, qsizetype count)
     {
         _fillRange(buffer, buffer + count);
     }
@@ -177,7 +177,8 @@ private:
     friend class QRandomGenerator64;
     struct SystemGenerator;
     struct SystemAndGlobalGenerators;
-    typedef std::mt19937 RandomEngine;
+    using RandomEngine = std::mersenne_twister_engine<quint32,
+        32,624,397,31,0x9908b0df,11,0xffffffff,7,0x9d2c5680,15,0xefc60000,18,1812433253>;
 
     union Storage {
         uint dummy;
@@ -214,10 +215,10 @@ public:
     QRandomGenerator64(quint32 seedValue = 1)
         : QRandomGenerator(seedValue)
     {}
-    template <qssize_t N> QRandomGenerator64(const quint32 (&seedBuffer)[N])
+    template <qsizetype N> QRandomGenerator64(const quint32 (&seedBuffer)[N])
         : QRandomGenerator(seedBuffer)
     {}
-    QRandomGenerator64(const quint32 *seedBuffer, qssize_t len)
+    QRandomGenerator64(const quint32 *seedBuffer, qsizetype len)
         : QRandomGenerator(seedBuffer, len)
     {}
     QRandomGenerator64(std::seed_seq &sseq) Q_DECL_NOTHROW

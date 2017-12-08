@@ -576,7 +576,7 @@ int qt_repeatCount(QStringView s)
     if (s.isEmpty())
         return 0;
     const QChar c = s.front();
-    qssize_t j = 1;
+    qsizetype j = 1;
     while (j < s.size() && s.at(j) == c)
         ++j;
     return int(j);
@@ -3443,7 +3443,7 @@ bool QLocaleData::validateChars(QStringView str, NumberMode numMode, QByteArray 
     bool dec = false;
     int decDigitCnt = 0;
 
-    for (qssize_t i = 0; i < str.size(); ++i) {
+    for (qsizetype i = 0; i < str.size(); ++i) {
         char c = digitToCLocale(str.at(i));
 
         if (c >= '0' && c <= '9') {

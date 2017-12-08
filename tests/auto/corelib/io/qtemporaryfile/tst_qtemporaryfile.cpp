@@ -70,6 +70,7 @@ private slots:
     void io();
     void openCloseOpenClose();
     void removeAndReOpen();
+    void removeUnnamed();
     void size();
     void resize();
     void openOnRootDrives();
@@ -442,11 +443,13 @@ void tst_QTemporaryFile::removeAndReOpen()
     {
         QTemporaryFile file;
         file.open();
-        fileName = file.fileName();
+        fileName = file.fileName();     // materializes any unnamed file
         QVERIFY(QFile::exists(fileName));
 
-        file.remove();
+        QVERIFY(file.remove());
+        QVERIFY(file.fileName().isEmpty());
         QVERIFY(!QFile::exists(fileName));
+        QVERIFY(!file.remove());
 
         QVERIFY(file.open());
         QCOMPARE(QFileInfo(file.fileName()).path(), QFileInfo(fileName).path());
@@ -454,6 +457,19 @@ void tst_QTemporaryFile::removeAndReOpen()
         QVERIFY(QFile::exists(fileName));
     }
     QVERIFY(!QFile::exists(fileName));
+}
+
+void tst_QTemporaryFile::removeUnnamed()
+{
+    QTemporaryFile file;
+    file.open();
+
+    // we did not call fileName(), so the file name may not have a name
+    QVERIFY(file.remove());
+    QVERIFY(file.fileName().isEmpty());
+
+    // if it was unnamed, this will succeed again, so we can't check the result
+    file.remove();
 }
 
 void tst_QTemporaryFile::size()

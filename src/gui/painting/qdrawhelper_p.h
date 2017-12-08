@@ -293,7 +293,7 @@ struct QTextureData
     int y1;
     int x2;
     int y2;
-    qssize_t bytesPerLine;
+    qsizetype bytesPerLine;
     QImage::Format format;
     const QVector<QRgb> *colorTable;
     bool hasAlpha;
@@ -847,7 +847,7 @@ inline void qt_memfill(T *dest, T value, int count)
 
 template <class T> Q_STATIC_TEMPLATE_FUNCTION
 inline void qt_rectfill(T *dest, T value,
-                        int x, int y, int width, int height, qssize_t stride)
+                        int x, int y, int width, int height, qsizetype stride)
 {
     char *d = reinterpret_cast<char*>(dest + x) + y * stride;
     if (uint(stride) == (width * sizeof(T))) {

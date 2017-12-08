@@ -93,7 +93,7 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-static qssize_t qt_random_cpu(void *buffer, qssize_t count) Q_DECL_NOTHROW;
+static qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW;
 
 #  ifdef Q_PROCESSOR_X86_64
 #    define _rdrandXX_step _rdrand64_step
@@ -101,7 +101,7 @@ static qssize_t qt_random_cpu(void *buffer, qssize_t count) Q_DECL_NOTHROW;
 #    define _rdrandXX_step _rdrand32_step
 #  endif
 
-static QT_FUNCTION_TARGET(RDRND) qssize_t qt_random_cpu(void *buffer, qssize_t count) Q_DECL_NOTHROW
+static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW
 {
     unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
     unsigned *end = ptr + count;
@@ -122,7 +122,7 @@ out:
     return ptr - reinterpret_cast<unsigned *>(buffer);
 }
 #else
-static qssize_t qt_random_cpu(void *, qssize_t)
+static qsizetype qt_random_cpu(void *, qsizetype)
 {
     return 0;
 }
@@ -136,10 +136,10 @@ enum {
 struct QRandomGenerator::SystemGenerator
 {
 #if QT_CONFIG(getentropy)
-    static qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
+    static qsizetype fillBuffer(void *buffer, qsizetype count) Q_DECL_NOTHROW
     {
         // getentropy can read at most 256 bytes, so break the reading
-        qssize_t read = 0;
+        qsizetype read = 0;
         while (count - read > 256) {
             // getentropy can't fail under normal circumstances
             int ret = getentropy(reinterpret_cast<uchar *>(buffer) + read, 256);
@@ -195,24 +195,24 @@ struct QRandomGenerator::SystemGenerator
 
     Q_DECL_CONSTEXPR SystemGenerator() : fdp1 Q_BASIC_ATOMIC_INITIALIZER(0) {}
 
-    qssize_t fillBuffer(void *buffer, qssize_t count)
+    qsizetype fillBuffer(void *buffer, qsizetype count)
     {
         int fd = openDevice();
         if (Q_UNLIKELY(fd < 0))
             return 0;
 
         qint64 n = qt_safe_read(fd, buffer, count);
-        return qMax<qssize_t>(n, 0);        // ignore any errors
+        return qMax<qsizetype>(n, 0);        // ignore any errors
     }
 
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    qssize_t fillBuffer(void *buffer, qssize_t count) Q_DECL_NOTHROW
+    qsizetype fillBuffer(void *buffer, qsizetype count) Q_DECL_NOTHROW
     {
         auto RtlGenRandom = SystemFunction036;
         return RtlGenRandom(buffer, ULONG(count)) ? count: 0;
     }
 #elif defined(Q_OS_WINRT)
-    qssize_t fillBuffer(void *, qssize_t) Q_DECL_NOTHROW
+    qsizetype fillBuffer(void *, qsizetype) Q_DECL_NOTHROW
     {
         // always use the fallback
         return 0;
@@ -243,7 +243,7 @@ struct QRandomGenerator::SystemGenerator
 
 #if defined(Q_OS_WIN)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
 {
     // on Windows, rand_s is a high-quality random number generator
     // and it requires no seeding
@@ -255,14 +255,14 @@ static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
 }
 #elif QT_CONFIG(getentropy)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *, qssize_t) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *, qsizetype) Q_DECL_NOTHROW
 {
     // no fallback necessary, getentropy cannot fail under normal circumstances
     Q_UNREACHABLE();
 }
 #elif defined(Q_OS_BSD4)
 static void fallback_update_seed(unsigned) {}
-static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
 {
     // BSDs have arc4random(4) and these work even in chroot(2)
     arc4random_buf(ptr, left * sizeof(*ptr));
@@ -281,7 +281,7 @@ Q_NEVER_INLINE
 #ifdef Q_CC_GNU
 __attribute__((cold))   // this function is pretty big, so optimize for size
 #endif
-static void fallback_fill(quint32 *ptr, qssize_t left) Q_DECL_NOTHROW
+static void fallback_fill(quint32 *ptr, qsizetype left) Q_DECL_NOTHROW
 {
     quint32 scratch[12];    // see element count below
     quint32 *end = scratch;
@@ -358,7 +358,7 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     Q_DECL_NOEXCEPT_EXPR(FillBufferNoexcept)
 {
     quint32 *buffer = begin;
-    qssize_t count = end - begin;
+    qsizetype count = end - begin;
 
     if (Q_UNLIKELY(uint(qt_randomdevice_control) & SetRandomData)) {
         uint value = uint(qt_randomdevice_control) & RandomDataMask;
@@ -366,14 +366,14 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
         return;
     }
 
-    qssize_t filled = 0;
+    qsizetype filled = 0;
     if (qt_has_hwrng() && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
         filled += qt_random_cpu(buffer, count);
 
     if (filled != count && (uint(qt_randomdevice_control) & SkipSystemRNG) == 0) {
-        qssize_t bytesFilled =
-                fillBuffer(buffer + filled, (count - filled) * qssize_t(sizeof(*buffer)));
-        filled += bytesFilled / qssize_t(sizeof(*buffer));
+        qsizetype bytesFilled =
+                fillBuffer(buffer + filled, (count - filled) * qsizetype(sizeof(*buffer)));
+        filled += bytesFilled / qsizetype(sizeof(*buffer));
     }
     if (filled)
         fallback_update_seed(*buffer);
@@ -682,7 +682,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn QRandomGenerator::QRandomGenerator(const quint32 *seedBuffer, qssize_t len)
+    \fn QRandomGenerator::QRandomGenerator(const quint32 *seedBuffer, qsizetype len)
     \overload
 
     Initializes this QRandomGenerator object with \a len values found in
@@ -874,7 +874,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn void QRandomGenerator::fillRange(UInt *buffer, qssize_t count)
+    \fn void QRandomGenerator::fillRange(UInt *buffer, qsizetype count)
 
     Generates \a count 32- or 64-bit quantities (depending on the type \c UInt)
     and stores them in the buffer pointed by \a buffer. This is the most

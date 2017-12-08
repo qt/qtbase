@@ -87,6 +87,11 @@
 #define QT_FEATURE_futimens -1
 #define QT_FEATURE_futimes -1
 #define QT_FEATURE_library -1
+#ifdef __linux__
+# define QT_FEATURE_linkat 1
+#else
+# define QT_FEATURE_linkat -1
+#endif
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1
 #define QT_FEATURE_renameat2 -1

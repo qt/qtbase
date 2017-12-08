@@ -111,7 +111,7 @@ public:
 #endif
     typedef const QChar value_type;
     typedef std::ptrdiff_t difference_type;
-    typedef qssize_t size_type;
+    typedef qsizetype size_type;
     typedef value_type &reference;
     typedef value_type &const_reference;
     typedef value_type *pointer;
@@ -139,17 +139,17 @@ private:
     using if_compatible_qstring_like = typename std::enable_if<std::is_same<T, QString>::value || std::is_same<T, QStringRef>::value, bool>::type;
 
     template <typename Char, size_t N>
-    static Q_DECL_CONSTEXPR qssize_t lengthHelperArray(const Char (&)[N]) Q_DECL_NOTHROW
+    static Q_DECL_CONSTEXPR qsizetype lengthHelperArray(const Char (&)[N]) Q_DECL_NOTHROW
     {
-        return qssize_t(N - 1);
+        return qsizetype(N - 1);
     }
 
     template <typename Char>
-    static qssize_t lengthHelperPointer(const Char *str) Q_DECL_NOTHROW
+    static qsizetype lengthHelperPointer(const Char *str) Q_DECL_NOTHROW
     {
 #if defined(Q_CC_GNU) && !defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
         if (__builtin_constant_p(*str)) {
-            qssize_t result = 0;
+            qsizetype result = 0;
             while (*str++)
                 ++result;
             return result;
@@ -157,7 +157,7 @@ private:
 #endif
         return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
     }
-    static qssize_t lengthHelperPointer(const QChar *str) Q_DECL_NOTHROW
+    static qsizetype lengthHelperPointer(const QChar *str) Q_DECL_NOTHROW
     {
         return QtPrivate::qustrlen(reinterpret_cast<const ushort *>(str));
     }
@@ -175,7 +175,7 @@ public:
         : QStringView() {}
 
     template <typename Char, if_compatible_char<Char> = true>
-    Q_DECL_CONSTEXPR QStringView(const Char *str, qssize_t len)
+    Q_DECL_CONSTEXPR QStringView(const Char *str, qsizetype len)
         : m_size((Q_ASSERT(len >= 0), Q_ASSERT(str || !len), len)),
           m_data(castHelper(str)) {}
 
@@ -205,20 +205,20 @@ public:
 #else
     template <typename String, if_compatible_qstring_like<String> = true>
     QStringView(const String &str) Q_DECL_NOTHROW
-        : QStringView(str.isNull() ? nullptr : str.data(), qssize_t(str.size())) {}
+        : QStringView(str.isNull() ? nullptr : str.data(), qsizetype(str.size())) {}
 #endif
 
     template <typename StdBasicString, if_compatible_string<StdBasicString> = true>
     QStringView(const StdBasicString &str) Q_DECL_NOTHROW
-        : QStringView(str.data(), qssize_t(str.size())) {}
+        : QStringView(str.data(), qsizetype(str.size())) {}
 
     Q_REQUIRED_RESULT inline QString toString() const; // defined in qstring.h
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR qssize_t size() const Q_DECL_NOTHROW { return m_size; }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR qsizetype size() const Q_DECL_NOTHROW { return m_size; }
     Q_REQUIRED_RESULT const_pointer data() const Q_DECL_NOTHROW { return reinterpret_cast<const_pointer>(m_data); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR const storage_type *utf16() const Q_DECL_NOTHROW { return m_data; }
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar operator[](qssize_t n) const
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar operator[](qsizetype n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n < size()), QChar(m_data[n]); }
 
     //
@@ -230,22 +230,22 @@ public:
     Q_REQUIRED_RESULT QByteArray toLocal8Bit() const { return QtPrivate::convertToLocal8Bit(*this); }
     Q_REQUIRED_RESULT inline QVector<uint> toUcs4() const; // defined in qvector.h
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar at(qssize_t n) const { return (*this)[n]; }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar at(qsizetype n) const { return (*this)[n]; }
 
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qssize_t pos) const
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qsizetype pos) const
     { return Q_ASSERT(pos >= 0), Q_ASSERT(pos <= size()), QStringView(m_data + pos, m_size - pos); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qssize_t pos, qssize_t n) const
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView mid(qsizetype pos, qsizetype n) const
     { return Q_ASSERT(pos >= 0), Q_ASSERT(n >= 0), Q_ASSERT(pos + n <= size()), QStringView(m_data + pos, n); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView left(qssize_t n) const
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView left(qsizetype n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, n); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView right(qssize_t n) const
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView right(qsizetype n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data + m_size - n, n); }
-    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView chopped(qssize_t n) const
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QStringView chopped(qsizetype n) const
     { return Q_ASSERT(n >= 0), Q_ASSERT(n <= size()), QStringView(m_data, m_size - n); }
 
-    Q_DECL_RELAXED_CONSTEXPR void truncate(qssize_t n)
+    Q_DECL_RELAXED_CONSTEXPR void truncate(qsizetype n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size = n; }
-    Q_DECL_RELAXED_CONSTEXPR void chop(qssize_t n)
+    Q_DECL_RELAXED_CONSTEXPR void chop(qsizetype n)
     { Q_ASSERT(n >= 0); Q_ASSERT(n <= size()); m_size -= n; }
 
     Q_REQUIRED_RESULT QStringView trimmed() const Q_DECL_NOTHROW { return QtPrivate::trimmed(*this); }
@@ -292,7 +292,7 @@ public:
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar first() const { return front(); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QChar last()  const { return back(); }
 private:
-    qssize_t m_size;
+    qsizetype m_size;
     const storage_type *m_data;
 };
 Q_DECLARE_TYPEINFO(QStringView, Q_PRIMITIVE_TYPE);

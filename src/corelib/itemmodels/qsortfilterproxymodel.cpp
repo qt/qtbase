@@ -2657,8 +2657,8 @@ void QSortFilterProxyModel::setFilterRole(int role)
 }
 
 /*!
-    \since 5.9
-    \property QSortFilterProxyModel::recursiveFiltering
+    \since 5.10
+    \property QSortFilterProxyModel::recursiveFilteringEnabled
     \brief whether the filter to be applied recursively on children, and for
     any matching child, its parents will be visible as well.
 
@@ -2666,13 +2666,13 @@ void QSortFilterProxyModel::setFilterRole(int role)
 
     \sa filterAcceptsRow()
 */
-bool QSortFilterProxyModel::recursiveFiltering() const
+bool QSortFilterProxyModel::isRecursiveFilteringEnabled() const
 {
     Q_D(const QSortFilterProxyModel);
     return d->filter_recursive;
 }
 
-void QSortFilterProxyModel::setRecursiveFiltering(bool recursive)
+void QSortFilterProxyModel::setRecursiveFilteringEnabled(bool recursive)
 {
     Q_D(QSortFilterProxyModel);
     if (d->filter_recursive == recursive)

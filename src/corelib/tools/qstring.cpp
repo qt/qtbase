@@ -160,9 +160,9 @@ static inline bool qt_ends_with(QStringView haystack, QStringView needle, Qt::Ca
 static inline bool qt_ends_with(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs);
 static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
 
-qssize_t QtPrivate::qustrlen(const ushort *str) Q_DECL_NOTHROW
+qsizetype QtPrivate::qustrlen(const ushort *str) Q_DECL_NOTHROW
 {
-    qssize_t result = 0;
+    qsizetype result = 0;
 
 #ifdef __SSE2__
     // find the 16-byte alignment immediately prior or equal to str

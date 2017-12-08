@@ -102,6 +102,10 @@ static int statx(int dirfd, const char *pathname, int flag, unsigned mask, struc
 #  endif
 #endif
 
+#ifndef STATX_BASIC_STATS
+struct statx { mode_t stx_mode; };
+#endif
+
 QT_BEGIN_NAMESPACE
 
 enum {
@@ -212,6 +216,8 @@ static inline typename QtPrivate::QEnableIf<(&T::st_atimespec, &T::st_mtimespec,
     modification->tv_usec = p->st_mtimespec.tv_nsec / 1000;
 }
 
+#  ifndef st_atimensec
+// if "st_atimensec" is defined, this would expand to invalid C++
 template <typename T>
 static inline typename QtPrivate::QEnableIf<(&T::st_atimensec, &T::st_mtimensec, true)>::Type get(const T *p, struct timeval *access, struct timeval *modification)
 {
@@ -221,6 +227,7 @@ static inline typename QtPrivate::QEnableIf<(&T::st_atimensec, &T::st_mtimensec,
     modification->tv_sec = p->st_mtime;
     modification->tv_usec = p->st_mtimensec / 1000;
 }
+#  endif
 #endif
 
 qint64 timespecToMSecs(const timespec &spec)
@@ -278,6 +285,7 @@ mtime(const T &statBuffer, int)
 { return timespecToMSecs(statBuffer.st_mtimespec); }
 #endif
 
+#ifndef st_mtimensec
 // Xtimensec
 template <typename T>
 Q_DECL_UNUSED static typename std::enable_if<(&T::st_atimensec, true), qint64>::type
@@ -298,8 +306,9 @@ template <typename T>
 Q_DECL_UNUSED static typename std::enable_if<(&T::st_mtimensec, true), qint64>::type
 mtime(const T &statBuffer, int)
 { return statBuffer.st_mtime * Q_INT64_C(1000) + statBuffer.st_mtimensec / 1000000; }
-}
-}
+#endif
+} // namespace GetFileTimes
+} // unnamed namespace
 
 #ifdef STATX_BASIC_STATS
 static int qt_real_statx(int fd, const char *pathname, int flags, struct statx *statxBuffer)
@@ -395,7 +404,6 @@ inline void QFileSystemMetaData::fillFromStatxBuf(const struct statx &statxBuffe
     groupId_ = statxBuffer.stx_gid;
 }
 #else
-struct statx { mode_t stx_mode; };
 static int qt_statx(const char *, struct statx *)
 { return -ENOSYS; }
 
@@ -928,7 +936,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     data.entryFlags &= ~what;
 
     const QByteArray nativeFilePath = entry.nativeFilePath();
-    bool entryExists = true; // innocent until proven otherwise
+    int entryErrno = 0; // innocent until proven otherwise
 
     // first, we may try lstat(2). Possible outcomes:
     //  - success and is a symlink: filesystem entry exists, but we need stat(2)
@@ -978,7 +986,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
             }
         } else {
             // it doesn't exist
-            entryExists = false;
+            entryErrno = errno;
             data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
         }
 
@@ -986,8 +994,8 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     }
 
     // second, we try a regular stat(2)
-    if (statResult != 0 && (what & QFileSystemMetaData::PosixStatFlags)) {
-        if (entryExists && statResult == -1) {
+    if (statResult == -1 && (what & QFileSystemMetaData::PosixStatFlags)) {
+        if (entryErrno == 0 && statResult == -1) {
             data.entryFlags &= ~QFileSystemMetaData::PosixStatFlags;
             statResult = qt_statx(nativeFilePath, &statxBuffer);
             if (statResult == -ENOSYS) {
@@ -1001,7 +1009,7 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         }
 
         if (statResult != 0) {
-            entryExists = false;
+            entryErrno = errno;
             data.birthTime_ = 0;
             data.metadataChangeTime_ = 0;
             data.modificationTime_ = 0;
@@ -1020,13 +1028,13 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
     if (what & (QFileSystemMetaData::UserPermissions | QFileSystemMetaData::ExistsAttribute)) {
         // calculate user permissions
         auto checkAccess = [&](QFileSystemMetaData::MetaDataFlag flag, int mode) {
-            if (!entryExists || (what & flag) == 0)
+            if (entryErrno != 0 || (what & flag) == 0)
                 return;
             if (QT_ACCESS(nativeFilePath, mode) == 0) {
                 // access ok (and file exists)
                 data.entryFlags |= flag | QFileSystemMetaData::ExistsAttribute;
             } else if (errno != EACCES && errno != EROFS) {
-                entryExists = false;
+                entryErrno = errno;
             }
         };
 
@@ -1035,9 +1043,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         checkAccess(QFileSystemMetaData::UserExecutePermission, X_OK);
 
         // if we still haven't found out if the file exists, try F_OK
-        if (entryExists && (data.entryFlags & QFileSystemMetaData::ExistsAttribute) == 0) {
-            entryExists = QT_ACCESS(nativeFilePath, F_OK) == 0;
-            if (entryExists)
+        if (entryErrno == 0 && (data.entryFlags & QFileSystemMetaData::ExistsAttribute) == 0) {
+            if (QT_ACCESS(nativeFilePath, F_OK) == -1)
+                entryErrno = errno;
+            else
                 data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
         }
 
@@ -1047,13 +1056,13 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
 #if defined(Q_OS_DARWIN)
     if (what & QFileSystemMetaData::AliasType) {
-        if (entryExists && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey))
+        if (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsAliasFileKey))
             data.entryFlags |= QFileSystemMetaData::AliasType;
         data.knownFlagsMask |= QFileSystemMetaData::AliasType;
     }
 
     if (what & QFileSystemMetaData::BundleType) {
-        if (entryExists && isPackage(data, entry))
+        if (entryErrno == 0 && isPackage(data, entry))
             data.entryFlags |= QFileSystemMetaData::BundleType;
 
         data.knownFlagsMask |= QFileSystemMetaData::BundleType;
@@ -1065,19 +1074,19 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         QString fileName = entry.fileName();
         if ((fileName.size() > 0 && fileName.at(0) == QLatin1Char('.'))
 #if defined(Q_OS_DARWIN)
-                || (entryExists && hasResourcePropertyFlag(data, entry, kCFURLIsHiddenKey))
+                || (entryErrno == 0 && hasResourcePropertyFlag(data, entry, kCFURLIsHiddenKey))
 #endif
                 )
             data.entryFlags |= QFileSystemMetaData::HiddenAttribute;
         data.knownFlagsMask |= QFileSystemMetaData::HiddenAttribute;
     }
 
-    if (!entryExists) {
+    if (entryErrno != 0) {
         what &= ~QFileSystemMetaData::LinkType; // don't clear link: could be broken symlink
         data.clearFlags(what);
         return false;
     }
-    return data.hasFlags(what);
+    return true;
 }
 
 // static
