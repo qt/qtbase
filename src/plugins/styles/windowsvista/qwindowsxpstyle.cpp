@@ -54,7 +54,6 @@
 #include <private/qapplication_p.h>
 #include <qpa/qplatformnativeinterface.h>
 
-#include <qdesktopwidget.h>
 #if QT_CONFIG(toolbutton)
 #include <qtoolbutton.h>
 #endif
@@ -186,7 +185,6 @@ HRGN XPThemeData::mask(QWidget *widget)
 
 // QWindowsXPStylePrivate -------------------------------------------------------------------------
 // Static initializations
-QPixmap *QWindowsXPStylePrivate::tabbody = 0;
 HWND QWindowsXPStylePrivate::m_vistaTreeViewHelper = 0;
 HTHEME QWindowsXPStylePrivate::m_themes[NThemes];
 bool QWindowsXPStylePrivate::use_xp = false;
@@ -266,8 +264,6 @@ void QWindowsXPStylePrivate::cleanup(bool force)
 
     use_xp = false;
     cleanupHandleMap();
-    delete tabbody;
-    tabbody = 0;
 }
 
 /* In order to obtain the correct VistaTreeViewTheme (arrows for PE_IndicatorBranch),
@@ -415,30 +411,6 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
 }
 
 /*! \internal
-    Returns the pointer to a tab widgets body pixmap, scaled to the
-    height of the screen. This way the theme engine doesn't need to
-    scale the body for every time we ask for it. (Speed optimization)
-*/
-const QPixmap *QWindowsXPStylePrivate::tabBody(QWidget *widget)
-{
-    if (!tabbody) {
-        XPThemeData theme(0, 0, QWindowsXPStylePrivate::TabTheme, TABP_BODY);
-        const QSize size = (theme.size() * QWindowsStylePrivate::nativeMetricScaleFactor(widget)).toSize();
-
-        tabbody = new QPixmap(size.width(), QApplication::desktop()->screenGeometry().height());
-        QPainter painter(tabbody);
-        theme.rect = QRect(QPoint(0, 0), size);
-        drawBackground(theme);
-        // We fill with the last line of the themedata, that
-        // way we don't get a tiled pixmap inside big tabs
-        QPixmap temp(size.width(), 1);
-        painter.drawPixmap(0, 0, temp, 0, size.height() - 1, -1, -1);
-        painter.drawTiledPixmap(0, size.height(), size.width(), tabbody->height() - size.height(), temp);
-    }
-    return tabbody;
-}
-
-/*! \internal
     Returns a native buffer (DIB section) of at least the size of
     ( \a x , \a y ). The buffer has a 32 bit depth, to not lose
     the alpha values on proper alpha-pixmaps.
@@ -561,16 +533,6 @@ QRegion QWindowsXPStylePrivate::region(XPThemeData &themeData)
     DeleteObject(dest);
 
     return region;
-}
-
-/*! \internal
-    Sets the parts region on a window.
-*/
-void QWindowsXPStylePrivate::setTransparency(QWidget *widget, XPThemeData &themeData)
-{
-    HRGN hrgn = themeData.mask(widget);
-    if (hrgn && widget)
-        SetWindowRgn(winId(widget), hrgn, true);
 }
 
 /*! \internal

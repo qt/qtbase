@@ -232,7 +232,6 @@ public:
     void init(bool force = false);
     void cleanup(bool force = false);
     void cleanupHandleMap();
-    const QPixmap *tabBody(QWidget *widget);
 
     HBITMAP buffer(int w = 0, int h = 0);
     HDC bufferHDC()
@@ -244,7 +243,6 @@ public:
     bool isTransparent(XPThemeData &themeData);
     QRegion region(XPThemeData &themeData);
 
-    void setTransparency(QWidget *widget, XPThemeData &themeData);
     bool drawBackground(XPThemeData &themeData);
     bool drawBackgroundThruNativeBuffer(XPThemeData &themeData, qreal aditionalDevicePixelRatio);
     bool drawBackgroundDirectly(HDC dc, XPThemeData &themeData, qreal aditionalDevicePixelRatio);
@@ -277,7 +275,6 @@ private:
 
     static QBasicAtomicInt ref;
     static bool use_xp;
-    static QPixmap *tabbody;
 
     QHash<ThemeMapKey, ThemeMapData> alphaCache;
     HDC bufferDC;
