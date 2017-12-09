@@ -3159,6 +3159,15 @@ void QHeaderViewPrivate::setupSectionIndicator(int section, int position)
     QRect rect(0, 0, w, h);
 
     QPainter painter(&pm);
+    const QVariant variant = model->headerData(section, orientation,
+                                               Qt::FontRole);
+    if (variant.isValid() && variant.canConvert<QFont>()) {
+        const QFont sectionFont = qvariant_cast<QFont>(variant);
+        painter.setFont(sectionFont);
+    } else {
+        painter.setFont(q->font());
+    }
+
     painter.setOpacity(0.75);
     q->paintSection(&painter, rect, section);
     painter.end();
