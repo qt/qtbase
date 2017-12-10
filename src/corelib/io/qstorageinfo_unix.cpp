@@ -107,6 +107,13 @@
 #  endif // QT_LARGEFILE_SUPPORT
 #endif // Q_OS_BSD4
 
+#if QT_HAS_INCLUDE(<paths.h>)
+#  include <paths.h>
+#endif
+#ifndef _PATH_MOUNTED
+#  define _PATH_MOUNTED     "/etc/mnttab"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QStorageIterator
@@ -241,11 +248,9 @@ inline QByteArray QStorageIterator::options() const
 
 #elif defined(Q_OS_SOLARIS)
 
-static const char pathMounted[] = "/etc/mnttab";
-
 inline QStorageIterator::QStorageIterator()
 {
-    const int fd = qt_safe_open(pathMounted, O_RDONLY);
+    const int fd = qt_safe_open(_PATH_MOUNTED, O_RDONLY);
     fp = ::fdopen(fd, "r");
 }
 
@@ -282,11 +287,9 @@ inline QByteArray QStorageIterator::device() const
 
 #elif defined(Q_OS_ANDROID)
 
-static const QLatin1String pathMounted("/proc/mounts");
-
 inline QStorageIterator::QStorageIterator()
 {
-    file.setFileName(pathMounted);
+    file.setFileName(_PATH_MOUNTED);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
 }
 
@@ -339,14 +342,13 @@ inline QByteArray QStorageIterator::options() const
 
 #elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
 
-static const char pathMounted[] = "/etc/mtab";
 static const int bufferSize = 1024; // 2 paths (mount point+device) and metainfo;
                                     // should be enough
 
 inline QStorageIterator::QStorageIterator() :
     buffer(QByteArray(bufferSize, 0))
 {
-    fp = ::setmntent(pathMounted, "r");
+    fp = ::setmntent(_PATH_MOUNTED, "r");
 }
 
 inline QStorageIterator::~QStorageIterator()

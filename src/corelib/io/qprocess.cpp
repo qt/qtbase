@@ -99,6 +99,10 @@ QT_END_NAMESPACE
 #include <private/qcore_unix_p.h>
 #endif
 
+#if QT_HAS_INCLUDE(<paths.h>)
+#include <paths.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -2638,6 +2642,8 @@ QString QProcess::nullDevice()
 {
 #ifdef Q_OS_WIN
     return QStringLiteral("\\\\.\\NUL");
+#elif defined(_PATH_DEVNULL)
+    return QStringLiteral(_PATH_DEVNULL);
 #else
     return QStringLiteral("/dev/null");
 #endif

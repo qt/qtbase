@@ -55,6 +55,13 @@
 #include <stdio.h>
 #include <errno.h>
 
+#if QT_HAS_INCLUDE(<paths.h>)
+# include <paths.h>
+#endif
+#ifndef _PATH_TMP           // from <paths.h>
+# define _PATH_TMP          "/tmp"
+#endif
+
 #if defined(Q_OS_MAC)
 # include <QtCore/private/qcore_mac_p.h>
 # include <CoreFoundation/CFBundle.h>
@@ -1507,14 +1514,13 @@ QString QFileSystemEngine::tempPath()
 #else
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));
     if (temp.isEmpty()) {
+        if (false) {
 #if defined(Q_OS_DARWIN) && !defined(QT_BOOTSTRAPPED)
-        if (NSString *nsPath = NSTemporaryDirectory()) {
+        } else if (NSString *nsPath = NSTemporaryDirectory()) {
             temp = QString::fromCFString((CFStringRef)nsPath);
-        } else {
-#else
-        {
 #endif
-            temp = QLatin1String("/tmp");
+        } else {
+            temp = QLatin1String(_PATH_TMP);
         }
     }
     return QDir::cleanPath(temp);
