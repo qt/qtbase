@@ -747,7 +747,7 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
         break;
     case Qt::TextAlignmentRole:
         if (index.column() == 1)
-            return Qt::AlignRight;
+            return QVariant(Qt::AlignTrailing | Qt::AlignVCenter);
         break;
     case FilePermissions:
         int p = permissions(index);
