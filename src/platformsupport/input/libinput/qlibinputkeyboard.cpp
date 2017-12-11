@@ -40,6 +40,8 @@
 #include "qlibinputkeyboard_p.h"
 #include <QtCore/QTextCodec>
 #include <QtCore/QLoggingCategory>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qinputdevicemanager_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <libinput.h>
 #ifndef QT_NO_XKBCOMMON_EVDEV
@@ -196,6 +198,8 @@ void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
 
     const xkb_keysym_t sym = xkb_state_key_get_one_sym(m_state, k);
 
+    // mods here is the modifier state before the event, i.e. not
+    // including the current key in case it is a modifier.
     Qt::KeyboardModifiers mods = Qt::NoModifier;
     const int qtkey = keysymToQtKey(sym, &mods, text);
 
@@ -210,6 +214,8 @@ void QLibInputKeyboard::processKey(libinput_event_keyboard *e)
         mods |= Qt::MetaModifier;
 
     xkb_state_update_key(m_state, k, pressed ? XKB_KEY_DOWN : XKB_KEY_UP);
+
+    QGuiApplicationPrivate::inputDeviceManager()->setKeyboardModifiers(mods, qtkey);
 
     QWindowSystemInterface::handleExtendedKeyEvent(Q_NULLPTR,
                                                    pressed ? QEvent::KeyPress : QEvent::KeyRelease,
