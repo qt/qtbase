@@ -6901,6 +6901,25 @@ void tst_QString::isRightToLeft_data()
 
     static const ushort unicode3[] = { QChar::highSurrogate(0x10800u), QChar::lowSurrogate(0x10800u), QChar::highSurrogate(0x10805u), QChar::lowSurrogate(0x10805u) };
     QTest::newRow("surrogates-cypriot") << QString::fromUtf16(unicode3, 4) << true;
+
+    QTest::newRow("lre") << (QString("12345") + QChar(0x202a) + QString("9") + QChar(0x202c)) << false;
+    QTest::newRow("rle") << (QString("12345") + QChar(0x202b) + QString("9") + QChar(0x202c)) << false;
+    QTest::newRow("r in lre") << (QString("12345") + QChar(0x202a) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + QString("a")) << true;
+    QTest::newRow("l in lre") << (QString("12345") + QChar(0x202a) + QString("a") + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
+    QTest::newRow("r in rle") << (QString("12345") + QChar(0x202b) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + QString("a")) << true;
+    QTest::newRow("l in rle") << (QString("12345") + QChar(0x202b) + QString("a") + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
+
+    QTest::newRow("lro") << (QString("12345") + QChar(0x202d) + QString("9") + QChar(0x202c)) << false;
+    QTest::newRow("rlo") << (QString("12345") + QChar(0x202e) + QString("9") + QChar(0x202c)) << false;
+    QTest::newRow("r in lro") << (QString("12345") + QChar(0x202d) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + QString("a")) << true;
+    QTest::newRow("l in lro") << (QString("12345") + QChar(0x202d) + QString("a") + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
+    QTest::newRow("r in rlo") << (QString("12345") + QChar(0x202e) + QString::fromUtf16(unicode1, 2) + QChar(0x202c) + QString("a")) << true;
+    QTest::newRow("l in rlo") << (QString("12345") + QChar(0x202e) + QString("a") + QChar(0x202c) + QString::fromUtf16(unicode1, 2)) << false;
+
+    QTest::newRow("lri") << (QString("12345") + QChar(0x2066) + QString("a") + QChar(0x2069) + QString::fromUtf16(unicode1, 2)) << true;
+    QTest::newRow("rli") << (QString("12345") + QChar(0x2067) + QString::fromUtf16(unicode1, 2) + QChar(0x2069) + QString("a")) << false;
+    QTest::newRow("fsi1") << (QString("12345") + QChar(0x2068) + QString("a") + QChar(0x2069) + QString::fromUtf16(unicode1, 2)) << true;
+    QTest::newRow("fsi2") << (QString("12345") + QChar(0x2068) + QString::fromUtf16(unicode1, 2) + QChar(0x2069) + QString("a")) << false;
 }
 
 void tst_QString::isRightToLeft()

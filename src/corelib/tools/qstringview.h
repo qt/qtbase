@@ -266,6 +266,9 @@ public:
     Q_REQUIRED_RESULT bool endsWith(QChar c, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
     { return QtPrivate::endsWith(*this, QStringView(&c, 1), cs); }
 
+    Q_REQUIRED_RESULT bool isRightToLeft() const Q_DECL_NOTHROW
+    { return QtPrivate::isRightToLeft(*this); }
+
     //
     // STL compatibility API:
     //

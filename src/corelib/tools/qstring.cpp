@@ -8506,7 +8506,7 @@ bool QString::isSimpleText() const
 */
 bool QString::isRightToLeft() const
 {
-    return QStringRef(this).isRightToLeft();
+    return QtPrivate::isRightToLeft(QStringView(*this));
 }
 
 /*! \fn QChar *QString::data()
@@ -10778,8 +10778,23 @@ int QStringRef::count(const QStringRef &str, Qt::CaseSensitivity cs) const
 */
 bool QStringRef::isRightToLeft() const
 {
-    const ushort *p = reinterpret_cast<const ushort*>(unicode());
-    const ushort * const end = p + size();
+    return QtPrivate::isRightToLeft(QStringView(unicode(), size()));
+}
+
+/*!
+    \since 5.11
+    \internal
+    \relates QStringView
+
+    Returns \c true if the string is read right to left.
+
+    \sa QString::isRightToLeft()
+*/
+bool QtPrivate::isRightToLeft(QStringView string)
+{
+    const ushort *p = reinterpret_cast<const ushort*>(string.data());
+    const ushort * const end = p + string.size();
+    int isolateLevel = 0;
     while (p < end) {
         uint ucs4 = *p;
         if (QChar::isHighSurrogate(ucs4) && p < end - 1) {
@@ -10791,10 +10806,23 @@ bool QStringRef::isRightToLeft() const
         }
         switch (QChar::direction(ucs4))
         {
+        case QChar::DirRLI:
+        case QChar::DirLRI:
+        case QChar::DirFSI:
+            ++isolateLevel;
+            break;
+        case QChar::DirPDI:
+            if (isolateLevel)
+                --isolateLevel;
+            break;
         case QChar::DirL:
+            if (isolateLevel)
+                break;
             return false;
         case QChar::DirR:
         case QChar::DirAL:
+            if (isolateLevel)
+                break;
             return true;
         default:
             break;

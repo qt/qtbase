@@ -772,4 +772,13 @@ QT_BEGIN_NAMESPACE
     \sa QString::isNull(), QStringRef::isNull(), QStringView
 */
 
+/*!
+    \fn bool QStringView::isRightToLeft();
+    \since 5.11
+
+    Returns \c true if the string is read right to left.
+
+    \sa QString::isRightToLeft()
+*/
+
 QT_END_NAMESPACE
