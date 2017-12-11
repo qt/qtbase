@@ -872,8 +872,8 @@ FontNames qt_getCanonicalFontNames(const uchar *table, quint32 bytes)
 
         if ((platform_id == PlatformId_Microsoft
             && (encoding_id == 0 || encoding_id == 1))
-            && (language_id & 0x3ff) == MS_LangIdEnglish
-            && *idType < Microsoft) {
+            && ((language_id & 0x3ff) == MS_LangIdEnglish
+                || *idType < Microsoft)) {
             *id = i;
             *idType = Microsoft;
         }
@@ -1172,6 +1172,46 @@ static int QT_WIN_CALLBACK populateFontFamilies(const LOGFONT *logFont, const TE
     return 1; // continue
 }
 
+void QWindowsFontDatabase::addDefaultEUDCFont()
+{
+    QString path;
+    {
+        HKEY key;
+        if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                         L"EUDC\\1252",
+                         0,
+                         KEY_READ,
+                         &key) != ERROR_SUCCESS) {
+            return;
+        }
+
+        WCHAR value[MAX_PATH];
+        DWORD bufferSize = sizeof(value);
+        ZeroMemory(value, bufferSize);
+
+        if (RegQueryValueEx(key,
+                            L"SystemDefaultEUDCFont",
+                            nullptr,
+                            nullptr,
+                            reinterpret_cast<LPBYTE>(value),
+                            &bufferSize) == ERROR_SUCCESS) {
+            path = QString::fromWCharArray(value);
+        }
+
+        RegCloseKey(key);
+    }
+
+    if (!path.isEmpty()) {
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly)) {
+            qCWarning(lcQpaFonts) << "Unable to open default EUDC font:" << path;
+            return;
+        }
+
+        m_eudcFonts = addApplicationFont(file.readAll(), path);
+    }
+}
+
 void QWindowsFontDatabase::populateFontDatabase()
 {
     removeApplicationFonts();
@@ -1186,6 +1226,7 @@ void QWindowsFontDatabase::populateFontDatabase()
     QString systemDefaultFamily = QWindowsFontDatabase::systemDefaultFont().family();
     if (QPlatformFontDatabase::resolveFontFamilyAlias(systemDefaultFamily) == systemDefaultFamily)
         QPlatformFontDatabase::registerFontFamily(systemDefaultFamily);
+    addDefaultEUDCFont();
 }
 
 typedef QSharedPointer<QWindowsFontEngineData> QWindowsFontEngineDataPtr;
@@ -1583,6 +1624,7 @@ void QWindowsFontDatabase::removeApplicationFonts()
         }
     }
     m_applicationFonts.clear();
+    m_eudcFonts.clear();
 }
 
 void QWindowsFontDatabase::releaseHandle(void *handle)
@@ -1842,7 +1884,7 @@ QString QWindowsFontDatabase::familyForStyleHint(QFont::StyleHint styleHint)
 
 QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
-    QStringList result;
+    QStringList result = m_eudcFonts;
     result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
     result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
