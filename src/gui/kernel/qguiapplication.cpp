@@ -53,6 +53,7 @@
 #include <qpa/qplatformdrag.h>
 
 #include <QtCore/QAbstractEventDispatcher>
+#include <QtCore/QStandardPaths>
 #include <QtCore/QVariant>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
@@ -242,6 +243,15 @@ static inline void clearFontUnlocked()
 {
     delete QGuiApplicationPrivate::app_font;
     QGuiApplicationPrivate::app_font = 0;
+}
+
+static bool checkRunningUnderFlatpak()
+{
+#if QT_CONFIG(dbus)
+    return !QStandardPaths::locate(QStandardPaths::RuntimeLocation, QLatin1String("flatpak-info")).isEmpty();
+#else
+    return false;
+#endif // QT_CONFIG(dbus)
 }
 
 // Using aggregate initialization instead of ctor so we can have a POD global static
@@ -1179,16 +1189,21 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     if (!platformThemeName.isEmpty())
         themeNames.append(platformThemeName);
 
-    // 2) Ask the platform integration for a list of theme names
+    // 2) Special case - check whether we are in sandbox to use flatpak platform theme for portals support
+    if (checkRunningUnderFlatpak()) {
+        themeNames.append(QStringLiteral("flatpak"));
+    }
+
+    // 3) Ask the platform integration for a list of theme names
     themeNames += QGuiApplicationPrivate::platform_integration->themeNames();
-    // 3) Look for a theme plugin.
+    // 4) Look for a theme plugin.
     for (const QString &themeName : qAsConst(themeNames)) {
         QGuiApplicationPrivate::platform_theme = QPlatformThemeFactory::create(themeName, platformPluginPath);
         if (QGuiApplicationPrivate::platform_theme)
             break;
     }
 
-    // 4) If no theme plugin was found ask the platform integration to
+    // 5) If no theme plugin was found ask the platform integration to
     // create a theme
     if (!QGuiApplicationPrivate::platform_theme) {
         for (const QString &themeName : qAsConst(themeNames)) {
@@ -1199,7 +1214,7 @@ static void init_platform(const QString &pluginArgument, const QString &platform
         // No error message; not having a theme plugin is allowed.
     }
 
-    // 5) Fall back on the built-in "null" platform theme.
+    // 6) Fall back on the built-in "null" platform theme.
     if (!QGuiApplicationPrivate::platform_theme)
         QGuiApplicationPrivate::platform_theme = new QPlatformTheme;
 
