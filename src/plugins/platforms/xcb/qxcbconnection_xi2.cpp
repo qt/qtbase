@@ -700,8 +700,9 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         // Touches must be accepted when we are grabbing touch events. Otherwise the entire sequence
         // will get replayed when the grab ends.
         if (m_xiGrab) {
-            // XIAllowTouchEvents deadlocks with libXi < 1.7.4 (this has nothing to do with the XI2 versions like 2.2)
-            // http://lists.x.org/archives/xorg-devel/2014-July/043059.html
+            // Note that XIAllowTouchEvents is known to deadlock with older libXi versions,
+            // for details see qtbase/src/plugins/platforms/xcb/README. This has nothing to
+            // do with the XInput protocol version, but is a bug in libXi implementation instead.
             XIAllowTouchEvents(static_cast<Display *>(m_xlib_display), xiDeviceEvent->deviceid,
                                xiDeviceEvent->detail, xiDeviceEvent->event, XIAcceptTouch);
         }

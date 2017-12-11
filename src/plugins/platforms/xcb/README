@@ -25,9 +25,8 @@ This should allow for binaries that are portable across most modern Linux distri
 PACKAGE VERSION REQUIREMENTS
 
 When using touch input via XInput 2.2 or higher, there is a potential issue on systems that ship with
-a libXi older than 1.7.4. This is because XIAllowTouchEvents can deadlock with libXi 1.7.3 and earlier.
+a libXi older than 1.7.5. This is because XIAllowTouchEvents can deadlock with libXi 1.7.4 and earlier.
 When touch events are never received, this is not an issue, so plain mouse/keyboard systems are not affected.
-See http://lists.x.org/archives/xorg-devel/2014-July/043059.html for details on the libXi patch.
 Qt versions before 5.8 attempted to recognize this scenario based on the pkg-config package version and skip
 the call. This has been removed starting from 5.8 since relying on pkg-config package versions is unsafe given
 that Qt must also support systems with limited or incomplete pkg-config setups.
