@@ -2595,6 +2595,9 @@
 
     \value ImhMultiLine              Multiple lines can be entered into the text field.
 
+    \value ImhNoEditMenu             Do not use built-in edit menu. This flag was introduced in Qt 5.11.
+    \value ImhNoTextHandles          Do not use built-in text cursor and selection handles. This flag was introduced in Qt 5.11.
+
     Flags that restrict input (exclusive flags):
 
     \value ImhDigitsOnly             Only digits are allowed.
