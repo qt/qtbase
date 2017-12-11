@@ -5138,14 +5138,9 @@ QString& QString::fill(QChar ch, int size)
 
     Returns the number of characters in this string.
 
-    The last character in the string is at position size() - 1. In
-    addition, QString ensures that the character at position size()
-    is always '\\0', so that you can use the return value of data()
-    and constData() as arguments to functions that expect
-    '\\0'-terminated strings.
+    The last character in the string is at position size() - 1.
 
     Example:
-
     \snippet qstring/main.cpp 58
 
     \sa isEmpty(), resize()
@@ -5674,10 +5669,13 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
 /*!
     \fn const QChar *QString::unicode() const
 
-    Returns a '\\0'-terminated Unicode representation of the string.
+    Returns a Unicode representation of the string.
     The result remains valid until the string is modified.
 
-    \sa utf16()
+    \note The returned string may not be '\\0'-terminated.
+    Use size() to determine the length of the array.
+
+    \sa utf16(), fromRawData()
 */
 
 /*!
@@ -8077,7 +8075,10 @@ bool QString::isRightToLeft() const
 
     Returns a pointer to the data stored in the QString. The pointer
     can be used to access and modify the characters that compose the
-    string. For convenience, the data is '\\0'-terminated.
+    string.
+
+    Unlike constData() and unicode(), the returned data is always
+    '\\0'-terminated.
 
     Example:
 
@@ -8093,18 +8094,25 @@ bool QString::isRightToLeft() const
 /*! \fn const QChar *QString::data() const
 
     \overload
+
+    \note The returned string may not be '\\0'-terminated.
+    Use size() to determine the length of the array.
+
+    \sa fromRawData()
 */
 
 /*! \fn const QChar *QString::constData() const
 
     Returns a pointer to the data stored in the QString. The pointer
-    can be used to access the characters that compose the string. For
-    convenience, the data is '\\0'-terminated.
+    can be used to access the characters that compose the string.
 
     Note that the pointer remains valid only as long as the string is
     not modified.
 
-    \sa data(), operator[]()
+    \note The returned string may not be '\\0'-terminated.
+    Use size() to determine the length of the array.
+
+    \sa data(), operator[](), fromRawData()
 */
 
 /*! \fn void QString::push_front(const QString &other)

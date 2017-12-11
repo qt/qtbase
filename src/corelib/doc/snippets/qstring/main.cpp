@@ -733,7 +733,6 @@ void Widget::sizeFunction()
     int n = str.size();         // n == 5
     str.data()[0];              // returns 'W'
     str.data()[4];              // returns 'd'
-    str.data()[5];              // returns '\0'
     //! [58]
 }
 
