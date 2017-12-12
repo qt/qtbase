@@ -34,4 +34,7 @@
 
     \image easing-example.png
 
+    See \l QEasingCurve for a detailed description on how to use the class's
+    functionalities.
+
 */
