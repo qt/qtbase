@@ -202,7 +202,21 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_HATRAN,
     HB_SCRIPT_MULTANI,
     HB_SCRIPT_OLD_HUNGARIAN,
-    HB_SCRIPT_SIGNWRITING
+    HB_SCRIPT_SIGNWRITING,
+
+    // Unicode 9.0 additions
+    HB_SCRIPT_ADLAM,
+    HB_SCRIPT_BHAIKSUKI,
+    HB_SCRIPT_MARCHEN,
+    HB_SCRIPT_NEWA,
+    HB_SCRIPT_OSAGE,
+    HB_SCRIPT_TANGUT,
+
+    // Unicode 10.0 additions
+    HB_SCRIPT_MASARAM_GONDI,
+    HB_SCRIPT_NUSHU,
+    HB_SCRIPT_SOYOMBO,
+    HB_SCRIPT_ZANABAZAR_SQUARE
 };
 Q_STATIC_ASSERT(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));
 

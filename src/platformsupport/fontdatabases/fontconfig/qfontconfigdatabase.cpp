@@ -250,7 +250,17 @@ static const char specialLanguages[][6] = {
     "", // Hatran
     "", // Multani
     "", // OldHungarian
-    ""  // SignWriting
+    "", // SignWriting
+    "", // Adlam
+    "", // Bhaiksuki
+    "", // Marchen
+    "", // Newa
+    "", // Osage
+    "", // Tangut
+    "", // MasaramGondi
+    "", // Nushu
+    "", // Soyombo
+    "" // ZanabazarSquare
 };
 Q_STATIC_ASSERT(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
 

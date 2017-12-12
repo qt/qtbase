@@ -38,8 +38,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "8.0"
-#define DATA_VERSION_STR "QChar::Unicode_8_0"
+#define DATA_VERSION_S "10.0"
+#define DATA_VERSION_STR "QChar::Unicode_10_0"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -67,6 +67,8 @@ static void initAgeMap()
         { QChar::Unicode_6_3,   "6.3" },
         { QChar::Unicode_7_0,   "7.0" },
         { QChar::Unicode_8_0,   "8.0" },
+        { QChar::Unicode_9_0,   "9.0" },
+        { QChar::Unicode_10_0,   "10.0" },
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -722,6 +724,20 @@ static void initScriptMap()
         { QChar::Script_Multani,                "Multani" },
         { QChar::Script_OldHungarian,           "OldHungarian" },
         { QChar::Script_SignWriting,            "SignWriting" },
+        // 9.0
+        { QChar::Script_Adlam,                  "Adlam" },
+        { QChar::Script_Bhaiksuki,              "Bhaiksuki" },
+        { QChar::Script_Marchen,                "Marchen" },
+        { QChar::Script_Newa,                   "Newa" },
+        { QChar::Script_Osage,                  "Osage" },
+        { QChar::Script_Tangut,                 "Tangut" },
+        // 10.0
+        { QChar::Script_MasaramGondi,           "MasaramGondi" },
+        { QChar::Script_Nushu,                  "Nushu" },
+        { QChar::Script_Soyombo,                "Soyombo" },
+        { QChar::Script_ZanabazarSquare,        "ZanabazarSquare" },
+
+
         // unhandled
         { QChar::Script_Unknown,                0 }
     };
