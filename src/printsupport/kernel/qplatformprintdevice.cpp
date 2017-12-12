@@ -167,7 +167,7 @@ QList<QPageSize> QPlatformPrintDevice::supportedPageSizes() const
 {
     if (!m_havePageSizes)
         loadPageSizes();
-    return m_pageSizes.toList();
+    return m_pageSizes;
 }
 
 QPageSize QPlatformPrintDevice::supportedPageSize(const QPageSize &pageSize) const
@@ -293,7 +293,7 @@ QList<int> QPlatformPrintDevice::supportedResolutions() const
 {
     if (!m_haveResolutions)
         loadResolutions();
-    return m_resolutions.toList();
+    return m_resolutions;
 }
 
 void QPlatformPrintDevice::loadInputSlots() const
@@ -400,7 +400,7 @@ QList<QMimeType> QPlatformPrintDevice::supportedMimeTypes() const
 {
     if (!m_haveMimeTypes)
         loadMimeTypes();
-    return m_mimeTypes.toList();
+    return m_mimeTypes;
 }
 #endif // QT_NO_MIMETYPE
 

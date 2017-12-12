@@ -155,7 +155,7 @@ protected:
     bool m_supportsCollateCopies;
 
     mutable bool m_havePageSizes;
-    mutable QVector<QPageSize> m_pageSizes;
+    mutable QList<QPageSize> m_pageSizes;
 
     bool m_supportsCustomPageSizes;
 
@@ -163,7 +163,7 @@ protected:
     QSize m_maximumPhysicalPageSize;
 
     mutable bool m_haveResolutions;
-    mutable QVector<int> m_resolutions;
+    mutable QList<int> m_resolutions;
 
     mutable bool m_haveInputSlots;
     mutable QVector<QPrint::InputSlot> m_inputSlots;
@@ -179,7 +179,7 @@ protected:
 
 #ifndef QT_NO_MIMETYPE
     mutable bool m_haveMimeTypes;
-    mutable QVector<QMimeType> m_mimeTypes;
+    mutable QList<QMimeType> m_mimeTypes;
 #endif
 };
 
