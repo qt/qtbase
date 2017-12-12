@@ -728,10 +728,6 @@
         }
     },
 
-    "testTypeAliases": {
-        "files": [ "fxc" ]
-    },
-
     "tests": {
         "angle_d3d11_qdtd": {
             "label": "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT",
@@ -747,9 +743,7 @@
         "fxc": {
             "label": "Direct3D Shader Compiler",
             "type": "fxc",
-            "files": [
-                "fxc.exe"
-            ]
+            "log": "value"
         },
         "drm_atomic": {
             "label": "DRM Atomic API",
@@ -1010,7 +1004,8 @@
             "condition": "features.dxguid && tests.fxc && (features.direct3d9 || (config.winrt && features.direct3d11 && libs.d3dcompiler))",
             "output": [
                 "publicFeature",
-                { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" }
+                { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" },
+                { "type": "varAssign", "name": "QMAKE_FXC_LOCATION", "value": "tests.fxc.value" }
             ]
         },
         "angle_d3d11_qdtd": {

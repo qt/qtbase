@@ -20,12 +20,35 @@ defineTest(qtConfLibrary_freetype) {
 # DXSDK_DIR variable. Starting with Windows Kit 8, it is included in
 # the Windows SDK.
 defineTest(qtConfTest_fxc) {
-    dxdir = $$getenv("DXSDK_DIR")
-    !isEmpty(dxdir) {
-        EXTRA_PATH += $$dxdir/Utilities/bin/x86
+    !mingw {
+        fxc = $$qtConfFindInPath("fxc.exe")
+    } else {
+        equals(QMAKE_HOST.arch, x86_64): \
+            fns = x64/fxc.exe
+        else: \
+            fns = x86/fxc.exe
+        dxdir = $$(DXSDK_DIR)
+        !isEmpty(dxdir) {
+            fxc = $$dxdir/Utilities/bin/$$fns
+        } else {
+            winkitbindir = $$(WindowsSdkVerBinPath)
+            !isEmpty(winkitbindir) {
+                fxc = $$winkitbindir/$$fns
+            } else {
+                winkitdir = $$(WindowsSdkDir)
+                !isEmpty(winkitdir): \
+                    fxc = $$winkitdir/bin/$$fns
+            }
+        }
     }
 
-    qtConfTest_files($${1}): return(true)
+    !isEmpty(fxc):exists($$fxc) {
+        $${1}.value = $$clean_path($$fxc)
+        export($${1}.value)
+        $${1}.cache += value
+        export($${1}.cache)
+        return(true)
+    }
     return(false)
 }
 
