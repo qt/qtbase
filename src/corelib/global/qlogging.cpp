@@ -61,7 +61,7 @@
 #include <qt_windows.h>
 #endif
 #if QT_CONFIG(slog2)
-#include <slog2.h>
+#include <sys/slog2.h>
 #endif
 
 #ifdef Q_OS_ANDROID
