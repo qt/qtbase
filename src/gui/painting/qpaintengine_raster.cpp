@@ -2341,8 +2341,12 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     if (s->matrix.type() > QTransform::TxTranslate || stretch_sr) {
 
         QRectF targetBounds = s->matrix.mapRect(r);
-        bool exceedsPrecision = targetBounds.width() > 0x7fff
-                             || targetBounds.height() > 0x7fff;
+        bool exceedsPrecision = r.width() > 0x7fff
+                             || r.height() > 0x7fff
+                             || targetBounds.width() > 0x7fff
+                             || targetBounds.height() > 0x7fff
+                             || s->matrix.m11() >= 512
+                             || s->matrix.m22() >= 512;
 
         if (!exceedsPrecision && d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             if (s->matrix.type() > QTransform::TxScale) {
@@ -4639,9 +4643,13 @@ void QSpanData::setupMatrix(const QTransform &matrix, int bilin)
     bilinear = bilin;
 
     const bool affine = inv.isAffine();
+    const qreal f1 = m11 * m11 + m21 * m21;
+    const qreal f2 = m12 * m12 + m22 * m22;
     fast_matrix = affine
-        && m11 * m11 + m21 * m21 < 1e4
-        && m12 * m12 + m22 * m22 < 1e4
+        && f1 < 1e4
+        && f2 < 1e4
+        && f1 > (1.0 / 65536)
+        && f2 > (1.0 / 65536)
         && qAbs(dx) < 1e4
         && qAbs(dy) < 1e4;
 
