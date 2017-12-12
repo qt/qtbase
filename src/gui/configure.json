@@ -63,21 +63,79 @@
                 "-lbcm_host"
             ]
         },
-        "direct2d": {
-            "label": "Direct 2D",
-            "export": "",
+        "dxguid": {
+            "label": "DirectX GUID",
+            "sources": [
+                "-ldxguid"
+            ]
+        },
+        "dxgi": {
+            "label": "DirectX GI",
+            "headers": "dxgi.h",
+            "sources": [
+                "-ldxgi"
+            ]
+        },
+        "dxgi1_2": {
+            "label": "DirectX GI 1.2",
             "test": {
-                "tail": "using Microsoft::WRL::ComPtr;",
                 "main": [
-                    "ComPtr<ID2D1Factory1> d2dFactory;",
-                    "D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, d2dFactory.ReleaseAndGetAddressOf());",
-                    "ComPtr<IDXGISurface1> surface;",
+                    "// fails with mingw-w64 5.4.0 - declaration is missing from header",
+                    "IDXGISurface1 *surface;",
                     "(void) surface;"
                 ]
             },
-            "headers": [ "d3d11_1.h", "d2d1_1.h", "d2d1_1helper.h", "dxgi1_2.h", "wrl.h", "dwrite.h" ],
+            "headers": "dxgi1_2.h",
             "sources": [
-                "-ld2d1 -ldwrite -ld3d11"
+                "-ldxgi"
+            ]
+        },
+        "d3d9": {
+            "label": "Direct3D 9",
+            "headers": "d3d9.h",
+            "sources": [
+                "-ld3d9"
+            ]
+        },
+        "d3d11": {
+            "label": "Direct3D 11",
+            "headers": "d3d11.h",
+            "sources": [
+                "-ld3d11"
+            ]
+        },
+        "d3d11_1": {
+            "label": "Direct3D 11.1",
+            "headers": "d3d11_1.h",
+            "sources": [
+                "-ld3d11"
+            ]
+        },
+        "d3dcompiler": {
+            "label": "Direct3D Shader Compiler Library",
+            "headers": "d3dcompiler.h",
+            "sources": [
+                "-ld3dcompiler"
+            ]
+        },
+        "d2d1": {
+            "label": "Direct2D 1",
+            "headers": [ "d2d1.h", "d2d1helper.h" ],
+            "sources": [
+                "-ld2d1"
+            ]
+        },
+        "d2d1_1": {
+            "label": "Direct2D 1.1",
+            "test": {
+                "main": [
+                    "ID2D1Factory1 *d2dFactory;",
+                    "D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2dFactory);"
+                ]
+            },
+            "headers": [ "d2d1_1.h", "d2d1_1helper.h" ],
+            "sources": [
+                "-ld2d1"
             ]
         },
         "directfb": {
@@ -94,9 +152,8 @@
                 { "type": "pkgConfig", "args": "directfb" }
             ]
         },
-        "directwrite": {
+        "dwrite": {
             "label": "DirectWrite",
-            "export": "",
             "test": {
                 "main": [
                     "IDWriteFactory *factory = 0;",
@@ -104,7 +161,29 @@
                     "                    (IUnknown **)(&factory));"
                 ]
             },
-            "headers": [ "dwrite.h", "d2d1.h" ],
+            "headers": "dwrite.h",
+            "sources": [
+                "-ldwrite"
+            ]
+        },
+        "dwrite_1": {
+            "label": "DirectWrite 1",
+            "headers": "dwrite_1.h",
+            "sources": [
+                "-ldwrite"
+            ]
+        },
+        "dwrite_2": {
+            "label": "DirectWrite 2",
+            "test": {
+                "main": [
+                    "IUnknown *factory = 0;",
+                    "(void)(size_t(DWRITE_E_NOCOLOR) + sizeof(IDWriteFontFace2));",
+                    "DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2),",
+                    "                    &factory);"
+                ]
+            },
+            "headers": "dwrite_2.h",
             "sources": [
                 "-ldwrite"
             ]
@@ -650,7 +729,7 @@
     },
 
     "testTypeAliases": {
-        "files": [ "directX" ]
+        "files": [ "fxc" ]
     },
 
     "tests": {
@@ -665,26 +744,10 @@
                 ]
             }
         },
-        "directwrite2": {
-            "label": "DirectWrite 2",
-            "type": "compile",
-            "test": {
-                "include": [ "dwrite_2.h", "d2d1.h" ],
-                "main": [
-                    "IUnknown *factory = 0;",
-                    "(void)(size_t(DWRITE_E_NOCOLOR) + sizeof(IDWriteFontFace2));",
-                    "DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2),",
-                    "                    &factory);"
-                ]
-            },
-            "use": "directwrite"
-        },
-        "directx": {
-            "label": "DirectX SDK",
-            "type": "directX",
+        "fxc": {
+            "label": "Direct3D Shader Compiler",
+            "type": "fxc",
             "files": [
-                "d3dcompiler.h",
-                "d3d11.lib",
                 "fxc.exe"
             ]
         },
@@ -944,7 +1007,7 @@
         "angle": {
             "label": "ANGLE",
             "autoDetect": "features.opengles2 || features.opengl-dynamic",
-            "condition": "config.win32 && tests.directx",
+            "condition": "features.dxguid && tests.fxc && (features.direct3d9 || (config.winrt && features.direct3d11 && libs.d3dcompiler))",
             "output": [
                 "publicFeature",
                 { "type": "define", "name": "QT_OPENGL_ES_2_ANGLE" }
@@ -971,19 +1034,59 @@
         "directwrite": {
             "label": "DirectWrite",
             "emitIf": "config.win32",
-            "condition": "libs.directwrite",
+            "condition": "libs.dwrite",
+            "output": [ "privateFeature" ]
+        },
+        "directwrite1": {
+            "label": "DirectWrite 1",
+            "emitIf": "config.win32",
+            "condition": "libs.dwrite_1",
             "output": [ "privateFeature" ]
         },
         "directwrite2": {
             "label": "DirectWrite 2",
             "emitIf": "config.win32",
-            "condition": "features.directwrite && tests.directwrite2",
+            "condition": "features.directwrite1 && libs.dwrite_2",
+            "output": [ "privateFeature" ]
+        },
+        "dxguid": {
+            "label": "DirectX GUID",
+            "condition": "config.win32 && libs.dxguid",
+            "output": [ "privateFeature" ]
+        },
+        "direct3d9": {
+            "label": "Direct 3D 9",
+            "condition": "config.win32 && !config.winrt && libs.d3d9",
+            "output": [ "privateFeature" ]
+        },
+        "dxgi": {
+            "label": "DirectX GI",
+            "condition": "config.win32 && libs.dxgi",
+            "output": [ "privateFeature" ]
+        },
+        "dxgi1_2": {
+            "label": "DirectX GI 1.2",
+            "condition": "features.dxgi && libs.dxgi1_2",
+            "output": [ "privateFeature" ]
+        },
+        "direct3d11": {
+            "label": "Direct 3D 11",
+            "condition": "features.dxgi && libs.d3d11",
+            "output": [ "privateFeature" ]
+        },
+        "direct3d11_1": {
+            "label": "Direct 3D 11.1",
+            "condition": "features.direct3d11 && features.dxgi1_2 && libs.d3d11_1",
             "output": [ "privateFeature" ]
         },
         "direct2d": {
             "label": "Direct 2D",
-            "section": "Platform plugins",
-            "condition": "config.win32 && !config.winrt && libs.direct2d",
+            "condition": "config.win32 && !config.winrt && features.direct3d11 && libs.d2d1",
+            "output": [ "privateFeature" ]
+        },
+        "direct2d1_1": {
+            "label": "Direct 2D 1.1",
+            "condition": "features.direct2d && libs.d2d1_1",
             "output": [ "privateFeature" ]
         },
         "evdev": {

@@ -15,27 +15,14 @@ defineTest(qtConfLibrary_freetype) {
     return(true)
 }
 
-# Check for Direct X SDK (include, lib, and direct shader compiler 'fxc').
+# Check for Direct X shader compiler 'fxc'.
 # Up to Direct X SDK June 2010 and for MinGW, this is pointed to by the
 # DXSDK_DIR variable. Starting with Windows Kit 8, it is included in
-# the Windows SDK. Checking for the header is not sufficient, since it
-# is also present in MinGW.
-defineTest(qtConfTest_directX) {
+# the Windows SDK.
+defineTest(qtConfTest_fxc) {
     dxdir = $$getenv("DXSDK_DIR")
     !isEmpty(dxdir) {
-        EXTRA_INCLUDEPATH += $$dxdir/include
-        equals(QT_ARCH, x86_64): \
-            EXTRA_LIBDIR += $$dxdir/lib/x64
-        else: \
-            EXTRA_LIBDIR += $$dxdir/lib/x86
         EXTRA_PATH += $$dxdir/Utilities/bin/x86
-    }
-
-    $$qtConfEvaluate("features.sse2") {
-        ky = $$size($${1}.files._KEYS_)
-        $${1}.files._KEYS_ += $$ky
-        # Not present on MinGW-32
-        $${1}.files.$${ky} = "intrin.h"
     }
 
     qtConfTest_files($${1}): return(true)

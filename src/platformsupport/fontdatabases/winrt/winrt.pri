@@ -8,4 +8,6 @@ HEADERS += \
 
 DEFINES += __WRL_NO_DEFAULT_LIB__
 
-LIBS += -lws2_32 -ldwrite
+LIBS += -lws2_32
+
+QMAKE_USE_PRIVATE += dwrite_1

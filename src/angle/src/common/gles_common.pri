@@ -8,11 +8,11 @@ INCLUDEPATH += \
 
 # Remember to adapt src/gui/configure.* if the Direct X version changes.
 !winrt: \
-    LIBS_PRIVATE += -ld3d9
+    QMAKE_USE_PRIVATE += d3d9
 winrt: \
-    LIBS_PRIVATE += -ld3dcompiler -ldxgi -ld3d11
+    QMAKE_USE_PRIVATE += d3dcompiler d3d11 dxgi
 
-LIBS_PRIVATE += -ldxguid
+QMAKE_USE_PRIVATE += dxguid
 
 STATICLIBS = translator preprocessor
 for(libname, STATICLIBS) {
