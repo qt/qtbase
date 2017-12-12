@@ -62,7 +62,7 @@ QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffs
     , m_display(display)
     , m_pbuffer(EGL_NO_SURFACE)
 {
-    bool hasSurfaceless = !flags.testFlag(QEGLPlatformContext::NoSurfaceless)
+    m_hasSurfaceless = !flags.testFlag(QEGLPlatformContext::NoSurfaceless)
         && q_hasEglExtension(display, "EGL_KHR_surfaceless_context");
 
     // Disable surfaceless contexts on Mesa for now. As of 10.6.0 and Intel at least, some
@@ -72,9 +72,9 @@ QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffs
     // read/draw surface in the Intel backend.
     const char *vendor = eglQueryString(display, EGL_VENDOR); // hard to check for GL_ strings here, so blacklist all Mesa
     if (vendor && strstr(vendor, "Mesa"))
-        hasSurfaceless = false;
+        m_hasSurfaceless = false;
 
-    if (hasSurfaceless)
+    if (m_hasSurfaceless)
         return;
 
     EGLConfig config = q_configFromGLFormat(m_display, m_format, false, EGL_PBUFFER_BIT);
@@ -98,6 +98,11 @@ QEGLPbuffer::~QEGLPbuffer()
 {
     if (m_pbuffer != EGL_NO_SURFACE)
         eglDestroySurface(m_display, m_pbuffer);
+}
+
+bool QEGLPbuffer::isValid() const
+{
+    return m_pbuffer != EGL_NO_SURFACE || m_hasSurfaceless;
 }
 
 QT_END_NAMESPACE

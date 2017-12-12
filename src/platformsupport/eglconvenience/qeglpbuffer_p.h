@@ -64,7 +64,7 @@ public:
     ~QEGLPbuffer();
 
     QSurfaceFormat format() const Q_DECL_OVERRIDE { return m_format; }
-    bool isValid() const Q_DECL_OVERRIDE { return m_pbuffer != EGL_NO_SURFACE; }
+    bool isValid() const Q_DECL_OVERRIDE;
 
     EGLSurface pbuffer() const { return m_pbuffer; }
 
@@ -72,6 +72,7 @@ private:
     QSurfaceFormat m_format;
     EGLDisplay m_display;
     EGLSurface m_pbuffer;
+    bool m_hasSurfaceless;
 };
 
 QT_END_NAMESPACE
