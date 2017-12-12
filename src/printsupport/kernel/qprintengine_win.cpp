@@ -1024,7 +1024,7 @@ bool QWin32PrintEnginePrivate::resetDC()
     return hdc != 0;
 }
 
-static int indexOfId(const QList<QPrint::InputSlot> &inputSlots, QPrint::InputSlotId id)
+static int indexOfId(const QVector<QPrint::InputSlot> &inputSlots, QPrint::InputSlotId id)
 {
     for (int i = 0; i < inputSlots.size(); ++i) {
         if (inputSlots.at(i).id == id)
@@ -1033,7 +1033,7 @@ static int indexOfId(const QList<QPrint::InputSlot> &inputSlots, QPrint::InputSl
     return -1;
 }
 
-static int indexOfWindowsId(const QList<QPrint::InputSlot> &inputSlots, int windowsId)
+static int indexOfWindowsId(const QVector<QPrint::InputSlot> &inputSlots, int windowsId)
 {
     for (int i = 0; i < inputSlots.size(); ++i) {
         if (inputSlots.at(i).windowsId == windowsId)
@@ -1210,7 +1210,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
     case PPK_PaperSource: {
         if (!d->devMode)
             break;
-        const QList<QPrint::InputSlot> inputSlots = d->m_printDevice.supportedInputSlots();
+        const auto inputSlots = d->m_printDevice.supportedInputSlots();
         const int paperSource = value.toInt();
         const int index = paperSource >= DMBIN_USER ?
             indexOfWindowsId(inputSlots, paperSource) : indexOfId(inputSlots, QPrint::InputSlotId(paperSource));
@@ -1465,7 +1465,7 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
             if (d->devMode->dmDefaultSource >= DMBIN_USER) {
                 value = int(d->devMode->dmDefaultSource);
             } else {
-                const QList<QPrint::InputSlot> inputSlots = d->m_printDevice.supportedInputSlots();
+                const auto inputSlots = d->m_printDevice.supportedInputSlots();
                 const int index = indexOfWindowsId(inputSlots, d->devMode->dmDefaultSource);
                 value = index >= 0 ? inputSlots.at(index).id : QPrint::Auto;
             }

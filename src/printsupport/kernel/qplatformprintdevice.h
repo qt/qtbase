@@ -110,16 +110,16 @@ public:
     virtual QList<int> supportedResolutions() const;
 
     virtual QPrint::InputSlot defaultInputSlot() const;
-    virtual QList<QPrint::InputSlot> supportedInputSlots() const;
+    virtual QVector<QPrint::InputSlot> supportedInputSlots() const;
 
     virtual QPrint::OutputBin defaultOutputBin() const;
-    virtual QList<QPrint::OutputBin> supportedOutputBins() const;
+    virtual QVector<QPrint::OutputBin> supportedOutputBins() const;
 
     virtual QPrint::DuplexMode defaultDuplexMode() const;
-    virtual QList<QPrint::DuplexMode> supportedDuplexModes() const;
+    virtual QVector<QPrint::DuplexMode> supportedDuplexModes() const;
 
     virtual QPrint::ColorMode defaultColorMode() const;
-    virtual QList<QPrint::ColorMode> supportedColorModes() const;
+    virtual QVector<QPrint::ColorMode> supportedColorModes() const;
 
     virtual QVariant property(QPrintDevice::PrintDevicePropertyKey key) const;
     virtual bool setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value);
