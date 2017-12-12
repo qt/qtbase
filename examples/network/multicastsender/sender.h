@@ -70,9 +70,11 @@ private slots:
 private:
     QLabel *statusLabel = nullptr;
     QPushButton *startButton = nullptr;
-    QUdpSocket udpSocket;
+    QUdpSocket udpSocket4;
+    QUdpSocket udpSocket6;
     QTimer timer;
-    QHostAddress groupAddress;
+    QHostAddress groupAddress4;
+    QHostAddress groupAddress6;
     int messageNo = 1;
 };
 
