@@ -438,6 +438,14 @@ void tst_QTimeZone::transitionEachZone()
     QTimeZone named(zone);
 
     for (int i = start; i < stop; i++) {
+#ifdef Q_OS_WIN
+        // See QTBUG-64985: MS's TZ APIs' misdescription of Europe/Samara leads
+        // to mis-disambiguation of its fall-back here.
+        if (QOperatingSystemVersion::current() <= QOperatingSystemVersion::Windows7
+            && zone == "Europe/Samara" && i == -3) {
+            continue;
+        }
+#endif
         qint64 here = secs + i * 3600;
         QDateTime when = QDateTime::fromMSecsSinceEpoch(here * 1000, named);
         qint64 stamp = when.toMSecsSinceEpoch();
