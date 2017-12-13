@@ -1140,8 +1140,14 @@ static void init_platform(const QString &pluginArgument, const QString &platform
     if (Q_UNLIKELY(!QGuiApplicationPrivate::platform_integration)) {
         QStringList keys = QPlatformIntegrationFactory::keys(platformPluginPath);
 
-        QString fatalMessage
-                = QStringLiteral("This application failed to start because it could not find or load the Qt platform plugin \"%1\"\nin \"%2\".\n\n").arg(name, QDir::toNativeSeparators(platformPluginPath));
+        QString fatalMessage;
+        if (keys.contains(name)) {
+            fatalMessage = QStringLiteral("This application failed to start because it could not load the Qt platform plugin \"%2\"\nin \"%3\", even though it was found. ").arg(name, QDir::toNativeSeparators(platformPluginPath));
+            fatalMessage += QStringLiteral("This is usually due to missing dependencies, which you can verify by setting the env variable QT_DEBUG_PLUGINS to 1.\n\n");
+        } else {
+            fatalMessage = QStringLiteral("This application failed to start because it could not find the Qt platform plugin \"%2\"\nin \"%3\".\n\n").arg(name, QDir::toNativeSeparators(platformPluginPath));
+        }
+
         if (!keys.isEmpty()) {
             fatalMessage += QStringLiteral("Available platform plugins are: %1.\n\n").arg(
                         keys.join(QLatin1String(", ")));
