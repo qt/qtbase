@@ -35,13 +35,12 @@ include(thread/thread.pri)
 include(tools/tools.pri)
 include(io/io.pri)
 include(itemmodels/itemmodels.pri)
-include(json/json.pri)
 include(plugin/plugin.pri)
 include(kernel/kernel.pri)
 include(codecs/codecs.pri)
+include(serialization/serialization.pri)
 include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
-include(xml/xml.pri)
 
 win32 {
     LIBS_PRIVATE += -lws2_32
