@@ -1191,6 +1191,22 @@ inline uint comp_func_Plus_one_pixel(uint d, const uint s)
 #undef MIX
 #undef AMIX
 
+// must be multiple of 4 for easier SIMD implementations
+static Q_CONSTEXPR int BufferSize = 2048;
+
+// A buffer of intermediate results used by simple bilinear scaling.
+struct IntermediateBuffer
+{
+    // The idea is first to do the interpolation between the row s1 and the row s2
+    // into this intermediate buffer, then later interpolate between two pixel of this buffer.
+    //
+    // buffer_rb is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
+    // buffer_ag is the alpha-green component of the pixel, in the form 0x00AA00GG
+    // +1 for the last pixel to interpolate with, and +1 for rounding errors.
+    quint32 buffer_rb[BufferSize+2];
+    quint32 buffer_ag[BufferSize+2];
+};
+
 struct QDitherInfo {
     int x;
     int y;

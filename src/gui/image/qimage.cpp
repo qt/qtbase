@@ -2582,15 +2582,14 @@ bool QImage::allGray() const
         break;
     }
 
-    const int buffer_size = 2048;
-    uint buffer[buffer_size];
+    uint buffer[BufferSize];
     const QPixelLayout *layout = &qPixelLayouts[d->format];
     FetchPixelsFunc fetch = qFetchPixels[layout->bpp];
     for (int j = 0; j < d->height; ++j) {
         const uchar *b = constScanLine(j);
         int x = 0;
         while (x < d->width) {
-            int l = qMin(d->width - x, buffer_size);
+            int l = qMin(d->width - x, BufferSize);
             const uint *ptr = fetch(buffer, b, x, l);
             ptr = layout->convertToARGB32PM(buffer, ptr, l, 0, 0);
             for (int i = 0; i < l; ++i) {
@@ -3218,14 +3217,13 @@ inline void rgbSwapped_generic(int width, int height, const QImage *src, QImage 
     const uint alphaGreenMask = (((1 << layout->alphaWidth) - 1) << layout->alphaShift)
             | (((1 << layout->greenWidth) - 1) << layout->greenShift);
 
-    const int buffer_size = 2048;
-    uint buffer[buffer_size];
+    uint buffer[BufferSize];
     for (int i = 0; i < height; ++i) {
         uchar *q = dst->scanLine(i);
         const uchar *p = src->constScanLine(i);
         int x = 0;
         while (x < width) {
-            int l = qMin(width - x, buffer_size);
+            int l = qMin(width - x, BufferSize);
             const uint *ptr = fetch(buffer, p, x, l);
             for (int j = 0; j < l; ++j) {
                 uint red = (ptr[j] >> layout->redShift) & redBlueMask;

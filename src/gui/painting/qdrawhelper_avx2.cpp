@@ -45,8 +45,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static Q_CONSTEXPR int BufferSize = 2048;
-
 enum {
     FixedScale = 1 << 16,
     HalfPoint = 1 << 15
@@ -576,8 +574,10 @@ inline void fetchTransformedBilinear_pixelBounds(int, int l1, int l2, int &v1, i
     Q_ASSERT(v2 >= l1 && v2 <= l2);
 }
 
-void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
-                                                                             int &fx, int &fy, int fdx, int /*fdy*/)
+void QT_FASTCALL intermediate_adder_avx2(uint *b, uint *end, const IntermediateBuffer &intermediate, int offset, int &fx, int fdx);
+
+void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_scale_helper_avx2(uint *b, uint *end, const QTextureData &image,
+                                                                           int &fx, int &fy, int fdx, int /*fdy*/)
 {
     int y1 = (fy >> 16);
     int y2;
@@ -594,16 +594,12 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
     const int offset = (fx + adjust) >> 16;
     int x = offset;
 
-    // The idea is first to do the interpolation between the row s1 and the row s2
-    // into an intermediate buffer, then we interpolate between two pixel of this buffer.
-
-    // intermediate_buffer[0] is a buffer of red-blue component of the pixel, in the form 0x00RR00BB
-    // intermediate_buffer[1] is the alpha-green component of the pixel, in the form 0x00AA00GG
-    // +1 for the last pixel to interpolate with, and +1 for rounding errors.
-    quint32 intermediate_buffer[2][BufferSize + 2];
+    IntermediateBuffer intermediate;
     // count is the size used in the intermediate_buffer.
     int count = (qint64(length) * qAbs(fdx) + FixedScale - 1) / FixedScale + 2;
-    Q_ASSERT(count <= BufferSize + 2); //length is supposed to be <= buffer_size and data->m11 < 1 in this case
+    // length is supposed to be <= BufferSize either because data->m11 < 1 or
+    // data->m11 < 2, and any larger buffers split
+    Q_ASSERT(count <= BufferSize + 2);
     int f = 0;
     int lim = qMin(count, image.x2 - x);
     if (x < image.x1) {
@@ -613,8 +609,8 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
         quint32 rb = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
         quint32 ag = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
         do {
-            intermediate_buffer[0][f] = rb;
-            intermediate_buffer[1][f] = ag;
+            intermediate.buffer_rb[f] = rb;
+            intermediate.buffer_ag[f] = ag;
             f++;
             x++;
         } while (x < image.x1 && f < lim);
@@ -644,10 +640,10 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
         // Add the values, and shift to only keep 8 significant bits per colors
         __m256i rAG =_mm256_add_epi16(topAG, bottomAG);
         rAG = _mm256_srli_epi16(rAG, 8);
-        _mm256_storeu_si256((__m256i*)(&intermediate_buffer[1][f]), rAG);
+        _mm256_storeu_si256((__m256i*)(&intermediate.buffer_ag[f]), rAG);
         __m256i rRB =_mm256_add_epi16(topRB, bottomRB);
         rRB = _mm256_srli_epi16(rRB, 8);
-        _mm256_storeu_si256((__m256i*)(&intermediate_buffer[0][f]), rRB);
+        _mm256_storeu_si256((__m256i*)(&intermediate.buffer_rb[f]), rRB);
     }
 
     for (; f < count; f++) { // Same as above but without simd
@@ -656,11 +652,17 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
         uint t = s1[x];
         uint b = s2[x];
 
-        intermediate_buffer[0][f] = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
-        intermediate_buffer[1][f] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
+        intermediate.buffer_rb[f] = (((t & 0xff00ff) * idisty + (b & 0xff00ff) * disty) >> 8) & 0xff00ff;
+        intermediate.buffer_ag[f] = ((((t>>8) & 0xff00ff) * idisty + ((b>>8) & 0xff00ff) * disty) >> 8) & 0xff00ff;
         x++;
     }
+
     // Now interpolate the values from the intermediate_buffer to get the final result.
+    intermediate_adder_avx2(b, end, intermediate, offset, fx, fdx);
+}
+
+void QT_FASTCALL intermediate_adder_avx2(uint *b, uint *end, const IntermediateBuffer &intermediate, int offset, int &fx, int fdx)
+{
     fx -= offset * FixedScale;
 
     const __m128i v_fdx = _mm_set1_epi32(fdx * 4);
@@ -669,8 +671,8 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
 
     while (b < end - 3) {
         const __m128i offset = _mm_srli_epi32(v_fx, 16);
-        __m256i vrb = _mm256_i32gather_epi64((const long long *)intermediate_buffer[0], offset, 4);
-        __m256i vag = _mm256_i32gather_epi64((const long long *)intermediate_buffer[1], offset, 4);
+        __m256i vrb = _mm256_i32gather_epi64((const long long *)intermediate.buffer_rb, offset, 4);
+        __m256i vag = _mm256_i32gather_epi64((const long long *)intermediate.buffer_ag, offset, 4);
 
         __m128i vdx = _mm_and_si128(v_fx, _mm_set1_epi32(0x0000ffff));
         vdx = _mm_srli_epi16(vdx, 8);
@@ -695,17 +697,17 @@ void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uin
         v_fx = _mm_add_epi32(v_fx, v_fdx);
     }
     while (b < end) {
-        int x = (fx >> 16);
+        const int x = (fx >> 16);
 
-        uint distx = (fx & 0x0000ffff) >> 8;
-        uint idistx = 256 - distx;
-
-        uint rb = ((intermediate_buffer[0][x] * idistx + intermediate_buffer[0][x + 1] * distx) >> 8) & 0xff00ff;
-        uint ag = (intermediate_buffer[1][x] * idistx + intermediate_buffer[1][x + 1] * distx) & 0xff00ff00;
-        *b = rb | ag;
+        const uint distx = (fx & 0x0000ffff) >> 8;
+        const uint idistx = 256 - distx;
+        const uint rb = (intermediate.buffer_rb[x] * idistx + intermediate.buffer_rb[x + 1] * distx) & 0xff00ff00;
+        const uint ag = (intermediate.buffer_ag[x] * idistx + intermediate.buffer_ag[x + 1] * distx) & 0xff00ff00;
+        *b = (rb >> 8) | ag;
         b++;
         fx += fdx;
     }
+    fx += offset * FixedScale;
 }
 
 void QT_FASTCALL fetchTransformedBilinearARGB32PM_downscale_helper_avx2(uint *b, uint *end, const QTextureData &image,

@@ -145,8 +145,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     // Cannot be used with indexed formats.
     Q_ASSERT(dest->format > QImage::Format_Indexed8);
     Q_ASSERT(src->format > QImage::Format_Indexed8);
-    const int buffer_size = 2048;
-    uint buf[buffer_size];
+    uint buf[BufferSize];
     uint *buffer = buf;
     const QPixelLayout *srcLayout = &qPixelLayouts[src->format];
     const QPixelLayout *destLayout = &qPixelLayouts[dest->format];
@@ -196,7 +195,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
             if (destLayout->bpp == QPixelLayout::BPP32)
                 buffer = reinterpret_cast<uint *>(destData) + x;
             else
-                l = qMin(l, buffer_size);
+                l = qMin(l, BufferSize);
             const uint *ptr = fetch(buffer, srcData, x, l);
             ptr = convertToARGB32PM(buffer, ptr, l, 0, ditherPtr);
             ptr = convertFromARGB32PM(buffer, ptr, l, 0, ditherPtr);
@@ -217,8 +216,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     if (data->depth != qt_depthForFormat(dst_format))
         return false;
 
-    const int buffer_size = 2048;
-    uint buffer[buffer_size];
+    uint buffer[BufferSize];
     const QPixelLayout *srcLayout = &qPixelLayouts[data->format];
     const QPixelLayout *destLayout = &qPixelLayouts[dst_format];
     uchar *srcData = data->data;
@@ -261,7 +259,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         int x = 0;
         while (x < data->width) {
             dither.x = x;
-            int l = qMin(data->width - x, buffer_size);
+            int l = qMin(data->width - x, BufferSize);
             const uint *ptr = fetch(buffer, srcData, x, l);
             ptr = convertToARGB32PM(buffer, ptr, l, 0, ditherPtr);
             ptr = convertFromARGB32PM(buffer, ptr, l, 0, ditherPtr);
