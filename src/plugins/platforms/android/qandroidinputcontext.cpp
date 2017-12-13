@@ -438,6 +438,16 @@ QAndroidInputContext::QAndroidInputContext()
 
     QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::cursorRectangleChanged,
                      this, &QAndroidInputContext::updateSelectionHandles);
+    QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::anchorRectangleChanged,
+                     this, &QAndroidInputContext::updateSelectionHandles);
+    QObject::connect(QGuiApplication::inputMethod(), &QInputMethod::inputItemClipRectangleChanged, this, [this]{
+        auto im = qGuiApp->inputMethod();
+        if (!im->inputItemClipRectangle().contains(im->anchorRectangle()) ||
+                !im->inputItemClipRectangle().contains(im->cursorRectangle())) {
+            m_cursorHandleShown = CursorHandleNotShown;
+            updateSelectionHandles();
+        }
+    });
 }
 
 QAndroidInputContext::~QAndroidInputContext()
