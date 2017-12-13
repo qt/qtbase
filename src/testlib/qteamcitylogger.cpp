@@ -184,7 +184,7 @@ void QTeamCityLogger::addIncident(IncidentTypes type, const char *description,
         pendingMessages.clear();
     }
 
-    buf = QString(QLatin1String("##teamcity[testFinished name='%1']\n")).arg(tmpFuncName);
+    buf = QString(QLatin1String("##teamcity[testFinished name='%1' duration='%2']\n")).arg(tmpFuncName).arg(int(TestLog::msecsFunctionTime()*1000));
     outputString(qPrintable(buf));
 }
 
