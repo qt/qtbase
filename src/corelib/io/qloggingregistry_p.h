@@ -113,7 +113,7 @@ class Q_AUTOTEST_EXPORT QLoggingRegistry
 public:
     QLoggingRegistry();
 
-    void initalizeRules();
+    void initializeRules();
 
     void registerCategory(QLoggingCategory *category, QtMsgType enableForLevel);
     void unregisterCategory(QLoggingCategory *category);

@@ -255,7 +255,7 @@ void QLoggingSettingsParser::parseNextLine(QStringRef line)
 QLoggingRegistry::QLoggingRegistry()
     : categoryFilter(defaultCategoryFilter)
 {
-    initalizeRules(); // Init on first use
+    initializeRules(); // Init on first use
 }
 
 static bool qtLoggingDebug()
@@ -284,7 +284,7 @@ static QVector<QLoggingRule> loadRulesFromFile(const QString &filePath)
     Initializes the rules database by loading
     $QT_LOGGING_CONF, $QT_LOGGING_RULES, and .config/QtProject/qtlogging.ini.
  */
-void QLoggingRegistry::initalizeRules()
+void QLoggingRegistry::initializeRules()
 {
     QVector<QLoggingRule> er, qr, cr;
     // get rules from environment
