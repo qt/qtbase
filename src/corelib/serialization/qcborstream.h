@@ -244,6 +244,7 @@ private:
     }
 
     friend QCborStreamReaderPrivate;
+    friend class QCborContainerPrivate;
     quint64 value64;
     QScopedPointer<QCborStreamReaderPrivate> d;
     quint8 type_;

@@ -3,6 +3,7 @@ SUBDIRS = \
     json \
     qcborstreamreader \
     qcborstreamwriter \
+    qcborvalue \
     qdatastream \
     qtextstream \
     qxmlstream
