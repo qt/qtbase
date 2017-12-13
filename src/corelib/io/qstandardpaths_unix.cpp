@@ -284,16 +284,12 @@ static QStringList xdgDataDirs()
         dirs.append(QString::fromLatin1("/usr/local/share"));
         dirs.append(QString::fromLatin1("/usr/share"));
     } else {
-        dirs = xdgDataDirsEnv.split(QLatin1Char(':'), QString::SkipEmptyParts);
+        const auto parts = xdgDataDirsEnv.splitRef(QLatin1Char(':'), QString::SkipEmptyParts);
 
         // Normalize paths, skip relative paths
-        QMutableListIterator<QString> it(dirs);
-        while (it.hasNext()) {
-            const QString dir = it.next();
-            if (!dir.startsWith(QLatin1Char('/')))
-                it.remove();
-            else
-                it.setValue(QDir::cleanPath(dir));
+        for (const QStringRef &dir : parts) {
+            if (dir.startsWith(QLatin1Char('/')))
+                dirs.push_back(QDir::cleanPath(dir.toString()));
         }
 
         // Remove duplicates from the list, there's no use for duplicated
