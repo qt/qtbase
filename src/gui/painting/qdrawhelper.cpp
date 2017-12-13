@@ -3303,6 +3303,15 @@ static SourceFetchProc sourceFetchARGB32PM[NBlendTypes] = {
     fetchTransformedBilinearARGB32PM<BlendTransformedBilinearTiled> // BilinearTiled
 };
 
+static SourceFetchProc sourceFetchAny16[NBlendTypes] = {
+    fetchUntransformed,                                                             // Untransformed
+    fetchUntransformed,                                                             // Tiled
+    fetchTransformed<BlendTransformed, QPixelLayout::BPP16>,                        // Transformed
+    fetchTransformed<BlendTransformedTiled, QPixelLayout::BPP16>,                   // TransformedTiled
+    fetchTransformedBilinear<BlendTransformedBilinear, QPixelLayout::BPP16>,        // TransformedBilinear
+    fetchTransformedBilinear<BlendTransformedBilinearTiled, QPixelLayout::BPP16>    // TransformedBilinearTiled
+};
+
 static SourceFetchProc sourceFetchAny32[NBlendTypes] = {
     fetchUntransformed,                                                             // Untransformed
     fetchUntransformed,                                                             // Tiled
@@ -3327,6 +3336,8 @@ static inline SourceFetchProc getSourceFetch(TextureBlendType blendType, QImage:
         return sourceFetchARGB32PM[blendType];
     if (blendType == BlendUntransformed || blendType == BlendTiled)
         return sourceFetchUntransformed[format];
+    if (qPixelLayouts[format].bpp == QPixelLayout::BPP16)
+        return sourceFetchAny16[blendType];
     if (qPixelLayouts[format].bpp == QPixelLayout::BPP32)
         return sourceFetchAny32[blendType];
     return sourceFetchGeneric[blendType];
@@ -4512,199 +4523,6 @@ static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
     }
 }
 
-static void blend_transformed_bilinear_rgb565(int count, const QSpan *spans, void *userData)
-{
-    QSpanData *data = reinterpret_cast<QSpanData*>(userData);
-    QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
-
-    if (data->texture.format != QImage::Format_RGB16
-            || (mode != QPainter::CompositionMode_SourceOver
-                && mode != QPainter::CompositionMode_Source))
-    {
-        blend_src_generic(count, spans, userData);
-        return;
-    }
-
-    quint16 buffer[BufferSize];
-
-    const int src_minx = data->texture.x1;
-    const int src_miny = data->texture.y1;
-    const int src_maxx = data->texture.x2 - 1;
-    const int src_maxy = data->texture.y2 - 1;
-
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        const int fdx = (int)(data->m11 * fixed_scale);
-        const int fdy = (int)(data->m12 * fixed_scale);
-
-        while (count--) {
-            const quint8 coverage = (data->texture.const_alpha * spans->coverage) >> 8;
-            const quint8 alpha = (coverage + 1) >> 3;
-            const quint8 ialpha = 0x20 - alpha;
-            if (alpha == 0) {
-                ++spans;
-                continue;
-            }
-
-            quint16 *dest = (quint16 *)data->rasterBuffer->scanLine(spans->y) + spans->x;
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-            int x = int((data->m21 * cy
-                         + data->m11 * cx + data->dx) * fixed_scale) - half_point;
-            int y = int((data->m22 * cy
-                         + data->m12 * cx + data->dy) * fixed_scale) - half_point;
-            int length = spans->len;
-
-            while (length) {
-                int l;
-                quint16 *b;
-                if (ialpha == 0) {
-                    l = length;
-                    b = dest;
-                } else {
-                    l = qMin(length, BufferSize);
-                    b = buffer;
-                }
-                const quint16 *end = b + l;
-
-                while (b < end) {
-                    int x1 = (x >> 16);
-                    int x2;
-                    int y1 = (y >> 16);
-                    int y2;
-
-                    fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(0, src_minx, src_maxx, x1, x2);
-                    fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(0, src_miny, src_maxy, y1, y2);
-
-                    const quint16 *src1 = (const quint16*)data->texture.scanLine(y1);
-                    const quint16 *src2 = (const quint16*)data->texture.scanLine(y2);
-                    quint16 tl = src1[x1];
-                    const quint16 tr = src1[x2];
-                    quint16 bl = src2[x1];
-                    const quint16 br = src2[x2];
-
-                    const uint distxsl8 = x & 0xff00;
-                    const uint distysl8 = y & 0xff00;
-                    const uint distx = distxsl8 >> 8;
-                    const uint disty = distysl8 >> 8;
-                    const uint distxy = distx * disty;
-
-                    const uint tlw = 0x10000 - distxsl8 - distysl8 + distxy; // (256 - distx) * (256 - disty)
-                    const uint trw = distxsl8 - distxy; // distx * (256 - disty)
-                    const uint blw = distysl8 - distxy; // (256 - distx) * disty
-                    const uint brw = distxy; // distx * disty
-                    uint red = ((tl & 0xf800) * tlw + (tr & 0xf800) * trw
-                            + (bl & 0xf800) * blw + (br & 0xf800) * brw) & 0xf8000000;
-                    uint green = ((tl & 0x07e0) * tlw + (tr & 0x07e0) * trw
-                            + (bl & 0x07e0) * blw + (br & 0x07e0) * brw) & 0x07e00000;
-                    uint blue = ((tl & 0x001f) * tlw + (tr & 0x001f) * trw
-                            + (bl & 0x001f) * blw + (br & 0x001f) * brw);
-                    *b = quint16((red | green | blue) >> 16);
-
-                    ++b;
-                    x += fdx;
-                    y += fdy;
-                }
-
-                if (ialpha != 0)
-                    blend_sourceOver_rgb16_rgb16(dest, buffer, l, alpha, ialpha);
-
-                dest += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        while (count--) {
-            const quint8 coverage = (data->texture.const_alpha * spans->coverage) >> 8;
-            const quint8 alpha = (coverage + 1) >> 3;
-            const quint8 ialpha = 0x20 - alpha;
-            if (alpha == 0) {
-                ++spans;
-                continue;
-            }
-
-            quint16 *dest = (quint16 *)data->rasterBuffer->scanLine(spans->y) + spans->x;
-
-            const qreal cx = spans->x + qreal(0.5);
-            const qreal cy = spans->y + qreal(0.5);
-
-            qreal x = data->m21 * cy + data->m11 * cx + data->dx;
-            qreal y = data->m22 * cy + data->m12 * cx + data->dy;
-            qreal w = data->m23 * cy + data->m13 * cx + data->m33;
-
-            int length = spans->len;
-            while (length) {
-                int l;
-                quint16 *b;
-                if (ialpha == 0) {
-                    l = length;
-                    b = dest;
-                } else {
-                    l = qMin(length, BufferSize);
-                    b = buffer;
-                }
-                const quint16 *end = b + l;
-
-                while (b < end) {
-                    const qreal iw = w == 0 ? 1 : 1 / w;
-                    const qreal px = x * iw - qreal(0.5);
-                    const qreal py = y * iw - qreal(0.5);
-
-                    int x1 = int(px) - (px < 0);
-                    int x2;
-                    int y1 = int(py) - (py < 0);
-                    int y2;
-
-                    fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(0, src_minx, src_maxx, x1, x2);
-                    fetchTransformedBilinear_pixelBounds<BlendTransformedBilinear>(0, src_miny, src_maxy, y1, y2);
-
-                    const quint16 *src1 = (const quint16 *)data->texture.scanLine(y1);
-                    const quint16 *src2 = (const quint16 *)data->texture.scanLine(y2);
-                    quint16 tl = src1[x1];
-                    const quint16 tr = src1[x2];
-                    quint16 bl = src2[x1];
-                    const quint16 br = src2[x2];
-
-                    const uint distx = uint((px - x1) * 256);
-                    const uint disty = uint((py - y1) * 256);
-                    const uint distxsl8 = distx << 8;
-                    const uint distysl8 = disty << 8;
-                    const uint distxy = distx * disty;
-
-                    const uint tlw = 0x10000 - distxsl8 - distysl8 + distxy; // (256 - distx) * (256 - disty)
-                    const uint trw = distxsl8 - distxy; // distx * (256 - disty)
-                    const uint blw = distysl8 - distxy; // (256 - distx) * disty
-                    const uint brw = distxy; // distx * disty
-                    uint red = ((tl & 0xf800) * tlw + (tr & 0xf800) * trw
-                            + (bl & 0xf800) * blw + (br & 0xf800) * brw) & 0xf8000000;
-                    uint green = ((tl & 0x07e0) * tlw + (tr & 0x07e0) * trw
-                            + (bl & 0x07e0) * blw + (br & 0x07e0) * brw) & 0x07e00000;
-                    uint blue = ((tl & 0x001f) * tlw + (tr & 0x001f) * trw
-                            + (bl & 0x001f) * blw + (br & 0x001f) * brw);
-                    *b = quint16((red | green | blue) >> 16);
-
-                    ++b;
-                    x += fdx;
-                    y += fdy;
-                    w += fdw;
-                }
-
-                if (ialpha != 0)
-                    blend_sourceOver_rgb16_rgb16(dest, buffer, l, alpha, ialpha);
-
-                dest += l;
-                length -= l;
-            }
-            ++spans;
-        }
-    }
-}
-
 static void blend_transformed_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
@@ -5238,7 +5056,7 @@ static const ProcessSpans processTextureSpansRGB16[NBlendTypes] = {
     blend_tiled_rgb565,                 // Tiled
     blend_transformed_rgb565,           // Transformed
     blend_transformed_tiled_rgb565,     // TransformedTiled
-    blend_transformed_bilinear_rgb565,  // TransformedBilinear
+    blend_src_generic,                  // TransformedBilinear
     blend_src_generic                   // TransformedBilinearTiled
 };
 
