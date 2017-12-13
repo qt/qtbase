@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 static void preventDllUnload();
 #endif
 
@@ -136,7 +136,7 @@ QDBusConnectionManager::QDBusConnectionManager()
             this, &QDBusConnectionManager::createServer, Qt::BlockingQueuedConnection);
     moveToThread(this);         // ugly, don't do this in other projects
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // prevent the library from being unloaded on Windows. See comments in the function.
     preventDllUnload();
 #endif
@@ -1263,7 +1263,7 @@ QByteArray QDBusConnection::localMachineId()
 
 QT_END_NAMESPACE
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #  include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
