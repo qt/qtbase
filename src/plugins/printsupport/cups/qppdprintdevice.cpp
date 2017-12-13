@@ -491,6 +491,7 @@ void QPpdPrintDevice::loadPrinter()
         if (m_ppd) {
             ppdMarkDefaults(m_ppd);
             cupsMarkOptions(m_ppd, m_cupsDest->num_options, m_cupsDest->options);
+            ppdLocalize(m_ppd);
         } else {
             cupsFreeDests(1, m_cupsDest);
             m_cupsDest = 0;
