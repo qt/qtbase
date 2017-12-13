@@ -6399,12 +6399,19 @@ static void qInitDrawhelperFunctions()
         qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
         qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_avx2;
 
-        extern void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-        extern void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, uint color, uint const_alpha);
         extern void QT_FASTCALL comp_func_Source_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
-        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_avx2;
-        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_avx2;
+        extern void QT_FASTCALL comp_func_Source_rgb64_avx2(QRgba64 *destPixels, const QRgba64 *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_SourceOver_avx2(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_SourceOver_rgb64_avx2(QRgba64 *destPixels, const QRgba64 *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_avx2(uint *destPixels, int length, uint color, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_rgb64_avx2(QRgba64 *destPixels, int length, QRgba64 color, uint const_alpha);
+
         qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_avx2;
+        qt_functionForMode64_C[QPainter::CompositionMode_Source] = comp_func_Source_rgb64_avx2;
+        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_avx2;
+        qt_functionForMode64_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_rgb64_avx2;
+        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_avx2;
+        qt_functionForModeSolid64_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_rgb64_avx2;
 
         extern void QT_FASTCALL fetchTransformedBilinearARGB32PM_simple_upscale_helper_avx2(uint *b, uint *end, const QTextureData &image,
                                                                                             int &fx, int &fy, int fdx, int /*fdy*/);

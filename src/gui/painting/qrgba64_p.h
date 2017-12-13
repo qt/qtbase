@@ -299,6 +299,21 @@ inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
     return blend;
 }
 
+static Q_ALWAYS_INLINE void blend_pixel(QRgba64 &dst, QRgba64 src)
+{
+    if (src.isOpaque())
+        dst = src;
+    else if (!src.isTransparent())
+        dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());
+}
+
+static Q_ALWAYS_INLINE void blend_pixel(QRgba64 &dst, QRgba64 src, const int const_alpha)
+{
+    if (!src.isTransparent()) {
+        src = multiplyAlpha255(src, const_alpha);
+        dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());
+    }
+}
 
 QT_END_NAMESPACE
 
