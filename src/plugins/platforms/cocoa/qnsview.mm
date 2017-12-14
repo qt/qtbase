@@ -2004,10 +2004,6 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
         QCocoaDropData mimeData([sender draggingPasteboard]);
         response = QWindowSystemInterface::handleDrop(target, &mimeData, mapWindowCoordinates(m_platformWindow->window(), target, qt_windowPoint), qtAllowed);
     }
-    if (response.isAccepted()) {
-        QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-        nativeDrag->setAcceptedAction(response.acceptedAction());
-    }
     return response.isAccepted();
 }
 
@@ -2024,6 +2020,9 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     QWindow *target = findEventTargetWindow(m_platformWindow->window());
     if (!target)
         return;
+
+    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
+    nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
 
     // keep our state, and QGuiApplication state (buttons member) in-sync,
     // or future mouse events will be processed incorrectly
