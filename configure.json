@@ -867,7 +867,7 @@
         "sanitizer": {
             "label": "Sanitizers",
             "condition": "features.sanitize_address || features.sanitize_thread || features.sanitize_memory || features.sanitize_undefined",
-            "output": [ "publicConfig" ]
+            "output": [ "sanitizer", "publicConfig" ]
         },
         "GNUmake": {
             "label": "GNU make",

@@ -876,6 +876,19 @@ defineTest(qtConfOutput_shared) {
     export(CONFIG)
 }
 
+defineTest(qtConfOutput_sanitizer) {
+    !$${2}: return()
+
+    # Export this here, so that WebEngine can access it at configure time.
+    CONFIG += sanitizer
+    $$qtConfEvaluate("features.sanitize_address"): CONFIG += sanitize_address
+    $$qtConfEvaluate("features.sanitize_thread"): CONFIG += sanitize_thread
+    $$qtConfEvaluate("features.sanitize_memory"): CONFIG += sanitize_memory
+    $$qtConfEvaluate("features.sanitize_undefined"): CONFIG += sanitize_undefined
+
+    export(CONFIG)
+}
+
 defineTest(qtConfOutput_architecture) {
     arch = $$qtConfEvaluate("tests.architecture.arch")
     buildabi = $$qtConfEvaluate("tests.architecture.buildabi")
