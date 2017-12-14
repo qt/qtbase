@@ -127,15 +127,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool qt_enable_backingstore = true;
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-// for compatibility with Qt 4.0
-Q_WIDGETS_EXPORT void qt_x11_set_global_double_buffer(bool enable)
-{
-    qt_enable_backingstore = enable;
-}
-#endif
-
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
 bool qt_mac_clearDirtyOnWidgetInsideDrawWidget = false;
 #endif
@@ -144,11 +135,6 @@ static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
     return (qMax(r1.left(), r2.left()) <= qMin(r1.right(), r2.right()) &&
             qMax(r1.top(), r2.top()) <= qMin(r1.bottom(), r2.bottom()));
-}
-
-static inline bool hasBackingStoreSupport()
-{
-    return true;
 }
 
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
@@ -1351,8 +1337,7 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     // a real toplevel window needs a backing store
     if (isWindow() && windowType() != Qt::Desktop) {
         d->topData()->backingStoreTracker.destroy();
-        if (hasBackingStoreSupport())
-            d->topData()->backingStoreTracker.create(this);
+        d->topData()->backingStoreTracker.create(this);
     }
 
     d->setModal_sys();
@@ -2339,7 +2324,7 @@ bool QWidgetPrivate::paintOnScreen() const
         return true;
     }
 
-    return !qt_enable_backingstore;
+    return false;
 #endif
 }
 
@@ -11036,15 +11021,11 @@ void QWidget::repaint(const QRect &rect)
     if (!isVisible() || !updatesEnabled() || rect.isEmpty())
         return;
 
-    if (hasBackingStoreSupport()) {
-        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
-        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-            tlwExtra->inRepaint = true;
-            tlwExtra->backingStoreTracker->markDirty(rect, this, QWidgetBackingStore::UpdateNow);
-            tlwExtra->inRepaint = false;
-        }
-    } else {
-        d->repaint_sys(rect);
+    QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
+        tlwExtra->inRepaint = true;
+        tlwExtra->backingStoreTracker->markDirty(rect, this, QWidgetBackingStore::UpdateNow);
+        tlwExtra->inRepaint = false;
     }
 }
 
@@ -11065,15 +11046,11 @@ void QWidget::repaint(const QRegion &rgn)
     if (!isVisible() || !updatesEnabled() || rgn.isEmpty())
         return;
 
-    if (hasBackingStoreSupport()) {
-        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
-        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
-            tlwExtra->inRepaint = true;
-            tlwExtra->backingStoreTracker->markDirty(rgn, this, QWidgetBackingStore::UpdateNow);
-            tlwExtra->inRepaint = false;
-        }
-    } else {
-        d->repaint_sys(rgn);
+    QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore) {
+        tlwExtra->inRepaint = true;
+        tlwExtra->backingStoreTracker->markDirty(rgn, this, QWidgetBackingStore::UpdateNow);
+        tlwExtra->inRepaint = false;
     }
 }
 
@@ -11127,13 +11104,9 @@ void QWidget::update(const QRect &rect)
         return;
     }
 
-    if (hasBackingStoreSupport()) {
-        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
-        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-            tlwExtra->backingStoreTracker->markDirty(r, this);
-    } else {
-        d_func()->repaint_sys(r);
-    }
+    QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
+        tlwExtra->backingStoreTracker->markDirty(r, this);
 }
 
 /*!
@@ -11156,13 +11129,9 @@ void QWidget::update(const QRegion &rgn)
         return;
     }
 
-    if (hasBackingStoreSupport()) {
-        QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
-        if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-            tlwExtra->backingStoreTracker->markDirty(r, this);
-    } else {
-        d_func()->repaint_sys(r);
-    }
+    QTLWExtra *tlwExtra = window()->d_func()->maybeTopData();
+    if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
+        tlwExtra->backingStoreTracker->markDirty(r, this);
 }
 
 
