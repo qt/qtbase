@@ -28,10 +28,25 @@
 
 #include "nativewindowdump.h"
 
+#if QT_VERSION >= 0x050000
+#  include <QtGui/QGuiApplication>
+#  include <qpa/qplatformnativeinterface.h>
+#endif
+
+#include <QtCore/QDebug>
+
 namespace QtDiag {
 
-void dumpNativeWindows(WId)
+void dumpNativeWindows(WId wid)
 {
+#if QT_VERSION >= 0x050000
+    QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface();
+    QString result;
+    QMetaObject::invokeMethod(ni, "dumpNativeWindows", Qt::DirectConnection,
+                              Q_RETURN_ARG(QString, result),
+                              Q_ARG(WId, wid));
+    qDebug().noquote() << result;
+#endif // Qt 5
 }
 
 void dumpNativeQtTopLevels()

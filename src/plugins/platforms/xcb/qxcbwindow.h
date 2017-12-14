@@ -182,6 +182,8 @@ public:
     virtual void create();
     virtual void destroy();
 
+    static QString windowTitle(const QXcbConnection *conn, xcb_window_t window);
+
 public Q_SLOTS:
     void updateSyncRequestCounter();
 

@@ -127,6 +127,8 @@ public:
     Q_INVOKABLE bool systrayVisualHasAlphaChannel();
     Q_INVOKABLE bool requestSystemTrayWindowDock(const QWindow *window);
     Q_INVOKABLE QRect systemTrayWindowGlobalGeometry(const QWindow *window);
+    Q_INVOKABLE QString dumpConnectionNativeWindows(const QXcbConnection *connection, WId root) const;
+    Q_INVOKABLE QString dumpNativeWindows(WId root = 0) const;
 
     void addHandler(QXcbNativeInterfaceHandler *handler);
     void removeHandler(QXcbNativeInterfaceHandler *handler);
