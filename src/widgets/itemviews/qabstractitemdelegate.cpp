@@ -58,6 +58,7 @@
 #endif
 #include <qapplication.h>
 #include <qvalidator.h>
+#include <qjsonvalue.h>
 #include <private/qtextengine_p.h>
 #include <private/qabstractitemdelegate_p.h>
 
@@ -588,11 +589,22 @@ QString QAbstractItemDelegatePrivate::textForRole(Qt::ItemDataRole role, const Q
     case QVariant::DateTime:
         text = locale.toString(value.toDateTime(), formatType);
         break;
-    default:
-        text = value.toString();
+    default: {
+        if (value.canConvert<QJsonValue>()) {
+            const QJsonValue val = value.toJsonValue();
+            if (val.isBool())
+                text = QVariant(val.toBool()).toString();
+            else if (val.isDouble())
+                text = locale.toString(val.toDouble(), 'g', precision);
+            else if (val.isString())
+                text = val.toString();
+        } else {
+            text = value.toString();
+        }
         if (role == Qt::DisplayRole)
             text.replace(QLatin1Char('\n'), QChar::LineSeparator);
         break;
+    }
     }
     return text;
 }
