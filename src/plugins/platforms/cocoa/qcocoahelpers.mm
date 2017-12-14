@@ -91,6 +91,7 @@ struct dndenum_mapper
 static dndenum_mapper dnd_enums[] = {
     { NSDragOperationLink,  Qt::LinkAction, true },
     { NSDragOperationMove,  Qt::MoveAction, true },
+    { NSDragOperationDelete,  Qt::MoveAction, true },
     { NSDragOperationCopy,  Qt::CopyAction, true },
     { NSDragOperationGeneric,  Qt::CopyAction, false },
     { NSDragOperationEvery, Qt::ActionMask, false },
