@@ -3708,7 +3708,6 @@ void QXmlStreamWriter::writeEntityReference(const QString &name)
 void QXmlStreamWriter::writeNamespace(const QString &namespaceUri, const QString &prefix)
 {
     Q_D(QXmlStreamWriter);
-    Q_ASSERT(!namespaceUri.isEmpty());
     Q_ASSERT(prefix != QLatin1String("xmlns"));
     if (prefix.isEmpty()) {
         d->findNamespace(namespaceUri, d->inStartElement);
