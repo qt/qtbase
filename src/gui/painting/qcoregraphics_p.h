@@ -56,13 +56,15 @@
 #include <QtGui/qpalette.h>
 
 #include <CoreGraphics/CoreGraphics.h>
-#ifdef Q_OS_MACOS
+
+#if defined(__OBJC__) && defined(Q_OS_MACOS)
 #include <AppKit/AppKit.h>
+#define HAVE_APPKIT
 #endif
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_MACOS
+#ifdef HAVE_APPKIT
 Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QPixmap &pm);
 Q_GUI_EXPORT NSImage *qt_mac_create_nsimage(const QIcon &icon, int defaultSize = 0);
 Q_GUI_EXPORT QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size);
@@ -78,7 +80,7 @@ Q_GUI_EXPORT CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *
 
 Q_GUI_EXPORT void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig_xform);
 
-#ifdef Q_OS_MACOS
+#ifdef HAVE_APPKIT
 Q_GUI_EXPORT QColor qt_mac_toQColor(const NSColor *color);
 Q_GUI_EXPORT QBrush qt_mac_toQBrush(const NSColor *color, QPalette::ColorGroup colorGroup = QPalette::Normal);
 #endif
@@ -123,5 +125,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#undef HAVE_APPKIT
 
 #endif // QCOREGRAPHICS_P_H
