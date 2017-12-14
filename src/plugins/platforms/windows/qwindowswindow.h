@@ -108,8 +108,8 @@ struct QWindowsWindowData
 {
     Qt::WindowFlags flags;
     QRect geometry;
-    QMargins frame; // Do not use directly for windows, see FrameDirty.
-    QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
+    QMargins fullFrameMargins; // Do not use directly for windows, see FrameDirty.
+    QMargins customMargins;    // User-defined, additional frame for NCCALCSIZE
     HWND hwnd = 0;
     bool embedded = false;
 
@@ -125,9 +125,10 @@ public:
 
     WId winId() const override { return WId(handle()); }
     QRect geometry() const override { return geometry_sys(); }
-    QMargins frameMargins() const override { return frameMargins_sys(); }
+    QMargins frameMargins() const override { return fullFrameMargins(); }
     QPoint mapToGlobal(const QPoint &pos) const override;
     QPoint mapFromGlobal(const QPoint &pos) const override;
+    virtual QMargins fullFrameMargins() const { return frameMargins_sys(); }
 
     using QPlatformWindow::screenForGeometry;
 
@@ -258,7 +259,8 @@ public:
     static bool handleGeometryChangingMessage(MSG *message, const QWindow *qWindow, const QMargins &marginsDp);
     bool handleGeometryChanging(MSG *message) const;
     QMargins frameMargins() const override;
-    void setFrameMargins(const QMargins &newMargins);
+    QMargins fullFrameMargins() const override;
+    void setFullFrameMargins(const QMargins &newMargins);
 
     void setOpacity(qreal level) override;
     void setMask(const QRegion &region) override;

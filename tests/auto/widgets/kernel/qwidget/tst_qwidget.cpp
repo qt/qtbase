@@ -3798,9 +3798,10 @@ void tst_QWidget::optimizedResize_topLevel()
     // a native function call works (it basically has to go through
     // WM_RESIZE in QApplication). This is a corner case, though.
     // See task 243708
-    const QRect frame = topLevel.frameGeometry();
-    MoveWindow(winHandleOf(&topLevel), frame.x(), frame.y(),
-               frame.width() + 10, frame.height() + 10,
+    RECT rect;
+    GetWindowRect(winHandleOf(&topLevel), &rect);
+    MoveWindow(winHandleOf(&topLevel), rect.left, rect.top,
+               rect.right - rect.left + 10, rect.bottom - rect.top + 10,
                true);
     QTest::qWait(100);
 #endif

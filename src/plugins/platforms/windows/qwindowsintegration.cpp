@@ -332,7 +332,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
         << "\n    Requested: " << requested.geometry << " frame incl.="
         << QWindowsGeometryHint::positionIncludesFrame(window)
         << ' ' << requested.flags
-        << "\n    Obtained : " << obtained.geometry << " margins=" << obtained.frame
+        << "\n    Obtained : " << obtained.geometry << " margins=" << obtained.fullFrameMargins
         << " handle=" << obtained.hwnd << ' ' << obtained.flags << '\n';
 
     if (Q_UNLIKELY(!obtained.hwnd))

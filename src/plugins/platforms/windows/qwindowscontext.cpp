@@ -1401,7 +1401,7 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsWndProc(HWND hwnd, UINT message, WPAR
             marginsFromRects(ncCalcSizeFrame, rectFromNcCalcSize(message, wParam, lParam, 0));
         if (margins.left() >= 0) {
             if (platformWindow) {
-                platformWindow->setFrameMargins(margins);
+                platformWindow->setFullFrameMargins(margins);
             } else {
                 const QSharedPointer<QWindowCreationContext> ctx = QWindowsContext::instance()->windowCreationContext();
                 if (!ctx.isNull())
