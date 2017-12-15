@@ -44,6 +44,7 @@
 #include <qpa/qplatforminputcontext.h>
 #include <jni.h>
 #include <qevent.h>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 
@@ -157,6 +158,7 @@ private:
     HandleModes m_handleMode;
     QAtomicInt m_batchEditNestingLevel;
     QObject *m_focusObject;
+    QTimer m_hideCursorHandleTimer;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAndroidInputContext::HandleModes)
 QT_END_NAMESPACE

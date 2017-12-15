@@ -471,6 +471,13 @@ QAndroidInputContext::QAndroidInputContext()
             updateSelectionHandles();
         }
     });
+    m_hideCursorHandleTimer.setInterval(4000);
+    m_hideCursorHandleTimer.setSingleShot(true);
+    m_hideCursorHandleTimer.setTimerType(Qt::VeryCoarseTimer);
+    connect(&m_hideCursorHandleTimer, &QTimer::timeout, this, [this]{
+        m_handleMode = Hidden;
+        updateSelectionHandles();
+    });
 }
 
 QAndroidInputContext::~QAndroidInputContext()
@@ -590,6 +597,10 @@ void QAndroidInputContext::updateSelectionHandles()
         QPoint editMenuPoint(curRect.center().x(), curRect.top());
         QtAndroidInput::updateHandles(m_handleMode, cursorPoint * pixelDensity,
                                       editMenuPoint * pixelDensity);
+        m_handleMode |= ShowCursor;
+        // The VK is hidden, reset the timer
+        if (m_hideCursorHandleTimer.isActive())
+            m_hideCursorHandleTimer.start();
         return;
     }
 
@@ -603,6 +614,7 @@ void QAndroidInputContext::updateSelectionHandles()
     QPoint righPoint(rightRect.bottomRight().toPoint() * pixelDensity);
     QtAndroidInput::updateHandles(ShowSelection, leftPoint, righPoint,
                                   query.value(Qt::ImCurrentSelection).toString().isRightToLeft());
+    m_hideCursorHandleTimer.stop();
 }
 
 /*
@@ -690,6 +702,8 @@ void QAndroidInputContext::touchDown(int x, int y)
     if (m_focusObject && inputItemRectangle().contains(x, y)) {
         // If the user touch the input rectangle, we can show the cursor handle
         m_handleMode = ShowCursor;
+        // The VK will appear in a moment, stop the timer
+        m_hideCursorHandleTimer.stop();
         QMetaObject::invokeMethod(this, "updateSelectionHandles", Qt::QueuedConnection);
     }
 }
@@ -747,6 +761,8 @@ void QAndroidInputContext::hideSelectionHandles()
     if (m_handleMode & ShowSelection) {
         m_handleMode = Hidden;
         updateSelectionHandles();
+    } else {
+        m_hideCursorHandleTimer.start();
     }
 }
 
