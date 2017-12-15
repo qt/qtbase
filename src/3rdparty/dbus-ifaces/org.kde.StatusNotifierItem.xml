@@ -85,6 +85,9 @@
     <signal name="NewOverlayIcon">
     </signal>
 
+    <signal name="NewMenu">
+    </signal>
+
     <signal name="NewToolTip">
     </signal>
 
