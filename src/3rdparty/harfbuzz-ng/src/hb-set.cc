@@ -45,7 +45,7 @@ hb_set_create (void)
   if (!(set = hb_object_create<hb_set_t> ()))
     return hb_set_get_empty ();
 
-  set->clear ();
+  set->init ();
 
   return set;
 }
@@ -95,7 +95,7 @@ hb_set_destroy (hb_set_t *set)
 {
   if (!hb_object_destroy (set)) return;
 
-  set->fini ();
+  set->finish ();
 
   free (set);
 }
@@ -105,7 +105,7 @@ hb_set_destroy (hb_set_t *set)
  * @set: a set.
  * @key:
  * @data:
- * @destroy (closure data):
+ * @destroy:
  * @replace:
  *
  * Return value:
@@ -376,11 +376,12 @@ hb_set_symmetric_difference (hb_set_t       *set,
  * 
  *
  * Since: 0.9.10
+ *
+ * Deprecated: 1.6.1
  **/
 void
 hb_set_invert (hb_set_t *set)
 {
-  set->invert ();
 }
 
 /**
