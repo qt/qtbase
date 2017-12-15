@@ -58,6 +58,14 @@ class QAndroidInputContext: public QPlatformInputContext
     };
 
 public:
+    enum HandleMode {
+        Hidden        = 0,
+        ShowCursor    = 1,
+        ShowSelection = 2,
+        ShowEditPopup = 0x100
+    };
+    Q_DECLARE_FLAGS(HandleModes, HandleMode)
+
     struct ExtractedText
     {
         ExtractedText() { clear(); }
@@ -145,17 +153,11 @@ private:
     int m_composingCursor;
     QMetaObject::Connection m_updateCursorPosConnection;
     bool m_blockUpdateSelection;
-    enum CursorHandleShowMode {
-        CursorHandleNotShown,
-        CursorHandleShowNormal = 1,
-        CursorHandleShowSelection = 2,
-        CursorHandleShowPopup = 3
-    };
-    CursorHandleShowMode m_cursorHandleShown;
+    HandleModes m_handleMode;
     QAtomicInt m_batchEditNestingLevel;
     QObject *m_focusObject;
 };
-
+Q_DECLARE_OPERATORS_FOR_FLAGS(QAndroidInputContext::HandleModes)
 QT_END_NAMESPACE
 
 #endif // ANDROIDINPUTCONTEXT_H

@@ -484,10 +484,11 @@ public class QtActivityDelegate
     }
 
     // Values coming from QAndroidInputContext::CursorHandleShowMode
-    private static final int CursorHandleNotShown = 0;
-    private static final int CursorHandleShowNormal = 1;
-    private static final int CursorHandleShowSelection = 2;
-    private static final int CursorHandleShowPopup = 3;
+    private static final int CursorHandleNotShown       = 0;
+    private static final int CursorHandleShowNormal     = 1;
+    private static final int CursorHandleShowSelection  = 2;
+    private static final int CursorHandleShowEdit       = 0x100;
+    private static final int CursorHandleShowPopup      = 0x200;
 
     /* called from the C++ code when the position of the cursor or selection handles needs to
        be adjusted.
@@ -495,55 +496,70 @@ public class QtActivityDelegate
     */
     public void updateHandles(int mode, int x1, int y1, int x2, int y2, boolean rtl)
     {
-        if (mode == CursorHandleNotShown) {
-            if (m_cursorHandle != null)
-                m_cursorHandle.hide();
-            if (m_rightSelectionHandle != null) {
-                m_rightSelectionHandle.hide();
-                m_leftSelectionHandle.hide();
-                m_rightSelectionHandle = null;
-                m_leftSelectionHandle = null;
-            }
-            if (m_editMenu != null)
-                m_editMenu.hide();
-            if (m_editPopupMenu != null)
-                m_editPopupMenu.hide();
-        } else if (mode == CursorHandleShowNormal || mode == CursorHandleShowPopup) {
-            if (m_cursorHandle == null) {
-                m_cursorHandle = new CursorHandle(m_activity, m_layout, QtNative.IdCursorHandle,
-                                                  android.R.attr.textSelectHandle, false);
-            }
-            m_cursorHandle.setPosition(x1, y1);
-            if (m_rightSelectionHandle != null) {
-                m_rightSelectionHandle.hide();
-                m_leftSelectionHandle.hide();
-                m_rightSelectionHandle = null;
-                m_leftSelectionHandle = null;
-            }
-        } else if (mode == CursorHandleShowSelection) {
-            if (m_rightSelectionHandle == null) {
-                m_leftSelectionHandle = new CursorHandle(m_activity, m_layout, QtNative.IdLeftHandle,
-                                                         !rtl ? android.R.attr.textSelectHandleLeft :
-                                                                android.R.attr.textSelectHandleRight,
-                                                         rtl);
-                m_rightSelectionHandle = new CursorHandle(m_activity, m_layout, QtNative.IdRightHandle,
-                                                          !rtl ? android.R.attr.textSelectHandleRight :
-                                                                 android.R.attr.textSelectHandleLeft,
-                                                          rtl);
-            }
-            m_leftSelectionHandle.setPosition(x1,y1);
-            m_rightSelectionHandle.setPosition(x2,y2);
-            if (m_cursorHandle != null)
-                m_cursorHandle.hide();
+        switch (mode & 0xff)
+        {
+            case CursorHandleNotShown:
+                if (m_cursorHandle != null) {
+                    m_cursorHandle.hide();
+                    m_cursorHandle = null;
+                }
+                if (m_rightSelectionHandle != null) {
+                    m_rightSelectionHandle.hide();
+                    m_leftSelectionHandle.hide();
+                    m_rightSelectionHandle = null;
+                    m_leftSelectionHandle = null;
+                }
+                if (m_editMenu != null) {
+                    m_editMenu.hide();
+                    m_editMenu = null;
+                }
+                if (m_editPopupMenu != null) {
+                    m_editPopupMenu.hide();
+                    m_editPopupMenu = null;
+                }
+                break;
 
-            if (m_editMenu == null)
-                m_editMenu = new EditMenu(m_activity);
-            m_editMenu.show();
+            case CursorHandleShowNormal:
+                if (m_editMenu != null) {
+                    m_editMenu.hide();
+                    m_editMenu = null;
+                }
+                if (m_cursorHandle == null) {
+                    m_cursorHandle = new CursorHandle(m_activity, m_layout, QtNative.IdCursorHandle,
+                                                      android.R.attr.textSelectHandle, false);
+                }
+                m_cursorHandle.setPosition(x1, y1);
+                if (m_rightSelectionHandle != null) {
+                    m_rightSelectionHandle.hide();
+                    m_leftSelectionHandle.hide();
+                    m_rightSelectionHandle = null;
+                    m_leftSelectionHandle = null;
+                }
+                break;
+
+            case CursorHandleShowSelection:
+                if (m_rightSelectionHandle == null) {
+                    m_leftSelectionHandle = new CursorHandle(m_activity, m_layout, QtNative.IdLeftHandle,
+                                                             !rtl ? android.R.attr.textSelectHandleLeft :
+                                                                    android.R.attr.textSelectHandleRight,
+                                                             rtl);
+                    m_rightSelectionHandle = new CursorHandle(m_activity, m_layout, QtNative.IdRightHandle,
+                                                              !rtl ? android.R.attr.textSelectHandleRight :
+                                                                     android.R.attr.textSelectHandleLeft,
+                                                              rtl);
+                }
+                m_leftSelectionHandle.setPosition(x1,y1);
+                m_rightSelectionHandle.setPosition(x2,y2);
+                if (m_cursorHandle != null) {
+                    m_cursorHandle.hide();
+                    m_cursorHandle = null;
+                }
+                if (m_editMenu == null)
+                    m_editMenu = new EditMenu(m_activity);
+                m_editMenu.show();
+                break;
         }
-
-        // show the edit popup menu
-        if (mode == CursorHandleShowPopup && (m_editMenu == null || !m_editMenu.isShown())
-                && QtNative.hasClipboardText()) {
+        if ((mode & CursorHandleShowPopup) == CursorHandleShowPopup && QtNative.hasClipboardText()) {
             if (m_editPopupMenu == null)
                 m_editPopupMenu = new EditPopupMenu(m_activity, m_layout);
             if (y2 < m_editPopupMenu.getHeight())  {
@@ -553,8 +569,8 @@ public class QtActivityDelegate
             m_editPopupMenu.setPosition(x2, y2);
         } else if (m_editPopupMenu != null) {
             m_editPopupMenu.hide();
+            m_editPopupMenu = null;
         }
-
     }
 
     public boolean loadApplication(Activity activity, ClassLoader classLoader, Bundle loaderParams)
