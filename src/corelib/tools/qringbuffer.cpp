@@ -180,7 +180,7 @@ void QRingBuffer::chop(qint64 bytes)
             // keep a single block around if it does not exceed
             // the basic block size, to avoid repeated allocations
             // between uses of the buffer
-            if (bufferSize <= bytes) {
+            if (bufferSize == bytes) {
                 if (buffers.constFirst().size() <= basicBlockSize) {
                     bufferSize = 0;
                     head = tail = 0;
