@@ -132,6 +132,7 @@ public slots:
     void touchDown(int x, int y);
     void longPress(int x, int y);
     void keyDown();
+    void hideSelectionHandles();
 
 private slots:
     void showInputPanelLater(Qt::ApplicationState);

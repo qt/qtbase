@@ -805,8 +805,10 @@ namespace QtAndroidInput
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
         if (inputContext && qGuiApp) {
             inputContext->emitInputPanelVisibleChanged();
-            if (!visibility)
+            if (!visibility) {
                 inputContext->emitKeyboardRectChanged();
+                QMetaObject::invokeMethod(inputContext, "hideSelectionHandles", Qt::QueuedConnection);
+            }
         }
 #ifdef QT_DEBUG_ANDROID_IM_PROTOCOL
         qDebug() << "@@@ KEYBOARDVISIBILITYCHANGED" << inputContext;

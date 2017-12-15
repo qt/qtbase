@@ -593,6 +593,7 @@ void QAndroidInputContext::updateSelectionHandles()
         return;
     }
 
+    m_handleMode |= ShowSelection;
     auto leftRect = im->cursorRectangle();
     auto rightRect = im->anchorRectangle();
     if (cpos > anchor)
@@ -736,6 +737,14 @@ void QAndroidInputContext::keyDown()
 {
     if (m_handleMode) {
         // When the user enter text on the keyboard, we hide the cursor handle
+        m_handleMode = Hidden;
+        updateSelectionHandles();
+    }
+}
+
+void QAndroidInputContext::hideSelectionHandles()
+{
+    if (m_handleMode & ShowSelection) {
         m_handleMode = Hidden;
         updateSelectionHandles();
     }
