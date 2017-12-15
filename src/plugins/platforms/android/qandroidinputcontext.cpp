@@ -715,7 +715,14 @@ void QAndroidInputContext::touchDown(int x, int y)
 
 void QAndroidInputContext::longPress(int x, int y)
 {
+    static bool noHandles = qEnvironmentVariableIntValue("QT_QPA_NO_TEXT_HANDLES");
+    if (noHandles)
+        return;
+
     if (m_focusObject && inputItemRectangle().contains(x, y)) {
+        // Release left button, otherwise the following events will cancel the menu popup
+        QtAndroidInput::releaseMouse(x, y);
+
         handleLocationChanged(1, x, y);
         ScopedValueChangeBack<bool> svcb(m_blockUpdateSelection, true);
 
