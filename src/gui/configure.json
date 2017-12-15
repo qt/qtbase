@@ -956,7 +956,7 @@
             "label": "IMF",
             "emitIf": "config.qnx",
             "condition": "libs.imf",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "integrityfb": {
             "label": "INTEGRITY framebuffer",

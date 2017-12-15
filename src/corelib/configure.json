@@ -509,7 +509,7 @@
             "label": "PPS",
             "emitIf": "config.qnx",
             "condition": "libs.pps",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "qeventtransition": {
             "label": "QEventTransition class",

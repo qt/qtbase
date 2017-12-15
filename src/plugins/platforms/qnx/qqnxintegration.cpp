@@ -56,17 +56,16 @@
 #include "qqnxeglwindow.h"
 #endif
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
 #include "qqnxnavigatorpps.h"
 #include "qqnxnavigatoreventnotifier.h"
 #include "qqnxvirtualkeyboardpps.h"
 #endif
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
 #  include "qqnxbuttoneventnotifier.h"
 #  include "qqnxclipboard.h"
-
-#  if defined(QQNX_IMF)
+#  if QT_CONFIG(qqnx_imf)
 #    include "qqnxinputcontext_imf.h"
 #  else
 #    include "qqnxinputcontext_noimf.h"
@@ -126,7 +125,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     , m_screenEventThread(0)
     , m_navigatorEventHandler(new QQnxNavigatorEventHandler())
     , m_virtualKeyboard(0)
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     , m_navigatorEventNotifier(0)
     , m_inputContext(0)
     , m_buttonsNotifier(new QQnxButtonEventNotifier())
@@ -150,7 +149,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     Q_SCREEN_CRITICALERROR(screen_create_context(&ms_screenContext, SCREEN_APPLICATION_CONTEXT),
                            "Failed to create screen context");
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     // Create/start navigator event notifier
     m_navigatorEventNotifier = new QQnxNavigatorEventNotifier(m_navigatorEventHandler);
 
@@ -168,7 +167,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     m_screenEventThread = new QQnxScreenEventThread(ms_screenContext, m_screenEventHandler);
     m_screenEventThread->start();
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     // Create/start the keyboard class.
     m_virtualKeyboard = new QQnxVirtualKeyboardPps();
 
@@ -177,7 +176,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     QMetaObject::invokeMethod(m_virtualKeyboard, "start", Qt::QueuedConnection);
 #endif
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     m_navigator = new QQnxNavigatorPps();
 #endif
 
@@ -192,16 +191,16 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
         QObject::connect(m_virtualKeyboard, SIGNAL(heightChanged(int)),
                          primaryDisplay(), SLOT(keyboardHeightChanged(int)));
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
         // Set up the input context
         m_inputContext = new QQnxInputContext(this, *m_virtualKeyboard);
-#if defined(QQNX_IMF)
+#if QT_CONFIG(qqnx_imf)
         m_screenEventHandler->addScreenEventFilter(m_inputContext);
 #endif
 #endif
     }
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(m_buttonsNotifier, "start", Qt::QueuedConnection);
@@ -224,7 +223,7 @@ QQnxIntegration::~QQnxIntegration()
 #endif
 
     // Stop/destroy navigator event notifier
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     delete m_navigatorEventNotifier;
 #endif
     delete m_navigatorEventHandler;
@@ -248,7 +247,7 @@ QQnxIntegration::~QQnxIntegration()
     QQnxGLContext::shutdownContext();
 #endif
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     // Destroy the hardware button notifier
     delete m_buttonsNotifier;
 
@@ -318,7 +317,7 @@ QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLCont
 }
 #endif
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
 QPlatformInputContext *QQnxIntegration::inputContext() const
 {
     qIntegrationDebug();
@@ -361,7 +360,7 @@ QPlatformClipboard *QQnxIntegration::clipboard() const
 {
     qIntegrationDebug();
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     if (!m_clipboard)
         m_clipboard = new QQnxClipboard;
 #endif
