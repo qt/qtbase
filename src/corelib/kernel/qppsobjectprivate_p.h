@@ -57,13 +57,15 @@
 #include <QDebug>
 
 #include <sys/pps.h>
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
 
-class QPpsObjectPrivate
+class QPpsObjectPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QPpsObject)
 public:
     explicit QPpsObjectPrivate(const QString &path);
 
