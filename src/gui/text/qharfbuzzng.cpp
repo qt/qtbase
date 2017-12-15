@@ -422,7 +422,6 @@ hb_unicode_funcs_t *hb_qt_get_unicode_funcs()
 
 // Font routines
 
-#if HB_VERSION_ATLEAST(1, 1, 3)
 static hb_bool_t
 _hb_qt_get_font_h_extents(hb_font_t * /*font*/, void *font_data,
                           hb_font_extents_t *metrics,
@@ -437,9 +436,7 @@ _hb_qt_get_font_h_extents(hb_font_t * /*font*/, void *font_data,
 
     return true;
 }
-#endif
 
-#if HB_VERSION_ATLEAST(1, 2, 3)
 static hb_bool_t
 _hb_qt_font_get_nominal_glyph(hb_font_t * /*font*/, void *font_data,
                               hb_codepoint_t unicode,
@@ -453,7 +450,6 @@ _hb_qt_font_get_nominal_glyph(hb_font_t * /*font*/, void *font_data,
 
     return *glyph != 0;
 }
-#endif
 
 static hb_bool_t
 _hb_qt_font_get_variation_glyph(hb_font_t * /*font*/, void *font_data,
@@ -489,17 +485,6 @@ _hb_qt_font_get_glyph_h_advance(hb_font_t *font, void *font_data,
 
     return advance.value();
 }
-
-#if !HB_VERSION_ATLEAST(1, 1, 2)
-static hb_bool_t
-_hb_qt_font_get_glyph_h_origin(hb_font_t * /*font*/, void * /*font_data*/,
-                               hb_codepoint_t /*glyph*/,
-                               hb_position_t * /*x*/, hb_position_t * /*y*/,
-                               void * /*user_data*/)
-{
-    return true; // we always work in the horizontal coordinates
-}
-#endif
 
 static hb_position_t
 _hb_qt_font_get_glyph_h_kerning(hb_font_t *font, void *font_data,
@@ -581,19 +566,10 @@ struct _hb_qt_font_funcs_t {
     {
         funcs = hb_font_funcs_create();
 
-#if HB_VERSION_ATLEAST(1, 1, 3)
         hb_font_funcs_set_font_h_extents_func(funcs, _hb_qt_get_font_h_extents, NULL, NULL);
-#endif
-#if HB_VERSION_ATLEAST(1, 2, 3)
         hb_font_funcs_set_nominal_glyph_func(funcs, _hb_qt_font_get_nominal_glyph, NULL, NULL);
         hb_font_funcs_set_variation_glyph_func(funcs, _hb_qt_font_get_variation_glyph, NULL, NULL);
-#else
-        hb_font_funcs_set_glyph_func(funcs, _hb_qt_font_get_variation_glyph, NULL, NULL);
-#endif
         hb_font_funcs_set_glyph_h_advance_func(funcs, _hb_qt_font_get_glyph_h_advance, NULL, NULL);
-#if !HB_VERSION_ATLEAST(1, 1, 2)
-        hb_font_funcs_set_glyph_h_origin_func(funcs, _hb_qt_font_get_glyph_h_origin, NULL, NULL);
-#endif
         hb_font_funcs_set_glyph_h_kerning_func(funcs, _hb_qt_font_get_glyph_h_kerning, NULL, NULL);
         hb_font_funcs_set_glyph_extents_func(funcs, _hb_qt_font_get_glyph_extents, NULL, NULL);
         hb_font_funcs_set_glyph_contour_point_func(funcs, _hb_qt_font_get_glyph_contour_point, NULL, NULL);

@@ -207,7 +207,7 @@
             "test": {
                 "include": "harfbuzz/hb.h",
                 "tail": [
-                    "#if !HB_VERSION_ATLEAST(0, 9, 42)",
+                    "#if !HB_VERSION_ATLEAST(1, 6, 0)",
                     "#  error This version of harfbuzz is too old.",
                     "#endif"
                 ],
