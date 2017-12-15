@@ -61,6 +61,7 @@ class CursorView extends ImageView
     // The coordinare which where clicked
     private float m_offsetX;
     private float m_offsetY;
+    private boolean m_pressed = false;
 
     CursorView (Context context, CursorHandle handle) {
         super(context);
@@ -79,10 +80,13 @@ class CursorView extends ImageView
         case MotionEvent.ACTION_DOWN: {
             m_offsetX = ev.getRawX();
             m_offsetY = ev.getRawY() + getHeight() / 2;
+            m_pressed = true;
             break;
         }
 
         case MotionEvent.ACTION_MOVE: {
+            if (!m_pressed)
+                return false;
             mHandle.updatePosition(Math.round(ev.getRawX() - m_offsetX),
                                     Math.round(ev.getRawY() - m_offsetY));
             break;
@@ -90,6 +94,7 @@ class CursorView extends ImageView
 
         case MotionEvent.ACTION_UP:
         case MotionEvent.ACTION_CANCEL:
+            m_pressed = false;
             break;
         }
         return true;
