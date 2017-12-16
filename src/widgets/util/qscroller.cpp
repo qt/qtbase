@@ -281,10 +281,9 @@ private:
 */
 
 typedef QMap<QObject *, QScroller *> ScrollerHash;
-typedef QSet<QScroller *> ScrollerSet;
 
 Q_GLOBAL_STATIC(ScrollerHash, qt_allScrollers)
-Q_GLOBAL_STATIC(ScrollerSet, qt_activeScrollers)
+Q_GLOBAL_STATIC(QList<QScroller *>, qt_activeScrollers)
 
 /*!
     Returns \c true if a QScroller object was already created for \a target; \c false otherwise.
@@ -335,7 +334,7 @@ const QScroller *QScroller::scroller(const QObject *target)
 */
 QList<QScroller *> QScroller::activeScrollers()
 {
-    return qt_activeScrollers()->toList();
+    return *qt_activeScrollers();
 }
 
 /*!
@@ -512,7 +511,7 @@ QScroller::~QScroller()
     d->recognizer = 0;
 #endif
     qt_allScrollers()->remove(d->target);
-    qt_activeScrollers()->remove(this);
+    qt_activeScrollers()->removeOne(this);
 
     delete d_ptr;
 }
@@ -1768,9 +1767,9 @@ void QScrollerPrivate::setState(QScroller::State newstate)
         firstScroll = true;
     }
     if (state == QScroller::Dragging || state == QScroller::Scrolling)
-        qt_activeScrollers()->insert(q);
+        qt_activeScrollers()->push_back(q);
     else
-        qt_activeScrollers()->remove(q);
+        qt_activeScrollers()->removeOne(q);
     emit q->stateChanged(state);
 }
 
