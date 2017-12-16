@@ -169,7 +169,7 @@ void QSpanCollection::clear()
 /** \internal
  * return a list to all the spans that spans over cells in the given rectangle
  */
-QList<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w, int h) const
+QSet<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w, int h) const
 {
     QSet<Span *> list;
     Index::const_iterator it_y = index.lowerBound(-y);
@@ -191,7 +191,7 @@ QList<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w,
             break;
         --it_y;
     }
-    return list.values();
+    return list;
 }
 
 #undef DEBUG_SPAN_UPDATE
@@ -863,19 +863,17 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
     bool alternateBase = false;
     QRegion region = viewport->rect();
 
-    QList<QSpanCollection::Span *> visibleSpans;
+    QSet<QSpanCollection::Span *> visibleSpans;
     bool sectionMoved = verticalHeader->sectionsMoved() || horizontalHeader->sectionsMoved();
 
     if (!sectionMoved) {
         visibleSpans = spans.spansInRect(logicalColumn(firstVisualColumn), logicalRow(firstVisualRow),
                                          lastVisualColumn - firstVisualColumn + 1, lastVisualRow - firstVisualRow + 1);
     } else {
-        QSet<QSpanCollection::Span *> set;
         for(int x = firstVisualColumn; x <= lastVisualColumn; x++)
             for(int y = firstVisualRow; y <= lastVisualRow; y++)
-                set.insert(spans.spanAt(x,y));
-        set.remove(0);
-        visibleSpans = set.values();
+                visibleSpans.insert(spans.spanAt(x,y));
+        visibleSpans.remove(nullptr);
     }
 
     for (QSpanCollection::Span *span : qAsConst(visibleSpans)) {

@@ -104,7 +104,7 @@ public:
     void updateSpan(Span *span, int old_height);
     Span *spanAt(int x, int y) const;
     void clear();
-    QList<Span *> spansInRect(int x, int y, int w, int h) const;
+    QSet<Span *> spansInRect(int x, int y, int w, int h) const;
 
     void updateInsertedRows(int start, int end);
     void updateInsertedColumns(int start, int end);
