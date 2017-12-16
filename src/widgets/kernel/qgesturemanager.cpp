@@ -167,30 +167,26 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
 
 void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType type)
 {
-    QMap<ObjectGesture, QList<QGesture *> >::Iterator iter = m_objectGestures.begin();
-    while (iter != m_objectGestures.end()) {
-        ObjectGesture objectGesture = iter.key();
-        if (objectGesture.gesture == type && target == objectGesture.object) {
-            QSet<QGesture *> gestures = QSet<QGesture *>(iter.value().constBegin(), iter.value().constEnd());
-            for (QHash<QGestureRecognizer *, QSet<QGesture *> >::iterator
-                 it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {
-                it.value() -= gestures;
-            }
-            foreach (QGesture *g, gestures) {
-                m_deletedRecognizers.remove(g);
-                m_gestureToRecognizer.remove(g);
-                m_maybeGestures.remove(g);
-                m_activeGestures.remove(g);
-                m_gestureOwners.remove(g);
-                m_gestureTargets.remove(g);
-                m_gesturesToDelete.insert(g);
-            }
+    const auto iter = m_objectGestures.find({target, type});
+    if (iter == m_objectGestures.end())
+        return;
 
-            iter = m_objectGestures.erase(iter);
-        } else {
-            ++iter;
-        }
+    const QList<QGesture *> &gestures = iter.value();
+    for (auto &e : m_obsoleteGestures) {
+        for (QGesture *g : gestures)
+            e -= g;
     }
+    for (QGesture *g : gestures) {
+        m_deletedRecognizers.remove(g);
+        m_gestureToRecognizer.remove(g);
+        m_maybeGestures.remove(g);
+        m_activeGestures.remove(g);
+        m_gestureOwners.remove(g);
+        m_gestureTargets.remove(g);
+        m_gesturesToDelete.insert(g);
+    }
+
+    m_objectGestures.erase(iter);
 }
 
 // get or create a QGesture object that will represent the state for a given object, used by the recognizer
