@@ -312,6 +312,12 @@ public:
         return QVariant();
     }
 
+    void simulateMoveRows()
+    {
+        beginMoveRows(QModelIndex(), 0, 0, QModelIndex(), 2);
+        endMoveRows();
+    }
+
     void removeLastRow()
     {
         beginRemoveRows(QModelIndex(), rows - 1, rows - 1);
@@ -1327,6 +1333,17 @@ void tst_QTreeView::columnHidden()
     for (int c = 0; c < model.columnCount(); ++c)
         QCOMPARE(view.isColumnHidden(c), true);
     view.update();
+
+    // QTBUG 54610
+    // QAbstractItemViewPrivate::_q_layoutChanged() is called on
+    // rows/columnMoved and because this function is virtual,
+    // QHeaderViewPrivate::_q_layoutChanged() was called and unhided
+    // all sections because QHeaderViewPrivate::_q_layoutAboutToBeChanged()
+    // could not fill persistentHiddenSections (and is not needed)
+    view.hideColumn(model.cols - 1);
+    QCOMPARE(view.isColumnHidden(model.cols - 1), true);
+    model.simulateMoveRows();
+    QCOMPARE(view.isColumnHidden(model.cols - 1), true);
 }
 
 void tst_QTreeView::rowHidden()
@@ -4601,7 +4618,7 @@ void tst_QTreeView::fetchMoreOnScroll()
     tw.setModel(&im);
     tw.show();
     tw.expandAll();
-    QTest::qWaitForWindowActive(&tw);
+    QVERIFY(QTest::qWaitForWindowActive(&tw));
     // Now we can allow the fetch to happen
     im.canFetchReady = true;
     tw.verticalScrollBar()->setValue(tw.verticalScrollBar()->maximum());

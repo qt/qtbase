@@ -120,8 +120,8 @@ public:
     void updateHiddenSections(int logicalFirst, int logicalLast);
     void resizeSections(QHeaderView::ResizeMode globalMode, bool useGlobalMode = false);
     void _q_sectionsRemoved(const QModelIndex &,int,int);
-    void _q_layoutAboutToBeChanged();
-    void _q_layoutChanged() override;
+    void _q_sectionsAboutToBeChanged();
+    void _q_sectionsChanged();
 
     bool isSectionSelected(int section) const;
     bool isFirstVisibleSection(int section) const;
