@@ -152,6 +152,7 @@ private:
     friend class QTypeInfo<List>;
     QVector<List> lists;
     int indent;
+    int headingLevel;
 
     // insert a named anchor the next time we emit a char format,
     // either in a block or in regular text

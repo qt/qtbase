@@ -2906,7 +2906,11 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
             html += QLatin1Char('>');
         html += QLatin1String("<pre");
     } else if (!list) {
-        html += QLatin1String("<p");
+        int headingLevel = blockFormat.headingLevel();
+        if (headingLevel > 0 && headingLevel <= 6)
+            html += QLatin1String("<h") + QString::number(headingLevel);
+        else
+            html += QLatin1String("<p");
     }
 
     emitBlockAttributes(block);
@@ -2929,8 +2933,13 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
         html += QLatin1String("</pre>");
     else if (list)
         html += QLatin1String("</li>");
-    else
-        html += QLatin1String("</p>");
+    else {
+        int headingLevel = blockFormat.headingLevel();
+        if (headingLevel > 0 && headingLevel <= 6)
+            html += QLatin1String("</h") + QString::number(headingLevel) + QLatin1Char('>');
+        else
+            html += QLatin1String("</p>");
+    }
 
     if (list) {
         if (list->itemNumber(block) == list->count() - 1) { // last item? close list

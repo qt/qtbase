@@ -175,6 +175,7 @@ public:
         LineHeightType = 0x1049,
         BlockNonBreakableLines = 0x1050,
         BlockTrailingHorizontalRulerWidth = 0x1060,
+        HeadingLevel = 0x1070,
 
         // character properties
         FirstFontProperty = 0x1FE0,
@@ -623,6 +624,11 @@ public:
     inline void setIndent(int indent);
     inline int indent() const
     { return intProperty(BlockIndent); }
+
+    inline void setHeadingLevel(int alevel)
+    { setProperty(HeadingLevel, alevel); }
+    inline int headingLevel() const
+    { return intProperty(HeadingLevel); }
 
     inline void setLineHeight(qreal height, int heightType)
     { setProperty(LineHeight, height); setProperty(LineHeightType, heightType); }

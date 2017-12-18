@@ -348,6 +348,12 @@ void TextEdit::setupTextActions()
     comboStyle->addItem("Ordered List (Alpha upper)");
     comboStyle->addItem("Ordered List (Roman lower)");
     comboStyle->addItem("Ordered List (Roman upper)");
+    comboStyle->addItem("Heading 1");
+    comboStyle->addItem("Heading 2");
+    comboStyle->addItem("Heading 3");
+    comboStyle->addItem("Heading 4");
+    comboStyle->addItem("Heading 5");
+    comboStyle->addItem("Heading 6");
 
     connect(comboStyle, QOverload<int>::of(&QComboBox::activated), this, &TextEdit::textStyle);
 
@@ -575,44 +581,56 @@ void TextEdit::textSize(const QString &p)
 void TextEdit::textStyle(int styleIndex)
 {
     QTextCursor cursor = textEdit->textCursor();
+    QTextListFormat::Style style = QTextListFormat::ListStyleUndefined;
 
-    if (styleIndex != 0) {
-        QTextListFormat::Style style = QTextListFormat::ListDisc;
+    switch (styleIndex) {
+    case 1:
+        style = QTextListFormat::ListDisc;
+        break;
+    case 2:
+        style = QTextListFormat::ListCircle;
+        break;
+    case 3:
+        style = QTextListFormat::ListSquare;
+        break;
+    case 4:
+        style = QTextListFormat::ListDecimal;
+        break;
+    case 5:
+        style = QTextListFormat::ListLowerAlpha;
+        break;
+    case 6:
+        style = QTextListFormat::ListUpperAlpha;
+        break;
+    case 7:
+        style = QTextListFormat::ListLowerRoman;
+        break;
+    case 8:
+        style = QTextListFormat::ListUpperRoman;
+        break;
+    default:
+        break;
+    }
 
-        switch (styleIndex) {
-            default:
-            case 1:
-                style = QTextListFormat::ListDisc;
-                break;
-            case 2:
-                style = QTextListFormat::ListCircle;
-                break;
-            case 3:
-                style = QTextListFormat::ListSquare;
-                break;
-            case 4:
-                style = QTextListFormat::ListDecimal;
-                break;
-            case 5:
-                style = QTextListFormat::ListLowerAlpha;
-                break;
-            case 6:
-                style = QTextListFormat::ListUpperAlpha;
-                break;
-            case 7:
-                style = QTextListFormat::ListLowerRoman;
-                break;
-            case 8:
-                style = QTextListFormat::ListUpperRoman;
-                break;
-        }
+    cursor.beginEditBlock();
 
-        cursor.beginEditBlock();
+    QTextBlockFormat blockFmt = cursor.blockFormat();
 
-        QTextBlockFormat blockFmt = cursor.blockFormat();
+    if (style == QTextListFormat::ListStyleUndefined) {
+        blockFmt.setObjectIndex(-1);
+        int headingLevel = styleIndex >= 9 ? styleIndex - 9 + 1 : 0; // H1 to H6, or Standard
+        blockFmt.setHeadingLevel(headingLevel);
+        cursor.setBlockFormat(blockFmt);
 
+        int sizeAdjustment = headingLevel ? 4 - headingLevel : 0; // H1 to H6: +3 to -2
+        QTextCharFormat fmt;
+        fmt.setFontWeight(headingLevel ? QFont::Bold : QFont::Normal);
+        fmt.setProperty(QTextFormat::FontSizeAdjustment, sizeAdjustment);
+        cursor.select(QTextCursor::LineUnderCursor);
+        cursor.mergeCharFormat(fmt);
+        textEdit->mergeCurrentCharFormat(fmt);
+    } else {
         QTextListFormat listFmt;
-
         if (cursor.currentList()) {
             listFmt = cursor.currentList()->format();
         } else {
@@ -620,18 +638,11 @@ void TextEdit::textStyle(int styleIndex)
             blockFmt.setIndent(0);
             cursor.setBlockFormat(blockFmt);
         }
-
         listFmt.setStyle(style);
-
         cursor.createList(listFmt);
-
-        cursor.endEditBlock();
-    } else {
-        // ####
-        QTextBlockFormat bfmt;
-        bfmt.setObjectIndex(-1);
-        cursor.mergeBlockFormat(bfmt);
     }
+
+    cursor.endEditBlock();
 }
 
 void TextEdit::textColor()
@@ -666,6 +677,41 @@ void TextEdit::currentCharFormatChanged(const QTextCharFormat &format)
 void TextEdit::cursorPositionChanged()
 {
     alignmentChanged(textEdit->alignment());
+    QTextList *list = textEdit->textCursor().currentList();
+    if (list) {
+        switch (list->format().style()) {
+        case QTextListFormat::ListDisc:
+            comboStyle->setCurrentIndex(1);
+            break;
+        case QTextListFormat::ListCircle:
+            comboStyle->setCurrentIndex(2);
+            break;
+        case QTextListFormat::ListSquare:
+            comboStyle->setCurrentIndex(3);
+            break;
+        case QTextListFormat::ListDecimal:
+            comboStyle->setCurrentIndex(4);
+            break;
+        case QTextListFormat::ListLowerAlpha:
+            comboStyle->setCurrentIndex(5);
+            break;
+        case QTextListFormat::ListUpperAlpha:
+            comboStyle->setCurrentIndex(6);
+            break;
+        case QTextListFormat::ListLowerRoman:
+            comboStyle->setCurrentIndex(7);
+            break;
+        case QTextListFormat::ListUpperRoman:
+            comboStyle->setCurrentIndex(8);
+            break;
+        default:
+            comboStyle->setCurrentIndex(-1);
+            break;
+        }
+    } else {
+        int headingLevel = textEdit->textCursor().blockFormat().headingLevel();
+        comboStyle->setCurrentIndex(headingLevel ? headingLevel + 8 : 0);
+    }
 }
 
 void TextEdit::clipboardDataChanged()

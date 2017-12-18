@@ -420,7 +420,7 @@ static QTextListFormat::Style nextListStyle(QTextListFormat::Style style)
 }
 
 QTextHtmlImporter::QTextHtmlImporter(QTextDocument *_doc, const QString &_html, ImportMode mode, const QTextDocument *resourceProvider)
-    : indent(0), compressNextWhitespace(PreserveWhiteSpace), doc(_doc), importMode(mode)
+    : indent(0), headingLevel(0), compressNextWhitespace(PreserveWhiteSpace), doc(_doc), importMode(mode)
 {
     cursor = QTextCursor(doc);
     wsm = QTextHtmlParserNode::WhiteSpaceNormal;
@@ -747,8 +747,28 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
             return ContinueWithNextNode;
         }
 
+        case Html_h1:
+            headingLevel = 1;
+            break;
+        case Html_h2:
+            headingLevel = 2;
+            break;
+        case Html_h3:
+            headingLevel = 3;
+            break;
+        case Html_h4:
+            headingLevel = 4;
+            break;
+        case Html_h5:
+            headingLevel = 5;
+            break;
+        case Html_h6:
+            headingLevel = 6;
+            break;
+
         default: break;
     }
+
     return ContinueWithCurrentNode;
 }
 
@@ -831,6 +851,15 @@ bool QTextHtmlImporter::closeTag()
                         blockTagClosed = true;
                     }
                 }
+                break;
+            case Html_h1:
+            case Html_h2:
+            case Html_h3:
+            case Html_h4:
+            case Html_h5:
+            case Html_h6:
+                headingLevel = 0;
+                blockTagClosed = true;
                 break;
             default:
                 if (closedNode->isBlock())
@@ -1090,6 +1119,11 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
            )
        ) {
         block.setIndent(indent);
+        modifiedBlockFormat = true;
+    }
+
+    if (headingLevel) {
+        block.setHeadingLevel(headingLevel);
         modifiedBlockFormat = true;
     }
 
