@@ -198,7 +198,7 @@ bool Uic::write(QIODevice *in)
     }
 
     QString language = ui->attributeLanguage();
-
+    driver()->setUseIdBasedTranslations(ui->attributeIdbasedtr());
 
     bool rtn = false;
 

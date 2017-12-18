@@ -2261,7 +2261,7 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     enableSorting(w, varName, tempName);
 }
 
-QString WriteInitialization::trCall(const QString &str, const QString &commentHint) const
+QString WriteInitialization::trCall(const QString &str, const QString &commentHint, const QString &id) const
 {
     if (str.isEmpty())
         return QLatin1String("QString()");
@@ -2269,8 +2269,9 @@ QString WriteInitialization::trCall(const QString &str, const QString &commentHi
     QString result;
     const QString comment = commentHint.isEmpty() ? QString(QLatin1String("nullptr")) : fixString(commentHint, m_dindent);
 
+    const bool idBasedTranslations = m_driver->useIdBasedTranslations();
     if (m_option.translateFunction.isEmpty()) {
-        if (m_option.idBased) {
+        if (idBasedTranslations || m_option.idBased) {
             result += QLatin1String("qtTrId(");
         } else {
             result += QLatin1String("QApplication::translate(\"")
@@ -2281,9 +2282,9 @@ QString WriteInitialization::trCall(const QString &str, const QString &commentHi
         result += m_option.translateFunction + QLatin1Char('(');
     }
 
-    result += fixString(str, m_dindent);
+    result += fixString(idBasedTranslations ? id : str, m_dindent);
 
-    if (!m_option.idBased) {
+    if (!idBasedTranslations && !m_option.idBased) {
         result += QLatin1String(", ") + comment;
     }
 
@@ -2306,11 +2307,13 @@ QString WriteInitialization::trCall(DomString *str, const QString &defaultString
 {
     QString value = defaultString;
     QString comment;
+    QString id;
     if (str) {
         value = toString(str);
         comment = str->attributeComment();
+        id = str->attributeId();
     }
-    return trCall(value, comment);
+    return trCall(value, comment, id);
 }
 
 QString WriteInitialization::noTrCall(DomString *str, const QString &defaultString) const
