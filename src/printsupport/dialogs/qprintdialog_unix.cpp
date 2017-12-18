@@ -49,6 +49,7 @@
 #include "qfiledialog.h"
 #endif
 #include <QtCore/qdir.h>
+#include <QtCore/qtextcodec.h>
 #include <QtGui/qevent.h>
 #if QT_CONFIG(filesystemmodel)
 #include <QtWidgets/qfilesystemmodel.h>
