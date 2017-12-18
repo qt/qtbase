@@ -148,11 +148,10 @@ private slots:
     void taskQTBUG56275_reinsertMenuInParentlessQMenuBar();
     void QTBUG_57404_existingMenuItemException();
 #endif
+    void QTBUG_25669_menubarActionDoubleTriggered();
     void taskQTBUG55966_subMenuRemoved();
     void QTBUG_58344_invalidIcon();
-
     void platformMenu();
-
     void addActionQt5connect();
 
 protected slots:
@@ -1631,6 +1630,31 @@ void tst_QMenuBar::addActionQt5connect()
     auto action3 = menuBar.addAction(QStringLiteral("3"), this, functor);
     action3->activate(QAction::Trigger);
     QVERIFY(flag);
+}
+
+void tst_QMenuBar::QTBUG_25669_menubarActionDoubleTriggered()
+{
+    QMainWindow win;
+    win.menuBar()->setNativeMenuBar(false);
+    QAction *act1 = win.menuBar()->addAction("Action1");
+    QAction *act2 = win.menuBar()->addAction("Action2");
+    QSignalSpy spy(win.menuBar(), &QMenuBar::triggered);
+
+    win.show();
+    QApplication::setActiveWindow(&win);
+    QVERIFY(QTest::qWaitForWindowExposed(&win));
+
+    QPoint posAct1 = menuBarActionWindowPos(win.menuBar(), act1);
+    QPoint posAct2 = menuBarActionWindowPos(win.menuBar(), act2);
+
+    QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, posAct1);
+    QTRY_COMPARE(spy.count(), 1);
+
+    QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, posAct2);
+    QTRY_COMPARE(spy.count(), 2);
+
+    QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, posAct2);
+    QTRY_COMPARE(spy.count(), 3);
 }
 
 void tst_QMenuBar::slotForTaskQTBUG53205()

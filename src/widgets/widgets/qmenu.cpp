@@ -3534,9 +3534,13 @@ void QMenu::actionEvent(QActionEvent *e)
     if (d->tornPopup)
         d->tornPopup->syncWithMenu(this, e);
     if (e->type() == QEvent::ActionAdded) {
-        if(!d->tornoff) {
-            connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
-            connect(e->action(), SIGNAL(hovered()), this, SLOT(_q_actionHovered()));
+
+        if (!d->tornoff
+            && !qobject_cast<QMenuBar*>(e->action()->parent())) {
+            // Only connect if the action was not directly added by QMenuBar::addAction(const QString &text)
+            // to avoid the signal being emitted twice
+            connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()), Qt::UniqueConnection);
+            connect(e->action(), SIGNAL(hovered()), this, SLOT(_q_actionHovered()), Qt::UniqueConnection);
         }
         if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
             QWidget *widget = wa->requestWidget(this);
