@@ -96,7 +96,7 @@ public:
     int lastItemCount;
 
     QRectF sceneRect;
-
+#ifndef Q_OS_HTML5
     quint32 hasSceneRect : 1;
     quint32 dirtyGrowingItemsBoundingRect : 1;
     quint32 updateAll : 1;
@@ -115,7 +115,26 @@ public:
     quint32 sortCacheEnabled : 1; // for compatibility
     quint32 allItemsIgnoreTouchEvents : 1;
     quint32 padding : 15;
-
+#else
+    quint32 hasSceneRect = 1;
+    quint32 dirtyGrowingItemsBoundingRect = 1;
+    quint32 updateAll = 1;
+    quint32 calledEmitUpdated = 1;
+    quint32 processDirtyItemsEmitted = 1;
+    quint32 needSortTopLevelItems = 1;
+    quint32 holesInTopLevelSiblingIndex = 1;
+    quint32 topLevelSequentialOrdering = 1;
+    quint32 scenePosDescendantsUpdatePending = 1;
+    quint32 stickyFocus = 1;
+    quint32 hasFocus = 1;
+    quint32 lastMouseGrabberItemHasImplicitMouseGrab = 1;
+    quint32 allItemsIgnoreHoverEvents = 1;
+    quint32 allItemsUseDefaultCursor = 1;
+    quint32 painterStateProtection = 1;
+    quint32 sortCacheEnabled = 1; // for compatibility
+    quint32 allItemsIgnoreTouchEvents = 1;
+    quint32 padding = 15;
+#endif
     qreal minimumRenderSize;
 
     QRectF growingItemsBoundingRect;

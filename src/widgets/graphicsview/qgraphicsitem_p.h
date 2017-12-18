@@ -459,7 +459,7 @@ public:
 #ifndef QT_NO_GESTURES
     QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 #endif
-
+#ifndef Q_OS_HTML5
     // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
@@ -515,7 +515,63 @@ public:
     quint32 sendParentChangeNotification : 1;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 padding : 19;
+#else //HTML5
+    // Packed 32 bits
+    quint32 acceptedMouseButtons = 5;
+    quint32 visible = 1;
+    quint32 explicitlyHidden = 1;
+    quint32 enabled = 1;
+    quint32 explicitlyDisabled = 1;
+    quint32 selected = 1;
+    quint32 acceptsHover = 1;
+    quint32 acceptDrops = 1;
+    quint32 isMemberOfGroup = 1;
+    quint32 handlesChildEvents = 1;
+    quint32 itemDiscovered = 1;
+    quint32 hasCursor = 1;
+    quint32 ancestorFlags = 5;
+    quint32 cacheMode = 2;
+    quint32 hasBoundingRegionGranularity = 1;
+    quint32 isWidget = 1;
+    quint32 dirty = 1;
+    quint32 dirtyChildren = 1;
+    quint32 localCollisionHack = 1;
+    quint32 inSetPosHelper = 1;
+    quint32 needSortChildren = 1;
+    quint32 allChildrenDirty = 1;
+    quint32 fullUpdatePending = 1;
 
+    // Packed 32 bits
+    quint32 flags : 20;
+    quint32 paintedViewBoundingRectsNeedRepaint = 1;
+    quint32 dirtySceneTransform = 1;
+    quint32 geometryChanged = 1;
+    quint32 inDestructor = 1;
+    quint32 isObject = 1;
+    quint32 ignoreVisible = 1;
+    quint32 ignoreOpacity = 1;
+    quint32 acceptTouchEvents = 1;
+    quint32 acceptedTouchBeginEvent = 1;
+    quint32 filtersDescendantEvents = 1;
+    quint32 sceneTransformTranslateOnly = 1;
+    quint32 notifyBoundingRectChanged = 1;
+
+    // New 32 bits
+    quint32 notifyInvalidated = 1;
+    quint32 mouseSetsFocus = 1;
+    quint32 explicitActivate = 1;
+    quint32 wantsActive = 1;
+    quint32 holesInSiblingIndex = 1;
+    quint32 sequentialOrdering = 1;
+    quint32 updateDueToGraphicsEffect = 1;
+    quint32 scenePosDescendants = 1;
+    quint32 pendingPolish = 1;
+    quint32 mayHaveChildWithGraphicsEffect = 1;
+    quint32 isDeclarativeItem = 1;
+    quint32 sendParentChangeNotification = 1;
+    quint32 dirtyChildrenBoundingRect = 1;
+    quint32 padding = 19;
+#endif
     // Optional stacking order
     int globalStackingOrder;
     QGraphicsItem *q_ptr;
@@ -583,8 +639,13 @@ struct QGraphicsItemPaintInfo
     QStyleOptionGraphicsItem *option;
     QPainter *painter;
     qreal opacity;
+#ifndef Q_OS_HTML5
     quint32 wasDirtySceneTransform : 1;
     quint32 drawItem : 1;
+#else
+    quint32 wasDirtySceneTransform =1;
+    quint32 drawItem=1;
+#endif
 };
 
 #if QT_CONFIG(graphicseffect)

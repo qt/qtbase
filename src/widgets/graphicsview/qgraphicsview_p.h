@@ -79,6 +79,7 @@ public:
 
     QGraphicsView::DragMode dragMode;
 
+#ifndef Q_OS_HTML5
     quint32 sceneInteractionAllowed : 1;
     quint32 hasSceneRect : 1;
     quint32 connectedToScene : 1;
@@ -94,7 +95,23 @@ public:
     quint32 fullUpdatePending : 1;
     quint32 hasUpdateClip : 1;
     quint32 padding : 18;
-
+#else
+    quint32 sceneInteractionAllowed = 1;
+    quint32 hasSceneRect = 1;
+    quint32 connectedToScene = 1;
+    quint32 useLastMouseEvent = 1;
+    quint32 identityMatrix = 1;
+    quint32 dirtyScroll = 1;
+    quint32 accelerateScrolling = 1;
+    quint32 keepLastCenterPoint = 1;
+    quint32 transforming = 1;
+    quint32 handScrolling = 1;
+    quint32 mustAllocateStyleOptions = 1;
+    quint32 mustResizeBackgroundPixmap = 1;
+    quint32 fullUpdatePending = 1;
+    quint32 hasUpdateClip = 1;
+    quint32 padding = 18;
+#endif
     QRectF sceneRect;
     void updateLastCenterPoint();
 

@@ -162,12 +162,19 @@ public:
             return false;
         return (attributes & (1 << bit)) != 0;
     }
+#ifndef Q_OS_HTML5
     quint32 attributes : 10;
     quint32 inSetGeometry : 1;
     quint32 polished: 1;
     quint32 inSetPos : 1;
     quint32 autoFillBackground : 1;
-
+#else
+    quint32 attributes = 10;
+    quint32 inSetGeometry : 1;
+    quint32 polished= 1;
+    quint32 inSetPos = 1;
+    quint32 autoFillBackground : 1;
+#endif
     // Focus
     Qt::FocusPolicy focusPolicy;
     QGraphicsWidget *focusNext;

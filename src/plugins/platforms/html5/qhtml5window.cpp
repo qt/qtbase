@@ -193,6 +193,7 @@ void QHtml5Window::injectMousePressed(const QPoint &local, const QPoint &global,
     Q_UNUSED(local);
     Q_UNUSED(mods);
 
+    qDebug() << Q_FUNC_INFO << local << global;
     if (!hasTitle || button != Qt::LeftButton)
         return;
 
