@@ -71,6 +71,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QMimeDatabase>
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printer)
@@ -395,11 +396,18 @@ bool TextEdit::load(const QString &f)
     QByteArray data = file.readAll();
     QTextCodec *codec = Qt::codecForHtml(data);
     QString str = codec->toUnicode(data);
+    QUrl baseUrl = (f.front() == QLatin1Char(':') ? QUrl(f) : QUrl::fromLocalFile(f)).adjusted(QUrl::RemoveFilename);
+    textEdit->document()->setBaseUrl(baseUrl);
     if (Qt::mightBeRichText(str)) {
         textEdit->setHtml(str);
     } else {
-        str = QString::fromLocal8Bit(data);
-        textEdit->setPlainText(str);
+#if QT_CONFIG(textmarkdownreader)
+        QMimeDatabase db;
+        if (db.mimeTypeForFileNameAndData(f, data).name() == QLatin1String("text/markdown"))
+            textEdit->setMarkdown(str);
+        else
+#endif
+            textEdit->setPlainText(QString::fromLocal8Bit(data));
     }
 
     setCurrentFileName(f);
@@ -451,7 +459,15 @@ void TextEdit::fileOpen()
     QFileDialog fileDialog(this, tr("Open File..."));
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
-    fileDialog.setMimeTypeFilters(QStringList() << "text/html" << "text/plain");
+    fileDialog.setMimeTypeFilters(QStringList()
+#if QT_CONFIG(texthtmlparser)
+                                  << "text/html"
+#endif
+#if QT_CONFIG(textmarkdownreader)
+
+                                  << "text/markdown"
+#endif
+                                  << "text/plain");
     if (fileDialog.exec() != QDialog::Accepted)
         return;
     const QString fn = fileDialog.selectedFiles().first();
@@ -485,9 +501,18 @@ bool TextEdit::fileSaveAs()
     QFileDialog fileDialog(this, tr("Save as..."));
     fileDialog.setAcceptMode(QFileDialog::AcceptSave);
     QStringList mimeTypes;
-    mimeTypes << "application/vnd.oasis.opendocument.text" << "text/html" << "text/plain";
+    mimeTypes << "text/plain"
+#if QT_CONFIG(textodfwriter)
+              << "application/vnd.oasis.opendocument.text"
+#endif
+#if QT_CONFIG(textmarkdownwriter)
+              << "text/markdown"
+#endif
+              << "text/html";
     fileDialog.setMimeTypeFilters(mimeTypes);
+#if QT_CONFIG(textodfwriter)
     fileDialog.setDefaultSuffix("odt");
+#endif
     if (fileDialog.exec() != QDialog::Accepted)
         return false;
     const QString fn = fileDialog.selectedFiles().first();
