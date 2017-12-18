@@ -509,14 +509,14 @@ void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)
 // return true if accepted (consumed)
 bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
 {
-    QMap<Qt::GestureType, int> types;
+    QVarLengthArray<Qt::GestureType, 16> types;
     QMultiMap<QObject *, Qt::GestureType> contexts;
     QWidget *w = receiver;
     typedef QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator ContextIterator;
     if (!w->d_func()->gestureContext.isEmpty()) {
         for(ContextIterator it = w->d_func()->gestureContext.constBegin(),
             e = w->d_func()->gestureContext.constEnd(); it != e; ++it) {
-            types.insert(it.key(), 0);
+            types.push_back(it.key());
             contexts.insert(w, it.key());
         }
     }
@@ -528,7 +528,7 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
              e = w->d_func()->gestureContext.constEnd(); it != e; ++it) {
             if (!(it.value() & Qt::DontStartGestureOnChildren)) {
                 if (!types.contains(it.key())) {
-                    types.insert(it.key(), 0);
+                    types.push_back(it.key());
                     contexts.insert(w, it.key());
                 }
             }
@@ -543,14 +543,14 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
 #if QT_CONFIG(graphicsview)
 bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
 {
-    QMap<Qt::GestureType, int> types;
+    QVarLengthArray<Qt::GestureType, 16> types;
     QMultiMap<QObject *, Qt::GestureType> contexts;
     QGraphicsObject *item = receiver;
     if (!item->QGraphicsItem::d_func()->gestureContext.isEmpty()) {
         typedef QMap<Qt::GestureType, Qt::GestureFlags>::const_iterator ContextIterator;
         for(ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.constBegin(),
             e = item->QGraphicsItem::d_func()->gestureContext.constEnd(); it != e; ++it) {
-            types.insert(it.key(), 0);
+            types.push_back(it.key());
             contexts.insert(item, it.key());
         }
     }
@@ -563,7 +563,7 @@ bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
              e = item->QGraphicsItem::d_func()->gestureContext.constEnd(); it != e; ++it) {
             if (!(it.value() & Qt::DontStartGestureOnChildren)) {
                 if (!types.contains(it.key())) {
-                    types.insert(it.key(), 0);
+                    types.push_back(it.key());
                     contexts.insert(item, it.key());
                 }
             }
