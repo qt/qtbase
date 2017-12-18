@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -70,6 +70,9 @@
 #include <private/qabstracttextdocumentlayout_p.h>
 #include "qpagedpaintdevice.h"
 #include "private/qpagedpaintdevice_p.h"
+#if QT_CONFIG(textmarkdownreader)
+#include <private/qtextmarkdownimporter_p.h>
+#endif
 
 #include <limits.h>
 
@@ -3284,6 +3287,31 @@ QString QTextDocument::toHtml(const QByteArray &encoding) const
     return QTextHtmlExporter(this).toHtml(encoding);
 }
 #endif // QT_NO_TEXTHTMLPARSER
+
+/*!
+    Replaces the entire contents of the document with the given
+    Markdown-formatted text in the \a markdown string, with the given
+    \a features supported.  By default, all supported GitHub-style
+    Markdown features are included; pass \c MarkdownDialectCommonMark
+    for a more basic parse.
+
+    The Markdown formatting is respected as much as possible; for example,
+    "*bold* text" will produce text where the first word has a font weight that
+    gives it an emphasized appearance.
+
+    Parsing of HTML included in the \a markdown string is handled in the same
+    way as in \l setHtml; however, Markdown formatting inside HTML blocks is
+    not supported. The \c MarkdownNoHTML feature flag can be set to disable
+    HTML parsing.
+
+    The undo/redo history is reset when this function is called.
+*/
+#if QT_CONFIG(textmarkdownreader)
+void QTextDocument::setMarkdown(const QString &markdown, QTextDocument::MarkdownFeatures features)
+{
+    QTextMarkdownImporter(static_cast<QTextMarkdownImporter::Features>(int(features))).import(this, markdown);
+}
+#endif
 
 /*!
     Returns a vector of text formats for all the formats used in the document.

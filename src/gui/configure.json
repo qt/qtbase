@@ -28,6 +28,7 @@
             "lgmon": "boolean",
             "libinput": "boolean",
             "libjpeg": { "type": "enum", "values": [ "no", "qt", "system" ] },
+            "libmd4c": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "libpng": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "linuxfb": "boolean",
             "mtdev": "boolean",
@@ -374,6 +375,17 @@
             "sources": [
                 { "libs": "-llibjpeg", "condition": "config.msvc" },
                 "-ljpeg"
+            ]
+        },
+        "libmd4c": {
+            "label": "libmd4c",
+            "test": {
+                "main": "md_parse(\"hello\", 5, nullptr, nullptr);"
+            },
+            "headers": "md4c.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "md4c" },
+                { "libs": "-lmd4c" }
             ]
         },
         "libpng": {
@@ -1583,6 +1595,22 @@
             "section": "Kernel",
             "output": [ "publicFeature", "feature" ]
         },
+        "textmarkdownreader": {
+            "label": "MarkdownReader",
+            "disable": "input.libmd4c == 'no'",
+            "enable": "input.libmd4c == 'system' || input.libmd4c == 'qt' || input.libmd4c == 'yes'",
+            "purpose": "Provides a Markdown (CommonMark and GitHub) reader",
+            "section": "Kernel",
+            "output": [ "publicFeature" ]
+        },
+        "system-textmarkdownreader": {
+            "label": "  Using system libmd4c",
+            "disable": "input.libmd4c == 'qt'",
+            "enable": "input.libmd4c == 'system'",
+            "section": "Kernel",
+            "condition": "libs.libmd4c",
+            "output": [ "publicFeature" ]
+        },
         "textodfwriter": {
             "label": "OdfWriter",
             "purpose": "Provides an ODF writer.",
@@ -1859,6 +1887,12 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "Image formats",
                     "entries": [
                         "gif", "ico", "jpeg", "system-jpeg", "png", "system-png"
+                    ]
+                },
+                {
+                    "section": "Text formats",
+                    "entries": [
+                        "texthtmlparser", "cssparser", "textodfwriter", "textmarkdownreader", "system-textmarkdownreader"
                     ]
                 },
                 "egl",

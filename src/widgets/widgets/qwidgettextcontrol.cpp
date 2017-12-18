@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -491,6 +491,11 @@ void QWidgetTextControlPrivate::setContent(Qt::TextFormat format, const QString 
             formatCursor.select(QTextCursor::Document);
             formatCursor.setCharFormat(charFormatForInsertion);
             formatCursor.endEditBlock();
+#if QT_CONFIG(textmarkdownreader)
+        } else if (format == Qt::MarkdownText) {
+            doc->setMarkdown(text);
+            doc->setUndoRedoEnabled(false);
+#endif
         } else {
 #ifndef QT_NO_TEXTHTMLPARSER
             doc->setHtml(text);
@@ -1193,6 +1198,14 @@ void QWidgetTextControl::setPlainText(const QString &text)
     Q_D(QWidgetTextControl);
     d->setContent(Qt::PlainText, text);
 }
+
+#if QT_CONFIG(textmarkdownreader)
+void QWidgetTextControl::setMarkdown(const QString &text)
+{
+    Q_D(QWidgetTextControl);
+    d->setContent(Qt::MarkdownText, text);
+}
+#endif
 
 void QWidgetTextControl::setHtml(const QString &text)
 {

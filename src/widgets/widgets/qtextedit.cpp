@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1202,6 +1202,13 @@ QString QTextEdit::toHtml() const
 }
 #endif
 
+#if QT_CONFIG(textmarkdownreader)
+void QTextEdit::setMarkdown(const QString &text)
+{
+    Q_D(const QTextEdit);
+    d->control->setMarkdown(text);
+}
+#endif
 
 /*! \reimp
 */

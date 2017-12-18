@@ -97,6 +97,18 @@ qtConfig(textodfwriter) {
         text/qzip.cpp
 }
 
+qtConfig(textmarkdownreader) {
+    qtConfig(system-textmarkdownreader) {
+        QMAKE_USE += libmd4c
+    } else {
+        include($$PWD/../../3rdparty/md4c.pri)
+    }
+    HEADERS += \
+        text/qtextmarkdownimporter_p.h
+    SOURCES += \
+        text/qtextmarkdownimporter.cpp
+}
+
 qtConfig(cssparser) {
     HEADERS += \
         text/qcssparser_p.h

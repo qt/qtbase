@@ -1198,7 +1198,8 @@ public:
     enum TextFormat {
         PlainText,
         RichText,
-        AutoText
+        AutoText,
+        MarkdownText
     };
 
     enum AspectRatioMode {

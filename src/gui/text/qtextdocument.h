@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -149,6 +149,19 @@ public:
 #ifndef QT_NO_TEXTHTMLPARSER
     QString toHtml(const QByteArray &encoding = QByteArray()) const;
     void setHtml(const QString &html);
+#endif
+
+#if QT_CONFIG(textmarkdownreader)
+    // Must be in sync with QTextMarkdownImporter::Features, should be in sync with #define MD_FLAG_* in md4c
+    enum MarkdownFeature {
+        MarkdownNoHTML = 0x0020 | 0x0040,
+        MarkdownDialectCommonMark = 0,
+        MarkdownDialectGitHub = 0x0004 | 0x0008 | 0x0400 | 0x0100 | 0x0200 | 0x0800
+    };
+    Q_DECLARE_FLAGS(MarkdownFeatures, MarkdownFeature)
+    Q_FLAG(MarkdownFeatures)
+
+    void setMarkdown(const QString &markdown, MarkdownFeatures features = MarkdownDialectGitHub);
 #endif
 
     QString toRawText() const;
