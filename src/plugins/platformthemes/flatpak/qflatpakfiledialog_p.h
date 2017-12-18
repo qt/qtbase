@@ -51,7 +51,7 @@ class QFlatpakFileDialog : public QPlatformFileDialogHelper
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFlatpakFileDialog)
 public:
-    enum ConditionType {
+    enum ConditionType : uint {
         GlobalPattern = 0,
         MimeType = 1
     };
