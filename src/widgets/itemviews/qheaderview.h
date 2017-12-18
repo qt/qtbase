@@ -118,6 +118,8 @@ public:
     inline QT_DEPRECATED void setMovable(bool movable) { setSectionsMovable(movable); }
     inline QT_DEPRECATED bool isMovable() const { return sectionsMovable(); }
 #endif
+    void setFirstSectionMovable(bool movable);
+    bool firstSectionMovable() const;
 
     void setSectionsClickable(bool clickable);
     bool sectionsClickable() const;

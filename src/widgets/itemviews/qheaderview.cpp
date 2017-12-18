@@ -1115,10 +1115,15 @@ int QHeaderView::logicalIndex(int visualIndex) const
 /*!
     \since 5.0
 
-    If \a movable is true, the header may be moved by the user; otherwise it
-    is fixed in place.
+    If \a movable is true, the header sections may be moved by the user;
+    otherwise they are fixed in place.
+
+    When used in combination with QTreeView, the first column is not
+    movable (since it contains the tree structure), by default.
+    You can make it movable with setFirstSectionMovable(true).
 
     \sa sectionsMovable(), sectionMoved()
+    \sa setFirstSectionMovable()
 */
 
 void QHeaderView::setSectionsMovable(bool movable)
@@ -1143,6 +1148,9 @@ void QHeaderView::setSectionsMovable(bool movable)
     Returns \c true if the header can be moved by the user; otherwise returns
     false.
 
+    By default, sections are movable in QTreeView (except for the first one),
+    and not movable in QTableView.
+
     \sa setSectionsMovable()
 */
 
@@ -1161,6 +1169,39 @@ bool QHeaderView::sectionsMovable() const
 
     \sa sectionsMovable()
 */
+
+/*!
+    \since 5.10
+
+    If \a movable is true, the first column can be moved by the user.
+    In a QTreeView, the first column holds the tree structure and is
+    therefore non-movable by default, even after setSectionsMovable(true).
+
+    It can be made movable again, for instance in the case of flat lists
+    without a tree structure, by calling this method.
+    In such a scenario, it is recommended to call QTreeView::setRootIsDecorated(false)
+    as well.
+
+    This method has no effect unless setSectionsMovable(true) is called as well.
+    \sa setSectionsMovable()
+*/
+void QHeaderView::setFirstSectionMovable(bool movable)
+{
+    Q_D(QHeaderView);
+    d->allowUserMoveOfSection0 = movable;
+}
+
+/*!
+    \since 5.10
+
+    Returns \c true if the first column can be moved by the user,
+    when this header is used in a QTreeView.
+*/
+bool QHeaderView::firstSectionMovable() const
+{
+    Q_D(const QHeaderView);
+    return d->allowUserMoveOfSection0;
+}
 
 /*!
     \since 5.0

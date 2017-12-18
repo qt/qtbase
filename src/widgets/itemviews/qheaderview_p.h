@@ -246,10 +246,6 @@ public:
         }
     }
 
-    inline void setAllowUserMoveOfSection0(bool b) {
-        allowUserMoveOfSection0 = b;
-    }
-
     void clear();
     void flipSortIndicator(int section);
     void cascadingResize(int visual, int newSize);

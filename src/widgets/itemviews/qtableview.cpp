@@ -1226,7 +1226,7 @@ void QTableView::setHorizontalHeader(QHeaderView *header)
         delete d->horizontalHeader;
     d->horizontalHeader = header;
     d->horizontalHeader->setParent(this);
-    d->horizontalHeader->d_func()->setAllowUserMoveOfSection0(true);
+    d->horizontalHeader->setFirstSectionMovable(true);
     if (!d->horizontalHeader->model()) {
         d->horizontalHeader->setModel(d->model);
         if (d->selectionModel)
@@ -1264,7 +1264,7 @@ void QTableView::setVerticalHeader(QHeaderView *header)
         delete d->verticalHeader;
     d->verticalHeader = header;
     d->verticalHeader->setParent(this);
-    d->verticalHeader->d_func()->setAllowUserMoveOfSection0(true);
+    d->verticalHeader->setFirstSectionMovable(true);
     if (!d->verticalHeader->model()) {
         d->verticalHeader->setModel(d->model);
         if (d->selectionModel)

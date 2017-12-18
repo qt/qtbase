@@ -311,7 +311,7 @@ void QTreeView::setHeader(QHeaderView *header)
         delete d->header;
     d->header = header;
     d->header->setParent(this);
-    d->header->d_func()->setAllowUserMoveOfSection0(false);
+    d->header->setFirstSectionMovable(false);
 
     if (!d->header->model()) {
         d->header->setModel(d->model);
