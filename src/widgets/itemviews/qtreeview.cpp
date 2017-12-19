@@ -3514,7 +3514,7 @@ int QTreeViewPrivate::itemAtCoordinate(int coordinate) const
         const int contentsCoordinate = coordinate + vbar->value();
         for (int viewItemIndex = 0; viewItemIndex < viewItems.count(); ++viewItemIndex) {
             viewItemCoordinate += itemHeight(viewItemIndex);
-            if (viewItemCoordinate >= contentsCoordinate)
+            if (viewItemCoordinate > contentsCoordinate)
                 return (viewItemIndex >= itemCount ? -1 : viewItemIndex);
         }
     } else { // ScrollPerItem
