@@ -239,9 +239,12 @@ void QCupsPrintEnginePrivate::closePrintDevice()
             cupsOptStruct.append(opt);
         }
 
-        // Print the file.
+        // Print the file
+        // Cups expect the printer original name without instance, the full name is used only to retrieve the configuration
+        const auto parts = printerName.splitRef(QLatin1Char('/'));
+        const auto printerOriginalName = parts.at(0);
         cups_option_t* optPtr = cupsOptStruct.size() ? &cupsOptStruct.first() : 0;
-        cupsPrintFile(printerName.toLocal8Bit().constData(), tempFile.toLocal8Bit().constData(),
+        cupsPrintFile(printerOriginalName.toLocal8Bit().constData(), tempFile.toLocal8Bit().constData(),
                       title.toLocal8Bit().constData(), cupsOptStruct.size(), optPtr);
 
         QFile::remove(tempFile);
