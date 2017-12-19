@@ -93,6 +93,10 @@ public:
     Qt::HANDLE handle() const;
 
     bool isEncryptedPkcs8(const QByteArray &der) const;
+#if !QT_CONFIG(openssl)
+    QByteArray decryptPkcs8(const QByteArray &encrypted, const QByteArray &passPhrase);
+    bool isPkcs8 = false;
+#endif
 
     bool isNull;
     QSsl::KeyType type;

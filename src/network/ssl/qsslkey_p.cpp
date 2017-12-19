@@ -185,6 +185,11 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der, const QMap<QByteArr
     if (isEncryptedPkcs8(der)) {
         pem.prepend(pkcs8Header(true) + '\n' + extra);
         pem.append(pkcs8Footer(true) + '\n');
+#if !QT_CONFIG(openssl)
+    } else if (isPkcs8) {
+        pem.prepend(pkcs8Header(false) + '\n' + extra);
+        pem.append(pkcs8Footer(false) + '\n');
+#endif
     } else {
         pem.prepend(pemHeader() + '\n' + extra);
         pem.append(pemFooter() + '\n');

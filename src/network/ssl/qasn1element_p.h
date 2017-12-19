@@ -72,18 +72,47 @@ QT_BEGIN_NAMESPACE
 #define PKCS12_OID RSADSI_OID "1.12."
 
 // -PBES1
-#define PKCS5_MD2_DES_CBC_OID QByteArrayLiteral(PKCS5_OID "1")
-#define PKCS5_MD2_RC2_CBC_OID QByteArrayLiteral(PKCS5_OID "4")
+#define PKCS5_MD2_DES_CBC_OID QByteArrayLiteral(PKCS5_OID "1") // Not (yet) implemented
+#define PKCS5_MD2_RC2_CBC_OID QByteArrayLiteral(PKCS5_OID "4") // Not (yet) implemented
 #define PKCS5_MD5_DES_CBC_OID QByteArrayLiteral(PKCS5_OID "3")
 #define PKCS5_MD5_RC2_CBC_OID QByteArrayLiteral(PKCS5_OID "6")
 #define PKCS5_SHA1_DES_CBC_OID QByteArrayLiteral(PKCS5_OID "10")
 #define PKCS5_SHA1_RC2_CBC_OID QByteArrayLiteral(PKCS5_OID "11")
+#define PKCS12_SHA1_RC4_128_OID QByteArrayLiteral(PKCS12_OID "1.1") // Not (yet) implemented
+#define PKCS12_SHA1_RC4_40_OID QByteArrayLiteral(PKCS12_OID "1.2") // Not (yet) implemented
+#define PKCS12_SHA1_3KEY_3DES_CBC_OID QByteArrayLiteral(PKCS12_OID "1.3")
+#define PKCS12_SHA1_2KEY_3DES_CBC_OID QByteArrayLiteral(PKCS12_OID "1.4")
+#define PKCS12_SHA1_RC2_128_CBC_OID QByteArrayLiteral(PKCS12_OID "1.5")
+#define PKCS12_SHA1_RC2_40_CBC_OID QByteArrayLiteral(PKCS12_OID "1.6")
 
 // -PBKDF2
 #define PKCS5_PBKDF2_ENCRYPTION_OID QByteArrayLiteral(PKCS5_OID "12")
 
 // -PBES2
 #define PKCS5_PBES2_ENCRYPTION_OID QByteArrayLiteral(PKCS5_OID "13")
+
+// Digest
+#define DIGEST_ALGORITHM_OID RSADSI_OID "2."
+// -HMAC-SHA-1
+#define HMAC_WITH_SHA1 QByteArrayLiteral(DIGEST_ALGORITHM_OID "7")
+// -HMAC-SHA-2
+#define HMAC_WITH_SHA224 QByteArrayLiteral(DIGEST_ALGORITHM_OID "8")
+#define HMAC_WITH_SHA256 QByteArrayLiteral(DIGEST_ALGORITHM_OID "9")
+#define HMAC_WITH_SHA384 QByteArrayLiteral(DIGEST_ALGORITHM_OID "10")
+#define HMAC_WITH_SHA512 QByteArrayLiteral(DIGEST_ALGORITHM_OID "11")
+#define HMAC_WITH_SHA512_224 QByteArrayLiteral(DIGEST_ALGORITHM_OID "12")
+#define HMAC_WITH_SHA512_256 QByteArrayLiteral(DIGEST_ALGORITHM_OID "13")
+
+// Encryption algorithms
+#define ENCRYPTION_ALGORITHM_OID RSADSI_OID "3."
+#define DES_CBC_ENCRYPTION_OID QByteArrayLiteral("1.3.14.3.2.7")
+#define DES_EDE3_CBC_ENCRYPTION_OID QByteArrayLiteral(ENCRYPTION_ALGORITHM_OID "7")
+#define RC2_CBC_ENCRYPTION_OID QByteArrayLiteral(ENCRYPTION_ALGORITHM_OID "2")
+#define RC5_CBC_ENCRYPTION_OID QByteArrayLiteral(ENCRYPTION_ALGORITHM_OID "9") // Not (yet) implemented
+#define AES_OID "2.16.840.1.101.3.4.1."
+#define AES128_CBC_ENCRYPTION_OID QByteArrayLiteral(AES_OID "2")
+#define AES192_CBC_ENCRYPTION_OID QByteArrayLiteral(AES_OID "22") // Not (yet) implemented
+#define AES256_CBC_ENCRYPTION_OID QByteArrayLiteral(AES_OID "42") // Not (yet) implemented
 
 class Q_AUTOTEST_EXPORT QAsn1Element
 {

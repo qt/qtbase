@@ -164,10 +164,15 @@ void tst_QSslKey::createPlainTestRows(bool filter, QSsl::EncodingFormat format)
     foreach (KeyInfo keyInfo, keyInfoList) {
         if (filter && keyInfo.format != format)
             continue;
-
+#ifdef Q_OS_WINRT
+        if (keyInfo.fileInfo.fileName().contains("RC2-64"))
+            continue; // WinRT treats RC2 as 128 bit
+#endif
 #if !defined(QT_NO_SSL) && defined(QT_NO_OPENSSL) // generic backend
-        if (keyInfo.fileInfo.fileName().contains("pkcs8"))
-            continue; // The generic backend does not support pkcs8 (yet)
+        if (keyInfo.fileInfo.fileName().contains(QRegularExpression("-aes\\d\\d\\d-")))
+            continue; // No AES support in the generic back-end
+        if (keyInfo.fileInfo.fileName().contains("pkcs8-pkcs12"))
+            continue; // The generic back-end doesn't support PKCS#12 algorithms
 #endif
 
         QTest::newRow(keyInfo.fileInfo.fileName().toLatin1())
@@ -324,11 +329,15 @@ void tst_QSslKey::toPemOrDer()
     QFETCH(QSsl::KeyType, type);
     QFETCH(QSsl::EncodingFormat, format);
 
-    if (QByteArray(QTest::currentDataTag()).contains("-pkcs8-")) // these are encrypted
+    QByteArray dataTag = QByteArray(QTest::currentDataTag());
+    if (dataTag.contains("-pkcs8-")) // these are encrypted
         QSKIP("Encrypted PKCS#8 keys gets decrypted when loaded. So we can't compare it to the encrypted version.");
 #ifndef QT_NO_OPENSSL
-    if (QByteArray(QTest::currentDataTag()).contains("pkcs8"))
+    if (dataTag.contains("pkcs8"))
         QSKIP("OpenSSL converts PKCS#8 keys to other formats, invalidating comparisons.");
+#else // !openssl
+    if (dataTag.contains("pkcs8") && dataTag.contains("rsa"))
+        QSKIP("PKCS#8 RSA keys are changed into a different format in the generic back-end, meaning the comparison fails.");
 #endif // openssl
 
     QByteArray encoded = readFile(absFilePath);
