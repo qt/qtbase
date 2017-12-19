@@ -204,7 +204,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 - (void)sendEvent:(UIEvent *)event
 {
-    QScopedValueRollback<BOOL>(self->_sendingEvent, YES);
+    QScopedValueRollback<BOOL> sendingEvent(self->_sendingEvent, YES);
     [super sendEvent:event];
 }
 
