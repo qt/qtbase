@@ -128,6 +128,9 @@ public:
 #ifndef QT_NO_TEXTHTMLPARSER
     QString toHtml() const;
 #endif
+#if QT_CONFIG(textmarkdownwriter)
+    QString toMarkdown(QTextDocument::MarkdownFeatures features = QTextDocument::MarkdownDialectGitHub) const;
+#endif
 
     virtual void ensureCursorVisible();
 

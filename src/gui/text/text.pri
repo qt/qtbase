@@ -109,6 +109,13 @@ qtConfig(textmarkdownreader) {
         text/qtextmarkdownimporter.cpp
 }
 
+qtConfig(textmarkdownwriter) {
+    HEADERS += \
+        text/qtextmarkdownwriter_p.h
+    SOURCES += \
+        text/qtextmarkdownwriter.cpp
+}
+
 qtConfig(cssparser) {
     HEADERS += \
         text/qcssparser_p.h

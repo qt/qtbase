@@ -151,7 +151,7 @@ public:
     void setHtml(const QString &html);
 #endif
 
-#if QT_CONFIG(textmarkdownreader)
+#if QT_CONFIG(textmarkdownwriter) || QT_CONFIG(textmarkdownreader)
     // Must be in sync with QTextMarkdownImporter::Features, should be in sync with #define MD_FLAG_* in md4c
     enum MarkdownFeature {
         MarkdownNoHTML = 0x0020 | 0x0040,
@@ -160,7 +160,13 @@ public:
     };
     Q_DECLARE_FLAGS(MarkdownFeatures, MarkdownFeature)
     Q_FLAG(MarkdownFeatures)
+#endif
 
+#if QT_CONFIG(textmarkdownwriter)
+    QString toMarkdown(MarkdownFeatures features = MarkdownDialectGitHub) const;
+#endif
+
+#if QT_CONFIG(textmarkdownreader)
     void setMarkdown(const QString &markdown, MarkdownFeatures features = MarkdownDialectGitHub);
 #endif
 

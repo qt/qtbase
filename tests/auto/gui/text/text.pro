@@ -28,12 +28,15 @@ SUBDIRS=\
 
 win32:SUBDIRS -= qtextpiecetable
 
+qtConfig(textmarkdownwriter): SUBDIRS += qtextmarkdownwriter
+
 !qtConfig(private_tests): SUBDIRS -= \
            qfontcache \
            qcssparser \
            qtextlayout \
            qtextpiecetable \
            qzip \
+           qtextmarkdownwriter \
            qtextodfwriter
 
 !qtHaveModule(xml): SUBDIRS -= \

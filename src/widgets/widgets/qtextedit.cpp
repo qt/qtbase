@@ -366,8 +366,8 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     \section1 Introduction and Concepts
 
     QTextEdit is an advanced WYSIWYG viewer/editor supporting rich
-    text formatting using HTML-style tags. It is optimized to handle
-    large documents and to respond quickly to user input.
+    text formatting using HTML-style tags, or Markdown format. It is optimized
+    to handle large documents and to respond quickly to user input.
 
     QTextEdit works on paragraphs and characters. A paragraph is a
     formatted string which is word-wrapped to fit into the width of
@@ -381,7 +381,7 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     QTextEdit can display images, lists and tables. If the text is
     too large to view within the text edit's viewport, scroll bars will
     appear. The text edit can load both plain text and rich text files.
-    Rich text is described using a subset of HTML 4 markup, refer to the
+    Rich text can be described using a subset of HTML 4 markup; refer to the
     \l {Supported HTML Subset} page for more information.
 
     If you just need to display a small piece of rich text use QLabel.
@@ -401,11 +401,18 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     QTextEdit can display a large HTML subset, including tables and
     images.
 
-    The text is set or replaced using setHtml() which deletes any
+    The text can be set or replaced using \l setHtml() which deletes any
     existing text and replaces it with the text passed in the
     setHtml() call. If you call setHtml() with legacy HTML, and then
     call toHtml(), the text that is returned may have different markup,
     but will render the same. The entire text can be deleted with clear().
+
+    Text can also be set or replaced using \l setMarkdown(), and the same
+    caveats apply: if you then call \l toMarkdown(), the text that is returned
+    may be different, but the meaning is preserved as much as possible.
+    Markdown with some embedded HTML can be parsed, with the same limitations
+    that \l setHtml() has; but \l toMarkdown() only writes "pure" Markdown,
+    without any embedded HTML.
 
     Text itself can be inserted using the QTextCursor class or using the
     convenience functions insertHtml(), insertPlainText(), append() or
@@ -1213,11 +1220,54 @@ QString QTextEdit::toHtml() const
 }
 #endif
 
+#if QT_CONFIG(textmarkdownreader) && QT_CONFIG(textmarkdownwriter)
+/*!
+    \property QTextEdit::markdown
+
+    This property provides a Markdown interface to the text of the text edit.
+
+    \c toMarkdown() returns the text of the text edit as "pure" Markdown,
+    without any embedded HTML formatting. Some features that QTextDocument
+    supports (such as the use of specific colors and named fonts) cannot be
+    expressed in "pure" Markdown, and they will be omitted.
+
+    \c setMarkdown() changes the text of the text edit.  Any previous text is
+    removed and the undo/redo history is cleared. The input text is
+    interpreted as rich text in Markdown format.
+
+    Parsing of HTML included in the \a markdown string is handled in the same
+    way as in \l setHtml; however, Markdown formatting inside HTML blocks is
+    not supported.
+
+    Some features of the parser can be enabled or disabled via the \a features
+    argument:
+
+    \value MarkdownNoHTML
+           Any HTML tags in the Markdown text will be discarded
+    \value MarkdownDialectCommonMark
+           The parser supports only the features standardized by CommonMark
+    \value MarkdownDialectGitHub
+           The parser supports the GitHub dialect
+
+    The default is \c MarkdownDialectGitHub.
+
+    \sa plainText, html, QTextDocument::toMarkdown(), QTextDocument::setMarkdown()
+*/
+#endif
+
 #if QT_CONFIG(textmarkdownreader)
-void QTextEdit::setMarkdown(const QString &text)
+void QTextEdit::setMarkdown(const QString &markdown)
 {
     Q_D(const QTextEdit);
-    d->control->setMarkdown(text);
+    d->control->setMarkdown(markdown);
+}
+#endif
+
+#if QT_CONFIG(textmarkdownwriter)
+QString QTextEdit::toMarkdown(QTextDocument::MarkdownFeatures features) const
+{
+    Q_D(const QTextEdit);
+    return d->control->toMarkdown(features);
 }
 #endif
 

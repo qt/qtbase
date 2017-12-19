@@ -71,6 +71,9 @@ class Q_WIDGETS_EXPORT QTextEdit : public QAbstractScrollArea
     QDOC_PROPERTY(QTextOption::WrapMode wordWrapMode READ wordWrapMode WRITE setWordWrapMode)
     Q_PROPERTY(int lineWrapColumnOrWidth READ lineWrapColumnOrWidth WRITE setLineWrapColumnOrWidth)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
+#if QT_CONFIG(textmarkdownreader) && QT_CONFIG(textmarkdownwriter)
+    Q_PROPERTY(QString markdown READ toMarkdown WRITE setMarkdown NOTIFY textChanged)
+#endif
 #ifndef QT_NO_TEXTHTMLPARSER
     Q_PROPERTY(QString html READ toHtml WRITE setHtml NOTIFY textChanged USER true)
 #endif
@@ -174,6 +177,9 @@ public:
 #ifndef QT_NO_TEXTHTMLPARSER
     QString toHtml() const;
 #endif
+#if QT_CONFIG(textmarkdownwriter)
+    QString toMarkdown(QTextDocument::MarkdownFeatures features = QTextDocument::MarkdownDialectGitHub) const;
+#endif
 
     void ensureCursorVisible();
 
@@ -239,7 +245,7 @@ public Q_SLOTS:
     void setHtml(const QString &text);
 #endif
 #if QT_CONFIG(textmarkdownreader)
-    void setMarkdown(const QString &text);
+    void setMarkdown(const QString &markdown);
 #endif
     void setText(const QString &text);
 

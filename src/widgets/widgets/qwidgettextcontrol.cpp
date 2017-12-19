@@ -3130,6 +3130,13 @@ QString QWidgetTextControl::toHtml() const
 }
 #endif
 
+#ifndef QT_NO_TEXTHTMLPARSER
+QString QWidgetTextControl::toMarkdown(QTextDocument::MarkdownFeatures features) const
+{
+    return document()->toMarkdown(features);
+}
+#endif
+
 void QWidgetTextControlPrivate::append(const QString &text, Qt::TextFormat format)
 {
     QTextCursor tmp(doc);

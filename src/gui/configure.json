@@ -1611,6 +1611,12 @@
             "condition": "libs.libmd4c",
             "output": [ "publicFeature" ]
         },
+        "textmarkdownwriter": {
+            "label": "MarkdownWriter",
+            "purpose": "Provides a Markdown (CommonMark) writer",
+            "section": "Kernel",
+            "output": [ "publicFeature" ]
+        },
         "textodfwriter": {
             "label": "OdfWriter",
             "purpose": "Provides an ODF writer.",
@@ -1892,7 +1898,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                 {
                     "section": "Text formats",
                     "entries": [
-                        "texthtmlparser", "cssparser", "textodfwriter", "textmarkdownreader", "system-textmarkdownreader"
+                        "texthtmlparser", "cssparser", "textodfwriter", "textmarkdownreader", "system-textmarkdownreader", "textmarkdownwriter"
                     ]
                 },
                 "egl",

@@ -73,6 +73,9 @@
 #if QT_CONFIG(textmarkdownreader)
 #include <private/qtextmarkdownimporter_p.h>
 #endif
+#if QT_CONFIG(textmarkdownwriter)
+#include <private/qtextmarkdownwriter_p.h>
+#endif
 
 #include <limits.h>
 
@@ -3289,6 +3292,22 @@ QString QTextDocument::toHtml(const QByteArray &encoding) const
 #endif // QT_NO_TEXTHTMLPARSER
 
 /*!
+    Returns a string containing a Markdown representation of the document,
+    or an empty string if writing fails for any reason.
+*/
+#if QT_CONFIG(textmarkdownwriter)
+QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) const
+{
+    QString ret;
+    QTextStream s(&ret);
+    QTextMarkdownWriter w(s, features);
+    if (w.writeAll(*this))
+        return ret;
+    return QString();
+}
+#endif
+
+/*!
     Replaces the entire contents of the document with the given
     Markdown-formatted text in the \a markdown string, with the given
     \a features supported.  By default, all supported GitHub-style
@@ -3301,8 +3320,19 @@ QString QTextDocument::toHtml(const QByteArray &encoding) const
 
     Parsing of HTML included in the \a markdown string is handled in the same
     way as in \l setHtml; however, Markdown formatting inside HTML blocks is
-    not supported. The \c MarkdownNoHTML feature flag can be set to disable
-    HTML parsing.
+    not supported.
+
+    Some features of the parser can be enabled or disabled via the \a features
+    argument:
+
+    \value MarkdownNoHTML
+           Any HTML tags in the Markdown text will be discarded
+    \value MarkdownDialectCommonMark
+           The parser supports only the features standardized by CommonMark
+    \value MarkdownDialectGitHub
+           The parser supports the GitHub dialect
+
+    The default is \c MarkdownDialectGitHub.
 
     The undo/redo history is reset when this function is called.
 */
