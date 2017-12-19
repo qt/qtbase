@@ -96,6 +96,8 @@ protected:
     void clearXKBConfig();
     // when XKEYBOARD not present on the X server
     void updateModifiers();
+    typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
+    KeysymModifierMap keysymsToModifiers();
     // when XKEYBOARD is present on the X server
     void updateVModMapping();
     void updateVModToRModMapping();

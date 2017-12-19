@@ -1289,20 +1289,56 @@ void QXcbKeyboard::updateVModToRModMapping()
 #endif
 }
 
+// Small helper: set modifier bit, if modifier position is valid
+static inline void applyModifier(uint *mask, int modifierBit)
+{
+    if (modifierBit >= 0 && modifierBit < 8)
+        *mask |= 1 << modifierBit;
+}
+
 void QXcbKeyboard::updateModifiers()
+{
+    memset(&rmod_masks, 0, sizeof(rmod_masks));
+
+    // Compute X modifier bits for Qt modifiers
+    KeysymModifierMap keysymMods(keysymsToModifiers());
+    applyModifier(&rmod_masks.alt,   keysymMods.value(XK_Alt_L,       -1));
+    applyModifier(&rmod_masks.alt,   keysymMods.value(XK_Alt_R,       -1));
+    applyModifier(&rmod_masks.meta,  keysymMods.value(XK_Meta_L,      -1));
+    applyModifier(&rmod_masks.meta,  keysymMods.value(XK_Meta_R,      -1));
+    applyModifier(&rmod_masks.altgr, keysymMods.value(XK_Mode_switch, -1));
+    applyModifier(&rmod_masks.super, keysymMods.value(XK_Super_L,     -1));
+    applyModifier(&rmod_masks.super, keysymMods.value(XK_Super_R,     -1));
+    applyModifier(&rmod_masks.hyper, keysymMods.value(XK_Hyper_L,     -1));
+    applyModifier(&rmod_masks.hyper, keysymMods.value(XK_Hyper_R,     -1));
+
+    resolveMaskConflicts();
+}
+
+// Small helper: check if an array of xcb_keycode_t contains a certain code
+static inline bool keycodes_contains(xcb_keycode_t *codes, xcb_keycode_t which)
+{
+    while (*codes != XCB_NO_SYMBOL) {
+        if (*codes == which) return true;
+        codes++;
+    }
+    return false;
+}
+
+QXcbKeyboard::KeysymModifierMap QXcbKeyboard::keysymsToModifiers()
 {
     // The core protocol does not provide a convenient way to determine the mapping
     // of modifier bits. Clients must retrieve and search the modifier map to determine
     // the keycodes bound to each modifier, and then retrieve and search the keyboard
     // mapping to determine the keysyms bound to the keycodes. They must repeat this
     // process for all modifiers whenever any part of the modifier mapping is changed.
-    memset(&rmod_masks, 0, sizeof(rmod_masks));
 
-    xcb_connection_t *conn = xcb_connection();
-    auto modMapReply = Q_XCB_REPLY(xcb_get_modifier_mapping, conn);
+    KeysymModifierMap map;
+
+    auto modMapReply = Q_XCB_REPLY(xcb_get_modifier_mapping, xcb_connection());
     if (!modMapReply) {
         qWarning("Qt: failed to get modifier mapping");
-        return;
+        return map;
     }
 
     // for Alt and Meta L and R are the same
@@ -1318,34 +1354,62 @@ void QXcbKeyboard::updateModifiers()
         modKeyCodes[i] = xcb_key_symbols_get_keycode(m_key_symbols, symbols[i]);
 
     xcb_keycode_t *modMap = xcb_get_modifier_mapping_keycodes(modMapReply.get());
-    const int w = modMapReply->keycodes_per_modifier;
-    for (size_t i = 0; i < numSymbols; ++i) {
-        for (int bit = 0; bit < 8; ++bit) {
-            uint mask = 1 << bit;
-            for (int x = 0; x < w; ++x) {
-                xcb_keycode_t keyCode = modMap[x + bit * w];
-                xcb_keycode_t *itk = modKeyCodes[i];
-                while (itk && *itk != XCB_NO_SYMBOL)
-                    if (*itk++ == keyCode) {
-                        uint sym = symbols[i];
-                        if ((sym == XK_Alt_L || sym == XK_Alt_R))
-                            rmod_masks.alt = mask;
-                        if ((sym == XK_Meta_L || sym == XK_Meta_R))
-                            rmod_masks.meta = mask;
-                        if (sym == XK_Mode_switch)
-                            rmod_masks.altgr = mask;
-                        if ((sym == XK_Super_L) || (sym == XK_Super_R))
-                            rmod_masks.super = mask;
-                        if ((sym == XK_Hyper_L) || (sym == XK_Hyper_R))
-                            rmod_masks.hyper = mask;
-                    }
+    const int modMapLength = xcb_get_modifier_mapping_keycodes_length(modMapReply.get());
+    /* For each modifier of "Shift, Lock, Control, Mod1, Mod2, Mod3,
+     * Mod4, and Mod5" the modifier map contains keycodes_per_modifier
+     * key codes that are associated with a modifier.
+     *
+     * As an example, take this 'xmodmap' output:
+     *   xmodmap: up to 4 keys per modifier, (keycodes in parentheses):
+     *
+     *   shift       Shift_L (0x32),  Shift_R (0x3e)
+     *   lock        Caps_Lock (0x42)
+     *   control     Control_L (0x25),  Control_R (0x69)
+     *   mod1        Alt_L (0x40),  Alt_R (0x6c),  Meta_L (0xcd)
+     *   mod2        Num_Lock (0x4d)
+     *   mod3
+     *   mod4        Super_L (0x85),  Super_R (0x86),  Super_L (0xce),  Hyper_L (0xcf)
+     *   mod5        ISO_Level3_Shift (0x5c),  Mode_switch (0xcb)
+     *
+     * The corresponding raw modifier map would contain keycodes for:
+     *   Shift_L (0x32), Shift_R (0x3e), 0, 0,
+     *   Caps_Lock (0x42), 0, 0, 0,
+     *   Control_L (0x25), Control_R (0x69), 0, 0,
+     *   Alt_L (0x40), Alt_R (0x6c), Meta_L (0xcd), 0,
+     *   Num_Lock (0x4d), 0, 0, 0,
+     *   0,0,0,0,
+     *   Super_L (0x85),  Super_R (0x86),  Super_L (0xce),  Hyper_L (0xcf),
+     *   ISO_Level3_Shift (0x5c),  Mode_switch (0xcb), 0, 0
+     */
+
+    /* Create a map between a modifier keysym (as per the symbols array)
+     * and the modifier bit it's associated with (if any).
+     * As modMap contains key codes, search modKeyCodes for a match;
+     * if one is found we can look up the associated keysym.
+     * Together with the modifier index this will be used
+     * to compute a mapping between X modifier bits and Qt's
+     * modifiers (Alt, Ctrl etc). */
+    for (int i = 0; i < modMapLength; i++) {
+        if (modMap[i] == XCB_NO_SYMBOL)
+            continue;
+        // Get key symbol for key code
+        for (size_t k = 0; k < numSymbols; k++) {
+            if (modKeyCodes[k] && keycodes_contains(modKeyCodes[k], modMap[i])) {
+                // Key code is for modifier. Record mapping
+                xcb_keysym_t sym = symbols[k];
+                /* As per modMap layout explanation above, dividing
+                 * by keycodes_per_modifier gives the 'row' in the
+                 * modifier map, which in turn is the modifier bit. */
+                map[sym] = i / modMapReply->keycodes_per_modifier;
+                break;
             }
         }
     }
 
     for (size_t i = 0; i < numSymbols; ++i)
         free(modKeyCodes[i]);
-    resolveMaskConflicts();
+
+    return map;
 }
 
 void QXcbKeyboard::resolveMaskConflicts()
