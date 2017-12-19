@@ -212,8 +212,6 @@ void QElapsedTimer::start() Q_DECL_NOTHROW
 
 qint64 QElapsedTimer::restart() Q_DECL_NOTHROW
 {
-
-    qDebug() << Q_FUNC_INFO;
     return elapsedAndRestart(t1, t2, &t1, &t2);
 }
 
