@@ -89,6 +89,7 @@
 #define QT_FEATURE_library -1
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1
+#define QT_FEATURE_regularexpression -1
 #define QT_FEATURE_renameat2 -1
 #define QT_FEATURE_sharedmemory -1
 #define QT_FEATURE_slog2 -1
