@@ -409,6 +409,9 @@ void QPrintPropertiesDialog::setupPrinter() const
 #endif
 
 #if QT_CONFIG(cups)
+    // Set Color by default, that will change if the "ColorModel" property is available
+    m_printer->setColorMode(QPrinter::Color);
+
     m_cupsOptionsModel->setCupsOptionsFromItems(m_printer);
 #endif
 }
@@ -567,6 +570,11 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
             options.pageSetCombo->setEnabled(false);
         else
             options.pageSetCombo->setEnabled(true);
+
+#if QT_CONFIG(cups)
+        // Disable color options on main dialog if not printing to file, it will be handled by CUPS advanced dialog
+        options.colorMode->setVisible(outputFormat == QPrinter::PdfFormat);
+#endif
 }
 
 #if QT_CONFIG(cups)
@@ -668,7 +676,12 @@ void QPrintDialogPrivate::setupPrinter()
             p->setDuplex(QPrinter::DuplexShortSide);
     }
 
-    p->setColorMode(options.color->isChecked() ? QPrinter::Color : QPrinter::GrayScale);
+#if QT_CONFIG(cups)
+    // When printing to a device the colorMode will be set by the advanced panel
+    if (p->outputFormat() == QPrinter::PdfFormat)
+#endif
+        p->setColorMode(options.color->isChecked() ? QPrinter::Color : QPrinter::GrayScale);
+
     p->setPageOrder(options.reverse->isChecked() ? QPrinter::LastPageFirst : QPrinter::FirstPageFirst);
 
     // print range
@@ -1417,6 +1430,10 @@ void QPPDOptionsModel::setCupsOptionsFromItems(QPrinter *printer, QOptionTreeIte
         if (itm->type == QOptionTreeItem::Option) {
             QOptionTreeItemOption *itmOption = static_cast<QOptionTreeItemOption *>(itm);
             const ppd_option_t *opt = static_cast<const ppd_option_t*>(itm->ptr);
+
+            if (qstrcmp(opt->keyword, "ColorModel") == 0)
+                printer->setColorMode(qstrcmp(opt->choices[itmOption->selected].choice, "Gray") == 0 ? QPrinter::GrayScale : QPrinter::Color);
+
             if (qstrcmp(opt->defchoice, opt->choices[itmOption->selected].choice) != 0) {
                 QCUPSSupport::setCupsOption(printer, QString::fromLatin1(opt->keyword), QString::fromLatin1(opt->choices[itmOption->selected].choice));
             }
