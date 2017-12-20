@@ -520,6 +520,11 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
         QPrinter *p = q->printer();
         printerOutputFormat = outputFormat;
 
+        // printer supports duplex mode?
+        const auto supportedDuplexMode = top->d->m_currentPrintDevice.supportedDuplexModes();
+        options.duplexLong->setEnabled(supportedDuplexMode.contains(QPrint::DuplexLongSide));
+        options.duplexShort->setEnabled(supportedDuplexMode.contains(QPrint::DuplexShortSide));
+
         if (p->colorMode() == QPrinter::Color)
             options.color->setChecked(true);
         else
@@ -1319,7 +1324,8 @@ static bool isBlacklistedOption(const char *keyword) Q_DECL_NOTHROW
         "Copies",
         "OutputOrder",
         "PageRegion",
-        "PageSize"
+        "PageSize",
+        "Duplex" // handled by the main dialog
     };
     auto equals = [](const char *keyword) {
         return [keyword](const char *candidate) {
