@@ -79,3 +79,6 @@ void MyWidget::drawIcon(QPainter *painter, QPoint pos)
     QIcon undoicon = QIcon::fromTheme("edit-undo", QIcon(":/undo.png"));
 //! [4]
 
+//! [5]
+    QIcon::setFallbackSearchPaths(QIcon::fallbackSearchPaths() << "my/search/path");
+//! [5]

@@ -1158,6 +1158,36 @@ QStringList QIcon::themeSearchPaths()
 }
 
 /*!
+    \since 5.11
+
+    Returns the fallback search paths for icons.
+
+    The default value will depend on the platform.
+
+    \sa setFallbackSearchPaths(), themeSearchPaths()
+*/
+QStringList QIcon::fallbackSearchPaths()
+{
+    return QIconLoader::instance()->fallbackSearchPaths();
+}
+
+/*!
+    \since 5.11
+
+    Sets the fallback search paths for icons to \a paths.
+
+    \note To add some path without replacing existing ones:
+
+    \snippet code/src_gui_image_qicon.cpp 5
+
+    \sa fallbackSearchPaths(), setThemeSearchPaths()
+*/
+void QIcon::setFallbackSearchPaths(const QStringList &paths)
+{
+    QIconLoader::instance()->setFallbackSearchPaths(paths);
+}
+
+/*!
     \since 4.6
 
     Sets the current icon theme to \a name.
@@ -1216,7 +1246,10 @@ QString QIcon::themeName()
     the lookup. These caches can be generated using gtk-update-icon-cache:
     \l{https://developer.gnome.org/gtk3/stable/gtk-update-icon-cache.html}.
 
-    \sa themeName(), setThemeName(), themeSearchPaths()
+    \note If an icon can't be found in the current theme, then it will be
+    searched in fallbackSearchPaths() as an unthemed icon.
+
+    \sa themeName(), setThemeName(), themeSearchPaths(), fallbackSearchPaths()
 */
 QIcon QIcon::fromTheme(const QString &name)
 {

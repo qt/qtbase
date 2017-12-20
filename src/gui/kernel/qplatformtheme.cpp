@@ -516,6 +516,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(QString());
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QStringList());
+    case QPlatformTheme::IconFallbackSearchPaths:
+        return QVariant(QStringList());
     case QPlatformTheme::StyleNames:
         return QVariant(QStringList());
     case QPlatformTheme::ShowShortcutsInContextMenus:

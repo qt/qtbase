@@ -178,6 +178,12 @@ QStringList QGenericUnixTheme::xdgIconThemePaths()
             paths.append(xdgIconsDir.absoluteFilePath());
     }
 
+    return paths;
+}
+
+QStringList QGenericUnixTheme::iconFallbackPaths()
+{
+    QStringList paths;
     const QFileInfo pixmapsIconsDir(QStringLiteral("/usr/share/pixmaps"));
     if (pixmapsIconsDir.isDir())
         paths.append(pixmapsIconsDir.absoluteFilePath());
@@ -210,6 +216,8 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
         return QVariant(QString(QStringLiteral("hicolor")));
     case QPlatformTheme::IconThemeSearchPaths:
         return xdgIconThemePaths();
+    case QPlatformTheme::IconFallbackSearchPaths:
+        return iconFallbackPaths();
     case QPlatformTheme::DialogButtonBoxButtonsHaveIcons:
         return QVariant(true);
     case QPlatformTheme::StyleNames: {

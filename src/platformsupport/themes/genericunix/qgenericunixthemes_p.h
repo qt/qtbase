@@ -85,6 +85,7 @@ public:
     QVariant themeHint(ThemeHint hint) const override;
 
     static QStringList xdgIconThemePaths();
+    static QStringList iconFallbackPaths();
 #ifndef QT_NO_DBUS
     QPlatformMenuBar *createPlatformMenuBar() const override;
 #endif
