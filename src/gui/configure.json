@@ -1,7 +1,8 @@
 {
     "module": "gui",
     "depends": [
-        "core"
+        "core",
+        "network"
     ],
     "testDir": "../../config.tests",
 
@@ -996,7 +997,10 @@
         "vnc": {
             "label": "VNC",
             "section": "Platform plugins",
-            "condition": "config.unix && !config.android && !config.darwin && features.regularexpression",
+            "condition": [
+                "config.unix && !config.android && !config.darwin",
+                "features.regularexpression && features.network"
+            ],
             "output": [ "privateFeature" ]
         },
         "mirclient": {
@@ -1188,6 +1192,12 @@
         "tslib": {
             "label": "tslib",
             "condition": "libs.tslib",
+            "output": [ "privateFeature" ]
+        },
+        "tuiotouch": {
+            "label": "TuioTouch",
+            "purpose": "Provides the TuioTouch input plugin.",
+            "condition": "features.network && features.udpsocket",
             "output": [ "privateFeature" ]
         },
         "xcb": {
