@@ -2685,6 +2685,7 @@ void QSortFilterProxyModel::setRecursiveFilteringEnabled(bool recursive)
     d->filter_changed();
 }
 
+#if QT_DEPRECATED_SINCE(5, 11)
 /*!
     \obsolete
 
@@ -2692,12 +2693,9 @@ void QSortFilterProxyModel::setRecursiveFilteringEnabled(bool recursive)
 */
 void QSortFilterProxyModel::clear()
 {
-    Q_D(QSortFilterProxyModel);
-    emit layoutAboutToBeChanged();
-    d->_q_clearMapping();
-    emit layoutChanged();
+    invalidate();
 }
-
+#endif
 /*!
    \since 4.3
 
@@ -2713,6 +2711,7 @@ void QSortFilterProxyModel::invalidate()
     emit layoutChanged();
 }
 
+#if QT_DEPRECATED_SINCE(5, 11)
 /*!
    \obsolete
 
@@ -2720,9 +2719,9 @@ void QSortFilterProxyModel::invalidate()
 */
 void QSortFilterProxyModel::filterChanged()
 {
-    Q_D(QSortFilterProxyModel);
-    d->filter_changed();
+    invalidateFilter();
 }
+#endif
 
 /*!
    \since 4.3
