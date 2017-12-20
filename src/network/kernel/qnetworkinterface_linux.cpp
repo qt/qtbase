@@ -158,7 +158,7 @@ template <typename Lambda> struct ProcessNetlinkRequest
     void operator()(int sock, nlmsghdr *hdr, char *buf, size_t bufsize, Lambda &&func)
     {
         // send the request
-        if (send(sock, hdr, hdr->nlmsg_len, 0) != hdr->nlmsg_len)
+        if (send(sock, hdr, hdr->nlmsg_len, 0) != ssize_t(hdr->nlmsg_len))
             return;
 
         // receive and parse the request
