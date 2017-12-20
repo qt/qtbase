@@ -178,6 +178,8 @@ Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
     return result;
 }
 
+static QPoint lastMouseMovePos;
+
 bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                                QtWindows::WindowsEventType et,
                                                MSG msg, LRESULT *result)
@@ -191,6 +193,29 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
 
     if (et == QtWindows::MouseWheelEvent)
         return translateMouseWheelEvent(window, hwnd, msg, result);
+
+    const QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+    QPoint clientPosition;
+    QPoint globalPosition;
+    if (et & QtWindows::NonClientEventFlag) {
+        globalPosition = winEventPosition;
+        clientPosition = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPosition);
+    } else {
+        clientPosition = winEventPosition;
+        globalPosition = QWindowsGeometryHint::mapToGlobal(hwnd, winEventPosition);
+    }
+
+    // Windows sends a mouse move with no buttons pressed to signal "Enter"
+    // when a window is shown over the cursor. Discard the event and only use
+    // it for generating QEvent::Enter to be consistent with other platforms -
+    // X11 and macOS.
+    bool discardEvent = false;
+    if (msg.message == WM_MOUSEMOVE) {
+        const bool samePosition = globalPosition == lastMouseMovePos;
+        lastMouseMovePos = globalPosition;
+        if (msg.wParam == 0 && (m_windowUnderMouse.isNull() || samePosition))
+            discardEvent = true;
+    }
 
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
 
@@ -210,10 +235,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         }
     }
 
-    const QPoint winEventPosition(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
     if (et & QtWindows::NonClientEventFlag) {
-        const QPoint globalPosition = winEventPosition;
-        const QPoint clientPosition = QWindowsGeometryHint::mapFromGlobal(hwnd, globalPosition);
         const Qt::MouseButtons buttons = QWindowsMouseHandler::queryMouseButtons();
         QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition,
                                                            globalPosition, buttons,
@@ -269,7 +291,6 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         }
     }
 
-    const QPoint globalPosition = QWindowsGeometryHint::mapToGlobal(hwnd, winEventPosition);
     // In this context, neither an invisible nor a transparent window (transparent regarding mouse
     // events, "click-through") can be considered as the window under mouse.
     QWindow *currentWindowUnderMouse = platformWindow->hasMouseCapture() ?
@@ -369,9 +390,11 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         m_windowUnderMouse = currentWindowUnderMouse;
     }
 
-    QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
-                                             QWindowsKeyMapper::queryKeyboardModifiers(),
-                                             source);
+    if (!discardEvent) {
+        QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
+                                                 QWindowsKeyMapper::queryKeyboardModifiers(),
+                                                 source);
+    }
     m_previousCaptureWindow = hasCapture ? window : 0;
     // QTBUG-48117, force synchronous handling for the extra buttons so that WM_APPCOMMAND
     // is sent for unhandled WM_XBUTTONDOWN.

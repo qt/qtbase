@@ -97,6 +97,7 @@ private slots:
     void modalWindowPosition();
 #ifndef QT_NO_CURSOR
     void modalWindowEnterEventOnHide_QTBUG35109();
+    void spuriousMouseMove();
 #endif
     void windowsTransientChildren();
     void requestUpdate();
@@ -887,7 +888,7 @@ void tst_QWindow::isActive()
     QVERIFY(child.isActive());
 }
 
-class InputTestWindow : public QWindow
+class InputTestWindow : public ColoredWindow
 {
 public:
     void keyPressEvent(QKeyEvent *event) {
@@ -981,7 +982,9 @@ public:
         enterEventCount = leaveEventCount = 0;
     }
 
-    InputTestWindow() {
+    explicit InputTestWindow(const QColor &color = Qt::white, QWindow *parent = nullptr)
+        : ColoredWindow(color, parent)
+    {
         keyPressCode = keyReleaseCode = 0;
         mousePressButton = mouseReleaseButton = mouseMoveButton = 0;
         ignoreMouse = ignoreTouch = false;
@@ -2202,7 +2205,51 @@ void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
         QTRY_COMPARE(root.enterEventCount, 1);
     }
 }
-#endif
+
+// Verify that no spurious mouse move events are received. On Windows, there is
+// no enter event, the OS sends mouse move events instead. Test that the QPA
+// plugin properly suppresses those since they can interfere with tests.
+// Simulate a main window setup with a modal dialog on top, keep the cursor
+// in the center and check that no mouse events are recorded.
+void tst_QWindow::spuriousMouseMove()
+{
+    const QString &platformName = QGuiApplication::platformName();
+    if (platformName == QLatin1String("offscreen") || platformName == QLatin1String("cocoa"))
+        QSKIP("No enter events sent");
+    const QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
+    const QPoint center = screenGeometry.center();
+    QCursor::setPos(center);
+    QRect windowGeometry(QPoint(), 2 * m_testWindowSize);
+    windowGeometry.moveCenter(center);
+    QTRY_COMPARE(QCursor::pos(), center);
+    InputTestWindow topLevel;
+    topLevel.setTitle(QTest::currentTestFunction());
+    topLevel.setGeometry(windowGeometry);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QTRY_VERIFY(topLevel.enterEventCount > 0);
+    InputTestWindow dialog(Qt::yellow);
+    dialog.setTransientParent(&topLevel);
+    dialog.setTitle("Dialog " + topLevel.title());
+    dialog.setModality(Qt::ApplicationModal);
+    windowGeometry.setSize(m_testWindowSize);
+    windowGeometry.moveCenter(center);
+    dialog.setGeometry(windowGeometry);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+    QTRY_VERIFY(dialog.enterEventCount > 0);
+    dialog.setVisible(false);
+    QCOMPARE(dialog.mousePressedCount, 0);
+    QCOMPARE(dialog.mouseReleasedCount, 0);
+    QCOMPARE(dialog.mouseMovedCount, 0);
+    QCOMPARE(dialog.mouseDoubleClickedCount, 0);
+    topLevel.setVisible(false);
+    QCOMPARE(topLevel.mousePressedCount, 0);
+    QCOMPARE(topLevel.mouseReleasedCount, 0);
+    QCOMPARE(topLevel.mouseMovedCount, 0);
+    QCOMPARE(topLevel.mouseDoubleClickedCount, 0);
+}
+#endif // !QT_NO_CURSOR
 
 static bool isNativeWindowVisible(const QWindow *window)
 {
