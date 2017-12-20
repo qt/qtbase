@@ -278,8 +278,24 @@ void QStandardItemPrivate::setItemData(const QMap<int, QVariant> &roles)
 
     if (newValues != values) {
         values.swap(newValues);
-        if (model)
-            model->d_func()->itemChanged(q);
+        if (model) {
+            QVector<int> roleKeys;
+            roleKeys.reserve(roles.size() + 1);
+            bool hasEditRole = false;
+            bool hasDisplayRole = false;
+            for (auto it = roles.keyBegin(); it != roles.keyEnd(); ++it) {
+                roleKeys.push_back(*it);
+                if (*it == Qt::EditRole)
+                    hasEditRole = true;
+                else if (*it == Qt::DisplayRole)
+                    hasDisplayRole = true;
+            }
+            if (hasEditRole && !hasDisplayRole)
+                roleKeys.push_back(Qt::DisplayRole);
+            else if (!hasEditRole && hasDisplayRole)
+                roleKeys.push_back(Qt::EditRole);
+            model->d_func()->itemChanged(q, roleKeys);
+        }
     }
 }
 
@@ -554,7 +570,7 @@ bool QStandardItemPrivate::insertColumns(int column, int count, const QList<QSta
 /*!
   \internal
 */
-void QStandardItemModelPrivate::itemChanged(QStandardItem *item)
+void QStandardItemModelPrivate::itemChanged(QStandardItem *item, const QVector<int> &roles)
 {
     Q_Q(QStandardItemModel);
     Q_ASSERT(item);
@@ -570,8 +586,8 @@ void QStandardItemModelPrivate::itemChanged(QStandardItem *item)
         }
     } else {
         // Normal item
-        QModelIndex index = q->indexFromItem(item);
-        emit q->dataChanged(index, index);
+        const QModelIndex index = q->indexFromItem(item);
+        emit q->dataChanged(index, index, roles);
     }
 }
 
@@ -885,6 +901,9 @@ void QStandardItem::setData(const QVariant &value, int role)
 {
     Q_D(QStandardItem);
     role = (role == Qt::EditRole) ? Qt::DisplayRole : role;
+    const QVector<int> roles((role == Qt::DisplayRole) ?
+                                QVector<int>({Qt::DisplayRole, Qt::EditRole}) :
+                                QVector<int>({role}));
     QVector<QStandardItemData>::iterator it;
     for (it = d->values.begin(); it != d->values.end(); ++it) {
         if ((*it).role == role) {
@@ -896,13 +915,13 @@ void QStandardItem::setData(const QVariant &value, int role)
                 d->values.erase(it);
             }
             if (d->model)
-                d->model->d_func()->itemChanged(this);
+                d->model->d_func()->itemChanged(this, roles);
             return;
         }
     }
     d->values.append(QStandardItemData(role, value));
     if (d->model)
-        d->model->d_func()->itemChanged(this);
+        d->model->d_func()->itemChanged(this, roles);
 }
 
 /*!

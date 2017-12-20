@@ -34,6 +34,8 @@
 
 Q_DECLARE_METATYPE(QModelIndex)
 
+static const int s_filterRole = Qt::UserRole + 1;
+
 class ModelSignalSpy : public QObject {
     Q_OBJECT
 public:
@@ -67,7 +69,7 @@ private Q_SLOTS:
         mSignals << QStringLiteral("rowsMoved");
     }
     void onDataChanged(const QModelIndex &from, const QModelIndex& ) {
-        mSignals << QStringLiteral("dataChanged(%1)").arg(from.data().toString());
+        mSignals << QStringLiteral("dataChanged(%1)").arg(from.data(Qt::DisplayRole).toString());
     }
     void onLayoutChanged() {
         mSignals << QStringLiteral("layoutChanged");
@@ -78,7 +80,7 @@ private Q_SLOTS:
 private:
     QString textForRowSpy(const QModelIndex &parent, int start, int end)
     {
-        QString txt = parent.data().toString();
+        QString txt = parent.data(Qt::DisplayRole).toString();
         if (!txt.isEmpty())
             txt += QLatin1Char('.');
         txt += QString::number(start+1);
@@ -95,13 +97,14 @@ public:
     TestModel(QAbstractItemModel *sourceModel)
         : QSortFilterProxyModel()
     {
+        setFilterRole(s_filterRole);
         setRecursiveFilteringEnabled(true);
         setSourceModel(sourceModel);
     }
 
     virtual bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override
     {
-        return sourceModel()->index(sourceRow, 0, sourceParent).data(Qt::UserRole +1).toBool()
+        return sourceModel()->index(sourceRow, 0, sourceParent).data(s_filterRole).toBool()
                 && QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     }
 };
@@ -114,7 +117,7 @@ public:
 // - - E
 // as a single string, englobing children in brackets, like this:
 // [A[B[C D] E]]
-// In addition, items that match the filtering (data(UserRole+1) == true) have a * after their value.
+// In addition, items that match the filtering (data(s_filterRole) == true) have a * after their value.
 static QString treeAsString(const QAbstractItemModel &model, const QModelIndex &parent = QModelIndex())
 {
     QString ret;
@@ -126,8 +129,8 @@ static QString treeAsString(const QAbstractItemModel &model, const QModelIndex &
                 ret += ' ';
             }
             const QModelIndex child = model.index(row, 0, parent);
-            ret += child.data().toString();
-            if (child.data(Qt::UserRole+1).toBool())
+            ret += child.data(Qt::DisplayRole).toString();
+            if (child.data(s_filterRole).toBool())
                 ret += QLatin1Char('*');
             ret += treeAsString(model, child);
         }
@@ -146,7 +149,7 @@ static void fillModel(QStandardItemModel &model, const QString &str)
         const QChar ch = str.at(i);
         if ((ch == '[' || ch == ']' || ch == ' ') && !data.isEmpty()) {
             if (data.endsWith('*')) {
-                item->setData(true, Qt::UserRole + 1);
+                item->setData(true, s_filterRole);
                 data.chop(1);
             }
             item->setText(data);
@@ -231,10 +234,10 @@ private Q_SLOTS:
 
         QCOMPARE(treeAsString(proxy), QStringLiteral("[1[1.1[ME*]]]"));
 
+        // filterRole is Qt::UserRole + 1, so parents are not checked and
+        // therefore no dataChanged for parents
         QCOMPARE(spy.mSignals, QStringList()
-                 << QStringLiteral("dataChanged(ME)")
-                 << QStringLiteral("dataChanged(1.1)")
-                 << QStringLiteral("dataChanged(1)"));
+                 << QStringLiteral("dataChanged(ME)"));
     }
 
     // Test changing a role that is unrelated to the filtering, in a hidden item.
@@ -319,8 +322,8 @@ private Q_SLOTS:
         ModelSignalSpy spy(proxy);
         // When changing the data on the designated item to show this row
         QStandardItem *itemToChange = itemByText(model, add);
-        QVERIFY(!itemToChange->data().toBool());
-        itemToChange->setData(true);
+        QVERIFY(!itemToChange->data(s_filterRole).toBool());
+        itemToChange->setData(true, s_filterRole);
 
         // The proxy should update as expected
         QCOMPARE(treeAsString(proxy), expectedProxyStr);
@@ -408,8 +411,8 @@ private Q_SLOTS:
 
         // When changing the data on the designated item to exclude this row again
         QStandardItem *itemToChange = itemByText(model, remove);
-        QVERIFY(itemToChange->data().toBool());
-        itemToChange->setData(false);
+        QVERIFY(itemToChange->data(s_filterRole).toBool());
+        itemToChange->setData(false, s_filterRole);
 
         // The proxy should update as expected
         QCOMPARE(treeAsString(proxy), expectedProxyStr);
@@ -431,7 +434,7 @@ private Q_SLOTS:
         ModelSignalSpy spy(proxy);
         QStandardItem *item_1_1_1 = model.item(0)->child(0)->child(0);
         QStandardItem *item_1_1_1_1 = new QStandardItem(QStringLiteral("1.1.1.1"));
-        item_1_1_1_1->setData(true);
+        item_1_1_1_1->setData(true, s_filterRole);
         item_1_1_1->appendRow(item_1_1_1_1);
         QCOMPARE(treeAsString(proxy), QStringLiteral("[1[1.1[1.1.1[1.1.1.1*]]]]"));
 
@@ -456,7 +459,7 @@ private Q_SLOTS:
         ModelSignalSpy spy(proxy);
         {
             QStandardItem *item_1_1_1_1 = new QStandardItem(QStringLiteral("1.1.1.1"));
-            item_1_1_1_1->setData(true);
+            item_1_1_1_1->setData(true, s_filterRole);
             QStandardItem *item_1_1_1 = model.item(0)->child(0)->child(0);
             item_1_1_1->appendRow(item_1_1_1_1);
         }
@@ -484,7 +487,7 @@ private Q_SLOTS:
         {
             QStandardItem *item_1_1_1 = new QStandardItem(QStringLiteral("1.1.1"));
             QStandardItem *item_1_1_1_1 = new QStandardItem(QStringLiteral("1.1.1.1"));
-            item_1_1_1_1->setData(true);
+            item_1_1_1_1->setData(true, s_filterRole);
             item_1_1_1->appendRow(item_1_1_1_1);
 
             QStandardItem *item_1_1 = model.item(0)->child(0);
@@ -511,7 +514,7 @@ private Q_SLOTS:
         {
             QStandardItem *item_1_1_2 = new QStandardItem(QStringLiteral("1.1.2"));
             QStandardItem *item_1_1_2_1 = new QStandardItem(QStringLiteral("1.1.2.1"));
-            item_1_1_2_1->setData(true);
+            item_1_1_2_1->setData(true, s_filterRole);
             item_1_1_2->appendRow(item_1_1_2_1);
 
             QStandardItem *item_1_1 = model.item(0)->child(0);
@@ -706,6 +709,7 @@ private Q_SLOTS:
         ModelSignalSpy spy(proxy);
 
         //qDebug() << "setFilterFixedString";
+        proxy.setFilterRole(Qt::DisplayRole);
         proxy.setFilterFixedString(filter);
 
         QCOMPARE(treeAsString(proxy), expectedProxyStr);
