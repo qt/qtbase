@@ -39,7 +39,7 @@ SOURCES += \
         global/qrandom.cpp \
         global/qhooks.cpp
 
-# Only add global/qfloat16_f16.c if qfloat16.cpp can't #include it.
+# Only add global/qfloat16_f16c.c if qfloat16.cpp can't #include it.
 # Any compiler: if it is already generating F16C code, let qfloat16.cpp do it
 # Clang: ICE if not generating F16C code, so use qfloat16_f16c.c
 # ICC: miscompiles if not generating F16C code, so use qfloat16_f16c.c
@@ -48,7 +48,7 @@ SOURCES += \
 # MSVC: otherwise, it generates poorly-performing code, so use qfloat16_f16c.c
 contains(QT_CPU_FEATURES.$$QT_ARCH, f16c): \
     f16c_cxx = true
-else: clang|intel_icl: \
+else: clang|intel_icl|intel_icc: \
     f16c_cxx = false
 else: gcc:f16c:x86SimdAlways: \
     f16c_cxx = true
