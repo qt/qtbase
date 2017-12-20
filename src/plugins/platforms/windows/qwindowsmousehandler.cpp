@@ -180,6 +180,83 @@ Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
 
 static QPoint lastMouseMovePos;
 
+namespace {
+struct MouseEvent {
+    QEvent::Type type;
+    Qt::MouseButton button;
+};
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const MouseEvent &e)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    d << "MouseEvent(" << e.type << ", " << e.button << ')';
+    return d;
+}
+#endif // QT_NO_DEBUG_STREAM
+} // namespace
+
+static inline Qt::MouseButton extraButton(WPARAM wParam) // for WM_XBUTTON...
+{
+    return GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? Qt::BackButton : Qt::ForwardButton;
+}
+
+static inline MouseEvent eventFromMsg(const MSG &msg)
+{
+    switch (msg.message) {
+    case WM_MOUSEMOVE:
+        return {QEvent::MouseMove, Qt::NoButton};
+    case WM_LBUTTONDOWN:
+        return {QEvent::MouseButtonPress, Qt::LeftButton};
+    case WM_LBUTTONUP:
+        return {QEvent::MouseButtonRelease, Qt::LeftButton};
+    case WM_LBUTTONDBLCLK:
+        return {QEvent::MouseButtonDblClick, Qt::LeftButton};
+    case WM_MBUTTONDOWN:
+        return {QEvent::MouseButtonPress, Qt::MidButton};
+    case WM_MBUTTONUP:
+        return {QEvent::MouseButtonRelease, Qt::MidButton};
+    case WM_MBUTTONDBLCLK:
+        return {QEvent::MouseButtonDblClick, Qt::MidButton};
+    case WM_RBUTTONDOWN:
+        return {QEvent::MouseButtonPress, Qt::RightButton};
+    case WM_RBUTTONUP:
+        return {QEvent::MouseButtonRelease, Qt::RightButton};
+    case WM_RBUTTONDBLCLK:
+        return {QEvent::MouseButtonDblClick, Qt::RightButton};
+    case WM_XBUTTONDOWN:
+        return {QEvent::MouseButtonPress, extraButton(msg.wParam)};
+    case WM_XBUTTONUP:
+        return {QEvent::MouseButtonRelease, extraButton(msg.wParam)};
+    case WM_XBUTTONDBLCLK:
+        return {QEvent::MouseButtonDblClick, extraButton(msg.wParam)};
+    case WM_NCMOUSEMOVE:
+        return {QEvent::NonClientAreaMouseMove, Qt::NoButton};
+    case WM_NCLBUTTONDOWN:
+        return {QEvent::NonClientAreaMouseButtonPress, Qt::LeftButton};
+    case WM_NCLBUTTONUP:
+        return {QEvent::NonClientAreaMouseButtonRelease, Qt::LeftButton};
+    case WM_NCLBUTTONDBLCLK:
+        return {QEvent::NonClientAreaMouseButtonDblClick, Qt::LeftButton};
+    case WM_NCMBUTTONDOWN:
+        return {QEvent::NonClientAreaMouseButtonPress, Qt::MidButton};
+    case WM_NCMBUTTONUP:
+        return {QEvent::NonClientAreaMouseButtonRelease, Qt::MidButton};
+    case WM_NCMBUTTONDBLCLK:
+        return {QEvent::NonClientAreaMouseButtonDblClick, Qt::MidButton};
+    case WM_NCRBUTTONDOWN:
+        return {QEvent::NonClientAreaMouseButtonPress, Qt::RightButton};
+    case WM_NCRBUTTONUP:
+        return {QEvent::NonClientAreaMouseButtonRelease, Qt::RightButton};
+    case WM_NCRBUTTONDBLCLK:
+        return {QEvent::NonClientAreaMouseButtonDblClick, Qt::RightButton};
+    default: // WM_MOUSELEAVE
+        break;
+    }
+    return {QEvent::None, Qt::NoButton};
+}
+
 bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                                                QtWindows::WindowsEventType et,
                                                MSG msg, LRESULT *result)
@@ -219,6 +296,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
 
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
 
+    const MouseEvent mouseEvent = eventFromMsg(msg);
+
     // Check for events synthesized from touch. Lower byte is touch index, 0 means pen.
     static const bool passSynthesizedMouseEvents =
             !(QWindowsIntegration::instance()->options() & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch);
@@ -235,10 +314,11 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         }
     }
 
-    if (et & QtWindows::NonClientEventFlag) {
+    if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick) {
         const Qt::MouseButtons buttons = QWindowsMouseHandler::queryMouseButtons();
         QWindowSystemInterface::handleFrameStrutMouseEvent(window, clientPosition,
                                                            globalPosition, buttons,
+                                                           mouseEvent.button, mouseEvent.type,
                                                            QWindowsKeyMapper::queryKeyboardModifiers(),
                                                            source);
         return false; // Allow further event processing (dragging of windows).
@@ -246,7 +326,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
 
     *result = 0;
     if (msg.message == WM_MOUSELEAVE) {
-        qCDebug(lcQpaEvents) << "WM_MOUSELEAVE for " << window << " previous window under mouse = " << m_windowUnderMouse << " tracked window =" << m_trackedWindow;
+        qCDebug(lcQpaEvents) << mouseEvent << "for" << window << "previous window under mouse="
+            << m_windowUnderMouse << "tracked window=" << m_trackedWindow;
 
         // When moving out of a window, WM_MOUSEMOVE within the moved-to window is received first,
         // so if m_trackedWindow is not the window here, it means the cursor has left the
@@ -311,10 +392,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     // Qt expects the platform plugin to capture the mouse on
     // any button press until release.
     if (!platformWindow->hasMouseCapture()
-        && (msg.message == WM_LBUTTONDOWN || msg.message == WM_MBUTTONDOWN
-            || msg.message == WM_RBUTTONDOWN || msg.message == WM_XBUTTONDOWN
-            || msg.message == WM_LBUTTONDBLCLK || msg.message == WM_MBUTTONDBLCLK
-            || msg.message == WM_RBUTTONDBLCLK || msg.message == WM_XBUTTONDBLCLK)) {
+        && (mouseEvent.type == QEvent::MouseButtonPress || mouseEvent.type == QEvent::MouseButtonDblClick)) {
         platformWindow->setMouseGrabEnabled(true);
         platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
         qCDebug(lcQpaEvents) << "Automatic mouse capture " << window;
@@ -323,8 +401,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             window->requestActivate();
     } else if (platformWindow->hasMouseCapture()
                && platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)
-               && (msg.message == WM_LBUTTONUP || msg.message == WM_MBUTTONUP
-                   || msg.message == WM_RBUTTONUP || msg.message == WM_XBUTTONUP)
+               && mouseEvent.type == QEvent::MouseButtonRelease
                && !buttons) {
         platformWindow->setMouseGrabEnabled(false);
         qCDebug(lcQpaEvents) << "Releasing automatic mouse capture " << window;
@@ -390,8 +467,9 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         m_windowUnderMouse = currentWindowUnderMouse;
     }
 
-    if (!discardEvent) {
+    if (!discardEvent && mouseEvent.type != QEvent::None) {
         QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
+                                                 mouseEvent.button, mouseEvent.type,
                                                  QWindowsKeyMapper::queryKeyboardModifiers(),
                                                  source);
     }
@@ -420,9 +498,10 @@ static void redirectWheelEvent(QWindow *window, const QPoint &globalPos, int del
 {
     // If a window is blocked by modality, it can't get the event.
     if (isValidWheelReceiver(window)) {
+        const QPoint point = (orientation == Qt::Vertical) ? QPoint(0, delta) : QPoint(delta, 0);
         QWindowSystemInterface::handleWheelEvent(window,
                                                  QWindowsGeometryHint::mapFromGlobal(window, globalPos),
-                                                 globalPos, delta, orientation, mods);
+                                                 globalPos, QPoint(), point, mods);
     }
 }
 
