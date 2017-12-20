@@ -234,9 +234,13 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
       m_printer(nullptr),
       m_outputFormat(QPrinter::PdfFormat),
       m_units(QPageLayout::Point),
-      m_blockSignals(false)
+      m_blockSignals(false),
+      m_realCustomPageSizeIndex(-1)
 {
     m_ui.setupUi(this);
+
+    if (!QMetaType::hasRegisteredComparators<QPageSize>())
+        QMetaType::registerEqualsComparator<QPageSize>();
 
     QVBoxLayout *lay = new QVBoxLayout(m_ui.preview);
     m_pagePreview = new QPagePreview(m_ui.preview);
@@ -341,15 +345,18 @@ void QPageSetupWidget::initPageSizes()
 
     m_ui.pageSizeCombo->clear();
 
+    m_realCustomPageSizeIndex = -1;
+
     if (m_outputFormat == QPrinter::NativeFormat && !m_printerName.isEmpty()) {
         QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
         if (ps) {
             QPrintDevice printDevice = ps->createPrintDevice(m_printerName);
             const auto pageSizes = printDevice.supportedPageSizes();
             for (const QPageSize &pageSize : pageSizes)
-                m_ui.pageSizeCombo->addItem(pageSize.name(), QVariant::fromValue(pageSize.id()));
+                m_ui.pageSizeCombo->addItem(pageSize.name(), QVariant::fromValue(pageSize));
             if (m_ui.pageSizeCombo->count() > 0 && printDevice.supportsCustomPageSizes()) {
-                m_ui.pageSizeCombo->addItem(tr("Custom"), QVariant::fromValue(QPageSize::Custom));
+                m_ui.pageSizeCombo->addItem(tr("Custom"));
+                m_realCustomPageSizeIndex = m_ui.pageSizeCombo->count() - 1;
                 m_blockSignals = false;
                 return;
             }
@@ -359,10 +366,11 @@ void QPageSetupWidget::initPageSizes()
     // If PdfFormat or no available printer page sizes, populate with all page sizes
     for (int id = 0; id < QPageSize::LastPageSize; ++id) {
         if (QPageSize::PageSizeId(id) == QPageSize::Custom) {
-            m_ui.pageSizeCombo->addItem(tr("Custom"), QVariant::fromValue(QPageSize::Custom));
+            m_ui.pageSizeCombo->addItem(tr("Custom"));
+            m_realCustomPageSizeIndex = m_ui.pageSizeCombo->count() - 1;
         } else {
             QPageSize pageSize = QPageSize(QPageSize::PageSizeId(id));
-            m_ui.pageSizeCombo->addItem(pageSize.name(), QVariant::fromValue(pageSize.id()));
+            m_ui.pageSizeCombo->addItem(pageSize.name(), QVariant::fromValue(pageSize));
         }
     }
 
@@ -434,7 +442,9 @@ void QPageSetupWidget::updateWidget()
 
     m_ui.unitCombo->setCurrentIndex(m_ui.unitCombo->findData(QVariant::fromValue(m_units)));
 
-    m_ui.pageSizeCombo->setCurrentIndex(m_ui.pageSizeCombo->findData(QVariant::fromValue(m_pageLayout.pageSize().id())));
+    const bool isCustom = m_ui.pageSizeCombo->currentIndex() == m_realCustomPageSizeIndex && m_realCustomPageSizeIndex != -1;
+    if (!isCustom)
+        m_ui.pageSizeCombo->setCurrentIndex(m_ui.pageSizeCombo->findData(QVariant::fromValue(m_pageLayout.pageSize())));
 
     QMarginsF min;
     QMarginsF max;
@@ -466,8 +476,6 @@ void QPageSetupWidget::updateWidget()
     m_ui.bottomMargin->setMinimum(min.bottom());
     m_ui.bottomMargin->setMaximum(max.bottom());
     m_ui.bottomMargin->setValue(m_pageLayout.margins().bottom());
-
-    bool isCustom = m_ui.pageSizeCombo->currentData().value<QPageSize::PageSizeId>() == QPageSize::Custom;
 
     m_ui.pageWidth->setSuffix(suffix);
     m_ui.pageWidth->setValue(m_pageLayout.fullRect(m_units).width());
@@ -513,10 +521,10 @@ void QPageSetupWidget::pageSizeChanged()
     if (m_blockSignals)
         return;
 
-    QPageSize::PageSizeId id = m_ui.pageSizeCombo->currentData().value<QPageSize::PageSizeId>();
-    if (id != QPageSize::Custom) {
+    if (m_ui.pageSizeCombo->currentIndex() != m_realCustomPageSizeIndex) {
+        const QPageSize pageSize = m_ui.pageSizeCombo->currentData().value<QPageSize>();
         // TODO Set layout margin min/max to printer custom min/max
-        m_pageLayout.setPageSize(QPageSize(id));
+        m_pageLayout.setPageSize(pageSize);
     } else {
         QSizeF customSize;
         if (m_pageLayout.orientation() == QPageLayout::Landscape)

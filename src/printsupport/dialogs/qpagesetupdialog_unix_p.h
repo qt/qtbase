@@ -102,6 +102,7 @@ private:
     QPageLayout m_pageLayout;
     QPageLayout::Unit m_units;
     bool m_blockSignals;
+    int m_realCustomPageSizeIndex;
 };
 
 QT_END_NAMESPACE
