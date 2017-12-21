@@ -247,8 +247,6 @@ public:
           index(i),
           ptr(p),
           description(desc),
-          selected(-1),
-          selDescription(nullptr),
           parentItem(pi) {}
 
     ~QOptionTreeItem() {
@@ -259,10 +257,20 @@ public:
     int index;
     const void *ptr;
     const char *description;
-    int selected;
-    const char *selDescription;
     QOptionTreeItem *parentItem;
     QList<QOptionTreeItem*> childItems;
+};
+
+class QOptionTreeItemOption : public QOptionTreeItem
+{
+public:
+    QOptionTreeItemOption (int i, const void *p, const char *desc, QOptionTreeItem *pi)
+        : QOptionTreeItem(Option, i, p, desc, pi)
+    {
+    }
+
+    int selected;
+    const char *selDescription;
 };
 
 class QPPDOptionsModel : public QAbstractItemModel
@@ -285,7 +293,7 @@ public:
     QOptionTreeItem *rootItem;
     void parseGroups(QOptionTreeItem *parent);
     void parseOptions(QOptionTreeItem *parent);
-    void parseChoices(QOptionTreeItem *parent);
+    void parseChoices(QOptionTreeItemOption *parent);
 };
 
 class QPPDOptionsEditor : public QStyledItemDelegate
@@ -387,10 +395,11 @@ void QPrintPropertiesDialog::setCupsOptionsFromItems(QOptionTreeItem *parent) co
 {
     for (QOptionTreeItem *itm : qAsConst(parent->childItems)) {
         if (itm->type == QOptionTreeItem::Option) {
+            QOptionTreeItemOption *itmOption = static_cast<QOptionTreeItemOption *>(itm);
             const ppd_option_t *opt = static_cast<const ppd_option_t*>(itm->ptr);
-            if (qstrcmp(opt->defchoice, opt->choices[itm->selected].choice) != 0) {
+            if (qstrcmp(opt->defchoice, opt->choices[itmOption->selected].choice) != 0) {
                 QStringList cupsOptions = QCUPSSupport::cupsOptionsList(m_printer);
-                QCUPSSupport::setCupsOption(cupsOptions, QString::fromLatin1(opt->keyword), QString::fromLatin1(opt->choices[itm->selected].choice));
+                QCUPSSupport::setCupsOption(cupsOptions, QString::fromLatin1(opt->keyword), QString::fromLatin1(opt->choices[itmOption->selected].choice));
                 QCUPSSupport::setCupsOptions(m_printer, cupsOptions);
             }
         } else {
@@ -1153,12 +1162,15 @@ QVariant QPPDOptionsModel::data(const QModelIndex &index, int role) const
     break;
 
     case Qt::DisplayRole: {
-        if (index.column() == 0)
+        if (index.column() == 0) {
             return cupsCodec->toUnicode(itm->description);
-        else if (itm->type == QOptionTreeItem::Option && itm->selected > -1)
-            return cupsCodec->toUnicode(itm->selDescription);
-        else
-            return QVariant();
+        } else if (itm->type == QOptionTreeItem::Option) {
+            QOptionTreeItemOption *itmOption = static_cast<QOptionTreeItemOption *>(itm);
+            if (itmOption->selected > -1)
+                return cupsCodec->toUnicode(itmOption->selDescription);
+        }
+
+        return QVariant();
     }
     break;
 
@@ -1240,14 +1252,14 @@ void QPPDOptionsModel::parseOptions(QOptionTreeItem *parent)
     const ppd_group_t *group = static_cast<const ppd_group_t*>(parent->ptr);
     for (int i = 0; i < group->num_options; ++i) {
         if (!isBlacklistedOption(group->options[i].keyword)) {
-            QOptionTreeItem *opt = new QOptionTreeItem(QOptionTreeItem::Option, i, &group->options[i], group->options[i].text, parent);
+            QOptionTreeItemOption *opt = new QOptionTreeItemOption(i, &group->options[i], group->options[i].text, parent);
             parent->childItems.append(opt);
             parseChoices(opt);
         }
     }
 }
 
-void QPPDOptionsModel::parseChoices(QOptionTreeItem *parent)
+void QPPDOptionsModel::parseChoices(QOptionTreeItemOption *parent)
 {
     const ppd_option_t *option = static_cast<const ppd_option_t*>(parent->ptr);
     bool marked = false;
@@ -1307,7 +1319,7 @@ void QPPDOptionsEditor::setEditorData(QWidget *editor, const QModelIndex &index)
         return;
 
     QComboBox *cb = static_cast<QComboBox*>(editor);
-    QOptionTreeItem *itm = static_cast<QOptionTreeItem*>(index.internalPointer());
+    QOptionTreeItemOption *itm = static_cast<QOptionTreeItemOption*>(index.internalPointer());
 
     if (itm->selected == -1)
         cb->addItem(QString());
@@ -1323,7 +1335,7 @@ void QPPDOptionsEditor::setEditorData(QWidget *editor, const QModelIndex &index)
 void QPPDOptionsEditor::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     QComboBox *cb = static_cast<QComboBox*>(editor);
-    QOptionTreeItem *itm = static_cast<QOptionTreeItem*>(index.internalPointer());
+    QOptionTreeItemOption *itm = static_cast<QOptionTreeItemOption*>(index.internalPointer());
 
     if (itm->selected == cb->currentIndex())
         return;
