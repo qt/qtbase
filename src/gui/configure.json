@@ -715,7 +715,7 @@
                     "// window and pixmap types will be different than what an X-based platform",
                     "// plugin would expect."
                 ],
-                "include": [ "EGL/egl.h", "xcb/xcb.h", "X11/Xlib.h", "X11/Xlib-xcb.h" ],
+                "include": [ "EGL/egl.h", "X11/Xlib.h" ],
                 "main": [
                     "Display *dpy = EGL_DEFAULT_DISPLAY;",
                     "EGLNativeDisplayType egldpy = XOpenDisplay(\"\");",
@@ -725,7 +725,7 @@
                     "XCloseDisplay(dpy);"
                 ]
             },
-            "use": "egl xcb_xlib"
+            "use": "egl xlib"
         },
         "egl-brcm": {
             "label": "Broadcom EGL (Raspberry Pi)",
@@ -1229,6 +1229,11 @@
             "condition": "config.integrity && features.eglfs && tests.egl-openwfd",
             "output": [ "privateFeature" ]
         },
+        "eglfs_x11": {
+            "label": "EGLFS X11",
+            "condition": "features.eglfs && features.xcb && features.xcb-xlib && features.egl_x11",
+            "output": [ "privateFeature" ]
+        },
         "gif": {
             "label": "GIF",
             "condition": "features.imageformatplugin",
@@ -1709,7 +1714,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "EGLFS details",
                     "condition": "features.eglfs",
                     "entries": [
-                        "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_rcar", "eglfs_egldevice", "eglfs_gbm", "eglfs_vsp2", "eglfs_mali", "eglfs_brcm", "egl_x11"
+                        "eglfs_openwfd", "eglfs_viv", "eglfs_viv_wl", "eglfs_rcar", "eglfs_egldevice", "eglfs_gbm", "eglfs_vsp2", "eglfs_mali", "eglfs_brcm", "eglfs_x11"
                     ]
                 },
                 "linuxfb", "vnc", "mirclient",
