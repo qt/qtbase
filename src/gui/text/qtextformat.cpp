@@ -201,8 +201,10 @@ public:
     inline void insertProperty(qint32 key, const QVariant &value)
     {
         hashDirty = true;
-        if (key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
+        if ((key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
+                || key == QTextFormat::FontLetterSpacingType) {
             fontDirty = true;
+        }
         for (int i = 0; i < props.count(); ++i)
             if (props.at(i).key == key) {
                 props[i].value = value;
@@ -216,8 +218,10 @@ public:
         for (int i = 0; i < props.count(); ++i)
             if (props.at(i).key == key) {
                 hashDirty = true;
-                if (key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
+                if ((key >= QTextFormat::FirstFontProperty && key <= QTextFormat::LastFontProperty)
+                        || key == QTextFormat::FontLetterSpacingType) {
                     fontDirty = true;
+                }
                 props.remove(i);
                 return;
             }
