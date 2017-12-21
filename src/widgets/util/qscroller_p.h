@@ -119,7 +119,6 @@ public:
     bool prepareScrolling(const QPointF &position);
     void handleDrag(const QPointF &position, qint64 timestamp);
 
-    QPointF realDpi(int screen) const;
     QPointF dpi() const;
     void setDpi(const QPointF &dpi);
     void setDpiFromWidget(QWidget *widget);
