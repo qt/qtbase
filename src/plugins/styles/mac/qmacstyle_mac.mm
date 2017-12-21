@@ -5174,11 +5174,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             const auto cw = QMacStylePrivate::CocoaControl(controlType, cocoaSize);
             NSScroller *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
 
+            const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
+            const bool hasDarkBg = bgColor.red() < 128 && bgColor.green() < 128 && bgColor.blue() < 128;
             if (isTransient) {
                 // macOS behavior: as soon as one color channel is >= 128,
                 // the background is considered bright, scroller is dark.
-                const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
-                const bool hasDarkBg = bgColor.red() < 128 && bgColor.green() < 128 && bgColor.blue() < 128;
                 scroller.knobStyle = hasDarkBg? NSScrollerKnobStyleLight : NSScrollerKnobStyleDark;
             } else {
                 scroller.knobStyle = NSScrollerKnobStyleDefault;
@@ -5228,7 +5228,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     QCFType<CGPathRef> knobPath = CGPathCreateWithRoundedRect(knobRect, knobRadius, knobRadius, nullptr);
                     CGContextAddPath(cg, knobPath);
                     CGContextSetAlpha(cg, 0.5);
-                    CGContextSetFillColorWithColor(cg, NSColor.blackColor.CGColor);
+                    CGColorRef knobColor = hasDarkBg ? NSColor.whiteColor.CGColor : NSColor.blackColor.CGColor;
+                    CGContextSetFillColorWithColor(cg, knobColor);
                     CGContextFillPath(cg);
                 } else {
                     [scroller drawKnob];
