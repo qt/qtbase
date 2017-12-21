@@ -44,6 +44,13 @@
 #include <algorithm>    // for std::generate
 #include <random>       // for std::mt19937
 
+#ifdef min
+#  undef min
+#endif
+#ifdef max
+#  undef max
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QRandomGenerator
@@ -160,8 +167,8 @@ public:
     void seed(quint32 s = 1) { *this = { s }; }
     void seed(std::seed_seq &sseq) Q_DECL_NOTHROW { *this = { sseq }; }
     Q_CORE_EXPORT void discard(unsigned long long z);
-    static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
-    static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
+    static Q_DECL_CONSTEXPR result_type min() { return std::numeric_limits<result_type>::min(); }
+    static Q_DECL_CONSTEXPR result_type max() { return std::numeric_limits<result_type>::max(); }
 
     static inline Q_DECL_CONST_FUNCTION QRandomGenerator *system();
     static inline Q_DECL_CONST_FUNCTION QRandomGenerator *global();
@@ -236,8 +243,8 @@ public:
         QRandomGenerator::discard(z * 2);
     }
 
-    static Q_DECL_CONSTEXPR result_type min() { return (std::numeric_limits<result_type>::min)(); }
-    static Q_DECL_CONSTEXPR result_type max() { return (std::numeric_limits<result_type>::max)(); }
+    static Q_DECL_CONSTEXPR result_type min() { return std::numeric_limits<result_type>::min(); }
+    static Q_DECL_CONSTEXPR result_type max() { return std::numeric_limits<result_type>::max(); }
     static Q_DECL_CONST_FUNCTION Q_CORE_EXPORT QRandomGenerator64 *system();
     static Q_DECL_CONST_FUNCTION Q_CORE_EXPORT QRandomGenerator64 *global();
     static Q_CORE_EXPORT QRandomGenerator64 securelySeeded();
