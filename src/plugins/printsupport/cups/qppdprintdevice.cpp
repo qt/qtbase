@@ -443,8 +443,10 @@ bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, cons
 {
     if (key == PDPK_PpdOption) {
         const QStringList values = value.toStringList();
-        if (values.count() == 2)
-            return ppdMarkOption(m_ppd, values[0].toLatin1(), values[1].toLatin1()) == 0;
+        if (values.count() == 2) {
+            ppdMarkOption(m_ppd, values[0].toLatin1(), values[1].toLatin1());
+            return true;
+        }
     }
 
     return false;

@@ -141,6 +141,7 @@ public:
 
 private slots:
     void reject() override;
+    void accept() override;
 
 private:
     friend class QUnixPrintWidgetPrivate;
@@ -298,6 +299,12 @@ public:
     QPrintDevice *currentPrintDevice() const;
     QTextCodec *cupsCodec() const;
 
+    void emitConflictsChanged();
+    bool hasConflicts() const;
+
+signals:
+    void hasConflictsChanged(bool conflicts);
+
 private:
     void parseGroups(QOptionTreeItem *parent);
     void parseOptions(QOptionTreeItem *parent);
@@ -305,6 +312,8 @@ private:
 
     void setCupsOptionsFromItems(QPrinter *printer, QOptionTreeItem *parent) const;
     void reject(QOptionTreeItem *item);
+    void emitDataChanged(QOptionTreeItem *item, const QModelIndex &itemIndex, bool *conflictsFound);
+    bool hasConflicts(QOptionTreeItem *item) const;
 
     QPrintDevice *m_currentPrintDevice;
     QTextCodec *m_cupsCodec;
@@ -377,6 +386,9 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *
         widget.treeView->setModel(nullptr);
         widget.tabs->setTabEnabled(advancedTabIndex, false);
     }
+
+    widget.conflictsLabel->setVisible(m_cupsOptionsModel->hasConflicts());
+    connect(m_cupsOptionsModel, &QPPDOptionsModel::hasConflictsChanged, widget.conflictsLabel, &QLabel::setVisible);
 #else
     Q_UNUSED(currentPrintDevice)
     widget.tabs->setTabEnabled(advancedTabIndex, false);
@@ -411,6 +423,21 @@ void QPrintPropertiesDialog::reject()
     m_cupsOptionsModel->reject();
 #endif
     QDialog::reject();
+}
+
+void QPrintPropertiesDialog::accept()
+{
+#if QT_CONFIG(cups)
+    if (m_cupsOptionsModel->hasConflicts()) {
+        widget.tabs->setCurrentWidget(widget.cupsPropertiesPage);
+        const QMessageBox::StandardButton answer = QMessageBox::warning(this, tr("Advanced option conflicts"),
+                                                                        tr("There are conflicts in some advanced options. Do you want to fix them?"),
+                                                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        if (answer != QMessageBox::No)
+            return;
+    }
+#endif
+    QDialog::accept();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1180,6 +1207,22 @@ QVariant QPPDOptionsModel::data(const QModelIndex &index, int role) const
     }
     break;
 
+    case Qt::DecorationRole: {
+        if (itm->type == QOptionTreeItem::Option && index.column() == 1) {
+            const ppd_option_t *option = static_cast<const ppd_option_t*>(itm->ptr);
+            if (option->conflicted) {
+                const QIcon warning = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning, nullptr, nullptr);
+                if (!warning.isNull())
+                    return warning;
+
+                qWarning() << "Current application style returned a null icon for SP_MessageBoxWarning.";
+                return QColor(Qt::red);
+            }
+        }
+        return QVariant();
+    }
+    break;
+
     }
 
     return QVariant();
@@ -1316,6 +1359,55 @@ void QPPDOptionsModel::parseChoices(QOptionTreeItemOption *parent)
     }
 }
 
+bool QPPDOptionsModel::hasConflicts() const
+{
+    return hasConflicts(m_rootItem);
+}
+
+bool QPPDOptionsModel::hasConflicts(QOptionTreeItem *item) const
+{
+    if (item->type == QOptionTreeItem::Option) {
+        const ppd_option_t *option = static_cast<const ppd_option_t*>(item->ptr);
+        return option->conflicted;
+    }
+
+    for (QOptionTreeItem *child : qAsConst(item->childItems)) {
+        if (hasConflicts(child))
+            return true;
+    }
+
+    return false;
+}
+
+void QPPDOptionsModel::emitConflictsChanged()
+{
+    bool conflictsFound = false;
+    emitDataChanged(m_rootItem, QModelIndex(), &conflictsFound);
+
+    emit hasConflictsChanged(conflictsFound);
+}
+
+void QPPDOptionsModel::emitDataChanged(QOptionTreeItem *item, const QModelIndex &itemIndex, bool *conflictsFound)
+{
+    if (item->type == QOptionTreeItem::Option) {
+        // We just emit DecorationRole dataChanged for all the leaves
+        // and let the view requery the value
+        const QModelIndex secondColItem = index(itemIndex.row(), 1, itemIndex.parent());
+        emit dataChanged(secondColItem, secondColItem, QVector<int>() << Qt::DecorationRole);
+
+        if (conflictsFound && *conflictsFound == false) {
+            const ppd_option_t *option = static_cast<const ppd_option_t*>(item->ptr);
+            if (option->conflicted && conflictsFound)
+                *conflictsFound = true;
+        }
+    }
+
+    for (int i = 0; i < item->childItems.count(); ++i) {
+        QOptionTreeItem *child = item->childItems.at(i);
+        emitDataChanged(child, index(i, 0, itemIndex), conflictsFound);
+    }
+}
+
 QVariant QPPDOptionsModel::headerData(int section, Qt::Orientation, int role) const
 {
     if (role != Qt::DisplayRole)
@@ -1404,10 +1496,11 @@ void QPPDOptionsEditor::setModelData(QWidget *editor, QAbstractItemModel *model,
     QPPDOptionsModel *m = static_cast<QPPDOptionsModel*>(model);
 
     const auto values = QStringList{} << QString::fromLatin1(opt->keyword) << QString::fromLatin1(opt->choices[cb->currentIndex()].choice);
-    if (m->currentPrintDevice()->setProperty(PDPK_PpdOption, values)) {
-        itm->selected = cb->currentIndex();
-        itm->selDescription = static_cast<const ppd_option_t*>(itm->ptr)->choices[itm->selected].text;
-    }
+    m->currentPrintDevice()->setProperty(PDPK_PpdOption, values);
+    itm->selected = cb->currentIndex();
+    itm->selDescription = static_cast<const ppd_option_t*>(itm->ptr)->choices[itm->selected].text;
+
+    m->emitConflictsChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
