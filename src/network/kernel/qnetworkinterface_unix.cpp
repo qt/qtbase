@@ -341,6 +341,7 @@ QT_END_INCLUDE_NAMESPACE
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
+    Q_UNUSED(getMtu)
     QList<QNetworkInterfacePrivate *> interfaces;
     QSet<QString> seenInterfaces;
     QVarLengthArray<int, 16> seenIndexes;   // faster than QSet<int>
@@ -564,6 +565,7 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
+    Q_UNUSED(getMtu)
     QList<QNetworkInterfacePrivate *> interfaces;
 
     // make sure there's one entry for each interface
