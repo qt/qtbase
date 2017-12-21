@@ -128,5 +128,44 @@ long q_OpenSSL_version_num();
 const char *q_OpenSSL_version(int type);
 
 unsigned long q_SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *session);
+unsigned long q_SSL_set_options(SSL *s, unsigned long op);
+
+// Functions and types required for DTLS support:
+extern "C"
+{
+
+typedef int (*CookieVerifyCallback)(SSL *, const unsigned char *, unsigned);
+typedef int (*DgramWriteCallback) (BIO *, const char *, int);
+typedef int (*DgramReadCallback) (BIO *, char *, int);
+typedef int (*DgramPutsCallback) (BIO *, const char *);
+typedef long (*DgramCtrlCallback) (BIO *, int, long, void *);
+typedef int (*DgramCreateCallback) (BIO *);
+typedef int (*DgramDestroyCallback) (BIO *);
+
+}
+
+int q_DTLSv1_listen(SSL *s, BIO_ADDR *client);
+BIO_ADDR *q_BIO_ADDR_new();
+void q_BIO_ADDR_free(BIO_ADDR *ap);
+int q_BIO_ADDR_family(const BIO_ADDR *ap);
+unsigned short q_BIO_ADDR_rawport(const BIO_ADDR *ap);
+int q_BIO_ADDR_rawaddress(const BIO_ADDR *ap, void *p, size_t *l);
+int q_BIO_ADDR_rawmake(BIO_ADDR *ap, int family, const void *where, size_t wherelen,
+                       unsigned short port);
+
+// API we need for a custom dgram BIO:
+BIO_METHOD *q_BIO_meth_new(int type, const char *name);
+void q_BIO_meth_free(BIO_METHOD *biom);
+int q_BIO_meth_set_write(BIO_METHOD *biom, DgramWriteCallback);
+int q_BIO_meth_set_read(BIO_METHOD *biom, DgramReadCallback);
+int q_BIO_meth_set_puts(BIO_METHOD *biom, DgramPutsCallback);
+int q_BIO_meth_set_ctrl(BIO_METHOD *biom, DgramCtrlCallback);
+int q_BIO_meth_set_create(BIO_METHOD *biom, DgramCreateCallback);
+int q_BIO_meth_set_destroy(BIO_METHOD *biom, DgramDestroyCallback);
+void q_BIO_set_data(BIO *a, void *ptr);
+void *q_BIO_get_data(BIO *a);
+void q_BIO_set_init(BIO *a, int init);
+int q_BIO_get_shutdown(BIO *a);
+void q_BIO_set_shutdown(BIO *a, int shut);
 
 #endif
