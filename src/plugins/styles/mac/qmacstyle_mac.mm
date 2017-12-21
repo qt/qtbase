@@ -5190,7 +5190,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 break;
 
             if (isTransient) {
-                CGContextBeginTransparencyLayer(cg, NULL);
+                CGContextBeginTransparencyLayerWithRect(cg, scroller.frame, nullptr);
                 CGContextSetAlpha(cg, opacity);
             }
 
