@@ -517,16 +517,14 @@
         "xcb_xlib": {
             "label": "XCB Xlib",
             "test": {
-                "include": [ "xcb/xcb.h", "X11/Xlib.h", "X11/Xlib-xcb.h" ],
-                "main": [
-                    "Display *dpy = XOpenDisplay(\"\");",
-                    "(void) XGetXCBConnection(dpy);"
-                ]
+                "include": "X11/Xlib-xcb.h",
+                "main": "(void) XGetXCBConnection((Display *)0);"
             },
             "sources": [
-                { "type": "pkgConfig", "args": "x11-xcb x11 xcb" },
-                "-lxcb -lX11 -lX11-xcb"
-            ]
+                { "type": "pkgConfig", "args": "x11-xcb" },
+                "-lX11-xcb"
+            ],
+            "use": "xcb xlib"
         },
         "xcb_xkb": {
             "label": "XCB XKB >= 1.10",
@@ -543,14 +541,15 @@
                 ]
             },
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-xkb >= 1.10 xcb" },
-                "-lxcb-xkb -lxcb"
-            ]
+                { "type": "pkgConfig", "args": "xcb-xkb >= 1.10" },
+                "-lxcb-xkb"
+            ],
+            "use": "xcb"
         },
         "xcb_render": {
             "label": "XCB XRender",
             "test": {
-                "include": [ "xcb/xcb.h", "xcb/render.h" ],
+                "include": "xcb/render.h",
                 "tail": [
                     "// 'template' is used as a function argument name in xcb_renderutil.h",
                     "#define template template_param",
@@ -563,7 +562,7 @@
                 "main": [
                     "int primaryScreen = 0;",
                     "xcb_generic_error_t *error = 0;",
-                    "xcb_connection_t *connection = xcb_connect(\"\", &primaryScreen);",
+                    "xcb_connection_t *connection = 0;",
                     "xcb_render_query_pict_formats_cookie_t formatsCookie =",
                     "    xcb_render_query_pict_formats(connection);",
                     "xcb_render_query_pict_formats_reply_t *formatsReply =",
@@ -574,17 +573,18 @@
                 ]
             },
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-renderutil xcb-render xcb" },
-                "-lxcb-render-util -lxcb-render -lxcb"
-            ]
+                { "type": "pkgConfig", "args": "xcb-renderutil xcb-render" },
+                "-lxcb-render-util -lxcb-render"
+            ],
+            "use": "xcb"
         },
         "xcb_glx": {
             "label": "XCB GLX",
             "test": {
-                "include": [ "xcb/xcb.h", "xcb/glx.h" ],
+                "include": "xcb/glx.h",
                 "main": [
                     "int primaryScreen = 0;",
-                    "xcb_connection_t *connection = xcb_connect(\"\", &primaryScreen);",
+                    "xcb_connection_t *connection = 0;",
                     "xcb_generic_error_t *error = 0;",
                     "xcb_glx_query_version_cookie_t xglx_query_cookie = xcb_glx_query_version(",
                     "        connection, XCB_GLX_MAJOR_VERSION, XCB_GLX_MINOR_VERSION);",
@@ -592,17 +592,17 @@
                 ]
             },
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-glx xcb" },
-                "-lxcb-glx -lxcb"
-            ]
+                { "type": "pkgConfig", "args": "xcb-glx" },
+                "-lxcb-glx"
+            ],
+            "use": "xcb"
         },
         "xcb_xinput": {
             "label": "XCB XInput",
             "test": {
-                "include": [ "xcb/xcb.h", "xcb/xinput.h" ],
+                "include": "xcb/xinput.h",
                 "main": [
-                    "int primaryScreen = 0;",
-                    "xcb_connection_t *connection = xcb_connect(\"\", &primaryScreen);",
+                    "xcb_connection_t *connection = 0;",
                     "xcb_generic_error_t *error = 0;",
                     "xcb_input_xi_query_version_cookie_t xinput_query_cookie = xcb_input_xi_query_version(",
                     "        connection, XCB_INPUT_MAJOR_VERSION, XCB_INPUT_MINOR_VERSION);",
@@ -610,9 +610,10 @@
                 ]
             },
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-xinput >= 1.12 xcb" },
-                "-lxcb-xinput -lxcb"
-            ]
+                { "type": "pkgConfig", "args": "xcb-xinput >= 1.12" },
+                "-lxcb-xinput"
+            ],
+            "use": "xcb"
         },
         "xkbcommon": {
             "label": "xkbcommon >= 0.5.0",
