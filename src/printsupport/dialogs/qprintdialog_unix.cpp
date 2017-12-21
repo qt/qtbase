@@ -139,6 +139,9 @@ public:
 
     void showEvent(QShowEvent *event) override;
 
+private slots:
+    void reject() override;
+
 private:
     friend class QUnixPrintWidgetPrivate;
     QPrinter *m_printer;
@@ -270,6 +273,7 @@ public:
     }
 
     int selected;
+    int originallySelected;
     const char *selDescription;
 };
 
@@ -289,6 +293,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const override;
 
     void setCupsOptionsFromItems(QPrinter *printer) const;
+    void reject();
 
     QPrintDevice *currentPrintDevice() const;
     QTextCodec *cupsCodec() const;
@@ -299,6 +304,7 @@ private:
     void parseChoices(QOptionTreeItemOption *parent);
 
     void setCupsOptionsFromItems(QPrinter *printer, QOptionTreeItem *parent) const;
+    void reject(QOptionTreeItem *item);
 
     QPrintDevice *m_currentPrintDevice;
     QTextCodec *m_cupsCodec;
@@ -397,6 +403,14 @@ void QPrintPropertiesDialog::showEvent(QShowEvent *event)
 {
     widget.treeView->resizeColumnToContents(0);
     QDialog::showEvent(event);
+}
+
+void QPrintPropertiesDialog::reject()
+{
+#if QT_CONFIG(cups)
+    m_cupsOptionsModel->reject();
+#endif
+    QDialog::reject();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1297,6 +1311,7 @@ void QPPDOptionsModel::parseChoices(QOptionTreeItemOption *parent)
             parent->selected = i;
             parent->selDescription = option->choices[i].text;
         }
+        parent->originallySelected = parent->selected;
         parent->childItems.append(choice);
     }
 }
@@ -1314,6 +1329,27 @@ QVariant QPPDOptionsModel::headerData(int section, Qt::Orientation, int role) co
     }
 
     return QVariant();
+}
+
+void QPPDOptionsModel::reject()
+{
+    reject(m_rootItem);
+}
+
+void QPPDOptionsModel::reject(QOptionTreeItem *item)
+{
+    if (item->type == QOptionTreeItem::Option) {
+        QOptionTreeItemOption *itemOption = static_cast<QOptionTreeItemOption *>(item);
+
+        const ppd_option_t *option = static_cast<const ppd_option_t*>(item->ptr);
+        const char *choice = itemOption->originallySelected != -1 ? option->choices[itemOption->originallySelected].choice
+                                                                  : option->defchoice;
+        const auto values = QStringList{} << QString::fromLatin1(option->keyword) << QString::fromLatin1(choice);
+        m_currentPrintDevice->setProperty(PDPK_PpdOption, values);
+    }
+
+    for (QOptionTreeItem *child : qAsConst(item->childItems))
+        reject(child);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
