@@ -76,6 +76,7 @@ public:
         //Connecting,
         LoggingIn,
         CheckingFeatures,
+        ResolvingPath,
         Statting,
         Transferring,
         Disconnecting
@@ -107,8 +108,8 @@ private:
     QPointer<QNetworkAccessCachedFtpConnection> ftp;
     QIODevice *uploadDevice;
     qint64 totalBytes;
-    int helpId, sizeId, mdtmId;
-    bool supportsSize, supportsMdtm;
+    int helpId, sizeId, mdtmId, pwdId;
+    bool supportsSize, supportsMdtm, supportsPwd;
     State state;
 };
 

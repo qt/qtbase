@@ -102,8 +102,8 @@ public:
 };
 
 QNetworkAccessFtpBackend::QNetworkAccessFtpBackend()
-    : ftp(0), uploadDevice(0), totalBytes(0), helpId(-1), sizeId(-1), mdtmId(-1),
-    supportsSize(false), supportsMdtm(false), state(Idle)
+    : ftp(0), uploadDevice(0), totalBytes(0), helpId(-1), sizeId(-1), mdtmId(-1), pwdId(-1),
+    supportsSize(false), supportsMdtm(false), supportsPwd(false), state(Idle)
 {
 }
 
@@ -302,13 +302,38 @@ void QNetworkAccessFtpBackend::ftpDone()
 
     if (state == LoggingIn) {
         state = CheckingFeatures;
-        if (operation() == QNetworkAccessManager::GetOperation) {
-            // send help command to find out if server supports "SIZE" and "MDTM"
+        // send help command to find out if server supports SIZE, MDTM, and PWD
+        if (operation() == QNetworkAccessManager::GetOperation
+            || operation() == QNetworkAccessManager::PutOperation) {
             helpId = ftp->rawCommand(QLatin1String("HELP")); // get supported commands
         } else {
             ftpDone();
         }
     } else if (state == CheckingFeatures) {
+        // If a URL path starts with // prefix (/%2F decoded), the resource will
+        // be retrieved by an absolute path starting with the root directory.
+        // For the other URLs, the working directory is retrieved by PWD command
+        // and prepended to the resource path as an absolute path starting with
+        // the working directory.
+        state = ResolvingPath;
+        QString path = url().path();
+        if (path.startsWith(QLatin1String("//")) || supportsPwd == false) {
+            ftpDone(); // no commands sent, move to the next state
+        } else {
+            // If a path starts with /~/ prefix, its prefix will be replaced by
+            // the working directory as an absolute path starting with working
+            // directory.
+            if (path.startsWith(QLatin1String("/~/"))) {
+                // Remove leading /~ symbols
+                QUrl newUrl = url();
+                newUrl.setPath(path.mid(2));
+                setUrl(newUrl);
+            }
+
+            // send PWD command to retrieve the working directory
+            pwdId = ftp->rawCommand(QLatin1String("PWD"));
+        }
+    } else if (state == ResolvingPath) {
         state = Statting;
         if (operation() == QNetworkAccessManager::GetOperation) {
             // logged in successfully, send the stat requests (if supported)
@@ -366,6 +391,34 @@ void QNetworkAccessFtpBackend::ftpRawCommandReply(int code, const QString &text)
             supportsSize = true;
         if (text.contains(QLatin1String("MDTM"), Qt::CaseSensitive))
             supportsMdtm = true;
+        if (text.contains(QLatin1String("PWD"), Qt::CaseSensitive))
+            supportsPwd = true;
+    } else if (id == pwdId && code == 257) {
+        QString pwdPath;
+        int startIndex = text.indexOf('"');
+        int stopIndex = text.lastIndexOf('"');
+        if (stopIndex - startIndex) {
+            // The working directory is a substring between \" symbols.
+            startIndex++; // skip the first \" symbol
+            pwdPath = text.mid(startIndex, stopIndex - startIndex);
+        } else {
+            // If there is no or only one \" symbol, use all the characters of
+            // text.
+            pwdPath = text;
+        }
+
+        // If a URL path starts with the working directory prefix, its resource
+        // will be retrieved from the working directory. Otherwise, the path of
+        // the working directory is prepended to the resource path.
+        QString urlPath = url().path();
+        if (!urlPath.startsWith(pwdPath)) {
+            if (pwdPath.endsWith(QLatin1Char('/')))
+                pwdPath.chop(1);
+            // Prepend working directory to the URL path
+            QUrl newUrl = url();
+            newUrl.setPath(pwdPath % urlPath);
+            setUrl(newUrl);
+        }
     } else if (code == 213) {          // file status
         if (id == sizeId) {
             // reply to the size command
