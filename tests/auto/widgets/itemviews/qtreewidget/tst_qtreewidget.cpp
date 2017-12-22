@@ -159,6 +159,7 @@ private slots:
     void taskQTBUG_34717_collapseAtBottom();
     void task20345_sortChildren();
     void getMimeDataWithInvalidItem();
+    void testVisualItemRect();
 
 public slots:
     void itemSelectionChanged();
@@ -3460,6 +3461,35 @@ void tst_QTreeWidget::getMimeDataWithInvalidItem()
     QTest::ignoreMessage(QtWarningMsg, "QTreeWidget::mimeData: Null-item passed");
     QMimeData *md = w.mimeData(QList<QTreeWidgetItem*>() << nullptr);
     QVERIFY(!md);
+}
+
+// visualItemRect returned a wrong rect when the columns were moved
+// (-> logical index != visual index). see QTBUG-28733
+void tst_QTreeWidget::testVisualItemRect()
+{
+    QTreeWidget tw;
+    tw.setColumnCount(2);
+    QTreeWidgetItem *item = new QTreeWidgetItem(&tw);
+    item->setText(0, "text 0");
+    item->setText(1, "text 1");
+
+    static const int sectionSize = 30;
+    tw.header()->setStretchLastSection(false);
+    tw.header()->setMinimumSectionSize(sectionSize);
+    tw.header()->resizeSection(0, sectionSize);
+    tw.header()->resizeSection(1, sectionSize);
+    tw.setRootIsDecorated(false);
+    tw.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tw));
+
+    QRect r = tw.visualItemRect(item);
+    QCOMPARE(r.width(), sectionSize * 2);   // 2 columns
+    tw.header()->moveSection(1, 0);
+    r = tw.visualItemRect(item);
+    QCOMPARE(r.width(), sectionSize * 2);   // 2 columns
+    tw.hideColumn(0);
+    r = tw.visualItemRect(item);
+    QCOMPARE(r.width(), sectionSize);
 }
 
 QTEST_MAIN(tst_QTreeWidget)
