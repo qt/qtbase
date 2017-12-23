@@ -3411,6 +3411,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 QRect ir = toolbutton->rect;
                 QStyleOptionToolButton newBtn = *toolbutton;
                 newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() - mbi + 4, mbi - 6, mbi - 6);
+                newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
             }
         }
