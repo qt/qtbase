@@ -409,6 +409,11 @@ QXmlStreamReader::QXmlStreamReader(const QByteArray &data)
 /*!
   Creates a new stream reader that reads from \a data.
 
+  This function should only be used if the XML header either says the encoding
+  is "UTF-8" or lacks any encoding information (the latter is the case of
+  QXmlStreamWriter writing to a QString). Any other encoding is likely going to
+  cause data corruption ("mojibake").
+
   \sa addData(), clear(), setDevice()
  */
 QXmlStreamReader::QXmlStreamReader(const QString &data)
@@ -3268,6 +3273,9 @@ QXmlStreamWriter::QXmlStreamWriter(QByteArray *array)
 
 
 /*!  Constructs a stream writer that writes into \a string.
+ *
+ * Note that when writing to QString, QXmlStreamWriter ignores the codec set
+ * with setCodec(). See that function for more information.
  */
 QXmlStreamWriter::QXmlStreamWriter(QString *string)
     : d_ptr(new QXmlStreamWriterPrivate(this))
@@ -3326,6 +3334,12 @@ QIODevice *QXmlStreamWriter::device() const
     gets written when you call writeStartDocument(). Call this
     function before calling writeStartDocument().
 
+    \note When writing the XML to a QString, the codec information is ignored
+    and the XML header will not include any encoding information, since all
+    QStrings are UTF-16. If you later convert the QString to an 8-bit format,
+    you must arrange for the encoding information to be transmitted
+    out-of-band.
+
     \sa codec()
 */
 void QXmlStreamWriter::setCodec(QTextCodec *codec)
@@ -3344,6 +3358,12 @@ void QXmlStreamWriter::setCodec(QTextCodec *codec)
     specified by \a codecName. Common values for \c codecName include
     "ISO 8859-1", "UTF-8", and "UTF-16". If the encoding isn't
     recognized, nothing happens.
+
+    \note When writing the XML to a QString, the codec information is ignored
+    and the XML header will not include any encoding information, since all
+    QStrings are UTF-16. If you later convert the QString to an 8-bit format,
+    you must arrange for the encoding information to be transmitted
+    out-of-band.
 
     \sa QTextCodec::codecForName()
 */
