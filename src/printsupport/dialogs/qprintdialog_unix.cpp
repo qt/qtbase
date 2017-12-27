@@ -1148,6 +1148,11 @@ void QUnixPrintWidget::updatePrinter()
 
 #if QT_CONFIG(cups)
 
+static bool isBlacklistedGroup(ppd_group_t *group) Q_DECL_NOTHROW
+{
+    return qstrcmp(group->name, "InstallableOptions") == 0;
+};
+
 QPPDOptionsModel::QPPDOptionsModel(QPrintDevice *currentPrintDevice, QObject *parent)
     : QAbstractItemModel(parent)
     , m_currentPrintDevice(currentPrintDevice)
@@ -1159,10 +1164,12 @@ QPPDOptionsModel::QPPDOptionsModel(QPrintDevice *currentPrintDevice, QObject *pa
     if (ppd) {
         m_cupsCodec = QTextCodec::codecForName(ppd->lang_encoding);
         for (int i = 0; i < ppd->num_groups; ++i) {
-            QOptionTreeItem *group = new QOptionTreeItem(QOptionTreeItem::Group, i, &ppd->groups[i], m_rootItem);
-            m_rootItem->childItems.append(group);
-            parseGroups(group); // parse possible subgroups
-            parseOptions(group); // parse options
+            if (!isBlacklistedGroup(&ppd->groups[i])) {
+                QOptionTreeItem *group = new QOptionTreeItem(QOptionTreeItem::Group, i, &ppd->groups[i], m_rootItem);
+                m_rootItem->childItems.append(group);
+                parseGroups(group); // parse possible subgroups
+                parseOptions(group); // parse options
+            }
         }
     }
 
@@ -1322,10 +1329,12 @@ void QPPDOptionsModel::parseGroups(QOptionTreeItem *parent)
 
     if (group) {
         for (int i = 0; i < group->num_subgroups; ++i) {
-            QOptionTreeItem *subgroup = new QOptionTreeItem(QOptionTreeItem::Group, i, &group->subgroups[i], parent);
-            parent->childItems.append(subgroup);
-            parseGroups(subgroup); // parse possible subgroups
-            parseOptions(subgroup); // parse options
+            if (!isBlacklistedGroup(&group->subgroups[i])) {
+                QOptionTreeItem *subgroup = new QOptionTreeItem(QOptionTreeItem::Group, i, &group->subgroups[i], parent);
+                parent->childItems.append(subgroup);
+                parseGroups(subgroup); // parse possible subgroups
+                parseOptions(subgroup); // parse options
+            }
         }
     }
 }
