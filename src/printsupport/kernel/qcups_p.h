@@ -145,13 +145,19 @@ public:
 
     struct JobSheets
     {
-        BannerPage startBannerPage = QCUPSSupport::NoBanner;
-        BannerPage endBannerPage = QCUPSSupport::NoBanner;
+        JobSheets(BannerPage s = NoBanner, BannerPage e = NoBanner)
+         : startBannerPage(s), endBannerPage(e) {}
+
+        BannerPage startBannerPage;
+        BannerPage endBannerPage;
     };
     static JobSheets parseJobSheets(const QString &jobSheets);
 
     struct JobHoldUntilWithTime
     {
+        JobHoldUntilWithTime(JobHoldUntil jh = NoHold, const QTime &t = QTime())
+            : jobHold(jh), time(t) {}
+
         JobHoldUntil jobHold;
         QTime time;
     };

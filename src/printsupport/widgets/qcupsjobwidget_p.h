@@ -75,6 +75,8 @@ public:
     explicit QCupsJobWidget(QPrinter *printer, QPrintDevice *printDevice, QWidget *parent = nullptr);
     ~QCupsJobWidget();
     void setupPrinter();
+    void updateSavedValues();
+    void revertToSavedValues();
 
 private Q_SLOTS:
     void toggleJobHoldTime();
@@ -105,6 +107,11 @@ private:
     QPrinter *m_printer;
     QPrintDevice *m_printDevice;
     Ui::QCupsJobWidget m_ui;
+
+    QCUPSSupport::JobHoldUntilWithTime m_savedJobHoldWithTime;
+    QString m_savedJobBilling;
+    int m_savedPriority;
+    QCUPSSupport::JobSheets m_savedJobSheets;
 
     Q_DISABLE_COPY(QCupsJobWidget)
 };

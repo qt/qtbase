@@ -77,6 +77,8 @@ QCupsJobWidget::QCupsJobWidget(QPrinter *printer, QPrintDevice *printDevice, QWi
     initJobBilling();
     initJobPriority();
     initBannerPages();
+
+    updateSavedValues();
 }
 
 QCupsJobWidget::~QCupsJobWidget()
@@ -89,6 +91,27 @@ void QCupsJobWidget::setupPrinter()
     QCUPSSupport::setJobBilling(m_printer, jobBilling());
     QCUPSSupport::setJobPriority(m_printer, jobPriority());
     QCUPSSupport::setBannerPages(m_printer, startBannerPage(), endBannerPage());
+}
+
+void QCupsJobWidget::updateSavedValues()
+{
+    m_savedJobHoldWithTime = { jobHold(), jobHoldTime() };
+    m_savedJobBilling = jobBilling();
+    m_savedPriority = jobPriority();
+    m_savedJobSheets = { startBannerPage(), endBannerPage() };
+}
+
+void QCupsJobWidget::revertToSavedValues()
+{
+    setJobHold(m_savedJobHoldWithTime.jobHold, m_savedJobHoldWithTime.time);
+    toggleJobHoldTime();
+
+    setJobBilling(m_savedJobBilling);
+
+    setJobPriority(m_savedPriority);
+
+    setStartBannerPage(m_savedJobSheets.startBannerPage);
+    setEndBannerPage(m_savedJobSheets.endBannerPage);
 }
 
 void QCupsJobWidget::initJobHold()
@@ -154,7 +177,7 @@ void QCupsJobWidget::initJobBilling()
 
 void QCupsJobWidget::setJobBilling(const QString &jobBilling)
 {
-    m_ui.jobBillingLineEdit->insert(jobBilling);
+    m_ui.jobBillingLineEdit->setText(jobBilling);
 }
 
 QString QCupsJobWidget::jobBilling() const

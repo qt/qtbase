@@ -75,6 +75,8 @@ public:
     void setPrinter(QPrinter *printer, QPrintDevice *printDevice,
                     QPrinter::OutputFormat outputFormat, const QString &printerName);
     void setupPrinter() const;
+    void updateSavedValues();
+    void revertToSavedValues();
 
 private slots:
     void pageSizeChanged();
@@ -100,7 +102,11 @@ private:
     QPrinter::OutputFormat m_outputFormat;
     QString m_printerName;
     QPageLayout m_pageLayout;
+    QPageLayout m_savedPageLayout;
     QPageLayout::Unit m_units;
+    QPageLayout::Unit m_savedUnits;
+    int m_savedPagesPerSheet;
+    int m_savedPagesPerSheetLayout;
     bool m_blockSignals;
     int m_realCustomPageSizeIndex;
 };

@@ -234,6 +234,9 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
       m_printer(nullptr),
       m_outputFormat(QPrinter::PdfFormat),
       m_units(QPageLayout::Point),
+      m_savedUnits(QPageLayout::Point),
+      m_savedPagesPerSheet(-1),
+      m_savedPagesPerSheetLayout(-1),
       m_blockSignals(false),
       m_realCustomPageSizeIndex(-1)
 {
@@ -404,6 +407,7 @@ void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
     m_printerName = printerName;
     initPageSizes();
     updateWidget();
+    updateSavedValues();
 }
 
 // Update the widget with the current settings
@@ -487,6 +491,7 @@ void QPageSetupWidget::updateWidget()
     m_ui.pageHeight->setEnabled(isCustom);
     m_ui.heightLabel->setEnabled(isCustom);
 
+    m_ui.portrait->setChecked(m_pageLayout.orientation() == QPageLayout::Portrait);
     m_ui.landscape->setChecked(m_pageLayout.orientation() == QPageLayout::Landscape);
 
     m_ui.pagesPerSheetButtonGroup->setEnabled(m_outputFormat == QPrinter::NativeFormat);
@@ -513,6 +518,26 @@ void QPageSetupWidget::setupPrinter() const
 #ifdef PSD_ENABLE_PAPERSOURCE
     m_printer->setPaperSource((QPrinter::PaperSource)m_ui.paperSource->currentIndex());
 #endif
+}
+
+void QPageSetupWidget::updateSavedValues()
+{
+    m_savedUnits = m_units;
+    m_savedPageLayout = m_pageLayout;
+    m_savedPagesPerSheet = m_ui.pagesPerSheetCombo->currentIndex();
+    m_savedPagesPerSheetLayout = m_ui.pagesPerSheetLayoutCombo->currentIndex();
+}
+
+void QPageSetupWidget::revertToSavedValues()
+{
+    m_units = m_savedUnits;
+    m_pageLayout = m_savedPageLayout;
+    m_pagePreview->setPageLayout(m_pageLayout);
+
+    updateWidget();
+
+    m_ui.pagesPerSheetCombo->setCurrentIndex(m_savedPagesPerSheet);
+    m_ui.pagesPerSheetLayoutCombo->setCurrentIndex(m_savedPagesPerSheetLayout);
 }
 
 // Updates size/preview after the combobox has been changed.
