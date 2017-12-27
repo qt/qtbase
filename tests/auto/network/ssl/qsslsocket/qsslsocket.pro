@@ -14,6 +14,8 @@ win32 {
   }
 }
 
+TESTDATA += certs
+
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 requires(qtConfig(private_tests))

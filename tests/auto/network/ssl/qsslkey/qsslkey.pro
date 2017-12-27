@@ -9,4 +9,5 @@ qtConfig(private_tests) {
 
 TARGET = tst_qsslkey
 
-TESTDATA += keys/* rsa-without-passphrase.pem rsa-with-passphrase.pem
+TESTDATA += keys/* \
+            rsa-*.pem

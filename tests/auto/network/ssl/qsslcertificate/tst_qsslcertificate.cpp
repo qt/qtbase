@@ -57,11 +57,8 @@ class tst_QSslCertificate : public QObject
     void compareCertificates(const QSslCertificate & cert1, const QSslCertificate & cert2);
 #endif
 
-    QString oldCurrentDir;
-
 public slots:
     void initTestCase();
-    void cleanupTestCase();
 
 #ifndef QT_NO_SSL
 private slots:
@@ -123,12 +120,6 @@ void tst_QSslCertificate::initTestCase()
     if (!testDataDir.endsWith(QLatin1String("/")))
         testDataDir += QLatin1String("/");
 
-    if (QDir::current().absolutePath() != testDataDir) {
-        oldCurrentDir = QDir::current().absolutePath();
-        QVERIFY2(QDir::setCurrent(testDataDir),
-                 qPrintable(QString("Cannot change directory to %1").arg(testDataDir)));
-    }
-
     QDir dir(testDataDir + "certificates");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
     QRegExp rxCert(QLatin1String("^.+\\.(pem|der)$"));
@@ -150,13 +141,6 @@ void tst_QSslCertificate::initTestCase()
             else
                 sha1Map.insert(rxDigest.cap(1), fileInfo.absoluteFilePath());
         }
-    }
-}
-
-void tst_QSslCertificate::cleanupTestCase()
-{
-    if (!oldCurrentDir.isEmpty()) {
-        QDir::setCurrent(oldCurrentDir);
     }
 }
 
@@ -447,7 +431,7 @@ void tst_QSslCertificate::subjectAlternativeNames()
 
 void tst_QSslCertificate::utf8SubjectNames()
 {
-    QSslCertificate cert = QSslCertificate::fromPath("certificates/cert-ss-san-utf8.pem", QSsl::Pem,
+    QSslCertificate cert = QSslCertificate::fromPath(testDataDir + "certificates/cert-ss-san-utf8.pem", QSsl::Pem,
                                                      QRegExp::FixedString).first();
     QVERIFY(!cert.isNull());
 
@@ -570,60 +554,60 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("empty regexp der") << QString() << int(QRegExp::RegExp) << false << 0;
     QTest::newRow("empty wildcard pem") << QString() << int(QRegExp::Wildcard) << true << 0;
     QTest::newRow("empty wildcard der") << QString() << int(QRegExp::Wildcard) << false << 0;
-    QTest::newRow("\"certificates\" fixed pem") << QString("certificates") << int(QRegExp::FixedString) << true << 0;
-    QTest::newRow("\"certificates\" fixed der") << QString("certificates") << int(QRegExp::FixedString) << false << 0;
-    QTest::newRow("\"certificates\" regexp pem") << QString("certificates") << int(QRegExp::RegExp) << true << 0;
-    QTest::newRow("\"certificates\" regexp der") << QString("certificates") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"certificates\" wildcard pem") << QString("certificates") << int(QRegExp::Wildcard) << true << 0;
-    QTest::newRow("\"certificates\" wildcard der") << QString("certificates") << int(QRegExp::Wildcard) << false << 0;
-    QTest::newRow("\"certificates/cert.pem\" fixed pem") << QString("certificates/cert.pem") << int(QRegExp::FixedString) << true << 1;
-    QTest::newRow("\"certificates/cert.pem\" fixed der") << QString("certificates/cert.pem") << int(QRegExp::FixedString) << false << 0;
-    QTest::newRow("\"certificates/cert.pem\" regexp pem") << QString("certificates/cert.pem") << int(QRegExp::RegExp) << true << 1;
-    QTest::newRow("\"certificates/cert.pem\" regexp der") << QString("certificates/cert.pem") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"certificates/cert.pem\" wildcard pem") << QString("certificates/cert.pem") << int(QRegExp::Wildcard) << true << 1;
-    QTest::newRow("\"certificates/cert.pem\" wildcard der") << QString("certificates/cert.pem") << int(QRegExp::Wildcard) << false << 0;
-    QTest::newRow("\"certificates/*\" fixed pem") << QString("certificates/*") << int(QRegExp::FixedString) << true << 0;
-    QTest::newRow("\"certificates/*\" fixed der") << QString("certificates/*") << int(QRegExp::FixedString) << false << 0;
-    QTest::newRow("\"certificates/*\" regexp pem") << QString("certificates/*") << int(QRegExp::RegExp) << true << 0;
-    QTest::newRow("\"certificates/*\" regexp der") << QString("certificates/*") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"certificates/*\" wildcard pem") << QString("certificates/*") << int(QRegExp::Wildcard) << true << 7;
-    QTest::newRow("\"certificates/ca*\" wildcard pem") << QString("certificates/ca*") << int(QRegExp::Wildcard) << true << 1;
-    QTest::newRow("\"certificates/cert*\" wildcard pem") << QString("certificates/cert*") << int(QRegExp::Wildcard) << true << 4;
-    QTest::newRow("\"certificates/cert-[sure]*\" wildcard pem") << QString("certificates/cert-[sure]*") << int(QRegExp::Wildcard) << true << 3;
-    QTest::newRow("\"certificates/cert-[not]*\" wildcard pem") << QString("certificates/cert-[not]*") << int(QRegExp::Wildcard) << true << 0;
-    QTest::newRow("\"certificates/*\" wildcard der") << QString("certificates/*") << int(QRegExp::Wildcard) << false << 2;
-    QTest::newRow("\"c*/c*.pem\" fixed pem") << QString("c*/c*.pem") << int(QRegExp::FixedString) << true << 0;
-    QTest::newRow("\"c*/c*.pem\" fixed der") << QString("c*/c*.pem") << int(QRegExp::FixedString) << false << 0;
-    QTest::newRow("\"c*/c*.pem\" regexp pem") << QString("c*/c*.pem") << int(QRegExp::RegExp) << true << 0;
-    QTest::newRow("\"c*/c*.pem\" regexp der") << QString("c*/c*.pem") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"c*/c*.pem\" wildcard pem") << QString("c*/c*.pem") << int(QRegExp::Wildcard) << true << 5;
-    QTest::newRow("\"c*/c*.pem\" wildcard der") << QString("c*/c*.pem") << int(QRegExp::Wildcard) << false << 0;
-    QTest::newRow("\"d*/c*.pem\" fixed pem") << QString("d*/c*.pem") << int(QRegExp::FixedString) << true << 0;
-    QTest::newRow("\"d*/c*.pem\" fixed der") << QString("d*/c*.pem") << int(QRegExp::FixedString) << false << 0;
-    QTest::newRow("\"d*/c*.pem\" regexp pem") << QString("d*/c*.pem") << int(QRegExp::RegExp) << true << 0;
-    QTest::newRow("\"d*/c*.pem\" regexp der") << QString("d*/c*.pem") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"d*/c*.pem\" wildcard pem") << QString("d*/c*.pem") << int(QRegExp::Wildcard) << true << 0;
-    QTest::newRow("\"d*/c*.pem\" wildcard der") << QString("d*/c*.pem") << int(QRegExp::Wildcard) << false << 0;
-    QTest::newRow("\"c.*/c.*.pem\" fixed pem") << QString("c.*/c.*.pem") << int(QRegExp::FixedString) << true << 0;
-    QTest::newRow("\"c.*/c.*.pem\" fixed der") << QString("c.*/c.*.pem") << int(QRegExp::FixedString) << false << 0;
-    QTest::newRow("\"c.*/c.*.pem\" regexp pem") << QString("c.*/c.*.pem") << int(QRegExp::RegExp) << true << 5;
-    QTest::newRow("\"c.*/c.*.pem\" regexp der") << QString("c.*/c.*.pem") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"c.*/c.*.pem\" wildcard pem") << QString("c.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
-    QTest::newRow("\"c.*/c.*.pem\" wildcard der") << QString("c.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
-    QTest::newRow("\"d.*/c.*.pem\" fixed pem") << QString("d.*/c.*.pem") << int(QRegExp::FixedString) << true << 0;
-    QTest::newRow("\"d.*/c.*.pem\" fixed der") << QString("d.*/c.*.pem") << int(QRegExp::FixedString) << false << 0;
-    QTest::newRow("\"d.*/c.*.pem\" regexp pem") << QString("d.*/c.*.pem") << int(QRegExp::RegExp) << true << 0;
-    QTest::newRow("\"d.*/c.*.pem\" regexp der") << QString("d.*/c.*.pem") << int(QRegExp::RegExp) << false << 0;
-    QTest::newRow("\"d.*/c.*.pem\" wildcard pem") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
-    QTest::newRow("\"d.*/c.*.pem\" wildcard der") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
+    QTest::newRow("\"certificates\" fixed pem") << (testDataDir + "certificates") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("\"certificates\" fixed der") << (testDataDir + "certificates") << int(QRegExp::FixedString) << false << 0;
+    QTest::newRow("\"certificates\" regexp pem") << (testDataDir + "certificates") << int(QRegExp::RegExp) << true << 0;
+    QTest::newRow("\"certificates\" regexp der") << (testDataDir + "certificates") << int(QRegExp::RegExp) << false << 0;
+    QTest::newRow("\"certificates\" wildcard pem") << (testDataDir + "certificates") << int(QRegExp::Wildcard) << true << 0;
+    QTest::newRow("\"certificates\" wildcard der") << (testDataDir + "certificates") << int(QRegExp::Wildcard) << false << 0;
+    QTest::newRow("\"certificates/cert.pem\" fixed pem") << (testDataDir + "certificates/cert.pem") << int(QRegExp::FixedString) << true << 1;
+    QTest::newRow("\"certificates/cert.pem\" fixed der") << (testDataDir + "certificates/cert.pem") << int(QRegExp::FixedString) << false << 0;
+    QTest::newRow("\"certificates/cert.pem\" regexp pem") << (testDataDir + "certificates/cert.pem") << int(QRegExp::RegExp) << true << 1;
+    QTest::newRow("\"certificates/cert.pem\" regexp der") << (testDataDir + "certificates/cert.pem") << int(QRegExp::RegExp) << false << 0;
+    QTest::newRow("\"certificates/cert.pem\" wildcard pem") << (testDataDir + "certificates/cert.pem") << int(QRegExp::Wildcard) << true << 1;
+    QTest::newRow("\"certificates/cert.pem\" wildcard der") << (testDataDir + "certificates/cert.pem") << int(QRegExp::Wildcard) << false << 0;
+    QTest::newRow("\"certificates/*\" fixed pem") << (testDataDir + "certificates/*") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("\"certificates/*\" fixed der") << (testDataDir + "certificates/*") << int(QRegExp::FixedString) << false << 0;
+    QTest::newRow("\"certificates/*\" regexp pem") << (testDataDir + "certificates/*") << int(QRegExp::RegExp) << true << 0;
+    QTest::newRow("\"certificates/*\" regexp der") << (testDataDir + "certificates/*") << int(QRegExp::RegExp) << false << 0;
+    QTest::newRow("\"certificates/*\" wildcard pem") << (testDataDir + "certificates/*") << int(QRegExp::Wildcard) << true << 7;
+    QTest::newRow("\"certificates/ca*\" wildcard pem") << (testDataDir + "certificates/ca*") << int(QRegExp::Wildcard) << true << 1;
+    QTest::newRow("\"certificates/cert*\" wildcard pem") << (testDataDir + "certificates/cert*") << int(QRegExp::Wildcard) << true << 4;
+    QTest::newRow("\"certificates/cert-[sure]*\" wildcard pem") << (testDataDir + "certificates/cert-[sure]*") << int(QRegExp::Wildcard) << true << 3;
+    QTest::newRow("\"certificates/cert-[not]*\" wildcard pem") << (testDataDir + "certificates/cert-[not]*") << int(QRegExp::Wildcard) << true << 0;
+    QTest::newRow("\"certificates/*\" wildcard der") << (testDataDir + "certificates/*") << int(QRegExp::Wildcard) << false << 2;
+    QTest::newRow("\"c*/c*.pem\" fixed pem") << (testDataDir + "c*/c*.pem") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("\"c*/c*.pem\" fixed der") << (testDataDir + "c*/c*.pem") << int(QRegExp::FixedString) << false << 0;
+    QTest::newRow("\"c*/c*.pem\" regexp pem") << (testDataDir + "c*/c*.pem") << int(QRegExp::RegExp) << true << 0;
+    QTest::newRow("\"c*/c*.pem\" regexp der") << (testDataDir + "c*/c*.pem") << int(QRegExp::RegExp) << false << 0;
+    QTest::newRow("\"c*/c*.pem\" wildcard pem") << (testDataDir + "c*/c*.pem") << int(QRegExp::Wildcard) << true << 5;
+    QTest::newRow("\"c*/c*.pem\" wildcard der") << (testDataDir + "c*/c*.pem") << int(QRegExp::Wildcard) << false << 0;
+    QTest::newRow("\"d*/c*.pem\" fixed pem") << (testDataDir + "d*/c*.pem") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("\"d*/c*.pem\" fixed der") << (testDataDir + "d*/c*.pem") << int(QRegExp::FixedString) << false << 0;
+    QTest::newRow("\"d*/c*.pem\" regexp pem") << (testDataDir + "d*/c*.pem") << int(QRegExp::RegExp) << true << 0;
+    QTest::newRow("\"d*/c*.pem\" regexp der") << (testDataDir + "d*/c*.pem") << int(QRegExp::RegExp) << false << 0;
+    QTest::newRow("\"d*/c*.pem\" wildcard pem") << (testDataDir + "d*/c*.pem") << int(QRegExp::Wildcard) << true << 0;
+    QTest::newRow("\"d*/c*.pem\" wildcard der") << (testDataDir + "d*/c*.pem") << int(QRegExp::Wildcard) << false << 0;
+    QTest::newRow("\"c.*/c.*.pem\" fixed pem") << (testDataDir + "c.*/c.*.pem") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("\"c.*/c.*.pem\" fixed der") << (testDataDir + "c.*/c.*.pem") << int(QRegExp::FixedString) << false << 0;
+    QTest::newRow("\"c.*/c.*.pem\" regexp pem") << (testDataDir + "c.*/c.*.pem") << int(QRegExp::RegExp) << true << 5;
+    QTest::newRow("\"c.*/c.*.pem\" regexp der") << (testDataDir + "c.*/c.*.pem") << int(QRegExp::RegExp) << false << 0;
+    QTest::newRow("\"c.*/c.*.pem\" wildcard pem") << (testDataDir + "c.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
+    QTest::newRow("\"c.*/c.*.pem\" wildcard der") << (testDataDir + "c.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
+    QTest::newRow("\"d.*/c.*.pem\" fixed pem") << (testDataDir + "d.*/c.*.pem") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("\"d.*/c.*.pem\" fixed der") << (testDataDir + "d.*/c.*.pem") << int(QRegExp::FixedString) << false << 0;
+    QTest::newRow("\"d.*/c.*.pem\" regexp pem") << (testDataDir + "d.*/c.*.pem") << int(QRegExp::RegExp) << true << 0;
+    QTest::newRow("\"d.*/c.*.pem\" regexp der") << (testDataDir + "d.*/c.*.pem") << int(QRegExp::RegExp) << false << 0;
+    QTest::newRow("\"d.*/c.*.pem\" wildcard pem") << (testDataDir + "d.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
+    QTest::newRow("\"d.*/c.*.pem\" wildcard der") << (testDataDir + "d.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
 #ifdef Q_OS_LINUX
     QTest::newRow("absolute path wildcard pem") << (testDataDir + "certificates/*.pem") << int(QRegExp::Wildcard) << true << 7;
 #endif
 
-    QTest::newRow("trailing-whitespace") << QString("more-certificates/trailing-whitespace.pem") << int(QRegExp::FixedString) << true << 1;
-    QTest::newRow("no-ending-newline") << QString("more-certificates/no-ending-newline.pem") << int(QRegExp::FixedString) << true << 1;
-    QTest::newRow("malformed-just-begin") << QString("more-certificates/malformed-just-begin.pem") << int(QRegExp::FixedString) << true << 0;
-    QTest::newRow("malformed-just-begin-no-newline") << QString("more-certificates/malformed-just-begin-no-newline.pem") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("trailing-whitespace") << (testDataDir + "more-certificates/trailing-whitespace.pem") << int(QRegExp::FixedString) << true << 1;
+    QTest::newRow("no-ending-newline") << (testDataDir + "more-certificates/no-ending-newline.pem") << int(QRegExp::FixedString) << true << 1;
+    QTest::newRow("malformed-just-begin") << (testDataDir + "more-certificates/malformed-just-begin.pem") << int(QRegExp::FixedString) << true << 0;
+    QTest::newRow("malformed-just-begin-no-newline") << (testDataDir + "more-certificates/malformed-just-begin-no-newline.pem") << int(QRegExp::FixedString) << true << 0;
 }
 
 void tst_QSslCertificate::fromPath()
@@ -724,7 +708,7 @@ void tst_QSslCertificate::certInfo()
         "dc:c2:eb:b7:bb:50:18:05:ba:ad:af:08:49:fe:98:63"
         "55:ba:e7:fb:95:5d:91";
 
-    QSslCertificate cert =  QSslCertificate::fromPath("certificates/cert.pem", QSsl::Pem,
+    QSslCertificate cert =  QSslCertificate::fromPath(testDataDir + "certificates/cert.pem", QSsl::Pem,
                                                       QRegExp::FixedString).first();
     QVERIFY(!cert.isNull());
 
@@ -781,7 +765,7 @@ void tst_QSslCertificate::certInfo()
 
 void tst_QSslCertificate::certInfoQByteArray()
 {
-    QSslCertificate cert =  QSslCertificate::fromPath("certificates/cert.pem", QSsl::Pem,
+    QSslCertificate cert =  QSslCertificate::fromPath(testDataDir + "certificates/cert.pem", QSsl::Pem,
                                                       QRegExp::FixedString).first();
     QVERIFY(!cert.isNull());
 
@@ -898,8 +882,8 @@ void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
 
 void tst_QSslCertificate::blacklistedCertificates()
 {
-    QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath("more-certificates/blacklisted*.pem", QSsl::Pem, QRegExp::Wildcard);
-    QVERIFY2(blacklistedCerts.count() > 0, "Please run this test from the source directory");
+    QList<QSslCertificate> blacklistedCerts = QSslCertificate::fromPath(testDataDir + "more-certificates/blacklisted*.pem", QSsl::Pem, QRegExp::Wildcard);
+    QVERIFY(blacklistedCerts.count() > 0);
     for (int a = 0; a < blacklistedCerts.count(); a++) {
         QVERIFY(blacklistedCerts.at(a).isBlacklisted());
     }
@@ -953,7 +937,7 @@ void tst_QSslCertificate::multipleCommonNames()
 {
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-two-cns-cert.pem");
-    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+    QVERIFY(certList.count() > 0);
 
     QStringList commonNames = certList[0].subjectInfo(QSslCertificate::CommonName);
     QVERIFY(commonNames.contains(QString("www.example.com")));
@@ -964,14 +948,14 @@ void tst_QSslCertificate::subjectAndIssuerAttributes()
 {
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-with-drink-cert.pem");
-    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+    QVERIFY(certList.count() > 0);
 
     QList<QByteArray> attributes = certList[0].subjectInfoAttributes();
     QVERIFY(attributes.contains(QByteArray("favouriteDrink")));
     attributes.clear();
 
     certList = QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem");
-    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+    QVERIFY(certList.count() > 0);
 
     attributes = certList[0].subjectInfoAttributes();
     QVERIFY(attributes.contains(QByteArray("1.3.6.1.4.1.311.60.2.1.3")));
@@ -1071,7 +1055,7 @@ void tst_QSslCertificate::extensions()
 {
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem");
-    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+    QVERIFY(certList.count() > 0);
 
     QSslCertificate cert = certList[0];
     QList<QSslCertificateExtension> extensions = cert.extensions();
@@ -1169,7 +1153,7 @@ void tst_QSslCertificate::extensionsCritical()
 {
     QList<QSslCertificate> certList =
         QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem");
-    QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
+    QVERIFY(certList.count() > 0);
 
     QSslCertificate cert = certList[0];
     QList<QSslCertificateExtension> extensions = cert.extensions();

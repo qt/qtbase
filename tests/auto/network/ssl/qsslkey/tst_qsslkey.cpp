@@ -394,9 +394,9 @@ void tst_QSslKey::passphraseChecks_data()
 {
     QTest::addColumn<QString>("fileName");
 
-    QTest::newRow("DES") << QString(testDataDir + "rsa-with-passphrase-des.pem");
-    QTest::newRow("3DES") << QString(testDataDir + "rsa-with-passphrase-3des.pem");
-    QTest::newRow("RC2") << QString(testDataDir + "rsa-with-passphrase-rc2.pem");
+    QTest::newRow("DES") << (testDataDir + "rsa-with-passphrase-des.pem");
+    QTest::newRow("3DES") << (testDataDir + "rsa-with-passphrase-3des.pem");
+    QTest::newRow("RC2") << (testDataDir + "rsa-with-passphrase-rc2.pem");
 }
 
 void tst_QSslKey::passphraseChecks()
