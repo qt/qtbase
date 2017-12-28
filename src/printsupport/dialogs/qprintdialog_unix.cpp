@@ -1417,9 +1417,7 @@ void QPPDOptionsModel::setCupsOptionsFromItems(QPrinter *printer, QOptionTreeIte
             QOptionTreeItemOption *itmOption = static_cast<QOptionTreeItemOption *>(itm);
             const ppd_option_t *opt = static_cast<const ppd_option_t*>(itm->ptr);
             if (qstrcmp(opt->defchoice, opt->choices[itmOption->selected].choice) != 0) {
-                QStringList cupsOptions = QCUPSSupport::cupsOptionsList(printer);
-                QCUPSSupport::setCupsOption(cupsOptions, QString::fromLatin1(opt->keyword), QString::fromLatin1(opt->choices[itmOption->selected].choice));
-                QCUPSSupport::setCupsOptions(printer, cupsOptions);
+                QCUPSSupport::setCupsOption(printer, QString::fromLatin1(opt->keyword), QString::fromLatin1(opt->choices[itmOption->selected].choice));
             }
         } else {
             setCupsOptionsFromItems(printer, itm);
