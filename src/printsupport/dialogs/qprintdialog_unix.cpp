@@ -493,6 +493,9 @@ void QPrintDialogPrivate::init()
     options.pageSetCombo->addItem(tr("All Pages"), QVariant::fromValue(QCUPSSupport::AllPages));
     options.pageSetCombo->addItem(tr("Odd Pages"), QVariant::fromValue(QCUPSSupport::OddPages));
     options.pageSetCombo->addItem(tr("Even Pages"), QVariant::fromValue(QCUPSSupport::EvenPages));
+#else
+    for (int i = options.pagesLayout->count() - 1; i >= 0; --i)
+        delete options.pagesLayout->itemAt(i)->widget();
 #endif
 
     top->d->setOptionsPane(this);
@@ -565,6 +568,87 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
             options.pageSetCombo->setEnabled(true);
 }
 
+#if QT_CONFIG(cups)
+static std::vector<std::pair<int, int>> pageRangesFromString(const QString &pagesString) Q_DECL_NOTHROW
+{
+    std::vector<std::pair<int, int>> result;
+    const QStringList items = pagesString.split(',');
+    for (const QString item : items) {
+        if (item.isEmpty())
+            return {};
+
+        if (item.contains(QLatin1Char('-'))) {
+            const QStringList rangeItems = item.split('-');
+            if (rangeItems.count() != 2)
+                return {};
+
+            bool ok;
+            const int number1 = rangeItems[0].toInt(&ok);
+            if (!ok)
+                return {};
+
+            const int number2 = rangeItems[1].toInt(&ok);
+            if (!ok)
+                return {};
+
+            if (number1 < 1 || number2 < 1 || number2 < number1)
+                return {};
+
+            result.push_back(std::make_pair(number1, number2));
+
+        } else {
+            bool ok;
+            const int number = item.toInt(&ok);
+            if (!ok)
+                return {};
+
+            if (number < 1)
+                return {};
+
+            result.push_back(std::make_pair(number, number));
+        }
+    }
+
+    // check no range intersects with the next
+    std::sort(result.begin(), result.end(), [](auto it1, auto it2) { return it1.first < it2.first; });
+    int previousSecond = -1;
+    for (auto pair : result) {
+        if (pair.first <= previousSecond)
+            return {};
+
+        previousSecond = pair.second;
+    }
+
+    return result;
+}
+
+static QString stringFromPageRanges(const std::vector<std::pair<int, int>> &pageRanges) Q_DECL_NOTHROW
+{
+    QString result;
+
+    for (auto pair : pageRanges) {
+        if (!result.isEmpty())
+            result += QLatin1Char(',');
+
+        if (pair.first == pair.second)
+            result += QString::number(pair.first);
+        else
+            result += QStringLiteral("%1-%2").arg(pair.first).arg(pair.second);
+    }
+
+    return result;
+}
+
+static bool isValidPagesString(const QString &pagesString) Q_DECL_NOTHROW
+{
+    if (pagesString.isEmpty())
+        return false;
+
+    auto pagesRanges = pageRangesFromString(pagesString);
+    return !pagesRanges.empty();
+}
+#endif
+
 void QPrintDialogPrivate::setupPrinter()
 {
     // First setup the requested OutputFormat, Printer and Page Size first
@@ -609,6 +693,16 @@ void QPrintDialogPrivate::setupPrinter()
     }
 
 #if QT_CONFIG(cups)
+    if (options.pagesRadioButton->isChecked()) {
+        auto pageRanges = pageRangesFromString(options.pagesLineEdit->text());
+
+        p->setPrintRange(QPrinter::AllPages);
+        p->setFromTo(0, 0);
+
+        // server-side page filtering
+        QCUPSSupport::setPageRange(p, stringFromPageRanges(pageRanges));
+    }
+
     // page set
     if (p->printRange() == QPrinter::AllPages || p->printRange() == QPrinter::PageRange) {
         //If the application is selecting pages and the first page number is even then need to adjust the odd-even accordingly
@@ -805,6 +899,16 @@ int QPrintDialog::exec()
 void QPrintDialog::accept()
 {
     Q_D(QPrintDialog);
+#if QT_CONFIG(cups)
+    if (d->options.pagesRadioButton->isChecked() && !isValidPagesString(d->options.pagesLineEdit->text())) {
+        QMessageBox::critical(this, tr("Invalid pages definition"),
+                              tr("%1 does not follow the correct syntax. Please use ',' to separate "
+                              "ranges and pages, '-' to define ranges and make sure ranges do "
+                              "not intersect with each other.").arg(d->options.pagesLineEdit->text()),
+                              QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
+#endif
     d->setupPrinter();
     QDialog::accept();
 }

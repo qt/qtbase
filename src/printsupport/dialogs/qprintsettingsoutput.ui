@@ -6,15 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>426</width>
-    <height>187</height>
+    <width>432</width>
+    <height>251</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
@@ -42,7 +51,16 @@
           <property name="spacing">
            <number>4</number>
           </property>
-          <property name="margin">
+          <property name="leftMargin">
+           <number>6</number>
+          </property>
+          <property name="topMargin">
+           <number>6</number>
+          </property>
+          <property name="rightMargin">
+           <number>6</number>
+          </property>
+          <property name="bottomMargin">
            <number>6</number>
           </property>
           <item>
@@ -60,7 +78,16 @@
             <property name="spacing">
              <number>6</number>
             </property>
-            <property name="margin">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
              <number>0</number>
             </property>
             <item>
@@ -115,6 +142,27 @@
                </size>
               </property>
              </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="pagesLayout">
+            <item>
+             <widget class="QRadioButton" name="pagesRadioButton">
+              <property name="text">
+               <string>Pages</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="pagesLineEdit">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>Specify pages or ranges separated by commas. Ranges are specified by two numbers separated by a hyphen. E.g: 3,5-7,9 prints pages 3, 5, 6, 7 and 9.</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -361,12 +409,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>76</x>
-     <y>59</y>
+     <x>89</x>
+     <y>113</y>
     </hint>
     <hint type="destinationlabel">
-     <x>122</x>
-     <y>57</y>
+     <x>182</x>
+     <y>113</y>
     </hint>
    </hints>
   </connection>
@@ -377,12 +425,28 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>69</x>
-     <y>67</y>
+     <x>82</x>
+     <y>113</y>
     </hint>
     <hint type="destinationlabel">
-     <x>215</x>
-     <y>67</y>
+     <x>267</x>
+     <y>113</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pagesRadioButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>pagesLineEdit</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>132</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>163</x>
+     <y>128</y>
     </hint>
    </hints>
   </connection>

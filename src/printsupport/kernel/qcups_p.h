@@ -142,6 +142,7 @@ public:
     static void setPagesPerSheetLayout(QPrinter *printer, const PagesPerSheet pagesPerSheet,
                                        const PagesPerSheetLayout pagesPerSheetLayout);
     static void setPageRange(QPrinter *printer, int pageFrom, int pageTo);
+    static void setPageRange(QPrinter *printer, const QString &pageRange);
 
     struct JobSheets
     {

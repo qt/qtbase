@@ -254,8 +254,13 @@ void QCUPSSupport::setPagesPerSheetLayout(QPrinter *printer,  const PagesPerShee
 
 void QCUPSSupport::setPageRange(QPrinter *printer, int pageFrom, int pageTo)
 {
+    setPageRange(printer, QStringLiteral("%1-%2").arg(pageFrom).arg(pageTo));
+}
+
+void QCUPSSupport::setPageRange(QPrinter *printer, const QString &pageRange)
+{
     QStringList cupsOptions = cupsOptionsList(printer);
-    setCupsOption(cupsOptions, QStringLiteral("page-ranges"), QStringLiteral("%1-%2").arg(pageFrom).arg(pageTo));
+    setCupsOption(cupsOptions, QStringLiteral("page-ranges"), pageRange);
     setCupsOptions(printer, cupsOptions);
 }
 
