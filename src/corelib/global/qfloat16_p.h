@@ -61,9 +61,9 @@ static inline bool qt_is_inf(qfloat16 d) Q_DECL_NOTHROW
     bool is_inf;
     uchar *ch = (uchar *)&d;
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-        is_inf = (ch[0] & 0x7c) == 0x7c;
+        is_inf = (ch[0] & 0x7c) == 0x7c && (ch[0] & 0x02) == 0;
     else
-        is_inf = (ch[1] & 0x7c) == 0x7c;
+        is_inf = (ch[1] & 0x7c) == 0x7c && (ch[1] & 0x02) == 0;
     return is_inf;
 }
 

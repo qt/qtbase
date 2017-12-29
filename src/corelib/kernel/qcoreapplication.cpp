@@ -2196,11 +2196,11 @@ QString QCoreApplication::applicationFilePath()
     QCoreApplicationPrivate *d = self->d_func();
 
     if (d->argc) {
-        static const char *procName = d->argv[0];
-        if (qstrcmp(procName, d->argv[0]) != 0) {
+        static QByteArray procName = QByteArray(d->argv[0]);
+        if (procName != d->argv[0]) {
             // clear the cache if the procname changes, so we reprocess it.
             QCoreApplicationPrivate::clearApplicationFilePath();
-            procName = d->argv[0];
+            procName = QByteArray(d->argv[0]);
         }
     }
 

@@ -344,6 +344,13 @@ public:
     void setSharedPainter(QPainter *painter);
     QWidgetBackingStore *maybeBackingStore() const;
     QWidgetWindow *windowHandle() const;
+
+    template <typename T>
+    void repaint(T t);
+
+    template <typename T>
+    void update(T t);
+
     void init(QWidget *desktopWidget, Qt::WindowFlags f);
     void create_sys(WId window, bool initializeWindow, bool destroyOldWindow);
     void createRecursively();
@@ -515,6 +522,9 @@ public:
     void getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const;
     void setLayoutItemMargins(int left, int top, int right, int bottom);
     void setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt = 0);
+
+    void updateContentsRect();
+    QMargins safeAreaMargins() const;
 
     // aboutToDestroy() is called just before the contents of
     // QWidget::destroy() is executed. It's used to signal QWidget

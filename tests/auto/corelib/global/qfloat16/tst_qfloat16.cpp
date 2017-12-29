@@ -158,12 +158,14 @@ void tst_qfloat16::qNan()
     qfloat16 nan = qQNaN();
     QVERIFY(!(0. > nan));
     QVERIFY(!(0. < nan));
+    QVERIFY(!qIsInf(nan));
     QVERIFY(qIsNaN(nan));
     QVERIFY(qIsNaN(nan + 1.f));
     QVERIFY(qIsNaN(-nan));
     qfloat16 inf = qInf();
     QVERIFY(inf > qfloat16(0));
     QVERIFY(-inf < qfloat16(0));
+    QVERIFY(!qIsNaN(inf));
     QVERIFY(qIsInf(inf));
     QVERIFY(qIsInf(-inf));
     QVERIFY(qIsInf(2.f*inf));

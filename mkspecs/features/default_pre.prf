@@ -2,6 +2,9 @@
 # Note that evaluating variable assignments from the command line
 # still happens in between these two steps.
 
+# In early configure setup; nothing useful to be done here.
+isEmpty(QMAKE_CXX): return()
+
 load(exclusive_builds)
 CONFIG = \
     lex yacc debug exceptions depend_includepath \

@@ -166,6 +166,16 @@ QMargins QPlatformWindow::frameMargins() const
 }
 
 /*!
+    The safe area margins of a window represent the area that is safe to
+    place content within, without intersecting areas of the screen where
+    system UI is placed, or where a screen bezel may cover the content.
+*/
+QMargins QPlatformWindow::safeAreaMargins() const
+{
+    return QMargins();
+}
+
+/*!
     Reimplemented in subclasses to show the surface
     if \a visible is \c true, and hide it if \a visible is \c false.
 

@@ -178,7 +178,7 @@
         "slog2": {
             "label": "slog2",
             "test": {
-                "include": "slog2.h",
+                "include": "sys/slog2.h",
                 "main": "slog2_set_default_buffer((slog2_buffer_t)-1);"
             },
             "export": "",
@@ -608,7 +608,7 @@
             "label": "PPS",
             "emitIf": "config.qnx",
             "condition": "libs.pps",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "qeventtransition": {
             "label": "QEventTransition class",

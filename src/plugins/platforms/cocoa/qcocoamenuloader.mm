@@ -43,6 +43,7 @@
 #include "qcocoahelpers.h"
 #include "qcocoamenubar.h"
 #include "qcocoamenuitem.h"
+#include "qcocoaintegration.h"
 
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtCore/private/qthread_p.h>
@@ -343,9 +344,12 @@
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem
 {
-    if ([menuItem action] == @selector(hide:)
-        || [menuItem action] == @selector(hideOtherApplications:)
+    if ([menuItem action] == @selector(hideOtherApplications:)
         || [menuItem action] == @selector(unhideAllApplications:)) {
+        return [NSApp validateMenuItem:menuItem];
+    } else if ([menuItem action] == @selector(hide:)) {
+        if (QCocoaIntegration::instance()->activePopupWindow())
+            return NO;
         return [NSApp validateMenuItem:menuItem];
     } else if ([menuItem tag]) {
         QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([menuItem tag]);

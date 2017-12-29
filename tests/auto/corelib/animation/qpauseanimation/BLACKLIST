@@ -4,3 +4,5 @@ osx-10.9
 *
 [multipleSequentialGroups]
 osx
+[noTimerUpdates]
+osx

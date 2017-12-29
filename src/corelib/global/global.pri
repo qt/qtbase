@@ -42,7 +42,10 @@ SOURCES += \
 VERSIONTAGGING_SOURCES = global/qversiontagging.cpp
 
 darwin: SOURCES += global/qoperatingsystemversion_darwin.mm
-win32: SOURCES += global/qoperatingsystemversion_win.cpp
+win32 {
+    SOURCES += global/qoperatingsystemversion_win.cpp
+    HEADERS += global/qoperatingsystemversion_win_p.h
+}
 
 # qlibraryinfo.cpp includes qconfig.cpp
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global

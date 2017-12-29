@@ -1156,7 +1156,7 @@ public class QtActivityDelegate
             return false;
 
         m_metaState = MetaKeyKeyListener.handleKeyDown(m_metaState, keyCode, event);
-        int c = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(m_metaState));
+        int c = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(m_metaState) | event.getMetaState());
         int lc = c;
         m_metaState = MetaKeyKeyListener.adjustMetaAfterKeypress(m_metaState);
 

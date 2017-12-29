@@ -557,7 +557,7 @@ defineTest(qtConfOutput_prepareOptions) {
                 else: \
                     qtConfFatalError("Cannot detect the Android host." \
                                      "Please use -android-ndk-host option to specify one.")
-                qtConfAddNotice("Available Android host does not match host architecture.")
+                qtConfAddNote("Available Android host does not match host architecture.")
             }
         } else {
             !exists($$ndk_tc_pfx/$$ndk_host/*): \

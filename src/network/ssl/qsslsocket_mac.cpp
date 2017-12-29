@@ -47,6 +47,7 @@
 #include "qsslkey_p.h"
 
 #include <QtCore/qmessageauthenticationcode.h>
+#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qdatastream.h>
 #include <QtCore/qsysinfo.h>
@@ -1245,13 +1246,17 @@ bool QSslSocketBackendPrivate::verifyPeerTrust()
     // actual system CA certificate list (which most use-cases need) other than
     // by letting SecTrustEvaluate fall through to the system list; so, in this case
     // (even though the client code may have provided its own certs), we retain
-    // the default behavior.
+    // the default behavior. Note, with macOS SDK below 10.12 using 'trust my
+    // anchors only' may result in some valid chains rejected, apparently the
+    // ones containing intermediated certificates; so we use this functionality
+    // on more recent versions only.
+
+    bool anchorsFromConfigurationOnly = false;
 
 #ifdef Q_OS_MACOS
-    const bool anchorsFromConfigurationOnly = true;
-#else
-    const bool anchorsFromConfigurationOnly = false;
-#endif
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSierra)
+        anchorsFromConfigurationOnly = true;
+#endif // Q_OS_MACOS
 
     SecTrustSetAnchorCertificatesOnly(trust, anchorsFromConfigurationOnly);
 

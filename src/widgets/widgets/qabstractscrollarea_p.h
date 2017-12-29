@@ -95,6 +95,7 @@ public:
 
     void init();
     void layoutChildren();
+    void layoutChildren_helper(bool *needHorizontalScrollbar, bool *needVerticalScrollbar);
     // ### Fix for 4.4, talk to Bjoern E or Girish.
     virtual void scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy) {}
     bool canStartScrollingAt( const QPoint &startPos );

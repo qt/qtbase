@@ -52,6 +52,7 @@
 //
 
 #include "qeglfsglobal_p.h"
+#include "qeglfscursor_p.h"
 #include <QtEglSupport/private/qeglplatformcontext_p.h>
 #include <QtCore/QVariant>
 
@@ -67,6 +68,8 @@ public:
     void destroyTemporaryOffscreenSurface(EGLSurface surface) override;
     void runGLChecks() override;
     void swapBuffers(QPlatformSurface *surface) override;
+
+    QEglFSCursorData cursorData;
 
 private:
     EGLNativeWindowType m_tempWindow;

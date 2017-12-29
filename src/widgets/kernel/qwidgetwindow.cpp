@@ -99,6 +99,13 @@ public:
 #if QT_CONFIG(opengl)
     QOpenGLContext *shareContext() const override;
 #endif
+
+    void processSafeAreaMarginsChanged() override
+    {
+        Q_Q(QWidgetWindow);
+        if (QWidget *widget = q->widget())
+            QWidgetPrivate::get(widget)->updateContentsRect();
+    }
 };
 
 QRectF QWidgetWindowPrivate::closestAcceptableGeometry(const QRectF &rect) const

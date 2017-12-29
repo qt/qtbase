@@ -332,6 +332,17 @@ public:
         endRemoveColumns();
     }
 
+    void removeAddLastColumnLayoutChanged()    // for taskQTBUG_41124
+    {
+        // make sure QHeaderView::_q_layoutChanged() is called
+        emit layoutAboutToBeChanged();
+        --cols;
+        emit layoutChanged();
+        emit layoutAboutToBeChanged();
+        ++cols;
+        emit layoutChanged();
+    }
+
     void removeAllColumns()
     {
         beginRemoveColumns(QModelIndex(), 0, cols - 1);
@@ -1326,6 +1337,19 @@ void tst_QTreeView::columnHidden()
     for (int c = 0; c < model.columnCount(); ++c)
         QCOMPARE(view.isColumnHidden(c), true);
     view.update();
+
+    // QTBUG_41124:
+    // QHeaderViewPrivate::_q_layoutChanged was not called because it was
+    // disconnected in QTreeView::setModel(). _q_layoutChanged restores
+    // the hidden sections which is tested here
+    view.setColumnHidden(model.cols - 1, true);
+    model.removeAddLastColumnLayoutChanged();
+    // we removed the last column and added a new one
+    // (with layoutToBeChanged/layoutChanged() for both) so column
+    // 1 is a new column and therefore must not be hidden when
+    // _q_layoutChanged() is called and is doing the right stuff
+    QCOMPARE(view.isColumnHidden(model.cols - 1), false);
+
 }
 
 void tst_QTreeView::rowHidden()

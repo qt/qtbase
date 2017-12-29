@@ -1881,7 +1881,8 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
         emit q->networkSessionConnected();
     lastSessionState = state;
 
-    if (online && state == QNetworkSession::Disconnected) {
+    if (online && (state == QNetworkSession::Disconnected
+                   || state == QNetworkSession::NotAvailable)) {
         const auto cfgs = networkConfigurationManager.allConfigurations();
         for (const QNetworkConfiguration &cfg : cfgs) {
             if (cfg.state().testFlag(QNetworkConfiguration::Active)) {
@@ -1923,9 +1924,9 @@ void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
         online = (networkConfiguration.state() & QNetworkConfiguration::Active);
     } else {
         if (online != isOnline) {
+            online = isOnline;
             _q_networkSessionClosed();
             createSession(q->configuration());
-            online = isOnline;
         }
     }
     if (online) {

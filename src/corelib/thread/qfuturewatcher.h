@@ -115,7 +115,7 @@ template <typename T>
 class QFutureWatcher : public QFutureWatcherBase
 {
 public:
-    explicit QFutureWatcher(QObject *_parent = 0)
+    explicit QFutureWatcher(QObject *_parent = nullptr)
         : QFutureWatcherBase(_parent)
     { }
     ~QFutureWatcher()

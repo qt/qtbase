@@ -477,6 +477,8 @@ public:
 
         WA_TabletTracking = 129,
 
+        WA_ContentsMarginsRespectsSafeArea = 130,
+
         // Add new attributes before this line
         WA_AttributeCount
     };

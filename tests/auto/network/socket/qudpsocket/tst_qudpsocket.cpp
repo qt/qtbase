@@ -55,6 +55,13 @@
 #include <errno.h>
 #endif
 
+#ifdef Q_OS_UNIX
+#  include <sys/socket.h>
+#endif
+#if defined(Q_OS_LINUX) || defined(Q_OS_WIN) || defined(SO_NREAD)
+#  define RELIABLE_BYTES_AVAILABLE
+#endif
+
 Q_DECLARE_METATYPE(QHostAddress)
 
 QT_FORWARD_DECLARE_CLASS(QUdpSocket)
@@ -1678,7 +1685,7 @@ void tst_QUdpSocket::linkLocalIPv4()
             foreach (QNetworkAddressEntry addr, iface.addressEntries()) {
                 if (addr.ip().isInSubnet(localMask, 16)) {
                     addresses << addr.ip();
-                    qDebug() << addr.ip();
+                    qDebug() << "Found IPv4 link local address" << addr.ip();
                 }
             }
         }
@@ -1703,7 +1710,6 @@ void tst_QUdpSocket::linkLocalIPv4()
         QVERIFY(s->writeDatagram(testData, s->localAddress(), neutral.localPort()));
         QVERIFY2(neutral.waitForReadyRead(10000), QtNetworkSettings::msgSocketError(neutral).constData());
 
-        QVERIFY2(s->waitForReadyRead(10000), QtNetworkSettings::msgSocketError(*s).constData());
         QNetworkDatagram dgram = neutral.receiveDatagram(testData.length() * 2);
         QVERIFY(dgram.isValid());
         QCOMPARE(dgram.senderAddress(), s->localAddress());
@@ -1726,7 +1732,7 @@ void tst_QUdpSocket::linkLocalIPv4()
         }
 
         QVERIFY(neutral.writeDatagram(dgram.makeReply(testData)));
-
+        QVERIFY2(s->waitForReadyRead(10000), QtNetworkSettings::msgSocketError(*s).constData());
         dgram = s->receiveDatagram(testData.length() * 2);
         QVERIFY(dgram.isValid());
         QCOMPARE(dgram.data(), testData);
@@ -1764,7 +1770,9 @@ void tst_QUdpSocket::readyRead()
     // make sure only one signal was emitted
     QCOMPARE(spy.count(), 1);
     QVERIFY(receiver.hasPendingDatagrams());
+#ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(receiver.bytesAvailable(), qint64(2));
+#endif
     QCOMPARE(receiver.pendingDatagramSize(), qint64(2));
 
     // write another datagram
@@ -1786,7 +1794,9 @@ void tst_QUdpSocket::readyRead()
     QTest::qWait(100);
     QCOMPARE(spy.count(), 2);
     QVERIFY(receiver.hasPendingDatagrams());
+#ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(receiver.bytesAvailable(), qint64(3));
+#endif
     QCOMPARE(receiver.pendingDatagramSize(), qint64(3));
 }
 
@@ -1814,7 +1824,9 @@ void tst_QUdpSocket::readyReadForEmptyDatagram()
     char buf[1];
     QVERIFY(receiver.hasPendingDatagrams());
     QCOMPARE(receiver.pendingDatagramSize(), qint64(0));
+#ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(receiver.bytesAvailable(), qint64(0));
+#endif
     QCOMPARE(receiver.readDatagram(buf, sizeof buf), qint64(0));
 }
 
@@ -1823,7 +1835,9 @@ void tst_QUdpSocket::async_readDatagramSlot()
     char buf[1];
     QVERIFY(m_asyncReceiver->hasPendingDatagrams());
     QCOMPARE(m_asyncReceiver->pendingDatagramSize(), qint64(1));
+#ifdef RELIABLE_BYTES_AVAILABLE
     QCOMPARE(m_asyncReceiver->bytesAvailable(), qint64(1));
+#endif
     QCOMPARE(m_asyncReceiver->readDatagram(buf, sizeof(buf)), qint64(1));
 
     if (buf[0] == '2') {

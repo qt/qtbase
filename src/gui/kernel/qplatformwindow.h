@@ -88,6 +88,7 @@ public:
     virtual QRect normalGeometry() const;
 
     virtual QMargins frameMargins() const;
+    virtual QMargins safeAreaMargins() const;
 
     virtual void setVisible(bool visible);
     virtual void setWindowFlags(Qt::WindowFlags flags);

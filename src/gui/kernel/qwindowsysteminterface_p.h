@@ -98,7 +98,8 @@ public:
 #endif
         ApplicationStateChanged = 0x19,
         FlushEvents = 0x20,
-        WindowScreenChanged = 0x21
+        WindowScreenChanged = 0x21,
+        SafeAreaMarginsChanged = 0x22
     };
 
     class WindowSystemEvent {
@@ -183,6 +184,15 @@ public:
 
         QPointer<QWindow> window;
         QPointer<QScreen> screen;
+    };
+
+    class SafeAreaMarginsChangedEvent : public WindowSystemEvent {
+    public:
+        SafeAreaMarginsChangedEvent(QWindow *w)
+            : WindowSystemEvent(SafeAreaMarginsChanged), window(w)
+        { }
+
+        QPointer<QWindow> window;
     };
 
     class ApplicationStateChangedEvent : public WindowSystemEvent {

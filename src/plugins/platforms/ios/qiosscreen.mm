@@ -174,6 +174,41 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 @end
 
+@interface UIScreen (Compatibility)
+@property (nonatomic, readonly) CGRect qt_applicationFrame;
+@end
+
+@implementation UIScreen (Compatibility)
+- (CGRect)qt_applicationFrame
+{
+#ifdef Q_OS_IOS
+    return self.applicationFrame;
+#else
+    return self.bounds;
+#endif
+}
+@end
+
+// -------------------------------------------------------------------------
+
+@implementation QUIWindow
+
+- (id)initWithFrame:(CGRect)frame
+{
+    if ((self = [super initWithFrame:frame]))
+        self->_sendingEvent = NO;
+
+    return self;
+}
+
+- (void)sendEvent:(UIEvent *)event
+{
+    QScopedValueRollback<BOOL> sendingEvent(self->_sendingEvent, YES);
+    [super sendEvent:event];
+}
+
+@end
+
 // -------------------------------------------------------------------------
 
 QT_BEGIN_NAMESPACE
@@ -245,7 +280,7 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
 
     if (!m_uiWindow) {
         // Create a window and associated view-controller that we can use
-        m_uiWindow = [[UIWindow alloc] initWithFrame:[m_uiScreen bounds]];
+        m_uiWindow = [[QUIWindow alloc] initWithFrame:[m_uiScreen bounds]];
         m_uiWindow.rootViewController = [[[QIOSViewController alloc] initWithQIOSScreen:this] autorelease];
     }
 
@@ -264,17 +299,31 @@ QIOSScreen::~QIOSScreen()
     [m_uiWindow release];
 }
 
+QString QIOSScreen::name() const
+{
+    if (m_uiScreen == [UIScreen mainScreen]) {
+        return QString::fromNSString([UIDevice currentDevice].model)
+            + QLatin1String(" built-in display");
+    } else {
+        return QLatin1String("External display");
+    }
+}
+
 void QIOSScreen::updateProperties()
 {
     QRect previousGeometry = m_geometry;
     QRect previousAvailableGeometry = m_availableGeometry;
 
     m_geometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
-#ifdef Q_OS_TVOS
-    m_availableGeometry = m_geometry;
-#else
-    m_availableGeometry = QRectF::fromCGRect(m_uiScreen.applicationFrame).toRect();
-#endif
+
+    // The application frame doesn't take safe area insets into account, and
+    // the safe area insets are not available before the UIWindow is shown,
+    // and do not take split-view constraints into account, so we have to
+    // combine the two to get the correct available geometry.
+    QRect applicationFrame = QRectF::fromCGRect(m_uiScreen.qt_applicationFrame).toRect();
+    UIEdgeInsets safeAreaInsets = m_uiWindow.qt_safeAreaInsets;
+    m_availableGeometry = m_geometry.adjusted(safeAreaInsets.left, safeAreaInsets.top,
+        -safeAreaInsets.right, -safeAreaInsets.bottom).intersected(applicationFrame);
 
 #ifndef Q_OS_TVOS
     if (m_uiScreen == [UIScreen mainScreen]) {
@@ -394,6 +443,16 @@ QDpi QIOSScreen::logicalDpi() const
 qreal QIOSScreen::devicePixelRatio() const
 {
     return [m_uiScreen scale];
+}
+
+qreal QIOSScreen::refreshRate() const
+{
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, 100300, 110000, __WATCHOS_NA)
+    if (__builtin_available(iOS 10.3, tvOS 11, *))
+        return m_uiScreen.maximumFramesPerSecond;
+#endif
+
+    return 60.0;
 }
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const

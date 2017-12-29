@@ -486,8 +486,8 @@ int runMoc(int argc, char **argv)
     // 3. and output meta object code
 
     if (output.size()) { // output file specified
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-        if (fopen_s(&out, QFile::encodeName(output).constData(), "w"))
+#if defined(_MSC_VER)
+        if (_wfopen_s(&out, reinterpret_cast<const wchar_t *>(output.utf16()), L"w") != 0)
 #else
         out = fopen(QFile::encodeName(output).constData(), "w"); // create output file
         if (!out)

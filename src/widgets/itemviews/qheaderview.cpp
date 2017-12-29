@@ -2319,18 +2319,20 @@ void QHeaderView::paintEvent(QPaintEvent *e)
     d->prepareSectionSelected(); // clear and resize the bit array
 
     QRect currentSectionRect;
-    int logical;
     const int width = d->viewport->width();
     const int height = d->viewport->height();
+    const int rtlHorizontalOffset = d->reverse() ? 1 : 0;
     for (int i = start; i <= end; ++i) {
         if (d->isVisualIndexHidden(i))
             continue;
         painter.save();
-        logical = logicalIndex(i);
+        const int logical = logicalIndex(i);
         if (d->orientation == Qt::Horizontal) {
-            currentSectionRect.setRect(sectionViewportPosition(logical), 0, sectionSize(logical), height);
+            currentSectionRect.setRect(sectionViewportPosition(logical) + rtlHorizontalOffset,
+                                       0, sectionSize(logical), height);
         } else {
-            currentSectionRect.setRect(0, sectionViewportPosition(logical), width, sectionSize(logical));
+            currentSectionRect.setRect(0, sectionViewportPosition(logical),
+                                       width, sectionSize(logical));
         }
         currentSectionRect.translate(offset);
 
@@ -2788,9 +2790,9 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     if (first && last)
         opt.position = QStyleOptionHeader::OnlyOneSection;
     else if (first)
-        opt.position = QStyleOptionHeader::Beginning;
+        opt.position = d->reverse() ? QStyleOptionHeader::End : QStyleOptionHeader::Beginning;
     else if (last)
-        opt.position = QStyleOptionHeader::End;
+        opt.position = d->reverse() ? QStyleOptionHeader::Beginning : QStyleOptionHeader::End;
     else
         opt.position = QStyleOptionHeader::Middle;
     opt.orientation = d->orientation;
@@ -3169,6 +3171,15 @@ void QHeaderViewPrivate::setupSectionIndicator(int section, int position)
     QRect rect(0, 0, w, h);
 
     QPainter painter(&pm);
+    const QVariant variant = model->headerData(section, orientation,
+                                               Qt::FontRole);
+    if (variant.isValid() && variant.canConvert<QFont>()) {
+        const QFont sectionFont = qvariant_cast<QFont>(variant);
+        painter.setFont(sectionFont);
+    } else {
+        painter.setFont(q->font());
+    }
+
     painter.setOpacity(0.75);
     q->paintSection(&painter, rect, section);
     painter.end();

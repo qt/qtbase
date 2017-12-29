@@ -160,6 +160,7 @@ static TRUSTEE_W currentUserTrusteeW;
 static TRUSTEE_W worldTrusteeW;
 static PSID currentUserSID = 0;
 static PSID worldSID = 0;
+static HANDLE currentUserImpersonatedToken = nullptr;
 
 QT_BEGIN_NAMESPACE
 
@@ -179,6 +180,11 @@ GlobalSid::~GlobalSid()
     if (worldSID) {
         ::FreeSid(worldSID);
         worldSID = 0;
+    }
+
+    if (currentUserImpersonatedToken) {
+        ::CloseHandle(currentUserImpersonatedToken);
+        currentUserImpersonatedToken = nullptr;
     }
 }
 
@@ -207,6 +213,12 @@ GlobalSid::GlobalSid()
                     }
                     free(tokenBuffer);
                 }
+                ::CloseHandle(token);
+            }
+
+            token = nullptr;
+            if (::OpenProcessToken(hnd, TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE | STANDARD_RIGHTS_READ, &token)) {
+                ::DuplicateToken(token, SecurityImpersonation, &currentUserImpersonatedToken);
                 ::CloseHandle(token);
             }
 
@@ -724,15 +736,49 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                 ACCESS_MASK access_mask;
                 TRUSTEE_W trustee;
                 if (what & QFileSystemMetaData::UserPermissions) { // user
-                    data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
-                    if (GetEffectiveRightsFromAcl(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
-                        access_mask = (ACCESS_MASK)-1;
-                    if(access_mask & ReadMask)
-                        data.entryFlags |= QFileSystemMetaData::UserReadPermission;
-                    if(access_mask & WriteMask)
-                        data.entryFlags|= QFileSystemMetaData::UserWritePermission;
-                    if(access_mask & ExecMask)
-                        data.entryFlags|= QFileSystemMetaData::UserExecutePermission;
+                    // Using AccessCheck because GetEffectiveRightsFromAcl doesn't account for elevation
+                    if (currentUserImpersonatedToken) {
+                        GENERIC_MAPPING mapping = {FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_GENERIC_EXECUTE, FILE_ALL_ACCESS};
+                        PRIVILEGE_SET privileges;
+                        DWORD grantedAccess;
+                        BOOL result;
+
+                        data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
+                        DWORD genericAccessRights = GENERIC_READ;
+                        ::MapGenericMask(&genericAccessRights, &mapping);
+
+                        DWORD privilegesLength = sizeof(privileges);
+                        if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
+                                          &mapping, &privileges, &privilegesLength, &grantedAccess, &result) && result) {
+                            data.entryFlags |= QFileSystemMetaData::UserReadPermission;
+                        }
+
+                        privilegesLength = sizeof(privileges);
+                        genericAccessRights = GENERIC_WRITE;
+                        ::MapGenericMask(&genericAccessRights, &mapping);
+                        if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
+                                          &mapping, &privileges, &privilegesLength, &grantedAccess, &result) && result) {
+                            data.entryFlags |= QFileSystemMetaData::UserWritePermission;
+                        }
+
+                        privilegesLength = sizeof(privileges);
+                        genericAccessRights = GENERIC_EXECUTE;
+                        ::MapGenericMask(&genericAccessRights, &mapping);
+                        if (::AccessCheck(pSD, currentUserImpersonatedToken, genericAccessRights,
+                                          &mapping, &privileges, &privilegesLength, &grantedAccess, &result) && result) {
+                            data.entryFlags |= QFileSystemMetaData::UserExecutePermission;
+                        }
+                    } else { // fallback to GetEffectiveRightsFromAcl
+                        data.knownFlagsMask |= QFileSystemMetaData::UserPermissions;
+                        if (GetEffectiveRightsFromAclW(pDacl, &currentUserTrusteeW, &access_mask) != ERROR_SUCCESS)
+                            access_mask = ACCESS_MASK(-1);
+                        if (access_mask & ReadMask)
+                            data.entryFlags |= QFileSystemMetaData::UserReadPermission;
+                        if (access_mask & WriteMask)
+                            data.entryFlags|= QFileSystemMetaData::UserWritePermission;
+                        if (access_mask & ExecMask)
+                            data.entryFlags|= QFileSystemMetaData::UserExecutePermission;
+                    }
                 }
                 if (what & QFileSystemMetaData::OwnerPermissions) { // owner
                     data.knownFlagsMask |= QFileSystemMetaData::OwnerPermissions;

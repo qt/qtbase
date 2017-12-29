@@ -181,6 +181,9 @@ public:
     static void handleWindowScreenChanged(QWindow *window, QScreen *newScreen);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static void handleSafeAreaMarginsChanged(QWindow *window);
+
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);
 
 #ifndef QT_NO_DRAGANDDROP
