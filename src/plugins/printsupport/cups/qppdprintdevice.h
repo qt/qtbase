@@ -91,6 +91,7 @@ public:
 
     QVariant property(QPrintDevice::PrintDevicePropertyKey key) const override;
     bool setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value) override;
+    bool isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const override;
 
 protected:
     void loadPageSizes() const override;

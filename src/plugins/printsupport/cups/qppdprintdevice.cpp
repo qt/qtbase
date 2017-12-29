@@ -436,7 +436,7 @@ QVariant QPpdPrintDevice::property(QPrintDevice::PrintDevicePropertyKey key) con
     else if (key == PDPK_CupsJobHoldUntil)
         return printerOption(QStringLiteral("job-hold-until"));
 
-    return QVariant();
+    return QPlatformPrintDevice::property(key);
 }
 
 bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, const QVariant &value)
@@ -449,7 +449,18 @@ bool QPpdPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key, cons
         }
     }
 
-    return false;
+    return QPlatformPrintDevice::setProperty(key, value);
+}
+
+bool QPpdPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const
+{
+    if (key == PDPK_PpdChoiceIsInstallableConflict) {
+        const QStringList values = params.toStringList();
+        if (values.count() == 2)
+            return ppdInstallableConflict(m_ppd, values[0].toLatin1(), values[1].toLatin1());
+    }
+
+    return QPlatformPrintDevice::isFeatureAvailable(key, params);
 }
 
 #ifndef QT_NO_MIMETYPE

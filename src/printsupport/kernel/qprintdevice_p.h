@@ -137,6 +137,7 @@ public:
 
     QVariant property(PrintDevicePropertyKey key) const;
     bool setProperty(PrintDevicePropertyKey key, const QVariant &value);
+    bool isFeatureAvailable(PrintDevicePropertyKey key, const QVariant &params) const;
 
 #ifndef QT_NO_MIMETYPE
     QList<QMimeType> supportedMimeTypes() const;

@@ -255,6 +255,11 @@ bool QPrintDevice::setProperty(PrintDevicePropertyKey key, const QVariant &value
     return isValid() ? d->setProperty(key, value) : false;
 }
 
+bool QPrintDevice::isFeatureAvailable(PrintDevicePropertyKey key, const QVariant &params) const
+{
+    return isValid() ? d->isFeatureAvailable(key, params) : false;
+}
+
 #ifndef QT_NO_MIMETYPE
 QList<QMimeType> QPrintDevice::supportedMimeTypes() const
 {

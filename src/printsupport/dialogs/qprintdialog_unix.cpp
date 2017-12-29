@@ -271,6 +271,7 @@ public:
     {
     }
 
+    // These indices are related to ppd_option_t::choices not to childItems
     int selected;
     int originallySelected;
 };
@@ -1466,8 +1467,14 @@ void QPPDOptionsModel::parseOptions(QOptionTreeItem *parent)
     for (int i = 0; i < group->num_options; ++i) {
         if (!isBlacklistedOption(group->options[i].keyword)) {
             QOptionTreeItemOption *opt = new QOptionTreeItemOption(i, &group->options[i], parent);
-            parent->childItems.append(opt);
             parseChoices(opt);
+
+            // Don't show options that are actually not options at all
+            // because they don't give the user any choice
+            if (opt->childItems.count() > 1)
+                parent->childItems.append(opt);
+            else
+                delete opt;
         }
     }
 }
@@ -1477,15 +1484,18 @@ void QPPDOptionsModel::parseChoices(QOptionTreeItemOption *parent)
     const ppd_option_t *option = static_cast<const ppd_option_t*>(parent->ptr);
     bool marked = false;
     for (int i = 0; i < option->num_choices; ++i) {
-        QOptionTreeItem *choice = new QOptionTreeItem(QOptionTreeItem::Choice, i, &option->choices[i], parent);
-        if (static_cast<int>(option->choices[i].marked) == 1) {
-            parent->selected = i;
-            marked = true;
-        } else if (!marked && qstrcmp(option->choices[i].choice, option->defchoice) == 0) {
-            parent->selected = i;
+        const auto values = QStringList{} << QString::fromLatin1(option->keyword) << QString::fromLatin1(option->choices[i].choice);
+        if (!m_currentPrintDevice->isFeatureAvailable(PDPK_PpdChoiceIsInstallableConflict, values)) {
+            QOptionTreeItem *choice = new QOptionTreeItem(QOptionTreeItem::Choice, i, &option->choices[i], parent);
+            if (static_cast<int>(option->choices[i].marked) == 1) {
+                parent->selected = i;
+                marked = true;
+            } else if (!marked && qstrcmp(option->choices[i].choice, option->defchoice) == 0) {
+                parent->selected = i;
+            }
+            parent->originallySelected = parent->selected;
+            parent->childItems.append(choice);
         }
-        parent->originallySelected = parent->selected;
-        parent->childItems.append(choice);
     }
 }
 
@@ -1627,11 +1637,10 @@ void QPPDOptionsEditor::setEditorData(QWidget *editor, const QModelIndex &index)
     const QPPDOptionsModel *m = static_cast<const QPPDOptionsModel*>(index.model());
     for (auto *childItem : qAsConst(itm->childItems)) {
         const ppd_choice_t *choice = static_cast<const ppd_choice_t*>(childItem->ptr);
-        cb->addItem(m->cupsCodec()->toUnicode(choice->text));
+        cb->addItem(m->cupsCodec()->toUnicode(choice->text), childItem->index);
+        if (childItem->index == itm->selected)
+            cb->setCurrentIndex(cb->count() - 1);
     }
-
-    if (itm->selected > -1)
-        cb->setCurrentIndex(itm->selected);
 }
 
 void QPPDOptionsEditor::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
@@ -1639,15 +1648,20 @@ void QPPDOptionsEditor::setModelData(QWidget *editor, QAbstractItemModel *model,
     QComboBox *cb = static_cast<QComboBox*>(editor);
     QOptionTreeItemOption *itm = static_cast<QOptionTreeItemOption*>(index.internalPointer());
 
-    if (itm->selected == cb->currentIndex())
+    // We can't use cb->currentIndex() to know the index of the option in the choices[] array
+    // because some of them may not be present in the list because they conflict with the
+    // installable options so use the index passed on addItem
+    const int selectedChoiceIndex = cb->currentData().toInt();
+
+    if (itm->selected == selectedChoiceIndex || selectedChoiceIndex < 0)
         return;
 
     const ppd_option_t *opt = static_cast<const ppd_option_t*>(itm->ptr);
     QPPDOptionsModel *m = static_cast<QPPDOptionsModel*>(model);
 
-    const auto values = QStringList{} << QString::fromLatin1(opt->keyword) << QString::fromLatin1(opt->choices[cb->currentIndex()].choice);
+    const auto values = QStringList{} << QString::fromLatin1(opt->keyword) << QString::fromLatin1(opt->choices[selectedChoiceIndex].choice);
     m->currentPrintDevice()->setProperty(PDPK_PpdOption, values);
-    itm->selected = cb->currentIndex();
+    itm->selected = selectedChoiceIndex;
 
     m->emitConflictsChanged();
 }

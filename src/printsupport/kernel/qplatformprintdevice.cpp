@@ -396,6 +396,14 @@ bool QPlatformPrintDevice::setProperty(QPrintDevice::PrintDevicePropertyKey key,
     return false;
 }
 
+bool QPlatformPrintDevice::isFeatureAvailable(QPrintDevice::PrintDevicePropertyKey key, const QVariant &params) const
+{
+    Q_UNUSED(key)
+    Q_UNUSED(params)
+
+    return false;
+}
+
 QList<QMimeType> QPlatformPrintDevice::supportedMimeTypes() const
 {
     if (!m_haveMimeTypes)
