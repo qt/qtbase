@@ -22,12 +22,9 @@ osx
 osx
 [broadcasting]
 osx
-ubuntu-16.04
 [zeroLengthDatagram]
 osx
 [linkLocalIPv6]
 redhatenterpriselinuxworkstation-6.6
-[pendingDatagramSize]
-ubuntu-16.04
 [readyReadForEmptyDatagram]
 ubuntu-16.04

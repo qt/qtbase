@@ -131,11 +131,13 @@ protected slots:
 
 private:
     bool shouldSkipIpv6TestsForBrokenSetsockopt();
+    bool shouldWorkaroundLinuxKernelBug();
 #ifdef SHOULD_CHECK_SYSCALL_SUPPORT
     bool ipv6SetsockoptionMissing(int level, int optname);
 #endif
 
     bool m_skipUnsupportedIPv6Tests;
+    bool m_workaroundLinuxKernelBug;
     QList<QHostAddress> allAddresses;
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager *netConfMan;
@@ -181,6 +183,16 @@ bool tst_QUdpSocket::shouldSkipIpv6TestsForBrokenSetsockopt()
 #endif //SHOULD_CHECK_SYSCALL_SUPPORT
 
     return false;
+}
+
+bool tst_QUdpSocket::shouldWorkaroundLinuxKernelBug()
+{
+#ifdef Q_OS_LINUX
+    const QVersionNumber version = QVersionNumber::fromString(QSysInfo::kernelVersion());
+    return version.majorVersion() == 4 && version.minorVersion() >= 6 && version.minorVersion() < 13;
+#else
+    return false;
+#endif
 }
 
 static QHostAddress makeNonAny(const QHostAddress &address, QHostAddress::SpecialAddress preferForAny = QHostAddress::LocalHost)
@@ -235,7 +247,7 @@ void tst_QUdpSocket::initTestCase()
         QSKIP("No network test server available");
     allAddresses = QNetworkInterface::allAddresses();
     m_skipUnsupportedIPv6Tests = shouldSkipIpv6TestsForBrokenSetsockopt();
-
+    m_workaroundLinuxKernelBug = shouldWorkaroundLinuxKernelBug();
     if (EmulationDetector::isRunningArmOnX86())
         QSKIP("This test is unreliable due to QEMU emulation shortcomings.");
 }
@@ -329,6 +341,9 @@ void tst_QUdpSocket::unconnectedServerAndClientTest()
 
 void tst_QUdpSocket::broadcasting()
 {
+    if (m_workaroundLinuxKernelBug)
+        QSKIP("This test can fail due to linux kernel bug");
+
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
 #ifndef QT_NO_NETWORKPROXY
@@ -797,6 +812,9 @@ void tst_QUdpSocket::bindAndConnectToHost()
 
 void tst_QUdpSocket::pendingDatagramSize()
 {
+    if (m_workaroundLinuxKernelBug)
+        QSKIP("This test can fail due to linux kernel bug");
+
     QUdpSocket server;
 #ifdef FORCE_SESSION
     server.setProperty("_q_networksession", QVariant::fromValue(networkSession));
