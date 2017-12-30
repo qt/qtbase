@@ -87,6 +87,7 @@ private:
         bool isComplete;
     };
 
+    static bool verifyGraphicsHardwareAvailability();
     static void deleteBuffers(const FramebufferObject &framebufferObject);
 
     FramebufferObject &backingFramebufferObjectFor(QPlatformSurface *) const;

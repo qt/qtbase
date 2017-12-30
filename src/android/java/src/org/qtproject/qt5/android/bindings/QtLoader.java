@@ -569,7 +569,8 @@ public abstract class QtLoader {
                 boolean bundlingQtLibs = false;
                 if (m_contextInfo.metaData.containsKey("android.app.bundle_local_qt_libs")
                         && m_contextInfo.metaData.getInt("android.app.bundle_local_qt_libs") == 1) {
-                    localPrefix = m_context.getApplicationInfo().dataDir + "/";
+                    File dataDir = new File(m_context.getApplicationInfo().dataDir);
+                    localPrefix = dataDir.getCanonicalPath() + "/";
                     pluginsPrefix = localPrefix + "qt-reserved-files/";
 
                     if (libsDir == null)

@@ -355,6 +355,8 @@ bool QWindowsTabletSupport::translateTabletProximityEvent(WPARAM /* wParam */, L
 
     if (!LOWORD(lParam)) {
         qCDebug(lcQpaTablet) << "leave proximity for device #" << m_currentDevice;
+        if (m_currentDevice < 0 || m_currentDevice >= m_devices.size()) // QTBUG-65120, spurious leave observed
+            return false;
         if (totalPacks > 0) {
             QWindowSystemInterface::handleTabletLeaveProximityEvent(proximityBuffer[0].pkTime,
                                                                     m_devices.at(m_currentDevice).currentDevice,

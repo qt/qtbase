@@ -71,8 +71,10 @@ private slots:
 
 private:
     QLabel *statusLabel = nullptr;
-    QUdpSocket udpSocket;
-    QHostAddress groupAddress;
+    QUdpSocket udpSocket4;
+    QUdpSocket udpSocket6;
+    QHostAddress groupAddress4;
+    QHostAddress groupAddress6;
 };
 
 #endif

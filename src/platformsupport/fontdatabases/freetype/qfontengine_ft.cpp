@@ -1773,7 +1773,10 @@ QFixed QFontEngineFT::scaledBitmapMetrics(QFixed m) const
 
 glyph_metrics_t QFontEngineFT::scaledBitmapMetrics(const glyph_metrics_t &m, const QTransform &t) const
 {
-    QTransform trans(t);
+    QTransform trans;
+    trans.setMatrix(t.m11(), t.m12(), t.m13(),
+                    t.m21(), t.m22(), t.m23(),
+                    0, 0, t.m33());
     const qreal scaleFactor = scalableBitmapScaleFactor.toReal();
     trans.scale(scaleFactor, scaleFactor);
 

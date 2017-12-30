@@ -178,7 +178,7 @@
         "slog2": {
             "label": "slog2",
             "test": {
-                "include": "slog2.h",
+                "include": "sys/slog2.h",
                 "main": "slog2_set_default_buffer((slog2_buffer_t)-1);"
             },
             "export": "",
@@ -347,6 +347,15 @@
                     "shm_unlink(\"test\");"
                 ],
                 "qmake": "linux: LIBS += -lpthread -lrt"
+            }
+        },
+        "linkat": {
+            "label": "linkat()",
+            "type": "compile",
+            "test": {
+                "head": "#define _ATFILE_SOURCE 1",
+                "include": [ "fcntl.h", "unistd.h" ],
+                "main": "linkat(AT_FDCWD, \"foo\", AT_FDCWD, \"bar\", AT_SYMLINK_FOLLOW);"
             }
         },
         "ppoll": {
@@ -540,6 +549,12 @@
             "condition": "libs.journald",
             "output": [ "privateFeature" ]
         },
+        "linkat": {
+            "label": "linkat()",
+            "autoDetect": "config.linux",
+            "condition": "tests.linkat",
+            "output": [ "privateFeature" ]
+        },
         "std-atomic64": {
             "label": "64 bit atomic operations",
             "condition": "libs.libatomic",
@@ -593,7 +608,7 @@
             "label": "PPS",
             "emitIf": "config.qnx",
             "condition": "libs.pps",
-            "output": [ "privateConfig" ]
+            "output": [ "privateFeature" ]
         },
         "qeventtransition": {
             "label": "QEventTransition class",

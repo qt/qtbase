@@ -499,30 +499,37 @@ defineTest(qtConfLibrary_inline) {
     # to make them recognize the same input variables.
     input = $$eval($${2}.alias)
 
-    # direct libs. overwrites inline libs.
-    defined(config.input.$${input}.libs, var) {
-        $${1}.libs = $$eval(config.input.$${input}.libs)
-        export($${1}.libs)
-    }
-
     # build-specific direct libs. overwrites inline libs.
     vars =
     any = false
     all = true
-    for (b, $${1}.builds._KEYS_) {
+    for (b, $$list(debug release)) {
         iv = $${input}.libs.$${b}
         vars += $$eval(config.commandline.rev_assignments.$${iv})
         defined(config.input.$${iv}, var) {
-            $${1}.builds.$${b}.libs = $$eval(config.input.$${iv})
-            export($${1}.builds.$${b}.libs)
+            $${1}.builds.$${b} = $$eval(config.input.$${iv})
+            export($${1}.builds.$${b})
+            $${1}.builds._KEYS_ *= $${b}
             any = true
         } else {
             all = false
         }
     }
-    $$any:!$$all {
-        qtConfAddError("Either none or all of $$join(vars, ", ", [, ]) must be specified.")
-        return(false)
+    $$any {
+        !$$all {
+            qtConfAddError("Either none or all of $$join(vars, ", ", [, ]) must be specified.")
+            return(false)
+        }
+        export($${1}.builds._KEYS_)
+        # we also reset the generic libs, to avoid surprises.
+        $${1}.libs =
+        export($${1}.libs)
+    }
+
+    # direct libs. overwrites inline libs.
+    defined(config.input.$${input}.libs, var) {
+        $${1}.libs = $$eval(config.input.$${input}.libs)
+        export($${1}.libs)
     }
 
     # prefix. prepends to (possibly overwritten) inline libs.
@@ -670,9 +677,10 @@ defineTest(qtConfExportLibrary) {
     NAME = $$upper($$name)
     # LIBS is emitted even if empty, as this allows the library to be "seen".
     qtConfOutputVar(assign, $$output, QMAKE_LIBS_$$NAME, $$libs)
-    for (b, $${spfx}.builds._KEYS_): \
-        qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), \
-                                          $$eval($${spfx}.builds.$${b}))
+    for (b, $${spfx}.builds._KEYS_) {
+        eval(blibs = $$eval($${spfx}.builds.$${b}))
+        qtConfOutputVar(assign, $$output, QMAKE_LIBS_$${NAME}_$$upper($$b), $$blibs)
+    }
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
     !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
     !isEmpty($${currentConfig}.module): \
@@ -1044,8 +1052,13 @@ defineTest(qtConfSaveResult) {
         return()
     keys = result $$eval($${1}.cache)
     cont = "cache.$${2}._KEYS_ = $$keys"
-    for (k, keys): \
+    cache.$${2}._KEYS_ = $$keys
+    export(cache.$${2}._KEYS_)
+    for (k, keys) {
         cont += "cache.$${2}.$${k} = $$val_escape($${1}.$${k})"
+        cache.$${2}.$${k} = $$eval($${1}.$${k})
+        export(cache.$${2}.$${k})
+    }
     write_file($$QMAKE_CONFIG_CACHE, cont, append)|error()
 }
 
@@ -2033,14 +2046,28 @@ qtConfCheckErrors()
 
 QMAKE_CONFIG_CACHE = $$OUT_PWD/config.cache
 QMAKE_CONFIG_CACHE_USE = $$eval(config.input.cache_use)
+cache_recheck = $$eval(config.input.cache_recheck)
+equals(cache_recheck, yes) {
+    QMAKE_CONFIG_CACHE_USE = positive
+    cache_recheck =
+}
 isEmpty(QMAKE_CONFIG_CACHE_USE): \
     QMAKE_CONFIG_CACHE_USE = all
 !equals(QMAKE_CONFIG_CACHE_USE, none) {
     include($$QMAKE_CONFIG_CACHE, , true)
     # this crudely determines when to discard the cache. this also catches the case
     # of no cache being there in the first place.
-    !equals(cache.platform, $$[QMAKE_SPEC])|!equals(cache.xplatform, $$[QMAKE_XSPEC]): \
+    !equals(cache.platform, $$[QMAKE_SPEC])|!equals(cache.xplatform, $$[QMAKE_XSPEC]) {
         QMAKE_CONFIG_CACHE_USE = none
+    } else: !isEmpty(cache_recheck) {
+        for (cr, $$list($$split(cache_recheck, ","))) {
+            !isEmpty(cache.$${cr}._KEYS_) {
+                cache.$${cr}._KEYS_ =
+            } else {
+                qtConfAddWarning("Attempting to discard non-cached result '$$cr'.")
+            }
+        }
+    }
 }
 equals(QMAKE_CONFIG_CACHE_USE, none) {
     cont = \

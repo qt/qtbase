@@ -30,26 +30,6 @@
 
 manifestmeta.filters                =   highlighted android thumbnail ios
 
-manifestmeta.highlighted.names      =   "QtQuick/Qt Quick Demo - Same Game" \
-                                        "QtQuick/Qt Quick Demo - Photo Surface" \
-                                        "QtQuick/Qt Quick Demo - Tweet Search" \
-                                        "QtQuick/Qt Quick Demo - Calqlatr" \
-                                        "QtQuick/Qt Quick Demo - StocQt" \
-                                        "QtQuick/Qt Quick Demo - Clocks" \
-                                        "QtQuick/Qt Quick Examples - Shader Effects" \
-                                        "QtQuickExtras/Qt Quick Extras - Dashboard" \
-                                        "QtQuickExtras/Qt Quick Extras - Flat" \
-                                        "QtQuickExtras/Qt Quick Extras - Gallery" \
-                                        "QtQuickDialogs/Qt Quick System Dialog Examples" \
-                                        "QtWinExtras/Quick Player" \
-                                        "QtMultimedia/QML Video Shader Effects Example" \
-                                        "QtCanvas3D/Interactive Mobile Phone Example" \
-                                        "QtLocation/Map Viewer (QML)" \
-                                        "QtBluetooth/Bluetooth Low Energy Heart Rate Game" \
-                                        "QtCharts/Chart Themes Example" \
-                                        "QtDataVisualization/Bars Example" \
-                                        "QtDataVisualization/Surface Example"
-
 manifestmeta.highlighted.attributes =   isHighlighted:true
 
 manifestmeta.android.names          =  "QtQuick/Qt Quick Demo - Calqlatr" \

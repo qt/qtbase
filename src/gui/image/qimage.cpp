@@ -130,7 +130,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
     if (std::numeric_limits<int>::max()/depth < width
         || bytes_per_line <= 0
         || height <= 0
-        || std::numeric_limits<qssize_t>::max()/uint(bytes_per_line) < height
+        || std::numeric_limits<qsizetype>::max()/uint(bytes_per_line) < height
         || std::numeric_limits<int>::max()/sizeof(uchar *) < uint(height))
         return 0;
 
@@ -1470,7 +1470,7 @@ int QImage::byteCount() const
     \sa byteCount(), bytesPerLine(), bits(), {QImage#Image Information}{Image
     Information}
 */
-qssize_t QImage::sizeInBytes() const
+qsizetype QImage::sizeInBytes() const
 {
     return d ? d->nbytes : 0;
 }

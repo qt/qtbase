@@ -376,8 +376,22 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
 {
     qreal factor = qreal(1.0);
     if (screen) {
-        if (m_usePixelDensity)
-            factor *= screen->pixelDensity();
+        if (m_usePixelDensity) {
+            qreal pixelDensity = screen->pixelDensity();
+
+            // Pixel density reported by the screen is sometimes not precise enough,
+            // so recalculate it: divide px (physical pixels) by dp (device-independent pixels)
+            // for both width and height, and then use the average if it is different from
+            // the one initially reported by the screen
+            QRect screenGeometry = screen->geometry();
+            qreal wFactor = qreal(screenGeometry.width()) / qRound(screenGeometry.width() / pixelDensity);
+            qreal hFactor = qreal(screenGeometry.height()) / qRound(screenGeometry.height() / pixelDensity);
+            qreal averageDensity = (wFactor + hFactor) / 2;
+            if (!qFuzzyCompare(pixelDensity, averageDensity))
+                pixelDensity = averageDensity;
+
+            factor *= pixelDensity;
+        }
         if (m_screenFactorSet) {
             QVariant screenFactor = screen->screen()->property(scaleFactorProperty);
             if (screenFactor.isValid())

@@ -378,8 +378,8 @@ void QNetworkConfigurationManager::updateConfigurations()
         priv->performAsyncConfigurationUpdate();
 }
 
-#include "moc_qnetworkconfigmanager.cpp"
-
 QT_END_NAMESPACE
+
+#include "moc_qnetworkconfigmanager.cpp"
 
 #endif // QT_NO_BEARERMANAGEMENT

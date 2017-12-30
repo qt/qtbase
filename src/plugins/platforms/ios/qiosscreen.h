@@ -46,6 +46,10 @@
 
 @class QIOSOrientationListener;
 
+@interface QUIWindow : UIWindow
+@property (nonatomic, readonly) BOOL sendingEvent;
+@end
+
 QT_BEGIN_NAMESPACE
 
 class QIOSScreen : public QObject, public QPlatformScreen
@@ -56,6 +60,8 @@ public:
     QIOSScreen(UIScreen *screen);
     ~QIOSScreen();
 
+    QString name() const override;
+
     QRect geometry() const override;
     QRect availableGeometry() const override;
     int depth() const override;
@@ -63,6 +69,7 @@ public:
     QSizeF physicalSize() const override;
     QDpi logicalDpi() const override;
     qreal devicePixelRatio() const override;
+    qreal refreshRate() const override;
 
     Qt::ScreenOrientation nativeOrientation() const override;
     Qt::ScreenOrientation orientation() const override;

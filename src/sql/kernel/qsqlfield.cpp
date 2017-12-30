@@ -155,6 +155,19 @@ public:
 */
 
 /*!
+    Constructs an empty field called \a fieldName of variant type \a type.
+
+    \sa setRequiredStatus(), setLength(), setPrecision(), setDefaultValue(),
+        setGenerated(), setReadOnly()
+*/
+QSqlField::QSqlField(const QString &fieldName, QVariant::Type type)
+{
+    d = new QSqlFieldPrivate(fieldName, type, QString());
+    val = QVariant(type);
+}
+
+/*!
+    \overload
     Constructs an empty field called \a fieldName of variant type \a
     type in \a table.
 

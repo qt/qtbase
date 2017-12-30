@@ -52,6 +52,7 @@
 #include <QtGui/QImageWriter>
 
 #include <shlobj.h>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -1264,15 +1265,16 @@ bool QBuiltInMimes::convertFromMime(const FORMATETC &formatetc, const QMimeData 
 QVector<FORMATETC> QBuiltInMimes::formatsForMime(const QString &mimeType, const QMimeData *mimeData) const
 {
     QVector<FORMATETC> formatetcs;
-    if (!outFormats.keys(mimeType).isEmpty() && mimeData->formats().contains(mimeType))
-        formatetcs += setCf(outFormats.key(mimeType));
+    const auto mit = std::find(outFormats.cbegin(), outFormats.cend(), mimeType);
+    if (mit != outFormats.cend() && mimeData->formats().contains(mimeType))
+        formatetcs += setCf(mit.key());
     return formatetcs;
 }
 
 bool QBuiltInMimes::canConvertToMime(const QString &mimeType, IDataObject *pDataObj) const
 {
-    return (!inFormats.keys(mimeType).isEmpty())
-        && canGetData(inFormats.key(mimeType), pDataObj);
+    const auto mit = std::find(inFormats.cbegin(), inFormats.cend(), mimeType);
+    return mit != inFormats.cend() && canGetData(mit.key(), pDataObj);
 }
 
 QVariant QBuiltInMimes::convertToMime(const QString &mimeType, IDataObject *pDataObj, QVariant::Type preferredType) const
@@ -1315,7 +1317,7 @@ public:
     QString mimeForFormat(const FORMATETC &formatetc) const override;
 
 private:
-    QMap<int, QString> formats;
+    mutable QMap<int, QString> formats;
     static QStringList ianaTypes;
     static QStringList excludeList;
 };
@@ -1380,15 +1382,13 @@ bool QLastResortMimes::convertFromMime(const FORMATETC &formatetc, const QMimeDa
 QVector<FORMATETC> QLastResortMimes::formatsForMime(const QString &mimeType, const QMimeData * /*mimeData*/) const
 {
     QVector<FORMATETC> formatetcs;
-    if (!formats.keys(mimeType).isEmpty()) {
-        formatetcs += setCf(formats.key(mimeType));
-    } else if (!excludeList.contains(mimeType, Qt::CaseInsensitive)){
-        // register any other available formats
-        int cf = QWindowsMime::registerMimeType(mimeType);
-        QLastResortMimes *that = const_cast<QLastResortMimes *>(this);
-        that->formats.insert(cf, mimeType);
-        formatetcs += setCf(cf);
-    }
+    auto mit = std::find(formats.begin(), formats.end(), mimeType);
+    // register any other available formats
+    if (mit == formats.end() && !excludeList.contains(mimeType, Qt::CaseInsensitive))
+        mit = formats.insert(QWindowsMime::registerMimeType(mimeType), mimeType);
+    if (mit != formats.end())
+        formatetcs += setCf(mit.key());
+
     if (!formatetcs.isEmpty())
         qCDebug(lcQpaMime) << __FUNCTION__ << mimeType << formatetcs;
     return formatetcs;
@@ -1426,14 +1426,11 @@ bool QLastResortMimes::canConvertToMime(const QString &mimeType, IDataObject *pD
         QString clipFormat = customMimeType(mimeType);
         const UINT cf = RegisterClipboardFormat(reinterpret_cast<const wchar_t *> (clipFormat.utf16()));
         return canGetData(int(cf), pDataObj);
-    } else if (formats.keys(mimeType).isEmpty()) {
-        // if it is not in there then register it and see if we can get it
-        int cf = QWindowsMime::registerMimeType(mimeType);
-        return canGetData(cf, pDataObj);
-    } else {
-        return canGetData(formats.key(mimeType), pDataObj);
     }
-    return false;
+    // if it is not in there then register it and see if we can get it
+    const auto mit = std::find(formats.cbegin(), formats.cend(), mimeType);
+    const int cf = mit != formats.cend() ? mit.key() : QWindowsMime::registerMimeType(mimeType);
+    return canGetData(cf, pDataObj);
 }
 
 QVariant QLastResortMimes::convertToMime(const QString &mimeType, IDataObject *pDataObj, QVariant::Type preferredType) const
@@ -1447,11 +1444,10 @@ QVariant QLastResortMimes::convertToMime(const QString &mimeType, IDataObject *p
             QString clipFormat = customMimeType(mimeType, &lindex);
             const UINT cf = RegisterClipboardFormat(reinterpret_cast<const wchar_t *> (clipFormat.utf16()));
             data = getData(int(cf), pDataObj, lindex);
-        } else if (formats.keys(mimeType).isEmpty()) {
-            int cf = QWindowsMime::registerMimeType(mimeType);
-            data = getData(cf, pDataObj);
         } else {
-            data = getData(formats.key(mimeType), pDataObj);
+            const auto mit = std::find(formats.cbegin(), formats.cend(), mimeType);
+            const int cf = mit != formats.cend() ? mit.key() : QWindowsMime::registerMimeType(mimeType);
+            data = getData(cf, pDataObj);
         }
         if (!data.isEmpty())
             val = data; // it should be enough to return the data and let QMimeData do the rest.

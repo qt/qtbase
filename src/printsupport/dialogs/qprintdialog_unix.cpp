@@ -335,8 +335,8 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *
     lay->addWidget(content);
     lay->addWidget(m_buttons);
 
-    connect(m_buttons->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(accept()));
-    connect(m_buttons->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this, SLOT(reject()));
+    connect(m_buttons->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, &QPrintPropertiesDialog::accept);
+    connect(m_buttons->button(QDialogButtonBox::Cancel), &QPushButton::clicked, this, &QPrintPropertiesDialog::reject);
 
     widget.pageSetup->setPrinter(printer, currentPrintDevice, outputFormat, printerName);
 
@@ -726,7 +726,7 @@ QPrintDialog::QPrintDialog(QPrinter *printer, QWidget *parent)
     Constructs a print dialog with the given \a parent.
 */
 QPrintDialog::QPrintDialog(QWidget *parent)
-    : QAbstractPrintDialog(*(new QPrintDialogPrivate), 0, parent)
+    : QAbstractPrintDialog(*(new QPrintDialogPrivate), nullptr, parent)
 {
     Q_D(QPrintDialog);
     d->init();
@@ -774,7 +774,7 @@ void QPrintDialog::accept()
 /*! \internal
 */
 QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *prn)
-    : parent(p), propertiesDialog(0), printer(prn), optionsPane(0),
+    : parent(p), propertiesDialog(nullptr), printer(prn), optionsPane(0),
       filePrintersAdded(false), propertiesDialogShown(false)
 {
     q = 0;
@@ -791,7 +791,9 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
 
         widget.printers->addItems(printers);
 
-        const int idx = printers.indexOf(defaultPrinter);
+        const QString selectedPrinter = prn && !prn->printerName().isEmpty() ? prn->printerName() : defaultPrinter;
+        const int idx = printers.indexOf(selectedPrinter);
+
         if (idx >= 0)
             currentPrinterIndex = idx;
     }
@@ -906,7 +908,7 @@ void QUnixPrintWidgetPrivate::_q_btnBrowseClicked()
     QString filename = widget.filename->text();
 #if QT_CONFIG(filedialog)
     filename = QFileDialog::getSaveFileName(parent, QPrintDialog::tr("Print To File ..."), filename,
-                                            QString(), 0, QFileDialog::DontConfirmOverwrite);
+                                            QString(), nullptr, QFileDialog::DontConfirmOverwrite);
 #else
     filename.clear();
 #endif
@@ -971,8 +973,7 @@ bool QUnixPrintWidgetPrivate::checkFields()
 
 void QUnixPrintWidgetPrivate::setupPrinterProperties()
 {
-    if (propertiesDialog)
-        delete propertiesDialog;
+    delete propertiesDialog;
 
     QPrinter::OutputFormat outputFormat;
     QString printerName;

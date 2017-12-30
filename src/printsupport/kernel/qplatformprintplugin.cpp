@@ -60,12 +60,12 @@ QPlatformPrinterSupportPlugin::~QPlatformPrinterSupportPlugin()
 {
 }
 
-static QPlatformPrinterSupport *printerSupport = 0;
+static QPlatformPrinterSupport *printerSupport = nullptr;
 
 static void cleanupPrinterSupport()
 {
     delete printerSupport;
-    printerSupport = 0;
+    printerSupport = nullptr;
 }
 
 /*!

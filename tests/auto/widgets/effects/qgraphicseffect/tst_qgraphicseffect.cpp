@@ -52,6 +52,7 @@ private slots:
     void boundingRect2();
     void draw();
     void opacity();
+    void nestedOpaqueOpacity();
     void grayscale();
     void colorize();
     void drawPixmapItem();
@@ -405,6 +406,26 @@ void tst_QGraphicsEffect::opacity()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(effect->numRepaints > 0);
     QCOMPARE(effect->m_opacity, qreal(0.5));
+}
+
+void tst_QGraphicsEffect::nestedOpaqueOpacity()
+{
+    // QTBUG-60231: Nesting widgets with a QGraphicsEffect on a toplevel with
+    // QGraphicsOpacityEffect caused crashes due to constructing several
+    // QPainter instances on a device in the fast path for
+    // QGraphicsOpacityEffect::opacity=1
+    QWidget topLevel;
+    topLevel.setWindowTitle(QTest::currentTestFunction());
+    topLevel.resize(320, 200);
+    QGraphicsOpacityEffect *opacityEffect = new QGraphicsOpacityEffect;
+    opacityEffect->setOpacity(1);
+    topLevel.setGraphicsEffect(opacityEffect);
+    QWidget *child = new QWidget(&topLevel);
+    child->resize(topLevel.size() / 2);
+    QGraphicsDropShadowEffect *childEffect = new QGraphicsDropShadowEffect;
+    child->setGraphicsEffect(childEffect);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 }
 
 void tst_QGraphicsEffect::grayscale()

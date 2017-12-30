@@ -272,7 +272,7 @@ static QSqlField qMakeFieldInfo(const QDB2ResultPrivate* d, int i)
 {
     SQLSMALLINT colNameLen;
     SQLSMALLINT colType;
-    SQLUINTEGER colSize;
+    SQLULEN colSize;
     SQLSMALLINT colScale;
     SQLSMALLINT nullable;
     SQLRETURN r = SQL_ERROR;
@@ -314,7 +314,7 @@ static int qGetIntData(SQLHANDLE hStmt, int column, bool& isNull)
 {
     SQLINTEGER intbuf;
     isNull = false;
-    SQLINTEGER lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
     SQLRETURN r = SQLGetData(hStmt,
                               column + 1,
                               SQL_C_SLONG,
@@ -332,7 +332,7 @@ static double qGetDoubleData(SQLHANDLE hStmt, int column, bool& isNull)
 {
     SQLDOUBLE dblbuf;
     isNull = false;
-    SQLINTEGER lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
     SQLRETURN r = SQLGetData(hStmt,
                               column+1,
                               SQL_C_DOUBLE,
@@ -351,7 +351,7 @@ static SQLBIGINT qGetBigIntData(SQLHANDLE hStmt, int column, bool& isNull)
 {
     SQLBIGINT lngbuf = Q_INT64_C(0);
     isNull = false;
-    SQLINTEGER lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
     SQLRETURN r = SQLGetData(hStmt,
                               column+1,
                               SQL_C_SBIGINT,
@@ -368,7 +368,7 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool& is
 {
     QString     fieldVal;
     SQLRETURN   r = SQL_ERROR;
-    SQLINTEGER  lengthIndicator = 0;
+    SQLLEN      lengthIndicator = 0;
 
     if (colSize <= 0)
         colSize = 255;
@@ -404,12 +404,12 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool& is
     return fieldVal;
 }
 
-static QByteArray qGetBinaryData(SQLHANDLE hStmt, int column, SQLINTEGER& lengthIndicator, bool& isNull)
+static QByteArray qGetBinaryData(SQLHANDLE hStmt, int column, SQLLEN& lengthIndicator, bool& isNull)
 {
     QByteArray fieldVal;
     SQLSMALLINT colNameLen;
     SQLSMALLINT colType;
-    SQLUINTEGER colSize;
+    SQLULEN colSize;
     SQLSMALLINT colScale;
     SQLSMALLINT nullable;
     SQLRETURN r = SQL_ERROR;
@@ -643,9 +643,9 @@ bool QDB2Result::exec()
 {
     Q_D(QDB2Result);
     QList<QByteArray> tmpStorage; // holds temporary ptrs
-    QVarLengthArray<SQLINTEGER, 32> indicators(boundValues().count());
+    QVarLengthArray<SQLLEN, 32> indicators(boundValues().count());
 
-    memset(indicators.data(), 0, indicators.size() * sizeof(SQLINTEGER));
+    memset(indicators.data(), 0, indicators.size() * sizeof(SQLLEN));
     setActive(false);
     setAt(QSql::BeforeFirstRow);
     SQLRETURN r;
@@ -661,7 +661,7 @@ bool QDB2Result::exec()
     int i;
     for (i = 0; i < values.count(); ++i) {
         // bind parameters - only positional binding allowed
-        SQLINTEGER *ind = &indicators[i];
+        SQLLEN *ind = &indicators[i];
         if (values.at(i).isNull())
             *ind = SQL_NULL_DATA;
         if (bindValueType(i) & QSql::Out)
@@ -1006,7 +1006,7 @@ QVariant QDB2Result::data(int field)
         return QVariant();
     }
     SQLRETURN r = 0;
-    SQLINTEGER lengthIndicator = 0;
+    SQLLEN lengthIndicator = 0;
     bool isNull = false;
     const QSqlField info = d->recInf.field(field);
 
@@ -1119,7 +1119,7 @@ bool QDB2Result::isNull(int i)
 int QDB2Result::numRowsAffected()
 {
     Q_D(const QDB2Result);
-    SQLINTEGER affectedRowCount = 0;
+    SQLLEN affectedRowCount = 0;
     SQLRETURN r = SQLRowCount(d->hStmt, &affectedRowCount);
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         return affectedRowCount;
@@ -1248,7 +1248,7 @@ bool QDB2Driver::open(const QString& db, const QString& user, const QString& pas
         const QString opt(tmp.left(idx));
         const QString val(tmp.mid(idx + 1).simplified());
 
-        SQLUINTEGER v = 0;
+        SQLULEN v = 0;
         r = SQL_SUCCESS;
         if (opt == QLatin1String("SQL_ATTR_ACCESS_MODE")) {
             if (val == QLatin1String("SQL_MODE_READ_ONLY")) {
@@ -1634,7 +1634,7 @@ bool QDB2Driver::rollbackTransaction()
 bool QDB2Driver::setAutoCommit(bool autoCommit)
 {
     Q_D(QDB2Driver);
-    SQLUINTEGER ac = autoCommit ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF;
+    SQLULEN ac = autoCommit ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF;
     SQLRETURN r  = SQLSetConnectAttr(d->hDbc,
                                       SQL_ATTR_AUTOCOMMIT,
                                       reinterpret_cast<SQLPOINTER>(ac),

@@ -1499,7 +1499,7 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
         QList<QVariant> out;
         const auto inputSlots = d->m_printDevice.supportedInputSlots();
         out.reserve(inputSlots.size());
-        for (const QPrint::InputSlot inputSlot : inputSlots)
+        for (const QPrint::InputSlot &inputSlot : inputSlots)
             out << QVariant(inputSlot.id == QPrint::CustomInputSlot ? inputSlot.windowsId : int(inputSlot.id));
         value = out;
         break;

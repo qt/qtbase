@@ -471,7 +471,7 @@ void QPrintDialog::done(int result)
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, SIGNAL(accepted(QPrinter*)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
-        d->receiverToDisconnectOnClose = 0;
+        d->receiverToDisconnectOnClose = nullptr;
     }
     d->memberToDisconnectOnClose.clear();
 }

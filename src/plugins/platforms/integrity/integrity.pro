@@ -8,13 +8,18 @@ QT += \
 SOURCES = \
     main.cpp \
     qintegrityfbintegration.cpp \
-    qintegrityfbscreen.cpp \
-    qintegrityhidmanager.cpp
+    qintegrityfbscreen.cpp
 
 HEADERS = \
     qintegrityfbintegration.h \
-    qintegrityfbscreen.h \
-    qintegrityhidmanager.h
+    qintegrityfbscreen.h
+
+qtConfig(integrityhid) {
+    SOURCES += \
+        qintegrityhidmanager.cpp
+    HEADERS += \
+        qintegrityhidmanager.h
+}
 
 OTHER_FILES += integrity.json
 

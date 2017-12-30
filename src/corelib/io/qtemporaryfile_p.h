@@ -58,7 +58,7 @@
 #include "private/qfile_p.h"
 #include "qtemporaryfile.h"
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && QT_CONFIG(linkat)
 #  include <fcntl.h>
 #  ifdef O_TMPFILE
 // some early libc support had the wrong values for O_TMPFILE
@@ -74,8 +74,8 @@ QT_BEGIN_NAMESPACE
 struct QTemporaryFileName
 {
     QFileSystemEntry::NativePath path;
-    qssize_t pos;
-    qssize_t length;
+    qsizetype pos;
+    qsizetype length;
 
     QTemporaryFileName(const QString &templateName);
     QFileSystemEntry::NativePath generateNext();
@@ -140,7 +140,7 @@ public:
 
     enum MaterializationMode { Overwrite, DontOverwrite, NameIsTemplate };
     bool materializeUnnamedFile(const QString &newName, MaterializationMode mode);
-    bool isUnnamedFile() const;
+    bool isUnnamedFile() const override final;
 
     const QString &templateName;
     quint32 fileMode;

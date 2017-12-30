@@ -4186,7 +4186,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 break;
             }
 
-            const int tabwidth = mi->tabWidth;
             const int maxpmw = mi->maxIconWidth;
             const bool enabled = mi->state & State_Enabled;
 
@@ -4244,21 +4243,37 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             }
 
             QString s = mi->text;
-            if (!s.isEmpty()) {
-                int t = s.indexOf(QLatin1Char('\t'));
-                int text_flags = Qt::AlignRight | Qt::AlignVCenter | Qt::TextHideMnemonic
-                                 | Qt::TextSingleLine | Qt::AlignAbsolute;
-                int yPos = mi->rect.y();
-                if (widgetSize == QStyleHelper::SizeMini)
-                    yPos += 1;
-                p->save();
-                if (t >= 0) {
-                    p->setFont(qt_app_fonts_hash()->value("QMenuItem", p->font()));
-                    int xp = mi->rect.right() - tabwidth - macRightBorder - macItemHMargin - macItemFrame + 1;
-                    p->drawText(xp, yPos, tabwidth, mi->rect.height(), text_flags, s.mid(t + 1));
-                    s = s.left(t);
-                }
+            const auto text_flags = Qt::AlignVCenter | Qt::TextHideMnemonic
+                                  | Qt::TextSingleLine | Qt::AlignAbsolute;
+            int yPos = mi->rect.y();
+            if (widgetSize == QStyleHelper::SizeMini)
+                yPos += 1;
 
+            const bool isSubMenu = mi->menuItemType == QStyleOptionMenuItem::SubMenu;
+            const int tabwidth = isSubMenu ? 9 : mi->tabWidth;
+
+            QString rightMarginText;
+            if (isSubMenu)
+                rightMarginText = QStringLiteral("\u25b6\ufe0e"); // U+25B6 U+FE0E: BLACK RIGHT-POINTING TRIANGLE
+
+            // If present, save and remove embedded shorcut from text
+            const int tabIndex = s.indexOf(QLatin1Char('\t'));
+            if (tabIndex >= 0) {
+                if (!isSubMenu) // ... but ignore it if it's a submenu.
+                    rightMarginText = s.mid(tabIndex + 1);
+                s = s.left(tabIndex);
+            }
+
+            p->save();
+            if (!rightMarginText.isEmpty()) {
+                p->setFont(qt_app_fonts_hash()->value("QMenuItem", p->font()));
+                int xp = mi->rect.right() - tabwidth - macRightBorder + 2;
+                if (!isSubMenu)
+                    xp -= macItemHMargin + macItemFrame + 3; // Adjust for shortcut
+                p->drawText(xp, yPos, tabwidth, mi->rect.height(), text_flags | Qt::AlignRight, rightMarginText);
+            }
+
+            if (!s.isEmpty()) {
                 const int xm = macItemFrame + maxpmw + macItemHMargin;
                 QFont myFont = mi->font;
                 // myFont may not have any "hard" flags set. We override
@@ -4269,9 +4284,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 myFont.setPointSizeF(QFontInfo(mi->font).pointSizeF());
                 p->setFont(myFont);
                 p->drawText(xpos, yPos, mi->rect.width() - xm - tabwidth + 1,
-                            mi->rect.height(), text_flags ^ Qt::AlignRight, s);
-                p->restore();
+                            mi->rect.height(), text_flags, s);
             }
+            p->restore();
         }
         break;
     case CE_MenuBarItem:
@@ -5158,11 +5173,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             const auto cw = QMacStylePrivate::CocoaControl(controlType, cocoaSize);
             NSScroller *scroller = static_cast<NSScroller *>(d->cocoaControl(cw));
 
+            const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
+            const bool hasDarkBg = bgColor.red() < 128 && bgColor.green() < 128 && bgColor.blue() < 128;
             if (isTransient) {
                 // macOS behavior: as soon as one color channel is >= 128,
                 // the background is considered bright, scroller is dark.
-                const QColor bgColor = QStyleHelper::backgroundColor(opt->palette, widget);
-                const bool hasDarkBg = bgColor.red() < 128 && bgColor.green() < 128 && bgColor.blue() < 128;
                 scroller.knobStyle = hasDarkBg? NSScrollerKnobStyleLight : NSScrollerKnobStyleDark;
             } else {
                 scroller.knobStyle = NSScrollerKnobStyleDefault;
@@ -5174,7 +5189,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 break;
 
             if (isTransient) {
-                CGContextBeginTransparencyLayer(cg, NULL);
+                CGContextBeginTransparencyLayerWithRect(cg, scroller.frame, nullptr);
                 CGContextSetAlpha(cg, opacity);
             }
 
@@ -5212,7 +5227,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     QCFType<CGPathRef> knobPath = CGPathCreateWithRoundedRect(knobRect, knobRadius, knobRadius, nullptr);
                     CGContextAddPath(cg, knobPath);
                     CGContextSetAlpha(cg, 0.5);
-                    CGContextSetFillColorWithColor(cg, NSColor.blackColor.CGColor);
+                    CGColorRef knobColor = hasDarkBg ? NSColor.whiteColor.CGColor : NSColor.blackColor.CGColor;
+                    CGContextSetFillColorWithColor(cg, knobColor);
                     CGContextFillPath(cg);
                 } else {
                     [scroller drawKnob];
@@ -6363,8 +6379,8 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             }
             if (mi->text.contains(QLatin1Char('\t')))
                 w += 12;
-            if (mi->menuItemType == QStyleOptionMenuItem::SubMenu)
-                w += 20;
+            else if (mi->menuItemType == QStyleOptionMenuItem::SubMenu)
+                w += 35; // Not quite exactly as it seems to depend on other factors
             if (maxpmw)
                 w += maxpmw + 6;
             // add space for a check. All items have place for a check too.

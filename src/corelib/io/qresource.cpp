@@ -86,8 +86,8 @@ public:
     }
 
     const QChar *m_data;
-    qssize_t m_len;
-    qssize_t m_pos = 0;
+    qsizetype m_len;
+    qsizetype m_pos = 0;
     QChar m_splitChar = QLatin1Char('/');
 };
 

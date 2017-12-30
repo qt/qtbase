@@ -506,7 +506,7 @@ void QConnmanTechnologyInterface::scan()
 
 void QConnmanTechnologyInterface::scanReply(QDBusPendingCallWatcher *call)
 {
-    QDBusPendingReply<QVariantMap> props_reply = *call;
+    QDBusPendingReply<> props_reply = *call;
     if (props_reply.isError()) {
         qDebug() << props_reply.error().message();
     }

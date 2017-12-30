@@ -250,7 +250,7 @@ typedef quint64 qulonglong;
 // In C++ mode, we define below using QIntegerForSize template
 Q_STATIC_ASSERT_X(sizeof(ptrdiff_t) == sizeof(size_t), "Weird ptrdiff_t and size_t definitions");
 typedef ptrdiff_t qptrdiff;
-typedef ptrdiff_t qssize_t;
+typedef ptrdiff_t qsizetype;
 typedef ptrdiff_t qintptr;
 typedef size_t quintptr;
 #endif
@@ -475,7 +475,7 @@ namespace QtPrivate {
       sizeof(void *) == sizeof(quintptr)
       && sizeof(void *) == sizeof(qptrdiff)
 
-  size_t and qssize_t are not guaranteed to be the same size as a pointer, but
+  size_t and qsizetype are not guaranteed to be the same size as a pointer, but
   they usually are.
 */
 template <int> struct QIntegerForSize;
@@ -492,7 +492,7 @@ typedef QIntegerForSize<Q_PROCESSOR_WORDSIZE>::Unsigned qregisteruint;
 typedef QIntegerForSizeof<void*>::Unsigned quintptr;
 typedef QIntegerForSizeof<void*>::Signed qptrdiff;
 typedef qptrdiff qintptr;
-using qssize_t = QIntegerForSizeof<std::size_t>::Signed;
+using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 
 /* moc compats (signals/slots) */
 #ifndef QT_MOC_COMPAT

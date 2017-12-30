@@ -239,13 +239,18 @@ void tst_QFileSystemModel::readOnly()
     QCOMPARE(model->isReadOnly(), true);
     QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
     QVERIFY2(file.open(), qPrintable(file.errorString()));
+    const QString fileName = file.fileName();
+    file.close();
+
+    const QFileInfo fileInfo(fileName);
+    QTRY_VERIFY(QDir(flatDirTestPath).entryInfoList().contains(fileInfo));
     QModelIndex root = model->setRootPath(flatDirTestPath);
 
     QTRY_VERIFY(model->rowCount(root) > 0);
-    QVERIFY(!(model->flags(model->index(file.fileName())) & Qt::ItemIsEditable));
+    QVERIFY(!(model->flags(model->index(fileName)) & Qt::ItemIsEditable));
     model->setReadOnly(false);
     QCOMPARE(model->isReadOnly(), false);
-    QVERIFY(model->flags(model->index(file.fileName())) & Qt::ItemIsEditable);
+    QVERIFY(model->flags(model->index(fileName)) & Qt::ItemIsEditable);
 }
 
 class CustomFileIconProvider : public QFileIconProvider
@@ -729,6 +734,9 @@ void tst_QFileSystemModel::sortPersistentIndex()
 {
     QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
     QVERIFY2(file.open(), qPrintable(file.errorString()));
+    const QFileInfo fileInfo(file.fileName());
+    file.close();
+    QTRY_VERIFY(QDir(flatDirTestPath).entryInfoList().contains(fileInfo));
     QModelIndex root = model->setRootPath(flatDirTestPath);
     QTRY_VERIFY(model->rowCount(root) > 0);
 

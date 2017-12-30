@@ -377,7 +377,6 @@
     QScopedValueRollback<BOOL> rollback(m_inSendEventToFocusObject, true);
     QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyPress, key, modifiers);
     QWindowSystemInterface::handleKeyEvent(qApp->focusWindow(), QEvent::KeyRelease, key, modifiers);
-    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 #ifndef QT_NO_SHORTCUT

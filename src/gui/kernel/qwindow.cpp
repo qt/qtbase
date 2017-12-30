@@ -2790,6 +2790,8 @@ bool QWindowPrivate::applyCursor()
             if (!platformWindow)
                 return true;
             QCursor *c = QGuiApplication::overrideCursor();
+            if (c != nullptr && platformCursor->capabilities().testFlag(QPlatformCursor::OverrideCursor))
+                return true;
             if (!c && hasCursor)
                 c = &cursor;
             platformCursor->changeCursor(c, q);

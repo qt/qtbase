@@ -79,7 +79,7 @@ class QPrintPreviewMainWindow : public QMainWindow
 {
 public:
     QPrintPreviewMainWindow(QWidget *parent) : QMainWindow(parent) {}
-    QMenu *createPopupMenu() override { return 0; }
+    QMenu *createPopupMenu() override { return nullptr; }
 };
 
 class ZoomFactorValidator : public QDoubleValidator
@@ -119,7 +119,7 @@ public:
         : QLineEdit(parent)
     {
         setContextMenuPolicy(Qt::NoContextMenu);
-        connect(this, SIGNAL(returnPressed()), SLOT(handleReturnPressed()));
+        connect(this, &LineEdit::returnPressed, this, &LineEdit::handleReturnPressed);
     }
 
 protected:

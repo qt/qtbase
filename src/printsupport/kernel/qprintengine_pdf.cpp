@@ -381,7 +381,7 @@ void QPdfPrintEnginePrivate::closePrintDevice()
     #endif
         fd = -1;
         delete outDevice;
-        outDevice = 0;
+        outDevice = nullptr;
     }
 }
 

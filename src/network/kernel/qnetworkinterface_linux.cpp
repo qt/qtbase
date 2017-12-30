@@ -165,7 +165,7 @@ template <typename Lambda> struct ProcessNetlinkRequest
         int expectedType = expectedTypeForRequest(hdr->nlmsg_type);
         const bool isDump = hdr->nlmsg_flags & NLM_F_DUMP;
         forever {
-            qssize_t len = recv(sock, buf, bufsize, 0);
+            qsizetype len = recv(sock, buf, bufsize, 0);
             hdr = reinterpret_cast<struct nlmsghdr *>(buf);
             if (!NLMSG_OK(hdr, len))
                 return;

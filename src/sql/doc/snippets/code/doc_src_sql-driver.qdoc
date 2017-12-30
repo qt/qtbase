@@ -49,14 +49,16 @@
 ****************************************************************************/
 
 //! [0]
--no-sql-<driver> ... Disable SQL <driver> entirely.
--qt-sql-<driver> ... Enable a SQL <driver> in the Qt Library, by default
-                     none are turned on.
--plugin-sql-<driver> Enable SQL <driver> as a plugin to be linked to
-                     at run time.
+[...]
 
-                     Possible values for <driver>:
-                     [ db2 ibase mysql oci odbc psql sqlite sqlite2 tds ]
+Database options:
+
+  -sql-<driver> ........ Enable SQL <driver> plugin. Supported drivers:
+                         db2 ibase mysql oci odbc psql sqlite2 sqlite tds
+                         [all auto]
+  -sqlite .............. Select used sqlite3 [system/qt]
+
+[...]
 //! [0]
 
 
@@ -70,9 +72,9 @@ END
 
 
 //! [3]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/mysql
-qmake "INCLUDEPATH+=/usr/local/include" "LIBS+=-L/usr/local/lib -lmysqlclient_r" mysql.pro
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- MYSQL_PREFIX=/usr/local
+make sub-mysql
 //! [3]
 
 
@@ -83,32 +85,30 @@ make install
 
 
 //! [5]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\mysql
-qmake "INCLUDEPATH+=C:/MySQL/include" "LIBS+=C:/MYSQL/MySQL Server <version>/lib/opt/libmysql.lib" mysql.pro
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake -- MYSQL_INCDIR=C:/MySQL/include "MYSQL_LIBDIR=C:/MYSQL/MySQL Server <version>/lib/opt"
+nmake sub-mysql
 //! [5]
 
 
 //! [6]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/oci
-qmake "INCLUDEPATH+=$ORACLE_HOME/rdbms/public $ORACLE_HOME/rdbms/demo" "LIBS+=-L$ORACLE_HOME/lib -lclntsh -lwtc9" oci.pro
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- "OCI_INCDIR=$ORACLE_HOME/rdbms/public" OCI_LIBDIR=$ORACLE_HOME/lib "OCI_LIBS=-lclntsh -lwtc9"
+make sub-oci
 //! [6]
 
 
 //! [7]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/oci
-qmake "INCLUDEPATH+=/usr/include/oracle/10.1.0.3/client/" "LIBS+=-L/usr/lib/oracle/10.1.0.3/client/lib -lclntsh" oci.pro
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib
+make sub-oci
 //! [7]
 
 
 //! [8]
-set INCLUDE=%INCLUDE%;c:\oracle\oci\include
-set LIB=%LIB%;c:\oracle\oci\lib\msvc
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\oci
-qmake oci.pro
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake -- OCI_INCDIR=c:/oracle/oci/include OCI_LIBDIR=c:/oracle/oci/lib/msvc
+nmake sub-oci
 //! [8]
 
 
@@ -118,128 +118,110 @@ set PATH=%PATH%;c:\oracle\bin
 
 
 //! [11]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/odbc
-qmake "INCLUDEPATH+=/usr/local/unixODBC/include" "LIBS+=-L/usr/local/unixODBC/lib -lodbc"
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- ODBC_PREFIX=/usr/local/unixODBC
+make sub-odbc
 //! [11]
 
 
 //! [12]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\odbc
-qmake odbc.pro
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake
+nmake sub-odbc
 //! [12]
 
 
 //! [13]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/psql
-qmake "INCLUDEPATH+=/usr/include/pgsql" "LIBS+=-L/usr/lib -lpq" psql.pro
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- PSQL_INCDIR=/usr/include/pgsql
+make sub-psql
 //! [13]
 
 
-//! [14]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/psql
-make install
-//! [14]
-
-
 //! [15]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\psql
-qmake "INCLUDEPATH+=C:/psql/include" "LIBS+=C:/psql/lib/ms/libpq.lib" psql.pro
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake -- PSQL_INCDIR=C:/psql/include PSQL_LIBDIR=C:/psql/lib/ms
+nmake sub-psql
 //! [15]
 
 
 //! [16]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/tds
-qmake "INCLUDEPATH=$SYBASE/include" "LIBS=-L$SYBASE/lib -lsybdb"
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- TDS_PREFIX=$SYBASE
+make sub-tds
 //! [16]
 
 
 //! [17]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\tds
-qmake "LIBS+=NTWDBLIB.LIB" tds.pro
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake
+nmake sub-tds
 //! [17]
 
 
 //! [18]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/db2
-qmake "INCLUDEPATH+=$DB2DIR/include" "LIBS+=-L$DB2DIR/lib -ldb2"
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- DB2_PREFIX=$DB2DIR
+make sub-db2
 //! [18]
 
 
-//! [19]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/db2
-make install
-//! [19]
-
-
 //! [20]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\db2
-qmake "INCLUDEPATH+=<DB2 home>/sqllib/include" "LIBS+=<DB2 home>/sqllib/lib/db2cli.lib"
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake -- "DB2_PREFIX=<DB2 home>/sqllib"
+nmake sub-db2
 //! [20]
 
 
 //! [21]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/sqlite
-qmake "INCLUDEPATH+=$SQLITE/include" "LIBS+=-L$SQLITE/lib -lsqlite"
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- -system-sqlite SQLITE3_PREFIX=$SQLITE
+make sub-sqlite
 //! [21]
-
-
-//! [22]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/sqlite
-make install
-//! [22]
 
 
 //! [23]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\sqlite
-qmake "INCLUDEPATH+=C:/SQLITE/INCLUDE" "LIBS+=C:/SQLITE/LIB/SQLITE3.LIB" sqlite.pro
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake -- -system-sqlite SQLITE3_PREFIX=C:/SQLITE
+nmake sub-sqlite
 //! [23]
 
 
 //! [27]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/ibase
-qmake "INCLUDEPATH+=/opt/interbase/include" "LIBS+=-L/opt/interbase/lib" ibase.pro
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- IBASE_PREFIX=/opt/interbase
+make sub-ibase
 //! [27]
 
 
 //! [28]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/ibase
-qmake "INCLUDEPATH+=/opt/interbase/include" "LIBS+=-L/opt/interbase/lib -lfbclient" ibase.pro
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- IBASE_PREFIX=/opt/interbase IBASE_LIBS=-lfbclient
+make sub-ibase
 //! [28]
 
 
 //! [29]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\ibase
-qmake "INCLUDEPATH+=C:/interbase/include" ibase.pro
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake -- IBASE_INCDIR=C:/interbase/include
+nmake sub-ibase
 //! [29]
 
 
 //! [30]
-cd %QTDIR%\qtbase\src\plugins\sqldrivers\ibase
-qmake "INCLUDEPATH+=C:/interbase/include" "LIBS+=-lfbclient" ibase.pro
-nmake
+cd %QTDIR%\qtbase\src\plugins\sqldrivers
+qmake -- IBASE_INCDIR=C:/interbase/include IBASE_LIBS=-lfbclient
+nmake sub-ibase
 //! [30]
 
 
 //! [32]
-configure -I /usr/include/oracle/10.1.0.3/client -L /usr/lib/oracle/10.1.0.3/client/lib -R /usr/lib/oracle/10.1.0.3/client/lib -lclntsh -lnnz10
+configure OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib -R /usr/lib/oracle/10.1.0.3/client/lib "OCI_LIBS=-lclntsh -lnnz10"
 make
 //! [32]
 
 //! [33]
-cd $QTDIR/qtbase/src/plugins/sqldrivers/oci
-qmake "INCLUDEPATH+=/usr/include/oracle/10.1.0.3/client" "LIBS+=-L/usr/lib/oracle/10.1.0.3/client/lib -Wl,-rpath,/usr/lib/oracle/10.1.0.3/client/lib -lclntsh -lnnz10" oci.pro
-make
+cd $QTDIR/qtbase/src/plugins/sqldrivers
+qmake -- OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib "OCI_LIBS=-Wl,-rpath,/usr/lib/oracle/10.1.0.3/client/lib -lclntsh -lnnz10"
+make sub-oci
 //! [33]

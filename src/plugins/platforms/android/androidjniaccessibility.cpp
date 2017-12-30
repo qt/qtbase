@@ -106,7 +106,8 @@ namespace QtAndroidAccessibility
         QAccessibleInterface *iface = interfaceFromId(objectId);
         if (iface && iface->isValid()) {
             const int childCount = iface->childCount();
-            QVarLengthArray<jint, 8> ifaceIdArray(childCount);
+            QVarLengthArray<jint, 8> ifaceIdArray;
+            ifaceIdArray.reserve(childCount);
             for (int i = 0; i < childCount; ++i) {
                 QAccessibleInterface *child = iface->child(i);
                 if (child && child->isValid())

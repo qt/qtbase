@@ -40,20 +40,24 @@
 #ifndef QIOSAPPLICATIONSTATE_H
 #define QIOSAPPLICATIONSTATE_H
 
-#include <QtCore/qglobal.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qobject.h>
 
-Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
+#include <UIKit/UIApplication.h>
 
 QT_BEGIN_NAMESPACE
 
-class QIOSApplicationState
+class QIOSApplicationState : public QObject
 {
+    Q_OBJECT
 public:
     QIOSApplicationState();
-    ~QIOSApplicationState();
-private:
-    QVector<NSObject*> m_observers;
+
+    static void handleApplicationStateChanged(UIApplicationState state, const QString &reason);
+    static Qt::ApplicationState toQtApplicationState(UIApplicationState state);
+
+Q_SIGNALS:
+    void applicationStateWillChange(Qt::ApplicationState);
+    void applicationStateDidChange(Qt::ApplicationState);
 };
 
 QT_END_NAMESPACE

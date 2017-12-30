@@ -81,26 +81,26 @@ qtConfig(opengles2) {
     QMAKE_USE += opengl_es2 egl
 }
 
-CONFIG(qqnx_pps) {
-    DEFINES += QQNX_PPS
-
-    SOURCES += qqnxclipboard.cpp \
-               qqnxbuttoneventnotifier.cpp \
+qtConfig(qqnx_pps) {
+    SOURCES += qqnxbuttoneventnotifier.cpp \
                qqnxnavigatorpps.cpp \
                qqnxnavigatoreventnotifier.cpp \
                qqnxvirtualkeyboardpps.cpp
 
-    HEADERS += qqnxclipboard.h \
-               qqnxbuttoneventnotifier.h \
+    HEADERS += qqnxbuttoneventnotifier.h \
                qqnxnavigatorpps.h \
                qqnxnavigatoreventnotifier.h \
                qqnxvirtualkeyboardpps.h
 
     QMAKE_USE += pps
-    !contains(DEFINES, QT_NO_CLIPBOARD): LIBS += -lclipboard
 
-    CONFIG(qqnx_imf) {
-        DEFINES += QQNX_IMF
+    qtConfig(clipboard) {
+        SOURCES += qqnxclipboard.cpp
+        HEADERS += qqnxclipboard.h
+        LIBS += -lclipboard
+    }
+
+    qtConfig(qqnx_imf) {
         HEADERS += qqnxinputcontext_imf.h
         SOURCES += qqnxinputcontext_imf.cpp
     } else {
