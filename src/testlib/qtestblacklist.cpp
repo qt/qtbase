@@ -155,7 +155,7 @@ static QSet<QByteArray> keywords()
             << "arm"
 #endif
 
-#ifdef Q_AUTOTEST_EXPORT
+#ifdef QT_BUILD_INTERNAL
             << "developer-build"
 #endif
             ;
