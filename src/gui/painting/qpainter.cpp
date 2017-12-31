@@ -5744,7 +5744,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     if (d->extended == 0
             || !d->state->matrix.isAffine()
             || !fe->supportsTransformation(d->state->matrix)) {
-        staticText_d->paintText(topLeftPosition, this);
+        staticText_d->paintText(topLeftPosition, this, pen().color());
         return;
     }
 
@@ -5816,11 +5816,16 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
 
     QPen oldPen = d->state->pen;
     QColor currentColor = oldPen.color();
+    static const QColor bodyIndicator(0, 0, 0, 0);
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
-        if (item->color.isValid() && currentColor != item->color) {
-            setPen(item->color);
-            currentColor = item->color;
+        if (item->color.isValid() && currentColor != item->color
+            && item->color != bodyIndicator) {
+                setPen(item->color);
+                currentColor = item->color;
+        } else if (item->color == bodyIndicator) {
+            setPen(oldPen);
+            currentColor = oldPen.color();
         }
         d->extended->drawStaticTextItem(item);
 
