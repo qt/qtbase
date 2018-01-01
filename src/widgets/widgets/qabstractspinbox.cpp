@@ -828,6 +828,9 @@ void QAbstractSpinBox::changeEvent(QEvent *event)
             d->reset();
             d->updateEditFieldGeometry();
             break;
+        case QEvent::LocaleChange:
+            d->updateEdit();
+            break;
         case QEvent::EnabledChange:
             if (!isEnabled()) {
                 d->reset();
