@@ -939,6 +939,8 @@
             order in which they are given.
     \row    \li precompile_header \li Enables support for the use of
             \l{Using Precompiled Headers}{precompiled headers} in projects.
+    \row    \li precompile_header_c (MSVC only) \li Enables support for the use of
+            \l{Using Precompiled Headers}{precompiled headers} for C files.
     \row    \li warn_on  \li The compiler should output as many warnings as possible.
             If \c warn_off is also specified, the last one takes effect.
     \row    \li warn_off \li The compiler should output as few warnings as possible.
@@ -4622,6 +4624,11 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 106
+
+    To use the precompiled header also for C files on MSVC nmake target, add
+    \c precompile_header_c to the \l{CONFIG} variable. If the header is
+    used also for C++ and it contains C++ keywords/includes, enclose them
+    with \c{#ifdef __cplusplus}).
 
     \section1 Notes on Possible Issues
 

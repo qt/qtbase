@@ -53,7 +53,7 @@ protected:
     QString var(const ProKey &value) const;
     QString precompH, precompObj, precompPch;
     QString precompObjC, precompPchC;
-    bool usePCH;
+    bool usePCH, usePCHC;
 
 public:
     NmakeMakefileGenerator();
