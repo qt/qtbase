@@ -3657,7 +3657,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if ((pseudo == PseudoElement_MenuSeparator) && subRule.hasDrawable()) {
                 subRule.drawRule(p, opt->rect);
             } else if ((pseudo == PseudoElement_Item)
-                        && (allRules.hasBox() || allRules.hasBorder()
+                        && (allRules.hasBox() || allRules.hasBorder() || subRule.hasFont
                             || (allRules.background() && !allRules.background()->pixmap.isNull()))) {
                 subRule.drawRule(p, opt->rect);
                 if (subRule.hasBackground()) {

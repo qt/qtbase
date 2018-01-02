@@ -212,7 +212,7 @@ private slots:
 
         qunsetenv("QT_LOGGING_RULES");
         qputenv("QT_LOGGING_CONF", QFINDTESTDATA("qtlogging.ini").toLocal8Bit());
-        registry.initalizeRules();
+        registry.initializeRules();
 
         QCOMPARE(registry.ruleSets[QLoggingRegistry::ApiRules].size(), 0);
         QCOMPARE(registry.ruleSets[QLoggingRegistry::ConfigRules].size(), 0);
@@ -220,7 +220,7 @@ private slots:
 
         // check that QT_LOGGING_RULES take precedence
         qputenv("QT_LOGGING_RULES", "Digia.*=true");
-        registry.initalizeRules();
+        registry.initializeRules();
         QCOMPARE(registry.ruleSets[QLoggingRegistry::EnvironmentRules].size(), 2);
         QCOMPARE(registry.ruleSets[QLoggingRegistry::EnvironmentRules].at(1).enabled, true);
     }
@@ -246,7 +246,7 @@ private slots:
         file.close();
 
         QLoggingRegistry registry;
-        registry.initalizeRules();
+        registry.initializeRules();
         QCOMPARE(registry.ruleSets[QLoggingRegistry::ConfigRules].size(), 1);
 
         // remove file again

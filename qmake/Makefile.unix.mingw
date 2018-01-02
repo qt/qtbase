@@ -9,7 +9,7 @@
 # sh-compatible shell. This is not a problem, because configure.bat
 # will not do that.
 ifeq ($(SHELL), sh.exe)
-    ifeq ($(wildcard $(CURDIR)/sh.exe), )
+    ifeq ($(wildcard ./sh.exe), )
         SH = 0
     else
         SH = 1

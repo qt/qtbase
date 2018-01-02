@@ -750,7 +750,6 @@ void Widget::sizeFunction()
     int n = str.size();         // n == 5
     str.data()[0];              // returns 'W'
     str.data()[4];              // returns 'd'
-    str.data()[5];              // returns '\0'
     //! [58]
 }
 
@@ -810,6 +809,18 @@ void Widget::splitCaseSensitiveFunction()
     QStringList list2 = str.split(',', QString::SkipEmptyParts);
     // list2: [ "a", "b", "c" ]
     //! [62]
+
+    //! [62-empty]
+    QString str = "abc";
+    auto parts = str.split("");
+    // parts: {"", "a", "b", "c", ""}
+    //! [62-empty]
+
+    //! [62-slashes]
+    QString str = "/a/b/c/";
+    auto parts = str.split('/');
+    // parts: {"", "a", "b", "c", ""}
+    //! [62-slashes]
 }
 
 void Widget::sprintfFunction()

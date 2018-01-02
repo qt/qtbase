@@ -299,13 +299,13 @@ void QUnifiedTimer::stopAnimationDriver()
     driver->stop();
 }
 
-void QUnifiedTimer::updateAnimationTimers(qint64)
+void QUnifiedTimer::updateAnimationTimers(qint64 currentTick)
 {
     //setCurrentTime can get this called again while we're the for loop. At least with pauseAnimations
     if(insideTick)
         return;
 
-    qint64 totalElapsed = elapsed();
+    qint64 totalElapsed = currentTick > 0 ? currentTick : elapsed();
 
     // ignore consistentTiming in case the pause timer is active
     qint64 delta = (consistentTiming && !pauseTimer.isActive()) ?

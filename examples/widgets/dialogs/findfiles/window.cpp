@@ -74,6 +74,7 @@ static inline void openFile(const QString &fileName)
 Window::Window(QWidget *parent)
     : QWidget(parent)
 {
+    setWindowTitle(tr("Find Files"));
     QPushButton *browseButton = new QPushButton(tr("&Browse..."), this);
     connect(browseButton, &QAbstractButton::clicked, this, &Window::browse);
     findButton = new QPushButton(tr("&Find"), this);
@@ -92,9 +93,7 @@ Window::Window(QWidget *parent)
     filesFoundLabel = new QLabel;
 
     createFilesTable();
-//! [0]
 
-//! [1]
     QGridLayout *mainLayout = new QGridLayout(this);
     mainLayout->addWidget(new QLabel(tr("Named:")), 0, 0);
     mainLayout->addWidget(fileComboBox, 0, 1, 1, 2);
@@ -106,12 +105,13 @@ Window::Window(QWidget *parent)
     mainLayout->addWidget(filesTable, 3, 0, 1, 3);
     mainLayout->addWidget(filesFoundLabel, 4, 0, 1, 2);
     mainLayout->addWidget(findButton, 4, 2);
+//! [0]
 
-    setWindowTitle(tr("Find Files"));
-    const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
-    resize(screenGeometry.width() / 2, screenGeometry.height() / 3);
-}
 //! [1]
+    connect(new QShortcut(QKeySequence::Quit, this), &QShortcut::activated,
+        qApp, &QApplication::quit);
+//! [1]
+}
 
 //! [2]
 void Window::browse()
@@ -133,21 +133,7 @@ static void updateComboBox(QComboBox *comboBox)
         comboBox->addItem(comboBox->currentText());
 }
 
-//! [13]
-
-static void findRecursion(const QString &path, const QString &pattern, QStringList *result)
-{
-    QDir currentDir(path);
-    const QString prefix = path + QLatin1Char('/');
-    foreach (const QString &match, currentDir.entryList(QStringList(pattern), QDir::Files | QDir::NoSymLinks))
-        result->append(prefix + match);
-    foreach (const QString &dir, currentDir.entryList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot))
-        findRecursion(prefix + dir, pattern, result);
-}
-
-//! [13]
 //! [3]
-
 void Window::find()
 {
     filesTable->setRowCount(0);
@@ -155,6 +141,7 @@ void Window::find()
     QString fileName = fileComboBox->currentText();
     QString text = textComboBox->currentText();
     QString path = QDir::cleanPath(directoryComboBox->currentText());
+    currentDir = QDir(path);
 //! [3]
 
     updateComboBox(fileComboBox);
@@ -162,12 +149,16 @@ void Window::find()
     updateComboBox(directoryComboBox);
 
 //! [4]
-
-    currentDir = QDir(path);
+    QStringList filter;
+    if (!fileName.isEmpty())
+        filter << fileName;
+    QDirIterator it(path, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     QStringList files;
-    findRecursion(path, fileName.isEmpty() ? QStringLiteral("*") : fileName, &files);
+    while (it.hasNext())
+        files << it.next();
     if (!text.isEmpty())
         files = findFiles(files, text);
+    files.sort();
     showFiles(files);
 }
 //! [4]
@@ -225,20 +216,18 @@ QStringList Window::findFiles(const QStringList &files, const QString &text)
 //! [7]
 
 //! [8]
-void Window::showFiles(const QStringList &files)
+void Window::showFiles(const QStringList &paths)
 {
-    for (int i = 0; i < files.size(); ++i) {
-        const QString &fileName = files.at(i);
-        const QString toolTip = QDir::toNativeSeparators(fileName);
-        const QString relativePath = QDir::toNativeSeparators(currentDir.relativeFilePath(fileName));
-        const qint64 size = QFileInfo(fileName).size();
+    for (const QString &filePath : paths) {
+        const QString toolTip = QDir::toNativeSeparators(filePath);
+        const QString relativePath = QDir::toNativeSeparators(currentDir.relativeFilePath(filePath));
+        const qint64 size = QFileInfo(filePath).size();
         QTableWidgetItem *fileNameItem = new QTableWidgetItem(relativePath);
-        fileNameItem->setData(absoluteFileNameRole, QVariant(fileName));
+        fileNameItem->setData(absoluteFileNameRole, QVariant(filePath));
         fileNameItem->setToolTip(toolTip);
         fileNameItem->setFlags(fileNameItem->flags() ^ Qt::ItemIsEditable);
-        QTableWidgetItem *sizeItem = new QTableWidgetItem(tr("%1 KB")
-                                             .arg(int((size + 1023) / 1024)));
-        sizeItem->setData(absoluteFileNameRole, QVariant(fileName));
+        QTableWidgetItem *sizeItem = new QTableWidgetItem(QLocale().formattedDataSize(size));
+        sizeItem->setData(absoluteFileNameRole, QVariant(filePath));
         sizeItem->setToolTip(toolTip);
         sizeItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         sizeItem->setFlags(sizeItem->flags() ^ Qt::ItemIsEditable);
@@ -248,7 +237,7 @@ void Window::showFiles(const QStringList &files)
         filesTable->setItem(row, 0, fileNameItem);
         filesTable->setItem(row, 1, sizeItem);
     }
-    filesFoundLabel->setText(tr("%n file(s) found (Double click on a file to open it)", 0, files.size()));
+    filesFoundLabel->setText(tr("%n file(s) found (Double click on a file to open it)", 0, paths.size()));
     filesFoundLabel->setWordWrap(true);
 }
 //! [8]

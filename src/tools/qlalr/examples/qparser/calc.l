@@ -33,6 +33,9 @@
 #include "calc_parser.h"
 #include <cstdlib>
 
+// Work around flex bug
+#include <unistd.h>
+
 #define YY_DECL int CalcParser::nextToken()
 %}
 

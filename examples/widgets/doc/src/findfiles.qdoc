@@ -74,19 +74,23 @@
 
     \snippet dialogs/findfiles/window.cpp 0
 
-    We create the application's buttons using the private \c
-    createButton() function. Then we create the comboboxes associated
-    with the search specifications, using the private \c
-    createComboBox() function. We also create the application's labels
-    before we use the private \c createFilesTable() function to create
-    the table displaying the search results.
+    We create the widgets to build up the UI, and we add them to a main layout
+    using QGridLayout. We have, however, put the \c Find and \c Quit buttons
+    and a stretchable space in a separate \l QHBoxLayout first, to make the
+    buttons appear in the \c Window widget's bottom right corner.
+
+    Alternatively, we could have used Qt Designer to construct a UI file,
+    and \l {uic} to generate this code.
 
     \snippet dialogs/findfiles/window.cpp 1
 
-    Then we add all the widgets to a main layout using QGridLayout. We
-    have, however, put the \c Find and \c Quit buttons and a
-    stretchable space in a separate QHBoxLayout first, to make the
-    buttons appear in the \c Window widget's bottom right corner.
+    We did not create a \l QMenuBar with a \uicontrol Quit menu item; but we
+    would still like to have a keyboard shortcut for quitting. Since we
+    construct a \l QShortcut with \l QKeySequence::Quit, and connect it to
+    \l QApplication::quit(), on most platforms it will be possible to press
+    Control-Q to quit (or whichever standard Quit key is configured on that platform).
+    (On \macos, this is redundant, because every application gets a
+    \uicontrol Quit menu item automatically; but it helps to make the application portable.)
 
     \snippet dialogs/findfiles/window.cpp 2
 
@@ -122,18 +126,16 @@
     We use the directory's path to create a QDir; the QDir class
     provides access to directory structures and their contents.
 
-    \snippet dialogs/findfiles/window.cpp 13
-
-    We recursively create a list of the files (contained in the newl
-    created QDir) that match the specified file name.
+    We use QDirIterator to iterate over the files that match the
+    specified file name and build a QStringList of paths.
 
     Then we search through all the files in the list, using the private
-    \c findFiles() function, eliminating the ones that don't contain
-    the specified text. And finally, we display the results using the
-    private \c showFiles() function.
+    \c findFiles() function, eliminating the ones that don't contain the
+    specified text. We sort them (because QDirIterator did not). And finally,
+    we display the results using the private \c showFiles() function.
 
     If the user didn't specify any text, there is no reason to search
-    through the files, and we display the results immediately.
+    through the files, so we sort and display the results immediately.
 
     \image findfiles_progress_dialog.png Screenshot of the Progress Dialog
 
@@ -196,7 +198,8 @@
     the \c find() slot. In the \c showFiles() function we run through
     the provided list of file names, adding each relative file name to the
     first column in the table widget and retrieving the file's size using
-    QFileInfo for the second column. For later use, we set
+    QFileInfo for the second column. We use \l QLocale::formattedDataSize()
+    to format the file size in a human-readable form. For later use, we set
     the absolute path as a data on the QTableWidget using the
     the role absoluteFileNameRole defined to be Qt::UserRole + 1.
 

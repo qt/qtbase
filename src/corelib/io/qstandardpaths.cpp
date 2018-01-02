@@ -48,6 +48,14 @@
 #include <qcoreapplication.h>
 #endif
 
+#if QT_HAS_INCLUDE(<paths.h>)
+#include <paths.h>
+#endif
+
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#endif
+
 #ifndef QT_NO_STANDARDPATHS
 
 QT_BEGIN_NAMESPACE
@@ -509,6 +517,27 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
     QStringList searchPaths = paths;
     if (paths.isEmpty()) {
         QByteArray pEnv = qgetenv("PATH");
+        if (Q_UNLIKELY(pEnv.isNull())) {
+            // Get a default path. POSIX.1 does not actually require this, but
+            // most Unix libc fall back to confstr(_CS_PATH) if the PATH
+            // environment variable isn't set. Let's try to do the same.
+#if defined(_PATH_DEFPATH)
+            // BSD API.
+            pEnv = _PATH_DEFPATH;
+#elif defined(_CS_PATH)
+            // POSIX API.
+            size_t n = confstr(_CS_PATH, nullptr, 0);
+            if (n) {
+                pEnv.resize(n);
+                // size()+1 is ok because QByteArray always has an extra NUL-terminator
+                confstr(_CS_PATH, pEnv.data(), pEnv.size() + 1);
+            }
+#else
+            // Windows SDK's execvpe() does not have a fallback, so we won't
+            // apply one either.
+#endif
+        }
+
         // Remove trailing slashes, which occur on Windows.
         const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(QDir::listSeparator(), QString::SkipEmptyParts);
         searchPaths.reserve(rawPaths.size());

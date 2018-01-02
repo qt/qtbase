@@ -1713,6 +1713,8 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
     }
 #endif
 
+    // Sync up with error string, which open() shall clear.
+    d->socketError = UnknownSocketError;
     if (openMode & QIODevice::Unbuffered)
         d->isBuffered = false;
     else if (!d_func()->isBuffered)
@@ -1948,6 +1950,8 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
         return false;
     }
 
+    // Sync up with error string, which open() shall clear.
+    d->socketError = UnknownSocketError;
     if (d->threadData->hasEventDispatcher())
         d->socketEngine->setReceiver(d);
 

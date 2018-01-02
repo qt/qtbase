@@ -36,6 +36,8 @@ exampledirs += ../../../examples/qtconcurrent \
                ../ \
                snippets
 
+manifestmeta.highlighted.names = "QtConcurrent/QtConcurrent Progress Dialog Example"
+
 excludedirs += ../../../examples/widgets/doc
 
 imagedirs   += images

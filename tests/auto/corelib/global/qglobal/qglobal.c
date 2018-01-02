@@ -72,7 +72,7 @@ void tst_GlobalTypes()
     qreal qr;
     Q_UNUSED(qr);
 
-    qssize_t qs;
+    qsizetype qs;
     qptrdiff qp;
     qintptr qip;
     quintptr qup;

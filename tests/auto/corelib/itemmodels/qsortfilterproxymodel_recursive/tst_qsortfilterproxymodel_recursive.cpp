@@ -100,7 +100,7 @@ public:
     TestModel(QAbstractItemModel *sourceModel)
         : QSortFilterProxyModel()
     {
-        setRecursiveFiltering(true);
+        setRecursiveFilteringEnabled(true);
         setSourceModel(sourceModel);
     }
 
@@ -213,6 +213,7 @@ private Q_SLOTS:
         QCOMPARE(treeAsString(model), sourceStr);
 
         TestModel proxy(&model);
+        QVERIFY(proxy.isRecursiveFilteringEnabled());
         QCOMPARE(treeAsString(proxy), proxyStr);
     }
 

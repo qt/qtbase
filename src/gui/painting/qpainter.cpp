@@ -6482,7 +6482,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
                 extended->drawTextItem(QPointF(x, y), ti2);
             else
                 engine->drawTextItem(QPointF(x, y), ti2);
-            drawTextItemDecoration(q, p, ti2.fontEngine, textEngine, ti2.underlineStyle,
+            drawTextItemDecoration(q, QPointF(x, y), ti2.fontEngine, textEngine, ti2.underlineStyle,
                                    ti2.flags, ti2.width.toReal(), ti2.charFormat);
 
             if (!rtl)
@@ -6515,7 +6515,7 @@ void QPainterPrivate::drawTextItem(const QPointF &p, const QTextItem &_ti, QText
             extended->drawTextItem(QPointF(x, y), ti2);
         else
             engine->drawTextItem(QPointF(x,y), ti2);
-        drawTextItemDecoration(q, p, ti2.fontEngine, textEngine, ti2.underlineStyle,
+        drawTextItemDecoration(q, QPointF(x, y), ti2.fontEngine, textEngine, ti2.underlineStyle,
                                ti2.flags, ti2.width.toReal(), ti2.charFormat);
 
         // reset the high byte for all glyphs

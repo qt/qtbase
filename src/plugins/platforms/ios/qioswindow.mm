@@ -223,9 +223,16 @@ void QIOSWindow::applyGeometry(const QRect &rect)
         [m_view layoutIfNeeded];
 }
 
+QMargins QIOSWindow::safeAreaMargins() const
+{
+    UIEdgeInsets safeAreaInsets = m_view.qt_safeAreaInsets;
+    return QMargins(safeAreaInsets.left, safeAreaInsets.top,
+        safeAreaInsets.right, safeAreaInsets.bottom);
+}
+
 bool QIOSWindow::isExposed() const
 {
-    return qApp->applicationState() >= Qt::ApplicationActive
+    return qApp->applicationState() != Qt::ApplicationSuspended
         && window()->isVisible() && !window()->geometry().isEmpty();
 }
 

@@ -2383,7 +2383,7 @@ static void QT_FASTCALL fetchTransformedBilinearARGB32PM_fast_rotate_helper(uint
         __m128i v_fy = _mm_setr_epi32(fy, fy + fdy, fy + fdy + fdy, fy + fdy + fdy + fdy);
 
         const uchar *textureData = image.imageData;
-        const qssize_t bytesPerLine = image.bytesPerLine;
+        const qsizetype bytesPerLine = image.bytesPerLine;
         const __m128i vbpl = _mm_shufflelo_epi16(_mm_cvtsi32_si128(bytesPerLine/4), _MM_SHUFFLE(0, 0, 0, 0));
 
         while (b < boundedEnd - 3) {
@@ -4719,6 +4719,7 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
 
     CompositionFunction func = functionForMode[data->rasterBuffer->compositionMode];
     uint buffer[buffer_size];
+    quint32 mask = (data->texture.format == QImage::Format_RGB32) ? 0xff000000 : 0;
 
     const int image_x1 = data->texture.x1;
     const int image_y1 = data->texture.y1;
@@ -4752,7 +4753,7 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
                 while (b < end) {
                     int px = qBound(image_x1, x >> 16, image_x2);
                     int py = qBound(image_y1, y >> 16, image_y2);
-                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px];
+                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px] | mask;
 
                     x += fdx;
                     y += fdy;
@@ -4793,7 +4794,7 @@ static void blend_transformed_argb(int count, const QSpan *spans, void *userData
                     const int px = qBound(image_x1, int(tx) - (tx < 0), image_x2);
                     const int py = qBound(image_y1, int(ty) - (ty < 0), image_y2);
 
-                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px];
+                    *b = reinterpret_cast<const uint *>(data->texture.scanLine(py))[px] | mask;
                     x += fdx;
                     y += fdy;
                     w += fdw;
@@ -4959,7 +4960,7 @@ static void blend_transformed_tiled_argb(int count, const QSpan *spans, void *us
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
-    const qssize_t scanline_offset = data->texture.bytesPerLine / 4;
+    const qsizetype scanline_offset = data->texture.bytesPerLine / 4;
 
     if (data->fast_matrix) {
         // The increment pr x in the scanline

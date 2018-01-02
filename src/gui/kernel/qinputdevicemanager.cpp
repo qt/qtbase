@@ -92,4 +92,48 @@ void QInputDeviceManager::setCursorPos(const QPoint &pos)
     emit cursorPositionChangeRequested(pos);
 }
 
+/*!
+    \return the keyboard modifier state stored in the QInputDeviceManager object.
+
+    Keyboard input handlers are expected to keep this up-to-date via
+    setKeyboardModifiers().
+
+    Querying the state via this function (e.g. from a mouse handler that needs
+    to include the modifier state in mouse events) is the preferred alternative
+    over QGuiApplication::keyboardModifiers() since the latter may not report
+    the current state due to asynchronous QPA event processing.
+ */
+Qt::KeyboardModifiers QInputDeviceManager::keyboardModifiers() const
+{
+    Q_D(const QInputDeviceManager);
+    return d->keyboardModifiers;
+}
+
+void QInputDeviceManager::setKeyboardModifiers(Qt::KeyboardModifiers modsBeforeEvent, int key)
+{
+    Q_D(QInputDeviceManager);
+    Qt::KeyboardModifiers mods;
+    switch (key) {
+    case Qt::Key_Shift:
+        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::ShiftModifier);
+        break;
+    case Qt::Key_Control:
+        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::ControlModifier);
+        break;
+    case Qt::Key_Alt:
+        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::AltModifier);
+        break;
+    case Qt::Key_Meta:
+        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::MetaModifier);
+        break;
+    case Qt::Key_AltGr:
+        mods = Qt::KeyboardModifiers(modsBeforeEvent ^ Qt::GroupSwitchModifier);
+        break;
+    default:
+        mods = modsBeforeEvent;
+        break;
+    }
+    d->keyboardModifiers = mods;
+}
+
 QT_END_NAMESPACE

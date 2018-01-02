@@ -751,11 +751,29 @@ void QPaintEngine::drawPath(const QPainterPath &)
 void QPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
     const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);
+    if (ti.glyphs.numGlyphs == 0)
+        return;
+
+    if (ti.fontEngine->glyphFormat == QFontEngine::Format_ARGB) {
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+        QTransform matrix = QTransform::fromTranslate(p.x(), p.y() - ti.fontEngine->ascent().toReal());
+        ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+        painter()->save();
+        painter()->setRenderHint(QPainter::SmoothPixmapTransform,
+                                 bool((painter()->renderHints() & QPainter::TextAntialiasing)
+                                      && !(painter()->font().styleStrategy() & QFont::NoAntialias)));
+        for (int i = 0; i < ti.glyphs.numGlyphs; ++i) {
+            QImage glyph = ti.fontEngine->bitmapForGlyph(glyphs[i], QFixed(), QTransform());
+            painter()->drawImage(positions[i].x.toReal(), positions[i].y.toReal(), glyph);
+        }
+        painter()->restore();
+        return;
+    }
 
     QPainterPath path;
     path.setFillRule(Qt::WindingFill);
-    if (ti.glyphs.numGlyphs)
-        ti.fontEngine->addOutlineToPath(0, 0, ti.glyphs, &path, ti.flags);
+    ti.fontEngine->addOutlineToPath(0, 0, ti.glyphs, &path, ti.flags);
     if (!path.isEmpty()) {
         painter()->save();
         painter()->setRenderHint(QPainter::Antialiasing,

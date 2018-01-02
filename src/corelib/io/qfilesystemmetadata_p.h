@@ -64,6 +64,10 @@
 #  endif
 #endif
 
+#ifdef Q_OS_UNIX
+struct statx;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QFileSystemEngine;

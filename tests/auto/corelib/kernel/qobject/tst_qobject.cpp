@@ -151,6 +151,7 @@ private slots:
     void deleteLaterInAboutToBlockHandler();
     void mutableFunctor();
     void checkArgumentsForNarrowing();
+    void nullReceiver();
 };
 
 struct QObjectCreatedOnShutdown
@@ -7420,6 +7421,16 @@ void tst_QObject::checkArgumentsForNarrowing()
 #undef FITS_IF
 #undef NARROWS
 #undef FITS
+}
+
+void tst_QObject::nullReceiver()
+{
+    QObject o;
+    QObject *nullObj = nullptr; // Passing nullptr directly doesn't compile with gcc 4.8
+    QVERIFY(!connect(&o, &QObject::destroyed, nullObj, &QObject::deleteLater));
+    QVERIFY(!connect(&o, &QObject::destroyed, nullObj, [] {}));
+    QVERIFY(!connect(&o, &QObject::destroyed, nullObj, Functor_noexcept()));
+    QVERIFY(!connect(&o, SIGNAL(destroyed()), nullObj, SLOT(deleteLater())));
 }
 
 // Test for QtPrivate::HasQ_OBJECT_Macro

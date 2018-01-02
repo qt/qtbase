@@ -71,6 +71,8 @@ public:
     bool isExposed() const override;
     void propagateSizeHints() override {}
 
+    QMargins safeAreaMargins() const override;
+
     void raise() override{ raiseOrLower(true); }
     void lower() override { raiseOrLower(false); }
 

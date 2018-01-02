@@ -50,10 +50,10 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-
 #ifndef QUNICODETABLES_P_H
 #define QUNICODETABLES_P_H
+
+#include <QtCore/private/qglobal_p.h>
 
 #include <QtCore/qchar.h>
 

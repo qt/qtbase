@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -48,32 +48,67 @@
 **
 ****************************************************************************/
 
-#ifndef CONFIGDIALOG_H
-#define CONFIGDIALOG_H
+#ifndef NOTEPAD_H
+#define NOTEPAD_H
 
-#include <QDialog>
+//! [all]
+//! [1]
+#include <QMainWindow>
+//! [1]
 
+//! [2]
 QT_BEGIN_NAMESPACE
-class QListWidget;
-class QListWidgetItem;
-class QStackedWidget;
+namespace Ui {
+class Notepad;
+}
 QT_END_NAMESPACE
+//! [2]
 
-class ConfigDialog : public QDialog
+//! [3]
+class Notepad : public QMainWindow
 {
     Q_OBJECT
+//! [3]
 
+//! [4]
 public:
-    ConfigDialog();
+    explicit Notepad(QWidget *parent = 0);
+//! [4]
+//! [5]
+    ~Notepad();
+//! [5]
 
-public slots:
-    void changePage(QListWidgetItem *current, QListWidgetItem *previous);
+private slots:
+    void on_actionNew_triggered();
 
+    void on_actionOpen_triggered();
+
+    void on_actionSave_triggered();
+
+    void on_actionSave_as_triggered();
+
+    void on_actionPrint_triggered();
+
+    void on_actionExit_triggered();
+
+    void on_actionCopy_triggered();
+
+    void on_actionCut_triggered();
+
+    void on_actionPaste_triggered();
+
+    void on_actionUndo_triggered();
+
+    void on_actionRedo_triggered();
+
+    void on_actionFont_triggered();
+
+//! [6]
 private:
-    void createIcons();
-
-    QListWidget *contentsWidget;
-    QStackedWidget *pagesWidget;
+    Ui::Notepad *ui;
+    QString currentFile;
+//! [6]
 };
+//! [all]
 
-#endif
+#endif // NOTEPAD_H

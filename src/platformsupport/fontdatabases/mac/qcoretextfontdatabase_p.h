@@ -87,12 +87,14 @@ public:
     QFont *themeFont(QPlatformTheme::Font) const;
     const QHash<QPlatformTheme::Font, QFont *> &themeFonts() const;
 
+protected:
+    mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
+
 private:
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
 
     mutable QString defaultFontName;
 
-    mutable QSet<CTFontDescriptorRef> m_systemFontDescriptors;
     mutable QHash<QPlatformTheme::Font, QFont *> m_themeFonts;
     bool m_hasPopulatedAliases;
 };

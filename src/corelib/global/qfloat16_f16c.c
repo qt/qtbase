@@ -54,9 +54,9 @@ extern "C" {
 #endif
 
 QT_FUNCTION_TARGET(F16C)
-void qFloatToFloat16_fast(quint16 *out, const float *in, qssize_t len) Q_DECL_NOTHROW
+void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q_DECL_NOTHROW
 {
-    qssize_t i = 0;
+    qsizetype i = 0;
     for (; i < len - 7; i += 8)
         _mm_storeu_si128((__m128i *)(out + i), _mm256_cvtps_ph(_mm256_loadu_ps(in + i), 0));
     if (i < len - 3) {
@@ -69,9 +69,9 @@ void qFloatToFloat16_fast(quint16 *out, const float *in, qssize_t len) Q_DECL_NO
 }
 
 QT_FUNCTION_TARGET(F16C)
-void qFloatFromFloat16_fast(float *out, const quint16 *in, qssize_t len) Q_DECL_NOTHROW
+void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) Q_DECL_NOTHROW
 {
-    qssize_t i = 0;
+    qsizetype i = 0;
     for (; i < len - 7; i += 8)
         _mm256_storeu_ps(out + i, _mm256_cvtph_ps(_mm_loadu_si128((const __m128i *)(in + i))));
     if (i < len - 3) {

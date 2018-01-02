@@ -132,7 +132,7 @@ void QPrinterPrivate::initEngines(QPrinter::OutputFormat format, const QPrinterI
 {
     // Default to PdfFormat
     outputFormat = QPrinter::PdfFormat;
-    QPlatformPrinterSupport *ps = 0;
+    QPlatformPrinterSupport *ps = nullptr;
     QString printerName;
 
     // Only set NativeFormat if we have a valid plugin and printer to use

@@ -265,6 +265,13 @@ void QWindowSystemInterface::handleWindowScreenChanged(QWindow *window, QScreen 
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleSafeAreaMarginsChanged, QWindow *window)
+{
+    QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent *e =
+        new QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent(window);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
+}
+
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleApplicationStateChanged, Qt::ApplicationState newState, bool forcePropagate)
 {
     Q_ASSERT(QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState));

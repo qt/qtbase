@@ -112,6 +112,9 @@ public:
     qint64 write(const char *data, qint64 len) override;
     bool cloneTo(QAbstractFileEngine *target) override;
 
+    virtual bool isUnnamedFile() const
+    { return false; }
+
     bool extension(Extension extension, const ExtensionOption *option = 0, ExtensionReturn *output = 0) override;
     bool supportsExtension(Extension extension) const override;
 

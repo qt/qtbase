@@ -994,7 +994,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
 
     Q_ASSERT(img.depth() >= 8);
 
-    qssize_t srcBPL = img.bytesPerLine();
+    qsizetype srcBPL = img.bytesPerLine();
     const uchar *srcBits = img.bits();
     int srcSize = img.depth() >> 3; // This is the part that is incompatible with lower than 8-bit..
     int iw = img.width();
@@ -1043,7 +1043,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
 
     // call the blend function...
     int dstSize = rasterBuffer->bytesPerPixel();
-    qssize_t dstBPL = rasterBuffer->bytesPerLine();
+    qsizetype dstBPL = rasterBuffer->bytesPerLine();
     func(rasterBuffer->buffer() + x * dstSize + y * dstBPL, dstBPL,
          srcBits, srcBPL,
          iw, ih,
@@ -2318,8 +2318,8 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
                 clippedSourceRect = clippedSourceRect.intersected(img.rect());
 
-                const qssize_t dbpl = d->rasterBuffer->bytesPerLine();
-                const qssize_t sbpl = img.bytesPerLine();
+                const qsizetype dbpl = d->rasterBuffer->bytesPerLine();
+                const qsizetype sbpl = img.bytesPerLine();
 
                 uchar *dst = d->rasterBuffer->buffer();
                 uint bpp = img.depth() >> 3;
@@ -2828,7 +2828,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         cache->fillInPendingGlyphs();
 
         const QImage &image = cache->image();
-        qssize_t bpl = image.bytesPerLine();
+        qsizetype bpl = image.bytesPerLine();
 
         int depth = image.depth();
         int rightShift = 0;

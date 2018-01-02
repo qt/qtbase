@@ -99,4 +99,6 @@ qtConfig(vulkan) {
     QMAKE_USE += xkbcommon
 }
 
+qtConfig(dlopen): QMAKE_USE += libdl
+
 load(qt_module)

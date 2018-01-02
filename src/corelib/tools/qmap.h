@@ -115,9 +115,9 @@ struct QMapNode : public QMapNodeBase
     inline QMapNode *leftNode() const { return static_cast<QMapNode *>(left); }
     inline QMapNode *rightNode() const { return static_cast<QMapNode *>(right); }
 
-    inline const QMapNode *nextNode() const { return static_cast<const QMapNode *>(QMapNodeBase::nextNode()); }
+    inline const QMapNode *nextNode() const { return reinterpret_cast<const QMapNode *>(QMapNodeBase::nextNode()); }
     inline const QMapNode *previousNode() const { return static_cast<const QMapNode *>(QMapNodeBase::previousNode()); }
-    inline QMapNode *nextNode() { return static_cast<QMapNode *>(QMapNodeBase::nextNode()); }
+    inline QMapNode *nextNode() { return reinterpret_cast<QMapNode *>(QMapNodeBase::nextNode()); }
     inline QMapNode *previousNode() { return static_cast<QMapNode *>(QMapNodeBase::previousNode()); }
 
     QMapNode<Key, T> *copy(QMapData<Key, T> *d) const;

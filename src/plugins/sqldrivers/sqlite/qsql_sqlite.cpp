@@ -467,7 +467,7 @@ bool QSQLiteResult::exec()
 
 #if (SQLITE_VERSION_NUMBER >= 3003011)
     // In the case of the reuse of a named placeholder
-    if (!paramCountIsValid) {
+    if (paramCount < values.count()) {
         const auto countIndexes = [](int counter, const QList<int>& indexList) {
                                       return counter + indexList.length();
                                   };

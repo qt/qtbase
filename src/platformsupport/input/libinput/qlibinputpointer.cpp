@@ -42,6 +42,8 @@
 #include <QtCore/QEvent>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qinputdevicemanager_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <private/qhighdpiscaling_p.h>
 
@@ -80,7 +82,7 @@ void QLibInputPointer::processButton(libinput_event_pointer *e)
     m_buttons.setFlag(button, pressed);
 
     QEvent::Type type = pressed ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
-    Qt::KeyboardModifiers mods = QGuiApplication::keyboardModifiers();
+    Qt::KeyboardModifiers mods = QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers();
 
     QWindowSystemInterface::handleMouseEvent(nullptr, m_pos, m_pos, m_buttons, button, type, mods);
 }
@@ -95,7 +97,7 @@ void QLibInputPointer::processMotion(libinput_event_pointer *e)
     m_pos.setX(qBound(g.left(), qRound(m_pos.x() + dx), g.right()));
     m_pos.setY(qBound(g.top(), qRound(m_pos.y() + dy), g.bottom()));
 
-    Qt::KeyboardModifiers mods = QGuiApplication::keyboardModifiers();
+    Qt::KeyboardModifiers mods = QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers();
 
     QWindowSystemInterface::handleMouseEvent(nullptr, m_pos, m_pos, m_buttons,
                                              Qt::NoButton, QEvent::MouseMove, mods);

@@ -707,15 +707,15 @@ EGLint SwapChain11::copyOffscreenToBackbuffer(EGLint x, EGLint y, EGLint width, 
     d3d11::PositionTexCoordVertex *vertices = static_cast<d3d11::PositionTexCoordVertex*>(mappedResource.pData);
 
     // Create a quad in homogeneous coordinates
-    float x1 = (x / float(mWidth)) * 2.0f - 1.0f;
-    float y1 = (y / float(mHeight)) * 2.0f - 1.0f;
-    float x2 = ((x + width) / float(mWidth)) * 2.0f - 1.0f;
-    float y2 = ((y + height) / float(mHeight)) * 2.0f - 1.0f;
+    float x1 = (x / float(width)) * 2.0f - 1.0f;
+    float y1 = (y / float(height)) * 2.0f - 1.0f;
+    float x2 = ((x + width) / float(width)) * 2.0f - 1.0f;
+    float y2 = ((y + height) / float(height)) * 2.0f - 1.0f;
 
-    float u1 = x / float(mWidth);
-    float v1 = y / float(mHeight);
-    float u2 = (x + width) / float(mWidth);
-    float v2 = (y + height) / float(mHeight);
+    float u1 = x / float(width);
+    float v1 = y / float(height);
+    float u2 = (x + width) / float(width);
+    float v2 = (y + height) / float(height);
 
     // Invert the quad vertices depending on the surface orientation.
     if ((mOrientation & EGL_SURFACE_ORIENTATION_INVERT_X_ANGLE) != 0)
@@ -760,8 +760,8 @@ EGLint SwapChain11::copyOffscreenToBackbuffer(EGLint x, EGLint y, EGLint width, 
     D3D11_VIEWPORT viewport;
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
-    viewport.Width = static_cast<FLOAT>(mWidth);
-    viewport.Height = static_cast<FLOAT>(mHeight);
+    viewport.Width = static_cast<FLOAT>(width);
+    viewport.Height =  static_cast<FLOAT>(height);
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
     deviceContext->RSSetViewports(1, &viewport);

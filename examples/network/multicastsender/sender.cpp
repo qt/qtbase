@@ -52,11 +52,21 @@
 
 Sender::Sender(QWidget *parent)
     : QDialog(parent),
-      groupAddress(QStringLiteral("239.255.43.21"))
+      groupAddress4(QStringLiteral("239.255.43.21")),
+      groupAddress6(QStringLiteral("ff12::2115"))
 {
-    statusLabel = new QLabel(tr("Ready to multicast datagrams to group %1 on port 45454").arg(groupAddress.toString()));
+    // force binding to their respective families
+    udpSocket4.bind(QHostAddress(QHostAddress::AnyIPv4), 0);
+    udpSocket6.bind(QHostAddress(QHostAddress::AnyIPv6), udpSocket4.localPort());
 
-    auto ttlLabel = new QLabel(tr("TTL for multicast datagrams:"));
+    QString msg = tr("Ready to multicast datagrams to groups %1 and [%2] on port 45454").arg(groupAddress4.toString());
+    if (udpSocket6.state() != QAbstractSocket::BoundState)
+        msg = tr("IPv6 failed. Ready to multicast datagrams to group %1 on port 45454").arg(groupAddress4.toString());
+    else
+        msg = msg.arg(groupAddress6.toString());
+    statusLabel = new QLabel(msg);
+
+    auto ttlLabel = new QLabel(tr("TTL for IPv4 multicast datagrams:"));
     auto ttlSpinBox = new QSpinBox;
     ttlSpinBox->setRange(0, 255);
 
@@ -88,7 +98,8 @@ Sender::Sender(QWidget *parent)
 
 void Sender::ttlChanged(int newTtl)
 {
-    udpSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, newTtl);
+    // we only set the TTL on the IPv4 socket, as that changes the multicast scope
+    udpSocket4.setSocketOption(QAbstractSocket::MulticastTtlOption, newTtl);
 }
 
 void Sender::startSending()
@@ -101,6 +112,8 @@ void Sender::sendDatagram()
 {
     statusLabel->setText(tr("Now sending datagram %1").arg(messageNo));
     QByteArray datagram = "Multicast message " + QByteArray::number(messageNo);
-    udpSocket.writeDatagram(datagram, groupAddress, 45454);
+    udpSocket4.writeDatagram(datagram, groupAddress4, 45454);
+    if (udpSocket6.state() == QAbstractSocket::BoundState)
+        udpSocket6.writeDatagram(datagram, groupAddress6, 45454);
     ++messageNo;
 }

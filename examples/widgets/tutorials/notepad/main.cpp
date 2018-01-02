@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -48,27 +48,14 @@
 **
 ****************************************************************************/
 
-#ifndef PAGES_H
-#define PAGES_H
+#include "notepad.h"
+#include <QApplication>
 
-#include <QWidget>
-
-class ConfigurationPage : public QWidget
+int main(int argc, char *argv[])
 {
-public:
-    ConfigurationPage(QWidget *parent = 0);
-};
+    QApplication EditorApp(argc, argv);
+    Notepad Editor;
+    Editor.show();
 
-class QueryPage : public QWidget
-{
-public:
-    QueryPage(QWidget *parent = 0);
-};
-
-class UpdatePage : public QWidget
-{
-public:
-    UpdatePage(QWidget *parent = 0);
-};
-
-#endif
+    return EditorApp.exec();
+}

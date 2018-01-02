@@ -188,7 +188,7 @@ vxworks {
                 kernel/qfunctions_vxworks.h
 }
 
-qqnx_pps {
+qnx:qtConfig(qqnx_pps) {
         QMAKE_USE_PRIVATE += pps
         SOURCES += \
                 kernel/qppsattribute.cpp \

@@ -174,18 +174,53 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 @end
 
+@interface UIScreen (Compatibility)
+@property (nonatomic, readonly) CGRect qt_applicationFrame;
+@end
+
+@implementation UIScreen (Compatibility)
+- (CGRect)qt_applicationFrame
+{
+#ifdef Q_OS_IOS
+    return self.applicationFrame;
+#else
+    return self.bounds;
+#endif
+}
+@end
+
+// -------------------------------------------------------------------------
+
+@implementation QUIWindow
+
+- (id)initWithFrame:(CGRect)frame
+{
+    if ((self = [super initWithFrame:frame]))
+        self->_sendingEvent = NO;
+
+    return self;
+}
+
+- (void)sendEvent:(UIEvent *)event
+{
+    QScopedValueRollback<BOOL> sendingEvent(self->_sendingEvent, YES);
+    [super sendEvent:event];
+}
+
+@end
+
 // -------------------------------------------------------------------------
 
 QT_BEGIN_NAMESPACE
 
 /*!
     Returns the model identifier of the device.
-
-    When running under the simulator, the identifier will not
-    match the simulated device, but will be x86_64 or i386.
 */
 static QString deviceModelIdentifier()
 {
+#if TARGET_OS_SIMULATOR
+    return QString::fromLocal8Bit(qgetenv("SIMULATOR_MODEL_IDENTIFIER"));
+#else
     static const char key[] = "hw.machine";
 
     size_t size;
@@ -195,6 +230,7 @@ static QString deviceModelIdentifier()
     sysctlbyname(key, &value, &size, NULL, 0);
 
     return QString::fromLatin1(value);
+#endif
 }
 
 QIOSScreen::QIOSScreen(UIScreen *screen)
@@ -203,25 +239,30 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
     , m_uiWindow(0)
     , m_orientationListener(0)
 {
-    if (screen == [UIScreen mainScreen]) {
-        QString deviceIdentifier = deviceModelIdentifier();
+    QString deviceIdentifier = deviceModelIdentifier();
 
+    if (screen == [UIScreen mainScreen] && !deviceIdentifier.startsWith("AppleTV")) {
         // Based on https://en.wikipedia.org/wiki/List_of_iOS_devices#Display
 
         // iPhone (1st gen), 3G, 3GS, and iPod Touch (1st–3rd gen) are 18-bit devices
-        if (deviceIdentifier.contains(QRegularExpression("^(iPhone1,[12]|iPhone2,1|iPod[1-3],1)$")))
-            m_depth = 18;
-        else
-            m_depth = 24;
+        static QRegularExpression lowBitDepthDevices("^(iPhone1,[12]|iPhone2,1|iPod[1-3],1)$");
+        m_depth = deviceIdentifier.contains(lowBitDepthDevices) ? 18 : 24;
 
-        if (deviceIdentifier.contains(QRegularExpression("^iPhone(7,1|8,2|9,2|9,4)$"))) {
-            // iPhone Plus models
+        static QRegularExpression iPhoneXModels("^iPhone(10,[36])$");
+        static QRegularExpression iPhonePlusModels("^iPhone(7,1|8,2|9,[24]|10,[25])$");
+        static QRegularExpression iPadMiniModels("^iPad(2,[567]|4,[4-9]|5,[12])$");
+
+        if (deviceIdentifier.contains(iPhoneXModels)) {
+            m_physicalDpi = 458;
+        } else if (deviceIdentifier.contains(iPhonePlusModels)) {
             m_physicalDpi = 401;
-        } else if (deviceIdentifier.contains(QRegularExpression("^iPad(1,1|2,[1-4]|3,[1-6]|4,[1-3]|5,[3-4]|6,[7-8])$"))) {
-            // All iPads except the iPad Mini series
-            m_physicalDpi = 132 * devicePixelRatio();
+        } else if (deviceIdentifier.startsWith("iPad")) {
+            if (deviceIdentifier.contains(iPadMiniModels))
+                m_physicalDpi = 163 * devicePixelRatio();
+            else
+                m_physicalDpi = 132 * devicePixelRatio();
         } else {
-            // All non-Plus iPhones, and iPad Minis
+            // All normal iPhones, and iPods
             m_physicalDpi = 163 * devicePixelRatio();
         }
     } else {
@@ -239,7 +280,7 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
 
     if (!m_uiWindow) {
         // Create a window and associated view-controller that we can use
-        m_uiWindow = [[UIWindow alloc] initWithFrame:[m_uiScreen bounds]];
+        m_uiWindow = [[QUIWindow alloc] initWithFrame:[m_uiScreen bounds]];
         m_uiWindow.rootViewController = [[[QIOSViewController alloc] initWithQIOSScreen:this] autorelease];
     }
 
@@ -258,17 +299,31 @@ QIOSScreen::~QIOSScreen()
     [m_uiWindow release];
 }
 
+QString QIOSScreen::name() const
+{
+    if (m_uiScreen == [UIScreen mainScreen]) {
+        return QString::fromNSString([UIDevice currentDevice].model)
+            + QLatin1String(" built-in display");
+    } else {
+        return QLatin1String("External display");
+    }
+}
+
 void QIOSScreen::updateProperties()
 {
     QRect previousGeometry = m_geometry;
     QRect previousAvailableGeometry = m_availableGeometry;
 
     m_geometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
-#ifdef Q_OS_TVOS
-    m_availableGeometry = m_geometry;
-#else
-    m_availableGeometry = QRectF::fromCGRect(m_uiScreen.applicationFrame).toRect();
-#endif
+
+    // The application frame doesn't take safe area insets into account, and
+    // the safe area insets are not available before the UIWindow is shown,
+    // and do not take split-view constraints into account, so we have to
+    // combine the two to get the correct available geometry.
+    QRect applicationFrame = QRectF::fromCGRect(m_uiScreen.qt_applicationFrame).toRect();
+    UIEdgeInsets safeAreaInsets = m_uiWindow.qt_safeAreaInsets;
+    m_availableGeometry = m_geometry.adjusted(safeAreaInsets.left, safeAreaInsets.top,
+        -safeAreaInsets.right, -safeAreaInsets.bottom).intersected(applicationFrame);
 
 #ifndef Q_OS_TVOS
     if (m_uiScreen == [UIScreen mainScreen]) {
@@ -388,6 +443,16 @@ QDpi QIOSScreen::logicalDpi() const
 qreal QIOSScreen::devicePixelRatio() const
 {
     return [m_uiScreen scale];
+}
+
+qreal QIOSScreen::refreshRate() const
+{
+#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, 100300, 110000, __WATCHOS_NA)
+    if (__builtin_available(iOS 10.3, tvOS 11, *))
+        return m_uiScreen.maximumFramesPerSecond;
+#endif
+
+    return 60.0;
 }
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const

@@ -41,7 +41,7 @@
 #define QQNXINTEGRATION_H
 
 #include <qpa/qplatformintegration.h>
-
+#include <private/qtguiglobal_p.h>
 #include <QtCore/qmutex.h>
 
 #include <screen/screen.h>
@@ -61,7 +61,7 @@ class QQnxServices;
 
 class QSimpleDrag;
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
 class QQnxInputContext;
 class QQnxNavigatorEventNotifier;
 class QQnxButtonEventNotifier;
@@ -96,7 +96,7 @@ public:
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
 #endif
 
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     QPlatformInputContext *inputContext() const override;
 #endif
 
@@ -143,7 +143,7 @@ private:
     QQnxScreenEventThread *m_screenEventThread;
     QQnxNavigatorEventHandler *m_navigatorEventHandler;
     QQnxAbstractVirtualKeyboard *m_virtualKeyboard;
-#if defined(QQNX_PPS)
+#if QT_CONFIG(qqnx_pps)
     QQnxNavigatorEventNotifier *m_navigatorEventNotifier;
     QQnxInputContext *m_inputContext;
     QQnxButtonEventNotifier *m_buttonsNotifier;
