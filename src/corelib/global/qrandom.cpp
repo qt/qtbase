@@ -671,7 +671,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn QRandomGenerator::QRandomGenerator(const quint32 (&seedBuffer)[N])
+    \fn template <qsizetype N> QRandomGenerator::QRandomGenerator(const quint32 (&seedBuffer)[N])
     \overload
 
     Initializes this QRandomGenerator object with the values found in the
@@ -765,9 +765,9 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 /*!
     \typedef QRandomGenerator::result_type
 
-    A typedef to the type that operator()() returns. That is, quint32.
+    A typedef to the type that operator() returns. That is, quint32.
 
-    \sa {QRandomGenerator::operator()}{operator()()}
+    \sa operator()
  */
 
 /*!
@@ -837,7 +837,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 */
 
 /*!
-    \fn void QRandomGenerator::generate(ForwardIterator begin, ForwardIterator end)
+    \fn template <typename ForwardIterator> void QRandomGenerator::generate(ForwardIterator begin, ForwardIterator end)
 
     Generates 32-bit quantities and stores them in the range between \a begin
     and \a end. This function is equivalent to (and is implemented as):
@@ -874,7 +874,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn void QRandomGenerator::fillRange(UInt *buffer, qsizetype count)
+    \fn template <typename UInt> void QRandomGenerator::fillRange(UInt *buffer, qsizetype count)
 
     Generates \a count 32- or 64-bit quantities (depending on the type \c UInt)
     and stores them in the buffer pointed by \a buffer. This is the most
@@ -894,7 +894,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn void QRandomGenerator::fillRange(UInt (&buffer)[N})
+    \fn template <typename UInt, size_t N> void QRandomGenerator::fillRange(UInt (&buffer)[N})
 
     Generates \c N 32- or 64-bit quantities (depending on the type \c UInt) and
     stores them in the \a buffer array. This is the most efficient way to
@@ -1108,18 +1108,11 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 */
 
 /*!
-   \fn QRandomGenerator64::QRandomGenerator64(const QRandomGenerator &other)
-   \internal
-
-   Creates a copy.
-*/
-
-/*!
     \typedef QRandomGenerator64::result_type
 
-    A typedef to the type that operator()() returns. That is, quint64.
+    A typedef to the type that operator() returns. That is, quint64.
 
-    \sa {QRandomGenerator64::operator()}{operator()()}
+    \sa operator()
  */
 
 /*!
