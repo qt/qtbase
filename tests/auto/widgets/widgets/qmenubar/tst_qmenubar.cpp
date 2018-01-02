@@ -153,6 +153,8 @@ private slots:
 
     void platformMenu();
 
+    void addActionQt5connect();
+
 protected slots:
     void onSimpleActivated( QAction*);
     void onComplexActionTriggered();
@@ -1593,6 +1595,42 @@ void tst_QMenuBar::platformMenu()
 
     menuBar.addMenu(menu);
     QVERIFY(menu->platformMenu());
+}
+
+class TestObject : public QObject
+{
+    Q_OBJECT
+public:
+    bool flag = false;
+    void setFlag()
+    {
+        flag = true;
+    }
+};
+
+void tst_QMenuBar::addActionQt5connect()
+{
+    bool flag = false;
+    auto functor = [&flag](){ flag = true; };
+
+    TestObject obj;
+
+    QMenuBar menuBar;
+
+    auto action1 = menuBar.addAction(QStringLiteral("1"), &obj, &TestObject::setFlag);
+    auto action2 = menuBar.addAction(QStringLiteral("2"), functor);
+
+    action1->activate(QAction::Trigger);
+    action2->activate(QAction::Trigger);
+
+    QVERIFY(obj.flag);
+    QVERIFY(flag);
+
+    flag = false;
+
+    auto action3 = menuBar.addAction(QStringLiteral("3"), this, functor);
+    action3->activate(QAction::Trigger);
+    QVERIFY(flag);
 }
 
 void tst_QMenuBar::slotForTaskQTBUG53205()

@@ -781,6 +781,42 @@ QAction *QMenuBar::addAction(const QString &text, const QObject *receiver, const
 }
 
 /*!
+    \fn template<typename Obj, typename PointerToMemberFunctionOrFunctor>
+    QAction *QMenuBar::addAction(const QString &text, const Obj *receiver, PointerToMemberFunctionOrFunctor method)
+
+    \since 5.11
+
+    \overload
+
+    This convenience function creates a new action with the given \a
+    text. The action's triggered() signal is connected to the
+    \a method of the \a receiver. The function adds the newly created
+    action to the menu's list of actions and returns it.
+
+    QMenuBar takes ownership of the returned QAction.
+
+    \sa QWidget::addAction(), QWidget::actions()
+*/
+
+/*!
+    \fn template<typename Functor>
+    QAction *QMenuBar::addAction(const QString &text, Functor functor)
+
+    \since 5.11
+
+    \overload
+
+    This convenience function creates a new action with the given \a
+    text. The action's triggered() signal is connected to the
+    \a functor. The function adds the newly created
+    action to the menu's list of actions and returns it.
+
+    QMenuBar takes ownership of the returned QAction.
+
+    \sa QWidget::addAction(), QWidget::actions()
+*/
+
+/*!
   Appends a new QMenu with \a title to the menu bar. The menu bar
   takes ownership of the menu. Returns the new menu.
 
