@@ -403,7 +403,7 @@ Q_GLOBAL_STATIC(QInterpolatorVector, registeredInterpolators)
 static QBasicMutex registeredInterpolatorsMutex;
 
 /*!
-    \fn void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress))
+    \fn template <typename T> void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress))
     \relates QVariantAnimation
     \threadsafe
 
