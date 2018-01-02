@@ -1589,7 +1589,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 */
 
 /*!
-    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, Qt::ConnectionType type, FunctorReturnType *ret)
+    \fn  template<typename Functor, typename FunctorReturnType> bool QMetaObject::invokeMethod(QObject *context, Functor function, Qt::ConnectionType type, FunctorReturnType *ret)
 
     \since 5.10
 
@@ -1602,7 +1602,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
 */
 
 /*!
-    \fn bool QMetaObject::invokeMethod(QObject *context, Functor function, FunctorReturnType *ret)
+    \fn  template<typename Functor, typename FunctorReturnType> bool QMetaObject::invokeMethod(QObject *context, Functor function, FunctorReturnType *ret)
 
     \since 5.10
 
@@ -2083,7 +2083,7 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
 }
 
 /*!
-    \fn QMetaMethod QMetaMethod::fromSignal(PointerToMemberFunction signal)
+    \fn  template <typename PointerToMemberFunction> QMetaMethod QMetaMethod::fromSignal(PointerToMemberFunction signal)
     \since 5.0
 
     Returns the meta-method that corresponds to the given \a signal, or an
