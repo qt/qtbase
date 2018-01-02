@@ -852,6 +852,8 @@ QLocale::QLocale(const QString &name)
 QLocale::QLocale()
     : d(*defaultLocalePrivate)
 {
+    // Make sure system data is up to date
+    systemData();
 }
 
 /*!

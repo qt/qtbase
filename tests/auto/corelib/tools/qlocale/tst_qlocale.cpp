@@ -141,6 +141,8 @@ private slots:
     void formattedDataSize();
     void bcp47Name();
 
+    void systemLocale();
+
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
     QString m_sysapp;
@@ -2639,6 +2641,50 @@ void tst_QLocale::bcp47Name()
     QCOMPARE(QLocale("sr_HR").bcp47Name(), QStringLiteral("sr"));
     QCOMPARE(QLocale("sr_Cyrl_HR").bcp47Name(), QStringLiteral("sr"));
     QCOMPARE(QLocale("sr_Latn_HR").bcp47Name(), QStringLiteral("sr-Latn"));
+}
+
+class MySystemLocale : public QSystemLocale
+{
+public:
+    MySystemLocale(const QLocale &locale) : m_locale(locale)
+    {
+    }
+
+    QVariant query(QueryType /*type*/, QVariant /*in*/) const override
+    {
+        return QVariant();
+    }
+
+    QLocale fallbackUiLocale() const override
+    {
+        return m_locale;
+    }
+
+private:
+    const QLocale m_locale;
+};
+
+void tst_QLocale::systemLocale()
+{
+    QLocale originalLocale;
+
+    MySystemLocale *sLocale = new MySystemLocale(QLocale("uk"));
+    QCOMPARE(QLocale().language(), QLocale::Ukrainian);
+    QCOMPARE(QLocale::system().language(), QLocale::Ukrainian);
+    delete sLocale;
+
+    sLocale = new MySystemLocale(QLocale("ca"));
+    QCOMPARE(QLocale().language(), QLocale::Catalan);
+    QCOMPARE(QLocale::system().language(), QLocale::Catalan);
+    delete sLocale;
+
+    sLocale = new MySystemLocale(QLocale("de"));
+    QCOMPARE(QLocale().language(), QLocale::German);
+    QCOMPARE(QLocale::system().language(), QLocale::German);
+    delete sLocale;
+
+    QCOMPARE(QLocale(), originalLocale);
+    QCOMPARE(QLocale::system(), originalLocale);
 }
 
 QTEST_MAIN(tst_QLocale)
