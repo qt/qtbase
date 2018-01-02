@@ -157,10 +157,10 @@ rem Determine host spec
 if "%PLATFORM%" == "" (
     if not "%icl.exe%" == "" (
         set PLATFORM=win32-icc
-    ) else if not "%clang-cl.exe%" == "" (
-        set PLATFORM=win32-clang-msvc
     ) else if not "%cl.exe%" == "" (
         set PLATFORM=win32-msvc
+    ) else if not "%clang-cl.exe%" == "" (
+        set PLATFORM=win32-clang-msvc
     ) else if not "%g++.exe%" == "" (
         set PLATFORM=win32-g++
     ) else (
