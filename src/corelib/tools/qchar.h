@@ -89,7 +89,7 @@ public:
 #if defined(Q_COMPILER_UNICODE_STRINGS)
     Q_DECL_CONSTEXPR QChar(char16_t ch) Q_DECL_NOTHROW : ucs(ushort(ch)) {} // implicit
 #endif
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
     Q_STATIC_ASSERT(sizeof(wchar_t) == sizeof(ushort));
     Q_DECL_CONSTEXPR QChar(wchar_t ch) Q_DECL_NOTHROW : ucs(ushort(ch)) {} // implicit
 #endif
