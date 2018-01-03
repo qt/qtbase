@@ -1108,7 +1108,27 @@ void QAbstractItemModel::resetInternalData()
     Returns the sibling at \a row and \a column. If there is no sibling at this
     position, an invalid QModelIndex is returned.
 
-    \sa parent()
+    \sa parent(), siblingAtColumn(), siblingAtRow()
+*/
+
+/*!
+    \fn QModelIndex QModelIndex::siblingAtColumn(int column) const
+
+    Returns the sibling at \a column for the current row. If there is no sibling
+    at this position, an invalid QModelIndex is returned.
+
+    \sa sibling(), siblingAtRow()
+    \since 5.11
+*/
+
+/*!
+    \fn QModelIndex QModelIndex::siblingAtRow(int row) const
+
+    Returns the sibling at \a row for the current column. If there is no sibling
+    at this position, an invalid QModelIndex is returned.
+
+    \sa sibling(), siblingAtColumn()
+    \since 5.11
 */
 
 /*!

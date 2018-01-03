@@ -428,6 +428,14 @@ void checkChildren(QAbstractItemModel *currentModel, const QModelIndex &parent, 
                 const QModelIndex sibling = topLeftChild.sibling( r, c );
                 QVERIFY( index == sibling );
             }
+            if (r == topLeftChild.row()) {
+                const QModelIndex sibling = topLeftChild.siblingAtColumn( c );
+                QVERIFY( index == sibling );
+            }
+            if (c == topLeftChild.column()) {
+                const QModelIndex sibling = topLeftChild.siblingAtRow( r );
+                QVERIFY( index == sibling );
+            }
 
             // Some basic checking on the index that is returned
             QCOMPARE(index.model(), currentModel);
