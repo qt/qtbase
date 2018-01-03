@@ -139,7 +139,7 @@ public:
     // Lockable concept
     bool try_lock() QT_MUTEX_LOCK_NOEXCEPT { return tryLock(); }
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if QT_HAS_INCLUDE(<chrono>) || defined(Q_CLANG_QDOC)
     // TimedLockable concept
     template <class Rep, class Period>
     bool try_lock_for(std::chrono::duration<Rep, Period> duration)
