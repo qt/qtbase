@@ -295,11 +295,15 @@ private:
 
         bool develMode = false;
         bool debugWait = false;
-        for (const char *arg : args) {
-            if (strcmp(arg, "-qdevel") == 0)
+        for (int i = args.count() - 1; i >= 0; --i) {
+            const char *arg = args.at(i);
+            if (strcmp(arg, "-qdevel") == 0) {
                 develMode = true;
-            if (strcmp(arg, "-qdebug") == 0)
+                args.remove(i);
+            } else if (strcmp(arg, "-qdebug") == 0) {
                 debugWait = true;
+                args.remove(i);
+            }
         }
         if (develMode) {
             // Write a PID file to help runner
