@@ -410,7 +410,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     }
 }
 
-/*!\fn void QTimer::singleShot(int msec, const QObject *receiver, PointerToMemberFunction method)
+/*! \fn template<typename PointerToMemberFunction> void QTimer::singleShot(int msec, const QObject *receiver, PointerToMemberFunction method)
 
     \since 5.4
 
@@ -432,7 +432,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     \sa start()
 */
 
-/*!\fn void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, PointerToMemberFunction method)
+/*! \fn template<typename PointerToMemberFunction> void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, PointerToMemberFunction method)
 
     \since 5.4
 
@@ -455,7 +455,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     \sa start()
 */
 
-/*!\fn void QTimer::singleShot(int msec, Functor functor)
+/*! \fn template<typename Functor> void QTimer::singleShot(int msec, Functor functor)
 
     \since 5.4
 
@@ -472,7 +472,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     \sa start()
 */
 
-/*!\fn void QTimer::singleShot(int msec, Qt::TimerType timerType, Functor functor)
+/*! \fn template<typename Functor> void QTimer::singleShot(int msec, Qt::TimerType timerType, Functor functor)
 
     \since 5.4
 
@@ -490,7 +490,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     \sa start()
 */
 
-/*!\fn void QTimer::singleShot(int msec, const QObject *context, Functor functor)
+/*! \fn template<typename Functor> void QTimer::singleShot(int msec, const QObject *context, Functor functor)
 
     \since 5.4
 
@@ -511,7 +511,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     \sa start()
 */
 
-/*!\fn void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *context, Functor functor)
+/*! \fn template<typename Functor> void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *context, Functor functor)
 
     \since 5.4
 
