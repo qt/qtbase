@@ -149,8 +149,7 @@ QSignalTransition::QSignalTransition(const QObject *sender, const char *signal,
 }
 
 /*!
-  \fn QSignalTransition::QSignalTransition(const QObject *sender,
-                       PointerToMemberFunction signal, QState *sourceState)
+  \fn template <typename PointerToMemberFunction> QSignalTransition::QSignalTransition(const QObject *sender, PointerToMemberFunction signal, QState *sourceState)
   \since 5.7
   \overload
 
