@@ -1886,6 +1886,10 @@ void qErrnoWarning(int code, const char *msg, ...)
     environment variable; if both \l qSetMessagePattern() is called and QT_MESSAGE_PATTERN is
     set, the environment variable takes precedence.
 
+    \note The message pattern only applies to unstructured logging, such as the default
+    \c stderr output. Structured logging such as systemd will record the message as is,
+    along with as much structured information as can be captured.
+
     Custom message handlers can use qFormatLogMessage() to take \a pattern into account.
 
     \sa qInstallMessageHandler(), {Debugging Techniques}, {QLoggingCategory}
