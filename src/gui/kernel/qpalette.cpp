@@ -751,21 +751,24 @@ const QBrush &QPalette::brush(ColorGroup gr, ColorRole cr) const
 void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
 {
     Q_ASSERT(cr < NColorRoles);
-    detach();
-    if(cg >= (int)NColorGroups) {
-        if(cg == All) {
-            for(int i = 0; i < (int)NColorGroups; i++)
-                d->br[i][cr] = b;
-            data.resolve_mask |= (1<<cr);
-            return;
-        } else if(cg == Current) {
-            cg = (ColorGroup)data.current_group;
-        } else {
-            qWarning("QPalette::setBrush: Unknown ColorGroup: %d", (int)cg);
-            cg = Active;
-        }
+
+    if (cg == All) {
+        for (uint i = 0; i < NColorGroups; i++)
+            setBrush(ColorGroup(i), cr, b);
+        return;
     }
-    d->br[cg][cr] = b;
+
+    if (cg == Current) {
+        cg = ColorGroup(data.current_group);
+    } else if (cg >= NColorGroups) {
+        qWarning("QPalette::setBrush: Unknown ColorGroup: %d", cg);
+        cg = Active;
+    }
+
+    if (d->br[cg][cr] != b) {
+        detach();
+        d->br[cg][cr] = b;
+    }
     data.resolve_mask |= (1<<cr);
 }
 
@@ -1091,7 +1094,6 @@ void QPalette::setColorGroup(ColorGroup cg, const QBrush &foreground, const QBru
                              const QBrush &link, const QBrush &link_visited,
                              const QBrush &toolTipBase, const QBrush &toolTipText)
 {
-    detach();
     setBrush(cg, WindowText, foreground);
     setBrush(cg, Button, button);
     setBrush(cg, Light, light);
