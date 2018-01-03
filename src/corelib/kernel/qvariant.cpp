@@ -3776,7 +3776,7 @@ void* QVariant::data()
     \warning Null variants is not a single state and two null variants may easily
     return \c false on the == operator if they do not contain similar null values.
 
-    \sa QVariant(Type), convert(int)
+    \sa convert(int)
 */
 bool QVariant::isNull() const
 {
@@ -3820,7 +3820,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 #endif
 
 
-/*! \fn void QVariant::setValue(const T &value)
+/*! \fn template<typename T> void QVariant::setValue(const T &value)
 
     Stores a copy of \a value. If \c{T} is a type that QVariant
     doesn't support, QMetaType is used to store the value. A compile
@@ -3833,7 +3833,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa value(), fromValue(), canConvert()
  */
 
-/*! \fn T QVariant::value() const
+/*! \fn template<typename T> T QVariant::value() const
 
     Returns the stored value converted to the template type \c{T}.
     Call canConvert() to find out whether a type can be converted.
@@ -3877,7 +3877,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa convert()
 */
 
-/*! \fn static QVariant QVariant::fromValue(const T &value)
+/*! \fn template<typename T> static QVariant QVariant::fromValue(const T &value)
 
     Returns a QVariant containing a copy of \a value. Behaves
     exactly like setValue() otherwise.
@@ -3893,7 +3893,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 */
 
 /*!
-    \fn QVariant qVariantFromValue(const T &value)
+    \fn template<typename T> QVariant qVariantFromValue(const T &value)
     \relates QVariant
     \obsolete
 
@@ -3914,7 +3914,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa QVariant::fromValue()
 */
 
-/*! \fn void qVariantSetValue(QVariant &variant, const T &value)
+/*! \fn template<typename T> void qVariantSetValue(QVariant &variant, const T &value)
     \relates QVariant
     \obsolete
 
@@ -3931,7 +3931,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 */
 
 /*!
-    \fn T qvariant_cast(const QVariant &value)
+    \fn template<typename T> T qvariant_cast(const QVariant &value)
     \relates QVariant
 
     Returns the given \a value converted to the template type \c{T}.
@@ -3941,7 +3941,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa QVariant::value()
 */
 
-/*! \fn T qVariantValue(const QVariant &value)
+/*! \fn template<typename T> T qVariantValue(const QVariant &value)
     \relates QVariant
     \obsolete
 
