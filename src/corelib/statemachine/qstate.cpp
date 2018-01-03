@@ -341,8 +341,7 @@ void QState::addTransition(QAbstractTransition *transition)
 }
 
 /*!
-  \fn QState::addTransition(const QObject *sender, PointerToMemberFunction signal,
-                       QAbstractState *target);
+  \fn template <typename PointerToMemberFunction> QState::addTransition(const QObject *sender, PointerToMemberFunction signal, QAbstractState *target);
   \since 5.5
   \overload
 
