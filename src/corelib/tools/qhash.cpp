@@ -736,7 +736,7 @@ void QHashData::checkSanity()
 #endif
 
 /*!
-    \fn uint qHash(const QPair<T1, T2> &key, uint seed = 0)
+    \fn template <typename T1, typename T2> uint qHash(const QPair<T1, T2> &key, uint seed = 0)
     \since 5.0
     \relates QHash
 
@@ -746,7 +746,7 @@ void QHashData::checkSanity()
 */
 
 /*!
-    \fn uint qHash(const std::pair<T1, T2> &key, uint seed = 0)
+    \fn template <typename T1, typename T2> uint qHash(const std::pair<T1, T2> &key, uint seed = 0)
     \since 5.7
     \relates QHash
 
@@ -762,7 +762,7 @@ void QHashData::checkSanity()
     constraints, we cannot change the QPair algorithm to match the std::pair one before Qt 6.
 */
 
-/*! \fn uint qHashRange(InputIterator first, InputIterator last, uint seed = 0)
+/*! \fn template <typename InputIterator> uint qHashRange(InputIterator first, InputIterator last, uint seed = 0)
     \relates QHash
     \since 5.5
 
@@ -801,7 +801,7 @@ void QHashData::checkSanity()
     \sa qHashBits(), qHashRangeCommutative()
 */
 
-/*! \fn uint qHashRangeCommutative(InputIterator first, InputIterator last, uint seed = 0)
+/*! \fn template <typename InputIterator> uint qHashRangeCommutative(InputIterator first, InputIterator last, uint seed = 0)
     \relates QHash
     \since 5.5
 
@@ -1024,7 +1024,7 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
-/*! \fn uint qHash(const T *key, uint seed = 0)
+/*! \fn template <class T> uint qHash(const T *key, uint seed = 0)
     \relates QHash
     \since 5.0
 
@@ -2476,6 +2476,18 @@ uint qHash(long double key, uint seed) Q_DECL_NOTHROW
 
 /*! \fn template <class Key, class T> const_iterator QHash<Key, T>::key_iterator::base() const
     Returns the underlying const_iterator this key_iterator is based on.
+*/
+
+/*! \typedef QHash::const_key_value_iterator
+    \inmodule QtCore
+    \since 5.10
+    \brief The QMap::const_key_value_iterator typedef provides an STL-style const iterator for QHash and QMultiHash.
+
+    QHash::const_key_value_iterator is essentially the same as QHash::const_iterator
+    with the difference that operator*() returns a key/value pair instead of a
+    value.
+
+    \sa QKeyValueIterator
 */
 
 /*! \typedef QHash::key_value_iterator
