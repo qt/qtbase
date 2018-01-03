@@ -349,7 +349,7 @@ struct Q_CORE_EXPORT QMetaObject
     QObject *cast(QObject *obj) const;
     const QObject *cast(const QObject *obj) const;
 
-#ifndef QT_NO_TRANSLATION
+#if !defined(QT_NO_TRANSLATION) || defined(Q_CLANG_QDOC)
     QString tr(const char *s, const char *c, int n = -1) const;
 #endif // QT_NO_TRANSLATION
 
