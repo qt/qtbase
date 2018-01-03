@@ -39,6 +39,7 @@ private Q_SLOTS:
     void roleValues();
     void copySemantics();
     void moveSemantics();
+    void setBrush();
 };
 
 void tst_QPalette::roleValues_data()
@@ -126,6 +127,36 @@ void tst_QPalette::moveSemantics()
 #else
     QSKIP("Compiler doesn't support C++11 move semantics");
 #endif
+}
+
+void tst_QPalette::setBrush()
+{
+    QPalette p(Qt::red);
+    const QPalette q = p;
+    QVERIFY(q.isCopyOf(p));
+
+    // Setting a different brush will detach
+    p.setBrush(QPalette::Disabled, QPalette::Button, Qt::green);
+    QVERIFY(!q.isCopyOf(p));
+    QVERIFY(q != p);
+
+    // Check we only changed what we said we would
+    for (int i = 0; i < QPalette::NColorGroups; i++)
+        for (int j = 0; j < QPalette::NColorRoles; j++) {
+            const auto g = QPalette::ColorGroup(i);
+            const auto r = QPalette::ColorRole(j);
+            const auto b = p.brush(g, r);
+            if (g == QPalette::Disabled && r == QPalette::Button)
+                QCOMPARE(b, QBrush(Qt::green));
+            else
+                QCOMPARE(b, q.brush(g, r));
+        }
+
+    const QPalette pp = p;
+    QVERIFY(pp.isCopyOf(p));
+    // Setting the same brush won't detach
+    p.setBrush(QPalette::Disabled, QPalette::Button, Qt::green);
+    QVERIFY(pp.isCopyOf(p));
 }
 
 QTEST_MAIN(tst_QPalette)
