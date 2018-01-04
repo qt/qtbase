@@ -374,7 +374,7 @@ void QPdfPrintEnginePrivate::closePrintDevice()
     if (outDevice) {
         outDevice->close();
         if (fd >= 0)
-    #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
+    #if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
             ::_close(fd);
     #else
             ::close(fd);
