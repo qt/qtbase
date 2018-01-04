@@ -77,7 +77,7 @@
 */
 
 /*!
-    \fn void QQueue::swap(QQueue<T> &other)
+    \fn template <class T> void QQueue<T>::swap(QQueue<T> &other)
     \since 4.8
 
     Swaps queue \a other with this queue. This operation is very
@@ -85,7 +85,7 @@
 */
 
 /*!
-    \fn void QQueue::enqueue(const T& t)
+    \fn template <class T> void QQueue<T>::enqueue(const T& t)
 
     Adds value \a t to the tail of the queue.
 
@@ -95,7 +95,7 @@
 */
 
 /*!
-    \fn T &QQueue::head()
+    \fn template <class T> T &QQueue<T>::head()
 
     Returns a reference to the queue's head item. This function
     assumes that the queue isn't empty.
@@ -106,13 +106,13 @@
 */
 
 /*!
-    \fn const T &QQueue::head() const
+    \fn template <class T> const T &QQueue<T>::head() const
 
     \overload
 */
 
 /*!
-    \fn T QQueue::dequeue()
+    \fn template <class T> T QQueue<T>::dequeue()
 
     Removes the head item in the queue and returns it. This function
     assumes that the queue isn't empty.
