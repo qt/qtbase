@@ -141,19 +141,17 @@ static QSet<QByteArray> keywords()
 #endif
 #ifdef Q_CC_MSVC
             << "msvc"
-    #ifdef _MSC_VER
-        #if _MSC_VER == 1910
-            << "msvc-2017"
-        #elif _MSC_VER == 1900
-            << "msvc-2015"
-        #elif _MSC_VER == 1800
-            << "msvc-2013"
-        #elif _MSC_VER == 1700
-            << "msvc-2012"
-        #elif _MSC_VER == 1600
+#  if _MSC_VER <= 1600
             << "msvc-2010"
-        #endif
-    #endif
+#  elif _MSC_VER <= 1700
+            << "msvc-2012"
+#  elif _MSC_VER <= 1800
+            << "msvc-2013"
+#  elif _MSC_VER <= 1900
+            << "msvc-2015"
+#  else
+            << "msvc-2017"
+#  endif
 #endif
 
 #ifdef Q_PROCESSOR_X86
@@ -163,7 +161,7 @@ static QSet<QByteArray> keywords()
             << "arm"
 #endif
 
-#ifdef Q_AUTOTEST_EXPORT
+#ifdef QT_BUILD_INTERNAL
             << "developer-build"
 #endif
             ;
