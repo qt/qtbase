@@ -371,8 +371,7 @@ QT_BEGIN_NAMESPACE
 
     Returns a const pointer to the first character in the string.
 
-    \c{storage_type} is \c{char16_t}, except on MSVC 2013 (which lacks \c char16_t support),
-    where it is \c{wchar_t} instead.
+    \c{storage_type} is \c{char16_t}.
 
     \note The character array represented by the return value is \e not null-terminated.
 

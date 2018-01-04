@@ -624,8 +624,6 @@ QT_BEGIN_NAMESPACE
     \since 5.10
 
     Constructs a QChar corresponding to the UTF-16 character \a ch.
-
-    \note This constructor is not available on MSVC 2013.
 */
 
 /*!

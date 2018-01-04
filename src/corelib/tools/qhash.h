@@ -969,7 +969,7 @@ Q_OUTOFLINE_TEMPLATE bool QHash<Key, T>::operator==(const QHash &other) const
         //
         // ### Qt 6: if C++14 library support is a mandated minimum, remove the ifdef for MSVC.
         if (!std::is_permutation(it, thisEqualRangeEnd, otherEqualRange.first
-#if defined(Q_CC_MSVC) && _MSC_VER >= 1900
+#ifdef Q_CC_MSVC
                                  , otherEqualRange.second
 #endif
                                  )) {

@@ -927,13 +927,7 @@ QT_WARNING_DISABLE_MSVC(4514) /* unreferenced inline function has been removed *
 QT_WARNING_DISABLE_MSVC(4800) /* 'type' : forcing value to bool 'true' or 'false' (performance warning) */
 QT_WARNING_DISABLE_MSVC(4097) /* typedef-name 'identifier1' used as synonym for class-name 'identifier2' */
 QT_WARNING_DISABLE_MSVC(4706) /* assignment within conditional expression */
-#    if _MSC_VER <= 1310 // MSVC 2003
-QT_WARNING_DISABLE_MSVC(4786) /* 'identifier' : identifier was truncated to 'number' characters in the debug information */
-#    endif
 QT_WARNING_DISABLE_MSVC(4355) /* 'this' : used in base member initializer list */
-#    if _MSC_VER < 1800 // MSVC 2013
-QT_WARNING_DISABLE_MSVC(4231) /* nonstandard extension used : 'identifier' before template explicit instantiation */
-#    endif
 QT_WARNING_DISABLE_MSVC(4710) /* function not inlined */
 QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc */
 #  elif defined(Q_CC_BOR)

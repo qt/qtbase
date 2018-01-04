@@ -1367,7 +1367,7 @@ inline std::wstring QString::toStdWString() const
     std::wstring str;
     str.resize(length());
 
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     // VS2005 crashes if the string is empty
     if (!length())
         return str;

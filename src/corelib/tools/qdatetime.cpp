@@ -2216,7 +2216,7 @@ static int qt_timezone()
 static QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
 {
     int isDst = (daylightStatus == QDateTimePrivate::DaylightTime) ? 1 : 0;
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#if defined(Q_CC_MSVC)
     size_t s = 0;
     char name[512];
     if (_get_tzname(&s, name, 512, isDst))
@@ -2346,7 +2346,7 @@ static bool qt_localtime(qint64 msecsSinceEpoch, QDate *localDate, QTime *localT
     res = localtime_r(&secsSinceEpoch, &local);
     if (res)
         valid = true;
-#elif defined(_MSC_VER) && _MSC_VER >= 1400
+#elif defined(Q_CC_MSVC)
     if (!_localtime64_s(&local, &secsSinceEpoch))
         valid = true;
 #else

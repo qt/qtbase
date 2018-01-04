@@ -220,7 +220,7 @@ template <> inline bool mul_overflow(unsigned long long v1, unsigned long long v
 #  define HAVE_MUL64_OVERFLOW
 #endif
 
-#if ((defined(Q_CC_MSVC) && _MSC_VER >= 1800) || defined(Q_CC_INTEL)) && defined(Q_PROCESSOR_X86) && !QT_HAS_BUILTIN(__builtin_uadd_overflow)
+#if (defined(Q_CC_MSVC) || defined(Q_CC_INTEL)) && defined(Q_PROCESSOR_X86) && !QT_HAS_BUILTIN(__builtin_uadd_overflow)
 template <> inline bool add_overflow(unsigned v1, unsigned v2, unsigned *r)
 { return _addcarry_u32(0, v1, v2, r); }
 #  ifdef Q_CC_MSVC      // longs are 32-bit
@@ -228,7 +228,7 @@ template <> inline bool add_overflow(unsigned long v1, unsigned long v2, unsigne
 { return _addcarry_u32(0, v1, v2, reinterpret_cast<unsigned *>(r)); }
 #  endif
 #endif
-#if ((defined(Q_CC_MSVC) && _MSC_VER >= 1800) || defined(Q_CC_INTEL)) && defined(Q_PROCESSOR_X86_64) && !QT_HAS_BUILTIN(__builtin_uadd_overflow)
+#if (defined(Q_CC_MSVC) || defined(Q_CC_INTEL)) && defined(Q_PROCESSOR_X86_64) && !QT_HAS_BUILTIN(__builtin_uadd_overflow)
 template <> inline bool add_overflow(quint64 v1, quint64 v2, quint64 *r)
 { return _addcarry_u64(0, v1, v2, reinterpret_cast<unsigned __int64 *>(r)); }
 #  ifndef Q_CC_MSVC      // longs are 64-bit

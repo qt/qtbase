@@ -318,15 +318,7 @@ QLibraryInfo::buildDate()
 #elif defined(Q_CC_GNU)
 #  define COMPILER_STRING "GCC " __VERSION__
 #elif defined(Q_CC_MSVC)
-#  if _MSC_VER < 1600
-#    define COMPILER_STRING "MSVC 2008"
-#  elif _MSC_VER < 1700
-#    define COMPILER_STRING "MSVC 2010"
-#  elif _MSC_VER < 1800
-#    define COMPILER_STRING "MSVC 2012"
-#  elif _MSC_VER < 1900
-#    define COMPILER_STRING "MSVC 2013"
-#  elif _MSC_VER < 1910
+#  if _MSC_VER < 1910
 #    define COMPILER_STRING "MSVC 2015"
 #  elif _MSC_VER < 2000
 #    define COMPILER_STRING "MSVC 2017"

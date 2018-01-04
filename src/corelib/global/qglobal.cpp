@@ -3249,7 +3249,7 @@ static QBasicMutex environmentMutex;
 QByteArray qgetenv(const char *varName)
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     size_t requiredSize = 0;
     QByteArray buffer;
     getenv_s(&requiredSize, 0, 0, varName);
@@ -3364,7 +3364,7 @@ QString qEnvironmentVariable(const char *varName)
 bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     // we provide a buffer that can only hold the empty string, so
     // when the env.var isn't empty, we'll get an ERANGE error (buffer
     // too small):
@@ -3405,7 +3405,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
         (std::numeric_limits<uint>::digits + NumBinaryDigitsPerOctalDigit - 1) / NumBinaryDigitsPerOctalDigit;
 
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     // we provide a buffer that can hold any int value:
     char buffer[MaxDigitsForOctalInt + 2]; // +1 for NUL +1 for optional '-'
     size_t dummy;
@@ -3452,7 +3452,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) Q_DECL_NOEXCEPT
 bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     size_t requiredSize = 0;
     (void)getenv_s(&requiredSize, 0, 0, varName);
     return requiredSize != 0;
@@ -3482,7 +3482,7 @@ bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
 bool qputenv(const char *varName, const QByteArray& value)
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#if defined(Q_CC_MSVC)
     return _putenv_s(varName, value.constData()) == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
     // POSIX.1-2001 has setenv
@@ -3513,7 +3513,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 bool qunsetenv(const char *varName)
 {
     QMutexLocker locker(&environmentMutex);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#if defined(Q_CC_MSVC)
     return _putenv_s(varName, "") == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4) || defined(Q_OS_HAIKU)
     // POSIX.1-2001, BSD and Haiku have unsetenv
