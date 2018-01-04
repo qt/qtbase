@@ -887,7 +887,7 @@ void tst_QRawFont::unsupportedWritingSystem()
     QCOMPARE(rawFont.familyName(), QString::fromLatin1("QtBidiTestFont"));
     QCOMPARE(rawFont.pixelSize(), 12.0);
 
-    QString arabicText = QFontDatabase::writingSystemSample(QFontDatabase::Arabic);
+    QString arabicText = QFontDatabase::writingSystemSample(QFontDatabase::Arabic).simplified().remove(QLatin1Char(' '));
 
     QTextLayout layout;
     layout.setFont(font);

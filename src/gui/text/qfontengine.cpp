@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1847,7 +1847,12 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
     request.styleStrategy |= QFont::NoFontMerging;
     request.family = fallbackFamilyAt(at - 1);
 
-    if (QFontEngine *engine = QFontDatabase::findFont(request, m_script)) {
+    // At this point, the main script of the text has already been considered
+    // when fetching the list of fallback families from the database, and the
+    // info about the actual script of the characters may have been discarded,
+    // so we do not check for writing system support, but instead just load
+    // the family indiscriminately.
+    if (QFontEngine *engine = QFontDatabase::findFont(request, QFontDatabase::Any)) {
         engine->fontDef.weight = request.weight;
         if (request.style > QFont::StyleNormal)
             engine->fontDef.style = request.style;
