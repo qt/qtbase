@@ -894,7 +894,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn template <typename UInt, size_t N> void QRandomGenerator::fillRange(UInt (&buffer)[N})
+    \fn template <typename UInt, size_t N> void QRandomGenerator::fillRange(UInt (&buffer)[N])
 
     Generates \c N 32- or 64-bit quantities (depending on the type \c UInt) and
     stores them in the \a buffer array. This is the most efficient way to

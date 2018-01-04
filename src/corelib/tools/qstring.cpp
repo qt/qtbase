@@ -4574,7 +4574,7 @@ QString QString::mid(int position, int n) const
 }
 
 /*!
-    \fn QString::chopped(int len) const
+    \fn QString QString::chopped(int len) const
     \since 5.10
 
     Returns a substring that contains the size() - \a len leftmost characters
@@ -4802,7 +4802,7 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
     characters. Those characters may be suppressed or replaced with a
     question mark.
 
-    \sa fromLatin1(), toUtf8(), toLocal8Bit(), QTextCodec, qConvertToLatin1()
+    \sa fromLatin1(), toUtf8(), toLocal8Bit(), QTextCodec
 */
 
 /*!
@@ -4863,8 +4863,7 @@ static QByteArray qt_convert_to_local_8bit(QStringView string)
     Returns a local 8-bit representation of \a string as a QByteArray.
 
     QTextCodec::codecForLocale() is used to perform the conversion from
-    Unicode. If the locale's encoding could not be determined, this function
-    does the same as qConvertToLatin1().
+    Unicode.
 
     The behavior is undefined if \a string contains characters not
     supported by the locale's 8-bit encoding.
@@ -4886,7 +4885,7 @@ static QByteArray qt_convert_to_utf8(QStringView str);
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
 
-    \sa fromUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, qConvertToUtf8()
+    \sa fromUtf8(), toLatin1(), toLocal8Bit(), QTextCodec
 */
 
 QByteArray QString::toUtf8_helper(const QString &str)
@@ -4933,7 +4932,7 @@ static QVector<uint> qt_convert_to_ucs4(QStringView string);
 
     The returned vector is not NUL terminated.
 
-    \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray(), qConvertToUcs4()
+    \sa fromUtf8(), toUtf8(), toLatin1(), toLocal8Bit(), QTextCodec, fromUcs4(), toWCharArray()
 */
 QVector<uint> QString::toUcs4() const
 {
@@ -6438,7 +6437,7 @@ static LengthMod parse_length_modifier(const char * &c) Q_DECL_NOTHROW
 }
 
 /*!
-    \fn QString::vasprintf(const char *cformat, va_list ap)
+    \fn QString QString::vasprintf(const char *cformat, va_list ap)
     \since 5.5
 
     Equivalent method to asprintf(), but takes a va_list \a ap
@@ -8800,6 +8799,13 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \typedef QLatin1String::const_reference
+    \since 5.11
+
+    Alias for \c{reference}. Provided for compatibility with the STL.
+*/
+
+/*!
     \typedef QLatin1String::iterator
     \since 5.10
 
@@ -9213,8 +9219,6 @@ QString &QString::setRawData(const QChar *unicode, int size)
     Whitespace means any character for which QChar::isSpace() returns
     \c true. This includes the ASCII characters '\\t', '\\n', '\\v',
     '\\f', '\\r', and ' '.
-
-    \sa qTrimmed()
 */
 
 /*! \fn bool QLatin1String::operator==(const QString &other) const
@@ -10456,7 +10460,7 @@ QStringRef QString::rightRef(int n) const
 }
 
 /*!
-    \fn QStringRef::mid(int position, int n = -1) const
+    \fn QStringRef QStringRef::mid(int position, int n = -1) const
     \since 5.2
 
     Returns a substring reference to \a n characters of this string,
@@ -10490,7 +10494,7 @@ QStringRef QStringRef::mid(int pos, int n) const
 }
 
 /*!
-    \fn QStringRef::chopped(int len) const
+    \fn QStringRef QStringRef::chopped(int len) const
     \since 5.10
 
     Returns a substring reference to the size() - \a len leftmost characters
@@ -11120,7 +11124,7 @@ static inline bool qt_starts_with(QStringView haystack, QChar needle, Qt::CaseSe
     \since 5.10
     \fn bool QtPrivate::startsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
     \since 5.10
-    \fn bool QtPrivate::startsWith(QLatin1String haystack, QStringview needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::startsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs)
     \since 5.10
     \fn bool QtPrivate::startsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
     \since 5.10
@@ -11193,7 +11197,7 @@ static inline bool qt_ends_with(QStringView haystack, QChar needle, Qt::CaseSens
     \since 5.10
     \fn bool QtPrivate::endsWith(QStringView haystack, QLatin1String needle, Qt::CaseSensitivity cs)
     \since 5.10
-    \fn bool QtPrivate::endsWith(QLatin1String haystack, QStringview needle, Qt::CaseSensitivity cs)
+    \fn bool QtPrivate::endsWith(QLatin1String haystack, QStringView needle, Qt::CaseSensitivity cs)
     \since 5.10
     \fn bool QtPrivate::endsWith(QLatin1String haystack, QLatin1String needle, Qt::CaseSensitivity cs)
     \since 5.10
