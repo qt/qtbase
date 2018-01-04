@@ -3751,8 +3751,7 @@ void QGuiApplication::restoreOverrideCursor()
     } else {
         if (QPlatformCursor::capabilities().testFlag(QPlatformCursor::OverrideCursor))
             clearOverrideCursor(QGuiApplicationPrivate::screen_list);
-        else
-            applyWindowCursor(QGuiApplicationPrivate::window_list);
+        applyWindowCursor(QGuiApplicationPrivate::window_list);
     }
 }
 #endif// QT_NO_CURSOR

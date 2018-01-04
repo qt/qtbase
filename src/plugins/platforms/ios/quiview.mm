@@ -59,6 +59,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 + (void)load
 {
+#ifndef Q_OS_TVOS
     if (QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::IOS, 11)) {
         // iOS 11 handles this though [UIView safeAreaInsetsDidChange], but there's no signal for
         // the corresponding top and bottom layout guides that we use on earlier versions. Note
@@ -73,6 +74,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
             }
         ];
     }
+#endif
 }
 
 + (Class)layerClass
