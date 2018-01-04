@@ -146,7 +146,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template <typename T, typename Cleanup> T *QScopedPointer::get() const
+    \fn template <typename T, typename Cleanup> T *QScopedPointer<T, Cleanup>::get() const
     \since 5.11
 
     Same as data().

@@ -581,7 +581,7 @@
 */
 
 /*!
-    \fn T *QSharedPointer::get() const
+    \fn template <class T> T *QSharedPointer<T>::get() const
     \since 5.11
 
     Same as data().
