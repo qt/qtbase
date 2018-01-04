@@ -111,12 +111,7 @@ public:
 
     QSqlDriver* driver() const;
 
-    static
-#if !defined(Q_CC_MSVC) || _MSC_VER >= 1900
-    // ### Qt6: remove the #ifdef
-    const
-#endif
-    char *defaultConnection;
+    static const char *defaultConnection;
 
     static QSqlDatabase addDatabase(const QString& type,
                                  const QString& connectionName = QLatin1String(defaultConnection));
