@@ -109,6 +109,7 @@ public:
     bool fontsAlwaysScalable() const override;
     void derefUniqueFont(const QString &uniqueFont);
     void refUniqueFont(const QString &uniqueFont);
+    bool isPrivateFontFamily(const QString &family) const override;
 
     static QFont systemDefaultFont();
 

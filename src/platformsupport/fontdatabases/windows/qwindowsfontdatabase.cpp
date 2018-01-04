@@ -1884,8 +1884,9 @@ QString QWindowsFontDatabase::familyForStyleHint(QFont::StyleHint styleHint)
 
 QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
-    QStringList result = m_eudcFonts;
+    QStringList result;
     result.append(QWindowsFontDatabase::familyForStyleHint(styleHint));
+    result.append(m_eudcFonts);
     result.append(QWindowsFontDatabase::extraTryFontsForFamily(family));
     result.append(QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script));
 
@@ -2073,6 +2074,11 @@ QString QWindowsFontDatabase::readRegistryString(HKEY parentHandle, const wchar_
         RegCloseKey(handle);
     }
     return result;
+}
+
+bool QWindowsFontDatabase::isPrivateFontFamily(const QString &family) const
+{
+    return m_eudcFonts.contains(family) || QPlatformFontDatabase::isPrivateFontFamily(family);
 }
 
 QT_END_NAMESPACE
