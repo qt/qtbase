@@ -448,13 +448,6 @@ static const QTextHtmlElement elements[Html_NumElements]= {
     { "var",        Html_var,        QTextHtmlElement::DisplayInline },
 };
 
-#if defined(Q_CC_MSVC) && _MSC_VER < 1600
-static bool operator<(const QTextHtmlElement &e1, const QTextHtmlElement &e2)
-{
-    return QLatin1String(e1.name) < QLatin1String(e2.name);
-}
-#endif
-
 static bool operator<(const QString &str, const QTextHtmlElement &e)
 {
     return str < QLatin1String(e.name);

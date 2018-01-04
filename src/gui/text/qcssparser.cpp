@@ -345,13 +345,6 @@ static const QCssKnownValue styleFeatures[NumKnownStyleFeatures - 1] = {
     { "none", StyleFeature_None }
 };
 
-#if defined(Q_CC_MSVC) && _MSC_VER < 1600
-static bool operator<(const QCssKnownValue &prop1, const QCssKnownValue &prop2)
-{
-    return QString::compare(QString::fromLatin1(prop1.name), QLatin1String(prop2.name), Qt::CaseInsensitive) < 0;
-}
-#endif
-
 static bool operator<(const QString &name, const QCssKnownValue &prop)
 {
     return QString::compare(name, QLatin1String(prop.name), Qt::CaseInsensitive) < 0;

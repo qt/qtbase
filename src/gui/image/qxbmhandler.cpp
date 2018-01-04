@@ -241,7 +241,7 @@ static bool write_xbm_image(const QImage &sourceImage, QIODevice *device, const 
             }
         }
     }
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#ifdef Q_CC_MSVC
     strcpy_s(p, sizeof(" };\n"), " };\n");
 #else
     strcpy(p, " };\n");

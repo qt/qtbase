@@ -399,26 +399,6 @@ static bool operator<(const QCheckPoint &checkPoint, int pos)
     return checkPoint.positionInFrame < pos;
 }
 
-#if defined(Q_CC_MSVC) && _MSC_VER < 1600
-//The STL implementation of MSVC 2008 requires the definitions
-
-static bool operator<(const QCheckPoint &checkPoint1, const QCheckPoint &checkPoint2)
-{
-    return checkPoint1.y < checkPoint2.y;
-}
-
-static bool operator<(QFixed y, const QCheckPoint &checkPoint)
-{
-    return y < checkPoint.y;
-}
-
-static bool operator<(int pos, const QCheckPoint &checkPoint)
-{
-    return pos < checkPoint.positionInFrame;
-}
-
-#endif
-
 static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, const QPointF &origin, const QRectF &gradientRect = QRectF())
 {
     p->save();
