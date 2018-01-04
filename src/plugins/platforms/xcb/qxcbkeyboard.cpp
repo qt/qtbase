@@ -1267,27 +1267,32 @@ static bool isLatin(xkb_keysym_t sym)
     return ((sym >= 'a' && sym <= 'z') || (sym >= 'A' && sym <= 'Z'));
 }
 
-void QXcbKeyboard::checkForLatinLayout()
+void QXcbKeyboard::checkForLatinLayout() const
 {
-    m_hasLatinLayout = false;
     const xkb_layout_index_t layoutCount = xkb_keymap_num_layouts(xkb_keymap);
     const xcb_keycode_t minKeycode = connection()->setup()->min_keycode;
     const xcb_keycode_t maxKeycode = connection()->setup()->max_keycode;
-    struct xkb_state *kb_state = xkb_state_new(xkb_keymap);
+
+    ScopedXKBState state(xkb_state_new(xkb_keymap));
     for (xkb_layout_index_t layout = 0; layout < layoutCount; ++layout) {
-        xkb_state_update_mask(kb_state, 0, 0, 0, 0, 0, layout);
+        xkb_state_update_mask(state.get(), 0, 0, 0, 0, 0, layout);
         for (xcb_keycode_t code = minKeycode; code < maxKeycode; ++code) {
-            xkb_keysym_t sym = xkb_state_key_get_one_sym(kb_state, code);
+            xkb_keysym_t sym = xkb_state_key_get_one_sym(state.get(), code);
             // if layout can produce any of these latin letters (chosen
             // arbitrarily) then it must be a latin key based layout
-            if (sym == XK_q || sym == XK_a || sym == XK_e) {
-                m_hasLatinLayout = true;
-                xkb_state_unref(kb_state);
+            if (sym == XK_q || sym == XK_a || sym == XK_e)
                 return;
-            }
         }
     }
-    xkb_state_unref(kb_state);
+    // This means that lookupLatinKeysym() will not find anything and latin
+    // key shortcuts might not work. This is a bug in the affected desktop
+    // environment. Usually can be solved via system settings by adding e.g. 'us'
+    // layout to the list of seleced layouts, or by using command line, "setxkbmap
+    // -layout rus,en". The position of latin key based layout in the list of the
+    // selected layouts is irrelevant. Properly functioning desktop environments
+    // handle this behind the scenes, even if no latin key based layout has been
+    // explicitly listed in the selected layouts.
+    qCWarning(lcQpaKeyboard, "no keyboard layouts with latin keys present");
 }
 
 xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
@@ -1310,39 +1315,13 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
             break;
         }
     }
-    // If user layouts don't contain any layout that results in a latin key, we query a
-    // key from "US" layout, this allows for latin-key-based shorcuts to work even when
-    // users have only one (non-latin) layout set.
-    // But don't do this if using keymap obtained through the core protocol, as the key
-    // codes may not match up with those expected by the XKB keymap.
-    xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
-    xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
-    if (sym == XKB_KEY_NoSymbol && !m_hasLatinLayout && !m_keymap_is_core) {
-        if (!latin_keymap) {
-            const struct xkb_rule_names names = { xkb_names.rules, xkb_names.model, "us", 0, 0 };
-            latin_keymap = xkb_keymap_new_from_names(xkb_context, &names, (xkb_keymap_compile_flags)0);
-            static bool printFailure = true;
-            if (!latin_keymap && printFailure) {
-                // print message about failure to compile US keymap only once,
-                // no need to do this on every key press.
-                printFailure = false;
-                printKeymapError("Qt: Failed to compile US keymap, shortcut handling with "
-                                 "non-Latin keyboard layouts may not be fully functional!");
-            }
-        }
-        if (latin_keymap) {
-            struct xkb_state *latin_state = xkb_state_new(latin_keymap);
-            if (latin_state) {
-                xkb_state_update_mask(latin_state, 0, latchedMods, lockedMods, 0, 0, 0);
-                sym = xkb_state_key_get_one_sym(latin_state, keycode);
-                xkb_state_unref(latin_state);
-            } else {
-                qWarning("QXcbKeyboard: failed to create a state for US keymap!");
-            }
-        }
-    }
+
     if (sym == XKB_KEY_NoSymbol)
         return sym;
+
+    xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
+    xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+
     // Check for uniqueness, consider the following setup:
     // setxkbmap -layout us,ru,us -variant dvorak,, -option 'grp:ctrl_alt_toggle' (set 'ru' as active).
     // In this setup, the user would expect to trigger a ctrl+q shortcut by pressing ctrl+<physical x key>,
@@ -1353,18 +1332,18 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
     // generate the same shortcut event in this case.
     const xcb_keycode_t minKeycode = connection()->setup()->min_keycode;
     const xcb_keycode_t maxKeycode = connection()->setup()->max_keycode;
-    struct xkb_state *kb_state = xkb_state_new(xkb_keymap);
+    ScopedXKBState state(xkb_state_new(xkb_keymap));
     for (xkb_layout_index_t prevLayout = 0; prevLayout < layout; ++prevLayout) {
-        xkb_state_update_mask(kb_state, 0, latchedMods, lockedMods, 0, 0, prevLayout);
+        xkb_state_update_mask(state.get(), 0, latchedMods, lockedMods, 0, 0, prevLayout);
         for (xcb_keycode_t code = minKeycode; code < maxKeycode; ++code) {
-            xkb_keysym_t prevSym = xkb_state_key_get_one_sym(kb_state, code);
+            xkb_keysym_t prevSym = xkb_state_key_get_one_sym(state.get(), code);
             if (prevSym == sym) {
                 sym = XKB_KEY_NoSymbol;
                 break;
             }
         }
     }
-    xkb_state_unref(kb_state);
+
     return sym;
 }
 
@@ -1563,7 +1542,6 @@ QXcbKeyboard::~QXcbKeyboard()
     xkb_state_unref(xkb_state);
     xkb_keymap_unref(xkb_keymap);
     xkb_context_unref(xkb_context);
-    xkb_keymap_unref(latin_keymap);
     if (!connection()->hasXKB())
         xcb_key_symbols_free(m_key_symbols);
     clearXKBConfig();

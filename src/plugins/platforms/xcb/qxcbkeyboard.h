@@ -106,7 +106,7 @@ protected:
     void updateVModToRModMapping();
 
     xkb_keysym_t lookupLatinKeysym(xkb_keycode_t keycode) const;
-    void checkForLatinLayout();
+    void checkForLatinLayout() const;
 
 private:
     void updateXKBStateFromState(struct xkb_state *kb_state, quint16 state);
@@ -119,7 +119,6 @@ private:
     struct xkb_keymap *xkb_keymap = nullptr;
     struct xkb_state *xkb_state = nullptr;
     struct xkb_rule_names xkb_names;
-    mutable struct xkb_keymap *latin_keymap = nullptr;
 
     struct _mod_masks {
         uint alt;
@@ -149,7 +148,11 @@ private:
     _mod_masks vmod_masks;
     int core_device_id;
 #endif
-    bool m_hasLatinLayout = false;
+
+    struct XKBStateDeleter {
+        void operator()(struct xkb_state *state) const { return xkb_state_unref(state); }
+    };
+    using ScopedXKBState = std::unique_ptr<struct xkb_state, XKBStateDeleter>;
 };
 
 QT_END_NAMESPACE
