@@ -39,12 +39,6 @@
 
 #include <algorithm>
 
-// At least these specific versions of MSVC2010 has a severe performance problem with this file,
-// taking about 1 hour to compile if the portion making use of variadic macros is enabled.
-#if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 160030319) && (_MSC_FULL_VER <= 160040219)
-# define TST_QMETATYPE_BROKEN_COMPILER
-#endif
-
 // mingw gcc 4.8 also takes way too long, letting the CI system abort the test
 #if defined(__MINGW32__)
 # define TST_QMETATYPE_BROKEN_COMPILER

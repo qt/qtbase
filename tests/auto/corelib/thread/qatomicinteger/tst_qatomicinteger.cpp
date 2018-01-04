@@ -37,7 +37,7 @@
 #      undef QT_ATOMIC_FORCE_CXX11
 #    endif
 #  elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 407 && (__cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__))
-#  elif defined(_MSC_VER) && _MSC_VER >= 1900
+#  elif defined(_MSC_VER)
     // We need MSVC 2015 because of: atomics (2012), constexpr (2015), and unrestricted unions (2015).
     // Support for constexpr is not working completely on MSVC 2015 but it's enough for the test.
 #  else
