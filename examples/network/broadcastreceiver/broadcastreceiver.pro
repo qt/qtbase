@@ -1,4 +1,5 @@
 QT += network widgets
+requires(qtConfig(udpsocket))
 
 HEADERS       = receiver.h
 SOURCES       = receiver.cpp \
