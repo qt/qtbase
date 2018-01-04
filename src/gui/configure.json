@@ -46,7 +46,6 @@
             "xcb-xlib": "boolean",
             "xinput2": "boolean",
             "xkb": "boolean",
-            "xkb-config-root": "string",
             "xkbcommon": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "xkbcommon-evdev": "boolean",
             "xkbcommon-x11": { "type": "enum", "name": "xkbcommon", "values": [ "no", "qt", "system" ] }
@@ -624,8 +623,7 @@
     },
 
     "testTypeAliases": {
-        "files": [ "directX" ],
-        "getPkgConfigVariable": [ "xkbConfigRoot" ]
+        "files": [ "directX" ]
     },
 
     "tests": {
@@ -886,13 +884,6 @@
             "pkg-config-args": "x11",
             "pkg-config-variable": "prefix",
             "value": "/usr",
-            "log": "value"
-        },
-        "xkbconfigroot": {
-            "label": "XKB config root",
-            "type": "xkbConfigRoot",
-            "pkg-config-args": "xkeyboard-config",
-            "pkg-config-variable": "xkb_base",
             "log": "value"
         },
         "xlib": {
@@ -1355,12 +1346,6 @@
             "condition": "libs.xkbcommon_x11",
             "output": [ "privateFeature" ]
         },
-        "xkb-config-root": {
-            "label": "XKB config root",
-            "emitIf": "features.xcb",
-            "condition": "features.xcb && !features.xkbcommon-system && tests.xkbconfigroot",
-            "output": [ { "type": "varAssign", "name": "QMAKE_XKB_CONFIG_ROOT", "value": "tests.xkbconfigroot.value"} ]
-        },
         "xlib": {
             "label": "XLib",
             "autoDetect": "!config.darwin || features.xcb",
@@ -1579,12 +1564,6 @@
     ],
 
     "report": [
-        {
-            "type": "warning",
-            "condition": "features.xcb && !features.xkbcommon-system && !features.xkb-config-root",
-            "message": "Could not find XKB config root, use -xkb-config-root to set a path to
-XKB configuration data. This is required for keyboard input support."
-        },
         {
             "type": "note",
             "condition": "features.xcb && config.darwin",

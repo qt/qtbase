@@ -42,21 +42,6 @@ defineTest(qtConfTest_directX) {
     return(false)
 }
 
-defineTest(qtConfTest_xkbConfigRoot) {
-    qtConfTest_getPkgConfigVariable($${1}): return(true)
-
-    for (dir, $$list("/usr/share/X11/xkb", "/usr/local/share/X11/xkb")) {
-        exists($$dir) {
-            $${1}.value = $$dir
-            export($${1}.value)
-            $${1}.cache += value
-            export($${1}.cache)
-            return(true)
-        }
-    }
-    return(false)
-}
-
 defineTest(qtConfTest_qpaDefaultPlatform) {
     name =
     !isEmpty(config.input.qpa_default_platform): name = $$config.input.qpa_default_platform

@@ -701,75 +701,6 @@ Qt::KeyboardModifiers QXcbKeyboard::translateModifiers(int s) const
     return ret;
 }
 
-void QXcbKeyboard::readXKBConfig()
-{
-    clearXKBConfig();
-
-    xcb_connection_t *c = xcb_connection();
-    xcb_window_t rootWindow = connection()->rootWindow();
-
-    auto config_reply = Q_XCB_REPLY(xcb_get_property, c, 0, rootWindow,
-                                    atom(QXcbAtom::_XKB_RULES_NAMES), XCB_ATOM_STRING, 0, 1024);
-    if (!config_reply) {
-        qWarning("Qt: Couldn't interpret the _XKB_RULES_NAMES property");
-        return;
-    }
-    char *xkb_config = (char *)xcb_get_property_value(config_reply.get());
-    int length = xcb_get_property_value_length(config_reply.get());
-
-    // on old X servers xkb_config can be 0 even if config_reply indicates a succesfull read
-    if (!xkb_config || length == 0)
-        return;
-    // ### TODO some X servers don't set _XKB_RULES_NAMES at all, in these cases it is filled
-    // with gibberish, we would need to do some kind of sanity check
-
-    char *names[5] = { 0, 0, 0, 0, 0 };
-    char *p = xkb_config, *end = p + length;
-    int i = 0;
-    // The result from xcb_get_property_value() is not necessarily \0-terminated,
-    // we need to make sure that too many or missing '\0' symbols are handled safely.
-    do {
-        uint len = qstrnlen(p, length);
-        names[i++] = p;
-        p += len + 1;
-        length -= len + 1;
-    } while (p < end || i < 5);
-
-    xkb_names.rules = qstrdup(names[0]);
-    xkb_names.model = qstrdup(names[1]);
-    xkb_names.layout = qstrdup(names[2]);
-    xkb_names.variant = qstrdup(names[3]);
-    xkb_names.options = qstrdup(names[4]);
-}
-
-void QXcbKeyboard::clearXKBConfig()
-{
-    if (xkb_names.rules)
-        delete[] xkb_names.rules;
-    if (xkb_names.model)
-        delete[] xkb_names.model;
-    if (xkb_names.layout)
-        delete[] xkb_names.layout;
-    if (xkb_names.variant)
-        delete[] xkb_names.variant;
-    if (xkb_names.options)
-        delete[] xkb_names.options;
-    memset(&xkb_names, 0, sizeof(xkb_names));
-}
-
-void QXcbKeyboard::printKeymapError(const char *error) const
-{
-    qWarning() << error;
-    if (xkb_context) {
-        qWarning("Current XKB configuration data search paths are: ");
-        for (unsigned int i = 0; i < xkb_context_num_include_paths(xkb_context); ++i)
-            qWarning() << xkb_context_include_path_get(xkb_context, i);
-    }
-    qWarning("Use QT_XKB_CONFIG_ROOT environmental variable to provide an additional search path, "
-             "add ':' as separator to provide several search paths and/or make sure that XKB configuration data "
-             "directory contains recent enough contents, to update please see http://cgit.freedesktop.org/xkeyboard-config/ .");
-}
-
 /* Look at a pair of unshifted and shifted key symbols.
  * If the 'unshifted' symbol is uppercase and there is no shifted symbol,
  * return the matching lowercase symbol; otherwise return 0.
@@ -1051,91 +982,55 @@ struct xkb_keymap *QXcbKeyboard::keymapFromCore()
 
     keymap += "};\n"; // xkb_keymap
 
-    return xkb_keymap_new_from_buffer(xkb_context,
+    return xkb_keymap_new_from_buffer(m_xkbContext.get(),
                                       keymap.constData(),
                                       keymap.size(),
                                       XKB_KEYMAP_FORMAT_TEXT_V1,
-                                      static_cast<xkb_keymap_compile_flags>(0));
+                                      XKB_KEYMAP_COMPILE_NO_FLAGS);
 }
 
 void QXcbKeyboard::updateKeymap()
 {
     m_config = true;
-    m_keymap_is_core = false;
-    // set xkb context object
-    if (!xkb_context) {
-        if (qEnvironmentVariableIsSet("QT_XKB_CONFIG_ROOT")) {
-            xkb_context = xkb_context_new((xkb_context_flags)XKB_CONTEXT_NO_DEFAULT_INCLUDES);
-            const QList<QByteArray> xkbRootList = QByteArray(qgetenv("QT_XKB_CONFIG_ROOT")).split(':');
-            for (const QByteArray &xkbRoot : xkbRootList)
-                xkb_context_include_path_append(xkb_context, xkbRoot.constData());
-        } else {
-            xkb_context = xkb_context_new((xkb_context_flags)0);
-        }
-        if (!xkb_context) {
-            printKeymapError("Qt: Failed to create XKB context!");
+
+    if (!m_xkbContext) {
+        m_xkbContext.reset(xkb_context_new(XKB_CONTEXT_NO_DEFAULT_INCLUDES));
+        if (!m_xkbContext) {
+            qCWarning(lcQpaKeyboard, "failed to create XKB context");
             m_config = false;
             return;
         }
-        // log only critical errors, we do our own error logging from printKeymapError()
-        xkb_context_set_log_level(xkb_context, (xkb_log_level)XKB_LOG_LEVEL_CRITICAL);
+        xkb_log_level logLevel = lcQpaKeyboard().isDebugEnabled() ?
+                                 XKB_LOG_LEVEL_DEBUG : XKB_LOG_LEVEL_CRITICAL;
+        xkb_context_set_log_level(m_xkbContext.get(), logLevel);
     }
-    // update xkb keymap object
-    xkb_keymap_unref(xkb_keymap);
-    xkb_keymap = 0;
 
-    struct xkb_state *new_state = 0;
 #if QT_CONFIG(xkb)
     if (connection()->hasXKB()) {
-        xkb_keymap = xkb_x11_keymap_new_from_device(xkb_context, xcb_connection(), core_device_id, (xkb_keymap_compile_flags)0);
-        if (xkb_keymap) {
-            // Create a new keyboard state object for a keymap
-            new_state = xkb_x11_state_new_from_device(xkb_keymap, xcb_connection(), core_device_id);
-        }
+        m_xkbKeymap.reset(xkb_x11_keymap_new_from_device(m_xkbContext.get(), xcb_connection(),
+                                                         core_device_id, XKB_KEYMAP_COMPILE_NO_FLAGS));
+        if (m_xkbKeymap)
+            m_xkbState.reset(xkb_x11_state_new_from_device(m_xkbKeymap.get(), xcb_connection(), core_device_id));
+    } else {
+#endif
+        m_xkbKeymap.reset(keymapFromCore());
+        if (m_xkbKeymap)
+            m_xkbState.reset(xkb_state_new(m_xkbKeymap.get()));
+#if QT_CONFIG(xkb)
     }
 #endif
-    if (!xkb_keymap) {
-        // Read xkb RMLVO (rules, models, layouts, variants and options) names
-        readXKBConfig();
 
-        bool rmlvo_is_incomplete = !xkb_names.rules || !(*xkb_names.rules)
-            || !xkb_names.model || !(*xkb_names.model)
-            || !xkb_names.layout || !(*xkb_names.layout);
-        if (rmlvo_is_incomplete) {
-            // Try to build xkb map from core mapping information
-            xkb_keymap = keymapFromCore();
-            m_keymap_is_core = xkb_keymap != 0;
-        }
-
-        if (!xkb_keymap) {
-            // Compile a keymap from RMLVO
-            xkb_keymap = xkb_keymap_new_from_names(xkb_context, &xkb_names,
-                static_cast<xkb_keymap_compile_flags> (0));
-        }
-        if (!xkb_keymap) {
-            // last fallback is to used hard-coded keymap name, see DEFAULT_XKB_* in xkbcommon.pri
-            qWarning() << "Qt: Could not determine keyboard configuration data"
-                          " from X server, will use hard-coded keymap configuration.";
-            clearXKBConfig();
-            xkb_keymap = xkb_keymap_new_from_names(xkb_context, &xkb_names, (xkb_keymap_compile_flags)0);
-        }
-        if (xkb_keymap) {
-            new_state = xkb_state_new(xkb_keymap);
-        } else {
-            printKeymapError("Qt: Failed to compile a keymap!");
-            m_config = false;
-            return;
-        }
-
-    }
-    if (!new_state) {
-        qWarning("Qt: Failed to create xkb state!");
+    if (!m_xkbKeymap) {
+        qCWarning(lcQpaKeyboard, "failed to compile a keymap");
         m_config = false;
         return;
     }
-    // update xkb state object
-    xkb_state_unref(xkb_state);
-    xkb_state = new_state;
+    if (!m_xkbState) {
+        qCWarning(lcQpaKeyboard, "failed to create XKB state");
+        m_config = false;
+        return;
+    }
+
     updateXKBMods();
 
     checkForLatinLayout();
@@ -1146,7 +1041,7 @@ void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
 {
     if (m_config && connection()->hasXKB()) {
         const xkb_state_component newState
-                = xkb_state_update_mask(xkb_state,
+                = xkb_state_update_mask(m_xkbState.get(),
                                   state->baseMods,
                                   state->latchedMods,
                                   state->lockedMods,
@@ -1191,7 +1086,7 @@ void QXcbKeyboard::updateXKBStateFromState(struct xkb_state *kb_state, quint16 s
 void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
 {
     if (m_config && !connection()->hasXKB()) {
-        updateXKBStateFromState(xkb_state, state);
+        updateXKBStateFromState(m_xkbState.get(), state);
     }
 }
 
@@ -1201,7 +1096,7 @@ void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
     if (m_config && !connection()->hasXKB()) {
         xXIModifierInfo *mods = static_cast<xXIModifierInfo *>(modInfo);
         xXIGroupInfo *group = static_cast<xXIGroupInfo *>(groupInfo);
-        const xkb_state_component newState = xkb_state_update_mask(xkb_state,
+        const xkb_state_component newState = xkb_state_update_mask(m_xkbState.get(),
                                                                    mods->base_mods,
                                                                    mods->latched_mods,
                                                                    mods->locked_mods,
@@ -1242,14 +1137,14 @@ quint32 QXcbKeyboard::xkbModMask(quint16 state)
 
 void QXcbKeyboard::updateXKBMods()
 {
-    xkb_mods.shift = xkb_keymap_mod_get_index(xkb_keymap, XKB_MOD_NAME_SHIFT);
-    xkb_mods.lock = xkb_keymap_mod_get_index(xkb_keymap, XKB_MOD_NAME_CAPS);
-    xkb_mods.control = xkb_keymap_mod_get_index(xkb_keymap, XKB_MOD_NAME_CTRL);
-    xkb_mods.mod1 = xkb_keymap_mod_get_index(xkb_keymap, "Mod1");
-    xkb_mods.mod2 = xkb_keymap_mod_get_index(xkb_keymap, "Mod2");
-    xkb_mods.mod3 = xkb_keymap_mod_get_index(xkb_keymap, "Mod3");
-    xkb_mods.mod4 = xkb_keymap_mod_get_index(xkb_keymap, "Mod4");
-    xkb_mods.mod5 = xkb_keymap_mod_get_index(xkb_keymap, "Mod5");
+    xkb_mods.shift = xkb_keymap_mod_get_index(m_xkbKeymap.get(), XKB_MOD_NAME_SHIFT);
+    xkb_mods.lock = xkb_keymap_mod_get_index(m_xkbKeymap.get(), XKB_MOD_NAME_CAPS);
+    xkb_mods.control = xkb_keymap_mod_get_index(m_xkbKeymap.get(), XKB_MOD_NAME_CTRL);
+    xkb_mods.mod1 = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Mod1");
+    xkb_mods.mod2 = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Mod2");
+    xkb_mods.mod3 = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Mod3");
+    xkb_mods.mod4 = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Mod4");
+    xkb_mods.mod5 = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Mod5");
 }
 
 static bool isLatin(xkb_keysym_t sym)
@@ -1259,11 +1154,11 @@ static bool isLatin(xkb_keysym_t sym)
 
 void QXcbKeyboard::checkForLatinLayout() const
 {
-    const xkb_layout_index_t layoutCount = xkb_keymap_num_layouts(xkb_keymap);
+    const xkb_layout_index_t layoutCount = xkb_keymap_num_layouts(m_xkbKeymap.get());
     const xcb_keycode_t minKeycode = connection()->setup()->min_keycode;
     const xcb_keycode_t maxKeycode = connection()->setup()->max_keycode;
 
-    ScopedXKBState state(xkb_state_new(xkb_keymap));
+    ScopedXKBState state(xkb_state_new(m_xkbKeymap.get()));
     for (xkb_layout_index_t layout = 0; layout < layoutCount; ++layout) {
         xkb_state_update_mask(state.get(), 0, 0, 0, 0, 0, layout);
         for (xcb_keycode_t code = minKeycode; code < maxKeycode; ++code) {
@@ -1289,16 +1184,16 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
 {
     xkb_layout_index_t layout;
     xkb_keysym_t sym = XKB_KEY_NoSymbol;
-    const xkb_layout_index_t layoutCount = xkb_keymap_num_layouts_for_key(xkb_keymap, keycode);
-    const xkb_layout_index_t currentLayout = xkb_state_key_get_layout(xkb_state, keycode);
+    const xkb_layout_index_t layoutCount = xkb_keymap_num_layouts_for_key(m_xkbKeymap.get(), keycode);
+    const xkb_layout_index_t currentLayout = xkb_state_key_get_layout(m_xkbState.get(), keycode);
     // Look at user layouts in the order in which they are defined in system
     // settings to find a latin keysym.
     for (layout = 0; layout < layoutCount; ++layout) {
         if (layout == currentLayout)
             continue;
         const xkb_keysym_t *syms;
-        xkb_level_index_t level = xkb_state_key_get_level(xkb_state, keycode, layout);
-        if (xkb_keymap_key_get_syms_by_level(xkb_keymap, keycode, layout, level, &syms) != 1)
+        xkb_level_index_t level = xkb_state_key_get_level(m_xkbState.get(), keycode, layout);
+        if (xkb_keymap_key_get_syms_by_level(m_xkbKeymap.get(), keycode, layout, level, &syms) != 1)
             continue;
         if (isLatin(syms[0])) {
             sym = syms[0];
@@ -1309,8 +1204,8 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
     if (sym == XKB_KEY_NoSymbol)
         return sym;
 
-    xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
-    xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
+    xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(m_xkbState.get(), XKB_STATE_MODS_LATCHED);
+    xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(m_xkbState.get(), XKB_STATE_MODS_LOCKED);
 
     // Check for uniqueness, consider the following setup:
     // setxkbmap -layout us,ru,us -variant dvorak,, -option 'grp:ctrl_alt_toggle' (set 'ru' as active).
@@ -1322,7 +1217,7 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
     // generate the same shortcut event in this case.
     const xcb_keycode_t minKeycode = connection()->setup()->min_keycode;
     const xcb_keycode_t maxKeycode = connection()->setup()->max_keycode;
-    ScopedXKBState state(xkb_state_new(xkb_keymap));
+    ScopedXKBState state(xkb_state_new(m_xkbKeymap.get()));
     for (xkb_layout_index_t prevLayout = 0; prevLayout < layout; ++prevLayout) {
         xkb_state_update_mask(state.get(), 0, latchedMods, lockedMods, 0, 0, prevLayout);
         for (xcb_keycode_t code = minKeycode; code < maxKeycode; ++code) {
@@ -1343,16 +1238,16 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     Qt::KeyboardModifiers notNeeded = Qt::KeypadModifier | Qt::GroupSwitchModifier;
     Qt::KeyboardModifiers modifiers = event->modifiers() &= ~notNeeded;
     // create a fresh kb state and test against the relevant modifier combinations
-    struct xkb_state *kb_state = xkb_state_new(xkb_keymap);
+    struct xkb_state *kb_state = xkb_state_new(m_xkbKeymap.get());
     if (!kb_state) {
         qWarning("QXcbKeyboard: failed to compile xkb keymap!");
         return QList<int>();
     }
     // get kb state from the master xkb_state and update the temporary kb_state
-    xkb_layout_index_t lockedLayout = xkb_state_serialize_layout(xkb_state, XKB_STATE_LAYOUT_LOCKED);
-    xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LATCHED);
-    xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_LOCKED);
-    xkb_mod_mask_t depressedMods = xkb_state_serialize_mods(xkb_state, XKB_STATE_MODS_DEPRESSED);
+    xkb_layout_index_t lockedLayout = xkb_state_serialize_layout(m_xkbState.get(), XKB_STATE_LAYOUT_LOCKED);
+    xkb_mod_mask_t latchedMods = xkb_state_serialize_mods(m_xkbState.get(), XKB_STATE_MODS_LATCHED);
+    xkb_mod_mask_t lockedMods = xkb_state_serialize_mods(m_xkbState.get(), XKB_STATE_MODS_LOCKED);
+    xkb_mod_mask_t depressedMods = xkb_state_serialize_mods(m_xkbState.get(), XKB_STATE_MODS_DEPRESSED);
 
     xkb_state_update_mask(kb_state, depressedMods, latchedMods, lockedMods, 0, 0, lockedLayout);
     quint32 keycode = event->nativeScanCode();
@@ -1378,10 +1273,10 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     if (baseQtKey)
         result += (baseQtKey + modifiers);
 
-    xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(xkb_keymap, "Shift");
-    xkb_mod_index_t altMod = xkb_keymap_mod_get_index(xkb_keymap, "Alt");
-    xkb_mod_index_t controlMod = xkb_keymap_mod_get_index(xkb_keymap, "Control");
-    xkb_mod_index_t metaMod = xkb_keymap_mod_get_index(xkb_keymap, "Meta");
+    xkb_mod_index_t shiftMod = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Shift");
+    xkb_mod_index_t altMod = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Alt");
+    xkb_mod_index_t controlMod = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Control");
+    xkb_mod_index_t metaMod = xkb_keymap_mod_get_index(m_xkbKeymap.get(), "Meta");
 
     Q_ASSERT(shiftMod < 32);
     Q_ASSERT(altMod < 32);
@@ -1506,7 +1401,6 @@ int QXcbKeyboard::keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modi
 QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     : QXcbObject(connection)
 {
-    memset(&xkb_names, 0, sizeof(xkb_names));
 #if QT_CONFIG(xkb)
     core_device_id = 0;
     if (connection->hasXKB()) {
@@ -1529,12 +1423,8 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
 
 QXcbKeyboard::~QXcbKeyboard()
 {
-    xkb_state_unref(xkb_state);
-    xkb_keymap_unref(xkb_keymap);
-    xkb_context_unref(xkb_context);
     if (!connection()->hasXKB())
         xcb_key_symbols_free(m_key_symbols);
-    clearXKBConfig();
 }
 
 void QXcbKeyboard::updateVModMapping()
@@ -1880,7 +1770,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     // this way we allow for synthetic events to have different state
     // from the current state i.e. you can have Alt+Ctrl pressed
     // and receive a synthetic key event that has neither Alt nor Ctrl pressed
-    struct xkb_state *kb_state = xkb_state_new(xkb_keymap);
+    struct xkb_state *kb_state = xkb_state_new(m_xkbKeymap.get());
     if (!kb_state)
         return;
     updateXKBStateFromState(kb_state, state);

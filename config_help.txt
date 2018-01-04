@@ -298,8 +298,6 @@ Gui, printing, widget options:
     -xinput2 ........... Enable XInput2 support [auto]
     -xkbcommon-x11 ..... Select xkbcommon used in combination with xcb
                          [system/qt/no]
-    -xkb-config-root <dir> ... With -qt-xkbcommon-x11, set default XKB config
-                               root <dir> [detect]
     -xkbcommon-evdev ... Enable X-less xkbcommon in combination with libinput
                          [auto]
 
