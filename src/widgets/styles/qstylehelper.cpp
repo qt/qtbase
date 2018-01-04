@@ -51,8 +51,6 @@
 
 #include "qstylehelper_p.h"
 #include <qstringbuilder.h>
-#include <qdatastream.h>
-#include <qcryptographichash.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,6 +64,7 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
     QString tmp = key % HexString<uint>(option->state)
                       % HexString<uint>(option->direction)
                       % HexString<uint>(complexOption ? uint(complexOption->activeSubControls) : 0u)
+                      % HexString<quint64>(option->palette.cacheKey())
                       % HexString<uint>(size.width())
                       % HexString<uint>(size.height());
 
@@ -77,24 +76,6 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
     }
 #endif // QT_CONFIG(spinbox)
 
-    // QTBUG-56743, try to create a palette cache key reflecting the value,
-    // as leaks may occur in conjunction with QStyleSheetStyle/QRenderRule modifying
-    // palettes when using QPalette::cacheKey()
-    if (option->palette != QGuiApplication::palette()) {
-        tmp.append(QLatin1Char('P'));
-#ifndef QT_NO_DATASTREAM
-        QByteArray key;
-        key.reserve(5120); // Observed 5040B for a serialized palette on 64bit
-        {
-            QDataStream str(&key, QIODevice::WriteOnly);
-            str << option->palette;
-        }
-        const QByteArray sha1 = QCryptographicHash::hash(key, QCryptographicHash::Sha1).toHex();
-        tmp.append(QString::fromLatin1(sha1));
-#else // QT_NO_DATASTREAM
-        tmp.append(QString::number(option->palette.cacheKey(), 16));
-#endif // !QT_NO_DATASTREAM
-    }
     return tmp;
 }
 
