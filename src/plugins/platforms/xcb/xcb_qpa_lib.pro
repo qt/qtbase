@@ -46,7 +46,8 @@ HEADERS = \
         qxcbcursor.h \
         qxcbimage.h \
         qxcbxsettings.h \
-        qxcbsystemtraytracker.h
+        qxcbsystemtraytracker.h \
+        qxcbxkbcommon.h
 
 load(qt_build_paths)
 

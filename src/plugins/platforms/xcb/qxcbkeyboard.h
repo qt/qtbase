@@ -94,9 +94,8 @@ protected:
 
     void readXKBConfig();
     void clearXKBConfig();
-#if QT_CONFIG(xcb_xlib)
     struct xkb_keymap *keymapFromCore();
-#endif
+
     // when XKEYBOARD not present on the X server
     void updateModifiers();
     typedef QMap<xcb_keysym_t, int> KeysymModifierMap;

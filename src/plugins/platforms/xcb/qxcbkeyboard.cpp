@@ -39,6 +39,7 @@
 #include "qxcbkeyboard.h"
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
+#include "qxcbxkbcommon.h"
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatforminputcontext.h>
@@ -55,12 +56,6 @@
 
 #if QT_CONFIG(xinput2)
 #include <X11/extensions/XI2proto.h>
-#undef KeyPress
-#undef KeyRelease
-#endif
-
-#if QT_CONFIG(xcb_xlib)
-#include <X11/Xutil.h>
 #undef KeyPress
 #undef KeyRelease
 #endif
@@ -775,7 +770,6 @@ void QXcbKeyboard::printKeymapError(const char *error) const
              "directory contains recent enough contents, to update please see http://cgit.freedesktop.org/xkeyboard-config/ .");
 }
 
-#if QT_CONFIG(xcb_xlib)
 /* Look at a pair of unshifted and shifted key symbols.
  * If the 'unshifted' symbol is uppercase and there is no shifted symbol,
  * return the matching lowercase symbol; otherwise return 0.
@@ -787,18 +781,15 @@ static xcb_keysym_t getUnshiftedXKey(xcb_keysym_t unshifted, xcb_keysym_t shifte
     if (shifted != XKB_KEY_NoSymbol) // Has a shifted symbol
         return 0;
 
-    KeySym xlower;
-    KeySym xupper;
-    /* libxkbcommon >= 0.8.0 will have public API functions providing
-     * functionality equivalent to XConvertCase(), use these once the
-     * minimal libxkbcommon version is high enough. After that the
-     * xcb-xlib dependency can be removed */
-    XConvertCase(static_cast<KeySym>(unshifted), &xlower, &xupper);
+    xcb_keysym_t xlower;
+    xcb_keysym_t xupper;
+    xkbcommon_XConvertCase(unshifted, &xlower, &xupper);
 
-    if (xlower != xupper                                     // Check if symbol is cased
-        && unshifted == static_cast<xcb_keysym_t>(xupper)) { // Unshifted must be upper case
-        return static_cast<xcb_keysym_t>(xlower);
+    if (xlower != xupper          // Check if symbol is cased
+        && unshifted == xupper) { // Unshifted must be upper case
+        return xlower;
     }
+
     return 0;
 }
 
@@ -1066,7 +1057,6 @@ struct xkb_keymap *QXcbKeyboard::keymapFromCore()
                                       XKB_KEYMAP_FORMAT_TEXT_V1,
                                       static_cast<xkb_keymap_compile_flags>(0));
 }
-#endif
 
 void QXcbKeyboard::updateKeymap()
 {
@@ -1107,7 +1097,7 @@ void QXcbKeyboard::updateKeymap()
     if (!xkb_keymap) {
         // Read xkb RMLVO (rules, models, layouts, variants and options) names
         readXKBConfig();
-#if QT_CONFIG(xcb_xlib)
+
         bool rmlvo_is_incomplete = !xkb_names.rules || !(*xkb_names.rules)
             || !xkb_names.model || !(*xkb_names.model)
             || !xkb_names.layout || !(*xkb_names.layout);
@@ -1116,7 +1106,7 @@ void QXcbKeyboard::updateKeymap()
             xkb_keymap = keymapFromCore();
             m_keymap_is_core = xkb_keymap != 0;
         }
-#endif
+
         if (!xkb_keymap) {
             // Compile a keymap from RMLVO
             xkb_keymap = xkb_keymap_new_from_names(xkb_context, &xkb_names,
