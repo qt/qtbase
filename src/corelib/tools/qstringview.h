@@ -183,7 +183,7 @@ public:
     Q_DECL_CONSTEXPR QStringView(const Char *f, const Char *l)
         : QStringView(f, l - f) {}
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     template <typename Char, size_t N>
     Q_DECL_CONSTEXPR QStringView(const Char (&array)[N]) Q_DECL_NOTHROW;
 
@@ -199,7 +199,7 @@ public:
         : QStringView(str, str ? lengthHelperPointer(str) : 0) {}
 #endif
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     QStringView(const QString &str) Q_DECL_NOTHROW;
     QStringView(const QStringRef &str) Q_DECL_NOTHROW;
 #else

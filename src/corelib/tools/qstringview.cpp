@@ -117,6 +117,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \typedef QStringView::storage_type
+
+    Alias for \c{char16_t} for non-Windows or if Q_COMPILER_UNICODE_STRINGS
+    is defined. Otherwise, alias for \c{wchar_t}.
+*/
+
+/*!
     \typedef QStringView::value_type
 
     Alias for \c{const QChar}. Provided for compatibility with the STL.
@@ -224,7 +231,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char *str, qsizetype len)
+    \fn  template <typename Char> QStringView::QStringView(const Char *str, qsizetype len)
 
     Constructs a string view on \a str with length \a len.
 
@@ -240,7 +247,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char *first, const Char *last)
+    \fn template <typename Char> QStringView::QStringView(const Char *first, const Char *last)
 
     Constructs a string view on \a first with length (\a last - \a first).
 
@@ -260,7 +267,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char *str)
+    \fn template <typename Char> QStringView::QStringView(const Char *str)
 
     Constructs a string view on \a str. The length is determined
     by scanning for the first \c{Char(0)}.
@@ -277,7 +284,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const Char (&string)[N])
+    \fn template <typename Char, size_t N> QStringView::QStringView(const Char (&string)[N])
 
     Constructs a string view on the character string literal \a string.
     The length is set to \c{N-1}, excluding the trailing \{Char(0)}.
@@ -319,7 +326,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::QStringView(const StdBasicString &str)
+    \fn template <typename StdBasicString> QStringView::QStringView(const StdBasicString &str)
 
     Constructs a string view on \a str. The length is taken from \c{str.size()}.
 
@@ -713,7 +720,7 @@ QT_BEGIN_NAMESPACE
 
     The behavior is undefined if the string contains non-Latin1 characters.
 
-    \sa toUtf8(), toLocal8Bit(), QTextCodec, qConvertToLatin1()
+    \sa toUtf8(), toLocal8Bit(), QTextCodec
 */
 
 /*!
@@ -739,7 +746,7 @@ QT_BEGIN_NAMESPACE
     UTF-8 is a Unicode codec and can represent all characters in a Unicode
     string like QString.
 
-    \sa toLatin1(), toLocal8Bit(), QTextCodec, qConvertToUtf8()
+    \sa toLatin1(), toLocal8Bit(), QTextCodec
 */
 
 /*!
@@ -758,7 +765,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn qToStringViewIgnoringNull(const QStringLike &s);
+    \fn template <typename QStringLike> qToStringViewIgnoringNull(const QStringLike &s);
     \since 5.10
     \internal
 
@@ -773,7 +780,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QStringView::isRightToLeft();
+    \fn bool QStringView::isRightToLeft() const
     \since 5.11
 
     Returns \c true if the string is read right to left.
