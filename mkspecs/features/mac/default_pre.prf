@@ -54,3 +54,7 @@ macx-xcode:qtConfig(static): \
 # feature, which allows Xcode to choose the Qt libraries to link to
 # at build time, depending on the current Xcode SDK and configuration.
 QMAKE_XCODE_LIBRARY_SUFFIX_SETTING = QT_LIBRARY_SUFFIX
+
+xcode_copy_phase_strip_setting.name = COPY_PHASE_STRIP
+xcode_copy_phase_strip_setting.value = NO
+QMAKE_MAC_XCODE_SETTINGS += xcode_copy_phase_strip_setting
