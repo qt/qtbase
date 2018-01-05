@@ -71,6 +71,7 @@ public:
     QHTML5Screen *screen() { return mScreen; }
     QHtml5Compositor *compositor() { return mCompositor; }
     static void QHTML5BrowserExit();
+    static void updateQScreenAndCanvasRenderSize();
 
 private:
     mutable QHtml5FontDatabase *mFontDb;

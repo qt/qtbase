@@ -101,7 +101,9 @@ QHTML5Integration::QHTML5Integration()
    // qInstallMessageHandler(emscriptenOutput);
 
     globalHtml5Integration = this;
+
     screenAdded(mScreen);
+    updateQScreenAndCanvasRenderSize();
     emscripten_set_resize_callback(0, (void *)this, 1, uiEvent_cb);
 
     m_eventTranslator = new QHTML5EventTranslator();
@@ -193,21 +195,44 @@ QVariant QHTML5Integration::styleHint(QPlatformIntegration::StyleHint hint) cons
     return QPlatformIntegration::styleHint(hint);
 }
 
-int QHTML5Integration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void */*userData*/)
+int QHTML5Integration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
 {
     Q_UNUSED(e)
-//    qDebug() << __FUNCTION__ << eventType << e;
-//    qDebug() << e->documentBodyClientWidth
-//             << e->documentBodyClientHeight;
+    Q_UNUSED(userData)
 
     if (eventType == EMSCRIPTEN_EVENT_RESIZE) {
-        QHTML5Integration::get()->mScreen->invalidateSize();
-//        QRect newRect(0,0,e->documentBodyClientWidth,e->documentBodyClientHeight);
-//        QHTML5Integration::get()->mScreen->setGeometry(newRect);
-        QHTML5Integration::get()->mCompositor->requestRedraw();
+        // This resize event is called when the HTML window is resized. Depending
+        // on the page layout the the canvas might also have been resized, so we
+        // update the Qt screen size (and canvas render size).
+        updateQScreenAndCanvasRenderSize();
     }
 
     return 0;
+}
+
+static void set_canvas_size(double width, double height)
+{
+    EM_ASM_({
+        var canvas = Module.canvas;
+        canvas.width = $0;
+        canvas.height = $1;
+    }, width, height);
+}
+
+void QHTML5Integration::updateQScreenAndCanvasRenderSize()
+{
+    // The HTML canvas has two sizes: the CSS size and the canvas render size.
+    // The CSS size is determined according to standard CSS rules, while the
+    // render size is set using the "width" and "height" attributes. The render
+    // size must be set manually and is not auto-updated on CSS size change.
+    double css_width;
+    double css_height;
+    emscripten_get_element_css_size(0, &css_width, &css_height);
+
+    set_canvas_size(css_width, css_height);
+    QSizeF cssSize(css_width, css_height);
+    QHTML5Integration::get()->mScreen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
+    QHTML5Integration::get()->mCompositor->requestRedraw();
 }
 
 QT_END_NAMESPACE
