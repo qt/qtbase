@@ -93,15 +93,15 @@ QByteArray QRingChunk::toByteArray()
 */
 const char *QRingBuffer::readPointerAtPosition(qint64 pos, qint64 &length) const
 {
-    if (pos >= 0) {
-        for (const QRingChunk &chunk : buffers) {
-            length = chunk.size();
-            if (length > pos) {
-                length -= pos;
-                return chunk.data() + pos;
-            }
-            pos -= length;
+    Q_ASSERT(pos >= 0);
+
+    for (const QRingChunk &chunk : buffers) {
+        length = chunk.size();
+        if (length > pos) {
+            length -= pos;
+            return chunk.data() + pos;
         }
+        pos -= length;
     }
 
     length = 0;
@@ -143,8 +143,7 @@ void QRingBuffer::free(qint64 bytes)
 
 char *QRingBuffer::reserve(qint64 bytes)
 {
-    if (bytes <= 0 || bytes >= MaxByteArraySize)
-        return 0;
+    Q_ASSERT(bytes > 0 && bytes < MaxByteArraySize);
 
     const int chunkSize = qMax(basicBlockSize, int(bytes));
     int tail = 0;
@@ -174,8 +173,7 @@ char *QRingBuffer::reserve(qint64 bytes)
 */
 char *QRingBuffer::reserveFront(qint64 bytes)
 {
-    if (bytes <= 0 || bytes >= MaxByteArraySize)
-        return 0;
+    Q_ASSERT(bytes > 0 && bytes < MaxByteArraySize);
 
     const int chunkSize = qMax(basicBlockSize, int(bytes));
     if (bufferSize == 0) {
@@ -246,7 +244,9 @@ void QRingBuffer::clear()
 
 qint64 QRingBuffer::indexOf(char c, qint64 maxLength, qint64 pos) const
 {
-    if (maxLength <= 0 || pos < 0)
+    Q_ASSERT(maxLength >= 0 && pos >= 0);
+
+    if (maxLength == 0)
         return -1;
 
     qint64 index = -pos;
@@ -309,20 +309,19 @@ QByteArray QRingBuffer::read()
 */
 qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
 {
+    Q_ASSERT(maxLength >= 0 && pos >= 0);
+
     qint64 readSoFar = 0;
+    for (int i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
+        qint64 blockLength = buffers[i].size();
 
-    if (pos >= 0) {
-        for (int i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
-            qint64 blockLength = buffers[i].size();
-
-            if (pos < blockLength) {
-                blockLength = qMin(blockLength - pos, maxLength - readSoFar);
-                memcpy(data + readSoFar, buffers[i].data() + pos, blockLength);
-                readSoFar += blockLength;
-                pos = 0;
-            } else {
-                pos -= blockLength;
-            }
+        if (pos < blockLength) {
+            blockLength = qMin(blockLength - pos, maxLength - readSoFar);
+            memcpy(data + readSoFar, buffers[i].data() + pos, blockLength);
+            readSoFar += blockLength;
+            pos = 0;
+        } else {
+            pos -= blockLength;
         }
     }
 
@@ -336,10 +335,15 @@ qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
 */
 void QRingBuffer::append(const char *data, qint64 size)
 {
+    Q_ASSERT(size >= 0);
+
+    if (size == 0)
+        return;
+
     char *writePointer = reserve(size);
     if (size == 1)
         *writePointer = *data;
-    else if (size)
+    else
         ::memcpy(writePointer, data, size);
 }
 
@@ -359,9 +363,9 @@ void QRingBuffer::append(const QByteArray &qba)
 
 qint64 QRingBuffer::readLine(char *data, qint64 maxLength)
 {
-    if (!data || --maxLength <= 0)
-        return -1;
+    Q_ASSERT(data != nullptr && maxLength > 1);
 
+    --maxLength;
     qint64 i = indexOf('\n', maxLength);
     i = read(data, i >= 0 ? (i + 1) : maxLength);
 

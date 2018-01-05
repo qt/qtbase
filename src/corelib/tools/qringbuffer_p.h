@@ -207,8 +207,9 @@ public:
     Q_CORE_EXPORT char *reserveFront(qint64 bytes);
 
     inline void truncate(qint64 pos) {
-        if (pos < size())
-            chop(size() - pos);
+        Q_ASSERT(pos >= 0 && pos <= size());
+
+        chop(size() - pos);
     }
 
     Q_CORE_EXPORT void chop(qint64 bytes);
