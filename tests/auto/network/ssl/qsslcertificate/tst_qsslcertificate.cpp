@@ -120,6 +120,8 @@ void tst_QSslCertificate::initTestCase()
     testDataDir = QFileInfo(QFINDTESTDATA("certificates")).absolutePath();
     if (testDataDir.isEmpty())
         testDataDir = QCoreApplication::applicationDirPath();
+    if (!testDataDir.endsWith(QLatin1String("/")))
+        testDataDir += QLatin1String("/");
 
     if (QDir::current().absolutePath() != testDataDir) {
         oldCurrentDir = QDir::current().absolutePath();
@@ -127,7 +129,7 @@ void tst_QSslCertificate::initTestCase()
                  qPrintable(QString("Cannot change directory to %1").arg(testDataDir)));
     }
 
-    QDir dir(testDataDir + "/certificates");
+    QDir dir(testDataDir + "certificates");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
     QRegExp rxCert(QLatin1String("^.+\\.(pem|der)$"));
     QRegExp rxSan(QLatin1String("^(.+\\.(?:pem|der))\\.san$"));
@@ -232,7 +234,7 @@ void tst_QSslCertificate::constructor_device()
     if (!QSslSocket::supportsSsl())
         return;
 
-    QFile f(testDataDir + "/verify-certs/test-ocsp-good-cert.pem");
+    QFile f(testDataDir + "verify-certs/test-ocsp-good-cert.pem");
     bool ok = f.open(QIODevice::ReadOnly);
     QVERIFY(ok);
 
@@ -241,7 +243,7 @@ void tst_QSslCertificate::constructor_device()
     f.close();
 
     // Check opening a DER as a PEM fails
-    QFile f2(testDataDir + "/certificates/cert.der");
+    QFile f2(testDataDir + "certificates/cert.der");
     ok = f2.open(QIODevice::ReadOnly);
     QVERIFY(ok);
 
@@ -250,7 +252,7 @@ void tst_QSslCertificate::constructor_device()
     f2.close();
 
     // Check opening a DER as a DER works
-    QFile f3(testDataDir + "/certificates/cert.der");
+    QFile f3(testDataDir + "certificates/cert.der");
     ok = f3.open(QIODevice::ReadOnly);
     QVERIFY(ok);
 
@@ -259,7 +261,7 @@ void tst_QSslCertificate::constructor_device()
     f3.close();
 
     // Check opening a PEM as a DER fails
-    QFile f4(testDataDir + "/verify-certs/test-ocsp-good-cert.pem");
+    QFile f4(testDataDir + "verify-certs/test-ocsp-good-cert.pem");
     ok = f4.open(QIODevice::ReadOnly);
     QVERIFY(ok);
 
@@ -615,7 +617,7 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"d.*/c.*.pem\" wildcard pem") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << true << 0;
     QTest::newRow("\"d.*/c.*.pem\" wildcard der") << QString("d.*/c.*.pem") << int(QRegExp::Wildcard) << false << 0;
 #ifdef Q_OS_LINUX
-    QTest::newRow("absolute path wildcard pem") << (testDataDir + "/certificates/*.pem") << int(QRegExp::Wildcard) << true << 7;
+    QTest::newRow("absolute path wildcard pem") << (testDataDir + "certificates/*.pem") << int(QRegExp::Wildcard) << true << 7;
 #endif
 
     QTest::newRow("trailing-whitespace") << QString("more-certificates/trailing-whitespace.pem") << int(QRegExp::FixedString) << true << 1;
@@ -832,7 +834,7 @@ void tst_QSslCertificate::nulInCN()
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/more-certificates/badguy-nul-cn.crt");
+        QSslCertificate::fromPath(testDataDir + "more-certificates/badguy-nul-cn.crt");
     QCOMPARE(certList.size(), 1);
 
     const QSslCertificate &cert = certList.at(0);
@@ -851,7 +853,7 @@ void tst_QSslCertificate::nulInSan()
     QSKIP("Generic QSslCertificatePrivate fails this test");
 #endif
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/more-certificates/badguy-nul-san.crt");
+        QSslCertificate::fromPath(testDataDir + "more-certificates/badguy-nul-san.crt");
     QCOMPARE(certList.size(), 1);
 
     const QSslCertificate &cert = certList.at(0);
@@ -871,7 +873,7 @@ void tst_QSslCertificate::nulInSan()
 void tst_QSslCertificate::largeSerialNumber()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/more-certificates/cert-large-serial-number.pem");
+        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-serial-number.pem");
 
     QCOMPARE(certList.size(), 1);
 
@@ -883,7 +885,7 @@ void tst_QSslCertificate::largeSerialNumber()
 void tst_QSslCertificate::largeExpirationDate() // QTBUG-12489
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/more-certificates/cert-large-expiration-date.pem");
+        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-expiration-date.pem");
 
     QCOMPARE(certList.size(), 1);
 
@@ -905,34 +907,34 @@ void tst_QSslCertificate::blacklistedCertificates()
 
 void tst_QSslCertificate::selfsignedCertificates()
 {
-    QVERIFY(QSslCertificate::fromPath(testDataDir + "/certificates/cert-ss.pem").first().isSelfSigned());
-    QVERIFY(!QSslCertificate::fromPath(testDataDir + "/certificates/cert.pem").first().isSelfSigned());
+    QVERIFY(QSslCertificate::fromPath(testDataDir + "certificates/cert-ss.pem").first().isSelfSigned());
+    QVERIFY(!QSslCertificate::fromPath(testDataDir + "certificates/cert.pem").first().isSelfSigned());
     QVERIFY(!QSslCertificate().isSelfSigned());
 }
 
 void tst_QSslCertificate::toText()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/more-certificates/cert-large-expiration-date.pem");
+        QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-expiration-date.pem");
 
     QCOMPARE(certList.size(), 1);
     const QSslCertificate &cert = certList.at(0);
 
     // Openssl's cert dump method changed slightly between 0.9.8, 1.0.0 and 1.01 versions, so we want it to match any output
 
-    QFile f098(testDataDir + "/more-certificates/cert-large-expiration-date.txt.0.9.8");
+    QFile f098(testDataDir + "more-certificates/cert-large-expiration-date.txt.0.9.8");
     QVERIFY(f098.open(QIODevice::ReadOnly | QFile::Text));
     QByteArray txt098 = f098.readAll();
 
-    QFile f100(testDataDir + "/more-certificates/cert-large-expiration-date.txt.1.0.0");
+    QFile f100(testDataDir + "more-certificates/cert-large-expiration-date.txt.1.0.0");
     QVERIFY(f100.open(QIODevice::ReadOnly | QFile::Text));
     QByteArray txt100 = f100.readAll();
 
-    QFile f101(testDataDir + "/more-certificates/cert-large-expiration-date.txt.1.0.1");
+    QFile f101(testDataDir + "more-certificates/cert-large-expiration-date.txt.1.0.1");
     QVERIFY(f101.open(QIODevice::ReadOnly | QFile::Text));
     QByteArray txt101 = f101.readAll();
 
-    QFile f101c(testDataDir + "/more-certificates/cert-large-expiration-date.txt.1.0.1c");
+    QFile f101c(testDataDir + "more-certificates/cert-large-expiration-date.txt.1.0.1c");
     QVERIFY(f101c.open(QIODevice::ReadOnly | QFile::Text));
     QByteArray txt101c = f101c.readAll();
 
@@ -950,7 +952,7 @@ void tst_QSslCertificate::toText()
 void tst_QSslCertificate::multipleCommonNames()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/more-certificates/test-cn-two-cns-cert.pem");
+        QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-two-cns-cert.pem");
     QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
 
     QStringList commonNames = certList[0].subjectInfo(QSslCertificate::CommonName);
@@ -961,14 +963,14 @@ void tst_QSslCertificate::multipleCommonNames()
 void tst_QSslCertificate::subjectAndIssuerAttributes()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/more-certificates/test-cn-with-drink-cert.pem");
+        QSslCertificate::fromPath(testDataDir + "more-certificates/test-cn-with-drink-cert.pem");
     QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
 
     QList<QByteArray> attributes = certList[0].subjectInfoAttributes();
     QVERIFY(attributes.contains(QByteArray("favouriteDrink")));
     attributes.clear();
 
-    certList = QSslCertificate::fromPath(testDataDir + "/more-certificates/natwest-banking.pem");
+    certList = QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem");
     QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
 
     attributes = certList[0].subjectInfoAttributes();
@@ -999,17 +1001,17 @@ void tst_QSslCertificate::verify()
     errors.clear();
 
     // Verify a valid cert signed by a CA
-    QList<QSslCertificate> caCerts = QSslCertificate::fromPath(testDataDir + "/verify-certs/cacert.pem");
+    QList<QSslCertificate> caCerts = QSslCertificate::fromPath(testDataDir + "verify-certs/cacert.pem");
     QSslSocket::addDefaultCaCertificate(caCerts.first());
 
-    toVerify = QSslCertificate::fromPath(testDataDir + "/verify-certs/test-ocsp-good-cert.pem");
+    toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem");
 
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.count() == 0);
     errors.clear();
 
     // Test a blacklisted certificate
-    toVerify = QSslCertificate::fromPath(testDataDir + "/verify-certs/test-addons-mozilla-org-cert.pem");
+    toVerify = QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem");
     errors = QSslCertificate::verify(toVerify);
     bool foundBlack = false;
     foreach (const QSslError &error, errors) {
@@ -1022,7 +1024,7 @@ void tst_QSslCertificate::verify()
     errors.clear();
 
     // This one is expired and untrusted
-    toVerify = QSslCertificate::fromPath(testDataDir + "/more-certificates/cert-large-serial-number.pem");
+    toVerify = QSslCertificate::fromPath(testDataDir + "more-certificates/cert-large-serial-number.pem");
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.contains(QSslError(QSslError::SelfSignedCertificate, toVerify[0])));
     VERIFY_VERBOSE(errors.contains(QSslError(QSslError::CertificateExpired, toVerify[0])));
@@ -1030,15 +1032,15 @@ void tst_QSslCertificate::verify()
     toVerify.clear();
 
     // This one is signed by a valid cert, but the signer is not a valid CA
-    toVerify << QSslCertificate::fromPath(testDataDir + "/verify-certs/test-intermediate-not-ca-cert.pem").first();
-    toVerify << QSslCertificate::fromPath(testDataDir + "/verify-certs/test-ocsp-good-cert.pem").first();
+    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-not-ca-cert.pem").first();
+    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem").first();
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.contains(QSslError(QSslError::InvalidCaCertificate, toVerify[1])));
     toVerify.clear();
 
     // This one is signed by a valid cert, and the signer is a valid CA
-    toVerify << QSslCertificate::fromPath(testDataDir + "/verify-certs/test-intermediate-is-ca-cert.pem").first();
-    toVerify << QSslCertificate::fromPath(testDataDir + "/verify-certs/test-intermediate-ca-cert.pem").first();
+    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-is-ca-cert.pem").first();
+    toVerify << QSslCertificate::fromPath(testDataDir + "verify-certs/test-intermediate-ca-cert.pem").first();
     errors = QSslCertificate::verify(toVerify);
     VERIFY_VERBOSE(errors.count() == 0);
 
@@ -1068,7 +1070,7 @@ QString tst_QSslCertificate::toString(const QList<QSslError>& errors)
 void tst_QSslCertificate::extensions()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/more-certificates/natwest-banking.pem");
+        QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem");
     QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
 
     QSslCertificate cert = certList[0];
@@ -1166,7 +1168,7 @@ void tst_QSslCertificate::extensions()
 void tst_QSslCertificate::extensionsCritical()
 {
     QList<QSslCertificate> certList =
-        QSslCertificate::fromPath(testDataDir + "/verify-certs/test-addons-mozilla-org-cert.pem");
+        QSslCertificate::fromPath(testDataDir + "verify-certs/test-addons-mozilla-org-cert.pem");
     QVERIFY2(certList.count() > 0, "Please run this test from the source directory");
 
     QSslCertificate cert = certList[0];
@@ -1249,7 +1251,7 @@ void tst_QSslCertificate::threadSafeConstMethods()
     if (!QSslSocket::supportsSsl())
         return;
 
-    QByteArray encoded = readFile(testDataDir + "/certificates/cert.pem");
+    QByteArray encoded = readFile(testDataDir + "certificates/cert.pem");
     QSslCertificate certificate(encoded);
     QVERIFY(!certificate.isNull());
 
@@ -1287,12 +1289,12 @@ void tst_QSslCertificate::version_data()
     QTest::newRow("null certificate") << QSslCertificate() << QByteArray();
 
     QList<QSslCertificate> certs;
-    certs << QSslCertificate::fromPath(testDataDir + "/verify-certs/test-ocsp-good-cert.pem");
+    certs << QSslCertificate::fromPath(testDataDir + "verify-certs/test-ocsp-good-cert.pem");
 
     QTest::newRow("v3 certificate") << certs.first() << QByteArrayLiteral("3");
 
     certs.clear();
-    certs << QSslCertificate::fromPath(testDataDir + "/certificates/cert.pem");
+    certs << QSslCertificate::fromPath(testDataDir + "certificates/cert.pem");
     QTest::newRow("v1 certificate") << certs.first() << QByteArrayLiteral("1");
 }
 
@@ -1314,7 +1316,7 @@ void tst_QSslCertificate::pkcs12()
         return;
     }
 
-    QFile f(testDataDir + QLatin1String("/pkcs12/leaf.p12"));
+    QFile f(testDataDir + QLatin1String("pkcs12/leaf.p12"));
     bool ok = f.open(QIODevice::ReadOnly);
     QVERIFY(ok);
 
@@ -1329,12 +1331,12 @@ void tst_QSslCertificate::pkcs12()
     QVERIFY(ok);
     f.close();
 
-    QList<QSslCertificate> leafCert = QSslCertificate::fromPath(testDataDir + QLatin1String("/pkcs12/leaf.crt"));
+    QList<QSslCertificate> leafCert = QSslCertificate::fromPath(testDataDir + QLatin1String("pkcs12/leaf.crt"));
     QVERIFY(!leafCert.isEmpty());
 
     QCOMPARE(cert, leafCert.first());
 
-    QFile f2(testDataDir + QLatin1String("/pkcs12/leaf.key"));
+    QFile f2(testDataDir + QLatin1String("pkcs12/leaf.key"));
     ok = f2.open(QIODevice::ReadOnly);
     QVERIFY(ok);
 
@@ -1344,7 +1346,7 @@ void tst_QSslCertificate::pkcs12()
     QVERIFY(!leafKey.isNull());
     QCOMPARE(key, leafKey);
 
-    QList<QSslCertificate> caCert = QSslCertificate::fromPath(testDataDir + QLatin1String("/pkcs12/inter.crt"));
+    QList<QSslCertificate> caCert = QSslCertificate::fromPath(testDataDir + QLatin1String("pkcs12/inter.crt"));
     QVERIFY(!caCert.isEmpty());
 
     QVERIFY(!caCerts.isEmpty());
@@ -1352,7 +1354,7 @@ void tst_QSslCertificate::pkcs12()
     QCOMPARE(caCerts, caCert);
 
     // QTBUG-62335 - Fail (found no private key) but don't crash:
-    QFile nocert(testDataDir + QLatin1String("/pkcs12/leaf-nokey.p12"));
+    QFile nocert(testDataDir + QLatin1String("pkcs12/leaf-nokey.p12"));
     ok = nocert.open(QIODevice::ReadOnly);
     QVERIFY(ok);
     QTest::ignoreMessage(QtWarningMsg, "Unable to convert private key");
