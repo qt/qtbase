@@ -620,7 +620,7 @@ int QHeaderView::visualIndexAt(int position) const
         return -1;
 
     if (d->reverse())
-        vposition = d->viewport->width() - vposition;
+        vposition = d->viewport->width() - vposition - 1;
     vposition += d->offset;
 
     if (vposition > d->length)
