@@ -146,9 +146,17 @@ struct Q_AUTOTEST_EXPORT QScriptAnalysis
         TabOrObject = Tab,
         Object = 7
     };
-    unsigned short script    : 7;
-    unsigned short bidiLevel : 6;  // Unicode Bidi algorithm embedding level (0-61)
-    unsigned short flags     : 3;
+    enum BidiFlags {
+        BidiBN = 1,
+        BidiMaybeResetToParagraphLevel = 2,
+        BidiResetToParagraphLevel = 4,
+        BidiMirrored = 8
+    };
+    unsigned short script    : 8;
+    unsigned short flags     : 4;
+    unsigned short bidiFlags : 4;
+    unsigned short bidiLevel : 8;  // Unicode Bidi algorithm embedding level (0-125)
+    QChar::Direction bidiDirection : 8; // used when running the bidi algorithm
     inline bool operator == (const QScriptAnalysis &other) const {
         return script == other.script && bidiLevel == other.bidiLevel && flags == other.flags;
     }
