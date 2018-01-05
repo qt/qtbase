@@ -312,12 +312,14 @@ qint64 QRingBuffer::peek(char *data, qint64 maxLength, qint64 pos) const
     Q_ASSERT(maxLength >= 0 && pos >= 0);
 
     qint64 readSoFar = 0;
-    for (int i = 0; readSoFar < maxLength && i < buffers.size(); ++i) {
-        qint64 blockLength = buffers[i].size();
+    for (const QRingChunk &chunk : buffers) {
+        if (readSoFar == maxLength)
+            break;
 
+        qint64 blockLength = chunk.size();
         if (pos < blockLength) {
             blockLength = qMin(blockLength - pos, maxLength - readSoFar);
-            memcpy(data + readSoFar, buffers[i].data() + pos, blockLength);
+            memcpy(data + readSoFar, chunk.data() + pos, blockLength);
             readSoFar += blockLength;
             pos = 0;
         } else {
