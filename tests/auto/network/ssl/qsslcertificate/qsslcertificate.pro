@@ -6,7 +6,4 @@ QT = core network testlib
 
 TARGET = tst_qsslcertificate
 
-RESOURCES += \
-    qsslcertificate.qrc
-
 TESTDATA += certificates/* more-certificates/* verify-certs/* pkcs12/*

@@ -97,11 +97,17 @@ private slots:
 #endif
 
 #endif
+private:
+    QString testDataDir;
 };
 
 void tst_QSslKey::initTestCase()
 {
-    QDir dir(":/keys");
+    testDataDir = QFileInfo(QFINDTESTDATA("rsa-without-passphrase.pem")).absolutePath();
+    if (testDataDir.isEmpty())
+        testDataDir = QCoreApplication::applicationDirPath();
+
+    QDir dir(testDataDir + "/keys");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
     QRegExp rx(QLatin1String("^(rsa|dsa|ec)-(pub|pri)-(\\d+)-?\\w*\\.(pem|der)$"));
     foreach (QFileInfo fileInfo, fileInfoList) {
@@ -386,9 +392,9 @@ void tst_QSslKey::passphraseChecks_data()
 {
     QTest::addColumn<QString>("fileName");
 
-    QTest::newRow("DES") << QString(":/rsa-with-passphrase-des.pem");
-    QTest::newRow("3DES") << QString(":/rsa-with-passphrase-3des.pem");
-    QTest::newRow("RC2") << QString(":/rsa-with-passphrase-rc2.pem");
+    QTest::newRow("DES") << QString(testDataDir + "/rsa-with-passphrase-des.pem");
+    QTest::newRow("3DES") << QString(testDataDir + "/rsa-with-passphrase-3des.pem");
+    QTest::newRow("RC2") << QString(testDataDir + "/rsa-with-passphrase-rc2.pem");
 }
 
 void tst_QSslKey::passphraseChecks()
@@ -434,7 +440,7 @@ void tst_QSslKey::passphraseChecks()
 void tst_QSslKey::noPassphraseChecks()
 {
     // be sure and check a key without passphrase too
-    QString fileName(":/rsa-without-passphrase.pem");
+    QString fileName(testDataDir + "/rsa-without-passphrase.pem");
     QFile keyFile(fileName);
     {
         if (!keyFile.isOpen())
