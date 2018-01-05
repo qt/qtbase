@@ -147,9 +147,9 @@ void QHTML5Screen::createAndSetPlatformContext()
 
     EGLNativeWindowType eglWindow = 0;
 
-//#ifdef QEGL_EXTRA_DEBUG
+#ifdef QEGL_EXTRA_DEBUG
     q_printEglConfig(m_dpy, config);
-//#endif
+#endif
 
     m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, NULL);
     if (Q_UNLIKELY(m_surface == EGL_NO_SURFACE)) {
