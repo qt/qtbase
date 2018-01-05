@@ -120,7 +120,7 @@ void QRingBuffer::free(qint64 bytes)
             // keep a single block around if it does not exceed
             // the basic block size, to avoid repeated allocations
             // between uses of the buffer
-            if (bufferSize <= bytes) {
+            if (bufferSize == bytes) {
                 if (chunk.capacity() <= basicBlockSize && !chunk.isShared()) {
                     chunk.reset();
                     bufferSize = 0;
