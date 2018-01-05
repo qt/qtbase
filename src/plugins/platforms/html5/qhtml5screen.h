@@ -56,6 +56,7 @@ public:
     QRect geometry() const override;
     int depth() const override;
     QImage::Format format() const override;
+    qreal devicePixelRatio() const override;
     QPlatformCursor *cursor() const override;
 
     void resizeMaximizedWindows();

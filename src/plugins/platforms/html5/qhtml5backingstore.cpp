@@ -66,6 +66,7 @@ void QHtml5BackingStore::flush(QWindow *window, const QRegion &region, const QPo
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
+    mDirty |= region;
     mCompositor->requestRedraw();
 
     /*
@@ -122,8 +123,13 @@ void QHtml5BackingStore::updateTexture()
     QRect imageRect = mImage.rect();
 
     for (const QRect &rect : mDirty) {
+
+        // Convert device-independent dirty region to device region
+        qreal dpr = mImage.devicePixelRatio();
+        QRect deviceRect = QRect(rect.topLeft() * dpr, rect.size() * dpr);
+
         // intersect with image rect to be sure
-        QRect r = imageRect & rect;
+        QRect r = imageRect & deviceRect;
         // if the rect is wide enough it is cheaper to just extend it instead of doing an image copy
         if (r.width() >= imageRect.width() / 2) {
             r.setX(0);
@@ -168,7 +174,8 @@ void QHtml5BackingStore::resize(const QSize &size, const QRegion &staticContents
 {
     Q_UNUSED(staticContents)
 
-    mImage = QImage(size, QImage::Format_RGB32);
+    mImage = QImage(size * window()->devicePixelRatio(), QImage::Format_RGB32);
+    mImage.setDevicePixelRatio(window()->devicePixelRatio());
 
     //mContext->makeCurrent(window());
 

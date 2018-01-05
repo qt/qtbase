@@ -178,6 +178,19 @@ int QHtml5Compositor::windowCount() const
     return m_windowStack.count();
 }
 
+
+void QHtml5Compositor::redrawWindowContent()
+{
+    // Redraw window content by sending expose events. This redraw
+    // will cause a backing store flush, which will call requestRedraw()
+    // to composit.
+    for (QHtml5Window *platformWindow : m_windowStack) {
+        QWindow *window = platformWindow->window();
+        QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(
+            window, QRect(QPoint(0, 0), window->geometry().size()));
+    }
+}
+
 void QHtml5Compositor::requestRedraw()
 {
     if (m_needComposit)
@@ -399,8 +412,10 @@ void QHtml5Compositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHt
 {
     int width = window->windowFrameGeometry().width();
     int height = window->windowFrameGeometry().height();
+    qreal dpr = window->devicePixelRatio();
 
-    QImage image(QSize(width, height), QImage::Format_RGB32);
+    QImage image(QSize(width * dpr, height * dpr), QImage::Format_RGB32);
+    image.setDevicePixelRatio(dpr);
     QPainter painter(&image);
     painter.fillRect(QRect(0, 0, width, height), painter.background());
 
@@ -424,7 +439,7 @@ void QHtml5Compositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHt
     texture.create();
     texture.bind();
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image.width(), image.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                     image.constScanLine(0));
 
     blit(blitter, screen, &texture, QRect(window->windowFrameGeometry().topLeft(), QSize(width, height)));
@@ -799,7 +814,8 @@ void QHtml5Compositor::frame()
     if (!mBlitter->isCreated())
         mBlitter->create();
 
-    glViewport(0, 0, mScreen->geometry().width(), mScreen->geometry().height());
+    qreal dpr = mScreen->devicePixelRatio();
+    glViewport(0, 0, mScreen->geometry().width() * dpr, mScreen->geometry().height() *dpr);
 
     mContext->functions()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 

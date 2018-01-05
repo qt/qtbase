@@ -117,6 +117,8 @@ public:
     void flush(QHtml5Window *surface, const QRegion &region);
 
     int windowCount() const;
+
+    void redrawWindowContent();
     void requestRedraw();
 
     QWindow *windowAt(QPoint p, int padding = 0) const;

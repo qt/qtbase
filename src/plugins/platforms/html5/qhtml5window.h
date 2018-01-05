@@ -71,6 +71,7 @@ public:
     void raise() override;
     void lower() override;
     QRect normalGeometry() const override;
+    qreal devicePixelRatio() const override;
 
     QHtml5Screen *platformScreen() const;
     void setBackingStore(QHtml5BackingStore *store) { mBackingStore = store; }

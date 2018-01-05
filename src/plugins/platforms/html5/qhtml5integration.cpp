@@ -227,14 +227,20 @@ void QHtml5Integration::updateQScreenAndCanvasRenderSize()
     // The CSS size is determined according to standard CSS rules, while the
     // render size is set using the "width" and "height" attributes. The render
     // size must be set manually and is not auto-updated on CSS size change.
+    // Setting the render size to a value larger than the CSS size enables high-dpi
+    // rendering.
+
     double css_width;
     double css_height;
     emscripten_get_element_css_size(0, &css_width, &css_height);
-
-    set_canvas_size(css_width, css_height);
     QSizeF cssSize(css_width, css_height);
-    QHtml5Integration::get()->mScreen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
-    QHtml5Integration::get()->mCompositor->requestRedraw();
+
+    QHtml5Screen *screen = QHtml5Integration::get()->mScreen;
+    QSizeF canvasSize = cssSize * screen->devicePixelRatio();
+
+    set_canvas_size(canvasSize.width(), canvasSize.height());
+    screen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
+    QHtml5Integration::get()->mCompositor->redrawWindowContent();
 }
 
 QT_END_NAMESPACE

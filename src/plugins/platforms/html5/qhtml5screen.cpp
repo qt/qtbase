@@ -76,6 +76,18 @@ QImage::Format QHtml5Screen::format() const
     return m_format;
 }
 
+qreal QHtml5Screen::devicePixelRatio() const
+{
+    // FIXME: The effective device pixel ratio may be different from the
+    // HTML window dpr if the OpenGL driver/GPU allocates a less than
+    // full resolution surface. Use emscripten_webgl_get_drawing_buffer_size()
+    // and compute the dpr instead.
+    double htmlWindowDpr = EM_ASM_DOUBLE({
+        return window.devicePixelRatio;
+    });
+    return qreal(htmlWindowDpr);
+}
+
 QPlatformCursor *QHtml5Screen::cursor() const
 {
     return const_cast<QHtml5Cursor *>(&m_cursor);

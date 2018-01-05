@@ -394,4 +394,10 @@ QRect QHtml5Window::normalGeometry() const
 {
     return mNormalGeometry;
 }
+
+qreal QHtml5Window::devicePixelRatio() const
+{
+    return screen()->devicePixelRatio();
+}
+
 QT_END_NAMESPACE
