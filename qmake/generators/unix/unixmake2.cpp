@@ -155,6 +155,20 @@ UnixMakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::
     }
 }
 
+static QString rfc1034Identifier(const QString &str)
+{
+    QString s = str;
+    for (QChar &ch : s) {
+        const char c = ch.toLatin1();
+
+        const bool okChar = (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
+                || (c >= 'a' && c <= 'z') || c == '-' || c == '.';
+        if (!okChar)
+            ch = QChar::fromLatin1('-');
+    }
+    return s;
+}
+
 void
 UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 {
@@ -826,7 +840,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if (bundleIdentifier.endsWith(".framework"))
                 bundleIdentifier.chop(10);
             // replace invalid bundle id characters
-            bundleIdentifier.replace('_', '-');
+            bundleIdentifier = rfc1034Identifier(bundleIdentifier);
             commonSedArgs << "-e \"s,@BUNDLEIDENTIFIER@," << bundleIdentifier << ",g\" ";
 
             if (!isFramework) {
