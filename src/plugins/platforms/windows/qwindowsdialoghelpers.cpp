@@ -1221,7 +1221,7 @@ void QWindowsNativeFileDialogBase::onSelectionChange()
 {
     const QList<QUrl> current = selectedFiles();
     m_data.setSelectedFiles(current);
-    qDebug() << __FUNCTION__ << current << current.size();
+    qCDebug(lcQpaDialogs) << __FUNCTION__ << current << current.size();
 
     if (current.size() == 1)
         emit currentChanged(current.front());
