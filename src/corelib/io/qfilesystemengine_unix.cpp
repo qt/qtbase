@@ -91,26 +91,35 @@ extern "C" NSString *NSTemporaryDirectory();
 #  include <sys/syscall.h>
 #  include <sys/sendfile.h>
 #  include <linux/fs.h>
+#  include <linux/stat.h>
 
 // in case linux/fs.h is too old and doesn't define it:
 #ifndef FICLONE
 #  define FICLONE       _IOW(0x94, 9, int)
 #endif
 
-#  if !QT_CONFIG(renameat2) && defined(SYS_renameat2)
+#  if defined(Q_OS_ANDROID)
+// renameat2() and statx() are disabled on Android because quite a few systems
+// come with sandboxes that kill applications that make system calls outside a
+// whitelist and several Android vendors can't be bothered to update the list.
+#    undef SYS_renameat2
+#    undef SYS_statx
+#    undef STATX_BASIC_STATS
+#  else
+#    if !QT_CONFIG(renameat2) && defined(SYS_renameat2)
 static int renameat2(int oldfd, const char *oldpath, int newfd, const char *newpath, unsigned flags)
 { return syscall(SYS_renameat2, oldfd, oldpath, newfd, newpath, flags); }
-#  endif
+#    endif
 
-#  if !QT_CONFIG(statx) && defined(SYS_statx) && QT_HAS_INCLUDE(<linux/stat.h>)
-#    include <linux/stat.h>
+#    if !QT_CONFIG(statx) && defined(SYS_statx)
 static int statx(int dirfd, const char *pathname, int flag, unsigned mask, struct statx *statxbuf)
 { return syscall(SYS_statx, dirfd, pathname, flag, mask, statxbuf); }
-#  endif
+#    endif
+#  endif // !Q_OS_ANDROID
 #endif
 
-#ifndef STATX_BASIC_STATS
-struct statx { mode_t stx_mode; };
+#ifndef STATX_ALL
+struct statx { mode_t stx_mode; };      // dummy
 #endif
 
 QT_BEGIN_NAMESPACE
