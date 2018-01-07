@@ -58,6 +58,7 @@
 
 #include <QtCore/QEventLoop>
 #include <QtCore/QDebug>
+#include <QtCore/QLoggingCategory>
 
 #include <private/qguiapplication_p.h>
 #include <private/qdnd_p.h>
@@ -68,6 +69,8 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_DRAGANDDROP
+
+Q_LOGGING_CATEGORY(lcDnd, "qt.gui.dnd")
 
 static QWindow* topLevelAt(const QPoint &pos)
 {
@@ -94,10 +97,10 @@ static QWindow* topLevelAt(const QPoint &pos)
 */
 
 QBasicDrag::QBasicDrag() :
-    m_restoreCursor(false), m_eventLoop(0),
+    m_current_window(nullptr), m_restoreCursor(false), m_eventLoop(nullptr),
     m_executed_drop_action(Qt::IgnoreAction), m_can_drop(false),
-    m_drag(0), m_drag_icon_window(0), m_useCompositing(true),
-    m_screen(Q_NULLPTR)
+    m_drag(nullptr), m_drag_icon_window(nullptr), m_useCompositing(true),
+    m_screen(nullptr)
 {
 }
 
@@ -161,6 +164,7 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
             return true; // Eat all mouse move events
         }
         case QEvent::MouseButtonRelease:
+        {
             disableEventFilter();
             if (canDrop()) {
                 QPoint nativePosition = getNativeMousePos(e, m_drag_icon_window);
@@ -169,8 +173,25 @@ bool QBasicDrag::eventFilter(QObject *o, QEvent *e)
                 cancel();
             }
             exitDndEventLoop();
-            QCoreApplication::postEvent(o, new QMouseEvent(*static_cast<QMouseEvent *>(e)));
+
+            // If a QShapedPixmapWindow (drag feedback) is being dragged along, the
+            // mouse event's localPos() will be relative to that, which is useless.
+            // We want a position relative to the window where the drag ends, if possible (?).
+            // If there is no such window (belonging to this Qt application),
+            // make the event relative to the window where the drag started. (QTBUG-66103)
+            const QMouseEvent *release = static_cast<QMouseEvent *>(e);
+            const QWindow *releaseWindow = topLevelAt(release->globalPos());
+            qCDebug(lcDnd) << "mouse released over" << releaseWindow << "after drag from" << m_current_window << "globalPos" << release->globalPos();
+            if (!releaseWindow)
+                releaseWindow = m_current_window;
+            QPoint releaseWindowPos = (releaseWindow ? releaseWindow->mapFromGlobal(release->globalPos()) : release->globalPos());
+            QMouseEvent *newRelease = new QMouseEvent(release->type(),
+                releaseWindowPos, releaseWindowPos, release->screenPos(),
+                release->button(), release->buttons(),
+                release->modifiers(), release->source());
+            QCoreApplication::postEvent(o, newRelease);
             return true; // defer mouse release events until drag event loop has returned
+        }
         case QEvent::MouseButtonDblClick:
         case QEvent::Wheel:
             return true;
@@ -349,7 +370,7 @@ static inline QPoint fromNativeGlobalPixels(const QPoint &point)
     into account.
 */
 
-QSimpleDrag::QSimpleDrag() : m_current_window(0)
+QSimpleDrag::QSimpleDrag()
 {
 }
 
@@ -373,6 +394,7 @@ void QSimpleDrag::startDrag()
         updateCursor(Qt::IgnoreAction);
     }
     setExecutedDropAction(Qt::IgnoreAction);
+    qCDebug(lcDnd) << "drag began from" << m_current_window<< "cursor pos" << QCursor::pos() << "can drop?" << canDrop();
 }
 
 void QSimpleDrag::cancel()

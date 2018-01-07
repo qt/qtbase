@@ -105,6 +105,9 @@ protected:
 
     QDrag *drag() const { return m_drag; }
 
+protected:
+    QWindow *m_current_window;
+
 private:
     void enableEventFilter();
     void disableEventFilter();
@@ -132,9 +135,6 @@ protected:
     virtual void cancel() Q_DECL_OVERRIDE;
     virtual void move(const QPoint &globalPos) Q_DECL_OVERRIDE;
     virtual void drop(const QPoint &globalPos) Q_DECL_OVERRIDE;
-
-private:
-    QWindow *m_current_window;
 };
 
 #endif // QT_NO_DRAGANDDROP
