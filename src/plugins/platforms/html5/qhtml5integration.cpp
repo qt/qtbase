@@ -31,6 +31,7 @@
 #include "qhtml5eventtranslator.h"
 #include "qhtml5eventdispatcher.h"
 #include "qhtml5compositor.h"
+#include "qhtml5openglcontext.h"
 
 #include "qhtml5window.h"
 #ifndef QT_NO_OPENGL
@@ -94,7 +95,7 @@ void emscriptenOutput(QtMsgType type, const QMessageLogContext &context, const Q
 QHTML5Integration::QHTML5Integration()
     : mFontDb(0),
       mCompositor(new QHtml5Compositor),
-      mScreen(new QHTML5Screen(EGL_DEFAULT_DISPLAY, mCompositor)),
+      mScreen(new QHTML5Screen(mCompositor)),
       m_eventDispatcher(0)
 {
     qSetMessagePattern(QString("(%{function}:%{line}) - %{message}"));
@@ -102,8 +103,8 @@ QHTML5Integration::QHTML5Integration()
 
     globalHtml5Integration = this;
 
-    screenAdded(mScreen);
     updateQScreenAndCanvasRenderSize();
+    screenAdded(mScreen);
     emscripten_set_resize_callback(0, (void *)this, 1, uiEvent_cb);
 
     m_eventTranslator = new QHTML5EventTranslator();
@@ -170,10 +171,11 @@ QPlatformBackingStore *QHTML5Integration::createPlatformBackingStore(QWindow *wi
     return nullptr;
 #endif
 }
+
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QHTML5Integration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return static_cast<QHTML5Screen *>(context->screen()->handle())->platformContext();
+    return new QHTML5OpenGLContext(context->format());
 }
 #endif
 

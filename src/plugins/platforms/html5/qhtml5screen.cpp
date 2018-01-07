@@ -48,136 +48,21 @@
 
 QT_BEGIN_NAMESPACE
 
-// #define QEGL_EXTRA_DEBUG
-
-#ifndef QT_NO_OPENGL
-
-class QHtml5Context : public QEGLPlatformContext
-{
-public:
-    QHtml5Context(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display)
-        : QEGLPlatformContext(format, share, display, 0, QVariant(), QEGLPlatformContext::NoSurfaceless)
-    {
-    }
-
-    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override
-    {
-        QHtml5Window *window = static_cast<QHtml5Window *>(surface);
-        QHTML5Screen *screen = static_cast<QHTML5Screen *>(window->screen());
-        return screen->surface();
-    }
-};
-
-#endif
-
-QHTML5Screen::QHTML5Screen(EGLNativeDisplayType display, QHtml5Compositor *compositor)
+QHTML5Screen::QHTML5Screen(QHtml5Compositor *compositor)
     : mCompositor(compositor)
     , m_depth(32)
-    , m_format(QImage::Format_Invalid)
-    , m_platformContext(0)
-    , m_context(0)
-    , m_surface(0)
+    , m_format(QImage::Format_RGB32)
 {
-#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
-#endif
-
-    EGLint major, minor;
-
-    if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API))) {
-        qWarning("Could not bind GL_ES API\n");
-        qFatal("EGL error");
-    }
-
-    m_dpy = eglGetDisplay(display);
-    if (Q_UNLIKELY(m_dpy == EGL_NO_DISPLAY)) {
-        qWarning("Could not open egl display\n");
-        qFatal("EGL error");
-    }
-    qWarning("Opened display %p\n", m_dpy);
-
-    if (Q_UNLIKELY(!eglInitialize(m_dpy, &major, &minor))) {
-        qWarning("Could not initialize egl display\n");
-        qFatal("EGL error");
-    }
-
-    qWarning("Initialized display %d %d\n", major, minor);
-
     mCompositor->setScreen(this);
 }
 
 QHTML5Screen::~QHTML5Screen()
 {
-    if (m_surface)
-        eglDestroySurface(m_dpy, m_surface);
 
-    eglTerminate(m_dpy);
-}
-
-void QHTML5Screen::createAndSetPlatformContext() const {
-    const_cast<QHTML5Screen *>(this)->createAndSetPlatformContext();
-}
-
-void QHTML5Screen::createAndSetPlatformContext()
-{
-    QSurfaceFormat platformFormat;
-
-    QByteArray depthString = qgetenv("QT_QPA_EGLFS_DEPTH");
-    if (depthString.toInt() == 16) {
-        platformFormat.setDepthBufferSize(16);
-        platformFormat.setRedBufferSize(5);
-        platformFormat.setGreenBufferSize(6);
-        platformFormat.setBlueBufferSize(5);
-        m_depth = 16;
-        m_format = QImage::Format_RGB16;
-    } else {
-        platformFormat.setDepthBufferSize(24);
-        platformFormat.setStencilBufferSize(8);
-        platformFormat.setRedBufferSize(8);
-        platformFormat.setGreenBufferSize(8);
-        platformFormat.setBlueBufferSize(8);
-        m_depth = 32;
-        m_format = QImage::Format_RGB32;
-    }
-
-    if (!qEnvironmentVariableIsEmpty("QT_QPA_EGLFS_MULTISAMPLE"))
-        platformFormat.setSamples(4);
-
-    EGLConfig config = q_configFromGLFormat(m_dpy, platformFormat);
-
-    EGLNativeWindowType eglWindow = 0;
-
-#ifdef QEGL_EXTRA_DEBUG
-    q_printEglConfig(m_dpy, config);
-#endif
-
-    m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, NULL);
-    if (Q_UNLIKELY(m_surface == EGL_NO_SURFACE)) {
-        qWarning("Could not create the egl surface: error = 0x%x\n", eglGetError());
-        eglTerminate(m_dpy);
-        qFatal("EGL error");
-    }
-
-    QEGLPlatformContext *platformContext = new QHtml5Context(platformFormat, 0, m_dpy);
-    m_platformContext = platformContext;
-
-    EGLint w,h;                    // screen size detection
-    eglQuerySurface(m_dpy, m_surface, EGL_WIDTH, &w);
-    eglQuerySurface(m_dpy, m_surface, EGL_HEIGHT, &h);
-
-    m_geometry = QRect(0,0,w,h);
-
-    //m_context.reset(new QOpenGLContext);
-    //m_context->setFormat(platformFormat);
-    //m_context->setScreen(screen);
-    //m_context->create();
 }
 
 QRect QHTML5Screen::geometry() const
 {
-    if (m_geometry.isNull()) {
-        createAndSetPlatformContext();
-    }
     return m_geometry;
 }
 
@@ -188,8 +73,6 @@ int QHTML5Screen::depth() const
 
 QImage::Format QHTML5Screen::format() const
 {
-    if (m_format == QImage::Format_Invalid)
-        createAndSetPlatformContext();
     return m_format;
 }
 
@@ -197,17 +80,6 @@ QPlatformCursor *QHTML5Screen::cursor() const
 {
     return const_cast<QHtml5Cursor *>(&m_cursor);
 }
-
-#ifndef QT_NO_OPENGL
-QPlatformOpenGLContext *QHTML5Screen::platformContext() const
-{
-    if (!m_platformContext) {
-        QHTML5Screen *that = const_cast<QHTML5Screen *>(this);
-        that->createAndSetPlatformContext();
-    }
-    return m_platformContext;
-}
-#endif
 
 void QHTML5Screen::resizeMaximizedWindows()
 {

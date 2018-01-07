@@ -37,8 +37,6 @@
 #include <QScopedPointer>
 #include <QtCore/QTextStream>
 
-#include <QtEglSupport/private/qt_egl_p.h>
-
 QT_BEGIN_NAMESPACE
 
 class QPlatformOpenGLContext;
@@ -52,15 +50,13 @@ class QHTML5Screen : public QObject, public QPlatformScreen
     Q_OBJECT
 public:
 
-    QHTML5Screen(EGLNativeDisplayType display, QHtml5Compositor *compositor);
+    QHTML5Screen(QHtml5Compositor *compositor);
     ~QHTML5Screen();
 
     QRect geometry() const override;
     int depth() const override;
     QImage::Format format() const override;
     QPlatformCursor *cursor() const override;
-    QPlatformOpenGLContext *platformContext() const;
-    EGLSurface surface() const { return m_surface; }
 
     void resizeMaximizedWindows();
     QWindow *topWindow() const;
@@ -85,22 +81,15 @@ protected:
     //QRegion mRepaintRegion;
 
 private:
-    void createAndSetPlatformContext() const;
-    void createAndSetPlatformContext();
     bool mUpdatePending;
 
 private:
     QHtml5Compositor *mCompositor;
 
-    QRect m_geometry;
+    QRect m_geometry = QRect(0, 0, 100, 100);
     int m_depth;
     QImage::Format m_format;
-    QPlatformOpenGLContext *m_platformContext;
-    QScopedPointer<QOpenGLContext> m_context;
     QHtml5Cursor m_cursor;
-
-    EGLDisplay m_dpy;
-    EGLSurface m_surface;
 };
 //Q_DECLARE_OPERATORS_FOR_FLAGS(QHTML5Screen::Flags)
 
