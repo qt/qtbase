@@ -655,9 +655,9 @@ QVariant QPSQLResult::data(int i)
     const int currentRow = isForwardOnly() ? 0 : at();
     int ptype = PQftype(d->result, i);
     QVariant::Type type = qDecodePSQLType(ptype);
-    const char *val = PQgetvalue(d->result, currentRow, i);
     if (PQgetisnull(d->result, currentRow, i))
         return QVariant(type);
+    const char *val = PQgetvalue(d->result, currentRow, i);
     switch (type) {
     case QVariant::Bool:
         return QVariant((bool)(val[0] == 't'));
@@ -742,7 +742,6 @@ bool QPSQLResult::isNull(int field)
 {
     Q_D(const QPSQLResult);
     const int currentRow = isForwardOnly() ? 0 : at();
-    PQgetvalue(d->result, currentRow, field);
     return PQgetisnull(d->result, currentRow, field);
 }
 
