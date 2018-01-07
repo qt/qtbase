@@ -1362,8 +1362,8 @@ void QTableView::paintEvent(QPaintEvent *event)
     if (horizontalHeader->count() == 0 || verticalHeader->count() == 0 || !d->itemDelegate)
         return;
 
-    uint x = horizontalHeader->length() - horizontalHeader->offset() - (rightToLeft ? 0 : 1);
-    uint y = verticalHeader->length() - verticalHeader->offset() - 1;
+    const int x = horizontalHeader->length() - horizontalHeader->offset() - (rightToLeft ? 0 : 1);
+    const int y = verticalHeader->length() - verticalHeader->offset() - 1;
 
     //firstVisualRow is the visual index of the first visible row.  lastVisualRow is the visual index of the last visible Row.
     //same goes for ...VisualColumn
@@ -1415,10 +1415,10 @@ void QTableView::paintEvent(QPaintEvent *event)
         int top = 0;
         bool alternateBase = false;
         if (alternate && verticalHeader->sectionsHidden()) {
-            uint verticalOffset = verticalHeader->offset();
+            const int verticalOffset = verticalHeader->offset();
             int row = verticalHeader->logicalIndex(top);
             for (int y = 0;
-                 ((uint)(y += verticalHeader->sectionSize(top)) <= verticalOffset) && (top < bottom);
+                 ((y += verticalHeader->sectionSize(top)) <= verticalOffset) && (top < bottom);
                  ++top) {
                 row = verticalHeader->logicalIndex(top);
                 if (alternate && !verticalHeader->isSectionHidden(row))
@@ -2131,9 +2131,9 @@ void QTableView::updateGeometries()
     // ### move this block into the if
     QSize vsize = d->viewport->size();
     QSize max = maximumViewportSize();
-    uint horizontalLength = d->horizontalHeader->length();
-    uint verticalLength = d->verticalHeader->length();
-    if ((uint)max.width() >= horizontalLength && (uint)max.height() >= verticalLength)
+    const int horizontalLength = d->horizontalHeader->length();
+    const int verticalLength = d->verticalHeader->length();
+    if (max.width() >= horizontalLength && max.height() >= verticalLength)
         vsize = max;
 
     // horizontal scroll bar
