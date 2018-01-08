@@ -95,3 +95,15 @@ QSqlDatabase: available drivers: QMYSQL
 //! [34]
 column.contains(QRegularExpression("pattern"));
 //! [34]
+
+
+//! [35]
+QSqlDatabase db = QSqlDatabase::addDatabase("QODBC3");
+QString connectString = QStringLiteral(
+    "DRIVER=/path/to/installation/libodbcHDB.so;"
+    "SERVERNODE=hostname:port;"
+    "UID=USER;"
+    "PWD=PASSWORD;"
+    "SCROLLABLERESULT=true");
+db.setDatabaseName(connectString);
+//! [35]

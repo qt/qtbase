@@ -299,6 +299,12 @@
     e.g., the SQLSTATEs.  Before setting this connect option, consult
     your ODBC documentation about behavior differences you can expect.
 
+    When using the SAP HANA database, the connection has to be
+    established using the option "SCROLLABLERESULT=TRUE", as the
+    HANA ODBC driver does not provide scrollable results by default, e.g.:
+
+    \snippet code/doc_src_sql-driver.cpp 35
+
     If you experience very slow access of the ODBC datasource, make sure
     that ODBC call tracing is turned off in the ODBC datasource manager.
 
