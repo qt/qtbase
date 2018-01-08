@@ -126,11 +126,7 @@ public:
     virtual bool event(QEvent *event);
     virtual bool eventFilter(QObject *watched, QEvent *event);
 
-#ifdef Q_CLANG_QDOC
-    virtual const QMetaObject *metaObject() const;
-    static const QMetaObject staticMetaObject;
-#endif
-#if defined(QT_NO_TRANSLATION) || defined(Q_CLANG_QDOC)
+#if defined(QT_NO_TRANSLATION)
     static QString tr(const char *sourceText, const char * = nullptr, int = -1)
         { return QString::fromUtf8(sourceText); }
 #if QT_DEPRECATED_SINCE(5, 0)
