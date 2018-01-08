@@ -48,6 +48,7 @@
 #if QT_CONFIG(filedialog)
 #include "qfiledialog.h"
 #endif
+#include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qtextcodec.h>
 #include <QtGui/qevent.h>
