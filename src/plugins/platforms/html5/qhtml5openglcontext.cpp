@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-#include "QHTML5OpenGLContext.h"
+#include "qhtml5openglcontext.h"
 
 #include <EGL/egl.h>
 
