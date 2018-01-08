@@ -110,7 +110,7 @@ void QHtml5Compositor::removeWindow(QHtml5Window *window)
     notifyTopWindowChanged(window);
 }
 
-void QHtml5Compositor::setScreen(QHTML5Screen *screen)
+void QHtml5Compositor::setScreen(QHtml5Screen *screen)
 {
     mScreen = screen;
 }
@@ -223,7 +223,7 @@ bool QHtml5Compositor::event(QEvent *ev)
     return QObject::event(ev);
 }
 
-void QHtml5Compositor::blit(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, const QOpenGLTexture *texture, QRect targetGeometry)
+void QHtml5Compositor::blit(QOpenGLTextureBlitter *blitter, QHtml5Screen *screen, const QOpenGLTexture *texture, QRect targetGeometry)
 {
     QMatrix4x4 m;
     m.translate(-1.0f, -1.0f);
@@ -242,9 +242,9 @@ void QHtml5Compositor::blit(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen
     blitter->blit(texture->textureId(), m, QOpenGLTextureBlitter::OriginTopLeft);
 }
 
-void QHtml5Compositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
+void QHtml5Compositor::drawWindowContent(QOpenGLTextureBlitter *blitter, QHtml5Screen *screen, QHtml5Window *window)
 {
-    QHTML5BackingStore* backingStore = window->backingStore();
+    QHtml5BackingStore* backingStore = window->backingStore();
 
     QOpenGLTexture const* texture = backingStore->getUpdatedTexture();
 
@@ -395,7 +395,7 @@ QHtml5Compositor::QHtml5TitleBarOptions QHtml5Compositor::makeTitleBarOptions(co
     return titleBarOptions;
 }
 
-void QHtml5Compositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
+void QHtml5Compositor::drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHtml5Screen *screen, QHtml5Window *window)
 {
     int width = window->windowFrameGeometry().width();
     int height = window->windowFrameGeometry().height();
@@ -757,7 +757,7 @@ void QHtml5Compositor::drawShadePanel(QHtml5TitleBarOptions options, QPainter *p
 
 }
 
-void QHtml5Compositor::drawWindow(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window)
+void QHtml5Compositor::drawWindow(QOpenGLTextureBlitter *blitter, QHtml5Screen *screen, QHtml5Window *window)
 {
     if (window->window()->type() != Qt::Popup)
         drawWindowDecorations(blitter, screen, window);

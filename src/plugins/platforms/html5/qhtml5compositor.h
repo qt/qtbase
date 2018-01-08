@@ -42,7 +42,7 @@
 QT_BEGIN_NAMESPACE
 
 class QHtml5Window;
-class QHTML5Screen;
+class QHtml5Screen;
 class QOpenGLContext;
 class QOpenGLTextureBlitter;
 
@@ -107,7 +107,7 @@ public:
 
     void addWindow(QHtml5Window *window, QHtml5Window *parentWindow = 0);
     void removeWindow(QHtml5Window *window);
-    void setScreen(QHTML5Screen *screen);
+    void setScreen(QHtml5Screen *screen);
 
     void setVisible(QHtml5Window *window, bool visible);
     void raise(QHtml5Window *window);
@@ -135,17 +135,17 @@ private:
     void flush2(const QRegion &region);
     void flushCompletedCallback(int32_t);
     void notifyTopWindowChanged(QHtml5Window* window);
-    void drawWindow(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window);
-    void drawWindowContent(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window);
-    void blit(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, const QOpenGLTexture *texture, QRect targetGeometry);
+    void drawWindow(QOpenGLTextureBlitter *blitter, QHtml5Screen *screen, QHtml5Window *window);
+    void drawWindowContent(QOpenGLTextureBlitter *blitter, QHtml5Screen *screen, QHtml5Window *window);
+    void blit(QOpenGLTextureBlitter *blitter, QHtml5Screen *screen, const QOpenGLTexture *texture, QRect targetGeometry);
 
-    void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHTML5Screen *screen, QHtml5Window *window);
+    void drawWindowDecorations(QOpenGLTextureBlitter *blitter, QHtml5Screen *screen, QHtml5Window *window);
     void drwPanelButton();
 private:
     QImage *m_frameBuffer;
     QScopedPointer<QOpenGLContext> mContext;
     QScopedPointer<QOpenGLTextureBlitter> mBlitter;
-    QHTML5Screen *mScreen;
+    QHtml5Screen *mScreen;
 
     QHash<QHtml5Window *, QHtml5CompositedWindow> m_compositedWindows;
     QList<QHtml5Window *> m_windowStack;

@@ -33,19 +33,19 @@
 
 QT_BEGIN_NAMESPACE
 
-QHTML5OpenGLContext::QHTML5OpenGLContext(const QSurfaceFormat &format)
+QHtml5OpenGLContext::QHtml5OpenGLContext(const QSurfaceFormat &format)
     :m_requestedFormat(format)
 {
     m_requestedFormat.setRenderableType(QSurfaceFormat::OpenGLES);
 }
 
-QHTML5OpenGLContext::~QHTML5OpenGLContext()
+QHtml5OpenGLContext::~QHtml5OpenGLContext()
 {
     if (m_context)
         emscripten_webgl_destroy_context(m_context);
 }
 
-void QHTML5OpenGLContext::maybeRecreateEmscriptenContext(QPlatformSurface *surface)
+void QHtml5OpenGLContext::maybeRecreateEmscriptenContext(QPlatformSurface *surface)
 {
     // Native emscripten contexts are tied to a single surface. Recreate
     // the context if the surface is changed.
@@ -67,9 +67,9 @@ void QHTML5OpenGLContext::maybeRecreateEmscriptenContext(QPlatformSurface *surfa
             Q_UNUSED(reserved);
             // The application may get contex-lost if e.g. moved to the background. Set
             // m_contextLost which will make isValid() return false. Application code will
-            // then detect this and recrate the the context, resulting in a new QHTML5OpenGLContext
+            // then detect this and recrate the the context, resulting in a new QHtml5OpenGLContext
             // instance.
-            reinterpret_cast<QHTML5OpenGLContext *>(userData)->m_contextLost = true;
+            reinterpret_cast<QHtml5OpenGLContext *>(userData)->m_contextLost = true;
             return true;
         };
         bool capture = true;
@@ -77,7 +77,7 @@ void QHTML5OpenGLContext::maybeRecreateEmscriptenContext(QPlatformSurface *surfa
     }
 }
 
-EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QHTML5OpenGLContext::createEmscriptenContext(const char *canvasId, QSurfaceFormat format)
+EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QHtml5OpenGLContext::createEmscriptenContext(const char *canvasId, QSurfaceFormat format)
 {
     EmscriptenWebGLContextAttributes attributes;
     emscripten_webgl_init_context_attributes(&attributes); // Populate with default attributes
@@ -97,45 +97,45 @@ EMSCRIPTEN_WEBGL_CONTEXT_HANDLE QHTML5OpenGLContext::createEmscriptenContext(con
     return context;
 }
 
-QSurfaceFormat QHTML5OpenGLContext::format() const
+QSurfaceFormat QHtml5OpenGLContext::format() const
 {
     return m_requestedFormat;
 }
 
-GLuint QHTML5OpenGLContext::defaultFramebufferObject(QPlatformSurface *surface) const
+GLuint QHtml5OpenGLContext::defaultFramebufferObject(QPlatformSurface *surface) const
 {
     return QPlatformOpenGLContext::defaultFramebufferObject(surface);
 }
 
-bool QHTML5OpenGLContext::makeCurrent(QPlatformSurface *surface)
+bool QHtml5OpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
     maybeRecreateEmscriptenContext(surface);
 
     return emscripten_webgl_make_context_current(m_context) == EMSCRIPTEN_RESULT_SUCCESS;
 }
 
-void QHTML5OpenGLContext::swapBuffers(QPlatformSurface *surface)
+void QHtml5OpenGLContext::swapBuffers(QPlatformSurface *surface)
 {
     Q_UNUSED(surface);
     // No swapbuffers on WebGl
 }
 
-void QHTML5OpenGLContext::doneCurrent()
+void QHtml5OpenGLContext::doneCurrent()
 {
     // No doneCurrent on WebGl
 }
 
-bool QHTML5OpenGLContext::isSharing() const
+bool QHtml5OpenGLContext::isSharing() const
 {
     return false;
 }
 
-bool QHTML5OpenGLContext::isValid() const
+bool QHtml5OpenGLContext::isValid() const
 {
     return (m_contextLost == false);
 }
 
-QFunctionPointer QHTML5OpenGLContext::getProcAddress(const char *procName)
+QFunctionPointer QHtml5OpenGLContext::getProcAddress(const char *procName)
 {
     return reinterpret_cast<QFunctionPointer>(eglGetProcAddress(procName));
 }

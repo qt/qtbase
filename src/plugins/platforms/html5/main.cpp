@@ -32,7 +32,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QHTML5IntegrationPlugin : public QPlatformIntegrationPlugin
+class QHtml5IntegrationPlugin : public QPlatformIntegrationPlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "html5.json")
@@ -40,11 +40,11 @@ public:
     QPlatformIntegration *create(const QString&, const QStringList&) override;
 };
 
-QPlatformIntegration* QHTML5IntegrationPlugin::create(const QString& system, const QStringList& paramList)
+QPlatformIntegration* QHtml5IntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
     if (!system.compare(QLatin1String("html5"), Qt::CaseInsensitive))
-        return new QHTML5Integration;
+        return new QHtml5Integration;
 
     return 0;
 }

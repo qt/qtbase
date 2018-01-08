@@ -40,7 +40,7 @@ QT_BEGIN_NAMESPACE
 
 class QWindow;
 
-class QHTML5EventTranslator : public QObject
+class QHtml5EventTranslator : public QObject
 {
     Q_OBJECT
 
@@ -171,7 +171,7 @@ class QHTML5EventTranslator : public QObject
 
 public:
 
-    explicit QHTML5EventTranslator(QObject *parent = 0);
+    explicit QHtml5EventTranslator(QObject *parent = 0);
 
     static int keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData);
     static int mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData);

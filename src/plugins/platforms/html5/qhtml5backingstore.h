@@ -39,11 +39,11 @@ class QOpenGLTexture;
 class QRegion;
 class QHtml5Compositor;
 
-class QHTML5BackingStore : public QPlatformBackingStore
+class QHtml5BackingStore : public QPlatformBackingStore
 {
 public:
-    QHTML5BackingStore(QHtml5Compositor *compositor, QWindow *window);
-    ~QHTML5BackingStore();
+    QHtml5BackingStore(QHtml5Compositor *compositor, QWindow *window);
+    ~QHtml5BackingStore();
 
     QPaintDevice *paintDevice() override;
 

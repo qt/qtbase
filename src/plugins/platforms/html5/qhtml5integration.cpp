@@ -55,15 +55,15 @@ using namespace emscripten;
 QT_BEGIN_NAMESPACE
 
 void browserBeforeUnload() {
-    QHTML5Integration::QHTML5BrowserExit();
+    QHtml5Integration::QHtml5BrowserExit();
 }
 
 EMSCRIPTEN_BINDINGS(my_module) {
     function("browserBeforeUnload", &browserBeforeUnload);
 }
 
-static QHTML5Integration *globalHtml5Integration;
-QHTML5Integration *QHTML5Integration::get() { return globalHtml5Integration; }
+static QHtml5Integration *globalHtml5Integration;
+QHtml5Integration *QHtml5Integration::get() { return globalHtml5Integration; }
 
 void emscriptenOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -92,10 +92,10 @@ void emscriptenOutput(QtMsgType type, const QMessageLogContext &context, const Q
     }
 }
 
-QHTML5Integration::QHTML5Integration()
+QHtml5Integration::QHtml5Integration()
     : mFontDb(0),
       mCompositor(new QHtml5Compositor),
-      mScreen(new QHTML5Screen(mCompositor)),
+      mScreen(new QHtml5Screen(mCompositor)),
       m_eventDispatcher(0)
 {
     qSetMessagePattern(QString("(%{function}:%{line}) - %{message}"));
@@ -107,9 +107,9 @@ QHTML5Integration::QHTML5Integration()
     screenAdded(mScreen);
     emscripten_set_resize_callback(0, (void *)this, 1, uiEvent_cb);
 
-    m_eventTranslator = new QHTML5EventTranslator();
+    m_eventTranslator = new QHtml5EventTranslator();
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QHTML5Integration\n");
+    qWarning("QHtml5Integration\n");
 #endif
     EM_ASM(// exit app if browser closes
            window.onbeforeunload = function () {
@@ -118,7 +118,7 @@ QHTML5Integration::QHTML5Integration()
      );
 }
 
-QHTML5Integration::~QHTML5Integration()
+QHtml5Integration::~QHtml5Integration()
 {
     qDebug() << Q_FUNC_INFO;
     delete mCompositor;
@@ -127,13 +127,13 @@ QHTML5Integration::~QHTML5Integration()
     delete m_eventTranslator;
 }
 
-void QHTML5Integration::QHTML5BrowserExit()
+void QHtml5Integration::QHtml5BrowserExit()
 {
     QCoreApplication *app = QCoreApplication::instance();
     app->quit();
 }
 
-bool QHTML5Integration::hasCapability(QPlatformIntegration::Capability cap) const
+bool QHtml5Integration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
     case ThreadedPixmaps: return true;
@@ -146,10 +146,10 @@ bool QHTML5Integration::hasCapability(QPlatformIntegration::Capability cap) cons
     }
 }
 
-QPlatformWindow *QHTML5Integration::createPlatformWindow(QWindow *window) const
+QPlatformWindow *QHtml5Integration::createPlatformWindow(QWindow *window) const
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QHTML5Integration::createPlatformWindow %p\n",window);
+    qWarning("QHtml5Integration::createPlatformWindow %p\n",window);
 #endif
 
     QHtml5Window *w = new QHtml5Window(window, mCompositor, m_backingStores.value(window));
@@ -158,13 +158,13 @@ QPlatformWindow *QHTML5Integration::createPlatformWindow(QWindow *window) const
     return w;
 }
 
-QPlatformBackingStore *QHTML5Integration::createPlatformBackingStore(QWindow *window) const
+QPlatformBackingStore *QHtml5Integration::createPlatformBackingStore(QWindow *window) const
 {
 //#ifdef QEGL_EXTRA_DEBUG
-    qWarning("QHTML5Integration::createWindowSurface %p\n", window);
+    qWarning("QHtml5Integration::createWindowSurface %p\n", window);
 //#endif
 #ifndef QT_NO_OPENGL
-    QHTML5BackingStore *backingStore = new QHTML5BackingStore(mCompositor, window);
+    QHtml5BackingStore *backingStore = new QHtml5BackingStore(mCompositor, window);
     m_backingStores.insert(window, backingStore);
     return backingStore;
 #else
@@ -173,13 +173,13 @@ QPlatformBackingStore *QHTML5Integration::createPlatformBackingStore(QWindow *wi
 }
 
 #ifndef QT_NO_OPENGL
-QPlatformOpenGLContext *QHTML5Integration::createPlatformOpenGLContext(QOpenGLContext *context) const
+QPlatformOpenGLContext *QHtml5Integration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return new QHTML5OpenGLContext(context->format());
+    return new QHtml5OpenGLContext(context->format());
 }
 #endif
 
-QPlatformFontDatabase *QHTML5Integration::fontDatabase() const
+QPlatformFontDatabase *QHtml5Integration::fontDatabase() const
 {
     if (mFontDb == 0)
         mFontDb = new QHtml5FontDatabase();
@@ -187,17 +187,17 @@ QPlatformFontDatabase *QHTML5Integration::fontDatabase() const
     return mFontDb;
 }
 
-QAbstractEventDispatcher *QHTML5Integration::createEventDispatcher() const
+QAbstractEventDispatcher *QHtml5Integration::createEventDispatcher() const
 {
     return new QHtml5EventDispatcher();
 }
 
-QVariant QHTML5Integration::styleHint(QPlatformIntegration::StyleHint hint) const
+QVariant QHtml5Integration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
     return QPlatformIntegration::styleHint(hint);
 }
 
-int QHTML5Integration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
+int QHtml5Integration::uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData)
 {
     Q_UNUSED(e)
     Q_UNUSED(userData)
@@ -221,7 +221,7 @@ static void set_canvas_size(double width, double height)
     }, width, height);
 }
 
-void QHTML5Integration::updateQScreenAndCanvasRenderSize()
+void QHtml5Integration::updateQScreenAndCanvasRenderSize()
 {
     // The HTML canvas has two sizes: the CSS size and the canvas render size.
     // The CSS size is determined according to standard CSS rules, while the
@@ -233,8 +233,8 @@ void QHTML5Integration::updateQScreenAndCanvasRenderSize()
 
     set_canvas_size(css_width, css_height);
     QSizeF cssSize(css_width, css_height);
-    QHTML5Integration::get()->mScreen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
-    QHTML5Integration::get()->mCompositor->requestRedraw();
+    QHtml5Integration::get()->mScreen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
+    QHtml5Integration::get()->mCompositor->requestRedraw();
 }
 
 QT_END_NAMESPACE

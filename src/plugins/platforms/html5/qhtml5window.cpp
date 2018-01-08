@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 //static QHtml5Window *globalHtml5Window;
 //QHtml5Window *QHtml5Window::get() { return globalHtml5Window; }
 
-QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHTML5BackingStore *backingStore)
+QHtml5Window::QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHtml5BackingStore *backingStore)
     : QPlatformWindow(w),
       mWindow(w),
       mCompositor(compositor),
@@ -101,9 +101,9 @@ void QHtml5Window::create()
     mNormalGeometry = rect;
 }
 
-QHTML5Screen *QHtml5Window::platformScreen() const
+QHtml5Screen *QHtml5Window::platformScreen() const
 {
-    return static_cast<QHTML5Screen *>(window()->screen()->handle());
+    return static_cast<QHtml5Screen *>(window()->screen()->handle());
 }
 
 void QHtml5Window::setGeometry(const QRect &rect)

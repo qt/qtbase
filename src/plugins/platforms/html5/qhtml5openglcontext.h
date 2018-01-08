@@ -34,11 +34,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class QHTML5OpenGLContext : public QPlatformOpenGLContext
+class QHtml5OpenGLContext : public QPlatformOpenGLContext
 {
 public:
-    QHTML5OpenGLContext(const QSurfaceFormat &format);
-    ~QHTML5OpenGLContext();
+    QHtml5OpenGLContext(const QSurfaceFormat &format);
+    ~QHtml5OpenGLContext();
 
     QSurfaceFormat format() const override;
     void swapBuffers(QPlatformSurface *surface) override;

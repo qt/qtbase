@@ -50,6 +50,6 @@ shell_file.files = html5_shell.html
 INSTALLS += shell_file
 
 PLUGIN_TYPE = platforms
-PLUGIN_CLASS_NAME = QHTML5IntegrationPlugin
+PLUGIN_CLASS_NAME = QHtml5IntegrationPlugin
 !equals(TARGET, $$QT_DEFAULT_QPA_PLUGIN): PLUGIN_EXTENDS = -
 load(qt_plugin)

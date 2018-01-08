@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QHTML5EventTranslator::QHTML5EventTranslator(QObject *parent)
+QHtml5EventTranslator::QHtml5EventTranslator(QObject *parent)
     : QObject(parent)
     , draggedWindow(nullptr)
     , pressedButtons(Qt::NoButton)
@@ -57,7 +57,7 @@ QHTML5EventTranslator::QHTML5EventTranslator(QObject *parent)
     emscripten_set_focus_callback(0,(void *)this, 1, &focus_cb);
 }
 
-QFlags<Qt::KeyboardModifier> QHTML5EventTranslator::translateKeyModifier(const EmscriptenKeyboardEvent *keyEvent)
+QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translateKeyModifier(const EmscriptenKeyboardEvent *keyEvent)
 {
     QFlags<Qt::KeyboardModifier> keyModifier = Qt::NoModifier;
     if (keyEvent->shiftKey) {
@@ -79,7 +79,7 @@ QFlags<Qt::KeyboardModifier> QHTML5EventTranslator::translateKeyModifier(const E
     return keyModifier;
 }
 
-QFlags<Qt::KeyboardModifier> QHTML5EventTranslator::translateMouseModifier(const EmscriptenMouseEvent *mouseEvent)
+QFlags<Qt::KeyboardModifier> QHtml5EventTranslator::translateMouseModifier(const EmscriptenMouseEvent *mouseEvent)
 {
     QFlags<Qt::KeyboardModifier> keyModifier = Qt::NoModifier;
     if (mouseEvent->ctrlKey) {
@@ -97,7 +97,7 @@ QFlags<Qt::KeyboardModifier> QHTML5EventTranslator::translateMouseModifier(const
     return keyModifier;
 }
 
-int QHTML5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
+int QHtml5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     Q_UNUSED(userData)
 
@@ -130,7 +130,7 @@ int QHTML5EventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEv
     return 0;
 }
 
-Qt::Key QHTML5EventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey, bool *outAlphanumeric)
+Qt::Key QHtml5EventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent *emscriptKey, bool *outAlphanumeric)
 {
     Qt::Key qtKey;
     if (outAlphanumeric)
@@ -218,7 +218,7 @@ Qt::Key QHTML5EventTranslator::translateEmscriptKey(const EmscriptenKeyboardEven
     return qtKey;
 }
 
-Qt::MouseButton QHTML5EventTranslator::translateMouseButton(unsigned short button)
+Qt::MouseButton QHtml5EventTranslator::translateMouseButton(unsigned short button)
 {
     if (button == 0)
         return Qt::LeftButton;
@@ -230,9 +230,9 @@ Qt::MouseButton QHTML5EventTranslator::translateMouseButton(unsigned short butto
     return Qt::NoButton;
 }
 
-int QHTML5EventTranslator::mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
+int QHtml5EventTranslator::mouse_cb(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
-    QHTML5EventTranslator *translator = (QHTML5EventTranslator*)userData;
+    QHtml5EventTranslator *translator = (QHtml5EventTranslator*)userData;
     translator->processMouse(eventType,mouseEvent);
     return 0;
 }
@@ -293,7 +293,7 @@ void resizeWindow(QWindow *window, QHtml5Window::ResizeMode mode,
     window->setGeometry(x1, y1, w, h);
 }
 
-void QHTML5EventTranslator::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
+void QHtml5EventTranslator::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
 {
     auto timestamp = mouseEvent->timestamp;
     QPoint point(mouseEvent->canvasX, mouseEvent->canvasY);
@@ -301,7 +301,7 @@ void QHTML5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
     Qt::MouseButton button = translateMouseButton(mouseEvent->button);
     Qt::KeyboardModifiers modifiers = translateMouseModifier(mouseEvent);
 
-    QWindow *window2 = QHTML5Integration::get()->compositor()->windowAt(point, 5);
+    QWindow *window2 = QHtml5Integration::get()->compositor()->windowAt(point, 5);
     QHtml5Window *htmlWindow = static_cast<QHtml5Window*>(window2->handle());
     bool onFrame = false;
     if (window2 && !window2->geometry().contains(point))
@@ -379,7 +379,7 @@ void QHTML5EventTranslator::processMouse(int eventType, const EmscriptenMouseEve
     QCoreApplication::processEvents(); // probably not the best way
 }
 
-int QHTML5EventTranslator::focus_cb(int /*eventType*/, const EmscriptenFocusEvent */*focusEvent*/, void */*userData*/)
+int QHtml5EventTranslator::focus_cb(int /*eventType*/, const EmscriptenFocusEvent */*focusEvent*/, void */*userData*/)
 {
 //    qDebug() << Q_FUNC_INFO << eventType << focusEvent;
     return 0;

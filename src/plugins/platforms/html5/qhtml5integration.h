@@ -42,20 +42,20 @@
 
 QT_BEGIN_NAMESPACE
 
-class QHTML5EventTranslator;
+class QHtml5EventTranslator;
 class QHtml5FontDatabase;
 class QHtml5Window;
 class QHtml5EventDispatcher;
-class QHTML5Screen;
+class QHtml5Screen;
 class QHtml5Compositor;
-class QHTML5BackingStore;
+class QHtml5BackingStore;
 
-class QHTML5Integration : public QObject, public QPlatformIntegration
+class QHtml5Integration : public QObject, public QPlatformIntegration
 {
     Q_OBJECT
 public:
-    QHTML5Integration();
-    ~QHTML5Integration();
+    QHtml5Integration();
+    ~QHtml5Integration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const override;
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
@@ -67,20 +67,20 @@ public:
     QAbstractEventDispatcher *createEventDispatcher() const override;
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const override;
 
-    static QHTML5Integration *get();
-    QHTML5Screen *screen() { return mScreen; }
+    static QHtml5Integration *get();
+    QHtml5Screen *screen() { return mScreen; }
     QHtml5Compositor *compositor() { return mCompositor; }
-    static void QHTML5BrowserExit();
+    static void QHtml5BrowserExit();
     static void updateQScreenAndCanvasRenderSize();
 
 private:
     mutable QHtml5FontDatabase *mFontDb;
     QHtml5Compositor *mCompositor;
-    mutable QHTML5Screen *mScreen;
-    mutable QHTML5EventTranslator *m_eventTranslator;
+    mutable QHtml5Screen *mScreen;
+    mutable QHtml5EventTranslator *m_eventTranslator;
     mutable QHtml5EventDispatcher *m_eventDispatcher;
     static int uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData);
-    mutable QHash<QWindow *, QHTML5BackingStore *> m_backingStores;
+    mutable QHash<QWindow *, QHtml5BackingStore *> m_backingStores;
 };
 
 QT_END_NAMESPACE

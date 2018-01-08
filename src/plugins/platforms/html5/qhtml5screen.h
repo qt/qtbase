@@ -41,17 +41,17 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformOpenGLContext;
 class QHtml5Window;
-class QHTML5BackingStore;
+class QHtml5BackingStore;
 class QHtml5Compositor;
 class QOpenGLContext;
 
-class QHTML5Screen : public QObject, public QPlatformScreen
+class QHtml5Screen : public QObject, public QPlatformScreen
 {
     Q_OBJECT
 public:
 
-    QHTML5Screen(QHtml5Compositor *compositor);
-    ~QHTML5Screen();
+    QHtml5Screen(QHtml5Compositor *compositor);
+    ~QHtml5Screen();
 
     QRect geometry() const override;
     int depth() const override;
@@ -91,7 +91,7 @@ private:
     QImage::Format m_format;
     QHtml5Cursor m_cursor;
 };
-//Q_DECLARE_OPERATORS_FOR_FLAGS(QHTML5Screen::Flags)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(QHtml5Screen::Flags)
 
 QT_END_NAMESPACE
 #endif // QHTML5SCREEN_H

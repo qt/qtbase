@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QHTML5BackingStore::QHTML5BackingStore(QHtml5Compositor *compositor, QWindow *window)
+QHtml5BackingStore::QHtml5BackingStore(QHtml5Compositor *compositor, QWindow *window)
     : QPlatformBackingStore(window)
     , mCompositor(compositor)
     , mTexture(new QOpenGLTexture(QOpenGLTexture::Target2D))
@@ -51,16 +51,16 @@ QHTML5BackingStore::QHTML5BackingStore(QHtml5Compositor *compositor, QWindow *wi
         html5Window->setBackingStore(this);
 }
 
-QHTML5BackingStore::~QHTML5BackingStore()
+QHtml5BackingStore::~QHtml5BackingStore()
 {
 }
 
-QPaintDevice *QHTML5BackingStore::paintDevice()
+QPaintDevice *QHtml5BackingStore::paintDevice()
 {
     return &mImage;
 }
 
-void QHTML5BackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QHtml5BackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(window);
     Q_UNUSED(region);
@@ -69,7 +69,7 @@ void QHTML5BackingStore::flush(QWindow *window, const QRegion &region, const QPo
     mCompositor->requestRedraw();
 
     /*
-    auto* screen = static_cast<QHTML5Screen *>(window->screen()->handle());
+    auto* screen = static_cast<QHtml5Screen *>(window->screen()->handle());
 
     mContext->makeCurrent(window);
 
@@ -104,7 +104,7 @@ void QHTML5BackingStore::flush(QWindow *window, const QRegion &region, const QPo
     */
 }
 
-void QHTML5BackingStore::updateTexture()
+void QHtml5BackingStore::updateTexture()
 {
     if (mDirty.isNull())
         return;
@@ -149,7 +149,7 @@ void QHTML5BackingStore::updateTexture()
     mDirty = QRegion();
 }
 
-void QHTML5BackingStore::beginPaint(const QRegion &region)
+void QHtml5BackingStore::beginPaint(const QRegion &region)
 {
     mDirty |= region;
     //mContext->makeCurrent(window());
@@ -164,7 +164,7 @@ void QHTML5BackingStore::beginPaint(const QRegion &region)
         painter.fillRect(rect, blank);
 }
 
-void QHTML5BackingStore::resize(const QSize &size, const QRegion &staticContents)
+void QHtml5BackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(staticContents)
 
@@ -180,18 +180,18 @@ void QHTML5BackingStore::resize(const QSize &size, const QRegion &staticContents
     */
 }
 
-QImage QHTML5BackingStore::toImage() const
+QImage QHtml5BackingStore::toImage() const
 {
     // used by QPlatformBackingStore::composeAndFlush
     return mImage;
 }
 
-const QImage &QHTML5BackingStore::getImageRef() const
+const QImage &QHtml5BackingStore::getImageRef() const
 {
     return mImage;
 }
 
-const QOpenGLTexture* QHTML5BackingStore::getUpdatedTexture()
+const QOpenGLTexture* QHtml5BackingStore::getUpdatedTexture()
 {
     updateTexture();
     return mTexture.data();

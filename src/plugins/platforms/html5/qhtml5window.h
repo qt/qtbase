@@ -56,7 +56,7 @@ public:
         ResizeLeft
     };
 
-    QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHTML5BackingStore *backingStore);
+    QHtml5Window(QWindow *w, QHtml5Compositor* compositor, QHtml5BackingStore *backingStore);
     ~QHtml5Window();
 
     void create();
@@ -72,9 +72,9 @@ public:
     void lower() override;
     QRect normalGeometry() const override;
 
-    QHTML5Screen *platformScreen() const;
-    void setBackingStore(QHTML5BackingStore *store) { mBackingStore = store; }
-    QHTML5BackingStore *backingStore() const { return mBackingStore; }
+    QHtml5Screen *platformScreen() const;
+    void setBackingStore(QHtml5BackingStore *store) { mBackingStore = store; }
+    QHtml5BackingStore *backingStore() const { return mBackingStore; }
     QWindow *window() const { return mWindow; }
 
     void injectMousePressed(const QPoint &local, const QPoint &global,
@@ -109,7 +109,7 @@ protected:
 
     QWindow* mWindow = nullptr;
     QHtml5Compositor *mCompositor = nullptr;
-    QHTML5BackingStore *mBackingStore = nullptr;
+    QHtml5BackingStore *mBackingStore = nullptr;
     QRect mNormalGeometry {0, 0, 0 ,0};
     QRect mOldGeometry;
     Qt::WindowFlags mWindowFlags = Qt::Window;

@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QHTML5Screen::QHTML5Screen(QHtml5Compositor *compositor)
+QHtml5Screen::QHtml5Screen(QHtml5Compositor *compositor)
     : mCompositor(compositor)
     , m_depth(32)
     , m_format(QImage::Format_RGB32)
@@ -56,32 +56,32 @@ QHTML5Screen::QHTML5Screen(QHtml5Compositor *compositor)
     mCompositor->setScreen(this);
 }
 
-QHTML5Screen::~QHTML5Screen()
+QHtml5Screen::~QHtml5Screen()
 {
 
 }
 
-QRect QHTML5Screen::geometry() const
+QRect QHtml5Screen::geometry() const
 {
     return m_geometry;
 }
 
-int QHTML5Screen::depth() const
+int QHtml5Screen::depth() const
 {
     return m_depth;
 }
 
-QImage::Format QHTML5Screen::format() const
+QImage::Format QHtml5Screen::format() const
 {
     return m_format;
 }
 
-QPlatformCursor *QHTML5Screen::cursor() const
+QPlatformCursor *QHtml5Screen::cursor() const
 {
     return const_cast<QHtml5Cursor *>(&m_cursor);
 }
 
-void QHTML5Screen::resizeMaximizedWindows()
+void QHtml5Screen::resizeMaximizedWindows()
 {
     QList<QWindow*> windows = QGuiApplication::allWindows();
     // 'screen()' still has the old geometry info while 'this' has the new geometry info
@@ -110,22 +110,22 @@ void QHTML5Screen::resizeMaximizedWindows()
     }
 }
 
-QWindow *QHTML5Screen::topWindow() const
+QWindow *QHtml5Screen::topWindow() const
 {
     return mCompositor->keyWindow();
 }
 
-QWindow *QHTML5Screen::topLevelAt(const QPoint & p) const
+QWindow *QHtml5Screen::topLevelAt(const QPoint & p) const
 {
     return mCompositor->windowAt(p);
 }
 
-void QHTML5Screen::invalidateSize()
+void QHtml5Screen::invalidateSize()
 {
     m_geometry = QRect();
 }
 
-void QHTML5Screen::setGeometry(const QRect &rect)
+void QHtml5Screen::setGeometry(const QRect &rect)
 {
     m_geometry = rect;
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
