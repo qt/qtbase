@@ -61,6 +61,8 @@
 
 #if QT_CONFIG(xcb_xlib)
 #include <X11/Xutil.h>
+#undef KeyPress
+#undef KeyRelease
 #endif
 
 #ifndef XK_ISO_Left_Tab
