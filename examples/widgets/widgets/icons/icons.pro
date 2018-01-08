@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(combobox))
 
 HEADERS       = iconpreviewarea.h \
                 iconsizespinbox.h \

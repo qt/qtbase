@@ -1,4 +1,5 @@
 QT += opengl widgets
+requires(qtConfig(combobox))
 
 qtConfig(opengles.|angle|dynamicgl): error("This example requires Qt to be configured with -opengl desktop")
 

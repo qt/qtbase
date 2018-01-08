@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(tableview))
 
 SOURCES = main.cpp
 

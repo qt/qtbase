@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(treewidget))
 
 HEADERS       = regularexpressiondialog.h
 SOURCES       = regularexpressiondialog.cpp \

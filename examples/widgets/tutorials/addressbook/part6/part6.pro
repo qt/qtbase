@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(filedialog))
 
 SOURCES   = addressbook.cpp \
             finddialog.cpp \

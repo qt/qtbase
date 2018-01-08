@@ -17,6 +17,7 @@ FORMS += \
     form.ui
 
 QT += widgets
+requires(qtConfig(treewidget))
 qtHaveModule(opengl): QT += opengl
 
 # install

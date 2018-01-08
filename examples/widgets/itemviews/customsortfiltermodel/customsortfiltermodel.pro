@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(treeview))
 
 HEADERS     = mysortfilterproxymodel.h \
               window.h \

@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(filedialog))
 qtHaveModule(printsupport): QT += printsupport
 
 TEMPLATE        = app

@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(listview))
 
 SOURCES   = adddialog.cpp \
             addresswidget.cpp \
