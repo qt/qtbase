@@ -109,7 +109,6 @@ void WriteIncludes::acceptUI(DomUI *node)
     add(QLatin1String("QAction"));
 
     add(QLatin1String("QButtonGroup")); // ### only if it is really necessary
-    add(QLatin1String("QHeaderView"));
 
     TreeWalker::acceptUI(node);
 
@@ -211,6 +210,14 @@ void WriteIncludes::add(const QString &className, bool determineHeader, const QS
         return;
 
     m_knownClasses.insert(className);
+
+    const CustomWidgetsInfo *cwi = m_uic->customWidgetsInfo();
+    if (cwi->extends(className, QLatin1String("QTreeView"))
+               || cwi->extends(className, QLatin1String("QTreeWidget"))
+               || cwi->extends(className, QLatin1String("QTableView"))
+               || cwi->extends(className, QLatin1String("QTableWidget"))) {
+        add(QLatin1String("QHeaderView"));
+    }
 
     if (!m_laidOut && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QToolBox")))
         add(QLatin1String("QLayout")); // spacing property of QToolBox)

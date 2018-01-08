@@ -17,7 +17,6 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QFontComboBox>
 #include <QtWidgets/QFormLayout>
-#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QSlider>
 
