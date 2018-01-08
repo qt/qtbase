@@ -2837,6 +2837,41 @@ QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
     return QGuiApplicationPrivate::platformIntegration()->fontDatabase()->resolveFontFamilyAlias(family);
 }
 
+Q_GUI_EXPORT QStringList qt_sort_families_by_writing_system(QChar::Script script, const QStringList &families)
+{
+    size_t writingSystem = std::find(scriptForWritingSystem,
+                                     scriptForWritingSystem + QFontDatabase::WritingSystemsCount,
+                                     script) - scriptForWritingSystem;
+    if (writingSystem == QFontDatabase::Any
+            || writingSystem >= QFontDatabase::WritingSystemsCount) {
+        return families;
+    }
+
+    QFontDatabasePrivate *db = privateDb();
+    QMultiMap<uint, QString> supported;
+    for (int i = 0; i < families.size(); ++i) {
+        const QString &family = families.at(i);
+
+        QtFontFamily *testFamily = nullptr;
+        for (int x = 0; x < db->count; ++x) {
+            if (Q_UNLIKELY(matchFamilyName(family, db->families[x]))) {
+                testFamily = db->families[x];
+                testFamily->ensurePopulated();
+                break;
+            }
+        }
+
+        uint order = i;
+        if (testFamily == nullptr
+              || (testFamily->writingSystems[writingSystem] & QtFontFamily::Supported) == 0) {
+            order |= 1 << 31;
+        }
+
+        supported.insert(order, family);
+    }
+
+    return supported.values();
+}
 
 QT_END_NAMESPACE
 
