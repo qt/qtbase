@@ -3268,6 +3268,8 @@ QByteArray qgetenv(const char *varName)
 
 
 /*!
+    QString qEnvironmentVariable(const char *varName, const QString &defaultValue);
+
     \relates <QtGlobal>
     \since 5.10
 
@@ -3342,6 +3344,9 @@ QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
 #endif
 }
 
+/*!
+  \internal
+*/
 QString qEnvironmentVariable(const char *varName)
 {
     return qEnvironmentVariable(varName, QString());
