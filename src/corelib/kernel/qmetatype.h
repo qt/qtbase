@@ -441,6 +441,7 @@ public:
         QJsonValue = 45, QJsonObject = 46, QJsonArray = 47, QJsonDocument = 48,
         QByteArrayList = 49, QObjectStar = 39, SChar = 40,
         Void = 43,
+        Nullptr = 51,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
         QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
@@ -448,6 +449,8 @@ public:
         QMatrix = 79, QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
         QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86,
         QSizePolicy = 121,
+        LastCoreType = Nullptr,
+        LastGuiType = QPolygonF,
         User = 1024
     };
 #endif

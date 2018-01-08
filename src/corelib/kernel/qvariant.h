@@ -360,7 +360,6 @@ class Q_CORE_EXPORT QVariant
     { return canConvert(qMetaTypeId<T>()); }
 
  public:
-#ifndef Q_QDOC
     struct PrivateShared
     {
         inline PrivateShared(void *v) : ptr(v), ref(1) { }
@@ -431,7 +430,6 @@ class Q_CORE_EXPORT QVariant
         f_canConvert canConvert;
         f_debugStream debugStream;
     };
-#endif
 
     inline bool operator==(const QVariant &v) const
     { return cmp(v); }

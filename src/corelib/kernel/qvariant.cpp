@@ -3999,6 +3999,41 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \typedef QVariant::DataPtr
     \internal
 */
+/*! \typedef QVariant::f_construct
+  \internal
+*/
+
+/*! \typedef QVariant::f_clear
+  \internal
+*/
+
+/*! \typedef QVariant::f_null
+  \internal
+*/
+
+/*! \typedef QVariant::f_load
+  \internal
+*/
+
+/*! \typedef QVariant::f_save
+  \internal
+*/
+
+/*! \typedef QVariant::f_compare
+  \internal
+*/
+
+/*! \typedef QVariant::f_convert
+  \internal
+*/
+
+/*! \typedef QVariant::f_canConvert
+  \internal
+*/
+
+/*! \typedef QVariant::f_debugStream
+  \internal
+*/
 
 /*!
     \fn DataPtr &QVariant::data_ptr()
