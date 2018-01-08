@@ -262,8 +262,8 @@ void QFlatpakFileDialog::exec()
             QRegularExpression regexp(QPlatformFileDialogHelper::filterRegExp);
             QRegularExpressionMatch match = regexp.match(filter);
             if (match.hasMatch()) {
-                QString userVisibleName = match.captured(0);
-                QStringList filterStrings = match.captured(1).split(QLatin1String(" "));
+                QString userVisibleName = match.captured(1);
+                QStringList filterStrings = match.captured(2).split(QLatin1String(" "));
 
                 FilterConditionList filterConditions;
                 for (const QString &filterString : filterStrings) {
