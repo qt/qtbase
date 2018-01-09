@@ -132,7 +132,8 @@ QT_BEGIN_NAMESPACE
 
 QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, int errNo = -1)
 {
-    return QSqlError(QLatin1String("QTDS: ") + err, QString(), type, errNo);
+    return QSqlError(QLatin1String("QTDS: ") + err, QString(), type,
+                     errNo != -1 ? QString::number(errNo) : QString());
 }
 
 class QTDSDriverPrivate : public QSqlDriverPrivate

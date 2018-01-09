@@ -388,7 +388,8 @@ public:
             return false;
 
         q->setLastError(QSqlError(QCoreApplication::translate("QIBaseResult", msg),
-                        imsg, typ, int(sqlcode)));
+                        imsg, typ,
+                        sqlcode != -1 ? QString::number(sqlcode) : QString()));
         return true;
     }
 

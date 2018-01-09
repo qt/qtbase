@@ -269,7 +269,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
     const char *cerr = p->mysql ? mysql_error(p->mysql) : 0;
     return QSqlError(QLatin1String("QMYSQL: ") + err,
                      p->tc ? toUnicode(p->tc, cerr) : QString::fromLatin1(cerr),
-                     type, mysql_errno(p->mysql));
+                     type, QString::number(mysql_errno(p->mysql)));
 }
 
 
@@ -349,7 +349,7 @@ static QSqlError qMakeStmtError(const QString& err, QSqlError::ErrorType type,
     const char *cerr = mysql_stmt_error(stmt);
     return QSqlError(QLatin1String("QMYSQL3: ") + err,
                      QString::fromLatin1(cerr),
-                     type, mysql_stmt_errno(stmt));
+                     type, QString::number(mysql_stmt_errno(stmt)));
 }
 
 static bool qIsBlob(int t)

@@ -178,7 +178,8 @@ void QSQLite2ResultPrivate::finalize()
     if (err) {
         q->setLastError(QSqlError(QCoreApplication::translate("QSQLite2Result",
                                   "Unable to fetch results"), QString::fromLatin1(err),
-                                  QSqlError::StatementError, res));
+                                  QSqlError::StatementError,
+                                  res != -1 ? QString::number(res) : QString()));
         sqlite_freemem(err);
     }
     currentMachine = 0;
