@@ -915,14 +915,20 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
             widget.lOutput->setEnabled(true);
             if (optionsPane)
                 optionsPane->selectPrinter(QPrinter::PdfFormat);
+            printer->setOutputFormat(QPrinter::PdfFormat);
+            m_currentPrintDevice = QPrintDevice();
             return;
         }
     }
 
     if (printer) {
+        printer->setOutputFormat(QPrinter::NativeFormat);
+
         QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
         if (ps)
             m_currentPrintDevice = ps->createPrintDevice(widget.printers->itemText(index));
+        else
+            m_currentPrintDevice = QPrintDevice();
 
         printer->setPrinterName(m_currentPrintDevice.id());
 
