@@ -10,7 +10,6 @@
 #define BACKSIDE_H
 
 #include <QtCore/QVariant>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDateTimeEdit>
 #include <QtWidgets/QGridLayout>

@@ -56,6 +56,13 @@ struct WriteIncludes : public TreeWalker
     void acceptProperty(DomProperty *node) override;
 
 //
+// actions
+//
+    void acceptActionGroup(DomActionGroup *node) Q_DECL_OVERRIDE;
+    void acceptAction(DomAction *node) Q_DECL_OVERRIDE;
+    void acceptActionRef(DomActionRef *node) Q_DECL_OVERRIDE;
+
+//
 // custom widgets
 //
     void acceptCustomWidgets(DomCustomWidgets *node) override;

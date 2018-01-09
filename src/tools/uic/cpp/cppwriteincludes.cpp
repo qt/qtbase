@@ -106,7 +106,6 @@ void WriteIncludes::acceptUI(DomUI *node)
 
     add(QLatin1String("QApplication"));
     add(QLatin1String("QVariant"));
-    add(QLatin1String("QAction"));
 
     if (node->elementButtonGroups())
         add(QLatin1String("QButtonGroup"));
@@ -250,6 +249,24 @@ void WriteIncludes::acceptCustomWidget(DomCustomWidget *node)
         }
         add(className, true, header, global);
     }
+}
+
+void WriteIncludes::acceptActionGroup(DomActionGroup *node)
+{
+    add(QLatin1String("QAction"));
+    TreeWalker::acceptActionGroup(node);
+}
+
+void WriteIncludes::acceptAction(DomAction *node)
+{
+    add(QLatin1String("QAction"));
+    TreeWalker::acceptAction(node);
+}
+
+void WriteIncludes::acceptActionRef(DomActionRef *node)
+{
+    add(QLatin1String("QAction"));
+    TreeWalker::acceptActionRef(node);
 }
 
 void WriteIncludes::acceptCustomWidgets(DomCustomWidgets *node)
