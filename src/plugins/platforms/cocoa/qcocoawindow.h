@@ -56,6 +56,9 @@ QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
 @class QT_MANGLE_NAMESPACE(QNSWindowHelper);
 
+// @compatibility_alias doesn't work with protocols
+#define QNSWindowProtocol QT_MANGLE_NAMESPACE(QNSWindowProtocol)
+
 @protocol QNSWindowProtocol
 
 @property (nonatomic, readonly) QT_MANGLE_NAMESPACE(QNSWindowHelper) *helper;
