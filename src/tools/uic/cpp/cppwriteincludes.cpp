@@ -108,7 +108,8 @@ void WriteIncludes::acceptUI(DomUI *node)
     add(QLatin1String("QVariant"));
     add(QLatin1String("QAction"));
 
-    add(QLatin1String("QButtonGroup")); // ### only if it is really necessary
+    if (node->elementButtonGroups())
+        add(QLatin1String("QButtonGroup"));
 
     TreeWalker::acceptUI(node);
 
