@@ -19,7 +19,7 @@ JAVASOURCES += \
     $$PATHPREFIX/QtNativeLibrariesDir.java \
     $$PATHPREFIX/QtSurface.java \
     $$PATHPREFIX/ExtractStyle.java \
-    $$PATHPREFIX/EditMenu.java \
+    $$PATHPREFIX/EditContextView.java \
     $$PATHPREFIX/EditPopupMenu.java \
     $$PATHPREFIX/CursorHandle.java \
     $$PATHPREFIX/QtThread.java

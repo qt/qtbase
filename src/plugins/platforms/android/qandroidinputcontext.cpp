@@ -581,8 +581,9 @@ void QAndroidInputContext::updateSelectionHandles()
         ? QHighDpiScaling::factor(window)
         : QHighDpiScaling::factor(QtAndroid::androidPlatformIntegration()->screen());
 
-    QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImEnabled | Qt::ImCurrentSelection);
+    QInputMethodQueryEvent query(Qt::ImCursorPosition | Qt::ImAnchorPosition | Qt::ImEnabled | Qt::ImCurrentSelection | Qt::ImHints | Qt::ImSurroundingText);
     QCoreApplication::sendEvent(m_focusObject, &query);
+
     int cpos = query.value(Qt::ImCursorPosition).toInt();
     int anchor = query.value(Qt::ImAnchorPosition).toInt();
 
@@ -594,17 +595,20 @@ void QAndroidInputContext::updateSelectionHandles()
 
         auto curRect = im->cursorRectangle();
         QPoint cursorPoint(curRect.center().x(), curRect.bottom());
-        QPoint editMenuPoint(curRect.center().x(), curRect.top());
-        QtAndroidInput::updateHandles(m_handleMode, cursorPoint * pixelDensity,
-                                      editMenuPoint * pixelDensity);
+        QPoint editMenuPoint(curRect.x(), curRect.y());
+        m_handleMode &= ShowEditPopup;
         m_handleMode |= ShowCursor;
+        uint32_t buttons = EditContext::PasteButton;
+        if (!query.value(Qt::ImSurroundingText).toString().isEmpty())
+            buttons |= EditContext::SelectAllButton;
+        QtAndroidInput::updateHandles(m_handleMode, editMenuPoint * pixelDensity, buttons, cursorPoint * pixelDensity);
         // The VK is hidden, reset the timer
         if (m_hideCursorHandleTimer.isActive())
             m_hideCursorHandleTimer.start();
         return;
     }
 
-    m_handleMode |= ShowSelection;
+    m_handleMode = ShowSelection | ShowEditPopup ;
     auto leftRect = im->cursorRectangle();
     auto rightRect = im->anchorRectangle();
     if (cpos > anchor)
@@ -612,7 +616,8 @@ void QAndroidInputContext::updateSelectionHandles()
 
     QPoint leftPoint(leftRect.bottomLeft().toPoint() * pixelDensity);
     QPoint righPoint(rightRect.bottomRight().toPoint() * pixelDensity);
-    QtAndroidInput::updateHandles(ShowSelection, leftPoint, righPoint,
+    QPoint editPoint(leftRect.united(rightRect).topLeft().toPoint() * pixelDensity);
+    QtAndroidInput::updateHandles(m_handleMode, editPoint, EditContext::AllButtons, leftPoint, righPoint,
                                   query.value(Qt::ImCurrentSelection).toString().isRightToLeft());
     m_hideCursorHandleTimer.stop();
 }
@@ -1230,21 +1235,21 @@ jboolean QAndroidInputContext::setSelection(jint start, jint end)
 
 jboolean QAndroidInputContext::selectAll()
 {
-    m_handleMode &= ~ShowEditPopup;
+    m_handleMode = ShowCursor;
     sendShortcut(QKeySequence::SelectAll);
     return JNI_TRUE;
 }
 
 jboolean QAndroidInputContext::cut()
 {
-    m_handleMode &= ~ShowEditPopup;
+    m_handleMode = ShowCursor;
     sendShortcut(QKeySequence::Cut);
     return JNI_TRUE;
 }
 
 jboolean QAndroidInputContext::copy()
 {
-    m_handleMode &= ~ShowEditPopup;
+    m_handleMode = ShowCursor;
     sendShortcut(QKeySequence::Copy);
     return JNI_TRUE;
 }
@@ -1258,7 +1263,7 @@ jboolean QAndroidInputContext::copyURL()
 jboolean QAndroidInputContext::paste()
 {
     finishComposingText();
-    m_handleMode &= ~ShowEditPopup;
+    m_handleMode = ShowCursor;
     sendShortcut(QKeySequence::Paste);
     return JNI_TRUE;
 }

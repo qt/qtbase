@@ -124,11 +124,12 @@ namespace QtAndroidInput
         return m_softwareKeyboardRect;
     }
 
-    void updateHandles(int mode, QPoint cursor, QPoint anchor, bool rtl)
+    void updateHandles(int mode, QPoint editMenuPos, uint32_t editButtons, QPoint cursor, QPoint anchor, bool rtl)
     {
-        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "updateHandles", "(IIIIIZ)V",
-                                                  mode, cursor.x(), cursor.y(), anchor.x(),
-                                                  anchor.y(), rtl);
+        QJNIObjectPrivate::callStaticMethod<void>(applicationClass(), "updateHandles", "(IIIIIIIIZ)V",
+                                                  mode, editMenuPos.x(), editMenuPos.y(), editButtons,
+                                                  cursor.x(), cursor.y(),
+                                                  anchor.x(), anchor.y(), rtl);
     }
 
     static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)

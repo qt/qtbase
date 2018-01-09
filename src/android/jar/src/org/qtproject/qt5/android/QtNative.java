@@ -585,6 +585,9 @@ public class QtNative
     }
 
     private static void updateHandles(final int mode,
+                                      final int editX,
+                                      final int editY,
+                                      final int editButtons,
                                       final int x1,
                                       final int y1,
                                       final int x2,
@@ -594,7 +597,7 @@ public class QtNative
         runAction(new Runnable() {
             @Override
             public void run() {
-                m_activityDelegate.updateHandles(mode, x1, y1, x2, y2, rtl);
+                m_activityDelegate.updateHandles(mode, editX, editY, editButtons, x1, y1, x2, y2, rtl);
             }
         });
     }

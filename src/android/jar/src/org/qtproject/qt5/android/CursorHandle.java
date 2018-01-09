@@ -142,7 +142,6 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 
             m_cursorView = new CursorView(context, this);
             m_cursorView.setImageDrawable(drawable);
-            // m_layout.addView(m_cursorView);
 
             m_popup = new PopupWindow(context, null, android.R.attr.textSelectHandleWindowStyle);
             m_popup.setSplitTouchEnabled(true);
@@ -183,6 +182,14 @@ public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 
         m_posX = x;
         m_posY = y;
+    }
+
+    public int bottom()
+    {
+        initOverlay();
+        final int[] location = new int[2];
+        m_cursorView.getLocationOnScreen(location);
+        return location[1] + m_cursorView.getHeight();
     }
 
     public void hide() {

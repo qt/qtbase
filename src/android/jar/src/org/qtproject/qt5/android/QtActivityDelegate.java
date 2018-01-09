@@ -151,7 +151,6 @@ public class QtActivityDelegate
     private CursorHandle m_cursorHandle;
     private CursorHandle m_leftSelectionHandle;
     private CursorHandle m_rightSelectionHandle;
-    private EditMenu m_editMenu;
     private EditPopupMenu m_editPopupMenu;
 
     public void setFullScreen(boolean enterFullScreen)
@@ -488,13 +487,12 @@ public class QtActivityDelegate
     private static final int CursorHandleShowNormal     = 1;
     private static final int CursorHandleShowSelection  = 2;
     private static final int CursorHandleShowEdit       = 0x100;
-    private static final int CursorHandleShowPopup      = 0x200;
 
     /* called from the C++ code when the position of the cursor or selection handles needs to
        be adjusted.
        mode is one of QAndroidInputContext::CursorHandleShowMode
     */
-    public void updateHandles(int mode, int x1, int y1, int x2, int y2, boolean rtl)
+    public void updateHandles(int mode, int editX, int editY, int editButtons, int x1, int y1, int x2, int y2, boolean rtl)
     {
         switch (mode & 0xff)
         {
@@ -509,21 +507,10 @@ public class QtActivityDelegate
                     m_rightSelectionHandle = null;
                     m_leftSelectionHandle = null;
                 }
-                if (m_editMenu != null) {
-                    m_editMenu.hide();
-                    m_editMenu = null;
-                }
-                if (m_editPopupMenu != null) {
-                    m_editPopupMenu.hide();
-                    m_editPopupMenu = null;
-                }
+                m_editPopupMenu.hide();
                 break;
 
             case CursorHandleShowNormal:
-                if (m_editMenu != null) {
-                    m_editMenu.hide();
-                    m_editMenu = null;
-                }
                 if (m_cursorHandle == null) {
                     m_cursorHandle = new CursorHandle(m_activity, m_layout, QtNative.IdCursorHandle,
                                                       android.R.attr.textSelectHandle, false);
@@ -554,22 +541,28 @@ public class QtActivityDelegate
                     m_cursorHandle.hide();
                     m_cursorHandle = null;
                 }
-                if (m_editMenu == null)
-                    m_editMenu = new EditMenu(m_activity);
-                m_editMenu.show();
+                mode |= CursorHandleShowEdit;
                 break;
         }
-        if ((mode & CursorHandleShowPopup) == CursorHandleShowPopup && QtNative.hasClipboardText()) {
-            if (m_editPopupMenu == null)
-                m_editPopupMenu = new EditPopupMenu(m_activity, m_layout);
-            if (y2 < m_editPopupMenu.getHeight())  {
-                // If the popup cannot be shown over the text, it must be shown under the anchors
-                y2 = y1 + 2 * m_editPopupMenu.getHeight();
+
+        if (QtNative.hasClipboardText())
+            editButtons |= EditContextView.PASTE_BUTTON;
+        else
+            editButtons &= ~EditContextView.PASTE_BUTTON;
+
+        if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
+            editY -= m_editPopupMenu.getHeight();
+            if (editY < 0) {
+                if (m_cursorHandle != null)
+                    editY = m_cursorHandle.bottom();
+                else if (m_leftSelectionHandle != null && m_rightSelectionHandle != null)
+                    editY = Math.max(m_leftSelectionHandle.bottom(), m_rightSelectionHandle.bottom());
+                else
+                    return;
             }
-            m_editPopupMenu.setPosition(x2, y2);
-        } else if (m_editPopupMenu != null) {
+            m_editPopupMenu.setPosition(editX, editY, editButtons);
+        } else {
             m_editPopupMenu.hide();
-            m_editPopupMenu = null;
         }
     }
 
@@ -1024,6 +1017,7 @@ public class QtActivityDelegate
                 return true;
             }
         });
+        m_editPopupMenu = new EditPopupMenu(m_activity, m_layout);
     }
 
     public void hideSplashScreen()

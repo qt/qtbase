@@ -59,6 +59,14 @@ class QAndroidInputContext: public QPlatformInputContext
     };
 
 public:
+    enum EditContext : uint32_t {
+        CutButton       = 1 << 0,
+        CopyButton      = 1 << 1,
+        PasteButton     = 1 << 2,
+        SelectAllButton = 1 << 3,
+        AllButtons      = CutButton | CopyButton | PasteButton | SelectAllButton
+    };
+
     enum HandleMode {
         Hidden        = 0,
         ShowCursor    = 1,

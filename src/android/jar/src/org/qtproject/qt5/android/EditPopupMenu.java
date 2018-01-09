@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2018 BogDan Vatra <bogdan@kde.org>
 ** Copyright (C) 2016 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt.io/licensing/
 **
@@ -55,59 +56,51 @@ import android.view.ViewTreeObserver;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup;
+import android.R;
 
 // Helper class that manages a cursor or selection handle
-public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, OnClickListener
+public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, EditContextView.OnClickListener
 {
     private View m_layout = null;
-    private View m_view = null;
+    private EditContextView m_view = null;
     private PopupWindow m_popup = null;
-    private Activity m_activity;
     private int m_posX;
     private int m_posY;
+    private int m_buttons;
 
-    public EditPopupMenu(Activity activity, View layout) {
-        m_activity = activity;
+    public EditPopupMenu(Activity activity, View layout)
+    {
+        m_view = new EditContextView(activity, this);
         m_layout = layout;
     }
 
-    private boolean initOverlay(){
-        if (m_popup == null){
-            Context context = m_layout.getContext();
-            int[] attrs = { android.R.attr.textEditPasteWindowLayout };
-            TypedArray a = context.getTheme().obtainStyledAttributes(attrs);
-            final int layout = a.getResourceId(0, 0);
-            LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            m_view = inflater.inflate(layout, null);
+    private void initOverlay()
+    {
+        if (m_popup != null)
+            return;
 
-            final int size = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-            m_view.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                    ViewGroup.LayoutParams.WRAP_CONTENT));
-            m_view.measure(size, size);
-            m_view.setOnClickListener(this);
+        Context context = m_layout.getContext();
+        m_popup = new PopupWindow(context, null, android.R.attr.textSelectHandleWindowStyle);
+        m_popup.setSplitTouchEnabled(true);
+        m_popup.setClippingEnabled(false);
+        m_popup.setContentView(m_view);
+        m_popup.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+        m_popup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
 
-            m_popup = new PopupWindow(context, null, android.R.attr.textSelectHandleWindowStyle);
-            m_popup.setSplitTouchEnabled(true);
-            m_popup.setClippingEnabled(false);
-            m_popup.setContentView(m_view);
-            m_popup.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-            m_popup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-
-            m_layout.getViewTreeObserver().addOnPreDrawListener(this);
-        }
-        return true;
+        m_layout.getViewTreeObserver().addOnPreDrawListener(this);
     }
 
     public int getHeight()
     {
-        initOverlay();
         return m_view.getHeight();
     }
 
     // Show the handle at a given position (or move it if it is already shown)
-    public void setPosition(final int x, final int y){
+    public void setPosition(final int x, final int y, final int buttons)
+    {
         initOverlay();
 
+        m_view.updateButtons(buttons);
         final int[] location = new int[2];
         m_layout.getLocationOnScreen(location);
 
@@ -115,9 +108,12 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, OnClic
         int y2 = y + location[1];
 
         x2 -= m_view.getWidth() / 2 ;
+
+        if (m_layout.getWidth() < x + m_view.getWidth() / 2)
+            x2 = m_layout.getWidth() - m_view.getWidth();
+
         if (x2 < 0)
             x2 = 0;
-        y2 -= m_view.getHeight();
 
         if (m_popup.isShowing())
             m_popup.update(x2, y2, -1, -1);
@@ -126,12 +122,13 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, OnClic
 
         m_posX = x;
         m_posY = y;
-
+        m_buttons = buttons;
     }
 
     public void hide() {
         if (m_popup != null) {
             m_popup.dismiss();
+            m_popup = null;
         }
     }
 
@@ -141,15 +138,27 @@ public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, OnClic
         // For example if the keyboard appears.
         // Adjust the position of the handle accordingly
         if (m_popup != null && m_popup.isShowing())
-            setPosition(m_posX, m_posY);
+            setPosition(m_posX, m_posY, m_buttons);
 
         return true;
     }
 
     @Override
-    public void onClick(View v) {
-        QtNativeInputConnection.paste();
+    public void contextButtonClicked(int buttonId) {
+        switch (buttonId) {
+        case R.string.cut:
+            QtNativeInputConnection.cut();
+            break;
+        case R.string.copy:
+            QtNativeInputConnection.copy();
+            break;
+        case R.string.paste:
+            QtNativeInputConnection.paste();
+            break;
+        case R.string.selectAll:
+            QtNativeInputConnection.selectAll();
+            break;
+        }
         hide();
     }
 }
-
