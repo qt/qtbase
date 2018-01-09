@@ -89,6 +89,11 @@ static void qt_closePopups()
     }
 }
 
+
+// @compatibility_alias doesn't work with categories or their methods
+#define FullScreenProperty QT_MANGLE_NAMESPACE(FullScreenProperty)
+#define qt_fullScreen QT_MANGLE_NAMESPACE(qt_fullScreen)
+
 @interface NSWindow (FullScreenProperty)
 @property(readonly) BOOL qt_fullScreen;
 @end
