@@ -41,6 +41,8 @@
 #include <qnetworkconfigmanager.h>
 #include <QNetworkSession>
 #include <QtNetwork/private/qnetworksession_p.h>
+#include <QTcpServer>
+#include <QHostInfo>
 
 #include "../../../network-settings.h"
 
@@ -107,6 +109,9 @@ private slots:
     void queueMoreCommandsInDoneSlot();
 
     void qtbug7359Crash();
+
+    void loginURL_data();
+    void loginURL();
 
 protected slots:
     void stateChanged( int );
@@ -395,11 +400,11 @@ void tst_QFtp::login_data()
     QTest::addColumn<int>("success");
 
     QTest::newRow( "ok01" ) << QtNetworkSettings::serverName() << (uint)21 << QString() << QString() << 1;
-    QTest::newRow( "ok02" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftp") << QString() << 1;
+    QTest::newRow( "ok02" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftp") << QString("") << 1;
     QTest::newRow( "ok03" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftp") << QString("foo") << 1;
     QTest::newRow( "ok04" ) << QtNetworkSettings::serverName() << (uint)21 << QString("ftptest") << QString("password") << 1;
 
-    QTest::newRow( "error01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("foo") << QString() << 0;
+    QTest::newRow( "error01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("foo") << QString("") << 0;
     QTest::newRow( "error02" ) << QtNetworkSettings::serverName() << (uint)21 << QString("foo") << QString("bar") << 0;
 }
 
@@ -2148,6 +2153,206 @@ void tst_QFtp::qtbug7359Crash()
     t.restart();
     while ((elapsed = t.elapsed()) < 2000)
         QCoreApplication::processEvents(QEventLoop::AllEvents, 2000 - elapsed);
+}
+
+class FtpLocalServer : public QTcpServer
+{
+    Q_OBJECT
+
+public:
+    explicit FtpLocalServer(QObject *parent = 0) : QTcpServer(parent) {}
+    virtual ~FtpLocalServer() { delete mSocket; }
+    void startServer(qint16 port = 0);
+    void stopServer();
+
+    enum class ReplyCodes {
+        ServiceReady = 220,
+        ServiceClose = 221,
+        NeedPassword = 331,
+        LoginFailed  = 530,
+        RequestDeny  = 550
+    };
+
+    void sendResponse(ReplyCodes code);
+
+    inline QString getRawUser() { return rawUser; }
+    inline QString getRawPassword() { return rawPass; }
+
+signals:
+    void onStarted();
+    void onStopped();
+
+public slots:
+    void socketReadyRead();
+    void socketDisconnected();
+
+protected:
+    virtual void incomingConnection(qintptr handle);
+
+private:
+    QTcpSocket *mSocket = nullptr;
+    QString rawUser;
+    QString rawPass;
+};
+
+void FtpLocalServer::startServer(qint16 port)
+{
+    if (listen(QHostAddress::Any, port))
+        emit onStarted(); // Notify connected objects
+    else
+        qDebug("Could not start FTP server");
+}
+
+void FtpLocalServer::stopServer()
+{
+    close();
+    emit onStopped(); // Notify connected objects
+}
+
+void FtpLocalServer::sendResponse(ReplyCodes code)
+{
+    if (mSocket)
+    {
+        QString response;
+        switch (code) {
+        case ReplyCodes::ServiceReady:
+            response = QString("220 Service ready for new user.\r\n");
+            break;
+        case ReplyCodes::ServiceClose:
+            response = QString("221 Service closing control connection.\r\n");
+            break;
+        case ReplyCodes::NeedPassword:
+            response = QString("331 User name okay, need password.\r\n");
+            break;
+        case ReplyCodes::LoginFailed:
+            response = QString("530 Not logged in.\r\n");
+            break;
+        case ReplyCodes::RequestDeny:
+            response = QString("550 Requested action not taken.\r\n");
+            break;
+        default:
+            qDebug("Unimplemented response code: %u", static_cast<uint>(code));
+            break;
+        }
+
+        if (!response.isEmpty())
+            mSocket->write(response.toLatin1());
+    }
+}
+
+void FtpLocalServer::incomingConnection(qintptr handle)
+{
+    mSocket = new QTcpSocket(this);
+    if (mSocket == nullptr || !mSocket->setSocketDescriptor(handle))
+    {
+        delete mSocket;
+        mSocket = nullptr;
+        qDebug() << handle << " Error binding socket";
+        return;
+    }
+
+    connect(mSocket, SIGNAL(readyRead()), this, SLOT(socketReadyRead()));
+    connect(mSocket, SIGNAL(disconnected()), this, SLOT(socketDisconnected()));
+
+    // Accept client connection
+    sendResponse(ReplyCodes::ServiceReady);
+}
+
+void FtpLocalServer::socketReadyRead()
+{
+    QString data;
+    if (mSocket)
+        data.append(mSocket->readAll());
+
+    // RFC959 Upper and lower case alphabetic characters are to be treated identically.
+    if (data.startsWith("USER", Qt::CaseInsensitive)) {
+        rawUser = data;
+        sendResponse(ReplyCodes::NeedPassword);
+    } else if (data.startsWith("PASS", Qt::CaseInsensitive)) {
+        rawPass = data;
+        sendResponse(ReplyCodes::LoginFailed);
+    } else {
+        sendResponse(ReplyCodes::RequestDeny);
+    }
+}
+
+void FtpLocalServer::socketDisconnected()
+{
+    // Cleanup
+    if (mSocket)
+        mSocket->deleteLater();
+    deleteLater();
+}
+
+void tst_QFtp::loginURL_data()
+{
+    QTest::addColumn<QString>("user");
+    QTest::addColumn<QString>("password");
+    QTest::addColumn<QString>("rawUser");
+    QTest::addColumn<QString>("rawPass");
+
+    QTest::newRow("no username, no password")
+        << QString() << QString()
+        << QString("USER anonymous\r\n") << QString("PASS anonymous@\r\n");
+
+    QTest::newRow("username, no password")
+        << QString("someone") << QString()
+        << QString("USER someone\r\n") << QString();
+
+    QTest::newRow("username, empty password")
+        << QString("someone") << QString("")
+        << QString("USER someone\r\n") << QString("PASS \r\n");
+
+    QTest::newRow("username, password")
+        << QString("someone") << QString("nonsense")
+        << QString("USER someone\r\n") << QString("PASS nonsense\r\n");
+
+    QTest::newRow("anonymous, no password")
+        << QString("anonymous") << QString()
+        << QString("USER anonymous\r\n") << QString("PASS anonymous@\r\n");
+
+    QTest::newRow("Anonymous, no password")
+        << QString("Anonymous") << QString()
+        << QString("USER Anonymous\r\n") << QString("PASS anonymous@\r\n");
+
+    QTest::newRow("anonymous, empty password")
+        << QString("anonymous") << QString("")
+        << QString("USER anonymous\r\n") << QString("PASS \r\n");
+
+    QTest::newRow("ANONYMOUS, password")
+        << QString("ANONYMOUS") << QString("nonsense")
+        << QString("USER ANONYMOUS\r\n") << QString("PASS nonsense\r\n");
+}
+
+void tst_QFtp::loginURL()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("This test should be verified on the local machine without proxies");
+
+    QFETCH(QString, user);
+    QFETCH(QString, password);
+    QFETCH(QString, rawUser);
+    QFETCH(QString, rawPass);
+
+    FtpLocalServer server;
+    server.startServer();
+    uint port = server.serverPort();
+
+    ftp = newFtp();
+    addCommand(QFtp::ConnectToHost,
+               ftp->connectToHost(QHostInfo::localHostName(), port));
+    addCommand(QFtp::Login, ftp->login(user, password));
+
+    QTestEventLoop::instance().enterLoop(5);
+    delete ftp;
+    ftp = nullptr;
+    server.stopServer();
+    if (QTestEventLoop::instance().timeout())
+        QFAIL(msgTimedOut(QHostInfo::localHostName(), port));
+
+    QCOMPARE(server.getRawUser(), rawUser);
+    QCOMPARE(server.getRawPassword(), rawPass);
 }
 
 QTEST_MAIN(tst_QFtp)

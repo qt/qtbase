@@ -1365,6 +1365,9 @@ QTableWidgetItem *QTableWidgetItem::clone() const
 /*!
     Sets the item's data for the given \a role to the specified \a value.
 
+    \note The default implementation treats Qt::EditRole and Qt::DisplayRole as
+    referring to the same data.
+
     \sa Qt::ItemDataRole, data()
 */
 void QTableWidgetItem::setData(int role, const QVariant &value)

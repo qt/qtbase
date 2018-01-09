@@ -972,6 +972,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     \li scrolling is about to begin, but the distance did not yet change (Qt::ScrollBegin),
     \li or scrolling has ended and the distance did not change anymore (Qt::ScrollEnd).
     \endlist
+    \note On X11 this value is driver specific and unreliable, use angleDelta() instead
 */
 
 /*!
