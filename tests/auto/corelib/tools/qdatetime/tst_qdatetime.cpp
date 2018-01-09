@@ -1912,7 +1912,7 @@ void tst_QDateTime::operator_eqeq_data()
     QDateTime dateTime1a = dateTime1.addMSecs(1);
     QDateTime dateTime2(QDate(2012, 20, 6), QTime(14, 33, 2, 500));
     QDateTime dateTime2a = dateTime2.addMSecs(-1);
-    QDateTime dateTime3(QDate(1970, 1, 1), QTime(0, 0, 0, 0), Qt::UTC);
+    QDateTime dateTime3(QDate(1970, 1, 1), QTime(0, 0, 0, 0), Qt::UTC); // UTC epoch
     QDateTime dateTime3a = dateTime3.addDays(1);
     QDateTime dateTime3b = dateTime3.addDays(-1);
     // Ensure that different times may be equal when considering timezone.
@@ -1920,8 +1920,7 @@ void tst_QDateTime::operator_eqeq_data()
     dateTime3c.setOffsetFromUtc(3600);
     QDateTime dateTime3d(dateTime3.addSecs(-3600));
     dateTime3d.setOffsetFromUtc(-3600);
-    // Convert from UTC to local.
-    QDateTime dateTime3e(dateTime3.date(), dateTime3.time());
+    QDateTime dateTime3e(dateTime3.date(), dateTime3.time()); // Local time's epoch
 
     QTest::newRow("data0") << dateTime1 << dateTime1 << true << false;
     QTest::newRow("data1") << dateTime2 << dateTime2 << true << false;
@@ -1936,8 +1935,11 @@ void tst_QDateTime::operator_eqeq_data()
     QTest::newRow("data10") << dateTime3 << dateTime3c << true << false;
     QTest::newRow("data11") << dateTime3 << dateTime3d << true << false;
     QTest::newRow("data12") << dateTime3c << dateTime3d << true << false;
-    QTest::newRow("data13") << dateTime3 << dateTime3e
-                            << (localTimeType == LocalTimeIsUtc) << false;
+    if (localTimeType == LocalTimeIsUtc)
+        QTest::newRow("data13") << dateTime3 << dateTime3e << true << false;
+    // ... but a zone (sometimes) ahead of or behind UTC (e.g. Europe/London)
+    // might agree with UTC about the epoch, all the same.
+
     QTest::newRow("invalid == invalid") << invalidDateTime() << invalidDateTime() << true << false;
     QTest::newRow("invalid == valid #1") << invalidDateTime() << dateTime1 << false << false;
 
