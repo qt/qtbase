@@ -275,7 +275,7 @@ void tst_QSqlTableModel::init()
 
 void tst_QSqlTableModel::cleanup()
 {
-    repopulateTestTables();
+    recreateTestTables();
 }
 
 void tst_QSqlTableModel::select()

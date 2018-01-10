@@ -2711,8 +2711,22 @@ void tst_QSqlQuery::lastInsertId()
 
     QSqlQuery q( db );
 
-    QVERIFY_SQL( q, exec( "insert into " + qtest + " values (41, 'VarChar41', 'Char41')" ) );
-
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    // PostgreSQL >= 8.1 relies on lastval() which does not work if a value is
+    // manually inserted to the serial field, so we create a table specifically
+    if (dbType == QSqlDriver::PostgreSQL) {
+        const auto tst_lastInsertId = qTableName("tst_lastInsertId", __FILE__, db);
+        tst_Databases::safeDropTable(db, tst_lastInsertId);
+        QVERIFY_SQL(q, exec(QStringLiteral("create table ") + tst_lastInsertId +
+                            QStringLiteral(" (id serial not null, t_varchar "
+                            "varchar(20), t_char char(20), primary key(id))")));
+        QVERIFY_SQL(q, exec(QStringLiteral("insert into ") + tst_lastInsertId +
+                            QStringLiteral(" (t_varchar, t_char) values "
+                            "('VarChar41', 'Char41')")));
+    } else {
+        QVERIFY_SQL(q, exec(QStringLiteral("insert into ") + qtest +
+                            QStringLiteral(" values (41, 'VarChar41', 'Char41')")));
+    }
     QVariant v = q.lastInsertId();
 
     QVERIFY( v.isValid() );
@@ -3269,10 +3283,19 @@ void tst_QSqlQuery::timeStampParsing()
     const QString tableName(qTableName("timeStampParsing", __FILE__, db));
     tst_Databases::safeDropTable(db, tableName);
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName
-                        + QStringLiteral(" (id integer, datefield timestamp)")));
-    QVERIFY_SQL(q, exec(QStringLiteral("INSERT INTO ") + tableName
-                        + QStringLiteral(" (datefield) VALUES (current_timestamp)")));
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriver::PostgreSQL) {
+        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
+                            "id serial NOT NULL, "
+                            "datefield timestamp, primary key(id));")));
+    } else {
+        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
+                            "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT,"
+                            "\"datefield\" timestamp);")));
+    }
+    QVERIFY_SQL(q, exec(
+                    QStringLiteral("INSERT INTO ") + tableName + QStringLiteral(" (datefield) VALUES (current_timestamp);"
+                    )));
     QVERIFY_SQL(q, exec(QStringLiteral("SELECT * FROM ") + tableName));
     while (q.next())
         QVERIFY(q.value(1).toDateTime().isValid());
@@ -3643,15 +3666,17 @@ void tst_QSqlQuery::QTBUG_18435()
 
 void tst_QSqlQuery::QTBUG_5251()
 {
+    // Since QSqlTableModel will escape the identifiers, we need to escape
+    // them for databases that are case sensitive
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     const QString timetest(qTableName("timetest", __FILE__, db));
-
+    tst_Databases::safeDropTable(db, timetest);
     QSqlQuery q(db);
-    q.exec("DROP TABLE " + timetest);
-    QVERIFY_SQL(q, exec("CREATE TABLE  " + timetest + " (t  TIME)"));
-    QVERIFY_SQL(q, exec("INSERT INTO " + timetest +  " VALUES ('1:2:3.666')"));
+    QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE \"") + timetest + QStringLiteral("\" (t TIME)")));
+    QVERIFY_SQL(q, exec(QStringLiteral("INSERT INTO \"") + timetest +
+                        QStringLiteral("\" VALUES ('1:2:3.666')")));
 
     QSqlTableModel timetestModel(0,db);
     timetestModel.setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -3664,7 +3689,8 @@ void tst_QSqlQuery::QTBUG_5251()
     QVERIFY_SQL(timetestModel, submitAll());
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:12:34.500"));
 
-    QVERIFY_SQL(q, exec("UPDATE " + timetest + " SET t = '0:11:22.33'"));
+    QVERIFY_SQL(q, exec(QStringLiteral("UPDATE \"") + timetest +
+                        QStringLiteral("\" SET t = '0:11:22.33'")));
     QVERIFY_SQL(timetestModel, select());
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:11:22.330"));
 
@@ -4241,12 +4267,18 @@ void tst_QSqlQuery::aggregateFunctionTypes()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     QVariant::Type intType = QVariant::Int;
+    QVariant::Type sumType = intType;
+    QVariant::Type countType = intType;
     // QPSQL uses LongLong for manipulation of integers
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::PostgreSQL)
-        intType = QVariant::LongLong;
-    else if (dbType == QSqlDriver::Oracle)
-        intType = QVariant::Double;
+    if (dbType == QSqlDriver::PostgreSQL) {
+        sumType = countType = QVariant::LongLong;
+    } else if (dbType == QSqlDriver::Oracle) {
+        intType = sumType = countType = QVariant::Double;
+    } else if (dbType == QSqlDriver::MySqlServer) {
+        sumType = QVariant::Double;
+        countType = QVariant::LongLong;
+    }
     {
         const QString tableName(qTableName("numericFunctionsWithIntValues", __FILE__, db));
         tst_Databases::safeDropTable( db, tableName );
@@ -4259,10 +4291,8 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY(q.next());
         if (dbType == QSqlDriver::SQLite)
             QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
-        else if (dbType == QSqlDriver::MySqlServer)
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
         else
-            QCOMPARE(q.record().field(0).type(), intType);
+            QCOMPARE(q.record().field(0).type(), sumType);
 
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1)"));
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2)"));
@@ -4270,10 +4300,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 3);
-        if (dbType == QSqlDriver::MySqlServer)
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
-        else
-            QCOMPARE(q.record().field(0).type(), intType);
+        QCOMPARE(q.record().field(0).type(), sumType);
 
         QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
         QVERIFY(q.next());
@@ -4289,7 +4316,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), dbType != QSqlDriver::MySqlServer ? intType : QVariant::LongLong);
+        QCOMPARE(q.record().field(0).type(), countType);
 
         QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
         QVERIFY(q.next());
@@ -4332,7 +4359,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), dbType != QSqlDriver::MySqlServer ? intType : QVariant::LongLong);
+        QCOMPARE(q.record().field(0).type(), countType);
 
         QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
         QVERIFY(q.next());
