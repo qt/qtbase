@@ -804,6 +804,13 @@ QString qt_resolveFontFamilyAlias(const QString &alias)
     return alias;
 }
 
+/*!
+    Returns a list of alternative fonts for the specified \a family and
+    \a style and \a script using the \a styleHint given.
+
+    Default implementation returns a list of fonts for which \a style and \a script support
+    has been reported during the font database population.
+*/
 QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     Q_UNUSED(family);
