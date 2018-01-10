@@ -1578,7 +1578,7 @@ QAccessibleTextCursorEvent::~QAccessibleTextCursorEvent()
 
 
 /*!
-    \fn QAccessibleTextCursorEvent(QAccessibleInterface *iface, int cursorPos)
+    \fn QAccessibleTextCursorEvent::QAccessibleTextCursorEvent(QAccessibleInterface *iface, int cursorPos)
 
     Create a new QAccessibleTextCursorEvent for \a iface,
     The \a cursorPos is the new cursor position.
