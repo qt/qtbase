@@ -468,7 +468,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
 */
 
 /*!
-    \fn QItemEditorCreator::QItemEditorCreator(const QByteArray &valuePropertyName)
+    \fn template <class T> QItemEditorCreator<T>::QItemEditorCreator(const QByteArray &valuePropertyName)
 
     Constructs an editor creator object using \a valuePropertyName
     as the name of the property to be used for editing. The
@@ -480,12 +480,12 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
 */
 
 /*!
-    \fn QWidget *QItemEditorCreator::createWidget(QWidget *parent) const
+    \fn template <class T> QWidget *QItemEditorCreator<T>::createWidget(QWidget *parent) const
     \reimp
 */
 
 /*!
-    \fn QByteArray QItemEditorCreator::valuePropertyName() const
+    \fn template <class T> QByteArray QItemEditorCreator<T>::valuePropertyName() const
     \reimp
 */
 
@@ -524,18 +524,18 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
 */
 
 /*!
-    \fn QStandardItemEditorCreator::QStandardItemEditorCreator()
+    \fn template <class T> QStandardItemEditorCreator<T>::QStandardItemEditorCreator()
 
     Constructs an editor creator object.
 */
 
 /*!
-    \fn QWidget *QStandardItemEditorCreator::createWidget(QWidget *parent) const
+    \fn template <class T> QWidget *QStandardItemEditorCreator<T>::createWidget(QWidget *parent) const
     \reimp
 */
 
 /*!
-    \fn QByteArray QStandardItemEditorCreator::valuePropertyName() const
+    \fn template <class T> QByteArray QStandardItemEditorCreator<T>::valuePropertyName() const
     \reimp
 */
 
