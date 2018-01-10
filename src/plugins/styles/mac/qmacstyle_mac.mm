@@ -2311,7 +2311,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 
     case PM_CheckBoxLabelSpacing:
     case PM_RadioButtonLabelSpacing:
-        ret = 2;
+        ret = 4;
         break;
     case PM_MenuScrollerHeight:
         ret = 15; // I hate having magic numbers in here...
@@ -3253,49 +3253,37 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorViewItemCheck:
     case PE_IndicatorRadioButton:
     case PE_IndicatorCheckBox: {
-        bool drawColorless = tds == kThemeStateInactive;
-        HIThemeButtonDrawInfo bdi;
-        bdi.version = qt_mac_hitheme_version;
-        bdi.state = tds;
-        if (drawColorless)
-            bdi.state = kThemeStateActive;
-        bdi.adornment = kThemeDrawIndicatorOnly;
-        if (opt->state & State_HasFocus)
-            bdi.adornment |= kThemeAdornmentFocus;
-        bool isRadioButton = (pe == PE_IndicatorRadioButton);
-        switch (d->aquaSizeConstrain(opt, w)) {
-        case QStyleHelper::SizeDefault:
-        case QStyleHelper::SizeLarge:
-            if (isRadioButton)
-                bdi.kind = kThemeRadioButton;
-            else
-                bdi.kind = kThemeCheckBox;
-            break;
-        case QStyleHelper::SizeMini:
-            if (isRadioButton)
-                bdi.kind = kThemeMiniRadioButton;
-            else
-                bdi.kind = kThemeMiniCheckBox;
-            break;
-        case QStyleHelper::SizeSmall:
-            if (isRadioButton)
-                bdi.kind = kThemeSmallRadioButton;
-            else
-                bdi.kind = kThemeSmallCheckBox;
-            break;
-        }
-        if (opt->state & State_NoChange)
-            bdi.value = kThemeButtonMixed;
-        else if (opt->state & State_On)
-            bdi.value = kThemeButtonOn;
-        else
-            bdi.value = kThemeButtonOff;
-        CGRect macRect = opt->rect.toCGRect();
-        const QMacStylePrivate::CocoaControl cw = QMacStylePrivate::cocoaControlFromHIThemeButtonKind(bdi.kind);
-        if (!drawColorless)
-            HIThemeDrawButton(&macRect, &bdi, cg, kHIThemeOrientationNormal, 0);
-        else
-            d->drawColorlessButton(macRect, &bdi, cw, p, opt);
+        const bool isEnabled = opt->state & State_Enabled;
+        const bool isPressed = opt->state & State_Sunken;
+        const bool isRadioButton = (pe == PE_IndicatorRadioButton);
+        const auto ct = isRadioButton ? QMacStylePrivate::Button_RadioButton : QMacStylePrivate::Button_CheckBox;
+        const auto cs = d->effectiveAquaSizeConstrain(opt, w);
+        const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
+        auto *tb = static_cast<NSButton *>(d->cocoaControl(cw));
+        tb.enabled = isEnabled;
+        tb.state = (opt->state & State_NoChange) ? NSMixedState :
+                   (opt->state & State_On) ? NSOnState : NSOffState;
+        [tb highlight:isPressed];
+        d->drawNSViewInRect(cw, tb, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+            CGContextTranslateCTM(ctx, 2, isRadioButton ? -2 : -1);
+            [tb.cell drawInteriorWithFrame:rect inView:tb];
+            if (opt->state & State_HasFocus) {
+                CGContextSetAlpha(ctx, 0.5);
+                CGContextSetStrokeColorWithColor(ctx, NSColor.keyboardFocusIndicatorColor.CGColor);
+                CGContextSetLineWidth(ctx, 3.5);
+                CGContextSetLineJoin(ctx, kCGLineJoinRound);
+                if (isRadioButton) {
+                    const auto rbRect = CGRectOffset(CGRectInset(rect, 0.25, -0.25), -0.5, 0);
+                    CGContextAddEllipseInRect(ctx, rbRect);
+                } else {
+                    const auto cbRect = CGRectOffset(CGRectInset(rect, 1.25, 0.75), -0.5, 0);
+                    CGPathRef cbPath = CGPathCreateWithRoundedRect(cbRect, 4, 4, nullptr);
+                    CGContextAddPath(ctx, cbPath);
+                    CFRelease(cbPath);
+                }
+                CGContextStrokePath(ctx);
+            }
+        });
         break; }
     case PE_FrameFocusRect:
         // Use the our own focus widget stuff.
