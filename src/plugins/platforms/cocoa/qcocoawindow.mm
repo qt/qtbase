@@ -950,7 +950,7 @@ void QCocoaWindow::windowDidBecomeKey()
     }
 
     if (!windowIsPopupType() && !qnsview_cast(m_view).isMenuView)
-        QWindowSystemInterface::handleWindowActivated(window());
+        QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(window());
 }
 
 void QCocoaWindow::windowDidResignKey()
@@ -968,7 +968,7 @@ void QCocoaWindow::windowDidResignKey()
     if (!keyWindow || keyWindow == m_view.window) {
         // No new key window, go ahead and set the active window to zero
         if (!windowIsPopupType() && !qnsview_cast(m_view).isMenuView)
-            QWindowSystemInterface::handleWindowActivated(0);
+            QWindowSystemInterface::handleWindowActivated<QWindowSystemInterface::SynchronousDelivery>(0);
     }
 }
 
