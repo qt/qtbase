@@ -90,7 +90,7 @@ public:
     static QString localHostName();
     static QString localDomainName();
 
-#ifdef Q_QDOC
+#ifdef Q_CLANG_QDOC
     template<typename PointerToMemberFunction>
     static int QHostInfo::lookupHost(const QString &name, const QObject *receiver,
                               PointerToMemberFunction function);
