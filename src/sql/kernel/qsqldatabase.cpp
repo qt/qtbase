@@ -313,7 +313,7 @@ void QSqlDatabasePrivate::disable()
 */
 
 /*!
-    \fn QSqlDriver *QSqlDriverCreator::createObject() const
+    \fn template <class T> QSqlDriver *QSqlDriverCreator<T>::createObject() const
     \reimp
 */
 
