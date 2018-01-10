@@ -765,8 +765,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 */
 
 /*!
-    \fn void QStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option, \
-                                   QPainter *painter, const QWidget *widget) const
+    \fn void QStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 
     Draws the given primitive \a element with the provided \a painter using the style
     options specified by \a option.
@@ -1592,8 +1591,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 */
 
 /*!
-    \fn QSize QStyle::sizeFromContents(ContentsType type, const QStyleOption *option, \
-                                       const QSize &contentsSize, const QWidget *widget) const
+    \fn QSize QStyle::sizeFromContents(ContentsType type, const QStyleOption *option, const QSize &contentsSize, const QWidget *widget) const
 
     Returns the size of the element described by the specified
     \a option and \a type, based on the provided \a contentsSize.
@@ -2003,8 +2001,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 */
 
 /*!
-    \fn int QStyle::styleHint(StyleHint hint, const QStyleOption *option, \
-                              const QWidget *widget, QStyleHintReturn *returnData) const
+    \fn int QStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *returnData) const
 
     Returns an integer representing the specified style \a hint for
     the given \a widget described by the provided style \a option.
@@ -2116,8 +2113,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 */
 
 /*!
-    \fn QPixmap QStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option, \
-                                       const QWidget *widget) const
+    \fn QPixmap QStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *option, const QWidget *widget) const
 
     \obsolete
     Returns a pixmap for the given \a standardPixmap.
