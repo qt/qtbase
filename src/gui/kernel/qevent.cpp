@@ -4516,7 +4516,7 @@ QTouchEvent::TouchPoint::TouchPoint(int id)
 { }
 
 /*!
-    \fn TouchPoint::TouchPoint(const TouchPoint &other)
+    \fn QTouchEvent::TouchPoint::TouchPoint(const QTouchEvent::TouchPoint &other)
     \internal
 
     Constructs a copy of \a other.
@@ -5058,12 +5058,12 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
 }
 
 /*!
-    \fn TouchPoint &TouchPoint::operator=(const TouchPoint &other)
+    \fn QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::TouchPoint &other)
     \internal
  */
 
 /*!
-    \fn TouchPoint &TouchPoint::operator=(TouchPoint &&other)
+    \fn QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(QTouchEvent::TouchPoint &&other)
     \internal
  */
 /*!
