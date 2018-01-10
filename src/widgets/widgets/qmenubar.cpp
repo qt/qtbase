@@ -781,8 +781,7 @@ QAction *QMenuBar::addAction(const QString &text, const QObject *receiver, const
 }
 
 /*!
-    \fn template<typename Obj, typename PointerToMemberFunctionOrFunctor>
-    QAction *QMenuBar::addAction(const QString &text, const Obj *receiver, PointerToMemberFunctionOrFunctor method)
+    \fn template<typename Obj, typename PointerToMemberFunctionOrFunctor> QAction *QMenuBar::addAction(const QString &text, const Obj *receiver, PointerToMemberFunctionOrFunctor method)
 
     \since 5.11
 
@@ -799,8 +798,7 @@ QAction *QMenuBar::addAction(const QString &text, const QObject *receiver, const
 */
 
 /*!
-    \fn template<typename Functor>
-    QAction *QMenuBar::addAction(const QString &text, Functor functor)
+    \fn template<typename Functor> QAction *QMenuBar::addAction(const QString &text, Functor functor)
 
     \since 5.11
 
