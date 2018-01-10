@@ -1,0 +1,4 @@
+# QTBUG-65667
+[localAddress:linklocal-ipv4]
+msvc-2015 ci
+msvc-2017 ci
