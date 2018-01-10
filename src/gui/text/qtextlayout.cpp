@@ -93,14 +93,14 @@ QT_BEGIN_NAMESPACE
     Specifies the format to apply.
 */
 
-/*! \fn bool operator==(const FormatRange &lhs, const FormatRange &rhs)
+/*! \fn bool operator==(const QTextLayout::FormatRange &lhs, const QTextLayout::FormatRange &rhs)
   \relates QTextLayout::FormatRange
 
   Returns true if the \c {start}, \c {length}, and \c {format} fields
   in \a lhs and \a rhs contain the same values respectively.
  */
 
-/*! \fn bool operator!=(const FormatRange &lhs, const FormatRange &rhs)
+/*! \fn bool operator!=(const QTextLayout::FormatRange &lhs, const QTextLayout::FormatRange &rhs)
   \relates QTextLayout::FormatRange
 
   Returns true if any of the \c {start}, \c {length}, or \c {format} fields
