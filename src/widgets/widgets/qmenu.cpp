@@ -1802,7 +1802,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     return action;
 }
 
-/*!\fn QAction *QMenu::addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
+/*!\fn template<typename PointerToMemberFunction> QAction *QMenu::addAction(const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
 
     \since 5.6
 
@@ -1817,7 +1817,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QString &text, Functor functor, const QKeySequence &shortcut = 0)
+/*!\fn template<typename Functor> QAction *QMenu::addAction(const QString &text, Functor functor, const QKeySequence &shortcut = 0)
 
     \since 5.6
 
@@ -1832,7 +1832,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0)
+/*!\fn template<typename Functor> QAction *QMenu::addAction(const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut)
 
     \since 5.6
 
@@ -1849,7 +1849,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
+/*!\fn template<typename PointerToMemberFunction> QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver, PointerToMemberFunction method, const QKeySequence &shortcut = 0)
 
     \since 5.6
 
@@ -1864,7 +1864,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, Functor functor, const QKeySequence &shortcut = 0)
+/*!\fn template<typename Functor> QAction *QMenu::addAction(const QIcon &icon, const QString &text, Functor functor, const QKeySequence &shortcut = 0)
 
     \since 5.6
 
@@ -1879,7 +1879,7 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     QMenu takes ownership of the returned QAction.
 */
 
-/*!\fn QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut = 0)
+/*!\fn template<typename Functor> QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *context, Functor functor, const QKeySequence &shortcut)
 
     \since 5.6
 
