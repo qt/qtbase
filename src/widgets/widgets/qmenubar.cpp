@@ -1542,7 +1542,7 @@ bool QMenuBar::eventFilter(QObject *object, QEvent *event)
                     d->setKeyboardMode(!d->keyboardState);
                 }
             }
-            // fall through
+            Q_FALLTHROUGH();
             case QEvent::MouseButtonPress:
             case QEvent::MouseButtonRelease:
             case QEvent::MouseMove:

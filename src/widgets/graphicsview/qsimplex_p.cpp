@@ -209,7 +209,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> &newConstraints)
             surplus->index = ++variableIndex;
             constraints[i]->helper.first = surplus;
             constraints[i]->helper.second = -1.0;
-            // fall through
+            Q_FALLTHROUGH();
         case QSimplexConstraint::Equal:
             artificial = new QSimplexVariable;
             constraints[i]->artificial = artificial;

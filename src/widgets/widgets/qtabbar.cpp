@@ -1034,7 +1034,7 @@ void QTabBar::removeTab(int index)
                         newIndex--;
                     if (d->validIndex(newIndex))
                         break;
-                    // else fallthrough
+                    Q_FALLTHROUGH();
                 case SelectRightTab:
                     newIndex = index;
                     if (newIndex >= d->tabList.size())
@@ -2221,7 +2221,7 @@ void QTabBar::changeEvent(QEvent *event)
             d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
         if (!d->useScrollButtonsSetByUser)
             d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
-        // fallthrough
+        Q_FALLTHROUGH();
     case QEvent::FontChange:
         d->textSizes.clear();
         d->refresh();

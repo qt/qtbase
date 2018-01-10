@@ -145,7 +145,7 @@ void QWindowsPipeWriter::notified(DWORD errorCode, DWORD numberOfBytesWritten)
     case ERROR_OPERATION_ABORTED:
         if (stopped)
             break;
-        // fall through
+        Q_FALLTHROUGH();
     default:
         qErrnoWarning(errorCode, "QWindowsPipeWriter: asynchronous write failed.");
         break;

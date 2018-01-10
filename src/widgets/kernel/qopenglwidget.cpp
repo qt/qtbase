@@ -1429,7 +1429,7 @@ bool QOpenGLWidget::event(QEvent *e)
             d->reset();
         if (isHidden())
             break;
-        // FALLTHROUGH
+        Q_FALLTHROUGH();
     case QEvent::Show: // reparenting may not lead to a resize so reinitalize on Show too
         if (d->initialized && window()->windowHandle()
                 && d->context->shareContext() != QWidgetPrivate::get(window())->shareContext())

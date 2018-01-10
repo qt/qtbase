@@ -1372,7 +1372,7 @@ bool QSplitter::event(QEvent *e)
         if (!d->firstShow)
             break;
         d->firstShow = false;
-        // fall through
+        Q_FALLTHROUGH();
     case QEvent::HideToParent:
     case QEvent::ShowToParent:
     case QEvent::LayoutRequest:

@@ -1129,7 +1129,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
             }
 #endif
         }
-        // else fall through
+        Q_FALLTHROUGH();
     case Qt::Key_Backtab:
     case Qt::Key_Tab: {
         event->accept();

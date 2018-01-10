@@ -672,7 +672,7 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 break;
             }
         }
-            // fall through
+            Q_FALLTHROUGH();
         default:
             r = field.value().toString();
             break;

@@ -4620,7 +4620,7 @@ QStyle::SubControl QStyleSheetStyle::hitTestComplexControl(ComplexControl cc, co
         if (!rule.hasDrawable() && !rule.hasBox())
             break;
                        }
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case CC_SpinBox:
     case CC_GroupBox:
     case CC_ComboBox:
@@ -5786,7 +5786,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
         if (!qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             return subElementRect(SE_CheckBoxIndicator, opt, w);
         }
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case SE_ItemViewItemText:
     case SE_ItemViewItemDecoration:
     case SE_ItemViewItemFocusRect:
@@ -5846,15 +5846,15 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 #if QT_CONFIG(tabbar)
     case SE_TabWidgetLeftCorner:
         pe = PseudoElement_TabWidgetLeftCorner;
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case SE_TabWidgetRightCorner:
         if (pe == PseudoElement_None)
             pe = PseudoElement_TabWidgetRightCorner;
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case SE_TabWidgetTabBar:
         if (pe == PseudoElement_None)
             pe = PseudoElement_TabWidgetTabBar;
-        // intentionally falls through
+        Q_FALLTHROUGH();
     case SE_TabWidgetTabPane:
     case SE_TabWidgetTabContents:
         if (pe == PseudoElement_None)

@@ -297,7 +297,7 @@ void QLocalServerPrivate::waitForNewConnection(int msec, bool *timedOut)
         }
 
         errno = EBADF;
-        // FALLTHROUGH
+        Q_FALLTHROUGH();
     case -1:
         setError(QLatin1String("QLocalServer::waitForNewConnection"));
         closeServer();

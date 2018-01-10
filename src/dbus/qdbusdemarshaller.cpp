@@ -289,7 +289,7 @@ QVariant QDBusDemarshaller::toVariantInternal()
     case DBUS_TYPE_UNIX_FD:
         if (capabilities & QDBusConnection::UnixFileDescriptorPassing)
             return QVariant::fromValue(toUnixFileDescriptor());
-        // fall through
+        Q_FALLTHROUGH();
 
     default:
 //        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",

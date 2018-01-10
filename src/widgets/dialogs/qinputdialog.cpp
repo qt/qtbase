@@ -71,7 +71,8 @@ static const char *candidateSignal(int which)
     case IntValueSelectedSignal:    return SIGNAL(intValueSelected(int));
     case DoubleValueSelectedSignal: return SIGNAL(doubleValueSelected(double));
 
-    case NumCandidateSignals:       ; // fall through
+    case NumCandidateSignals:
+        break;
     };
     Q_UNREACHABLE();
     return nullptr;

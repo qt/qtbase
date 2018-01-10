@@ -2638,7 +2638,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
                 d->tabBar->setTabEnabled(tabIndex, true);
         }
 #endif // QT_CONFIG(tabbar)
-        // fall through
+        Q_FALLTHROUGH();
     case QEvent::Hide:
         d->isSubWindowsTiled = false;
         break;

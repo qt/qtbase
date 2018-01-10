@@ -562,7 +562,7 @@ static QVersionDirectivePosition findVersionDirectivePosition(const char *source
                 break;
             }
             state = Normal;
-            // fall through
+            Q_FALLTHROUGH();
         case Normal:
             if (*c == '/')
                 state = CommentStarting;
