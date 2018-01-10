@@ -504,13 +504,13 @@ QVulkanInstance::~QVulkanInstance()
  */
 
 /*!
-    \fn bool QVulkanInfoVector::contains(const QByteArray &name) const
+    \fn template<typename T> bool QVulkanInfoVector<T>::contains(const QByteArray &name) const
 
     \return true if the vector contains a layer or extension with the given \a name.
  */
 
 /*!
-    \fn bool QVulkanInfoVector::contains(const QByteArray &name, int minVersion) const
+    \fn template<typename T> bool QVulkanInfoVector<T>::contains(const QByteArray &name, int minVersion) const
 
     \return true if the vector contains a layer or extension with the given
     \a name and a version same as or newer than \a minVersion.
