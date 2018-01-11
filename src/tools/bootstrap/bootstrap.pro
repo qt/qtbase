@@ -147,8 +147,5 @@ win32 {
 
 load(qt_module)
 
-# otherwise mingw headers do not declare common functions like putenv
-mingw: CONFIG -= strict_c++
-
 lib.CONFIG = dummy_install
 INSTALLS += lib

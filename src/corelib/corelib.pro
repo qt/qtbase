@@ -44,10 +44,6 @@ include(mimetypes/mimetypes.pri)
 include(xml/xml.pri)
 
 win32 {
-    mingw {
-        # otherwise mingw headers do not declare common functions like putenv
-        CONFIG -= strict_c++
-    }
     LIBS_PRIVATE += -lws2_32
     !winrt {
         LIBS_PRIVATE += -lkernel32 -luser32 -lshell32 -luuid -lole32 -ladvapi32 -lwinmm
