@@ -709,6 +709,7 @@ void QAndroidInputContext::touchDown(int x, int y)
         m_handleMode = ShowCursor;
         // The VK will appear in a moment, stop the timer
         m_hideCursorHandleTimer.stop();
+        finishComposingText();
         QMetaObject::invokeMethod(this, "updateSelectionHandles", Qt::QueuedConnection);
     }
 }
@@ -720,6 +721,8 @@ void QAndroidInputContext::longPress(int x, int y)
         return;
 
     if (m_focusObject && inputItemRectangle().contains(x, y)) {
+        finishComposingText();
+
         // Release left button, otherwise the following events will cancel the menu popup
         QtAndroidInput::releaseMouse(x, y);
 
@@ -1242,6 +1245,7 @@ jboolean QAndroidInputContext::setSelection(jint start, jint end)
 
 jboolean QAndroidInputContext::selectAll()
 {
+    finishComposingText();
     m_handleMode = ShowCursor;
     sendShortcut(QKeySequence::SelectAll);
     return JNI_TRUE;
@@ -1249,6 +1253,7 @@ jboolean QAndroidInputContext::selectAll()
 
 jboolean QAndroidInputContext::cut()
 {
+    finishComposingText();
     m_handleMode = ShowCursor;
     sendShortcut(QKeySequence::Cut);
     return JNI_TRUE;
@@ -1256,6 +1261,7 @@ jboolean QAndroidInputContext::cut()
 
 jboolean QAndroidInputContext::copy()
 {
+    finishComposingText();
     m_handleMode = ShowCursor;
     sendShortcut(QKeySequence::Copy);
     return JNI_TRUE;
