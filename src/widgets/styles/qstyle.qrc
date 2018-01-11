@@ -128,6 +128,18 @@
         <file>images/media-volume-16.png</file>
         <file>images/media-volume-muted-16.png</file>
         <file>images/fusion_groupbox.png</file>
+        <file>images/closedock-10.png</file>
+        <file>images/closedock-16.png</file>
+        <file>images/closedock-20.png</file>
+        <file>images/closedock-32.png</file>
+        <file>images/closedock-48.png</file>
+        <file>images/closedock-64.png</file>
+        <file>images/normalizedockup-10.png</file>
+        <file>images/normalizedockup-16.png</file>
+        <file>images/normalizedockup-20.png</file>
+        <file>images/normalizedockup-32.png</file>
+        <file>images/normalizedockup-48.png</file>
+        <file>images/normalizedockup-64.png</file>
     </qresource>
     <qresource prefix="/qt-project.org/styles/macstyle">
         <file alias="images/closedock-16.png">images/closedock-macstyle-16.png</file>

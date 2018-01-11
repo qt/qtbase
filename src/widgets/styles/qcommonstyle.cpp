@@ -5709,6 +5709,22 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     return QPixmap();
 }
 
+#if QT_CONFIG(imageformat_png)
+static inline QString iconResourcePrefix() { return QStringLiteral(":/qt-project.org/styles/commonstyle/images/"); }
+static inline QString iconPngSuffix() { return QStringLiteral(".png"); }
+
+static void addIconFiles(const QString &prefix, const int sizes[], size_t count, QIcon &icon)
+{
+    for (size_t i = 0; i < count; ++i) {
+        const int size = sizes[i];
+        icon.addFile(prefix + QString::number(size) + iconPngSuffix(), QSize(size, size));
+    }
+}
+
+static const int dockTitleIconSizes[] = {10, 16, 20, 32, 48, 64};
+
+#endif // imageformat_png
+
 /*!
     \internal
 */
@@ -6215,11 +6231,19 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
     case SP_MediaVolumeMuted:
         icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/media-volume-muted-16.png"), QSize(16, 16));
         break;
+    case SP_TitleBarCloseButton:
+        addIconFiles(iconResourcePrefix() + QStringLiteral("closedock-"),
+                     dockTitleIconSizes, sizeof(dockTitleIconSizes)/sizeof(dockTitleIconSizes[0]), icon);
+        break;
     case SP_TitleBarMenuButton:
 #  ifndef QT_NO_IMAGEFORMAT_XPM
         icon.addPixmap(titleBarMenuCachedPixmapFromXPM());
 #  endif
         icon.addFile(QLatin1String(":/qt-project.org/qmessagebox/images/qtlogo-64.png"));
+        break;
+    case SP_TitleBarNormalButton:
+        addIconFiles(iconResourcePrefix() + QStringLiteral("normalizedockup-"),
+                     dockTitleIconSizes, sizeof(dockTitleIconSizes)/sizeof(dockTitleIconSizes[0]), icon);
         break;
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:

@@ -3769,6 +3769,19 @@ QRect QFusionStyle::subElementRect(SubElement sr, const QStyleOption *opt, const
 QIcon QFusionStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *option,
                                  const QWidget *widget) const
 {
+#if QT_CONFIG(imageformat_xpm)
+    switch (standardIcon) {
+    case SP_TitleBarNormalButton:
+        return QIcon(QPixmap(dock_widget_restore_xpm));
+    case SP_TitleBarMinButton:
+        return QIcon(QPixmap(workspace_minimize));
+    case SP_TitleBarCloseButton:
+    case SP_DockWidgetCloseButton:
+        return QIcon(QPixmap(dock_widget_close_xpm));
+    default:
+        break;
+    }
+#endif // imageformat_xpm
     return QCommonStyle::standardIcon(standardIcon, option, widget);
 }
 
