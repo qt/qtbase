@@ -28,6 +28,7 @@
 
 #include <QtCore>
 #include <QtTest/QtTest>
+#include <QThread>
 
 #define INVOKE_COUNT 10000
 
@@ -37,6 +38,8 @@ class qtimer_vs_qmetaobject : public QObject
 private slots:
     void bench();
     void bench_data();
+    void benchBackgroundThread();
+    void benchBackgroundThread_data() { bench_data(); }
 };
 
 class InvokeCounter : public QObject {
@@ -47,8 +50,10 @@ public slots:
     void invokeSlot() {
         count++;
         if (count == INVOKE_COUNT)
-            QTestEventLoop::instance().exitLoop();
+            emit allInvoked();
     }
+signals:
+    void allInvoked();
 protected:
     int count;
 };
@@ -98,11 +103,11 @@ void qtimer_vs_qmetaobject::bench()
 
     QBENCHMARK {
         InvokeCounter invokeCounter;
+        QSignalSpy spy(&invokeCounter, &InvokeCounter::allInvoked);
         for(int i = 0; i < INVOKE_COUNT; ++i) {
             invoke(&invokeCounter);
         }
-        QTestEventLoop::instance().enterLoop(10);
-        QVERIFY(!QTestEventLoop::instance().timeout());
+        QVERIFY(spy.wait(10000));
     }
 }
 
@@ -118,6 +123,16 @@ void qtimer_vs_qmetaobject::bench_data()
     QTest::addRow("invokeMethod_functor") << 6;
 }
 
+void qtimer_vs_qmetaobject::benchBackgroundThread()
+{
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("This test requires QThread::create");
+#else
+    QScopedPointer<QThread> thread(QThread::create([this]() { bench(); }));
+    thread->start();
+    QVERIFY(thread->wait());
+#endif
+}
 
 QTEST_MAIN(qtimer_vs_qmetaobject)
 

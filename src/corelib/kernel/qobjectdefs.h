@@ -576,6 +576,7 @@ struct Q_CORE_EXPORT QMetaObject
 
 private:
     static bool invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret);
+    friend class QTimer;
 };
 
 class Q_CORE_EXPORT QMetaObject::Connection {

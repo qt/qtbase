@@ -424,47 +424,44 @@ int main(int argc, char *argv[]) \
 #  define QTEST_DISABLE_KEYPAD_NAVIGATION
 #endif
 
-#define QTEST_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
-{ \
+#define QTEST_MAIN_IMPL(TestObject) \
     TESTLIB_SELFCOVERAGE_START(#TestObject) \
     QApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     QTEST_DISABLE_KEYPAD_NAVIGATION \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv); \
-}
+    return QTest::qExec(&tc, argc, argv);
 
 #elif defined(QT_GUI_LIB)
 
 #include <QtTest/qtest_gui.h>
 
-#define QTEST_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
-{ \
+#define QTEST_MAIN_IMPL(TestObject) \
     TESTLIB_SELFCOVERAGE_START(#TestObject) \
     QGuiApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv); \
-}
+    return QTest::qExec(&tc, argc, argv);
 
 #else
 
-#define QTEST_MAIN(TestObject) \
-int main(int argc, char *argv[]) \
-{ \
+#define QTEST_MAIN_IMPL(TestObject) \
     TESTLIB_SELFCOVERAGE_START(#TestObject) \
     QCoreApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
     QTEST_SET_MAIN_SOURCE_PATH \
-    return QTest::qExec(&tc, argc, argv); \
-}
+    return QTest::qExec(&tc, argc, argv);
 
 #endif // QT_GUI_LIB
+
+#define QTEST_MAIN(TestObject) \
+int main(int argc, char *argv[]) \
+{ \
+    QTEST_MAIN_IMPL(TestObject) \
+}
 
 #define QTEST_GUILESS_MAIN(TestObject) \
 int main(int argc, char *argv[]) \
