@@ -130,10 +130,10 @@
         <file>images/fusion_groupbox.png</file>
     </qresource>
     <qresource prefix="/qt-project.org/styles/macstyle">
-        <file>images/closedock-16.png</file>
-        <file>images/closedock-down-16.png</file>
-        <file>images/dockdock-16.png</file>
-        <file>images/dockdock-down-16.png</file>
+        <file alias="images/closedock-16.png">images/closedock-macstyle-16.png</file>
+        <file alias="images/closedock-down-16.png">images/closedock-down-macstyle-16.png</file>
+        <file alias="images/dockdock-16.png">images/dockdock-macstyle-16.png</file>
+        <file alias="images/dockdock-down-16.png">images/dockdock-down-macstyle-16.png</file>
         <file>images/toolbar-ext.png</file>
         <file>images/toolbar-ext@2x.png</file>
     </qresource>
