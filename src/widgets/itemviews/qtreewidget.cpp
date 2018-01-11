@@ -1699,6 +1699,9 @@ Qt::ItemFlags QTreeWidgetItem::flags() const
 
     The \a role describes the type of data specified by \a value, and is defined by
     the Qt::ItemDataRole enum.
+
+    \note The default implementation treats Qt::EditRole and Qt::DisplayRole as
+    referring to the same data.
 */
 void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
 {

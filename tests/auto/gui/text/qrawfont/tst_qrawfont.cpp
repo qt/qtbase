@@ -90,6 +90,9 @@ private slots:
     void rawFontFromInvalidData();
 
     void kernedAdvances();
+
+    void fallbackFontsOrder();
+
 private:
     QString testFont;
     QString testFontBoldItalic;
@@ -887,7 +890,7 @@ void tst_QRawFont::unsupportedWritingSystem()
     QCOMPARE(rawFont.familyName(), QString::fromLatin1("QtBidiTestFont"));
     QCOMPARE(rawFont.pixelSize(), 12.0);
 
-    QString arabicText = QFontDatabase::writingSystemSample(QFontDatabase::Arabic);
+    QString arabicText = QFontDatabase::writingSystemSample(QFontDatabase::Arabic).simplified().remove(QLatin1Char(' '));
 
     QTextLayout layout;
     layout.setFont(font);
@@ -1007,6 +1010,38 @@ void tst_QRawFont::kernedAdvances()
 
     expectedAdvanceWidth = pixelSize * (underScoreAW + underscoreTwoKerning) / emSquareSize;
     QVERIFY(FUZZY_LTEQ(qAbs(advances.at(0).x() - expectedAdvanceWidth), errorMargin));
+}
+
+void tst_QRawFont::fallbackFontsOrder()
+{
+    QFontDatabase fontDatabase;
+    int id = fontDatabase.addApplicationFont(testFont);
+
+    QFont font("QtBidiTestFont");
+    font.setPixelSize(12.0);
+
+    QString arabicText = QFontDatabase::writingSystemSample(QFontDatabase::Arabic);
+
+    // If this fails, then the writing system sample has changed and we need to create
+    // a new text containing both a space and Arabic characters.
+    QVERIFY(arabicText.contains(QLatin1Char(' ')));
+
+    QTextLayout layout;
+    layout.setFont(font);
+    layout.setText(arabicText);
+    layout.setCacheEnabled(true);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+
+    // Since QtBidiTestFont does not support Arabic nor the space, both should map to
+    // the same font. If this fails, it is an indication that the list of fallbacks fonts
+    // is not sorted by writing system support.
+    QCOMPARE(glyphRuns.size(), 1);
+
+    fontDatabase.removeApplicationFont(id);
 }
 
 #endif // QT_NO_RAWFONT

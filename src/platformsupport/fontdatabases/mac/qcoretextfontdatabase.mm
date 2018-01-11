@@ -544,6 +544,9 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                         fallbackList.append(QStringLiteral("Arial Unicode MS"));
 #endif
 
+                    extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
+                    fallbackList = qt_sort_families_by_writing_system(script, fallbackList);
+
                     return fallbackList;
                 }
             }

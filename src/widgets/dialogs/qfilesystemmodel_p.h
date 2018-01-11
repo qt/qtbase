@@ -72,6 +72,23 @@ class ExtendedInformation;
 class QFileSystemModelPrivate;
 class QFileIconProvider;
 
+#if defined(Q_OS_WIN)
+class QFileSystemModelNodePathKey : public QString
+{
+public:
+    QFileSystemModelNodePathKey() {}
+    QFileSystemModelNodePathKey(const QString &other) : QString(other) {}
+    QFileSystemModelNodePathKey(const QFileSystemModelNodePathKey &other) : QString(other) {}
+    bool operator==(const QFileSystemModelNodePathKey &other) const { return !compare(other, Qt::CaseInsensitive); }
+};
+
+Q_DECLARE_TYPEINFO(QFileSystemModelNodePathKey, Q_MOVABLE_TYPE);
+
+inline uint qHash(const QFileSystemModelNodePathKey &key) { return qHash(key.toCaseFolded()); }
+#else // Q_OS_WIN
+typedef QString QFileSystemModelNodePathKey;
+#endif
+
 class Q_AUTOTEST_EXPORT QFileSystemModelPrivate : public QAbstractItemModelPrivate
 {
     Q_DECLARE_PUBLIC(QFileSystemModel)
@@ -189,7 +206,7 @@ public:
 
         bool populatedChildren;
         bool isVisible;
-        QHash<QString,QFileSystemNode *> children;
+        QHash<QFileSystemModelNodePathKey, QFileSystemNode *> children;
         QList<QString> visibleChildren;
         int dirtyChildrenIndex;
         QFileSystemNode *parent;
