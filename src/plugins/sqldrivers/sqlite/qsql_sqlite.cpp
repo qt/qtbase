@@ -446,7 +446,7 @@ static QString timespecToString(const QDateTime &dateTime)
 bool QSQLiteResult::exec()
 {
     Q_D(QSQLiteResult);
-    const QVector<QVariant> values = boundValues();
+    QVector<QVariant> values = boundValues();
 
     d->skippedStatus = false;
     d->skipRow = false;
@@ -478,6 +478,20 @@ bool QSQLiteResult::exec()
                                                    countIndexes);
 
         paramCountIsValid = bindParamCount == values.count();
+        // When using named placeholders, it will reuse the index for duplicated
+        // placeholders. So we need to ensure the QVector has only one instance of
+        // each value as SQLite will do the rest for us.
+        QVector<QVariant> prunedValues;
+        QList<int> handledIndexes;
+        for (int i = 0, currentIndex = 0; i < values.size(); ++i) {
+            if (handledIndexes.contains(i))
+                continue;
+            const auto placeHolder = QString::fromUtf8(sqlite3_bind_parameter_name(d->stmt, currentIndex + 1));
+            handledIndexes << d->indexes[placeHolder];
+            prunedValues << values.at(d->indexes[placeHolder].first());
+            ++currentIndex;
+        }
+        values = prunedValues;
     }
 #endif
 

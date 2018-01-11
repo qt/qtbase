@@ -2253,6 +2253,31 @@ void tst_QSqlQuery::prepare_bind_exec()
         QCOMPARE( q.value(1).toString(), QString("name") );
         QCOMPARE( q.value(2).toString(), QString("name") );
 
+        // Test that duplicated named placeholders before the next unique one works correctly - QTBUG-65150
+        QVERIFY(q.prepare("insert into " + qtest_prepare + " (id, name, name2) values (:id, :id, :name)"));
+        for (i = 104; i < 106; ++i) {
+            q.bindValue(":id", i);
+            q.bindValue(":name", "name");
+            QVERIFY(q.exec());
+        }
+        QVERIFY(q.exec("select * from " + qtest_prepare + " where id > 103 order by id"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 104);
+        QCOMPARE(q.value(1).toString(), QString("104"));
+        QCOMPARE(q.value(2).toString(), QString("name"));
+
+        // Test that duplicated named placeholders in any order
+        QVERIFY(q.prepare("insert into " + qtest_prepare + " (id, name, name2) values (:id, :name, :id)"));
+        for (i = 107; i < 109; ++i) {
+            q.bindValue(":id", i);
+            q.bindValue(":name", "name");
+            QVERIFY(q.exec());
+        }
+        QVERIFY(q.exec("select * from " + qtest_prepare + " where id > 106 order by id"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 107);
+        QCOMPARE(q.value(1).toString(), QString("name"));
+        QCOMPARE(q.value(2).toString(), QString("107"));
     } // end of SQLite scope
 }
 

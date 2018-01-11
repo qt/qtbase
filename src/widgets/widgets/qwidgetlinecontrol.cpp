@@ -44,7 +44,9 @@
 #endif
 #include "qclipboard.h"
 #include <private/qguiapplication_p.h>
+#if QT_CONFIG(completer)
 #include <private/qcompleter_p.h>
+#endif
 #include <qpa/qplatformtheme.h>
 #include <qstylehints.h>
 #ifndef QT_NO_ACCESSIBILITY
