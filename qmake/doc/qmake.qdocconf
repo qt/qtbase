@@ -30,12 +30,10 @@ depends += \
     qtassistant \
     qtbluetooth \
     qtconcurrent \
-    qtcontacts \
     qtcore \
     qtdbus \
     qtdoc \
     qtdesigner \
-    qtfeedback \
     qtgraphicaleffects \
     qtgui \
     qthelp \
@@ -43,31 +41,21 @@ depends += \
     qtlinguist \
     qtlocation \
     qtmultimedia \
-    qtmultimediawidgets \
     qtnetwork \
     qtopengl \
-    qtorganizer \
     qtprintsupport \
-    qtpublishsubscribe \
     qtqml \
     qtquick \
     qtquickcontrols \
-    qtquickcontrolsstyles \
     qtquickdialogs \
-    qtquicklayouts \
     qtscript \
     qtscripttools \
     qtsensors \
     qtserialport \
-    qtserviceframework \
     qtsql \
     qtsvg \
-    qtsysteminfo \
     qttestlib \
     qtuitools \
-    qtversit \
-    qtwebkit \
-    qtwebkitexamples \
     qtwidgets \
     qtwinextras \
     qtx11extras \
