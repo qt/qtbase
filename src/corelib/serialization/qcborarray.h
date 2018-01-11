@@ -247,6 +247,12 @@ public:
     QCborArray &operator<<(const QCborValue &v)
     { append(v); return *this; }
 
+    static QCborArray fromStringList(const QStringList &list);
+    static QCborArray fromVariantList(const QVariantList &list);
+    static QCborArray fromJsonArray(const QJsonArray &array);
+    QVariantList toVariantList() const;
+    QJsonArray toJsonArray() const;
+
 private:
     void detach(qsizetype reserve = 0);
 

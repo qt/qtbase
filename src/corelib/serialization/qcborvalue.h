@@ -262,6 +262,11 @@ public:
     { return compare(other) < 0; }
 #endif
 
+    static QCborValue fromVariant(const QVariant &variant);
+    QVariant toVariant() const;
+    static QCborValue fromJsonValue(const QJsonValue &v);
+    QJsonValue toJsonValue() const;
+
     static QCborValue fromCbor(QCborStreamReader &reader);
     static QCborValue fromCbor(const QByteArray &ba, QCborParserError *error = nullptr);
     static QCborValue fromCbor(const char *data, qsizetype len, QCborParserError *error = nullptr)
@@ -391,6 +396,9 @@ public:
     bool operator<(const QCborValue &other) const
     { return compare(other) < 0; }
 #endif
+
+    QVariant toVariant() const                  { return concrete().toVariant(); }
+    QJsonValue toJsonValue() const;
 
     QByteArray toCbor(QCborValue::EncodingOptions opt = QCborValue::NoTransformation)
     { return concrete().toCbor(opt); }

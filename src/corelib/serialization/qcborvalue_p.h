@@ -93,6 +93,7 @@ struct Element
     }
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(Element::ValueFlags)
+Q_STATIC_ASSERT(sizeof(Element) == 16);
 
 struct ByteData
 {
@@ -112,8 +113,6 @@ struct ByteData
     QStringView asStringView() const{ return QStringView(utf16(), len / 2); }
     QString asQStringRaw() const    { return QString::fromRawData(utf16(), len / 2); }
 };
-
-Q_STATIC_ASSERT(sizeof(Element) == 16);
 Q_STATIC_ASSERT(std::is_pod<ByteData>::value);
 } // namespace QtCbor
 

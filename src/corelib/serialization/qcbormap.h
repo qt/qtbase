@@ -295,6 +295,13 @@ public:
     }
     iterator insert(value_type v) { return insert(v.first, v.second); }
 
+    static QCborMap fromVariantMap(const QVariantMap &map);
+    static QCborMap fromVariantHash(const QVariantHash &hash);
+    static QCborMap fromJsonObject(const QJsonObject &o);
+    QVariantMap toVariantMap() const;
+    QVariantHash toVariantHash() const;
+    QJsonObject toJsonObject() const;
+
 private:
     void detach(qsizetype reserve = 0);
 

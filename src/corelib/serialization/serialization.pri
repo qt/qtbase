@@ -27,6 +27,7 @@ SOURCES += \
     serialization/qcborvalue.cpp \
     serialization/qdatastream.cpp \
     serialization/qjson.cpp \
+    serialization/qjsoncbor.cpp \
     serialization/qjsondocument.cpp \
     serialization/qjsonobject.cpp \
     serialization/qjsonarray.cpp \
