@@ -5716,14 +5716,14 @@ static inline QString iconPngSuffix() { return QStringLiteral(".png"); }
 
 static void addIconFiles(const QString &prefix, const int sizes[], size_t count, QIcon &icon)
 {
-    for (size_t i = 0; i < count; ++i) {
-        const int size = sizes[i];
-        icon.addFile(prefix + QString::number(size) + iconPngSuffix(), QSize(size, size));
-    }
+    for (size_t i = 0; i < count; ++i)
+        icon.addFile(prefix + QString::number(sizes[i]) + iconPngSuffix());
 }
 
 static const int dockTitleIconSizes[] = {10, 16, 20, 32, 48, 64};
-
+static const int titleBarSizes[] = {16, 32, 48};
+static const int toolBarExtHSizes[] = {8, 16, 32};
+static const int toolBarExtVSizes[] = {5, 10, 20};
 #endif // imageformat_png
 
 /*!
@@ -6038,6 +6038,27 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
 
     switch (standardIcon) {
 #ifndef QT_NO_IMAGEFORMAT_PNG
+    case SP_TitleBarMinButton:
+        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-min-"),
+                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+        break;
+    case SP_TitleBarMaxButton:
+        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-max-"),
+                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+        break;
+    case SP_TitleBarShadeButton:
+        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-shade-"),
+                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+
+        break;
+    case SP_TitleBarUnshadeButton:
+        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-unshade-"),
+                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+        break;
+    case SP_TitleBarContextHelpButton:
+        addIconFiles(iconResourcePrefix() + QStringLiteral("titlebar-contexthelp-"),
+                     titleBarSizes, sizeof(titleBarSizes)/sizeof(titleBarSizes[0]), icon);
+        break;
      case SP_FileDialogNewFolder:
         icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/newdirectory-16.png"), QSize(16, 16));
         icon.addFile(QLatin1String(":/qt-project.org/styles/commonstyle/images/newdirectory-32.png"), QSize(32, 32));
@@ -6245,6 +6266,17 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
     case SP_TitleBarNormalButton:
         addIconFiles(iconResourcePrefix() + QStringLiteral("normalizedockup-"),
                      dockTitleIconSizes, sizeof(dockTitleIconSizes)/sizeof(dockTitleIconSizes[0]), icon);
+        break;
+    case SP_ToolBarHorizontalExtensionButton: {
+        QString prefix = iconResourcePrefix() + QStringLiteral("toolbar-ext-h-");
+        if (rtl)
+            prefix += QStringLiteral("rtl-");
+        addIconFiles(prefix, toolBarExtHSizes, sizeof(toolBarExtHSizes)/sizeof(toolBarExtHSizes[0]), icon);
+    }
+        break;
+    case SP_ToolBarVerticalExtensionButton:
+        addIconFiles(iconResourcePrefix() + QStringLiteral("toolbar-ext-v-"),
+                     toolBarExtVSizes, sizeof(toolBarExtVSizes)/sizeof(toolBarExtVSizes[0]), icon);
         break;
 #endif // QT_NO_IMAGEFORMAT_PNG
     default:

@@ -140,6 +140,30 @@
         <file>images/normalizedockup-32.png</file>
         <file>images/normalizedockup-48.png</file>
         <file>images/normalizedockup-64.png</file>
+        <file>images/toolbar-ext-h-8.png</file>
+        <file>images/toolbar-ext-h-16.png</file>
+        <file>images/toolbar-ext-h-32.png</file>
+        <file>images/toolbar-ext-h-rtl-8.png</file>
+        <file>images/toolbar-ext-h-rtl-16.png</file>
+        <file>images/toolbar-ext-h-rtl-32.png</file>
+        <file>images/toolbar-ext-v-5.png</file>
+        <file>images/toolbar-ext-v-10.png</file>
+        <file>images/toolbar-ext-v-20.png</file>
+        <file>images/titlebar-contexthelp-16.png</file>
+        <file>images/titlebar-contexthelp-32.png</file>
+        <file>images/titlebar-contexthelp-48.png</file>
+        <file>images/titlebar-max-16.png</file>
+        <file>images/titlebar-max-32.png</file>
+        <file>images/titlebar-max-48.png</file>
+        <file>images/titlebar-min-16.png</file>
+        <file>images/titlebar-min-32.png</file>
+        <file>images/titlebar-min-48.png</file>
+        <file>images/titlebar-shade-16.png</file>
+        <file>images/titlebar-shade-32.png</file>
+        <file>images/titlebar-shade-48.png</file>
+        <file>images/titlebar-unshade-16.png</file>
+        <file>images/titlebar-unshade-32.png</file>
+        <file>images/titlebar-unshade-48.png</file>
     </qresource>
     <qresource prefix="/qt-project.org/styles/macstyle">
         <file alias="images/closedock-16.png">images/closedock-macstyle-16.png</file>
