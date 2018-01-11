@@ -289,9 +289,6 @@ void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &mess
 }
 QT_END_NAMESPACE
 
-@implementation NSStatusItem (Qt)
-@end
-
 @implementation QNSImageView
 -(id)initWithParent:(QNSStatusItem*)myParent {
     self = [super init];
