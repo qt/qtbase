@@ -5,7 +5,8 @@ SUBDIRS = \
         qmetatype \
         qobject \
         qvariant \
-        qcoreapplication
+        qcoreapplication \
+        qtimer_vs_qmetaobject
 
 !qtHaveModule(widgets): SUBDIRS -= \
     qmetaobject \
