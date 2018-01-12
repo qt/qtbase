@@ -2692,24 +2692,19 @@ void QStyleSheetStyle::unsetStyleSheetFont(QWidget *w) const
 static void updateObjects(const QList<const QObject *>& objects)
 {
     if (!styleSheetCaches->styleRulesCache.isEmpty() || !styleSheetCaches->hasStyleRuleCache.isEmpty() || !styleSheetCaches->renderRulesCache.isEmpty()) {
-        for (int i = 0; i < objects.size(); ++i) {
-            const QObject *object = objects.at(i);
+        for (const QObject *object : objects) {
             styleSheetCaches->styleRulesCache.remove(object);
             styleSheetCaches->hasStyleRuleCache.remove(object);
             styleSheetCaches->renderRulesCache.remove(object);
         }
     }
 
-    QWidgetList widgets;
-    foreach (const QObject *object, objects) {
-        if (QWidget *w = qobject_cast<QWidget*>(const_cast<QObject*>(object)))
-            widgets << w;
-    }
-
     QEvent event(QEvent::StyleChange);
-    foreach (QWidget *widget, widgets) {
-        widget->style()->polish(widget);
-        QApplication::sendEvent(widget, &event);
+    for (const QObject *object : objects) {
+        if (auto widget = qobject_cast<QWidget*>(const_cast<QObject*>(object))) {
+            widget->style()->polish(widget);
+            QApplication::sendEvent(widget, &event);
+        }
     }
 }
 
