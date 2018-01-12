@@ -59,6 +59,8 @@
 
 QT_BEGIN_NAMESPACE
 
+extern QMarginsF qt_convertMargins(const QMarginsF &margins, QPageLayout::Unit fromUnits, QPageLayout::Unit toUnits);
+
 // Disabled until we have support for papersources on unix
 // #define PSD_ENABLE_PAPERSOURCE
 
@@ -390,8 +392,11 @@ void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
     // Initialize the layout to the current QPrinter layout
     m_pageLayout = m_printer->pageLayout();
 
-    if (printDevice)
-        m_pageLayout.setPageSize(printDevice->defaultPageSize());
+    if (printDevice) {
+        const QPageSize pageSize = printDevice->defaultPageSize();
+        const QMarginsF printable = printDevice->printableMargins(pageSize, m_pageLayout.orientation(), m_printer->resolution());
+        m_pageLayout.setPageSize(pageSize, qt_convertMargins(printable, QPageLayout::Point, m_pageLayout.units()));
+    }
 
     // Assume if margins are Points then is by default, so set to locale default units
     if (m_pageLayout.units() == QPageLayout::Point) {
