@@ -270,6 +270,7 @@ public:
     void resolveCurrentNSView(QWindow *window) const;
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
+    void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
 
 #if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;

@@ -72,6 +72,7 @@ void QRadioButtonPrivate::init()
     q->setAutoExclusive(true);
     q->setMouseTracking(true);
     q->setForegroundRole(QPalette::WindowText);
+    q->setAttribute(Qt::WA_MacShowFocusRect);
     setLayoutItemMargins(QStyle::SE_RadioButtonLayoutItem);
 }
 

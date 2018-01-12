@@ -1187,6 +1187,57 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
                   QRect(focusRingPixmap.width() - shCornerSize, svCornerSize, shCornerSize, focusRingPixmap.width() - 2 * svCornerSize));
 }
 
+void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const
+{
+    static const auto focusRingWidth = 3.5;
+
+    QPainterPath focusRingPath;
+    qreal hOffset = 0.0;
+    qreal vOffset = 0.0;
+    switch (cw.first) {
+    case Button_CheckBox: {
+        const auto cbInnerRadius = (cw.second == QStyleHelper::SizeMini ? 2.0 : 3.0);
+        const auto cbSize = cw.second == QStyleHelper::SizeLarge ? 13 :
+                            cw.second == QStyleHelper::SizeSmall ? 11 : 9; // As measured
+        hOffset = hMargin + (cw.second == QStyleHelper::SizeLarge ? 2.5 :
+                             cw.second == QStyleHelper::SizeSmall ? 2.0 : 1.0); // As measured
+        vOffset = 0.5 * qreal(targetRect.height() - cbSize);
+        const auto cbInnerRect = QRectF(0, 0, cbSize, cbSize);
+        const auto cbOutterRadius = cbInnerRadius + focusRingWidth;
+        const auto cbOutterRect = cbInnerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
+        focusRingPath.setFillRule(Qt::OddEvenFill);
+        focusRingPath.addRoundedRect(cbOutterRect, cbOutterRadius, cbOutterRadius);
+        focusRingPath.addRoundedRect(cbInnerRect, cbInnerRadius, cbInnerRadius);
+        break;
+    }
+    case Button_RadioButton: {
+        const auto rbSize = cw.second == QStyleHelper::SizeLarge ? 15 :
+                            cw.second == QStyleHelper::SizeSmall ? 13 : 9; // As measured
+        hOffset = hMargin + (cw.second == QStyleHelper::SizeLarge ? 1.5 :
+                             cw.second == QStyleHelper::SizeSmall ? 1.0 : 1.0); // As measured
+        vOffset = 0.5 * qreal(targetRect.height() - rbSize);
+        const auto rbInnerRect = QRectF(0, 0, rbSize, rbSize);
+        const auto rbOutterRect = rbInnerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
+        focusRingPath.setFillRule(Qt::OddEvenFill);
+        focusRingPath.addEllipse(rbInnerRect);
+        focusRingPath.addEllipse(rbOutterRect);
+        break;
+    }
+    default:
+        Q_UNUSED(vMargin);
+        Q_UNREACHABLE();
+    }
+
+    const auto focusRingColor = qt_mac_toQColor(NSColor.keyboardFocusIndicatorColor.CGColor);
+
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing);
+    p->setOpacity(0.5);
+    p->translate(hOffset, vOffset);
+    p->fillPath(focusRingPath, focusRingColor);
+    p->restore();
+}
+
 #if QT_CONFIG(tabbar)
 void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const
 {
@@ -1942,19 +1993,8 @@ NSCell *QMacStylePrivate::cocoaCell(CocoaControl widget) const
 void QMacStylePrivate::drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, DrawRectBlock drawRectBlock) const
 {
     QPoint offset;
-    if (widget == CocoaControl(Button_RadioButton, QStyleHelper::SizeLarge))
-        offset.setY(2);
-    else if (widget == CocoaControl(Button_RadioButton, QStyleHelper::SizeSmall))
-        offset = QPoint(-1, 2);
-    else if (widget == CocoaControl(Button_RadioButton, QStyleHelper::SizeMini))
-        offset.setY(2);
-    else if (widget == CocoaControl(Button_PopupButton, QStyleHelper::SizeSmall)
-             || widget == CocoaControl(Button_CheckBox, QStyleHelper::SizeLarge))
+    if (widget == CocoaControl(Button_PopupButton, QStyleHelper::SizeSmall))
         offset.setY(1);
-    else if (widget == CocoaControl(Button_CheckBox, QStyleHelper::SizeSmall))
-        offset.setX(-1);
-    else if (widget == CocoaControl(Button_CheckBox, QStyleHelper::SizeMini))
-        offset = QPoint(7, 5);
     else if (widget == CocoaControl(Button_PopupButton, QStyleHelper::SizeMini))
         offset = QPoint(2, -1);
     else if (widget == CocoaControl(Button_PullDown, QStyleHelper::SizeLarge))
@@ -2311,7 +2351,15 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 
     case PM_CheckBoxLabelSpacing:
     case PM_RadioButtonLabelSpacing:
-        ret = 4;
+        ret = [=] {
+            if (opt) {
+                if (opt->state & State_Mini)
+                    return 4;
+                if (opt->state & State_Small)
+                    return 3;
+            }
+            return 2;
+        } ();
         break;
     case PM_MenuScrollerHeight:
         ret = 15; // I hate having magic numbers in here...
@@ -3264,25 +3312,16 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         tb.state = (opt->state & State_NoChange) ? NSMixedState :
                    (opt->state & State_On) ? NSOnState : NSOffState;
         [tb highlight:isPressed];
+        const auto vOffset = [=] {
+            // As measured
+            if (cs == QStyleHelper::SizeMini)
+                return ct == QMacStylePrivate::Button_CheckBox ? -0.5 : 0.5;
+
+            return cs == QStyleHelper::SizeSmall ? 0.5 : 0.0;
+        } ();
         d->drawNSViewInRect(cw, tb, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
-            CGContextTranslateCTM(ctx, 2, isRadioButton ? -2 : -1);
+            CGContextTranslateCTM(ctx, 0, vOffset);
             [tb.cell drawInteriorWithFrame:rect inView:tb];
-            if (opt->state & State_HasFocus) {
-                CGContextSetAlpha(ctx, 0.5);
-                CGContextSetStrokeColorWithColor(ctx, NSColor.keyboardFocusIndicatorColor.CGColor);
-                CGContextSetLineWidth(ctx, 3.5);
-                CGContextSetLineJoin(ctx, kCGLineJoinRound);
-                if (isRadioButton) {
-                    const auto rbRect = CGRectOffset(CGRectInset(rect, 0.25, -0.25), -0.5, 0);
-                    CGContextAddEllipseInRect(ctx, rbRect);
-                } else {
-                    const auto cbRect = CGRectOffset(CGRectInset(rect, 1.25, 0.75), -0.5, 0);
-                    CGPathRef cbPath = CGPathCreateWithRoundedRect(cbRect, 4, 4, nullptr);
-                    CGContextAddPath(ctx, cbPath);
-                    CFRelease(cbPath);
-                }
-                CGContextStrokePath(ctx);
-            }
         });
         break; }
     case PE_FrameFocusRect:
@@ -4103,9 +4142,28 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         break;
 #endif
     case CE_FocusFrame: {
+        const auto *ff = qobject_cast<const QFocusFrame *>(w);
+        const auto *ffw = ff ? ff->widget() : nullptr;
+        const auto ct = [=] {
+            if (ffw) {
+                if (ffw->inherits("QCheckBox"))
+                    return QMacStylePrivate::Button_CheckBox;
+                if (ffw->inherits("QRadioButton"))
+                    return QMacStylePrivate::Button_RadioButton;
+            }
+
+            return QMacStylePrivate::Box; // Not really, just make it the default
+        } ();
         const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, w);
         const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt, w);
-        d->drawFocusRing(p, opt->rect, hMargin, vMargin);
+        if (ct == QMacStylePrivate::Box) {
+            d->drawFocusRing(p, opt->rect, hMargin, vMargin);
+        } else if (ffw) {
+            const auto cs = ffw->testAttribute(Qt::WA_MacMiniSize) ? QStyleHelper::SizeMini :
+                            ffw->testAttribute(Qt::WA_MacSmallSize) ? QStyleHelper::SizeSmall :
+                            QStyleHelper::SizeLarge;
+            d->drawFocusRing(p, opt->rect, hMargin, vMargin, QMacStylePrivate::CocoaControl(ct, cs));
+        }
         break; }
     case CE_MenuEmptyArea:
         // Skip: PE_PanelMenu fills in everything
