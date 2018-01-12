@@ -127,3 +127,15 @@ while (query1.next()) {
     }                                            // query1, and cause the loop to quit
 }
 //! [37]
+
+
+//! [39]
+QSqlDatabase db = QSqlDatabase::addDatabase("QODBC3");
+QString connectString = QStringLiteral(
+    "DRIVER=/path/to/installation/libodbcHDB.so;"
+    "SERVERNODE=hostname:port;"
+    "UID=USER;"
+    "PWD=PASSWORD;"
+    "SCROLLABLERESULT=true");
+db.setDatabaseName(connectString);
+//! [39]

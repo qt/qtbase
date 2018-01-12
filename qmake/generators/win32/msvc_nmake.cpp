@@ -51,7 +51,7 @@ static QString nmakePathList(const QStringList &list)
             .replace('#', QLatin1String("^#")).replace('$', QLatin1String("$$"));
 }
 
-NmakeMakefileGenerator::NmakeMakefileGenerator() : Win32MakefileGenerator(), usePCH(false)
+NmakeMakefileGenerator::NmakeMakefileGenerator() : usePCH(false), usePCHC(false)
 {
 
 }
@@ -324,6 +324,8 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
           << escapeDependencyPaths(findDependencies(precompH)).join(" \\\n\t\t")
           << "\n\t$(CXX) " + precompRule +" $(CXXFLAGS) $(INCPATH) -TP "
           << escapeFilePath(precompH) << endl << endl;
+    }
+    if (usePCHC) {
         QString precompRuleC = QString("-c -Yc -Fp%1 -Fo%2")
                 .arg(escapeFilePath(precompPchC), escapeFilePath(precompObjC));
         t << escapeDependencyPath(precompObjC) << ": " << escapeDependencyPath(precompH) << ' '
@@ -335,14 +337,14 @@ void NmakeMakefileGenerator::writeNmakeParts(QTextStream &t)
 
 QString NmakeMakefileGenerator::var(const ProKey &value) const
 {
-    if (usePCH) {
+    if (usePCH || usePCHC) {
         const bool isRunC = (value == "QMAKE_RUN_CC_IMP_BATCH"
                              || value == "QMAKE_RUN_CC_IMP"
                              || value == "QMAKE_RUN_CC");
-        if (isRunC
-            || value == "QMAKE_RUN_CXX_IMP_BATCH"
-            || value == "QMAKE_RUN_CXX_IMP"
-            || value == "QMAKE_RUN_CXX") {
+        const bool isRunCpp = (value == "QMAKE_RUN_CXX_IMP_BATCH"
+                               || value == "QMAKE_RUN_CXX_IMP"
+                               || value == "QMAKE_RUN_CXX");
+        if ((isRunCpp && usePCH) || (isRunC && usePCHC)) {
             QFileInfo precompHInfo(fileInfo(precompH));
             QString precompH_f = escapeFilePath(precompHInfo.fileName());
             QString precompRule = QString("-c -FI%1 -Yu%2 -Fp%3")
@@ -410,21 +412,24 @@ void NmakeMakefileGenerator::init()
     // Setup PCH variables
     precompH = project->first("PRECOMPILED_HEADER").toQString();
     usePCH = !precompH.isEmpty() && project->isActiveConfig("precompile_header");
+    usePCHC = !precompH.isEmpty() && project->isActiveConfig("precompile_header_c");
     if (usePCH) {
         // Created files
         precompObj = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch" + Option::obj_ext;
         precompPch = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch.pch";
-        precompObjC = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch_c" + Option::obj_ext;
-        precompPchC = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch_c.pch";
         // Add linking of precompObj (required for whole precompiled classes)
-        project->values("OBJECTS")                  += precompObj;
-        project->values("OBJECTS")                  += precompObjC;
+        project->values("OBJECTS") += precompObj;
         // Add pch file to cleanup
-        project->values("QMAKE_CLEAN")          += precompPch;
-        project->values("QMAKE_CLEAN")          += precompPchC;
+        project->values("QMAKE_CLEAN") += precompPch;
         // Return to variable pool
         project->values("PRECOMPILED_OBJECT") = ProStringList(precompObj);
         project->values("PRECOMPILED_PCH")    = ProStringList(precompPch);
+    }
+    if (usePCHC) {
+        precompObjC = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch_c" + Option::obj_ext;
+        precompPchC = var("PRECOMPILED_DIR") + project->first("TARGET") + "_pch_c.pch";
+        project->values("OBJECTS") += precompObjC;
+        project->values("QMAKE_CLEAN") += precompPchC;
         project->values("PRECOMPILED_OBJECT_C") = ProStringList(precompObjC);
         project->values("PRECOMPILED_PCH_C")    = ProStringList(precompPchC);
     }

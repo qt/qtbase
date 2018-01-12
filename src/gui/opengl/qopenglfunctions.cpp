@@ -4478,7 +4478,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendBarrier.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendBarrier.xml}{glBlendBarrier()}.
 */
 
 /*!
@@ -4491,7 +4491,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendEquationSeparatei.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendEquationSeparatei.xml}{glBlendEquationSeparatei()}.
 */
 
 /*!
@@ -4504,7 +4504,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendEquationi.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendEquationi.xml}{glBlendEquationi()}.
 */
 
 /*!
@@ -4517,7 +4517,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendFuncSeparatei.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendFuncSeparatei.xml}{glBlendFuncSeparatei()}.
 */
 
 /*!
@@ -4530,7 +4530,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendFunci.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glBlendFunci.xml}{glBlendFunci()}.
 */
 
 /*!
@@ -4543,7 +4543,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glColorMaski.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glColorMaski.xml}{glColorMaski()}.
 */
 
 /*!
@@ -4556,7 +4556,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glCopyImageSubData.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glCopyImageSubData.xml}{glCopyImageSubData()}.
 */
 
 /*!
@@ -4569,7 +4569,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageCallback.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageCallback.xml}{glDebugMessageCallback()}.
 */
 
 /*!
@@ -4582,7 +4582,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageControl.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageControl.xml}{glDebugMessageContro()}.
 */
 
 /*!
@@ -4595,7 +4595,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageInsert.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDebugMessageInsert.xml}{glDebugMessageInsert()}.
 */
 
 /*!
@@ -4608,7 +4608,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDisablei.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDisablei.xml}{glDisablei()}.
 */
 
 /*!
@@ -4621,7 +4621,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawElementsBaseVertex.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawElementsBaseVertex.xml}{glDrawElementsBaseVerte()}.
 */
 
 /*!
@@ -4634,7 +4634,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawElementsInstancedBaseVertex.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawElementsInstancedBaseVertex.xml}{glDrawElementsInstancedBaseVerte()}.
 */
 
 /*!
@@ -4647,7 +4647,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawRangeElementsBaseVertex.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glDrawRangeElementsBaseVertex.xml}{glDrawRangeElementsBaseVerte()}.
 */
 
 /*!
@@ -4660,7 +4660,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glEnablei.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glEnablei.xml}{glEnablei()}.
 */
 
 /*!
@@ -4673,7 +4673,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glFramebufferTexture.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glFramebufferTexture.xml}{glFramebufferTexture()}.
 */
 
 /*!
@@ -4686,7 +4686,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetDebugMessageLog.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetDebugMessageLog.xml}{glGetDebugMessageLog()}.
 */
 
 /*!
@@ -4699,7 +4699,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetGraphicsResetStatus.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetGraphicsResetStatus.xml}{glGetGraphicsResetStatus()}.
 */
 
 /*!
@@ -4712,7 +4712,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetObjectLabel.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetObjectLabel.xml}{glGetObjectLabe()}.
 */
 
 /*!
@@ -4725,7 +4725,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetObjectPtrLabel.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetObjectPtrLabel.xml}{glGetObjectPtrLabe()}.
 */
 
 /*!
@@ -4738,7 +4738,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetPointerv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetPointerv.xml}{glGetPointerv()}.
 */
 
 /*!
@@ -4751,7 +4751,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetSamplerParameterIiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetSamplerParameterIiv.xml}{glGetSamplerParameterIiv()}.
 */
 
 /*!
@@ -4764,7 +4764,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetSamplerParameterIuiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetSamplerParameterIuiv.xml}{glGetSamplerParameterIuiv()}.
 */
 
 /*!
@@ -4777,7 +4777,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetTexParameterIiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetTexParameterIiv.xml}{glGetTexParameterIiv()}.
 */
 
 /*!
@@ -4790,7 +4790,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetTexParameterIuiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetTexParameterIuiv.xml}{glGetTexParameterIuiv()}.
 */
 
 /*!
@@ -4803,7 +4803,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformfv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformfv.xml}{glGetnUniformfv()}.
 */
 
 /*!
@@ -4816,7 +4816,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformiv.xml}{glGetnUniformiv()}.
 */
 
 /*!
@@ -4829,7 +4829,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformuiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glGetnUniformuiv.xml}{glGetnUniformuiv()}.
 */
 
 /*!
@@ -4842,7 +4842,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glIsEnabledi.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glIsEnabledi.xml}{glIsEnabledi()}.
 */
 
 /*!
@@ -4855,7 +4855,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glMinSampleShading.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glMinSampleShading.xml}{glMinSampleShading()}.
 */
 
 /*!
@@ -4868,7 +4868,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glObjectLabel.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glObjectLabel.xml}{glObjectLabe()}.
 */
 
 /*!
@@ -4881,7 +4881,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glObjectPtrLabel.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glObjectPtrLabel.xml}{glObjectPtrLabe()}.
 */
 
 /*!
@@ -4894,7 +4894,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPatchParameteri.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPatchParameteri.xml}{glPatchParameteri()}.
 */
 
 /*!
@@ -4907,7 +4907,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPopDebugGroup.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPopDebugGroup.xml}{glPopDebugGroup()}.
 */
 
 /*!
@@ -4920,7 +4920,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPrimitiveBoundingBox.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPrimitiveBoundingBox.xml}{glPrimitiveBoundingBo()}.
 */
 
 /*!
@@ -4933,7 +4933,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPushDebugGroup.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glPushDebugGroup.xml}{glPushDebugGroup()}.
 */
 
 /*!
@@ -4946,7 +4946,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glReadnPixels.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glReadnPixels.xml}{glReadnPixels()}.
 */
 
 /*!
@@ -4959,7 +4959,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glSamplerParameterIiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glSamplerParameterIiv.xml}{glSamplerParameterIiv()}.
 */
 
 /*!
@@ -4972,7 +4972,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glSamplerParameterIuiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glSamplerParameterIuiv.xml}{glSamplerParameterIuiv()}.
 */
 
 /*!
@@ -4985,7 +4985,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexBuffer.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexBuffer.xml}{glTexBuffer()}.
 */
 
 /*!
@@ -4998,7 +4998,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexBufferRange.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexBufferRange.xml}{glTexBufferRange()}.
 */
 
 /*!
@@ -5011,7 +5011,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexParameterIiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexParameterIiv.xml}{glTexParameterIiv()}.
 */
 
 /*!
@@ -5024,7 +5024,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexParameterIuiv.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexParameterIuiv.xml}{glTexParameterIuiv()}.
 */
 
 /*!
@@ -5037,7 +5037,7 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     function either in core or as an extension.
 
     For more information, see the OpenGL ES 3.2 documentation for
-    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexStorage3DMultisample.xml}{${NAME}()}.
+    \l{http://www.khronos.org/opengles/sdk/docs/man32/glTexStorage3DMultisample.xml}{glTexStorage3DMultisample()}.
 */
 
 /*!
