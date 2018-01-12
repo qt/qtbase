@@ -234,6 +234,7 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
     : QWidget(parent),
       m_pagePreview(nullptr),
       m_printer(nullptr),
+      m_printDevice(nullptr),
       m_outputFormat(QPrinter::PdfFormat),
       m_units(QPageLayout::Point),
       m_savedUnits(QPageLayout::Point),
@@ -388,6 +389,7 @@ void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
                                   QPrinter::OutputFormat outputFormat, const QString &printerName)
 {
     m_printer = printer;
+    m_printDevice = printDevice;
 
     // Initialize the layout to the current QPrinter layout
     m_pageLayout = m_printer->pageLayout();
@@ -551,19 +553,20 @@ void QPageSetupWidget::pageSizeChanged()
     if (m_blockSignals)
         return;
 
+    QPageSize pageSize;
     if (m_ui.pageSizeCombo->currentIndex() != m_realCustomPageSizeIndex) {
-        const QPageSize pageSize = m_ui.pageSizeCombo->currentData().value<QPageSize>();
-        // TODO Set layout margin min/max to printer custom min/max
-        m_pageLayout.setPageSize(pageSize);
+        pageSize = m_ui.pageSizeCombo->currentData().value<QPageSize>();
     } else {
         QSizeF customSize;
         if (m_pageLayout.orientation() == QPageLayout::Landscape)
             customSize = QSizeF(m_ui.pageHeight->value(), m_ui.pageWidth->value());
         else
             customSize = QSizeF(m_ui.pageWidth->value(), m_ui.pageHeight->value());
-        // TODO Set layout margin min/max to printer min/max for page size
-        m_pageLayout.setPageSize(QPageSize(customSize, QPageSize::Unit(m_units)));
+        pageSize = QPageSize(customSize, QPageSize::Unit(m_units));
     }
+    const QMarginsF printable = m_printDevice ? m_printDevice->printableMargins(pageSize, m_pageLayout.orientation(), m_printer->resolution())
+                                              : QMarginsF();
+    m_pageLayout.setPageSize(pageSize, qt_convertMargins(printable, QPageLayout::Point, m_pageLayout.units()));
     m_pagePreview->setPageLayout(m_pageLayout);
 
     updateWidget();

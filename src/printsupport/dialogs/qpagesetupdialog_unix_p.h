@@ -99,6 +99,7 @@ private:
     Ui::QPageSetupWidget m_ui;
     QPagePreview *m_pagePreview;
     QPrinter *m_printer;
+    QPrintDevice *m_printDevice;
     QPrinter::OutputFormat m_outputFormat;
     QString m_printerName;
     QPageLayout m_pageLayout;
