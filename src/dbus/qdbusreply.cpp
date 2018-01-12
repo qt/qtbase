@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     If the remote method call cannot fail, you can skip the error checking:
     \snippet code/src_qdbus_qdbusreply.cpp 1
 
-    However, if it does fail under those conditions, the value returned by QDBusReply::value() is
+    However, if it does fail under those conditions, the value returned by QDBusReply<T>::value() is
     a default-constructed value. It may be indistinguishable from a valid return value.
 
     QDBusReply objects are used for remote calls that have no output
@@ -75,18 +75,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QDBusReply::QDBusReply(const QDBusMessage &reply)
+    \fn template<typename T> QDBusReply<T>::QDBusReply(const QDBusMessage &reply)
     Automatically construct a QDBusReply object from the reply message \a reply, extracting the
     first return value from it if it is a success reply.
 */
 
 /*!
-    \fn QDBusReply::QDBusReply(const QDBusPendingReply<T> &reply)
+    \fn template<typename T> QDBusReply<T>::QDBusReply(const QDBusPendingReply &reply)
     Constructs a QDBusReply object from the pending reply message, \a reply.
 */
 
 /*!
-    \fn QDBusReply::QDBusReply(const QDBusPendingCall &pcall)
+    \fn template <typename T> QDBusReply<T>::QDBusReply(const QDBusPendingCall &pcall)
     Automatically construct a QDBusReply object from the asynchronous
     pending call \a pcall. If the call isn't finished yet, QDBusReply
     will call QDBusPendingCall::waitForFinished(), which is a blocking
@@ -97,29 +97,29 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QDBusReply::QDBusReply(const QDBusError &error)
+    \fn template <typename T> QDBusReply<T>::QDBusReply(const QDBusError &error)
     Constructs an error reply from the D-Bus error code given by \a error.
 */
 
 /*!
-    \fn QDBusReply::operator=(const QDBusReply &other)
+    \fn template <typename T> QDBusReply<T>::operator=(const QDBusReply &other)
     Makes this object be a copy of the object \a other.
 */
 
 /*!
-    \fn QDBusReply::operator=(const QDBusError &error)
-    Sets this object to contain the error code given by \a error. You
+    \fn template <typename T> QDBusReply<T>::operator=(const QDBusError &dbusError)
+    Sets this object to contain the error code given by \a dbusError. You
     can later access it with error().
 */
 
 /*!
-    \fn QDBusReply::operator=(const QDBusMessage &message)
+    \fn template <typename T> QDBusReply<T>::operator=(const QDBusMessage &reply)
 
-    Makes this object contain the reply specified by message \a
-    message. If \a message is an error message, this function will
+    Makes this object contain the \a reply message. If \a reply
+    is an error message, this function will
     copy the error code and message into this object
 
-    If \a message is a standard reply message and contains at least
+    If \a reply is a standard reply message and contains at least
     one parameter, it will be copied into this object, as long as it
     is of the correct type. If it's not of the same type as this
     QDBusError object, this function will instead set an error code
@@ -127,7 +127,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QDBusReply::operator=(const QDBusPendingCall &pcall)
+    \fn template <typename T> QDBusReply<T>::operator=(const QDBusPendingCall &pcall)
 
     Makes this object contain the reply specified by the pending
     asynchronous call \a pcall. If the call is not finished yet, this
@@ -145,7 +145,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QDBusReply::isValid() const
+    \fn template <typename T> bool QDBusReply<T>::isValid() const
 
     Returns \c true if no error occurred; otherwise, returns \c false.
 
@@ -153,7 +153,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QDBusError& QDBusReply::error() const
+    \fn template<typename T> const QDBusError& QDBusReply<T>::error() const
 
     Returns the error code that was returned from the remote function call. If the remote call did
     not return an error (i.e., if it succeeded), then the QDBusError object that is returned will
@@ -163,12 +163,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn const QDBusError& QDBusReply::error()
+    \fn template <typename T> const QDBusError& QDBusReply<T>::error()
     \overload
 */
 
 /*!
-    \fn QDBusReply::value() const
+    \fn template <typename T> QDBusReply<T>::value() const
     Returns the remote function's calls return value. If the remote call returned with an error,
     the return value of this function is undefined and may be undistinguishable from a valid return
     value.
@@ -177,7 +177,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QDBusReply::operator Type() const
+    \fn template <typename T> QDBusReply<T>::operator Type() const
     Returns the same as value().
 
     This function is not available if the remote call returns \c void.

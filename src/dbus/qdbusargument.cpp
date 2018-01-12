@@ -267,11 +267,11 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
 */
 
 /*!
-    \fn qdbus_cast(const QDBusArgument &argument)
+    \fn qdbus_cast(const QDBusArgument &arg)
     \relates QDBusArgument
     \since 4.2
 
-    Attempts to demarshall the contents of \a argument into the type
+    Attempts to demarshall the contents of \a arg into the type
     \c{T}. For example:
 
     \snippet code/src_qdbus_qdbusargument.cpp 2
