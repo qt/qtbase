@@ -154,9 +154,9 @@ public:
         iterator(const iterator &o) Q_DECL_NOTHROW; // = default
         iterator &operator=(const iterator &o) Q_DECL_NOTHROW; // = default
         iterator(iterator &&other) Q_DECL_NOTHROW // = default
-        { memcpy(this, &other, sizeof(iterator)); }
+        { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(iterator)); }
         iterator &operator=(iterator &&other) Q_DECL_NOTHROW // = default
-        { memcpy(this, &other, sizeof(iterator)); return *this; }
+        { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(iterator)); return *this; }
 #endif
 
         QTextFrame *parentFrame() const { return f; }

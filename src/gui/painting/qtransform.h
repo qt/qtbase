@@ -78,14 +78,14 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // ### Qt 6: remove; the compiler-generated ones are fine!
     QTransform &operator=(QTransform &&other) Q_DECL_NOTHROW // = default
-    { memcpy(this, &other, sizeof(QTransform)); return *this; }
+    { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QTransform)); return *this; }
     QTransform &operator=(const QTransform &) Q_DECL_NOTHROW; // = default
     QTransform(QTransform &&other) Q_DECL_NOTHROW // = default
         : affine(Qt::Uninitialized)
-    { memcpy(this, &other, sizeof(QTransform)); }
+    { memcpy(static_cast<void *>(this), static_cast<void *>(&other), sizeof(QTransform)); }
     QTransform(const QTransform &other) Q_DECL_NOTHROW // = default
         : affine(Qt::Uninitialized)
-    { memcpy(this, &other, sizeof(QTransform)); }
+    { memcpy(static_cast<void *>(this), static_cast<const void *>(&other), sizeof(QTransform)); }
 #endif
 
     bool isAffine() const;
