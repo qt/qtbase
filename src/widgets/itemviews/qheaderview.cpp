@@ -361,9 +361,9 @@ void QHeaderView::setModel(QAbstractItemModel *model)
             QObject::disconnect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
                                 this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
             QObject::disconnect(d->model, SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-                                this, SLOT(_q_sectionsAboutToBeChanged()));
+                                this, SLOT(_q_sectionsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
             QObject::disconnect(d->model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
-                                this, SLOT(_q_sectionsChanged()));
+                                this, SLOT(_q_sectionsMoved(QModelIndex,int,int,QModelIndex,int)));
         } else {
             QObject::disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                                 this, SLOT(sectionsInserted(QModelIndex,int,int)));
@@ -372,16 +372,16 @@ void QHeaderView::setModel(QAbstractItemModel *model)
             QObject::disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                                 this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
             QObject::disconnect(d->model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-                                this, SLOT(_q_sectionsAboutToBeChanged()));
+                                this, SLOT(_q_sectionsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
             QObject::disconnect(d->model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
-                                this, SLOT(_q_sectionsChanged()));
+                                this, SLOT(_q_sectionsMoved(QModelIndex,int,int,QModelIndex,int)));
         }
         QObject::disconnect(d->model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                             this, SLOT(headerDataChanged(Qt::Orientation,int,int)));
-        QObject::disconnect(d->model, SIGNAL(layoutAboutToBeChanged()),
-                            this, SLOT(_q_sectionsAboutToBeChanged()));
-        QObject::disconnect(d->model, SIGNAL(layoutChanged()),
-                            this, SLOT(_q_sectionsChanged()));
+        QObject::disconnect(d->model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                            this, SLOT(_q_sectionsAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
+        QObject::disconnect(d->model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                            this, SLOT(_q_sectionsChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
     }
 
     if (model && model != QAbstractItemModelPrivate::staticEmptyModel()) {
@@ -393,9 +393,9 @@ void QHeaderView::setModel(QAbstractItemModel *model)
             QObject::connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
                              this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
             QObject::connect(model, SIGNAL(columnsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-                             this, SLOT(_q_sectionsAboutToBeChanged()));
+                             this, SLOT(_q_sectionsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
             QObject::connect(model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
-                             this, SLOT(_q_sectionsChanged()));
+                             this, SLOT(_q_sectionsMoved(QModelIndex,int,int,QModelIndex,int)));
         } else {
             QObject::connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                              this, SLOT(sectionsInserted(QModelIndex,int,int)));
@@ -404,16 +404,16 @@ void QHeaderView::setModel(QAbstractItemModel *model)
             QObject::connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                              this, SLOT(_q_sectionsRemoved(QModelIndex,int,int)));
             QObject::connect(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)),
-                             this, SLOT(_q_sectionsAboutToBeChanged()));
+                             this, SLOT(_q_sectionsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
             QObject::connect(model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)),
-                             this, SLOT(_q_sectionsChanged()));
+                             this, SLOT(_q_sectionsMoved(QModelIndex,int,int,QModelIndex,int)));
         }
         QObject::connect(model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                          this, SLOT(headerDataChanged(Qt::Orientation,int,int)));
-        QObject::connect(model, SIGNAL(layoutAboutToBeChanged()),
-                         this, SLOT(_q_sectionsAboutToBeChanged()));
-        QObject::connect(model, SIGNAL(layoutChanged()),
-                         this, SLOT(_q_sectionsChanged()));
+        QObject::connect(model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                         this, SLOT(_q_sectionsAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
+        QObject::connect(model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                         this, SLOT(_q_sectionsChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
     }
 
     d->state = QHeaderViewPrivate::NoClear;
@@ -2150,8 +2150,33 @@ void QHeaderViewPrivate::_q_sectionsRemoved(const QModelIndex &parent,
     viewport->update();
 }
 
-void QHeaderViewPrivate::_q_sectionsAboutToBeChanged()
+void QHeaderViewPrivate::_q_sectionsAboutToBeMoved(const QModelIndex &sourceParent, int logicalStart, int logicalEnd, const QModelIndex &destinationParent, int logicalDestination)
 {
+    if (sourceParent != root || destinationParent != root)
+        return; // we only handle changes in the root level
+    Q_UNUSED(logicalStart);
+    Q_UNUSED(logicalEnd);
+    Q_UNUSED(logicalDestination);
+    _q_sectionsAboutToBeChanged();
+}
+
+void QHeaderViewPrivate::_q_sectionsMoved(const QModelIndex &sourceParent, int logicalStart, int logicalEnd, const QModelIndex &destinationParent, int logicalDestination)
+{
+    if (sourceParent != root || destinationParent != root)
+        return; // we only handle changes in the root level
+    Q_UNUSED(logicalStart);
+    Q_UNUSED(logicalEnd);
+    Q_UNUSED(logicalDestination);
+    _q_sectionsChanged();
+}
+
+void QHeaderViewPrivate::_q_sectionsAboutToBeChanged(const QList<QPersistentModelIndex> &,
+                                                     QAbstractItemModel::LayoutChangeHint hint)
+{
+    if ((hint == QAbstractItemModel::VerticalSortHint && orientation == Qt::Horizontal) ||
+        (hint == QAbstractItemModel::HorizontalSortHint && orientation == Qt::Vertical))
+        return;
+
     //if there is no row/column we can't have mapping for columns
     //because no QModelIndex in the model would be valid
     // ### this is far from being bullet-proof and we would need a real system to
@@ -2190,8 +2215,13 @@ void QHeaderViewPrivate::_q_sectionsAboutToBeChanged()
     }
 }
 
-void QHeaderViewPrivate::_q_sectionsChanged()
+void QHeaderViewPrivate::_q_sectionsChanged(const QList<QPersistentModelIndex> &,
+                                            QAbstractItemModel::LayoutChangeHint hint)
 {
+    if ((hint == QAbstractItemModel::VerticalSortHint && orientation == Qt::Horizontal) ||
+        (hint == QAbstractItemModel::HorizontalSortHint && orientation == Qt::Vertical))
+        return;
+
     Q_Q(QHeaderView);
     viewport->update();
 
