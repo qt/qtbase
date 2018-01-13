@@ -282,7 +282,7 @@ static inline XTextProperty* qstringToXTP(Display *dpy, const QString& s)
         tl[1] = 0;
         errCode = XmbTextListToTextProperty(dpy, tl, 1, XStdICCTextStyle, &tp);
         if (errCode < 0)
-            qDebug("XmbTextListToTextProperty result code %d", errCode);
+            qCDebug(lcQpaXcb, "XmbTextListToTextProperty result code %d", errCode);
     }
     if (!mapper || errCode < 0) {
         mapper = QTextCodec::codecForName("latin1");

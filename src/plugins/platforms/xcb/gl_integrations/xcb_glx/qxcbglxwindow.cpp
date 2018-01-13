@@ -60,7 +60,7 @@ const xcb_visualtype_t *QXcbGlxWindow::createVisual()
     if (!scr)
         return Q_NULLPTR;
 
-    qDebug(lcQpaGl) << "Requested format before FBConfig/Visual selection:" << m_format;
+    qCDebug(lcQpaGl) << "Requested format before FBConfig/Visual selection:" << m_format;
 
     Display *dpy = static_cast<Display *>(scr->connection()->xlib_display());
     const char *glxExts = glXQueryExtensionsString(dpy, scr->screenNumber());
@@ -79,7 +79,7 @@ const xcb_visualtype_t *QXcbGlxWindow::createVisual()
     const xcb_visualtype_t *xcb_visualtype = scr->visualForId(visualInfo->visualid);
     XFree(visualInfo);
 
-    qDebug(lcQpaGl) << "Got format:" << m_format;
+    qCDebug(lcQpaGl) << "Got format:" << m_format;
 
     return xcb_visualtype;
 }

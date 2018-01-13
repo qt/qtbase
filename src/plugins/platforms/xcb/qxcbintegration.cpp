@@ -176,8 +176,8 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 
 #if defined(QT_DEBUG)
     if (!noGrabArg && !doGrabArg && underDebugger) {
-        qDebug("Qt: gdb: -nograb added to command-line options.\n"
-               "\t Use the -dograb option to enforce grabbing.");
+        qCDebug(lcQpaXcb, "Qt: gdb: -nograb added to command-line options.\n"
+                "\t Use the -dograb option to enforce grabbing.");
     }
 #endif
     m_canGrab = (!underDebugger && !noGrabArg) || (underDebugger && doGrabArg);
@@ -213,7 +213,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters, int &argc, char 
 
 #if QT_CONFIG(xcb_native_painting)
     if (nativePaintingEnabled()) {
-        qDebug("QXCB USING NATIVE PAINTING");
+        qCDebug(lcQpaXcb, "QXCB USING NATIVE PAINTING");
         qt_xcb_native_x11_info_init(defaultConnection());
     }
 #endif
