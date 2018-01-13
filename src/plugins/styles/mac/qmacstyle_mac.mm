@@ -1126,46 +1126,33 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
     static const QString keyFormat = QLatin1String("$qt_focusring%1-%2-%3-%4");
     const QString &key = keyFormat.arg(hMargin).arg(vMargin).arg(radius).arg(pixelRatio);
     QPixmap focusRingPixmap;
-    const qreal size = radius * 2 + 5;
 
     if (!QPixmapCache::find(key, focusRingPixmap)) {
+        const qreal size = radius * 2 + 5;
         focusRingPixmap = QPixmap((QSize(size, size) + 2 * QSize(hMargin, vMargin)) * pixelRatio);
         focusRingPixmap.fill(Qt::transparent);
         focusRingPixmap.setDevicePixelRatio(pixelRatio);
-        {
-            const CGFloat focusRingWidth = radius > 0 ? 3.5 : 6;
-            QMacAutoReleasePool pool;
-            QMacCGContext ctx(&focusRingPixmap);
-            setupNSGraphicsContext(ctx, NO);
 
-            CGContextBeginTransparencyLayer(ctx, NULL);
-            CGContextSetAlpha(ctx, 0.5); // As applied to the stroke color below
+        static const qreal focusRingWidth = 3.5;
+        const auto focusRingRect = QRectF(hMargin, vMargin, size, size);
+        QPainterPath focusRingPath;
+        focusRingPath.setFillRule(Qt::OddEvenFill);
+        const auto innerRect = radius > 0 ? focusRingRect : focusRingRect.adjusted(0.5, 0.5, -0.5, -0.5);
+        if (radius > 0)
+            focusRingPath.addRoundedRect(innerRect, radius, radius);
+        else
+            focusRingPath.addRect(innerRect);
 
-            CGRect focusRingRect = CGRectMake(hMargin, vMargin, size, size);
-            NSBezierPath *focusRingPath;
-            if (radius > 0) {
-                const CGFloat roundedRectInset = -1.5;
-                focusRingPath = [NSBezierPath bezierPathWithRoundedRect:NSRectFromCGRect(CGRectInset(focusRingRect, roundedRectInset, roundedRectInset))
-                                                                xRadius:radius
-                                                                yRadius:radius];
-            } else {
-                const CGFloat outerClipInset = -focusRingWidth / 2;
-                NSBezierPath *focusRingClipPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(CGRectInset(focusRingRect, outerClipInset, outerClipInset))];
-                const CGFloat innerClipInset = 1;
-                NSBezierPath *focusRingInnerClipPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(CGRectInset(focusRingRect, innerClipInset, innerClipInset))];
-                [focusRingClipPath appendBezierPath:focusRingInnerClipPath.bezierPathByReversingPath];
-                [focusRingClipPath setClip];
-                focusRingPath = [NSBezierPath bezierPathWithRect:NSRectFromCGRect(focusRingRect)];
-                focusRingPath.lineJoinStyle = NSRoundLineJoinStyle;
-            }
+        const auto outterRect = innerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
+        const auto outterRadius = radius + focusRingWidth;
+        focusRingPath.addRoundedRect(outterRect, outterRadius, outterRadius);
 
-            focusRingPath.lineWidth = focusRingWidth;
-            [[NSColor keyboardFocusIndicatorColor] setStroke];
-            [focusRingPath stroke];
+        QPainter pp(&focusRingPixmap);
+        pp.setOpacity(0.5);
+        pp.setRenderHint(QPainter::Antialiasing);
+        const auto focusRingColor = qt_mac_toQColor(NSColor.keyboardFocusIndicatorColor.CGColor);
+        pp.fillPath(focusRingPath, focusRingColor);
 
-            CGContextEndTransparencyLayer(ctx);
-            restoreNSGraphicsContext(ctx);
-        }
         QPixmapCache::insert(key, focusRingPixmap);
     }
 
@@ -3795,7 +3782,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     }
                 }
 
-                const qreal radius = bdi.kind == kThemeBevelButton ? 0 : 4;
+                const qreal radius = bdi.kind == kThemeBevelButton ? 0 : 3;
                 const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, btn, w);
                 const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, btn, w);
                 const QRect focusTargetRect(focusRect.origin.x, focusRect.origin.y, focusRect.size.width, focusRect.size.height);
