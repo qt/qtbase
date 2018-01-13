@@ -889,6 +889,13 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int 
                 break;
             }
 
+            if (wrapText) {
+                if (option->features & QStyleOptionViewItem::HasCheckIndicator)
+                    bounds.setWidth(bounds.width() - proxyStyle->pixelMetric(QStyle::PM_IndicatorWidth) - 2 * textMargin);
+                if (option->features & QStyleOptionViewItem::HasDecoration)
+                    bounds.setWidth(bounds.width() - option->decorationSize.width() - 2 * textMargin);
+            }
+
             const int lineWidth = bounds.width();
             const QSizeF size = viewItemTextLayout(textLayout, lineWidth);
             return QSize(qCeil(size.width()) + 2 * textMargin, qCeil(size.height()));

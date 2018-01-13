@@ -971,6 +971,9 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
         option.rect.setHeight(height);
         option.rect.setX(q->columnViewportPosition(index.column()));
         option.rect.setWidth(q->columnWidth(index.column()));
+        // 1px less space when grid is shown (see drawCell)
+        if (showGrid)
+            option.rect.setWidth(option.rect.width() - 1);
     }
     hint = qMax(hint, q->itemDelegate(index)->sizeHint(option, index).height());
     return hint;
