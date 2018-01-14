@@ -1338,7 +1338,7 @@ static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &cont
             fprintf(stderr, "Error registering slogger2 buffer!\n");
             fprintf(stderr, "%s", formattedMessage.toLocal8Bit().constData());
             fflush(stderr);
-            return;
+            return false;
         }
 
         // Set as the default buffer
@@ -1346,7 +1346,7 @@ static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &cont
     }
     int severity;
     //Determines the severity level
-    switch (msgType) {
+    switch (type) {
     case QtDebugMsg:
         severity = SLOG2_DEBUG1;
         break;
