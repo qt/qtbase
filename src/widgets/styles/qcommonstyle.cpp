@@ -994,11 +994,14 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItem *opt,  QRect
     const bool hasCheck = checkRect->isValid();
     const bool hasPixmap = pixmapRect->isValid();
     const bool hasText = textRect->isValid();
-    const int textMargin = hasText ? proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
-    const int pixmapMargin = hasPixmap ? proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
-    const int checkMargin = hasCheck ? proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
-    int x = opt->rect.left();
-    int y = opt->rect.top();
+    const bool hasMargin = (hasText | hasPixmap | hasCheck);
+    const int frameHMargin = hasMargin ?
+                proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget) + 1 : 0;
+    const int textMargin = hasText ? frameHMargin : 0;
+    const int pixmapMargin = hasPixmap ? frameHMargin : 0;
+    const int checkMargin = hasCheck ? frameHMargin : 0;
+    const int x = opt->rect.left();
+    const int y = opt->rect.top();
     int w, h;
 
     if (textRect->height() == 0 && (!hasPixmap || !sizehint)) {

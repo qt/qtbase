@@ -803,11 +803,14 @@ void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
     const bool hasCheck = checkRect->isValid();
     const bool hasPixmap = pixmapRect->isValid();
     const bool hasText = textRect->isValid();
-    const int textMargin = hasText ? style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, widget) + 1 : 0;
-    const int pixmapMargin = hasPixmap ? style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, widget) + 1 : 0;
-    const int checkMargin = hasCheck ? style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, widget) + 1 : 0;
-    int x = option.rect.left();
-    int y = option.rect.top();
+    const bool hasMargin = (hasText | hasPixmap | hasCheck);
+    const int frameHMargin = hasMargin ?
+                style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, widget) + 1 : 0;
+    const int textMargin = hasText ? frameHMargin : 0;
+    const int pixmapMargin = hasPixmap ? frameHMargin : 0;
+    const int checkMargin = hasCheck ? frameHMargin : 0;
+    const int x = option.rect.left();
+    const int y = option.rect.top();
     int w, h;
 
     textRect->adjust(-textMargin, 0, textMargin, 0); // add width padding
