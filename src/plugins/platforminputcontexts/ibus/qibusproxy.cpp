@@ -33,10 +33,53 @@ QIBusProxy::~QIBusProxy()
 {
 }
 
+#ifdef QIBUS_GET_ADDRESS
+QString QIBusProxy::getAddress()
+{
+    QDBusReply<QDBusVariant> reply = Address();
+    QVariant variant = reply.value().variant();
+    if (!variant.isValid())
+        return QString();
+    return variant.toString();
+}
+#endif
+
+#ifdef QIBUS_GET_ENGINES
+QList<QIBusEngineDesc> QIBusProxy::getEngines()
+{
+    QList<QIBusEngineDesc> engines;
+    QDBusReply<QDBusVariant> reply = Engines();
+    QVariant variant = reply.value().variant();
+    if (!variant.isValid())
+        return engines;
+    const QDBusArgument argument = variant.value<QDBusArgument>();
+    qCDebug(qtQpaInputMethodsSerialize) << "QIBusProxy::getEngines()" << argument.currentSignature();
+
+    int i = 1;
+    argument.beginMap();
+    while (!argument.atEnd()) {
+        QDBusVariant value;
+        argument >> value;
+        if (!value.variant().isValid()) {
+            qWarning() << "Warning in QIBusProxy::getEngines():" << QString::asprintf("%dth variant is wrong", i);
+            break;
+        }
+        const QDBusArgument desc_arg = value.variant().value<QDBusArgument>();
+
+        QIBusEngineDesc desc;
+        desc_arg >> desc;
+        engines.append(desc);
+        ++i;
+    }
+    argument.endMap();
+    return engines;
+}
+#endif
+
 QIBusEngineDesc QIBusProxy::getGlobalEngine()
 {
     QIBusEngineDesc desc;
-    QDBusReply<QDBusVariant> reply = GetGlobalEngine();
+    QDBusReply<QDBusVariant> reply = GlobalEngine();
     QVariant variant = reply.value().variant();
     if (!variant.isValid())
         return desc;
