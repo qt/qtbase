@@ -297,9 +297,13 @@ public:
     static int naturalCompare(const QString &s1, const QString &s2, Qt::CaseSensitivity cs);
 
     QDir rootDir;
-#ifndef QT_NO_FILESYSTEMWATCHER
+#if QT_CONFIG(filesystemwatcher)
+#  ifdef Q_OS_WIN
+    QStringList unwatchPathsAt(const QModelIndex &);
+    void watchPaths(const QStringList &paths) { fileInfoGatherer.watchPaths(paths); }
+#  endif // Q_OS_WIN
     QFileInfoGatherer fileInfoGatherer;
-#endif
+#endif // filesystemwatcher
     QTimer delayedSortTimer;
     bool forceSort;
     int sortColumn;
