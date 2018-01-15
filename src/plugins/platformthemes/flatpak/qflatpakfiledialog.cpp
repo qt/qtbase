@@ -147,61 +147,7 @@ void QFlatpakFileDialog::initializeDialog()
     setDirectory(options()->initialDirectory());
 }
 
-bool QFlatpakFileDialog::defaultNameFilterDisables() const
-{
-    return false;
-}
-
-void QFlatpakFileDialog::setDirectory(const QUrl &directory)
-{
-    Q_D(QFlatpakFileDialog);
-
-    d->directory = directory.path();
-}
-
-QUrl QFlatpakFileDialog::directory() const
-{
-    Q_D(const QFlatpakFileDialog);
-
-    return d->directory;
-}
-
-void QFlatpakFileDialog::selectFile(const QUrl &filename)
-{
-    Q_D(QFlatpakFileDialog);
-
-    d->selectedFiles << filename.path();
-}
-
-QList<QUrl> QFlatpakFileDialog::selectedFiles() const
-{
-    Q_D(const QFlatpakFileDialog);
-
-    QList<QUrl> files;
-    for (const QString &file : d->selectedFiles) {
-        files << QUrl(file);
-    }
-    return files;
-}
-
-void QFlatpakFileDialog::setFilter()
-{
-    // TODO
-}
-
-void QFlatpakFileDialog::selectNameFilter(const QString &filter)
-{
-    Q_UNUSED(filter);
-    // TODO
-}
-
-QString QFlatpakFileDialog::selectedNameFilter() const
-{
-    // TODO
-    return QString();
-}
-
-void QFlatpakFileDialog::exec()
+void QFlatpakFileDialog::openPortal()
 {
     Q_D(const QFlatpakFileDialog);
 
@@ -305,7 +251,64 @@ void QFlatpakFileDialog::exec()
                                                   SLOT(gotResponse(uint,QVariantMap)));
         }
     });
+}
 
+bool QFlatpakFileDialog::defaultNameFilterDisables() const
+{
+    return false;
+}
+
+void QFlatpakFileDialog::setDirectory(const QUrl &directory)
+{
+    Q_D(QFlatpakFileDialog);
+
+    d->directory = directory.path();
+}
+
+QUrl QFlatpakFileDialog::directory() const
+{
+    Q_D(const QFlatpakFileDialog);
+
+    return d->directory;
+}
+
+void QFlatpakFileDialog::selectFile(const QUrl &filename)
+{
+    Q_D(QFlatpakFileDialog);
+
+    d->selectedFiles << filename.path();
+}
+
+QList<QUrl> QFlatpakFileDialog::selectedFiles() const
+{
+    Q_D(const QFlatpakFileDialog);
+
+    QList<QUrl> files;
+    for (const QString &file : d->selectedFiles) {
+        files << QUrl(file);
+    }
+    return files;
+}
+
+void QFlatpakFileDialog::setFilter()
+{
+    // TODO
+}
+
+void QFlatpakFileDialog::selectNameFilter(const QString &filter)
+{
+    Q_UNUSED(filter);
+    // TODO
+}
+
+QString QFlatpakFileDialog::selectedNameFilter() const
+{
+    // TODO
+    return QString();
+}
+
+void QFlatpakFileDialog::exec()
+{
     // HACK we have to avoid returning until we emit that the dialog was accepted or rejected
     QEventLoop loop;
     loop.connect(this, SIGNAL(accept()), SLOT(quit()));
@@ -326,6 +329,8 @@ bool QFlatpakFileDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality wi
 
     d->modal = windowModality != Qt::NonModal;
     d->winId = parent ? parent->winId() : 0;
+
+    openPortal();
 
     return true;
 }
