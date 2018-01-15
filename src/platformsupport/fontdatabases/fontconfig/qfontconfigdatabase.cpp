@@ -915,7 +915,7 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
 
     if (services) {
         const QList<QByteArray> desktopEnv = services->desktopEnvironment().split(':');
-        useXftConf = desktopEnv.contains("GNOME") || desktopEnv.contains("UNITY");
+        useXftConf = desktopEnv.contains("GNOME") || desktopEnv.contains("UNITY") || desktopEnv.contains("XFCE");
     }
 
     if (useXftConf && !forcedAntialiasSetting) {
