@@ -145,8 +145,7 @@ QSize QMacNativeWidget::sizeHint() const
     return QWidget::sizeHint();
 }
 
-/*! \fn NSView *QMacNativeWidget::nativeView() const
-
+/*!
     Returns the native view backing the QMacNativeWidget.
 
 */

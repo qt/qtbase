@@ -108,11 +108,9 @@ QMacCocoaViewContainerPrivate::~QMacCocoaViewContainerPrivate()
 }
 
 /*!
-    \fn QMacCocoaViewContainer::QMacCocoaViewContainer(NSView *cocoaViewToWrap, QWidget *parent)
-
-    Create a new QMacCocoaViewContainer using the NSView pointer in \a
-    cocoaViewToWrap with parent, \a parent. QMacCocoaViewContainer will
-    retain \a cocoaViewToWrap.
+    Create a new QMacCocoaViewContainer using the NSView pointer in
+    the \a view with parent, \a parent. QMacCocoaViewContainer will
+    retain the \a view.
 
 */
 QMacCocoaViewContainer::QMacCocoaViewContainer(NSView *view, QWidget *parent)
