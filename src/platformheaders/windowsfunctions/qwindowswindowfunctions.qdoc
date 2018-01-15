@@ -124,7 +124,7 @@
 */
 
 /*!
-    \fn QByteArray setWindowActivationBehaviorIdentifier()
+    \fn QByteArray QWindowsWindowFunctions::setWindowActivationBehaviorIdentifier()
 
     This function returns a bytearray that can be used to query
     QGuiApplication::platformFunction() to retrieve the SetWindowActivationBehaviorType

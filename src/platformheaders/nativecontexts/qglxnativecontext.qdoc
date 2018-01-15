@@ -77,7 +77,7 @@
  */
 
 /*!
-  \fn QGLXNativeContext::QGLXNativeContext(GLXContext ctx, Display *dpy = 0, Window wnd = 0, VisualID vid = 0)
+  \fn QGLXNativeContext::QGLXNativeContext(GLXContext ctx, Display *dpy, Window wnd, VisualID vid)
 
   Constructs a new instance with the provided \a ctx, \a dpy, \a wnd, \a vid handles.
  */

@@ -45,6 +45,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(Q_CLANG_QDOC)
+typedef void NSOpenGLContext;
+#endif
+
 struct QCocoaNativeContext
 {
     QCocoaNativeContext()

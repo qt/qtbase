@@ -46,6 +46,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(Q_CLANG_QDOC)
+typedef int HGLRC;
+typedef int HWND;
+#endif
+
 class QWGLNativeContext
 {
 public:

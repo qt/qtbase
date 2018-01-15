@@ -95,3 +95,48 @@
     \internal
     \preliminary
 */
+
+/*!
+    \typedef QEglFSFunctions::Vsp2AddBlendListenerType
+    \internal
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2AddLayerType
+    \internal
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2RemoveLayerType
+    \internal
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2SetLayerBufferType
+    \internal
+*/
+
+/*!
+    \typedef QEglFSFunctions::Vsp2SetLayerPositionType
+    \internal
+*/
+
+/*! \fn QByteArray QEglFSFunctions::vsp2AddBlendListenerTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2AddLayerTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2RemoveLayerTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2SetLayerBufferTypeIdentifier()
+    \internal
+ */
+
+/*! \fn QByteArray QEglFSFunctions::vsp2SetLayerPositionTypeIdentifier()
+    \internal
+ */
