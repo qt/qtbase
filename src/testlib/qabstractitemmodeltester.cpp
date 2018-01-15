@@ -172,13 +172,13 @@ private:
     This enumeration specifies how QAbstractItemModelTester should report
     a failure when it tests a QAbstractItemModel subclass.
 
-    \value FailureReportingMode::QtTest The failures will be reported through
+    \value QtTest The failures will be reported through
     QtTest's logging mechanism.
 
-    \value FailureReportingMode::Warning The failures will be reported as
+    \value Warning The failures will be reported as
     warning messages in the \c{qt.modeltest} logging category.
 
-    \value FailureReportingMode::Fatal A failure will cause immediate and
+    \value Fatal A failure will cause immediate and
     abnormal program termination. The reason for the failure will be reported
     using \c{qFatal()}.
 */
@@ -296,7 +296,7 @@ void QAbstractItemModelTesterPrivate::runAllTests()
     data();
 }
 
-/*!
+/*
     nonDestructiveBasicTest tries to call a number of the basic functions (not all)
     to make sure the model doesn't outright segfault, testing the functions that makes sense.
 */
@@ -322,7 +322,7 @@ void QAbstractItemModelTesterPrivate::nonDestructiveBasicTest()
     model->roleNames();
 }
 
-/*!
+/*
     Tests model's implementation of QAbstractItemModel::rowCount(),
     columnCount() and hasChildren().
 
@@ -364,7 +364,7 @@ void QAbstractItemModelTesterPrivate::rowAndColumnCount()
     // rowCount() / columnCount() are tested more extensively in checkChildren()
 }
 
-/*!
+/*
     Tests model's implementation of QAbstractItemModel::hasIndex()
  */
 void QAbstractItemModelTesterPrivate::hasIndex()
@@ -388,7 +388,7 @@ void QAbstractItemModelTesterPrivate::hasIndex()
     // but this catches the big mistakes
 }
 
-/*!
+/*
     Tests model's implementation of QAbstractItemModel::index()
  */
 void QAbstractItemModelTesterPrivate::index()
@@ -411,7 +411,7 @@ void QAbstractItemModelTesterPrivate::index()
     // but this catches the big mistakes
 }
 
-/*!
+/*
     Tests model's implementation of QAbstractItemModel::parent()
  */
 void QAbstractItemModelTesterPrivate::parent()
@@ -461,7 +461,7 @@ void QAbstractItemModelTesterPrivate::parent()
     checkChildren(QModelIndex());
 }
 
-/*!
+/*
     Called from the parent() test.
 
     A model that returns an index of parent X should also return X when asking
@@ -560,7 +560,7 @@ void QAbstractItemModelTesterPrivate::checkChildren(const QModelIndex &parent, i
     }
 }
 
-/*!
+/*
     Tests model's implementation of QAbstractItemModel::data()
  */
 void QAbstractItemModelTesterPrivate::data()
@@ -612,7 +612,7 @@ void QAbstractItemModelTesterPrivate::data()
         return;
 }
 
-/*!
+/*
     Store what is about to be inserted to make sure it actually happens
 
     \sa rowsInserted()
@@ -633,7 +633,7 @@ void QAbstractItemModelTesterPrivate::rowsAboutToBeInserted(const QModelIndex &p
     insert.push(c);
 }
 
-/*!
+/*
     Confirm that what was said was going to happen actually did
 
     \sa rowsAboutToBeInserted()
@@ -685,7 +685,7 @@ void QAbstractItemModelTesterPrivate::layoutChanged()
     changing.clear();
 }
 
-/*!
+/*
     Store what is about to be inserted to make sure it actually happens
 
     \sa rowsRemoved()
@@ -706,7 +706,7 @@ void QAbstractItemModelTesterPrivate::rowsAboutToBeRemoved(const QModelIndex &pa
     remove.push(c);
 }
 
-/*!
+/*
     Confirm that what was said was going to happen actually did
 
     \sa rowsAboutToBeRemoved()

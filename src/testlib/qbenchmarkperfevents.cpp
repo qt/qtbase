@@ -106,7 +106,9 @@ static void initPerf()
     }
 }
 
-/*!
+// This class does not exist in the API so it's qdoc comment marker was removed.
+
+/*
     \class QBenchmarkPerfEvents
     \brief The Linux perf events benchmark backend
 

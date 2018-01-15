@@ -205,13 +205,13 @@ private:
         QWindow *targetWindow;
         QTouchDevice *device;
         bool commitWhenDestroyed;
-#ifdef QT_WIDGETS_LIB
-        friend QTouchEventSequence touchEvent(QWidget *, QTouchDevice*, bool);
+#if defined(QT_WIDGETS_LIB) || defined(Q_CLANG_QDOC)
+        friend QTouchEventSequence touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit);
 #endif
-        friend QTouchEventSequence touchEvent(QWindow *, QTouchDevice*, bool);
+        friend QTouchEventSequence touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit);
     };
 
-#ifdef QT_WIDGETS_LIB
+#if defined(QT_WIDGETS_LIB) || defined(Q_CLANG_QDOC)
     inline
     QTouchEventSequence touchEvent(QWidget *widget,
                                    QTouchDevice *device,

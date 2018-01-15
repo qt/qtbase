@@ -72,7 +72,7 @@
     \snippet code/doc_src_qsignalspy.cpp 4
 */
 
-/*! \fn QSignalSpy::QSignalSpy(const QObject *object, PointerToMemberFunction signal)
+/*! \fn template <typename PointerToMemberFunction> QSignalSpy::QSignalSpy(const QObject *object, PointerToMemberFunction signal)
     \since 5.4
 
     Constructs a new QSignalSpy that listens for emissions of the \a signal
