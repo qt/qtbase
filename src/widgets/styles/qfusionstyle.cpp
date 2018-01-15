@@ -798,16 +798,14 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 painter->setPen(QPen(checkMarkColor, 1));
                 painter->setBrush(gradient);
                 painter->drawRect(rect.adjusted(checkMarkPadding, checkMarkPadding, -checkMarkPadding, -checkMarkPadding));
-
-            } else if (checkbox->state & (State_On)) {
+            } else if (checkbox->state & State_On) {
                 qreal penWidth = QStyleHelper::dpiScaled(1.8);
                 penWidth = qMax(penWidth , 0.18 * rect.height());
                 penWidth = qMin(penWidth , 0.30 * rect.height());
-                QPen checkPen = QPen(checkMarkColor, penWidth);
                 checkMarkColor.setAlpha(210);
-                painter->translate(-0.8, 0.5);
-                painter->setPen(checkPen);
+                painter->setPen(QPen(checkMarkColor, penWidth));
                 painter->setBrush(Qt::NoBrush);
+                painter->translate(-0.8, 0.5);
 
                 // Draw checkmark
                 QPainterPath path;
