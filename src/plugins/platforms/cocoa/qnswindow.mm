@@ -99,18 +99,25 @@ static bool isMouseEvent(NSEvent *ev)
     const Class windowClass = [self class];
     const Class panelClass = [QNSPanel class];
 
-    unsigned int methodDescriptionsCount;
-    objc_method_description *methods = protocol_copyMethodDescriptionList(
-        objc_getProtocol("QNSWindowProtocol"), NO, YES, &methodDescriptionsCount);
+    unsigned int protocolCount;
+    Protocol **protocols = class_copyProtocolList(windowClass, &protocolCount);
+    for (unsigned int i = 0; i < protocolCount; ++i) {
+        Protocol *protocol = protocols[i];
 
-    for (unsigned int i = 0; i < methodDescriptionsCount; ++i) {
-        objc_method_description method = methods[i];
-        class_addMethod(panelClass, method.name,
-            class_getMethodImplementation(windowClass, method.name),
-            method.types);
+        unsigned int methodDescriptionsCount;
+        objc_method_description *methods = protocol_copyMethodDescriptionList(
+            protocol, NO, YES, &methodDescriptionsCount);
+
+        for (unsigned int j = 0; j < methodDescriptionsCount; ++j) {
+            objc_method_description method = methods[j];
+            class_addMethod(panelClass, method.name,
+                class_getMethodImplementation(windowClass, method.name),
+                method.types);
+        }
+        free(methods);
     }
 
-    free(methods);
+    free(protocols);
 }
 
 - (QCocoaWindow *)platformWindow
