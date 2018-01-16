@@ -48,6 +48,10 @@
 #include <QtCore/qthread.h>
 #include <private/qthreadpool_p.h>
 
+#ifdef interface
+#  undef interface
+#endif
+
 QT_BEGIN_NAMESPACE
 
 enum {
