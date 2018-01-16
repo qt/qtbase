@@ -3350,18 +3350,18 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
     This enum can be used to control the checks performed by
     QAbstractItemModel::checkIndex().
 
-    \value CheckIndexOption::NoOption No check options are specified.
+    \value NoOption No check options are specified.
 
-    \value CheckIndexOption::IndexIsValid The model index passed to
+    \value IndexIsValid The model index passed to
     QAbstractItemModel::checkIndex() is checked to be a valid model index.
 
-    \value CheckIndexOption::DoNotUseParent Does not perform any check
+    \value DoNotUseParent Does not perform any check
     involving the usage of the parent of the index passed to
     QAbstractItemModel::checkIndex().
 
-    \value CheckIndexOption::ParentIsInvalid The parent of the model index
+    \value ParentIsInvalid The parent of the model index
     passed to QAbstractItemModel::checkIndex() is checked to be an invalid
-    model index. If both this option and CheckIndexOption::DoNotUseParent
+    model index. If both this option and DoNotUseParent
     are specified, then this option is ignored.
 */
 
@@ -3383,17 +3383,17 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
     \endlist
 
     The \a options argument may change some of these checks. If \a options
-    contains \c{CheckIndexOption::IndexIsValid}, then \a index must be a valid
+    contains \c{IndexIsValid}, then \a index must be a valid
     index; this is useful when reimplementing functions such as \l{data()} or
     \l{setData()}, which expect valid indexes.
 
-    If \a options contains \c{CheckIndexOption::DoNotUseParent}, then the
+    If \a options contains \c{DoNotUseParent}, then the
     checks that would call \l{parent()} are omitted; this allows calling this
     function from a \l{parent()} reimplementation (otherwise, this would result
     in endless recursion and a crash).
 
-    If \a options does not contain \c{CheckIndexOption::DoNotUseParent}, and it
-    contains \c{CheckIndexOption::ParentIsInvalid}, then an additional check is
+    If \a options does not contain \c{DoNotUseParent}, and it
+    contains \c{ParentIsInvalid}, then an additional check is
     performed: the parent index is checked for not being valid. This is useful
     when implementing flat models such as lists or tables, where no model index
     should have a valid parent index.
