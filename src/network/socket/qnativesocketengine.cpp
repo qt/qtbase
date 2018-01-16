@@ -1163,7 +1163,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
 }
 
 #if 0   // currently unused
-/*!
+/*
     Returns the size of the operating system's socket receive
     buffer. Depending on the operating system, this size may be
     different from what has been set earlier with
@@ -1175,7 +1175,7 @@ qint64 QNativeSocketEngine::receiveBufferSize() const
     return option(ReceiveBufferSocketOption);
 }
 
-/*!
+/*
     Sets the size of the operating system receive buffer to \a size.
 
     For clients, this should be set before connectToHost() is called;
@@ -1196,7 +1196,7 @@ void QNativeSocketEngine::setReceiveBufferSize(qint64 size)
     setOption(ReceiveBufferSocketOption, size);
 }
 
-/*!
+/*
     Returns the size of the operating system send buffer. Depending on
     the operating system, this size may be different from what has
     been set earlier with setSendBufferSize().
@@ -1207,7 +1207,7 @@ qint64 QNativeSocketEngine::sendBufferSize() const
     return option(SendBufferSocketOption);
 }
 
-/*!
+/*
     Sets the size of the operating system send buffer to \a size.
 
     The operating system send buffer size effectively limits how much
