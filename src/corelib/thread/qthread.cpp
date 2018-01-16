@@ -892,7 +892,7 @@ bool QThread::isInterruptionRequested() const
 }
 
 /*
-    \fn template <typename Function, typename Args...> static QThread *QThread::create(Function &&f, Args &&... args)
+    \fn template <typename Function, typename... Args> QThread *QThread::create(Function &&f, Args &&... args)
     \since 5.10
 
     Creates a new QThread object that will execute the function \a f with the
@@ -916,7 +916,7 @@ bool QThread::isInterruptionRequested() const
 */
 
 /*
-    \fn template <typename Function> static QThread *QThread::create(Function &&f)
+    \fn template <typename Function> QThread *QThread::create(Function &&f)
     \since 5.10
 
     Creates a new QThread object that will execute the function \a f.

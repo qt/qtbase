@@ -757,7 +757,7 @@ void **QListData::erase(void **xi)
     Same as at(). This function runs in \l{Algorithmic Complexity}{constant time}.
 */
 
-/*! \fn template <class T> QList<T>::reserve(int alloc)
+/*! \fn template <class T> void QList<T>::reserve(int alloc)
 
     Reserve space for \a alloc elements.
 

@@ -1272,7 +1272,7 @@ QDate QDate::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDate::fromString(const QString &string, const QString &format)
+    \fn QDate QDate::fromString(const QString &string, const QString &format)
 
     Returns the QDate represented by the \a string, using the \a
     format given, or an invalid date if the string cannot be parsed.
@@ -2000,7 +2000,7 @@ QTime QTime::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QTime::fromString(const QString &string, const QString &format)
+    \fn QTime QTime::fromString(const QString &string, const QString &format)
 
     Returns the QTime represented by the \a string, using the \a
     format given, or an invalid time if the string cannot be parsed.
@@ -4944,7 +4944,7 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
 }
 
 /*!
-    \fn QDateTime::fromString(const QString &string, const QString &format)
+    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format)
 
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.

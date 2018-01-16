@@ -795,7 +795,7 @@
 */
 
 
-/*! \fn template <typename T> QVector &QVector<T>::fill(const T &value, int size = -1)
+/*! \fn template <typename T> QVector<T> &QVector<T>::fill(const T &value, int size = -1)
 
     Assigns \a value to all items in the vector. If \a size is
     different from -1 (the default), the vector is resized to size \a

@@ -590,7 +590,7 @@
     \sa operator=()
 */
 
-/*! \fn template <typename T> QFutureIterator &QFutureIterator<T>::operator=(const QFuture<T> &future)
+/*! \fn template <typename T> QFutureIterator<T> &QFutureIterator<T>::operator=(const QFuture<T> &future)
 
     Makes the iterator operate on \a future. The iterator is set to be at the
     front of the result list (before the first result).
