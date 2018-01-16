@@ -2737,6 +2737,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 pixmapName += QLatin1String("-editable");
             if (isEnabled)
                 pixmapName += QLatin1String("-enabled");
+            if (!comboBox->frame)
+                pixmapName += QLatin1String("-frameless");
 
             if (!QPixmapCache::find(pixmapName, cache)) {
                 cache = styleCachePixmap(comboBox->rect.size());
@@ -2762,7 +2764,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         buttonOption.state &= ~State_MouseOver;
                     }
 
-                    proxy()->drawPrimitive(PE_FrameLineEdit, &buttonOption, &cachePainter, widget);
+                    if (comboBox->frame)
+                        proxy()->drawPrimitive(PE_FrameLineEdit, &buttonOption, &cachePainter, widget);
 
                     // Draw button clipped
                     cachePainter.save();
