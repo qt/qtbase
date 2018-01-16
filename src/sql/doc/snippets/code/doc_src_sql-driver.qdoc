@@ -237,3 +237,16 @@ Could not create database object
 //! [38]
 QPSQLDriver::getResult: Query results lost - probably discarded on executing another SQL query.
 //! [38]
+
+//! [39]
+CREATE TABLE "testTable" ("id" INTEGER);
+//! [39]
+
+//! [40]
+QString tableString("testTable");
+QSqlQuery q;
+// Create table query is not quoted, therefore it is mapped to lower case
+q.exec(QString("CREATE TABLE %1 (id INTEGER)").arg(tableString));
+// Call toLower() on the string so that it can be matched
+QSqlRecord rec = database.record(tableString.toLower());
+//! [40]

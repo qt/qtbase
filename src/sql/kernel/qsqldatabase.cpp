@@ -1088,6 +1088,11 @@ QStringList QSqlDatabase::tables(QSql::TableType type) const
     Returns the primary index for table \a tablename. If no primary
     index exists, an empty QSqlIndex is returned.
 
+    \note Some drivers, such as the \l {QPSQL Case Sensitivity}{QPSQL}
+    driver, may may require you to pass \a tablename in lower case if
+    the table was not quoted when created. See the
+    \l{sql-driver.html}{Qt SQL driver} documentation for more information.
+
     \sa tables(), record()
 */
 
@@ -1102,6 +1107,11 @@ QSqlIndex QSqlDatabase::primaryIndex(const QString& tablename) const
     the table (or view) called \a tablename. The order in which the
     fields appear in the record is undefined. If no such table (or
     view) exists, an empty record is returned.
+
+    \note Some drivers, such as the \l {QPSQL Case Sensitivity}{QPSQL}
+    driver, may may require you to pass \a tablename in lower case if
+    the table was not quoted when created. See the
+    \l{sql-driver.html}{Qt SQL driver} documentation for more information.
 */
 
 QSqlRecord QSqlDatabase::record(const QString& tablename) const

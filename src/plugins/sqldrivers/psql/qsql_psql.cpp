@@ -1393,16 +1393,8 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     QString tbl = tablename;
     QString schema;
     qSplitTableName(tbl, schema);
-
-    if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
-        tbl = stripDelimiters(tbl, QSqlDriver::TableName);
-    else
-        tbl = std::move(tbl).toLower();
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = std::move(schema).toLower();
+    schema = stripDelimiters(schema, QSqlDriver::TableName);
+    tbl = stripDelimiters(tbl, QSqlDriver::TableName);
 
     QString stmt = QStringLiteral("SELECT pg_attribute.attname, pg_attribute.atttypid::int, "
                                   "pg_class.relname "
@@ -1437,16 +1429,8 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
     QString tbl = tablename;
     QString schema;
     qSplitTableName(tbl, schema);
-
-    if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
-        tbl = stripDelimiters(tbl, QSqlDriver::TableName);
-    else
-        tbl = std::move(tbl).toLower();
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = std::move(schema).toLower();
+    schema = stripDelimiters(schema, QSqlDriver::TableName);
+    tbl = stripDelimiters(tbl, QSqlDriver::TableName);
 
     QString stmt = QStringLiteral("SELECT pg_attribute.attname, pg_attribute.atttypid::int, "
                                   "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
