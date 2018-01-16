@@ -194,6 +194,11 @@ static bool isFatal(QtMsgType msgType)
     return false;
 }
 
+static bool isDefaultCategory(const char *category)
+{
+    return !category || strcmp(category, "default") == 0;
+}
+
 static bool willLogToConsole()
 {
 #if defined(Q_OS_WINRT)
@@ -1487,7 +1492,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             }
 #endif // !QT_BOOTSTRAPPED
         } else if (token == ifCategoryTokenC) {
-            if (!context.category || (strcmp(context.category, "default") == 0))
+            if (isDefaultCategory(context.category))
                 skip = true;
 #define HANDLE_IF_TOKEN(LEVEL)  \
         } else if (token == if##LEVEL##TokenC) { \
@@ -1709,7 +1714,7 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
 {
 #ifndef QT_BOOTSTRAPPED
     // qDebug, qWarning, ... macros do not check whether category is enabled
-    if (!context.category || (strcmp(context.category, "default") == 0)) {
+    if (isDefaultCategory(context.category)) {
         if (QLoggingCategory *defaultCategory = QLoggingCategory::defaultCategory()) {
             if (!defaultCategory->isEnabled(msgType))
                 return;
