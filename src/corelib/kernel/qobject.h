@@ -106,7 +106,8 @@ public:
     uint sendChildEvents : 1;
     uint receiveChildEvents : 1;
     uint isWindow : 1; //for QWindow
-    uint unused : 25;
+    uint deleteLaterCalled : 1;
+    uint unused : 24;
     int postedEvents;
     QDynamicMetaObjectData *metaObject;
     QMetaObject *dynamicMetaObject() const;

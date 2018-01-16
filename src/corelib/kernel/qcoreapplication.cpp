@@ -1467,6 +1467,9 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         return;
     }
 
+    if (event->type() == QEvent::DeferredDelete)
+        receiver->d_ptr->deleteLaterCalled = true;
+
     if (event->type() == QEvent::DeferredDelete && data == QThreadData::current()) {
         // remember the current running eventloop for DeferredDelete
         // events posted in the receiver's thread.
@@ -1526,22 +1529,34 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
                 return true;
             }
         }
-    } else
+        return false;
+    }
 #endif
-        if ((event->type() == QEvent::DeferredDelete
-             || event->type() == QEvent::Quit)
-            && receiver->d_func()->postedEvents > 0) {
-            for (int i = 0; i < postedEvents->size(); ++i) {
-                const QPostEvent &cur = postedEvents->at(i);
-                if (cur.receiver != receiver
+
+    if (event->type() == QEvent::DeferredDelete) {
+        if (receiver->d_ptr->deleteLaterCalled) {
+            // there was a previous DeferredDelete event, so we can drop the new one
+            delete event;
+            return true;
+        }
+        // deleteLaterCalled is set to true in postedEvents when queueing the very first
+        // deferred deletion event.
+        return false;
+    }
+
+    if (event->type() == QEvent::Quit && receiver->d_func()->postedEvents > 0) {
+        for (int i = 0; i < postedEvents->size(); ++i) {
+            const QPostEvent &cur = postedEvents->at(i);
+            if (cur.receiver != receiver
                     || cur.event == 0
                     || cur.event->type() != event->type())
-                    continue;
-                // found an event for this receiver
-                delete event;
-                return true;
-            }
+                continue;
+            // found an event for this receiver
+            delete event;
+            return true;
         }
+    }
+
     return false;
 }
 
@@ -2881,6 +2896,10 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
 
     If QCoreApplication is deleted and another QCoreApplication is created,
     the startup function will be invoked again.
+
+    \note This macro is not suitable for use in library code that is then
+    statically linked into an application since the function may not be called
+    at all due to being eliminated by the linker.
 */
 
 /*!

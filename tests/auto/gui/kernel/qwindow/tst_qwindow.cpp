@@ -2029,9 +2029,6 @@ void tst_QWindow::modalWindowPosition()
 #ifndef QT_NO_CURSOR
 void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
 {
-    if (QGuiApplication::platformName() == QLatin1String("cocoa"))
-        QSKIP("This test fails on OS X on CI");
-
     if (isPlatformOffscreenOrMinimal())
         QSKIP("Can't test window focusing on offscreen/minimal");
 

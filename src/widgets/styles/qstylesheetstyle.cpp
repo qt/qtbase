@@ -3649,6 +3649,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             QFont oldFont = p->font();
             if (subRule.hasFont)
                 p->setFont(subRule.font.resolve(p->font()));
+            else
+                p->setFont(mi.font);
 
             // We fall back to drawing with the style sheet code whenever at least one of the
             // items are styled in an incompatible way, such as having a background image.
@@ -3765,8 +3767,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
             }
 
-            if (subRule.hasFont)
-                p->setFont(oldFont);
+            p->setFont(oldFont);
 
             return;
         }
