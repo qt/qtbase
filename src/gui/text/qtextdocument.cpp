@@ -974,7 +974,7 @@ QString QTextDocument::defaultStyleSheet() const
 
 
 /*!
-    \fn QTextDocument::undoAvailable(bool available);
+    \fn void QTextDocument::undoAvailable(bool available);
 
     This signal is emitted whenever undo operations become available
     (\a available is true) or unavailable (\a available is false).
@@ -986,14 +986,14 @@ QString QTextDocument::defaultStyleSheet() const
 */
 
 /*!
-    \fn QTextDocument::redoAvailable(bool available);
+    \fn void QTextDocument::redoAvailable(bool available);
 
     This signal is emitted whenever redo operations become available
     (\a available is true) or unavailable (\a available is false).
 */
 
 /*!
-    \fn QTextDocument::cursorPositionChanged(const QTextCursor &cursor);
+    \fn void QTextDocument::cursorPositionChanged(const QTextCursor &cursor);
 
     This signal is emitted whenever the position of a cursor changed
     due to an editing operation. The cursor that changed is passed in
@@ -1003,7 +1003,7 @@ QString QTextDocument::defaultStyleSheet() const
 */
 
 /*!
-    \fn QTextDocument::blockCountChanged(int newBlockCount);
+    \fn void QTextDocument::blockCountChanged(int newBlockCount);
     \since 4.3
 
     This signal is emitted when the total number of text blocks in the
@@ -1012,7 +1012,7 @@ QString QTextDocument::defaultStyleSheet() const
 */
 
 /*!
-    \fn QTextDocument::documentLayoutChanged();
+    \fn void QTextDocument::documentLayoutChanged();
     \since 4.4
 
     This signal is emitted when a new document layout is set.
@@ -1845,7 +1845,7 @@ QFont QTextDocument::defaultFont() const
 }
 
 /*!
-    \fn QTextDocument::modificationChanged(bool changed)
+    \fn void QTextDocument::modificationChanged(bool changed)
 
     This signal is emitted whenever the content of the document
     changes in a way that affects the modification state. If \a

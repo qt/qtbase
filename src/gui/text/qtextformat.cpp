@@ -2588,13 +2588,13 @@ QTextFrameFormat::QTextFrameFormat(const QTextFormat &fmt)
 }
 
 /*!
-    \fn QTextFrameFormat::isValid() const
+    \fn bool QTextFrameFormat::isValid() const
 
     Returns \c true if the format description is valid; otherwise returns \c false.
 */
 
 /*!
-    \fn QTextFrameFormat::setPosition(Position policy)
+    \fn void QTextFrameFormat::setPosition(Position policy)
 
     Sets the \a policy for positioning frames with this frame format.
 
@@ -2607,7 +2607,7 @@ QTextFrameFormat::QTextFrameFormat(const QTextFormat &fmt)
 */
 
 /*!
-    \fn QTextFrameFormat::setBorder(qreal width)
+    \fn void QTextFrameFormat::setBorder(qreal width)
 
     Sets the \a width (in pixels) of the frame's border.
 */
@@ -2619,7 +2619,7 @@ QTextFrameFormat::QTextFrameFormat(const QTextFormat &fmt)
 */
 
 /*!
-    \fn QTextFrameFormat::setBorderBrush(const QBrush &brush)
+    \fn void QTextFrameFormat::setBorderBrush(const QBrush &brush)
     \since 4.3
 
     Sets the \a brush used for the frame's border.
@@ -2633,7 +2633,7 @@ QTextFrameFormat::QTextFrameFormat(const QTextFormat &fmt)
 */
 
 /*!
-    \fn QTextFrameFormat::setBorderStyle(BorderStyle style)
+    \fn void QTextFrameFormat::setBorderStyle(BorderStyle style)
     \since 4.3
 
     Sets the \a style of the frame's border.
@@ -2647,7 +2647,7 @@ QTextFrameFormat::QTextFrameFormat(const QTextFormat &fmt)
 */
 
 /*!
-    \fn QTextFrameFormat::setMargin(qreal margin)
+    \fn void QTextFrameFormat::setMargin(qreal margin)
 
     Sets the frame's \a margin in pixels.
     This method also sets the left, right, top and bottom margins
@@ -2671,7 +2671,7 @@ void QTextFrameFormat::setMargin(qreal amargin)
 */
 
 /*!
-    \fn QTextFrameFormat::setTopMargin(qreal margin)
+    \fn void QTextFrameFormat::setTopMargin(qreal margin)
     \since 4.3
 
     Sets the frame's top \a margin in pixels.
@@ -2691,7 +2691,7 @@ qreal QTextFrameFormat::topMargin() const
 }
 
 /*!
-    \fn QTextFrameFormat::setBottomMargin(qreal margin)
+    \fn void QTextFrameFormat::setBottomMargin(qreal margin)
     \since 4.3
 
     Sets the frame's bottom \a margin in pixels.
@@ -2711,7 +2711,7 @@ qreal QTextFrameFormat::bottomMargin() const
 }
 
 /*!
-    \fn QTextFrameFormat::setLeftMargin(qreal margin)
+    \fn void QTextFrameFormat::setLeftMargin(qreal margin)
     \since 4.3
 
     Sets the frame's left \a margin in pixels.
@@ -2731,7 +2731,7 @@ qreal QTextFrameFormat::leftMargin() const
 }
 
 /*!
-    \fn QTextFrameFormat::setRightMargin(qreal margin)
+    \fn void QTextFrameFormat::setRightMargin(qreal margin)
     \since 4.3
 
     Sets the frame's right \a margin in pixels.
@@ -2751,7 +2751,7 @@ qreal QTextFrameFormat::rightMargin() const
 }
 
 /*!
-    \fn QTextFrameFormat::setPadding(qreal width)
+    \fn void QTextFrameFormat::setPadding(qreal width)
 
     Sets the \a width of the frame's internal padding in pixels.
 */
@@ -2763,7 +2763,7 @@ qreal QTextFrameFormat::rightMargin() const
 */
 
 /*!
-    \fn QTextFrameFormat::setWidth(const QTextLength &width)
+    \fn void QTextFrameFormat::setWidth(const QTextLength &width)
 
     Sets the frame's border rectangle's \a width.
 
@@ -2771,7 +2771,7 @@ qreal QTextFrameFormat::rightMargin() const
 */
 
 /*!
-    \fn QTextFrameFormat::setWidth(qreal width)
+    \fn void QTextFrameFormat::setWidth(qreal width)
     \overload
 
     Convenience method that sets the width of the frame's border
