@@ -42,6 +42,7 @@
 #define ANDROIDINPUTCONTEXT_H
 
 #include <qpa/qplatforminputcontext.h>
+#include <functional>
 #include <jni.h>
 #include <qevent.h>
 #include <QTimer>
@@ -135,6 +136,7 @@ public:
     jboolean paste();
 
 public slots:
+    void safeCall(const std::function<void()> &func, Qt::ConnectionType conType = Qt::BlockingQueuedConnection);
     void updateCursorPosition();
     void updateSelectionHandles();
     void handleLocationChanged(int handleId, int x, int y);
@@ -147,14 +149,8 @@ private slots:
     void showInputPanelLater(Qt::ApplicationState);
 
 private:
-    void sendInputMethodEventThreadSafe(QInputMethodEvent *event);
-    Q_INVOKABLE void sendInputMethodEventUnsafe(QInputMethodEvent *event);
-
-    QSharedPointer<QInputMethodQueryEvent> focusObjectInputMethodQueryThreadSafe(Qt::InputMethodQueries queries = Qt::ImQueryAll);
-    Q_INVOKABLE QInputMethodQueryEvent *focusObjectInputMethodQueryUnsafe(Qt::InputMethodQueries queries);
-
-    Q_INVOKABLE QVariant queryFocusObjectUnsafe(Qt::InputMethodQuery query, QVariant argument);
-    QVariant queryFocusObjectThreadSafe(Qt::InputMethodQuery query, QVariant argument);
+    void sendInputMethodEvent(QInputMethodEvent *event);
+    QSharedPointer<QInputMethodQueryEvent> focusObjectInputMethodQuery(Qt::InputMethodQueries queries = Qt::ImQueryAll);
 
 private:
     ExtractedText m_extractedText;
