@@ -441,7 +441,7 @@ void QPrintPropertiesDialog::accept()
 #if QT_CONFIG(cups)
     if (m_cupsOptionsModel->hasConflicts()) {
         widget.tabs->setCurrentWidget(widget.cupsPropertiesPage);
-        const QMessageBox::StandardButton answer = QMessageBox::warning(this, tr("Advanced option conflicts"),
+        const QMessageBox::StandardButton answer = QMessageBox::warning(this, tr("Advanced Option Conflicts"),
                                                                         tr("There are conflicts in some advanced options. Do you want to fix them?"),
                                                                         QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
         if (answer != QMessageBox::No)
@@ -916,7 +916,7 @@ void QPrintDialog::accept()
     Q_D(QPrintDialog);
 #if QT_CONFIG(cups)
     if (d->options.pagesRadioButton->isChecked() && !isValidPagesString(d->options.pagesLineEdit->text())) {
-        QMessageBox::critical(this, tr("Invalid pages definition"),
+        QMessageBox::critical(this, tr("Invalid Pages Definition"),
                               tr("%1 does not follow the correct syntax. Please use ',' to separate "
                               "ranges and pages, '-' to define ranges and make sure ranges do "
                               "not intersect with each other.").arg(d->options.pagesLineEdit->text()),
