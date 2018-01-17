@@ -557,7 +557,7 @@
             ]
         },
         "xcb": {
-            "label": "XCB >= 1.9 (core)",
+            "label": "XCB >= 1.9",
             "test": {
                 "main": [
                     "int primaryScreen = 0;",
@@ -572,30 +572,86 @@
                 "-lxcb"
             ]
         },
-        "xcb_syslibs": {
-            "label": "XCB (extensions)",
-            "test": {
-                "include": [
-                    "xcb/xcb.h",
-                    "xcb/xfixes.h",
-                    "xcb/xcb_image.h",
-                    "xcb/xcb_keysyms.h",
-                    "xcb/xinerama.h",
-                    "xcb/sync.h",
-                    "xcb/randr.h",
-                    "xcb/shm.h",
-                    "xcb/xcb_icccm.h"
-                ],
-                "main": [
-                    "int primaryScreen = 0;",
-                    "(void) xcb_connect(\"\", &primaryScreen);"
-                ]
-            },
+        "xcb_icccm": {
+            "label": "XCB ICCCM >= 0.3.9",
+            "headers": "xcb/xcb_icccm.h",
             "sources": [
-                { "type": "pkgConfig",
-                  "args": "xcb xcb-shm xcb-sync xcb-xfixes xcb-xinerama xcb-randr xcb-image xcb-keysyms xcb-icccm xcb-shape" },
-                "-lxcb -lxcb-shm -lxcb-sync -lxcb-xfixes -lxcb-xinerama -lxcb-randr -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-shape"
-            ]
+                { "type": "pkgConfig", "args": "xcb-icccm >= 0.3.9" },
+                "-lxcb-icccm"
+            ],
+            "use": "xcb"
+        },
+        "xcb_image": {
+            "label": "XCB Image >= 0.3.9",
+            "headers": "xcb/xcb_image.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-image >= 0.3.9" },
+                "-lxcb-image"
+            ],
+            "use": "xcb_shm xcb"
+        },
+        "xcb_keysyms": {
+            "label": "XCB Keysyms >= 0.3.9",
+            "headers": "xcb/xcb_keysyms.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-keysyms >= 0.3.9" },
+                "-lxcb-keysyms"
+            ],
+            "use": "xcb"
+        },
+        "xcb_randr": {
+            "label": "XCB RandR",
+            "headers": "xcb/randr.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-randr" },
+                "-lxcb-randr"
+            ],
+            "use": "xcb"
+        },
+        "xcb_shape": {
+            "label": "XCB Shape",
+            "headers": "xcb/shape.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-shape" },
+                "-lxcb-shape"
+            ],
+            "use": "xcb"
+        },
+        "xcb_shm": {
+            "label": "XCB SHM",
+            "headers": "xcb/shm.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-shm" },
+                "-lxcb-shm"
+            ],
+            "use": "xcb"
+        },
+        "xcb_sync": {
+            "label": "XCB Sync",
+            "headers": "xcb/sync.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-sync" },
+                "-lxcb-sync"
+            ],
+            "use": "xcb"
+        },
+        "xcb_xfixes": {
+            "label": "XCB Xfixes",
+            "headers": "xcb/xfixes.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-xfixes" },
+                "-lxcb-xfixes"
+            ],
+            "use": "xcb"
+        },
+        "xcb_xinerama": {
+            "label": "XCB Xinerama",
+            "headers": "xcb/xinerama.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "xcb-xinerama" },
+                "-lxcb-xinerama"
+            ],
+            "use": "xcb"
         },
         "xcb_xlib": {
             "label": "XCB Xlib",
@@ -981,6 +1037,29 @@
             "label": "default QPA platform",
             "type": "qpaDefaultPlatform",
             "log": "value"
+        },
+        "xcb_syslibs": {
+            "label": "XCB (extensions)",
+            "type": "compile",
+            "test": {
+                "include": [
+                    "xcb/xcb.h",
+                    "xcb/xcb_image.h",
+                    "xcb/xcb_keysyms.h",
+                    "xcb/randr.h",
+                    "xcb/shape.h",
+                    "xcb/shm.h",
+                    "xcb/sync.h",
+                    "xcb/xfixes.h",
+                    "xcb/xinerama.h",
+                    "xcb/xcb_icccm.h"
+                ],
+                "main": [
+                    "int primaryScreen = 0;",
+                    "(void) xcb_connect(\"\", &primaryScreen);"
+                ]
+            },
+            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb"
         },
         "x11prefix": {
             "label": "X11 prefix",
@@ -1420,7 +1499,7 @@
             "enable": "input.xcb == 'system'",
             "disable": "input.xcb == 'qt'",
             "autoDetect": "!config.darwin",
-            "condition": "features.xcb && libs.xcb_syslibs",
+            "condition": "features.xcb && tests.xcb_syslibs",
             "output": [ "privateFeature" ]
         },
         "x11-prefix": {
