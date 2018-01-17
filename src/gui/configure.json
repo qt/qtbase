@@ -595,7 +595,13 @@
         "angle_d3d11_qdtd": {
             "label": "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT",
             "type": "compile",
-            "test": "win/angle_d3d11_qdtd"
+            "test": {
+                "include": "d3d11.h",
+                "main": [
+                    "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT qdtd;",
+                    "(void) qdtd;"
+                ]
+            }
         },
         "directwrite2": {
             "label": "DirectWrite 2",
