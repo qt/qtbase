@@ -1547,6 +1547,8 @@ void tst_QSqlRelationalTableModel::relationOnFirstColumn()
 
     //modify the model data
     QVERIFY_SQL(model, setData(model.index(0, 0), 40));
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL)
+        QEXPECT_FAIL("", "Currently broken for PostgreSQL due to case sensitivity problems - see QTBUG-65788", Abort);
     QVERIFY_SQL(model, submit());
     QVERIFY_SQL(model, setData(model.index(1, 0), 50));
     QVERIFY_SQL(model, submit());

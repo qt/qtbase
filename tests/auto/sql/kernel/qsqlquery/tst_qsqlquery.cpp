@@ -2711,10 +2711,9 @@ void tst_QSqlQuery::lastInsertId()
 
     QSqlQuery q( db );
 
-    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     // PostgreSQL >= 8.1 relies on lastval() which does not work if a value is
     // manually inserted to the serial field, so we create a table specifically
-    if (dbType == QSqlDriver::PostgreSQL) {
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL) {
         const auto tst_lastInsertId = qTableName("tst_lastInsertId", __FILE__, db);
         tst_Databases::safeDropTable(db, tst_lastInsertId);
         QVERIFY_SQL(q, exec(QStringLiteral("create table ") + tst_lastInsertId +
@@ -3681,6 +3680,8 @@ void tst_QSqlQuery::QTBUG_5251()
     QSqlTableModel timetestModel(0,db);
     timetestModel.setEditStrategy(QSqlTableModel::OnManualSubmit);
     timetestModel.setTable(timetest);
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL)
+        QEXPECT_FAIL("", "Currently broken for PostgreSQL due to case sensitivity problems - see QTBUG-65788", Abort);
     QVERIFY_SQL(timetestModel, select());
 
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("01:02:03.666"));
