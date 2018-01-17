@@ -74,6 +74,7 @@
 #include <private/qunicodetools_p.h>
 
 #include <stdlib.h>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -624,7 +625,7 @@ public:
     int nextLogicalPosition(int oldPos) const;
     int lineNumberForTextPosition(int pos);
     int positionAfterVisualMovement(int oldPos, QTextCursor::MoveOperation op);
-    void insertionPointsForLine(int lineNum, QVector<int> &insertionPoints);
+    std::vector<int> insertionPointsForLine(int lineNum);
     void resetFontEngineCache();
 
     void enableDelayDecorations(bool enable = true) { delayDecorations = enable; }

@@ -3309,11 +3309,12 @@ int QTextEngine::lineNumberForTextPosition(int pos)
     return -1;
 }
 
-void QTextEngine::insertionPointsForLine(int lineNum, QVector<int> &insertionPoints)
+std::vector<int> QTextEngine::insertionPointsForLine(int lineNum)
 {
     QTextLineItemIterator iterator(this, lineNum);
 
-    insertionPoints.reserve(iterator.line.length);
+    std::vector<int> insertionPoints;
+    insertionPoints.reserve(size_t(iterator.line.length));
 
     bool lastLine = lineNum >= lines.size() - 1;
 
@@ -3331,25 +3332,22 @@ void QTextEngine::insertionPointsForLine(int lineNum, QVector<int> &insertionPoi
                 insertionPoints.push_back(i);
         }
     }
+    return insertionPoints;
 }
 
 int QTextEngine::endOfLine(int lineNum)
 {
-    QVector<int> insertionPoints;
-    insertionPointsForLine(lineNum, insertionPoints);
-
+    const auto insertionPoints = insertionPointsForLine(lineNum);
     if (insertionPoints.size() > 0)
-        return insertionPoints.constLast();
+        return insertionPoints.back();
     return 0;
 }
 
 int QTextEngine::beginningOfLine(int lineNum)
 {
-    QVector<int> insertionPoints;
-    insertionPointsForLine(lineNum, insertionPoints);
-
+    const auto insertionPoints = insertionPointsForLine(lineNum);
     if (insertionPoints.size() > 0)
-        return insertionPoints.constFirst();
+        return insertionPoints.front();
     return 0;
 }
 
@@ -3366,10 +3364,8 @@ int QTextEngine::positionAfterVisualMovement(int pos, QTextCursor::MoveOperation
     if (lineNum < 0)
         return pos;
 
-    QVector<int> insertionPoints;
-    insertionPointsForLine(lineNum, insertionPoints);
-    int i, max = insertionPoints.size();
-    for (i = 0; i < max; i++)
+    const auto insertionPoints = insertionPointsForLine(lineNum);
+    for (size_t i = 0, max = insertionPoints.size(); i < max; ++i)
         if (pos == insertionPoints[i]) {
             if (moveRight) {
                 if (i + 1 < max)

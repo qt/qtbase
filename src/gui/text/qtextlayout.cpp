@@ -2840,9 +2840,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
         bool rtl = eng->isRightToLeft();
 
         eng->shapeLine(line);
-        QVector<int> insertionPoints;
-        if (visual && rtl)
-            eng->insertionPointsForLine(lineNum, insertionPoints);
+        const auto insertionPoints = (visual && rtl) ? eng->insertionPointsForLine(lineNum) : std::vector<int>();
         int nchars = 0;
         for (int i = 0; i < nItems; ++i) {
             int item = visualOrder[i]+firstItem;
@@ -2974,7 +2972,7 @@ int QTextLine::xToCursor(qreal _x, CursorPosition cpos) const
                             continue;
                         }
                         if (rtl && nchars > 0)
-                            return insertionPoints[lastLine ? nchars : nchars - 1];
+                            return insertionPoints[size_t(lastLine ? nchars : nchars - 1)];
                     }
                     return eng->positionInLigature(&si, end, x, pos, -1,
                                                    cpos == QTextLine::CursorOnCharacter);
