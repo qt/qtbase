@@ -355,7 +355,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
             host += QByteArray::number(port);
         }
 
-        request.setHeaderField("Host", host);
+        request.prependHeaderField("Host", host);
     }
 
     reply->d_func()->requestIsPrepared = true;

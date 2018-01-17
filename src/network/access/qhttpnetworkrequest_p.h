@@ -102,6 +102,7 @@ public:
     QList<QPair<QByteArray, QByteArray> > header() const Q_DECL_OVERRIDE;
     QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const Q_DECL_OVERRIDE;
     void setHeaderField(const QByteArray &name, const QByteArray &data) Q_DECL_OVERRIDE;
+    void prependHeaderField(const QByteArray &name, const QByteArray &data);
 
     Operation operation() const;
     void setOperation(Operation operation);

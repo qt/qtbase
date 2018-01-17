@@ -92,6 +92,7 @@ public:
     QByteArray headerField(const QByteArray &name, const QByteArray &defaultValue = QByteArray()) const;
     QList<QByteArray> headerFieldValues(const QByteArray &name) const;
     void setHeaderField(const QByteArray &name, const QByteArray &data);
+    void prependHeaderField(const QByteArray &name, const QByteArray &data);
     bool operator==(const QHttpNetworkHeaderPrivate &other) const;
 
 };

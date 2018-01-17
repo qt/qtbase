@@ -114,6 +114,11 @@ void QHttpNetworkHeaderPrivate::setHeaderField(const QByteArray &name, const QBy
     fields.append(qMakePair(name, data));
 }
 
+void QHttpNetworkHeaderPrivate::prependHeaderField(const QByteArray &name, const QByteArray &data)
+{
+    fields.prepend(qMakePair(name, data));
+}
+
 bool QHttpNetworkHeaderPrivate::operator==(const QHttpNetworkHeaderPrivate &other) const
 {
    return (url == other.url);
