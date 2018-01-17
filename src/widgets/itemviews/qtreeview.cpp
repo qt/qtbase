@@ -237,6 +237,9 @@ void QTreeView::setModel(QAbstractItemModel *model)
     // QAbstractItemView connects to a private slot
     disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
+    // do header layout after the tree
+    disconnect(d->model, SIGNAL(layoutChanged()),
+               d->header, SLOT(_q_layoutChanged()));
     // QTreeView has a public slot for this
     connect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
             this, SLOT(rowsRemoved(QModelIndex,int,int)));

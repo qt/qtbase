@@ -49,7 +49,7 @@
 
 QT_USE_NAMESPACE
 
-@interface QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) : NSObject<NSWindowDelegate, QT_MANGLE_NAMESPACE(QNSPanelDelegate)>
+@interface QT_MANGLE_NAMESPACE(QNSColorPanelDelegate) : NSObject<NSWindowDelegate, QNSPanelDelegate>
 {
     @public
     NSColorPanel *mColorPanel;

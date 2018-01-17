@@ -931,7 +931,8 @@ QImage::QImage(const uchar *data, int width, int height, int bytesPerLine, Forma
 
     The loader attempts to read the image using the specified \a
     format. If the \a format is not specified (which is the default),
-    the loader probes the file for a header to guess the file format.
+    it is auto-detected based on the file's suffix and header. For
+    details, see {QImageReader::setAutoDetectImageFormat()}{QImageReader}.
 
     If the loading of the image failed, this object is a null image.
 
@@ -3406,8 +3407,9 @@ void QImage::rgbSwapped_inplace()
     and returns \c false.
 
     The loader attempts to read the image using the specified \a format, e.g.,
-    PNG or JPG. If \a format is not specified (which is the default), the
-    loader probes the file for a header to guess the file format.
+    PNG or JPG. If \a format is not specified (which is the default), it is
+    auto-detected based on the file's suffix and header. For details, see
+    {QImageReader::setAutoDetectImageFormat()}{QImageReader}.
 
     The file name can either refer to an actual file on disk or to one
     of the application's embedded resources. See the
@@ -3474,14 +3476,10 @@ bool QImage::loadFromData(const uchar *data, int len, const char *format)
     Constructs a QImage from the first \a size bytes of the given
     binary \a data. The loader attempts to read the image using the
     specified \a format. If \a format is not specified (which is the default),
-    the loader probes the file for a header to guess the file format.
-    binary \a data. The loader attempts to read the image, either using the
-    optional image \a format specified or by determining the image format from
-    the data.
+    the loader probes the data for a header to guess the file format.
 
-    If \a format is not specified (which is the default), the loader probes the
-    file for a header to determine the file format. If \a format is specified,
-    it must be one of the values returned by QImageReader::supportedImageFormats().
+    If \a format is specified, it must be one of the values returned by
+    QImageReader::supportedImageFormats().
 
     If the loading of the image fails, the image returned will be a null image.
 

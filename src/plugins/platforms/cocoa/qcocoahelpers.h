@@ -164,7 +164,10 @@ T qt_mac_resolveOption(const T &fallback, QWindow *window, const QByteArray &pro
 
 QT_END_NAMESPACE
 
-@protocol QT_MANGLE_NAMESPACE(QNSPanelDelegate)
+// @compatibility_alias doesn't work with protocols
+#define QNSPanelDelegate QT_MANGLE_NAMESPACE(QNSPanelDelegate)
+
+@protocol QNSPanelDelegate
 @required
 - (void)onOkClicked;
 - (void)onCancelClicked;
@@ -182,7 +185,7 @@ QT_END_NAMESPACE
 @property (nonatomic, readonly) NSView *panelContents; // ARC: unretained, make it weak
 @property (nonatomic, assign) NSEdgeInsets panelContentsMargins;
 
-- (instancetype)initWithPanelDelegate:(id<QT_MANGLE_NAMESPACE(QNSPanelDelegate)>)panelDelegate;
+- (instancetype)initWithPanelDelegate:(id<QNSPanelDelegate>)panelDelegate;
 - (void)dealloc;
 
 - (NSButton *)createButtonWithTitle:(const char *)title;

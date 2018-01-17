@@ -306,7 +306,7 @@ QT_END_NAMESPACE
 @synthesize panelContents = _panelContents;
 @synthesize panelContentsMargins = _panelContentsMargins;
 
-- (instancetype)initWithPanelDelegate:(id<QT_MANGLE_NAMESPACE(QNSPanelDelegate)>)panelDelegate
+- (instancetype)initWithPanelDelegate:(id<QNSPanelDelegate>)panelDelegate
 {
     if ((self = [super initWithFrame:NSZeroRect])) {
         // create OK and Cancel buttons and add these as subviews

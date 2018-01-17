@@ -1,3 +1,7 @@
+# This avoids spurious errors when a project is explicitly disabled
+# due to required Qt modules being missing.
+!isEmpty(QMAKE_FAILED_REQUIREMENTS): return()
+
 CONFIG *= thread
 
 #handle defines

@@ -248,9 +248,9 @@ QString QStandardPaths::displayName(StandardLocation type)
     if (QStandardPaths::ApplicationsLocation == type)
         return QCoreApplication::translate("QStandardPaths", "Applications");
 
+    const QCFString fsPath(standardLocations(type).constFirst());
     if (QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-            standardLocations(type).constFirst().toCFString(),
-            kCFURLPOSIXPathStyle, true)) {
+            fsPath, kCFURLPOSIXPathStyle, true)) {
         QCFString name;
         CFURLCopyResourcePropertyForKey(url, kCFURLLocalizedNameKey, &name, NULL);
         if (name && CFStringGetLength(name))
