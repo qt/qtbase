@@ -488,7 +488,7 @@ void tst_QItemDelegate::doLayout_data()
         << QRect(0, 0, 50, 50)
         << QRect(0, 0, 1000, 1000)
         << QRect(0, 0, 400, 400)
-        << QRect(m, 0, 50 + 2*m, 1000)
+        << QRect(0, 0, 50 + 2*m, 1000)
         << QRect(50 + 2*m, 0, 1000 + 2*m, 1000 + m)
         << QRect(50 + 2*m, 1000 + m, 1000 + 2*m, 400);
     /*
@@ -524,7 +524,7 @@ void tst_QItemDelegate::doLayout_data()
         << QRect(0, 0, 50, 50)
         << QRect(0, 0, 1000, 1000)
         << QRect(0, 0, 400, 400)
-        << QRect(m, 0, 50 + 2 * m, 1000)
+        << QRect(0, 0, 50 + 2 * m, 1000)
         << QRect(50 + 2 * m, 400 + m, 1000 + 2 * m, 1000)
         << QRect(50 + 2 * m, 0, 1000 + 2 * m, 400 + m);
 
@@ -548,7 +548,7 @@ void tst_QItemDelegate::doLayout_data()
         << QRect(0, 0, 50, 50)
         << QRect(0, 0, 1000, 1000)
         << QRect(0, 0, 400, 400)
-        << QRect(m, 0, 50 + 2 * m, 1000)
+        << QRect(0, 0, 50 + 2 * m, 1000)
         << QRect(50 + 2 * m, 0, 1000 + 2 * m, 1000)
         << QRect(1050 + 4 * m, 0, 400 + 2 * m, 1000);
 
@@ -572,7 +572,7 @@ void tst_QItemDelegate::doLayout_data()
         << QRect(0, 0, 50, 50)
         << QRect(0, 0, 1000, 1000)
         << QRect(0, 0, 400, 400)
-        << QRect(m, 0, 50 + 2 * m, 1000)
+        << QRect(0, 0, 50 + 2 * m, 1000)
         << QRect(450 + 4 * m, 0, 1000 + 2 * m, 1000)
         << QRect(50 + 2 * m, 0, 400 + 2 * m, 1000);
 

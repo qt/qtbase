@@ -845,7 +845,7 @@ void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
         if (option.direction == Qt::RightToLeft) {
             check.setRect(x + w - cw, y, cw, h);
         } else {
-            check.setRect(x + checkMargin, y, cw, h);
+            check.setRect(x, y, cw, h);
         }
     }
 
