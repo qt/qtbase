@@ -100,6 +100,7 @@ public:
     virtual void setWindowTitle(const QString &title);
     virtual void setWindowFilePath(const QString &title);
     virtual void setWindowIcon(const QIcon &icon);
+    virtual bool close();
     virtual void raise();
     virtual void lower();
 

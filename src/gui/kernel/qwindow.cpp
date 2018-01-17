@@ -2144,10 +2144,7 @@ bool QWindow::close()
     if (!d->platformWindow)
         return true;
 
-    bool accepted = false;
-    QWindowSystemInterface::handleCloseEvent(this, &accepted);
-    QWindowSystemInterface::flushWindowSystemEvents();
-    return accepted;
+    return d->platformWindow->close();
 }
 
 /*!

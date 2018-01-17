@@ -340,6 +340,20 @@ void QPlatformWindow::setWindowFilePath(const QString &filePath) { Q_UNUSED(file
 void QPlatformWindow::setWindowIcon(const QIcon &icon) { Q_UNUSED(icon); }
 
 /*!
+  Reimplement to let the platform handle non-spontaneous window close.
+
+  When reimplementing make sure to call the base class implementation
+  or QWindowSystemInterface::handleCloseEvent(), which will prompt the
+  user to accept the window close (if needed) and then close the QWindow.
+*/
+bool QPlatformWindow::close()
+{
+    bool accepted = false;
+    QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(window(), &accepted);
+    return accepted;
+}
+
+/*!
   Reimplement to be able to let Qt raise windows to the top of the desktop
 */
 void QPlatformWindow::raise() { qWarning("This plugin does not support raise()"); }
