@@ -88,7 +88,7 @@ class QWindowContainer;
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
 #endif
-#if QT_CONFIG(vulkan)
+#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
 class QVulkanInstance;
 #endif
 
@@ -270,7 +270,7 @@ public:
 
     static QWindow *fromWinId(WId id);
 
-#if QT_CONFIG(vulkan)
+#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
     void setVulkanInstance(QVulkanInstance *instance);
     QVulkanInstance *vulkanInstance() const;
 #endif
@@ -378,6 +378,7 @@ private:
 };
 
 #ifndef Q_QDOC
+// should these be seen by clang-qdoc?
 template <> inline QWindow *qobject_cast<QWindow*>(QObject *o)
 {
     if (!o || !o->isWindowType()) return nullptr;

@@ -88,4 +88,65 @@ QT_END_NAMESPACE
 
 #endif // QT_CONFIG(vulkan)
 
+#if defined(Q_CLANG_QDOC)
+/*
+  The following include file did not exist for clang-qdoc running
+  in macOS, but the classes are documented in qvulkanfunctions.cpp.
+  clang-qdoc must parse the class declarations in an include file,
+  or else it can't find a place to put the documentation for the
+  classes. Apparently these classes are created at build time if
+  Vulkan is present.
+ */
+#ifndef QVULKANFUNCTIONS_H
+#define QVULKANFUNCTIONS_H
+
+#include <QtGui/qtguiglobal.h>
+
+#if QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
+
+#ifndef VK_NO_PROTOTYPES
+#define VK_NO_PROTOTYPES
+#endif
+#include <vulkan/vulkan.h>
+
+#include <QtCore/qscopedpointer.h>
+
+QT_BEGIN_NAMESPACE
+
+class QVulkanInstance;
+class QVulkanFunctionsPrivate;
+class QVulkanDeviceFunctionsPrivate;
+
+class Q_GUI_EXPORT QVulkanFunctions
+{
+public:
+    ~QVulkanFunctions();
+
+private:
+    Q_DISABLE_COPY(QVulkanFunctions)
+    QVulkanFunctions(QVulkanInstance *inst);
+
+    QScopedPointer<QVulkanFunctionsPrivate> d_ptr;
+    friend class QVulkanInstance;
+};
+
+class Q_GUI_EXPORT QVulkanDeviceFunctions
+{
+public:
+    ~QVulkanDeviceFunctions();
+
+private:
+    Q_DISABLE_COPY(QVulkanDeviceFunctions)
+    QVulkanDeviceFunctions(QVulkanInstance *inst, VkDevice device);
+
+    QScopedPointer<QVulkanDeviceFunctionsPrivate> d_ptr;
+    friend class QVulkanInstance;
+};
+
+QT_END_NAMESPACE
+
+#endif // QT_CONFIG(vulkan) || defined(Q_CLANG_QDOC)
+#endif // QVULKANFUNCTIONS_H;
+#endif // Q_CLANG_QDOC
+
 #endif // QPLATFORMVULKANINSTANCE_H
