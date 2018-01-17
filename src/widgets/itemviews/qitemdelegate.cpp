@@ -103,7 +103,10 @@ public:
     QItemEditorFactory *f;
     bool clipPainting;
 
-    QRect textLayoutBounds(const QStyleOptionViewItem &options) const;
+    QRect displayRect(const QModelIndex &index, const QStyleOptionViewItem &option,
+                       const QRect &decorationRect, const QRect &checkRect) const;
+    QRect textLayoutBounds(const QStyleOptionViewItem &option,
+                           const QRect &decorationRect, const QRect &checkRect) const;
     QSizeF doTextLayout(int lineWidth) const;
     mutable QTextLayout textLayout;
     mutable QTextOption textOption;
@@ -121,19 +124,51 @@ public:
     } tmp;
 };
 
-QRect QItemDelegatePrivate::textLayoutBounds(const QStyleOptionViewItem &option) const
+QRect QItemDelegatePrivate::displayRect(const QModelIndex &index, const QStyleOptionViewItem &option,
+                                        const QRect &decorationRect, const QRect &checkRect) const
+{
+    Q_Q(const QItemDelegate);
+    const QVariant value = index.data(Qt::DisplayRole);
+    if (!value.isValid() || value.isNull())
+        return QRect();
+
+    const QString text = valueToText(value, option);
+    const QVariant fontVal = index.data(Qt::FontRole);
+    const QFont fnt = qvariant_cast<QFont>(fontVal).resolve(option.font);
+    return q->textRectangle(nullptr,
+                            textLayoutBounds(option, decorationRect, checkRect),
+                            fnt, text);
+}
+
+// similar to QCommonStylePrivate::viewItemSize(Qt::DisplayRole)
+QRect QItemDelegatePrivate::textLayoutBounds(const QStyleOptionViewItem &option,
+                                             const QRect &decorationRect, const QRect &checkRect) const
 {
     QRect rect = option.rect;
+    const QWidget *w = widget(option);
+    QStyle *style = w ? w->style() : QApplication::style();
     const bool wrapText = option.features & QStyleOptionViewItem::WrapText;
+    // see QItemDelegate::drawDisplay
+    const int textMargin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, w) + 1;
     switch (option.decorationPosition) {
     case QStyleOptionViewItem::Left:
     case QStyleOptionViewItem::Right:
-        rect.setWidth(wrapText && rect.isValid() ? rect.width() : (QFIXED_MAX));
+        rect.setWidth(wrapText && rect.isValid() ? rect.width() - 2 * textMargin : (QFIXED_MAX));
         break;
     case QStyleOptionViewItem::Top:
     case QStyleOptionViewItem::Bottom:
-        rect.setWidth(wrapText ? option.decorationSize.width() : (QFIXED_MAX));
+        rect.setWidth(wrapText ? option.decorationSize.width() - 2 * textMargin : (QFIXED_MAX));
         break;
+    }
+
+    if (wrapText) {
+        if (!decorationRect.isNull())
+            rect.setWidth(rect.width() - decorationRect.width() - 2 * textMargin);
+        if (!checkRect.isNull())
+            rect.setWidth(rect.width() - checkRect.width() - 2 * textMargin);
+        // adjust height to be sure that the text fits
+        const QSizeF size = doTextLayout(rect.width());
+        rect.setHeight(qCeil(size.height()));
     }
 
     return rect;
@@ -395,20 +430,20 @@ void QItemDelegate::paint(QPainter *painter,
         decorationRect = QRect();
     }
 
-    QString text;
-    QRect displayRect;
-    value = index.data(Qt::DisplayRole);
-    if (value.isValid() && !value.isNull()) {
-        text = d->valueToText(value, opt);
-        displayRect = textRectangle(painter, d->textLayoutBounds(opt), opt.font, text);
-    }
-
     QRect checkRect;
     Qt::CheckState checkState = Qt::Unchecked;
     value = index.data(Qt::CheckStateRole);
     if (value.isValid()) {
         checkState = static_cast<Qt::CheckState>(value.toInt());
         checkRect = doCheck(opt, opt.rect, value);
+    }
+
+    QString text;
+    QRect displayRect;
+    value = index.data(Qt::DisplayRole);
+    if (value.isValid() && !value.isNull()) {
+        text = d->valueToText(value, opt);
+        displayRect = d->displayRect(index, opt, decorationRect, checkRect);
     }
 
     // do the layout
@@ -440,12 +475,13 @@ void QItemDelegate::paint(QPainter *painter,
 QSize QItemDelegate::sizeHint(const QStyleOptionViewItem &option,
                               const QModelIndex &index) const
 {
+    Q_D(const QItemDelegate);
     QVariant value = index.data(Qt::SizeHintRole);
     if (value.isValid())
         return qvariant_cast<QSize>(value);
     QRect decorationRect = rect(option, index, Qt::DecorationRole);
-    QRect displayRect = rect(option, index, Qt::DisplayRole);
     QRect checkRect = rect(option, index, Qt::CheckStateRole);
+    QRect displayRect = d->displayRect(index, option, decorationRect, checkRect);
 
     doLayout(option, &checkRect, &decorationRect, &displayRect, true);
 
@@ -1000,8 +1036,8 @@ QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette,
 
 /*!
   \internal
+  Only used (and usable) for Qt::DecorationRole and Qt::CheckStateRole
 */
-
 QRect QItemDelegate::rect(const QStyleOptionViewItem &option,
                           const QModelIndex &index, int role) const
 {
@@ -1032,7 +1068,9 @@ QRect QItemDelegate::rect(const QStyleOptionViewItem &option,
             const QString text = d->valueToText(value, option);
             value = index.data(Qt::FontRole);
             QFont fnt = qvariant_cast<QFont>(value).resolve(option.font);
-            return textRectangle(0, d->textLayoutBounds(option), fnt, text); }
+            return textRectangle(nullptr,
+                                 d->textLayoutBounds(option, QRect(), QRect()),
+                                 fnt, text); }
         }
     }
     return QRect();
