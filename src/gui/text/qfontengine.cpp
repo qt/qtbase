@@ -992,13 +992,12 @@ void QFontEngine::removeGlyphFromCache(glyph_t)
 QFontEngine::Properties QFontEngine::properties() const
 {
     Properties p;
-    QByteArray psname = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8());
-    psname += '-';
-    psname += QByteArray::number(fontDef.style);
-    psname += '-';
-    psname += QByteArray::number(fontDef.weight);
-
-    p.postscriptName = psname;
+    p.postscriptName
+            = QFontEngine::convertToPostscriptFontFamilyName(fontDef.family.toUtf8())
+            + '-'
+            + QByteArray::number(fontDef.style)
+            + '-'
+            + QByteArray::number(fontDef.weight);
     p.ascent = ascent();
     p.descent = descent();
     p.leading = leading();
