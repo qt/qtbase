@@ -193,6 +193,7 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleExposeEvent(QWindow *window, const QRegion &region);
 
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleCloseEvent(QWindow *window, bool *accepted = nullptr);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
