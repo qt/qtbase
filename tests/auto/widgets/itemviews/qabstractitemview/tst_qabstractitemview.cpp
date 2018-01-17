@@ -147,6 +147,8 @@ private slots:
     void testClearModelInClickedSignal();
     void inputMethodEnabled_data();
     void inputMethodEnabled();
+    void currentFollowsIndexWidget_data();
+    void currentFollowsIndexWidget();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -2388,6 +2390,57 @@ void tst_QAbstractItemView::inputMethodEnabled()
     QApplication::setActiveWindow(view.data());
     QVERIFY(QTest::qWaitForWindowActive(view.data()));
     QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
+}
+
+void tst_QAbstractItemView::currentFollowsIndexWidget_data()
+{
+    QTest::addColumn<QByteArray>("viewType");
+
+    QList<QByteArray> widgets;
+    widgets << "QListView" << "QTreeView" << "QTableView";
+    for (const QByteArray &widget : qAsConst(widgets))
+        QTest::newRow(widget) << widget;
+}
+
+void tst_QAbstractItemView::currentFollowsIndexWidget()
+{
+    QFETCH(QByteArray, viewType);
+
+    QScopedPointer<QAbstractItemView> view;
+    if (viewType == "QListView")
+        view.reset(new QListView());
+    else if (viewType == "QTableView")
+        view.reset(new QTableView());
+    else if (viewType == "QTreeView")
+        view.reset(new QTreeView());
+    else
+        QVERIFY(0);
+
+    centerOnScreen(view.data());
+    view->show();
+    QVERIFY(QTest::qWaitForWindowExposed(view.data()));
+
+    QStandardItemModel *model = new QStandardItemModel(view.data());
+    QStandardItem *item1 = new QStandardItem("first item");
+    item1->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    model->appendRow(item1);
+
+    QStandardItem *item2 = new QStandardItem("test item");
+    item2->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    model->appendRow(item2);
+
+    view->setModel(model);
+    QLineEdit *lineEdit1 = new QLineEdit;
+    QLineEdit *lineEdit2 = new QLineEdit;
+    view->setIndexWidget(item1->index(), lineEdit1);
+    view->setIndexWidget(item2->index(), lineEdit2);
+
+    lineEdit2->setFocus();
+    QTRY_VERIFY(lineEdit2->hasFocus());
+    QCOMPARE(view->currentIndex(), item2->index());
+    lineEdit1->setFocus();
+    QTRY_VERIFY(lineEdit1->hasFocus());
+    QCOMPARE(view->currentIndex(), item1->index());
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
