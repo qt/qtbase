@@ -619,7 +619,8 @@ static std::vector<std::pair<int, int>> pageRangesFromString(const QString &page
     }
 
     // check no range intersects with the next
-    std::sort(result.begin(), result.end(), [](auto it1, auto it2) { return it1.first < it2.first; });
+    std::sort(result.begin(), result.end(),
+              [](const std::pair<int, int> &it1, const std::pair<int, int> &it2) { return it1.first < it2.first; });
     int previousSecond = -1;
     for (auto pair : result) {
         if (pair.first <= previousSecond)
