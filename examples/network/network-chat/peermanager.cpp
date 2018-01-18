@@ -108,7 +108,7 @@ void PeerManager::startBroadcasting()
 bool PeerManager::isLocalHostAddress(const QHostAddress &address)
 {
     foreach (QHostAddress localAddress, ipAddresses) {
-        if (address == localAddress)
+        if (address.isEqual(localAddress))
             return true;
     }
     return false;
