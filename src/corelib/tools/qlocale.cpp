@@ -3807,6 +3807,12 @@ QString QLocale::toCurrencyString(double value, const QString &symbol, int preci
 }
 
 /*!
+  \fn QString QLocale::toCurrencyString(float i, const QString &symbol) const
+  \fn QString QLocale::toCurrencyString(float i, const QString &symbol, int precision) const
+  \overload toCurrencyString()
+*/
+
+/*!
     \since 5.10
 
     \enum QLocale::DataSizeFormat

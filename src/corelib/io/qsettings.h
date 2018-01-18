@@ -88,7 +88,7 @@ public:
         NativeFormat,
         IniFormat,
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_CLANG_QDOC)
         Registry32Format,
         Registry64Format,
 #endif

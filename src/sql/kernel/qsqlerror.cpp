@@ -91,6 +91,7 @@ public:
 */
 
 /*!
+    \fn QSqlError::QSqlError(const QString &driverText, const QString &databaseText, ErrorType type, int number)
     \obsolete
 
     Constructs an error containing the driver error text \a

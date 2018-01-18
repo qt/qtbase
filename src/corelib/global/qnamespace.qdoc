@@ -1338,6 +1338,7 @@
     \omitvalue WA_WState_WindowOpacitySet
     \omitvalue WA_WState_AcceptedTouchBeginEvent
     \omitvalue WA_MacNoShadow
+    \omitvalue WA_ContentsMarginsRespectsSafeArea
 */
 
 /*! \typedef Qt::HANDLE
