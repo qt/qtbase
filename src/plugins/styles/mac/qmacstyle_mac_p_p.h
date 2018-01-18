@@ -267,7 +267,7 @@ public:
 
     void setupVerticalInvertedXform(CGContextRef cg, bool reverse, bool vertical, const CGRect &rect) const;
 
-    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, DrawRectBlock drawRectBlock = nil) const;
+    void drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &rect, QPainter *p, bool isQWidget = true, __attribute__((noescape)) DrawRectBlock drawRectBlock = nil) const;
     void resolveCurrentNSView(QWindow *window) const;
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
