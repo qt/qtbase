@@ -78,7 +78,7 @@ void Client::sendMessage(const QString &message)
 
 QString Client::nickName() const
 {
-    return QString(peerManager->userName()) + '@' + QHostInfo::localHostName()
+    return peerManager->userName() + '@' + QHostInfo::localHostName()
            + ':' + QString::number(server.serverPort());
 }
 

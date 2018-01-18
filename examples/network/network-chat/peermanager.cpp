@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -62,16 +63,14 @@ PeerManager::PeerManager(Client *client)
 {
     this->client = client;
 
-    QStringList envVariables;
-    envVariables << "USERNAME" << "USER" << "USERDOMAIN"
-                 << "HOSTNAME" << "DOMAINNAME";
+    static const char *envVariables[] = {
+        "USERNAME", "USER", "USERDOMAIN", "HOSTNAME", "DOMAINNAME"
+    };
 
-    QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
-    foreach (QString string, envVariables) {
-        if (environment.contains(string)) {
-            username = environment.value(string).toUtf8();
+    for (const char *varname : envVariables) {
+        username = qEnvironmentVariable(varname);
+        if (!username.isNull())
             break;
-        }
     }
 
     if (username.isEmpty())
@@ -95,7 +94,7 @@ void PeerManager::setServerPort(int port)
     serverPort = port;
 }
 
-QByteArray PeerManager::userName() const
+QString PeerManager::userName() const
 {
     return username;
 }
@@ -116,9 +115,14 @@ bool PeerManager::isLocalHostAddress(const QHostAddress &address)
 
 void PeerManager::sendBroadcastDatagram()
 {
-    QByteArray datagram(username);
-    datagram.append('@');
-    datagram.append(QByteArray::number(serverPort));
+    QByteArray datagram;
+    {
+        QCborStreamWriter writer(&datagram);
+        writer.startArray(2);
+        writer.append(username);
+        writer.append(serverPort);
+        writer.endArray();
+    }
 
     bool validBroadcastAddresses = true;
     foreach (QHostAddress address, broadcastAddresses) {
@@ -142,11 +146,27 @@ void PeerManager::readBroadcastDatagram()
                                          &senderIp, &senderPort) == -1)
             continue;
 
-        QList<QByteArray> list = datagram.split('@');
-        if (list.size() != 2)
-            continue;
+        int senderServerPort;
+        {
+            // decode the datagram
+            QCborStreamReader reader(datagram);
+            if (reader.lastError() != QCborError::NoError || !reader.isArray())
+                continue;
+            if (!reader.isLengthKnown() || reader.length() != 2)
+                continue;
 
-        int senderServerPort = list.at(1).toInt();
+            reader.enterContainer();
+            if (reader.lastError() != QCborError::NoError || !reader.isString())
+                continue;
+            while (reader.readString().status == QCborStreamReader::Ok) {
+                // we don't actually need the username right now
+            }
+
+            if (reader.lastError() != QCborError::NoError || !reader.isUnsignedInteger())
+                continue;
+            senderServerPort = reader.toInteger();
+        }
+
         if (isLocalHostAddress(senderIp) && senderServerPort == serverPort)
             continue;
 
