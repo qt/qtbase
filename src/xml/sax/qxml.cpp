@@ -776,6 +776,11 @@ QXmlAttributes::~QXmlAttributes()
 {
 }
 
+/*!
+  \fn void QXmlAttributes::swap(QXmlAttributes &other)
+
+  Swaps \c this with \a other.
+ */
 
 /*!
     Looks up the index of an attribute by the qualified name \a qName.
