@@ -65,6 +65,12 @@ QtCore
 QtNetwork
 ---------
 
+ - Bearer Management:
+   * [QTBUG-40332] The nativewifi (Windows) bearer plugin was determined
+     to be causing network interference in the form of system-wide higher
+     latency and has been disabled. The CoreWlan (macOS) plugin has also
+     been disabled.
+
  - QUdpSocket:
    * [QTBUG-64718] Fixed a regression from Qt 5.9.3 caused by an apparent
      Win32 API quirk we triggered when using readDatagram(), resulting in
