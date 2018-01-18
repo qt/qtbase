@@ -662,9 +662,6 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p, 
         document.documentLayout()->draw(p, ctx);
         p->restore();
 
-        if (textWidth >= 0.0)
-            document.adjustSize(); // Find optimal size
-
         actualSize = document.size();
     }
 }

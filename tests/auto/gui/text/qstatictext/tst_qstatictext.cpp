@@ -98,6 +98,8 @@ private slots:
 
     void multiLine();
 
+    void size_qtbug65836();
+
 private:
     bool supportsTransformations() const;
 
@@ -910,6 +912,43 @@ void tst_QStaticText::multiLine()
     }
 
     QCOMPARE(paintEngine->differentVerticalPositions.size(), 2);
+}
+
+void tst_QStaticText::size_qtbug65836()
+{
+    const QString text = QLatin1String("Lorem ipsum dolor sit amet, "
+                                        "consectetur adipiscing elit.");
+    QFont font("Courier");
+    font.setPixelSize(15);
+
+    {
+        QStaticText st1(text);
+        st1.setTextFormat(Qt::PlainText);
+        st1.prepare(QTransform(), font);
+
+        QStaticText st2(text);
+        st2.setTextFormat(Qt::RichText);
+        QTextOption opt;
+        opt.setWrapMode(QTextOption::NoWrap);
+        st2.setTextOption(opt);
+        st2.prepare(QTransform(), font);
+
+        QCOMPARE(st1.size(), st2.size());
+    }
+
+    {
+        QStaticText st1(text);
+        st1.setTextFormat(Qt::PlainText);
+        st1.setTextWidth(10.0);
+        st1.prepare(QTransform(), font);
+
+        QStaticText st2(text);
+        st2.setTextFormat(Qt::RichText);
+        st2.setTextWidth(10.0);
+        st2.prepare(QTransform(), font);
+
+        QCOMPARE(st1.size(), st2.size());
+    }
 }
 
 QTEST_MAIN(tst_QStaticText)
