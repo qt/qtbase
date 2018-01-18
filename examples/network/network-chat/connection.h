@@ -51,10 +51,12 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include <QCborStreamReader>
+#include <QCborStreamWriter>
+#include <QElapsedTimer>
 #include <QHostAddress>
 #include <QString>
 #include <QTcpSocket>
-#include <QTime>
 #include <QTimer>
 
 static const int MaxBufferSize = 1024000;
@@ -78,6 +80,8 @@ public:
     };
 
     Connection(QObject *parent = 0);
+    Connection(qintptr socketDescriptor, QObject *parent = 0);
+    ~Connection();
 
     QString name() const;
     void setGreetingMessage(const QString &message);
@@ -96,20 +100,19 @@ private slots:
     void sendGreetingMessage();
 
 private:
-    int readDataIntoBuffer(int maxSize = MaxBufferSize);
-    int dataLengthForCurrentDataType();
-    bool readProtocolHeader();
     bool hasEnoughData();
+    void processGreeting();
     void processData();
 
+    QCborStreamReader reader;
+    QCborStreamWriter writer;
     QString greetingMessage;
     QString username;
     QTimer pingTimer;
-    QTime pongTime;
-    QByteArray buffer;
+    QElapsedTimer pongTime;
+    QString buffer;
     ConnectionState state;
     DataType currentDataType;
-    int numBytesForCurrentDataType;
     int transferTimerId;
     bool isGreetingMessageSent;
 };
