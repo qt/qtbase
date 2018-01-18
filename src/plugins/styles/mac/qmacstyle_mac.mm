@@ -237,6 +237,19 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QIndeterminateProgressIndicator);
 
 @end
 
+@interface QT_MANGLE_NAMESPACE(QVerticalSplitView) : NSSplitView
+- (BOOL)isVertical;
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QVerticalSplitView);
+
+@implementation QVerticalSplitView
+- (BOOL)isVertical
+{
+    return YES;
+}
+@end
+
 QT_BEGIN_NAMESPACE
 
 // The following constants are used for adjusting the size
@@ -1915,6 +1928,12 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
             // Cocoa sets the orientation from the view's frame
             // at construction time, and it cannot be changed later.
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
+            break;
+        case SplitView_Horizontal:
+            bv = [[NSSplitView alloc] init];
+            break;
+        case SplitView_Vertical:
+            bv = [[QVerticalSplitView alloc] init];
             break;
         case TextField:
             bv = [[NSTextField alloc] init];
@@ -4465,13 +4484,16 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         break;
         }
     case CE_Splitter:
-        if (opt->rect.width() > 1 && opt->rect.height() > 1){
-            HIThemeSplitterDrawInfo sdi;
-            sdi.version = qt_mac_hitheme_version;
-            sdi.state = tds;
-            sdi.adornment = kHIThemeSplitterAdornmentMetal;
-            CGRect cgRect = opt->rect.toCGRect();
-            HIThemeDrawPaneSplitter(&cgRect, &sdi, cg, kHIThemeOrientationNormal);
+        if (opt->rect.width() > 1 && opt->rect.height() > 1) {
+            const bool isVertical = !(opt->state & QStyle::State_Horizontal);
+            // Qt refers to the layout orientation, while Cocoa refers to the divider's.
+            const auto ct = isVertical ? QMacStylePrivate::SplitView_Horizontal : QMacStylePrivate::SplitView_Vertical;
+            const auto cw = QMacStylePrivate::CocoaControl(ct, QStyleHelper::SizeLarge);
+            auto *sv = static_cast<NSSplitView *>(d->cocoaControl(cw));
+            sv.frame = opt->rect.toCGRect();
+            d->drawNSViewInRect(cw, sv, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+                [sv drawDividerInRect:rect];
+            });
         } else {
             QPen oldPen = p->pen();
             p->setPen(opt->palette.dark().color());

@@ -196,6 +196,8 @@ public:
         Scroller_Vertical,
         Slider_Horizontal,
         Slider_Vertical,
+        SplitView_Horizontal,
+        SplitView_Vertical,
         Stepper,      // QSpinBox buttons
         TextField
     };
