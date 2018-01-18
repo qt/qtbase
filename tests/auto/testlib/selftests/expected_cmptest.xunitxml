@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="34" tests="24" name="tst_Cmptest">
+<testsuite errors="0" failures="38" tests="26" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -18,6 +18,22 @@
     <failure message="Compared values are not the same
    Actual   (MyClassEnum::MyClassEnumValue1): MyClassEnumValue1
    Expected (MyClassEnum::MyClassEnumValue2): MyClassEnumValue2" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="test_windowflags">
+    <failure tag="fail1" message="Compared values are not the same
+   Actual   (actualWindowFlags)  : Window|WindowSystemMenuHint|WindowStaysOnBottomHint
+   Expected (expectedWindowFlags): Window|FramelessWindowHint|WindowSystemMenuHint|WindowStaysOnBottomHint" result="fail"/>
+    <failure tag="fail2" message="Compared values are not the same
+   Actual   (actualWindowFlags)  : Window
+   Expected (expectedWindowFlags): Window|FramelessWindowHint" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="test_unregistered_flags">
+    <failure tag="fail1" message="Compared values are not the same
+   Actual   (actualFlags)  : 0x3
+   Expected (expectedFlags): 0x5" result="fail"/>
+    <failure tag="fail2" message="Compared values are not the same
+   Actual   (actualFlags)  : 0x1
+   Expected (expectedFlags): 0x5" result="fail"/>
   </testcase>
   <testcase result="pass" name="compare_boolfuncs"/>
   <testcase result="pass" name="compare_to_nullptr"/>

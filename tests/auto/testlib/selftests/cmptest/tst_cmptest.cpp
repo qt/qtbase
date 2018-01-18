@@ -130,6 +130,10 @@ private slots:
     void compare_unregistered_enums();
     void compare_registered_enums();
     void compare_class_enums();
+    void test_windowflags_data();
+    void test_windowflags();
+    void test_unregistered_flags_data();
+    void test_unregistered_flags();
     void compare_boolfuncs();
     void compare_to_nullptr();
     void compare_pointerfuncs();
@@ -178,6 +182,64 @@ void tst_Cmptest::compare_class_enums()
 {
     QCOMPARE(MyClassEnum::MyClassEnumValue1, MyClassEnum::MyClassEnumValue1);
     QCOMPARE(MyClassEnum::MyClassEnumValue1, MyClassEnum::MyClassEnumValue2);
+}
+
+void tst_Cmptest::test_windowflags_data()
+{
+    QTest::addColumn<Qt::WindowFlags>("actualWindowFlags");
+    QTest::addColumn<Qt::WindowFlags>("expectedWindowFlags");
+
+    const Qt::WindowFlags windowFlags = Qt::Window
+        | Qt::WindowSystemMenuHint | Qt::WindowStaysOnBottomHint;
+    QTest::newRow("pass")
+        << windowFlags
+        << windowFlags;
+    QTest::newRow("fail1")
+        << windowFlags
+        << (windowFlags | Qt::FramelessWindowHint);
+    QTest::newRow("fail2")
+        << Qt::WindowFlags(Qt::Window)
+        << Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint);
+}
+
+void tst_Cmptest::test_windowflags()
+{
+    QFETCH(Qt::WindowFlags, actualWindowFlags);
+    QFETCH(Qt::WindowFlags, expectedWindowFlags);
+    QCOMPARE(actualWindowFlags, expectedWindowFlags);
+}
+
+enum UnregisteredEnum {
+    UnregisteredEnumValue1 = 0x1,
+    UnregisteredEnumValue2 = 0x2,
+    UnregisteredEnumValue3 = 0x4
+};
+
+typedef QFlags<UnregisteredEnum> UnregisteredFlags;
+
+Q_DECLARE_METATYPE(UnregisteredFlags);
+
+void tst_Cmptest::test_unregistered_flags_data()
+{
+    QTest::addColumn<UnregisteredFlags>("actualFlags");
+    QTest::addColumn<UnregisteredFlags>("expectedFlags");
+
+    QTest::newRow("pass")
+        << UnregisteredFlags(UnregisteredEnumValue1)
+        << UnregisteredFlags(UnregisteredEnumValue1);
+    QTest::newRow("fail1")
+        << UnregisteredFlags(UnregisteredEnumValue1 | UnregisteredEnumValue2)
+        << UnregisteredFlags(UnregisteredEnumValue1 | UnregisteredEnumValue3);
+    QTest::newRow("fail2")
+        << UnregisteredFlags(UnregisteredEnumValue1)
+        << UnregisteredFlags(UnregisteredEnumValue1 | UnregisteredEnumValue3);
+}
+
+void tst_Cmptest::test_unregistered_flags()
+{
+    QFETCH(UnregisteredFlags, actualFlags);
+    QFETCH(UnregisteredFlags, expectedFlags);
+    QCOMPARE(actualFlags, expectedFlags);
 }
 
 static bool boolfunc() { return true; }

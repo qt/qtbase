@@ -31,6 +31,42 @@
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>
+<TestFunction name="test_windowflags">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[pass]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[fail1]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual   (actualWindowFlags)  : Window|WindowSystemMenuHint|WindowStaysOnBottomHint
+   Expected (expectedWindowFlags): Window|FramelessWindowHint|WindowSystemMenuHint|WindowStaysOnBottomHint]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[fail2]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual   (actualWindowFlags)  : Window
+   Expected (expectedWindowFlags): Window|FramelessWindowHint]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
+<TestFunction name="test_unregistered_flags">
+<Incident type="pass" file="" line="0">
+    <DataTag><![CDATA[pass]]></DataTag>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[fail1]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual   (actualFlags)  : 0x3
+   Expected (expectedFlags): 0x5]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[fail2]]></DataTag>
+    <Description><![CDATA[Compared values are not the same
+   Actual   (actualFlags)  : 0x1
+   Expected (expectedFlags): 0x5]]></Description>
+</Incident>
+    <Duration msecs="0"/>
+</TestFunction>
 <TestFunction name="compare_boolfuncs">
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
