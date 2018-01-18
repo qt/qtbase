@@ -180,6 +180,8 @@ private slots:
     void testThreading();
     void matches_data();
     void matches();
+    void ipv6_zoneId_data();
+    void ipv6_zoneId();
 
 private:
     void testThreadingHelper();
@@ -1876,6 +1878,24 @@ void tst_QUrl::ipv6_data()
 
     QTest::newRow("encoded-digit") << "//[::%31]" << true << "//[::1]";
     QTest::newRow("encoded-colon") << "//[%3A%3A]" << true << "//[::]";
+
+    QTest::newRow("full ipv6 with zone id (decoded %)") << QString::fromLatin1("//[56:56:56:56:56:56:56:56%eth0]") << true
+            << "//[56:56:56:56:56:56:56:56%25eth0]";
+
+    QTest::newRow("full ipv6 with zone id (encoded %)") << QString::fromLatin1("//[56:56:56:56:56:56:56:56%25eth0]") << true
+            << "//[56:56:56:56:56:56:56:56%25eth0]";
+
+    QTest::newRow("full ipv6 with invalid zone id") << QString::fromLatin1("//[56:56:56:56:56:56:56:56%]") << false << "";
+
+    QTest::newRow("full ipv6 with invalid zone id (encoded)") << QString::fromLatin1("//[56:56:56:56:56:56:56:56%25]") << false << "";
+
+    QTest::newRow("full ipv6 with zone id 25 (encoded)") << QString::fromLatin1("//[56:56:56:56:56:56:56:56%2525]") << true << "//[56:56:56:56:56:56:56:56%2525]";
+
+    QTest::newRow("case 4 with less and ip4 and port and useinfo and zone id")
+            << QString::fromLatin1("//user:pass@[56::56:56:56:127.0.0.1%ethernet_1]:99") << true
+            << "//user:pass@[56::56:56:56:7f00:1%25ethernet_1]:99";
+
+    QTest::newRow("encoded-digit including zone id") << "//[::%31%25eth0]" << true << "//[::1%25eth0]";
 }
 
 void tst_QUrl::ipv6()
@@ -4118,6 +4138,38 @@ void tst_QUrl::matches()
     QUrl urlOne(urlStrOne);
     QUrl urlTwo(urlStrTwo);
     QCOMPARE(urlOne.matches(urlTwo, QUrl::FormattingOptions(options)), matches);
+}
+
+void tst_QUrl::ipv6_zoneId_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QString>("decodedHost");
+    QTest::addColumn<QString>("prettyHost");
+    QTest::addColumn<QString>("encodedHost");
+
+    QTest::newRow("digit") << QUrl("x://[::%251]") << "::%1" << "::%251" << "::%251";
+    QTest::newRow("eth0") << QUrl("x://[::%25eth0]") << "::%eth0" << "::%25eth0" << "::%25eth0";
+    QTest::newRow("space") << QUrl("x://[::%25%20]") << "::% " << "::%25 " << "::%25%20";
+    QTest::newRow("subdelims") << QUrl("x://[::%25eth%2B]") << "::%eth+" << "::%25eth%2B" << "::%25eth%2B";
+    QTest::newRow("other") << QUrl("x://[::%25^]") << "::%^" << "::%25%5E" << "::%25%5E";
+    QTest::newRow("control") << QUrl("x://[::%25%7F]") << "::%\x7f" << "::%25%7F" << "::%25%7F";
+    QTest::newRow("unicode") << QUrl("x://[::%25wlán0]") << "::%wlán0" << "::%25wlán0" << "::%25wl%C3%A1n0";
+    QTest::newRow("non-utf8") << QUrl("x://[::%25%80]") << QString("::%") + QChar(QChar::ReplacementCharacter) << "::%25%80" << "::%25%80";
+  }
+
+void tst_QUrl::ipv6_zoneId()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QString, decodedHost);
+    QFETCH(QString, prettyHost);
+    QFETCH(QString, encodedHost);
+
+    QVERIFY2(url.isValid(), qPrintable(url.errorString()));
+    QCOMPARE(url.host(QUrl::FullyDecoded), decodedHost);
+    QCOMPARE(url.host(), decodedHost);
+    QCOMPARE(url.host(QUrl::FullyEncoded), encodedHost);
+    QCOMPARE(url.toString(), "x://[" + prettyHost + "]");
+    QCOMPARE(url.toString(QUrl::FullyEncoded), "x://[" + encodedHost + "]");
 }
 
 QTEST_MAIN(tst_QUrl)

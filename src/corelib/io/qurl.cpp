@@ -1203,16 +1203,18 @@ inline void QUrlPrivate::setQuery(const QString &value, int from, int iend)
 
 inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions options) const
 {
-    // EncodeUnicode is the only flag that matters
-    if ((options & QUrl::FullyDecoded) == QUrl::FullyDecoded)
-        options = 0;
-    else
-        options &= QUrl::EncodeUnicode;
     if (host.isEmpty())
         return;
     if (host.at(0).unicode() == '[') {
-        // IPv6Address and IPvFuture address never require any transformation
-        appendTo += host;
+        // IPv6 addresses might contain a zone-id which needs to be recoded
+        QString hostInCorrectFormat;
+        if (options != 0)
+            qt_urlRecode(hostInCorrectFormat, host.constBegin(), host.constEnd(), options, 0);
+
+        if (hostInCorrectFormat.isEmpty())
+            hostInCorrectFormat = host;
+
+        appendTo += hostInCorrectFormat;
     } else {
         // this is either an IPv4Address or a reg-name
         // if it is a reg-name, it is already stored in Unicode form
@@ -1278,31 +1280,44 @@ static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar
 // ONLY the IPv6 address is parsed here, WITHOUT the brackets
 static const QChar *parseIp6(QString &host, const QChar *begin, const QChar *end, QUrl::ParsingMode mode)
 {
-    QIPAddressUtils::IPv6Address address;
-    const QChar *ret = QIPAddressUtils::parseIp6(address, begin, end);
-    if (ret) {
+    // ### Update to use QStringView once QStringView::indexOf and QStringView::lastIndexOf exists
+    QString decoded;
+    if (mode == QUrl::TolerantMode) {
         // this struct is kept in automatic storage because it's only 4 bytes
         const ushort decodeColon[] = { decode(':'), 0 };
-
-        // IPv6 failed parsing, check if it was a percent-encoded character in
-        // the middle and try again
-        QString decoded;
-        if (mode == QUrl::TolerantMode && qt_urlRecode(decoded, begin, end, 0, decodeColon)) {
-            // recurse
-            // if the parsing fails again, the qt_urlRecode above will return 0
-            ret = parseIp6(host, decoded.constBegin(), decoded.constEnd(), mode);
-
-            // we can't return ret, otherwise it would be dangling
-            return ret ? end : 0;
-        }
-
-        // no transformation, nothing to re-parse
-        return ret;
+        if (qt_urlRecode(decoded, begin, end, QUrl::ComponentFormattingOption::PrettyDecoded, decodeColon) == 0)
+            decoded = QString(begin, end-begin);
+    } else {
+      decoded = QString(begin, end-begin);
     }
 
-    host.reserve(host.size() + (end - begin));
+    const QLatin1String zoneIdIdentifier("%25");
+    QIPAddressUtils::IPv6Address address;
+    QString zoneId;
+
+    const QChar *endBeforeZoneId = decoded.constEnd();
+
+    int zoneIdPosition = decoded.indexOf(zoneIdIdentifier);
+    if ((zoneIdPosition != -1) && (decoded.lastIndexOf(zoneIdIdentifier) == zoneIdPosition)) {
+        zoneId = decoded.mid(zoneIdPosition + zoneIdIdentifier.size());
+        endBeforeZoneId = decoded.constBegin() + zoneIdPosition;
+
+        if (zoneId.isEmpty())
+            return end;
+    }
+
+    const QChar *ret = QIPAddressUtils::parseIp6(address, decoded.constBegin(), endBeforeZoneId);
+    if (ret)
+        return begin + (ret - decoded.constBegin());
+
+    host.reserve(host.size() + (decoded.constEnd() - decoded.constBegin()));
     host += QLatin1Char('[');
     QIPAddressUtils::toString(host, address);
+
+    if (!zoneId.isEmpty()) {
+        host += zoneIdIdentifier;
+        host += zoneId;
+    }
     host += QLatin1Char(']');
     return 0;
 }
