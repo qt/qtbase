@@ -4157,7 +4157,16 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, w);
         const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt, w);
         if (ct == QMacStylePrivate::Box) {
-            d->drawFocusRing(p, opt->rect, hMargin, vMargin);
+            auto frameRect = opt->rect;
+            if (ffw && ffw->inherits("QLineEdit")
+                    && ffw->parentWidget()
+                    && ffw->parentWidget()->inherits("QAbstractSpinBox")) {
+                // See CC_SpinBox case for drawComplexControl
+                const int frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
+                frameRect = frameRect.adjusted(-frame_size, -frame_size, +frame_size, +frame_size);
+            }
+
+            d->drawFocusRing(p, frameRect, hMargin, vMargin);
         } else if (ffw) {
             const auto cs = ffw->testAttribute(Qt::WA_MacMiniSize) ? QStyleHelper::SizeMini :
                             ffw->testAttribute(Qt::WA_MacSmallSize) ? QStyleHelper::SizeSmall :
@@ -5435,19 +5444,18 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             if (sb->frame && (sb->subControls & SC_SpinBoxFrame)) {
-                int frame_size;
-                frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
-
-                QRect lineeditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget);
-                lineeditRect.adjust(-frame_size, -frame_size, +frame_size, +frame_size);
-
-                HIThemeFrameDrawInfo fdi;
-                fdi.version = qt_mac_hitheme_version;
-                fdi.state = tds == kThemeStateInactive ? kThemeStateActive : tds;
-                fdi.kind = kHIThemeFrameTextFieldSquare;
-                fdi.isFocused = false;
-                CGRect cgRect = lineeditRect.toCGRect();
-                HIThemeDrawFrame(&cgRect, &fdi, cg, kHIThemeOrientationNormal);
+                const int frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
+                const auto lineEditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget)
+                        .adjusted(-frame_size, -frame_size, +frame_size, +frame_size);
+                QStyleOptionFrame frame;
+                static_cast<QStyleOption &>(frame) = *opt;
+                frame.rect = lineEditRect;
+                frame.state |= State_Sunken;
+                frame.lineWidth = 1;
+                frame.midLineWidth = 0;
+                frame.features = QStyleOptionFrame::None;
+                frame.frameShape = QFrame::Box;
+                drawPrimitive(PE_FrameLineEdit, &frame, p, widget);
             }
             if (sb->subControls & (SC_SpinBoxUp | SC_SpinBoxDown)) {
                 const QRect updown = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxUp, widget)
@@ -5465,7 +5473,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 const bool upPressed = sb->activeSubControls == SC_SpinBoxUp && (sb->state & State_Sunken);
                 const bool downPressed = sb->activeSubControls == SC_SpinBoxDown && (sb->state & State_Sunken);
                 const CGFloat x = CGRectGetMidX(newRect);
-                const CGFloat y = upPressed ? -3 : 3; // FIXME Weird coordinate shift going on
+                const CGFloat y = upPressed ? -3 : 3; // Weird coordinate shift going on. Verified with Hopper
                 const CGPoint pressPoint = CGPointMake(x, y);
                 // Pretend we're pressing the mouse on the right button. Unfortunately, NSStepperCell has no
                 // API to highlight a specific button. The highlighted property works only on the down button.
@@ -6624,24 +6632,14 @@ bool QMacStyle::event(QEvent *e)
             }
         }
 #endif
+
         if (focusWidget && focusWidget->testAttribute(Qt::WA_MacShowFocusRect)) {
-            f = focusWidget;
-            QWidget *top = f->parentWidget();
-            while (top && !top->isWindow() && !(top->windowType() == Qt::SubWindow))
-                top = top->parentWidget();
-#if QT_CONFIG(mainwindow)
-            if (qobject_cast<QMainWindow *>(top)) {
-                QWidget *central = static_cast<QMainWindow *>(top)->centralWidget();
-                for (const QWidget *par = f; par; par = par->parentWidget()) {
-                    if (par == central) {
-                        top = central;
-                        break;
-                    }
-                    if (par->isWindow())
-                        break;
-                }
-            }
+#if QT_CONFIG(spinbox)
+            if (const auto sb = qobject_cast<QAbstractSpinBox *>(focusWidget))
+                f = sb->property("_q_spinbox_lineedit").value<QWidget *>();
+            else
 #endif
+                f = focusWidget;
         }
         if (f) {
             if(!d->focusWidget)
