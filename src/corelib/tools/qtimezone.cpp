@@ -66,11 +66,10 @@ static QTimeZonePrivate *newBackendTimeZone()
     return new QAndroidTimeZonePrivate();
 #elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate();
-    // Registry based timezone backend not available on WinRT
-#elif defined Q_OS_WIN
-    return new QWinTimeZonePrivate();
 #elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate();
+#elif defined Q_OS_WIN
+    return new QWinTimeZonePrivate();
 #else
     return new QUtcTimeZonePrivate();
 #endif // System Locales
@@ -93,11 +92,10 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
     return new QAndroidTimeZonePrivate(ianaId);
 #elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate(ianaId);
-    // Registry based timezone backend not available on WinRT
-#elif defined Q_OS_WIN
-    return new QWinTimeZonePrivate(ianaId);
 #elif QT_CONFIG(icu)
     return new QIcuTimeZonePrivate(ianaId);
+#elif defined Q_OS_WIN
+    return new QWinTimeZonePrivate(ianaId);
 #else
     return new QUtcTimeZonePrivate(ianaId);
 #endif // System Locales

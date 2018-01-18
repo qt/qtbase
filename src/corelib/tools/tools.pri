@@ -159,16 +159,18 @@ qtConfig(timezone) {
     SOURCES += \
         tools/qtimezone.cpp \
         tools/qtimezoneprivate.cpp
-    !nacl:darwin: \
+    !nacl:darwin: {
         SOURCES += tools/qtimezoneprivate_mac.mm
-    else: android: \
+    } else: android: {
         SOURCES += tools/qtimezoneprivate_android.cpp
-    else: unix: \
+    } else: unix: {
         SOURCES += tools/qtimezoneprivate_tz.cpp
-    else: win32: \
-        SOURCES += tools/qtimezoneprivate_win.cpp
-    qtConfig(icu): \
+        qtConfig(icu): SOURCES += tools/qtimezoneprivate_icu.cpp
+    } else: qtConfig(icu): {
         SOURCES += tools/qtimezoneprivate_icu.cpp
+    } else: win32: {
+        SOURCES += tools/qtimezoneprivate_win.cpp
+    }
 }
 
 qtConfig(datetimeparser) {

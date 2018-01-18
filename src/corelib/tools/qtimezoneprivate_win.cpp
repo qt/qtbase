@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef Q_OS_WINRT
+// The registry-based timezone backend is not available on WinRT, which falls back to equivalent APIs.
 #define QT_USE_REGISTRY_TIMEZONE 1
 #endif
 
