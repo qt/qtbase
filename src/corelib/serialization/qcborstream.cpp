@@ -1452,13 +1452,6 @@ bool QCborStreamWriter::endMap()
    parsing from a QByteArray, or reparse(), if it is instead reading directly
    a the QIDOevice that now has more data available (see setDevice()).
 
-   \section1 Validation
-
-   In addition to the basic well-formedness of the CBOR stream,
-   QCborStreamReader has an API to validate the stream to further parameters,
-   such as whether it is canonical CBOR or follows strict encoding (see
-   \l{QCborStreamWriter} for more details). See validate() and ValidationFlags.
-
    \sa QCborStreamWriter, QCborValue, QXmlStreamReader
  */
 
