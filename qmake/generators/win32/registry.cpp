@@ -32,7 +32,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_OS_WIN32
-/*!
+/*
   Returns the path part of a registry key.
   e.g.
       For a key
@@ -48,7 +48,7 @@ static QString keyPath(const QString &rKey)
     return rKey.left(idx + 1);
 }
 
-/*!
+/*
   Returns the name part of a registry key.
   e.g.
       For a key
