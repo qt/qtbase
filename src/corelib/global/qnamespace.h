@@ -1861,6 +1861,16 @@ public:
     static bool activateCallbacks(Callback, void **);
 };
 
+#if defined(Q_CLANG_QDOC)
+// Declared here for qdoc; actual declarations in qtextdocument.h
+namespace Qt
+{
+    bool mightBeRichText(const QString&);
+    QString convertFromPlainText(const QString &plain, WhiteSpaceMode mode = WhiteSpacePre);
+    QTextCodec *codecForHtml(const QByteArray &ba);
+}
+#endif // Q_CLANG_QDOC
+
 QT_END_NAMESPACE
 
 #endif // QNAMESPACE_H

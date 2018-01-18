@@ -5521,7 +5521,7 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
 */
 
 /*!
-    \fn QGraphicsScene::focusItemChanged(QGraphicsItem *newFocusItem, QGraphicsItem *oldFocusItem, Qt::FocusReason reason)
+    \fn void QGraphicsScene::focusItemChanged(QGraphicsItem *newFocusItem, QGraphicsItem *oldFocusItem, Qt::FocusReason reason)
 
     This signal is emitted by QGraphicsScene whenever focus changes in the
     scene (i.e., when an item gains or loses input focus, or when focus

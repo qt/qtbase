@@ -234,6 +234,8 @@ typedef int GLint;
 typedef int GLsizei;
 #undef GLuint
 typedef unsigned int GLuint;
+#undef GLubyte
+typedef unsigned int GLubyte;
 #undef GLenum
 typedef unsigned int GLenum;
 #undef GLbitfield

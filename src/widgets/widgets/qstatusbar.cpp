@@ -601,7 +601,7 @@ QString QStatusBar::currentMessage() const
 }
 
 /*!
-    \fn QStatusBar::messageChanged(const QString &message)
+    \fn void QStatusBar::messageChanged(const QString &message)
 
     This signal is emitted whenever the temporary status message
     changes. The new temporary message is passed in the \a message

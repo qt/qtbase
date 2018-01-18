@@ -348,7 +348,7 @@ QObject *QScroller::target() const
 }
 
 /*!
-    \fn QScroller::scrollerPropertiesChanged(const QScrollerProperties &newProperties);
+    \fn void QScroller::scrollerPropertiesChanged(const QScrollerProperties &newProperties);
 
     QScroller emits this signal whenever its scroller properties change.
     \a newProperties are the new scroller properties.
@@ -518,7 +518,7 @@ QScroller::~QScroller()
 
 
 /*!
-    \fn QScroller::stateChanged(QScroller::State newState);
+    \fn void QScroller::stateChanged(QScroller::State newState);
 
     QScroller emits this signal whenever the state changes. \a newState is the new State.
 

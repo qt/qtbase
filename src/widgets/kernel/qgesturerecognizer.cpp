@@ -193,7 +193,7 @@ void QGestureRecognizer::reset(QGesture *gesture)
 }
 
 /*!
-    \fn QGestureRecognizer::recognize(QGesture *gesture, QObject *watched, QEvent *event)
+    \fn QGestureRecognizer::Result QGestureRecognizer::recognize(QGesture *gesture, QObject *watched, QEvent *event)
 
     Handles the given \a event for the \a watched object, updating the state of the \a gesture
     object as required, and returns a suitable result for the current recognition step.

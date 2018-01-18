@@ -951,7 +951,9 @@ void QMainWindow::setDockNestingEnabled(bool enabled)
 }
 
 #if 0
-/*! \property QMainWindow::verticalTabsEnabled
+// If added back in, add the '!' to the qdoc comment marker as well.
+/*
+    \property QMainWindow::verticalTabsEnabled
     \brief whether left and right dock areas use vertical tabs
     \since 4.2
 

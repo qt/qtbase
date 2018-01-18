@@ -4007,7 +4007,7 @@ int QTreeView::visualIndex(const QModelIndex &index) const
 }
 
 /*!
-   \reimp
+   \internal
 */
 
 void QTreeView::verticalScrollbarValueChanged(int value)

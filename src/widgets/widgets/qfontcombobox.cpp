@@ -524,7 +524,7 @@ void QFontComboBox::setCurrentFont(const QFont &font)
 }
 
 /*!
-    \fn QFontComboBox::currentFontChanged(const QFont &font)
+    \fn void QFontComboBox::currentFontChanged(const QFont &font)
 
     This signal is emitted whenever the current font changes, with
     the new \a font.

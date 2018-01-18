@@ -172,6 +172,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+  \fn void QCursor::swap(QCursor &other)
+
+  Swaps this cursor with the \a other cursor.
+ */
+
+/*!
     \fn QPoint QCursor::pos(const QScreen *screen)
 
     Returns the position of the cursor (hot spot) of the \a screen

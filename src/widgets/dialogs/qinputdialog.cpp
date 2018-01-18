@@ -1312,7 +1312,7 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
 }
 
 /*!
-    \fn QInputDialog::getInteger(QWidget *parent, const QString &title, const QString &label, int value, int min, int max, int step, bool *ok, Qt::WindowFlags flags)
+    \fn int QInputDialog::getInteger(QWidget *parent, const QString &title, const QString &label, int value, int min, int max, int step, bool *ok, Qt::WindowFlags flags)
     \deprecated use getInt()
 
     Static convenience function to get an integer input from the user.

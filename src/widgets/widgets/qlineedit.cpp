@@ -231,10 +231,10 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
 */
 
 /*!
-    \fn void QLineEdit::cursorPositionChanged(int old, int new)
+    \fn void QLineEdit::cursorPositionChanged(int oldPos, int newPos)
 
     This signal is emitted whenever the cursor moves. The previous
-    position is given by \a old, and the new position by \a new.
+    position is given by \a oldPos, and the new position by \a newPos.
 
     \sa setCursorPosition(), cursorPosition()
 */

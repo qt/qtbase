@@ -10640,7 +10640,7 @@ bool QGraphicsTextItemPrivate::_q_mouseOnEdge(QGraphicsSceneMouseEvent *event)
 }
 
 /*!
-    \fn QGraphicsTextItem::linkActivated(const QString &link)
+    \fn void QGraphicsTextItem::linkActivated(const QString &link)
 
     This signal is emitted when the user clicks on a link on a text item
     that enables Qt::LinksAccessibleByMouse or Qt::LinksAccessibleByKeyboard.
@@ -10650,7 +10650,7 @@ bool QGraphicsTextItemPrivate::_q_mouseOnEdge(QGraphicsSceneMouseEvent *event)
 */
 
 /*!
-    \fn QGraphicsTextItem::linkHovered(const QString &link)
+    \fn void QGraphicsTextItem::linkHovered(const QString &link)
 
     This signal is emitted when the user hovers over a link on a text item
     that enables Qt::LinksAccessibleByMouse. \a link is

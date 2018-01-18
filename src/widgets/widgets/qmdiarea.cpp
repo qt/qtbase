@@ -100,7 +100,7 @@
 */
 
 /*!
-    \fn QMdiArea::subWindowActivated(QMdiSubWindow *window)
+    \fn void QMdiArea::subWindowActivated(QMdiSubWindow *window)
 
     QMdiArea emits this signal after \a window has been activated. When \a
     window is 0, QMdiArea has just deactivated its last active window, and

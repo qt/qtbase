@@ -165,7 +165,7 @@ void QTextOption::setTabArray(const QList<qreal> &tabStops)
     Sets the tab positions for the text layout to those specified by
     \a tabStops.
 
-    \sa tabStops()
+    \sa tabStop()
 */
 void QTextOption::setTabs(const QList<QTextOption::Tab> &tabStops)
 {

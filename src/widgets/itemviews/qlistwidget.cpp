@@ -1197,7 +1197,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     new current item and the item that was previously current.
 
     \sa QListWidgetItem, QListView, QTreeView, {Model/View Programming},
-        {Config Dialog Example}
+        {Tab Dialog Example}
 */
 
 /*!
