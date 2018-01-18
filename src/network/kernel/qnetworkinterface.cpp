@@ -166,7 +166,7 @@ QString QNetworkInterfacePrivate::makeHwAddress(int len, uchar *data)
 */
 
 /*!
-    \enum QNetworkAddressEntry::DnsEligilibilityStatus
+    \enum QNetworkAddressEntry::DnsEligibilityStatus
     \since 5.11
 
     This enum indicates whether a given host address is eligible to be

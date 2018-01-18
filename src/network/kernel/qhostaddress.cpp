@@ -1233,7 +1233,7 @@ bool QHostAddress::isGlobal() const
     \l{https://www.iana.org/assignments/ipv6-address-space/ipv6-address-space.xhtml}{IANA
     IPv6 Address Space} registry for more information.
 
-    \sa isLoopback(), isGlobal(). isMulticast(), isSiteLocal(), isUniqueLocalUnicast()
+    \sa isLoopback(), isGlobal(), isMulticast(), isSiteLocal(), isUniqueLocalUnicast()
 */
 bool QHostAddress::isLinkLocal() const
 {
@@ -1338,8 +1338,8 @@ uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW
 }
 
 /*!
+    \fn bool operator==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
     \relates QHostAddress
-    \fn operator==(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
 
     Returns \c true if special address \a lhs is the same as host address \a rhs;
     otherwise returns \c false.
@@ -1348,9 +1348,9 @@ uint qHash(const QHostAddress &key, uint seed) Q_DECL_NOTHROW
 */
 
 /*!
+    \fn bool operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
     \relates QHostAddress
     \since 5.9
-    \fn operator!=(QHostAddress::SpecialAddress lhs, const QHostAddress &rhs)
 
     Returns \c false if special address \a lhs is the same as host address \a rhs;
     otherwise returns \c true.

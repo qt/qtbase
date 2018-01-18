@@ -198,9 +198,6 @@ static void q_OpenSSL_add_all_algorithms_safe()
 }
 
 
-/*!
-    \internal
-*/
 void QSslSocketPrivate::deinitialize()
 {
     q_CRYPTO_set_id_callback(0);

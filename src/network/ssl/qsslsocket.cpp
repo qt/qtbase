@@ -215,7 +215,7 @@
 */
 
 /*!
-    \fn QSslSocket::encrypted()
+    \fn void QSslSocket::encrypted()
 
     This signal is emitted when QSslSocket enters encrypted mode. After this
     signal has been emitted, QSslSocket::isEncrypted() will return true, and
@@ -225,7 +225,7 @@
 */
 
 /*!
-    \fn QSslSocket::modeChanged(QSslSocket::SslMode mode)
+    \fn void QSslSocket::modeChanged(QSslSocket::SslMode mode)
 
     This signal is emitted when QSslSocket changes from \l
     QSslSocket::UnencryptedMode to either \l QSslSocket::SslClientMode or \l
@@ -235,7 +235,7 @@
 */
 
 /*!
-    \fn QSslSocket::encryptedBytesWritten(qint64 written)
+    \fn void QSslSocket::encryptedBytesWritten(qint64 written)
     \since 4.4
 
     This signal is emitted when QSslSocket writes its encrypted data to the
