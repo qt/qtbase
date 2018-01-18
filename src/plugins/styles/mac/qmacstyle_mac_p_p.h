@@ -196,7 +196,8 @@ public:
         Scroller_Vertical,
         Slider_Horizontal,
         Slider_Vertical,
-        Stepper       // QSpinBox buttons
+        Stepper,      // QSpinBox buttons
+        TextField
     };
 
     typedef QPair<CocoaControlType, QStyleHelper::WidgetSizePolicy> CocoaControl;

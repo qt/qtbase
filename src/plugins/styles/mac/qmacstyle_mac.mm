@@ -1916,6 +1916,9 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
             // at construction time, and it cannot be changed later.
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
             break;
+        case TextField:
+            bv = [[NSTextField alloc] init];
+            break;
         default:
             break;
         }
@@ -3361,35 +3364,21 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_FrameLineEdit:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (frame->state & State_Sunken) {
-                QColor baseColor(frame->palette.background().color());
-                HIThemeFrameDrawInfo fdi;
-                fdi.version = qt_mac_hitheme_version;
-                fdi.state = tds;
-                int frame_size;
-                fdi.kind = frame->features & QStyleOptionFrame::Rounded ? kHIThemeFrameTextFieldRound :
-                                                                          kHIThemeFrameTextFieldSquare;
-                frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
-                if ((frame->state & State_ReadOnly) || !(frame->state & State_Enabled))
-                    fdi.state = kThemeStateInactive;
-                else if (fdi.state == kThemeStatePressed)
-                    // This pressed state doesn't make sense for a line edit frame.
-                    // And Yosemite agrees with us. Otherwise it starts showing yellow pixels.
-                    fdi.state = kThemeStateActive;
-                fdi.isFocused = (frame->state & State_HasFocus);
-                int lw = frame->lineWidth;
-                if (lw <= 0)
-                    lw = proxy()->pixelMetric(PM_DefaultFrameWidth, frame, w);
-                { //clear to base color
-                    p->save();
-                    p->setPen(QPen(baseColor, lw));
-                    p->setBrush(Qt::NoBrush);
-                    p->drawRect(frame->rect);
-                    p->restore();
-                }
-                const auto frameMargins = QMargins(frame_size, frame_size, frame_size, frame_size);
-                const CGRect cgRect = frame->rect.marginsRemoved(frameMargins).toCGRect();
-
-                HIThemeDrawFrame(&cgRect, &fdi, cg, kHIThemeOrientationNormal);
+                const bool isEnabled = opt->state & State_Enabled;
+                const bool isReadOnly = opt->state & State_ReadOnly;
+                const bool isRounded = frame->features & QStyleOptionFrame::Rounded;
+                const auto cs = d->effectiveAquaSizeConstrain(opt, w, CT_LineEdit);
+                const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::TextField, cs);
+                auto *tf = static_cast<NSTextField *>(d->cocoaControl(cw));
+                tf.enabled = isEnabled;
+                tf.editable = !isReadOnly;
+                tf.bezeled = YES;
+                static_cast<NSTextFieldCell *>(tf.cell).bezelStyle = isRounded ? NSTextFieldRoundedBezel : NSTextFieldSquareBezel;
+                tf.frame = opt->rect.toCGRect();
+                d->drawNSViewInRect(cw, tf, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+                    Q_UNUSED(ctx);
+                    [tf.cell drawWithFrame:rect inView:tf];
+                });
             } else {
                 QCommonStyle::drawPrimitive(pe, opt, p, w);
             }
