@@ -3389,13 +3389,12 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
         break;
     case PE_IndicatorMenuCheckMark: {
-        if (!(opt->state & State_On))
-            break;
         QColor pc;
-        if (opt->state & State_Selected)
+        if (opt->state & State_On)
             pc = opt->palette.highlightedText().color();
         else
             pc = opt->palette.text().color();
+
         QCFType<CGColorRef> checkmarkColor = CGColorCreateGenericRGB(static_cast<CGFloat>(pc.redF()),
                                                                      static_cast<CGFloat>(pc.greenF()),
                                                                      static_cast<CGFloat>(pc.blueF()),
@@ -4493,8 +4492,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 const int xp = contentRect.x() + macItemFrame;
                 checkmarkOpt.rect = QRect(xp, contentRect.y() - checkmarkOpt.fontMetrics.descent(), mw, mh);
 
-                checkmarkOpt.state |= State_On; // Always on. Never rendered when off.
-                checkmarkOpt.state.setFlag(State_Selected, active);
+                checkmarkOpt.state.setFlag(State_On, active);
                 checkmarkOpt.state.setFlag(State_Enabled, enabled);
                 if (widgetSize == QAquaSizeMini)
                     checkmarkOpt.state |= State_Mini;
