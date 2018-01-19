@@ -121,6 +121,9 @@ Build options:
   -gcov ................ Instrument with the GCov code coverage tool [no]
   -sanitize {address|thread|memory|undefined}
                          Instrument with the specified compiler sanitizer.
+                         Note that some sanitizers cannot be combined;
+                         for example, -sanitize address cannot be combined with
+                         -sanitize thread.
 
   -c++std <edition> .... Select C++ standard <edition> [c++1z/c++14/c++11]
                          (Not supported with MSVC)
