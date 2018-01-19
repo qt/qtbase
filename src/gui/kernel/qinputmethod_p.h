@@ -80,7 +80,7 @@ public:
 
     void _q_connectFocusObject();
     void _q_checkFocusObject(QObject *object);
-    bool objectAcceptsInputMethod(QObject *object);
+    static bool objectAcceptsInputMethod(QObject *object);
 
     QTransform inputItemTransform;
     QRectF inputRectangle;

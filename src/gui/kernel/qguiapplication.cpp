@@ -84,6 +84,7 @@
 #include "private/qcursor_p.h"
 #include "private/qopenglcontext_p.h"
 #include "private/qinputdevicemanager_p.h"
+#include "private/qinputmethod_p.h"
 #include "private/qtouchdevice_p.h"
 
 #include <qpa/qplatformthemefactory_p.h>
@@ -4030,18 +4031,7 @@ void QGuiApplicationPrivate::_q_updateFocusObject(QObject *object)
     Q_Q(QGuiApplication);
 
     QPlatformInputContext *inputContext = platformIntegration()->inputContext();
-    bool enabled = false;
-    if (object && inputContext) {
-        QInputMethodQueryEvent query(Qt::ImEnabled | Qt::ImHints);
-        QGuiApplication::sendEvent(object, &query);
-        enabled = query.value(Qt::ImEnabled).toBool();
-        if (enabled) {
-            static const bool supportsHiddenText = inputContext->hasCapability(QPlatformInputContext::HiddenTextCapability);
-            const Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(query.value(Qt::ImHints).toInt());
-            if ((hints & Qt::ImhHiddenText) && !supportsHiddenText)
-                enabled = false;
-        }
-    }
+    const bool enabled = inputContext && QInputMethodPrivate::objectAcceptsInputMethod(object);
 
     QPlatformInputContextPrivate::setInputMethodAccepted(enabled);
     if (inputContext)
