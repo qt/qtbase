@@ -3761,14 +3761,25 @@ static inline void formatInputMethodEvent(QDebug d, const QInputMethodEvent *e)
 
 static inline void formatInputMethodQueryEvent(QDebug d, const QInputMethodQueryEvent *e)
 {
+    QDebugStateSaver saver(d);
+    d.noquote();
     const Qt::InputMethodQueries queries = e->queries();
     d << "QInputMethodQueryEvent(queries=" << showbase << hex << int(queries)
       << noshowbase << dec << ", {";
-    for (unsigned mask = 1; mask <= Qt::ImTextAfterCursor; mask<<=1) {
+    for (unsigned mask = 1; mask <= Qt::ImInputItemClipRectangle; mask<<=1) {
         if (queries & mask) {
-            const QVariant value = e->value(static_cast<Qt::InputMethodQuery>(mask));
-            if (value.isValid())
-                d << '[' << showbase << hex << mask <<  noshowbase << dec << '=' << value << "],";
+            const Qt::InputMethodQuery query = static_cast<Qt::InputMethodQuery>(mask);
+            const QVariant value = e->value(query);
+            if (value.isValid()) {
+                d << '[';
+                QtDebugUtils::formatQEnum(d, query);
+                d << '=';
+                if (query == Qt::ImHints)
+                    QtDebugUtils::formatQFlags(d, Qt::InputMethodHints(value.toInt()));
+                else
+                    d << value.toString();
+                d << "],";
+            }
         }
     }
     d << "})";
