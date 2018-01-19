@@ -470,6 +470,10 @@ bool QMoviePrivate::next()
         currentPixmap = QPixmap::fromImage( info.pixmap.toImage().scaled(scaledSize) );
     else
         currentPixmap = info.pixmap;
+
+    if (!speed)
+        return true;
+
     nextDelay = speedAdjustedDelay(info.delay);
     // Adjust delay according to the time it took to read the frame
     int processingTime = time.elapsed();
@@ -504,7 +508,7 @@ void QMoviePrivate::_q_loadNextFrame(bool starting)
         emit q->updated(frameRect);
         emit q->frameChanged(currentFrameNumber);
 
-        if (movieState == QMovie::Running)
+        if (speed && movieState == QMovie::Running)
             nextImageTimer.start(nextDelay);
     } else {
         // Could not read another frame
@@ -926,6 +930,8 @@ void QMovie::setPaused(bool paused)
 void QMovie::setSpeed(int percentSpeed)
 {
     Q_D(QMovie);
+    if (!d->speed && d->movieState == Running)
+        d->nextImageTimer.start(nextFrameDelay());
     d->speed = percentSpeed;
 }
 
