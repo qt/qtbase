@@ -593,7 +593,7 @@ bool QNetworkAddressEntry::isPermanent() const
     \value Ethernet             IEEE 802.3 Ethernet interfaces, though on many
                                 systems other types of IEEE 802 interfaces may also
                                 be detected as Ethernet (especially Wi-Fi).
-    \value WiFi                 IEEE 802.11 Wi-Fi interfaces. Note that on some
+    \value Wifi                 IEEE 802.11 Wi-Fi interfaces. Note that on some
                                 systems, QNetworkInterface may be unable to
                                 distinguish regular Ethernet from Wi-Fi and will
                                 not return this enum value.

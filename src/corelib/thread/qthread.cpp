@@ -891,7 +891,7 @@ bool QThread::isInterruptionRequested() const
     return d->running && !d->finished && !d->isInFinish;
 }
 
-/*
+/*!
     \fn template <typename Function, typename... Args> QThread *QThread::create(Function &&f, Args &&... args)
     \since 5.10
 
@@ -915,7 +915,7 @@ bool QThread::isInterruptionRequested() const
     \sa start()
 */
 
-/*
+/*!
     \fn template <typename Function> QThread *QThread::create(Function &&f)
     \since 5.10
 
