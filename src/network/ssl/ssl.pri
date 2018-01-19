@@ -102,3 +102,6 @@ qtConfig(ssl) {
         }
     }
 }
+
+HEADERS += ssl/qpassworddigestor.h
+SOURCES += ssl/qpassworddigestor.cpp

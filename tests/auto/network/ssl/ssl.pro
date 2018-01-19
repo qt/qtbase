@@ -2,6 +2,7 @@ TEMPLATE=subdirs
 QT_FOR_CONFIG += network
 
 SUBDIRS=\
+   qpassworddigestor \
    qsslcertificate \
    qsslcipher \
    qsslellipticcurve \
