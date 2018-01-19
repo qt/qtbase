@@ -28,10 +28,18 @@
 ****************************************************************************/
 
 #include <QtCore/QCoreApplication>
+
+#if QT_CONFIG(temporaryfile) && QT_CONFIG(process)
+#  define USE_DIFF
+#endif
 #include <QtCore/QXmlStreamReader>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QTemporaryDir>
+#ifdef USE_DIFF
+#  include <QtCore/QTemporaryFile>
+#  include <QtCore/QStandardPaths>
+#endif
 #include <QtTest/QtTest>
 
 #include <private/cycle_p.h>
@@ -173,6 +181,70 @@ static QList<QByteArray> expectedResult(const QString &fileName)
     if (!file.open(QIODevice::ReadOnly))
         return QList<QByteArray>();
     return splitLines(file.readAll());
+}
+
+// Helpers for running the 'diff' tool in case comparison fails
+#ifdef USE_DIFF
+static inline void writeLines(QIODevice &d, const QByteArrayList &lines)
+{
+    for (const QByteArray &l : lines) {
+        d.write(l);
+        d.write("\n");
+    }
+}
+#endif // USE_DIFF
+
+static QByteArray runDiff(const QByteArrayList &expected, const QByteArrayList &actual)
+{
+    QByteArray result;
+#ifdef USE_DIFF
+#  ifndef Q_OS_WIN
+    const QString diff = QStandardPaths::findExecutable("diff");
+#  else
+    const QString diff = QStandardPaths::findExecutable("diff.exe");
+#  endif
+    if (diff.isEmpty())
+        return result;
+    QTemporaryFile expectedFile;
+    if (!expectedFile.open())
+        return result;
+    writeLines(expectedFile, expected);
+    expectedFile.close();
+    QTemporaryFile actualFile;
+    if (!actualFile.open())
+        return result;
+    writeLines(actualFile, actual);
+    actualFile.close();
+    QProcess diffProcess;
+    diffProcess.start(diff, {QLatin1String("-u"), expectedFile.fileName(), actualFile.fileName()});
+    if (!diffProcess.waitForStarted())
+        return result;
+    if (diffProcess.waitForFinished())
+        result = diffProcess.readAllStandardOutput();
+    else
+        diffProcess.kill();
+#endif // USE_DIFF
+    return result;
+}
+
+// Print the difference preferably using 'diff', else just print lines
+static void printDifference(const QByteArrayList &expected, const QByteArrayList &actual)
+{
+    QDebug info = qInfo();
+    info.noquote();
+    info.nospace();
+    const QByteArray diff = runDiff(expected, actual);
+    if (diff.isEmpty()) {
+        info << "<<<<<<\n";
+        for (const QByteArray &line : actual)
+            info << line << '\n';
+        info << "======\n";
+        for (const QByteArray &line : expected)
+            info << line << '\n';
+        info << ">>>>>>\n";
+    } else {
+        info << diff;
+    }
 }
 
 // Each test is run with a set of one or more test output loggers.
@@ -728,14 +800,7 @@ void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& logge
             }
         } else {
             if (res.count() != exp.count()) {
-                qDebug() << "<<<<<<";
-                foreach (const QByteArray &line, res)
-                    qDebug() << line;
-                qDebug() << "======";
-                foreach (const QByteArray &line, exp)
-                    qDebug() << line;
-                qDebug() << ">>>>>>";
-
+                printDifference(exp, res);
                 QVERIFY2(res.count() == exp.count(),
                      qPrintable(QString::fromLatin1("Mismatch in line count: %1 != %2 (%3, %4).")
                                 .arg(res.count()).arg(exp.count()).arg(loggers.at(n), expectedFileName)));
