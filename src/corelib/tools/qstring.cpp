@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -250,6 +250,151 @@ inline RetType UnrollTailLoop<0>::exec(Number, RetType returnIfExited, Functor1,
 }
 }
 #endif
+
+#ifdef __SSE2__
+static bool simdTestMask(const char *&ptr, const char *end, quint32 maskval)
+{
+#  if defined(__AVX2__)
+    // AVX2 implementation: test 32 bytes at a time
+    const __m256i mask256 = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(maskval));
+    while (ptr + 32 < end) {
+        __m256i data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
+        if (!_mm256_testz_si256(mask256, data))
+            return false;
+        ptr += 32;
+    }
+
+    const __m128i mask = _mm256_castsi256_si128(mask256);
+#  elif defined(__SSE4_1__)
+    // SSE 4.1 implementation: test 32 bytes at a time (two 16-byte
+    // comparisons, unrolled)
+    const __m128i mask = _mm_set1_epi32(maskval);
+    while (ptr + 32 < end) {
+        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+        __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
+        if (!_mm_testz_si128(mask, data1))
+            return false;
+        if (!_mm_testz_si128(mask, data2))
+            return false;
+        ptr += 32;
+    }
+#  endif
+#  if defined(__SSE4_1__)
+    // AVX2 and SSE4.1: final 16-byte comparison
+    if (ptr + 16 < end) {
+        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+        if (!_mm_testz_si128(mask, data1))
+            return false;
+        ptr += 16;
+    }
+#  else
+    // SSE2 implementation: test 16 bytes at a time.
+    const __m128i mask = _mm_set1_epi32(maskval);
+    while (ptr + 16 < end) {
+        __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+        __m128i masked = _mm_andnot_si128(mask, data);
+        __m128i comparison = _mm_cmpeq_epi16(masked, _mm_setzero_si128());
+        if (quint16(_mm_movemask_epi8(comparison)) != 0xffff)
+            return false;
+        ptr += 16;
+    }
+#  endif
+
+    return true;
+}
+#endif
+
+bool QtPrivate::isAscii(QLatin1String s) Q_DECL_NOTHROW
+{
+    const char *ptr = s.begin();
+    const char *end = s.end();
+
+#if defined(__AVX2__)
+    if (!simdTestMask(ptr, end, 0x80808080))
+        return false;
+#elif defined(__SSE2__)
+    // Testing for the high bit can be done efficiently with just PMOVMSKB
+    while (ptr + 16 < end) {
+        __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+        quint32 mask = _mm_movemask_epi8(data);
+        if (mask)
+            return false;
+        ptr += 16;
+    }
+#endif
+
+    while (ptr + 4 < end) {
+        quint32 data = qFromUnaligned<quint32>(ptr);
+        if (data & 0x80808080U)
+            return false;
+        ptr += 4;
+    }
+
+    while (ptr != end) {
+        if (quint8(*ptr++) & 0x80)
+            return false;
+    }
+    return true;
+}
+
+bool QtPrivate::isAscii(QStringView s) Q_DECL_NOTHROW
+{
+    const QChar *ptr = s.begin();
+    const QChar *end = s.end();
+
+#ifdef __SSE2__
+    const char *ptr8 = reinterpret_cast<const char *>(ptr);
+    const char *end8 = reinterpret_cast<const char *>(end);
+    if (!simdTestMask(ptr8, end8, 0xff80ff80))
+        return false;
+    ptr = reinterpret_cast<const QChar *>(ptr8);
+#endif
+
+    while (ptr != end) {
+        if ((*ptr++).unicode() & 0xff80)
+            return false;
+    }
+    return true;
+}
+
+bool QtPrivate::isLatin1(QStringView s) Q_DECL_NOTHROW
+{
+    const QChar *ptr = s.begin();
+    const QChar *end = s.end();
+
+#if defined(__SSE4_1__)
+    const char *ptr8 = reinterpret_cast<const char *>(ptr);
+    const char *end8 = reinterpret_cast<const char *>(end);
+    if (!simdTestMask(ptr8, end8, 0xff00ff00))
+        return false;
+    ptr = reinterpret_cast<const QChar *>(ptr8);
+#elif defined(__SSE2__)
+    // Testing if every other byte is non-zero can be done efficiently by
+    // using PUNPCKHBW (unpack high order bytes) and comparing that to zero.
+    while (ptr + 32 < end) {
+        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+        __m128i data2 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr + 16));
+        __m128i high = _mm_unpackhi_epi8(data1, data2);
+        __m128i comparison = _mm_cmpeq_epi16(high, _mm_setzero_si128());
+        if (_mm_movemask_epi8(comparison))
+            return false;
+        ptr += 16;
+    }
+    if (ptr + 16 < end) {
+        __m128i data1 = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+        __m128i high = _mm_unpackhi_epi8(data1, data1);
+        __m128i comparison = _mm_cmpeq_epi16(high, _mm_setzero_si128());
+        if (_mm_movemask_epi8(comparison))
+            return false;
+    }
+#endif
+
+    while (ptr != end) {
+        if ((*ptr++).unicode() > 0xff)
+            return false;
+    }
+    return true;
+}
 
 // conversion between Latin 1 and UTF-16
 void qt_from_latin1(ushort *dst, const char *str, size_t size) Q_DECL_NOTHROW

@@ -202,6 +202,12 @@ Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
 typedef QLatin1String QLatin1Literal;
 
 //
+// QLatin1String inline implementations
+//
+inline bool QtPrivate::isLatin1(QLatin1String) Q_DECL_NOTHROW
+{ return true; }
+
+//
 // QStringView members that require QLatin1String:
 //
 bool QStringView::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const Q_DECL_NOTHROW
