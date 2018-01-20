@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(completer))
 
 HEADERS   = fsmodel.h \
             mainwindow.h

@@ -1161,7 +1161,7 @@ static void qLibraryInit()
 #endif // Q_NO_MYSQL_EMBEDDED
 
 #ifdef MARIADB_BASE_VERSION
-    qAddPostRoutine(mysql_server_end);
+    qAddPostRoutine([]() { mysql_server_end(); });
 #endif
 }
 

@@ -1,4 +1,5 @@
 QT      +=  network widgets
+requires(qtConfig(itemviews))
 SOURCES =   main.cpp searchbox.cpp googlesuggest.cpp
 HEADERS  =  searchbox.h googlesuggest.h
 

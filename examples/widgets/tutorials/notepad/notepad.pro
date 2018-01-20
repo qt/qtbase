@@ -2,6 +2,7 @@ TEMPLATE = app
 TARGET = notepad
 
 QT += printsupport
+requires(qtConfig(fontdialog))
 
 SOURCES += \
     main.cpp\

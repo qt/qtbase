@@ -1,4 +1,5 @@
 QT += concurrent widgets
+requires(qtConfig(filedialog))
 
 SOURCES += main.cpp imagescaling.cpp
 HEADERS += imagescaling.h

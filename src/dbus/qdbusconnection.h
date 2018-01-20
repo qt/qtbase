@@ -47,6 +47,10 @@
 
 #ifndef QT_NO_DBUS
 
+#ifdef interface
+#  undef interface
+#endif
+
 QT_BEGIN_NAMESPACE
 
 

@@ -32,7 +32,7 @@ It allows browsers to, for example:
 supported by Qt (by the QNetworkCookieJar class).",
 
     "Homepage": "http://publicsuffix.org/",
-    "Version": "Generated on 2016-10-20 from revision 915565885d0fbd25caf7d8b339cd3478f558da94",
+    "Version": "Generated on 2018-01-04",
     "License": "Mozilla Public License 2.0",
     "LicenseFile": "PSL-LICENSE.txt",
     "LicenseId": "MPL-2.0",

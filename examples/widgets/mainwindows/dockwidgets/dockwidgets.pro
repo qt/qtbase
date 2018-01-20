@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(listwidget))
 qtHaveModule(printsupport): QT += printsupport
 
 HEADERS         = mainwindow.h

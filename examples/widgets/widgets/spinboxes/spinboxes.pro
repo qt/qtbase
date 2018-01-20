@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(datetimeedit))
 
 HEADERS       = window.h
 SOURCES       = main.cpp \

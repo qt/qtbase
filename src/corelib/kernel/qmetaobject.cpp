@@ -1491,6 +1491,12 @@ bool QMetaObject::invokeMethod(QObject *obj,
 
 bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
 {
+    struct Holder {
+        QtPrivate::QSlotObjectBase *obj;
+        ~Holder() { obj->destroyIfLastRef(); }
+    } holder = { slot };
+    Q_UNUSED(holder);
+
     if (! object)
         return false;
 

@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(completer))
 
 HEADERS   = mainwindow.h \
             textedit.h

@@ -1,5 +1,6 @@
 TEMPLATE = app
 QT += widgets
+requires(qtConfig(combobox))
 
 HEADERS += colorswatch.h mainwindow.h toolbar.h
 SOURCES += colorswatch.cpp mainwindow.cpp toolbar.cpp main.cpp

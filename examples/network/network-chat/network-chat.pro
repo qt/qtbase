@@ -12,6 +12,7 @@ SOURCES       = chatdialog.cpp \
 FORMS         = chatdialog.ui
 QT           += network widgets
 requires(qtConfig(udpsocket))
+requires(qtConfig(listwidget))
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/network/network-chat

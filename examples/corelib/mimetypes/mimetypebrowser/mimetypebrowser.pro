@@ -1,5 +1,6 @@
 TEMPLATE = app
 QT += widgets
+requires(qtConfig(treeview))
 CONFIG -= app_bundle
 CONFIG += c++11
 

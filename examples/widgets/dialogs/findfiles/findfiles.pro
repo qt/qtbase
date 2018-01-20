@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(filedialog))
 
 HEADERS       = window.h
 SOURCES       = main.cpp \

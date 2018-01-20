@@ -4,6 +4,7 @@ SOURCES       = main.cpp \
                 mainwindow.cpp \
                 xbeltree.cpp
 QT           += xml widgets
+requires(qtConfig(filedialog))
 
 EXAMPLE_FILES = frank.xbel jennifer.xbel
 

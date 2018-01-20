@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(combobox))
 qtHaveModule(printsupport): QT += printsupport
 
 FORMS     = mainwindowbase.ui

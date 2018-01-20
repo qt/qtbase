@@ -8,6 +8,7 @@ SOURCES = imageitem.cpp \
           main.cpp \
           view.cpp
 QT += sql widgets
+requires(qtConfig(combobox))
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/sql/drilldown

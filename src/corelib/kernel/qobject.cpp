@@ -230,6 +230,7 @@ QObjectPrivate::QObjectPrivate(int version)
     connectedSignals[0] = connectedSignals[1] = 0;
     metaObject = 0;
     isWindow = false;
+    deleteLaterCalled = false;
 }
 
 QObjectPrivate::~QObjectPrivate()

@@ -113,7 +113,7 @@ private:
 
 template <typename T>
 void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress)) {
-    QVariantAnimation::registerInterpolator(reinterpret_cast<QVariantAnimation::Interpolator>(func), qMetaTypeId<T>());
+    QVariantAnimation::registerInterpolator(reinterpret_cast<QVariantAnimation::Interpolator>(reinterpret_cast<void(*)()>(func)), qMetaTypeId<T>());
 }
 
 #endif //QT_NO_ANIMATION

@@ -108,7 +108,7 @@ public Q_SLOTS:
     }
 
 protected:
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         if (event->type() == QEvent::MetaCall) {
             auto metaCallEvent = static_cast<QMetaCallEvent *>(event);
