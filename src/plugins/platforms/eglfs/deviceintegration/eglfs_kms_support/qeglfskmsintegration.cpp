@@ -138,6 +138,10 @@ void *QEglFSKmsIntegration::nativeResourceForIntegration(const QByteArray &name)
     if (name == QByteArrayLiteral("dri_fd") && m_device)
         return (void *) (qintptr) m_device->fd();
 
+#if QT_CONFIG(drm_atomic)
+    if (name == QByteArrayLiteral("dri_atomic_request") && m_device)
+        return (void *) (qintptr) m_device->atomic_request();
+#endif
     return nullptr;
 }
 
