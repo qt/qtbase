@@ -2487,6 +2487,15 @@ QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
     return color;
 }
 
+/*!
+   \obsolete
+
+   Use the \c const overload instead.
+*/
+void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a)
+{
+    const_cast<const QColor *>(this)->getCmyk(c, m, y, k, a);
+}
 
 /*!
     Sets the contents pointed to by \a c, \a m, \a y, \a k, and \a a, to the
@@ -2498,7 +2507,7 @@ QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
 
     \sa setCmyk(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
-void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a)
+void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a) const
 {
     if (!c || !m || !y || !k)
         return;
@@ -2518,6 +2527,16 @@ void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a)
 }
 
 /*!
+   \obsolete
+
+   Use the \c const overload instead.
+*/
+void QColor::getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a)
+{
+    const_cast<const QColor *>(this)->getCmykF(c, m, y, k, a);
+}
+
+/*!
     Sets the contents pointed to by \a c, \a m, \a y, \a k, and \a a, to the
     cyan, magenta, yellow, black, and alpha-channel (transparency) components
     of the color's CMYK value.
@@ -2527,7 +2546,7 @@ void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a)
 
     \sa setCmykF(), {QColor#The CMYK Color Model}{The CMYK Color Model}
 */
-void QColor::getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a)
+void QColor::getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a) const
 {
     if (!c || !m || !y || !k)
         return;

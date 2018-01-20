@@ -172,10 +172,12 @@ public:
     qreal yellowF() const Q_DECL_NOTHROW;
     qreal blackF() const Q_DECL_NOTHROW;
 
-    void getCmyk(int *c, int *m, int *y, int *k, int *a = nullptr);
+    void getCmyk(int *c, int *m, int *y, int *k, int *a = nullptr); // ### Qt 6: remove
+    void getCmyk(int *c, int *m, int *y, int *k, int *a = nullptr) const;
     void setCmyk(int c, int m, int y, int k, int a = 255);
 
-    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = nullptr);
+    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = nullptr); // ### Qt 6: remove
+    void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = nullptr) const;
     void setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
 
     int hslHue() const Q_DECL_NOTHROW; // 0 <= hue < 360
