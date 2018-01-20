@@ -1099,8 +1099,9 @@ void tst_QVariant::toString_data()
 
     QTest::newRow( "bool" ) << QVariant( true ) << QString( "true" );
     QTest::newRow( "qdate" ) << QVariant( QDate( 2002, 1, 1 ) ) << QString( "2002-01-01" );
-    QTest::newRow( "qtime" ) << QVariant( QTime( 12, 34, 56 ) ) << QString( "12:34:56" );
-    QTest::newRow( "qdatetime" ) << QVariant( QDateTime( QDate( 2002, 1, 1 ), QTime( 12, 34, 56 ) ) ) << QString( "2002-01-01T12:34:56" );
+    QTest::newRow( "qtime" ) << QVariant( QTime( 12, 34, 56 ) ) << QString( "12:34:56.000" );
+    QTest::newRow( "qtime-with-ms" ) << QVariant( QTime( 12, 34, 56, 789 ) ) << QString( "12:34:56.789" );
+    QTest::newRow( "qdatetime" ) << QVariant( QDateTime( QDate( 2002, 1, 1 ), QTime( 12, 34, 56, 789 ) ) ) << QString( "2002-01-01T12:34:56.789" );
     QTest::newRow( "llong" ) << QVariant( (qlonglong)Q_INT64_C(123456789012) ) <<
         QString( "123456789012" );
     QTest::newRow("QJsonValue") << QVariant(QJsonValue(QString("hello"))) << QString("hello");
@@ -1151,6 +1152,7 @@ void tst_QVariant::toTime_data()
     QTest::newRow( "qtime" ) << QVariant( QTime( 12, 34, 56 ) ) << QTime( 12, 34, 56 );
     QTest::newRow( "qdatetime" ) << QVariant( QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56 ) ) ) << QTime( 12, 34, 56 );
     QTest::newRow( "qstring" ) << QVariant( QString( "12:34:56" ) ) << QTime( 12, 34, 56 );
+    QTest::newRow( "qstring-with-ms" ) << QVariant( QString( "12:34:56.789" ) ) << QTime( 12, 34, 56, 789 );
 }
 
 void tst_QVariant::toTime()
@@ -1171,6 +1173,10 @@ void tst_QVariant::toDateTime_data()
         << QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56 ) );
     QTest::newRow( "qdate" ) << QVariant( QDate( 2002, 10, 10 ) ) << QDateTime( QDate( 2002, 10, 10 ), QTime( 0, 0, 0 ) );
     QTest::newRow( "qstring" ) << QVariant( QString( "2002-10-10T12:34:56" ) ) << QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56 ) );
+    QTest::newRow( "qstring-utc" ) << QVariant( QString( "2002-10-10T12:34:56Z" ) )
+                                   << QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56 ), Qt::UTC );
+    QTest::newRow( "qstring-with-ms" ) << QVariant( QString( "2002-10-10T12:34:56.789" ) )
+                                       << QDateTime( QDate( 2002, 10, 10 ), QTime( 12, 34, 56, 789 ) );
 }
 
 void tst_QVariant::toDateTime()
