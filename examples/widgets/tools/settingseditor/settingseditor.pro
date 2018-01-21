@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(tablewidget))
 
 HEADERS       = locationdialog.h \
                 mainwindow.h \

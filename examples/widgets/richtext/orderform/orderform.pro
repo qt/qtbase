@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(tablewidget))
 qtHaveModule(printsupport): QT += printsupport
 
 HEADERS     = detailsdialog.h \

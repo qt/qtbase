@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(listwidget))
 
 HEADERS       = languagechooser.h \
                 mainwindow.h

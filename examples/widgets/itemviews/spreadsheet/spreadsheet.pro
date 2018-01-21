@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(treeview))
 qtHaveModule(printsupport): QT += printsupport
 #unix:qtHaveModule(dbus): QT += dbus widgets
 

@@ -186,6 +186,9 @@ QPaintDevice *QBackingStore::paintDevice()
 */
 void QBackingStore::endPaint()
 {
+    if (paintDevice()->paintingActive())
+        qWarning() << "QBackingStore::endPaint() called with active painter on backingstore paint device";
+
     d_ptr->platformBackingStore->endPaint();
 }
 

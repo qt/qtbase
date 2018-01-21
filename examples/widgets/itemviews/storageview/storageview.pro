@@ -1,4 +1,5 @@
 QT += core gui widgets
+requires(qtConfig(treeview))
 TARGET = storageview
 TEMPLATE = app
 SOURCES += storagemodel.cpp \

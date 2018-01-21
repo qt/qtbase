@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(listwidget))
 
 HEADERS       = tabdialog.h
 SOURCES       = main.cpp \

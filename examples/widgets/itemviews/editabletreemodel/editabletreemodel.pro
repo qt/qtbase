@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(treeview))
 
 FORMS       = mainwindow.ui
 HEADERS     = mainwindow.h \

@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(fontcombobox))
 
 SOURCES += main.cpp
 SOURCES += customproxy.cpp embeddeddialog.cpp

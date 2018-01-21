@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(combobox))
 
 HEADERS       = imagecomposer.h
 SOURCES       = imagecomposer.cpp \

@@ -42,7 +42,7 @@
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 #include "qcocoahelpers.h"
-#include "qcocoaapplication.h"
+#include "qcocoaapplicationdelegate.h"
 #include "qcocoaintegration.h"
 #include "qcocoaeventdispatcher.h"
 
@@ -256,7 +256,7 @@ void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
     QMacAutoReleasePool pool;
     QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
     NSMenu *menu = cocoaPlatformMenu->nsMenu();
-    [NSApp QT_MANGLE_NAMESPACE(qt_setDockMenu): menu];
+    [[QCocoaApplicationDelegate sharedDelegate] setDockMenu:menu];
 }
 
 void *QCocoaNativeInterface::qMenuToNSMenu(QPlatformMenu *platformMenu)

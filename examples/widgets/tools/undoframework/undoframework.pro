@@ -1,4 +1,5 @@
 QT += widgets
+requires(qtConfig(undoview))
 
 HEADERS	    = commands.h \
 	      diagramitem.h \
