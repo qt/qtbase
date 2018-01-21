@@ -1927,7 +1927,7 @@ const QCharAttributes *QTextEngine::attributes() const
 
     QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems(layoutData->items.size());
     for (int i = 0; i < layoutData->items.size(); ++i) {
-        const QScriptItem &si = layoutData->items[i];
+        const QScriptItem &si = layoutData->items.at(i);
         scriptItems[i].position = si.position;
         scriptItems[i].script = si.analysis.script;
     }
@@ -1944,14 +1944,14 @@ const QCharAttributes *QTextEngine::attributes() const
 
 void QTextEngine::shape(int item) const
 {
-    if (layoutData->items[item].analysis.flags == QScriptAnalysis::Object) {
+    if (layoutData->items.at(item).analysis.flags == QScriptAnalysis::Object) {
         ensureSpace(1);
         if (block.docHandle()) {
             docLayout()->resizeInlineObject(QTextInlineObject(item, const_cast<QTextEngine *>(this)),
                                             layoutData->items[item].position + block.position(),
                                             format(&layoutData->items[item]));
         }
-    } else if (layoutData->items[item].analysis.flags == QScriptAnalysis::Tab) {
+    } else if (layoutData->items.at(item).analysis.flags == QScriptAnalysis::Tab) {
         // set up at least the ascent/descent/leading of the script item for the tab
         fontEngine(layoutData->items[item],
                    &layoutData->items[item].ascent,
@@ -2193,9 +2193,9 @@ int QTextEngine::findItem(int strPos, int firstItem) const
     int right = layoutData->items.size()-1;
     while(left <= right) {
         int middle = ((right-left)/2)+left;
-        if (strPos > layoutData->items[middle].position)
+        if (strPos > layoutData->items.at(middle).position)
             left = middle+1;
-        else if(strPos < layoutData->items[middle].position)
+        else if (strPos < layoutData->items.at(middle).position)
             right = middle-1;
         else {
             return middle;
@@ -2587,7 +2587,7 @@ void QTextEngine::justify(const QScriptLine &line)
         int end = line.from + (int)line.length + line.trailingSpaces;
         if (end == layoutData->string.length())
             return; // no justification at end of paragraph
-        if (end && layoutData->items[findItem(end-1)].analysis.flags == QScriptAnalysis::LineOrParagraphSeparator)
+        if (end && layoutData->items.at(findItem(end - 1)).analysis.flags == QScriptAnalysis::LineOrParagraphSeparator)
             return; // no justification at the end of an explicitly separated line
     }
 
@@ -2621,13 +2621,13 @@ void QTextEngine::justify(const QScriptLine &line)
     // store pointers to the glyph data that could get reallocated by the shaping
     // process.
     for (int i = 0; i < nItems; ++i) {
-        QScriptItem &si = layoutData->items[firstItem + i];
+        const QScriptItem &si = layoutData->items.at(firstItem + i);
         if (!si.num_glyphs)
             shape(firstItem + i);
     }
 
     for (int i = 0; i < nItems; ++i) {
-        QScriptItem &si = layoutData->items[firstItem + i];
+        const QScriptItem &si = layoutData->items.at(firstItem + i);
 
         int kashida_type = Justification_Arabic_Normal;
         int kashida_pos = -1;
@@ -2923,7 +2923,7 @@ int QTextEngine::formatIndex(const QScriptItem *si) const
     if (specialData && !specialData->resolvedFormats.isEmpty()) {
         QTextFormatCollection *collection = formatCollection();
         Q_ASSERT(collection);
-        return collection->indexForFormat(specialData->resolvedFormats.at(si - &layoutData->items[0]));
+        return collection->indexForFormat(specialData->resolvedFormats.at(si - &layoutData->items.at(0)));
     }
 
     QTextDocumentPrivate *p = block.docHandle();
@@ -3129,7 +3129,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         if (!attributes)
             return QString();
         for (int i = 0; i < layoutData->items.size(); ++i) {
-            QScriptItem &si = layoutData->items[i];
+            const QScriptItem &si = layoutData->items.at(i);
             if (!si.num_glyphs)
                 shape(i);
 
@@ -3314,24 +3314,29 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
     QList<QTextOption::Tab> tabArray = option.tabs();
     if (!tabArray.isEmpty()) {
         if (isRightToLeft()) { // rebase the tabArray positions.
-            QList<QTextOption::Tab> newTabs;
-            newTabs.reserve(tabArray.count());
-            QList<QTextOption::Tab>::Iterator iter = tabArray.begin();
-            while(iter != tabArray.end()) {
-                QTextOption::Tab tab = *iter;
-                if (tab.type == QTextOption::LeftTab)
-                    tab.type = QTextOption::RightTab;
-                else if (tab.type == QTextOption::RightTab)
-                    tab.type = QTextOption::LeftTab;
-                newTabs << tab;
-                ++iter;
+            auto isLeftOrRightTab = [](const QTextOption::Tab &tab) {
+                return tab.type == QTextOption::LeftTab || tab.type == QTextOption::RightTab;
+            };
+            const auto cbegin = tabArray.cbegin();
+            const auto cend = tabArray.cend();
+            const auto cit = std::find_if(cbegin, cend, isLeftOrRightTab);
+            if (cit != cend) {
+                const int index = std::distance(cbegin, cit);
+                auto iter = tabArray.begin() + index;
+                const auto end = tabArray.end();
+                while (iter != end) {
+                    QTextOption::Tab &tab = *iter;
+                    if (tab.type == QTextOption::LeftTab)
+                        tab.type = QTextOption::RightTab;
+                    else if (tab.type == QTextOption::RightTab)
+                        tab.type = QTextOption::LeftTab;
+                    ++iter;
+                }
             }
-            tabArray = newTabs;
         }
-        for (int i = 0; i < tabArray.size(); ++i) {
-            QFixed tab = QFixed::fromReal(tabArray[i].position) * dpiScale;
+        for (const QTextOption::Tab &tabSpec : qAsConst(tabArray)) {
+            QFixed tab = QFixed::fromReal(tabSpec.position) * dpiScale;
             if (tab > x) {  // this is the tab we need.
-                QTextOption::Tab tabSpec = tabArray[i];
                 int tabSectionEnd = layoutData->string.count();
                 if (tabSpec.type == QTextOption::RightTab || tabSpec.type == QTextOption::CenterTab) {
                     // find next tab to calculate the width required.
@@ -3352,7 +3357,7 @@ QFixed QTextEngine::calculateTabWidth(int item, QFixed x) const
                     QFixed length;
                     // Calculate the length of text between this tab and the tabSectionEnd
                     for (int i=item; i < layoutData->items.count(); i++) {
-                        QScriptItem &item = layoutData->items[i];
+                        const QScriptItem &item = layoutData->items.at(i);
                         if (item.position > tabSectionEnd || item.position <= si.position)
                             continue;
                         shape(i); // first, lets make sure relevant text is already shaped
@@ -3986,7 +3991,7 @@ QTextLineItemIterator::QTextLineItemIterator(QTextEngine *_eng, int _lineNum, co
 
     QVarLengthArray<uchar> levels(nItems);
     for (int i = 0; i < nItems; ++i)
-        levels[i] = eng->layoutData->items[i+firstItem].analysis.bidiLevel;
+        levels[i] = eng->layoutData->items.at(i + firstItem).analysis.bidiLevel;
     QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
 
     eng->shapeLine(line);
