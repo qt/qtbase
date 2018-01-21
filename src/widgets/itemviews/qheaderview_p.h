@@ -231,10 +231,6 @@ public:
                 : model->rowCount(root));
     }
 
-    inline bool modelIsEmpty() const {
-        return (model->rowCount(root) == 0 || model->columnCount(root) == 0);
-    }
-
     inline void doDelayedResizeSections() {
         if (!delayedResize.isActive())
             delayedResize.start(0, q_func());
@@ -304,7 +300,6 @@ public:
     QLabel *sectionIndicator;
 #endif
     QHeaderView::ResizeMode globalResizeMode;
-    QList<QPersistentModelIndex> persistentHiddenSections;
     mutable bool sectionStartposRecalc;
     int resizeContentsPrecision;
     // header sections
@@ -335,6 +330,11 @@ public:
     };
 
     QVector<SectionItem> sectionItems;
+    struct LayoutChangeItem {
+        QPersistentModelIndex index;
+        SectionItem section;
+    };
+    QVector<LayoutChangeItem> layoutChangePersistentSections;
 
     void createSectionItems(int start, int end, int size, QHeaderView::ResizeMode mode);
     void removeSectionsFromSectionItems(int start, int end);
@@ -388,6 +388,7 @@ public:
 
 };
 Q_DECLARE_TYPEINFO(QHeaderViewPrivate::SectionItem, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QHeaderViewPrivate::LayoutChangeItem, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
