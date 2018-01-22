@@ -154,14 +154,7 @@ static inline bool useCompressed(const QString &s)
 {
     if (s.length() >= 0x8000)
         return false;
-    const ushort *uc = (const ushort *)s.constData();
-    const ushort *e = uc + s.length();
-    while (uc < e) {
-        if (*uc > 0xff)
-            return false;
-        ++uc;
-    }
-    return true;
+    return QtPrivate::isLatin1(s);
 }
 
 static inline int qStringSize(const QString &string, bool compress)
