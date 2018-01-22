@@ -994,9 +994,7 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
 static inline bool areMetricsTooLarge(const QFontEngineFT::GlyphInfo &info)
 {
     // false if exceeds QFontEngineFT::Glyph metrics
-    return (short)(info.linearAdvance) != info.linearAdvance
-            || (uchar)(info.width) != info.width
-            || (uchar)(info.height) != info.height;
+    return info.width > 0xFF || info.height > 0xFF;
 }
 
 static inline void transformBoundingBox(int *left, int *top, int *right, int *bottom, FT_Matrix *matrix)
