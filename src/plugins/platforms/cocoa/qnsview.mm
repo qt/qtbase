@@ -334,7 +334,11 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
 
     qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
+    [self updateRegion:exposedRegion];
+}
 
+- (void)updateRegion:(QRegion)dirtyRegion
+{
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {
         [m_glContext->nsOpenGLContext() setView:self];
@@ -350,7 +354,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         windowPrivate->deliverUpdateRequest();
         m_updateRequested = false;
     } else {
-        m_platformWindow->handleExposeEvent(exposedRegion);
+        m_platformWindow->handleExposeEvent(dirtyRegion);
     }
 
     if (windowPrivate->updateRequestPending) {
@@ -376,7 +380,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     qCDebug(lcQpaCocoaWindow) << "[QNSView updateLayer]" << m_platformWindow->window();
 
     // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
-    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
+    [self updateRegion:QRectF::fromCGRect(self.bounds).toRect()];
 }
 
 - (void)viewDidChangeBackingProperties
