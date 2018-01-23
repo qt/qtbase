@@ -153,7 +153,8 @@ public:
         char *ptr = data.begin() + offset;
         auto b = new (ptr) QtCbor::ByteData;
         b->len = len;
-        memcpy(b->byte(), block, len);
+        if (block)
+            memcpy(b->byte(), block, len);
 
         return offset;
     }
@@ -239,10 +240,14 @@ public:
         appendByteData(s.latin1(), s.size(), QCborValue::String,
                        QtCbor::Element::StringIsAscii);
     }
+    void appendAsciiString(const QString &s);
     void append(const QString &s)
     {
-        appendByteData(reinterpret_cast<const char *>(s.constData()), s.size() * 2,
-                       QCborValue::String, QtCbor::Element::StringIsUtf16);
+        if (QtPrivate::isAscii(s))
+            appendAsciiString(s);
+        else
+            appendByteData(reinterpret_cast<const char *>(s.constData()), s.size() * 2,
+                           QCborValue::String, QtCbor::Element::StringIsUtf16);
     }
     void append(const QCborValue &v)
     {

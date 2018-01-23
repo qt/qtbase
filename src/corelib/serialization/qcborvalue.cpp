@@ -48,6 +48,7 @@
 #include <qlocale.h>
 #include <private/qnumeric_p.h>
 #include <qscopedvaluerollback.h>
+#include <private/qsimd_p.h>
 #include <qstack.h>
 
 #include <new>
@@ -1080,6 +1081,24 @@ void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &valu
         if (const ByteData *b = value.container->byteData(value.n))
             e.value = addByteData(b->byte(), b->len);
     }
+}
+
+// in qstring.cpp
+void qt_to_latin1_unchecked(uchar *dst, const ushort *uc, qsizetype len);
+
+Q_NEVER_INLINE void QCborContainerPrivate::appendAsciiString(const QString &s)
+{
+    qsizetype len = s.size();
+    QtCbor::Element e;
+    e.value = addByteData(nullptr, len);
+    e.type = QCborValue::String;
+    e.flags = Element::HasByteData | Element::StringIsAscii;
+    elements.append(e);
+
+    char *ptr = data.data() + e.value + sizeof(ByteData);
+    uchar *l = reinterpret_cast<uchar *>(ptr);
+    const ushort *uc = (const ushort *)s.unicode();
+    qt_to_latin1_unchecked(l, uc, len);
 }
 
 QT_WARNING_DISABLE_MSVC(4146)   // unary minus operator applied to unsigned type, result still unsigned
