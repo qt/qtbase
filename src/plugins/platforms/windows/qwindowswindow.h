@@ -101,6 +101,7 @@ struct QWindowCreationContext
     int frameY = CW_USEDEFAULT;
     int frameWidth = CW_USEDEFAULT;
     int frameHeight = CW_USEDEFAULT;
+    int menuHeight = 0;
 };
 
 struct QWindowsWindowData
