@@ -1093,7 +1093,9 @@ QObjectPrivate::Connection::~Connection()
     \sa metaObject()
 */
 
-/*! \fn template <class T> T *qobject_cast<T *>(QObject *object)
+/*!
+    \fn template <class T> T qobject_cast(QObject *object)
+    \fn template <class T> T qobject_cast(const QObject *object)
     \relates QObject
 
     Returns the given \a object cast to type T if the object is of type
