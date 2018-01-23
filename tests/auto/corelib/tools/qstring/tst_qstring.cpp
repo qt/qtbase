@@ -6043,8 +6043,14 @@ void tst_QString::compare_data()
     QTest::addColumn<int>("csr"); // case sensitive result
     QTest::addColumn<int>("cir"); // case insensitive result
 
-
     // null strings
+    QTest::newRow("null-null") << QString() << QString() << 0 << 0;
+    QTest::newRow("text-null") << QString("a") << QString() << 1 << 1;
+    QTest::newRow("null-text") << QString() << QString("a") << -1 << -1;
+    QTest::newRow("null-empty") << QString() << QString("") << 0 << 0;
+    QTest::newRow("empty-null") << QString("") << QString() << 0 << 0;
+
+    // empty strings
     QTest::newRow("data0") << QString("") << QString("") << 0 << 0;
     QTest::newRow("data1") << QString("a") << QString("") << 1 << 1;
     QTest::newRow("data2") << QString("") << QString("a") << -1 << -1;

@@ -423,10 +423,6 @@ static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QCha
 {
     if (a == b)
         return (ae - be);
-    if (a == 0)
-        return be - b;
-    if (b == 0)
-        return a - ae;
 
     const QChar *e = ae;
     if (be - b < ae - a)
@@ -455,11 +451,6 @@ static int ucstricmp(const QChar *a, const QChar *ae, const QChar *b, const QCha
 // Case-insensitive comparison between a Unicode string and a QLatin1String
 static int ucstricmp(const QChar *a, const QChar *ae, const char *b, const char *be)
 {
-    if (!a)
-        return be - b;
-    if (!b)
-        return a - ae;
-
     auto e = ae;
     if (be - b < ae - a)
         e = a + (be - b);
