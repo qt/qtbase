@@ -2279,6 +2279,9 @@
     Specifies the \l{All Modules}{Qt modules} that are used by your project. For
     the value to add for each module, see the module documentation.
 
+    At the C++ implementation level, using a Qt module makes its headers
+    available for inclusion and causes it to be linked to the binary.
+
     By default, \c QT contains \c core and \c gui, ensuring that standard
     GUI applications can be built without further configuration.
 
