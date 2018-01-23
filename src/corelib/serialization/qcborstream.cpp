@@ -1840,54 +1840,93 @@ bool QCborStreamWriter::endMap()
 class QCborStreamReaderPrivate
 {
 public:
+    enum {
+        // 9 bytes is the maximum size for any integer, floating point or
+        // length in CBOR.
+        MaxCborIndividualSize = 9,
+        IdealIoBufferSize = 256
+    };
+
     struct ChunkParameters {
         qsizetype offset;
         qsizetype size;
     };
 
     QIODevice *device;
+    QByteArray buffer;
+    QStack<CborValue> containerStack;
+
     CborParser parser;
     CborValue currentElement;
-    QStack<CborValue> containerStack;
     QCborError lastError = {};
-    bool deleteDevice = false;
+
+    QByteArray::size_type bufferStart;
     bool corrupt = false;
-    quint8 buflen = 0;
-    char buffer[sizeof(qint64) + 1];
 
     QCborStreamReaderPrivate(const QByteArray &data)
-        : device(new QBuffer), deleteDevice(true)
+        : device(nullptr), buffer(data)
     {
-        static_cast<QBuffer *>(device)->setData(data);
-        device->open(QIODevice::ReadWrite | QIODevice::Unbuffered);
         initDecoder();
     }
 
     QCborStreamReaderPrivate(QIODevice *device)
-        : device(device)
     {
-        initDecoder();
+        setDevice(device);
     }
 
     ~QCborStreamReaderPrivate()
     {
-        if (deleteDevice)
-            delete device;
+    }
+
+    void setDevice(QIODevice *dev)
+    {
+        buffer.clear();
+        device = dev;
+        initDecoder();
     }
 
     void initDecoder()
     {
         containerStack.clear();
+        bufferStart = 0;
+        if (device) {
+            buffer.clear();
+            buffer.reserve(IdealIoBufferSize);      // sets the CapacityReserved flag
+        }
+
         preread();
         if (CborError err = cbor_parser_init_reader(nullptr, &parser, &currentElement, this))
             handleError(err);
     }
 
+    char *bufferPtr()
+    {
+        Q_ASSERT(buffer.isDetached());
+        return const_cast<char *>(buffer.constData()) + bufferStart;
+    }
+
     void preread()
     {
-        // Read up to 9 bytes into our internal buffer
-        // (this is enough for all CBOR types except strings).
-        buflen = device->peek(buffer, sizeof(buffer));
+        if (device && buffer.size() - bufferStart < MaxCborIndividualSize) {
+            // load more, but only if there's more to be read
+            qint64 avail = device->bytesAvailable();
+            Q_ASSERT(avail >= buffer.size());
+            if (avail == buffer.size())
+                return;
+
+            if (bufferStart)
+                device->skip(bufferStart);  // skip what we've already parsed
+
+            if (buffer.size() != IdealIoBufferSize)
+                buffer.resize(IdealIoBufferSize);
+
+            bufferStart = 0;
+            qint64 read = device->peek(bufferPtr(), IdealIoBufferSize);
+            if (read < 0)
+                buffer.clear();
+            else if (read != IdealIoBufferSize)
+                buffer.truncate(read);
+        }
     }
 
     void handleError(CborError err) Q_DECL_NOTHROW
@@ -1902,6 +1941,27 @@ public:
         lastError = { QCborError::Code(err) };
     }
 
+    void updateBufferAfterString(ChunkParameters params)
+    {
+        Q_ASSERT(device);
+
+        bufferStart += params.offset;
+        qsizetype newStart = bufferStart + params.size;
+        qsizetype remainingInBuffer = buffer.size() - newStart;
+
+        if (remainingInBuffer <= 0) {
+            // We've read from the QIODevice more than what was in the buffer.
+            buffer.truncate(0);
+        } else {
+            // There's still data buffered, but we need to move it around.
+            char *ptr = buffer.data();
+            memmove(ptr, ptr + newStart, remainingInBuffer);
+            buffer.truncate(remainingInBuffer);
+        }
+
+        bufferStart = 0;
+    }
+
     ChunkParameters getStringChunkParameters();
 };
 
@@ -1912,16 +1972,20 @@ void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error)
 
 static inline bool qt_cbor_decoder_can_read(void *token, size_t len)
 {
+    Q_ASSERT(len <= QCborStreamReaderPrivate::MaxCborIndividualSize);
     auto self = static_cast<QCborStreamReaderPrivate *>(token);
-    qint64 avail = self->device->bytesAvailable();
-    return avail >= 0 && len <= quint64(avail);
+
+    qint64 avail = self->buffer.size() - self->bufferStart;
+    return len <= quint64(avail);
 }
 
 static void qt_cbor_decoder_advance(void *token, size_t len)
 {
+    Q_ASSERT(len <= QCborStreamReaderPrivate::MaxCborIndividualSize);
     auto self = static_cast<QCborStreamReaderPrivate *>(token);
-    Q_ASSERT(len <= self->buflen);
-    self->device->skip(qint64(len));
+    Q_ASSERT(len <= size_t(self->buffer.size() - self->bufferStart));
+
+    self->bufferStart += int(len);
     self->preread();
 }
 
@@ -1929,17 +1993,17 @@ static void *qt_cbor_decoder_read(void *token, void *userptr, size_t offset, siz
 {
     Q_ASSERT(len == 1 || len == 2 || len == 4 || len == 8);
     Q_ASSERT(offset == 0 || offset == 1);
-    auto self = static_cast<QCborStreamReaderPrivate *>(token);
+    auto self = static_cast<const QCborStreamReaderPrivate *>(token);
 
     // we must have pre-read the data
-    Q_ASSERT(len <= self->buflen);
-    return memcpy(userptr, self->buffer + offset, len);
+    Q_ASSERT(len + offset <= size_t(self->buffer.size() - self->bufferStart));
+    return memcpy(userptr, self->buffer.constData() + self->bufferStart + offset, len);
 }
 
 static CborError qt_cbor_decoder_transfer_string(void *token, const void **userptr, size_t offset, size_t len)
 {
     auto self = static_cast<QCborStreamReaderPrivate *>(token);
-    Q_ASSERT(offset <= sizeof(self->buffer));
+    Q_ASSERT(offset <= size_t(self->buffer.size()));
     Q_STATIC_ASSERT(sizeof(size_t) >= sizeof(QByteArray::size_type));
     Q_STATIC_ASSERT(sizeof(size_t) == sizeof(qsizetype));
 
@@ -1950,13 +2014,12 @@ static CborError qt_cbor_decoder_transfer_string(void *token, const void **userp
             || add_overflow<qsizetype>(offset, len, &total))
         return CborErrorDataTooLarge;
 
-    qint64 avail = self->device->bytesAvailable();
-    if (total > avail)
-        return CborErrorUnexpectedEOF;
-
     // our string transfer is just saving the offset to the userptr
     *userptr = reinterpret_cast<void *>(offset);
-    return CborNoError;
+
+    qint64 avail = (self->device ? self->device->bytesAvailable() : self->buffer.size()) -
+            self->bufferStart;
+    return total > avail ? CborErrorUnexpectedEOF : CborNoError;
 }
 
 QCborStreamReaderPrivate::ChunkParameters QCborStreamReaderPrivate::getStringChunkParameters()
@@ -2000,7 +2063,7 @@ inline void QCborStreamReader::preparse()
             // Null and Undefined).
             if (type_ == CborBooleanType || type_ == CborNullType || type_ == CborUndefinedType) {
                 type_ = SimpleType;
-                value64 = quint8(d->buffer[0]) - CborSimpleType;
+                value64 = quint8(d->buffer.at(d->bufferStart)) - CborSimpleType;
             } else {
                 // Using internal TinyCBOR API!
                 value64 = _cbor_value_extract_int64_helper(&d->currentElement);
@@ -2088,11 +2151,7 @@ QCborStreamReader::~QCborStreamReader()
  */
 void QCborStreamReader::setDevice(QIODevice *device)
 {
-    if (d->deleteDevice)
-        delete d->device;
-    d->device = device;
-    d->deleteDevice = false;
-    d->initDecoder();
+    d->setDevice(device);
     preparse();
 }
 
@@ -2103,8 +2162,7 @@ void QCborStreamReader::setDevice(QIODevice *device)
  */
 QIODevice *QCborStreamReader::device() const
 {
-    // don't return our own, internal QBuffer
-    return d->deleteDevice ? nullptr : d->device;
+    return d->device;
 }
 
 /*!
@@ -2137,15 +2195,10 @@ void QCborStreamReader::addData(const QByteArray &data)
  */
 void QCborStreamReader::addData(const char *data, qsizetype len)
 {
-    if (d->deleteDevice) {
-        if (len > 0) {
-            auto buf = static_cast<QBuffer *>(d->device);
-            qint64 currentPos = buf->pos();
-            buf->seek(buf->size());
-            buf->write(data, len);
-            buf->seek(currentPos);
-            reparse();
-        }
+    if (!d->device) {
+        if (len > 0)
+            d->buffer.append(data, len);
+        reparse();
     } else {
         qWarning("QCborStreamReader: addData() with device()");
     }
@@ -2180,10 +2233,7 @@ void QCborStreamReader::reparse()
  */
 void QCborStreamReader::clear()
 {
-    auto buf = new QBuffer;
-    buf->setData(QByteArray());
-    setDevice(buf);
-    d->deleteDevice = true;
+    setDevice(nullptr);
 }
 
 /*!
@@ -2201,7 +2251,8 @@ void QCborStreamReader::clear()
  */
 void QCborStreamReader::reset()
 {
-    d->device->reset();
+    if (d->device)
+        d->device->reset();
     d->lastError = {};
     d->initDecoder();
     preparse();
@@ -2228,7 +2279,7 @@ QCborError QCborStreamReader::lastError()
  */
 qint64 QCborStreamReader::currentOffset() const
 {
-    return d->device->pos();
+    return (d->device ? d->device->pos() : 0) + d->bufferStart;
 }
 
 /*!
@@ -2749,22 +2800,31 @@ QCborStreamReader::readStringChunk(char *ptr, qsizetype maxlen)
     // Read the chunk into the user's buffer.
     qsizetype toRead = qMin(maxlen, params.size);
     qsizetype left = params.size - maxlen;
+    qint64 actuallyRead;
 
-    // This first skip can't fail because we've already read this many bytes.
-    d->device->skip(params.offset);
+    if (d->device) {
+        // This first skip can't fail because we've already read this many bytes.
+        d->device->skip(d->bufferStart + params.offset);
+        actuallyRead = d->device->read(ptr, toRead);
 
-    qint64 actuallyRead = d->device->read(ptr, toRead);
-    if (actuallyRead != toRead)  {
-        actuallyRead = -1;
-    } else if (left) {
-        qint64 skipped = d->device->skip(left);
-        if (skipped != left)
+        if (actuallyRead != toRead)  {
             actuallyRead = -1;
-    }
+        } else if (left) {
+            qint64 skipped = d->device->skip(left);
+            if (skipped != left)
+                actuallyRead = -1;
+        }
 
-    if (actuallyRead < 0) {
-        d->handleError(CborErrorIO);
-        return result;
+        if (actuallyRead < 0) {
+            d->handleError(CborErrorIO);
+            return result;
+        }
+
+        d->updateBufferAfterString(params);
+    } else {
+        actuallyRead = toRead;
+        memcpy(ptr, d->buffer.constData() + d->bufferStart + params.offset, toRead);
+        d->bufferStart += QByteArray::size_type(params.offset + params.size);
     }
 
     d->preread();

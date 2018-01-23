@@ -45,7 +45,10 @@ class tst_QCborStreamReader : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void initTestCase_data();
     void basics();
+    void clear_data();
+    void clear();
     void integers_data();
     void integers();
     void fixed_data();
@@ -113,11 +116,27 @@ QT_END_NAMESPACE
 // Get the data from TinyCBOR (see src/3rdparty/tinycbor/tests/parser/data.cpp)
 #include "data.cpp"
 
+void tst_QCborStreamReader::initTestCase_data()
+{
+    QTest::addColumn<bool>("useDevice");
+    QTest::newRow("QByteArray") << false;
+    QTest::newRow("QBuffer") << true;
+}
+
 void tst_QCborStreamReader::basics()
 {
+    QFETCH_GLOBAL(bool, useDevice);
+    QBuffer buffer;
     QCborStreamReader reader;
 
-    QCOMPARE(reader.device(), nullptr);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+        QVERIFY(reader.device() != nullptr);
+    } else {
+        QCOMPARE(reader.device(), nullptr);
+    }
+
     QCOMPARE(reader.currentOffset(), 0);
     QCOMPARE(reader.lastError(), QCborError::EndOfFile);
 
@@ -149,11 +168,15 @@ void tst_QCborStreamReader::basics()
     QVERIFY(reader.isLengthKnown());    // well, it's not unknown
     QCOMPARE(reader.length(), ~0ULL);
 
-    reader.addData(QByteArray());
-    reader.reparse();
+    if (useDevice) {
+        reader.reparse();
+        QVERIFY(reader.device() != nullptr);
+    } else {
+        reader.addData(QByteArray());
+        QCOMPARE(reader.device(), nullptr);
+    }
 
     // nothing changes, we added nothing
-    QCOMPARE(reader.device(), nullptr);
     QCOMPARE(reader.currentOffset(), 0);
     QCOMPARE(reader.lastError(), QCborError::EndOfFile);
 
@@ -183,6 +206,51 @@ void tst_QCborStreamReader::basics()
     QCOMPARE(reader.parentContainerType(), QCborStreamReader::Invalid);
     QVERIFY(!reader.hasNext());
     QVERIFY(!reader.next());
+
+    reader.clear();
+    QCOMPARE(reader.device(), nullptr);
+    QCOMPARE(reader.currentOffset(), 0);
+    QCOMPARE(reader.lastError(), QCborError::EndOfFile);
+}
+
+void tst_QCborStreamReader::clear_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QCborError>("firstError");
+    QTest::addColumn<int>("offsetAfterSkip");
+    QTest::newRow("invalid") << QByteArray(512, '\xff') << QCborError{QCborError::UnexpectedBreak} << 0;
+    QTest::newRow("valid")   << QByteArray(512, '\0')   << QCborError{QCborError::NoError} << 0;
+    QTest::newRow("skipped") << QByteArray(512, '\0')   << QCborError{QCborError::NoError} << 1;
+}
+
+void tst_QCborStreamReader::clear()
+{
+    QFETCH_GLOBAL(bool, useDevice);
+    QFETCH(QByteArray, data);
+    QFETCH(QCborError, firstError);
+    QFETCH(int, offsetAfterSkip);
+
+    QBuffer buffer(&data);
+    QCborStreamReader reader(data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
+    QCOMPARE(reader.isValid(), !firstError);
+    QCOMPARE(reader.currentOffset(), 0);
+    QCOMPARE(reader.lastError(), firstError);
+
+    if (offsetAfterSkip) {
+        reader.next();
+        QVERIFY(!reader.isValid());
+        QCOMPARE(reader.currentOffset(), 1);
+        QCOMPARE(reader.lastError(), QCborError::NoError);
+    }
+
+    reader.clear();
+    QCOMPARE(reader.device(), nullptr);
+    QCOMPARE(reader.currentOffset(), 0);
+    QCOMPARE(reader.lastError(), QCborError::EndOfFile);
 }
 
 void tst_QCborStreamReader::integers_data()
@@ -192,6 +260,7 @@ void tst_QCborStreamReader::integers_data()
 
 void tst_QCborStreamReader::integers()
 {
+    QFETCH_GLOBAL(bool, useDevice);
     QFETCH(QByteArray, data);
     QFETCH(bool, isNegative);
     QFETCH(quint64, expectedRaw);
@@ -199,7 +268,12 @@ void tst_QCborStreamReader::integers()
     QFETCH(bool, inInt64Range);
     quint64 absolute = (isNegative ? expectedRaw + 1 : expectedRaw);
 
+    QBuffer buffer(&data);
     QCborStreamReader reader(data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
     QVERIFY(reader.isValid());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QVERIFY(reader.isInteger());
@@ -525,11 +599,17 @@ void tst_QCborStreamReader::fixed_data()
 
 void tst_QCborStreamReader::fixed()
 {
+    QFETCH_GLOBAL(bool, useDevice);
     QFETCH(QByteArray, data);
     QFETCH(QString, expected);
     removeIndicators(expected);
 
+    QBuffer buffer(&data);
     QCborStreamReader reader(data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
     QVERIFY(reader.isValid());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QCOMPARE(parseOne(reader), expected);
@@ -560,9 +640,17 @@ void tst_QCborStreamReader::strings()
 
     QFETCH(QByteArray, data);
     QFETCH(QString, expected);
+    QFETCH_GLOBAL(bool, useDevice);
     bool isChunked = expected.startsWith('(');
 
+    QBuffer buffer(&data), controlBuffer(&data);
     QCborStreamReader reader(data), controlReader(data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        controlBuffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+        controlReader.setDevice(&controlBuffer);
+    }
     QVERIFY(reader.isString() || reader.isByteArray());
     QCOMPARE(reader.isLengthKnown(), !isChunked);
 
@@ -618,11 +706,17 @@ void tst_QCborStreamReader::emptyContainers_data()
 
 void tst_QCborStreamReader::emptyContainers()
 {
+    QFETCH_GLOBAL(bool, useDevice);
     QFETCH(QByteArray, data);
     QFETCH(QString, expected);
     removeIndicators(expected);
 
+    QBuffer buffer(&data);
     QCborStreamReader reader(data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
     QVERIFY(reader.isValid());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     if (reader.isLengthKnown())
@@ -649,7 +743,15 @@ void tst_QCborStreamReader::arrays_data()
 
 static void checkContainer(int len, const QByteArray &data, const QString &expected)
 {
+    QFETCH_GLOBAL(bool, useDevice);
+
+    QByteArray copy = data;
+    QBuffer buffer(&copy);
     QCborStreamReader reader(data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
     QVERIFY(reader.isValid());
     QCOMPARE(reader.lastError(), QCborError::NoError);
     if (len >= 0) {
@@ -749,8 +851,15 @@ void tst_QCborStreamReader::next()
 {
     QFETCH(QByteArray, data);
 
-    auto doit = [](const QByteArray &data) {
+    auto doit = [](QByteArray data) {
+        QFETCH_GLOBAL(bool, useDevice);
+
+        QBuffer buffer(&data);
         QCborStreamReader reader(data);
+        if (useDevice) {
+            buffer.open(QIODevice::ReadOnly);
+            reader.setDevice(&buffer);
+        }
         return reader.next();
     };
 
@@ -774,9 +883,15 @@ void tst_QCborStreamReader::validation_data()
 
 void tst_QCborStreamReader::validation()
 {
+    QFETCH_GLOBAL(bool, useDevice);
     QFETCH(QByteArray, data);
 
+    QBuffer buffer(&data);
     QCborStreamReader reader(data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
     parseOne(reader);
     QVERIFY(reader.lastError() != QCborError::NoError);
 
@@ -830,9 +945,16 @@ void tst_QCborStreamReader::recursionLimit_data()
 
 void tst_QCborStreamReader::recursionLimit()
 {
+    QFETCH_GLOBAL(bool, useDevice);
     QFETCH(QByteArray, data);
 
-    QCborStreamReader reader('\x81' + data);
+    data.prepend('\x81');
+    QBuffer buffer(&data);
+    QCborStreamReader reader(data);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
 
     // verify that it works normally:
     QVERIFY(reader.enterContainer());
@@ -854,20 +976,38 @@ void tst_QCborStreamReader::addData_singleElement_data()
 
 void tst_QCborStreamReader::addData_singleElement()
 {
+    QFETCH_GLOBAL(bool, useDevice);
     QFETCH(QByteArray, data);
     QFETCH(QString, expected);
     removeIndicators(expected);
 
+    QByteArray growing;
+    QBuffer buffer(&growing);
     QCborStreamReader reader;
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
     for (int i = 0; i < data.size() - 1; ++i) {
         // add one byte from the data
-        reader.addData(data.constData() + i, 1);
+        if (useDevice) {
+            growing.append(data.at(i));
+            reader.reparse();
+        } else {
+            reader.addData(data.constData() + i, 1);
+        }
+
         parseOne(reader);
         QCOMPARE(reader.lastError(), QCborError::EndOfFile);
     }
 
     // add the last byte
-    reader.addData(data.right(1));
+    if (useDevice) {
+        growing.append(data.right(1));
+        reader.reparse();
+    } else {
+        reader.addData(data.right(1));
+    }
     QCOMPARE(reader.lastError(), QCborError::NoError);
     QCOMPARE(parseOne(reader), expected);
 }
@@ -878,13 +1018,22 @@ void tst_QCborStreamReader::addData_complex()
     QFETCH(QString, expected);
     removeIndicators(expected);
 
-    // transform tags (parseNonRecursive() can't produce the usual form)
+    // transform tags (parseNonRecursive can't produce the usual form)
     expected.replace(QRegularExpression(R"/((\d+)\(([^)]+)\))/"), "Tag:\\1:\\2");
 
     auto doit = [](const QByteArray &data) {
+        QFETCH_GLOBAL(bool, useDevice);
+
         // start with one byte
         int added = 1;
-        QCborStreamReader reader(data.constData(), 1);
+        QByteArray growing = data.left(added);
+        QBuffer buffer(&growing);
+        QCborStreamReader reader(growing);
+        if (useDevice) {
+            buffer.open(QIODevice::ReadOnly);
+            reader.setDevice(&buffer);
+        }
+
         QString result;
         bool printingStringChunks = false;
         forever {
@@ -897,7 +1046,14 @@ void tst_QCborStreamReader::addData_complex()
                 // add more data
                 if (added == data.size())
                     return QStringLiteral("Couldn't parse even with all data");
-                reader.addData(data.constData() + added++, 1);
+
+                if (useDevice) {
+                    growing.append(data.at(added));
+                    reader.reparse();
+                } else {
+                    reader.addData(data.constData() + added, 1);
+                }
+                ++added;
             }
         }
     };
