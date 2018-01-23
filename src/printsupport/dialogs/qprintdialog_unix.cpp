@@ -403,6 +403,10 @@ QPrintPropertiesDialog::~QPrintPropertiesDialog()
 
 void QPrintPropertiesDialog::setupPrinter() const
 {
+#if QT_CONFIG(cups)
+    QCUPSSupport::clearCupsOptions(m_printer);
+#endif
+
     widget.pageSetup->setupPrinter();
 #if QT_CONFIG(cupsjobwidget)
     m_jobOptions->setupPrinter();
