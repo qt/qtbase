@@ -283,9 +283,10 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleApplicationStateChanged, Qt::Application
 QWindowSystemInterfacePrivate::GeometryChangeEvent::GeometryChangeEvent(QWindow *window, const QRect &newGeometry)
     : WindowSystemEvent(GeometryChange)
     , window(window)
-    , requestedGeometry(window->handle() ? window->handle()->QPlatformWindow::geometry() : QRect())
     , newGeometry(newGeometry)
 {
+    if (const QPlatformWindow *pw = window->handle())
+        requestedGeometry = QHighDpi::fromNativePixels(pw->QPlatformWindow::geometry(), window);
 }
 
 QT_DEFINE_QPA_EVENT_HANDLER(void, handleGeometryChange, QWindow *window, const QRect &newRect)
