@@ -109,9 +109,6 @@ public:
                 this, &EventWithNotifier::onNotifierActivated);
         notifier.setHandle(CreateEvent(0, TRUE, FALSE, 0));
         notifier.setEnabled(true);
-
-        static int nextIndex = 0;
-        idx = nextIndex++;
     }
 
     ~EventWithNotifier()
@@ -137,7 +134,6 @@ public slots:
 private:
     QWinEventNotifier notifier;
     int activatedCount = 0;
-    int idx = 0;
 };
 
 void tst_QWinEventNotifier::manyNotifiers()
