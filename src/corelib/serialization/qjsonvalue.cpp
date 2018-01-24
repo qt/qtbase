@@ -41,6 +41,7 @@
 #include <qjsonvalue.h>
 #include <qjsonarray.h>
 #include <qurl.h>
+#include <quuid.h>
 #include <qvariant.h>
 #include <qstringlist.h>
 #include <qdebug.h>
@@ -416,6 +417,12 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
             \endlist
         \li QJsonValue::String. The conversion will use QUrl::toString() with flag
             QUrl::FullyEncoded, so as to ensure maximum compatibility in parsing the URL
+    \row
+        \li
+            \list
+                \li QMetaType::QUuid
+            \endlist
+        \li QJsonValue::String. Since Qt 5.11, the resulting string will not include braces
     \endtable
 
     For all other QVariant types a conversion to a QString will be attempted. If the returned string
@@ -450,6 +457,8 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 #ifndef QT_BOOTSTRAPPED
     case QVariant::Url:
         return QJsonValue(variant.toUrl().toString(QUrl::FullyEncoded));
+    case QVariant::Uuid:
+        return variant.toUuid().toString(QUuid::WithoutBraces);
     case QMetaType::QJsonValue:
         return variant.toJsonValue();
     case QMetaType::QJsonObject:
