@@ -70,7 +70,7 @@ private:
 
 void tst_QIODevice::initTestCase()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QVERIFY(QFileInfo(QStringLiteral("./tst_qiodevice.cpp")).exists()
             || QFile::copy(QStringLiteral(":/tst_qiodevice.cpp"), QStringLiteral("./tst_qiodevice.cpp")));
 #endif

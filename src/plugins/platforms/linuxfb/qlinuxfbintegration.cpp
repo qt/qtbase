@@ -59,13 +59,13 @@
 #include <QtInputSupport/private/qlibinputhandler_p.h>
 #endif
 
-#if QT_CONFIG(evdev) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(evdev)
 #include <QtInputSupport/private/qevdevmousemanager_p.h>
 #include <QtInputSupport/private/qevdevkeyboardmanager_p.h>
 #include <QtInputSupport/private/qevdevtouchmanager_p.h>
 #endif
 
-#if QT_CONFIG(tslib) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(tslib)
 #include <QtInputSupport/private/qtslib_p.h>
 #endif
 
@@ -162,7 +162,7 @@ void QLinuxFbIntegration::createInputHandlers()
         new QTsLibMouseHandler(QLatin1String("TsLib"), QString());
 #endif
 
-#if QT_CONFIG(evdev) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(evdev)
     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString(), this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString(), this);
 #if QT_CONFIG(tslib)

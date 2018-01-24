@@ -1265,18 +1265,8 @@ void QXmlInputSource::fetchData()
         } else if (device->isOpen() || device->open(QIODevice::ReadOnly)) {
             rawData.resize(BufferSize);
             qint64 size = device->read(rawData.data(), BufferSize);
-
-            if (size != -1) {
-                // We don't want to give fromRawData() less than four bytes if we can avoid it.
-                while (size < 4) {
-                    if (!device->waitForReadyRead(-1))
-                        break;
-                    int ret = device->read(rawData.data() + size, BufferSize - size);
-                    if (ret <= 0)
-                        break;
-                    size += ret;
-                }
-            }
+            if (size == 0 && device->waitForReadyRead(-1))
+                size = device->read(rawData.data(), BufferSize);
 
             rawData.resize(qMax(qint64(0), size));
         }

@@ -74,7 +74,7 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 }
 #endif
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #  include <private/qjni_p.h>
 #endif
 
@@ -1285,7 +1285,7 @@ void QRandomGenerator::_fillRange(void *buffer, void *bufferEnd)
     std::generate(begin, end, [this]() { return storage.engine()(); });
 }
 
-#if defined(Q_OS_ANDROID) && (__ANDROID_API__ < 21)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED) && (__ANDROID_API__ < 21)
 typedef QThreadStorage<QJNIObjectPrivate> AndroidRandomStorage;
 Q_GLOBAL_STATIC(AndroidRandomStorage, randomTLS)
 
@@ -1314,7 +1314,7 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 */
 void qsrand(uint seed)
 {
-#if defined(Q_OS_ANDROID) && (__ANDROID_API__ < 21)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED) && (__ANDROID_API__ < 21)
     if (randomTLS->hasLocalData()) {
         randomTLS->localData().callMethod<void>("setSeed", "(J)V", jlong(seed));
         return;
@@ -1370,7 +1370,7 @@ void qsrand(uint seed)
 */
 int qrand()
 {
-#if defined(Q_OS_ANDROID) && (__ANDROID_API__ < 21)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED) && (__ANDROID_API__ < 21)
     AndroidRandomStorage *randomStorage = randomTLS();
     if (!randomStorage)
         return rand();

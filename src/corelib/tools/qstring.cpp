@@ -11626,7 +11626,7 @@ QString QString::toHtmlEscaped() const
   This cost can be avoided by using QStringLiteral instead:
 
   \code
-  if (node.hasAttribute(QStringLiteral("http-contents-length"))) //...
+  if (node.hasAttribute(QStringLiteral(u"http-contents-length"))) //...
   \endcode
 
   In this case, QString's internal data will be generated at compile time; no
@@ -11645,6 +11645,10 @@ QString QString::toHtmlEscaped() const
   \code
   if (attribute.name() == QLatin1String("http-contents-length")) //...
   \endcode
+
+  \note Some compilers have bugs encoding strings containing characters outside
+  the US-ASCII character set. Make sure you prefix your string with \c{u} in
+  those cases. It is optional otherwise.
 
   \sa QByteArrayLiteral
 */

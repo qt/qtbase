@@ -200,7 +200,7 @@ qnx:qtConfig(qqnx_pps) {
                 kernel/qppsobjectprivate_p.h
 }
 
-android {
+android:!android-embedded {
         SOURCES += \
                    kernel/qjnionload.cpp \
                    kernel/qjnihelpers.cpp \

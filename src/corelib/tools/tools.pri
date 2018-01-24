@@ -161,7 +161,7 @@ qtConfig(timezone) {
         tools/qtimezoneprivate.cpp
     !nacl:darwin: \
         SOURCES += tools/qtimezoneprivate_mac.mm
-    else: android: \
+    else: android:!android-embedded: \
         SOURCES += tools/qtimezoneprivate_android.cpp
     else: unix: \
         SOURCES += tools/qtimezoneprivate_tz.cpp

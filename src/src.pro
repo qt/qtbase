@@ -201,9 +201,11 @@ qtConfig(gui) {
     src_plugins.depends += src_gui src_platformsupport src_platformheaders
     src_testlib.depends += src_gui      # if QtGui is enabled, QtTest requires QtGui's headers
     qtConfig(widgets) {
-        SUBDIRS += src_tools_uic src_widgets src_printsupport
+        SUBDIRS += src_tools_uic src_widgets
+        !android-embedded: SUBDIRS += src_printsupport
         TOOLS += src_tools_uic
-        src_plugins.depends += src_widgets src_printsupport
+        src_plugins.depends += src_widgets
+        !android-embedded: src_plugins.depends += src_printsupport
         src_testlib.depends += src_widgets        # if QtWidgets is enabled, QtTest requires QtWidgets's headers
         qtConfig(opengl) {
             SUBDIRS += src_opengl
@@ -215,7 +217,7 @@ SUBDIRS += src_plugins
 
 nacl: SUBDIRS -= src_network src_testlib
 
-android: SUBDIRS += src_android src_3rdparty_gradle
+android:!android-embedded: SUBDIRS += src_android src_3rdparty_gradle
 
 TR_EXCLUDE = \
     src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_tools_qlalr \
