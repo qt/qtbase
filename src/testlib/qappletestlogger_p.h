@@ -71,8 +71,7 @@ public:
     { m_logger->stopLogging(); }
 
     void enterTestFunction(const char *function) override;
-     void leaveTestFunction() override
-    { m_logger->leaveTestFunction(); }
+    void leaveTestFunction() override;
 
     void addIncident(IncidentTypes type, const char *description,
                      const char *file = 0, int line = 0) override;

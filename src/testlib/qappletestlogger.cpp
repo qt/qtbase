@@ -62,8 +62,13 @@ QAppleTestLogger::QAppleTestLogger(QAbstractTestLogger *logger)
 {
 }
 
+static QAppleLogActivity testFunctionActivity;
+
 void QAppleTestLogger::enterTestFunction(const char *function)
 {
+    // Re-create activity each time
+    testFunctionActivity = QT_APPLE_LOG_ACTIVITY("Running test function").enter();
+
     if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *)) {
         QTestCharBuffer testIdentifier;
         QTestPrivate::generateTestIdentifier(&testIdentifier);
@@ -75,6 +80,12 @@ void QAppleTestLogger::enterTestFunction(const char *function)
     }
 
     m_logger->enterTestFunction(function);
+}
+
+void QAppleTestLogger::leaveTestFunction()
+{
+    m_logger->leaveTestFunction();
+    testFunctionActivity.leave();
 }
 
 typedef QPair<QtMsgType, const char *> IncidentClassification;

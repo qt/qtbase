@@ -51,17 +51,49 @@
 // We mean it.
 //
 
+#include "private/qglobal_p.h"
+
 #ifndef __IMAGECAPTURE__
 #  define __IMAGECAPTURE__
 #endif
+
+// --------------------------------------------------------------------------
+
+#if !defined(QT_BOOTSTRAPPED) && (QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12) || !defined(Q_OS_MACOS))
+#define QT_USE_APPLE_ACTIVITIES
+
+#if defined(OS_ACTIVITY_OBJECT_API)
+#error The file <os/activity.h> has already been included
+#endif
+
+// We runtime-check all use of the activity APIs, so we can safely build
+// with them included, even if the deployment target is macOS 10.11
+#if QT_MACOS_DEPLOYMENT_TARGET_BELOW(__MAC_10_12)
+#undef __MAC_OS_X_VERSION_MIN_REQUIRED
+#define __MAC_OS_X_VERSION_MIN_REQUIRED __MAC_10_12
+#define DID_OVERRIDE_DEPLOYMENT_TARGET
+#endif
+
+#include <os/activity.h>
+#if !OS_ACTIVITY_OBJECT_API
+#error "Expected activity API to be available"
+#endif
+
+#if defined(DID_OVERRIDE_DEPLOYMENT_TARGET)
+#undef __MAC_OS_X_VERSION_MIN_REQUIRED
+#define __MAC_OS_X_VERSION_MIN_REQUIRED __MAC_10_11
+#undef DID_OVERRIDE_DEPLOYMENT_TARGET
+#endif
+
+#endif
+
+// --------------------------------------------------------------------------
 
 #if defined(QT_BOOTSTRAPPED)
 #include <ApplicationServices/ApplicationServices.h>
 #else
 #include <CoreFoundation/CoreFoundation.h>
 #endif
-
-#include "private/qglobal_p.h"
 
 #ifdef __OBJC__
 #include <Foundation/Foundation.h>
@@ -189,6 +221,100 @@ private:
 #endif
 
 // --------------------------------------------------------------------------
+
+#if defined(QT_USE_APPLE_ACTIVITIES)
+
+QT_END_NAMESPACE
+#include <os/availability.h>
+#define OS_ACTIVITY_AVAILABILITY API_AVAILABLE(macos(10.12), ios(10.0), tvos(10.0), watchos(3.0))
+#define OS_ACTIVITY_AVAILABILITY_CHECK __builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *)
+QT_BEGIN_NAMESPACE
+
+template <typename T> using QAppleOsType = QAppleRefCounted<T, void *, os_retain, os_release>;
+
+class Q_CORE_EXPORT QAppleLogActivity
+{
+public:
+    QAppleLogActivity() : activity(nullptr) {}
+    QAppleLogActivity(os_activity_t activity) OS_ACTIVITY_AVAILABILITY : activity(activity) {}
+    ~QAppleLogActivity() { if (activity) leave(); }
+
+    QAppleLogActivity(const QAppleLogActivity &) = delete;
+    QAppleLogActivity& operator=(const QAppleLogActivity &) = delete;
+
+    QAppleLogActivity(QAppleLogActivity&& other)
+        : activity(other.activity), state(other.state) { other.activity = nullptr; }
+
+    QAppleLogActivity& operator=(QAppleLogActivity &&other)
+    {
+        if (this != &other) {
+            activity = other.activity;
+            state = other.state;
+            other.activity = nullptr;
+        }
+        return *this;
+    }
+
+    QAppleLogActivity&& enter()
+    {
+        if (activity) {
+            if (OS_ACTIVITY_AVAILABILITY_CHECK)
+                os_activity_scope_enter(static_cast<os_activity_t>(*this), &state);
+        }
+        return std::move(*this);
+    }
+
+    void leave() {
+        if (activity) {
+            if (OS_ACTIVITY_AVAILABILITY_CHECK)
+                os_activity_scope_leave(&state);
+        }
+    }
+
+    operator os_activity_t() OS_ACTIVITY_AVAILABILITY
+    {
+        return reinterpret_cast<os_activity_t>(static_cast<void *>(activity));
+    }
+
+private:
+    // Work around API_AVAILABLE not working for templates by using void*
+    QAppleOsType<void *> activity;
+    os_activity_scope_state_s state;
+};
+
+#define QT_APPLE_LOG_ACTIVITY_CREATE(condition, description, parent) []() { \
+        if (!(condition)) \
+            return QAppleLogActivity(); \
+        if (OS_ACTIVITY_AVAILABILITY_CHECK) \
+            return QAppleLogActivity(os_activity_create(description, parent, OS_ACTIVITY_FLAG_DEFAULT)); \
+        return QAppleLogActivity(); \
+    }()
+
+#define QT_VA_ARGS_CHOOSE(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
+#define QT_VA_ARGS_COUNT(...) QT_VA_ARGS_CHOOSE(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+
+#define QT_OVERLOADED_MACRO(MACRO, ...) _QT_OVERLOADED_MACRO(MACRO, QT_VA_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__)
+#define _QT_OVERLOADED_MACRO(MACRO, ARGC) _QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC)
+#define _QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC) MACRO##ARGC
+
+#define QT_APPLE_LOG_ACTIVITY_WITH_PARENT3(condition, description, parent) QT_APPLE_LOG_ACTIVITY_CREATE(condition, description, parent)
+#define QT_APPLE_LOG_ACTIVITY_WITH_PARENT2(description, parent) QT_APPLE_LOG_ACTIVITY_WITH_PARENT3(true, description, parent)
+#define QT_APPLE_LOG_ACTIVITY_WITH_PARENT(...) QT_OVERLOADED_MACRO(QT_APPLE_LOG_ACTIVITY_WITH_PARENT, __VA_ARGS__)
+
+#define QT_APPLE_LOG_ACTIVITY2(condition, description) QT_APPLE_LOG_ACTIVITY_CREATE(condition, description, OS_ACTIVITY_CURRENT)
+#define QT_APPLE_LOG_ACTIVITY1(description) QT_APPLE_LOG_ACTIVITY2(true, description)
+#define QT_APPLE_LOG_ACTIVITY(...) QT_OVERLOADED_MACRO(QT_APPLE_LOG_ACTIVITY, __VA_ARGS__)
+
+#define QT_APPLE_SCOPED_LOG_ACTIVITY(...) QAppleLogActivity scopedLogActivity = QT_APPLE_LOG_ACTIVITY(__VA_ARGS__).enter();
+
+#else
+// No-ops for macOS 10.11. We don't need to provide QT_APPLE_SCOPED_LOG_ACTIVITY,
+// as all the call sites for that are in code that's only built on 10.12 and above.
+#define QT_APPLE_LOG_ACTIVITY_WITH_PARENT(...)
+#define QT_APPLE_LOG_ACTIVITY(...)
+#endif // QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE
+
+// -------------------------------------------------------------------------
 
 QT_END_NAMESPACE
 

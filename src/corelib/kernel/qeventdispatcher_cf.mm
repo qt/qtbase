@@ -238,6 +238,7 @@ QEventLoop *QEventDispatcherCoreFoundation::currentEventLoop() const
 */
 bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
+    QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "processEvents");
     bool eventsProcessed = false;
 
     if (flags & (QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers))
@@ -390,6 +391,8 @@ bool QEventDispatcherCoreFoundation::processEvents(QEventLoop::ProcessEventsFlag
 
 bool QEventDispatcherCoreFoundation::processPostedEvents()
 {
+    QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "processPostedEvents");
+
     if (m_processEvents.processedPostedEvents && !(m_processEvents.flags & QEventLoop::EventLoopExec)) {
         qCDebug(lcEventDispatcher) << "Already processed events this pass";
         return false;
@@ -405,6 +408,8 @@ bool QEventDispatcherCoreFoundation::processPostedEvents()
 
 void QEventDispatcherCoreFoundation::processTimers(CFRunLoopTimerRef timer)
 {
+    QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "processTimers");
+
     if (m_processEvents.processedTimers && !(m_processEvents.flags & QEventLoop::EventLoopExec)) {
         qCDebug(lcEventDispatcher) << "Already processed timers this pass";
         m_processEvents.deferredUpdateTimers = true;

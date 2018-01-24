@@ -204,6 +204,11 @@ namespace
     jmp_buf applicationWillTerminateJumpPoint;
 
     bool debugStackUsage = false;
+
+    struct {
+        QAppleLogActivity UIApplicationMain;
+        QAppleLogActivity applicationDidFinishLaunching;
+    } logActivity;
 }
 
 extern "C" int qt_main_wrapper(int argc, char *argv[])
@@ -227,6 +232,9 @@ extern "C" int qt_main_wrapper(int argc, char *argv[])
                 qDebug("Effective stack size is %lu bytes", userMainStack.size());
             }
         }
+
+        logActivity.UIApplicationMain = QT_APPLE_LOG_ACTIVITY(
+            lcEventDispatcher().isDebugEnabled(), "UIApplicationMain").enter();
 
         qCDebug(lcEventDispatcher) << "Running UIApplicationMain";
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([QIOSApplicationDelegate class]));
@@ -263,10 +271,13 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
     int exitCode = main(argc, argv);
     delete[] argv;
 
+    logActivity.applicationDidFinishLaunching.enter();
     qCDebug(lcEventDispatcher) << "Returned from main with exit code " << exitCode;
 
     if (Q_UNLIKELY(debugStackUsage))
         userMainStack.printUsage();
+
+    logActivity.applicationDidFinishLaunching.leave();
 
     if (applicationAboutToTerminate)
         longjmp(applicationWillTerminateJumpPoint, kJumpedFromUserMainTrampoline);
@@ -322,6 +333,9 @@ static bool rootLevelRunLoopIntegration()
 
 + (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+    logActivity.applicationDidFinishLaunching = QT_APPLE_LOG_ACTIVITY_WITH_PARENT(
+        lcEventDispatcher().isDebugEnabled(), "applicationDidFinishLaunching", logActivity.UIApplicationMain).enter();
+
     qCDebug(lcEventDispatcher) << "Application launched with options" << notification.userInfo;
 
     if (!isQtApplication())
@@ -339,10 +353,11 @@ static bool rootLevelRunLoopIntegration()
         return;
     }
 
-
     switch (setjmp(processEventEnterJumpPoint)) {
-    case kJumpPointSetSuccessfully:
+    case kJumpPointSetSuccessfully: {
         qCDebug(lcEventDispatcher) << "Running main() on separate stack";
+        QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "main()");
+
         // Redirect the stack pointer to the start of the reserved stack. This ensures
         // that when we longjmp out of the event dispatcher and continue execution, the
         // 'Qt main' call-stack will not be smashed, as it lives in a part of the stack
@@ -357,9 +372,11 @@ static bool rootLevelRunLoopIntegration()
 
         Q_UNREACHABLE();
         break;
+    }
     case kJumpedFromEventDispatcherProcessEvents:
         // We've returned from the longjmp in the event dispatcher,
         // and the stack has been restored to its old self.
+        logActivity.UIApplicationMain.enter();
         qCDebug(lcEventDispatcher) << "↳ Jumped from processEvents due to exec";
 
         if (Q_UNLIKELY(debugStackUsage))
@@ -378,6 +395,10 @@ static const char kApplicationWillTerminateExitCode = char(SIGTERM | 0x80);
 
 + (void)applicationWillTerminate
 {
+    QAppleLogActivity applicationWillTerminateActivity = QT_APPLE_LOG_ACTIVITY_WITH_PARENT(
+        lcEventDispatcher().isDebugEnabled(), "applicationWillTerminate", logActivity.UIApplicationMain).enter();
+    qCDebug(lcEventDispatcher) << "Application about to be terminated by iOS";
+
     if (!isQtApplication())
         return;
 
@@ -403,11 +424,14 @@ static const char kApplicationWillTerminateExitCode = char(SIGTERM | 0x80);
         // so we'll never see the exit activity and have a chance to return from
         // QEventLoop::exec(). We initiate the return manually as a workaround.
         qCDebug(lcEventDispatcher) << "Manually triggering return from event loop exec";
+        applicationWillTerminateActivity.leave();
         static_cast<QIOSEventDispatcher *>(qApp->eventDispatcher())->interruptEventLoopExec();
         break;
     case kJumpedFromUserMainTrampoline:
+        applicationWillTerminateActivity.enter();
         // The user's main has returned, so we're ready to let iOS terminate the application
         qCDebug(lcEventDispatcher) << "kJumpedFromUserMainTrampoline, allowing iOS to terminate";
+        applicationWillTerminateActivity.leave();
         break;
     default:
         qFatal("Unexpected jump result in event loop integration");
@@ -441,6 +465,7 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
     }
 
     if (!m_processEventLevel && (flags & QEventLoop::EventLoopExec)) {
+        QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "processEvents");
         qCDebug(lcEventDispatcher) << "Processing events with flags" << flags;
 
         ++m_processEventLevel;
@@ -487,6 +512,7 @@ bool QIOSEventDispatcher::processPostedEvents()
     if (!QEventDispatcherCoreFoundation::processPostedEvents())
         return false;
 
+    QT_APPLE_SCOPED_LOG_ACTIVITY(lcEventDispatcher().isDebugEnabled(), "sendWindowSystemEvents");
     qCDebug(lcEventDispatcher) << "Sending window system events for" << m_processEvents.flags;
     QWindowSystemInterface::sendWindowSystemEvents(m_processEvents.flags);
 
@@ -516,10 +542,12 @@ void QIOSEventDispatcher::interruptEventLoopExec()
     switch (setjmp(processEventEnterJumpPoint)) {
     case kJumpPointSetSuccessfully:
         qCDebug(lcEventDispatcher) << "Jumping into processEvents due to system runloop exit ⇢";
+        logActivity.UIApplicationMain.leave();
         longjmp(processEventExitJumpPoint, kJumpedFromEventLoopExecInterrupt);
         break;
     case kJumpedFromEventDispatcherProcessEvents:
         // QEventLoop was re-executed
+        logActivity.UIApplicationMain.enter();
         qCDebug(lcEventDispatcher) << "↳ Jumped from processEvents due to re-exec";
         break;
     default:
