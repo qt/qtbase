@@ -147,6 +147,21 @@
     [super dealloc];
 }
 
+- (NSString *)description
+{
+    NSMutableString *description = [NSMutableString stringWithString:[super description]];
+
+#ifndef QT_NO_DEBUG_STREAM
+    QString platformWindowDescription;
+    QDebug debug(&platformWindowDescription);
+    debug.nospace() << "; " << m_qioswindow << ">";
+    NSRange lastCharacter = [description rangeOfComposedCharacterSequenceAtIndex:description.length - 1];
+    [description replaceCharactersInRange:lastCharacter withString:platformWindowDescription.toNSString()];
+#endif
+
+    return description;
+}
+
 - (void)willMoveToWindow:(UIWindow *)newWindow
 {
     // UIKIt will normally set the scale factor of a view to match the corresponding
@@ -191,13 +206,12 @@
     // when the size is also changed.
 
     if (!CGAffineTransformIsIdentity(self.transform))
-        qWarning() << m_qioswindow->window()
-            << "is backed by a UIView that has a transform set. This is not supported.";
+        qWarning() << self << "has a transform set. This is not supported.";
 
     QWindow *window = m_qioswindow->window();
     QRect lastReportedGeometry = qt_window_private(window)->geometry;
     QRect currentGeometry = QRectF::fromCGRect(self.frame).toRect();
-    qCDebug(lcQpaWindow) << m_qioswindow->window() << "new geometry is" << currentGeometry;
+    qCDebug(lcQpaWindow) << m_qioswindow << "new geometry is" << currentGeometry;
     QWindowSystemInterface::handleGeometryChange(window, currentGeometry);
 
     if (currentGeometry.size() != lastReportedGeometry.size()) {
@@ -230,7 +244,7 @@
         region = QRect(QPoint(), bounds);
     }
 
-    qCDebug(lcQpaWindow) << m_qioswindow->window() << region << "isExposed" << m_qioswindow->isExposed();
+    qCDebug(lcQpaWindow) << m_qioswindow << region << "isExposed" << m_qioswindow->isExposed();
     QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
 }
 
@@ -254,16 +268,14 @@
         // blocked by this guard.
         FirstResponderCandidate firstResponderCandidate(self);
 
-        qImDebug() << "win:" << m_qioswindow->window() << "self:" << self
-            << "first:" << [UIResponder currentFirstResponder];
+        qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
 
         if (![super becomeFirstResponder]) {
-            qImDebug() << m_qioswindow->window()
-                << "was not allowed to become first responder";
+            qImDebug() << self << "was not allowed to become first responder";
             return NO;
         }
 
-        qImDebug() << m_qioswindow->window() << "became first responder";
+        qImDebug() << self << "became first responder";
     }
 
     if (qGuiApp->focusWindow() != m_qioswindow->window())
@@ -295,13 +307,12 @@
 
 - (BOOL)resignFirstResponder
 {
-    qImDebug() << "win:" << m_qioswindow->window() << "self:" << self
-        << "first:" << [UIResponder currentFirstResponder];
+    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
 
     if (![super resignFirstResponder])
         return NO;
 
-    qImDebug() << m_qioswindow->window() << "resigned first responder";
+    qImDebug() << self << "resigned first responder";
 
     UIResponder *newResponder = FirstResponderCandidate::currentCandidate();
     if ([self responderShouldTriggerWindowDeactivation:newResponder])
