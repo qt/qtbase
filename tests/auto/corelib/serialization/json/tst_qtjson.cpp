@@ -82,6 +82,8 @@ private Q_SLOTS:
 
     void fromVariant_data();
     void fromVariant();
+    void fromVariantSpecial_data();
+    void fromVariantSpecial();
     void toVariant_data();
     void toVariant();
     void fromVariantMap();
@@ -1172,6 +1174,24 @@ void tst_QtJson::fromVariant()
 
     QCOMPARE(QJsonValue::fromVariant(variant), jsonvalue);
     QCOMPARE(variant.toJsonValue(), jsonvalue);
+}
+
+void tst_QtJson::fromVariantSpecial_data()
+{
+    QTest::addColumn<QVariant>("variant");
+    QTest::addColumn<QJsonValue>("jsonvalue");
+
+    // Qt types with special encoding
+    QTest::newRow("url") << QVariant(QUrl("https://example.com/\xc2\xa9 "))
+                         << QJsonValue("https://example.com/%C2%A9%20");
+}
+
+void tst_QtJson::fromVariantSpecial()
+{
+    QFETCH( QVariant, variant );
+    QFETCH( QJsonValue, jsonvalue );
+
+    QCOMPARE(QJsonValue::fromVariant(variant), jsonvalue);
 }
 
 void tst_QtJson::toVariant_data()

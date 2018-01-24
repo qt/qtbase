@@ -40,6 +40,7 @@
 #include <qjsonobject.h>
 #include <qjsonvalue.h>
 #include <qjsonarray.h>
+#include <qurl.h>
 #include <qvariant.h>
 #include <qstringlist.h>
 #include <qdebug.h>
@@ -407,6 +408,14 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
                 \li QMetaType::QVariantHash
             \endlist
         \li QJsonValue::Object
+
+    \row
+        \li
+            \list
+                \li QMetaType::QUrl
+            \endlist
+        \li QJsonValue::String. The conversion will use QUrl::toString() with flag
+            QUrl::FullyEncoded, so as to ensure maximum compatibility in parsing the URL
     \endtable
 
     For all other QVariant types a conversion to a QString will be attempted. If the returned string
@@ -439,6 +448,8 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
     case QVariant::Hash:
         return QJsonValue(QJsonObject::fromVariantHash(variant.toHash()));
 #ifndef QT_BOOTSTRAPPED
+    case QVariant::Url:
+        return QJsonValue(variant.toUrl().toString(QUrl::FullyEncoded));
     case QMetaType::QJsonValue:
         return variant.toJsonValue();
     case QMetaType::QJsonObject:
