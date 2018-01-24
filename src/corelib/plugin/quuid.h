@@ -85,7 +85,14 @@ public:
         Sha1                 = 5 // 0 1 0 1
     };
 
+    enum StringFormat {
+        WithBraces      = 0,
+        WithoutBraces   = 1,
+        Id128           = 3
+    };
+
 #if defined(Q_COMPILER_UNIFORM_INIT) && !defined(Q_CLANG_QDOC)
+
     Q_DECL_CONSTEXPR QUuid() Q_DECL_NOTHROW : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
 
     Q_DECL_CONSTEXPR QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
@@ -121,8 +128,10 @@ public:
     static QUuid fromString(QLatin1String string) Q_DECL_NOTHROW;
     QUuid(const char *);
     QString toString() const;
+    QString toString(StringFormat mode) const; // ### Qt6: merge with previous
     QUuid(const QByteArray &);
     QByteArray toByteArray() const;
+    QByteArray toByteArray(StringFormat mode) const; // ### Qt6: merge with previous
     QByteArray toRfc4122() const;
     static QUuid fromRfc4122(const QByteArray &);
     bool isNull() const Q_DECL_NOTHROW;
