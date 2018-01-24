@@ -45,7 +45,7 @@
 #include <QtPlatformHeaders/QEGLNativeContext>
 #include <QDebug>
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #include <QtCore/private/qjnihelpers_p.h>
 #endif
 #ifndef Q_OS_WIN
@@ -332,7 +332,7 @@ void QEGLPlatformContext::updateFormatFromGL()
                 QByteArray version = QByteArray(reinterpret_cast<const char *>(s));
                 int major, minor;
                 if (QPlatformOpenGLContext::parseOpenGLVersion(version, major, minor)) {
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
                     // Some Android 4.2.2 devices report OpenGL ES 3.0 without the functions being available.
                     static int apiLevel = QtAndroidPrivate::androidSdkVersion();
                     if (apiLevel <= 17 && major >= 3) {

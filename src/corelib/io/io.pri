@@ -165,7 +165,7 @@ win32 {
             } else {
                 LIBS += -framework MobileCoreServices
             }
-        } else:android {
+        } else:android:!android-embedded {
             SOURCES += \
                 io/qstandardpaths_android.cpp \
                 io/qstorageinfo_unix.cpp

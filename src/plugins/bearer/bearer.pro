@@ -6,6 +6,6 @@ QT_FOR_CONFIG += network-private
     SUBDIRS += connman networkmanager
 }
 
-android:SUBDIRS += android
+android:!android-embedded: SUBDIRS += android
 
 isEmpty(SUBDIRS):SUBDIRS = generic

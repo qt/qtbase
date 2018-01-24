@@ -112,7 +112,7 @@ void tst_QDirModel::getSetCheck()
 
 void tst_QDirModel::initTestCase()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QString dataPath = SRCDIR;
     QString resourceSourcePath = QStringLiteral(":/android_testdata");
     QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
@@ -614,7 +614,7 @@ void tst_QDirModel::task196768_sorting()
     view.setSortingEnabled(true);
     index2 = model.index(path);
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QEXPECT_FAIL("", "QTBUG-43818", Continue);
 #else
     if (EmulationDetector::isRunningArmOnX86())

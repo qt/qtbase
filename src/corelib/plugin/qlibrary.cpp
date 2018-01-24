@@ -237,21 +237,34 @@ static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
         if (lib)
             lib->errorString = file.errorString();
         if (qt_debug_component()) {
-            qWarning("%s: %s", (const char*) QFile::encodeName(library),
+            qWarning("%s: %s", QFile::encodeName(library).constData(),
                 qPrintable(QSystemError::stdString()));
         }
         return false;
     }
 
     QByteArray data;
-    const char *filedata = 0;
     ulong fdlen = file.size();
-    filedata = (char *) file.map(0, fdlen);
+    const char *filedata = reinterpret_cast<char *>(file.map(0, fdlen));
+
     if (filedata == 0) {
-        // try reading the data into memory instead
-        data = file.readAll();
-        filedata = data.constData();
-        fdlen = data.size();
+        if (uchar *mapdata = file.map(0, 1)) {
+            file.unmap(mapdata);
+            // Mapping is supported, but failed for the entire file, likely due to OOM.
+            // Return false, as readAll() would cause a bad_alloc and terminate the process.
+            if (lib)
+                lib->errorString = QLibrary::tr("Out of memory while loading plugin '%1'.").arg(library);
+            if (qt_debug_component()) {
+                qWarning("%s: %s", QFile::encodeName(library).constData(),
+                    qPrintable(QSystemError::stdString(ENOMEM)));
+            }
+            return false;
+        } else {
+            // Try reading the data into memory instead.
+            data = file.readAll();
+            filedata = data.constData();
+            fdlen = data.size();
+        }
     }
 
     /*
@@ -745,7 +758,7 @@ void QLibraryPrivate::updatePluginState()
         if (qt_debug_component()) {
             qWarning("In %s:\n"
                  "  Plugin uses incompatible Qt library (%d.%d.%d) [%s]",
-                 (const char*) QFile::encodeName(fileName),
+                 QFile::encodeName(fileName).constData(),
                  (qt_version&0xff0000) >> 16, (qt_version&0xff00) >> 8, qt_version&0xff,
                  debug ? "debug" : "release");
         }
