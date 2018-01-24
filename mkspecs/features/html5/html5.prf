@@ -1,3 +1,18 @@
+# Copies the given files to the destination directory
+defineTest(copyToOutDdir) {
+    files = $$1
+    for(FILE, files) {
+        DDIR = $$OUT_PWD
+
+        # Replace slashes in paths with backslashes for Windows
+        win32:FILE ~= s,/,\\,g
+        win32:DDIR ~= s,/,\\,g
+
+        QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$FILE) $$quote($$DDIR) $$escape_expand(\\n\\t)
+    }
+    export(QMAKE_POST_LINK)
+}
+
 # Creates an HTML + JS file, to be executed with emrun or node
 contains(TEMPLATE, .*app) {
     !contains(TARGET, .html): TARGET = $${TARGET}.html
@@ -11,20 +26,25 @@ contains(TEMPLATE, .*app) {
         INSTALLS += js_file
 
     !contains(CONFIG,config_test):!build_pass:cross_compile: {
-        QMAKE_CFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
-        QMAKE_CXXFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
-        QMAKE_LFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
+        QMAKE_CFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
+        QMAKE_CXXFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
+        QMAKE_LFLAGS += -s WASM=1 -s MODULARIZE=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
     }
 
+    # Generate/copy hosting html and javascript to the application build directory.
     exists($$[QT_INSTALL_PLUGINS]/platforms/html5_shell.html) {
         # dont pass this until it's installed somewhere
         # otherwise makespec test fails during qt configure
-        QMAKE_LFLAGS += --shell-file  $$[QT_INSTALL_PLUGINS]/platforms/html5_shell.html
+        HTML5_PLUGIN_PATH = $$[QT_INSTALL_PLUGINS]/platforms
     } else {
         ## internal build. not installed
-        MODULE_BASE_OUTDIR = $$shadowed($$dirname(_QMAKE_CONF_))
-        QMAKE_LFLAGS += --shell-file $$PWD/../../../src/plugins/platforms/html5/html5_shell.html
+        HTML5_PLUGIN_PATH = $$PWD/../../../src/plugins/platforms/html5
     }
+    QMAKE_LFLAGS += --shell-file $$HTML5_PLUGIN_PATH/html5_shell.html
+    copyToOutDdir($$HTML5_PLUGIN_PATH/qtloader.js)
+
+    message($$HTML5_PLUGIN_PATH)
+    message($$OUT_PWD)
 
     # emscripten ports are linked into the main module (this app), not the Qt
     # libs which reference them

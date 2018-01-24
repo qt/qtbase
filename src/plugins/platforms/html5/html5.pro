@@ -43,7 +43,8 @@ CONFIG +=  egl
 
 OTHER_FILES += \
     html5.json \
-    html5_shell.html
+    html5_shell.html \
+    qtloader.js
 
 shell_file.path = $$[QT_INSTALL_PLUGINS]/platforms
 shell_file.files = html5_shell.html
