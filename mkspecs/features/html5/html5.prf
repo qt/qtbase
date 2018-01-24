@@ -10,24 +10,20 @@ contains(TEMPLATE, .*app) {
           js_file.path += ./
         INSTALLS += js_file
 
-     !contains(CONFIG,config_test):!build_pass:cross_compile: {
+    !contains(CONFIG,config_test):!build_pass:cross_compile: {
         QMAKE_CFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
         QMAKE_CXXFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
         QMAKE_LFLAGS += -s WASM=1 -s \"BINARYEN_METHOD=\'native-wasm\'\"
-     }
+    }
 
     exists($$[QT_INSTALL_PLUGINS]/platforms/html5_shell.html) {
-       # dont pass this until it's installed somewhere
-       # otherwise makespec test fails during qt configure
+        # dont pass this until it's installed somewhere
+        # otherwise makespec test fails during qt configure
         QMAKE_LFLAGS += --shell-file  $$[QT_INSTALL_PLUGINS]/platforms/html5_shell.html
     } else {
-## internal build. not installed
-
+        ## internal build. not installed
         MODULE_BASE_OUTDIR = $$shadowed($$dirname(_QMAKE_CONF_))
         QMAKE_LFLAGS += --shell-file $$PWD/../../../src/plugins/platforms/html5/html5_shell.html
-
-      !exists($$[QT_HOST_PREFIX]/plugins/imageformats) {
-        }
     }
 
     # emscripten ports are linked into the main module (this app), not the Qt
