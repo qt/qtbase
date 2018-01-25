@@ -39,6 +39,7 @@
 
 #include "qstatictext.h"
 #include "qstatictext_p.h"
+#include <qmath.h>
 #include <private/qtextengine_p.h>
 #include <private/qfontengine_p.h>
 #include <qabstracttextdocumentlayout.h>
@@ -611,22 +612,22 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p, 
         textLayout.setTextOption(textOption);
         textLayout.setCacheEnabled(true);
 
-        qreal leading = QFontMetricsF(font).leading();
-        qreal height = -leading;
-
+        qreal height = 0;
         textLayout.beginLayout();
         while (1) {
             QTextLine line = textLayout.createLine();
             if (!line.isValid())
                 break;
+            line.setLeadingIncluded(true);
 
             if (textWidth >= 0.0)
                 line.setLineWidth(textWidth);
             else
                 line.setLineWidth(QFIXED_MAX);
-            height += leading;
             line.setPosition(QPointF(0.0, height));
             height += line.height();
+            if (line.leading() < 0)
+                height += qCeil(line.leading());
         }
         textLayout.endLayout();
 
