@@ -2387,14 +2387,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_SpinBoxFrameWidth:
         ret = qt_mac_aqua_get_metric(EditTextFrameOutset);
-        switch (d->aquaSizeConstrain(opt, widget)) {
-        case QStyleHelper::SizeMini:
-            ret += 1;
-            break;
-        default:
-            ret += 2;
-            break;
-        }
         break;
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
@@ -2999,6 +2991,9 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = false;
         break;
     case SH_ComboBox_AllowWheelScrolling:
+        ret = false;
+        break;
+    case SH_SpinBox_ButtonsInsideFrame:
         ret = false;
         break;
     default:
@@ -4157,16 +4152,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         const int hMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, w);
         const int vMargin = proxy()->pixelMetric(QStyle::PM_FocusFrameVMargin, opt, w);
         if (ct == QMacStylePrivate::Box) {
-            auto frameRect = opt->rect;
-            if (ffw && ffw->inherits("QLineEdit")
-                    && ffw->parentWidget()
-                    && ffw->parentWidget()->inherits("QAbstractSpinBox")) {
-                // See CC_SpinBox case for drawComplexControl
-                const int frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
-                frameRect = frameRect.adjusted(-frame_size, -frame_size, +frame_size, +frame_size);
-            }
-
-            d->drawFocusRing(p, frameRect, hMargin, vMargin);
+            d->drawFocusRing(p, opt->rect, hMargin, vMargin);
         } else if (ffw) {
             const auto cs = ffw->testAttribute(Qt::WA_MacMiniSize) ? QStyleHelper::SizeMini :
                             ffw->testAttribute(Qt::WA_MacSmallSize) ? QStyleHelper::SizeSmall :
@@ -5444,9 +5430,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             if (sb->frame && (sb->subControls & SC_SpinBoxFrame)) {
-                const int frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
-                const auto lineEditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget)
-                        .adjusted(-frame_size, -frame_size, +frame_size, +frame_size);
+                const auto lineEditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget);
                 QStyleOptionFrame frame;
                 static_cast<QStyleOption &>(frame) = *opt;
                 frame.rect = lineEditRect;
@@ -6175,9 +6159,9 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             QStyleHelper::WidgetSizePolicy aquaSize = d->effectiveAquaSizeConstrain(spin, widget);
+            const auto fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
             int spinner_w;
             int spinBoxSep;
-            int fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
             switch (aquaSize) {
             case QStyleHelper::SizeLarge:
                 spinner_w = 14;
@@ -6240,16 +6224,11 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 break;
             }
             case SC_SpinBoxEditField:
-                if (spin->buttonSymbols == QAbstractSpinBox::NoButtons) {
-                    ret.setRect(fw, fw,
-                                spin->rect.width() - fw * 2,
-                                spin->rect.height() - fw * 2);
-                } else {
-                    ret.setRect(fw, fw,
-                                spin->rect.width() - fw * 2 - spinBoxSep - spinner_w,
-                                spin->rect.height() - fw * 2);
+                ret = spin->rect.adjusted(fw, fw, -fw, -fw);
+                if (spin->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                    ret.setWidth(spin->rect.width() - spinBoxSep - spinner_w);
+                    ret = visualRect(spin->direction, spin->rect, ret);
                 }
-                ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             default:
                 ret = QCommonStyle::subControlRect(cc, spin, sc, widget);
@@ -6286,10 +6265,8 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
         if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            // Add button + frame widths
-            int buttonWidth = 20;
-            int fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, vopt, widget);
-            sz += QSize(buttonWidth + 2*fw, 2*fw - 3);
+            const int buttonWidth = 20; // FIXME Use subControlRect()
+            sz += QSize(buttonWidth, -3);
         }
         break;
 #endif

@@ -1997,6 +1997,10 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
            This is on by default in all styles except the Mac style.
            This enum value has been introduced in Qt 5.10.
 
+    \value SH_SpinBox_ButtonsInsideFrame
+           Determnines if the spin box buttons are inside the line edit frame.
+           This enum value has been introduced in Qt 5.11.
+
     \sa styleHint()
 */
 
