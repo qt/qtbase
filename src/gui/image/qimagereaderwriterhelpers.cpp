@@ -78,7 +78,8 @@ static void appendImagePluginFormats(QFactoryLoader *loader,
 
 static void appendImagePluginMimeTypes(QFactoryLoader *loader,
                                        QImageIOPlugin::Capability cap,
-                                       QList<QByteArray> *result)
+                                       QList<QByteArray> *result,
+                                       QList<QByteArray> *resultKeys = nullptr)
 {
     QList<QJsonObject> metaDataList = loader->metaData();
 
@@ -90,8 +91,12 @@ static void appendImagePluginMimeTypes(QFactoryLoader *loader,
         QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(loader->instance(i));
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k) {
-            if (plugin && (plugin->capabilities(0, keys.at(k).toString().toLatin1()) & cap) != 0)
+            const QByteArray key = keys.at(k).toString().toLatin1();
+            if (plugin && (plugin->capabilities(0, key) & cap) != 0) {
                 result->append(mimeTypes.at(k).toString().toLatin1());
+                if (resultKeys)
+                    resultKeys->append(key);
+            }
         }
     }
 }
@@ -141,6 +146,33 @@ QList<QByteArray> supportedMimeTypes(Capability cap)
     std::sort(mimeTypes.begin(), mimeTypes.end());
     mimeTypes.erase(std::unique(mimeTypes.begin(), mimeTypes.end()), mimeTypes.end());
     return mimeTypes;
+}
+
+QList<QByteArray> imageFormatsForMimeType(const QByteArray &mimeType, Capability cap)
+{
+    QList<QByteArray> formats;
+    if (mimeType.startsWith("image/")) {
+        const QByteArray type = mimeType.mid(sizeof("image/") - 1);
+        for (const auto &fmt : _qt_BuiltInFormats) {
+            if (fmt.mimeType == type && !formats.contains(fmt.extension))
+                formats << fmt.extension;
+        }
+    }
+
+#ifndef QT_NO_IMAGEFORMATPLUGIN
+    QList<QByteArray> mimeTypes;
+    QList<QByteArray> keys;
+    appendImagePluginMimeTypes(loader(), pluginCapability(cap), &mimeTypes, &keys);
+    for (int i = 0; i < mimeTypes.size(); ++i) {
+        if (mimeTypes.at(i) == mimeType) {
+            const auto &key = keys.at(i);
+            if (!formats.contains(key))
+                formats << key;
+        }
+    }
+#endif // QT_NO_IMAGEFORMATPLUGIN
+
+    return formats;
 }
 
 } // QImageReaderWriterHelpers

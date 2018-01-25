@@ -1552,4 +1552,21 @@ QList<QByteArray> QImageReader::supportedMimeTypes()
     return QImageReaderWriterHelpers::supportedMimeTypes(QImageReaderWriterHelpers::CanRead);
 }
 
+/*!
+    \since 5.12
+
+    Returns the list of image formats corresponding to \mimeType.
+
+    Note that the QGuiApplication instance must be created before this function is
+    called.
+
+    \sa supportedImageFormats(), supportedMimeTypes()
+*/
+
+QList<QByteArray> QImageReader::imageFormatsForMimeType(const QByteArray &mimeType)
+{
+    return QImageReaderWriterHelpers::imageFormatsForMimeType(mimeType,
+                                                              QImageReaderWriterHelpers::CanRead);
+}
+
 QT_END_NAMESPACE

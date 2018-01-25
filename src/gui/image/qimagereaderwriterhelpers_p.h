@@ -130,6 +130,7 @@ enum Capability {
 };
 QList<QByteArray> supportedImageFormats(Capability cap);
 QList<QByteArray> supportedMimeTypes(Capability cap);
+QList<QByteArray> imageFormatsForMimeType(const QByteArray &mimeType, Capability cap);
 
 }
 
