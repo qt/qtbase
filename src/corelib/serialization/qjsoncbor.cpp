@@ -728,13 +728,18 @@ QCborValue QCborValue::fromVariant(const QVariant &variant)
             return QCborArray::fromJsonArray(doc.array());
         return QCborMap::fromJsonObject(doc.object());
     }
+    case QMetaType::QCborValue:
+        return variant.value<QCborValue>();
+    case QMetaType::QCborArray:
+        return variant.value<QCborArray>();
+    case QMetaType::QCborMap:
+        return variant.value<QCborMap>();
+    case QMetaType::QCborSimpleType:
+        return variant.value<QCborSimpleType>();
 #endif
     default:
         break;
     }
-
-    if (variant.userType() == qMetaTypeId<QCborSimpleType>())
-        return variant.value<QCborSimpleType>();
 
     if (variant.isNull())
         return QCborValue(nullptr);

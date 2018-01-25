@@ -46,6 +46,11 @@
 #include <qstringlist.h>
 #include <qdebug.h>
 
+#ifndef QT_BOOTSTRAPPED
+#  include <qcborarray.h>
+#  include <qcbormap.h>
+#endif
+
 #include "qjson_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -423,6 +428,25 @@ QJsonValue &QJsonValue::operator =(const QJsonValue &other)
                 \li QMetaType::QUuid
             \endlist
         \li QJsonValue::String. Since Qt 5.11, the resulting string will not include braces
+    \row
+        \li
+            \list
+                \li QMetaType::QCborValue
+            \endlist
+        \li Whichever type QCborValue::toJsonValue() returns.
+    \row
+        \li
+            \list
+                \li QMetaType::QCborArray
+            \endlist
+        \li QJsonValue::Array. See QCborValue::toJsonValue() for conversion restrictions.
+    \row
+        \li
+            \list
+                \li QMetaType::QCborMap
+            \endlist
+        \li QJsonValue::Map. See QCborValue::toJsonValue() for conversion restrictions and the
+            "stringification" of map keys.
     \endtable
 
     For all other QVariant types a conversion to a QString will be attempted. If the returned string
@@ -469,6 +493,12 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
         QJsonDocument doc = variant.toJsonDocument();
         return doc.isArray() ? QJsonValue(doc.array()) : QJsonValue(doc.object());
     }
+    case QMetaType::QCborValue:
+        return variant.value<QCborValue>().toJsonValue();
+    case QMetaType::QCborArray:
+        return variant.value<QCborArray>().toJsonArray();
+    case QMetaType::QCborMap:
+        return variant.value<QCborMap>().toJsonObject();
 #endif
     default:
         break;

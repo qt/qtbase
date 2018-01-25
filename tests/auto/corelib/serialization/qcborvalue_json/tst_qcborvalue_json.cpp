@@ -151,6 +151,12 @@ void tst_QCborValue_Json::toVariant()
     }
 
     QCOMPARE(v.toVariant(), variant);
+    if (variant.isValid()) {
+        QVariant variant2 = QVariant::fromValue(v);
+        QVERIFY(variant2.canConvert(variant.userType()));
+        QVERIFY(variant2.convert(variant.userType()));
+        QCOMPARE(variant2, variant);
+    }
 
     // tags get ignored:
     QCOMPARE(QCborValue(QCborKnownTags::Signature, v).toVariant(), variant);
@@ -174,6 +180,7 @@ void tst_QCborValue_Json::toJson()
     QFETCH(QJsonValue, json);
 
     QCOMPARE(v.toJsonValue(), json);
+    QCOMPARE(QVariant::fromValue(v).toJsonValue(), json);
 
     // most tags get ignored:
     QCOMPARE(QCborValue(QCborKnownTags::Signature, v).toJsonValue(), json);
@@ -216,6 +223,7 @@ void tst_QCborValue_Json::fromVariant()
     QFETCH(QVariant, variant);
 
     QCOMPARE(QCborValue::fromVariant(variant), v);
+    QCOMPARE(variant.value<QCborValue>(), v);
 
     // try arrays
     QCOMPARE(QCborArray::fromVariantList({variant}), QCborArray{v});
@@ -260,6 +268,7 @@ void tst_QCborValue_Json::fromJson()
     QFETCH(QJsonValue, json);
 
     QCOMPARE(QCborValue::fromJsonValue(json), v);
+    QCOMPARE(QVariant(json).value<QCborValue>(), v);
     QCOMPARE(QCborArray::fromJsonArray({json}), QCborArray({v}));
     QCOMPARE(QCborArray::fromJsonArray({json, json}), QCborArray({v, v}));
     QCOMPARE(QCborMap::fromJsonObject({{"foo", json}}), QCborMap({{"foo", v}}));
