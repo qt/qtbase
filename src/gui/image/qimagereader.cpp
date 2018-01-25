@@ -164,73 +164,13 @@
 #include <private/qpnghandler_p.h>
 #endif
 
+#include <private/qimagereaderwriterhelpers_p.h>
+
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_IMAGEFORMATPLUGIN
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-                          (QImageIOHandlerFactoryInterface_iid, QLatin1String("/imageformats")))
-#endif
-
-enum _qt_BuiltInFormatType {
-#ifndef QT_NO_IMAGEFORMAT_PNG
-    _qt_PngFormat,
-#endif
-#ifndef QT_NO_IMAGEFORMAT_BMP
-    _qt_BmpFormat,
-#endif
-#ifndef QT_NO_IMAGEFORMAT_PPM
-    _qt_PpmFormat,
-    _qt_PgmFormat,
-    _qt_PbmFormat,
-#endif
-#ifndef QT_NO_IMAGEFORMAT_XBM
-    _qt_XbmFormat,
-#endif
-#ifndef QT_NO_IMAGEFORMAT_XPM
-    _qt_XpmFormat,
-#endif
-    _qt_NumFormats,
-    _qt_NoFormat = -1
-};
-
-#if !defined(QT_NO_IMAGEFORMAT_PPM)
-# define MAX_MT_SIZE 20
-#elif !defined(QT_NO_IMAGEFORMAT_XBM) || !defined(QT_NO_IMAGEFORMAT_XPM)
-#  define MAX_MT_SIZE 10
-#else
-#  define MAX_MT_SIZE 4
-#endif
-
-struct _qt_BuiltInFormatStruct
-{
-    char extension[4];
-    char mimeType[MAX_MT_SIZE];
-};
-
-#undef MAX_MT_SIZE
-
-static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
-#ifndef QT_NO_IMAGEFORMAT_PNG
-    {"png", "png"},
-#endif
-#ifndef QT_NO_IMAGEFORMAT_BMP
-    {"bmp", "bmp"},
-#endif
-#ifndef QT_NO_IMAGEFORMAT_PPM
-    {"ppm", "x-portable-pixmap"},
-    {"pgm", "x-portable-graymap"},
-    {"pbm", "x-portable-bitmap"},
-#endif
-#ifndef QT_NO_IMAGEFORMAT_XBM
-    {"xbm", "x-xbitmap"},
-#endif
-#ifndef QT_NO_IMAGEFORMAT_XPM
-    {"xpm", "x-xpixmap"},
-#endif
-};
-Q_STATIC_ASSERT(_qt_NumFormats == sizeof _qt_BuiltInFormats / sizeof *_qt_BuiltInFormats);
+using namespace QImageReaderWriterHelpers;
 
 static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
                                                 const QByteArray &format,
@@ -251,7 +191,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     typedef QMultiMap<int, QString> PluginKeyMap;
 
     // check if we have plugins that support the image format
-    QFactoryLoader *l = loader();
+    auto l = QImageReaderWriterHelpers::pluginLoader();
     const PluginKeyMap keyMap = l->keyMap();
 
 #ifdef QIMAGEREADER_DEBUG
@@ -1565,16 +1505,6 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     return format;
 }
 
-#ifndef QT_NO_IMAGEFORMATPLUGIN
-void supportedImageHandlerFormats(QFactoryLoader *loader,
-                                  QImageIOPlugin::Capability cap,
-                                  QList<QByteArray> *result);
-
-void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
-                                  QImageIOPlugin::Capability cap,
-                                  QList<QByteArray> *result);
-#endif
-
 /*!
     Returns the list of image formats supported by QImageReader.
 
@@ -1605,18 +1535,7 @@ void supportedImageHandlerMimeTypes(QFactoryLoader *loader,
 
 QList<QByteArray> QImageReader::supportedImageFormats()
 {
-    QList<QByteArray> formats;
-    formats.reserve(_qt_NumFormats);
-    for (int i = 0; i < _qt_NumFormats; ++i)
-        formats << _qt_BuiltInFormats[i].extension;
-
-#ifndef QT_NO_IMAGEFORMATPLUGIN
-    supportedImageHandlerFormats(loader(), QImageIOPlugin::CanRead, &formats);
-#endif // QT_NO_IMAGEFORMATPLUGIN
-
-    std::sort(formats.begin(), formats.end());
-    formats.erase(std::unique(formats.begin(), formats.end()), formats.end());
-    return formats;
+    return QImageReaderWriterHelpers::supportedImageFormats(QImageReaderWriterHelpers::CanRead);
 }
 
 /*!
@@ -1630,18 +1549,7 @@ QList<QByteArray> QImageReader::supportedImageFormats()
 
 QList<QByteArray> QImageReader::supportedMimeTypes()
 {
-    QList<QByteArray> mimeTypes;
-    mimeTypes.reserve(_qt_NumFormats);
-    for (const auto &fmt : _qt_BuiltInFormats)
-        mimeTypes.append(QByteArrayLiteral("image/") + fmt.mimeType);
-
-#ifndef QT_NO_IMAGEFORMATPLUGIN
-    supportedImageHandlerMimeTypes(loader(), QImageIOPlugin::CanRead, &mimeTypes);
-#endif // QT_NO_IMAGEFORMATPLUGIN
-
-    std::sort(mimeTypes.begin(), mimeTypes.end());
-    mimeTypes.erase(std::unique(mimeTypes.begin(), mimeTypes.end()), mimeTypes.end());
-    return mimeTypes;
+    return QImageReaderWriterHelpers::supportedMimeTypes(QImageReaderWriterHelpers::CanRead);
 }
 
 QT_END_NAMESPACE
