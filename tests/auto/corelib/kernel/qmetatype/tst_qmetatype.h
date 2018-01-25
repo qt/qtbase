@@ -273,6 +273,24 @@ template<> struct TestValueFactory<QMetaType::QJsonDocument> {
         );
     }
 };
+
+template<> struct TestValueFactory<QMetaType::QCborSimpleType> {
+    static QCborSimpleType *create() { return new QCborSimpleType(QCborSimpleType::True); }
+};
+template<> struct TestValueFactory<QMetaType::QCborValue> {
+    static QCborValue *create() { return new QCborValue(123.); }
+};
+template<> struct TestValueFactory<QMetaType::QCborMap> {
+    static QCborMap *create() {
+        return new QCborMap{{0, 0}, {"Hello", 1}, {1, nullptr}};
+    }
+};
+template<> struct TestValueFactory<QMetaType::QCborArray> {
+    static QCborArray *create() {
+        return new QCborArray{0, 1, -2, 2.5, false, nullptr, "Hello", QByteArray("World") };
+    }
+};
+
 template<> struct TestValueFactory<QMetaType::QVariant> {
     static QVariant *create() { return new QVariant(QStringList(QStringList() << "Q" << "t")); }
 };

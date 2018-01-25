@@ -1186,6 +1186,10 @@ static void testMetaTypesHelper(QSettings::Format format)
     F(QJsonArray) \
     F(QJsonDocument) \
     F(QPersistentModelIndex) \
+    F(QCborSimpleType) \
+    F(QCborValue) \
+    F(QCborArray) \
+    F(QCborMap) \
 
 #define EXCLUDE_NON_SUPPORTED_METATYPES(MetaTypeName) \
 template<> void testMetaTypesHelper<QMetaType::MetaTypeName>(QSettings::Format) \

@@ -128,7 +128,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, QCborTag tg);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QCborSimpleType)
 Q_DECLARE_METATYPE(QCborTag)
 
 #endif // QCBORSTREAM_H

@@ -65,6 +65,9 @@
 #  include "qjsonobject.h"
 #  include "qjsonarray.h"
 #  include "qjsondocument.h"
+#  include "qcborvalue.h"
+#  include "qcborarray.h"
+#  include "qcbormap.h"
 #  include "qbytearraylist.h"
 #endif
 
@@ -1346,6 +1349,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QJsonObject:
     case QMetaType::QJsonArray:
     case QMetaType::QJsonDocument:
+    case QMetaType::QCborValue:
+    case QMetaType::QCborArray:
+    case QMetaType::QCborMap:
         return false;
     case QMetaType::Nullptr:
         stream << *static_cast<const std::nullptr_t *>(data);
@@ -1484,6 +1490,9 @@ bool QMetaType::save(QDataStream &stream, int type, const void *data)
     case QMetaType::QEasingCurve:
         stream << *static_cast<const NS(QEasingCurve)*>(data);
         break;
+    case QMetaType::QCborSimpleType:
+        stream << *static_cast<const quint8 *>(data);
+        break;
 #endif // QT_BOOTSTRAPPED
     case QMetaType::QFont:
     case QMetaType::QPixmap:
@@ -1572,6 +1581,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     case QMetaType::QJsonObject:
     case QMetaType::QJsonArray:
     case QMetaType::QJsonDocument:
+    case QMetaType::QCborValue:
+    case QMetaType::QCborArray:
+    case QMetaType::QCborMap:
         return false;
     case QMetaType::Nullptr:
         stream >> *static_cast<std::nullptr_t *>(data);
@@ -1715,6 +1727,9 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
 #ifndef QT_BOOTSTRAPPED
     case QMetaType::QEasingCurve:
         stream >> *static_cast< NS(QEasingCurve)*>(data);
+        break;
+    case QMetaType::QCborSimpleType:
+        stream >> *static_cast<quint8 *>(data);
         break;
 #endif // QT_BOOTSTRAPPED
     case QMetaType::QFont:

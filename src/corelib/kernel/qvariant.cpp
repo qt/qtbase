@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2018 Intel Corporation.
 ** Copyright (C) 2015 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -60,6 +60,9 @@
 #include "qabstractitemmodel.h"
 #endif
 #ifndef QT_BOOTSTRAPPED
+#include "qcborarray.h"
+#include "qcborcommon.h"
+#include "qcbormap.h"
 #include "qjsonvalue.h"
 #include "qjsonobject.h"
 #include "qjsonarray.h"

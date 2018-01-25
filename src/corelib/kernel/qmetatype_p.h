@@ -196,6 +196,10 @@ struct TypeDefinition {
 // Ignore these types, as incomplete
 #ifdef QT_BOOTSTRAPPED
 template<> struct TypeDefinition<QBitArray> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QCborArray> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QCborMap> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QCborSimpleType> { static const bool IsAvailable = false; };
+template<> struct TypeDefinition<QCborValue> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonArray> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonDocument> { static const bool IsAvailable = false; };

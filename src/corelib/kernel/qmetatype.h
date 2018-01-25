@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 Intel Corporation.
 ** Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -60,6 +61,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// from qcborcommon.h
+enum class QCborSimpleType : quint8;
+
 template <typename T>
 struct QMetaTypeId2;
 
@@ -85,6 +89,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(Float, 38, float) \
     F(SChar, 40, signed char) \
     F(Nullptr, 51, std::nullptr_t) \
+    F(QCborSimpleType, 52, QCborSimpleType) \
 
 #define QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(F)\
     F(VoidStar, 31, void*) \
@@ -125,6 +130,9 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QJsonObject, 46, QJsonObject) \
     F(QJsonArray, 47, QJsonArray) \
     F(QJsonDocument, 48, QJsonDocument) \
+    F(QCborValue, 53, QCborValue) \
+    F(QCborArray, 54, QCborArray) \
+    F(QCborMap, 55, QCborMap) \
     QT_FOR_EACH_STATIC_ITEMMODEL_CLASS(F)
 
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
@@ -420,7 +428,7 @@ public:
         QT_FOR_EACH_STATIC_TYPE(QT_DEFINE_METATYPE_ID)
 
         FirstCoreType = Bool,
-        LastCoreType = Nullptr,
+        LastCoreType = QCborMap,
         FirstGuiType = QFont,
         LastGuiType = QPolygonF,
         FirstWidgetsType = QSizePolicy,
@@ -450,13 +458,18 @@ public:
         Void = 43,
         Nullptr = 51,
         QVariantMap = 8, QVariantList = 9, QVariantHash = 28,
+        QCborSimpleType = 52, QCborValue = 53, QCborArray = 54, QCborMap = 55,
+
+        // Gui types
         QFont = 64, QPixmap = 65, QBrush = 66, QColor = 67, QPalette = 68,
         QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
         QCursor = 74, QKeySequence = 75, QPen = 76, QTextLength = 77, QTextFormat = 78,
         QMatrix = 79, QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
         QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86,
+
+        // Widget types
         QSizePolicy = 121,
-        LastCoreType = Nullptr,
+        LastCoreType = QCborMap,
         LastGuiType = QPolygonF,
         User = 1024
     };
