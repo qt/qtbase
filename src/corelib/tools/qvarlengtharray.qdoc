@@ -516,7 +516,9 @@
     Typedef for \c{std::reverse_iterator<T*>}. Provided for STL compatibility.
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::prepend(const T &value)
+/*!
+    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::prepend(const T &value)
+    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::prepend(T &&value)
 
     \since 4.8
     Inserts \a value at the beginning of the array.
@@ -696,7 +698,9 @@
     before the call.
 */
 
-/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::insert(int i, const T &value)
+/*!
+    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::insert(int i, const T &value)
+    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::insert(int i, T &&value)
     \since 4.8
 
     Inserts \a value at index position \a i in the array. If \a i is
@@ -721,7 +725,9 @@
     vector.
 */
 
-/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, const T &value)
+/*!
+    \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, const T &value)
+    \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, T &&value)
 
     \overload
     \since 4.8

@@ -587,7 +587,9 @@
 */
 
 
-/*! \fn template <typename T> void QVector<T>::prepend(const T &value)
+/*!
+    \fn template <typename T> void QVector<T>::prepend(const T &value)
+    \fn template <typename T> void QVector<T>::prepend(T &&value)
 
     Inserts \a value at the beginning of the vector.
 
@@ -605,7 +607,9 @@
     \sa append(), insert()
 */
 
-/*! \fn template <typename T> void QVector<T>::insert(int i, const T &value)
+/*!
+    \fn template <typename T> void QVector<T>::insert(int i, const T &value)
+    \fn template <typename T> void QVector<T>::insert(int i, T &&value)
 
     Inserts \a value at index position \a i in the vector. If \a i is
     0, the value is prepended to the vector. If \a i is size(), the
@@ -634,7 +638,9 @@
     \snippet code/src_corelib_tools_qvector.cpp 10
 */
 
-/*! \fn template <typename T> QVector<T>::iterator QVector<T>::insert(iterator before, const T &value)
+/*!
+    \fn template <typename T> QVector<T>::iterator QVector<T>::insert(iterator before, const T &value)
+    \fn template <typename T> QVector<T>::iterator QVector<T>::insert(iterator before, T &&value)
 
     \overload
 
@@ -1084,7 +1090,9 @@
     \overload
 */
 
-/*! \fn template <typename T> void QVector<T>::push_front(const T &value)
+/*!
+    \fn template <typename T> void QVector<T>::push_front(const T &value)
+    \fn template <typename T> void QVector<T>::push_front(T &&value)
 
     This function is provided for STL compatibility. It is equivalent
     to prepend(\a value).
