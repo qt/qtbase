@@ -6,7 +6,7 @@
 
     "Description": "The Independent JPEG Group's JPEG software",
     "Homepage": "http://libjpeg-turbo.virtualgl.org/",
-    "Version": "1.5.2",
+    "Version": "1.5.3",
     "License": "Independent JPEG Group License",
     "LicenseId": "IJG",
     "LicenseFile": "LICENSE",
