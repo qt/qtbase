@@ -1550,4 +1550,18 @@ void QCborMap::detach(qsizetype reserved)
     \sa operator+=(), operator-()
 */
 
+#if !defined(QT_NO_DEBUG_STREAM)
+QDebug operator<<(QDebug dbg, const QCborMap &m)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QCborMap{";
+    const char *open = "{";
+    for (auto pair : m) {
+        dbg << open << pair.first <<  ", " << pair.second << '}';
+        open = ", {";
+    }
+    return dbg << '}';
+}
+#endif
+
 QT_END_NAMESPACE

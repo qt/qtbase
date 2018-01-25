@@ -97,11 +97,6 @@ QDataStream &operator>>(QDataStream &ds, QCborSimpleType &st)
     return ds;
 }
 
-QDebug &operator<<(QDebug &d, QCborSimpleType st)
-{
-    return d << quint8(st);
-}
-
 QDataStream &operator<<(QDataStream &ds, QCborTag tag)
 {
     return ds << quint64(tag);
@@ -113,11 +108,6 @@ QDataStream &operator>>(QDataStream &ds, QCborTag &tag)
     ds >> v;
     tag = QCborTag(v);
     return ds;
-}
-
-QDebug &operator<<(QDebug &d, QCborTag tag)
-{
-    return d << quint64(tag);
 }
 
 QT_END_NAMESPACE

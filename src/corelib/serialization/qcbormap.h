@@ -322,6 +322,10 @@ inline QCborMap QCborValueRef::toMap(const QCborMap &m) const
     return concrete().toMap(m);
 }
 
+#if !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborMap &m);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QCBORMAP_H

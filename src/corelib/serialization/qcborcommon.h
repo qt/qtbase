@@ -42,6 +42,7 @@
 
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qdebug.h>
 
 #if 0
 #pragma qt_class(QtCborCommon)
@@ -118,6 +119,12 @@ public:
     operator Code() const { return c; }
     QString toString() const;
 };
+
+#if !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT QDebug operator<<(QDebug, QCborSimpleType st);
+Q_CORE_EXPORT QDebug operator<<(QDebug, QCborKnownTags tg);
+Q_CORE_EXPORT QDebug operator<<(QDebug, QCborTag tg);
+#endif
 
 QT_END_NAMESPACE
 

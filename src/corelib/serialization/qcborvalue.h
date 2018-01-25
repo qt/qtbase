@@ -430,6 +430,10 @@ private:
     qsizetype i;
 };
 
+#if !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborValue &v);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QCBORVALUE_H

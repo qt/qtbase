@@ -273,6 +273,10 @@ inline QCborArray QCborValueRef::toArray(const QCborArray &a) const
     return concrete().toArray(a);
 }
 
+#if !defined(QT_NO_DEBUG_STREAM)
+Q_CORE_EXPORT QDebug operator<<(QDebug, const QCborArray &a);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QCBORARRAY_H

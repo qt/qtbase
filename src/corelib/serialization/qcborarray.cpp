@@ -1138,4 +1138,18 @@ void QCborArray::detach(qsizetype reserved)
     Returns the offset of this iterator relative to \a other.
 */
 
+#if !defined(QT_NO_DEBUG_STREAM)
+QDebug operator<<(QDebug dbg, const QCborArray &a)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QCborArray{";
+    const char *comma = "";
+    for (auto v : a) {
+        dbg << comma << v;
+        comma = ", ";
+    }
+    return dbg << '}';
+}
+#endif
+
 QT_END_NAMESPACE

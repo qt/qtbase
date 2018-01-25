@@ -2564,6 +2564,63 @@ inline QCborMap::QCborMap(QCborContainerPrivate &dd) Q_DECL_NOTHROW
 {
 }
 
+#if !defined(QT_NO_DEBUG_STREAM)
+static QDebug debugContents(QDebug &dbg, const QCborValue &v)
+{
+    switch (v.type()) {
+    case QCborValue::Integer:
+        return dbg << v.toInteger();
+    case QCborValue::ByteArray:
+        return dbg << "QByteArray(" << v.toByteArray() << ')';
+    case QCborValue::String:
+        return dbg << v.toString();
+    case QCborValue::Array:
+        return dbg << v.toArray();
+    case QCborValue::Map:
+        return dbg << v.toMap();
+    case QCborValue::Tag:
+        dbg << v.tag() << ", ";
+        return debugContents(dbg, v.taggedValue());
+    case QCborValue::SimpleType:
+        break;
+    case QCborValue::True:
+        return dbg << true;
+    case QCborValue::False:
+        return dbg << false;
+    case QCborValue::Null:
+        return dbg << "nullptr";
+    case QCborValue::Undefined:
+        return dbg;
+    case QCborValue::Double: {
+        qint64 i = qint64(v.toDouble());
+        if (i == v.toDouble())
+            return dbg << i << ".0";
+        else
+            return dbg << v.toDouble();
+    }
+    case QCborValue::DateTime:
+        return dbg << v.toDateTime();
+    case QCborValue::Url:
+        return dbg << v.toUrl();
+    case QCborValue::RegularExpression:
+        return dbg << v.toRegularExpression();
+    case QCborValue::Uuid:
+        return dbg << v.toUuid();
+    case QCborValue::Invalid:
+        return dbg << "<invalid>";
+    }
+    if (v.isSimpleType())
+        return dbg << v.toSimpleType();
+    return dbg << "<unknown type " << hex << int(v.type()) << '>';
+}
+QDebug operator<<(QDebug dbg, const QCborValue &v)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QCborValue(";
+    return debugContents(dbg, v) << ')';
+}
+#endif
+
 QT_END_NAMESPACE
 
 #include "qcborarray.cpp"
