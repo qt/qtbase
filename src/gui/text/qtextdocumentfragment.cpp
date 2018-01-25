@@ -724,9 +724,9 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
 
             cursor.insertImage(fmt, QTextFrameFormat::Position(currentNode->cssFloat));
 
-            cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+            cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
             cursor.mergeCharFormat(currentNode->charFormat);
-            cursor.movePosition(QTextCursor::Right);
+            cursor.movePosition(QTextCursor::NextCharacter);
             compressNextWhitespace = CollapseWhiteSpace;
 
             hasBlock = false;
