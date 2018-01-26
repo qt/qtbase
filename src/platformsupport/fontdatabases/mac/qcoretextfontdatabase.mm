@@ -507,6 +507,23 @@ static QString familyNameFromPostScriptName(NSString *psName)
 }
 #endif
 
+static void addExtraFallbacks(QStringList *fallbackList)
+{
+#if defined(Q_OS_MACOS)
+    // Since we are only returning a list of default fonts for the current language, we do not
+    // cover all unicode completely. This was especially an issue for some of the common script
+    // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
+    // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
+    // of Unicode 2.1.
+    if (!fallbackList->contains(QStringLiteral("Arial Unicode MS")))
+        fallbackList->append(QStringLiteral("Arial Unicode MS"));
+    // Since some symbols (specifically Braille) are not in Arial Unicode MS, we
+    // add Apple Symbols to cover those too.
+    if (!fallbackList->contains(QStringLiteral("Apple Symbols")))
+        fallbackList->append(QStringLiteral("Apple Symbols"));
+#endif
+}
+
 QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     Q_UNUSED(style);
@@ -534,16 +551,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                         fallbackList.append(QString::fromCFString(fallbackFamilyName));
                     }
 
-#if defined(Q_OS_OSX)
-                    // Since we are only returning a list of default fonts for the current language, we do not
-                    // cover all unicode completely. This was especially an issue for some of the common script
-                    // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
-                    // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
-                    // of Unicode 2.1.
-                    if (!fallbackList.contains(QStringLiteral("Arial Unicode MS")))
-                        fallbackList.append(QStringLiteral("Arial Unicode MS"));
-#endif
-
+                    addExtraFallbacks(&fallbackList);
                     extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
                     fallbackList = qt_sort_families_by_writing_system(script, fallbackList);
 
@@ -584,14 +592,7 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 
             fallbackList.append(QLatin1String("Apple Color Emoji"));
 
-            // Since we are only returning a list of default fonts for the current language, we do not
-            // cover all unicode completely. This was especially an issue for some of the common script
-            // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
-            // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
-            // of Unicode 2.1.
-            if (!fallbackList.contains(QStringLiteral("Arial Unicode MS")))
-                fallbackList.append(QStringLiteral("Arial Unicode MS"));
-
+            addExtraFallbacks(&fallbackList);
             fallbackLists[styleLookupKey.arg(fallbackStyleHint)] = fallbackList;
         }
 #else
