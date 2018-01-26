@@ -64,6 +64,8 @@
 
 int main(int argc, char *argv[])
 {
+    QGuiApplication app(argc, argv);
+
     QSurfaceFormat fmt;
     fmt.setDepthBufferSize(24);
 
@@ -78,8 +80,6 @@ int main(int argc, char *argv[])
     }
 
     QSurfaceFormat::setDefaultFormat(fmt);
-
-    QGuiApplication app(argc, argv);
 
     GLWindow glWindow;
     glWindow.showMaximized();
