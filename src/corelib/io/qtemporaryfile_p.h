@@ -85,6 +85,10 @@ class QTemporaryFileEngine : public QFSFileEngine
 {
     Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
+    enum Flags { Win32NonShared = 0x1 };
+
+    explicit QTemporaryFileEngine(int _flags = 0) : flags(_flags) {}
+
     void initialize(const QString &file, quint32 mode, bool nameIsTemplate = true)
     {
         Q_D(QFSFileEngine);
@@ -109,6 +113,7 @@ public:
     bool close() override;
 
     quint32 fileMode;
+    int flags;
     bool filePathIsTemplate;
     bool filePathWasTemplate;
 };

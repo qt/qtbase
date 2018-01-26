@@ -117,7 +117,7 @@ typedef int NativeFileHandle;
 */
 static bool createFileFromTemplate(NativeFileHandle &file,
         QFileSystemEntry::NativePath &path, size_t pos, size_t length, quint32 mode,
-        QSystemError &error)
+        int flags, QSystemError &error)
 {
     Q_ASSERT(length != 0);
     Q_ASSERT(pos < size_t(path.length()));
@@ -151,16 +151,18 @@ static bool createFileFromTemplate(NativeFileHandle &file,
         // Atomically create file and obtain handle
 #if defined(Q_OS_WIN)
         Q_UNUSED(mode);
+        const DWORD shareMode = (flags & QTemporaryFileEngine::Win32NonShared)
+                                ? 0u : (FILE_SHARE_READ | FILE_SHARE_WRITE);
 
 #  ifndef Q_OS_WINRT
         file = CreateFile((const wchar_t *)path.constData(),
                 GENERIC_READ | GENERIC_WRITE,
-                FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_NEW,
+                shareMode, NULL, CREATE_NEW,
                 FILE_ATTRIBUTE_NORMAL, NULL);
 #  else // !Q_OS_WINRT
         file = CreateFile2((const wchar_t *)path.constData(),
                 GENERIC_READ | GENERIC_WRITE,
-                FILE_SHARE_READ | FILE_SHARE_WRITE, CREATE_NEW,
+                shareMode, CREATE_NEW,
                 NULL);
 #  endif // Q_OS_WINRT
 
@@ -182,6 +184,7 @@ static bool createFileFromTemplate(NativeFileHandle &file,
             return false;
         }
 #else // POSIX
+        Q_UNUSED(flags)
         file = QT_OPEN(path.constData(),
                 QT_OPEN_CREAT | O_EXCL | QT_OPEN_RDWR | QT_OPEN_LARGEFILE,
                 static_cast<mode_t>(mode));
@@ -342,7 +345,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     NativeFileHandle &file = d->fd;
 #endif
 
-    if (!createFileFromTemplate(file, filename, phPos, phLength, fileMode, error)) {
+    if (!createFileFromTemplate(file, filename, phPos, phLength, fileMode, flags, error)) {
         setError(QFile::OpenError, error.toString());
         return false;
     }
