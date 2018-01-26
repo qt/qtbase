@@ -182,6 +182,7 @@ class QMacStylePrivate : public QCommonStylePrivate
     Q_DECLARE_PUBLIC(QMacStyle)
 public:
     enum CocoaControlType {
+        NoControl,    // For when there's no such a control in Cocoa
         Box,          // QGroupBox
         Button_CheckBox,
         Button_Disclosure,  // Disclosure triangle, like in QTreeView
@@ -189,6 +190,9 @@ public:
         Button_PullDown, // QPushButton with menu
         Button_PushButton,
         Button_RadioButton,
+        Button_WindowClose,
+        Button_WindowMiniaturize,
+        Button_WindowZoom,
         ComboBox,     // Editable QComboBox
         ProgressIndicator_Determinate,
         ProgressIndicator_Indeterminate,
@@ -271,6 +275,10 @@ public:
 
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, qreal radius = 0) const;
     void drawFocusRing(QPainter *p, const QRect &targetRect, int hMargin, int vMargin, const CocoaControl &cw) const;
+
+    QPainterPath windowPanelPath(const QRectF &r) const;
+
+    CocoaControlType windowButtonCocoaControl(QStyle::SubControl sc) const;
 
 #if QT_CONFIG(tabbar)
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;
