@@ -686,8 +686,10 @@ static CTFontUIFontType fontTypeFromTheme(QPlatformTheme::Font f)
         return kCTFontUIFontWindowTitle;
 
     case QPlatformTheme::MdiSubWindowTitleFont:
-    case QPlatformTheme::DockWidgetTitleFont:
         return kCTFontUIFontSystem;
+
+    case QPlatformTheme::DockWidgetTitleFont:
+        return kCTFontUIFontSmallSystem;
 
     case QPlatformTheme::PushButtonFont:
         return kCTFontUIFontPushButton;
