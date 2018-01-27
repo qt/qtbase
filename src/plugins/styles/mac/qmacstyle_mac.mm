@@ -4125,78 +4125,41 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #endif
 #if QT_CONFIG(dockwidget)
     case CE_DockWidgetTitle:
-        if (const QDockWidget *dockWidget = qobject_cast<const QDockWidget *>(w)) {
-            bool floating = dockWidget->isFloating();
-            if (floating) {
-                ThemeDrawState tds = d->getDrawState(opt->state);
-                HIThemeWindowDrawInfo wdi;
-                wdi.version = qt_mac_hitheme_version;
-                wdi.state = tds;
-                wdi.windowType = kThemeMovableDialogWindow;
-                wdi.titleHeight = opt->rect.height();
-                wdi.titleWidth = opt->rect.width();
-                wdi.attributes = 0;
-
-                CGRect titleBarRect;
-                CGRect tmpRect = opt->rect.toCGRect();
-                {
-                    QCFType<HIShapeRef> titleRegion;
-                    QRect newr = opt->rect.adjusted(0, 0, 2, 0);
-                    HIThemeGetWindowShape(&tmpRect, &wdi, kWindowTitleBarRgn, &titleRegion);
-                    HIShapeGetBounds(titleRegion, &tmpRect);
-                    newr.translate(newr.x() - int(tmpRect.origin.x), newr.y() - int(tmpRect.origin.y));
-                    titleBarRect = newr.toCGRect();
-                }
-                QMacCGContext cg(p);
-                HIThemeDrawWindowFrame(&titleBarRect, &wdi, cg, kHIThemeOrientationNormal, 0);
-            } else {
-                // fill title bar background
-                QLinearGradient linearGrad(0, opt->rect.top(), 0, opt->rect.bottom());
-                linearGrad.setColorAt(0, mainWindowGradientBegin);
-                linearGrad.setColorAt(1, mainWindowGradientEnd);
-                p->fillRect(opt->rect, linearGrad);
-
-                // draw horizontal lines at top and bottom
-                p->save();
-                p->setPen(mainWindowGradientBegin.lighter(114));
-                p->drawLine(opt->rect.topLeft(), opt->rect.topRight());
-                p->setPen(mainWindowGradientEnd.darker(114));
-                p->drawLine(opt->rect.bottomLeft(), opt->rect.bottomRight());
-                p->restore();
+        if (const auto *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
+            const bool isVertical = dwOpt->verticalTitleBar;
+            const auto effectiveRect = isVertical ? opt->rect.transposed() : opt->rect;
+            p->save();
+            if (isVertical) {
+                p->translate(effectiveRect.left(), effectiveRect.top() + effectiveRect.width());
+                p->rotate(-90);
+                p->translate(-effectiveRect.left(), -effectiveRect.top());
             }
-        }
 
-        // Draw the text...
-        if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
+            // fill title bar background
+            QLinearGradient linearGrad;
+            linearGrad.setStart(QPointF(0, 0));
+            linearGrad.setFinalStop(QPointF(0, 2 * effectiveRect.height()));
+            linearGrad.setColorAt(0, opt->palette.button().color());
+            linearGrad.setColorAt(1, opt->palette.dark().color());
+            p->fillRect(effectiveRect, linearGrad);
+
+            // draw horizontal line at bottom
+            p->setPen(opt->palette.dark().color());
+            p->drawLine(effectiveRect.bottomLeft(), effectiveRect.bottomRight());
+
             if (!dwOpt->title.isEmpty()) {
+                auto titleRect = proxy()->subElementRect(SE_DockWidgetTitleBarText, opt, w);
+                if (isVertical)
+                    titleRect = QRect(effectiveRect.left() + opt->rect.bottom() - titleRect.bottom(),
+                                      effectiveRect.top() + titleRect.left() - opt->rect.left(),
+                                      titleRect.height(),
+                                      titleRect.width());
 
-                const bool verticalTitleBar = dwOpt->verticalTitleBar;
-
-                QRect titleRect = subElementRect(SE_DockWidgetTitleBarText, opt, w);
-                if (verticalTitleBar) {
-                    QRect rect = dwOpt->rect;
-                    QRect r = rect.transposed();
-
-                    titleRect = QRect(r.left() + rect.bottom()
-                                        - titleRect.bottom(),
-                                    r.top() + titleRect.left() - rect.left(),
-                                    titleRect.height(), titleRect.width());
-
-                    p->translate(r.left(), r.top() + r.width());
-                    p->rotate(-90);
-                    p->translate(-r.left(), -r.top());
-                }
-
-                QFont oldFont = p->font();
-                p->setFont(qt_app_fonts_hash()->value("QToolButton", p->font()));
-                QString text = p->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight,
-                    titleRect.width());
-                drawItemText(p, titleRect,
-                              Qt::AlignCenter | Qt::TextShowMnemonic, dwOpt->palette,
-                              dwOpt->state & State_Enabled, text,
-                              QPalette::WindowText);
-                p->setFont(oldFont);
+                const auto text = p->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight, titleRect.width());
+                proxy()->drawItemText(p, titleRect, Qt::AlignCenter | Qt::TextShowMnemonic, dwOpt->palette,
+                                      dwOpt->state & State_Enabled, text, QPalette::WindowText);
             }
+            p->restore();
         }
         break;
 #endif
