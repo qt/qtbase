@@ -2782,8 +2782,18 @@ MakefileGenerator::fixLibFlags(const ProKey &var)
     ProStringList ret;
 
     ret.reserve(in.length());
-    for (const ProString &v : in)
-        ret << fixLibFlag(v);
+    for (int i = 0; i < in.length(); ++i) {
+        ProString str = in[i];
+
+        // Remove superfluous "-s" flags. Skip "-s" if followed by
+        // something that does not need it, like "-s" or "-lfoo"
+        int j = i + 1;
+        bool isS = str.toQString() == QStringLiteral("-s");
+        if (isS && j < in.length() && in[j].toQString().startsWith('-'))
+            continue;
+
+        ret << fixLibFlag(str);
+    }
     return ret;
 }
 
