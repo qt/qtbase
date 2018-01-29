@@ -65,6 +65,7 @@ public:
     int addLayer(int dmabufFd, const QSize &size, const QPoint &position, uint drmPixelFormat, uint bytesPerLine);
     void setLayerBuffer(int id, int dmabufFd);
     void setLayerPosition(int id, const QPoint &position);
+    void setLayerAlpha(int id, qreal alpha);
     bool removeLayer(int id);
     void addBlendListener(void (*callback)());
 

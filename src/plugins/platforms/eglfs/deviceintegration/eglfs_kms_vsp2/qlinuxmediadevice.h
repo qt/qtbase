@@ -95,7 +95,10 @@ public:
         int m_subdevFd = -1;
     };
 
+    static int openVideoDevice(media_pad *pad);
+
     static bool setSubdevFormat(struct media_pad *pad, const QSize &size, uint32_t mbusFormat = MEDIA_BUS_FMT_ARGB8888_1X32);
+    static bool setSubdevAlpha(int subdevFd, qreal alpha);
 
     static bool setSubdevSelection(struct media_pad *pad, const QRect &geometry, uint target);
     static bool setSubdevCrop(struct media_pad *pad, const QRect &geometry);

@@ -186,6 +186,12 @@ void QEglFSKmsVsp2Screen::setLayerPosition(int id, const QPoint &position)
     m_blendDevice->setInputPosition(layerIndex, position);
 }
 
+void QEglFSKmsVsp2Screen::setLayerAlpha(int id, qreal alpha)
+{
+    int layerIndex = id;
+    m_blendDevice->setInputAlpha(layerIndex, alpha);
+}
+
 bool QEglFSKmsVsp2Screen::removeLayer(int id)
 {
     int layerIndex = id;

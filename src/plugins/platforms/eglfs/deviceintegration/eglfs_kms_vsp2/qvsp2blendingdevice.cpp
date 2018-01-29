@@ -99,6 +99,7 @@ QVsp2BlendingDevice::QVsp2BlendingDevice(const QSize &screenSize)
         input.linkToBru = md.parseLink(QString("'%1 rpf.%2':1 -> '%1 bru':%2").arg(deviceName).arg(i));
         input.inputFormatPad = md.parsePad(QString("'%1 rpf.%2':0").arg(deviceName).arg(i));
         input.outputFormatPad = md.parsePad(QString("'%1 rpf.%2':1").arg(deviceName).arg(i));
+        input.outputFormatFd = QLinuxMediaDevice::openVideoDevice(input.outputFormatPad);
         input.bruInputFormatPad = md.parsePad(QString("'%1 bru':%2").arg(deviceName).arg(i));
         input.rpfInput = new QLinuxMediaDevice::OutputSubDevice(&md, QString("%1 rpf.%2 input").arg(deviceName).arg(i));
         m_inputs.append(input);
@@ -200,6 +201,17 @@ bool QVsp2BlendingDevice::setInputPosition(int index, const QPoint &position)
     m_dirty = true;
     input.geometry.moveTopLeft(position);
     return QLinuxMediaDevice::setSubdevCompose(input.bruInputFormatPad, input.geometry);
+}
+
+bool QVsp2BlendingDevice::setInputAlpha(int index, qreal alpha)
+{
+    Input &input = m_inputs[index];
+    if (input.alpha == alpha)
+        return true;
+
+    m_dirty = true;
+    input.alpha = alpha;
+    return QLinuxMediaDevice::setSubdevAlpha(input.outputFormatFd, alpha);
 }
 
 bool QVsp2BlendingDevice::blend(int outputDmabufFd)

@@ -72,6 +72,7 @@ private:
     static bool removeLayerStatic(const QScreen *screen, int id);
     static void setLayerBufferStatic(const QScreen *screen, int id, int dmabufFd);
     static void setLayerPositionStatic(const QScreen *screen, int id, const QPoint &position);
+    static void setLayerAlphaStatic(const QScreen *screen, int id, qreal alpha);
     static void addBlendListenerStatic(const QScreen *screen, void(*callback)());
 };
 

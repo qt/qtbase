@@ -133,6 +133,8 @@ QFunctionPointer QEglFSKmsVsp2Integration::platformFunction(const QByteArray &fu
         return QFunctionPointer(setLayerBufferStatic);
     if (function == QEglFSFunctions::vsp2SetLayerPositionTypeIdentifier())
         return QFunctionPointer(setLayerPositionStatic);
+    if (function == QEglFSFunctions::vsp2SetLayerAlphaTypeIdentifier())
+        return QFunctionPointer(setLayerAlphaStatic);
     if (function == QEglFSFunctions::vsp2AddBlendListenerTypeIdentifier())
         return QFunctionPointer(addBlendListenerStatic);
 
@@ -182,6 +184,12 @@ void QEglFSKmsVsp2Integration::setLayerPositionStatic(const QScreen *screen, int
 {
     auto vsp2Screen = static_cast<QEglFSKmsVsp2Screen *>(screen->handle());
     vsp2Screen->setLayerPosition(id, position);
+}
+
+void QEglFSKmsVsp2Integration::setLayerAlphaStatic(const QScreen *screen, int id, qreal alpha)
+{
+    auto vsp2Screen = static_cast<QEglFSKmsVsp2Screen *>(screen->handle());
+    vsp2Screen->setLayerAlpha(id, alpha);
 }
 
 void QEglFSKmsVsp2Integration::addBlendListenerStatic(const QScreen *screen, void(*callback)())
