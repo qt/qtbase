@@ -931,11 +931,10 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
 
     viewItemTextLayout(textLayout, textRect.width());
 
-    QString elidedText;
     qreal height = 0;
     qreal width = 0;
-    int elidedIndex = -1;
     const int lineCount = textLayout.lineCount();
+    QHash<int, QString> elidedTexts;
     for (int j = 0; j < lineCount; ++j) {
         const QTextLine line = textLayout.lineAt(j);
         if (j + 1 <= lineCount - 1) {
@@ -944,22 +943,20 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
                 int start = line.textStart();
                 int length = line.textLength() + nextLine.textLength();
                 const QStackTextEngine engine(textLayout.text().mid(start, length), option->font);
-                elidedText = engine.elidedText(option->textElideMode, textRect.width());
+                elidedTexts.insert(j, engine.elidedText(option->textElideMode, textRect.width()));
                 height += line.height();
                 width = textRect.width();
-                elidedIndex = j;
-                break;
+                continue;
             }
         }
         if (line.naturalTextWidth() > textRect.width()) {
             int start = line.textStart();
             int length = line.textLength();
             const QStackTextEngine engine(textLayout.text().mid(start, length), option->font);
-            elidedText = engine.elidedText(option->textElideMode, textRect.width());
+            elidedTexts.insert(j, engine.elidedText(option->textElideMode, textRect.width()));
             height += line.height();
             width = textRect.width();
-            elidedIndex = j;
-            break;
+            continue;
         }
         width = qMax<qreal>(width, line.width());
         height += line.height();
@@ -970,14 +967,16 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     const QPointF position = layoutRect.topLeft();
     for (int i = 0; i < lineCount; ++i) {
         const QTextLine line = textLayout.lineAt(i);
-        if (i == elidedIndex) {
+        auto it = elidedTexts.constFind(i);
+        if (it != elidedTexts.constEnd()) {
+            const QString &elidedText = it.value();
             qreal x = position.x() + line.x();
             qreal y = position.y() + line.y() + line.ascent();
             p->save();
             p->setFont(option->font);
             p->drawText(QPointF(x, y), elidedText);
             p->restore();
-            break;
+            continue;
         }
         line.draw(p, position);
     }
