@@ -4554,28 +4554,22 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #if QT_CONFIG(mainwindow)
             if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window())) {
                 if (toolBar && toolBar->toolBarArea == Qt::TopToolBarArea && mainWindow->unifiedTitleAndToolBarOnMac()) {
-
                     // fill with transparent pixels.
                     p->save();
                     p->setCompositionMode(QPainter::CompositionMode_Source);
                     p->fillRect(opt->rect, Qt::transparent);
                     p->restore();
 
-                    // Drow a horizontal sepearator line at the toolBar bottom if the "unified" area ends here.
+                    // Drow a horizontal separator line at the toolBar bottom if the "unified" area ends here.
                     // There might be additional toolbars or other widgets such as tab bars in document
                     // mode below. Determine this by making a unified toolbar area test for the row below
                     // this toolbar.
-                    QPoint windowToolbarEnd = w->mapTo(w->window(), opt->rect.bottomLeft());
-                    bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowToolbarEnd.y() + 1);
+                    const QPoint windowToolbarEnd = w->mapTo(w->window(), opt->rect.bottomLeft());
+                    const bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowToolbarEnd.y() + 1);
                     if (isEndOfUnifiedArea) {
-                        int margin;
-                        margin = qt_mac_aqua_get_metric(SeparatorSize);
-                        CGRect separatorRect = CGRectMake(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
-                        HIThemeSeparatorDrawInfo separatorDrawInfo;
-                        separatorDrawInfo.version = 0;
-                        separatorDrawInfo.state = qt_macWindowMainWindow(mainWindow) ? kThemeStateActive : kThemeStateInactive;
-                        QMacCGContext cg(p);
-                        HIThemeDrawSeparator(&separatorRect, &separatorDrawInfo, cg, kHIThemeOrientationNormal);
+                        const int margin = qt_mac_aqua_get_metric(SeparatorSize);
+                        const auto separatorRect = QRect(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
+                        p->fillRect(separatorRect, opt->palette.dark().color());
                     }
                     break;
                 }
