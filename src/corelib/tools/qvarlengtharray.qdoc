@@ -533,6 +533,13 @@
     \sa append(), insert()
 */
 
+/*!
+    \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::prepend(T &&value)
+    \since 5.11
+
+    \overload
+*/
+
 /*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::replace(int i, const T &value)
 
     \since 4.8
@@ -721,6 +728,14 @@
     vector.
 */
 
+
+/*! \fn template<class T, int Prealloc> void QVarLengthArray<T, Prealloc>::insert(int i, T &&value)
+
+    \overload
+    \since 5.11
+
+*/
+
 /*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, const T &value)
 
     \overload
@@ -728,6 +743,12 @@
 
     Inserts \a value in front of the item pointed to by the iterator
     \a before. Returns an iterator pointing at the inserted item.
+*/
+
+/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, T &&value)
+
+    \overload
+    \since 5.11
 */
 
 /*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, int count, const T &value)

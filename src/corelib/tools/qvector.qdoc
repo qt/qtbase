@@ -605,6 +605,16 @@
     \sa append(), insert()
 */
 
+/*!
+    \fn template <typename T> void QVector<T>::prepend(T &&value)
+    \since 5.11
+
+    \overload
+
+    Inserts \a value at the beginning of the vector using move semantics.
+*/
+
+
 /*! \fn template <typename T> void QVector<T>::insert(int i, const T &value)
 
     Inserts \a value at index position \a i in the vector. If \a i is
@@ -621,6 +631,14 @@
     instead.
 
     \sa append(), prepend(), remove()
+*/
+
+/*! \fn template <typename T> void QVector<T>::insert(int i, T &&value)
+    \since 5.11
+
+    \overload
+
+    Inserts \a value at index position \a i in the vector using move semantics.
 */
 
 /*! \fn template <typename T> void QVector<T>::insert(int i, int count, const T &value)
@@ -1088,6 +1106,11 @@
 
     This function is provided for STL compatibility. It is equivalent
     to prepend(\a value).
+*/
+
+/*! \fn template <typename T> void QVector<T>::push_front(T &&value)
+    \since 5.11
+    \overload
 */
 
 /*! \fn template <typename T> void QVector<T>::pop_front()
