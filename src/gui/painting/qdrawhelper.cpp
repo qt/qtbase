@@ -3801,10 +3801,23 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
 
     quint64 buffer[BufferSize];
     const QRgba64 color = data->solid.color;
+    bool solidFill = data->rasterBuffer->compositionMode == QPainter::CompositionMode_Source
+                  || (data->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver && color.isOpaque());
+    bool isBpp32 = qPixelLayouts[data->rasterBuffer->format].bpp == QPixelLayout::BPP32;
 
     while (count--) {
         int x = spans->x;
         int length = spans->len;
+        if (solidFill && isBpp32 && spans->coverage == 255) {
+            // If dest doesn't matter we don't need to bother with blending or converting all the identical pixels
+            if (length > 0) {
+                op.destStore64(data->rasterBuffer, x, spans->y, &color, 1);
+                uint *dest = (uint*)data->rasterBuffer->scanLine(spans->y) + x;
+                qt_memfill32(dest + 1, dest[0], length - 1);
+                length = 0;
+            }
+        }
+
         while (length) {
             int l = qMin(BufferSize, length);
             QRgba64 *dest = op.destFetch64((QRgba64 *)buffer, data->rasterBuffer, x, spans->y, l);
@@ -4346,6 +4359,50 @@ static void blend_tiled_generic_rgb64(int count, const QSpan *spans, void *userD
         xoff += image_width;
     if (yoff < 0)
         yoff += image_height;
+
+    bool isBpp32 = qPixelLayouts[data->rasterBuffer->format].bpp == QPixelLayout::BPP32;
+    if (op.destFetch64 == destFetch64Undefined && image_width <= BufferSize && isBpp32) {
+        // If destination isn't blended into the result, we can do the tiling directly on destination pixels.
+        while (count--) {
+            int x = spans->x;
+            int y = spans->y;
+            int length = spans->len;
+            int sx = (xoff + spans->x) % image_width;
+            int sy = (spans->y + yoff) % image_height;
+            if (sx < 0)
+                sx += image_width;
+            if (sy < 0)
+                sy += image_height;
+
+            int sl = qMin(image_width, length);
+            if (sx > 0 && sl > 0) {
+                int l = qMin(image_width - sx, sl);
+                const QRgba64 *src = op.srcFetch64((QRgba64 *)src_buffer, &op, data, sy, sx, l);
+                op.destStore64(data->rasterBuffer, x, y, src, l);
+                x += l;
+                sx += l;
+                sl -= l;
+                if (sx >= image_width)
+                    sx = 0;
+            }
+            if (sl > 0) {
+                Q_ASSERT(sx == 0);
+                const QRgba64 *src = op.srcFetch64((QRgba64 *)src_buffer, &op, data, sy, sx, sl);
+                op.destStore64(data->rasterBuffer, x, y, src, sl);
+                x += sl;
+                sx += sl;
+                sl -= sl;
+                if (sx >= image_width)
+                    sx = 0;
+            }
+            uint *dest = (uint*)data->rasterBuffer->scanLine(y) + x - image_width;
+            for (int i = image_width; i < length; ++i) {
+                dest[i] = dest[i - image_width];
+            }
+            ++spans;
+        }
+        return;
+    }
 
     while (count--) {
         int x = spans->x;
