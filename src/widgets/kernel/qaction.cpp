@@ -1332,7 +1332,7 @@ bool QAction::isShortcutVisibleInContextMenu() const
 {
     Q_D(const QAction);
     if (d->shortcutVisibleInContextMenu == -1) {
-        if (QApplication::instance()->testAttribute(Qt::AA_DontShowIconsInMenus))
+        if (QApplication::instance()->testAttribute(Qt::AA_DontShowShortcutsInContextMenus))
             return false;
         return qApp->styleHints()->showShortcutsInContextMenus();
     }
