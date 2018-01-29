@@ -987,7 +987,7 @@ void QTreeView::setTreePosition(int index)
 {
     Q_D(QTreeView);
     d->treePosition = index;
-    update();
+    d->viewport->update();
 }
 
 /*!

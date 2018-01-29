@@ -287,6 +287,8 @@ void QPlatformInputContext::setSelectionOnFocusObject(const QPointF &anchorPos, 
     if (success) {
         int cursor = QInputMethod::queryFocusObject(Qt::ImCursorPosition, cursorPos * mapToLocal).toInt(&success);
         if (success) {
+            if (anchor == cursor && anchorPos != cursorPos)
+                return;
             QList<QInputMethodEvent::Attribute> imAttributes;
             imAttributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, anchor, cursor - anchor, QVariant()));
             QInputMethodEvent event(QString(), imAttributes);
