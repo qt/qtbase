@@ -2599,10 +2599,15 @@ QString &QString::remove(int pos, int len)
 */
 QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 {
-    if (str.d->size) {
-        int i = 0;
-        while ((i = indexOf(str, i, cs)) != -1)
-            remove(i, str.d->size);
+    const int strSize = str.size();
+    if (strSize) {
+        if (strSize == 1) {
+            remove(str.front(), cs);
+        } else {
+            int i = 0;
+            while ((i = indexOf(str, i, cs)) != -1)
+                remove(i, strSize);
+        }
     }
     return *this;
 }
