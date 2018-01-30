@@ -651,7 +651,8 @@ public:
     inline void reserve(int extraCapacity) {
         if (tos + extraCapacity + 1 > cap) {
             cap = qMax(tos + extraCapacity + 1, cap << 1 );
-            data = reinterpret_cast<T *>(realloc(data, cap * sizeof(T)));
+            void *ptr = realloc(static_cast<void *>(data), cap * sizeof(T));
+            data = reinterpret_cast<T *>(ptr);
             Q_CHECK_PTR(data);
         }
     }
