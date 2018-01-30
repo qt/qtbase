@@ -1,0 +1,154 @@
+Qt 5.10.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.10.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+http://doc.qt.io/qt-5/index.html
+
+The Qt version 5.10 series is binary compatible with the 5.9.x series.
+Applications compiled for 5.9 will continue to run with 5.10.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+This release contains all fixes included in the Qt 5.9.4 release.
+
+****************************************************************************
+*                               Library                                    *
+****************************************************************************
+
+QtCore
+------
+
+ - [QTBUG-64529] Fixed a compilation issue with qfloat16 if AVX2 support is
+   enabled in the compiler. Since all processors that support AVX2 also
+   support F16C, for GCC and Clang it is recommended to either add -mf16c
+   to your build or to use the corresponding -march= switch.
+
+ - QCoreApplication:
+   * [QTBUG-58919] Fixed a crash if QCoreApplication is recreated on Windows
+     and the passed argv parameter is different.
+
+ - QFile:
+   * [QTBUG-64103] Fixed a regression in doing rename() on Android
+     Marshmallow.
+
+ - QFileInfo:
+   * [QTBUG-30148] Fixed isWritable() on Windows to return whether the given
+     file is writable only under current privilege levels. Previously, the
+     result would take into account privilege elevation.
+
+ - QMetaObject:
+   * [QTBUG-65462] Fixed a memory leak that happened when the new-style
+     call to invokeMethod() was used.
+
+ - QObject:
+   * [QTBUG-65712] Improved performance of QObject::deleteLater.
+   * Fixed a crash that could happen if the context QObject pointer passed to
+     new-style connect() was null.
+
+ - QPluginLoader:
+   * [QTBUG-65197] Fixed a bug that would cause the Qt plugin scanning
+     system to allocate too much memory and possibly crash the process.
+
+ - QProcess:
+   * [QTBUG-65076] Fixed a regression that made QProcess be unable to find
+     executables when the PATH environment variable on some Unix systems
+     wasn't set. This behavior should not be relied upon since many systems
+     do not have sensible fallback values for PATH.
+
+ - QRandomGenerator:
+   * [QTBUG-65414] Fixed compilation on Windows if the windows.h header was
+     included before this qrandom.h.
+
+ - QSettings:
+   * [QTBUG-64121] Fixed reading from NTFS symbolic links.
+
+ - QStandardPaths:
+   * [QTBUG-65076] findExecutable() will now apply the default value for
+     the PATH environment variable (as returned by the POSIX confstr(3)
+     function or found in <paths.h>) if the variable isn't set in the
+     environment.
+   * [QTBUG-65687] Fixed a memory leak with displayName() on Apple platforms.
+   * On Windows, it is now possible to resolve configuration paths even
+     without QCoreApplication created.
+
+ - QString:
+   * [QTBUG-65939] Fixed a regression from 5.9 that caused comparing
+     default-constructed QStrings to be sorted after non-empty strings.
+
+ - QTextBoundaryFinder:
+   * [QTBUG-63191] Fixed a bug in the generating of Unicode data, affecting
+     the joining properties of characters like U+200C ZWNJ.
+
+ - QXmlStreamWriter:
+   * [QTBUG-63538] Empty namespace URIs are now possible.
+
+ - State Machine:
+   * [QTBUG-61463] Fixed a failed assertion that could happen when emitting a
+     signal from another thread.
+
+QtGui
+-----
+
+ - Text:
+   * [QTBUG-61882] Fixed a bug where mixing different writing systems with
+     emojis could lead to missing glyphs.
+   * [QTBUG-65519] Fixed ZWJ and ZWNJ control characters when fallback
+     fonts are in use.
+
+****************************************************************************
+*                         Platform-specific Changes                        *
+****************************************************************************
+
+ - QNX:
+   * [QTBUG-64033] Fixed the detection of slog2 with QNX 7.0
+
+ - Windows:
+   * Named pipes internally created by QProcess now contain the PID in their
+     name to ensure uniqueness.
+   * [QTBUG-65940] Fixed asserts and crashes in QWinEventNotifier.
+
+ - WinRT:
+   * -qdevel and -qdebug are removed from the command line arguments and
+     not passed to the application.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - libjpeg-turbo was updated to version 1.5.3
+
+****************************************************************************
+*                                Tools                                     *
+****************************************************************************
+
+configure & build system
+------------------------
+
+ - [QTBUG-65753] Fixed installation of resource sources in some examples.
+ - Qt's pkg-config .pc files now add -DQT_{module}_LIB to CFLAGS.
+
+qmake
+-----
+
+ - [QTBUG-65106] The value of QT is now silently ignored when the sub-
+   project already failed requires()/REQUIRES.
+ - [QTBUG-63442] Fixed an issue that would cause warnings with CMake 3.10
+   for projects that used AUTOMOC.
+ - [QTBUG-63637][MinGW] Fixed cross compilation from Linux.
+ - [QTBUG-65103] Introduced precompile_header_c CONFIG option for MSVC to
+   enable precompiled header for C sources.
+ - [QTBUG-65477][Darwin] Added escaping to @BUNDLEIDENTIFIER@.
+ - [Darwin] Rewrote handling of placeholders in Info.plist; the preferred
+   style is now ${} and is consistent between Xcode and Makefile generators.
+ - [Windows] Fixed path separators when setting working directory in
+   "make check".
+ - [Windows] Paths which are relative to the current drive's root are not
+   treated as absolute any more.
