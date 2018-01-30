@@ -1787,27 +1787,36 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     // this way we allow for synthetic events to have different state
     // from the current state i.e. you can have Alt+Ctrl pressed
     // and receive a synthetic key event that has neither Alt nor Ctrl pressed
-    struct xkb_state *kb_state = xkb_state_new(m_xkbKeymap.get());
-    if (!kb_state)
+    ScopedXKBState xkbState(xkb_state_new(m_xkbKeymap.get()));
+    if (!xkbState)
         return;
-    updateXKBStateFromState(kb_state, state);
+    updateXKBStateFromState(xkbState.get(), state);
 
-    xcb_keysym_t sym = xkb_state_key_get_one_sym(kb_state, code);
-    QString string = lookupString(kb_state, code);
+    xcb_keysym_t sym = xkb_state_key_get_one_sym(xkbState.get(), code);
+    QString string = lookupString(xkbState.get(), code);
 
     Qt::KeyboardModifiers modifiers = translateModifiers(state);
     if (sym >= XKB_KEY_KP_Space && sym <= XKB_KEY_KP_9)
         modifiers |= Qt::KeypadModifier;
 
-    // Ιf control modifier is set we should prefer latin character, this is
-    // used for standard shortcuts in checks like "key == QKeySequence::Copy",
-    // users can still see the actual X11 keysym with QKeyEvent::nativeVirtualKey
-    xcb_keysym_t translatedSym = XKB_KEY_NoSymbol;
-    if (modifiers & Qt::ControlModifier && !isLatin(sym))
-        translatedSym = lookupLatinKeysym(code);
-    if (translatedSym == XKB_KEY_NoSymbol)
-        translatedSym = sym;
-    int qtcode = keysymToQtKey(translatedSym, modifiers, kb_state, code);
+    // Note 1: All standard key sequences on linux (as defined in platform theme)
+    // that use a latin character also contain a control modifier, which is why
+    // checking for Qt::ControlModifier is sufficient here. It is possible to
+    // override QPlatformTheme::keyBindings() and provide custom sequences for
+    // QKeySequence::StandardKey. Custom sequences probably should respect this
+    // convention (alternatively, we could test against other modifiers here).
+    // Note 2: The possibleKeys() shorcut mechanism is not affected by this value
+    // adjustment and does its own thing.
+    xcb_keysym_t latinKeysym = XKB_KEY_NoSymbol;
+    if (modifiers & Qt::ControlModifier) {
+        // With standard shortcuts we should prefer a latin character, this is
+        // in checks like "event == QKeySequence::Copy".
+        if (!isLatin(sym))
+            latinKeysym = lookupLatinKeysym(code);
+    }
+
+    int qtcode = keysymToQtKey(latinKeysym != XKB_KEY_NoSymbol ? latinKeysym : sym,
+                               modifiers, xkbState.get(), code);
 
     bool isAutoRepeat = false;
     if (type == QEvent::KeyPress) {
@@ -1859,7 +1868,6 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
             QWindowSystemInterface::handleExtendedKeyEvent(window, time, QEvent::KeyPress, qtcode, modifiers,
                                                            code, sym, state, string, isAutoRepeat);
     }
-    xkb_state_unref(kb_state);
 }
 
 QString QXcbKeyboard::lookupString(struct xkb_state *state, xcb_keycode_t code) const
