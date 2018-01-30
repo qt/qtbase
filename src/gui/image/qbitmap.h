@@ -72,6 +72,7 @@ public:
     inline void clear() { fill(Qt::color0); }
 
     static QBitmap fromImage(const QImage &image, Qt::ImageConversionFlags flags = Qt::AutoColor);
+    static QBitmap fromImage(QImage &&image, Qt::ImageConversionFlags flags = Qt::AutoColor);
     static QBitmap fromData(const QSize &size, const uchar *bits,
                             QImage::Format monoFormat = QImage::Format_MonoLSB);
 

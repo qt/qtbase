@@ -90,6 +90,7 @@ private slots:
 
     void mask();
     void bitmapMask();
+    void bitmapFromImageRvalue();
     void setGetMask_data();
     void setGetMask();
     void cacheKey();
@@ -594,6 +595,27 @@ void tst_QPixmap::bitmapMask()
     QVERIFY(!image.pixel(0, 0));
     QVERIFY(!image.pixel(2, 0));
     QVERIFY(image.pixel(1, 1));
+}
+
+void tst_QPixmap::bitmapFromImageRvalue()
+{
+    auto makeImage = [](){
+        QImage image(3, 3, QImage::Format_MonoLSB);
+        image.setColor(0, Qt::color0);
+        image.setColor(1, Qt::color1);
+        image.fill(Qt::color0);
+        image.setPixel(1, 1, Qt::color1);
+        image.setPixel(0, 0, Qt::color1);
+        return image;
+    };
+
+    auto image1 = makeImage();
+    auto image2 = makeImage();
+    auto bitmap1 = QBitmap::fromImage(image1);
+    auto bitmap2 = QBitmap::fromImage(std::move(image2));
+    QCOMPARE(bitmap1.toImage(), bitmap2.toImage());
+    QVERIFY(!image1.isNull());
+    QVERIFY(image2.isNull());
 }
 
 void tst_QPixmap::setGetMask_data()

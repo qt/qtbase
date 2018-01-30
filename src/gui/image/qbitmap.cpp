@@ -189,9 +189,7 @@ QBitmap &QBitmap::operator=(const QPixmap &pixmap)
     } else if (pixmap.depth() == 1) {                // 1-bit pixmap
         QPixmap::operator=(pixmap);                // shallow assignment
     } else {                                        // n-bit depth pixmap
-        QImage image;
-        image = pixmap.toImage();                                // convert pixmap to image
-        *this = fromImage(image);                                // will dither image
+        *this = fromImage(pixmap.toImage());        // will dither image
     }
     return *this;
 }
@@ -223,6 +221,24 @@ QBitmap::operator QVariant() const
     return QVariant(QVariant::Bitmap, this);
 }
 
+static QBitmap makeBitmap(QImage &&image, Qt::ImageConversionFlags flags)
+{
+    // make sure image.color(0) == Qt::color0 (white)
+    // and image.color(1) == Qt::color1 (black)
+    const QRgb c0 = QColor(Qt::black).rgb();
+    const QRgb c1 = QColor(Qt::white).rgb();
+    if (image.color(0) == c0 && image.color(1) == c1) {
+        image.invertPixels();
+        image.setColor(0, c1);
+        image.setColor(1, c0);
+    }
+
+    QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::BitmapType));
+
+    data->fromImageInPlace(image, flags | Qt::MonoOnly);
+    return QPixmap(data.take());
+}
+
 /*!
     Returns a copy of the given \a image converted to a bitmap using
     the specified image conversion \a flags.
@@ -234,22 +250,24 @@ QBitmap QBitmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QBitmap();
 
-    QImage img = image.convertToFormat(QImage::Format_MonoLSB, flags);
+    return makeBitmap(image.convertToFormat(QImage::Format_MonoLSB, flags), flags);
+}
 
-    // make sure image.color(0) == Qt::color0 (white)
-    // and image.color(1) == Qt::color1 (black)
-    const QRgb c0 = QColor(Qt::black).rgb();
-    const QRgb c1 = QColor(Qt::white).rgb();
-    if (img.color(0) == c0 && img.color(1) == c1) {
-        img.invertPixels();
-        img.setColor(0, c1);
-        img.setColor(1, c0);
-    }
+/*!
+    \since 5.12
+    \overload
 
-    QScopedPointer<QPlatformPixmap> data(QGuiApplicationPrivate::platformIntegration()->createPlatformPixmap(QPlatformPixmap::BitmapType));
+    Returns a copy of the given \a image converted to a bitmap using
+    the specified image conversion \a flags.
 
-    data->fromImage(img, flags | Qt::MonoOnly);
-    return QPixmap(data.take());
+    \sa fromData()
+*/
+QBitmap QBitmap::fromImage(QImage &&image, Qt::ImageConversionFlags flags)
+{
+    if (image.isNull())
+        return QBitmap();
+
+    return makeBitmap(std::move(image).convertToFormat(QImage::Format_MonoLSB, flags), flags);
 }
 
 /*!
@@ -277,7 +295,7 @@ QBitmap QBitmap::fromData(const QSize &size, const uchar *bits, QImage::Format m
     int bytesPerLine = (size.width() + 7) / 8;
     for (int y = 0; y < size.height(); ++y)
         memcpy(image.scanLine(y), bits + bytesPerLine * y, bytesPerLine);
-    return QBitmap::fromImage(image);
+    return QBitmap::fromImage(std::move(image));
 }
 
 /*!
