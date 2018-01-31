@@ -1039,7 +1039,7 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
         if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
             QStyleSheetStyle *style = const_cast<QStyleSheetStyle *>(globalStyleSheetStyle);
             if (!style)
-                style = qobject_cast<QStyleSheetStyle *>(widget->style());
+                style = qt_styleSheet(widget->style());
             if (style)
                 fixupBorder(style->nativeFrameWidth(widget));
         }
@@ -1500,7 +1500,7 @@ public:
                 return className;
             } else if (name == QLatin1String("style")) {
                 QWidget *w = qobject_cast<QWidget *>(obj);
-                QStyleSheetStyle *proxy = w ? qobject_cast<QStyleSheetStyle *>(w->style()) : 0;
+                QStyleSheetStyle *proxy = w ? qt_styleSheet(w->style()) : 0;
                 if (proxy) {
                     QString styleName = QString::fromLatin1(proxy->baseStyle()->metaObject()->className());
                     cache[name] = styleName;
@@ -2732,7 +2732,7 @@ QStyle *QStyleSheetStyle::baseStyle() const
 {
     if (base)
         return base;
-    if (QStyleSheetStyle *me = qobject_cast<QStyleSheetStyle *>(QApplication::style()))
+    if (QStyleSheetStyle *me = qt_styleSheet(QApplication::style()))
         return me->base;
     return QApplication::style();
 }

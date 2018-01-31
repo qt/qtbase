@@ -2000,7 +2000,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
 
     // draw text, selections and cursors
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style())) {
+    if (QStyleSheetStyle* cssStyle = qt_styleSheet(style())) {
         cssStyle->styleSheetPalette(this, &panel, &pal);
     }
 #endif

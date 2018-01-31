@@ -395,7 +395,7 @@ public:
     void setLocale_helper(const QLocale &l, bool forceUpdate = false);
     void resolveLocale();
 
-    void setStyle_helper(QStyle *newStyle, bool propagate, bool metalHack = false);
+    void setStyle_helper(QStyle *newStyle, bool propagate);
     void inheritStyle();
 
     void setUpdatesEnabled_helper(bool );

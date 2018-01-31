@@ -1019,9 +1019,8 @@ void QLabel::paintEvent(QPaintEvent *)
         QStyleOption opt;
         opt.initFrom(this);
 #ifndef QT_NO_STYLE_STYLESHEET
-        if (QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(style)) {
+        if (QStyleSheetStyle* cssStyle = qt_styleSheet(style))
             cssStyle->styleSheetPalette(this, &opt, &opt.palette);
-        }
 #endif
         if (d->control) {
 #ifndef QT_NO_SHORTCUT

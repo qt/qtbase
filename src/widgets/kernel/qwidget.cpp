@@ -1847,7 +1847,7 @@ void QWidgetPrivate::deleteExtra()
         deleteSysExtra();
 #ifndef QT_NO_STYLE_STYLESHEET
         // dereference the stylesheet style
-        if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(extra->style))
+        if (QStyleSheetStyle *proxy = qt_styleSheet(extra->style))
             proxy->deref();
 #endif
         if (extra->topextra) {
@@ -2657,7 +2657,7 @@ void QWidget::setStyleSheet(const QString& styleSheet)
         return;
     d->createExtra();
 
-    QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(d->extra->style);
+    QStyleSheetStyle *proxy = qt_styleSheet(d->extra->style);
     d->extra->styleSheet = styleSheet;
     if (styleSheet.isEmpty()) { // stylesheet removed
         if (!proxy)
@@ -2722,12 +2722,12 @@ void QWidget::setStyle(QStyle *style)
     setAttribute(Qt::WA_SetStyle, style != 0);
     d->createExtra();
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(style)) {
+    if (QStyleSheetStyle *styleSheetStyle = qt_styleSheet(style)) {
         //if for some reason someone try to set a QStyleSheetStyle, ref it
         //(this may happen for exemple in QButtonDialogBox which propagates its style)
-        proxy->ref();
+        styleSheetStyle->ref();
         d->setStyle_helper(style, false);
-    } else if (qobject_cast<QStyleSheetStyle *>(d->extra->style) || !qApp->styleSheet().isEmpty()) {
+    } else if (qt_styleSheet(d->extra->style) || !qApp->styleSheet().isEmpty()) {
         // if we have an application stylesheet or have a proxy already, propagate
         d->setStyle_helper(new QStyleSheetStyle(style), true);
     } else
@@ -2735,48 +2735,22 @@ void QWidget::setStyle(QStyle *style)
         d->setStyle_helper(style, false);
 }
 
-void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        metalHack
-#endif
-        )
+void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate)
 {
     Q_Q(QWidget);
-    QStyle *oldStyle  = q->style();
-#ifndef QT_NO_STYLE_STYLESHEET
-    QPointer<QStyle> origStyle;
-#endif
+    QStyle *oldStyle = q->style();
 
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    // the metalhack boolean allows Qt/Mac to do a proper re-polish depending
-    // on how the Qt::WA_MacBrushedMetal attribute is set. It is only ever
-    // set when changing that attribute and passes the widget's CURRENT style.
-    // therefore no need to do a reassignment.
-    if (!metalHack)
-#endif
-    {
-        createExtra();
+    createExtra();
 
 #ifndef QT_NO_STYLE_STYLESHEET
-        origStyle = extra->style.data();
+    QPointer<QStyle> origStyle = extra->style;
 #endif
-        extra->style = newStyle;
-    }
+    extra->style = newStyle;
 
     // repolish
-    if (q->windowType() != Qt::Desktop) {
-        if (polished) {
-            oldStyle->unpolish(q);
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-            if (metalHack)
-                macUpdateMetalAttribute();
-#endif
-            q->style()->polish(q);
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        } else if (metalHack) {
-            macUpdateMetalAttribute();
-#endif
-        }
+    if (polished && q->windowType() != Qt::Desktop) {
+        oldStyle->unpolish(q);
+        q->style()->polish(q);
     }
 
     if (propagate) {
@@ -2790,8 +2764,8 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
     }
 
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (!qobject_cast<QStyleSheetStyle*>(newStyle)) {
-        if (const QStyleSheetStyle* cssStyle = qobject_cast<QStyleSheetStyle*>(origStyle.data())) {
+    if (!qt_styleSheet(newStyle)) {
+        if (const QStyleSheetStyle* cssStyle = qt_styleSheet(origStyle)) {
             cssStyle->clearWidgetFont(q);
         }
     }
@@ -2802,7 +2776,7 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
 
 #ifndef QT_NO_STYLE_STYLESHEET
     // dereference the old stylesheet style
-    if (QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(origStyle.data()))
+    if (QStyleSheetStyle *proxy = qt_styleSheet(origStyle))
         proxy->deref();
 #endif
 }
@@ -2813,7 +2787,9 @@ void QWidgetPrivate::inheritStyle()
 #ifndef QT_NO_STYLE_STYLESHEET
     Q_Q(QWidget);
 
-    QStyleSheetStyle *proxy = extra ? qobject_cast<QStyleSheetStyle *>(extra->style) : 0;
+    QStyle *extraStyle = extra ? (QStyle*)extra->style : nullptr;
+
+    QStyleSheetStyle *proxy = qt_styleSheet(extraStyle);
 
     if (!q->styleSheet().isEmpty()) {
         Q_ASSERT(proxy);
@@ -2821,16 +2797,16 @@ void QWidgetPrivate::inheritStyle()
         return;
     }
 
-    QStyle *origStyle = proxy ? proxy->base : (extra ? (QStyle*)extra->style : 0);
+    QStyle *origStyle = proxy ? proxy->base : extraStyle;
     QWidget *parent = q->parentWidget();
     QStyle *parentStyle = (parent && parent->d_func()->extra) ? (QStyle*)parent->d_func()->extra->style : 0;
     // If we have stylesheet on app or parent has stylesheet style, we need
     // to be running a proxy
-    if (!qApp->styleSheet().isEmpty() || qobject_cast<QStyleSheetStyle *>(parentStyle)) {
+    if (!qApp->styleSheet().isEmpty() || qt_styleSheet(parentStyle)) {
         QStyle *newStyle = parentStyle;
         if (q->testAttribute(Qt::WA_SetStyle))
             newStyle = new QStyleSheetStyle(origStyle);
-        else if (QStyleSheetStyle *newProxy = qobject_cast<QStyleSheetStyle *>(parentStyle))
+        else if (QStyleSheetStyle *newProxy = qt_styleSheet(parentStyle))
             newProxy->ref();
 
         setStyle_helper(newStyle, true);
@@ -2839,7 +2815,7 @@ void QWidgetPrivate::inheritStyle()
 
     // So, we have no stylesheet on parent/app and we have an empty stylesheet
     // we just need our original style back
-    if (origStyle == (extra ? (QStyle*)extra->style : 0)) // is it any different?
+    if (origStyle == extraStyle) // is it any different?
         return;
 
     // We could have inherited the proxy from our parent (which has a custom style)
@@ -4688,9 +4664,8 @@ void QWidget::setFont(const QFont &font)
 
 #ifndef QT_NO_STYLE_STYLESHEET
     const QStyleSheetStyle* style;
-    if (d->extra && (style = qobject_cast<const QStyleSheetStyle*>(d->extra->style))) {
+    if (d->extra && (style = qt_styleSheet(d->extra->style)))
         style->saveWidgetFont(this, font);
-    }
 #endif
 
     setAttribute(Qt::WA_SetFont, font.resolve() != 0);
@@ -4786,7 +4761,7 @@ void QWidgetPrivate::updateFont(const QFont &font)
     Q_Q(QWidget);
 #ifndef QT_NO_STYLE_STYLESHEET
     const QStyleSheetStyle* cssStyle;
-    cssStyle = extra ? qobject_cast<const QStyleSheetStyle*>(extra->style) : 0;
+    cssStyle = extra ? qt_styleSheet(extra->style) : 0;
     const bool useStyleSheetPropagationInWidgetStyles =
         QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
 #endif

@@ -1020,17 +1020,17 @@ QString QApplication::styleSheet() const
 void QApplication::setStyleSheet(const QString& styleSheet)
 {
     QApplicationPrivate::styleSheet = styleSheet;
-    QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle*>(QApplicationPrivate::app_style);
+    QStyleSheetStyle *styleSheetStyle = qt_styleSheet(QApplicationPrivate::app_style);
     if (styleSheet.isEmpty()) { // application style sheet removed
-        if (!proxy)
+        if (!styleSheetStyle)
             return; // there was no stylesheet before
-        setStyle(proxy->base);
-    } else if (proxy) { // style sheet update, just repolish
-        proxy->repolish(qApp);
+        setStyle(styleSheetStyle->base);
+    } else if (styleSheetStyle) { // style sheet update, just repolish
+        styleSheetStyle->repolish(qApp);
     } else { // stylesheet set the first time
-        QStyleSheetStyle *newProxy = new QStyleSheetStyle(QApplicationPrivate::app_style);
-        QApplicationPrivate::app_style->setParent(newProxy);
-        setStyle(newProxy);
+        QStyleSheetStyle *newStyleSheetStyle = new QStyleSheetStyle(QApplicationPrivate::app_style);
+        QApplicationPrivate::app_style->setParent(newStyleSheetStyle);
+        setStyle(newStyleSheetStyle);
     }
 }
 
@@ -1140,11 +1140,11 @@ void QApplication::setStyle(QStyle *style)
     QStyle *old = QApplicationPrivate::app_style; // save
 
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (!QApplicationPrivate::styleSheet.isEmpty() && !qobject_cast<QStyleSheetStyle *>(style)) {
+    if (!QApplicationPrivate::styleSheet.isEmpty() && !qt_styleSheet(style)) {
         // we have a stylesheet already and a new style is being set
-        QStyleSheetStyle *newProxy = new QStyleSheetStyle(style);
-        style->setParent(newProxy);
-        QApplicationPrivate::app_style = newProxy;
+        QStyleSheetStyle *newStyleSheetStyle = new QStyleSheetStyle(style);
+        style->setParent(newStyleSheetStyle);
+        QApplicationPrivate::app_style = newStyleSheetStyle;
     } else
 #endif // QT_NO_STYLE_STYLESHEET
         QApplicationPrivate::app_style = style;
@@ -1194,8 +1194,8 @@ void QApplication::setStyle(QStyle *style)
     }
 
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (QStyleSheetStyle *oldProxy = qobject_cast<QStyleSheetStyle *>(old)) {
-        oldProxy->deref();
+    if (QStyleSheetStyle *oldStyleSheetStyle = qt_styleSheet(old)) {
+        oldStyleSheetStyle->deref();
     } else
 #endif
     if (old && old->parent() == qApp) {
