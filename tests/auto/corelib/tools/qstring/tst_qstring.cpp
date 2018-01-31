@@ -2994,6 +2994,12 @@ void tst_QString::remove_string()
         QString s5 = string;
         s5.replace( QRegExp(before, cs, QRegExp::FixedString), after );
         QTEST( s5, "result" );
+
+        if (QtPrivate::isLatin1(before)) {
+            QString s6 = string;
+            s6.remove( QLatin1String(before.toLatin1()), cs );
+            QTEST( s6, "result" );
+        }
     } else {
         QCOMPARE( 0, 0 ); // shut Qt Test
     }

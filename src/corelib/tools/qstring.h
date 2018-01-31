@@ -483,6 +483,7 @@ public:
 
     QString &remove(int i, int len);
     QString &remove(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive);
+    QString &remove(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &remove(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive);
     QString &replace(int i, int len, QChar after);
     QString &replace(int i, int len, const QChar *s, int slen);

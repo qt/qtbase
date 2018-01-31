@@ -2586,6 +2586,21 @@ QString &QString::remove(int pos, int len)
     return *this;
 }
 
+template<typename T>
+static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs)
+{
+    const int needleSize = needle.size();
+    if (needleSize) {
+        if (needleSize == 1) {
+            s.remove(needle.front(), cs);
+        } else {
+            int i = 0;
+            while ((i = s.indexOf(needle, i, cs)) != -1)
+                s.remove(i, needleSize);
+        }
+    }
+}
+
 /*!
   Removes every occurrence of the given \a str string in this
   string, and returns a reference to this string.
@@ -2599,16 +2614,27 @@ QString &QString::remove(int pos, int len)
 */
 QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 {
-    const int strSize = str.size();
-    if (strSize) {
-        if (strSize == 1) {
-            remove(str.front(), cs);
-        } else {
-            int i = 0;
-            while ((i = indexOf(str, i, cs)) != -1)
-                remove(i, strSize);
-        }
-    }
+    removeStringImpl(*this, str, cs);
+    return *this;
+}
+
+/*!
+  \since 5.11
+  \overload
+
+  Removes every occurrence of the given \a str string in this
+  string, and returns a reference to this string.
+
+  If \a cs is Qt::CaseSensitive (default), the search is
+  case sensitive; otherwise the search is case insensitive.
+
+  This is the same as \c replace(str, "", cs).
+
+  \sa replace()
+*/
+QString &QString::remove(QLatin1String str, Qt::CaseSensitivity cs)
+{
+    removeStringImpl(*this, str, cs);
     return *this;
 }
 
