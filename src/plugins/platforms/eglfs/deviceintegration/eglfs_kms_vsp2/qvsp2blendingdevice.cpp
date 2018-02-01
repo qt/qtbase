@@ -251,6 +251,8 @@ bool QVsp2BlendingDevice::blend(int outputDmabufFd)
 
     if (!m_wpfOutput->dequeueBuffer()) {
         qWarning() << "Vsp2: Failed to dequeue blending output buffer";
+        if (!streamOff())
+            qWarning() << "Vsp2: Failed to stop streaming when recovering after a broken blend.";
         return false;
     }
 
@@ -284,19 +286,12 @@ bool QVsp2BlendingDevice::streamOn()
 
 bool QVsp2BlendingDevice::streamOff()
 {
-    if (!m_wpfOutput->streamOff()) {
-        //TODO: perhaps it's better to try to continue with the other inputs?
-        return false;
-    }
-
+    bool succeeded = m_wpfOutput->streamOff();
     for (auto &input : m_inputs) {
-        if (input.enabled) {
-            if (!input.rpfInput->streamOff())
-                return false;
-        }
+        if (input.enabled)
+            succeeded &= input.rpfInput->streamOff();
     }
-
-    return true;
+    return succeeded;
 }
 
 bool QVsp2BlendingDevice::setInputFormat(int i, const QRect &bufferGeometry, uint pixelFormat, uint bytesPerLine)
