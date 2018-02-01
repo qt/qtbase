@@ -1157,23 +1157,6 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
         m_exposedRect = QRect();
     }
 
-    QWindowPrivate *windowPrivate = qt_window_private(window());
-    if (windowPrivate->updateRequestPending) {
-        // We can only deliver update request events when the window is exposed,
-        // and we also have to make sure we deliver any change to the exposed
-        // rect as a real expose event (including going from non-exposed to
-        // exposed). FIXME: Should this logic live in QGuiApplication?
-        if (isExposed() && m_exposedRect == previouslyExposedRect) {
-            qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
-            windowPrivate->deliverUpdateRequest();
-            return;
-        } else {
-            // Since updateRequestPending is still set, we will issue a deferred setNeedsDisplay
-            // from drawRect and get back into this code on the next display cycle, delivering
-            // the pending update request.
-        }
-    }
-
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), region);
 }
@@ -1348,7 +1331,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 void QCocoaWindow::requestUpdate()
 {
     qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::requestUpdate" << window();
-    [m_view setNeedsDisplay:YES];
+    [m_view requestUpdate];
 }
 
 void QCocoaWindow::requestActivateWindow()

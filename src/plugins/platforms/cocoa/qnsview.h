@@ -81,6 +81,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
     NSEvent *m_currentlyInterpretedKeyEvent;
     bool m_isMenuView;
     QSet<quint32> m_acceptedKeyDowns;
+    bool m_updateRequested;
 }
 
 @property (nonatomic, retain) NSCursor *cursor;
@@ -104,6 +105,8 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 - (void)convertFromScreen:(NSPoint)mouseLocation toWindowPoint:(QPointF *)qtWindowPoint andScreenPoint:(QPointF *)qtScreenPoint;
 
 - (void)resetMouseButtons;
+
+- (void)requestUpdate;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 - (bool)handleMouseDownEvent:(NSEvent *)theEvent withButton:(int)buttonNumber;
