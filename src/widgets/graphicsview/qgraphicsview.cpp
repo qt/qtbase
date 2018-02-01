@@ -313,13 +313,15 @@ void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEv
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
     for (int i = 0; i < touchPoints.count(); ++i) {
         QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+        const QSizeF ellipseDiameters = touchPoint.ellipseDiameters();
         // the scene will set the item local pos, startPos, lastPos, and rect before delivering to
         // an item, but for now those functions are returning the view's local coordinates
-        touchPoint.setSceneRect(d->mapToScene(touchPoint.rect()));
+        touchPoint.setScenePos(d->mapToScene(touchPoint.pos()));
         touchPoint.setStartScenePos(d->mapToScene(touchPoint.startPos()));
         touchPoint.setLastScenePos(d->mapToScene(touchPoint.lastPos()));
+        touchPoint.setEllipseDiameters(ellipseDiameters);
 
-        // screenPos, startScreenPos, lastScreenPos, and screenRect are already set
+        // screenPos, startScreenPos, and lastScreenPos are already set
     }
 
     touchEvent->setTouchPoints(touchPoints);
