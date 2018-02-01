@@ -802,6 +802,14 @@ void QCoreApplicationPrivate::init()
     if (!coreappdata()->applicationVersionSet)
         coreappdata()->applicationVersion = appVersion();
 
+#if defined(Q_OS_ANDROID)
+    // We've deferred initializing the logging registry due to not being
+    // able to guarantee that logging happened on the same thread as the
+    // Qt main thread, but now that the Qt main thread is set up, we can
+    // enable categorized logging.
+    QLoggingRegistry::instance()->initializeRules();
+#endif
+
 #if QT_CONFIG(library)
     // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
     // into account. If necessary, recompute right away and replay the manual changes on top of the
