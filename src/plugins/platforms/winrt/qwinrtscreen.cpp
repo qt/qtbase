@@ -1215,6 +1215,12 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
             QWindowSystemInterface::handleMouseEvent(d->currentPressWindow, localPressPos, pos, buttons, mods);
             d->currentPressWindow = nullptr;
         }
+        // If the mouse button is released outside of a window, targetWindow is 0, but the event
+        // has to be delivered to the window, that initially received the mouse press.
+        if (buttons == Qt::NoButton && d->currentPressWindow && !targetWindow) {
+            targetWindow = d->currentPressWindow;
+            d->currentPressWindow = nullptr;
+        }
 
         QWindowSystemInterface::handleMouseEvent(targetWindow, localPos, pos, buttons, mods);
 
