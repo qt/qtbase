@@ -56,17 +56,27 @@ host_build:cross_compile: return()
 # -Wvla: use of variable-length arrays (an extension to C++)
 clang {
     clang_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
+    apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
     versionAtLeast(clang_ver, 3.5): \
         QMAKE_CXXFLAGS_WARN_ON += -Wdate-time
 
-    # Clang/LLVM 5.0 and Xcode 9.0 introduced unguarded availability warnings.
-    # The same construct has been a hard error in Swift from the very beginning.
-    apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
-    darwin:if(versionAtLeast(clang_ver, 5.0)|versionAtLeast(apple_ver, 9.0)): \
+    versionAtLeast(clang_ver, 3.6)|versionAtLeast(apple_ver, 6.3): \
+        QMAKE_CXXFLAGS_WARN_ON += -Winconsistent-missing-override
+
+    darwin {
         QMAKE_CXXFLAGS_WARN_ON += \
-            -Werror=unguarded-availability \
-            -Werror=unguarded-availability-new \
-            -Werror=unsupported-availability-guard
+            -Wobjc-interface-ivars \
+            -Wobjc-method-access \
+            -Wobjc-multiple-method-names
+
+        # Clang/LLVM 5.0 and Xcode 9.0 introduced unguarded availability warnings.
+        # The same construct has been a hard error in Swift from the very beginning.
+        versionAtLeast(clang_ver, 5.0)|versionAtLeast(apple_ver, 9.0): \
+            QMAKE_CXXFLAGS_WARN_ON += \
+                -Werror=unguarded-availability \
+                -Werror=unguarded-availability-new \
+                -Werror=unsupported-availability-guard
+    }
 } else: gcc:!intel_icc {
     QMAKE_CXXFLAGS_WARN_ON += -Wvla
     # GCC 5 introduced -Wdate-time
@@ -82,11 +92,11 @@ warnings_are_errors:warning_clean {
     # This setting is compiler-dependent anyway because it depends on the version of the
     # compiler.
     clang {
-        # Apple clang 4.0-4.2,5.0-5.1,6.0-6.4,7.0-7.3
+        # Apple clang 4.0-4.2,5.0-5.1,6.0-6.4,7.0-7.3,8.0-8.3,9.0-9.2
         # Regular clang 3.x-5.0
         apple_ver = $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}
         reg_ver = $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}
-        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]|7\\.[0123]")|contains(reg_ver, "[34]\\.|5\\.0") {
+        contains(apple_ver, "4\\.[012]|5\\.[01]|6\\.[01234]|7\\.[0123]|8\\.[0123]|9\\.[012]")|contains(reg_ver, "[34]\\.|5\\.0") {
             QMAKE_CXXFLAGS_WARN_ON += -Werror -Wno-error=\\$${LITERAL_HASH}warnings -Wno-error=deprecated-declarations $$WERROR
         }
     } else:intel_icc:linux {
