@@ -448,7 +448,8 @@ void QGtk3Menu::showPopup(const QWindow *parentWindow, const QRect &targetRect, 
     if (index != -1)
         gtk_menu_set_active(GTK_MENU(m_menu), index);
 
-    m_targetPos = targetRect.bottomLeft();
+    m_targetPos = QPoint(targetRect.x(), targetRect.y() + targetRect.height());
+
     if (parentWindow)
         m_targetPos = parentWindow->mapToGlobal(m_targetPos);
 
