@@ -97,6 +97,7 @@ MainWindow::MainWindow(const CustomSizeHintMap &customSizeHints,
                        QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
 {
+    Q_UNUSED(message);
     setObjectName("MainWindow");
     setWindowTitle("Qt Main Window Example");
 

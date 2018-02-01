@@ -81,6 +81,7 @@ glUnmapBuffer
 #ifndef Q_OS_MAC
 # ifndef APIENTRYP
 #   ifdef APIENTRY
+#     undef APIENTRYP
 #     define APIENTRYP APIENTRY *
 #   else
 #     define APIENTRY
