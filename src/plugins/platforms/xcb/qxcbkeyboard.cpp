@@ -786,37 +786,32 @@ void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
 }
 #endif
 
-void QXcbKeyboard::updateXKBStateFromState(struct xkb_state *kb_state, quint16 state)
+static xkb_layout_index_t lockedGroup(quint16 state)
 {
-    const quint32 modsDepressed = xkb_state_serialize_mods(kb_state, XKB_STATE_MODS_DEPRESSED);
-    const quint32 modsLatched = xkb_state_serialize_mods(kb_state, XKB_STATE_MODS_LATCHED);
-    const quint32 modsLocked = xkb_state_serialize_mods(kb_state, XKB_STATE_MODS_LOCKED);
-    const quint32 xkbMask = xkbModMask(state);
-
-    const quint32 latched = modsLatched & xkbMask;
-    const quint32 locked = modsLocked & xkbMask;
-    quint32 depressed = modsDepressed & xkbMask;
-    // set modifiers in depressed if they don't appear in any of the final masks
-    depressed |= ~(depressed | latched | locked) & xkbMask;
-
-    const xkb_state_component newState
-            = xkb_state_update_mask(kb_state,
-                            depressed,
-                            latched,
-                            locked,
-                            0,
-                            0,
-                            (state >> 13) & 3); // bits 13 and 14 report the state keyboard group
-
-    if ((newState & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE) {
-        //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
-    }
+    return (state >> 13) & 3; // bits 13 and 14 report the state keyboard group
 }
 
 void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
 {
     if (m_config && !connection()->hasXKB()) {
-        updateXKBStateFromState(m_xkbState.get(), state);
+        struct xkb_state *xkbState = m_xkbState.get();
+        xkb_mod_mask_t modsDepressed = xkb_state_serialize_mods(xkbState, XKB_STATE_MODS_DEPRESSED);
+        xkb_mod_mask_t modsLatched = xkb_state_serialize_mods(xkbState, XKB_STATE_MODS_LATCHED);
+        xkb_mod_mask_t modsLocked = xkb_state_serialize_mods(xkbState, XKB_STATE_MODS_LOCKED);
+        xkb_mod_mask_t xkbMask = xkbModMask(state);
+
+        xkb_mod_mask_t latched = modsLatched & xkbMask;
+        xkb_mod_mask_t locked = modsLocked & xkbMask;
+        xkb_mod_mask_t depressed = modsDepressed & xkbMask;
+        // set modifiers in depressed if they don't appear in any of the final masks
+        depressed |= ~(depressed | latched | locked) & xkbMask;
+
+        xkb_state_component changedComponents = xkb_state_update_mask(
+                    xkbState, depressed, latched, locked, 0, 0, lockedGroup(state));
+
+        if ((changedComponents & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE) {
+            //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
+        }
     }
 }
 
@@ -841,9 +836,9 @@ void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
 }
 #endif
 
-quint32 QXcbKeyboard::xkbModMask(quint16 state)
+xkb_mod_mask_t QXcbKeyboard::xkbModMask(quint16 state)
 {
-    quint32 xkb_mask = 0;
+    xkb_mod_mask_t xkb_mask = 0;
 
     if ((state & XCB_MOD_MASK_SHIFT) && xkb_mods.shift != XKB_MOD_INVALID)
         xkb_mask |= (1 << xkb_mods.shift);
@@ -1503,7 +1498,7 @@ private:
 };
 
 void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code,
-                                  quint16 state, xcb_timestamp_t time)
+                                  quint16 state, xcb_timestamp_t time, bool fromSendEvent)
 {
     if (!m_config)
         return;
@@ -1515,17 +1510,25 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     if (type == QEvent::KeyPress)
         targetWindow->updateNetWmUserTime(time);
 
-    // Have a temporary keyboard state filled in from state
-    // this way we allow for synthetic events to have different state
-    // from the current state i.e. you can have Alt+Ctrl pressed
-    // and receive a synthetic key event that has neither Alt nor Ctrl pressed
-    ScopedXKBState xkbState(xkb_state_new(m_xkbKeymap.get()));
-    if (!xkbState)
-        return;
-    updateXKBStateFromState(xkbState.get(), state);
 
-    xcb_keysym_t sym = xkb_state_key_get_one_sym(xkbState.get(), code);
-    QString string = lookupString(xkbState.get(), code);
+    ScopedXKBState sendEventState;
+    if (fromSendEvent) {
+        // Have a temporary keyboard state filled in from state
+        // this way we allow for synthetic events to have different state
+        // from the current state i.e. you can have Alt+Ctrl pressed
+        // and receive a synthetic key event that has neither Alt nor Ctrl pressed
+        sendEventState.reset(xkb_state_new(m_xkbKeymap.get()));
+        if (!sendEventState)
+            return;
+
+        xkb_mod_mask_t depressed = xkbModMask(state);
+        xkb_state_update_mask(sendEventState.get(), depressed, 0, 0, 0, 0, lockedGroup(state));
+    }
+
+    struct xkb_state *xkbState = fromSendEvent ? sendEventState.get() : m_xkbState.get();
+
+    xcb_keysym_t sym = xkb_state_key_get_one_sym(xkbState, code);
+    QString string = lookupString(xkbState, code);
 
     Qt::KeyboardModifiers modifiers = translateModifiers(state);
     if (sym >= XKB_KEY_KP_Space && sym <= XKB_KEY_KP_9)
@@ -1548,7 +1551,7 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     }
 
     int qtcode = keysymToQtKey(latinKeysym != XKB_KEY_NoSymbol ? latinKeysym : sym,
-                               modifiers, xkbState.get(), code);
+                               modifiers, xkbState, code);
 
     bool isAutoRepeat = false;
     if (type == QEvent::KeyPress) {
@@ -1624,14 +1627,23 @@ QString QXcbKeyboard::lookupStringNoKeysymTransformations(xkb_keysym_t keysym) c
     return QString::fromUtf8(chars.constData(), size);
 }
 
-void QXcbKeyboard::handleKeyPressEvent(const xcb_key_press_event_t *event)
+static bool fromSendEvent(const void *event)
 {
-    handleKeyEvent(event->event, QEvent::KeyPress, event->detail, event->state, event->time);
+    // From X11 protocol: Every event contains an 8-bit type code. The most
+    // significant bit in this code is set if the event was generated from
+    // a SendEvent request.
+    const xcb_generic_event_t *e = reinterpret_cast<const xcb_generic_event_t *>(event);
+    return (e->response_type & 0x80) != 0;
 }
 
-void QXcbKeyboard::handleKeyReleaseEvent(const xcb_key_release_event_t *event)
+void QXcbKeyboard::handleKeyPressEvent(const xcb_key_press_event_t *e)
 {
-    handleKeyEvent(event->event, QEvent::KeyRelease, event->detail, event->state, event->time);
+    handleKeyEvent(e->event, QEvent::KeyPress, e->detail, e->state, e->time, fromSendEvent(e));
+}
+
+void QXcbKeyboard::handleKeyReleaseEvent(const xcb_key_release_event_t *e)
+{
+    handleKeyEvent(e->event, QEvent::KeyRelease, e->detail, e->state, e->time, fromSendEvent(e));
 }
 
 void QXcbKeyboard::handleMappingNotifyEvent(const void *event)

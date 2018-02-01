@@ -72,7 +72,7 @@ public:
 
     // when XKEYBOARD not present on the X server
     void updateXKBMods();
-    quint32 xkbModMask(quint16 state);
+    xkb_mod_mask_t xkbModMask(quint16 state);
     void updateXKBStateFromCore(quint16 state);
 #if QT_CONFIG(xinput2)
     void updateXKBStateFromXI(void *modInfo, void *groupInfo);
@@ -84,7 +84,8 @@ public:
 #endif
 
 protected:
-    void handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
+    void handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code,
+                        quint16 state, xcb_timestamp_t time, bool fromSendEvent);
 
     void resolveMaskConflicts();
     QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
@@ -106,8 +107,6 @@ protected:
     void checkForLatinLayout() const;
 
 private:
-    void updateXKBStateFromState(struct xkb_state *kb_state, quint16 state);
-
     bool m_config = false;
     xcb_keycode_t m_autorepeat_code = 0;
 
