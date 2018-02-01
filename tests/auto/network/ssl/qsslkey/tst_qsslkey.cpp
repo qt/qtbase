@@ -110,10 +110,10 @@ void tst_QSslKey::initTestCase()
         testDataDir += QLatin1String("/");
 
     QDir dir(testDataDir + "keys");
-    QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
-    QRegExp rx(QLatin1String("^(rsa|dsa|ec)-(pub|pri)-(\\d+)-?\\w*\\.(pem|der)$"));
-    foreach (QFileInfo fileInfo, fileInfoList) {
-        if (rx.indexIn(fileInfo.fileName()) >= 0)
+    const QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
+    QRegExp rx(QLatin1String("^(rsa|dsa|ec)-(pub|pri)-(\\d+)-?[\\w-]*\\.(pem|der)$"));
+    for (const QFileInfo &fileInfo : fileInfoList) {
+        if (rx.indexIn(fileInfo.fileName()) >= 0) {
             keyInfoList << KeyInfo(
                 fileInfo,
                 rx.cap(1) == QLatin1String("rsa") ? QSsl::Rsa :
@@ -121,6 +121,7 @@ void tst_QSslKey::initTestCase()
                 rx.cap(2) == QLatin1String("pub") ? QSsl::PublicKey : QSsl::PrivateKey,
                 rx.cap(3).toInt(),
                 rx.cap(4) == QLatin1String("pem") ? QSsl::Pem : QSsl::Der);
+        }
     }
 }
 
@@ -164,6 +165,11 @@ void tst_QSslKey::createPlainTestRows(bool filter, QSsl::EncodingFormat format)
         if (filter && keyInfo.format != format)
             continue;
 
+#if !defined(QT_NO_SSL) && defined(QT_NO_OPENSSL) // generic backend
+        if (keyInfo.fileInfo.fileName().contains("pkcs8"))
+            continue; // The generic backend does not support pkcs8 (yet)
+#endif
+
         QTest::newRow(keyInfo.fileInfo.fileName().toLatin1())
             << keyInfo.fileInfo.absoluteFilePath() << keyInfo.algorithm << keyInfo.type
             << keyInfo.length << keyInfo.format;
@@ -186,7 +192,10 @@ void tst_QSslKey::constructor()
     QFETCH(QSsl::EncodingFormat, format);
 
     QByteArray encoded = readFile(absFilePath);
-    QSslKey key(encoded, algorithm, format, type);
+    QByteArray passphrase;
+    if (QByteArray(QTest::currentDataTag()).contains("-pkcs8-"))
+        passphrase = QByteArray("1234");
+    QSslKey key(encoded, algorithm, format, type, passphrase);
     QVERIFY(!key.isNull());
 }
 
@@ -215,9 +224,12 @@ void tst_QSslKey::constructorHandle()
                  ? q_PEM_read_bio_PUBKEY
                  : q_PEM_read_bio_PrivateKey);
 
+    QByteArray passphrase;
+    if (QByteArray(QTest::currentDataTag()).contains("-pkcs8-"))
+        passphrase = "1234";
     BIO* bio = q_BIO_new(q_BIO_s_mem());
     q_BIO_write(bio, pem.constData(), pem.length());
-    QSslKey key(func(bio, nullptr, nullptr, nullptr), type);
+    QSslKey key(func(bio, nullptr, nullptr, static_cast<void *>(passphrase.data())), type);
     q_BIO_free(bio);
 
     QVERIFY(!key.isNull());
@@ -245,7 +257,10 @@ void tst_QSslKey::copyAndAssign()
     QFETCH(QSsl::EncodingFormat, format);
 
     QByteArray encoded = readFile(absFilePath);
-    QSslKey key(encoded, algorithm, format, type);
+    QByteArray passphrase;
+    if (QByteArray(QTest::currentDataTag()).contains("-pkcs8-"))
+        passphrase = QByteArray("1234");
+    QSslKey key(encoded, algorithm, format, type, passphrase);
 
     QSslKey copied(key);
     QCOMPARE(key, copied);
@@ -286,7 +301,10 @@ void tst_QSslKey::length()
     QFETCH(QSsl::EncodingFormat, format);
 
     QByteArray encoded = readFile(absFilePath);
-    QSslKey key(encoded, algorithm, format, type);
+    QByteArray passphrase;
+    if (QByteArray(QTest::currentDataTag()).contains("-pkcs8-"))
+        passphrase = QByteArray("1234");
+    QSslKey key(encoded, algorithm, format, type, passphrase);
     QVERIFY(!key.isNull());
     QCOMPARE(key.length(), length);
 }
@@ -305,6 +323,13 @@ void tst_QSslKey::toPemOrDer()
     QFETCH(QSsl::KeyAlgorithm, algorithm);
     QFETCH(QSsl::KeyType, type);
     QFETCH(QSsl::EncodingFormat, format);
+
+    if (QByteArray(QTest::currentDataTag()).contains("-pkcs8-")) // these are encrypted
+        QSKIP("Encrypted PKCS#8 keys gets decrypted when loaded. So we can't compare it to the encrypted version.");
+#ifndef QT_NO_OPENSSL
+    if (QByteArray(QTest::currentDataTag()).contains("pkcs8"))
+        QSKIP("OpenSSL converts PKCS#8 keys to other formats, invalidating comparisons.");
+#endif // openssl
 
     QByteArray encoded = readFile(absFilePath);
     QSslKey key(encoded, algorithm, format, type);
@@ -326,6 +351,8 @@ void tst_QSslKey::toEncryptedPemOrDer_data()
     passwords << " " << "foobar" << "foo bar"
               << "aAzZ`1234567890-=~!@#$%^&*()_+[]{}\\|;:'\",.<>/?"; // ### add more (?)
     foreach (KeyInfo keyInfo, keyInfoList) {
+        if (keyInfo.fileInfo.fileName().contains("pkcs8"))
+            continue; // pkcs8 keys are encrypted in a different way than the other keys
         foreach (QString password, passwords) {
             const QByteArray testName = keyInfo.fileInfo.fileName().toLatin1()
             + '-' + (keyInfo.algorithm == QSsl::Rsa ? "RSA" :

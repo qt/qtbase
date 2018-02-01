@@ -61,6 +61,7 @@
 #endif
 #include "qsslsocket.h"
 #include "qsslsocket_p.h"
+#include "qasn1element_p.h"
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qbytearray.h>
@@ -120,6 +121,13 @@ QByteArray QSslKeyPrivate::pemHeader() const
     return QByteArray();
 }
 
+static QByteArray pkcs8Header(bool encrypted)
+{
+    return encrypted
+        ? QByteArrayLiteral("-----BEGIN ENCRYPTED PRIVATE KEY-----")
+        : QByteArrayLiteral("-----BEGIN PRIVATE KEY-----");
+}
+
 /*!
     \internal
 */
@@ -136,6 +144,13 @@ QByteArray QSslKeyPrivate::pemFooter() const
 
     Q_UNREACHABLE();
     return QByteArray();
+}
+
+static QByteArray pkcs8Footer(bool encrypted)
+{
+    return encrypted
+        ? QByteArrayLiteral("-----END ENCRYPTED PRIVATE KEY-----")
+        : QByteArrayLiteral("-----END PRIVATE KEY-----");
 }
 
 /*!
@@ -166,8 +181,14 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der, const QMap<QByteArr
         } while (it != headers.constBegin());
         extra += '\n';
     }
-    pem.prepend(pemHeader() + '\n' + extra);
-    pem.append(pemFooter() + '\n');
+
+    if (isEncryptedPkcs8(der)) {
+        pem.prepend(pkcs8Header(true) + '\n' + extra);
+        pem.append(pkcs8Footer(true) + '\n');
+    } else {
+        pem.prepend(pemHeader() + '\n' + extra);
+        pem.append(pemFooter() + '\n');
+    }
 
     return pem;
 }
@@ -179,13 +200,27 @@ QByteArray QSslKeyPrivate::pemFromDer(const QByteArray &der, const QMap<QByteArr
 */
 QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QByteArray> *headers) const
 {
-    const QByteArray header = pemHeader();
-    const QByteArray footer = pemFooter();
+    QByteArray header = pemHeader();
+    QByteArray footer = pemFooter();
 
     QByteArray der(pem);
 
-    const int headerIndex = der.indexOf(header);
-    const int footerIndex = der.indexOf(footer);
+    int headerIndex = der.indexOf(header);
+    int footerIndex = der.indexOf(footer, headerIndex + header.length());
+    if (type != QSsl::PublicKey) {
+        if (headerIndex == -1 || footerIndex == -1) {
+            header = pkcs8Header(true);
+            footer = pkcs8Footer(true);
+            headerIndex = der.indexOf(header);
+            footerIndex = der.indexOf(footer, headerIndex + header.length());
+        }
+        if (headerIndex == -1 || footerIndex == -1) {
+            header = pkcs8Header(false);
+            footer = pkcs8Footer(false);
+            headerIndex = der.indexOf(header);
+            footerIndex = der.indexOf(footer, headerIndex + header.length());
+        }
+    }
     if (headerIndex == -1 || footerIndex == -1)
         return QByteArray();
 
@@ -225,13 +260,47 @@ QByteArray QSslKeyPrivate::derFromPem(const QByteArray &pem, QMap<QByteArray, QB
     return QByteArray::fromBase64(der); // ignores newlines
 }
 
+bool QSslKeyPrivate::isEncryptedPkcs8(const QByteArray &der) const
+{
+    static const QVector<QByteArray> pbes1OIds {
+        // PKCS5
+        {PKCS5_MD2_DES_CBC_OID},
+        {PKCS5_MD2_RC2_CBC_OID},
+        {PKCS5_MD5_DES_CBC_OID},
+        {PKCS5_MD5_RC2_CBC_OID},
+        {PKCS5_SHA1_DES_CBC_OID},
+        {PKCS5_SHA1_RC2_CBC_OID},
+    };
+    QAsn1Element elem;
+    if (!elem.read(der) || elem.type() != QAsn1Element::SequenceType)
+        return false;
+
+    const QVector<QAsn1Element> items = elem.toVector();
+    if (items.size() != 2
+        || items[0].type() != QAsn1Element::SequenceType
+        || items[1].type() != QAsn1Element::OctetStringType) {
+        return false;
+    }
+
+    const QVector<QAsn1Element> encryptionSchemeContainer = items[0].toVector();
+    if (encryptionSchemeContainer.size() != 2
+        || encryptionSchemeContainer[0].type() != QAsn1Element::ObjectIdentifierType
+        || encryptionSchemeContainer[1].type() != QAsn1Element::SequenceType) {
+        return false;
+    }
+
+    const QByteArray encryptionScheme = encryptionSchemeContainer[0].toObjectId();
+    return encryptionScheme == PKCS5_PBES2_ENCRYPTION_OID
+            || pbes1OIds.contains(encryptionScheme)
+            || encryptionScheme.startsWith(PKCS12_OID);
+}
+
 /*!
     Constructs a QSslKey by decoding the string in the byte array
     \a encoded using a specified \a algorithm and \a encoding format.
     \a type specifies whether the key is public or private.
 
-    If the key is encoded as PEM and encrypted, \a passPhrase is used
-    to decrypt it.
+    If the key is encrypted then \a passPhrase is used to decrypt it.
 
     After construction, use isNull() to check if \a encoded contained
     a valid key.
@@ -243,7 +312,7 @@ QSslKey::QSslKey(const QByteArray &encoded, QSsl::KeyAlgorithm algorithm,
     d->type = type;
     d->algorithm = algorithm;
     if (encoding == QSsl::Der)
-        d->decodeDer(encoded);
+        d->decodeDer(encoded, passPhrase);
     else
         d->decodePem(encoded, passPhrase);
 }
@@ -253,8 +322,7 @@ QSslKey::QSslKey(const QByteArray &encoded, QSsl::KeyAlgorithm algorithm,
     \a device using a specified \a algorithm and \a encoding format.
     \a type specifies whether the key is public or private.
 
-    If the key is encoded as PEM and encrypted, \a passPhrase is used
-    to decrypt it.
+    If the key is encrypted then \a passPhrase is used to decrypt it.
 
     After construction, use isNull() to check if \a device provided
     a valid key.
@@ -269,7 +337,7 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
     d->type = type;
     d->algorithm = algorithm;
     if (encoding == QSsl::Der)
-        d->decodeDer(encoded);
+        d->decodeDer(encoded, passPhrase);
     else
         d->decodePem(encoded, passPhrase);
 }

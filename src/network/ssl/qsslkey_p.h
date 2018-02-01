@@ -81,9 +81,8 @@ public:
 #ifndef QT_NO_OPENSSL
     bool fromEVP_PKEY(EVP_PKEY *pkey);
 #endif
-    void decodeDer(const QByteArray &der, bool deepClear = true);
-    void decodePem(const QByteArray &pem, const QByteArray &passPhrase,
-                   bool deepClear = true);
+    void decodeDer(const QByteArray &der, const QByteArray &passPhrase = {}, bool deepClear = true);
+    void decodePem(const QByteArray &pem, const QByteArray &passPhrase, bool deepClear = true);
     QByteArray pemHeader() const;
     QByteArray pemFooter() const;
     QByteArray pemFromDer(const QByteArray &der, const QMap<QByteArray, QByteArray> &headers) const;
@@ -92,6 +91,8 @@ public:
     int length() const;
     QByteArray toPem(const QByteArray &passPhrase) const;
     Qt::HANDLE handle() const;
+
+    bool isEncryptedPkcs8(const QByteArray &der) const;
 
     bool isNull;
     QSsl::KeyType type;

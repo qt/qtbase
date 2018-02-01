@@ -154,8 +154,9 @@ void QSslKeyPrivate::clear(bool deep)
     keyLength = -1;
 }
 
-void QSslKeyPrivate::decodeDer(const QByteArray &der, bool deepClear)
+void QSslKeyPrivate::decodeDer(const QByteArray &der, const QByteArray &passPhrase, bool deepClear)
 {
+    Q_UNUSED(passPhrase);
     clear(deepClear);
 
     if (der.isEmpty())
@@ -272,7 +273,7 @@ void QSslKeyPrivate::decodePem(const QByteArray &pem, const QByteArray &passPhra
         const QByteArray key = deriveKey(cipher, passPhrase, iv);
         data = decrypt(cipher, data, key, iv);
     }
-    decodeDer(data, deepClear);
+    decodeDer(data, passPhrase, deepClear);
 }
 
 int QSslKeyPrivate::length() const

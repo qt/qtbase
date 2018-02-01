@@ -58,9 +58,32 @@
 
 QT_BEGIN_NAMESPACE
 
-#define RSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.113549.1.1.1")
+// General
+#define RSADSI_OID "1.2.840.113549."
+
+#define RSA_ENCRYPTION_OID QByteArrayLiteral(RSADSI_OID "1.1.1")
 #define DSA_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10040.4.1")
 #define EC_ENCRYPTION_OID QByteArrayLiteral("1.2.840.10045.2.1")
+
+// These are mostly from the RFC for PKCS#5
+// PKCS#5: https://tools.ietf.org/html/rfc8018#appendix-B
+#define PKCS5_OID RSADSI_OID "1.5."
+// PKCS#12: https://tools.ietf.org/html/rfc7292#appendix-D)
+#define PKCS12_OID RSADSI_OID "1.12."
+
+// -PBES1
+#define PKCS5_MD2_DES_CBC_OID QByteArrayLiteral(PKCS5_OID "1")
+#define PKCS5_MD2_RC2_CBC_OID QByteArrayLiteral(PKCS5_OID "4")
+#define PKCS5_MD5_DES_CBC_OID QByteArrayLiteral(PKCS5_OID "3")
+#define PKCS5_MD5_RC2_CBC_OID QByteArrayLiteral(PKCS5_OID "6")
+#define PKCS5_SHA1_DES_CBC_OID QByteArrayLiteral(PKCS5_OID "10")
+#define PKCS5_SHA1_RC2_CBC_OID QByteArrayLiteral(PKCS5_OID "11")
+
+// -PBKDF2
+#define PKCS5_PBKDF2_ENCRYPTION_OID QByteArrayLiteral(PKCS5_OID "12")
+
+// -PBES2
+#define PKCS5_PBES2_ENCRYPTION_OID QByteArrayLiteral(PKCS5_OID "13")
 
 class Q_AUTOTEST_EXPORT QAsn1Element
 {

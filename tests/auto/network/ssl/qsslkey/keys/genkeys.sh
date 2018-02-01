@@ -87,3 +87,58 @@ do
   echo -e "\ngenerating EC public key to DER file ..."
   openssl ec -in ec-pri-$size-$curve.pem -pubout -out ec-pub-$size-$curve.der -outform DER
 done
+
+#--- PKCS#8 ------------------------------------------------------------------------
+# Note: We'll just grab some of the keys generated earlier and convert those
+# https://www.openssl.org/docs/manmaster/man1/pkcs8.html#PKCS-5-v1.5-and-PKCS-12-algorithms
+echo -e "\ngenerating unencrypted PKCS#8-format RSA PEM file ..."
+openssl pkcs8 -topk8 -nocrypt -in rsa-pri-512.pem -out rsa-pri-512-pkcs8.pem
+echo -e "\ngenerating unencrypted PKCS#8-format RSA DER file ..."
+openssl pkcs8 -topk8 -nocrypt -in rsa-pri-512.pem -outform DER -out rsa-pri-512-pkcs8.der
+
+echo -e "\ngenerating unencrypted PKCS#8-format DSA PEM file ..."
+openssl pkcs8 -topk8 -nocrypt -in dsa-pri-512.pem -out dsa-pri-512-pkcs8.pem
+echo -e "\ngenerating unencrypted PKCS#8-format DSA DER file ..."
+openssl pkcs8 -topk8 -nocrypt -in dsa-pri-512.pem -outform DER -out dsa-pri-512-pkcs8.der
+
+echo -e "\ngenerating unencrypted PKCS#8-format EC PEM file ..."
+openssl pkcs8 -topk8 -nocrypt -in ec-pri-224-secp224r1.pem -out ec-pri-224-secp224r1-pkcs8.pem
+echo -e "\ngenerating unencrypted PKCS#8-format EC DER file ..."
+openssl pkcs8 -topk8 -nocrypt -in ec-pri-224-secp224r1.pem -outform DER -out ec-pri-224-secp224r1-pkcs8.der
+
+for pkey in rsa-pri-512 dsa-pri-512 ec-pri-224-secp224r1
+do
+  pkeystem=`echo "$pkey" | cut -d- -f 1`
+  # List: https://www.openssl.org/docs/manmaster/man1/pkcs8.html#PKCS-5-v1.5-and-PKCS-12-algorithms
+  # These are technically supported, but fail to generate. Probably because MD2 is deprecated/removed
+  # PBE-MD2-DES PBE-MD2-RC2-64
+  for algorithm in PBE-MD5-DES PBE-SHA1-RC2-64 PBE-MD5-RC2-64 PBE-SHA1-DES
+  do
+    echo -e "\ngenerating encrypted PKCS#8-format (v1) PEM-encoded $pkeystem key using $algorithm ..."
+    openssl pkcs8 -topk8 -in $pkey.pem -v1 $algorithm -out $pkey-pkcs8-$algorithm.pem -passout pass:1234
+
+    echo -e "\ngenerating encrypted PKCS#8-format (v1) DER-encoded $pkeystem key using $algorithm ..."
+    openssl pkcs8 -topk8 -in $pkey.pem -v1 $algorithm -outform DER -out $pkey-pkcs8-$algorithm.der -passout pass:1234
+  done
+
+  for algorithm in PBE-SHA1-RC4-128 PBE-SHA1-RC4-40 PBE-SHA1-3DES PBE-SHA1-2DES PBE-SHA1-RC2-128 PBE-SHA1-RC2-40
+  do
+    echo -e "\ngenerating encrypted PKCS#8-format (v1 PKCS#12) PEM-encoded $pkeystem key using $algorithm ..."
+    openssl pkcs8 -topk8 -in $pkey.pem -v1 $algorithm -out $pkey-pkcs8-pkcs12-$algorithm.pem -passout pass:1234
+
+    echo -e "\ngenerating encrypted PKCS#8-format (v1 PKCS#12) DER-encoded $pkeystem key using $algorithm ..."
+    openssl pkcs8 -topk8 -in $pkey.pem -v1 $algorithm -outform DER -out $pkey-pkcs8-pkcs12-$algorithm.der -passout pass:1234
+  done
+
+  for algorithm in des3 aes128 aes256 rc2
+  do
+    for prf in hmacWithSHA1 hmacWithSHA256
+    do
+      echo -e "\ngenerating encrypted PKCS#8-format (v2) PEM-encoded $pkeystem key using $algorithm and $prf ..."
+      openssl pkcs8 -topk8 -in $pkey.pem -v2 $algorithm -v2prf $prf -out $pkey-pkcs8-$algorithm-$prf.pem -passout pass:1234
+
+      echo -e "\ngenerating encrypted PKCS#8-format (v2) DER-encoded $pkeystem key using $algorithm and $prf ..."
+      openssl pkcs8 -topk8 -in $pkey.pem -v2 $algorithm -v2prf $prf -outform DER -out $pkey-pkcs8-$algorithm-$prf.der -passout pass:1234
+    done
+  done
+done
