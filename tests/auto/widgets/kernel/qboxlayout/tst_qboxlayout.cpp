@@ -56,6 +56,7 @@ private slots:
     void taskQTBUG_40609_addingWidgetToItsOwnLayout();
     void taskQTBUG_40609_addingLayoutToItself();
     void replaceWidget();
+    void indexOf();
 };
 
 class CustomLayoutStyle : public QProxyStyle
@@ -512,6 +513,25 @@ void tst_QBoxLayout::replaceWidget()
 
     QCOMPARE(boxLayout->indexOf(replaceFrom), -1);
     QCOMPARE(boxLayout->indexOf(replaceTo), 1);
+}
+
+void tst_QBoxLayout::indexOf()
+{
+    QWidget w;
+    auto outer = new QVBoxLayout(&w);
+    auto inner = new QHBoxLayout();
+    outer->addLayout(inner);
+    auto widget1 = new QWidget();
+    QWidget widget2;
+    inner->addWidget(widget1);
+
+    QCOMPARE(inner->indexOf(widget1), 0);
+    QCOMPARE(inner->indexOf(&widget2), -1);
+    QCOMPARE(outer->indexOf(widget1), -1);
+    QCOMPARE(outer->indexOf(&widget2), -1);
+    QCOMPARE(outer->indexOf(outer), -1);
+    QCOMPARE(outer->indexOf(inner), 0);
+    QCOMPARE(inner->indexOf(inner->itemAt(0)), 0);
 }
 
 QTEST_MAIN(tst_QBoxLayout)

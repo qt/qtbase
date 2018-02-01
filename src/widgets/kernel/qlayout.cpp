@@ -1244,6 +1244,26 @@ int QLayout::indexOf(QWidget *widget) const
 }
 
 /*!
+    \since 5.12
+    Searches for layout item \a layoutItem in this layout (not including child
+    layouts).
+
+    Returns the index of \a layoutItem, or -1 if \a layoutItem is not found.
+*/
+int QLayout::indexOf(QLayoutItem *layoutItem) const
+{
+    int i = 0;
+    QLayoutItem *item = itemAt(i);
+    while (item) {
+        if (item == layoutItem)
+            return i;
+        ++i;
+        item = itemAt(i);
+    }
+    return -1;
+}
+
+/*!
     \enum QLayout::SizeConstraint
 
     The possible values are:
