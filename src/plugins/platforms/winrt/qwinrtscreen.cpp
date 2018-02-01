@@ -1209,7 +1209,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         // menus.
         if (buttons != Qt::NoButton && d->currentPressWindow == nullptr && !d->mouseGrabWindow)
             d->currentPressWindow = windowUnderPointer;
-        if (!isPressed && d->currentPressWindow && d->mouseGrabWindow) {
+        if (buttons == Qt::NoButton && d->currentPressWindow && d->mouseGrabWindow) {
             const QPointF globalPosDelta = pos - posPoint;
             const QPointF localPressPos = d->currentPressWindow->mapFromGlobal(posPoint) + globalPosDelta;
 
