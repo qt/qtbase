@@ -499,7 +499,7 @@ bool QFseventsFileSystemWatcherEngine::startStream()
 
     DEBUG() << "Starting stream with paths" << watchingState.watchedPaths.keys();
 
-    NSMutableArray *pathsToWatch = [NSMutableArray arrayWithCapacity:watchingState.watchedPaths.size()];
+    NSMutableArray<NSString *> *pathsToWatch = [NSMutableArray<NSString *> arrayWithCapacity:watchingState.watchedPaths.size()];
     for (PathRefCounts::const_iterator i = watchingState.watchedPaths.begin(), ei = watchingState.watchedPaths.end(); i != ei; ++i)
         [pathsToWatch addObject:i.key().toNSString()];
 

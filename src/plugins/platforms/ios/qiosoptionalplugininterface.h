@@ -44,9 +44,9 @@
 
 #include "qiosfiledialog.h"
 
-QT_BEGIN_NAMESPACE
-
 Q_FORWARD_DECLARE_OBJC_CLASS(UIViewController);
+
+QT_BEGIN_NAMESPACE
 
 #define QIosOptionalPluginInterface_iid "org.qt-project.Qt.QPA.ios.optional"
 

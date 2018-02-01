@@ -70,11 +70,8 @@ class QPixmap;
 class QString;
 
 // Conversion functions
-QStringList qt_mac_NSArrayToQStringList(void *nsarray);
-void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list);
-
-inline NSMutableArray *qt_mac_QStringListToNSMutableArray(const QStringList &qstrlist)
-{ return reinterpret_cast<NSMutableArray *>(qt_mac_QStringListToNSMutableArrayVoid(qstrlist)); }
+QStringList qt_mac_NSArrayToQStringList(NSArray<NSString *> *nsarray);
+NSMutableArray<NSString *> *qt_mac_QStringListToNSMutableArray(const QStringList &list);
 
 NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
 NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
@@ -170,12 +167,7 @@ QT_END_NAMESPACE
 - (void)onCancelClicked;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSPanelContentsWrapper) : NSView {
-    NSButton *_okButton;
-    NSButton *_cancelButton;
-    NSView *_panelContents;
-    NSEdgeInsets _panelContentsMargins;
-}
+@interface QT_MANGLE_NAMESPACE(QNSPanelContentsWrapper) : NSView
 
 @property (nonatomic, readonly) NSButton *okButton;
 @property (nonatomic, readonly) NSButton *cancelButton;
@@ -187,6 +179,7 @@ QT_END_NAMESPACE
 
 - (NSButton *)createButtonWithTitle:(const char *)title;
 - (void)layout;
+
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSPanelContentsWrapper);

@@ -28,9 +28,14 @@
 
 #import "TestMouseMovedNSView.h"
 
-@implementation TestMouseMovedNSView
+@implementation TestMouseMovedNSView {
+    NSPoint mouseMovedPoint_;
+    BOOL wasAcceptingMouseEvents_;
+    NSTrackingRectTag trackingRect_;
+    NSTrackingArea* trackingArea_;
+}
 
-- (id)initWithFrame:(NSRect)frame
+- (instancetype)initWithFrame:(NSRect)frame
 {
     self = [super initWithFrame:frame];
     if (self)
@@ -40,13 +45,13 @@
 
 - (void)viewDidMoveToWindow
 {
-    trackingArea_ = [[NSTrackingArea alloc] initWithRect:[self bounds] options: (NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:nil];
+    trackingArea_ = [[NSTrackingArea alloc] initWithRect:self.bounds options:(NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:nil];
     [self addTrackingArea:trackingArea_];
 }
 
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow
 {
-    if ([self window] && trackingArea_)
+    if (self.window && trackingArea_)
         [self removeTrackingArea:trackingArea_];
 }
 
@@ -54,7 +59,7 @@
 {
     [super updateTrackingAreas];
     [self removeTrackingArea: trackingArea_];
-    trackingArea_ = [[NSTrackingArea alloc] initWithRect:[self bounds] options: (NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:nil];
+    trackingArea_ = [[NSTrackingArea alloc] initWithRect:self.bounds options:(NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways) owner:self userInfo:nil];
     [self addTrackingArea:trackingArea_];
 }
 
@@ -64,20 +69,20 @@
 - (void)mouseEntered:(NSEvent *)theEvent
 {
     wasAcceptingMouseEvents_ = [[self window] acceptsMouseMovedEvents];
-    [[self window] setAcceptsMouseMovedEvents:YES];
-    [[self window] makeFirstResponder:self];
+    [self.window setAcceptsMouseMovedEvents:YES];
+    [self.window makeFirstResponder:self];
 }
 
 - (void)mouseExited:(NSEvent *)theEvent
 {
-    [[self window] setAcceptsMouseMovedEvents:wasAcceptingMouseEvents_];
+    [self.window setAcceptsMouseMovedEvents:wasAcceptingMouseEvents_];
     [self setNeedsDisplay:YES];
     [self displayIfNeeded];
 }
 
 -(void)mouseMoved:(NSEvent *)pTheEvent
 {
-    mouseMovedPoint_ = [self convertPoint:[pTheEvent locationInWindow] fromView:nil];
+    mouseMovedPoint_ = [self convertPoint:pTheEvent.locationInWindow fromView:nil];
     [self setNeedsDisplay:YES];
     [self displayIfNeeded];
 }
@@ -88,7 +93,7 @@
     NSRectFill(dirtyRect);
 
     NSGraphicsContext *nsGraphicsContext = [NSGraphicsContext currentContext];
-    CGContextRef cgContextRef = (CGContextRef) [nsGraphicsContext graphicsPort];
+    CGContextRef cgContextRef = nsGraphicsContext.CGContext;
 
     CGContextSetRGBStrokeColor(cgContextRef, 0, 0, 0, .5);
     CGContextSetLineWidth(cgContextRef, 1.0);

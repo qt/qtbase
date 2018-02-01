@@ -101,14 +101,14 @@ enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) }
 #ifdef Q_OS_OSX
 static NSInteger languageMapSort(id obj1, id obj2, void *context)
 {
-    NSArray *map1 = (NSArray *) obj1;
-    NSArray *map2 = (NSArray *) obj2;
-    NSArray *languages = (NSArray *) context;
+    NSArray<NSString *> *map1 = reinterpret_cast<NSArray<NSString *> *>(obj1);
+    NSArray<NSString *> *map2 = reinterpret_cast<NSArray<NSString *> *>(obj2);
+    NSArray<NSString *> *languages = reinterpret_cast<NSArray<NSString *> *>(context);
 
-    NSString *lang1 = [map1 objectAtIndex: 0];
-    NSString *lang2 = [map2 objectAtIndex: 0];
+    NSString *lang1 = [map1 objectAtIndex:0];
+    NSString *lang2 = [map2 objectAtIndex:0];
 
-    return [languages indexOfObject: lang1] - [languages indexOfObject: lang2];
+    return [languages indexOfObject:lang1] - [languages indexOfObject:lang2];
 }
 #endif
 
@@ -184,23 +184,9 @@ QCoreTextFontDatabase::~QCoreTextFontDatabase()
         CFRelease(ref);
 }
 
-static CFArrayRef availableFamilyNames()
-{
-#if QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(1060, 100000, 100000, 30000)
-    if (&CTFontManagerCopyAvailableFontFamilyNames)
-        return CTFontManagerCopyAvailableFontFamilyNames();
-#endif
-#if defined(QT_PLATFORM_UIKIT)
-    CFMutableArrayRef familyNames = CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, (CFArrayRef)[UIFont familyNames]);
-    CFArrayAppendValue(familyNames, CFSTR(".PhoneFallback"));
-    return familyNames;
-#endif
-    Q_UNREACHABLE();
-}
-
 void QCoreTextFontDatabase::populateFontDatabase()
 {
-    QCFType<CFArrayRef> familyNames = availableFamilyNames();
+    QCFType<CFArrayRef> familyNames = CTFontManagerCopyAvailableFontFamilyNames();
     for (NSString *familyName in familyNames.as<const NSArray *>())
         QPlatformFontDatabase::registerFontFamily(QString::fromNSString(familyName));
 
@@ -220,7 +206,7 @@ bool QCoreTextFontDatabase::populateFamilyAliases()
     if (m_hasPopulatedAliases)
         return false;
 
-    QCFType<CFArrayRef> familyNames = availableFamilyNames();
+    QCFType<CFArrayRef> familyNames = CTFontManagerCopyAvailableFontFamilyNames();
     for (NSString *familyName in familyNames.as<const NSArray *>()) {
         NSFontManager *fontManager = [NSFontManager sharedFontManager];
         NSString *localizedFamilyName = [fontManager localizedNameForFamily:familyName face:nil];
@@ -570,21 +556,21 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     if (!didPopulateStyleFallbacks) {
 #if defined(Q_OS_MACX)
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
+        NSArray<NSString *> *languages = [defaults stringArrayForKey:@"AppleLanguages"];
 
-        NSDictionary *fallbackDict = [NSDictionary dictionaryWithContentsOfFile: @"/System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreText.framework/Resources/DefaultFontFallbacks.plist"];
+        NSDictionary<NSString *, id> *fallbackDict = [NSDictionary<NSString *, id> dictionaryWithContentsOfFile:@"/System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreText.framework/Resources/DefaultFontFallbacks.plist"];
 
         for (NSString *style in [fallbackDict allKeys]) {
-            NSArray *list = [fallbackDict valueForKey: style];
+            NSArray *list = [fallbackDict valueForKey:style];
             QFont::StyleHint fallbackStyleHint = styleHintFromNSString(style);
             QStringList fallbackList;
             for (id item in list) {
                 // sort the array based on system language preferences
-                if ([item isKindOfClass: [NSArray class]]) {
-                    NSArray *langs = [(NSArray *) item sortedArrayUsingFunction: languageMapSort
-                                                                        context: languages];
-                    for (NSArray *map in langs)
-                        fallbackList.append(familyNameFromPostScriptName([map objectAtIndex: 1]));
+                if ([item isKindOfClass:[NSArray class]]) {
+                    NSArray *langs = [reinterpret_cast<NSArray *>(item)
+                        sortedArrayUsingFunction:languageMapSort context:languages];
+                    for (NSArray<NSString *> *map in langs)
+                        fallbackList.append(familyNameFromPostScriptName([map objectAtIndex:1]));
                 }
                 else if ([item isKindOfClass: [NSString class]])
                     fallbackList.append(familyNameFromPostScriptName(item));

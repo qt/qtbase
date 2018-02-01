@@ -245,7 +245,7 @@ extern "C" int main(int argc, char *argv[]);
 
 static void __attribute__((noinline, noreturn)) user_main_trampoline()
 {
-    NSArray *arguments = [[NSProcessInfo processInfo] arguments];
+    NSArray<NSString *> *arguments = [[NSProcessInfo processInfo] arguments];
     int argc = arguments.count;
     char **argv = new char*[argc];
 

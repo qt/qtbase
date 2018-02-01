@@ -331,12 +331,9 @@ NSMenuItem *QCocoaMenuItem::sync()
         NSFont *customMenuFont = [NSFont fontWithName:m_font.family().toNSString()
                                   size:m_font.pointSize()];
         if (customMenuFont) {
-            NSArray *keys = [NSArray arrayWithObjects:NSFontAttributeName, nil];
-            NSArray *objects = [NSArray arrayWithObjects:customMenuFont, nil];
-            NSDictionary *attributes = [NSDictionary dictionaryWithObjects:objects forKeys:keys];
             NSAttributedString *str = [[[NSAttributedString alloc] initWithString:finalString.toNSString()
-                                     attributes:attributes] autorelease];
-            [m_native setAttributedTitle: str];
+                                     attributes:@{NSFontAttributeName: customMenuFont}] autorelease];
+            [m_native setAttributedTitle:str];
             useAttributedTitle = true;
         }
     }

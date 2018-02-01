@@ -41,8 +41,6 @@
 
 #include "../../qiosfiledialog.h"
 
-@interface QIOSImagePickerController : UIImagePickerController <UIImagePickerControllerDelegate, UINavigationControllerDelegate> {
-    QIOSFileDialog *m_fileDialog;
-}
-- (id)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog;
+@interface QIOSImagePickerController : UIImagePickerController <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+- (instancetype)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog;
 @end

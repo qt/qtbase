@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qnswindow.h"
-#include "qnswindowdelegate.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
 #include "qcocoaeventdispatcher.h"
@@ -72,7 +71,7 @@ static bool isMouseEvent(NSEvent *ev)
     [center addObserverForName:NSWindowDidEnterFullScreenNotification object:nil queue:nil
         usingBlock:^(NSNotification *notification) {
             objc_setAssociatedObject(notification.object, @selector(qt_fullScreen),
-                [NSNumber numberWithBool:YES], OBJC_ASSOCIATION_RETAIN);
+                @(YES), OBJC_ASSOCIATION_RETAIN);
         }
     ];
     [center addObserverForName:NSWindowDidExitFullScreenNotification object:nil queue:nil
@@ -267,14 +266,14 @@ static bool isMouseEvent(NSEvent *ev)
     if (__builtin_available(macOS 10.12, *)) {
         // Unfortunately there's no NSWindowListOrderedBackToFront,
         // so we have to manually reverse the order using an array.
-        NSMutableArray *windows = [[[NSMutableArray alloc] init] autorelease];
+        NSMutableArray<NSWindow *> *windows = [NSMutableArray<NSWindow *> new];
         [application enumerateWindowsWithOptions:NSWindowListOrderedFrontToBack
             usingBlock:^(NSWindow *window, BOOL *) {
                 // For some reason AppKit will give us nil-windows, skip those
                 if (!window)
                     return;
 
-                [(NSMutableArray*)windows addObject:window];
+                [windows addObject:window];
             }
         ];
 

@@ -130,16 +130,14 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 // -------------------------------------------------------------------------
 
-@interface QIOSOrientationListener : NSObject {
-    @public
-    QIOSScreen *m_screen;
-}
-- (id)initWithQIOSScreen:(QIOSScreen *)screen;
+@interface QIOSOrientationListener : NSObject
 @end
 
-@implementation QIOSOrientationListener
+@implementation QIOSOrientationListener {
+    QIOSScreen *m_screen;
+}
 
-- (id)initWithQIOSScreen:(QIOSScreen *)screen
+- (instancetype)initWithQIOSScreen:(QIOSScreen *)screen
 {
     self = [super init];
     if (self) {
@@ -193,7 +191,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 @implementation QUIWindow
 
-- (id)initWithFrame:(CGRect)frame
+- (instancetype)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame]))
         self->_sendingEvent = NO;

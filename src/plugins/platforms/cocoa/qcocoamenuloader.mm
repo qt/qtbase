@@ -50,7 +50,19 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/private/qguiapplication_p.h>
 
-@implementation QCocoaMenuLoader
+@implementation QCocoaMenuLoader {
+    NSMenu *theMenu;
+    NSMenu *appMenu;
+    NSMenuItem *quitItem;
+    NSMenuItem *preferencesItem;
+    NSMenuItem *aboutItem;
+    NSMenuItem *aboutQtItem;
+    NSMenuItem *hideItem;
+    NSMenuItem *lastAppSpecificItem;
+    NSMenuItem *servicesItem;
+    NSMenuItem *hideAllOthersItem;
+    NSMenuItem *showAllItem;
+}
 
 + (instancetype)sharedMenuLoader
 {
@@ -323,7 +335,7 @@
 #endif
 }
 
-- (IBAction)qtDispatcherToQPAMenuItem:(id)sender
+- (void)qtDispatcherToQPAMenuItem:(id)sender
 {
     NSMenuItem *item = static_cast<NSMenuItem *>(sender);
     if (item == quitItem) {
@@ -363,9 +375,10 @@
     }
 }
 
-- (NSArray*) mergeable
+- (NSArray<NSMenuItem *> *)mergeable
 {
-    // don't include the quitItem here, since we want it always visible and enabled regardless
+    // Don't include the quitItem here, since we want it always visible and enabled regardless
+    // Note that lastAppSpecificItem may be nil, so we can't use @[] here.
     return [NSArray arrayWithObjects:preferencesItem, aboutItem, aboutQtItem, lastAppSpecificItem, nil];
 }
 

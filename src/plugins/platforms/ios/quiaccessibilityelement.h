@@ -45,13 +45,12 @@
 
 #ifndef QT_NO_ACCESSIBILITY
 
-@interface QMacAccessibilityElement : UIAccessibilityElement
-{}
+@interface QT_MANGLE_NAMESPACE(QMacAccessibilityElement) : UIAccessibilityElement
 
 @property (readonly) QAccessible::Id axid;
 
-- (id)initWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view;
-+ (QMacAccessibilityElement *)elementWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view;
+- (instancetype)initWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view;
++ (instancetype)elementWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view;
 
 @end
 

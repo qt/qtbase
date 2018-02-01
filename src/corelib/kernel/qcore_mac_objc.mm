@@ -87,19 +87,20 @@ QT_FOR_EACH_MUTABLE_CORE_GRAPHICS_TYPE(QT_DECLARE_WEAK_QDEBUG_OPERATOR_FOR_CF_TY
 QT_END_NAMESPACE
 QT_USE_NAMESPACE
 @interface QT_MANGLE_NAMESPACE(QMacAutoReleasePoolTracker) : NSObject
-{
+@end
+
+@implementation QT_MANGLE_NAMESPACE(QMacAutoReleasePoolTracker) {
     NSAutoreleasePool **m_pool;
 }
--(id)initWithPool:(NSAutoreleasePool**)pool;
-@end
-@implementation QT_MANGLE_NAMESPACE(QMacAutoReleasePoolTracker)
--(id)initWithPool:(NSAutoreleasePool**)pool
+
+- (instancetype)initWithPool:(NSAutoreleasePool **)pool
 {
-    if (self = [super init])
+    if ((self = [self init]))
         m_pool = pool;
     return self;
 }
--(void)dealloc
+
+- (void)dealloc
 {
     if (*m_pool) {
         // The pool is still valid, which means we're not being drained from

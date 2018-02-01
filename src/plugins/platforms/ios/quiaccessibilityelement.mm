@@ -42,20 +42,23 @@
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "private/qaccessiblecache_p.h"
+#include "private/qcore_mac_p.h"
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
 @implementation QMacAccessibilityElement
 
-- (id)initWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view
+- (instancetype)initWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view
 {
     Q_ASSERT((int)anId < 0);
-    self = [super initWithAccessibilityContainer: view];
+    self = [super initWithAccessibilityContainer:view];
     if (self)
         _axid = anId;
 
     return self;
 }
 
-+ (id)elementWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view
++ (instancetype)elementWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view
 {
     Q_ASSERT(anId);
     if (!anId)
@@ -63,10 +66,10 @@
 
     QAccessibleCache *cache = QAccessibleCache::instance();
 
-    QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element = cache->elementForId(anId);
+    QMacAccessibilityElement *element = cache->elementForId(anId);
     if (!element) {
         Q_ASSERT(QAccessible::accessibleInterface(anId));
-        element = [[self alloc] initWithId:anId withAccessibilityContainer: view];
+        element = [[self alloc] initWithId:anId withAccessibilityContainer:view];
         cache->insertElement(anId, element);
     }
     return element;

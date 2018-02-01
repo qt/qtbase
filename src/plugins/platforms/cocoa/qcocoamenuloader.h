@@ -55,19 +55,6 @@
 #include <QtCore/private/qcore_mac_p.h>
 
 @interface QT_MANGLE_NAMESPACE(QCocoaMenuLoader) : NSResponder
-{
-    IBOutlet NSMenu *theMenu;
-    IBOutlet NSMenu *appMenu;
-    IBOutlet NSMenuItem *quitItem;
-    IBOutlet NSMenuItem *preferencesItem;
-    IBOutlet NSMenuItem *aboutItem;
-    IBOutlet NSMenuItem *aboutQtItem;
-    IBOutlet NSMenuItem *hideItem;
-    NSMenuItem *lastAppSpecificItem;
-    NSMenuItem *servicesItem;
-    NSMenuItem *hideAllOthersItem;
-    NSMenuItem *showAllItem;
-}
 + (instancetype)sharedMenuLoader;
 - (instancetype)init;
 - (void)ensureAppMenuInMenu:(NSMenu *)menu;
@@ -80,16 +67,16 @@
 - (NSMenuItem *)aboutQtMenuItem;
 - (NSMenuItem *)hideMenuItem;
 - (NSMenuItem *)appSpecificMenuItem:(NSInteger)tag;
-- (IBAction)terminate:(id)sender;
-- (IBAction)orderFrontStandardAboutPanel:(id)sender;
-- (IBAction)hideOtherApplications:(id)sender;
-- (IBAction)unhideAllApplications:(id)sender;
-- (IBAction)hide:(id)sender;
-- (IBAction)qtDispatcherToQPAMenuItem:(id)sender;
+- (void)terminate:(id)sender;
+- (void)orderFrontStandardAboutPanel:(id)sender;
+- (void)hideOtherApplications:(id)sender;
+- (void)unhideAllApplications:(id)sender;
+- (void)hide:(id)sender;
+- (void)qtDispatcherToQPAMenuItem:(id)sender;
 - (void)orderFrontCharacterPalette:(id)sender;
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem;
 - (void)qtTranslateApplicationMenu;
-- (NSArray *)mergeable;
+- (NSArray<NSMenuItem *> *)mergeable;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaMenuLoader);

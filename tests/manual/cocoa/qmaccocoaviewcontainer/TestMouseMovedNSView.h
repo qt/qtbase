@@ -28,10 +28,5 @@
 
 #import <AppKit/AppKit.h>
 
-@interface TestMouseMovedNSView : NSView {
-    NSPoint mouseMovedPoint_;
-    BOOL wasAcceptingMouseEvents_;
-    NSTrackingRectTag trackingRect_;
-    NSTrackingArea* trackingArea_;
-}
+@interface TestMouseMovedNSView : NSView
 @end

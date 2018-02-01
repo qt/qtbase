@@ -66,7 +66,7 @@ QCocoaScreen::~QCocoaScreen()
 
 NSScreen *QCocoaScreen::nativeScreen() const
 {
-    NSArray *screens = [NSScreen screens];
+    NSArray<NSScreen *> *screens = [NSScreen screens];
 
     // Stale reference, screen configuration has changed
     if (m_screenIndex < 0 || (NSUInteger)m_screenIndex >= [screens count])

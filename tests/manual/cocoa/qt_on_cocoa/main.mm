@@ -50,31 +50,30 @@
 }
 @end
 
-@interface AppDelegate : NSObject <NSApplicationDelegate> {
+@interface AppDelegate : NSObject <NSApplicationDelegate>
+@end
+
+@implementation AppDelegate {
     QGuiApplication *m_app;
     QWindow *m_window;
 }
-- (AppDelegate *) initWithArgc:(int)argc argv:(const char **)argv;
-- (void) applicationWillFinishLaunching: (NSNotification *)notification;
-- (void)applicationWillTerminate:(NSNotification *)notification;
-@end
 
-
-@implementation AppDelegate
-- (AppDelegate *) initWithArgc:(int)argc argv:(const char **)argv
+- (instancetype)initWithArgc:(int)argc argv:(const char **)argv
 {
-    m_app = new QGuiApplication(argc, const_cast<char **>(argv));
+    if ((self = [self init])) {
+        m_app = new QGuiApplication(argc, const_cast<char **>(argv));
+    }
     return self;
 }
 
-- (void) applicationWillFinishLaunching: (NSNotification *)notification
+- (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
     Q_UNUSED(notification);
 
     // Create the NSWindow
     NSRect frame = NSMakeRect(500, 500, 500, 500);
-    NSWindow* window  = [[NSWindow alloc] initWithContentRect:frame
-                        styleMask:NSTitledWindowMask |  NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
+    NSWindow *window  = [[NSWindow alloc] initWithContentRect:frame
+                        styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
                         backing:NSBackingStoreBuffered
                         defer:NO];
 
@@ -100,7 +99,7 @@
     childWindow->setGeometry(50, 50, 100, 100);
 
     NSTextField *textField = [[NSTextField alloc] initWithFrame:NSMakeRect(10, 10, 80, 25)];
-    [(NSView*)childWindow->winId() addSubview:textField];
+    [reinterpret_cast<NSView *>(childWindow->winId()) addSubview:textField];
 
     [contentView addSubview:reinterpret_cast<NSView *>(m_window->winId())];
 
@@ -125,10 +124,7 @@
 int main(int argc, const char *argv[])
 {
     // Create NSApplicaiton with delgate
-    NSApplication *app =[NSApplication sharedApplication];
+    NSApplication *app = [NSApplication sharedApplication];
     app.delegate = [[AppDelegate alloc] initWithArgc:argc argv:argv];
-    return NSApplicationMain (argc, argv);
+    return NSApplicationMain(argc, argv);
 }
-
-
-

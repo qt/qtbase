@@ -77,26 +77,24 @@
 
 #include <Carbon/Carbon.h>
 
-@interface QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) : NSObject {
-QCocoaTheme *mPrivate;
-}
-- (id)initWithPrivate:(QCocoaTheme *)priv;
-- (void)systemColorsDidChange:(NSNotification *)notification;
+@interface QT_MANGLE_NAMESPACE(QCocoaThemeNotificationReceiver) : NSObject
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaThemeNotificationReceiver);
 
-@implementation QCocoaThemeNotificationReceiver
-- (id)initWithPrivate:(QCocoaTheme *)priv
+@implementation QCocoaThemeNotificationReceiver {
+    QCocoaTheme *mPrivate;
+}
+
+- (instancetype)initWithPrivate:(QCocoaTheme *)priv
 {
-    self = [super init];
-    mPrivate = priv;
+    if ((self = [self init]))
+        mPrivate = priv;
     return self;
 }
 
-- (void)systemColorsDidChange:(NSNotification *)notification
+- (void)systemColorsDidChange:(NSNotification *)__unused notification
 {
-    Q_UNUSED(notification);
     mPrivate->reset();
     QWindowSystemInterface::handleThemeChange(nullptr);
 }

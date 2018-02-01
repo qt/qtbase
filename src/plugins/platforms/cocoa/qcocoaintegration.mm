@@ -196,7 +196,7 @@ QCocoaIntegration::~QCocoaIntegration()
         QCocoaApplicationDelegate *delegate = [QCocoaApplicationDelegate sharedDelegate];
         [delegate removeAppleEventHandlers];
         // reset the application delegate
-        [[NSApplication sharedApplication] setDelegate: 0];
+        [[NSApplication sharedApplication] setDelegate:nil];
     }
 
 #ifndef QT_NO_CLIPBOARD
@@ -232,8 +232,8 @@ Q_LOGGING_CATEGORY(lcCocoaScreen, "qt.qpa.cocoa.screens");
 */
 void QCocoaIntegration::updateScreens()
 {
-    NSArray *scrs = [NSScreen screens];
-    NSMutableArray *screens = [NSMutableArray arrayWithArray:scrs];
+    NSArray<NSScreen *> *scrs = [NSScreen screens];
+    NSMutableArray<NSScreen *> *screens = [NSMutableArray<NSScreen *> arrayWithArray:scrs];
     if ([screens count] == 0)
         if ([NSScreen mainScreen])
            [screens addObject:[NSScreen mainScreen]];

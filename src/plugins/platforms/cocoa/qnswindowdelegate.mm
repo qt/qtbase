@@ -39,20 +39,23 @@
 
 #include "qnswindowdelegate.h"
 #include "qcocoahelpers.h"
+#include "qcocoawindow.h"
 
 #include <QDebug>
+#include <QtCore/private/qcore_mac_p.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qwindowsysteminterface.h>
 
 static QRegExp whitespaceRegex = QRegExp(QStringLiteral("\\s*"));
 
-@implementation QNSWindowDelegate
+@implementation QNSWindowDelegate {
+    QCocoaWindow *m_cocoaWindow;
+}
 
-- (id)initWithQCocoaWindow:(QCocoaWindow *)cocoaWindow
+- (instancetype)initWithQCocoaWindow:(QCocoaWindow *)cocoaWindow
 {
-    if (self = [super init])
+    if ((self = [self init]))
         m_cocoaWindow = cocoaWindow;
-
     return self;
 }
 

@@ -279,9 +279,7 @@ void QCocoaMenu::syncSeparatorsCollapsible(bool enable)
         bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
         NSMenuItem *previousItem = nil;
 
-        NSArray *itemArray = [m_nativeMenu itemArray];
-        for (unsigned int i = 0; i < [itemArray count]; ++i) {
-            NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
+        for (NSMenuItem *item in [m_nativeMenu itemArray]) {
             if ([item isSeparatorItem]) {
                 QCocoaMenuItem *cocoaItem = reinterpret_cast<QCocoaMenuItem *>([item tag]);
                 if (cocoaItem)

@@ -536,13 +536,13 @@ QVariant QMacPasteboardMimeRtfText::convertToMime(const QString &mimeType, QList
 
     // Read RTF into to NSAttributedString, then convert the string to HTML
     NSAttributedString *string = [[NSAttributedString alloc] initWithData:data.at(0).toNSData()
-            options:[NSDictionary dictionaryWithObject:NSRTFTextDocumentType forKey:NSDocumentTypeDocumentAttribute]
+            options:@{NSDocumentTypeDocumentAttribute: NSRTFTextDocumentType}
             documentAttributes:nil
             error:nil];
 
     NSError *error;
     NSRange range = NSMakeRange(0, [string length]);
-    NSDictionary *dict = [NSDictionary dictionaryWithObject:NSHTMLTextDocumentType forKey:NSDocumentTypeDocumentAttribute];
+    NSDictionary *dict = @{NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType};
     NSData *htmlData = [string dataFromRange:range documentAttributes:dict error:&error];
     return QByteArray::fromNSData(htmlData);
 }
@@ -554,13 +554,13 @@ QList<QByteArray> QMacPasteboardMimeRtfText::convertFromMime(const QString &mime
         return ret;
 
     NSAttributedString *string = [[NSAttributedString alloc] initWithData:data.toByteArray().toNSData()
-            options:[NSDictionary dictionaryWithObject:NSHTMLTextDocumentType forKey:NSDocumentTypeDocumentAttribute]
+            options:@{NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType}
             documentAttributes:nil
             error:nil];
 
     NSError *error;
     NSRange range = NSMakeRange(0, [string length]);
-    NSDictionary *dict = [NSDictionary dictionaryWithObject:NSRTFTextDocumentType forKey:NSDocumentTypeDocumentAttribute];
+    NSDictionary *dict = @{NSDocumentTypeDocumentAttribute: NSRTFTextDocumentType};
     NSData *rtfData = [string dataFromRange:range documentAttributes:dict error:&error];
     ret << QByteArray::fromNSData(rtfData);
     return ret;
@@ -853,8 +853,8 @@ QList<QByteArray> QMacPasteboardMimeTiff::convertFromMime(const QString &mime, Q
 
     QImage img = qvariant_cast<QImage>(variant);
     NSDictionary *props = @{
-        static_cast<NSString *>(kCGImagePropertyPixelWidth) : [NSNumber numberWithInt:img.width()],
-        static_cast<NSString *>(kCGImagePropertyPixelHeight) : [NSNumber numberWithInt:img.height()]
+        static_cast<NSString *>(kCGImagePropertyPixelWidth): @(img.width()),
+        static_cast<NSString *>(kCGImagePropertyPixelHeight): @(img.height())
     };
 
     CGImageDestinationAddImage(imageDestination, qt_mac_toCGImage(img), static_cast<CFDictionaryRef>(props));

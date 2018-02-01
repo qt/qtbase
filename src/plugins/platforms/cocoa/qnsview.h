@@ -42,52 +42,22 @@
 
 #include <AppKit/AppKit.h>
 
-#include <QtCore/QPointer>
-#include <QtCore/QSet>
-#include <QtGui/QImage>
-#include <QtGui/QAccessible>
-
 #include "private/qcore_mac_p.h"
 
 QT_BEGIN_NAMESPACE
 class QCocoaWindow;
 class QCocoaGLContext;
+class QPointF;
 QT_END_NAMESPACE
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper));
 
-@interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient> {
-    QPointer<QCocoaWindow> m_platformWindow;
-    NSTrackingArea *m_trackingArea;
-    Qt::MouseButtons m_buttons;
-    Qt::MouseButtons m_acceptedMouseDowns;
-    Qt::MouseButtons m_frameStrutButtons;
-    QString m_composingText;
-    QPointer<QObject> m_composingFocusObject;
-    bool m_sendKeyEvent;
-    QStringList *currentCustomDragTypes;
-    bool m_dontOverrideCtrlLMB;
-    bool m_sendUpAsRightButton;
-    Qt::KeyboardModifiers currentWheelModifiers;
-#ifndef QT_NO_OPENGL
-    QCocoaGLContext *m_glContext;
-    bool m_shouldSetGLContextinDrawRect;
-#endif
-    NSString *m_inputSource;
-    QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) *m_mouseMoveHelper;
-    bool m_resendKeyEvent;
-    bool m_scrolling;
-    bool m_updatingDrag;
-    NSEvent *m_currentlyInterpretedKeyEvent;
-    bool m_isMenuView;
-    QSet<quint32> m_acceptedKeyDowns;
-    bool m_updateRequested;
-}
+@interface QT_MANGLE_NAMESPACE(QNSView) : NSView <NSTextInputClient>
 
 @property (nonatomic, retain) NSCursor *cursor;
 
-- (id)init;
-- (id)initWithCocoaWindow:(QCocoaWindow *)platformWindow;
+- (instancetype)init;
+- (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow;
 #ifndef QT_NO_OPENGL
 - (void)setQCocoaGLContext:(QCocoaGLContext *)context;
 #endif

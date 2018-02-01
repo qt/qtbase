@@ -81,23 +81,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
 @interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate)
     : NSObject<NSOpenSavePanelDelegate>
-{
-    @public
-    NSOpenPanel *mOpenPanel;
-    NSSavePanel *mSavePanel;
-    NSView *mAccessoryView;
-    NSPopUpButton *mPopUpButton;
-    NSTextField *mTextField;
-    QCocoaFileDialogHelper *mHelper;
-    NSString *mCurrentDir;
-
-    int mReturnCode;
-
-    SharedPointerFileDialogOptions mOptions;
-    QString *mCurrentSelection;
-    QStringList *mNameFilterDropDownList;
-    QStringList *mSelectedNameFilter;
-}
 
 - (NSString *)strip:(const QString &)label;
 - (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url;
@@ -117,12 +100,27 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
 
-@implementation QNSOpenSavePanelDelegate
+@implementation QNSOpenSavePanelDelegate {
+    @public
+    NSOpenPanel *mOpenPanel;
+    NSSavePanel *mSavePanel;
+    NSView *mAccessoryView;
+    NSPopUpButton *mPopUpButton;
+    NSTextField *mTextField;
+    QCocoaFileDialogHelper *mHelper;
+    NSString *mCurrentDir;
 
-- (id)initWithAcceptMode:
-    (const QString &)selectFile
-    options:(SharedPointerFileDialogOptions)options
-    helper:(QCocoaFileDialogHelper *)helper
+    int mReturnCode;
+
+    SharedPointerFileDialogOptions mOptions;
+    QString *mCurrentSelection;
+    QStringList *mNameFilterDropDownList;
+    QStringList *mSelectedNameFilter;
+}
+
+- (instancetype)initWithAcceptMode:(const QString &)selectFile
+                           options:(SharedPointerFileDialogOptions)options
+                            helper:(QCocoaFileDialogHelper *)helper
 {
     self = [super init];
     mOptions = options;
@@ -406,9 +404,9 @@ static QString strippedText(QString s)
 {
     if (mOpenPanel) {
         QList<QUrl> result;
-        NSArray* array = [mOpenPanel URLs];
-        for (NSUInteger i=0; i<[array count]; ++i) {
-            QString path = QString::fromNSString([[array objectAtIndex:i] path]).normalized(QString::NormalizationForm_C);
+        NSArray<NSURL *> *array = [mOpenPanel URLs];
+        for (NSURL *url in array) {
+            QString path = QString::fromNSString(url.path).normalized(QString::NormalizationForm_C);
             result << QUrl::fromLocalFile(path);
         }
         return result;

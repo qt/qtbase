@@ -101,9 +101,9 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
 
 @implementation TestAXObject
 
-- (id) initWithAXUIElementRef: (AXUIElementRef) ref {
+- (instancetype)initWithAXUIElementRef:(AXUIElementRef)ref {
 
-    if ( self = [super init] ) {
+    if ((self = [super init])) {
         reference = ref;
     }
     return self;

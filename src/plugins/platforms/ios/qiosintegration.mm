@@ -97,7 +97,7 @@ QIOSIntegration::QIOSIntegration()
     QDir::setCurrent(QString::fromUtf8([[[NSBundle mainBundle] bundlePath] UTF8String]));
 
     UIScreen *mainScreen = [UIScreen mainScreen];
-    NSMutableArray *screens = [[[UIScreen screens] mutableCopy] autorelease];
+    NSMutableArray<UIScreen *> *screens = [[[UIScreen screens] mutableCopy] autorelease];
     if (![screens containsObject:mainScreen]) {
         // Fallback for iOS 7.1 (QTBUG-42345)
         [screens insertObject:mainScreen atIndex:0];

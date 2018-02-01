@@ -55,7 +55,12 @@
 
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
-@implementation QUIView
+@implementation QUIView {
+    QHash<UITouch *, QWindowSystemInterface::TouchPoint> m_activeTouches;
+    UITouch *m_activePencilTouch;
+    int m_nextTouchId;
+    NSMutableArray<UIAccessibilityElement *> *m_accessibleElements;
+}
 
 + (void)load
 {
@@ -82,25 +87,26 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     return [CAEAGLLayer class];
 }
 
-- (id)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window
+- (instancetype)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window
 {
     if (self = [self initWithFrame:window->geometry().toCGRect()]) {
-        m_qioswindow = window;
-        m_accessibleElements = [[NSMutableArray alloc] init];
+        self.platformWindow = window;
+        m_accessibleElements = [[NSMutableArray<UIAccessibilityElement *> alloc] init];
     }
 
     return self;
 }
 
-- (id)initWithFrame:(CGRect)frame
+- (instancetype)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) {
         // Set up EAGL layer
         CAEAGLLayer *eaglLayer = static_cast<CAEAGLLayer *>(self.layer);
         eaglLayer.opaque = TRUE;
-        eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-            [NSNumber numberWithBool:YES], kEAGLDrawablePropertyRetainedBacking,
-            kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
+        eaglLayer.drawableProperties = @{
+            kEAGLDrawablePropertyRetainedBacking: @(YES),
+            kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8
+        };
 
         if (isQtApplication())
             self.hidden = YES;
@@ -156,7 +162,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 #ifndef QT_NO_DEBUG_STREAM
     QString platformWindowDescription;
     QDebug debug(&platformWindowDescription);
-    debug.nospace() << "; " << m_qioswindow << ">";
+    debug.nospace() << "; " << self.platformWindow << ">";
     NSRange lastCharacter = [description rangeOfComposedCharacterSequenceAtIndex:description.length - 1];
     [description replaceCharactersInRange:lastCharacter withString:platformWindowDescription.toNSString()];
 #endif
@@ -210,10 +216,10 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if (!CGAffineTransformIsIdentity(self.transform))
         qWarning() << self << "has a transform set. This is not supported.";
 
-    QWindow *window = m_qioswindow->window();
+    QWindow *window = self.platformWindow->window();
     QRect lastReportedGeometry = qt_window_private(window)->geometry;
     QRect currentGeometry = QRectF::fromCGRect(self.frame).toRect();
-    qCDebug(lcQpaWindow) << m_qioswindow << "new geometry is" << currentGeometry;
+    qCDebug(lcQpaWindow) << self.platformWindow << "new geometry is" << currentGeometry;
     QWindowSystemInterface::handleGeometryChange(window, currentGeometry);
 
     if (currentGeometry.size() != lastReportedGeometry.size()) {
@@ -237,29 +243,29 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 {
     QRegion region;
 
-    if (m_qioswindow->isExposed()) {
+    if (self.platformWindow->isExposed()) {
         QSize bounds = QRectF::fromCGRect(self.layer.bounds).toRect().size();
 
-        Q_ASSERT(m_qioswindow->geometry().size() == bounds);
-        Q_ASSERT(self.hidden == !m_qioswindow->window()->isVisible());
+        Q_ASSERT(self.platformWindow->geometry().size() == bounds);
+        Q_ASSERT(self.hidden == !self.platformWindow->window()->isVisible());
 
         region = QRect(QPoint(), bounds);
     }
 
-    qCDebug(lcQpaWindow) << m_qioswindow << region << "isExposed" << m_qioswindow->isExposed();
-    QWindowSystemInterface::handleExposeEvent(m_qioswindow->window(), region);
+    qCDebug(lcQpaWindow) << self.platformWindow << region << "isExposed" << self.platformWindow->isExposed();
+    QWindowSystemInterface::handleExposeEvent(self.platformWindow->window(), region);
 }
 
 - (void)safeAreaInsetsDidChange
 {
-    QWindowSystemInterface::handleSafeAreaMarginsChanged(m_qioswindow->window());
+    QWindowSystemInterface::handleSafeAreaMarginsChanged(self.platformWindow->window());
 }
 
 // -------------------------------------------------------------------------
 
 - (BOOL)canBecomeFirstResponder
 {
-    return !(m_qioswindow->window()->flags() & Qt::WindowDoesNotAcceptFocus);
+    return !(self.platformWindow->window()->flags() & Qt::WindowDoesNotAcceptFocus);
 }
 
 - (BOOL)becomeFirstResponder
@@ -280,10 +286,10 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         qImDebug() << self << "became first responder";
     }
 
-    if (qGuiApp->focusWindow() != m_qioswindow->window())
-        QWindowSystemInterface::handleWindowActivated(m_qioswindow->window());
+    if (qGuiApp->focusWindow() != self.platformWindow->window())
+        QWindowSystemInterface::handleWindowActivated(self.platformWindow->window());
     else
-        qImDebug() << m_qioswindow->window() << "already active, not sending window activation";
+        qImDebug() << self.platformWindow->window() << "already active, not sending window activation";
 
     return YES;
 }
@@ -361,7 +367,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 -(BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
 {
-    if (m_qioswindow->window()->flags() & Qt::WindowTransparentForInput)
+    if (self.platformWindow->window()->flags() & Qt::WindowTransparentForInput)
         return NO;
     return [super pointInside:point withEvent:event];
 }
@@ -378,7 +384,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         for (UITouch *cTouch in cTouches) {
             QPointF localViewPosition = QPointF::fromCGPoint([cTouch preciseLocationInView:self]);
             QPoint localViewPositionI = localViewPosition.toPoint();
-            QPointF globalScreenPosition = m_qioswindow->mapToGlobal(localViewPositionI) +
+            QPointF globalScreenPosition = self.platformWindow->mapToGlobal(localViewPositionI) +
                     (localViewPosition - localViewPositionI);
             qreal pressure = cTouch.force / cTouch.maximumPossibleForce;
             // azimuth unit vector: +x to the right, +y going downwards
@@ -391,7 +397,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
             qCDebug(lcQpaTablet) << i << ":" << timeStamp << localViewPosition << pressure << state << "azimuth" << azimuth.dx << azimuth.dy
                      << "angle" << azimuthAngle << "altitude" << cTouch.altitudeAngle
                      << "xTilt" << qBound(-60.0, altitudeAngle * azimuth.dx, 60.0) << "yTilt" << qBound(-60.0, altitudeAngle * azimuth.dy, 60.0);
-            QWindowSystemInterface::handleTabletEvent(m_qioswindow->window(), timeStamp, localViewPosition, globalScreenPosition,
+            QWindowSystemInterface::handleTabletEvent(self.platformWindow->window(), timeStamp, localViewPosition, globalScreenPosition,
                     // device, pointerType, buttons
                     QTabletEvent::RotationStylus, QTabletEvent::Pen, state == Qt::TouchPointReleased ? Qt::NoButton : Qt::LeftButton,
                     // pressure, xTilt, yTilt
@@ -415,12 +421,12 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
             // just map from the local view position to global coordinates.
             // tvOS: all touches start at the center of the screen and move from there.
             QPoint localViewPosition = QPointF::fromCGPoint([uiTouch locationInView:self]).toPoint();
-            QPoint globalScreenPosition = m_qioswindow->mapToGlobal(localViewPosition);
+            QPoint globalScreenPosition = self.platformWindow->mapToGlobal(localViewPosition);
 
             touchPoint.area = QRectF(globalScreenPosition, QSize(0, 0));
 
             // FIXME: Do we really need to support QTouchDevice::NormalizedPosition?
-            QSize screenSize = m_qioswindow->screen()->geometry().size();
+            QSize screenSize = self.platformWindow->screen()->geometry().size();
             touchPoint.normalPosition = QPointF(globalScreenPosition.x() / screenSize.width(),
                                                 globalScreenPosition.y() / screenSize.height());
 
@@ -439,7 +445,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     }
     if (m_activeTouches.isEmpty())
             return;
-    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
+    QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(self.platformWindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
     if (!static_cast<QUIWindow *>(self.window).sendingEvent) {
         // The event is likely delivered as part of delayed touch delivery, via
         // _UIGestureEnvironmentSortAndSendDelayedTouches, due to one of the two
@@ -450,10 +456,10 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         // alert dialog, will fail to recognize. To be on the safe side, we deliver
         // the event asynchronously.
         QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::AsynchronousDelivery>(
-            m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
+            self.platformWindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
     } else {
         QWindowSystemInterface::handleTouchEvent<QWindowSystemInterface::SynchronousDelivery>(
-            m_qioswindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
+            self.platformWindow->window(), timeStamp, iosIntegration->touchDevice(), m_activeTouches.values());
     }
 }
 
@@ -481,8 +487,8 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 #endif
     }
 
-    if (m_qioswindow->shouldAutoActivateWindow() && m_activeTouches.size() == 1) {
-        QPlatformWindow *topLevel = m_qioswindow;
+    if (self.platformWindow->shouldAutoActivateWindow() && m_activeTouches.size() == 1) {
+        QPlatformWindow *topLevel = self.platformWindow;
         while (QPlatformWindow *p = topLevel->parent())
             topLevel = p;
         if (topLevel->window() != QGuiApplication::focusWindow())
@@ -552,7 +558,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     NSTimeInterval timestamp = event ? event.timestamp : [[NSProcessInfo processInfo] systemUptime];
 
     QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
-    QWindowSystemInterface::handleTouchCancelEvent(m_qioswindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
+    QWindowSystemInterface::handleTouchCancelEvent(self.platformWindow->window(), ulong(timestamp * 1000), iosIntegration->touchDevice());
 }
 
 - (int)mapPressTypeToKey:(UIPress*)press
@@ -580,7 +586,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         int key = [self mapPressTypeToKey:press];
         if (key == Qt::Key_unknown)
             continue;
-        if (QWindowSystemInterface::handleKeyEvent(m_qioswindow->window(), type, key, Qt::NoModifier))
+        if (QWindowSystemInterface::handleKeyEvent(self.platformWindow->window(), type, key, Qt::NoModifier))
             handled = true;
     }
 
@@ -634,7 +640,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 - (QWindow *)qwindow
 {
     if ([self isKindOfClass:[QUIView class]]) {
-        if (QT_PREPEND_NAMESPACE(QIOSWindow) *w = static_cast<QUIView *>(self)->m_qioswindow)
+        if (QT_PREPEND_NAMESPACE(QIOSWindow) *w = static_cast<QUIView *>(self).platformWindow)
             return w->window();
     }
     return nil;

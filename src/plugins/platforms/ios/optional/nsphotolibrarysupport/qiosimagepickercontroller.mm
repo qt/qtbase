@@ -41,15 +41,17 @@
 
 #include "qiosimagepickercontroller.h"
 
-@implementation QIOSImagePickerController
+@implementation QIOSImagePickerController {
+    QIOSFileDialog *m_fileDialog;
+}
 
-- (id)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog
+- (instancetype)initWithQIOSFileDialog:(QIOSFileDialog *)fileDialog
 {
     self = [super init];
     if (self) {
         m_fileDialog = fileDialog;
-        [self setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-        [self setDelegate:self];
+        self.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+        self.delegate = self;
     }
     return self;
 }
@@ -57,8 +59,8 @@
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     Q_UNUSED(picker);
-    NSURL *url = [info objectForKey:UIImagePickerControllerReferenceURL];
-    QUrl fileUrl = QUrl::fromLocalFile(QString::fromNSString([url description]));
+    NSURL *url = info[UIImagePickerControllerReferenceURL];
+    QUrl fileUrl = QUrl::fromLocalFile(QString::fromNSString(url.description));
     m_fileDialog->selectedFilesChanged(QList<QUrl>() << fileUrl);
     emit m_fileDialog->accept();
 }

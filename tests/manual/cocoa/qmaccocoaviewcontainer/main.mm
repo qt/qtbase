@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     w.resize(300, 300);
     w.setWindowTitle("QMacCocoaViewContainer");
     NSRect r = NSMakeRect(0, 0, 100, 100);
-    NSView *view = [[TestMouseMovedNSView alloc] initWithFrame: r];
+    NSView *view = [[TestMouseMovedNSView alloc] initWithFrame:r];
     QMacCocoaViewContainer *nativeChild = new QMacCocoaViewContainer(view, &w);
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(nativeChild);

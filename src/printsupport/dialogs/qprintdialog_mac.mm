@@ -77,22 +77,20 @@ QT_USE_NAMESPACE
 @class QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate);
 
 @interface QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) : NSObject
-{
-    NSPrintInfo *printInfo;
-}
-- (id)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo;
-- (void)printPanelDidEnd:(NSPrintPanel *)printPanel
-        returnCode:(int)returnCode contextInfo:(void *)contextInfo;
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate)
-- (id)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo
+@implementation QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) {
+    NSPrintInfo *printInfo;
+}
+
+- (instancetype)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo
 {
-    if (self = [super init]) {
+    if ((self = [self init])) {
         printInfo = nsPrintInfo;
     }
     return self;
 }
+
 - (void)printPanelDidEnd:(NSPrintPanel *)printPanel
         returnCode:(int)returnCode contextInfo:(void *)contextInfo
 {
@@ -102,8 +100,8 @@ QT_USE_NAMESPACE
     QPrinter *printer = dialog->printer();
 
     if (returnCode == NSModalResponseOK) {
-        PMPrintSession session = static_cast<PMPrintSession>([printInfo PMPrintSession]);
-        PMPrintSettings settings = static_cast<PMPrintSettings>([printInfo PMPrintSettings]);
+        PMPrintSession session = static_cast<PMPrintSession>(printInfo.PMPrintSession);
+        PMPrintSettings settings = static_cast<PMPrintSettings>(printInfo.PMPrintSettings);
 
         UInt32 frompage, topage;
         PMGetFirstPage(settings, &frompage);
@@ -192,6 +190,7 @@ QT_USE_NAMESPACE
 
     dialog->done((returnCode == NSModalResponseOK) ? QDialog::Accepted : QDialog::Rejected);
 }
+
 @end
 
 QT_BEGIN_NAMESPACE

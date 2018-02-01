@@ -145,22 +145,12 @@ static QWindow *qt_getWindow(const QWidget *widget)
     return widget ? widget->window()->windowHandle() : 0;
 }
 
-@interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject {
-QMacStylePrivate *mPrivate;
-}
-- (id)initWithPrivate:(QMacStylePrivate *)priv;
-- (void)scrollBarStyleDidChange:(NSNotification *)notification;
+@interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
 
 @implementation NotificationReceiver
-- (id)initWithPrivate:(QMacStylePrivate *)priv
-{
-    self = [super init];
-    mPrivate = priv;
-    return self;
-}
 
 - (void)scrollBarStyleDidChange:(NSNotification *)notification
 {
@@ -2285,7 +2275,7 @@ QMacStyle::QMacStyle()
     Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    d->receiver = [[NotificationReceiver alloc] initWithPrivate:d];
+    d->receiver = [[NotificationReceiver alloc] init];
     [[NSNotificationCenter defaultCenter] addObserver:d->receiver
                                              selector:@selector(scrollBarStyleDidChange:)
                                                  name:NSPreferredScrollerStyleDidChangeNotification
@@ -4513,7 +4503,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             const auto cw = QMacStylePrivate::CocoaControl(ct, QStyleHelper::SizeLarge);
             auto *sv = static_cast<NSSplitView *>(d->cocoaControl(cw));
             sv.frame = opt->rect.toCGRect();
-            d->drawNSViewInRect(cw, sv, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+            d->drawNSViewInRect(cw, sv, opt->rect, p, w != nullptr, ^(CGContextRef __unused ctx, const CGRect &rect) {
                 [sv drawDividerInRect:rect];
             });
         } else {
@@ -6209,7 +6199,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     switch (ct) {
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
-        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+        if (qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             const int buttonWidth = 20; // FIXME Use subControlRect()
             sz += QSize(buttonWidth, -3);
         }

@@ -46,11 +46,11 @@
 #include <QtGui/QGuiApplication>
 
 @interface UIPasteboard (QUIPasteboard)
-    + (UIPasteboard *)pasteboardWithQClipboardMode:(QClipboard::Mode)mode;
++ (instancetype)pasteboardWithQClipboardMode:(QClipboard::Mode)mode;
 @end
 
 @implementation UIPasteboard (QUIPasteboard)
-+ (UIPasteboard *)pasteboardWithQClipboardMode:(QClipboard::Mode)mode
++ (instancetype)pasteboardWithQClipboardMode:(QClipboard::Mode)mode
 {
     NSString *name = (mode == QClipboard::Clipboard) ? UIPasteboardNameGeneral : UIPasteboardNameFind;
     return [UIPasteboard pasteboardWithName:name create:NO];
@@ -60,17 +60,15 @@
 // --------------------------------------------------------------------
 
 @interface QUIClipboard : NSObject
-{
-@public
+@end
+
+@implementation QUIClipboard {
     QIOSClipboard *m_qiosClipboard;
     NSInteger m_changeCountClipboard;
     NSInteger m_changeCountFindBuffer;
 }
-@end
 
-@implementation QUIClipboard
-
-- (id)initWithQIOSClipboard:(QIOSClipboard *)qiosClipboard
+- (instancetype)initWithQIOSClipboard:(QIOSClipboard *)qiosClipboard
 {
     self = [super init];
     if (self) {
@@ -149,7 +147,7 @@ QStringList QIOSMimeData::formats() const
 {
     QStringList foundMimeTypes;
     UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:m_mode];
-    NSArray *pasteboardTypes = [pb pasteboardTypes];
+    NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];
 
     for (NSUInteger i = 0; i < [pasteboardTypes count]; ++i) {
         QString uti = QString::fromNSString([pasteboardTypes objectAtIndex:i]);
@@ -164,7 +162,7 @@ QStringList QIOSMimeData::formats() const
 QVariant QIOSMimeData::retrieveData(const QString &mimeType, QVariant::Type) const
 {
     UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:m_mode];
-    NSArray *pasteboardTypes = [pb pasteboardTypes];
+    NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];
 
     foreach (QMacInternalPasteboardMime *converter,
              QMacInternalPasteboardMime::all(QMacInternalPasteboardMime::MIME_ALL)) {
@@ -213,12 +211,12 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 
     UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:mode];
     if (!mimeData) {
-        pb.items = [NSArray array];
+        pb.items = [NSArray<NSDictionary<NSString *, id> *> array];
         return;
     }
 
     mimeData->deleteLater();
-    NSMutableDictionary *pbItem = [NSMutableDictionary dictionaryWithCapacity:mimeData->formats().size()];
+    NSMutableDictionary<NSString *, id> *pbItem = [NSMutableDictionary<NSString *, id> dictionaryWithCapacity:mimeData->formats().size()];
 
     foreach (const QString &mimeType, mimeData->formats()) {
         foreach (QMacInternalPasteboardMime *converter,
@@ -246,7 +244,7 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
         }
     }
 
-    pb.items = [NSArray arrayWithObject:pbItem];
+    pb.items = @[pbItem];
 }
 
 bool QIOSClipboard::supportsMode(QClipboard::Mode mode) const

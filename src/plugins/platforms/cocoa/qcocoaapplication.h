@@ -89,8 +89,7 @@
 #import <AppKit/AppKit.h>
 
 
-@interface QT_MANGLE_NAMESPACE(QNSApplication) : NSApplication {
-}
+@interface QT_MANGLE_NAMESPACE(QNSApplication) : NSApplication
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSApplication);

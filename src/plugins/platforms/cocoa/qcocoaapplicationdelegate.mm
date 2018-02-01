@@ -73,7 +73,6 @@
 
 
 #import "qcocoaapplicationdelegate.h"
-#import "qnswindowdelegate.h"
 #import "qcocoamenuloader.h"
 #include "qcocoaintegration.h"
 #include <qevent.h>
@@ -86,7 +85,12 @@
 
 QT_USE_NAMESPACE
 
-@implementation QCocoaApplicationDelegate
+@implementation QCocoaApplicationDelegate {
+    bool startedQuit;
+    NSMenu *dockMenu;
+    NSObject <NSApplicationDelegate> *reflectionDelegate;
+    bool inLaunch;
+}
 
 + (instancetype)sharedDelegate
 {
@@ -102,7 +106,7 @@ QT_USE_NAMESPACE
     return shared;
 }
 
-- (id)init
+- (instancetype)init
 {
     self = [super init];
     if (self) {
@@ -151,7 +155,7 @@ QT_USE_NAMESPACE
     return [[dockMenu retain] autorelease];
 }
 
-- (BOOL) canQuit
+- (BOOL)canQuit
 {
     [[NSApp mainMenu] cancelTracking];
 
@@ -219,7 +223,7 @@ QT_USE_NAMESPACE
     return NSTerminateCancel;
 }
 
-- (void) applicationWillFinishLaunching:(NSNotification *)notification
+- (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
     Q_UNUSED(notification);
 
@@ -249,14 +253,14 @@ QT_USE_NAMESPACE
 }
 
 // called by QCocoaIntegration's destructor before resetting the application delegate to nil
-- (void) removeAppleEventHandlers
+- (void)removeAppleEventHandlers
 {
     NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
     [eventManager removeEventHandlerForEventClass:kCoreEventClass andEventID:kAEQuitApplication];
     [eventManager removeEventHandlerForEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
 
-- (bool) inLaunch
+- (bool)inLaunch
 {
     return inLaunch;
 }

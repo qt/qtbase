@@ -65,21 +65,19 @@ Q_LOGGING_CATEGORY(lcQpaCocoaMouse, "qt.qpa.cocoa.mouse");
 // Conversion Functions
 //
 
-QStringList qt_mac_NSArrayToQStringList(void *nsarray)
+QStringList qt_mac_NSArrayToQStringList(NSArray<NSString *> *array)
 {
     QStringList result;
-    NSArray *array = static_cast<NSArray *>(nsarray);
-    for (NSUInteger i=0; i<[array count]; ++i)
-        result << QString::fromNSString([array objectAtIndex:i]);
+    for (NSString *string in array)
+        result << QString::fromNSString(string);
     return result;
 }
 
-void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list)
+NSMutableArray<NSString *> *qt_mac_QStringListToNSMutableArray(const QStringList &list)
 {
-    NSMutableArray *result = [NSMutableArray arrayWithCapacity:list.size()];
-    for (int i=0; i<list.size(); ++i){
-        [result addObject:list[i].toNSString()];
-    }
+    NSMutableArray<NSString *> *result = [NSMutableArray<NSString *> arrayWithCapacity:list.size()];
+    for (const QString &string : list)
+        [result addObject:string.toNSString()];
     return result;
 }
 
@@ -289,7 +287,12 @@ QT_END_NAMESPACE
     the target-action for the OK/Cancel buttons and making
     sure the layout is consistent.
  */
-@implementation QNSPanelContentsWrapper
+@implementation QNSPanelContentsWrapper {
+    NSButton *_okButton;
+    NSButton *_cancelButton;
+    NSView *_panelContents;
+    NSEdgeInsets _panelContentsMargins;
+}
 
 @synthesize okButton = _okButton;
 @synthesize cancelButton = _cancelButton;

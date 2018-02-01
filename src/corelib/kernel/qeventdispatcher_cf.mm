@@ -58,18 +58,18 @@
 
 QT_USE_NAMESPACE
 
-@interface QT_MANGLE_NAMESPACE(RunLoopModeTracker) : NSObject {
-    QStack<CFStringRef> m_runLoopModes;
-}
+@interface QT_MANGLE_NAMESPACE(RunLoopModeTracker) : NSObject
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(RunLoopModeTracker);
 
-@implementation RunLoopModeTracker
+@implementation RunLoopModeTracker {
+    QStack<CFStringRef> m_runLoopModes;
+}
 
-- (id) init
+- (instancetype)init
 {
-    if (self = [super init]) {
+    if ((self = [super init])) {
         m_runLoopModes.push(kCFRunLoopDefaultMode);
 
         [[NSNotificationCenter defaultCenter]
@@ -77,21 +77,21 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(RunLoopModeTracker);
             selector:@selector(receivedNotification:)
             name:nil
 #ifdef Q_OS_OSX
-            object:[NSApplication sharedApplication]];
+            object:NSApplication.sharedApplication];
 #elif defined(Q_OS_WATCHOS)
-            object:[WKExtension sharedExtension]];
+            object:WKExtension.sharedExtension];
 #else
             // Use performSelector so this can work in an App Extension
-            object:[[UIApplication class] performSelector:@selector(sharedApplication)]];
+            object:[UIApplication.class performSelector:@selector(sharedApplication)]];
 #endif
     }
 
     return self;
 }
 
-- (void) dealloc
+- (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [NSNotificationCenter.defaultCenter removeObserver:self];
 
     [super dealloc];
 }
@@ -100,13 +100,13 @@ static CFStringRef runLoopMode(NSDictionary *dictionary)
 {
     for (NSString *key in dictionary) {
         if (CFStringHasSuffix((CFStringRef)key, CFSTR("RunLoopMode")))
-            return (CFStringRef)[dictionary objectForKey: key];
+            return (CFStringRef)dictionary[key];
     }
 
     return nil;
 }
 
-- (void) receivedNotification:(NSNotification *) notification
+- (void)receivedNotification:(NSNotification *)notification
 {
      if (CFStringHasSuffix((CFStringRef)notification.name, CFSTR("RunLoopModePushNotification"))) {
         if (CFStringRef mode = runLoopMode(notification.userInfo))
@@ -116,7 +116,7 @@ static CFStringRef runLoopMode(NSDictionary *dictionary)
 
      } else if (CFStringHasSuffix((CFStringRef)notification.name, CFSTR("RunLoopModePopNotification"))) {
         CFStringRef mode = runLoopMode(notification.userInfo);
-        if (CFStringCompare(mode, [self currentMode], 0) == kCFCompareEqualTo)
+        if (CFStringCompare(mode, self.currentMode, 0) == kCFCompareEqualTo)
             m_runLoopModes.pop();
         else
             qCWarning(lcEventDispatcher) << "Tried to pop run loop mode"
@@ -126,7 +126,7 @@ static CFStringRef runLoopMode(NSDictionary *dictionary)
      }
 }
 
-- (CFStringRef) currentMode
+- (CFStringRef)currentMode
 {
     return m_runLoopModes.top();
 }

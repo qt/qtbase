@@ -52,13 +52,10 @@
 
 @class QT_MANGLE_NAMESPACE(QMacAccessibilityElement);
 
-@interface QT_MANGLE_NAMESPACE(QMacAccessibilityElement) : NSObject {
-    NSString *role;
-    QAccessible::Id axid;
-}
+@interface QT_MANGLE_NAMESPACE(QMacAccessibilityElement) : NSObject
 
-- (id)initWithId:(QAccessible::Id)anId;
-+ (QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *)elementWithId:(QAccessible::Id)anId;
+- (instancetype)initWithId:(QAccessible::Id)anId;
++ (instancetype)elementWithId:(QAccessible::Id)anId;
 
 @end
 

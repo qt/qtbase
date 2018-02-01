@@ -60,14 +60,14 @@ QIOSMenu *QIOSMenu::m_currentMenu = 0;
 
 static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
-@interface QUIMenuController : UIResponder {
-    QIOSMenuItemList m_visibleMenuItems;
-}
+@interface QUIMenuController : UIResponder
 @end
 
-@implementation QUIMenuController
+@implementation QUIMenuController {
+    QIOSMenuItemList m_visibleMenuItems;
+}
 
-- (id)initWithVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems
+- (instancetype)initWithVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems
 {
     if (self = [super init]) {
         [self setVisibleMenuItems:visibleMenuItems];
@@ -80,7 +80,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
     return self;
 }
 
--(void)dealloc
+- (void)dealloc
 {
     [[NSNotificationCenter defaultCenter]
         removeObserver:self
@@ -91,7 +91,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 - (void)setVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems
 {
     m_visibleMenuItems = visibleMenuItems;
-    NSMutableArray *menuItemArray = [NSMutableArray arrayWithCapacity:m_visibleMenuItems.size()];
+    NSMutableArray<UIMenuItem *> *menuItemArray = [NSMutableArray<UIMenuItem *> arrayWithCapacity:m_visibleMenuItems.size()];
     // Create an array of UIMenuItems, one for each visible QIOSMenuItem. Each
     // UIMenuItem needs a callback assigned, so we assign one of the placeholder methods
     // added to UIWindow (QIOSMenuActionTargets) below. Each method knows its own index, which
@@ -107,7 +107,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
         [[UIMenuController sharedMenuController] setMenuVisible:YES animated:NO];
 }
 
--(void)menuClosed
+- (void)menuClosed
 {
     QIOSMenu::currentMenu()->dismiss();
 }
@@ -141,19 +141,19 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
 
 // -------------------------------------------------------------------------
 
-@interface QUIPickerView : UIPickerView <UIPickerViewDelegate, UIPickerViewDataSource> {
-    QIOSMenuItemList m_visibleMenuItems;
-    QPointer<QObject> m_focusObjectWithPickerView;
-    NSInteger m_selectedRow;
-}
+@interface QUIPickerView : UIPickerView <UIPickerViewDelegate, UIPickerViewDataSource>
 
 @property(retain) UIToolbar *toolbar;
 
 @end
 
-@implementation QUIPickerView
+@implementation QUIPickerView {
+    QIOSMenuItemList m_visibleMenuItems;
+    QPointer<QObject> m_focusObjectWithPickerView;
+    NSInteger m_selectedRow;
+}
 
-- (id)initWithVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems selectItem:(const QIOSMenuItem *)selectItem
+- (instancetype)initWithVisibleMenuItems:(const QIOSMenuItemList &)visibleMenuItems selectItem:(const QIOSMenuItem *)selectItem
 {
     if (self = [super init]) {
         [self setVisibleMenuItems:visibleMenuItems selectItem:selectItem];
@@ -172,7 +172,7 @@ static NSString *const kSelectorPrefix = @"_qtMenuItem_";
         UIBarButtonItem *doneButton = [[[UIBarButtonItem alloc]
                 initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                 target:self action:@selector(closeMenu)] autorelease];
-        [self.toolbar setItems:[NSArray arrayWithObjects:cancelButton, spaceButton, doneButton, nil]];
+        [self.toolbar setItems:@[cancelButton, spaceButton, doneButton]];
 
         [self setDelegate:self];
         [self setDataSource:self];

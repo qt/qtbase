@@ -53,14 +53,12 @@
 @implementation QNSView (QNSViewAccessibility)
 
 - (id)childAccessibleElement {
-    if (m_platformWindow.isNull())
+    QCocoaWindow *platformWindow = self.platformWindow;
+    if (!platformWindow || !platformWindow->window()->accessibleRoot())
         return nil;
 
-    if (!m_platformWindow->window()->accessibleRoot())
-        return nil;
-
-    QAccessible::Id childId = QAccessible::uniqueId(m_platformWindow->window()->accessibleRoot());
-    return [QMacAccessibilityElement elementWithId: childId];
+    QAccessible::Id childId = QAccessible::uniqueId(platformWindow->window()->accessibleRoot());
+    return [QMacAccessibilityElement elementWithId:childId];
 }
 
 // The QNSView is a container that the user does not interact directly with:

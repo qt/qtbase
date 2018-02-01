@@ -41,20 +41,16 @@
 #define QNSWINDOWDELEGATE_H
 
 #include <AppKit/AppKit.h>
+#include <QtCore/private/qcore_mac_p.h>
 
-#include "qcocoawindow.h"
+QT_BEGIN_NAMESPACE
+class QCocoaWindow;
+QT_END_NAMESPACE
 
 @interface QT_MANGLE_NAMESPACE(QNSWindowDelegate) : NSObject <NSWindowDelegate>
-{
-    QCocoaWindow *m_cocoaWindow;
-}
 
-- (id)initWithQCocoaWindow:(QCocoaWindow *)cocoaWindow;
+- (instancetype)initWithQCocoaWindow:(QT_PREPEND_NAMESPACE(QCocoaWindow) *)cocoaWindow;
 
-- (BOOL)windowShouldClose:(NSNotification *)notification;
-
-- (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu;
-- (BOOL)window:(NSWindow *)window shouldDragDocumentWithEvent:(NSEvent *)event from:(NSPoint)dragImageLocation withPasteboard:(NSPasteboard *)pasteboard;
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSWindowDelegate);

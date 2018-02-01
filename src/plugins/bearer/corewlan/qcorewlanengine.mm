@@ -62,33 +62,29 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
 #include <ifaddrs.h>
 
 @interface QT_MANGLE_NAMESPACE(QNSListener) : NSObject <CWEventDelegate>
-{
-    NSNotificationCenter *notificationCenter;
-    CWWiFiClient *client;
-    QCoreWlanEngine *engine;
-    NSLock *locker;
-}
-- (void)powerStateDidChangeForWiFiInterfaceWithName:(NSString *)interfaceName;
-- (void)remove;
-- (void)setEngine:(QCoreWlanEngine *)coreEngine;
-- (QCoreWlanEngine *)engine;
-- (void)dealloc;
 
 @property (assign) QCoreWlanEngine* engine;
 
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSListener)
+@implementation QT_MANGLE_NAMESPACE(QNSListener) {
+    NSNotificationCenter *notificationCenter;
+    CWWiFiClient *client;
+    QCoreWlanEngine *engine;
+    NSLock *locker;
+}
 
-- (id) init
+- (instancetype)init
 {
-    [locker lock];
-    QMacAutoReleasePool pool;
-    notificationCenter = [NSNotificationCenter defaultCenter];
-    client = [CWWiFiClient sharedWiFiClient];
-    client.delegate = self;
-    [client startMonitoringEventWithType:CWEventTypePowerDidChange error:nil];
-    [locker unlock];
+    if ((self = [super init])) {
+        [locker lock];
+        QMacAutoReleasePool pool;
+        notificationCenter = [NSNotificationCenter defaultCenter];
+        client = [CWWiFiClient sharedWiFiClient];
+        client.delegate = self;
+        [client startMonitoringEventWithType:CWEventTypePowerDidChange error:nil];
+        [locker unlock];
+    }
     return self;
 }
 
@@ -300,7 +296,7 @@ void QScanThread::getUserConfigurations()
         if(airportPlist != nil) {
             NSDictionary *prefNetDict = [airportPlist objectForKey:@"PreferredNetworks"];
 
-            NSArray *thisSsidarray = [prefNetDict valueForKey:@"SSID_STR"];
+            NSArray<NSString *> *thisSsidarray = [prefNetDict valueForKey:@"SSID_STR"];
             for (NSString *ssidkey in thisSsidarray) {
                 QString thisSsid = QString::fromNSString(ssidkey);
                 if(!userProfiles.contains(thisSsid)) {

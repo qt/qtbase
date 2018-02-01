@@ -53,21 +53,10 @@ QT_END_NAMESPACE
 @class QIOSViewController;
 
 @interface QUIView : UIView
-{
-  @public
-    QT_PREPEND_NAMESPACE(QIOSWindow) *m_qioswindow;
-  @private
-    QHash<UITouch *, QWindowSystemInterface::TouchPoint> m_activeTouches;
-    UITouch *m_activePencilTouch;
-    int m_nextTouchId;
-
-  @private
-    NSMutableArray *m_accessibleElements;
-};
-
-- (id)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window;
+- (instancetype)initWithQIOSWindow:(QT_PREPEND_NAMESPACE(QIOSWindow) *)window;
 - (void)sendUpdatedExposeEvent;
 - (BOOL)isActiveWindow;
+@property (nonatomic, assign) QT_PREPEND_NAMESPACE(QIOSWindow) *platformWindow;
 @end
 
 @interface QUIView (Accessibility)

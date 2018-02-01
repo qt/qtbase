@@ -52,16 +52,13 @@ QT_USE_NAMESPACE
 @class QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate);
 
 @interface QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) : NSObject
-{
-    NSPrintInfo *printInfo;
-}
-- (id)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo;
-- (void)pageLayoutDidEnd:(NSPageLayout *)pageLayout
-        returnCode:(int)returnCode contextInfo:(void *)contextInfo;
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate)
-- (id)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo
+@implementation QT_MANGLE_NAMESPACE(QCocoaPageLayoutDelegate) {
+    NSPrintInfo *printInfo;
+}
+
+- (instancetype)initWithNSPrintInfo:(NSPrintInfo *)nsPrintInfo
 {
     self = [super init];
     if (self) {

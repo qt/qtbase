@@ -76,7 +76,15 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 @class QT_MANGLE_NAMESPACE(QNSFontPanelDelegate);
 
 @interface QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) : NSObject<NSWindowDelegate, QNSPanelDelegate>
-{
+- (void)restoreOriginalContentView;
+- (void)updateQtFont;
+- (void)changeFont:(id)sender;
+- (void)finishOffWithCode:(NSInteger)code;
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
+
+@implementation QNSFontPanelDelegate {
     @public
     NSFontPanel *mFontPanel;
     QCocoaFontDialogHelper *mHelper;
@@ -86,33 +94,25 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     NSInteger mResultCode;
     BOOL mDialogIsExecuting;
     BOOL mResultSet;
-};
-- (void)restoreOriginalContentView;
-- (void)updateQtFont;
-- (void)changeFont:(id)sender;
-- (void)finishOffWithCode:(NSInteger)code;
-@end
+}
 
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSFontPanelDelegate);
-
-@implementation QNSFontPanelDelegate
-
-- (id)init
+- (instancetype)init
 {
-    self = [super init];
-    mFontPanel = [NSFontPanel sharedFontPanel];
-    mHelper = 0;
-    mStolenContentView = 0;
-    mPanelButtons = 0;
-    mResultCode = NSModalResponseCancel;
-    mDialogIsExecuting = false;
-    mResultSet = false;
+    if ((self = [super init])) {
+        mFontPanel = [NSFontPanel sharedFontPanel];
+        mHelper = 0;
+        mStolenContentView = 0;
+        mPanelButtons = 0;
+        mResultCode = NSModalResponseCancel;
+        mDialogIsExecuting = false;
+        mResultSet = false;
 
-    [mFontPanel setRestorable:NO];
-    [mFontPanel setDelegate:self];
-    [[NSFontManager sharedFontManager] setDelegate:self];
+        [mFontPanel setRestorable:NO];
+        [mFontPanel setDelegate:self];
+        [[NSFontManager sharedFontManager] setDelegate:self];
 
-    [mFontPanel retain];
+        [mFontPanel retain];
+    }
     return self;
 }
 

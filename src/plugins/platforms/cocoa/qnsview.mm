@@ -51,7 +51,11 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QTextFormat>
 #include <QtCore/QDebug>
+#include <QtCore/QPointer>
+#include <QtCore/QSet>
 #include <QtCore/qsysinfo.h>
+#include <QtGui/QAccessible>
+#include <QtGui/QImage>
 #include <private/qguiapplication_p.h>
 #include <private/qcoregraphics_p.h>
 #include <private/qwindow_p.h>
@@ -72,11 +76,8 @@ Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 @interface QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) : NSObject
-{
-    QNSView *view;
-}
 
-- (id)initWithView:(QNSView *)theView;
+- (instancetype)initWithView:(QNSView *)theView;
 
 - (void)mouseMoved:(NSEvent *)theEvent;
 - (void)mouseEntered:(NSEvent *)theEvent;
@@ -85,9 +86,11 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper)
+@implementation QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) {
+    QNSView *view;
+}
 
-- (id)initWithView:(QNSView *)theView
+- (instancetype)initWithView:(QNSView *)theView
 {
     self = [super init];
     if (self) {
@@ -123,9 +126,35 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 - (BOOL)isTransparentForUserInput;
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSView)
+@implementation QT_MANGLE_NAMESPACE(QNSView) {
+    QPointer<QCocoaWindow> m_platformWindow;
+    NSTrackingArea *m_trackingArea;
+    Qt::MouseButtons m_buttons;
+    Qt::MouseButtons m_acceptedMouseDowns;
+    Qt::MouseButtons m_frameStrutButtons;
+    QString m_composingText;
+    QPointer<QObject> m_composingFocusObject;
+    bool m_sendKeyEvent;
+    QStringList *currentCustomDragTypes;
+    bool m_dontOverrideCtrlLMB;
+    bool m_sendUpAsRightButton;
+    Qt::KeyboardModifiers currentWheelModifiers;
+#ifndef QT_NO_OPENGL
+    QCocoaGLContext *m_glContext;
+    bool m_shouldSetGLContextinDrawRect;
+#endif
+    NSString *m_inputSource;
+    QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) *m_mouseMoveHelper;
+    bool m_resendKeyEvent;
+    bool m_scrolling;
+    bool m_updatingDrag;
+    NSEvent *m_currentlyInterpretedKeyEvent;
+    bool m_isMenuView;
+    QSet<quint32> m_acceptedKeyDowns;
+    bool m_updateRequested;
+}
 
-- (id) init
+- (instancetype)init
 {
     if (self = [super initWithFrame:NSZeroRect]) {
         m_buttons = Qt::NoButton;
@@ -168,7 +197,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     [super dealloc];
 }
 
-- (id)initWithCocoaWindow:(QCocoaWindow *)platformWindow
+- (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
 {
     self = [self init];
     if (!self)
@@ -1432,7 +1461,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                 if (imEnabled && !(hints & Qt::ImhDigitsOnly || hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhHiddenText)) {
                     // pass the key event to the input method. note that m_sendKeyEvent may be set to false during this call
                     m_currentlyInterpretedKeyEvent = nsevent;
-                    [self interpretKeyEvents:[NSArray arrayWithObject:nsevent]];
+                    [self interpretKeyEvents:@[nsevent]];
                     m_currentlyInterpretedKeyEvent = 0;
                 }
             }
@@ -1790,7 +1819,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     return NSNotFound;
 }
 
-- (NSArray*)validAttributesForMarkedText
+- (NSArray<NSString *> *)validAttributesForMarkedText
 {
     if (!m_platformWindow)
         return nil;
@@ -1809,8 +1838,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         return nil;
 
     // Support only underline color/style.
-    return [NSArray arrayWithObjects:NSUnderlineColorAttributeName,
-                                     NSUnderlineStyleAttributeName, nil];
+    return @[NSUnderlineColorAttributeName, NSUnderlineStyleAttributeName];
 }
 
 -(void)registerDragTypes
@@ -1821,8 +1849,9 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
         if (currentCustomDragTypes == 0)
             currentCustomDragTypes = new QStringList();
         *currentCustomDragTypes = customTypes;
-        const NSString* mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
-        NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType,
+        NSString * const mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
+        NSMutableArray<NSString *> *supportedTypes = [NSMutableArray<NSString *> arrayWithArray:@[
+                       NSColorPboardType,
                        NSFilenamesPboardType, NSStringPboardType,
                        NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
                        NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
@@ -1830,7 +1859,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
                        NSRTFDPboardType, NSHTMLPboardType,
                        NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
                        NSFilesPromisePboardType, NSInkTextPboardType,
-                       NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
+                       NSMultipleTextSelectionPboardType, mimeTypeGeneric]];
         // Add custom types supported by the application.
         for (int i = 0; i < customTypes.size(); i++) {
            [supportedTypes addObject:customTypes[i].toNSString()];

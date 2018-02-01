@@ -49,8 +49,9 @@
     if (!iface || iface->state().invisible || (iface->text(QAccessible::Name).isEmpty() && iface->text(QAccessible::Value).isEmpty() && iface->text(QAccessible::Description).isEmpty()))
         return;
     QAccessible::Id accessibleId = QAccessible::uniqueId(iface);
-    UIAccessibilityElement *elem = [[QMacAccessibilityElement alloc] initWithId: accessibleId withAccessibilityContainer: self];
-    [m_accessibleElements addObject:[elem autorelease]];
+    UIAccessibilityElement *elem = [[QT_MANGLE_NAMESPACE(QMacAccessibilityElement) alloc] initWithId:accessibleId withAccessibilityContainer:self];
+    [m_accessibleElements addObject:elem];
+    [elem release];
 }
 
 - (void)createAccessibleContainer:(QAccessibleInterface *)iface
@@ -73,7 +74,7 @@
     if ([m_accessibleElements count])
         return;
 
-    QWindow *win = m_qioswindow->window();
+    QWindow *win = self.platformWindow->window();
     QAccessibleInterface *iface = win->accessibleRoot();
     if (iface)
         [self createAccessibleContainer: iface];
