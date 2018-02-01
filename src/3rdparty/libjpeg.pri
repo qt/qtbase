@@ -7,10 +7,8 @@ DEFINES += \
     JPEG_LIB_VERSION=80 \
     SIZEOF_SIZE_T=__SIZEOF_SIZE_T__
 
-#Disable warnings in 3rdparty code due to unused arguments
-contains(QMAKE_CC, gcc): {
-    QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
-}
+# Disable warnings in 3rdparty code due to unused arguments
+gcc: QMAKE_CFLAGS_WARN_ON += -Wno-unused-parameter -Wno-main
 
 
 INCLUDEPATH += $$PWD/libjpeg/src
