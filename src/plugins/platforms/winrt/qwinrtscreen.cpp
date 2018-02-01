@@ -47,6 +47,7 @@
 #endif
 #include "qwinrtwindow.h"
 #include <private/qeventdispatcher_winrt_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QtCore/QLoggingCategory>
 #include <QtGui/QSurfaceFormat>
@@ -1126,11 +1127,11 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     // Common traits - point, modifiers, properties
     Point point;
     pointerPoint->get_Position(&point);
-    QPointF pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
+    const QPointF pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
     QPointF localPos = pos;
 
     const QPoint posPoint = pos.toPoint();
-    QWindow *windowUnderPointer = windowAt(posPoint);
+    QWindow *windowUnderPointer = windowAt(QHighDpiScaling::mapPositionFromNative(posPoint, this));
     QWindow *targetWindow = windowUnderPointer;
 
     if (d->mouseGrabWindow)
