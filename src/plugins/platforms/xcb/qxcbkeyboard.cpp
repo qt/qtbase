@@ -883,14 +883,14 @@ void QXcbKeyboard::checkForLatinLayout() const
     const xcb_keycode_t minKeycode = xkb_keymap_min_keycode(m_xkbKeymap.get());
     const xcb_keycode_t maxKeycode = xkb_keymap_max_keycode(m_xkbKeymap.get());
 
-    ScopedXKBState state(xkb_state_new(m_xkbKeymap.get()));
+    const xkb_keysym_t *keysyms = nullptr;
+    int nrLatinKeys = 0;
     for (xkb_layout_index_t layout = 0; layout < layoutCount; ++layout) {
-        xkb_state_update_mask(state.get(), 0, 0, 0, 0, 0, layout);
         for (xcb_keycode_t code = minKeycode; code < maxKeycode; ++code) {
-            xkb_keysym_t sym = xkb_state_key_get_one_sym(state.get(), code);
-            // if layout can produce any of these latin letters (chosen
-            // arbitrarily) then it must be a latin key based layout
-            if (sym == XKB_KEY_q || sym == XKB_KEY_a || sym == XKB_KEY_e)
+            xkb_keymap_key_get_syms_by_level(m_xkbKeymap.get(), code, layout, 0, &keysyms);
+            if (keysyms && isLatin(keysyms[0]))
+                nrLatinKeys++;
+            if (nrLatinKeys > 10) // arbitrarily chosen threshold
                 return;
         }
     }
