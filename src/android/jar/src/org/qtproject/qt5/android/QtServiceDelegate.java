@@ -187,6 +187,10 @@ public class QtServiceDelegate
     public void onDestroy()
     {
         QtNative.quitQtCoreApplication();
+        QtNative.terminateQt();
+        QtNative.setService(null, null);
+        QtNative.m_qtThread.exit();
+        System.exit(0);
     }
 
     public IBinder onBind(Intent intent)
