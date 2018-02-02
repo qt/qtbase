@@ -1664,7 +1664,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     handledStderr |= android_default_message_handler(type, context, message);
 #endif
 
-    if (handledStderr || !qt_logging_to_console())
+    if (handledStderr)
         return;
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
