@@ -770,7 +770,7 @@ void QXcbKeyboard::updateKeymap()
 void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
 {
     if (m_config && connection()->hasXKB()) {
-        const xkb_state_component newState
+        const xkb_state_component changedComponents
                 = xkb_state_update_mask(m_xkbState.get(),
                                   state->baseMods,
                                   state->latchedMods,
@@ -779,9 +779,7 @@ void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
                                   state->latchedGroup,
                                   state->lockedGroup);
 
-        if ((newState & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE) {
-            //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
-        }
+        handleStateChanges(changedComponents);
     }
 }
 #endif
@@ -809,9 +807,7 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
         xkb_state_component changedComponents = xkb_state_update_mask(
                     xkbState, depressed, latched, locked, 0, 0, lockedGroup(state));
 
-        if ((changedComponents & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE) {
-            //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
-        }
+        handleStateChanges(changedComponents);
     }
 }
 
@@ -821,20 +817,28 @@ void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
     if (m_config && !connection()->hasXKB()) {
         xXIModifierInfo *mods = static_cast<xXIModifierInfo *>(modInfo);
         xXIGroupInfo *group = static_cast<xXIGroupInfo *>(groupInfo);
-        const xkb_state_component newState = xkb_state_update_mask(m_xkbState.get(),
-                                                                   mods->base_mods,
-                                                                   mods->latched_mods,
-                                                                   mods->locked_mods,
-                                                                   group->base_group,
-                                                                   group->latched_group,
-                                                                   group->locked_group);
+        const xkb_state_component changedComponents
+                = xkb_state_update_mask(m_xkbState.get(),
+                                        mods->base_mods,
+                                        mods->latched_mods,
+                                        mods->locked_mods,
+                                        group->base_group,
+                                        group->latched_group,
+                                        group->locked_group);
 
-        if ((newState & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE) {
-            //qWarning("TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
-        }
+        handleStateChanges(changedComponents);
     }
 }
 #endif
+
+void QXcbKeyboard::handleStateChanges(xkb_state_component changedComponents)
+{
+    // Note: Ubuntu (with Unity) always creates a new keymap when layout is changed
+    // via system settings, which means that the layout change would not be detected
+    // by this code. That can be solved by emitting KeyboardLayoutChange also from updateKeymap().
+    if ((changedComponents & XKB_STATE_LAYOUT_EFFECTIVE) == XKB_STATE_LAYOUT_EFFECTIVE)
+        qCDebug(lcQpaKeyboard, "TODO: Support KeyboardLayoutChange on QPA (QTBUG-27681)");
+}
 
 xkb_mod_mask_t QXcbKeyboard::xkbModMask(quint16 state)
 {

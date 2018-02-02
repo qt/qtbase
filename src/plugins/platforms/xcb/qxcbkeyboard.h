@@ -82,6 +82,7 @@ public:
     int coreDeviceId() const { return core_device_id; }
     void updateXKBState(xcb_xkb_state_notify_event_t *state);
 #endif
+    void handleStateChanges(xkb_state_component changedComponents);
 
 protected:
     void handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code,
