@@ -777,7 +777,7 @@ bool QTreeModel::isChanging() const
     if column is -1 then all columns have changed
 */
 
-void QTreeModel::emitDataChanged(QTreeWidgetItem *item, int column)
+void QTreeModel::emitDataChanged(QTreeWidgetItem *item, int column, const QVector<int> &roles)
 {
     if (signalsBlocked())
         return;
@@ -800,7 +800,7 @@ void QTreeModel::emitDataChanged(QTreeWidgetItem *item, int column)
         topLeft = index(item, column);
         bottomRight = topLeft;
     }
-    emit dataChanged(topLeft, bottomRight);
+    emit dataChanged(topLeft, bottomRight, roles);
 }
 
 void QTreeModel::beginInsertItems(QTreeWidgetItem *parent, int row, int count)
@@ -1766,11 +1766,14 @@ void QTreeWidgetItem::setData(int column, int role, const QVariant &value)
     }
 
     if (model) {
-        model->emitDataChanged(this, column);
+        const QVector<int> roles((role == Qt::DisplayRole || role == Qt::EditRole) ?
+                                     QVector<int>({Qt::DisplayRole, Qt::EditRole}) :
+                                     QVector<int>({role}));
+        model->emitDataChanged(this, column, roles);
         if (role == Qt::CheckStateRole) {
             QTreeWidgetItem *p;
             for (p = par; p && (p->itemFlags & Qt::ItemIsAutoTristate); p = p->par)
-                model->emitDataChanged(p, column);
+                model->emitDataChanged(p, column, roles);
         }
     }
 }

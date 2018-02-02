@@ -1938,23 +1938,38 @@ void tst_QTreeWidget::setData()
     }
 }
 
+class QTreeWidgetDataChanged : public QTreeWidget
+{
+    Q_OBJECT
+public:
+    using QTreeWidget::QTreeWidget;
+
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override
+    {
+        QTreeWidget::dataChanged(topLeft, bottomRight, roles);
+        currentRoles = roles;
+    }
+    QVector<int> currentRoles;
+};
+
 void tst_QTreeWidget::itemData()
 {
-    QTreeWidget widget;
+    QTreeWidgetDataChanged widget;
     QTreeWidgetItem item(&widget);
     widget.setColumnCount(2);
     item.setFlags(item.flags() | Qt::ItemIsEditable);
     item.setData(0, Qt::DisplayRole,  QString("0"));
+    QCOMPARE(widget.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
     item.setData(0, Qt::CheckStateRole, Qt::PartiallyChecked);
-    item.setData(0, Qt::UserRole + 0, QString("1"));
-    item.setData(0, Qt::UserRole + 1, QString("2"));
-    item.setData(0, Qt::UserRole + 2, QString("3"));
-    item.setData(0, Qt::UserRole + 3, QString("4"));
-
+    QCOMPARE(widget.currentRoles, {Qt::CheckStateRole});
+    for (int i = 0; i < 4; ++i) {
+        item.setData(0, Qt::UserRole + i, QString::number(i + 1));
+        QCOMPARE(widget.currentRoles, {Qt::UserRole + i});
+    }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
     QCOMPARE(flags.count(), 6);
-    QCOMPARE(flags[Qt::UserRole + 0].toString(), QString("1"));
-
+    for (int i = 0; i < 4; ++i)
+        QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
     flags = widget.model()->itemData(widget.model()->index(0, 1));
     QCOMPARE(flags.count(), 0);
 }

@@ -339,6 +339,7 @@ Q_SIGNALS:
     void itemDoubleClicked(QTreeWidgetItem *item, int column);
     void itemActivated(QTreeWidgetItem *item, int column);
     void itemEntered(QTreeWidgetItem *item, int column);
+    // ### Qt 6: add changed roles
     void itemChanged(QTreeWidgetItem *item, int column);
     void itemExpanded(QTreeWidgetItem *item);
     void itemCollapsed(QTreeWidgetItem *item);
