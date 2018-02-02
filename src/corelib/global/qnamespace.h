@@ -477,8 +477,6 @@ public:
 
         WA_TabletTracking = 129,
 
-        WA_StyleSheetTarget = 130, // internal
-
         // Add new attributes before this line
         WA_AttributeCount
     };
