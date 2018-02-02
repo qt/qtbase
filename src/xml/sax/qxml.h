@@ -122,10 +122,8 @@ public:
     QXmlAttributes &operator=(const QXmlAttributes &) = default;
     QXmlAttributes &operator=(QXmlAttributes &&) Q_DECL_NOTHROW = default;
 #endif // default members
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    virtual // ### Qt 6: this value class don't need no virtual dtor
-#endif
-    ~QXmlAttributes();
+
+    QT6_NOT_VIRTUAL ~QXmlAttributes();
 
     void swap(QXmlAttributes &other) Q_DECL_NOTHROW
     {
