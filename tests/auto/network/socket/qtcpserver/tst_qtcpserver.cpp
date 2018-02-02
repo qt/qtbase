@@ -420,13 +420,20 @@ void tst_QTcpServer::maxPendingConnections()
     QTcpSocket socket2;
     QTcpSocket socket3;
 
+    QSignalSpy spy(&server, SIGNAL(newConnection()));
     QVERIFY(server.listen());
 
     socket1.connectToHost(QHostAddress::LocalHost, server.serverPort());
     socket2.connectToHost(QHostAddress::LocalHost, server.serverPort());
     socket3.connectToHost(QHostAddress::LocalHost, server.serverPort());
 
-    QVERIFY(server.waitForNewConnection(5000));
+    // We must have two and only two connections. First compare waits until
+    // two connections have been made. The second compare makes sure no
+    // more are accepted. Creating connections happens multithreaded so
+    // qWait must be used for that.
+    QTRY_COMPARE(spy.count(), 2);
+    QTest::qWait(100);
+    QCOMPARE(spy.count(), 2);
 
     QVERIFY(server.hasPendingConnections());
     QVERIFY(server.nextPendingConnection());
