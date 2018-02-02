@@ -156,7 +156,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     const StorePixelsFunc store = qStorePixels[destLayout->bpp];
     ConvertFunc convertToARGB32PM = srcLayout->convertToARGB32PM;
     ConvertFunc convertFromARGB32PM = destLayout->convertFromARGB32PM;
-    if (srcLayout->alphaWidth == 0 && destLayout->convertFromRGB32) {
+    if (!srcLayout->hasAlphaChannel && destLayout->convertFromRGB32) {
         // If the source doesn't have an alpha channel, we can use the faster convertFromRGB32 method.
         convertFromARGB32PM = destLayout->convertFromRGB32;
     } else {
@@ -173,7 +173,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
         }
     }
     if ((src->format == QImage::Format_ARGB32 || src->format == QImage::Format_RGBA8888) &&
-            destLayout->alphaWidth == 0 && destLayout->convertFromRGB32) {
+            !destLayout->hasAlphaChannel && destLayout->convertFromRGB32) {
         // Avoid unnecessary premultiply and unpremultiply when converting from unpremultiplied src format.
         convertToARGB32PM = qPixelLayouts[src->format + 1].convertToARGB32PM;
         if (dest->format == QImage::Format_RGB32)
@@ -225,7 +225,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     const StorePixelsFunc store = qStorePixels[destLayout->bpp];
     ConvertFunc convertToARGB32PM = srcLayout->convertToARGB32PM;
     ConvertFunc convertFromARGB32PM = destLayout->convertFromARGB32PM;
-    if (srcLayout->alphaWidth == 0 && destLayout->convertFromRGB32) {
+    if (!srcLayout->hasAlphaChannel && destLayout->convertFromRGB32) {
         // If the source doesn't have an alpha channel, we can use the faster convertFromRGB32 method.
         convertFromARGB32PM = destLayout->convertFromRGB32;
     } else {
@@ -241,7 +241,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         }
     }
     if ((data->format == QImage::Format_ARGB32 || data->format == QImage::Format_RGBA8888) &&
-            destLayout->alphaWidth == 0 && destLayout->convertFromRGB32) {
+            !destLayout->hasAlphaChannel && destLayout->convertFromRGB32) {
         // Avoid unnecessary premultiply and unpremultiply when converting from unpremultiplied src format.
         convertToARGB32PM = qPixelLayouts[data->format + 1].convertToARGB32PM;
         if (dst_format == QImage::Format_RGB32)

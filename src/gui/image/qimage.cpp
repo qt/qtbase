@@ -3209,13 +3209,15 @@ void QImage::mirrored_inplace(bool horizontal, bool vertical)
 
 inline void rgbSwapped_generic(int width, int height, const QImage *src, QImage *dst, const QPixelLayout* layout)
 {
-    Q_ASSERT(layout->redWidth == layout->blueWidth);
     FetchPixelsFunc fetch = qFetchPixels[layout->bpp];
     StorePixelsFunc store = qStorePixels[layout->bpp];
-
-    const uint redBlueMask = (1 << layout->redWidth) - 1;
-    const uint alphaGreenMask = (((1 << layout->alphaWidth) - 1) << layout->alphaShift)
-            | (((1 << layout->greenWidth) - 1) << layout->greenShift);
+    RbSwapFunc func = layout->rbSwap;
+    if (!func) {
+        qWarning("Trying to rb-swap an image format where it doesn't make sense");
+        if (src != dst)
+            *dst = *src;
+        return;
+    }
 
     uint buffer[BufferSize];
     for (int i = 0; i < height; ++i) {
@@ -3225,14 +3227,9 @@ inline void rgbSwapped_generic(int width, int height, const QImage *src, QImage 
         while (x < width) {
             int l = qMin(width - x, BufferSize);
             const uint *ptr = fetch(buffer, p, x, l);
-            for (int j = 0; j < l; ++j) {
-                uint red = (ptr[j] >> layout->redShift) & redBlueMask;
-                uint blue = (ptr[j] >> layout->blueShift) & redBlueMask;
-                buffer[j] = (ptr[j] & alphaGreenMask)
-                        | (red << layout->blueShift)
-                        | (blue << layout->redShift);
-            }
-            store(q, buffer, x, l);
+            ptr = func(buffer, ptr, l);
+            if (q != (const uchar *)ptr)
+                store(q, ptr, x, l);
             x += l;
         }
     }
@@ -3314,23 +3311,6 @@ QImage QImage::rgbSwapped_helper() const
             while (p < end) {
                 ushort c = *p;
                 *q = ((c << 11) & 0xf800) | ((c >> 11) & 0x1f) | (c & 0x07e0);
-                p++;
-                q++;
-            }
-        }
-        break;
-    case Format_BGR30:
-    case Format_A2BGR30_Premultiplied:
-    case Format_RGB30:
-    case Format_A2RGB30_Premultiplied:
-        res = QImage(d->width, d->height, d->format);
-        QIMAGE_SANITYCHECK_MEMORY(res);
-        for (int i = 0; i < d->height; i++) {
-            uint *q = (uint*)res.scanLine(i);
-            const uint *p = (const uint*)constScanLine(i);
-            const uint *end = p + d->width;
-            while (p < end) {
-                *q = qRgbSwapRgb30(*p);
                 p++;
                 q++;
             }

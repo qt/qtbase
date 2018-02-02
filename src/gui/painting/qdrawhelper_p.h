@@ -1217,6 +1217,8 @@ typedef const uint *(QT_FASTCALL *ConvertFunc)(uint *buffer, const uint *src, in
                                                const QVector<QRgb> *clut, QDitherInfo *dither);
 typedef const QRgba64 *(QT_FASTCALL *ConvertFunc64)(QRgba64 *buffer, const uint *src, int count,
                                                     const QVector<QRgb> *clut, QDitherInfo *dither);
+typedef const uint *(QT_FASTCALL *RbSwapFunc)(uint *buffer, const uint *src, int count);
+
 
 struct QPixelLayout
 {
@@ -1232,17 +1234,10 @@ struct QPixelLayout
         BPPCount
     };
 
-    // All numbers in bits.
-    uchar redWidth;
-    uchar redShift;
-    uchar greenWidth;
-    uchar greenShift;
-    uchar blueWidth;
-    uchar blueShift;
-    uchar alphaWidth;
-    uchar alphaShift;
+    bool hasAlphaChannel;
     bool premultiplied;
     BPP bpp;
+    RbSwapFunc rbSwap;
     ConvertFunc convertToARGB32PM;
     ConvertFunc convertFromARGB32PM;
     ConvertFunc convertFromRGB32;
