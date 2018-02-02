@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
  */
 static QString qt_strippedText(QString s)
 {
-    s.remove(QStringLiteral("..."));
+    s.remove(QLatin1String("..."));
     for (int i = 0; i < s.size(); ++i) {
         if (s.at(i) == QLatin1Char('&'))
             s.remove(i, 1);
