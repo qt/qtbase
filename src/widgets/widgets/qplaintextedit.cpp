@@ -46,6 +46,7 @@
 #include <qdebug.h>
 #include <qdrag.h>
 #include <qclipboard.h>
+#include <qmath.h>
 #if QT_CONFIG(menu)
 #include <qmenu.h>
 #endif
@@ -380,6 +381,8 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
         line.setLineWidth(availableWidth);
         line.setPosition(QPointF(margin, height));
         height += line.height();
+        if (line.leading() < 0)
+            height += qCeil(line.leading());
         blockMaximumWidth = qMax(blockMaximumWidth, line.naturalTextWidth() + 2*margin);
     }
     tl->endLayout();

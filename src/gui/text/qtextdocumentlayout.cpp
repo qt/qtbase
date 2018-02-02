@@ -2549,12 +2549,14 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
 }
 
 static inline void getLineHeightParams(const QTextBlockFormat &blockFormat, const QTextLine &line, qreal scaling,
-                                       QFixed *lineAdjustment, QFixed *lineBreakHeight, QFixed *lineHeight)
+                                       QFixed *lineAdjustment, QFixed *lineBreakHeight, QFixed *lineHeight, QFixed *lineBottom)
 {
-    *lineHeight = QFixed::fromReal(blockFormat.lineHeight(line.height(), scaling));
+    qreal rawHeight = qCeil(line.ascent() + line.descent() + line.leading());
+    *lineHeight = QFixed::fromReal(blockFormat.lineHeight(rawHeight, scaling));
+    *lineBottom = QFixed::fromReal(blockFormat.lineHeight(line.height(), scaling));
 
     if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight || blockFormat.lineHeightType() == QTextBlockFormat::MinimumHeight) {
-        *lineBreakHeight = *lineHeight;
+        *lineBreakHeight = *lineBottom;
         if (blockFormat.lineHeightType() == QTextBlockFormat::FixedHeight)
             *lineAdjustment = QFixed::fromReal(line.ascent() + qMax(line.leading(), qreal(0.0))) - ((*lineHeight * 4) / 5);
         else
@@ -2632,6 +2634,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
         const QFixed cy = layoutStruct->y;
         const QFixed l = layoutStruct->x_left  + totalLeftMargin;
         const QFixed r = layoutStruct->x_right - totalRightMargin;
+        QFixed bottom;
 
         tl->beginLayout();
         bool firstLine = true;
@@ -2701,10 +2704,10 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
 
             }
 
-            QFixed lineBreakHeight, lineHeight, lineAdjustment;
+            QFixed lineBreakHeight, lineHeight, lineAdjustment, lineBottom;
             qreal scaling = (q->paintDevice() && q->paintDevice()->logicalDpiY() != qt_defaultDpi()) ?
                             qreal(q->paintDevice()->logicalDpiY()) / qreal(qt_defaultDpi()) : 1;
-            getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight);
+            getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight, &lineBottom);
 
             if (layoutStruct->pageHeight > 0 && layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom) {
                 layoutStruct->newPage();
@@ -2719,6 +2722,7 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
             }
 
             line.setPosition(QPointF((left - layoutStruct->x_left).toReal(), (layoutStruct->y - cy - lineAdjustment).toReal()));
+            bottom = layoutStruct->y + lineBottom;
             layoutStruct->y += lineHeight;
             layoutStruct->contentsWidth
                 = qMax<QFixed>(layoutStruct->contentsWidth, QFixed::fromReal(line.x() + line.naturalTextWidth()) + totalRightMargin);
@@ -2730,27 +2734,31 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
             }
             layoutStruct->pendingFloats.clear();
         }
+        layoutStruct->y = qMax(layoutStruct->y, bottom);
         tl->endLayout();
     } else {
         const int cnt = tl->lineCount();
+        QFixed bottom;
         for (int i = 0; i < cnt; ++i) {
             LDEBUG << "going to move text line" << i;
             QTextLine line = tl->lineAt(i);
             layoutStruct->contentsWidth
                 = qMax(layoutStruct->contentsWidth, QFixed::fromReal(line.x() + tl->lineAt(i).naturalTextWidth()) + totalRightMargin);
 
-            QFixed lineBreakHeight, lineHeight, lineAdjustment;
+            QFixed lineBreakHeight, lineHeight, lineAdjustment, lineBottom;
             qreal scaling = (q->paintDevice() && q->paintDevice()->logicalDpiY() != qt_defaultDpi()) ?
                             qreal(q->paintDevice()->logicalDpiY()) / qreal(qt_defaultDpi()) : 1;
-            getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight);
+            getLineHeightParams(blockFormat, line, scaling, &lineAdjustment, &lineBreakHeight, &lineHeight, &lineBottom);
 
             if (layoutStruct->pageHeight != QFIXED_MAX) {
                 if (layoutStruct->absoluteY() + lineBreakHeight > layoutStruct->pageBottom)
                     layoutStruct->newPage();
                 line.setPosition(QPointF(line.position().x(), (layoutStruct->y - lineAdjustment).toReal() - tl->position().y()));
             }
+            bottom = layoutStruct->y + lineBottom;
             layoutStruct->y += lineHeight;
         }
+        layoutStruct->y = qMax(layoutStruct->y, bottom);
         if (layoutStruct->updateRect.isValid()
             && blockLength > 1) {
             if (layoutFrom >= blockPosition + blockLength) {

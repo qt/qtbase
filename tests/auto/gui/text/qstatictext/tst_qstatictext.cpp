@@ -245,38 +245,33 @@ void tst_QStaticText::compareToDrawText()
         QPainter p(&imageDrawStaticPlainText);
         p.setFont(font);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        text.setTextWidth(30),
+        text.setTextWidth(10),
         p.setClipRect(QRectF(11, 12, 30, 500));
         text.setTextFormat(Qt::PlainText);
         p.drawStaticText(QPointF(11, 12), text);
     }
 
-#if defined(DEBUG_SAVE_IMAGE)
-    imageDrawText.save("compareToDrawText_imageDrawText.png");
-    imageDrawStaticPlainText.save("compareToDrawText_imageDrawStaticPlainText.png");
-#endif
-
-    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-    QCOMPARE(imageDrawStaticPlainText, imageDrawText);
-
-    // Rich text rendering does not take negative leading into account.
-#if 0
     QPixmap imageDrawStaticRichText(1000, 1000);
     imageDrawStaticRichText.fill(Qt::white);
     {
         QPainter p(&imageDrawStaticRichText);
         p.setFont(font);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        text.setTextWidth(30),
+        text.setTextWidth(10),
         p.setClipRect(QRectF(11, 12, 30, 500));
         text.setTextFormat(Qt::RichText);
         p.drawStaticText(QPointF(11, 12), text);
     }
+
 #if defined(DEBUG_SAVE_IMAGE)
-    imageDrawStaticRichText.save("compareToDrawText_imageDrawStaticRichText.png");
+    imageDrawText.save("compareToDrawText_imageDrawText.png");
+    imageDrawStaticText.save("compareToDrawText_imageDrawStaticPlainText.png");
+    imageDrawStaticText.save("compareToDrawText_imageDrawStaticRichText.png");
 #endif
+
+    QVERIFY(imageDrawText.toImage() != m_whiteSquare);
+    QCOMPARE(imageDrawStaticPlainText, imageDrawText);
     QCOMPARE(imageDrawStaticRichText, imageDrawText);
-#endif
 }
 
 void tst_QStaticText::prepareToCorrectData()
