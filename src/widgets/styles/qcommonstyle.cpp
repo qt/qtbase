@@ -1583,10 +1583,11 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                               aligned.width() * pixmap.devicePixelRatio(),
                               pixmap.height() * pixmap.devicePixelRatio());
 
+                const int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
                 if (header->direction == Qt::LeftToRight)
-                    rect.setLeft(rect.left() + pixw + 2);
+                    rect.setLeft(rect.left() + pixw + margin);
                 else
-                    rect.setRight(rect.right() - pixw - 2);
+                    rect.setRight(rect.right() - pixw - margin);
             }
             if (header->state & QStyle::State_On) {
                 QFont fnt = p->font();
