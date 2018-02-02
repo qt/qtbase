@@ -66,6 +66,7 @@
 #include <qabstractproxymodel.h>
 #include <qstylehints.h>
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
@@ -2550,7 +2551,8 @@ bool QComboBoxPrivate::showNativePopup()
     else if (q->testAttribute(Qt::WA_MacMiniSize))
         offset = QPoint(-2, 6);
 
-    m_platformMenu->showPopup(tlw, QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize()), currentItem);
+    const QRect targetRect = QRect(tlw->mapFromGlobal(q->mapToGlobal(offset)), QSize());
+    m_platformMenu->showPopup(tlw, QHighDpi::toNativePixels(targetRect, tlw), currentItem);
 
 #ifdef Q_OS_OSX
     // The Cocoa popup will swallow any mouse release event.
