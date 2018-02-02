@@ -993,12 +993,7 @@
     \value WA_LayoutUsesWidgetRect Ignore the layout item rect from the style
     when laying out this widget with QLayout.
 
-    \value WA_MacNoClickThrough When a widget that has this attribute set
-    is clicked, and its window is inactive, the click will make the window
-    active but won't be seen by the widget. Typical use of this attribute
-    is on widgets with "destructive" actions, such as a "Delete" button.
-    WA_MacNoClickThrough also applies to all child widgets of the widget
-    that has it set.
+    \value WA_MacNoClickThrough This value is obsolete and has no effect.
 
     \value WA_MacOpaqueSizeGrip Indicates that the native Carbon size grip
     should be opaque instead of transparent (the default). This attribute
@@ -1027,9 +1022,7 @@
     alternative sizes for widgets to avoid clipping.
     This attribute is only applicable to \macos.
 
-    \value WA_MacBrushedMetal Indicates the widget should be drawn in
-    the brushed metal style as supported by the windowing system. This
-    attribute is only applicable to \macos.
+    \value WA_MacBrushedMetal This value is obsolete and has no effect.
 
     \omitvalue WA_MacMetalStyle
 
@@ -1284,9 +1277,7 @@
     has no effect on non-X11 platforms. \b Note: Qt automatically sets this
     attribute on the feedback widget used during a drag.
 
-    \value WA_MacFrameworkScaled Enables resolution independence aware mode
-    on Mac when using Carbon. This attribute has no effect on Cocoa.
-    The attribute is off by default and can be enabled on a per-window basis.
+    \value WA_MacFrameworkScaled This value is obsolete and has no effect.
 
     \value WA_AcceptTouchEvents Allows touch events (see QTouchEvent)
     to be sent to the widget. Must be set on all widgets that can
@@ -2160,7 +2151,7 @@
                    with a somewhat lighter frame. It can also be
                    combined with Qt::FramelessWindowHint.
                    On \macos, tool windows correspond to the
-                   \l{http://developer.apple.com/documentation/Carbon/Conceptual/HandlingWindowsControls/hitb-wind_cont_concept/chapter_2_section_2.html}{Floating}
+                   \l{https://developer.apple.com/documentation/appkit/nspanel}{NSPanel}
                    class of windows. This means that the window lives on a
                    level above normal windows making it impossible to put a normal
                    window on top of it. By default, tool windows will disappear

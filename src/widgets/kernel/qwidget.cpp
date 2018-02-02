@@ -11219,10 +11219,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_NoChildEventsFromChildren:
         d->receiveChildEvents = !on;
         break;
-    case Qt::WA_MacBrushedMetal:
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
-        d->setStyle_helper(style(), false, true);  // Make sure things get unpolished/polished correctly.
-        // fall through since changing the metal attribute affects the opaque size grip.
     case Qt::WA_MacOpaqueSizeGrip:
         d->macUpdateOpaqueSizeGrip();
         break;
@@ -11235,12 +11232,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_Hover:
         qt_mac_update_mouseTracking(this);
         break;
-#endif
     case Qt::WA_MacAlwaysShowToolWindow:
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
         d->macUpdateHideOnSuspend();
-#endif
         break;
+#endif
     case Qt::WA_MacNormalSize:
     case Qt::WA_MacSmallSize:
     case Qt::WA_MacMiniSize:
