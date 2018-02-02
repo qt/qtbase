@@ -880,8 +880,8 @@ static bool isLatin(xkb_keysym_t sym)
 void QXcbKeyboard::checkForLatinLayout() const
 {
     const xkb_layout_index_t layoutCount = xkb_keymap_num_layouts(m_xkbKeymap.get());
-    const xcb_keycode_t minKeycode = connection()->setup()->min_keycode;
-    const xcb_keycode_t maxKeycode = connection()->setup()->max_keycode;
+    const xcb_keycode_t minKeycode = xkb_keymap_min_keycode(m_xkbKeymap.get());
+    const xcb_keycode_t maxKeycode = xkb_keymap_max_keycode(m_xkbKeymap.get());
 
     ScopedXKBState state(xkb_state_new(m_xkbKeymap.get()));
     for (xkb_layout_index_t layout = 0; layout < layoutCount; ++layout) {
@@ -940,8 +940,8 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
     // then the obtained key is not unique. This prevents ctrl+<physical q key> from generating a ctrl+q
     // shortcut in the above described setup. We don't want ctrl+<physical x key> and ctrl+<physical q key> to
     // generate the same shortcut event in this case.
-    const xcb_keycode_t minKeycode = connection()->setup()->min_keycode;
-    const xcb_keycode_t maxKeycode = connection()->setup()->max_keycode;
+    const xcb_keycode_t minKeycode = xkb_keymap_min_keycode(m_xkbKeymap.get());
+    const xcb_keycode_t maxKeycode = xkb_keymap_max_keycode(m_xkbKeymap.get());
     ScopedXKBState state(xkb_state_new(m_xkbKeymap.get()));
     for (xkb_layout_index_t prevLayout = 0; prevLayout < layout; ++prevLayout) {
         xkb_state_update_mask(state.get(), 0, latchedMods, lockedMods, 0, 0, prevLayout);
