@@ -452,7 +452,7 @@ bool QFontMetrics::inFontUcs4(uint ucs4) const
     value is negative if the pixels of the character extend to the
     left of the logical origin.
 
-    See width(QChar) for a graphical description of this metric.
+    See width() for a graphical description of this metric.
 
     \sa rightBearing(), minLeftBearing(), width()
 */
@@ -1402,7 +1402,7 @@ bool QFontMetricsF::inFontUcs4(uint ucs4) const
     value is negative if the pixels of the character extend to the
     left of the logical origin.
 
-    See width(QChar) for a graphical description of this metric.
+    See width() for a graphical description of this metric.
 
     \sa rightBearing(), minLeftBearing(), width()
 */
