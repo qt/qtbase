@@ -2830,7 +2830,10 @@ void QFileDialogPrivate::init(const QUrl &directory, const QString &nameFilter,
     if (!nameFilter.isEmpty())
         q->setNameFilter(nameFilter);
     q->setDirectoryUrl(workingDirectory(directory));
-    q->selectFile(initialSelection(directory));
+    if (directory.isLocalFile())
+        q->selectFile(initialSelection(directory));
+    else
+        q->selectUrl(directory);
 
 #ifndef QT_NO_SETTINGS
     // Try to restore from the FileDialog settings group; if it fails, fall back

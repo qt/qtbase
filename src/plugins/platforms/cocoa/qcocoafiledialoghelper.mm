@@ -418,6 +418,13 @@ static QString strippedText(QString s)
     } else {
         QList<QUrl> result;
         QString filename = QString::fromNSString([[mSavePanel URL] path]).normalized(QString::NormalizationForm_C);
+        const QString defaultSuffix = mOptions->defaultSuffix();
+        const QFileInfo fileInfo(filename);
+        // If neither the user or the NSSavePanel have provided a suffix, use
+        // the default suffix (if it exists).
+        if (fileInfo.suffix().isEmpty() && !defaultSuffix.isEmpty()) {
+                filename.append('.').append(defaultSuffix);
+        }
         result << QUrl::fromLocalFile(filename.remove(QLatin1String("___qt_very_unlikely_prefix_")));
         return result;
     }
@@ -445,10 +452,7 @@ static QString strippedText(QString s)
     [mPopUpButton setHidden:chooseDirsOnly];    // TODO hide the whole sunken pane instead?
 
     if (mOptions->acceptMode() == QFileDialogOptions::AcceptSave) {
-        QStringList ext = [self acceptableExtensionsForSave];
-        const QString defaultSuffix = mOptions->defaultSuffix();
-        if (!ext.isEmpty() && !defaultSuffix.isEmpty())
-            ext.prepend(defaultSuffix);
+        const QStringList ext = [self acceptableExtensionsForSave];
         [mSavePanel setAllowedFileTypes:ext.isEmpty() ? nil : qt_mac_QStringListToNSMutableArray(ext)];
     } else {
         [mOpenPanel setAllowedFileTypes:nil]; // delegate panel:shouldEnableURL: does the file filtering for NSOpenPanel
