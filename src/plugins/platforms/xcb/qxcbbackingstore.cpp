@@ -85,6 +85,9 @@ public:
     void preparePaint(const QRegion &region);
 
 private:
+    void createShmSegment(size_t segmentSize);
+    void destroyShmSegment();
+
     void destroy();
 
     void ensureGC(xcb_drawable_t dst);
@@ -173,39 +176,13 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
                                    XCB_IMAGE_ORDER_MSB_FIRST,
                                    0, ~0, 0);
 
-    const int segmentSize = m_xcb_image->stride * m_xcb_image->height;
+    const size_t segmentSize = static_cast<size_t>(m_xcb_image->stride) * m_xcb_image->height;
     if (!segmentSize)
         return;
 
-    int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
-    if (id == -1) {
-        qWarning("QXcbShmImage: shmget() failed (%d: %s) for size %d (%dx%d)",
-                 errno, strerror(errno), segmentSize, size.width(), size.height());
-    } else {
-        m_shm_info.shmaddr = m_xcb_image->data = (quint8 *)shmat(id, 0, 0);
-    }
-    m_shm_info.shmid = id;
-    m_shm_info.shmseg = xcb_generate_id(xcb_connection());
+    createShmSegment(segmentSize);
 
-    const xcb_query_extension_reply_t *shm_reply = xcb_get_extension_data(xcb_connection(), &xcb_shm_id);
-    bool shm_present = shm_reply != NULL && shm_reply->present;
-    xcb_generic_error_t *error = NULL;
-    if (shm_present)
-        error = xcb_request_check(xcb_connection(), xcb_shm_attach_checked(xcb_connection(), m_shm_info.shmseg, m_shm_info.shmid, false));
-    if (!shm_present || error || id == -1) {
-        free(error);
-
-        if (id != -1) {
-            shmdt(m_shm_info.shmaddr);
-            shmctl(m_shm_info.shmid, IPC_RMID, 0);
-        }
-        m_shm_info.shmaddr = 0;
-
-        m_xcb_image->data = (uint8_t *)malloc(segmentSize);
-    } else {
-        if (shmctl(m_shm_info.shmid, IPC_RMID, 0) == -1)
-            qWarning("QXcbBackingStore: Error while marking the shared memory segment to be destroyed");
-    }
+    m_xcb_image->data = m_shm_info.shmaddr ? m_shm_info.shmaddr : (uint8_t *)malloc(segmentSize);
 
     m_hasAlpha = QImage::toPixelFormat(format).alphaUsage() == QPixelFormat::UsesAlpha;
     if (!m_hasAlpha)
@@ -270,6 +247,60 @@ void QXcbShmImage::flushScrolledRegion(bool clientSideScroll)
     }
 }
 
+void QXcbShmImage::createShmSegment(size_t segmentSize)
+{
+    m_shm_info.shmaddr = nullptr;
+    if (!connection()->hasShm())
+        return;
+
+    const int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
+    if (id == -1) {
+        qWarning("QXcbShmImage: shmget() failed (%d: %s) for size %zu",
+                 errno, strerror(errno), segmentSize);
+        return;
+    }
+
+    void *addr = shmat(id, 0, 0);
+    if (addr == (void *)-1) {
+        qWarning("QXcbShmImage: shmat() failed (%d: %s) for id %d",
+                 errno, strerror(errno), id);
+        return;
+    }
+
+    if (shmctl(id, IPC_RMID, 0) == -1)
+        qWarning("QXcbBackingStore: Error while marking the shared memory segment to be destroyed");
+
+    const auto seg = xcb_generate_id(xcb_connection());
+    auto cookie = xcb_shm_attach_checked(xcb_connection(), seg, id, false);
+    auto *error = xcb_request_check(xcb_connection(), cookie);
+    if (error) {
+        connection()->printXcbError("QXcbShmImage: xcb_shm_attach() failed with error", error);
+        free(error);
+        if (shmdt(addr) == -1) {
+            qWarning("QXcbShmImage: shmdt() failed (%d: %s) for %p",
+                     errno, strerror(errno), addr);
+        }
+        return;
+    }
+
+    m_shm_info.shmseg = seg;
+    m_shm_info.shmid = id; // unused
+    m_shm_info.shmaddr = static_cast<quint8 *>(addr);
+}
+
+void QXcbShmImage::destroyShmSegment()
+{
+    auto cookie = xcb_shm_detach_checked(xcb_connection(), m_shm_info.shmseg);
+    xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
+    if (error)
+        connection()->printXcbError("QXcbShmImage: xcb_shm_detach() failed with error", error);
+
+    if (shmdt(m_shm_info.shmaddr) == -1) {
+        qWarning("QXcbShmImage: shmdt() failed (%d: %s) for %p",
+                 errno, strerror(errno), m_shm_info.shmaddr);
+    }
+}
+
 extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
 
 bool QXcbShmImage::scroll(const QRegion &area, int dx, int dy)
@@ -318,17 +349,11 @@ bool QXcbShmImage::scroll(const QRegion &area, int dx, int dy)
 
 void QXcbShmImage::destroy()
 {
-    const int segmentSize = m_xcb_image ? (m_xcb_image->stride * m_xcb_image->height) : 0;
-    if (segmentSize && m_shm_info.shmaddr)
-        xcb_shm_detach(xcb_connection(), m_shm_info.shmseg);
-
-    if (segmentSize) {
-        if (m_shm_info.shmaddr) {
-            shmdt(m_shm_info.shmaddr);
-            shmctl(m_shm_info.shmid, IPC_RMID, 0);
-        } else {
+    if (m_xcb_image->data) {
+        if (m_shm_info.shmaddr)
+            destroyShmSegment();
+        else
             free(m_xcb_image->data);
-        }
     }
 
     xcb_image_destroy(m_xcb_image);
