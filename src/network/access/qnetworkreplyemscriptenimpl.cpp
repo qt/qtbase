@@ -247,6 +247,7 @@ void QNetworkReplyEmscriptenImplPrivate::onLoadCallback(void *data, int statusCo
 
 void QNetworkReplyEmscriptenImplPrivate::onProgressCallback(void* data, int done, int total, uint timestamp)
 {
+    Q_UNUSED(timestamp);
     QNetworkReplyEmscriptenImplPrivate *handler = reinterpret_cast<QNetworkReplyEmscriptenImplPrivate*>(data);
     handler->emitDataReadProgress(done, total);
 }
