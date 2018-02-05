@@ -986,9 +986,6 @@ void tst_QMenu::task258920_mouseBorder()
     QAction *action = menu.addAction("test");
 
     const QPoint center = QApplication::desktop()->availableGeometry().center();
-#ifndef QT_NO_CURSOR
-    QCursor::setPos(center - QPoint(100, 100)); // Mac: Ensure cursor is outside
-#endif
     menu.popup(center);
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
     QTest::qWait(100);
@@ -1234,96 +1231,90 @@ public:
 
 void tst_QMenu::QTBUG47515_widgetActionEnterLeave()
 {
-#if !QT_CONFIG(cursor)
-    QSKIP("This test requires QCursor API");
-#else
     if (QGuiApplication::platformName() == QLatin1String("cocoa"))
         QSKIP("See QTBUG-63031");
 
-    QPoint screenCenter = QGuiApplication::primaryScreen()->availableGeometry().center();
-    QPoint pointOutsideMenu = screenCenter - QPoint(100, 100);
+    const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    QRect geometry(QPoint(), availableGeometry.size() / 3);
+    geometry.moveCenter(availableGeometry.center());
+    QPoint pointOutsideMenu = geometry.bottomRight() - QPoint(5, 5);
 
-    QMenu menu("Menu1");
-    QMenu submenu("Menu2");
+    QMainWindow topLevel;
+    topLevel.setGeometry(geometry);
 
-    QWidgetAction menuAction(&menu);
-    MyWidget w1(&menu);
-    menuAction.setDefaultWidget(&w1);
+    QMenuBar *menuBar = topLevel.menuBar();
+    menuBar->setNativeMenuBar(false);
+    QMenu *menu = menuBar->addMenu("Menu1");
+    QMenu *submenu = menu->addMenu("Menu2");
 
-    QWidgetAction submenuAction(&submenu);
-    MyWidget w2(&submenu);
-    submenuAction.setDefaultWidget(&w2);
+    QWidgetAction *menuAction = new QWidgetAction(menu);
+    MyWidget *w1 = new MyWidget(menu);
+    menuAction->setDefaultWidget(w1);
 
-    QAction *nextMenuAct = menu.addMenu(&submenu);
+    QWidgetAction *submenuAction = new QWidgetAction(submenu);
+    MyWidget *w2 = new MyWidget(submenu);
+    submenuAction->setDefaultWidget(w2);
 
-    menu.addAction(&menuAction);
-    submenu.addAction(&submenuAction);
+    QAction *nextMenuAct = menu->addMenu(submenu);
 
-    // Root menu
+    menu->addAction(menuAction);
+    submenu->addAction(submenuAction);
+
+    topLevel.show();
+    topLevel.setWindowTitle(QTest::currentTestFunction());
+    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+    QWindow *topLevelWindow = topLevel.windowHandle();
+    QVERIFY(topLevelWindow);
+
+    // Root menu: Click on menu bar to open menu1
     {
-        QCursor::setPos(pointOutsideMenu);
-        QTRY_COMPARE(QCursor::pos(), pointOutsideMenu);
-        menu.popup(screenCenter);
-        QVERIFY(QTest::qWaitForWindowExposed(&menu));
+        const QPoint menuActionPos = menuBar->mapTo(&topLevel, menuBar->actionGeometry(menu->menuAction()).center());
+        QTest::mouseClick(topLevelWindow, Qt::LeftButton, Qt::KeyboardModifiers(), menuActionPos);
+        QVERIFY(QTest::qWaitForWindowExposed(menu));
 
-        w1.enter = 0;
-        w1.leave = 0;
-        QPoint w1Center = w1.rect().center();
-        const QPoint w1CenterGlobal = w1.mapToGlobal(w1Center);
-        QCursor::setPos(w1CenterGlobal);
-        QTRY_COMPARE(QCursor::pos(), w1CenterGlobal);
-        QVERIFY(w1.isVisible());
-        QTRY_COMPARE(w1.leave, 0);
-        QTRY_COMPARE(w1.enter, 1);
+        w1->enter = 0;
+        w1->leave = 0;
+        QPoint w1Center = topLevel.mapFromGlobal(w1->mapToGlobal(w1->rect().center()));
+        QTest::mouseMove(topLevelWindow, w1Center);
+        QVERIFY(w1->isVisible());
+        QTRY_COMPARE(w1->leave, 0);
+        QTRY_COMPARE(w1->enter, 1);
 
         // Check whether leave event is not delivered on mouse move
-        w1.move = 0;
-        QWidget *nativeParent = w1.nativeParentWidget();
-        QVERIFY(nativeParent);
-        QWindow *window = nativeParent->windowHandle();
-        QVERIFY(window);
-        QTest::mouseMove(window, w1.mapTo(nativeParent, w1Center + QPoint(1, 1)));
-        QTRY_COMPARE(w1.move, 1);
-        QTRY_COMPARE(w1.leave, 0);
-        QTRY_COMPARE(w1.enter, 1);
+        w1->move = 0;
+        QTest::mouseMove(topLevelWindow, w1Center + QPoint(1, 1));
+        QTRY_COMPARE(w1->move, 1);
+        QTRY_COMPARE(w1->leave, 0);
+        QTRY_COMPARE(w1->enter, 1);
 
-        QCursor::setPos(pointOutsideMenu);
-        QTRY_COMPARE(QCursor::pos(), pointOutsideMenu);
-        QTRY_COMPARE(w1.leave, 1);
-        QTRY_COMPARE(w1.enter, 1);
+        QTest::mouseMove(topLevelWindow, topLevel.mapFromGlobal(pointOutsideMenu));
+        QTRY_COMPARE(w1->leave, 1);
+        QTRY_COMPARE(w1->enter, 1);
     }
 
     // Submenu
     {
-        menu.setActiveAction(nextMenuAct);
-        QVERIFY(QTest::qWaitForWindowExposed(&submenu));
+        menu->setActiveAction(nextMenuAct);
+        QVERIFY(QTest::qWaitForWindowExposed(submenu));
 
-        QPoint w2Center = w2.rect().center();
-        const QPoint w2CenterGlobal = w2.mapToGlobal(w2Center);
-        QCursor::setPos(w2CenterGlobal);
-        QTRY_COMPARE(QCursor::pos(), w2CenterGlobal);
+        QPoint w2Center = topLevel.mapFromGlobal(w2->mapToGlobal(w2->rect().center()));
+        QTest::mouseMove(topLevelWindow, w2Center);
 
-        QVERIFY(w2.isVisible());
-        QTRY_COMPARE(w2.leave, 0);
-        QTRY_COMPARE(w2.enter, 1);
+        QVERIFY(w2->isVisible());
+        QTRY_COMPARE(w2->leave, 0);
+        QTRY_COMPARE(w2->enter, 1);
 
         // Check whether leave event is not delivered on mouse move
-        w2.move = 0;
-        QWidget *nativeParent = w2.nativeParentWidget();
-        QVERIFY(nativeParent);
-        QWindow *window = nativeParent->windowHandle();
-        QVERIFY(window);
-        QTest::mouseMove(window, w2.mapTo(nativeParent, w2Center + QPoint(1, 1)));
-        QTRY_COMPARE(w2.move, 1);
-        QTRY_COMPARE(w2.leave, 0);
-        QTRY_COMPARE(w2.enter, 1);
+        w2->move = 0;
+        QTest::mouseMove(topLevelWindow, w2Center + QPoint(1, 1));
+        QTRY_COMPARE(w2->move, 1);
+        QTRY_COMPARE(w2->leave, 0);
+        QTRY_COMPARE(w2->enter, 1);
 
-        QCursor::setPos(pointOutsideMenu);
-        QTRY_COMPARE(QCursor::pos(), pointOutsideMenu);
-        QTRY_COMPARE(w2.leave, 1);
-        QTRY_COMPARE(w2.enter, 1);
+        QTest::mouseMove(topLevelWindow, topLevel.mapFromGlobal(pointOutsideMenu));
+        QTRY_COMPARE(w2->leave, 1);
+        QTRY_COMPARE(w2->enter, 1);
     }
-#endif // QT_NO_CURSOR
 }
 
 class MyMenu : public QMenu
