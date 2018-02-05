@@ -93,7 +93,6 @@ public:
 private:
     Q_DISABLE_COPY(QCupsPrintEnginePrivate)
 
-    void setupDefaultPrinter();
     void changePrinter(const QString &newPrinter);
     void setPageSize(const QPageSize &pageSize);
 
