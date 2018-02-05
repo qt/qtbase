@@ -89,11 +89,6 @@ QPrintDevice QPlatformPrinterSupport::createPrintDevice(const QString &id)
     return QPrintDevice();
 }
 
-QPrintDevice QPlatformPrinterSupport::createDefaultPrintDevice()
-{
-    return createPrintDevice(defaultPrintDeviceId());
-}
-
 QStringList QPlatformPrinterSupport::availablePrintDeviceIds() const
 {
     return QStringList();
