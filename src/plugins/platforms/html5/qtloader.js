@@ -84,11 +84,13 @@
 //      Prefix path for wasm file, realative to the loading HMTL file.
 //  restartMode : "DoNotRestart", "RestartOnExit", "RestartOnCrash"
 //      Controls whether the application should be reloaded on exits. The default is "DoNotRestart"
+//  restartType : "RestartModule", "ReloadPage"
 //  restartLimit : <int>
 //     Restart attempts limit. The default is 10.
 //  stdoutEnabled : <bool>
 //  stderrEnabled : <bool>
-//
+//  environment : <object>
+//     key-value environment variable pairs.
 //
 // QtLoader object API
 //
@@ -106,7 +108,8 @@
 // exitCode
 //      main()/emscripten_force_exit() return code. Valid on status change to
 //      "Exited", iff crashed is false.
-//
+// exitText
+//      Abort/exit message.
 function QtLoader(config)
 {
     function webAssemblySupported() {
@@ -197,6 +200,7 @@ function QtLoader(config)
     publicAPI.status = undefined;
     publicAPI.crashed = false;
     publicAPI.exitCode = undefined;
+    publicAPI.exitText = undefined;
     publicAPI.loadEmscriptenModule = loadEmscriptenModule;
 
     restartCount = 0;
@@ -243,7 +247,7 @@ function QtLoader(config)
             // Filter out OpenGL getProcAddress warnings. Qt tries to resolve
             // all possible function/extension names at startup which causes
             // emscripten to spam the console log with warnings.
-            if (text.startsWith("bad name in getProcAddress:"))
+            if (text.startsWith !== undefined && text.startsWith("bad name in getProcAddress:"))
                 return;
 
             if (config.stderrEnabled)
@@ -257,21 +261,37 @@ function QtLoader(config)
         // async callbacks. These should be handled in window.onerror by user code.
         module.onAbort = module.onAbort || function(text) {
             publicAPI.crashed = true;
+            publicAPI.exitText = text;
             setStatus("Exited");
         }
         module.quit = module.quit || function(code, exception) {
-            if (exception.name == "RangeError") {
-                // Emscripten calls module.quit with RangeError on stack owerflow
-                publicAPI.crashed = true;
-            } else {
+            if (exception.name == "ExitStatus") {
                 // Clean exit with code
                 publicAPI.exitCode = code;
+            } else {
+                publicAPI.exitText = exception.toString();
+                publicAPI.crashed = true;
             }
-
             setStatus("Exited");
         }
 
+        // Set environment variables
+        Module.preRun = Module.preRun || []
+        Module.preRun.push(function() {
+            for (let [key, value] of Object.entries(config.environment)) {
+                ENV[key.toUpperCase()] = value;
+            }
+        });
+
         config.restart = function() {
+
+            // Restart by reloading the page. This will wipe all state which means
+            // reload loops can't be prevented.
+            if (config.restartType == "ReloadPage") {
+                location.reload();
+            }
+
+            // Restart by readling the emscripten app module.
             ++self.restartCount;
             if (self.restartCount > config.restartLimit) {
                 self.error = "Error: This application has crashed too many times and has been disabled. Reload the page to try again."
@@ -282,10 +302,11 @@ function QtLoader(config)
 
         }
         publicAPI.exitCode = undefined;
+        publicAPI.exitText = undefined;
         publicAPI.crashed = false;
         setStatus("Loading");
 
-        // Final call emscripten create with our config object
+        // Finally call emscripten create with our config object
         createModule(module);
     }
 
@@ -345,7 +366,7 @@ function QtLoader(config)
             return;
         }
 
-        if (publicAPI.crashed)
+        if (!publicAPI.crashed)
             return;
 
         for (container of config.containerElements) {
@@ -356,25 +377,10 @@ function QtLoader(config)
     }
 
     var committedStatus = undefined;
-    function handleExitedStatusChange() {
+    function handleStatusChange() {
         if (committedStatus == publicAPI.status)
             return;
         committedStatus = publicAPI.status;
-
-        if (publicAPI.status == "Exited") {
-            if (config.restartMode == "RestartOnExit" ||
-                config.restartMode == "RestartOnCrash" && publicAPI.crashed) {
-                    config.restart();
-            } else {
-                setExitContent();
-            }
-        }
-    }
-
-    function setStatus(status) {
-        if (publicAPI.status == status)
-            return;
-        publicAPI.status = status;
 
         if (publicAPI.status == "Error") {
             setErrorContent();
@@ -383,14 +389,26 @@ function QtLoader(config)
         } else if (publicAPI.status == "Running") {
             setCanvasContent();
         } else if (publicAPI.status == "Exited") {
-            // There may be multiple calls setStatus("Exited") on exit. Delay handling
-            // in order to prevent e.g. transitioning to "loading" in between two calls.
-            window.setTimeout(function() { handleExitedStatusChange(); }, 0);
+            if (config.restartMode == "RestartOnExit" ||
+                config.restartMode == "RestartOnCrash" && publicAPI.crashed) {
+                    committedStatus = undefined;
+                    config.restart();
+            } else {
+                setExitContent();
+            }
         }
 
         // Send status change notification
         if (config.statusChanged)
-            config.statusChanged(status);
+            config.statusChanged(publicAPI.status);
+    }
+
+    function setStatus(status) {
+        if (publicAPI.status == status)
+            return;
+        publicAPI.status = status;
+
+        window.setTimeout(function() { handleStatusChange(); }, 0);
     }
 
     setStatus("Created");
