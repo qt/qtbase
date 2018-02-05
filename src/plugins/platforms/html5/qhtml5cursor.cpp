@@ -55,7 +55,7 @@ void QHtml5Cursor::changeCursor(QCursor *windowCursor, QWindow *window)
     // Set cursor on the main canvas
     EM_ASM({
         if (Module['canvas']) {
-            Module['canvas'].style['cursor'] = Module['Pointer_stringify']($0);
+            Module['canvas'].style['cursor'] = Pointer_stringify($0);
         }
     }, htmlCursorName.constData());
 }
