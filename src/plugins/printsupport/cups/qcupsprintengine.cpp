@@ -104,7 +104,11 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         break;
     case PPK_QPageLayout: {
         QPageLayout pageLayout = value.value<QPageLayout>();
-        if (pageLayout.isValid() && (d->m_printDevice.isValidPageLayout(pageLayout, d->resolution) || d->m_printDevice.supportsCustomPageSizes())) {
+        if (pageLayout.isValid() && (d->m_printDevice.isValidPageLayout(pageLayout, d->resolution)
+                                     || d->m_printDevice.supportsCustomPageSizes()
+                                     || d->m_printDevice.supportedPageSizes().isEmpty())) {
+            // supportedPageSizes().isEmpty() because QPageSetupWidget::initPageSizes says
+            // "If no available printer page sizes, populate with all page sizes"
             d->m_pageLayout = pageLayout;
             d->setPageSize(pageLayout.pageSize());
         }

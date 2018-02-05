@@ -424,6 +424,12 @@ void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
     initPageSizes();
     updateWidget();
     updateSavedValues();
+
+    if (m_ui.pageSizeCombo->currentIndex() == -1) {
+        // This can happen in raw printers that since they don't have a default
+        // page size none will get selected so just default to the first size (A4)
+        m_ui.pageSizeCombo->setCurrentIndex(0);
+    }
 }
 
 // Update the widget with the current settings

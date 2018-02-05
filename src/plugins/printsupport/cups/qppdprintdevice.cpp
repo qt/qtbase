@@ -75,14 +75,13 @@ QPpdPrintDevice::QPpdPrintDevice(const QString &id)
                 ppdMarkDefaults(m_ppd);
                 cupsMarkOptions(m_ppd, m_cupsDest->num_options, m_cupsDest->options);
                 ppdLocalize(m_ppd);
-            } else {
-                cupsFreeDests(1, m_cupsDest);
-                m_cupsDest = nullptr;
-                m_ppd = nullptr;
-            }
-        }
 
-        if (m_cupsDest && m_ppd) {
+                m_minimumPhysicalPageSize = QSize(m_ppd->custom_min[0], m_ppd->custom_min[1]);
+                m_maximumPhysicalPageSize = QSize(m_ppd->custom_max[0], m_ppd->custom_max[1]);
+                m_customMargins = QMarginsF(m_ppd->custom_margins[0], m_ppd->custom_margins[3],
+                                            m_ppd->custom_margins[2], m_ppd->custom_margins[1]);
+            }
+
             m_name = printerOption("printer-info");
             m_location = printerOption("printer-location");
             m_makeAndModel = printerOption("printer-make-and-model");
@@ -98,10 +97,6 @@ QPpdPrintDevice::QPpdPrintDevice(const QString &id)
             // Cups ppd_file_t variable_sizes custom_min custom_max
             // PPD MaxMediaWidth MaxMediaHeight
             m_supportsCustomPageSizes = type & CUPS_PRINTER_VARIABLE;
-            m_minimumPhysicalPageSize = QSize(m_ppd->custom_min[0], m_ppd->custom_min[1]);
-            m_maximumPhysicalPageSize = QSize(m_ppd->custom_max[0], m_ppd->custom_max[1]);
-            m_customMargins = QMarginsF(m_ppd->custom_margins[0], m_ppd->custom_margins[3],
-                                        m_ppd->custom_margins[2], m_ppd->custom_margins[1]);
         }
     }
 }
@@ -118,7 +113,7 @@ QPpdPrintDevice::~QPpdPrintDevice()
 
 bool QPpdPrintDevice::isValid() const
 {
-    return m_cupsDest && m_ppd;
+    return m_cupsDest;
 }
 
 bool QPpdPrintDevice::isDefault() const
@@ -163,8 +158,8 @@ void QPpdPrintDevice::loadPageSizes() const
                 }
             }
         }
-        m_havePageSizes = true;
     }
+    m_havePageSizes = true;
 }
 
 QPageSize QPpdPrintDevice::defaultPageSize() const
