@@ -1903,7 +1903,6 @@ public:
     }
 
     ChunkParameters getStringChunkParameters();
-    QCborStreamReader::StringResult<QByteArray> readString();
 };
 
 void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error)
@@ -1984,35 +1983,6 @@ QCborStreamReaderPrivate::ChunkParameters QCborStreamReaderPrivate::getStringChu
     else
         lastError = {};
     return { qintptr(content), err ? -1 : qsizetype(len) };
-}
-
-Q_NEVER_INLINE
-QCborStreamReader::StringResult<QByteArray> QCborStreamReaderPrivate::readString()
-{
-    auto params = getStringChunkParameters();
-    QCborStreamReader::StringResult<QByteArray> result;
-    result.status = QCborStreamReader::Error;
-
-    if (params.size < 0) {
-        // this error may be due to failure to parse the string itself (content
-        // will be non-null) or failure to parse the next element (content will
-        // be null). If it's the next element, we first return EndOfString,
-        // then allow the error to be presented.
-        if (params.offset)
-            return result;
-    }
-
-    if (params.offset) {
-        // read from the device now
-        device->skip(params.offset);
-        result.data = device->read(params.size);
-        result.status = QCborStreamReader::Ok;
-    } else {
-        result.status = QCborStreamReader::EndOfString;
-    }
-
-    preread();
-    return result;
 }
 
 /*!
@@ -2335,13 +2305,13 @@ bool QCborStreamReader::next(int maxRecursion)
         if (lastError() == QCborError::NoError)
             leaveContainer();
     } else if (isString() || isByteArray()) {
-        auto r = d->readString();
+        auto r = _readByteArray_helper();
         while (r.status == Ok) {
             if (isString() && !QUtf8::isValidUtf8(r.data, r.data.size()).isValidUtf8) {
                 d->handleError(CborErrorInvalidUtf8TextString);
                 break;
             }
-            r = d->readString();
+            r = _readByteArray_helper();
         }
     } else {
         // fixed types
@@ -2630,7 +2600,7 @@ bool QCborStreamReader::leaveContainer()
  */
 QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 {
-    auto r = d->readString();
+    auto r = _readByteArray_helper();
     QCborStreamReader::StringResult<QString> result;
     result.status = r.status;
 
@@ -2645,8 +2615,6 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
         result.status = Error;
         return result;
     }
-    if (r.status == EndOfString)
-        preparse();
     return result;
 }
 
@@ -2684,10 +2652,17 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
  */
 QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readByteArray_helper()
 {
-    auto r = d->readString();
-    if (r.status == EndOfString)
-        preparse();
-    return r;
+    QCborStreamReader::StringResult<QByteArray> result;
+    result.status = Error;
+    qsizetype len = _currentStringChunkSize();
+    if (len < 0)
+        return result;
+
+    result.data.resize(len);
+    auto r = readStringChunk(result.data.data(), len);
+    Q_ASSERT(r.status != Ok || r.data == len);
+    result.status = r.status;
+    return result;
 }
 
 /*!
