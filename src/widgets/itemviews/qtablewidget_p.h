@@ -62,9 +62,6 @@ QT_REQUIRE_CONFIG(tablewidget);
 
 QT_BEGIN_NAMESPACE
 
-// workaround for VC++ 6.0 linker bug
-typedef bool(*LessThan)(const QPair<QTableWidgetItem*,int>&,const QPair<QTableWidgetItem*,int>&);
-
 class QTableWidgetMimeData : public QMimeData
 {
     Q_OBJECT
