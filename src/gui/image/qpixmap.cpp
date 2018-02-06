@@ -248,9 +248,9 @@ QPixmap::QPixmap(const char * const xpm[])
     QImage image(xpm);
     if (!image.isNull()) {
         if (data && data->pixelType() == QPlatformPixmap::BitmapType)
-            *this = QBitmap::fromImage(image);
+            *this = QBitmap::fromImage(std::move(image));
         else
-            *this = fromImage(image);
+            *this = fromImage(std::move(image));
     }
 }
 #endif
@@ -691,7 +691,7 @@ QBitmap QPixmap::createHeuristicMask(bool clipTight) const
 QBitmap QPixmap::createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode) const
 {
     QImage image = toImage().convertToFormat(QImage::Format_ARGB32);
-    return QBitmap::fromImage(image.createMaskFromColor(maskColor.rgba(), mode));
+    return QBitmap::fromImage(std::move(image).createMaskFromColor(maskColor.rgba(), mode));
 }
 
 /*!
@@ -1018,9 +1018,9 @@ QDataStream &operator>>(QDataStream &stream, QPixmap &pixmap)
     if (image.isNull()) {
         pixmap = QPixmap();
     } else if (image.depth() == 1) {
-        pixmap = QBitmap::fromImage(image);
+        pixmap = QBitmap::fromImage(std::move(image));
     } else {
-        pixmap = QPixmap::fromImage(image);
+        pixmap = QPixmap::fromImage(std::move(image));
     }
     return stream;
 }
