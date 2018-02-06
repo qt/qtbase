@@ -69,8 +69,8 @@
         \li Qt Test supports benchmarking and provides several measurement back-ends.
     \row
          \li \b {IDE friendly}
-         \li Qt Test outputs messages that can be interpreted by Visual
-            Studio and KDevelop.
+         \li Qt Test outputs messages that can be interpreted by Qt Creator, Visual
+            Studio, and KDevelop.
     \row
          \li \b Thread-safety
          \li The error reporting is thread safe and atomic.
