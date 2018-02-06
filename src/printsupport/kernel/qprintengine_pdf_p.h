@@ -130,7 +130,6 @@ private:
     QString printProgram;
     QString selectionOption;
 
-    QPrint::DuplexMode duplex;
     bool collate;
     int copies;
     QPrinter::PageOrder pageOrder;

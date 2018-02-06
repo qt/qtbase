@@ -132,6 +132,8 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     // The following keys are settings that are unsupported by the PDF PrintEngine
     case PPK_CustomBase:
         break;
+    case PPK_Duplex:
+        break;
 
     // The following keys are properties and settings that are supported by the PDF PrintEngine
     case PPK_CollateCopies:
@@ -203,9 +205,6 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_FontEmbedding:
         d->embedFonts = value.toBool();
         break;
-    case PPK_Duplex:
-        d->duplex = static_cast<QPrint::DuplexMode>(value.toInt());
-        break;
     case PPK_CustomPaperSize:
         d->m_pageLayout.setPageSize(QPageSize(value.toSizeF(), QPageSize::Point));
         break;
@@ -249,6 +248,7 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
     // The following keys are settings that are unsupported by the PDF PrintEngine
     // Return sensible default values to ensure consistent behavior across platforms
     case PPK_CustomBase:
+    case PPK_Duplex:
         // Special case, leave null
         break;
 
@@ -322,9 +322,6 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_FontEmbedding:
         ret = d->embedFonts;
         break;
-    case PPK_Duplex:
-        ret = d->duplex;
-        break;
     case PPK_CustomPaperSize:
         ret = d->m_pageLayout.fullRectPoints().size();
         break;
@@ -389,7 +386,6 @@ void QPdfPrintEnginePrivate::closePrintDevice()
 
 QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
     : QPdfEnginePrivate(),
-      duplex(QPrint::DuplexNone),
       collate(true),
       copies(1),
       pageOrder(QPrinter::FirstPageFirst),

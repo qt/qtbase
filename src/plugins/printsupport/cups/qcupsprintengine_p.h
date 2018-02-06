@@ -99,6 +99,7 @@ private:
     QPrintDevice m_printDevice;
     QStringList cupsOptions;
     QString cupsTempFile;
+    QPrint::DuplexMode duplex;
 };
 
 QT_END_NAMESPACE
