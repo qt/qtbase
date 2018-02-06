@@ -50,13 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QPpdPrintDevice::QPpdPrintDevice()
-    : QPlatformPrintDevice(),
-      m_cupsDest(0),
-      m_ppd(0)
-{
-}
-
 QPpdPrintDevice::QPpdPrintDevice(const QString &id)
     : QPlatformPrintDevice(id),
       m_cupsDest(0),
