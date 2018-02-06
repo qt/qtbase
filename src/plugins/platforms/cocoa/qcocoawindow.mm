@@ -117,17 +117,12 @@ static void qRegisterNotificationCallbacks()
                 return;
             }
 
-            if (lcCocoaNotifications().isDebugEnabled()) {
-                if (cocoaWindows.isEmpty()) {
-                    qCDebug(lcCocoaNotifications) << "Could not find forwarding target for" <<
-                        qPrintable(notificationName) << "from" << notification.object;
-                } else {
-                    QVector<QCocoaWindow *> debugWindows;
-                    for (QCocoaWindow *cocoaWindow : cocoaWindows)
-                        debugWindows += cocoaWindow;
-                    qCDebug(lcCocoaNotifications) << "Forwarding" << qPrintable(notificationName) <<
-                        "to" << debugWindows;
-                }
+            if (lcCocoaNotifications().isDebugEnabled() && !cocoaWindows.isEmpty()) {
+                QVector<QCocoaWindow *> debugWindows;
+                for (QCocoaWindow *cocoaWindow : cocoaWindows)
+                    debugWindows += cocoaWindow;
+                qCDebug(lcCocoaNotifications) << "Forwarding" << qPrintable(notificationName) <<
+                    "to" << debugWindows;
             }
 
             // FIXME: Could be a foreign window, look up by iterating top level QWindows
