@@ -482,19 +482,17 @@ bool QPlatformWindow::windowEvent(QEvent *event)
 }
 
 /*!
-    Reimplement this method to start a system size grip drag
-    operation if the system supports it and return true to indicate
-    success.
-    It is called from the mouse press event handler of the size grip.
+    Reimplement this method to start a system resize operation if
+    the system supports it and return true to indicate success.
 
-    The default implementation is empty and does nothing with \a pos
-    and \a corner.
+    The default implementation is empty and does nothing with \a edges.
+
+    \since 5.15
 */
 
-bool QPlatformWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
+bool QPlatformWindow::startSystemResize(Qt::Edges edges)
 {
-    Q_UNUSED(pos)
-    Q_UNUSED(corner)
+    Q_UNUSED(edges)
     return false;
 }
 
@@ -502,18 +500,13 @@ bool QPlatformWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
     Reimplement this method to start a system move operation if
     the system supports it and return true to indicate success.
 
-    The \a pos is a position of MouseButtonPress event or TouchBegin
-    event from a sequence of mouse events that triggered the movement.
-    It must be specified in window coordinates.
+    The default implementation is empty and does nothing.
 
-    The default implementation is empty and does nothing with \a pos.
-
-    \since 5.11
+    \since 5.15
 */
 
-bool QPlatformWindow::startSystemMove(const QPoint &pos)
+bool QPlatformWindow::startSystemMove()
 {
-    Q_UNUSED(pos)
     return false;
 }
 

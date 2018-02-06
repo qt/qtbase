@@ -132,8 +132,8 @@ public:
 
     virtual bool windowEvent(QEvent *event);
 
-    virtual bool startSystemResize(const QPoint &pos, Qt::Corner corner);
-    virtual bool startSystemMove(const QPoint &pos);
+    virtual bool startSystemResize(Qt::Edges edges);
+    virtual bool startSystemMove();
 
     virtual void setFrameStrutEventsEnabled(bool enabled);
     virtual bool frameStrutEventsEnabled() const;

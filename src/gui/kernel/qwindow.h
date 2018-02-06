@@ -292,6 +292,8 @@ public Q_SLOTS:
     bool close();
     void raise();
     void lower();
+    bool startSystemResize(Qt::Edges edges);
+    bool startSystemMove();
 
     void setTitle(const QString &);
 

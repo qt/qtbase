@@ -230,7 +230,7 @@ public:
     bool xi2MouseEventsDisabled() const;
     Qt::MouseButton xiToQtMouseButton(uint32_t b);
     void xi2UpdateScrollingDevices();
-    bool startSystemMoveResizeForTouchBegin(xcb_window_t window, const QPoint &point, int corner);
+    bool startSystemMoveResizeForTouch(xcb_window_t window, int edges);
     void abortSystemMoveResizeForTouch();
     bool isTouchScreen(int id);
 
@@ -334,7 +334,7 @@ private:
         xcb_window_t window = XCB_NONE;
         uint16_t deviceid;
         uint32_t pointid;
-        int corner;
+        int edges;
     } m_startSystemMoveResizeInfo;
 
     const bool m_canGrabServer;
