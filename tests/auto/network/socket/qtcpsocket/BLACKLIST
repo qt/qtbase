@@ -8,4 +8,6 @@ windows
 windows
 [timeoutConnect:ip]
 windows
-]
+# QTBUG-66247
+[taskQtBug5799ConnectionErrorEventLoop]
+windows

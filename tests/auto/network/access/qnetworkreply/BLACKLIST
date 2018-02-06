@@ -22,6 +22,9 @@ windows
 windows
 [ioPostToHttpFromSocket]
 windows
+# QTBUG-66247
+[ioHttpRedirect]
+windows
 [ioHttpRedirectMultipartPost]
 linux
 [ioHttpRedirectPolicy]
