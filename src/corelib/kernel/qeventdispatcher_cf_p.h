@@ -85,18 +85,21 @@
 // We mean it.
 //
 
-#define DEBUG_EVENT_DISPATCHER 0
-
 #include <QtCore/qabstracteventdispatcher.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
 #include <QtCore/private/qcfsocketnotifier_p.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
+
 #include <CoreFoundation/CoreFoundation.h>
 
 Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(RunLoopModeTracker));
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcher);
+Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcherTimers)
 
 class QEventDispatcherCoreFoundation;
 
@@ -268,18 +271,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#if DEBUG_EVENT_DISPATCHER
-extern uint g_eventDispatcherIndentationLevel;
-#define qEventDispatcherDebug() qDebug().nospace() \
-            << qPrintable(QString(QLatin1String("| ")).repeated(g_eventDispatcherIndentationLevel)) \
-            << __FUNCTION__ << "(): "
-#define qIndent() ++g_eventDispatcherIndentationLevel
-#define qUnIndent() --g_eventDispatcherIndentationLevel
-#else
-#define qEventDispatcherDebug() QT_NO_QDEBUG_MACRO()
-#define qIndent()
-#define qUnIndent()
-#endif
 
 #endif // QEVENTDISPATCHER_CF_P_H

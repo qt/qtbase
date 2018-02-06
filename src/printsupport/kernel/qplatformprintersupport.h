@@ -76,7 +76,6 @@ public:
     virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
 
     virtual QPrintDevice createPrintDevice(const QString &id);
-    virtual QPrintDevice createDefaultPrintDevice();
     virtual QStringList availablePrintDeviceIds() const;
     virtual QString defaultPrintDeviceId() const;
 

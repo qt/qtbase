@@ -1080,6 +1080,10 @@ void QMenuBar::mouseReleaseEvent(QMouseEvent *e)
 
     d->mouseDown = false;
     QAction *action = d->actionAt(e->pos());
+
+    // do noting if the action is hidden
+    if (!d->isVisible(action))
+        return;
     if((d->closePopupMode && action == d->currentAction) || !action || !action->menu()) {
         //we set the current action before activating
         //so that we let the leave event set the current back to 0

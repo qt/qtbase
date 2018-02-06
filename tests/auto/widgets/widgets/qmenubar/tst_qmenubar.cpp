@@ -136,7 +136,7 @@ private slots:
     void task223138_triggered();
     void task256322_highlight();
     void menubarSizeHint();
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
     void taskQTBUG4965_escapeEaten();
 #endif
     void taskQTBUG11823_crashwithInvisibleActions();
@@ -153,7 +153,7 @@ private slots:
     void QTBUG_58344_invalidIcon();
     void platformMenu();
     void addActionQt5connect();
-
+    void QTBUG_65488_hiddenActionTriggered();
 protected slots:
     void onSimpleActivated( QAction*);
     void onComplexActionTriggered();
@@ -1377,7 +1377,7 @@ void tst_QMenuBar::menubarSizeHint()
 }
 
 // On Mac, do not test the menubar with escape key
-#ifndef Q_OS_MAC
+#ifndef Q_OS_MACOS
 void tst_QMenuBar::taskQTBUG4965_escapeEaten()
 {
     QMenuBar menubar;
@@ -1575,6 +1575,25 @@ void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
     windowedParent.reset(); //make the old window invalid
     // trigger the aciton,  reset the menu bar's window, this used to crash here.
     testMenus.actions[0]->trigger();
+}
+
+void tst_QMenuBar::QTBUG_65488_hiddenActionTriggered()
+{
+    QMainWindow win;
+    win.menuBar()->setNativeMenuBar(false);
+    QAction *act1 = win.menuBar()->addAction("A very long named action that make menuBar item wide enough");
+    QSignalSpy spy(win.menuBar(), &QMenuBar::triggered);
+
+    QRect actRect = win.menuBar()->actionGeometry(act1);
+    // resize to action's size to make Action1 hidden
+    win.resize(actRect.width() - 10, win.size().height());
+    win.show();
+    QApplication::setActiveWindow(&win);
+    QVERIFY(QTest::qWaitForWindowExposed(&win));
+    // click center of the blank area on the menubar where Action1 resided
+    QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, win.menuBar()->geometry().center());
+    QCoreApplication::sendPostedEvents(); // make sure all queued events also dispatched
+    QCOMPARE(spy.count(), 0);
 }
 
 // QTBUG-56526

@@ -3892,6 +3892,19 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
     \sa setValue(), value()
 */
 
+/*! \fn static inline QVariant fromStdVariant(const std::variant<T, Types...> &value)
+    \since 5.11
+
+    Returns a QVariant with the type and value of the active variant of \a value. If
+    the active type is std::monostate a default QVariant is returned.
+
+    \note With this method you do not need to register the variant as a Qt metatype,
+    since the std::variant is resolved before being stored. The component types
+    should be registered however.
+
+    \sa fromValue()
+*/
+
 /*!
     \fn template<typename T> QVariant qVariantFromValue(const T &value)
     \relates QVariant

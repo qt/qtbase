@@ -90,6 +90,7 @@ private Q_SLOTS:
 
 private:
     void initializeDialog();
+    void openPortal();
 
     QScopedPointer<QFlatpakFileDialogPrivate> d_ptr;
 };

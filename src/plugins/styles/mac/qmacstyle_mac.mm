@@ -237,6 +237,19 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QIndeterminateProgressIndicator);
 
 @end
 
+@interface QT_MANGLE_NAMESPACE(QVerticalSplitView) : NSSplitView
+- (BOOL)isVertical;
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QVerticalSplitView);
+
+@implementation QVerticalSplitView
+- (BOOL)isVertical
+{
+    return YES;
+}
+@end
+
 QT_BEGIN_NAMESPACE
 
 // The following constants are used for adjusting the size
@@ -2002,6 +2015,15 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
             // at construction time, and it cannot be changed later.
             bv = [[NSSlider alloc] initWithFrame:NSMakeRect(0, 0, 20, 200)];
             break;
+        case SplitView_Horizontal:
+            bv = [[NSSplitView alloc] init];
+            break;
+        case SplitView_Vertical:
+            bv = [[QVerticalSplitView alloc] init];
+            break;
+        case TextField:
+            bv = [[NSTextField alloc] init];
+            break;
         default:
             break;
         }
@@ -2076,7 +2098,7 @@ NSCell *QMacStylePrivate::cocoaCell(CocoaControl widget) const
     return cell;
 }
 
-void QMacStylePrivate::drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, DrawRectBlock drawRectBlock) const
+void QMacStylePrivate::drawNSViewInRect(CocoaControl widget, NSView *view, const QRect &qtRect, QPainter *p, bool isQWidget, __attribute__((noescape)) DrawRectBlock drawRectBlock) const
 {
     QPoint offset;
     if (widget == CocoaControl(Button_PopupButton, QStyleHelper::SizeSmall))
@@ -3444,35 +3466,21 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_FrameLineEdit:
         if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             if (frame->state & State_Sunken) {
-                QColor baseColor(frame->palette.background().color());
-                HIThemeFrameDrawInfo fdi;
-                fdi.version = qt_mac_hitheme_version;
-                fdi.state = tds;
-                int frame_size;
-                fdi.kind = frame->features & QStyleOptionFrame::Rounded ? kHIThemeFrameTextFieldRound :
-                                                                          kHIThemeFrameTextFieldSquare;
-                frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
-                if ((frame->state & State_ReadOnly) || !(frame->state & State_Enabled))
-                    fdi.state = kThemeStateInactive;
-                else if (fdi.state == kThemeStatePressed)
-                    // This pressed state doesn't make sense for a line edit frame.
-                    // And Yosemite agrees with us. Otherwise it starts showing yellow pixels.
-                    fdi.state = kThemeStateActive;
-                fdi.isFocused = (frame->state & State_HasFocus);
-                int lw = frame->lineWidth;
-                if (lw <= 0)
-                    lw = proxy()->pixelMetric(PM_DefaultFrameWidth, frame, w);
-                { //clear to base color
-                    p->save();
-                    p->setPen(QPen(baseColor, lw));
-                    p->setBrush(Qt::NoBrush);
-                    p->drawRect(frame->rect);
-                    p->restore();
-                }
-                const auto frameMargins = QMargins(frame_size, frame_size, frame_size, frame_size);
-                const CGRect cgRect = frame->rect.marginsRemoved(frameMargins).toCGRect();
-
-                HIThemeDrawFrame(&cgRect, &fdi, cg, kHIThemeOrientationNormal);
+                const bool isEnabled = opt->state & State_Enabled;
+                const bool isReadOnly = opt->state & State_ReadOnly;
+                const bool isRounded = frame->features & QStyleOptionFrame::Rounded;
+                const auto cs = d->effectiveAquaSizeConstrain(opt, w, CT_LineEdit);
+                const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::TextField, cs);
+                auto *tf = static_cast<NSTextField *>(d->cocoaControl(cw));
+                tf.enabled = isEnabled;
+                tf.editable = !isReadOnly;
+                tf.bezeled = YES;
+                static_cast<NSTextFieldCell *>(tf.cell).bezelStyle = isRounded ? NSTextFieldRoundedBezel : NSTextFieldSquareBezel;
+                tf.frame = opt->rect.toCGRect();
+                d->drawNSViewInRect(cw, tf, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+                    Q_UNUSED(ctx);
+                    [tf.cell drawWithFrame:rect inView:tf];
+                });
             } else {
                 QCommonStyle::drawPrimitive(pe, opt, p, w);
             }
@@ -4498,13 +4506,16 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         break;
         }
     case CE_Splitter:
-        if (opt->rect.width() > 1 && opt->rect.height() > 1){
-            HIThemeSplitterDrawInfo sdi;
-            sdi.version = qt_mac_hitheme_version;
-            sdi.state = tds;
-            sdi.adornment = kHIThemeSplitterAdornmentMetal;
-            CGRect cgRect = opt->rect.toCGRect();
-            HIThemeDrawPaneSplitter(&cgRect, &sdi, cg, kHIThemeOrientationNormal);
+        if (opt->rect.width() > 1 && opt->rect.height() > 1) {
+            const bool isVertical = !(opt->state & QStyle::State_Horizontal);
+            // Qt refers to the layout orientation, while Cocoa refers to the divider's.
+            const auto ct = isVertical ? QMacStylePrivate::SplitView_Horizontal : QMacStylePrivate::SplitView_Vertical;
+            const auto cw = QMacStylePrivate::CocoaControl(ct, QStyleHelper::SizeLarge);
+            auto *sv = static_cast<NSSplitView *>(d->cocoaControl(cw));
+            sv.frame = opt->rect.toCGRect();
+            d->drawNSViewInRect(cw, sv, opt->rect, p, w != nullptr, ^(CGContextRef ctx, const CGRect &rect) {
+                [sv drawDividerInRect:rect];
+            });
         } else {
             QPen oldPen = p->pen();
             p->setPen(opt->palette.dark().color());

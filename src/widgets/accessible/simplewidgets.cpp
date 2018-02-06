@@ -704,6 +704,8 @@ QString QAccessibleLineEdit::text(QAccessible::Text t) const
     }
     if (str.isEmpty())
         str = QAccessibleWidget::text(t);
+    if (str.isEmpty() && t == QAccessible::Description)
+        str = lineEdit()->placeholderText();
     return str;
 }
 

@@ -427,7 +427,7 @@ void QT_FASTCALL comp_func_Source_rgb64_avx2(QRgba64 *dst, const QRgba64 *src, i
         ::memcpy(dst, src, length * sizeof(QRgba64));
     } else {
         const uint ca = const_alpha | (const_alpha << 8); // adjust to [0-65535]
-        const uint cia = 65535 - const_alpha;
+        const uint cia = 65535 - ca;
 
         int x = 0;
 
@@ -493,7 +493,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_rgb64_avx2(QRgba64 *destPixels, int 
         if (const_alpha != 255)
             color = multiplyAlpha255(color, const_alpha);
 
-        const uint minusAlphaOfColor = ~ushort(color.alpha());
+        const uint minusAlphaOfColor = 65535 - color.alpha();
         int x = 0;
         quint64 *dst = (quint64 *) destPixels;
         const __m256i colorVector = _mm256_set1_epi64x(color);

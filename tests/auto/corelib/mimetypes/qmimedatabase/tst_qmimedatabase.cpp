@@ -635,6 +635,7 @@ void tst_QMimeDatabase::suffixes_data()
     QTest::newRow("mimetype with multiple patterns") << "text/plain" << "*.asc;*.txt;*,v" << "txt";
     QTest::newRow("mimetype with uncommon pattern") << "text/x-readme" << "README*" << QString();
     QTest::newRow("mimetype with no patterns") << "application/x-ole-storage" << QString() << QString();
+    QTest::newRow("default_mimetype") << "application/octet-stream" << "*.bin" << QString();
 }
 
 void tst_QMimeDatabase::suffixes()

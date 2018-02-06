@@ -725,8 +725,7 @@
     vector.
 */
 
-/*!
-    \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, const T &value)
+/*! \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, const T &value)
     \fn template<class T, int Prealloc> QVarLengthArray<T, Prealloc>::iterator QVarLengthArray<T, Prealloc>::insert(const_iterator before, T &&value)
 
     \overload

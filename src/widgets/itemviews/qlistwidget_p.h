@@ -119,7 +119,7 @@ public:
         const QList<QListWidgetItem*>::iterator &end,
         Qt::SortOrder order, QListWidgetItem *item);
 
-    void itemChanged(QListWidgetItem *item);
+    void itemChanged(QListWidgetItem *item, const QVector<int> &roles = QVector<int>());
 
     // dnd
     QStringList mimeTypes() const override;

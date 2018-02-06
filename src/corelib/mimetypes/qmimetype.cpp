@@ -466,6 +466,8 @@ QStringList QMimeType::suffixes() const
  */
 QString QMimeType::preferredSuffix() const
 {
+    if (isDefault()) // workaround for unwanted *.bin suffix for octet-stream, https://bugs.freedesktop.org/show_bug.cgi?id=101667, fixed upstream in 1.10
+        return QString();
     const QStringList suffixList = suffixes();
     return suffixList.isEmpty() ? QString() : suffixList.at(0);
 }

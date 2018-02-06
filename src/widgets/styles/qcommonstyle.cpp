@@ -743,8 +743,9 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                                                           % QLatin1String(metaObject()->className()), opt, QSize(size, size))
                                  % HexString<uint>(pe);
             if (!QPixmapCache::find(pixmapName, pixmap)) {
-                int border = size/5;
-                int sqsize = 2*(size/2);
+                qreal pixelRatio = p->device()->devicePixelRatioF();
+                int border = qRound(pixelRatio*(size/5));
+                int sqsize = qRound(pixelRatio*(2*(size/2)));
                 QImage image(sqsize, sqsize, QImage::Format_ARGB32_Premultiplied);
                 image.fill(0);
                 QPainter imagePainter(&image);
@@ -796,6 +797,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 imagePainter.drawPolygon(a);
                 imagePainter.end();
                 pixmap = QPixmap::fromImage(image);
+                pixmap.setDevicePixelRatio(pixelRatio);
                 QPixmapCache::insert(pixmapName, pixmap);
             }
             int xOffset = r.x() + (r.width() - size)/2;
@@ -1581,10 +1583,11 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                               aligned.width() * pixmap.devicePixelRatio(),
                               pixmap.height() * pixmap.devicePixelRatio());
 
+                const int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
                 if (header->direction == Qt::LeftToRight)
-                    rect.setLeft(rect.left() + pixw + 2);
+                    rect.setLeft(rect.left() + pixw + margin);
                 else
-                    rect.setRight(rect.right() - pixw - 2);
+                    rect.setRight(rect.right() - pixw - margin);
             }
             if (header->state & QStyle::State_On) {
                 QFont fnt = p->font();
@@ -4165,14 +4168,10 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
-            int x = cb->rect.x(),
-                y = cb->rect.y(),
-                wi = cb->rect.width(),
-                he = cb->rect.height();
-            int xpos = x;
-            int margin = cb->frame ? 3 : 0;
-            int bmarg = cb->frame ? 2 : 0;
-            xpos += wi - bmarg - 16;
+            const int x = cb->rect.x(), y = cb->rect.y(), wi = cb->rect.width(), he = cb->rect.height();
+            const int margin = cb->frame ? qRound(QStyleHelper::dpiScaled(3)) : 0;
+            const int bmarg = cb->frame ? qRound(QStyleHelper::dpiScaled(2)) : 0;
+            const int xpos = x + wi - bmarg - qRound(QStyleHelper::dpiScaled(16));
 
 
             switch (sc) {
@@ -4180,10 +4179,10 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                 ret = cb->rect;
                 break;
             case SC_ComboBoxArrow:
-                ret.setRect(xpos, y + bmarg, 16, he - 2*bmarg);
+                ret.setRect(xpos, y + bmarg, qRound(QStyleHelper::dpiScaled(16)), he - 2*bmarg);
                 break;
             case SC_ComboBoxEditField:
-                ret.setRect(x + margin, y + margin, wi - 2 * margin - 16, he - 2 * margin);
+                ret.setRect(x + margin, y + margin, wi - 2 * margin - qRound(QStyleHelper::dpiScaled(16)), he - 2 * margin);
                 break;
             case SC_ComboBoxListBoxPopup:
                 ret = cb->rect;

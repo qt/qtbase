@@ -559,6 +559,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
                 dist = defaultThemeHint(MouseDoubleClickDistance).toInt(&ok) * 2;
             return QVariant(ok ? dist : 10);
         }
+    case MouseQuickSelectionThreshold:
+        return QVariant(10);
     }
     return QVariant();
 }

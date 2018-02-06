@@ -16,9 +16,8 @@ VPATH += \
     ../src/corelib/kernel \
     ../src/corelib/codecs \
     ../src/corelib/plugin \
-    ../src/corelib/xml \
     ../src/corelib/io \
-    ../src/corelib/json \
+    ../src/corelib/serialization \
     ../tools/shared/windows
 
 INCLUDEPATH += . \

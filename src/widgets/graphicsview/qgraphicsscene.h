@@ -288,11 +288,7 @@ protected:
                            QWidget *widget = nullptr);
 
 protected Q_SLOTS:
-    // ### Qt 6: make unconditional
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    virtual
-#endif
-    bool focusNextPrevChild(bool next);
+    QT6_VIRTUAL bool focusNextPrevChild(bool next);
 
 Q_SIGNALS:
     void changed(const QList<QRectF> &region);

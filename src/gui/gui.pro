@@ -95,3 +95,6 @@ qtConfig(angle) {
 qtConfig(egl): CMAKE_EGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_EGL)
 
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist
+
+TRACEPOINT_PROVIDER = $$PWD/qtgui.tracepoints
+CONFIG += qt_tracepoints

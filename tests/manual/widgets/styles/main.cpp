@@ -30,6 +30,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QGridLayout>
+#include <QGroupBox>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
@@ -41,6 +42,7 @@
 #include <QTabWidget>
 #include <QTextStream>
 #include <QVBoxLayout>
+#include <QVector>
 #include <QWindow>
 #include <QScreen>
 
@@ -61,21 +63,66 @@ static inline QString formatEnumValue(Enum value)
     return result;
 }
 
-static QString pixmapDescription(QStyle::StandardPixmap sp, const QPixmap &pixmap)
+static QTextStream &operator<<(QTextStream &str, const QSize &s)
 {
-    QString description = formatEnumValue(sp);
-    QTextStream str(&description);
-    str << '(' << int(sp) << ") ";
-    if (pixmap.isNull()) {
-        str << "(null)";
-    } else {
-        const qreal dpr = pixmap.devicePixelRatioF();
-        str << ' ' << pixmap.width() << 'x' << pixmap.height();
-        if (!qFuzzyCompare(dpr, qreal(1)))
-            str << " DPR=" << dpr;
-    }
-    return description;
+    str << s.width();
+    if (s.width() != s.height())
+        str << 'x' << s.height();
+    return str;
 }
+
+struct StyleIconEntry
+{
+    QString name;
+    QStyle::StandardPixmap pixmap;
+};
+
+static bool operator<(const StyleIconEntry &e1, const StyleIconEntry &e2)
+{
+    return e1.name < e2.name;
+}
+
+static QVector<StyleIconEntry> styleIconEntries()
+{
+    QVector<StyleIconEntry> result;
+    const int count = int(QStyle::SP_LineEditClearButton) + 1;
+    result.reserve(count);
+    for (int i = 0; i < count; ++i) {
+        QStyle::StandardPixmap px = static_cast<QStyle::StandardPixmap>(i);
+        result.append({formatEnumValue(px), px});
+    }
+    std::sort(result.begin(), result.end());
+    return result;
+}
+
+class IconDisplayWidget : public QGroupBox
+{
+public:
+    explicit IconDisplayWidget(const QString &title, const QString &text,
+                               const QPixmap &pixmap, QWidget *p = nullptr);
+};
+
+IconDisplayWidget::IconDisplayWidget(const QString &title, const QString &text,
+                                     const QPixmap &pixmap, QWidget *p)
+    : QGroupBox(title, p)
+{
+    QHBoxLayout *hLayout = new QHBoxLayout(this);
+    hLayout->addWidget(new QLabel(text, this));
+    QLabel *iconLabel = new QLabel(this);
+    iconLabel->setPixmap(pixmap);
+    hLayout->addWidget(iconLabel);
+}
+
+static IconDisplayWidget *createStandardPixmapDisplay(const StyleIconEntry &e, QWidget *parent)
+{
+    QPixmap pixmap = parent->style()->standardPixmap(e.pixmap, nullptr, parent);
+    QString description;
+    QTextStream str(&description);
+    str << pixmap.size();
+    return new IconDisplayWidget(e.name, description, pixmap, parent);
+}
+
+enum : int { maxColumns = 6 };
 
 // Display pixmaps returned by QStyle::standardPixmap() in a grid.
 static QWidget *createStandardPixmapPage(QWidget *parent)
@@ -84,16 +131,47 @@ static QWidget *createStandardPixmapPage(QWidget *parent)
     QGridLayout *grid = new QGridLayout(result);
     int row = 0;
     int column = 0;
-    const int maxColumns = 6;
-    for (int i = 0; i <= int(QStyle::SP_LineEditClearButton); ++i) {
-        const QStyle::StandardPixmap sp = static_cast<QStyle::StandardPixmap>(i);
-        QPixmap pixmap = result->style()->standardPixmap(sp, nullptr, result);
-        QLabel *descriptionLabel = new QLabel(pixmapDescription(sp, pixmap));
-        grid->addWidget(descriptionLabel, row, column++);
-        QLabel *displayLabel = new QLabel;
-        displayLabel->setPixmap(pixmap);
-        displayLabel->setFrameShape(QFrame::Box);
-        grid->addWidget(displayLabel, row, column++);
+    QVector<StyleIconEntry> entries = styleIconEntries();
+    for (int i = 0, size = entries.size(); i < size; ++i) {
+        grid->addWidget(createStandardPixmapDisplay(entries.at(i), parent), row, column++);
+        if (column >= maxColumns) {
+            ++row;
+            column = 0;
+        }
+    }
+    return result;
+}
+
+// Display icons returned by QStyle::standardIcon() in a grid.
+static IconDisplayWidget *createStandardIconDisplay(const StyleIconEntry &e,
+                                                    const QSize &displaySize,
+                                                    QWidget *parent)
+{
+    QIcon icon = parent->style()->standardIcon(e.pixmap, nullptr, parent);
+    QString description;
+    QTextStream str(&description);
+    auto availableSizes = icon.availableSizes();
+    std::sort(availableSizes.begin(), availableSizes.end(),
+              [](QSize s1, QSize s2) { return s1.width() < s2.width(); });
+    for (int i =0; i < availableSizes.size(); ++i) {
+        if (i)
+            str << ',';
+        str << availableSizes.at(i);
+    }
+    return new IconDisplayWidget(e.name, description, icon.pixmap(displaySize), parent);
+}
+
+static QWidget *createStandardIconPage(QWidget *parent)
+{
+    QWidget *result = new QWidget(parent);
+    QGridLayout *grid = new QGridLayout(result);
+    int row = 0;
+    int column = 0;
+    const int largeIconSize = parent->style()->pixelMetric(QStyle::PM_LargeIconSize);
+    const QSize displaySize(largeIconSize, largeIconSize);
+    QVector<StyleIconEntry> entries = styleIconEntries();
+    for (int i = 0, size = entries.size(); i < size; ++i) {
+        grid->addWidget(createStandardIconDisplay(entries.at(i), displaySize, parent), row, column++);
         if (column >= maxColumns) {
             ++row;
             column = 0;
@@ -190,6 +268,7 @@ MainWindow::MainWindow()
     QVBoxLayout *mainLayout = new QVBoxLayout(central);
     mainLayout->addWidget(m_descriptionLabel);
     mainLayout->addWidget(m_tabWidget);
+    m_tabWidget->addTab(createStandardIconPage(m_tabWidget), "Standard Icon");
     m_tabWidget->addTab(createStandardPixmapPage(m_tabWidget), "Standard Pixmaps");
     m_tabWidget->addTab(createHintsPage(m_tabWidget), "Hints");
     m_tabWidget->addTab(createMetricsPage(m_tabWidget), "Pixel Metrics");

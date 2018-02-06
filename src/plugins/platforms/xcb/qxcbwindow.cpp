@@ -2849,5 +2849,18 @@ QXcbScreen *QXcbWindow::xcbScreen() const
     return static_cast<QXcbScreen *>(screen());
 }
 
+QString QXcbWindow::windowTitle(const QXcbConnection *conn, xcb_window_t window)
+{
+    const xcb_atom_t utf8Atom = conn->atom(QXcbAtom::UTF8_STRING);
+    auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, conn->xcb_connection(),
+                                       false, window, conn->atom(QXcbAtom::_NET_WM_NAME),
+                                       utf8Atom, 0, 1024);
+    if (reply && reply->format == 8 && reply->type == utf8Atom) {
+        const char *name = reinterpret_cast<const char *>(xcb_get_property_value(reply.get()));
+        return QString::fromUtf8(name);
+    }
+    return QString();
+}
+
 QT_END_NAMESPACE
 

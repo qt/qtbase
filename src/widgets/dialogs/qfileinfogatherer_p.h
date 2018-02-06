@@ -167,6 +167,13 @@ public:
     explicit QFileInfoGatherer(QObject *parent = 0);
     ~QFileInfoGatherer();
 
+#if QT_CONFIG(filesystemwatcher) && defined(Q_OS_WIN)
+    QStringList watchedFiles() const            { return watcher->files(); }
+    QStringList watchedDirectories() const      { return watcher->directories(); }
+    void watchPaths(const QStringList &paths)   { watcher->addPaths(paths); }
+    void unwatchPaths(const QStringList &paths) { watcher->removePaths(paths); }
+#endif // filesystemwatcher && Q_OS_WIN
+
     // only callable from this->thread():
     void clear();
     void removePath(const QString &path);

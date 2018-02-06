@@ -198,7 +198,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
 
 static QString strippedText(QString s)
 {
-    s.remove( QString::fromLatin1("...") );
+    s.remove(QLatin1String("..."));
     return QPlatformTheme::removeMnemonics(s).trimmed();
 }
 

@@ -607,8 +607,7 @@
     \sa append(), insert()
 */
 
-/*!
-    \fn template <typename T> void QVector<T>::insert(int i, const T &value)
+/*! \fn template <typename T> void QVector<T>::insert(int i, const T &value)
     \fn template <typename T> void QVector<T>::insert(int i, T &&value)
 
     Inserts \a value at index position \a i in the vector. If \a i is

@@ -137,6 +137,7 @@ private:
     QVector<QModelIndex> rcParent;
     QVector<int> rcFirst;
     QVector<int> rcLast;
+    QVector<int> currentRoles;
 
     //return true if models have the same structure, and all child have the same text
     bool compareModels(QStandardItemModel *model1, QStandardItemModel *model2);
@@ -185,6 +186,12 @@ void tst_QStandardItemModel::init()
             this, SLOT(columnsAboutToBeRemoved(QModelIndex,int,int)));
     connect(m_model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
             this, SLOT(columnsRemoved(QModelIndex,int,int)));
+
+    connect(m_model, &QAbstractItemModel::dataChanged,
+            this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &roles)
+    {
+        currentRoles = roles;
+    });
 
     rcFirst.fill(-1);
     rcLast.fill(-1);
@@ -712,15 +719,20 @@ void tst_QStandardItemModel::checkChildren()
 
 void tst_QStandardItemModel::data()
 {
+    currentRoles.clear();
     // bad args
     m_model->setData(QModelIndex(), "bla", Qt::DisplayRole);
+    QCOMPARE(currentRoles, {});
 
     QIcon icon;
     for (int r=0; r < m_model->rowCount(); ++r) {
         for (int c=0; c < m_model->columnCount(); ++c) {
             m_model->setData(m_model->index(r,c), "initialitem", Qt::DisplayRole);
+            QCOMPARE(currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
             m_model->setData(m_model->index(r,c), "tooltip", Qt::ToolTipRole);
+            QCOMPARE(currentRoles, {Qt::ToolTipRole});
             m_model->setData(m_model->index(r,c), icon, Qt::DecorationRole);
+            QCOMPARE(currentRoles, {Qt::DecorationRole});
         }
     }
 
