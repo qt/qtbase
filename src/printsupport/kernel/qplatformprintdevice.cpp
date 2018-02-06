@@ -50,23 +50,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
 
-QPlatformPrintDevice::QPlatformPrintDevice()
-    : m_isRemote(false),
-      m_supportsMultipleCopies(false),
-      m_supportsCollateCopies(false),
-      m_havePageSizes(false),
-      m_supportsCustomPageSizes(false),
-      m_haveResolutions(false),
-      m_haveInputSlots(false),
-      m_haveOutputBins(false),
-      m_haveDuplexModes(false),
-      m_haveColorModes(false)
-#ifndef QT_NO_MIMETYPE
-    , m_haveMimeTypes(false)
-#endif
-{
-}
-
 QPlatformPrintDevice::QPlatformPrintDevice(const QString &id)
     : m_id(id),
       m_isRemote(false),

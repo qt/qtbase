@@ -69,8 +69,7 @@ class Q_PRINTSUPPORT_EXPORT QPlatformPrintDevice
 {
     Q_DISABLE_COPY(QPlatformPrintDevice)
 public:
-    QPlatformPrintDevice();
-    explicit QPlatformPrintDevice(const QString &id);
+    explicit QPlatformPrintDevice(const QString &id = QString());
     virtual ~QPlatformPrintDevice();
 
     virtual QString id() const;
