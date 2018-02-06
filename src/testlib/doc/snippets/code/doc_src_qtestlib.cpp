@@ -48,19 +48,41 @@
 **
 ****************************************************************************/
 
+#include <QtTest>
+
 //! [0]
 class MyFirstTest: public QObject
 {
     Q_OBJECT
+
+private:
+    bool myCondition()
+    {
+        return true;
+    }
+
 private slots:
     void initTestCase()
-    { qDebug("called before everything else"); }
+    {
+        qDebug("Called before everything else.");
+    }
+
     void myFirstTest()
-    { QVERIFY(1 == 1); }
+    {
+        QVERIFY(true); // check that a condition is satisfied
+        QCOMPARE(1, 1); // compare two values
+    }
+
     void mySecondTest()
-    { QVERIFY(1 != 2); }
+    {
+        QVERIFY(myCondition());
+        QVERIFY(1 != 2);
+    }
+
     void cleanupTestCase()
-    { qDebug("called after myFirstTest and mySecondTest"); }
+    {
+        qDebug("Called after myFirstTest and mySecondTest.");
+    }
 };
 //! [0]
 
