@@ -2103,6 +2103,15 @@ void QXcbConnection::initializeShm()
     }
 
     has_shm = true;
+
+    auto shm_query = Q_XCB_REPLY(xcb_shm_query_version, m_connection);
+    if (!shm_query) {
+        qWarning("QXcbConnection: Failed to request MIT-SHM version");
+        return;
+    }
+
+    has_shm_fd = (shm_query->major_version == 1 && shm_query->minor_version >= 2) ||
+                  shm_query->major_version > 1;
 }
 
 void QXcbConnection::initializeXFixes()

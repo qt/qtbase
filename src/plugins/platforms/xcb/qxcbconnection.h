@@ -480,6 +480,7 @@ public:
     bool hasXRender() const { return has_render_extension; }
     bool hasXInput2() const { return m_xi2Enabled; }
     bool hasShm() const { return has_shm; }
+    bool hasShmFd() const { return has_shm_fd; }
 
     bool threadedEventHandling() const { return m_reader->isRunning(); }
 
@@ -703,6 +704,7 @@ private:
     bool has_xkb = false;
     bool has_render_extension = false;
     bool has_shm = false;
+    bool has_shm_fd = false;
 
     Qt::MouseButtons m_buttonState = 0;
     Qt::MouseButton m_button = Qt::NoButton;
