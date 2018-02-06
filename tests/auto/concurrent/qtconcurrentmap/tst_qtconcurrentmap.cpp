@@ -2379,7 +2379,7 @@ void tst_QtConcurrentMap::stlContainers()
 InstanceCounter ic_fn(const InstanceCounter & ic)
 {
     return InstanceCounter(ic);
-};
+}
 
 // Verify that held results are deleted when a future is
 // assigned over with operator ==
