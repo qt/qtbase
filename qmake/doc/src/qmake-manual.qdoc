@@ -3168,11 +3168,6 @@
 
     \snippet code/doc_src_qmake-manual.pro 70
 
-    \section2 sprintf(string, arguments...)
-
-    Replaces %1-%9 with the arguments passed in the comma-separated list
-    of function \c arguments and returns the processed string.
-
     \section2 resolve_depends(variablename, prefix)
 
     This is an internal function that you will typically not need.
@@ -3238,6 +3233,11 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 168
+
+    \section2 sprintf(string, arguments...)
+
+    Replaces %1-%9 in \c string with the arguments passed in the comma-separated
+    list of function \c arguments and returns the processed string.
 
     \target str_member()
     \section2 str_member(arg [, start [, end]])
@@ -3306,7 +3306,7 @@
 
     \section2 system_quote(arg)
 
-    Quotes \c arg for the for the shell that is used by the \c{system()}
+    Quotes \c arg for the shell that is used by the \c{system()}
     functions.
 
     See also \l{shell_quote(arg)}{shell_quote()}.
