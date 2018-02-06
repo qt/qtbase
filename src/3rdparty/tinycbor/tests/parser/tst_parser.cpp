@@ -691,18 +691,23 @@ static void chunkedStringTest(const QByteArray &data, const QString &concatenate
 
     CborValue copy = value;
 
+    err = cbor_value_begin_string_iteration(&value);
+    QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
     forever {
         QString decoded;
         err = parseOneChunk(&value, &decoded);
-        QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
-
-        if (decoded.isEmpty())
+        if (err == CborErrorNoMoreStringChunks)
             break;          // last chunk
+
+        QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
 
         QVERIFY2(!chunks.isEmpty(), "Too many chunks");
         QString expected = chunks.takeFirst();
         QCOMPARE(decoded, expected);
     }
+
+    err = cbor_value_finish_string_iteration(&value);
+    QVERIFY2(!err, QByteArray("Got error \"") + cbor_error_string(err) + "\"");
     QVERIFY2(chunks.isEmpty(), "Too few chunks");
 
     // compare to the concatenated data

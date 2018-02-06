@@ -90,8 +90,6 @@ enum {
     BreakByte               = (unsigned)Break | (SimpleTypesType << MajorTypeShift)
 };
 
-CBOR_INTERNAL_API CborError CBOR_INTERNAL_API_CC _cbor_value_prepare_string_iteration(CborValue *it);
-
 static inline void copy_current_position(CborValue *dst, const CborValue *src)
 {
     // This "if" is here for pedantry only: the two branches should perform

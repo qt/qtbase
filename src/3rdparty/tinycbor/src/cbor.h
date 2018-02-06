@@ -166,8 +166,7 @@ typedef enum CborError {
     CborErrorIllegalType,           /* type not allowed here */
     CborErrorIllegalNumber,
     CborErrorIllegalSimpleType,     /* types of value less than 32 encoded in two bytes */
-
-    CborErrorLastStringChunk,       /* not really an error */
+    CborErrorNoMoreStringChunks,
 
     /* parser errors in strict mode parsing only */
     CborErrorUnknownSimpleType = 512,
@@ -291,11 +290,23 @@ enum CborParserGlobalFlags
 
 enum CborParserIteratorFlags
 {
+    /* used for all types, but not during string chunk iteration
+     * (values are static-asserted, don't change) */
     CborIteratorFlag_IntegerValueIs64Bit    = 0x01,
     CborIteratorFlag_IntegerValueTooLarge   = 0x02,
+
+    /* used only for CborIntegerType */
     CborIteratorFlag_NegativeInteger        = 0x04,
+
+    /* used only during string iteration */
+    CborIteratorFlag_BeforeFirstStringChunk = 0x04,
     CborIteratorFlag_IteratingStringChunks  = 0x08,
+
+    /* used for arrays, maps and strings, including during chunk iteration */
     CborIteratorFlag_UnknownLength          = 0x10,
+
+    /* used for maps, but must be kept for all types
+     * (ContainerIsMap value must be CborMapType - CborArrayType) */
     CborIteratorFlag_ContainerIsMap         = 0x20,
     CborIteratorFlag_NextIsMapKey           = 0x40
 };
@@ -496,9 +507,36 @@ CBOR_INLINE_API CborError cbor_value_dup_byte_string(const CborValue *value, uin
     return _cbor_value_dup_string(value, (void **)buffer, buflen, next);
 }
 
+CBOR_PRIVATE_API CborError _cbor_value_get_string_chunk_size(const CborValue *value, size_t *len);
+CBOR_INLINE_API CborError cbor_value_get_string_chunk_size(const CborValue *value, size_t *len)
+{
+    assert(value->flags & CborIteratorFlag_IteratingStringChunks);
+    return _cbor_value_get_string_chunk_size(value, len);
+}
+
+CBOR_INLINE_API bool cbor_value_string_iteration_at_end(const CborValue *value)
+{
+    size_t dummy;
+    return cbor_value_get_string_chunk_size(value, &dummy) == CborErrorNoMoreStringChunks;
+}
+
+CBOR_PRIVATE_API CborError _cbor_value_begin_string_iteration(CborValue *value);
+CBOR_INLINE_API CborError cbor_value_begin_string_iteration(CborValue *value)
+{
+    assert(cbor_value_is_text_string(value) || cbor_value_is_byte_string(value));
+    assert(!(value->flags & CborIteratorFlag_IteratingStringChunks));
+    return _cbor_value_begin_string_iteration(value);
+}
+
+CBOR_PRIVATE_API CborError _cbor_value_finish_string_iteration(CborValue *value);
+CBOR_INLINE_API CborError cbor_value_finish_string_iteration(CborValue *value)
+{
+    assert(cbor_value_string_iteration_at_end(value));
+    return _cbor_value_finish_string_iteration(value);
+}
+
 CBOR_PRIVATE_API CborError _cbor_value_get_string_chunk(const CborValue *value, const void **bufferptr,
                                                         size_t *len, CborValue *next);
-CBOR_API CborError cbor_value_get_string_chunk_size(CborValue *value, size_t *len);
 CBOR_INLINE_API CborError cbor_value_get_text_string_chunk(const CborValue *value, const char **bufferptr,
                                                            size_t *len, CborValue *next)
 {

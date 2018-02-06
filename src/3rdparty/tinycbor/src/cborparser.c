@@ -963,60 +963,45 @@ CborError cbor_value_calculate_string_length(const CborValue *value, size_t *len
     return _cbor_value_copy_string(value, NULL, len, NULL);
 }
 
-static inline void prepare_string_iteration(CborValue *it)
+CborError _cbor_value_begin_string_iteration(CborValue *it)
 {
+    it->flags |= CborIteratorFlag_IteratingStringChunks |
+            CborIteratorFlag_BeforeFirstStringChunk;
     if (!cbor_value_is_length_known(it)) {
         /* chunked string: we're before the first chunk;
          * advance to the first chunk */
         advance_bytes(it, 1);
-        it->flags |= CborIteratorFlag_IteratingStringChunks;
     }
-}
 
-CborError CBOR_INTERNAL_API_CC _cbor_value_prepare_string_iteration(CborValue *it)
-{
-    cbor_assert((it->flags & CborIteratorFlag_IteratingStringChunks) == 0);
-    prepare_string_iteration(it);
-
-    /* are we at the end? */
-    if (!can_read_bytes(it, 1))
-        return CborErrorUnexpectedEOF;
     return CborNoError;
 }
 
-static CborError get_string_chunk_size(CborValue *it, size_t *offset, size_t *len)
+CborError _cbor_value_finish_string_iteration(CborValue *it)
 {
-    /* Possible states:
-     * length known | iterating | meaning
-     *     no       |    no     | before the first chunk of a chunked string
-     *     yes      |    no     | at a non-chunked string
-     *     no       |    yes    | second or later chunk
-     *     yes      |    yes    | after a non-chunked string
-     */
-    if (it->flags & CborIteratorFlag_IteratingStringChunks) {
-        /* already iterating */
-        if (cbor_value_is_length_known(it)) {
-            /* if the length was known, it wasn't chunked, so finish iteration */
-            *len = 0;
-            return CborErrorLastStringChunk;
-        }
-    } else {
-        prepare_string_iteration(it);
-    }
+    if (!cbor_value_is_length_known(it))
+        advance_bytes(it, 1);       /* skip the Break */
+
+    return preparse_next_value(it);
+}
+
+static CborError get_string_chunk_size(const CborValue *it, size_t *offset, size_t *len)
+{
+    uint8_t descriptor;
+    size_t bytesNeeded = 1;
+
+    if (cbor_value_is_length_known(it) && (it->flags & CborIteratorFlag_BeforeFirstStringChunk) == 0)
+        return CborErrorNoMoreStringChunks;
 
     /* are we at the end? */
-    uint8_t descriptor;
     if (!read_bytes(it, &descriptor, 0, 1))
         return CborErrorUnexpectedEOF;
 
     if (descriptor == BreakByte)
-        return CborErrorLastStringChunk;
+        return CborErrorNoMoreStringChunks;
     if ((descriptor & MajorTypeMask) != it->type)
         return CborErrorIllegalType;
 
     /* find the string length */
-    size_t bytesNeeded = 1;
-
     descriptor &= SmallValueMask;
     if (descriptor < Value8Bit) {
         *len = descriptor;
@@ -1047,43 +1032,31 @@ static CborError get_string_chunk_size(CborValue *it, size_t *offset, size_t *le
         ++bytesNeeded;
     }
 
-    if (*len != (size_t)*len)
-        return CborErrorDataTooLarge;
-
     *offset = bytesNeeded;
     return CborNoError;
+}
+
+CborError _cbor_value_get_string_chunk_size(const CborValue *value, size_t *len)
+{
+    size_t offset;
+    return get_string_chunk_size(value, &offset, len);
 }
 
 static CborError get_string_chunk(CborValue *it, const void **bufferptr, size_t *len)
 {
     size_t offset;
     CborError err = get_string_chunk_size(it, &offset, len);
-    if (err == CborErrorLastStringChunk) {
-        /* last chunk */
-        if (!cbor_value_is_length_known(it)) {
-            /* skip the break byte */
-            advance_bytes(it, 1);
-        }
-        *bufferptr = NULL;
-        *len = 0;
-        return preparse_next_value(it);
-    } else if (err) {
+    if (err)
         return err;
-    }
 
     /* we're good, transfer the string now */
     err = transfer_string(it, bufferptr, offset, *len);
     if (err)
         return err;
 
-    it->flags |= CborIteratorFlag_IteratingStringChunks;
+    /* we've iterated at least once */
+    it->flags &= ~CborIteratorFlag_BeforeFirstStringChunk;
     return CborNoError;
-}
-
-CborError cbor_value_get_string_chunk_size(CborValue *value, size_t *len)
-{
-    size_t offset;
-    return get_string_chunk_size(value, &offset, len);
 }
 
 /**
@@ -1168,7 +1141,7 @@ CborError cbor_value_get_string_chunk_size(CborValue *value, size_t *len)
  */
 
 CborError _cbor_value_get_string_chunk(const CborValue *value, const void **bufferptr,
-                                                        size_t *len, CborValue *next)
+                                       size_t *len, CborValue *next)
 {
     CborValue tmp;
     if (!next)
@@ -1216,14 +1189,18 @@ static CborError iterate_string_chunks(const CborValue *value, char *buffer, siz
     *next = *value;
     *result = true;
 
+    err = _cbor_value_begin_string_iteration(next);
+    if (err)
+        return err;
+
     while (1) {
         size_t newTotal;
         size_t chunkLen;
         err = get_string_chunk(next, &ptr, &chunkLen);
+        if (err == CborErrorNoMoreStringChunks)
+            break;
         if (err)
             return err;
-        if (!ptr)
-            break;
 
         if (unlikely(add_check_overflow(total, chunkLen, &newTotal)))
             return CborErrorDataTooLarge;
@@ -1242,7 +1219,7 @@ static CborError iterate_string_chunks(const CborValue *value, char *buffer, siz
         *result = !!func(buffer + total, nul, 1);
     }
     *buflen = total;
-    return CborNoError;
+    return _cbor_value_finish_string_iteration(next);
 }
 
 /**
