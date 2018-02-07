@@ -76,7 +76,8 @@ struct QPodArrayOps
         Q_ASSERT(b < e);
         Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
 
-        ::memcpy(this->end(), b, (e - b) * sizeof(T));
+        ::memcpy(static_cast<void *>(this->end()), static_cast<const void *>(b),
+                 (e - b) * sizeof(T));
         this->size += e - b;
     }
 
