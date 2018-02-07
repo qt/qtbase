@@ -3457,8 +3457,7 @@ void QImage::rgbSwapped_inplace()
 
 bool QImage::load(const QString &fileName, const char* format)
 {
-    QImage image = QImageReader(fileName, format).read();
-    operator=(image);
+    *this = QImageReader(fileName, format).read();
     return !isNull();
 }
 
@@ -3471,8 +3470,7 @@ bool QImage::load(const QString &fileName, const char* format)
 
 bool QImage::load(QIODevice* device, const char* format)
 {
-    QImage image = QImageReader(device, format).read();
-    operator=(image);
+    *this = QImageReader(device, format).read();
     return !isNull();
 }
 
@@ -3492,8 +3490,7 @@ bool QImage::load(QIODevice* device, const char* format)
 
 bool QImage::loadFromData(const uchar *data, int len, const char *format)
 {
-    QImage image = fromData(data, len, format);
-    operator=(image);
+    *this = fromData(data, len, format);
     return !isNull();
 }
 
