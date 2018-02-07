@@ -1324,7 +1324,7 @@ static QString formatBacktraceForLogMessage(const QMessagePattern::BacktracePara
 
 static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
-    if (!qt_logging_to_console())
+    if (qt_logging_to_console())
         return false;
 
     QString formattedMessage = qFormatLogMessage(type, context, message);
