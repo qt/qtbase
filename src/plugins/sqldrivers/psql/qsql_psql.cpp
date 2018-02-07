@@ -57,29 +57,7 @@
 #include <libpq-fe.h>
 #include <pg_config.h>
 
-#include <stdlib.h>
-#include <math.h>
-// below code taken from an example at http://www.gnu.org/software/hello/manual/autoconf/Function-Portability.html
-#ifndef isnan
-    # define isnan(x) \
-        (sizeof (x) == sizeof (long double) ? isnan_ld (x) \
-        : sizeof (x) == sizeof (double) ? isnan_d (x) \
-        : isnan_f (x))
-    static inline int isnan_f  (float       x) { return x != x; }
-    static inline int isnan_d  (double      x) { return x != x; }
-    static inline int isnan_ld (long double x) { return x != x; }
-#endif
-
-#ifndef isinf
-    # define isinf(x) \
-        (sizeof (x) == sizeof (long double) ? isinf_ld (x) \
-        : sizeof (x) == sizeof (double) ? isinf_d (x) \
-        : isinf_f (x))
-    static inline int isinf_f  (float       x) { return isnan (x - x); }
-    static inline int isinf_d  (double      x) { return isnan (x - x); }
-    static inline int isinf_ld (long double x) { return isnan (x - x); }
-#endif
-
+#include <cmath>
 
 // workaround for postgres defining their OIDs in a private header file
 #define QBOOLOID 16
@@ -135,7 +113,7 @@ static const StatementId InvalidStatementId = 0;
 
 class QPSQLResultPrivate;
 
-class QPSQLResult: public QSqlResult
+class QPSQLResult final : public QSqlResult
 {
     Q_DECLARE_PRIVATE(QPSQLResult)
 
@@ -164,7 +142,7 @@ protected:
     bool exec() override;
 };
 
-class QPSQLDriverPrivate : public QSqlDriverPrivate
+class QPSQLDriverPrivate final : public QSqlDriverPrivate
 {
     Q_DECLARE_PUBLIC(QPSQLDriver)
 public:
@@ -671,7 +649,7 @@ QVariant QPSQLResult::data(int i)
             return QString::fromLatin1(val).toULongLong();
     case QVariant::Int:
         return atoi(val);
-    case QVariant::Double:
+    case QVariant::Double: {
         if (ptype == QNUMERICOID) {
             if (numericalPrecisionPolicy() != QSql::HighPrecision) {
                 QVariant retval;
@@ -689,7 +667,12 @@ QVariant QPSQLResult::data(int i)
             }
             return QString::fromLatin1(val);
         }
+        if (qstricmp(val, "Infinity") == 0)
+            return qInf();
+        if (qstricmp(val, "-Infinity") == 0)
+            return -qInf();
         return QString::fromLatin1(val).toDouble();
+    }
     case QVariant::Date:
         if (val[0] == '\0') {
             return QVariant(QDate());
@@ -1497,18 +1480,10 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
 template <class FloatType>
 inline void assignSpecialPsqlFloatValue(FloatType val, QString *target)
 {
-    if (isnan(val)) {
-        *target = QLatin1String("'NaN'");
-    } else {
-        switch (isinf(val)) {
-        case 1:
-            *target = QLatin1String("'Infinity'");
-            break;
-        case -1:
-            *target = QLatin1String("'-Infinity'");
-            break;
-        }
-    }
+    if (qIsNaN(val))
+        *target = QStringLiteral("'NaN'");
+    else if (qIsInf(val))
+        *target = (val < 0) ? QStringLiteral("'-Infinity'") : QStringLiteral("'Infinity'");
 }
 
 QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const

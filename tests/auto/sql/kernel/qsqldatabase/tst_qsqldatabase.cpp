@@ -126,6 +126,8 @@ private slots:
     void formatValueTrimStrings();
     void precisionPolicy_data() { generic_data(); }
     void precisionPolicy();
+    void infinityAndNan_data() { generic_data(); }
+    void infinityAndNan();
     void multipleThreads_data() { generic_data(); }
     void multipleThreads();
 
@@ -1465,6 +1467,46 @@ void tst_QSqlDatabase::precisionPolicy()
     QVERIFY_SQL(q2, next());
     QCOMPARE(q2.value(0).type(), QVariant::LongLong);
     db.setNumericalPrecisionPolicy(oldPrecision);
+}
+
+void tst_QSqlDatabase::infinityAndNan()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::PostgreSQL)
+       QSKIP("checking for infinity/nan currently only works for PostgreSQL");
+
+    QSqlQuery q(db);
+    const QString tableName(qTableName("infititytest", __FILE__, db));
+    tst_Databases::safeDropTables(db, {tableName});
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, val double precision)").arg(tableName)));
+
+    QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
+
+    q.bindValue(0, 1);
+    q.bindValue(1, qQNaN());
+    QVERIFY_SQL(q, exec());
+    q.bindValue(0, 2);
+    q.bindValue(1, qInf());
+    QVERIFY_SQL(q, exec());
+    q.bindValue(0, 3);
+    q.bindValue(1, -qInf());
+    QVERIFY_SQL(q, exec());
+
+    QVERIFY_SQL(q, exec(QString("SELECT val FROM %1 ORDER BY id").arg(tableName)));
+
+    QVERIFY_SQL(q, next());
+    QVERIFY(qIsNaN(q.value(0).toDouble()));
+
+    QVERIFY_SQL(q, next());
+    QVERIFY(qIsInf(q.value(0).toDouble()));
+    QVERIFY(q.value(0).toDouble() > 0);
+
+    QVERIFY_SQL(q, next());
+    QVERIFY(qIsInf(q.value(0).toDouble()));
+    QVERIFY(q.value(0).toDouble() < 0);
 }
 
 // This test needs a ODBC data source containing MYSQL in it's name
