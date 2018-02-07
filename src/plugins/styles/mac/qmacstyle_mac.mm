@@ -4340,39 +4340,41 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // and then the combo inherits it and passes it onward. At that point the resolve mask
                 // is very, very weak. This makes it stonger.
                 myFont.setPointSizeF(QFontInfo(mi->font).pointSizeF());
-#if 0
-                // QTBUG-65653: This doesn't look good enough, especially on non-retina displays.
-                // Worked around below while waiting for a proper fix in QCoreTextFontEngine.
-                p->setFont(myFont);
-                p->drawText(xpos, yPos, mi->rect.width() - xm - tabwidth + 1,
-                            mi->rect.height(), text_flags, s);
-#else
-                QMacCGContext cgCtx(p);
-                d->setupNSGraphicsContext(cgCtx, YES);
 
-                // Respect the menu item palette as set in the style option.
-                const auto pc = p->pen().color();
-                NSColor *c = [NSColor colorWithSRGBRed:pc.redF()
-                                                 green:pc.greenF()
-                                                  blue:pc.blueF()
-                                                 alpha:pc.alphaF()];
-
-                // Respect the menu item action font as set in the style option.
+                // QTBUG-65653: Our own text rendering doesn't look good enough, especially on non-retina
+                // displays. Worked around here while waiting for a proper fix in QCoreTextFontEngine.
+                // Only if we're not using QCoreTextFontEngine we do fallback to our own text rendering.
                 const auto *fontEngine = QFontPrivate::get(myFont)->engineForScript(QChar::Script_Common);
                 Q_ASSERT(fontEngine);
                 if (fontEngine->type() == QFontEngine::Multi) {
                     fontEngine = static_cast<const QFontEngineMulti *>(fontEngine)->engine(0);
                     Q_ASSERT(fontEngine);
                 }
-                Q_ASSERT(fontEngine->type() == QFontEngine::Mac);
-                NSFont *f = (NSFont *)(CTFontRef)fontEngine->handle();
+                if (fontEngine->type() == QFontEngine::Mac) {
+                    NSFont *f = (NSFont *)(CTFontRef)fontEngine->handle();
 
-                s = qt_mac_removeMnemonics(s);
-                [s.toNSString() drawInRect:CGRectMake(xpos, yPos, mi->rect.width() - xm - tabwidth + 1, mi->rect.height())
-                            withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c }];
+                    // Respect the menu item palette as set in the style option.
+                    const auto pc = p->pen().color();
+                    NSColor *c = [NSColor colorWithSRGBRed:pc.redF()
+                                                     green:pc.greenF()
+                                                      blue:pc.blueF()
+                                                     alpha:pc.alphaF()];
 
-                d->restoreNSGraphicsContext(cgCtx);
-#endif
+                    s = qt_mac_removeMnemonics(s);
+                    const auto textRect = CGRectMake(xpos, yPos, mi->rect.width() - xm - tabwidth + 1, mi->rect.height());
+
+                    QMacCGContext cgCtx(p);
+                    d->setupNSGraphicsContext(cgCtx, YES);
+
+                    [s.toNSString() drawInRect:textRect
+                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c }];
+
+                    d->restoreNSGraphicsContext(cgCtx);
+                } else {
+                    p->setFont(myFont);
+                    p->drawText(xpos, yPos, mi->rect.width() - xm - tabwidth + 1,
+                                mi->rect.height(), text_flags, s);
+                }
             }
             p->restore();
         }
