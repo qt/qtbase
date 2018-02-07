@@ -2762,6 +2762,7 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
                 glyph_start++;
             for (int i = glyph_end - 1; i >= glyph_start; i--)
                 x += glyphs.effectiveAdvance(i);
+            x -= eng->offsetInLigature(si, pos, end, glyph_pos);
         } else {
             int start = qMax(line.from - si->position, 0);
             int glyph_start = logClusters[start];
@@ -2770,8 +2771,8 @@ qreal QTextLine::cursorToX(int *cursorPos, Edge edge) const
                 glyph_end--;
             for (int i = glyph_start; i <= glyph_end; i++)
                 x += glyphs.effectiveAdvance(i);
+            x += eng->offsetInLigature(si, pos, end, glyph_pos);
         }
-        x += eng->offsetInLigature(si, pos, end, glyph_pos);
     }
 
     if (eng->option.wrapMode() != QTextOption::NoWrap && x > line.x + line.width)
