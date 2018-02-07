@@ -1371,7 +1371,7 @@ static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &cont
     //writes to the slog2 buffer
     slog2c(NULL, QT_LOG_CODE, severity, formattedMessage.toLocal8Bit().constData());
 
-    return false;
+    return true; // Prevent further output to stderr
 }
 #endif // slog2
 
@@ -1561,7 +1561,7 @@ static bool systemd_default_message_handler(QtMsgType type,
                     "QT_CATEGORY=%s", context.category ? context.category : "unknown",
                     NULL);
 
-    return false;
+    return true; // Prevent further output to stderr
 }
 #endif
 
@@ -1594,7 +1594,7 @@ static bool syslog_default_message_handler(QtMsgType type, const QMessageLogCont
 
     syslog(priority, "%s", formattedMessage.toUtf8().constData());
 
-    return false;
+    return true; // Prevent further output to stderr
 }
 #endif
 
@@ -1621,7 +1621,7 @@ static bool android_default_message_handler(QtMsgType type,
                         "%s:%d (%s): %s\n", context.file, context.line,
                         context.function, qPrintable(formattedMessage));
 
-    return false;
+    return true; // Prevent further output to stderr
 }
 #endif //Q_OS_ANDROID
 
@@ -1634,7 +1634,8 @@ static bool win_message_handler(QtMsgType type, const QMessageLogContext &contex
     QString formattedMessage = qFormatLogMessage(type, context, message);
     formattedMessage.append(QLatin1Char('\n'));
     OutputDebugString(reinterpret_cast<const wchar_t *>(formattedMessage.utf16()));
-    return false;
+
+    return true; // Prevent further output to stderr
 }
 #endif
 
