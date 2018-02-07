@@ -83,41 +83,28 @@ public:
     {
         // Try to set the paint engine page layout
         pd->engine->setPageLayout(newPageLayout);
-        // Set QPagedPaintDevice layout to match the current paint engine layout
-        m_pageLayout = pd->engine->pageLayout();
-        return m_pageLayout.isEquivalentTo(newPageLayout);
+        return pageLayout().isEquivalentTo(newPageLayout);
     }
 
     bool setPageSize(const QPageSize &pageSize) override
     {
         // Try to set the paint engine page size
         pd->engine->setPageSize(pageSize);
-        // Set QPagedPaintDevice layout to match the current paint engine layout
-        m_pageLayout = pd->engine->pageLayout();
-        return m_pageLayout.pageSize().isEquivalentTo(pageSize);
+        return pageLayout().pageSize().isEquivalentTo(pageSize);
     }
 
     bool setPageOrientation(QPageLayout::Orientation orientation) override
     {
         // Set the print engine value
         pd->engine->setPageOrientation(orientation);
-        // Set QPagedPaintDevice layout to match the current paint engine layout
-        m_pageLayout = pd->engine->pageLayout();
-        return m_pageLayout.orientation() == orientation;
-    }
-
-    bool setPageMargins(const QMarginsF &margins) override
-    {
-        return setPageMargins(margins, pageLayout().units());
+        return pageLayout().orientation() == orientation;
     }
 
     bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) override
     {
         // Try to set engine margins
         pd->engine->setPageMargins(margins, units);
-        // Set QPagedPaintDevice layout to match the current paint engine layout
-        m_pageLayout = pd->engine->pageLayout();
-        return m_pageLayout.margins() == margins && m_pageLayout.units() == units;
+        return pageLayout().margins() == margins && pageLayout().units() == units;
     }
 
     QPageLayout pageLayout() const override
@@ -150,9 +137,6 @@ QPdfWriter::QPdfWriter(const QString &filename)
     Q_D(QPdfWriter);
 
     d->engine->setOutputFilename(filename);
-
-    // Set QPagedPaintDevice layout to match the current paint engine layout
-    devicePageLayout() = d->engine->pageLayout();
 }
 
 /*!
@@ -165,9 +149,6 @@ QPdfWriter::QPdfWriter(QIODevice *device)
     Q_D(QPdfWriter);
 
     d->engine->d_func()->outDevice = device;
-
-    // Set QPagedPaintDevice layout to match the current paint engine layout
-    devicePageLayout() = d->engine->pageLayout();
 }
 
 /*!

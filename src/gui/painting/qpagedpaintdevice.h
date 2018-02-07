@@ -55,7 +55,7 @@ class QPagedPaintDevicePrivate;
 class Q_GUI_EXPORT QPagedPaintDevice : public QPaintDevice
 {
 public:
-    QPagedPaintDevice();
+    QT_DEPRECATED QPagedPaintDevice();
     ~QPagedPaintDevice();
 
     virtual bool newPage() = 0;
@@ -243,8 +243,8 @@ public:
 protected:
     QPagedPaintDevice(QPagedPaintDevicePrivate *dd);
     QPagedPaintDevicePrivate *dd();
-    QPageLayout devicePageLayout() const;
-    QPageLayout &devicePageLayout();
+    QT_DEPRECATED QPageLayout devicePageLayout() const;
+    QT_DEPRECATED QPageLayout &devicePageLayout();
     friend class QPagedPaintDevicePrivate;
     QPagedPaintDevicePrivate *d;
 };

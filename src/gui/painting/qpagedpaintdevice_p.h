@@ -60,8 +60,7 @@ class Q_GUI_EXPORT QPagedPaintDevicePrivate
 {
 public:
     QPagedPaintDevicePrivate()
-        : m_pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0, 0, 0, 0)),
-          fromPage(0),
+        : fromPage(0),
           toPage(0),
           pageOrderAscending(true),
           printSelectionOnly(false)
@@ -70,45 +69,18 @@ public:
 
     virtual ~QPagedPaintDevicePrivate();
 
-    // ### Qt6 Remove these and make public class methods virtual
-    virtual bool setPageLayout(const QPageLayout &newPageLayout)
-    {
-        m_pageLayout = newPageLayout;
-        return m_pageLayout.isEquivalentTo(newPageLayout);;
-    }
 
-    virtual bool setPageSize(const QPageSize &pageSize)
-    {
-        m_pageLayout.setPageSize(pageSize);
-        return m_pageLayout.pageSize().isEquivalentTo(pageSize);
-    }
+    virtual bool setPageLayout(const QPageLayout &newPageLayout) = 0;
 
-    virtual bool setPageOrientation(QPageLayout::Orientation orientation)
-    {
-        m_pageLayout.setOrientation(orientation);
-        return m_pageLayout.orientation() == orientation;
-    }
+    virtual bool setPageSize(const QPageSize &pageSize) = 0;
 
-    virtual bool setPageMargins(const QMarginsF &margins)
-    {
-        return setPageMargins(margins, m_pageLayout.units());
-    }
+    virtual bool setPageOrientation(QPageLayout::Orientation orientation) = 0;
 
-    virtual bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units)
-    {
-        m_pageLayout.setUnits(units);
-        m_pageLayout.setMargins(margins);
-        return m_pageLayout.margins() == margins && m_pageLayout.units() == units;
-    }
+    virtual bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) = 0;
 
-    virtual QPageLayout pageLayout() const
-    {
-        return m_pageLayout;
-    }
+    virtual QPageLayout pageLayout() const = 0;
 
     static inline QPagedPaintDevicePrivate *get(QPagedPaintDevice *pd) { return pd->d; }
-
-    QPageLayout m_pageLayout;
 
     // These are currently required to keep QPrinter functionality working in QTextDocument::print()
     int fromPage;

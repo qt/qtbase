@@ -94,6 +94,10 @@ public:
 
     }
 
+    static QPrinterPrivate *get(QPrinter *printer) {
+        return printer->d_ptr.get();
+    }
+
     void init(const QPrinterInfo &printer, QPrinter::PrinterMode mode);
 
     QPrinterInfo findValidPrinter(const QPrinterInfo &printer = QPrinterInfo());

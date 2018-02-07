@@ -224,8 +224,8 @@ void QPrinterPrivate::setProperty(QPrintEngine::PrintEnginePropertyKey key, cons
 class QPrinterPagedPaintDevicePrivate : public QPagedPaintDevicePrivate
 {
 public:
-    QPrinterPagedPaintDevicePrivate(QPrinterPrivate *d)
-        : QPagedPaintDevicePrivate(), pd(d)
+    QPrinterPagedPaintDevicePrivate(QPrinter *p)
+        : QPagedPaintDevicePrivate(), m_printer(p)
     {}
 
     virtual ~QPrinterPagedPaintDevicePrivate()
@@ -233,6 +233,8 @@ public:
 
     bool setPageLayout(const QPageLayout &newPageLayout) override
     {
+        QPrinterPrivate *pd = QPrinterPrivate::get(m_printer);
+
         if (pd->paintEngine->type() != QPaintEngine::Pdf
             && pd->printEngine->printerState() == QPrinter::Active) {
             qWarning("QPrinter::setPageLayout: Cannot be changed while printer is active");
@@ -242,14 +244,13 @@ public:
         // Try to set the print engine page layout
         pd->setProperty(QPrintEngine::PPK_QPageLayout, QVariant::fromValue(newPageLayout));
 
-        // Set QPagedPaintDevice layout to match the current print engine value
-        m_pageLayout = pageLayout();
-
         return pageLayout().isEquivalentTo(newPageLayout);
     }
 
     bool setPageSize(const QPageSize &pageSize) override
     {
+        QPrinterPrivate *pd = QPrinterPrivate::get(m_printer);
+
         if (pd->paintEngine->type() != QPaintEngine::Pdf
             && pd->printEngine->printerState() == QPrinter::Active) {
             qWarning("QPrinter::setPageLayout: Cannot be changed while printer is active");
@@ -260,46 +261,38 @@ public:
         // Try to set the print engine page size
         pd->setProperty(QPrintEngine::PPK_QPageSize, QVariant::fromValue(pageSize));
 
-        // Set QPagedPaintDevice layout to match the current print engine value
-        m_pageLayout = pageLayout();
-
         return pageLayout().pageSize().isEquivalentTo(pageSize);
     }
 
     bool setPageOrientation(QPageLayout::Orientation orientation) override
     {
+        QPrinterPrivate *pd = QPrinterPrivate::get(m_printer);
+
         // Set the print engine value
         pd->setProperty(QPrintEngine::PPK_Orientation, orientation);
-
-        // Set QPagedPaintDevice layout to match the current print engine value
-        m_pageLayout = pageLayout();
 
         return pageLayout().orientation() == orientation;
     }
 
-    bool setPageMargins(const QMarginsF &margins) override
-    {
-        return setPageMargins(margins, pageLayout().units());
-    }
-
     bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) override
     {
+        QPrinterPrivate *pd = QPrinterPrivate::get(m_printer);
+
         // Try to set print engine margins
         QPair<QMarginsF, QPageLayout::Unit> pair = qMakePair(margins, units);
         pd->setProperty(QPrintEngine::PPK_QPageMargins, QVariant::fromValue(pair));
-
-        // Set QPagedPaintDevice layout to match the current print engine value
-        m_pageLayout = pageLayout();
 
         return pageLayout().margins() == margins && pageLayout().units() == units;
     }
 
     QPageLayout pageLayout() const override
     {
+        QPrinterPrivate *pd = QPrinterPrivate::get(m_printer);
+
         return pd->printEngine->property(QPrintEngine::PPK_QPageLayout).value<QPageLayout>();
     }
 
-    QPrinterPrivate *pd;
+    QPrinter *m_printer;
 };
 
 
@@ -554,11 +547,9 @@ public:
     Creates a new printer object with the given \a mode.
 */
 QPrinter::QPrinter(PrinterMode mode)
-    : QPagedPaintDevice(),
+    : QPagedPaintDevice(new QPrinterPagedPaintDevicePrivate(this)),
       d_ptr(new QPrinterPrivate(this))
 {
-    delete d;
-    d = new QPrinterPagedPaintDevicePrivate(d_func());
     d_ptr->init(QPrinterInfo(), mode);
 }
 
@@ -568,11 +559,9 @@ QPrinter::QPrinter(PrinterMode mode)
     Creates a new printer object with the given \a printer and \a mode.
 */
 QPrinter::QPrinter(const QPrinterInfo& printer, PrinterMode mode)
-    : QPagedPaintDevice(),
+    : QPagedPaintDevice(new QPrinterPagedPaintDevicePrivate(this)),
       d_ptr(new QPrinterPrivate(this))
 {
-    delete d;
-    d = new QPrinterPagedPaintDevicePrivate(d_func());
     d_ptr->init(printer, mode);
 }
 
@@ -1469,8 +1458,6 @@ void QPrinter::setFullPage(bool fp)
     Q_D(QPrinter);
     // Set the print engine
     d->setProperty(QPrintEngine::PPK_FullPage, fp);
-    // Set QPagedPaintDevice layout to match the current print engine value
-    devicePageLayout() = pageLayout();
 }
 
 
