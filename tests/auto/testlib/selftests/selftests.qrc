@@ -62,6 +62,7 @@
         <file>expected_crashes_1.txt</file>
         <file>expected_crashes_2.txt</file>
         <file>expected_crashes_3.txt</file>
+        <file>expected_crashes_4.txt</file>
         <file>expected_datatable.lightxml</file>
         <file>expected_datatable.teamcity</file>
         <file>expected_datatable.txt</file>
