@@ -1244,7 +1244,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
     static QRegularExpression rx(QStringLiteral("^(?:[^(]*/)?([^(/]+)\\(([^+]*)(?:[\\+[a-f0-9x]*)?\\) \\[[a-f0-9x]*\\]$"),
                                  QRegularExpression::OptimizeOnFirstUsageOption);
 
-    QVarLengthArray<void*, 32> buffer(7 + frameCount);
+    QVarLengthArray<void*, 32> buffer(8 + frameCount);
     int n = backtrace(buffer.data(), buffer.size());
     if (n > 0) {
         int numberPrinted = 0;
@@ -1638,6 +1638,19 @@ static bool win_message_handler(QtMsgType type, const QMessageLogContext &contex
 
 // --------------------------------------------------------------------------
 
+static void stderr_message_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+
+    // print nothing if message pattern didn't apply / was empty.
+    // (still print empty lines, e.g. because message itself was empty)
+    if (formattedMessage.isNull())
+        return;
+
+    fprintf(stderr, "%s\n", formattedMessage.toLocal8Bit().constData());
+    fflush(stderr);
+}
+
 /*!
     \internal
 */
@@ -1666,18 +1679,8 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 # endif
 #endif
 
-    if (handledStderr)
-        return;
-
-    QString formattedMessage = qFormatLogMessage(type, context, message);
-
-    // print nothing if message pattern didn't apply / was empty.
-    // (still print empty lines, e.g. because message itself was empty)
-    if (formattedMessage.isNull())
-        return;
-
-    fprintf(stderr, "%s\n", formattedMessage.toLocal8Bit().constData());
-    fflush(stderr);
+    if (!handledStderr)
+        stderr_message_handler(type, context, message);
 }
 
 /*!
