@@ -1218,7 +1218,7 @@ void QMessagePattern::setPattern(const QString &pattern)
 #if defined(Q_OS_WINRT)
         OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
         if (0)
-#elif defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+#elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
         if (!qt_logging_to_console()) {
             OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
         } else
