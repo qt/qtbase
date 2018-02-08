@@ -909,7 +909,7 @@ Mozilla License) is included. The data is then also used in QNetworkCookieJar::v
             "condition": "features.journald || features.syslog || (config.qnx && features.slog2)",
             "message": "journald, syslog or slog2 integration is enabled.
 If your users intend to develop applications against this build,
-ensure that the IDEs they use either set QT_LOGGING_TO_CONSOLE to 1
+ensure that the IDEs they use either set QT_FORCE_STDERR_LOGGING to 1
 or are able to read the logged output from journald, syslog or slog2."
         },
         {
