@@ -1317,64 +1317,6 @@ static QString formatBacktraceForLogMessage(const QMessagePattern::BacktracePara
 }
 #endif // QLOGGING_HAVE_BACKTRACE && !QT_BOOTSTRAPPED
 
-#if QT_CONFIG(slog2)
-#ifndef QT_LOG_CODE
-#define QT_LOG_CODE 9000
-#endif
-
-static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
-{
-    if (qt_logging_to_console())
-        return false;
-
-    QString formattedMessage = qFormatLogMessage(type, context, message);
-    formattedMessage.append(QLatin1Char('\n'));
-    if (slog2_set_default_buffer((slog2_buffer_t)-1) == 0) {
-        slog2_buffer_set_config_t buffer_config;
-        slog2_buffer_t buffer_handle;
-
-        buffer_config.buffer_set_name = __progname;
-        buffer_config.num_buffers = 1;
-        buffer_config.verbosity_level = SLOG2_DEBUG1;
-        buffer_config.buffer_config[0].buffer_name = "default";
-        buffer_config.buffer_config[0].num_pages = 8;
-
-        if (slog2_register(&buffer_config, &buffer_handle, 0) == -1) {
-            fprintf(stderr, "Error registering slogger2 buffer!\n");
-            fprintf(stderr, "%s", formattedMessage.toLocal8Bit().constData());
-            fflush(stderr);
-            return false;
-        }
-
-        // Set as the default buffer
-        slog2_set_default_buffer(buffer_handle);
-    }
-    int severity;
-    //Determines the severity level
-    switch (type) {
-    case QtDebugMsg:
-        severity = SLOG2_DEBUG1;
-        break;
-    case QtInfoMsg:
-        severity = SLOG2_INFO;
-        break;
-    case QtWarningMsg:
-        severity = SLOG2_NOTICE;
-        break;
-    case QtCriticalMsg:
-        severity = SLOG2_WARNING;
-        break;
-    case QtFatalMsg:
-        severity = SLOG2_ERROR;
-        break;
-    }
-    //writes to the slog2 buffer
-    slog2c(NULL, QT_LOG_CODE, severity, formattedMessage.toLocal8Bit().constData());
-
-    return true; // Prevent further output to stderr
-}
-#endif // slog2
-
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
 
 /*!
@@ -1524,6 +1466,66 @@ static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_A
 // pointer to QtMessageHandler debug handler (with context)
 static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(qDefaultMessageHandler);
 
+// ------------------------ Alternate logging sinks -------------------------
+
+#if QT_CONFIG(slog2)
+#ifndef QT_LOG_CODE
+#define QT_LOG_CODE 9000
+#endif
+
+static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    if (qt_logging_to_console())
+        return false;
+
+    QString formattedMessage = qFormatLogMessage(type, context, message);
+    formattedMessage.append(QLatin1Char('\n'));
+    if (slog2_set_default_buffer((slog2_buffer_t)-1) == 0) {
+        slog2_buffer_set_config_t buffer_config;
+        slog2_buffer_t buffer_handle;
+
+        buffer_config.buffer_set_name = __progname;
+        buffer_config.num_buffers = 1;
+        buffer_config.verbosity_level = SLOG2_DEBUG1;
+        buffer_config.buffer_config[0].buffer_name = "default";
+        buffer_config.buffer_config[0].num_pages = 8;
+
+        if (slog2_register(&buffer_config, &buffer_handle, 0) == -1) {
+            fprintf(stderr, "Error registering slogger2 buffer!\n");
+            fprintf(stderr, "%s", formattedMessage.toLocal8Bit().constData());
+            fflush(stderr);
+            return false;
+        }
+
+        // Set as the default buffer
+        slog2_set_default_buffer(buffer_handle);
+    }
+    int severity;
+    //Determines the severity level
+    switch (type) {
+    case QtDebugMsg:
+        severity = SLOG2_DEBUG1;
+        break;
+    case QtInfoMsg:
+        severity = SLOG2_INFO;
+        break;
+    case QtWarningMsg:
+        severity = SLOG2_NOTICE;
+        break;
+    case QtCriticalMsg:
+        severity = SLOG2_WARNING;
+        break;
+    case QtFatalMsg:
+        severity = SLOG2_ERROR;
+        break;
+    }
+    //writes to the slog2 buffer
+    slog2c(NULL, QT_LOG_CODE, severity, formattedMessage.toLocal8Bit().constData());
+
+    return true; // Prevent further output to stderr
+}
+#endif // slog2
+
 #if QT_CONFIG(journald)
 static bool systemd_default_message_handler(QtMsgType type,
                                             const QMessageLogContext &context,
@@ -1638,6 +1640,8 @@ static bool win_message_handler(QtMsgType type, const QMessageLogContext &contex
     return true; // Prevent further output to stderr
 }
 #endif
+
+// --------------------------------------------------------------------------
 
 /*!
     \internal
