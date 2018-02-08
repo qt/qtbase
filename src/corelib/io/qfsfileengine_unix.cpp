@@ -180,10 +180,11 @@ bool QFSFileEnginePrivate::nativeFlush()
 bool QFSFileEnginePrivate::nativeSyncToDisk()
 {
     Q_Q(QFSFileEngine);
+    int ret;
 #if defined(_POSIX_SYNCHRONIZED_IO) && _POSIX_SYNCHRONIZED_IO > 0
-    const int ret = fdatasync(nativeHandle());
+    EINTR_LOOP(ret, fdatasync(nativeHandle()));
 #else
-    const int ret = fsync(nativeHandle());
+    EINTR_LOOP(ret, fsync(nativeHandle()));
 #endif
     if (ret != 0)
         q->setError(QFile::WriteError, qt_error_string(errno));
