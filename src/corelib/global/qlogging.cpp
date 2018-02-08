@@ -155,6 +155,7 @@ Q_NORETURN
 #endif
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message);
 static void qt_message_print(QtMsgType, const QMessageLogContext &context, const QString &message);
+static void qt_message_print(const QString &message);
 
 static int checked_var_value(const char *varname)
 {
@@ -1214,20 +1215,10 @@ void QMessagePattern::setPattern(const QString &pattern)
         error += QLatin1String("QT_MESSAGE_PATTERN: %{if-*} cannot be nested\n");
     else if (inIf)
         error += QLatin1String("QT_MESSAGE_PATTERN: missing %{endif}\n");
-    if (!error.isEmpty()) {
-#if defined(Q_OS_WINRT)
-        OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
-        if (0)
-#elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
-        if (!qt_logging_to_console()) {
-            OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
-        } else
-#endif
-        {
-            fprintf(stderr, "%s", error.toLocal8Bit().constData());
-            fflush(stderr);
-        }
-    }
+
+    if (!error.isEmpty())
+        qt_message_print(error);
+
     literals = new const char*[literalsVar.size() + 1];
     literals[literalsVar.size()] = 0;
     memcpy(literals, literalsVar.constData(), literalsVar.size() * sizeof(const char*));
@@ -1741,6 +1732,21 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
     } else {
         fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
     }
+}
+
+static void qt_message_print(const QString &message)
+{
+#if defined(Q_OS_WINRT)
+    OutputDebugString(reinterpret_cast<const wchar_t*>(message.utf16()));
+    return;
+#elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
+    if (!qt_logging_to_console()) {
+        OutputDebugString(reinterpret_cast<const wchar_t*>(message.utf16()));
+        return;
+    }
+#endif
+    fprintf(stderr, "%s", message.toLocal8Bit().constData());
+    fflush(stderr);
 }
 
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message)
