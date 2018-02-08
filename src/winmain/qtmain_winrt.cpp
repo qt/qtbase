@@ -157,7 +157,7 @@ public:
 
         mainThread = CreateThread(NULL, 0, [](void *param) -> DWORD {
             AppContainer *app = reinterpret_cast<AppContainer *>(param);
-            int argc = app->args.count();
+            int argc = app->args.count() - 1;
             char **argv = app->args.data();
             const int res = main(argc, argv);
             if (app->pidFile != INVALID_HANDLE_VALUE) {
@@ -305,6 +305,8 @@ private:
                 args.remove(i);
             }
         }
+        args.append(nullptr);
+
         if (develMode) {
             // Write a PID file to help runner
             const QString pidFileName = QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation))
