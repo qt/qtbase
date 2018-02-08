@@ -314,6 +314,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       lastDropAction(Qt::IgnoreAction),
       style(0)
 {
+    qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
 }
 
 /*!
