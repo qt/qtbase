@@ -205,8 +205,6 @@ static bool willLogToConsole()
 #if defined(Q_OS_WINRT)
     // these systems have no stderr, so always log to the system log
     return false;
-#elif defined(QT_BOOTSTRAPPED)
-    return true;
 #else
     // rules to determine if we'll log preferably to the console:
     //  1) if QT_LOGGING_TO_CONSOLE is set, it determines behavior:
@@ -1459,6 +1457,10 @@ static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QS
 
 // ------------------------ Alternate logging sinks -------------------------
 
+#if defined(QT_BOOTSTRAPPED)
+    // Boostrapped tools always print to stderr, so no need for alternate sinks
+#else
+
 #if QT_CONFIG(slog2)
 #ifndef QT_LOG_CODE
 #define QT_LOG_CODE 9000
@@ -1632,6 +1634,8 @@ static bool win_message_handler(QtMsgType type, const QMessageLogContext &contex
 }
 #endif
 
+#endif // Bootstrap check
+
 // --------------------------------------------------------------------------
 
 /*!
@@ -1648,16 +1652,18 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     // In the future, if we allow multiple/dynamic sinks, this will be iterating
     // a list of sinks.
 
-#if defined(Q_OS_WIN)
+#if !defined(QT_BOOTSTRAPPED)
+# if defined(Q_OS_WIN)
     handledStderr |= win_message_handler(type, context, message);
-#elif QT_CONFIG(slog2)
+# elif QT_CONFIG(slog2)
     handledStderr |= slog2_default_handler(type, context, message);
-#elif QT_CONFIG(journald)
+# elif QT_CONFIG(journald)
     handledStderr |= systemd_default_message_handler(type, context, message);
-#elif QT_CONFIG(syslog)
+# elif QT_CONFIG(syslog)
     handledStderr |= syslog_default_message_handler(type, context, message);
-#elif defined(Q_OS_ANDROID)
+# elif defined(Q_OS_ANDROID)
     handledStderr |= android_default_message_handler(type, context, message);
+# endif
 #endif
 
     if (handledStderr)
