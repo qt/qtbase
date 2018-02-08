@@ -60,6 +60,7 @@ public:
 
     void initDumbFrameBuffers();
     void initVsp2();
+    void initQtLayer();
 
     //TODO: use a fixed index API instead of auto increment?
     int addLayer(int dmabufFd, const QSize &size, const QPoint &position, uint drmPixelFormat, uint bytesPerLine);

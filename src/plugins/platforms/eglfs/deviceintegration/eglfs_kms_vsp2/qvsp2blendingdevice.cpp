@@ -219,11 +219,12 @@ bool QVsp2BlendingDevice::blend(int outputDmabufFd)
     if (!m_dirty)
         qWarning("Blending without being dirty, should not be necessary");
 
-    if (!m_inputs[0].enabled) {
-        qWarning("Vsp2: Can't blend with layer 0 disabled");
+    if (!hasContinuousLayers()) {
+        qWarning("Vsp2: Can't blend when layers are not enabled in order from 0 without gaps.");
         return false;
     }
 
+    bool queueingFailed = false;
     // Queue dma input buffers
     for (int i=0; i < m_inputs.size(); ++i) {
         auto &input = m_inputs[i];
@@ -233,10 +234,20 @@ bool QVsp2BlendingDevice::blend(int outputDmabufFd)
                            << "with dmabuf" << input.dmabuf.fd
                            << "and size" << input.geometry.size();
 
-                if (!disableInput(i))
-                    qWarning() << "Vsp2: Failed to disable input" << i;
+                queueingFailed = true;
             }
         }
+    }
+
+    if (queueingFailed) {
+        qWarning() << "Vsp2: Trying to clean up queued buffers";
+        for (auto &input : qAsConst(m_inputs)) {
+            if (input.enabled) {
+                if (!input.rpfInput->clearBuffers())
+                    qWarning() << "Vsp2: Failed to remove buffers after an aborted blend";
+            }
+        }
+        return false;
     }
 
     if (!m_wpfOutput->queueBuffer(outputDmabufFd, m_screenSize)) {
@@ -268,6 +279,17 @@ bool QVsp2BlendingDevice::blend(int outputDmabufFd)
 int QVsp2BlendingDevice::numInputs() const
 {
     return m_inputs.size();
+}
+
+bool QVsp2BlendingDevice::hasContinuousLayers() const
+{
+    bool seenDisabled = false;
+    for (auto &input : qAsConst(m_inputs)) {
+        if (seenDisabled && input.enabled)
+            return false;
+        seenDisabled |= !input.enabled;
+    }
+    return m_inputs[0].enabled;
 }
 
 bool QVsp2BlendingDevice::streamOn()
