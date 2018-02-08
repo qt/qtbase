@@ -1667,15 +1667,8 @@ static LONG WINAPI windowsFaultHandler(struct _EXCEPTION_POINTERS *exInfo)
 }
 #endif // Q_OS_WIN) && !Q_OS_WINRT
 
-static void qputenvIfEmpty(const char *name, const QByteArray &value)
-{
-    if (qEnvironmentVariableIsEmpty(name))
-        qputenv(name, value);
-}
-
 static void initEnvironment()
 {
-    qputenvIfEmpty("QT_LOGGING_TO_CONSOLE", "1");
     qputenv("QT_QTESTLIB_RUNNING", "1");
 }
 
