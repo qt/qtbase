@@ -476,7 +476,7 @@ static QByteArray symbolsGroupString(const xcb_keysym_t *symbols, int count)
     return groupString;
 }
 
-struct xkb_keymap *QXcbKeyboard::keymapFromCore()
+struct xkb_keymap *QXcbKeyboard::keymapFromCore(const KeysymModifierMap &keysymMods)
 {
     /* Construct an XKB keymap string from information queried from
      * the X server */
@@ -602,7 +602,6 @@ struct xkb_keymap *QXcbKeyboard::keymapFromCore()
         if (xkeymap.isEmpty())
             return nullptr;
 
-        KeysymModifierMap keysymMods(keysymsToModifiers());
         static const char *const builtinModifiers[] =
         { "Shift", "Lock", "Control", "Mod1", "Mod2", "Mod3", "Mod4", "Mod5" };
 
@@ -719,8 +718,22 @@ struct xkb_keymap *QXcbKeyboard::keymapFromCore()
                                       XKB_KEYMAP_COMPILE_NO_FLAGS);
 }
 
+void QXcbKeyboard::updateKeymap(xcb_mapping_notify_event_t *event)
+{
+    if (connection()->hasXKB() || event->request == XCB_MAPPING_POINTER)
+        return;
+
+    xcb_refresh_keyboard_mapping(m_key_symbols, event);
+    updateKeymap();
+}
+
 void QXcbKeyboard::updateKeymap()
 {
+    KeysymModifierMap keysymMods;
+    if (!connection()->hasXKB())
+        keysymMods = keysymsToModifiers();
+    updateModifiers(keysymMods);
+
     m_config = true;
 
     if (!m_xkbContext) {
@@ -743,7 +756,7 @@ void QXcbKeyboard::updateKeymap()
             m_xkbState.reset(xkb_x11_state_new_from_device(m_xkbKeymap.get(), xcb_connection(), core_device_id));
     } else {
 #endif
-        m_xkbKeymap.reset(keymapFromCore());
+        m_xkbKeymap.reset(keymapFromCore(keysymMods));
         if (m_xkbKeymap)
             m_xkbState.reset(xkb_state_new(m_xkbKeymap.get()));
 #if QT_CONFIG(xkb)
@@ -1152,8 +1165,6 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
 #if QT_CONFIG(xkb)
     core_device_id = 0;
     if (connection->hasXKB()) {
-        updateVModMapping();
-        updateVModToRModMapping();
         core_device_id = xkb_x11_get_core_keyboard_device_id(xcb_connection());
         if (core_device_id == -1) {
             qWarning("Qt: couldn't get core keyboard device info");
@@ -1162,7 +1173,6 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     } else {
 #endif
         m_key_symbols = xcb_key_symbols_alloc(xcb_connection());
-        updateModifiers();
 #if QT_CONFIG(xkb)
     }
 #endif
@@ -1171,7 +1181,7 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
 
 QXcbKeyboard::~QXcbKeyboard()
 {
-    if (!connection()->hasXKB())
+    if (m_key_symbols)
         xcb_key_symbols_free(m_key_symbols);
 }
 
@@ -1297,8 +1307,6 @@ void QXcbKeyboard::updateVModToRModMapping()
         else if (vmod_masks.hyper == bit)
             rmod_masks.hyper = modmap;
     }
-
-    resolveMaskConflicts();
 #endif
 }
 
@@ -1309,21 +1317,24 @@ static inline void applyModifier(uint *mask, int modifierBit)
         *mask |= 1 << modifierBit;
 }
 
-void QXcbKeyboard::updateModifiers()
+void QXcbKeyboard::updateModifiers(const KeysymModifierMap &keysymMods)
 {
-    memset(&rmod_masks, 0, sizeof(rmod_masks));
-
-    // Compute X modifier bits for Qt modifiers
-    KeysymModifierMap keysymMods(keysymsToModifiers());
-    applyModifier(&rmod_masks.alt,   keysymMods.value(XKB_KEY_Alt_L,       -1));
-    applyModifier(&rmod_masks.alt,   keysymMods.value(XKB_KEY_Alt_R,       -1));
-    applyModifier(&rmod_masks.meta,  keysymMods.value(XKB_KEY_Meta_L,      -1));
-    applyModifier(&rmod_masks.meta,  keysymMods.value(XKB_KEY_Meta_R,      -1));
-    applyModifier(&rmod_masks.altgr, keysymMods.value(XKB_KEY_Mode_switch, -1));
-    applyModifier(&rmod_masks.super, keysymMods.value(XKB_KEY_Super_L,     -1));
-    applyModifier(&rmod_masks.super, keysymMods.value(XKB_KEY_Super_R,     -1));
-    applyModifier(&rmod_masks.hyper, keysymMods.value(XKB_KEY_Hyper_L,     -1));
-    applyModifier(&rmod_masks.hyper, keysymMods.value(XKB_KEY_Hyper_R,     -1));
+    if (connection()->hasXKB()) {
+        updateVModMapping();
+        updateVModToRModMapping();
+    } else {
+        memset(&rmod_masks, 0, sizeof(rmod_masks));
+        // Compute X modifier bits for Qt modifiers
+        applyModifier(&rmod_masks.alt,   keysymMods.value(XKB_KEY_Alt_L,       -1));
+        applyModifier(&rmod_masks.alt,   keysymMods.value(XKB_KEY_Alt_R,       -1));
+        applyModifier(&rmod_masks.meta,  keysymMods.value(XKB_KEY_Meta_L,      -1));
+        applyModifier(&rmod_masks.meta,  keysymMods.value(XKB_KEY_Meta_R,      -1));
+        applyModifier(&rmod_masks.altgr, keysymMods.value(XKB_KEY_Mode_switch, -1));
+        applyModifier(&rmod_masks.super, keysymMods.value(XKB_KEY_Super_L,     -1));
+        applyModifier(&rmod_masks.super, keysymMods.value(XKB_KEY_Super_R,     -1));
+        applyModifier(&rmod_masks.hyper, keysymMods.value(XKB_KEY_Hyper_L,     -1));
+        applyModifier(&rmod_masks.hyper, keysymMods.value(XKB_KEY_Hyper_R,     -1));
+    }
 
     resolveMaskConflicts();
 }
@@ -1648,19 +1659,6 @@ void QXcbKeyboard::handleKeyPressEvent(const xcb_key_press_event_t *e)
 void QXcbKeyboard::handleKeyReleaseEvent(const xcb_key_release_event_t *e)
 {
     handleKeyEvent(e->event, QEvent::KeyRelease, e->detail, e->state, e->time, fromSendEvent(e));
-}
-
-void QXcbKeyboard::handleMappingNotifyEvent(const void *event)
-{
-    updateKeymap();
-    if (connection()->hasXKB()) {
-        updateVModMapping();
-        updateVModToRModMapping();
-    } else {
-        void *ev = const_cast<void *>(event);
-        xcb_refresh_keyboard_mapping(m_key_symbols, static_cast<xcb_mapping_notify_event_t *>(ev));
-        updateModifiers();
-    }
 }
 
 QT_END_NAMESPACE

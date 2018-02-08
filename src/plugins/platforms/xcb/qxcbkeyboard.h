@@ -64,9 +64,9 @@ public:
 
     void handleKeyPressEvent(const xcb_key_press_event_t *event);
     void handleKeyReleaseEvent(const xcb_key_release_event_t *event);
-    void handleMappingNotifyEvent(const void *event);
 
     Qt::KeyboardModifiers translateModifiers(int s) const;
+    void updateKeymap(xcb_mapping_notify_event_t *event);
     void updateKeymap();
     QList<int> possibleKeys(const QKeyEvent *e) const;
 
@@ -94,11 +94,11 @@ protected:
     int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers modifiers,
                       struct xkb_state *state, xcb_keycode_t code) const;
 
-    struct xkb_keymap *keymapFromCore();
+    typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
+    struct xkb_keymap *keymapFromCore(const KeysymModifierMap &keysymMods);
 
     // when XKEYBOARD not present on the X server
-    void updateModifiers();
-    typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
+    void updateModifiers(const KeysymModifierMap &keysymMods);
     KeysymModifierMap keysymsToModifiers();
     // when XKEYBOARD is present on the X server
     void updateVModMapping();
@@ -122,7 +122,7 @@ private:
     _mod_masks rmod_masks;
 
     // when XKEYBOARD not present on the X server
-    xcb_key_symbols_t *m_key_symbols;
+    xcb_key_symbols_t *m_key_symbols = nullptr;
     struct _xkb_mods {
         xkb_mod_index_t shift;
         xkb_mod_index_t lock;
