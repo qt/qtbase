@@ -201,8 +201,6 @@ template<> struct TypeDefinition<QJsonArray> { static const bool IsAvailable = f
 template<> struct TypeDefinition<QJsonDocument> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonValue> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QModelIndex> { static const bool IsAvailable = false; };
-template<> struct TypeDefinition<QPersistentModelIndex> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QUrl> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QByteArrayList> { static const bool IsAvailable = false; };
 #endif

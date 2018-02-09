@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+QT_REQUIRE_CONFIG(itemmodel);
+
 class QPersistentModelIndexData
 {
 public:

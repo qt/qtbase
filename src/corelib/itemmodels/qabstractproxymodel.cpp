@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qabstractproxymodel.h"
-
-#ifndef QT_NO_PROXYMODEL
-
 #include "qitemselectionmodel.h"
 #include <private/qabstractproxymodel_p.h>
 #include <QtCore/QSize>
@@ -471,5 +468,3 @@ Qt::DropActions QAbstractProxyModel::supportedDropActions() const
 QT_END_NAMESPACE
 
 #include "moc_qabstractproxymodel.cpp"
-
-#endif // QT_NO_PROXYMODEL

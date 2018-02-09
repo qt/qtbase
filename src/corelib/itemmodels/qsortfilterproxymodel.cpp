@@ -38,9 +38,6 @@
 ****************************************************************************/
 
 #include "qsortfilterproxymodel.h"
-
-#ifndef QT_NO_SORTFILTERPROXYMODEL
-
 #include "qitemselectionmodel.h"
 #include <qsize.h>
 #include <qdebug.h>
@@ -2883,5 +2880,3 @@ QItemSelection QSortFilterProxyModel::mapSelectionFromSource(const QItemSelectio
 QT_END_NAMESPACE
 
 #include "moc_qsortfilterproxymodel.cpp"
-
-#endif // QT_NO_SORTFILTERPROXYMODEL
