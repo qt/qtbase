@@ -51,7 +51,7 @@
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qdebug.h>
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 #include <qcache.h>
 #include <qregularexpression.h>
 #endif
@@ -625,7 +625,7 @@ QVariant QSQLiteResult::handle() const
 
 /////////////////////////////////////////////////////////
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 static void _q_regexp(sqlite3_context* context, int argc, sqlite3_value** argv)
 {
     if (Q_UNLIKELY(argc != 2)) {
@@ -724,7 +724,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool sharedCache = false;
     bool openReadOnlyOption = false;
     bool openUriOption = false;
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     static const QLatin1String regexpConnectOption = QLatin1String("QSQLITE_ENABLE_REGEXP");
     bool defineRegexp = false;
     int regexpCacheSize = 25;
@@ -748,7 +748,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
         } else if (option == QLatin1String("QSQLITE_ENABLE_SHARED_CACHE")) {
             sharedCache = true;
         }
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
         else if (option.startsWith(regexpConnectOption)) {
             option = option.mid(regexpConnectOption.size()).trimmed();
             if (option.isEmpty()) {
@@ -777,7 +777,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
         sqlite3_busy_timeout(d->access, timeOut);
         setOpen(true);
         setOpenError(false);
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
         if (defineRegexp) {
             auto cache = new QCache<QString, QRegularExpression>(regexpCacheSize);
             sqlite3_create_function_v2(d->access, "regexp", 2, SQLITE_UTF8, cache, &_q_regexp, NULL,

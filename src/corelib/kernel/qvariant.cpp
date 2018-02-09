@@ -48,7 +48,9 @@
 #include "qdatetime.h"
 #include "qeasingcurve.h"
 #include "qlist.h"
+#if QT_CONFIG(regularexpression)
 #include "qregularexpression.h"
+#endif
 #include "qstring.h"
 #include "qstringlist.h"
 #include "qurl.h"
@@ -1941,12 +1943,12 @@ QVariant::QVariant(const QRegExp &regExp)
     : d(RegExp)
 { v_construct<QRegExp>(&d, regExp); }
 #endif // QT_NO_REGEXP
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 QVariant::QVariant(const QRegularExpression &re)
     : d(RegularExpression)
 { v_construct<QRegularExpression>(&d, re); }
-#endif
+#endif // QT_CONFIG(regularexpression)
+#ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QUuid &uuid)
     : d(Uuid)
 { v_construct<QUuid>(&d, uuid); }
@@ -2650,7 +2652,7 @@ QRegExp QVariant::toRegExp() const
 }
 #endif
 
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(regularexpression)
 /*!
     \fn QRegularExpression QVariant::toRegularExpression() const
     \since 5.0
@@ -2660,13 +2662,13 @@ QRegExp QVariant::toRegExp() const
 
     \sa canConvert(), convert()
 */
-#ifndef QT_NO_REGULAREXPRESSION
 QRegularExpression QVariant::toRegularExpression() const
 {
     return qVariantToHelper<QRegularExpression>(d, handlerManager);
 }
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.0
 
@@ -2758,7 +2760,7 @@ QJsonDocument QVariant::toJsonDocument() const
 {
     return qVariantToHelper<QJsonDocument>(d, handlerManager);
 }
-#endif
+#endif // QT_BOOTSTRAPPED
 
 /*!
     \fn QChar QVariant::toChar() const

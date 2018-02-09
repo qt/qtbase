@@ -47,7 +47,9 @@
 #include "qtextlist.h"
 #include <qdebug.h>
 #include <qregexp.h>
+#if QT_CONFIG(regularexpression)
 #include <qregularexpression.h>
+#endif
 #include <qvarlengtharray.h>
 #include <qtextcodec.h>
 #include <qthread.h>
@@ -1488,7 +1490,7 @@ QTextCursor QTextDocument::find(const QRegExp &expr, const QTextCursor &cursor, 
 }
 #endif // QT_REGEXP
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 static bool findInBlock(const QTextBlock &block, const QRegularExpression &expression, int offset,
                         QTextDocument::FindFlags options, QTextCursor *cursor)
 {
@@ -1613,7 +1615,7 @@ QTextCursor QTextDocument::find(const QRegularExpression &expr, const QTextCurso
     }
     return find(expr, pos, options);
 }
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 
 /*!
     \fn QTextObject *QTextDocument::createObject(const QTextFormat &format)

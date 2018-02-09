@@ -140,7 +140,7 @@ QByteArray QEglFSDeviceIntegration::fbDeviceName() const
 int QEglFSDeviceIntegration::framebufferIndex() const
 {
     int fbIndex = 0;
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     QRegularExpression fbIndexRx(QLatin1String("fb(\\d+)"));
     QRegularExpressionMatch match = fbIndexRx.match(QString::fromLocal8Bit(fbDeviceName()));
     if (match.hasMatch())

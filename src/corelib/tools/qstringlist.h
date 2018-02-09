@@ -84,12 +84,10 @@ public:
     inline QStringList &replaceInStrings(const QRegExp &rx, const QString &after);
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     inline QStringList filter(const QRegularExpression &re) const;
     inline QStringList &replaceInStrings(const QRegularExpression &re, const QString &after);
-#endif // QT_NO_REGULAREXPRESSION
-#endif // QT_BOOTSTRAPPED
+#endif // QT_CONFIG(regularexpression)
 
 #ifndef Q_QDOC
 private:
@@ -138,12 +136,10 @@ public:
     inline int lastIndexOf(QRegExp &rx, int from = -1) const;
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     inline int indexOf(const QRegularExpression &re, int from = 0) const;
     inline int lastIndexOf(const QRegularExpression &re, int from = -1) const;
-#endif // QT_NO_REGULAREXPRESSION
-#endif // QT_BOOTSTRAPPED
+#endif // QT_CONFIG(regularexpression)
 
     using QList<QString>::indexOf;
     using QList<QString>::lastIndexOf;
@@ -179,14 +175,12 @@ namespace QtPrivate {
     int Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int from);
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QRegularExpression &rx, const QString &after);
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QRegularExpression &re);
     int Q_CORE_EXPORT QStringList_indexOf(const QStringList *that, const QRegularExpression &re, int from);
     int Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, const QRegularExpression &re, int from);
-#endif // QT_NO_REGULAREXPRESSION
-#endif // QT_BOOTSTRAPPED
+#endif // QT_CONFIG(regularexpression)
 }
 
 inline void QListSpecialMethods<QString>::sort(Qt::CaseSensitivity cs)
@@ -275,8 +269,7 @@ inline int QStringList::lastIndexOf(QRegExp &rx, int from) const
 }
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 inline QStringList &QListSpecialMethods<QString>::replaceInStrings(const QRegularExpression &rx, const QString &after)
 {
     QtPrivate::QStringList_replaceInStrings(self(), rx, after);
@@ -297,8 +290,7 @@ inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) cons
 {
     return QtPrivate::QStringList_lastIndexOf(this, rx, from);
 }
-#endif // QT_NO_REGULAREXPRESSION
-#endif // QT_BOOTSTRAPPED
+#endif // QT_CONFIG(regularexpression)
 #endif // Q_QDOC
 
 QT_END_NAMESPACE

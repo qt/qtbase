@@ -353,7 +353,7 @@ public:
     inline bool contains(QRegExp &rx) const { return indexOf(rx) != -1; }
 #endif
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     int indexOf(const QRegularExpression &re, int from = 0) const;
     int indexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const; // ### Qt 6: merge overloads
     int lastIndexOf(const QRegularExpression &re, int from = -1) const;
@@ -377,7 +377,7 @@ public:
 #ifndef QT_NO_REGEXP
     QString section(const QRegExp &reg, int start, int end = -1, SectionFlags flags = SectionDefault) const;
 #endif
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     QString section(const QRegularExpression &re, int start, int end = -1, SectionFlags flags = SectionDefault) const;
 #endif
     Q_REQUIRED_RESULT QString left(int n) const;
@@ -502,7 +502,7 @@ public:
     inline QString &remove(const QRegExp &rx)
     { return replace(rx, QString()); }
 #endif
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     QString &replace(const QRegularExpression &re, const QString  &after);
     inline QString &remove(const QRegularExpression &re)
     { return replace(re, QString()); }
@@ -522,7 +522,7 @@ public:
     Q_REQUIRED_RESULT QStringList split(const QRegExp &sep, SplitBehavior behavior = KeepEmptyParts) const;
     Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegExp &sep, SplitBehavior behavior = KeepEmptyParts) const;
 #endif
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     Q_REQUIRED_RESULT QStringList split(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const;
     Q_REQUIRED_RESULT QVector<QStringRef> splitRef(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const;
 #endif

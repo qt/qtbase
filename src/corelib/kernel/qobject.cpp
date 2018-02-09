@@ -50,7 +50,9 @@
 #include "qvariant.h"
 #include "qmetaobject.h"
 #include <qregexp.h>
-#include <qregularexpression.h>
+#if QT_CONFIG(regularexpression)
+#  include <qregularexpression.h>
+#endif
 #include <qthread.h>
 #include <private/qthread_p.h>
 #include <qdebug.h>
@@ -1921,7 +1923,7 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
 }
 #endif // QT_NO_REGEXP
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 /*!
     \internal
 */
@@ -1943,7 +1945,7 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re
             qt_qFindChildren_helper(obj, re, mo, list, options);
     }
 }
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 
 /*!
     \internal

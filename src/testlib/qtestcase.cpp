@@ -1971,7 +1971,7 @@ void QTest::ignoreMessage(QtMsgType type, const char *message)
     QTestLog::ignoreMessage(type, message);
 }
 
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
 /*!
     \overload
 
@@ -1991,7 +1991,7 @@ void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePatte
 {
     QTestLog::ignoreMessage(type, messagePattern);
 }
-#endif // QT_NO_REGULAREXPRESSION
+#endif // QT_CONFIG(regularexpression)
 
 /*! \internal
  */

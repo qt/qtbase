@@ -290,7 +290,7 @@ namespace QTest
                            const char *file, int line);
     Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = nullptr, int line = 0);
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const char *message);
-#ifndef QT_NO_REGULAREXPRESSION
+#if QT_CONFIG(regularexpression)
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
 #endif
 
