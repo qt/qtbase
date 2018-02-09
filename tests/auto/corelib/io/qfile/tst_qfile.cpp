@@ -1642,6 +1642,15 @@ static bool fOpen(const QByteArray &fileName, const char *mode, FILE **file)
 
 void tst_QFile::largeUncFileSupport()
 {
+    // Currently there is a single network test server that is used by all VMs running tests in
+    // the CI. This test accesses a file shared with Samba on that server. Unfortunately many
+    // clients accessing the file at the same time is a sharing violation. This test already
+    // attempted to deal with the problem with retries, but that has led to the test timing out,
+    // not eventually succeeding. Due to the timeouts blacklisting the test wouldn't help.
+    // See https://bugreports.qt.io/browse/QTQAINFRA-1727 which will be resolved by the new
+    // test server architecture where the server is no longer shared.
+    QSKIP("Multiple instances of running this test at the same time fail due to QTQAINFRA-1727");
+
     qint64 size = Q_INT64_C(8589934592);
     qint64 dataOffset = Q_INT64_C(8589914592);
     QByteArray knownData("LargeFile content at offset 8589914592");
