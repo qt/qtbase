@@ -41,6 +41,7 @@
 #define QTTESTGLOBAL_H
 
 #include <QtCore/qglobal.h>
+#include <QtTest/qttestlib-config.h>
 
 QT_BEGIN_NAMESPACE
 

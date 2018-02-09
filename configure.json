@@ -14,7 +14,8 @@
         "src/xml",
         "src/widgets",
         "src/printsupport",
-        "src/plugins/sqldrivers"
+        "src/plugins/sqldrivers",
+        "src/testlib"
     ],
 
     "commandline": {

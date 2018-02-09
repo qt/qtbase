@@ -41,6 +41,8 @@
 #include <QtGui/QIcon>
 #endif
 
+QT_REQUIRE_CONFIG(itemmodeltester);
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractItemModel;

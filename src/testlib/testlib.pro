@@ -12,7 +12,6 @@ unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
 QMAKE_DOCS = $$PWD/doc/qttestlib.qdocconf
 
 HEADERS = \
-    qabstractitemmodeltester.h \
     qbenchmark.h \
     qbenchmark_p.h \
     qbenchmarkmeasurement_p.h \
@@ -43,7 +42,6 @@ HEADERS = \
     qttestglobal.h
 
 SOURCES = \
-    qabstractitemmodeltester.cpp \
     qtestcase.cpp \
     qtestlog.cpp \
     qtesttable.cpp \
@@ -68,6 +66,14 @@ SOURCES = \
     qtestxunitstreamer.cpp \
     qxunittestlogger.cpp \
     qtestblacklist.cpp
+
+qtConfig(itemmodeltester) {
+    HEADERS += \
+        qabstractitemmodeltester.h
+
+    SOURCES += \
+        qabstractitemmodeltester.cpp
+}
 
 DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \
