@@ -46,12 +46,10 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformcursor.h>
 
-#include <QtCore/QTextCodec>
-#include <QtCore/QMetaMethod>
-#include <QtCore/QDir>
+#include <QtCore/QMetaEnum>
+
 #include <private/qguiapplication_p.h>
 
-#include <stdio.h>
 #include <X11/keysym.h>
 
 #if QT_CONFIG(xinput2)
@@ -1232,6 +1230,13 @@ xkb_keysym_t QXcbKeyboard::lookupLatinKeysym(xkb_keycode_t keycode) const
     return sym;
 }
 
+static const char *qtKeyName(int qtKey)
+{
+    int keyEnumIndex = qt_getQtMetaObject()->indexOfEnumerator("Key");
+    QMetaEnum keyEnum = qt_getQtMetaObject()->enumerator(keyEnumIndex);
+    return keyEnum.valueToKey(qtKey);
+}
+
 QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
 {
     // turn off the modifier bits which doesn't participate in shortcuts
@@ -1269,7 +1274,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     }
 
     QList<int> result;
-    int baseQtKey = keysymToQtKey(sym, modifiers, lookupString(kb_state, keycode));
+    int baseQtKey = keysymToQtKey(sym, modifiers, kb_state, keycode);
     if (baseQtKey)
         result += (baseQtKey + modifiers);
 
@@ -1310,7 +1315,7 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
                 continue;
 
             Qt::KeyboardModifiers mods = modifiers & ~neededMods;
-            qtKey = keysymToQtKey(sym, mods, lookupString(kb_state, keycode));
+            qtKey = keysymToQtKey(sym, mods, kb_state, keycode);
             if (!qtKey || qtKey == baseQtKey)
                 continue;
 
@@ -1331,71 +1336,83 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     }
     xkb_state_unref(kb_state);
     return result;
- }
+}
 
-int QXcbKeyboard::keysymToQtKey(xcb_keysym_t key) const
+int QXcbKeyboard::keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers modifiers,
+                                struct xkb_state *state, xcb_keycode_t code) const
 {
-    int code = 0;
-    int i = 0;
-    while (KeyTbl[i]) {
-        if (key == KeyTbl[i]) {
-            code = (int)KeyTbl[i+1];
-            break;
+    int qtKey = 0;
+
+    // lookup from direct mapping
+    if (keysym >= XKB_KEY_F1 && keysym <= XKB_KEY_F35) {
+        // function keys
+        qtKey = Qt::Key_F1 + (keysym - XKB_KEY_F1);
+    } else if (keysym >= XKB_KEY_KP_0 && keysym <= XKB_KEY_KP_9) {
+        // numeric keypad keys
+        qtKey = Qt::Key_0 + (keysym - XKB_KEY_KP_0);
+    } else if (isLatin(keysym)) {
+        qtKey = xkbcommon_xkb_keysym_to_upper(keysym);
+    } else {
+        // check if we have a direct mapping
+        int i = 0;
+        while (KeyTbl[i]) {
+            if (keysym == KeyTbl[i]) {
+                qtKey = KeyTbl[i + 1];
+                break;
+            }
+            i += 2;
         }
-        i += 2;
+    }
+
+    QString text;
+    bool fromUnicode = qtKey == 0;
+    if (fromUnicode) { // lookup from unicode
+        if (modifiers & Qt::ControlModifier) {
+            // Control modifier changes the text to ASCII control character, therefore we
+            // can't use this text to map keysym to a qt key. We can use the same keysym
+            // (it is not affectd by transformation) to obtain untransformed text. For details
+            // see "Appendix A. Default Symbol Transformations" in the XKB specification.
+            text = lookupStringNoKeysymTransformations(keysym);
+        } else {
+            text = lookupString(state, code);
+        }
+        if (!text.isEmpty()) {
+             if (text.unicode()->isDigit()) {
+                 // Ensures that also non-latin digits are mapped to corresponding qt keys,
+                 // e.g CTRL + ۲ (arabic two), is mapped to CTRL + Qt::Key_2.
+                 qtKey = Qt::Key_0 + text.unicode()->digitValue();
+             } else {
+                 qtKey = text.unicode()->toUpper().unicode();
+             }
+        }
     }
 
     if (rmod_masks.meta) {
         // translate Super/Hyper keys to Meta if we're using them as the MetaModifier
-        if (rmod_masks.meta == rmod_masks.super && (code == Qt::Key_Super_L || code == Qt::Key_Super_R)) {
-            code = Qt::Key_Meta;
-        } else if (rmod_masks.meta == rmod_masks.hyper && (code == Qt::Key_Hyper_L || code == Qt::Key_Hyper_R)) {
-            code = Qt::Key_Meta;
+        if (rmod_masks.meta == rmod_masks.super && (qtKey == Qt::Key_Super_L
+                                                 || qtKey == Qt::Key_Super_R)) {
+            qtKey = Qt::Key_Meta;
+        } else if (rmod_masks.meta == rmod_masks.hyper && (qtKey == Qt::Key_Hyper_L
+                                                        || qtKey == Qt::Key_Hyper_R)) {
+            qtKey = Qt::Key_Meta;
         }
     }
 
-    return code;
-}
-
-int QXcbKeyboard::keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, const QString &text) const
-{
-    int code = 0;
-#ifndef QT_NO_TEXTCODEC
-    QTextCodec *systemCodec = QTextCodec::codecForLocale();
-#endif
-    // Commentary in X11/keysymdef says that X codes match ASCII, so it
-    // is safe to use the locale functions to process X codes in ISO8859-1.
-    // This is mainly for compatibility - applications should not use the
-    // Qt keycodes between 128 and 255 (extended ACSII codes), but should
-    // rather use the QKeyEvent::text().
-    if (keysym < 128 || (keysym < 256
-#ifndef QT_NO_TEXTCODEC
-                         && systemCodec->mibEnum() == 4
-#endif
-                         )) {
-        // upper-case key, if known
-        code = isprint((int)keysym) ? toupper((int)keysym) : 0;
-    } else if (keysym >= XK_F1 && keysym <= XK_F35) {
-        // function keys
-        code = Qt::Key_F1 + ((int)keysym - XK_F1);
-    } else if (keysym >= XK_KP_Space && keysym <= XK_KP_9) {
-        if (keysym >= XK_KP_0) {
-            // numeric keypad keys
-            code = Qt::Key_0 + ((int)keysym - XK_KP_0);
+    if (Q_UNLIKELY(lcQpaKeyboard().isDebugEnabled())) {
+        char keysymName[64];
+        xkb_keysym_get_name(keysym, keysymName, sizeof(keysymName));
+        QString keysymInHex = QString(QStringLiteral("0x%1")).arg(keysym, 0, 16);
+        if (qtKeyName(qtKey)) {
+            qCDebug(lcQpaKeyboard).nospace() << "keysym: " << keysymName << "("
+                << keysymInHex << ") mapped to Qt::" << qtKeyName(qtKey) << " | text: " << text
+                << " | qt key: " << qtKey << " mapped from unicode number: " << fromUnicode;
         } else {
-            code = keysymToQtKey(keysym);
+            qCDebug(lcQpaKeyboard).nospace() << "no Qt::Key for keysym: " << keysymName
+                << "(" << keysymInHex << ") | text: " << text << " | qt key: " << qtKey;
         }
-        modifiers |= Qt::KeypadModifier;
-    } else if (text.length() == 1 && text.unicode()->unicode() > 0x1f
-                                  && text.unicode()->unicode() != 0x7f
-                                  && !(keysym >= XK_dead_grave && keysym <= XK_dead_longsolidusoverlay)) {
-        code = text.unicode()->toUpper().unicode();
-    } else {
-        // any other keys
-        code = keysymToQtKey(keysym);
     }
 
-    return code;
+    return qtKey;
 }
 
 QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
@@ -1778,16 +1795,19 @@ void QXcbKeyboard::handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, 
     xcb_keysym_t sym = xkb_state_key_get_one_sym(kb_state, code);
     QString string = lookupString(kb_state, code);
 
+    Qt::KeyboardModifiers modifiers = translateModifiers(state);
+    if (sym >= XKB_KEY_KP_Space && sym <= XKB_KEY_KP_9)
+        modifiers |= Qt::KeypadModifier;
+
     // Ιf control modifier is set we should prefer latin character, this is
     // used for standard shortcuts in checks like "key == QKeySequence::Copy",
     // users can still see the actual X11 keysym with QKeyEvent::nativeVirtualKey
-    Qt::KeyboardModifiers modifiers = translateModifiers(state);
     xcb_keysym_t translatedSym = XKB_KEY_NoSymbol;
     if (modifiers & Qt::ControlModifier && !isLatin(sym))
         translatedSym = lookupLatinKeysym(code);
     if (translatedSym == XKB_KEY_NoSymbol)
         translatedSym = sym;
-    int qtcode = keysymToQtKey(translatedSym, modifiers, string);
+    int qtcode = keysymToQtKey(translatedSym, modifiers, kb_state, code);
 
     bool isAutoRepeat = false;
     if (type == QEvent::KeyPress) {
@@ -1849,6 +1869,17 @@ QString QXcbKeyboard::lookupString(struct xkb_state *state, xcb_keycode_t code) 
     if (Q_UNLIKELY(size + 1 > chars.size())) { // +1 for NUL
         chars.resize(size + 1);
         xkb_state_key_get_utf8(state, code, chars.data(), chars.size());
+    }
+    return QString::fromUtf8(chars.constData(), size);
+}
+
+QString QXcbKeyboard::lookupStringNoKeysymTransformations(xkb_keysym_t keysym) const
+{
+    QVarLengthArray<char, 32> chars(32);
+    const int size = xkb_keysym_to_utf8(keysym, chars.data(), chars.size());
+    if (Q_UNLIKELY(size > chars.size())) {
+        chars.resize(size);
+        xkb_keysym_to_utf8(keysym, chars.data(), chars.size());
     }
     return QString::fromUtf8(chars.constData(), size);
 }

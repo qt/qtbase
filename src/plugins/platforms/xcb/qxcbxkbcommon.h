@@ -221,4 +221,13 @@ void xkbcommon_XConvertCase(xkb_keysym_t sym, xkb_keysym_t *lower, xkb_keysym_t 
     }
 }
 
+xkb_keysym_t xkbcommon_xkb_keysym_to_upper(xkb_keysym_t ks)
+{
+    xkb_keysym_t lower, upper;
+
+    xkbcommon_XConvertCase(ks, &lower, &upper);
+
+    return upper;
+}
+
 QT_END_NAMESPACE

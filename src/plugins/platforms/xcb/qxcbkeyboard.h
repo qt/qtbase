@@ -88,8 +88,9 @@ protected:
 
     void resolveMaskConflicts();
     QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
-    int keysymToQtKey(xcb_keysym_t keysym) const;
-    int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, const QString &text) const;
+    QString lookupStringNoKeysymTransformations(xkb_keysym_t keysym) const;
+    int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers modifiers,
+                      struct xkb_state *state, xcb_keycode_t code) const;
 
     struct xkb_keymap *keymapFromCore();
 
