@@ -54,14 +54,14 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include "private/qabstractitemmodel_p.h"
 
-#ifndef QT_NO_STANDARDITEMMODEL
-
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qstack.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qdebug.h>
+
+QT_REQUIRE_CONFIG(standarditemmodel);
 
 QT_BEGIN_NAMESPACE
 
@@ -223,7 +223,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_STANDARDITEMMODEL
 
 #endif // QSTANDARDITEMMODEL_P_H

@@ -39,8 +39,6 @@
 
 #include "qstandarditemmodel.h"
 
-#ifndef QT_NO_STANDARDITEMMODEL
-
 #include <QtCore/qdatetime.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
@@ -3259,5 +3257,3 @@ bool QStandardItemModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
 QT_END_NAMESPACE
 
 #include "moc_qstandarditemmodel.cpp"
-
-#endif // QT_NO_STANDARDITEMMODEL
