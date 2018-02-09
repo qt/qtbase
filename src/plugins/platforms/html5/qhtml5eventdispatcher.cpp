@@ -47,18 +47,12 @@ bool QHtml5EventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     // We need to give the control back to the browser due to lack of PTHREADS
     // Limit the number of events that may be processed at the time
-    int maxProcessedEvents = 2;
+    int maxProcessedEvents = 10;
     int processedCount = 0;
     do {
         processed = QUnixEventDispatcherQPA::processEvents(flags);
         processedCount += 1;
     } while (processed && hasPendingEvents() && processedCount < maxProcessedEvents);
-    // Schedule a new processing loop if we still have events pending
-    if (hasPendingEvents()) {
-     //   qDebug() << "scheduleProcessEvents";
-        QCoreApplication::processEvents();
-    //    scheduleProcessEvents();
-    }
     return true;
 }
 
