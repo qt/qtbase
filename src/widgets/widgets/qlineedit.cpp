@@ -1466,6 +1466,8 @@ bool QLineEdit::event(QEvent * e)
 #endif
     } else if (e->type() == QEvent::Resize) {
         d->positionSideWidgets();
+    } else if (e->type() == QEvent::StyleChange) {
+        d->initMouseYThreshold();
     }
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled()) {
@@ -1546,7 +1548,17 @@ void QLineEdit::mouseMoveEvent(QMouseEvent * e)
             const bool select = (d->imHints & Qt::ImhNoPredictiveText);
 #endif
 #ifndef QT_NO_IM
-            if (d->control->composeMode() && select) {
+            if (d->mouseYThreshold > 0 && e->pos().y() > d->mousePressPos.y() + d->mouseYThreshold) {
+                if (layoutDirection() == Qt::RightToLeft)
+                    d->control->home(select);
+                else
+                    d->control->end(select);
+            } else if (d->mouseYThreshold > 0 && e->pos().y() + d->mouseYThreshold < d->mousePressPos.y()) {
+                if (layoutDirection() == Qt::RightToLeft)
+                    d->control->end(select);
+                else
+                    d->control->home(select);
+            } else if (d->control->composeMode() && select) {
                 int startPos = d->xToPos(d->mousePressPos.x());
                 int currentPos = d->xToPos(e->pos().x());
                 if (startPos != currentPos)

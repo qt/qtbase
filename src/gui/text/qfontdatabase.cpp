@@ -74,6 +74,7 @@
 #  define FM_DEBUG if (false) qDebug
 #endif
 
+#include <qtgui_tracepoints_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1009,6 +1010,8 @@ QFontEngine *loadEngine(int script, const QFontDef &request,
     QFontEngine *engine = loadSingleEngine(script, request, family, foundry, style, size);
 
     if (engine && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
+        Q_TRACE(qfontdatabase_loadengine, request.family, request.pointSize);
+
         QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         QFontEngineMulti *pfMultiEngine = pfdb->fontEngineMulti(engine, QChar::Script(script));
         if (!request.fallBackFamilies.isEmpty()) {
@@ -2439,6 +2442,8 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     font.data = fontData;
     font.fileName = fileName;
 
+    Q_TRACE(qfontdatabaseprivate_addappfont, fileName);
+
     int i;
     for (i = 0; i < applicationFonts.count(); ++i)
         if (applicationFonts.at(i).families.isEmpty())
@@ -2494,6 +2499,9 @@ int QFontDatabase::addApplicationFont(const QString &fileName)
         QFile f(fileName);
         if (!f.open(QIODevice::ReadOnly))
             return -1;
+
+        Q_TRACE(qfontdatabase_addapplicationfont, fileName);
+
         data = f.readAll();
     }
     QMutexLocker locker(fontDatabaseMutex());
@@ -2791,6 +2799,8 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         return;
 
     QFontEngine *fe = nullptr;
+
+    Q_TRACE(qfontdatabase_load, req.family, req.pointSize);
 
     req.fallBackFamilies = fallBackFamilies;
     if (!req.fallBackFamilies.isEmpty())

@@ -3,8 +3,6 @@
 HEADERS +=  \
         io/qabstractfileengine_p.h \
         io/qbuffer.h \
-        io/qdatastream.h \
-        io/qdatastream_p.h \
         io/qdataurl_p.h \
         io/qdebug.h \
         io/qdebug_p.h \
@@ -22,8 +20,6 @@ HEADERS +=  \
         io/qlockfile.h \
         io/qlockfile_p.h \
         io/qnoncontiguousbytedevice_p.h \
-        io/qtextstream.h \
-        io/qtextstream_p.h \
         io/qtemporarydir.h \
         io/qtemporaryfile.h \
         io/qtemporaryfile_p.h \
@@ -57,7 +53,6 @@ HEADERS +=  \
 SOURCES += \
         io/qabstractfileengine.cpp \
         io/qbuffer.cpp \
-        io/qdatastream.cpp \
         io/qdataurl.cpp \
         io/qtldurl.cpp \
         io/qdebug.cpp \
@@ -71,7 +66,6 @@ SOURCES += \
         io/qlockfile.cpp \
         io/qnoncontiguousbytedevice.cpp \
         io/qstorageinfo.cpp \
-        io/qtextstream.cpp \
         io/qtemporarydir.cpp \
         io/qtemporaryfile.cpp \
         io/qresource.cpp \

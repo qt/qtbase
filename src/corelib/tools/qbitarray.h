@@ -104,6 +104,9 @@ public:
 
     inline void truncate(int pos) { if (pos < size()) resize(pos); }
 
+    const char *bits() const { return isEmpty() ? nullptr : d.constData() + 1; }
+    static QBitArray fromBits(const char *data, qsizetype len);
+
 public:
     typedef QByteArray::DataPtr DataPtr;
     inline DataPtr &data_ptr() { return d.data_ptr(); }

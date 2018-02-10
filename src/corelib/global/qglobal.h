@@ -88,6 +88,11 @@
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 #  define QT_NO_UNSHARABLE_CONTAINERS
+#  define QT6_VIRTUAL virtual
+#  define QT6_NOT_VIRTUAL
+#else
+#  define QT6_VIRTUAL
+#  define QT6_NOT_VIRTUAL virtual
 #endif
 
 /* These two macros makes it possible to turn the builtin line expander into a

@@ -1381,20 +1381,38 @@ void tst_QListWidget::changeDataWithSorting_data()
         << false;
 }
 
+class QListWidgetDataChanged : public QListWidget
+{
+    Q_OBJECT
+public:
+    using QListWidget::QListWidget;
+
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override
+    {
+        QListWidget::dataChanged(topLeft, bottomRight, roles);
+        currentRoles = roles;
+    }
+    QVector<int> currentRoles;
+};
+
 void tst_QListWidget::itemData()
 {
-    QListWidget widget;
+    QListWidgetDataChanged widget;
     QListWidgetItem item(&widget);
     item.setFlags(item.flags() | Qt::ItemIsEditable);
     item.setData(Qt::DisplayRole,  QString("0"));
+    QCOMPARE(widget.currentRoles, QVector<int>({Qt::DisplayRole, Qt::EditRole}));
     item.setData(Qt::CheckStateRole, Qt::PartiallyChecked);
-    item.setData(Qt::UserRole + 0, QString("1"));
-    item.setData(Qt::UserRole + 1, QString("2"));
-    item.setData(Qt::UserRole + 2, QString("3"));
-    item.setData(Qt::UserRole + 3, QString("4"));
+    QCOMPARE(widget.currentRoles, {Qt::CheckStateRole});
+    for (int i = 0; i < 4; ++i)
+    {
+        item.setData(Qt::UserRole + i, QString::number(i + 1));
+        QCOMPARE(widget.currentRoles, {Qt::UserRole + i});
+    }
     QMap<int, QVariant> flags = widget.model()->itemData(widget.model()->index(0, 0));
     QCOMPARE(flags.count(), 6);
-    QCOMPARE(flags[Qt::UserRole + 0].toString(), QString("1"));
+    for (int i = 0; i < 4; ++i)
+        QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
 }
 
 void tst_QListWidget::changeDataWithSorting()

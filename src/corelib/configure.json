@@ -15,7 +15,8 @@
             "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
             "pps": { "type": "boolean", "name": "qqnx_pps" },
             "slog2": "boolean",
-            "syslog": "boolean"
+            "syslog": "boolean",
+            "trace": { "type": "optionalString", "values": [ "etw", "lttng", "no", "yes" ] }
         }
     },
 
@@ -146,6 +147,18 @@
                 "",
                 "-lrt"
             ]
+        },
+        "lttng-ust": {
+            "label": "lttng-ust",
+            "test": {
+                "include": "lttng/ust-events.h",
+                "main": "lttng_session_destroy(nullptr);"
+            },
+            "sources": [
+                { "type": "pkgConfig", "args": "lttng-ust" },
+                "-llttng-ust"
+            ],
+            "use": "libdl"
         },
         "pcre2": {
             "label": "PCRE2",
@@ -858,6 +871,22 @@
             "section": "Utilities",
             "output": [ "publicFeature" ]
         },
+        "lttng": {
+            "label": "LTTNG",
+            "autoDetect": false,
+            "enable": "input.trace == 'lttng' || (input.trace =='yes' && config.linux)",
+            "disable": "input.trace == 'etw' || input.trace =='no'",
+            "condition": "config.linux && libs.lttng-ust",
+            "output": [ "privateFeature" ]
+        },
+        "etw": {
+            "label": "ETW",
+            "autoDetect": false,
+            "enable": "input.trace == 'etw' || (input.trace == 'yes' && config.win32)",
+            "disable": "input.trace == 'lttng' || input.trace == 'no'",
+            "condition": "config.win32",
+            "output": [ "privateFeature" ]
+        },
         "topleveldomain": {
             "label": "QUrl::topLevelDomain()",
             "purpose": "Provides support for extracting the top level domain from URLs.
@@ -907,6 +936,11 @@ Please apply the patch corresponding to your Standard Library vendor, found in
                 "glib",
                 "iconv",
                 "icu",
+                {
+                    "message": "Tracing backend",
+                    "type": "firstAvailableFeature",
+                    "args": "etw lttng"
+                },
                 {
                     "section": "Logging backends",
                     "entries": [

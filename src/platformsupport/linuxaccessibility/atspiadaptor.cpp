@@ -1601,7 +1601,13 @@ bool AtSpiAdaptor::componentInterface(QAccessibleInterface *interface, const QSt
         int x = message.arguments().at(0).toInt();
         int y = message.arguments().at(1).toInt();
         uint coordType = message.arguments().at(2).toUInt();
-        Q_UNUSED (coordType) // FIXME
+        if (coordType == ATSPI_COORD_TYPE_WINDOW) {
+            QWindow * window = interface->window();
+            if (window) {
+                x += window->position().x();
+                y += window->position().y();
+            }
+        }
 
         QAccessibleInterface * childInterface(interface->childAt(x, y));
         QAccessibleInterface * iface = 0;

@@ -418,6 +418,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::UiEffects);
     case WheelScrollLines:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::WheelScrollLines);
+    case MouseQuickSelectionThreshold:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::MouseQuickSelectionThreshold);
     }
 
     return 0;

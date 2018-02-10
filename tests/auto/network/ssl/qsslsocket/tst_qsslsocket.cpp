@@ -238,6 +238,8 @@ private slots:
     void allowedProtocolNegotiation();
     void pskServer();
     void forwardReadChannelFinished();
+    void signatureAlgorithm_data();
+    void signatureAlgorithm();
 #endif
 
     void setEmptyDefaultConfiguration(); // this test should be last
@@ -3906,6 +3908,134 @@ void tst_QSslSocket::pskServer()
 
     QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
     QCOMPARE(disconnectedSpy.count(), 1);
+}
+
+void tst_QSslSocket::signatureAlgorithm_data()
+{
+    if (!QSslSocket::supportsSsl())
+        QSKIP("Signature algorithms cannot be tested without SSL support");
+
+    if (QSslSocket::sslLibraryVersionNumber() < 0x10002000L)
+        QSKIP("Signature algorithms cannot be tested with OpenSSL < 1.0.2");
+
+    QTest::addColumn<QByteArrayList>("serverSigAlgPairs");
+    QTest::addColumn<QSsl::SslProtocol>("serverProtocol");
+    QTest::addColumn<QByteArrayList>("clientSigAlgPairs");
+    QTest::addColumn<QSsl::SslProtocol>("clientProtocol");
+    QTest::addColumn<QAbstractSocket::SocketState>("state");
+
+    const QByteArray dsaSha1("DSA+SHA1");
+    const QByteArray ecdsaSha1("ECDSA+SHA1");
+    const QByteArray ecdsaSha512("ECDSA+SHA512");
+    const QByteArray rsaSha256("RSA+SHA256");
+    const QByteArray rsaSha384("RSA+SHA384");
+    const QByteArray rsaSha512("RSA+SHA512");
+
+    QTest::newRow("match_TlsV1_2")
+        << QByteArrayList({rsaSha256})
+        << QSsl::TlsV1_2
+        << QByteArrayList({rsaSha256})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("no_hashalg_match_TlsV1_2")
+        << QByteArrayList({rsaSha256})
+        << QSsl::TlsV1_2
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::UnconnectedState;
+    QTest::newRow("no_sigalg_match_TlsV1_2")
+        << QByteArrayList({ecdsaSha512})
+        << QSsl::TlsV1_2
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::UnconnectedState;
+    QTest::newRow("no_cipher_match_AnyProtocol")
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QByteArrayList({ecdsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::UnconnectedState;
+    QTest::newRow("match_multiple-choice")
+        << QByteArrayList({dsaSha1, rsaSha256, rsaSha384, rsaSha512})
+        << QSsl::AnyProtocol
+        << QByteArrayList({ecdsaSha1, rsaSha384, rsaSha512, ecdsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("match_client_longer")
+        << QByteArrayList({dsaSha1, rsaSha256})
+        << QSsl::AnyProtocol
+        << QByteArrayList({ecdsaSha1, ecdsaSha512, rsaSha256})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("match_server_longer")
+        << QByteArrayList({ecdsaSha1, ecdsaSha512, rsaSha256})
+        << QSsl::AnyProtocol
+        << QByteArrayList({dsaSha1, rsaSha256})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+
+    // signature algorithms do not match, but are ignored because the tls version is not v1.2
+    QTest::newRow("client_ignore_TlsV1_1")
+        << QByteArrayList({rsaSha256})
+        << QSsl::TlsV1_1
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("server_ignore_TlsV1_1")
+        << QByteArrayList({rsaSha256})
+        << QSsl::AnyProtocol
+        << QByteArrayList({rsaSha512})
+        << QSsl::TlsV1_1
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("client_ignore_TlsV1_0")
+        << QByteArrayList({rsaSha256})
+        << QSsl::TlsV1_0
+        << QByteArrayList({rsaSha512})
+        << QSsl::AnyProtocol
+        << QAbstractSocket::ConnectedState;
+    QTest::newRow("server_ignore_TlsV1_0")
+        << QByteArrayList({rsaSha256})
+        << QSsl::AnyProtocol
+        << QByteArrayList({rsaSha512})
+        << QSsl::TlsV1_0
+        << QAbstractSocket::ConnectedState;
+}
+
+void tst_QSslSocket::signatureAlgorithm()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        QSKIP("Test not adapted for use with proxying");
+
+    QFETCH(QByteArrayList, serverSigAlgPairs);
+    QFETCH(QSsl::SslProtocol, serverProtocol);
+    QFETCH(QByteArrayList, clientSigAlgPairs);
+    QFETCH(QSsl::SslProtocol, clientProtocol);
+    QFETCH(QAbstractSocket::SocketState, state);
+
+    SslServer server;
+    server.protocol = serverProtocol;
+    server.config.setCiphers({QSslCipher("ECDHE-RSA-AES256-SHA")});
+    server.config.setBackendConfigOption(QByteArrayLiteral("SignatureAlgorithms"), serverSigAlgPairs.join(':'));
+    QVERIFY(server.listen());
+
+    QSslConfiguration clientConfig = QSslConfiguration::defaultConfiguration();
+    clientConfig.setProtocol(clientProtocol);
+    clientConfig.setBackendConfigOption(QByteArrayLiteral("SignatureAlgorithms"), clientSigAlgPairs.join(':'));
+    QSslSocket client;
+    client.setSslConfiguration(clientConfig);
+    socket = &client;
+
+    QEventLoop loop;
+    QTimer::singleShot(5000, &loop, &QEventLoop::quit);
+    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error), &loop, &QEventLoop::quit);
+    connect(socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors), this, &tst_QSslSocket::ignoreErrorSlot);
+    connect(socket, &QSslSocket::encrypted, &loop, &QEventLoop::quit);
+
+    client.connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
+    loop.exec();
+    socket = nullptr;
+    QCOMPARE(client.state(), state);
 }
 
 void tst_QSslSocket::forwardReadChannelFinished()

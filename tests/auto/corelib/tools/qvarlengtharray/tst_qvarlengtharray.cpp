@@ -30,6 +30,8 @@
 #include <qvarlengtharray.h>
 #include <qvariant.h>
 
+#include <memory>
+
 class tst_QVarLengthArray : public QObject
 {
     Q_OBJECT

@@ -250,38 +250,6 @@ void QCupsPrintEnginePrivate::closePrintDevice()
     }
 }
 
-void QCupsPrintEnginePrivate::setupDefaultPrinter()
-{
-    // Should never have reached here if no plugin available, but check just in case
-    QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();
-    if (!ps)
-        return;
-
-    // Get default printer id, if no default then use the first available
-    // TODO Find way to remove printerName from base class?
-    printerName = ps->defaultPrintDeviceId();
-    if (printerName.isEmpty()) {
-        QStringList list = ps->availablePrintDeviceIds();
-        if (list.size() > 0)
-            printerName = list.at(0);
-    }
-
-    // Should never have reached here if no printers available, but check just in case
-    if (printerName.isEmpty())
-        return;
-
-    m_printDevice = ps->createPrintDevice(printerName);
-    if (!m_printDevice.isValid())
-        return;
-
-    // Setup the printer defaults
-    duplex = m_printDevice.defaultDuplexMode();
-    grayscale = m_printDevice.defaultColorMode() == QPrint::GrayScale;
-    // CUPS server always supports collation, even if individual m_printDevice doesn't
-    collate = true;
-    setPageSize(m_printDevice.defaultPageSize());
-}
-
 void QCupsPrintEnginePrivate::changePrinter(const QString &newPrinter)
 {
     // Don't waste time if same printer name

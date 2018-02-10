@@ -340,6 +340,7 @@ init_context:
                                 const_cast<int *>(reinterpret_cast<const int *>(qcurves.data())))) {
                 sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocketBackendPrivate::getErrorsFromOpenSsl());
                 sslContext->errorCode = QSslError::UnspecifiedError;
+                return;
             }
         } else
 #endif // OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_EC)
@@ -347,8 +348,11 @@ init_context:
             // specific curves requested, but not possible to set -> error
             sslContext->errorStr = msgErrorSettingEllipticCurves(QSslSocket::tr("OpenSSL version too old, need at least v1.0.2"));
             sslContext->errorCode = QSslError::UnspecifiedError;
+            return;
         }
     }
+
+    applyBackendConfig(sslContext);
 }
 
 QT_END_NAMESPACE

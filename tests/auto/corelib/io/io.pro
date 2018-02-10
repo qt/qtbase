@@ -2,7 +2,6 @@ TEMPLATE=subdirs
 SUBDIRS=\
     qabstractfileengine \
     qbuffer \
-    qdatastream \
     qdataurl \
     qdebug \
     qdir \
@@ -30,19 +29,16 @@ SUBDIRS=\
     qstorageinfo \
     qtemporarydir \
     qtemporaryfile \
-    qtextstream \
     qurl \
     qurlinternal \
     qurlquery \
 
 !qtHaveModule(gui): SUBDIRS -= \
-    qdatastream \
     qsettings
 
 !qtHaveModule(network): SUBDIRS -= \
     qiodevice \
-    qprocess \
-    qtextstream
+    qprocess
 
 !qtHaveModule(concurrent): SUBDIRS -= \
     qdebug \

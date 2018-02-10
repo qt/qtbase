@@ -178,6 +178,7 @@ static void qFloatFromFloat16_fast(float *, const quint16 *, qsizetype) Q_DECL_N
 #endif
 /*!
     \since 5.11
+    \relates <QFloat16>
 
     Converts \a len floats from \a in to qfloat16 and stores them in \a out.
     Both \a in and \a out must have \a len allocated entries.
@@ -193,6 +194,7 @@ Q_CORE_EXPORT void qFloatToFloat16(qfloat16 *out, const float *in, qsizetype len
 
 /*!
     \since 5.11
+    \relates <QFloat16>
 
     Converts \a len qfloat16 from \a in to floats and stores them in \a out.
     Both \a in and \a out must have \a len allocated entries.

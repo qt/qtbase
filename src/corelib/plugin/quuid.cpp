@@ -149,7 +149,6 @@ static QUuid _q_uuidFromHex(const char *src)
     return QUuid();
 }
 
-#ifndef QT_BOOTSTRAPPED
 static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCryptographicHash::Algorithm algorithm, int version)
 {
     QByteArray hashResult;
@@ -172,7 +171,6 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 
     return result;
 }
-#endif
 
 /*!
     \class QUuid
@@ -510,12 +508,12 @@ QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData)
 {
     return createFromName(ns, baseData, QCryptographicHash::Md5, 3);
 }
+#endif
 
 QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData)
 {
     return createFromName(ns, baseData, QCryptographicHash::Sha1, 5);
 }
-#endif
 
 /*!
   Creates a QUuid object from the binary representation of the UUID, as

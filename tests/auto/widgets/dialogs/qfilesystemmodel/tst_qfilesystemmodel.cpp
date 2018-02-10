@@ -102,6 +102,7 @@ private slots:
 
     void mkdir();
     void deleteFile();
+    void deleteDirectory();
 
     void caseSensitivity();
 
@@ -882,6 +883,44 @@ void tst_QFileSystemModel::deleteFile()
     QVERIFY(idx.isValid());
     QVERIFY(model->remove(idx));
     QVERIFY(!newFile.exists());
+}
+
+void tst_QFileSystemModel::deleteDirectory()
+{
+    // QTBUG-65683: Verify that directories can be removed recursively despite
+    // file system watchers being active on them or their sub-directories (Windows).
+    // Create a temporary directory, a nested directory and expand a treeview
+    // to show them to ensure watcher creation. Then delete the directory.
+    QTemporaryDir dirToBeDeleted(flatDirTestPath + QStringLiteral("/deleteDirectory-XXXXXX"));
+    QVERIFY(dirToBeDeleted.isValid());
+    const QString dirToBeDeletedPath = dirToBeDeleted.path();
+    const QString nestedTestDir = QStringLiteral("test");
+    QVERIFY(QDir(dirToBeDeletedPath).mkpath(nestedTestDir));
+    const QString nestedTestDirPath = dirToBeDeletedPath + QLatin1Char('/') + nestedTestDir;
+    QFile testFile(nestedTestDirPath + QStringLiteral("/test.txt"));
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    testFile.write("Hello\n");
+    testFile.close();
+
+    QFileSystemModel model;
+    const QModelIndex rootIndex = model.setRootPath(flatDirTestPath);
+    QTreeView treeView;
+    treeView.setWindowTitle(QTest::currentTestFunction());
+    treeView.setModel(&model);
+    treeView.setRootIndex(rootIndex);
+
+    const QModelIndex dirToBeDeletedPathIndex = model.index(dirToBeDeletedPath);
+    QVERIFY(dirToBeDeletedPathIndex.isValid());
+    treeView.setExpanded(dirToBeDeletedPathIndex, true);
+    const QModelIndex nestedTestDirIndex = model.index(nestedTestDirPath);
+    QVERIFY(nestedTestDirIndex.isValid());
+    treeView.setExpanded(nestedTestDirIndex, true);
+
+    treeView.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&treeView));
+
+    QVERIFY(model.remove(dirToBeDeletedPathIndex));
+    dirToBeDeleted.setAutoRemove(false);
 }
 
 static QString flipCase(QString s)

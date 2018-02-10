@@ -2848,14 +2848,18 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
     if (isSortIndicatorShown() && sortIndicatorSection() == logicalIndex && isHeaderArrowOnTheSide)
         margin += style()->pixelMetric(QStyle::PM_HeaderMarkSize, 0, this);
 
-    if (d->textElideMode != Qt::ElideNone)
-        opt.text = opt.fontMetrics.elidedText(opt.text, d->textElideMode , rect.width() - margin);
-
-    QVariant variant = d->model->headerData(logicalIndex, d->orientation,
-                                    Qt::DecorationRole);
+    const QVariant variant = d->model->headerData(logicalIndex, d->orientation,
+                                                  Qt::DecorationRole);
     opt.icon = qvariant_cast<QIcon>(variant);
     if (opt.icon.isNull())
         opt.icon = qvariant_cast<QPixmap>(variant);
+    if (!opt.icon.isNull()) // see CT_HeaderSection
+        margin += style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this) +
+                  style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
+
+    if (d->textElideMode != Qt::ElideNone)
+        opt.text = opt.fontMetrics.elidedText(opt.text, d->textElideMode , rect.width() - margin);
+
     QVariant foregroundBrush = d->model->headerData(logicalIndex, d->orientation,
                                                     Qt::ForegroundRole);
     if (foregroundBrush.canConvert<QBrush>())

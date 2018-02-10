@@ -117,7 +117,8 @@ public:
         WheelScrollLines,
         TouchDoubleTapDistance,
         ShowShortcutsInContextMenus,
-        IconFallbackSearchPaths
+        IconFallbackSearchPaths,
+        MouseQuickSelectionThreshold
     };
 
     enum DialogType {

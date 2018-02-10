@@ -6,6 +6,9 @@ MODULE = core     # not corelib, as per project file
 MODULE_CONFIG = moc resources
 !isEmpty(QT_NAMESPACE): MODULE_DEFINES = QT_NAMESPACE=$$QT_NAMESPACE
 
+TRACEPOINT_PROVIDER = $$PWD/qtcore.tracepoints
+CONFIG += qt_tracepoints
+
 CONFIG += $$MODULE_CONFIG
 DEFINES += $$MODULE_DEFINES
 DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH
@@ -35,13 +38,12 @@ include(thread/thread.pri)
 include(tools/tools.pri)
 include(io/io.pri)
 include(itemmodels/itemmodels.pri)
-include(json/json.pri)
 include(plugin/plugin.pri)
 include(kernel/kernel.pri)
 include(codecs/codecs.pri)
+include(serialization/serialization.pri)
 include(statemachine/statemachine.pri)
 include(mimetypes/mimetypes.pri)
-include(xml/xml.pri)
 
 win32 {
     LIBS_PRIVATE += -lws2_32

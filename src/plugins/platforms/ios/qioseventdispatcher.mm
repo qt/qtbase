@@ -228,7 +228,7 @@ extern "C" int qt_main_wrapper(int argc, char *argv[])
             }
         }
 
-        qEventDispatcherDebug() << "Running UIApplicationMain"; qIndent();
+        qCDebug(lcEventDispatcher) << "Running UIApplicationMain";
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([QIOSApplicationDelegate class]));
     }
 }
@@ -263,7 +263,7 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
     int exitCode = main(argc, argv);
     delete[] argv;
 
-    qEventDispatcherDebug() << "Returned from main with exit code " << exitCode;
+    qCDebug(lcEventDispatcher) << "Returned from main with exit code " << exitCode;
 
     if (Q_UNLIKELY(debugStackUsage))
         userMainStack.printUsage();
@@ -322,7 +322,7 @@ static bool rootLevelRunLoopIntegration()
 
 + (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    qCDebug(lcQpaApplication) << "Application launched with options" << notification.userInfo;
+    qCDebug(lcEventDispatcher) << "Application launched with options" << notification.userInfo;
 
     if (!isQtApplication())
         return;
@@ -331,7 +331,7 @@ static bool rootLevelRunLoopIntegration()
         // We schedule the main-redirection for the next run-loop pass, so that we
         // can return from this function and let UIApplicationMain finish its job.
         // This results in running Qt's application eventloop as a nested runloop.
-        qCDebug(lcQpaApplication) << "Scheduling main() on next run-loop pass";
+        qCDebug(lcEventDispatcher) << "Scheduling main() on next run-loop pass";
         CFRunLoopTimerRef userMainTimer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault,
              CFAbsoluteTimeGetCurrent(), 0, 0, 0, ^(CFRunLoopTimerRef) { user_main_trampoline(); });
         CFRunLoopAddTimer(CFRunLoopGetMain(), userMainTimer, kCFRunLoopCommonModes);
@@ -339,10 +339,10 @@ static bool rootLevelRunLoopIntegration()
         return;
     }
 
+
     switch (setjmp(processEventEnterJumpPoint)) {
     case kJumpPointSetSuccessfully:
-        qCDebug(lcQpaApplication) << "Running main() on separate stack"; qIndent();
-
+        qCDebug(lcEventDispatcher) << "Running main() on separate stack";
         // Redirect the stack pointer to the start of the reserved stack. This ensures
         // that when we longjmp out of the event dispatcher and continue execution, the
         // 'Qt main' call-stack will not be smashed, as it lives in a part of the stack
@@ -360,7 +360,7 @@ static bool rootLevelRunLoopIntegration()
     case kJumpedFromEventDispatcherProcessEvents:
         // We've returned from the longjmp in the event dispatcher,
         // and the stack has been restored to its old self.
-        qUnIndent(); qCDebug(lcQpaApplication) << "Returned from processEvents";
+        qCDebug(lcEventDispatcher) << "↳ Jumped from processEvents due to exec";
 
         if (Q_UNLIKELY(debugStackUsage))
             userMainStack.printUsage();
@@ -396,18 +396,18 @@ static const char kApplicationWillTerminateExitCode = char(SIGTERM | 0x80);
     applicationAboutToTerminate = true;
     switch (setjmp(applicationWillTerminateJumpPoint)) {
     case kJumpPointSetSuccessfully:
-        qEventDispatcherDebug() << "Exiting qApp with SIGTERM exit code"; qIndent();
+        qCDebug(lcEventDispatcher) << "Exiting qApp with SIGTERM exit code";
         qApp->exit(kApplicationWillTerminateExitCode);
 
         // The runloop will not exit when the application is about to terminate,
         // so we'll never see the exit activity and have a chance to return from
         // QEventLoop::exec(). We initiate the return manually as a workaround.
-        qEventDispatcherDebug() << "Manually triggering return from event loop exec";
+        qCDebug(lcEventDispatcher) << "Manually triggering return from event loop exec";
         static_cast<QIOSEventDispatcher *>(qApp->eventDispatcher())->interruptEventLoopExec();
         break;
     case kJumpedFromUserMainTrampoline:
         // The user's main has returned, so we're ready to let iOS terminate the application
-        qUnIndent(); qEventDispatcherDebug() << "kJumpedFromUserMainTrampoline, allowing iOS to terminate";
+        qCDebug(lcEventDispatcher) << "kJumpedFromUserMainTrampoline, allowing iOS to terminate";
         break;
     default:
         qFatal("Unexpected jump result in event loop integration");
@@ -434,13 +434,15 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
         return QEventDispatcherCoreFoundation::processEvents(flags);
 
     if (applicationAboutToTerminate) {
-        qEventDispatcherDebug() << "Detected QEventLoop exec after application termination";
+        qCDebug(lcEventDispatcher) << "Detected QEventLoop exec after application termination";
         // Re-issue exit, and return immediately
         qApp->exit(kApplicationWillTerminateExitCode);
         return false;
     }
 
     if (!m_processEventLevel && (flags & QEventLoop::EventLoopExec)) {
+        qCDebug(lcEventDispatcher) << "Processing events with flags" << flags;
+
         ++m_processEventLevel;
 
         m_runLoopExitObserver.addToMode(kCFRunLoopCommonModes);
@@ -449,7 +451,7 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
         // is asked to exit, so that we can return from QEventLoop::exec().
         switch (setjmp(processEventExitJumpPoint)) {
         case kJumpPointSetSuccessfully:
-            qEventDispatcherDebug() << "QEventLoop exec detected, jumping back to native runloop";
+            qCDebug(lcEventDispatcher) << "QEventLoop exec detected, jumping back to system runloop ↵";
             longjmp(processEventEnterJumpPoint, kJumpedFromEventDispatcherProcessEvents);
             break;
         case kJumpedFromEventLoopExecInterrupt:
@@ -457,7 +459,7 @@ bool __attribute__((returns_twice)) QIOSEventDispatcher::processEvents(QEventLoo
             // signal), and we jumped back though processEventExitJumpPoint. We return from processEvents,
             // which will emit aboutToQuit if it's QApplication's event loop, and then return to the user's
             // main, which can do whatever it wants, including calling exec() on the application again.
-            qEventDispatcherDebug() << "kJumpedFromEventLoopExecInterrupt, returning with eventsProcessed = true";
+            qCDebug(lcEventDispatcher) << "⇢ System runloop exited, returning with eventsProcessed = true";
             return true;
         default:
             qFatal("Unexpected jump result in event loop integration");
@@ -485,9 +487,8 @@ bool QIOSEventDispatcher::processPostedEvents()
     if (!QEventDispatcherCoreFoundation::processPostedEvents())
         return false;
 
-    qEventDispatcherDebug() << "Sending window system events for " << m_processEvents.flags; qIndent();
+    qCDebug(lcEventDispatcher) << "Sending window system events for" << m_processEvents.flags;
     QWindowSystemInterface::sendWindowSystemEvents(m_processEvents.flags);
-    qUnIndent();
 
     return true;
 }
@@ -497,10 +498,8 @@ void QIOSEventDispatcher::handleRunLoopExit(CFRunLoopActivity activity)
     Q_UNUSED(activity);
     Q_ASSERT(activity == kCFRunLoopExit);
 
-    if (m_processEventLevel == 1 && !currentEventLoop()->isRunning()) {
-        qEventDispatcherDebug() << "Root runloop level exited";
+    if (m_processEventLevel == 1 && !currentEventLoop()->isRunning())
         interruptEventLoopExec();
-    }
 }
 
 void QIOSEventDispatcher::interruptEventLoopExec()
@@ -516,12 +515,12 @@ void QIOSEventDispatcher::interruptEventLoopExec()
     // processEvents, instead of back in didFinishLaunchingWithOptions.
     switch (setjmp(processEventEnterJumpPoint)) {
     case kJumpPointSetSuccessfully:
-        qEventDispatcherDebug() << "Jumping back to processEvents";
+        qCDebug(lcEventDispatcher) << "Jumping into processEvents due to system runloop exit ⇢";
         longjmp(processEventExitJumpPoint, kJumpedFromEventLoopExecInterrupt);
         break;
     case kJumpedFromEventDispatcherProcessEvents:
         // QEventLoop was re-executed
-        qEventDispatcherDebug() << "kJumpedFromEventDispatcherProcessEvents";
+        qCDebug(lcEventDispatcher) << "↳ Jumped from processEvents due to re-exec";
         break;
     default:
         qFatal("Unexpected jump result in event loop integration");

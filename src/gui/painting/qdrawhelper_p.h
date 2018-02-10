@@ -1104,21 +1104,29 @@ inline int qBlue565(quint16 rgb) {
     return (b << 3) | (b >> 2);
 }
 
+// We manually unalias the variables to make sure the compiler
+// fully optimizes both aliased and unaliased cases.
+#define UNALIASED_CONVERSION_LOOP(buffer, src, count, conversion) \
+    if (src == buffer) { \
+        for (int i = 0; i < count; ++i) \
+            buffer[i] = conversion(buffer[i]); \
+    } else { \
+        for (int i = 0; i < count; ++i) \
+            buffer[i] = conversion(src[i]); \
+    }
+
 
 static Q_ALWAYS_INLINE const uint *qt_convertARGB32ToARGB32PM(uint *buffer, const uint *src, int count)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(src[i]);
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, qPremultiply);
     return buffer;
 }
 
 static Q_ALWAYS_INLINE const uint *qt_convertRGBA8888ToARGB32PM(uint *buffer, const uint *src, int count)
 {
-    for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(RGBA2ARGB(src[i]));
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, [](uint s) { return qPremultiply(RGBA2ARGB(s));});
     return buffer;
 }
-
 
 const uint qt_bayer_matrix[16][16] = {
     { 0x1, 0xc0, 0x30, 0xf0, 0xc, 0xcc, 0x3c, 0xfc,

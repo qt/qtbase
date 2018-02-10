@@ -887,6 +887,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
         PROPERTYORIGIN origin = PO_NOTFOUND;
         GetThemePropertyOrigin(themeData.handle(), themeData.partId, themeData.stateId, TMT_BORDERSIZE, &origin);
         GetThemeInt(themeData.handle(), themeData.partId, themeData.stateId, TMT_BORDERSIZE, &borderSize);
+        borderSize *= additionalDevicePixelRatio;
 
         // Clip away border region
         if ((origin == PO_CLASS || origin == PO_PART || origin == PO_STATE) && borderSize > 0) {
@@ -996,7 +997,7 @@ bool QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     }
 
     if (addBorderContentClipping)
-        painter->setClipRegion(extraClip, Qt::IntersectClip);
+        painter->setClipRegion(scaleRegion(extraClip, 1.0 / additionalDevicePixelRatio), Qt::IntersectClip);
 
     if (!themeData.mirrorHorizontally && !themeData.mirrorVertically && !themeData.rotate) {
         if (!haveCachedPixmap)
@@ -1479,11 +1480,12 @@ case PE_Frame:
                 // GetThemeInt(theme.handle(), partId, stateId, TMT_BORDERCOLOR, &borderSize);
 
                 // Inner white border
-                p->setPen(QPen(option->palette.base().color(), 1));
-                p->drawRect(option->rect.adjusted(1, 1, -2, -2));
+                p->setPen(QPen(option->palette.base().color(), 0));
+                p->drawRect(QRectF(option->rect).adjusted(QStyleHelper::dpiScaled(0.5), QStyleHelper::dpiScaled(0.5),
+                                                          QStyleHelper::dpiScaled(-1), QStyleHelper::dpiScaled(-1)));
                 // Outer dark border
-                p->setPen(QPen(bordercolor, 1));
-                p->drawRect(option->rect.adjusted(0, 0, -1, -1));
+                p->setPen(QPen(bordercolor, 0));
+                p->drawRect(QRectF(option->rect).adjusted(0, 0, QStyleHelper::dpiScaled(-0.5), QStyleHelper::dpiScaled(-0.5)));
                 p->setPen(oldPen);
                 return;
             } else if (fillType == BT_NONE) {
@@ -3511,9 +3513,8 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
 
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            int x = cmb->rect.x(), y = cmb->rect.y(), wi = cmb->rect.width(), he = cmb->rect.height();
-            int xpos = x;
-            xpos += wi - 1 - 16;
+            const int x = cmb->rect.x(), y = cmb->rect.y(), wi = cmb->rect.width(), he = cmb->rect.height();
+            const int xpos = x + wi - qRound(QStyleHelper::dpiScaled(1 + 16));
 
             switch (subControl) {
             case SC_ComboBoxFrame:
@@ -3521,11 +3522,13 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
                 break;
 
             case SC_ComboBoxArrow:
-                rect = QRect(xpos, y+1, 16, he-2);
+                rect = QRect(xpos, y + qRound(QStyleHelper::dpiScaled(1)),
+                             qRound(QStyleHelper::dpiScaled(16)), he - qRound(QStyleHelper::dpiScaled(2)));
                 break;
 
             case SC_ComboBoxEditField:
-                rect = QRect(x+2, y+2, wi-3-16, he-4);
+                rect = QRect(x + qRound(QStyleHelper::dpiScaled(2)), y + qRound(QStyleHelper::dpiScaled(2)),
+                             wi - qRound(QStyleHelper::dpiScaled(3 + 16)), he - qRound(QStyleHelper::dpiScaled(4)));
                 break;
 
             case SC_ComboBoxListBoxPopup:
