@@ -245,6 +245,9 @@ public:
     bool endsWith(char c) const;
     bool endsWith(const char *c) const;
 
+    bool isUpper() const;
+    bool isLower() const;
+
     void truncate(int pos);
     void chop(int n);
 

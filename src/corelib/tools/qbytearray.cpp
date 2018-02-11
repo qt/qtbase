@@ -958,7 +958,7 @@ static inline char qToLower(char c)
     $LC_CTYPE is set, most Unix systems do "the right thing".)
     Functions that this affects include contains(), indexOf(),
     lastIndexOf(), operator<(), operator<=(), operator>(),
-    operator>=(), toLower() and toUpper().
+    operator>=(), isLower(), isUpper(), toLower() and toUpper().
 
     This issue does not apply to \l{QString}s since they represent
     characters using Unicode.
@@ -2949,6 +2949,78 @@ bool QByteArray::endsWith(const char *str) const
     return qstrncmp(d->data() + d->size - len, str, len) == 0;
 }
 
+/*!
+    Returns true if \a c is an uppercase Latin1 letter.
+    \note The multiplication sign 0xD7 and the sz ligature 0xDF are not
+    treated as uppercase Latin1.
+ */
+static inline bool isUpperCaseLatin1(char c)
+{
+    if (c >= 'A' && c <= 'Z')
+        return true;
+
+    return (uchar(c) >= 0xC0 && uchar(c) <= 0xDE && uchar(c) != 0xD7);
+}
+
+/*!
+    Returns \c true if this byte array contains only uppercase letters,
+    otherwise returns \c false. The byte array is interpreted as a Latin-1
+    encoded string.
+    \since 5.12
+
+    \sa isLower(), toUpper()
+*/
+bool QByteArray::isUpper() const
+{
+    if (isEmpty())
+        return false;
+
+    const char *d = data();
+
+    for (int i = 0, max = size(); i < max; ++i) {
+        if (!isUpperCaseLatin1(d[i]))
+            return false;
+    }
+
+    return true;
+}
+
+/*!
+    Returns true if \a c is an lowercase Latin1 letter.
+    \note The division sign 0xF7 is not treated as lowercase Latin1,
+    but the small y dieresis 0xFF is.
+ */
+static inline bool isLowerCaseLatin1(char c)
+{
+    if (c >= 'a' && c <= 'z')
+        return true;
+
+    return (uchar(c) >= 0xD0 && uchar(c) != 0xF7);
+}
+
+/*!
+    Returns \c true if this byte array contains only lowercase letters,
+    otherwise returns \c false. The byte array is interpreted as a Latin-1
+    encoded string.
+    \since 5.12
+
+    \sa isUpper(), toLower()
+ */
+bool QByteArray::isLower() const
+{
+    if (isEmpty())
+        return false;
+
+    const char *d = data();
+
+    for (int i = 0, max = size(); i < max; ++i) {
+        if (!isLowerCaseLatin1(d[i]))
+            return false;
+    }
+
+    return true;
+}
+
 /*! \overload
 
     Returns \c true if this byte array ends with character \a ch;
@@ -3060,7 +3132,7 @@ QByteArray QByteArray::mid(int pos, int len) const
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 30
 
-    \sa toUpper(), {8-bit Character Comparisons}
+    \sa isLower(), toUpper(), {8-bit Character Comparisons}
 */
 
 // prevent the compiler from inlining the function in each of
@@ -3114,7 +3186,7 @@ QByteArray QByteArray::toLower_helper(QByteArray &a)
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 31
 
-    \sa toLower(), {8-bit Character Comparisons}
+    \sa isUpper(), toLower(), {8-bit Character Comparisons}
 */
 
 QByteArray QByteArray::toUpper_helper(const QByteArray &a)

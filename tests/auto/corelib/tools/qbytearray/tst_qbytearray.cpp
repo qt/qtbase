@@ -141,6 +141,8 @@ private slots:
 #endif
     void toUpperLower_data();
     void toUpperLower();
+    void isUpper();
+    void isLower();
 
     void macTypes();
 
@@ -2186,6 +2188,51 @@ void tst_QByteArray::toUpperLower()
     copy = upper;
     copy.detach();
     QCOMPARE(qMove(copy).toUpper(), upper);
+}
+
+void tst_QByteArray::isUpper()
+{
+    QVERIFY(!QByteArray().isUpper());
+    QVERIFY(!QByteArray("").isUpper());
+    QVERIFY(QByteArray("TEXT").isUpper());
+    QVERIFY(QByteArray("\xD0\xDE").isUpper());
+    QVERIFY(!QByteArray("\xD7").isUpper()); // multiplication sign is not upper
+    QVERIFY(!QByteArray("\xDF").isUpper()); // sz ligature is not upper
+    QVERIFY(!QByteArray("text").isUpper());
+    QVERIFY(!QByteArray("Text").isUpper());
+    QVERIFY(!QByteArray("tExt").isUpper());
+    QVERIFY(!QByteArray("teXt").isUpper());
+    QVERIFY(!QByteArray("texT").isUpper());
+    QVERIFY(!QByteArray("TExt").isUpper());
+    QVERIFY(!QByteArray("teXT").isUpper());
+    QVERIFY(!QByteArray("tEXt").isUpper());
+    QVERIFY(!QByteArray("tExT").isUpper());
+    QVERIFY(!QByteArray("@ABYZ[").isUpper());
+    QVERIFY(!QByteArray("@abyz[").isUpper());
+    QVERIFY(!QByteArray("`ABYZ{").isUpper());
+    QVERIFY(!QByteArray("`abyz{").isUpper());
+}
+
+void tst_QByteArray::isLower()
+{
+    QVERIFY(!QByteArray().isLower());
+    QVERIFY(!QByteArray("").isLower());
+    QVERIFY(QByteArray("text").isLower());
+    QVERIFY(QByteArray("\xE0\xFF").isLower());
+    QVERIFY(!QByteArray("\xF7").isLower()); // division sign is not lower
+    QVERIFY(!QByteArray("Text").isLower());
+    QVERIFY(!QByteArray("tExt").isLower());
+    QVERIFY(!QByteArray("teXt").isLower());
+    QVERIFY(!QByteArray("texT").isLower());
+    QVERIFY(!QByteArray("TExt").isLower());
+    QVERIFY(!QByteArray("teXT").isLower());
+    QVERIFY(!QByteArray("tEXt").isLower());
+    QVERIFY(!QByteArray("tExT").isLower());
+    QVERIFY(!QByteArray("TEXT").isLower());
+    QVERIFY(!QByteArray("@ABYZ[").isLower());
+    QVERIFY(!QByteArray("@abyz[").isLower());
+    QVERIFY(!QByteArray("`ABYZ{").isLower());
+    QVERIFY(!QByteArray("`abyz{").isLower());
 }
 
 void tst_QByteArray::macTypes()
