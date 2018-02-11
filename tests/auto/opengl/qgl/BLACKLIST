@@ -16,7 +16,6 @@ winrt
 [clipTest]
 windows
 winrt
-opensuse-13.1
 [graphicsViewClipping]
 windows
 winrt
