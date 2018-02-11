@@ -195,6 +195,19 @@ static void formatApplicationState(QDebug debug)
 #endif // HAVE_GUI_APPLICATION
 }
 
+#ifdef HAVE_APPLICATION
+static void formatMouseState(QObject *o, QDebug debug)
+{
+    if (o->isWidgetType()) {
+        const QWidget *w = static_cast<const QWidget *>(o);
+        if (QWidget::mouseGrabber() == w)
+            debug << " [grabbed]";
+        if (w->hasMouseTracking())
+            debug << " [tracking]";
+    }
+}
+#endif // HAVE_APPLICATION
+
 bool EventFilter::eventFilter(QObject *o, QEvent *e)
 {
     static int n = 0;
@@ -210,6 +223,22 @@ bool EventFilter::eventFilter(QObject *o, QEvent *e)
         case QEvent::FocusIn:
             formatApplicationState(debug);
             break;
+#ifdef HAVE_APPLICATION
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseMove:
+        case QEvent::NonClientAreaMouseButtonDblClick:
+        case QEvent::NonClientAreaMouseButtonPress:
+        case QEvent::NonClientAreaMouseButtonRelease:
+        case QEvent::NonClientAreaMouseMove:
+#  if QT_VERSION >= 0x050000
+        case QEvent::Enter:
+#  endif
+        case QEvent::Leave:
+            formatMouseState(o, debug);
+            break;
+#endif // HAVE_APPLICATION
         default:
             break;
         }

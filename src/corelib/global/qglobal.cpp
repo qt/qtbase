@@ -3610,7 +3610,7 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
-    \fn template <typename T> qAsConst(T &t)
+    \fn template <typename T> typename std::add_const<T>::type &qAsConst(T &t)
     \relates <QtGlobal>
     \since 5.7
 
@@ -3662,7 +3662,7 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
-    \fn template <typename T> qAsConst(const T &&t)
+    \fn template <typename T> void qAsConst(const T &&t)
     \relates <QtGlobal>
     \since 5.7
     \overload

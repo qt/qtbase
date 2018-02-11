@@ -72,7 +72,7 @@ public:
     inline QVector(const QVector<T> &v);
     inline ~QVector() { if (!d->ref.deref()) freeData(d); }
     QVector<T> &operator=(const QVector<T> &v);
-#ifdef Q_COMPILER_RVALUE_REFS
+#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     QVector(QVector<T> &&other) Q_DECL_NOTHROW : d(other.d) { other.d = Data::sharedNull(); }
     QVector<T> &operator=(QVector<T> &&other) Q_DECL_NOTHROW
     { QVector moved(std::move(other)); swap(moved); return *this; }
@@ -133,7 +133,7 @@ public:
     T &operator[](int i);
     const T &operator[](int i) const;
     void append(const T &t);
-#ifdef Q_COMPILER_RVALUE_REFS
+#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     void append(T &&t);
 #endif
     inline void append(const QVector<T> &l) { *this += l; }
@@ -201,7 +201,7 @@ public:
     typedef typename Data::const_iterator const_iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-#if !defined(QT_STRICT_ITERATORS) || defined(Q_QDOC)
+#if !defined(QT_STRICT_ITERATORS) || defined(Q_CLANG_QDOC)
     inline iterator begin() { detach(); return d->begin(); }
     inline const_iterator begin() const Q_DECL_NOTHROW { return d->constBegin(); }
     inline const_iterator cbegin() const Q_DECL_NOTHROW { return d->constBegin(); }
@@ -258,7 +258,7 @@ public:
     typedef const_iterator ConstIterator;
     typedef int size_type;
     inline void push_back(const T &t) { append(t); }
-#ifdef Q_COMPILER_RVALUE_REFS
+#if defined(Q_COMPILER_RVALUE_REFS) || defined(Q_CLANG_QDOC)
     void push_back(T &&t) { append(std::move(t)); }
     void push_front(T &&t) { prepend(std::move(t)); }
 #endif

@@ -48,7 +48,7 @@
     \section1 MainWindow Class
 
     \c MainWindow inherits QWidget, and is the application's main window defined in
-    \c mainwindow.ui. The style of \c MainWindow can be modified with \l StyleSheetEditor.
+    \c mainwindow.ui. The style of \c MainWindow can be modified with \c StyleSheetEditor.
 
 
     \section1 StyleSheetEditor Class

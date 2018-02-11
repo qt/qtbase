@@ -124,8 +124,16 @@ void tst_QUuid::fromChar()
 void tst_QUuid::toString()
 {
     QCOMPARE(uuidA.toString(), QString("{fc69b59e-cc34-4436-a43c-ee95d128b8c5}"));
+    QCOMPARE(uuidA.toString(QUuid::WithoutBraces),
+             QString("fc69b59e-cc34-4436-a43c-ee95d128b8c5"));
+    QCOMPARE(uuidA.toString(QUuid::Id128),
+             QString("fc69b59ecc344436a43cee95d128b8c5"));
 
     QCOMPARE(uuidB.toString(), QString("{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}"));
+    QCOMPARE(uuidB.toString(QUuid::WithoutBraces),
+             QString("1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b"));
+    QCOMPARE(uuidB.toString(QUuid::Id128),
+             QString("1ab6e93ab1cb4a87ba47ec7e99039a7b"));
 }
 
 void tst_QUuid::fromString_data()
@@ -185,8 +193,16 @@ void tst_QUuid::fromString()
 void tst_QUuid::toByteArray()
 {
     QCOMPARE(uuidA.toByteArray(), QByteArray("{fc69b59e-cc34-4436-a43c-ee95d128b8c5}"));
+    QCOMPARE(uuidA.toByteArray(QUuid::WithoutBraces),
+             QByteArray("fc69b59e-cc34-4436-a43c-ee95d128b8c5"));
+    QCOMPARE(uuidA.toByteArray(QUuid::Id128),
+             QByteArray("fc69b59ecc344436a43cee95d128b8c5"));
 
     QCOMPARE(uuidB.toByteArray(), QByteArray("{1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b}"));
+    QCOMPARE(uuidB.toByteArray(QUuid::WithoutBraces),
+             QByteArray("1ab6e93a-b1cb-4a87-ba47-ec7e99039a7b"));
+    QCOMPARE(uuidB.toByteArray(QUuid::Id128),
+             QByteArray("1ab6e93ab1cb4a87ba47ec7e99039a7b"));
 }
 
 void tst_QUuid::fromByteArray()

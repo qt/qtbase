@@ -1406,6 +1406,9 @@ public:
 
         ImhMultiLine = 0x400,
 
+        ImhNoEditMenu = 0x800,
+        ImhNoTextHandles = 0x1000,
+
         ImhDigitsOnly = 0x10000,
         ImhFormattedNumbersOnly = 0x20000,
         ImhUppercaseOnly = 0x40000,

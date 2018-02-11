@@ -2283,6 +2283,8 @@ void QGuiApplicationPrivate::processWindowStateChangedEvent(QWindowSystemInterfa
 void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterfacePrivate::WindowScreenChangedEvent *wse)
 {
     if (QWindow *window  = wse->window.data()) {
+        if (window->screen() == wse->screen.data())
+            return;
         if (window->isTopLevel()) {
             if (QScreen *screen = wse->screen.data())
                 window->d_func()->setTopLevelScreen(screen, false /* recreate */);

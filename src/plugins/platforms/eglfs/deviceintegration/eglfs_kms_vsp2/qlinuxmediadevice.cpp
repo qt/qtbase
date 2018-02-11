@@ -533,6 +533,14 @@ bool QLinuxMediaDevice::OutputSubDevice::streamOff()
     return QLinuxMediaDevice::streamOff(m_subdevFd, V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
 }
 
+int QLinuxMediaDevice::openVideoDevice(media_pad *pad)
+{
+    const char *deviceName = media_entity_get_devname(pad->entity);
+    int fd = open(deviceName, O_RDWR);
+    qCDebug(qLcEglfsKmsDebug) << "Opened video device:" << deviceName << "with fd" << fd;
+    return fd;
+}
+
 bool QLinuxMediaDevice::setSubdevFormat(struct media_pad *pad, const QSize &size, uint32_t mbusFormat)
 {
     Q_ASSERT(size.isValid());
@@ -553,6 +561,18 @@ bool QLinuxMediaDevice::setSubdevFormat(struct media_pad *pad, const QSize &size
     }
 
     qCDebug(qLcEglfsKmsDebug) << "Set format to" << format << "for entity" << pad->entity << "index" << pad->index;
+    return true;
+}
+
+bool QLinuxMediaDevice::setSubdevAlpha(int subdevFd, qreal alpha)
+{
+    struct v4l2_control control;
+    control.id = V4L2_CID_ALPHA_COMPONENT;
+    control.value = static_cast<__s32>(alpha * 0xff);
+    if (ioctl(subdevFd, VIDIOC_S_CTRL, &control) == -1) {
+        qErrnoWarning("Setting alpha (%d) failed", control.value);
+        return false;
+    }
     return true;
 }
 

@@ -99,6 +99,8 @@ public:
     QDockWidget::DockWidgetFeatures features;
     Qt::DockWidgetAreas allowedAreas;
 
+    QFont font;
+
 #ifndef QT_NO_ACTION
     QAction *toggleViewAction;
 #endif

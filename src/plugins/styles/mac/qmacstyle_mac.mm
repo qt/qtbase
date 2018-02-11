@@ -301,6 +301,10 @@ static const QColor mainWindowGradientEnd(200, 200, 200);
 
 static const int DisclosureOffset = 4;
 
+static const qreal titleBarIconTitleSpacing = 5;
+static const qreal titleBarTitleRightMargin = 12;
+static const qreal titleBarButtonSpacing = 8;
+
 // Tab bar colors
 // active: window is active
 // selected: tab is selected
@@ -664,7 +668,6 @@ const int qt_mac_hitheme_version = 0; //the HITheme version we speak
 const int macItemFrame         = 2;    // menu item frame width
 const int macItemHMargin       = 3;    // menu item hor text margin
 const int macRightBorder       = 12;   // right border on mac
-const ThemeWindowType QtWinType = kThemeDocumentWindow; // Window type we use for QTitleBar.
 
 /*****************************************************************************
   QMacCGStyle utility functions
@@ -1250,6 +1253,58 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRect &targetRect, int h
     p->fillPath(focusRingPath, focusRingColor);
     p->restore();
 }
+
+QPainterPath QMacStylePrivate::windowPanelPath(const QRectF &r) const
+{
+    static const qreal CornerPointOffset = 5.5;
+    static const qreal CornerControlOffset = 2.1;
+
+    QPainterPath path;
+    // Top-left corner
+    path.moveTo(r.left(), r.top() + CornerPointOffset);
+    path.cubicTo(r.left(), r.top() + CornerControlOffset,
+                 r.left() + CornerControlOffset, r.top(),
+                 r.left() + CornerPointOffset, r.top());
+    // Top-right corner
+    path.lineTo(r.right() - CornerPointOffset, r.top());
+    path.cubicTo(r.right() - CornerControlOffset, r.top(),
+                 r.right(), r.top() + CornerControlOffset,
+                 r.right(), r.top() + CornerPointOffset);
+    // Bottom-right corner
+    path.lineTo(r.right(), r.bottom() - CornerPointOffset);
+    path.cubicTo(r.right(), r.bottom() - CornerControlOffset,
+                 r.right() - CornerControlOffset, r.bottom(),
+                 r.right() - CornerPointOffset, r.bottom());
+    // Bottom-right corner
+    path.lineTo(r.left() + CornerPointOffset, r.bottom());
+    path.cubicTo(r.left() + CornerControlOffset, r.bottom(),
+                 r.left(), r.bottom() - CornerControlOffset,
+                 r.left(), r.bottom() - CornerPointOffset);
+    path.lineTo(r.left(), r.top() + CornerPointOffset);
+
+    return path;
+}
+
+QMacStylePrivate::CocoaControlType QMacStylePrivate::windowButtonCocoaControl(QStyle::SubControl sc) const
+{
+    struct WindowButtons {
+        QStyle::SubControl sc;
+        QMacStylePrivate::CocoaControlType ct;
+    };
+
+    static const WindowButtons buttons[] = {
+        { QStyle::SC_TitleBarCloseButton, QMacStylePrivate::Button_WindowClose },
+        { QStyle::SC_TitleBarMinButton,   QMacStylePrivate::Button_WindowMiniaturize },
+        { QStyle::SC_TitleBarMaxButton,   QMacStylePrivate::Button_WindowZoom }
+    };
+
+    for (const auto &wb : buttons)
+        if (wb.sc == sc)
+            return wb.ct;
+
+    return NoControl;
+}
+
 
 #if QT_CONFIG(tabbar)
 void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const
@@ -1904,6 +1959,37 @@ NSView *QMacStylePrivate::cocoaControl(CocoaControl widget) const
         case Button_RadioButton:
             bv = makeButton(NSRadioButton, NSRegularSquareBezelStyle);
             break;
+        case Button_WindowClose:
+        case Button_WindowMiniaturize:
+        case Button_WindowZoom: {
+            const NSWindowButton button = [=] {
+                switch (widget.first) {
+                case Button_WindowClose:
+                    return NSWindowCloseButton;
+                case Button_WindowMiniaturize:
+                    return NSWindowMiniaturizeButton;
+                case Button_WindowZoom:
+                    return NSWindowZoomButton;
+                default:
+                    break;
+                }
+                Q_UNREACHABLE();
+            } ();
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_12)
+            const auto styleMask = NSWindowStyleMaskTitled
+                                 | NSWindowStyleMaskClosable
+                                 | NSWindowStyleMaskMiniaturizable
+                                 | NSWindowStyleMaskResizable;
+#else
+            const auto styleMask = NSTitledWindowMask
+                                 | NSClosableWindowMask
+                                 | NSMiniaturizableWindowMask
+                                 | NSResizableWindowMask;
+#endif
+            bv = [NSWindow standardWindowButton:button forStyleMask:styleMask];
+            [bv retain];
+            break;
+        }
         case ComboBox:
             bv = [[NSComboBox alloc] init];
             break;
@@ -2229,15 +2315,20 @@ void QMacStyle::unpolish(QApplication *)
 
 void QMacStyle::polish(QWidget* w)
 {
+    if (false
 #if QT_CONFIG(menu)
-    if (qobject_cast<QMenu*>(w)
-#if QT_CONFIG(combobox)
-            || qobject_cast<QComboBoxPrivateContainer *>(w)
+        || qobject_cast<QMenu*>(w)
+#  if QT_CONFIG(combobox)
+        || qobject_cast<QComboBoxPrivateContainer *>(w)
+#  endif
 #endif
-            ) {
+#if QT_CONFIG(mdiarea)
+        || qobject_cast<QMdiSubWindow *>(w)
+#endif
+        ) {
         w->setAttribute(Qt::WA_TranslucentBackground, true);
+        w->setAutoFillBackground(false);
     }
-#endif
 
 #if QT_CONFIG(tabbar)
     if (QTabBar *tb = qobject_cast<QTabBar*>(w)) {
@@ -2409,14 +2500,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_SpinBoxFrameWidth:
         ret = qt_mac_aqua_get_metric(EditTextFrameOutset);
-        switch (d->aquaSizeConstrain(opt, widget)) {
-        case QStyleHelper::SizeMini:
-            ret += 1;
-            break;
-        default:
-            ret += 2;
-            break;
-        }
         break;
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
@@ -2923,19 +3006,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = true;
         break;
     case SH_WindowFrame_Mask:
-        ret = 1;
-        if (QStyleHintReturnMask *mask = qstyleoption_cast<QStyleHintReturnMask *>(hret)) {
-            mask->region = opt->rect;
-            mask->region -= QRect(opt->rect.left(), opt->rect.top(), 5, 1);
-            mask->region -= QRect(opt->rect.left(), opt->rect.top() + 1, 3, 1);
-            mask->region -= QRect(opt->rect.left(), opt->rect.top() + 2, 2, 1);
-            mask->region -= QRect(opt->rect.left(), opt->rect.top() + 3, 1, 2);
-
-            mask->region -= QRect(opt->rect.right() - 4, opt->rect.top(), 5, 1);
-            mask->region -= QRect(opt->rect.right() - 2, opt->rect.top() + 1, 3, 1);
-            mask->region -= QRect(opt->rect.right() - 1, opt->rect.top() + 2, 2, 1);
-            mask->region -= QRect(opt->rect.right() , opt->rect.top() + 3, 1, 2);
-        }
+        ret = false;
         break;
     case SH_TabBar_ElideMode:
         ret = Qt::ElideRight;
@@ -3021,6 +3092,9 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = false;
         break;
     case SH_ComboBox_AllowWheelScrolling:
+        ret = false;
+        break;
+    case SH_SpinBox_ButtonsInsideFrame:
         ret = false;
         break;
     default:
@@ -3215,6 +3289,15 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
         break;
     case PE_FrameWindow:
+        if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
+            if (w && w->inherits("QMdiSubWindow")) {
+                p->save();
+                p->setPen(QPen(frame->palette.dark().color(), frame->lineWidth));
+                p->setBrush(frame->palette.window());
+                p->drawRect(frame->rect);
+                p->restore();
+            }
+        }
         break;
     case PE_IndicatorDockWidgetResizeHandle: {
             // The docwidget resize handle is drawn as a one-pixel wide line.
@@ -3489,31 +3572,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         p->setPen(Qt::transparent);
         p->setBrush(opt->palette.window());
         p->setRenderHint(QPainter::Antialiasing, true);
-        QPainterPath path;
-        static const qreal CornerPointOffset = 5.5;
-        static const qreal CornerControlOffset = 2.1;
-        QRectF r = opt->rect;
-        // Top-left corner
-        path.moveTo(r.left(), r.top() + CornerPointOffset);
-        path.cubicTo(r.left(), r.top() + CornerControlOffset,
-                     r.left() + CornerControlOffset, r.top(),
-                     r.left() + CornerPointOffset, r.top());
-        // Top-right corner
-        path.lineTo(r.right() - CornerPointOffset, r.top());
-        path.cubicTo(r.right() - CornerControlOffset, r.top(),
-                     r.right(), r.top() + CornerControlOffset,
-                     r.right(), r.top() + CornerPointOffset);
-        // Bottom-right corner
-        path.lineTo(r.right(), r.bottom() - CornerPointOffset);
-        path.cubicTo(r.right(), r.bottom() - CornerControlOffset,
-                     r.right() - CornerControlOffset, r.bottom(),
-                     r.right() - CornerPointOffset, r.bottom());
-        // Bottom-right corner
-        path.lineTo(r.left() + CornerPointOffset, r.bottom());
-        path.cubicTo(r.left() + CornerControlOffset, r.bottom(),
-                     r.left(), r.bottom() - CornerControlOffset,
-                     r.left(), r.bottom() - CornerPointOffset);
-        path.lineTo(r.left(), r.top() + CornerPointOffset);
+        const QPainterPath path = d->windowPanelPath(opt->rect);
         p->drawPath(path);
         p->restore();
         } break;
@@ -4074,78 +4133,41 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #endif
 #if QT_CONFIG(dockwidget)
     case CE_DockWidgetTitle:
-        if (const QDockWidget *dockWidget = qobject_cast<const QDockWidget *>(w)) {
-            bool floating = dockWidget->isFloating();
-            if (floating) {
-                ThemeDrawState tds = d->getDrawState(opt->state);
-                HIThemeWindowDrawInfo wdi;
-                wdi.version = qt_mac_hitheme_version;
-                wdi.state = tds;
-                wdi.windowType = kThemeMovableDialogWindow;
-                wdi.titleHeight = opt->rect.height();
-                wdi.titleWidth = opt->rect.width();
-                wdi.attributes = 0;
-
-                CGRect titleBarRect;
-                CGRect tmpRect = opt->rect.toCGRect();
-                {
-                    QCFType<HIShapeRef> titleRegion;
-                    QRect newr = opt->rect.adjusted(0, 0, 2, 0);
-                    HIThemeGetWindowShape(&tmpRect, &wdi, kWindowTitleBarRgn, &titleRegion);
-                    HIShapeGetBounds(titleRegion, &tmpRect);
-                    newr.translate(newr.x() - int(tmpRect.origin.x), newr.y() - int(tmpRect.origin.y));
-                    titleBarRect = newr.toCGRect();
-                }
-                QMacCGContext cg(p);
-                HIThemeDrawWindowFrame(&titleBarRect, &wdi, cg, kHIThemeOrientationNormal, 0);
-            } else {
-                // fill title bar background
-                QLinearGradient linearGrad(0, opt->rect.top(), 0, opt->rect.bottom());
-                linearGrad.setColorAt(0, mainWindowGradientBegin);
-                linearGrad.setColorAt(1, mainWindowGradientEnd);
-                p->fillRect(opt->rect, linearGrad);
-
-                // draw horizontal lines at top and bottom
-                p->save();
-                p->setPen(mainWindowGradientBegin.lighter(114));
-                p->drawLine(opt->rect.topLeft(), opt->rect.topRight());
-                p->setPen(mainWindowGradientEnd.darker(114));
-                p->drawLine(opt->rect.bottomLeft(), opt->rect.bottomRight());
-                p->restore();
+        if (const auto *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
+            const bool isVertical = dwOpt->verticalTitleBar;
+            const auto effectiveRect = isVertical ? opt->rect.transposed() : opt->rect;
+            p->save();
+            if (isVertical) {
+                p->translate(effectiveRect.left(), effectiveRect.top() + effectiveRect.width());
+                p->rotate(-90);
+                p->translate(-effectiveRect.left(), -effectiveRect.top());
             }
-        }
 
-        // Draw the text...
-        if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(opt)) {
+            // fill title bar background
+            QLinearGradient linearGrad;
+            linearGrad.setStart(QPointF(0, 0));
+            linearGrad.setFinalStop(QPointF(0, 2 * effectiveRect.height()));
+            linearGrad.setColorAt(0, opt->palette.button().color());
+            linearGrad.setColorAt(1, opt->palette.dark().color());
+            p->fillRect(effectiveRect, linearGrad);
+
+            // draw horizontal line at bottom
+            p->setPen(opt->palette.dark().color());
+            p->drawLine(effectiveRect.bottomLeft(), effectiveRect.bottomRight());
+
             if (!dwOpt->title.isEmpty()) {
+                auto titleRect = proxy()->subElementRect(SE_DockWidgetTitleBarText, opt, w);
+                if (isVertical)
+                    titleRect = QRect(effectiveRect.left() + opt->rect.bottom() - titleRect.bottom(),
+                                      effectiveRect.top() + titleRect.left() - opt->rect.left(),
+                                      titleRect.height(),
+                                      titleRect.width());
 
-                const bool verticalTitleBar = dwOpt->verticalTitleBar;
-
-                QRect titleRect = subElementRect(SE_DockWidgetTitleBarText, opt, w);
-                if (verticalTitleBar) {
-                    QRect rect = dwOpt->rect;
-                    QRect r = rect.transposed();
-
-                    titleRect = QRect(r.left() + rect.bottom()
-                                        - titleRect.bottom(),
-                                    r.top() + titleRect.left() - rect.left(),
-                                    titleRect.height(), titleRect.width());
-
-                    p->translate(r.left(), r.top() + r.width());
-                    p->rotate(-90);
-                    p->translate(-r.left(), -r.top());
-                }
-
-                QFont oldFont = p->font();
-                p->setFont(qt_app_fonts_hash()->value("QToolButton", p->font()));
-                QString text = p->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight,
-                    titleRect.width());
-                drawItemText(p, titleRect,
-                              Qt::AlignCenter | Qt::TextShowMnemonic, dwOpt->palette,
-                              dwOpt->state & State_Enabled, text,
-                              QPalette::WindowText);
-                p->setFont(oldFont);
+                const auto text = p->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight, titleRect.width());
+                proxy()->drawItemText(p, titleRect, Qt::AlignCenter | Qt::TextShowMnemonic, dwOpt->palette,
+                                      dwOpt->state & State_Enabled, text, QPalette::WindowText);
             }
+            p->restore();
         }
         break;
 #endif
@@ -4326,39 +4348,41 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // and then the combo inherits it and passes it onward. At that point the resolve mask
                 // is very, very weak. This makes it stonger.
                 myFont.setPointSizeF(QFontInfo(mi->font).pointSizeF());
-#if 0
-                // QTBUG-65653: This doesn't look good enough, especially on non-retina displays.
-                // Worked around below while waiting for a proper fix in QCoreTextFontEngine.
-                p->setFont(myFont);
-                p->drawText(xpos, yPos, mi->rect.width() - xm - tabwidth + 1,
-                            mi->rect.height(), text_flags, s);
-#else
-                QMacCGContext cgCtx(p);
-                d->setupNSGraphicsContext(cgCtx, YES);
 
-                // Respect the menu item palette as set in the style option.
-                const auto pc = p->pen().color();
-                NSColor *c = [NSColor colorWithSRGBRed:pc.redF()
-                                                 green:pc.greenF()
-                                                  blue:pc.blueF()
-                                                 alpha:pc.alphaF()];
-
-                // Respect the menu item action font as set in the style option.
+                // QTBUG-65653: Our own text rendering doesn't look good enough, especially on non-retina
+                // displays. Worked around here while waiting for a proper fix in QCoreTextFontEngine.
+                // Only if we're not using QCoreTextFontEngine we do fallback to our own text rendering.
                 const auto *fontEngine = QFontPrivate::get(myFont)->engineForScript(QChar::Script_Common);
                 Q_ASSERT(fontEngine);
                 if (fontEngine->type() == QFontEngine::Multi) {
                     fontEngine = static_cast<const QFontEngineMulti *>(fontEngine)->engine(0);
                     Q_ASSERT(fontEngine);
                 }
-                Q_ASSERT(fontEngine->type() == QFontEngine::Mac);
-                NSFont *f = (NSFont *)(CTFontRef)fontEngine->handle();
+                if (fontEngine->type() == QFontEngine::Mac) {
+                    NSFont *f = (NSFont *)(CTFontRef)fontEngine->handle();
 
-                s = qt_mac_removeMnemonics(s);
-                [s.toNSString() drawInRect:CGRectMake(xpos, yPos, mi->rect.width() - xm - tabwidth + 1, mi->rect.height())
-                            withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c }];
+                    // Respect the menu item palette as set in the style option.
+                    const auto pc = p->pen().color();
+                    NSColor *c = [NSColor colorWithSRGBRed:pc.redF()
+                                                     green:pc.greenF()
+                                                      blue:pc.blueF()
+                                                     alpha:pc.alphaF()];
 
-                d->restoreNSGraphicsContext(cgCtx);
-#endif
+                    s = qt_mac_removeMnemonics(s);
+                    const auto textRect = CGRectMake(xpos, yPos, mi->rect.width() - xm - tabwidth + 1, mi->rect.height());
+
+                    QMacCGContext cgCtx(p);
+                    d->setupNSGraphicsContext(cgCtx, YES);
+
+                    [s.toNSString() drawInRect:textRect
+                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c }];
+
+                    d->restoreNSGraphicsContext(cgCtx);
+                } else {
+                    p->setFont(myFont);
+                    p->drawText(xpos, yPos, mi->rect.width() - xm - tabwidth + 1,
+                                mi->rect.height(), text_flags, s);
+                }
             }
             p->restore();
         }
@@ -4543,28 +4567,22 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 #if QT_CONFIG(mainwindow)
             if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window())) {
                 if (toolBar && toolBar->toolBarArea == Qt::TopToolBarArea && mainWindow->unifiedTitleAndToolBarOnMac()) {
-
                     // fill with transparent pixels.
                     p->save();
                     p->setCompositionMode(QPainter::CompositionMode_Source);
                     p->fillRect(opt->rect, Qt::transparent);
                     p->restore();
 
-                    // Drow a horizontal sepearator line at the toolBar bottom if the "unified" area ends here.
+                    // Drow a horizontal separator line at the toolBar bottom if the "unified" area ends here.
                     // There might be additional toolbars or other widgets such as tab bars in document
                     // mode below. Determine this by making a unified toolbar area test for the row below
                     // this toolbar.
-                    QPoint windowToolbarEnd = w->mapTo(w->window(), opt->rect.bottomLeft());
-                    bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowToolbarEnd.y() + 1);
+                    const QPoint windowToolbarEnd = w->mapTo(w->window(), opt->rect.bottomLeft());
+                    const bool isEndOfUnifiedArea = !isInMacUnifiedToolbarArea(w->window()->windowHandle(), windowToolbarEnd.y() + 1);
                     if (isEndOfUnifiedArea) {
-                        int margin;
-                        margin = qt_mac_aqua_get_metric(SeparatorSize);
-                        CGRect separatorRect = CGRectMake(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
-                        HIThemeSeparatorDrawInfo separatorDrawInfo;
-                        separatorDrawInfo.version = 0;
-                        separatorDrawInfo.state = qt_macWindowMainWindow(mainWindow) ? kThemeStateActive : kThemeStateInactive;
-                        QMacCGContext cg(p);
-                        HIThemeDrawSeparator(&separatorRect, &separatorDrawInfo, cg, kHIThemeOrientationNormal);
+                        const int margin = qt_mac_aqua_get_metric(SeparatorSize);
+                        const auto separatorRect = QRect(opt->rect.left(), opt->rect.bottom(), opt->rect.width(), margin);
+                        p->fillRect(separatorRect, opt->palette.dark().color());
                     }
                     break;
                 }
@@ -5446,19 +5464,16 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             if (sb->frame && (sb->subControls & SC_SpinBoxFrame)) {
-                int frame_size;
-                frame_size = qt_mac_aqua_get_metric(EditTextFrameOutset);
-
-                QRect lineeditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget);
-                lineeditRect.adjust(-frame_size, -frame_size, +frame_size, +frame_size);
-
-                HIThemeFrameDrawInfo fdi;
-                fdi.version = qt_mac_hitheme_version;
-                fdi.state = tds == kThemeStateInactive ? kThemeStateActive : tds;
-                fdi.kind = kHIThemeFrameTextFieldSquare;
-                fdi.isFocused = false;
-                CGRect cgRect = lineeditRect.toCGRect();
-                HIThemeDrawFrame(&cgRect, &fdi, cg, kHIThemeOrientationNormal);
+                const auto lineEditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget);
+                QStyleOptionFrame frame;
+                static_cast<QStyleOption &>(frame) = *opt;
+                frame.rect = lineEditRect;
+                frame.state |= State_Sunken;
+                frame.lineWidth = 1;
+                frame.midLineWidth = 0;
+                frame.features = QStyleOptionFrame::None;
+                frame.frameShape = QFrame::Box;
+                drawPrimitive(PE_FrameLineEdit, &frame, p, widget);
             }
             if (sb->subControls & (SC_SpinBoxUp | SC_SpinBoxDown)) {
                 const QRect updown = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxUp, widget)
@@ -5476,7 +5491,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 const bool upPressed = sb->activeSubControls == SC_SpinBoxUp && (sb->state & State_Sunken);
                 const bool downPressed = sb->activeSubControls == SC_SpinBoxDown && (sb->state & State_Sunken);
                 const CGFloat x = CGRectGetMidX(newRect);
-                const CGFloat y = upPressed ? -3 : 3; // FIXME Weird coordinate shift going on
+                const CGFloat y = upPressed ? -3 : 3; // Weird coordinate shift going on. Verified with Hopper
                 const CGPoint pressPoint = CGPointMake(x, y);
                 // Pretend we're pressing the mouse on the right button. Unfortunately, NSStepperCell has no
                 // API to highlight a specific button. The highlighted property works only on the down button.
@@ -5513,115 +5528,74 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         }
         break;
     case CC_TitleBar:
-        if (const QStyleOptionTitleBar *titlebar
-                = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
-            if (titlebar->state & State_Active) {
-                if (titlebar->titleBarState & State_Active)
-                    tds = kThemeStateActive;
-                else
-                    tds = kThemeStateInactive;
+        if (const auto *titlebar = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
+            const bool isActive = (titlebar->state & State_Active)
+                               && (titlebar->titleBarState & State_Active);
+
+            p->fillRect(opt->rect, Qt::transparent);
+            p->setRenderHint(QPainter::Antialiasing);
+            p->setClipRect(opt->rect, Qt::IntersectClip);
+
+            // FIXME A single drawPath() with 0-sized pen
+            // doesn't look as good as this double fillPath().
+            const auto outterFrameRect = QRectF(opt->rect.adjusted(0, 0, 0, opt->rect.height()));
+            QPainterPath outterFramePath = d->windowPanelPath(outterFrameRect);
+            p->fillPath(outterFramePath, opt->palette.dark());
+
+            const auto frameAdjust = 1.0 / p->device()->devicePixelRatioF();
+            const auto innerFrameRect = outterFrameRect.adjusted(frameAdjust, frameAdjust, -frameAdjust, 0);
+            QPainterPath innerFramePath = d->windowPanelPath(innerFrameRect);
+            if (isActive) {
+                QLinearGradient g;
+                g.setStart(QPointF(0, 0));
+                g.setFinalStop(QPointF(0, 2 * opt->rect.height()));
+                g.setColorAt(0, opt->palette.button().color());
+                g.setColorAt(1, opt->palette.dark().color());
+                p->fillPath(innerFramePath, g);
             } else {
-                tds = kThemeStateInactive;
+                p->fillPath(innerFramePath, opt->palette.button());
             }
 
-            HIThemeWindowDrawInfo wdi;
-            wdi.version = qt_mac_hitheme_version;
-            wdi.state = tds;
-            wdi.windowType = QtWinType;
-            wdi.titleHeight = titlebar->rect.height();
-            wdi.titleWidth = titlebar->rect.width();
-            wdi.attributes = kThemeWindowHasTitleText;
-            // It seems HIThemeDrawTitleBarWidget is not able to draw a dirty
-            // close button, so use HIThemeDrawWindowFrame instead.
-            if (widget && widget->isWindowModified() && titlebar->subControls & SC_TitleBarCloseButton)
-                wdi.attributes |= kThemeWindowHasCloseBox | kThemeWindowHasDirty;
-
-            CGRect titleBarRect;
-            CGRect tmpRect = titlebar->rect.toCGRect();
-            {
-                QCFType<HIShapeRef> titleRegion;
-                QRect newr = titlebar->rect.adjusted(0, 0, 2, 0);
-                HIThemeGetWindowShape(&tmpRect, &wdi, kWindowTitleBarRgn, &titleRegion);
-                HIShapeGetBounds(titleRegion, &tmpRect);
-                newr.translate(newr.x() - int(tmpRect.origin.x), newr.y() - int(tmpRect.origin.y));
-                titleBarRect = newr.toCGRect();
-            }
-            HIThemeDrawWindowFrame(&titleBarRect, &wdi, cg, kHIThemeOrientationNormal, 0);
             if (titlebar->subControls & (SC_TitleBarCloseButton
                                          | SC_TitleBarMaxButton
                                          | SC_TitleBarMinButton
                                          | SC_TitleBarNormalButton)) {
-                HIThemeWindowWidgetDrawInfo wwdi;
-                wwdi.version = qt_mac_hitheme_version;
-                wwdi.widgetState = tds;
-                if (titlebar->state & State_MouseOver)
-                    wwdi.widgetState = kThemeStateRollover;
-                wwdi.windowType = QtWinType;
-                wwdi.attributes = wdi.attributes | kThemeWindowHasFullZoom | kThemeWindowHasCloseBox | kThemeWindowHasCollapseBox;
-                wwdi.windowState = wdi.state;
-                wwdi.titleHeight = wdi.titleHeight;
-                wwdi.titleWidth = wdi.titleWidth;
-                ThemeDrawState savedControlState = wwdi.widgetState;
-                uint sc = SC_TitleBarMinButton;
-                ThemeTitleBarWidget tbw = kThemeWidgetCollapseBox;
-                bool active = titlebar->state & State_Active;
+                const bool isHovered = (titlebar->state & State_MouseOver);
+                static const SubControl buttons[] = {
+                    SC_TitleBarCloseButton, SC_TitleBarMinButton, SC_TitleBarMaxButton
+                };
+                for (const auto sc : buttons) {
+                    const auto ct = d->windowButtonCocoaControl(sc);
+                    const auto cw = QMacStylePrivate::CocoaControl(ct, QStyleHelper::SizeLarge);
+                    auto *wb = static_cast<NSButton *>(d->cocoaControl(cw));
+                    wb.enabled = (sc & titlebar->subControls);
+                    [wb highlight:(titlebar->state & State_Sunken) && (sc & titlebar->activeSubControls)];
+                    Q_UNUSED(isHovered); // FIXME No public API for this
 
-                while (sc <= SC_TitleBarCloseButton) {
-                    if (sc & titlebar->subControls) {
-                        uint tmp = sc;
-                        wwdi.widgetState = savedControlState;
-                        wwdi.widgetType = tbw;
-                        if (sc == SC_TitleBarMinButton)
-                            tmp |= SC_TitleBarNormalButton;
-                        if (active && (titlebar->activeSubControls & tmp)
-                                && (titlebar->state & State_Sunken))
-                            wwdi.widgetState = kThemeStatePressed;
-                        // Draw all sub controllers except the dirty close button
-                        // (it is already handled by HIThemeDrawWindowFrame).
-                        if (!(widget && widget->isWindowModified() && tbw == kThemeWidgetCloseBox)) {
-                            HIThemeDrawTitleBarWidget(&titleBarRect, &wwdi, cg, kHIThemeOrientationNormal);
-                            p->paintEngine()->syncState();
-                        }
-                    }
-                    sc = sc << 1;
-                    tbw = tbw >> 1;
+                    const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titlebar, sc, widget);
+                    const auto drawBlock = ^ (CGContextRef ctx, const CGRect &rect) {
+                        Q_UNUSED(ctx);
+                        Q_UNUSED(rect);
+                        auto *wbCell = static_cast<NSButtonCell *>(wb.cell);
+                        [wbCell drawWithFrame:rect inView:wb];
+                    };
+                    d->drawNSViewInRect(cw, wb, buttonRect, p, widget != nullptr, drawBlock);
                 }
             }
-            p->paintEngine()->syncState();
+
             if (titlebar->subControls & SC_TitleBarLabel) {
-                int iw = 0;
+                const auto tr = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarLabel, widget);
                 if (!titlebar->icon.isNull()) {
-                    QCFType<HIShapeRef> titleRegion2;
-                    HIThemeGetWindowShape(&titleBarRect, &wdi, kWindowTitleProxyIconRgn,
-                                          &titleRegion2);
-                    HIShapeGetBounds(titleRegion2, &tmpRect);
-                    if (tmpRect.size.width != 1) {
-                        int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
-                        iw = titlebar->icon.actualSize(QSize(iconExtent, iconExtent)).width();
-                    }
+                    const auto iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+                    const auto iconSize = QSize(iconExtent, iconExtent);
+                    const auto iconPos = tr.x() - titlebar->icon.actualSize(iconSize).width() - qRound(titleBarIconTitleSpacing);
+                    // Only render the icon if it'll be fully visible
+                    if (iconPos < tr.right() - titleBarIconTitleSpacing)
+                        p->drawPixmap(iconPos, tr.y(), titlebar->icon.pixmap(window, iconSize, QIcon::Normal));
                 }
-                if (!titlebar->text.isEmpty()) {
-                    p->save();
-                    QCFType<HIShapeRef> titleRegion3;
-                    HIThemeGetWindowShape(&titleBarRect, &wdi, kWindowTitleTextRgn, &titleRegion3);
-                    HIShapeGetBounds(titleRegion3, &tmpRect);
-                    p->setClipRect(QRectF::fromCGRect(tmpRect).toRect());
-                    QRect br = p->clipRegion().boundingRect();
-                    int x = br.x(),
-                    y = br.y() + (titlebar->rect.height() / 2 - p->fontMetrics().height() / 2);
-                    if (br.width() <= (p->fontMetrics().horizontalAdvance(titlebar->text) + iw * 2))
-                        x += iw;
-                    else
-                        x += br.width() / 2 - p->fontMetrics().horizontalAdvance(titlebar->text) / 2;
-                    if (iw) {
-                        int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
-                        p->drawPixmap(x - iw, y,
-                                      titlebar->icon.pixmap(window, QSize(iconExtent, iconExtent), QIcon::Normal));
-                    }
-                    drawItemText(p, br, Qt::AlignCenter, opt->palette, tds == kThemeStateActive,
-                                    titlebar->text, QPalette::Text);
-                    p->restore();
-                }
+
+                if (!titlebar->text.isEmpty())
+                    drawItemText(p, tr, Qt::AlignCenter, opt->palette, isActive, titlebar->text, QPalette::Text);
             }
         }
         break;
@@ -5868,50 +5842,6 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
             }
         }
         break;
-/*
-    I don't know why, but we only get kWindowContentRgn here, which isn't what we want at all.
-    It would be very nice if this would work.
-    case QStyle::CC_TitleBar:
-        if (const QStyleOptionTitleBar *tbar = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
-            HIThemeWindowDrawInfo wdi;
-            memset(&wdi, 0, sizeof(wdi));
-            wdi.version = qt_mac_hitheme_version;
-            wdi.state = kThemeStateActive;
-            wdi.windowType = QtWinType;
-            wdi.titleWidth = tbar->rect.width();
-            wdi.titleHeight = tbar->rect.height();
-            if (tbar->titleBarState)
-                wdi.attributes |= kThemeWindowHasFullZoom | kThemeWindowHasCloseBox
-                                  | kThemeWindowHasCollapseBox;
-            else if (tbar->titleBarFlags & Qt::WindowSystemMenuHint)
-                wdi.attributes |= kThemeWindowHasCloseBox;
-            QRect tmpRect = tbar->rect;
-            tmpRect.setHeight(tmpRect.height() + 100);
-            CGRect cgRect = tmpRect.toCGRect();
-            WindowRegionCode hit;
-            CGPoint hipt = CGPointMake(pt.x(), pt.y());
-            if (HIThemeGetWindowRegionHit(&cgRect, &wdi, &hipt, &hit)) {
-                switch (hit) {
-                case kWindowCloseBoxRgn:
-                    sc = QStyle::SC_TitleBarCloseButton;
-                    break;
-                case kWindowCollapseBoxRgn:
-                    sc = QStyle::SC_TitleBarMinButton;
-                    break;
-                case kWindowZoomBoxRgn:
-                    sc = QStyle::SC_TitleBarMaxButton;
-                    break;
-                case kWindowTitleTextRgn:
-                    sc = QStyle::SC_TitleBarLabel;
-                    break;
-                default:
-                    qDebug("got something else %d", hit);
-                    break;
-                }
-            }
-        }
-        break;
-*/
     default:
         sc = QCommonStyle::hitTestComplexControl(cc, opt, pt, widget);
         break;
@@ -6005,49 +5935,47 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
         }
         break;
     case CC_TitleBar:
-        if (const QStyleOptionTitleBar *titlebar
-                = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
-            HIThemeWindowDrawInfo wdi;
-            memset(&wdi, 0, sizeof(wdi));
-            wdi.version = qt_mac_hitheme_version;
-            wdi.state = kThemeStateActive;
-            wdi.windowType = QtWinType;
-            wdi.titleHeight = titlebar->rect.height();
-            wdi.titleWidth = titlebar->rect.width();
-            wdi.attributes = kThemeWindowHasTitleText;
-            if (titlebar->subControls & SC_TitleBarCloseButton)
-                wdi.attributes |= kThemeWindowHasCloseBox;
-            if (titlebar->subControls & SC_TitleBarMaxButton
-                                        | SC_TitleBarNormalButton)
-                wdi.attributes |= kThemeWindowHasFullZoom;
-            if (titlebar->subControls & SC_TitleBarMinButton)
-                wdi.attributes |= kThemeWindowHasCollapseBox;
-            WindowRegionCode wrc = kWindowGlobalPortRgn;
+        if (const auto *titlebar = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
+            // The title bar layout is as follows: close, min, zoom, icon, title
+            //              [ x _ +    @ Window Title    ]
+            // Center the icon and title until it starts to overlap with the buttons.
+            // The icon doesn't count towards SC_TitleBarLabel, but it's still rendered
+            // next to the title text. See drawComplexControl().
+            if (sc == SC_TitleBarLabel) {
+                qreal labelWidth = titlebar->fontMetrics.horizontalAdvance(titlebar->text) + 1; // FIXME Rounding error?
+                qreal labelHeight = titlebar->fontMetrics.height();
 
-            if (sc == SC_TitleBarCloseButton)
-                wrc = kWindowCloseBoxRgn;
-            else if (sc == SC_TitleBarMinButton)
-                wrc = kWindowCollapseBoxRgn;
-            else if (sc == SC_TitleBarMaxButton)
-                wrc = kWindowZoomBoxRgn;
-            else if (sc == SC_TitleBarLabel)
-                wrc = kWindowTitleTextRgn;
-            else if (sc == SC_TitleBarSysMenu)
-                ret.setRect(-1024, -1024, 10, proxy()->pixelMetric(PM_TitleBarHeight,
-                                                             titlebar, widget));
-            if (wrc != kWindowGlobalPortRgn) {
-                QCFType<HIShapeRef> region;
-                QRect tmpRect = titlebar->rect;
-                CGRect titleRect = tmpRect.toCGRect();
-                HIThemeGetWindowShape(&titleRect, &wdi, kWindowTitleBarRgn, &region);
-                HIShapeGetBounds(region, &titleRect);
-                CFRelease(region);
-                tmpRect.translate(tmpRect.x() - int(titleRect.origin.x),
-                               tmpRect.y() - int(titleRect.origin.y));
-                titleRect = tmpRect.toCGRect();
-                HIThemeGetWindowShape(&titleRect, &wdi, wrc, &region);
-                HIShapeGetBounds(region, &titleRect);
-                ret = QRectF::fromCGRect(titleRect).toRect();
+                const auto lastButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarMaxButton, widget);
+                qreal controlsSpacing = lastButtonRect.right() + titleBarButtonSpacing;
+                if (!titlebar->icon.isNull()) {
+                    const auto iconSize = proxy()->pixelMetric(PM_SmallIconSize);
+                    const auto actualIconSize = titlebar->icon.actualSize(QSize(iconSize, iconSize)).width();;
+                    controlsSpacing += actualIconSize + titleBarIconTitleSpacing;
+                }
+
+                const qreal labelPos = qMax(controlsSpacing, (opt->rect.width() - labelWidth) / 2.0);
+                labelWidth = qMin(labelWidth, opt->rect.width() - (labelPos + titleBarTitleRightMargin));
+                ret = QRect(labelPos, (opt->rect.height() - labelHeight) / 2,
+                            labelWidth, labelHeight);
+            } else {
+                const auto currentButton = d->windowButtonCocoaControl(sc);
+                if (currentButton == QMacStylePrivate::NoControl)
+                    break;
+
+                QPointF buttonPos = titlebar->rect.topLeft() + QPointF(titleBarButtonSpacing, 0);
+                QSizeF buttonSize;
+                for (int ct = QMacStylePrivate::Button_WindowClose; ct <= currentButton; ct++) {
+                    const auto cw = QMacStylePrivate::CocoaControl(QMacStylePrivate::CocoaControlType(ct),
+                                                                   QStyleHelper::SizeLarge);
+                    auto *wb = static_cast<NSButton *>(d->cocoaControl(cw));
+                    if (ct == currentButton)
+                        buttonSize = QSizeF::fromCGSize(wb.frame.size);
+                    else
+                        buttonPos.rx() += wb.frame.size.width + titleBarButtonSpacing;
+                }
+
+                const auto vOffset = (opt->rect.height() - buttonSize.height()) / 2.0;
+                ret = QRectF(buttonPos, buttonSize).translated(0, vOffset).toRect();
             }
         }
         break;
@@ -6178,9 +6106,9 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spin = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             QStyleHelper::WidgetSizePolicy aquaSize = d->effectiveAquaSizeConstrain(spin, widget);
+            const auto fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
             int spinner_w;
             int spinBoxSep;
-            int fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
             switch (aquaSize) {
             case QStyleHelper::SizeLarge:
                 spinner_w = 14;
@@ -6243,16 +6171,11 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 break;
             }
             case SC_SpinBoxEditField:
-                if (spin->buttonSymbols == QAbstractSpinBox::NoButtons) {
-                    ret.setRect(fw, fw,
-                                spin->rect.width() - fw * 2,
-                                spin->rect.height() - fw * 2);
-                } else {
-                    ret.setRect(fw, fw,
-                                spin->rect.width() - fw * 2 - spinBoxSep - spinner_w,
-                                spin->rect.height() - fw * 2);
+                ret = spin->rect.adjusted(fw, fw, -fw, -fw);
+                if (spin->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                    ret.setWidth(spin->rect.width() - spinBoxSep - spinner_w);
+                    ret = visualRect(spin->direction, spin->rect, ret);
                 }
-                ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             default:
                 ret = QCommonStyle::subControlRect(cc, spin, sc, widget);
@@ -6289,10 +6212,8 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 #if QT_CONFIG(spinbox)
     case CT_SpinBox:
         if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            // Add button + frame widths
-            int buttonWidth = 20;
-            int fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, vopt, widget);
-            sz += QSize(buttonWidth + 2*fw, 2*fw - 3);
+            const int buttonWidth = 20; // FIXME Use subControlRect()
+            sz += QSize(buttonWidth, -3);
         }
         break;
 #endif
@@ -6635,24 +6556,14 @@ bool QMacStyle::event(QEvent *e)
             }
         }
 #endif
+
         if (focusWidget && focusWidget->testAttribute(Qt::WA_MacShowFocusRect)) {
-            f = focusWidget;
-            QWidget *top = f->parentWidget();
-            while (top && !top->isWindow() && !(top->windowType() == Qt::SubWindow))
-                top = top->parentWidget();
-#if QT_CONFIG(mainwindow)
-            if (qobject_cast<QMainWindow *>(top)) {
-                QWidget *central = static_cast<QMainWindow *>(top)->centralWidget();
-                for (const QWidget *par = f; par; par = par->parentWidget()) {
-                    if (par == central) {
-                        top = central;
-                        break;
-                    }
-                    if (par->isWindow())
-                        break;
-                }
-            }
+#if QT_CONFIG(spinbox)
+            if (const auto sb = qobject_cast<QAbstractSpinBox *>(focusWidget))
+                f = sb->property("_q_spinbox_lineedit").value<QWidget *>();
+            else
 #endif
+                f = focusWidget;
         }
         if (f) {
             if(!d->focusWidget)
