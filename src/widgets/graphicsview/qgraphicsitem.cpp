@@ -1134,19 +1134,26 @@ void QGraphicsItemPrivate::remapItemPos(QEvent *event, QGraphicsItem *item)
     is untransformable, this function will correctly map \a pos from the scene using the
     view's transformation.
 */
-QPointF QGraphicsItemPrivate::genericMapFromScene(const QPointF &pos,
-                                                  const QWidget *viewport) const
+
+QTransform QGraphicsItemPrivate::genericMapFromSceneTransform(const QWidget *viewport) const
 {
     Q_Q(const QGraphicsItem);
     if (!itemIsUntransformable())
-        return q->mapFromScene(pos);
-    QGraphicsView *view = 0;
-    if (viewport)
-        view = qobject_cast<QGraphicsView *>(viewport->parentWidget());
-    if (!view)
-        return q->mapFromScene(pos);
+       return sceneTransform.inverted();
+    const QGraphicsView *view = viewport
+        ? qobject_cast<QGraphicsView *>(viewport->parentWidget())
+        : nullptr;
+    if (view == nullptr)
+        return sceneTransform.inverted();
     // ### More ping pong than needed.
-    return q->deviceTransform(view->viewportTransform()).inverted().map(view->mapFromScene(pos));
+    const QTransform viewportTransform = view->viewportTransform();
+    return viewportTransform * q->deviceTransform(viewportTransform).inverted();
+}
+
+QPointF QGraphicsItemPrivate::genericMapFromScene(const QPointF &pos,
+                                                  const QWidget *viewport) const
+{
+    return genericMapFromSceneTransform(viewport).map(pos);
 }
 
 /*!
