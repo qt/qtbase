@@ -76,6 +76,7 @@ sub normalizePath {
 # set output basedir to be where ever syncqt is run from
 our $out_basedir = getcwd();
 normalizePath(\$out_basedir);
+our $build_basedir = $out_basedir;
 our $basedir;
 
 # Make sure we use Windows line endings for chomp and friends on Windows.
@@ -128,6 +129,7 @@ sub showUsage
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -minimal              Do not create CamelCase headers    (default: " . ($minimal ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
+    print "  -builddir <PATH>      Specify build directory for sync   (default: $build_basedir)\n";
     print "  -version <VERSION>    Specify the module's version       (default: detect from qglobal.h)\n";
     print "  -quiet                Only report problems, not activity (same as -verbose 0)\n";
     print "  -v, -verbose <level>  Sets the verbosity level (max. 4)  (default: $verbose_level)\n";
@@ -652,6 +654,7 @@ sub listSubdirs {
 sub loadSyncProfile {
     if ($verbose_level) {
         print("<srcbase> = $basedir \n");
+        print("<bldbase> = $build_basedir \n");
         print("<outbase> = $out_basedir \n");
     }
 
@@ -672,6 +675,7 @@ sub loadSyncProfile {
 sub basePrettify {
     my ($arg) = @_;
     $$arg =~ s,^\Q$basedir\E,<srcbase>,;
+    $$arg =~ s,^\Q$build_basedir\E,<bldbase>,;
     $$arg =~ s,^\Q$out_basedir\E,<outbase>,;
 }
 
@@ -724,7 +728,7 @@ sub globosort($$) {
 }
 
 # check if this is an in-source build, and if so use that as the basedir too
-$basedir = locateSyncProfile($out_basedir);
+$basedir = locateSyncProfile($build_basedir);
 if ($basedir) {
     $basedir = dirname($basedir) ;
     normalizePath(\$basedir);
@@ -748,6 +752,9 @@ while ( @ARGV ) {
         $val = "yes";
     } elsif($arg eq "-o" || $arg eq "-outdir") {
         $var = "output";
+        $val = shift @ARGV;
+    } elsif($arg eq "-builddir") {
+        $var = "build";
         $val = shift @ARGV;
     } elsif($arg eq "-showonly" || $arg eq "-remove-stale" || $arg eq "-windows" ||
             $arg eq "-relative" || $arg eq "-check-includes") {
@@ -875,6 +882,16 @@ while ( @ARGV ) {
             $out_basedir = $outdir;
         }
         normalizePath(\$out_basedir);
+    } elsif ($var eq "build") {
+        my $outdir = $val;
+        if (checkRelative($outdir)) {
+            $build_basedir = getcwd();
+            chomp $build_basedir;
+            $build_basedir .= "/" . $outdir;
+        } else {
+            $build_basedir = $outdir;
+        }
+        normalizePath(\$build_basedir);
     }
 }
 
@@ -939,7 +956,7 @@ foreach my $lib (@modules_to_sync) {
         for my $p (keys %inject_headers) {
             next unless ($p =~ /^\Q$dir\E(\/|$)/);
             my $sp = $p;
-            $sp =~ s,^\Q$basedir\E/,$out_basedir/,;
+            $sp =~ s,^\Q$basedir\E/,$build_basedir/,;
             for my $n (@{$inject_headers{$p}}) {
                 $injections{$sp."/".$n} = 1;
             }
@@ -1037,7 +1054,7 @@ foreach my $lib (@modules_to_sync) {
                         my $requires;
                         my $iheader_src = $subdir . "/" . $header;
                         my $iheader = $iheader_src;
-                        $iheader =~ s/^\Q$basedir\E/$out_basedir/ if ($shadow);
+                        $iheader =~ s/^\Q$basedir\E/$build_basedir/ if ($shadow);
                         if ($check_includes) {
                             # We need both $public_header and $private_header because QPA headers count as neither
                             my $private_header = !$public_header && !$qpa_header
