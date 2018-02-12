@@ -42,7 +42,7 @@
 #include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
 
-#ifndef QT_NO_SHORTCUT
+#if !defined(QT_NO_SHORTCUT) || defined(Q_CLANG_QDOC)
 
 #include "qdebug.h"
 #include <QtCore/qhashfunctions.h>
@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_MACX)
+#if defined(Q_OS_MACOS) || defined(Q_CLANG_QDOC)
 static bool qt_sequence_no_mnemonics = true;
 struct MacSpecialKey {
     int key;

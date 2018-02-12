@@ -5301,6 +5301,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_ComboBox_AllowWheelScrolling:
         ret = true;
         break;
+    case SH_SpinBox_ButtonsInsideFrame:
+        ret = true;
+        break;
     default:
         ret = 0;
         break;

@@ -653,6 +653,8 @@ void QDockWidgetPrivate::init()
     QObject::connect(button, SIGNAL(clicked()), q, SLOT(close()));
     layout->setWidgetForRole(QDockWidgetLayout::CloseButton, button);
 
+    font = QApplication::font("QDockWidgetTitle");
+
 #ifndef QT_NO_ACTION
     toggleViewAction = new QAction(q);
     toggleViewAction->setCheckable(true);
@@ -685,6 +687,7 @@ void QDockWidget::initStyleOption(QStyleOptionDockWidget *option) const
     // If we are in a floating tab, init from the parent because the attributes and the geometry
     // of the title bar should be taken from the floating window.
     option->initFrom(floatingTab && !isFloating() ? parentWidget() : this);
+    option->fontMetrics = QFontMetrics(d->font);
     option->rect = dwlayout->titleArea();
     option->title = d->fixedWindowTitle;
     option->closable = hasFeature(this, QDockWidget::DockWidgetClosable);
@@ -1481,6 +1484,7 @@ void QDockWidget::paintEvent(QPaintEvent *event)
         // the title may wish to extend out to all sides (eg. Vista style)
         QStyleOptionDockWidget titleOpt;
         initStyleOption(&titleOpt);
+        p.setFont(d_func()->font);
         p.drawControl(QStyle::CE_DockWidgetTitle, titleOpt);
     }
 }

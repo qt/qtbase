@@ -475,6 +475,25 @@ bool QPlatformWindow::startSystemResize(const QPoint &pos, Qt::Corner corner)
 }
 
 /*!
+    Reimplement this method to start a system move operation if
+    the system supports it and return true to indicate success.
+
+    The \a pos is a position of MouseButtonPress event or TouchBegin
+    event from a sequence of mouse events that triggered the movement.
+    It must be specified in window coordinates.
+
+    The default implementation is empty and does nothing with \a pos.
+
+    \since 5.11
+*/
+
+bool QPlatformWindow::startSystemMove(const QPoint &pos)
+{
+    Q_UNUSED(pos)
+    return false;
+}
+
+/*!
     Reimplement this method to set whether frame strut events
     should be sent to \a enabled.
 

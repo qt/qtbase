@@ -98,6 +98,15 @@ public:
         return func && func(screen, id, position);
     }
 
+    typedef bool (*Vsp2SetLayerAlphaType)(const QScreen *screen, int id, qreal alpha);
+    static QByteArray vsp2SetLayerAlphaTypeIdentifier() { return QByteArrayLiteral("EglFSVsp2SetLayerAlpha"); }
+
+    static bool vsp2SetLayerAlpha(const QScreen *screen, int id, qreal alpha)
+    {
+        auto func = reinterpret_cast<Vsp2SetLayerAlphaType>(QGuiApplication::platformFunction(vsp2SetLayerAlphaTypeIdentifier()));
+        return func && func(screen, id, alpha);
+    }
+
     typedef void (*Vsp2AddBlendListenerType)(const QScreen *screen, void(*callback)());
     static QByteArray vsp2AddBlendListenerTypeIdentifier() { return QByteArrayLiteral("EglFSVsp2AddBlendListener"); }
 

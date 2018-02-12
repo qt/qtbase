@@ -784,15 +784,15 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         }
 
         if (dev->qtTouchDevice->type() == QTouchDevice::TouchScreen &&
-            xiDeviceEvent->event == m_startSystemResizeInfo.window &&
-            xiDeviceEvent->sourceid == m_startSystemResizeInfo.deviceid &&
-            xiDeviceEvent->detail == m_startSystemResizeInfo.pointid) {
-            QXcbWindow *window = platformWindowFromId(m_startSystemResizeInfo.window);
+            xiDeviceEvent->event == m_startSystemMoveResizeInfo.window &&
+            xiDeviceEvent->sourceid == m_startSystemMoveResizeInfo.deviceid &&
+            xiDeviceEvent->detail == m_startSystemMoveResizeInfo.pointid) {
+            QXcbWindow *window = platformWindowFromId(m_startSystemMoveResizeInfo.window);
             if (window) {
                 XIAllowTouchEvents(static_cast<Display *>(m_xlib_display), xiDeviceEvent->deviceid,
                                    xiDeviceEvent->detail, xiDeviceEvent->event, XIRejectTouch);
-                window->doStartSystemResize(QPoint(x, y), m_startSystemResizeInfo.corner);
-                m_startSystemResizeInfo.window = XCB_NONE;
+                window->doStartSystemMoveResize(QPoint(x, y), m_startSystemMoveResizeInfo.corner);
+                m_startSystemMoveResizeInfo.window = XCB_NONE;
             }
         }
         break;
@@ -825,7 +825,7 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
         touchPoint.state = Qt::TouchPointStationary;
 }
 
-bool QXcbConnection::startSystemResizeForTouchBegin(xcb_window_t window, const QPoint &point, Qt::Corner corner)
+bool QXcbConnection::startSystemMoveResizeForTouchBegin(xcb_window_t window, const QPoint &point, int corner)
 {
     QHash<int, TouchDeviceData>::const_iterator devIt = m_touchDevices.constBegin();
     for (; devIt != m_touchDevices.constEnd(); ++devIt) {
@@ -834,10 +834,10 @@ bool QXcbConnection::startSystemResizeForTouchBegin(xcb_window_t window, const Q
             QHash<int, QPointF>::const_iterator pointIt = deviceData.pointPressedPosition.constBegin();
             for (; pointIt != deviceData.pointPressedPosition.constEnd(); ++pointIt) {
                 if (pointIt.value().toPoint() == point) {
-                    m_startSystemResizeInfo.window = window;
-                    m_startSystemResizeInfo.deviceid = devIt.key();
-                    m_startSystemResizeInfo.pointid = pointIt.key();
-                    m_startSystemResizeInfo.corner = corner;
+                    m_startSystemMoveResizeInfo.window = window;
+                    m_startSystemMoveResizeInfo.deviceid = devIt.key();
+                    m_startSystemMoveResizeInfo.pointid = pointIt.key();
+                    m_startSystemMoveResizeInfo.corner = corner;
                     return true;
                 }
             }

@@ -520,7 +520,7 @@ public:
     void xi2UpdateScrollingDevices();
 #endif
 #ifdef XCB_USE_XINPUT22
-    bool startSystemResizeForTouchBegin(xcb_window_t window, const QPoint &point, Qt::Corner corner);
+    bool startSystemMoveResizeForTouchBegin(xcb_window_t window, const QPoint &point, int corner);
     bool isTouchScreen(int id);
 #endif
 #endif
@@ -673,12 +673,12 @@ private:
 #if QT_CONFIG(xinput2)
     QHash<int, TouchDeviceData> m_touchDevices;
 #ifdef XCB_USE_XINPUT22
-    struct StartSystemResizeInfo {
+    struct StartSystemMoveResizeInfo {
         xcb_window_t window = XCB_NONE;
         uint16_t deviceid;
         uint32_t pointid;
-        Qt::Corner corner;
-    } m_startSystemResizeInfo;
+        int corner;
+    } m_startSystemMoveResizeInfo;
 #endif
 #endif
     WindowMapper m_mapper;

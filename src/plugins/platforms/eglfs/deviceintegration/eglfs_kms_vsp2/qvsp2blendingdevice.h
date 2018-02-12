@@ -59,6 +59,7 @@ public:
     bool disableInput(int i);
     bool setInputBuffer(int index, int dmabufFd);
     bool setInputPosition(int index, const QPoint &position);
+    bool setInputAlpha(int index, qreal alpha);
     bool blend(int outputDmabufFd);
     int numInputs() const;
     bool isDirty() const { return m_dirty; }
@@ -71,6 +72,7 @@ private:
     struct Input {
         bool enabled = false;
         QRect geometry;
+        qreal alpha = 1;
         struct {
             int fd = -1;
             uint bytesUsed = 0;
@@ -79,6 +81,7 @@ private:
         struct media_link *linkToBru = nullptr; //rpf.x:1 -> bru:x
         struct media_pad *inputFormatPad = nullptr; // rpf.x:0
         struct media_pad *outputFormatPad = nullptr; // rpf.x:1
+        int outputFormatFd = -1; // rpf.x:1 (again, because v4l2_subdev_* doesn't have a way to set alpha)
         struct media_pad *bruInputFormatPad = nullptr; // bru:x
         QLinuxMediaDevice::OutputSubDevice *rpfInput = nullptr; // rpf.x input
     };
