@@ -11,7 +11,7 @@ qtConfig(tslib) {
     SUBDIRS += tslib
 }
 
-qtConfig(udpsocket) {
+qtHaveModule(network):qtConfig(udpsocket) {
     SUBDIRS += tuiotouch
 }
 
