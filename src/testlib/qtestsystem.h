@@ -74,10 +74,8 @@ namespace QTest
             QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 
             remaining = deadline.remainingTime();
-            if (remaining > 0) {
+            if (remaining > 0)
                 QTest::qSleep(qMin(10, remaining));
-                remaining = deadline.remainingTime();
-            }
 
             if (predicate())
                 return true;
