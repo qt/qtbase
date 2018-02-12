@@ -32,12 +32,12 @@ Copyright (c) 2003, 2006 Massachusetts Institute of Technology"
         "Id": "linuxperf",
         "Name": "Linux Performance Events",
         "QDocModule": "qttestlib",
-        "QtUsage": "Used on Linux and Android in the Qt Test module.",
+        "QtUsage": "Used on Linux and Android in the Qt Test module. Note that this is a copy of the respective Linux header, and the clarifications of the Linux Syscall Note apply.",
         "Files": "linux_perf_event_p.h",
 
         "Description": "Allows access to the Linux kernel's performance events.",
-        "License": "GNU General Public License v2.0 only",
-        "LicenseId": "GPL-2.0",
+        "License": "GNU General Public License v2.0 only with Linux Syscall Note",
+        "LicenseId": "GPL-2.0 WITH Linux-syscall-note",
         "LicenseFile": "LINUX_LICENSE.txt",
         "Copyright": "Copyright (C) 2008-2009, Thomas Gleixner <tglx@linutronix.de>
 Copyright (C) 2008-2011, Red Hat, Inc., Ingo Molnar
