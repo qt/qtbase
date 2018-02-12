@@ -647,17 +647,15 @@ sub listSubdirs {
 ######################################################################
 # Syntax:  loadSyncProfile()
 #
-# Purpose: Locates the sync.profile.
-# Returns: Hashmap of module name -> directory.
+# Purpose: Loads the sync.profile.
 ######################################################################
 sub loadSyncProfile {
-    my ($srcbase, $outbase) = @_;
     if ($verbose_level) {
-        print("<srcbase> = $$srcbase \n");
-        print("<outbase> = $$outbase \n");
+        print("<srcbase> = $basedir \n");
+        print("<outbase> = $out_basedir \n");
     }
 
-    my $syncprofile = "$$srcbase/sync.profile";
+    my $syncprofile = "$basedir/sync.profile";
     my $result;
     unless ($result = do "$syncprofile") {
         die "syncqt couldn't parse $syncprofile: $@" if $@;
@@ -669,8 +667,6 @@ sub loadSyncProfile {
             $reverse_classnames{$cn} = $fn;
         }
     }
-
-    return $result;
 }
 
 sub basePrettify {
@@ -685,6 +681,11 @@ sub cleanPath {
     return $arg;
 }
 
+######################################################################
+# Syntax:  locateSyncProfile()
+#
+# Purpose: Locates the sync.profile.
+######################################################################
 sub locateSyncProfile
 {
     my ($directory) = @_;
@@ -889,7 +890,7 @@ our @ignore_for_qt_module_check = ();
 our %inject_headers = ();
 
 # load the module's sync.profile here, before we can
-loadSyncProfile(\$basedir, \$out_basedir);
+loadSyncProfile();
 
 @modules_to_sync = keys(%modules) if($#modules_to_sync == -1);
 
