@@ -77,7 +77,6 @@ sub normalizePath {
 our $out_basedir = getcwd();
 normalizePath(\$out_basedir);
 our $basedir;
-our $quoted_basedir;
 
 # Make sure we use Windows line endings for chomp and friends on Windows.
 $INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
@@ -728,7 +727,6 @@ $basedir = locateSyncProfile($out_basedir);
 if ($basedir) {
     $basedir = dirname($basedir) ;
     normalizePath(\$basedir);
-    $quoted_basedir = "\Q$basedir";
 }
 
 # --------------------------------------------------------------------
@@ -796,7 +794,6 @@ while ( @ARGV ) {
         die "Could not find a sync.profile for '$arg'\n" if (!$basedir);
         $basedir = dirname($basedir);
         normalizePath(\$basedir);
-        $quoted_basedir = "\Q$basedir";
         $var = "ignore";
     }
 
