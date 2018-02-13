@@ -538,29 +538,10 @@ void QCoreApplicationPrivate::cleanupThreadData()
 void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
-#if defined(Q_OS_UNIX)
-#  if defined(Q_OS_DARWIN)
-    bool ok = false;
-    int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
-    if (ok && value > 0)
-        eventDispatcher = new QEventDispatcherCoreFoundation(q);
-    else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  elif !defined(QT_NO_GLIB)
-    if (qEnvironmentVariableIsEmpty("QT_NO_GLIB") && QEventDispatcherGlib::versionSupported())
-        eventDispatcher = new QEventDispatcherGlib(q);
-    else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  else
-        eventDispatcher = new QEventDispatcherUNIX(q);
-#  endif
-#elif defined(Q_OS_WINRT)
-    eventDispatcher = new QEventDispatcherWinRT(q);
-#elif defined(Q_OS_WIN)
-    eventDispatcher = new QEventDispatcherWin32(q);
-#else
-#  error "QEventDispatcher not yet ported to this platform"
-#endif
+    QThreadData *data = QThreadData::current();
+    Q_ASSERT(!data->hasEventDispatcher());
+    eventDispatcher = QThreadPrivate::createEventDispatcher(data);
+    eventDispatcher->setParent(q);
 }
 
 void QCoreApplicationPrivate::eventDispatcherReady()

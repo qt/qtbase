@@ -296,8 +296,9 @@ QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *dat
     else
         return new QEventDispatcherUNIX;
 #elif !defined(QT_NO_GLIB)
+    const bool isQtMainThread = data->thread == QCoreApplicationPrivate::mainThread();
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
-        && qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")
+        && (isQtMainThread || qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB"))
         && QEventDispatcherGlib::versionSupported())
         return new QEventDispatcherGlib;
     else
