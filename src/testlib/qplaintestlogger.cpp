@@ -223,38 +223,47 @@ void QPlainTestLogger::outputMessage(const char *str)
     outputString(str);
 }
 
+static QTestCharBuffer testIdentifier()
+{
+    QTestCharBuffer identifier;
+
+    const char *testObject = QTestResult::currentTestObjectName();
+    const char *testFunction = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction() : "UnknownTestFunc";
+
+    const char *dataTag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
+    const char *globalDataTag = QTestResult::currentGlobalDataTag() ? QTestResult::currentGlobalDataTag() : "";
+    const char *tagFiller = (dataTag[0] && globalDataTag[0]) ? ":" : "";
+
+    QTest::qt_asprintf(&identifier, "%s::%s(%s%s%s)", testObject, testFunction, globalDataTag, tagFiller, dataTag);
+    return identifier;
+}
+
 void QPlainTestLogger::printMessage(const char *type, const char *msg, const char *file, int line)
 {
     QTEST_ASSERT(type);
     QTEST_ASSERT(msg);
 
-    QTestCharBuffer buf;
+    QTestCharBuffer messagePrefix;
 
-    const char *fn = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction()
-        : "UnknownTestFunc";
-    const char *tag = QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
-    const char *gtag = QTestResult::currentGlobalDataTag()
-                     ? QTestResult::currentGlobalDataTag()
-                     : "";
-    const char *filler = (tag[0] && gtag[0]) ? ":" : "";
+    QTestCharBuffer failureLocation;
     if (file) {
-        QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n"
 #ifdef Q_OS_WIN
-                      "%s(%d) : failure location\n"
+#define FAILURE_LOCATION_STR "\n%s(%d) : failure location"
 #else
-                      "   Loc: [%s(%d)]\n"
+#define FAILURE_LOCATION_STR "\n   Loc: [%s(%d)]"
 #endif
-                      , type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
-                      msg[0] ? " " : "", msg, file, line);
-    } else {
-        QTest::qt_asprintf(&buf, "%s: %s::%s(%s%s%s)%s%s\n",
-                type, QTestResult::currentTestObjectName(), fn, gtag, filler, tag,
-                msg[0] ? " " : "", msg);
+        QTest::qt_asprintf(&failureLocation, FAILURE_LOCATION_STR, file, line);
     }
+
+    const char *msgFiller = msg[0] ? " " : "";
+    QTest::qt_asprintf(&messagePrefix, "%s: %s%s%s%s\n",
+            type, testIdentifier().data(), msgFiller, msg, failureLocation.data());
+
     // In colored mode, printf above stripped our nonprintable control characters.
     // Put them back.
-    memcpy(buf.data(), type, strlen(type));
-    outputMessage(buf.data());
+    memcpy(messagePrefix.data(), type, strlen(type));
+
+    outputMessage(messagePrefix.data());
 }
 
 void QPlainTestLogger::printBenchmarkResult(const QBenchmarkResult &result)

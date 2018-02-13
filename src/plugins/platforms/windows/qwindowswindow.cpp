@@ -2277,6 +2277,16 @@ bool QWindowsWindow::startSystemResize(const QPoint &, Qt::Corner corner)
     return true;
 }
 
+bool QWindowsWindow::startSystemMove(const QPoint &)
+{
+    if (!GetSystemMenu(m_data.hwnd, FALSE))
+        return false;
+
+    ReleaseCapture();
+    PostMessage(m_data.hwnd, WM_SYSCOMMAND, 0xF012 /*SC_DRAGMOVE*/, 0);
+    return true;
+}
+
 void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
 {
     if (enabled) {

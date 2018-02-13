@@ -921,6 +921,7 @@ public class QtActivityDelegate
     public void onTerminate()
     {
         QtNative.terminateQt();
+        QtNative.m_qtThread.exit();
     }
 
     public void onCreate(Bundle savedInstanceState)
@@ -1076,7 +1077,8 @@ public class QtActivityDelegate
             QtNative.setActivity(null, null);
             if (m_debuggerProcess != null)
                 m_debuggerProcess.destroy();
-            System.exit(0);// FIXME remove it or find a better way
+            QtNative.m_qtThread.exit();
+            System.exit(0);
         }
     }
 

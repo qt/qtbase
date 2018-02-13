@@ -1158,7 +1158,7 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
         // rect as a real expose event (including going from non-exposed to
         // exposed). FIXME: Should this logic live in QGuiApplication?
         if (isExposed() && m_exposedRect == previouslyExposedRect) {
-            qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
+            qCDebug(lcQpaCocoaDrawing) << "QCocoaWindow::handleExposeEvent" << window() << region << "as update request";
             windowPrivate->deliverUpdateRequest();
             return;
         } else {
@@ -1168,7 +1168,7 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
         }
     }
 
-    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
+    qCDebug(lcQpaCocoaDrawing) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), region);
 }
 
@@ -1341,7 +1341,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 
 void QCocoaWindow::requestUpdate()
 {
-    qCDebug(lcQpaCocoaWindow) << "QCocoaWindow::requestUpdate" << window();
+    qCDebug(lcQpaCocoaDrawing) << "QCocoaWindow::requestUpdate" << window();
     [m_view setNeedsDisplay:YES];
 }
 

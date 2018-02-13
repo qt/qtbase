@@ -98,6 +98,7 @@ public class QtNative
     private static ClipboardManager m_clipboardManager = null;
     private static Method m_checkSelfPermissionMethod = null;
     private static Boolean m_tabletEventSupported = null;
+    public static QtThread m_qtThread = new QtThread();
     private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {
         @Override
         public void run() {
@@ -164,55 +165,64 @@ public class QtNative
     }
 
     // this method loads full path libs
-    public static void loadQtLibraries(ArrayList<String> libraries)
+    public static void loadQtLibraries(final ArrayList<String> libraries)
     {
-        if (libraries == null)
-            return;
-
-        for (String libName : libraries) {
-            try {
-                File f = new File(libName);
-                if (f.exists())
-                    System.load(libName);
-            } catch (SecurityException e) {
-                Log.i(QtTAG, "Can't load '" + libName + "'", e);
-            } catch (Exception e) {
-                Log.i(QtTAG, "Can't load '" + libName + "'", e);
+        m_qtThread.run(new Runnable() {
+            @Override
+            public void run() {
+                if (libraries == null)
+                    return;
+                for (String libName : libraries) {
+                    try {
+                        File f = new File(libName);
+                        if (f.exists())
+                            System.load(libName);
+                    } catch (SecurityException e) {
+                        Log.i(QtTAG, "Can't load '" + libName + "'", e);
+                    } catch (Exception e) {
+                        Log.i(QtTAG, "Can't load '" + libName + "'", e);
+                    }
+                }
             }
-        }
+        });
     }
 
     // this method loads bundled libs by name.
-    public static void loadBundledLibraries(ArrayList<String> libraries, String nativeLibraryDir)
+    public static void loadBundledLibraries(final ArrayList<String> libraries, final String nativeLibraryDir)
     {
-        if (libraries == null)
-            return;
+        m_qtThread.run(new Runnable() {
+            @Override
+            public void run() {
+                if (libraries == null)
+                    return;
 
-        for (String libName : libraries) {
-            try {
-                String libNameTemplate = "lib" + libName + ".so";
-                File f = new File(nativeLibraryDir + libNameTemplate);
-                if (!f.exists()) {
-                    Log.i(QtTAG, "Can't find '" + f.getAbsolutePath());
+                for (String libName : libraries) {
                     try {
-                        ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(),
-                                                                                   PackageManager.GET_META_DATA);
-                        String systemLibraryDir = QtNativeLibrariesDir.systemLibrariesDir;
-                        if (info.metaData.containsKey("android.app.system_libs_prefix"))
-                            systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
-                        f = new File(systemLibraryDir + libNameTemplate);
-                    } catch (Exception e) {
+                        String libNameTemplate = "lib" + libName + ".so";
+                        File f = new File(nativeLibraryDir + libNameTemplate);
+                        if (!f.exists()) {
+                            Log.i(QtTAG, "Can't find '" + f.getAbsolutePath());
+                            try {
+                                ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(),
+                                                                                           PackageManager.GET_META_DATA);
+                                String systemLibraryDir = QtNativeLibrariesDir.systemLibrariesDir;
+                                if (info.metaData.containsKey("android.app.system_libs_prefix"))
+                                    systemLibraryDir = info.metaData.getString("android.app.system_libs_prefix");
+                                f = new File(systemLibraryDir + libNameTemplate);
+                            } catch (Exception e) {
 
+                            }
+                        }
+                        if (f.exists())
+                            System.load(f.getAbsolutePath());
+                        else
+                            Log.i(QtTAG, "Can't find '" + f.getAbsolutePath());
+                    } catch (Exception e) {
+                        Log.i(QtTAG, "Can't load '" + libName + "'", e);
                     }
                 }
-                if (f.exists())
-                    System.load(f.getAbsolutePath());
-                else
-                    Log.i(QtTAG, "Can't find '" + f.getAbsolutePath());
-            } catch (Exception e) {
-                Log.i(QtTAG, "Can't load '" + libName + "'", e);
             }
-        }
+        });
     }
 
     public static void setActivity(Activity qtMainActivity, QtActivityDelegate qtActivityDelegate)
@@ -293,7 +303,7 @@ public class QtNative
     }
 
     public static boolean startApplication(String params,
-                                           String environment,
+                                           final String environment,
                                            String mainLibrary,
                                            String nativeLibraryDir) throws Exception
     {
@@ -317,23 +327,42 @@ public class QtNative
         if (params == null)
             params = "-platform\tandroid";
 
-        boolean res = false;
+        final String mainLibraryPath = f.getAbsolutePath();
+        final boolean[] res = new boolean[1];
+        res[0] = false;
         synchronized (m_mainActivityMutex) {
-            res = startQtAndroidPlugin();
-            setDisplayMetrics(m_displayMetricsScreenWidthPixels,
-                              m_displayMetricsScreenHeightPixels,
-                              m_displayMetricsDesktopWidthPixels,
-                              m_displayMetricsDesktopHeightPixels,
-                              m_displayMetricsXDpi,
-                              m_displayMetricsYDpi,
-                              m_displayMetricsScaledDensity,
-                              m_displayMetricsDensity);
             if (params.length() > 0 && !params.startsWith("\t"))
                 params = "\t" + params;
-            startQtApplication(f.getAbsolutePath() + params, environment);
+            final String qtParams = f.getAbsolutePath() + params;
+            m_qtThread.run(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        System.load(mainLibraryPath);
+                    } catch (Exception e) {
+                        Log.i(QtTAG, "Can't load '" + mainLibraryPath + "'", e);
+                    }
+                    res[0] = startQtAndroidPlugin(qtParams, environment);
+                    setDisplayMetrics(m_displayMetricsScreenWidthPixels,
+                                      m_displayMetricsScreenHeightPixels,
+                                      m_displayMetricsDesktopWidthPixels,
+                                      m_displayMetricsDesktopHeightPixels,
+                                      m_displayMetricsXDpi,
+                                      m_displayMetricsYDpi,
+                                      m_displayMetricsScaledDensity,
+                                      m_displayMetricsDensity);
+                }
+            });
+            m_qtThread.post(new Runnable() {
+                @Override
+                public void run() {
+                    startQtApplication();
+                }
+            });
+            waitForServiceSetup();
             m_started = true;
         }
-        return res;
+        return res[0];
     }
 
     public static void setApplicationDisplayMetrics(int screenWidthPixels,
@@ -377,8 +406,9 @@ public class QtNative
 
 
     // application methods
-    public static native void startQtApplication(String params, String env);
-    public static native boolean startQtAndroidPlugin();
+    public static native boolean startQtAndroidPlugin(String params, String env);
+    public static native void startQtApplication();
+    public static native void waitForServiceSetup();
     public static native void quitQtCoreApplication();
     public static native void quitQtAndroidPlugin();
     public static native void terminateQt();

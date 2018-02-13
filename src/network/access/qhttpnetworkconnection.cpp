@@ -646,8 +646,8 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
 
 #ifndef Q_OS_WINRT
     // For Happy Eyeballs the networkLayerState is set to Unknown
-    // untill we have started the first connection attempt. So no
-    // request will be started untill we know if IPv4 or IPv6
+    // until we have started the first connection attempt. So no
+    // request will be started until we know if IPv4 or IPv6
     // should be used.
     if (networkLayerState == Unknown || networkLayerState == HostLookupPending) {
         startHostInfoLookup();

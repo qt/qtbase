@@ -103,7 +103,7 @@
    to catch an exception thrown from the \a expression. If the \a expression
    throws an exception and its type is the same as \a exceptiontype
    or \a exceptiontype is substitutable with the type of thrown exception
-   (i.e. usually the type of thrown exception is publically derived
+   (i.e. usually the type of thrown exception is publicly derived
    from \a exceptiontype) then execution will be continued. If not-substitutable
    type of exception is thrown or the \a expression doesn't throw an exception
    at all, then a failure will be recorded in the test log and

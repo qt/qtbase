@@ -47,6 +47,7 @@
 #endif
 #include "qwinrtwindow.h"
 #include <private/qeventdispatcher_winrt_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QtCore/QLoggingCategory>
 #include <QtGui/QSurfaceFormat>
@@ -487,7 +488,8 @@ public:
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
     QAtomicPointer<QWinRTWindow> mouseGrabWindow;
     QAtomicPointer<QWinRTWindow> keyboardGrabWindow;
-    QWindow *currentPressWindow = 0;
+    QWindow *currentPressWindow = nullptr;
+    QWindow *currentTargetWindow = nullptr;
 };
 
 // To be called from the XAML thread
@@ -1081,11 +1083,11 @@ HRESULT QWinRTScreen::onPointerEntered(ICoreWindow *, IPointerEventArgs *args)
         pointerPoint->get_Position(&point);
         QPoint pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
 
-        QWindow *targetWindow = topWindow();
+        d->currentTargetWindow = topWindow();
         if (d->mouseGrabWindow)
-            targetWindow = d->mouseGrabWindow.load()->window();
+            d->currentTargetWindow = d->mouseGrabWindow.load()->window();
 
-        QWindowSystemInterface::handleEnterEvent(targetWindow, pos, pos);
+        QWindowSystemInterface::handleEnterEvent(d->currentTargetWindow, pos, pos);
     }
     return S_OK;
 }
@@ -1104,11 +1106,11 @@ HRESULT QWinRTScreen::onPointerExited(ICoreWindow *, IPointerEventArgs *args)
 
     d->touchPoints.remove(id);
 
-    QWindow *targetWindow = nullptr;
     if (d->mouseGrabWindow)
-        targetWindow = d->mouseGrabWindow.load()->window();
+        d->currentTargetWindow = d->mouseGrabWindow.load()->window();
 
-    QWindowSystemInterface::handleLeaveEvent(targetWindow);
+    QWindowSystemInterface::handleLeaveEvent(d->currentTargetWindow);
+    d->currentTargetWindow = nullptr;
     return S_OK;
 }
 
@@ -1126,19 +1128,19 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
     // Common traits - point, modifiers, properties
     Point point;
     pointerPoint->get_Position(&point);
-    QPointF pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
+    const QPointF pos(point.X * d->scaleFactor, point.Y * d->scaleFactor);
     QPointF localPos = pos;
 
     const QPoint posPoint = pos.toPoint();
-    QWindow *windowUnderPointer = windowAt(posPoint);
-    QWindow *targetWindow = windowUnderPointer;
+    QWindow *windowUnderPointer = windowAt(QHighDpiScaling::mapPositionFromNative(posPoint, this));
+    d->currentTargetWindow = windowUnderPointer;
 
     if (d->mouseGrabWindow)
-        targetWindow = d->mouseGrabWindow.load()->window();
+        d->currentTargetWindow = d->mouseGrabWindow.load()->window();
 
-    if (targetWindow) {
+    if (d->currentTargetWindow) {
         const QPointF globalPosDelta = pos - posPoint;
-        localPos = targetWindow->mapFromGlobal(posPoint) + globalPosDelta;
+        localPos = d->currentTargetWindow->mapFromGlobal(posPoint) + globalPosDelta;
     }
 
     VirtualKeyModifiers modifiers;
@@ -1173,7 +1175,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
             boolean isHorizontal;
             properties->get_IsHorizontalMouseWheel(&isHorizontal);
             QPoint angleDelta(isHorizontal ? delta : 0, isHorizontal ? 0 : delta);
-            QWindowSystemInterface::handleWheelEvent(targetWindow, localPos, pos, QPoint(), angleDelta, mods);
+            QWindowSystemInterface::handleWheelEvent(d->currentTargetWindow, localPos, pos, QPoint(), angleDelta, mods);
             break;
         }
 
@@ -1207,15 +1209,22 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         // menus.
         if (buttons != Qt::NoButton && d->currentPressWindow == nullptr && !d->mouseGrabWindow)
             d->currentPressWindow = windowUnderPointer;
-        if (!isPressed && d->currentPressWindow && d->mouseGrabWindow) {
+        if (buttons == Qt::NoButton && d->currentPressWindow && d->mouseGrabWindow) {
             const QPointF globalPosDelta = pos - posPoint;
             const QPointF localPressPos = d->currentPressWindow->mapFromGlobal(posPoint) + globalPosDelta;
 
             QWindowSystemInterface::handleMouseEvent(d->currentPressWindow, localPressPos, pos, buttons, mods);
             d->currentPressWindow = nullptr;
         }
+        // If the mouse button is released outside of a window, targetWindow is 0, but the event
+        // has to be delivered to the window, that initially received the mouse press. Do not reset
+        // d->currentTargetWindow though, as it is used (and reset) in onPointerExited.
+        if (buttons == Qt::NoButton && d->currentPressWindow && !d->currentTargetWindow) {
+            d->currentTargetWindow = d->currentPressWindow;
+            d->currentPressWindow = nullptr;
+        }
 
-        QWindowSystemInterface::handleMouseEvent(targetWindow, localPos, pos, buttons, mods);
+        QWindowSystemInterface::handleMouseEvent(d->currentTargetWindow, localPos, pos, buttons, mods);
 
         break;
     }
@@ -1269,7 +1278,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         it.value().normalPosition = QPointF(point.X/d->logicalRect.width(), point.Y/d->logicalRect.height());
         it.value().pressure = pressure;
 
-        QWindowSystemInterface::handleTouchEvent(targetWindow, d->touchDevice, d->touchPoints.values(), mods);
+        QWindowSystemInterface::handleTouchEvent(d->currentTargetWindow, d->touchDevice, d->touchPoints.values(), mods);
 
         // Fall-through for pen to generate tablet event
         if (pointerDeviceType != PointerDeviceType_Pen)
@@ -1288,7 +1297,7 @@ HRESULT QWinRTScreen::onPointerUpdated(ICoreWindow *, IPointerEventArgs *args)
         float rotation;
         properties->get_Twist(&rotation);
 
-        QWindowSystemInterface::handleTabletEvent(targetWindow, isPressed, pos, pos, 0,
+        QWindowSystemInterface::handleTabletEvent(d->currentTargetWindow, isPressed, pos, pos, 0,
                                                   pointerType, pressure, xTilt, yTilt,
                                                   0, rotation, 0, id, mods);
 
