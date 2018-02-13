@@ -848,8 +848,9 @@ void QCoreApplicationPrivate::init()
 
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
-    if (!eventDispatcher)
-        eventDispatcher = threadData->eventDispatcher.load();
+    Q_ASSERT(!eventDispatcher);
+    eventDispatcher = threadData->eventDispatcher.load();
+
     // otherwise we create one
     if (!eventDispatcher)
         createEventDispatcher();
