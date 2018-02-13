@@ -352,7 +352,7 @@ void *QThreadPrivate::start(void *arg)
             data->quitNow = thr->d_func()->exited;
         }
 
-        if (data->eventDispatcher.load()) // custom event dispatcher set?
+        if (data->hasEventDispatcher()) // custom event dispatcher set?
             data->eventDispatcher.load()->startingUp();
         else
             createEventDispatcher(data);

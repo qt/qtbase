@@ -101,7 +101,7 @@ QEventLoop::QEventLoop(QObject *parent)
     Q_D(QEventLoop);
     if (!QCoreApplication::instance() && QCoreApplicationPrivate::threadRequiresCoreApplication()) {
         qWarning("QEventLoop: Cannot be used without QApplication");
-    } else if (!d->threadData->eventDispatcher.load()) {
+    } else if (!d->threadData->hasEventDispatcher()) {
         QThreadPrivate::createEventDispatcher(d->threadData);
     }
 }
@@ -129,7 +129,7 @@ QEventLoop::~QEventLoop()
 bool QEventLoop::processEvents(ProcessEventsFlags flags)
 {
     Q_D(QEventLoop);
-    if (!d->threadData->eventDispatcher.load())
+    if (!d->threadData->hasEventDispatcher())
         return false;
     return d->threadData->eventDispatcher.load()->processEvents(flags);
 }
@@ -234,7 +234,7 @@ int QEventLoop::exec(ProcessEventsFlags flags)
 void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 {
     Q_D(QEventLoop);
-    if (!d->threadData->eventDispatcher.load())
+    if (!d->threadData->hasEventDispatcher())
         return;
 
     QElapsedTimer start;
@@ -263,7 +263,7 @@ void QEventLoop::processEvents(ProcessEventsFlags flags, int maxTime)
 void QEventLoop::exit(int returnCode)
 {
     Q_D(QEventLoop);
-    if (!d->threadData->eventDispatcher.load())
+    if (!d->threadData->hasEventDispatcher())
         return;
 
     d->returnCode.store(returnCode);
@@ -292,7 +292,7 @@ bool QEventLoop::isRunning() const
 void QEventLoop::wakeUp()
 {
     Q_D(QEventLoop);
-    if (!d->threadData->eventDispatcher.load())
+    if (!d->threadData->hasEventDispatcher())
         return;
     d->threadData->eventDispatcher.load()->wakeUp();
 }
