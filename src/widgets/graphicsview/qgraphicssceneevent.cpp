@@ -259,8 +259,9 @@
 
 #include "qgraphicssceneevent.h"
 
-#ifndef QT_NO_DEBUG
+#ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
+#include <private/qdebug_p.h>
 #endif
 #include <QtCore/qmap.h>
 #include <QtCore/qpoint.h>
@@ -1729,5 +1730,100 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
     Q_D(QGraphicsSceneMoveEvent);
     d->newPos = pos;
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+template <class Event>
+static inline void formatPositions(QDebug &debug, const Event *event)
+{
+    debug << ", pos=";
+    QtDebugUtils::formatQPoint(debug, event->pos());
+    debug << ", scenePos=";
+    QtDebugUtils::formatQPoint(debug, event->scenePos());
+    debug << ", screenPos=";
+    QtDebugUtils::formatQPoint(debug, event->screenPos());
+}
+
+QDebug operator<<(QDebug debug, const QGraphicsSceneEvent *event)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    if (!event) {
+        debug << "QGraphicsSceneEvent(0)";
+        return debug;
+    }
+
+    const QEvent::Type type = event->type();
+    switch (type) {
+    case QEvent::GraphicsSceneMouseMove:
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseRelease:
+    case QEvent::GraphicsSceneMouseDoubleClick: {
+        const QGraphicsSceneMouseEvent *me = static_cast<const QGraphicsSceneMouseEvent *>(event);
+        const Qt::MouseButton button = me->button();
+        const Qt::MouseButtons buttons = me->buttons();
+        debug << "QGraphicsSceneMouseEvent(";
+        QtDebugUtils::formatQEnum(debug, type);
+        if (type != QEvent::GraphicsSceneMouseMove) {
+            debug << ", ";
+            QtDebugUtils::formatQEnum(debug, button);
+        }
+        if (buttons && button != buttons) {
+            debug << ", buttons=";
+            QtDebugUtils::formatQFlags(debug, buttons);
+        }
+        QtDebugUtils::formatNonNullQFlags(debug, ", ", me->modifiers());
+        formatPositions(debug, me);
+        QtDebugUtils::formatNonNullQEnum(debug, ", ", me->source());
+        QtDebugUtils::formatNonNullQFlags(debug, ", flags=", me->flags());
+        debug << ')';
+    }
+        break;
+    case QEvent::GraphicsSceneContextMenu: {
+        const QGraphicsSceneContextMenuEvent *ce = static_cast<const QGraphicsSceneContextMenuEvent *>(event);
+        debug << "QGraphicsSceneContextMenuEvent(reason=" << ce->reason();
+        QtDebugUtils::formatNonNullQFlags(debug, ", ", ce->modifiers());
+        formatPositions(debug, ce);
+        debug << ')';
+    }
+        break;
+    case QEvent::GraphicsSceneHoverEnter:
+    case QEvent::GraphicsSceneHoverMove:
+    case QEvent::GraphicsSceneHoverLeave:
+        debug << "QGraphicsSceneHoverEvent(";
+        formatPositions(debug, static_cast<const QGraphicsSceneHoverEvent *>(event));
+        debug << ')';
+        break;
+    case QEvent::GraphicsSceneHelp:
+        break;
+    case QEvent::GraphicsSceneDragEnter:
+    case QEvent::GraphicsSceneDragMove:
+    case QEvent::GraphicsSceneDragLeave:
+    case QEvent::GraphicsSceneDrop: {
+        const QGraphicsSceneDragDropEvent *de = static_cast<const QGraphicsSceneDragDropEvent *>(event);
+        debug << "QGraphicsSceneDragDropEvent(proposedAction=";
+        QtDebugUtils::formatQEnum(debug, de->proposedAction());
+        debug << ", possibleActions=";
+        QtDebugUtils::formatQFlags(debug, de->possibleActions());
+        debug << ", source=" << de->source();
+        QtDebugUtils::formatNonNullQFlags(debug, ", buttons=", de->buttons());
+        QtDebugUtils::formatNonNullQFlags(debug, ", ", de->modifiers());
+        formatPositions(debug, de);
+    }
+        break;
+    case QEvent::GraphicsSceneWheel: {
+        const QGraphicsSceneWheelEvent *we = static_cast<const QGraphicsSceneWheelEvent *>(event);
+        debug << "QGraphicsSceneWheelEvent(";
+        QtDebugUtils::formatNonNullQFlags(debug, ", buttons=", we->buttons());
+        QtDebugUtils::formatNonNullQFlags(debug, ", ", we->modifiers());
+        formatPositions(debug, we);
+        debug << ')';
+    }
+        break;
+    default:
+        break;
+    }
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
 
 QT_END_NAMESPACE

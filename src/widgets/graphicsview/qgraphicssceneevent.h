@@ -320,6 +320,10 @@ public:
     void setNewPos(const QPointF &pos);
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_WIDGETS_EXPORT QDebug operator<<(QDebug, const QGraphicsSceneEvent *);
+#endif
+
 QT_END_NAMESPACE
 
 #endif
