@@ -102,7 +102,9 @@ QEventLoop::QEventLoop(QObject *parent)
     if (!QCoreApplication::instance() && QCoreApplicationPrivate::threadRequiresCoreApplication()) {
         qWarning("QEventLoop: Cannot be used without QApplication");
     } else if (!d->threadData->hasEventDispatcher()) {
-        QThreadPrivate::createEventDispatcher(d->threadData);
+        QAbstractEventDispatcher *eventDispatcher = QThreadPrivate::createEventDispatcher(d->threadData);
+        d->threadData->eventDispatcher.storeRelease(eventDispatcher);
+        eventDispatcher->startingUp();
     }
 }
 
