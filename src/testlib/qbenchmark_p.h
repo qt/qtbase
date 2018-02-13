@@ -69,7 +69,7 @@
 
 #include <QtTest/private/qbenchmarkmeasurement_p.h>
 #include <QtCore/QMap>
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 #ifdef QTESTLIB_USE_VALGRIND
 #include <QtTest/private/qbenchmarkvalgrind_p.h>
 #endif

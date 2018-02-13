@@ -37,13 +37,12 @@
 **
 ****************************************************************************/
 
-#ifndef QTEST_GLOBAL_H
-#define QTEST_GLOBAL_H
+#ifndef QTTESTGLOBAL_H
+#define QTTESTGLOBAL_H
 
 #include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
-
 
 #if defined(QT_STATIC)
 # define Q_TESTLIB_EXPORT

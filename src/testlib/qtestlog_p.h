@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 
 QT_BEGIN_NAMESPACE
 

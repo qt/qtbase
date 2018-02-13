@@ -29,7 +29,6 @@ HEADERS = \
     qtestdata.h \
     qtestevent.h \
     qtesteventloop.h \
-    qtest_global.h \
     qtest_gui.h \
     qtest_network.h \
     qtest_widgets.h \
@@ -40,7 +39,8 @@ HEADERS = \
     qtestsystem.h \
     qtesttouch.h \
     qtestblacklist_p.h \
-    qtesthelpers_p.h
+    qtesthelpers_p.h \
+    qttestglobal.h
 
 SOURCES = \
     qabstractitemmodeltester.cpp \

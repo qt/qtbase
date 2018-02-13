@@ -45,7 +45,7 @@
 #pragma qt_no_master_include
 #endif
 
-#include <QtTest/qtest_global.h>
+#include <QtTest/qttestglobal.h>
 #ifdef QT_GUI_LIB
 #include <QtTest/qtestkeyboard.h>
 #include <QtTest/qtestmouse.h>
