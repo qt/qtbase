@@ -381,7 +381,7 @@ QT_BEGIN_NAMESPACE
   QOpenGLContext. By connecting a slot, using direct connection, to this signal,
   it is possible to perform cleanup whenever the the underlying native context
   handle, or the entire QOpenGLContext instance, is going to be released. The
-  following snippet is in principal equivalent to the previous one:
+  following snippet is in principle equivalent to the previous one:
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 5
 

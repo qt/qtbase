@@ -516,7 +516,7 @@ void QMetaCallEvent::placeMetaCall(QObject *object)
 
     \reentrant
 
-    QSignalBlocker can be used whereever you would otherwise use a
+    QSignalBlocker can be used wherever you would otherwise use a
     pair of calls to blockSignals(). It blocks signals in its
     constructor and in the destructor it resets the state to what
     it was before the constructor ran.

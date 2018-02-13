@@ -117,7 +117,7 @@ QVariant SpreadSheetItem::computeFormula(const QString &formula,
                                          const QTableWidget *widget,
                                          const QTableWidgetItem *self)
 {
-    // check if the s tring is actually a formula or not
+    // check if the string is actually a formula or not
     QStringList list = formula.split(' ');
     if (list.isEmpty() || !widget)
         return formula; // it is a normal string

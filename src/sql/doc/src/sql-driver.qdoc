@@ -449,7 +449,7 @@
     \target QTDS
     \section2 QTDS for Sybase Adaptive Server
 
-    \note TDS is no longer used by MS Sql Server, and is superceded by
+    \note TDS is no longer used by MS Sql Server, and is superseded by
     \l{QODBC}{ODBC}. QTDS is obsolete from Qt 4.7.
 
     It is not possible to set the port with QSqlDatabase::setPort() due to limitations in the

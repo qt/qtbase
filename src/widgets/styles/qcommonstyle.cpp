@@ -6291,7 +6291,7 @@ QPixmap QCommonStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &p
 
         // High intensity colors needs dark shifting in the color table, while
         // low intensity colors needs light shifting. This is to increase the
-        // percieved contrast.
+        // perceived contrast.
         if ((red - factor > green && red - factor > blue)
             || (green - factor > red && green - factor > blue)
             || (blue - factor > red && blue - factor > green))

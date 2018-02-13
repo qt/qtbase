@@ -261,7 +261,7 @@ void QTriangulatingStroker::moveTo(const qreal *pts)
     normalVector(m_cx, m_cy, x2, y2, &m_nvx, &m_nvy);
 
 
-    // To acheive jumps we insert zero-area tringles. This is done by
+    // To achieve jumps we insert zero-area tringles. This is done by
     // adding two identical points in both the end of previous strip
     // and beginning of next strip
     bool invisibleJump = m_vertices.size();
