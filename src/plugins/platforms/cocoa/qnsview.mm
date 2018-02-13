@@ -314,7 +314,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     for (int i = 0; i < numDirtyRects; ++i)
         exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
 
-    qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
+    qCDebug(lcQpaCocoaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
 
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {
@@ -331,7 +331,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         // But AppKit will reset the needsDisplay state of the view after completing
         // the current display cycle, so we need to defer the request to redisplay.
         // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
-        qCDebug(lcQpaCocoaWindow) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
+        qCDebug(lcQpaCocoaDrawing) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
         dispatch_async(dispatch_get_main_queue (), ^{
             [self setNeedsDisplay:YES];
         });
@@ -348,7 +348,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if (!m_platformWindow)
         return;
 
-    qCDebug(lcQpaCocoaWindow) << "[QNSView updateLayer]" << m_platformWindow->window();
+    qCDebug(lcQpaCocoaDrawing) << "[QNSView updateLayer]" << m_platformWindow->window();
 
     // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
     m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
@@ -787,7 +787,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (void)cursorUpdate:(NSEvent *)theEvent
 {
-    qCDebug(lcQpaCocoaWindow) << "[QNSView cursorUpdate:]" << self.cursor;
+    qCDebug(lcQpaCocoaMouse) << "[QNSView cursorUpdate:]" << self.cursor;
 
     // Note: We do not get this callback when moving from a subview that
     // uses the legacy cursorRect API, so the cursor is reset to the arrow
