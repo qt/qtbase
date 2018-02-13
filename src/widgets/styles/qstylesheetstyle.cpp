@@ -3671,6 +3671,17 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 bool dis = !(opt->state & QStyle::State_Enabled),
                      act = opt->state & QStyle::State_Selected;
 
+                int checkableOffset = 0;
+                if (checkable) {
+                    QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
+                    QStyleOptionMenuItem newMi = mi;
+                    newMi.rect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
+                    checkableOffset = newMi.rect.width();
+                    if (subSubRule.hasDrawable() || checked)
+                        drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, w);
+                }
+
+                int iconOffset = 0;
                 if (!mi.icon.isNull()) {
                     QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
                     if (act && !dis)
@@ -3690,20 +3701,22 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         iconRule.geo->height = pixh;
                     }
                     QRect iconRect = positionRect(w, subRule, iconRule, PseudoElement_MenuIcon, opt->rect, opt->direction);
+                    if (opt->direction == Qt::LeftToRight)
+                        iconRect.moveLeft(iconRect.left() + checkableOffset);
+                    else
+                        iconRect.moveRight(iconRect.right() - checkableOffset);
                     iconRule.drawRule(p, iconRect);
                     QRect pmr(0, 0, pixw, pixh);
                     pmr.moveCenter(iconRect.center());
                     p->drawPixmap(pmr.topLeft(), pixmap);
-                } else if (checkable) {
-                    QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
-                    if (subSubRule.hasDrawable() || checked) {
-                        QStyleOptionMenuItem newMi = mi;
-                        newMi.rect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
-                        drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, w);
-                    }
+                    iconOffset = iconRule.geo->width;
                 }
 
                 QRect textRect = subRule.contentsRect(opt->rect);
+                if (opt->direction == Qt::LeftToRight)
+                    textRect.setLeft(textRect.left() + checkableOffset + iconOffset);
+                else
+                    textRect.setRight(textRect.right() - checkableOffset - iconOffset);
                 textRect.setWidth(textRect.width() - mi.tabWidth);
                 QStringRef s(&mi.text);
                 p->setPen(mi.palette.buttonText().color());
@@ -5045,6 +5058,16 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 int width = csz.width();
                 if (mi->text.contains(QLatin1Char('\t')))
                     width += 12; //as in QCommonStyle
+                bool checkable = mi->checkType != QStyleOptionMenuItem::NotCheckable;
+                if (checkable) {
+                    QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
+                    QRect checkmarkRect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
+                    width += checkmarkRect.width();
+                }
+                if (!mi->icon.isNull()) {
+                    QPixmap pixmap = mi->icon.pixmap(pixelMetric(PM_SmallIconSize));
+                    width += pixmap.width();
+                }
                 return subRule.boxSize(subRule.adjustSize(QSize(width, csz.height())));
             }
         }
