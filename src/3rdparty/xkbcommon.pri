@@ -1,4 +1,3 @@
-QMAKE_CFLAGS += -std=gnu99 -w
 INCLUDEPATH += $$PWD/xkbcommon \
                $$PWD/xkbcommon/xkbcommon \
                $$PWD/xkbcommon/src \

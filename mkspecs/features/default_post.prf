@@ -143,6 +143,21 @@ c++11|c++14|c++1z {
     unset(cxxstd)
 }
 
+c99|c11 {
+    c11:       cstd = C11
+    else:      cstd = C99
+
+    # Check if we should disable compiler extensions or not
+    !isEmpty(QMAKE_CFLAGS_GNU$$cstd) {
+        # Let strict C++ imply strict C
+        !strict_c++: cstd = GNU$$cstd
+    }
+
+    QMAKE_CFLAGS += $$eval(QMAKE_CFLAGS_$$cstd)
+
+    unset(cstd)
+}
+
 utf8_source {
     QMAKE_CFLAGS += $$QMAKE_CFLAGS_UTF8_SOURCE
     QMAKE_CXXFLAGS += $$QMAKE_CFLAGS_UTF8_SOURCE
