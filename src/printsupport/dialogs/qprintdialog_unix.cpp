@@ -138,6 +138,8 @@ private slots:
     void accept() override;
 
 private:
+    void showEvent(QShowEvent *event) override;
+
     friend class QUnixPrintWidgetPrivate;
     QPrinter *m_printer;
     Ui::QPrintPropertiesWidget widget;
@@ -151,6 +153,7 @@ private:
     void setPrinterAdvancedCupsOptions() const;
     void revertAdvancedOptionsToSavedValues() const;
     void advancedOptionsUpdateSavedValues() const;
+    bool anyPpdOptionConflict() const;
     bool anyAdvancedOptionConflict() const;
 
     QPrintDevice *m_currentPrintDevice;
@@ -171,6 +174,7 @@ public:
     void updatePrinter();
 
 private:
+    friend class QPrintDialog;
     friend class QPrintDialogPrivate;
     friend class QUnixPrintWidgetPrivate;
     QUnixPrintWidgetPrivate *d;
@@ -203,6 +207,11 @@ public:
 
     void updateWidget();
 
+#if QT_CONFIG(cups)
+    void setPpdDuplex(QPrinter::DuplexMode mode);
+    ppd_option_t *m_duplexPpdOption;
+#endif
+
 private:
     QPrintDialogPrivate *optionsPane;
     bool filePrintersAdded;
@@ -226,6 +235,9 @@ public:
 #endif
     void _q_collapseOrExpandDialog();
 
+#if QT_CONFIG(cups)
+    void updatePpdDuplexOption(QRadioButton *radio);
+#endif
     void setupPrinter();
     void updateWidgets();
 
@@ -281,7 +293,11 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *
     const bool anyWidgetCreated = createAdvancedOptionsWidget();
 
     widget.tabs->setTabEnabled(advancedTabIndex, anyWidgetCreated);
-    widget.conflictsLabel->setVisible(anyAdvancedOptionConflict());
+
+    connect(widget.pageSetup, &QPageSetupWidget::ppdOptionChanged, this, [this] {
+        widget.conflictsLabel->setVisible(anyPpdOptionConflict());
+    });
+
 #else
     Q_UNUSED(currentPrintDevice)
     widget.tabs->setTabEnabled(advancedTabIndex, false);
@@ -328,7 +344,14 @@ void QPrintPropertiesDialog::reject()
 void QPrintPropertiesDialog::accept()
 {
 #if QT_CONFIG(cups)
-    if (anyAdvancedOptionConflict()) {
+    if (widget.pageSetup->hasPpdConflict()) {
+        widget.tabs->setCurrentWidget(widget.tabPage);
+        const QMessageBox::StandardButton answer = QMessageBox::warning(this, tr("Page Setup Conflicts"),
+                                                                        tr("There are conflicts in page setup options. Do you want to fix them?"),
+                                                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        if (answer != QMessageBox::No)
+            return;
+    } else if (anyAdvancedOptionConflict()) {
         widget.tabs->setCurrentWidget(widget.cupsPropertiesPage);
         const QMessageBox::StandardButton answer = QMessageBox::warning(this, tr("Advanced Option Conflicts"),
                                                                         tr("There are conflicts in some advanced options. Do you want to fix them?"),
@@ -346,6 +369,14 @@ void QPrintPropertiesDialog::accept()
     widget.pageSetup->updateSavedValues();
 
     QDialog::accept();
+}
+
+void QPrintPropertiesDialog::showEvent(QShowEvent *event)
+{
+#if QT_CONFIG(cups)
+    widget.conflictsLabel->setVisible(anyPpdOptionConflict());
+#endif
+    QDialog::showEvent(event);
 }
 
 #if QT_CONFIG(cups)
@@ -434,7 +465,7 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
                                 const auto values = QStringList{} << QString::fromLatin1(option->keyword)
                                                                   << QString::fromLatin1(option->choices[selectedChoiceIndex].choice);
                                 m_currentPrintDevice->setProperty(PDPK_PpdOption, values);
-                                widget.conflictsLabel->setVisible(anyAdvancedOptionConflict());
+                                widget.conflictsLabel->setVisible(anyPpdOptionConflict());
                             });
 
                             // We need an extra label at the end to show the conflict warning
@@ -504,13 +535,21 @@ void QPrintPropertiesDialog::revertAdvancedOptionsToSavedValues() const
         choicesCb->setCurrentIndex(newComboIndexToSelect);
         // The currentIndexChanged lambda takes care of resetting the ppd option
     }
-    widget.conflictsLabel->setVisible(anyAdvancedOptionConflict());
+    widget.conflictsLabel->setVisible(anyPpdOptionConflict());
 }
 
 void QPrintPropertiesDialog::advancedOptionsUpdateSavedValues() const
 {
     for (QComboBox *choicesCb : m_advancedOptionsCombos)
         choicesCb->setProperty(ppdOriginallySelectedChoiceProperty, choicesCb->currentData());
+}
+
+bool QPrintPropertiesDialog::anyPpdOptionConflict() const
+{
+    // we need to execute both since besides returning true/false they update the warning icons
+    const bool pageSetupConflicts = widget.pageSetup->hasPpdConflict();
+    const bool advancedOptionConflicts = anyAdvancedOptionConflict();
+    return pageSetupConflicts || advancedOptionConflicts;
 }
 
 bool QPrintPropertiesDialog::anyAdvancedOptionConflict() const
@@ -610,6 +649,12 @@ void QPrintDialogPrivate::init()
                      q, SLOT(_q_togglePageSetCombo(bool)));
 
     QObject::connect(collapseButton, SIGNAL(released()), q, SLOT(_q_collapseOrExpandDialog()));
+
+#if QT_CONFIG(cups)
+    QObject::connect(options.noDuplex, &QAbstractButton::toggled, q, [this] { updatePpdDuplexOption(options.noDuplex); });
+    QObject::connect(options.duplexLong, &QAbstractButton::toggled, q, [this] { updatePpdDuplexOption(options.duplexLong); });
+    QObject::connect(options.duplexShort, &QAbstractButton::toggled, q, [this] { updatePpdDuplexOption(options.duplexShort); });
+#endif
 }
 
 // initialize printer options
@@ -735,6 +780,19 @@ static bool isValidPagesString(const QString &pagesString) Q_DECL_NOTHROW
     auto pagesRanges = pageRangesFromString(pagesString);
     return !pagesRanges.empty();
 }
+
+void QPrintDialogPrivate::updatePpdDuplexOption(QRadioButton *radio)
+{
+    const bool checked = radio->isChecked();
+    if (checked) {
+        if (radio == options.noDuplex) top->d->setPpdDuplex(QPrinter::DuplexNone);
+        else if (radio == options.duplexLong) top->d->setPpdDuplex(QPrinter::DuplexLongSide);
+        else if (radio == options.duplexShort) top->d->setPpdDuplex(QPrinter::DuplexShortSide);
+    }
+    const bool conflict = checked && top->d->m_duplexPpdOption && top->d->m_duplexPpdOption->conflicted;
+    radio->setIcon(conflict ? QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning, nullptr, nullptr) : QIcon());
+}
+
 #endif
 
 void QPrintDialogPrivate::setupPrinter()
@@ -1001,6 +1059,13 @@ void QPrintDialog::accept()
                               QMessageBox::Ok, QMessageBox::Ok);
         return;
     }
+    if (d->top->d->m_duplexPpdOption && d->top->d->m_duplexPpdOption->conflicted) {
+        const QMessageBox::StandardButton answer = QMessageBox::warning(this, tr("Duplex Settings Conflicts"),
+                                                                        tr("There are conflicts in duplex settings. Do you want to fix them?"),
+                                                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        if (answer != QMessageBox::No)
+            return;
+    }
 #endif
     d->setupPrinter();
     QDialog::accept();
@@ -1022,8 +1087,11 @@ void QPrintDialog::accept()
 /*! \internal
 */
 QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *prn)
-    : parent(p), propertiesDialog(nullptr), printer(prn), optionsPane(0),
-      filePrintersAdded(false)
+    : parent(p), propertiesDialog(nullptr), printer(prn),
+#if QT_CONFIG(cups)
+      m_duplexPpdOption(nullptr),
+#endif
+      optionsPane(nullptr), filePrintersAdded(false)
 {
     q = nullptr;
     if (parent)
@@ -1113,6 +1181,10 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
         propertiesDialog = nullptr;
     }
 
+#if QT_CONFIG(cups)
+    m_duplexPpdOption = nullptr;
+#endif
+
     if (filePrintersAdded) {
         Q_ASSERT(index != printerCount - 2); // separator
         if (index == printerCount - 1) { // PDF
@@ -1147,6 +1219,10 @@ void QUnixPrintWidgetPrivate::_q_printerChanged(int index)
         if (optionsPane)
             optionsPane->selectPrinter(QPrinter::NativeFormat);
     }
+
+#if QT_CONFIG(cups)
+    m_duplexPpdOption = QCUPSSupport::findPpdOption("Duplex", &m_currentPrintDevice);
+#endif
 }
 
 void QUnixPrintWidgetPrivate::setOptionsPane(QPrintDialogPrivate *pane)
@@ -1242,11 +1318,30 @@ void QUnixPrintWidgetPrivate::setupPrinterProperties()
     propertiesDialog = new QPrintPropertiesDialog(q->printer(), &m_currentPrintDevice, outputFormat, printerName, q);
 }
 
+#if QT_CONFIG(cups)
+void QUnixPrintWidgetPrivate::setPpdDuplex(QPrinter::DuplexMode mode)
+{
+    auto values = QStringList{} << QStringLiteral("Duplex");
+    if (mode == QPrinter::DuplexNone) values << QStringLiteral("None");
+    else if (mode == QPrinter::DuplexLongSide) values << QStringLiteral("DuplexNoTumble");
+    else if (mode == QPrinter::DuplexShortSide) values << QStringLiteral("DuplexTumble");
+
+    m_currentPrintDevice.setProperty(PDPK_PpdOption, values);
+}
+#endif
+
 void QUnixPrintWidgetPrivate::_q_btnPropertiesClicked()
 {
     if (!propertiesDialog)
         setupPrinterProperties();
     propertiesDialog->exec();
+
+#if QT_CONFIG(cups)
+    // update the warning icon on the duplex options if needed
+    optionsPane->updatePpdDuplexOption(optionsPane->options.noDuplex);
+    optionsPane->updatePpdDuplexOption(optionsPane->options.duplexLong);
+    optionsPane->updatePpdDuplexOption(optionsPane->options.duplexShort);
+#endif
 }
 
 void QUnixPrintWidgetPrivate::setupPrinter()

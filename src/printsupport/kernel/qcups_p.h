@@ -52,6 +52,7 @@
 //
 
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
+#include <QtPrintSupport/private/qprint_p.h>
 #include "QtCore/qstring.h"
 #include "QtCore/qstringlist.h"
 #include "QtPrintSupport/qprinter.h"
@@ -60,6 +61,8 @@
 QT_REQUIRE_CONFIG(cups);
 
 QT_BEGIN_NAMESPACE
+
+class QPrintDevice;
 
 // HACK! Define these here temporarily so they can be used in the dialogs
 // without a circular reference to QCupsPrintEngine in the plugin.
@@ -163,6 +166,8 @@ public:
         QTime time;
     };
     static JobHoldUntilWithTime parseJobHoldUntil(const QString &jobHoldUntil);
+
+    static ppd_option_t *findPpdOption(const char *optionName, QPrintDevice *printDevice);
 };
 Q_DECLARE_TYPEINFO(QCUPSSupport::JobHoldUntil,        Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QCUPSSupport::BannerPage,          Q_PRIMITIVE_TYPE);

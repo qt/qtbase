@@ -99,6 +99,9 @@
         </property>
        </spacer>
       </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="pageSizeWarningLabel"/>
+      </item>
      </layout>
     </widget>
    </item>

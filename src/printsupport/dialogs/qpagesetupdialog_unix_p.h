@@ -54,6 +54,7 @@
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
 #include "qprinter.h"
+#include "kernel/qprint_p.h"
 
 #include <QtGui/qpagelayout.h>
 
@@ -78,6 +79,13 @@ public:
     void updateSavedValues();
     void revertToSavedValues();
 
+#if QT_CONFIG(cups)
+    bool hasPpdConflict() const;
+
+signals:
+    void ppdOptionChanged();
+#endif
+
 private slots:
     void pageSizeChanged();
     void pageOrientationChanged();
@@ -100,6 +108,9 @@ private:
     QPagePreview *m_pagePreview;
     QPrinter *m_printer;
     QPrintDevice *m_printDevice;
+#if QT_CONFIG(cups)
+    ppd_option_t *m_pageSizePpdOption;
+#endif
     QPrinter::OutputFormat m_outputFormat;
     QString m_printerName;
     QPageLayout m_pageLayout;

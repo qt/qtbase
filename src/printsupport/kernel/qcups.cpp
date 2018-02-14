@@ -39,6 +39,7 @@
 
 #include "qcups_p.h"
 
+#include "qprintdevice_p.h"
 #include "qprintengine.h"
 
 QT_BEGIN_NAMESPACE
@@ -146,6 +147,25 @@ QCUPSSupport::JobHoldUntilWithTime QCUPSSupport::parseJobHoldUntil(const QString
     return { QCUPSSupport::NoHold, QTime() };
 }
 
+ppd_option_t *QCUPSSupport::findPpdOption(const char *optionName, QPrintDevice *printDevice)
+{
+    ppd_file_t *ppd = printDevice->property(PDPK_PpdFile).value<ppd_file_t*>();
+
+    if (ppd) {
+        for (int i = 0; i < ppd->num_groups; ++i) {
+            ppd_group_t *group = &ppd->groups[i];
+
+            for (int i = 0; i < group->num_options; ++i) {
+                ppd_option_t *option = &group->options[i];
+
+                if (qstrcmp(option->keyword, optionName) == 0)
+                    return option;
+            }
+        }
+    }
+
+    return nullptr;
+}
 
 void QCUPSSupport::setJobHold(QPrinter *printer, const JobHoldUntil jobHold, const QTime &holdUntilTime)
 {

@@ -49,6 +49,7 @@
 
 #include "qpainter.h"
 #include "qprintdialog.h"
+#include "qtextcodec.h"
 #include "qdialogbuttonbox.h"
 #include <ui_qpagesetupwidget.h>
 
@@ -235,6 +236,9 @@ QPageSetupWidget::QPageSetupWidget(QWidget *parent)
       m_pagePreview(nullptr),
       m_printer(nullptr),
       m_printDevice(nullptr),
+#if QT_CONFIG(cups)
+      m_pageSizePpdOption(nullptr),
+#endif
       m_outputFormat(QPrinter::PdfFormat),
       m_units(QPageLayout::Point),
       m_savedUnits(QPageLayout::Point),
@@ -390,6 +394,11 @@ void QPageSetupWidget::setPrinter(QPrinter *printer, QPrintDevice *printDevice,
 {
     m_printer = printer;
     m_printDevice = printDevice;
+
+#if QT_CONFIG(cups)
+    // find the PageSize cups option
+    m_pageSizePpdOption = m_printDevice ? QCUPSSupport::findPpdOption("PageSize", m_printDevice) : nullptr;
+#endif
 
     // Initialize the layout to the current QPrinter layout
     m_pageLayout = m_printer->pageLayout();
@@ -547,15 +556,48 @@ void QPageSetupWidget::revertToSavedValues()
     m_ui.pagesPerSheetLayoutCombo->setCurrentIndex(m_savedPagesPerSheetLayout);
 }
 
+#if QT_CONFIG(cups)
+bool QPageSetupWidget::hasPpdConflict() const
+{
+    if (m_pageSizePpdOption) {
+        if (m_pageSizePpdOption->conflicted) {
+            const QIcon warning = QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning, nullptr, nullptr);
+            const int pixmap_size = m_ui.pageSizeCombo->sizeHint().height() * .75;
+            m_ui.pageSizeWarningLabel->setPixmap(warning.pixmap(pixmap_size, pixmap_size));
+        } else {
+            m_ui.pageSizeWarningLabel->setPixmap(QPixmap());
+        }
+        return m_pageSizePpdOption->conflicted;
+    }
+
+    return false;
+}
+#endif
+
 // Updates size/preview after the combobox has been changed.
 void QPageSetupWidget::pageSizeChanged()
 {
-    if (m_blockSignals)
-        return;
-
     QPageSize pageSize;
     if (m_ui.pageSizeCombo->currentIndex() != m_realCustomPageSizeIndex) {
         pageSize = m_ui.pageSizeCombo->currentData().value<QPageSize>();
+
+#if QT_CONFIG(cups)
+        if (m_pageSizePpdOption) {
+            ppd_file_t *ppd = m_printDevice->property(PDPK_PpdFile).value<ppd_file_t*>();
+            QTextCodec *cupsCodec = QTextCodec::codecForName(ppd->lang_encoding);
+            for (int i = 0; i < m_pageSizePpdOption->num_choices; ++i) {
+                const ppd_choice_t *choice = &m_pageSizePpdOption->choices[i];
+                if (cupsCodec->toUnicode(choice->text) == m_ui.pageSizeCombo->currentText()) {
+                    const auto values = QStringList{} << QString::fromLatin1(m_pageSizePpdOption->keyword)
+                                                      << QString::fromLatin1(choice->choice);
+                    m_printDevice->setProperty(PDPK_PpdOption, values);
+                    emit ppdOptionChanged();
+                    break;
+                }
+            }
+        }
+#endif
+
     } else {
         QSizeF customSize;
         if (m_pageLayout.orientation() == QPageLayout::Landscape)
@@ -563,7 +605,22 @@ void QPageSetupWidget::pageSizeChanged()
         else
             customSize = QSizeF(m_ui.pageWidth->value(), m_ui.pageHeight->value());
         pageSize = QPageSize(customSize, QPageSize::Unit(m_units));
+
+#if QT_CONFIG(cups)
+        if (m_pageSizePpdOption) {
+            const auto values = QStringList{} << QString::fromLatin1(m_pageSizePpdOption->keyword)
+                                              << QStringLiteral("Custom");
+            m_printDevice->setProperty(PDPK_PpdOption, values);
+            emit ppdOptionChanged();
+        }
+#endif
     }
+
+    // We always need to update the m_pageSizePpdOption when the page size changes
+    // even if it's from inside updateWidget, so do not move up
+    if (m_blockSignals)
+        return;
+
     const QMarginsF printable = m_printDevice ? m_printDevice->printableMargins(pageSize, m_pageLayout.orientation(), m_printer->resolution())
                                               : QMarginsF();
     m_pageLayout.setPageSize(pageSize, qt_convertMargins(printable, QPageLayout::Point, m_pageLayout.units()));
