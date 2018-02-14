@@ -129,7 +129,11 @@
             "label": "dlopen()",
             "test": {
                 "include": "dlfcn.h",
-                "main": "dlopen(0, 0);"
+                "main": [
+                    "dlclose(dlopen(0, 0));",
+                    "dlsym(RTLD_DEFAULT, 0);",
+                    "dlerror();"
+                ]
             },
             "sources": [
                 "",
