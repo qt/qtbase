@@ -95,7 +95,7 @@
 #endif
 #endif // QT_NO_QOBJECT
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #  include <private/qjni_p.h>
 #  include <private/qjnihelpers_p.h>
 #endif
@@ -186,7 +186,7 @@ QString QCoreApplicationPrivate::appVersion() const
 #ifndef QT_BOOTSTRAPPED
 #  ifdef Q_OS_DARWIN
     applicationVersion = infoDictionaryStringProperty(QStringLiteral("CFBundleVersion"));
-#  elif defined(Q_OS_ANDROID)
+#  elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QJNIObjectPrivate context(QtAndroidPrivate::context());
     if (context.isValid()) {
         QJNIObjectPrivate pm = context.callObjectMethod(
@@ -815,6 +815,14 @@ void QCoreApplicationPrivate::init()
 
     if (!coreappdata()->applicationVersionSet)
         coreappdata()->applicationVersion = appVersion();
+
+#if defined(Q_OS_ANDROID)
+    // We've deferred initializing the logging registry due to not being
+    // able to guarantee that logging happened on the same thread as the
+    // Qt main thread, but now that the Qt main thread is set up, we can
+    // enable categorized logging.
+    QLoggingRegistry::instance()->initializeRules();
+#endif
 
 #if QT_CONFIG(library)
     // Reset the lib paths, so that they will be recomputed, taking the availability of argv[0]
@@ -2266,7 +2274,7 @@ QString QCoreApplication::applicationFilePath()
     }
 #endif
 #if defined( Q_OS_UNIX )
-#  if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
+#  if defined(Q_OS_LINUX) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED))
     // Try looking for a /proc/<pid>/exe symlink first which points to
     // the absolute path of the executable
     QFileInfo pfi(QString::fromLatin1("/proc/%1/exe").arg(getpid()));

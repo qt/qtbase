@@ -1,4 +1,4 @@
-CONFIG += simd no_batch
+CONFIG += simd no_batch object_parallel_to_source
 include(common.pri)
 
 INCLUDEPATH += $$OUT_PWD/.. $$ANGLE_DIR/src/libANGLE
@@ -48,6 +48,7 @@ HEADERS += \
     $$ANGLE_DIR/src/libANGLE/Constants.h \
     $$ANGLE_DIR/src/libANGLE/Context.h \
     $$ANGLE_DIR/src/libANGLE/Data.h \
+    $$ANGLE_DIR/src/libANGLE/Debug.h \
     $$ANGLE_DIR/src/libANGLE/Device.h \
     $$ANGLE_DIR/src/libANGLE/Display.h \
     $$ANGLE_DIR/src/libANGLE/Error.h \
@@ -169,6 +170,7 @@ SOURCES += \
     $$ANGLE_DIR/src/libANGLE/Config.cpp \
     $$ANGLE_DIR/src/libANGLE/Context.cpp \
     $$ANGLE_DIR/src/libANGLE/Data.cpp \
+    $$ANGLE_DIR/src/libANGLE/Debug.cpp \
     $$ANGLE_DIR/src/libANGLE/Device.cpp \
     $$ANGLE_DIR/src/libANGLE/Display.cpp \
     $$ANGLE_DIR/src/libANGLE/Error.cpp \
@@ -240,14 +242,6 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/libGLESv2.cpp
 
 SSE2_SOURCES += $$ANGLE_DIR/src/libANGLE/renderer/d3d/loadimageSSE2.cpp
-
-DEBUG_SOURCE = $$ANGLE_DIR/src/libANGLE/Debug.cpp
-debug_copy.input = DEBUG_SOURCE
-debug_copy.output = $$ANGLE_DIR/src/libANGLE/Debug2.cpp
-debug_copy.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
-debug_copy.variable_out = GENERATED_SOURCES
-debug_copy.CONFIG = target_predeps
-QMAKE_EXTRA_COMPILERS += debug_copy
 
 angle_d3d11 {
     HEADERS += \

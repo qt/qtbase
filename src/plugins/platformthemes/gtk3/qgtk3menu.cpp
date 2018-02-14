@@ -41,6 +41,7 @@
 
 #include <QtGui/qwindow.h>
 #include <QtGui/qpa/qplatformtheme.h>
+#include <QtGui/qpa/qplatformwindow.h>
 
 #undef signals
 #include <gtk/gtk.h>
@@ -426,9 +427,11 @@ void QGtk3Menu::showPopup(const QWindow *parentWindow, const QRect &targetRect, 
     if (index != -1)
         gtk_menu_set_active(GTK_MENU(m_menu), index);
 
-    m_targetPos = targetRect.bottomLeft();
-    if (parentWindow)
-        m_targetPos = parentWindow->mapToGlobal(m_targetPos);
+    m_targetPos = QPoint(targetRect.x(), targetRect.y() + targetRect.height());
+
+    QPlatformWindow *pw = parentWindow ? parentWindow->handle() : nullptr;
+    if (pw)
+        m_targetPos = pw->mapToGlobal(m_targetPos);
 
     gtk_menu_popup(GTK_MENU(m_menu), NULL, NULL, qt_gtk_menu_position_func, this, 0, gtk_get_current_event_time());
 }

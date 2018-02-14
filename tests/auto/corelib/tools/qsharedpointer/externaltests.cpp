@@ -42,6 +42,7 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 #include <QtCore/QLibraryInfo>
+#include <QtCore/QThread>
 
 #ifndef DEFAULT_MAKESPEC
 # error DEFAULT_MAKESPEC not defined
@@ -69,6 +70,16 @@ static QString makespec()
 QT_BEGIN_NAMESPACE
 namespace QTest {
 #if QT_CONFIG(process)
+    static void ensureStopped(QProcess &process)
+    {
+        if (process.state() == QProcess::Running) {
+            process.terminate();
+            QThread::msleep(20);
+            if (process.state() == QProcess::Running)
+                process.kill();
+        }
+    }
+
     class QExternalProcess: public QProcess
     {
     protected:
@@ -594,7 +605,7 @@ namespace QTest {
             ok = qmake.waitForFinished();
             exitCode = qmake.exitCode();
             if (!ok)
-                qmake.terminate();
+                QTest::ensureStopped(qmake);
 
             std_out += qmake.readAllStandardOutput();
             std_err += qmake.readAllStandardError();
@@ -661,7 +672,7 @@ namespace QTest {
         make.closeWriteChannel();
         bool ok = make.waitForFinished(channelMode == QProcess::ForwardedChannels ? -1 : 60000);
         if (!ok)
-            make.terminate();
+            QTest::ensureStopped(make);
         exitCode = make.exitCode();
         std_out += make.readAllStandardOutput();
         std_err += make.readAllStandardError();

@@ -117,7 +117,7 @@ void QEglFSWindow::create()
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     if (screen->primarySurface() != EGL_NO_SURFACE) {
         if (Q_UNLIKELY(!isRaster() || !compositor->targetWindow())) {
-#if !defined(Q_OS_ANDROID)
+#if !defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID_EMBEDDED)
             // We can have either a single OpenGL window or multiple raster windows.
             // Other combinations cannot work.
             qFatal("EGLFS: OpenGL windows cannot be mixed with others.");

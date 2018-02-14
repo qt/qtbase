@@ -313,7 +313,58 @@ QPlatformBackingStore *QQnxIntegration::createPlatformBackingStore(QWindow *wind
 QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     qIntegrationDebug();
-    return new QQnxGLContext(context);
+
+    // Get color channel sizes from window format
+    QSurfaceFormat format = context->format();
+    int alphaSize = format.alphaBufferSize();
+    int redSize = format.redBufferSize();
+    int greenSize = format.greenBufferSize();
+    int blueSize = format.blueBufferSize();
+
+    // Check if all channels are don't care
+    if (alphaSize == -1 && redSize == -1 && greenSize == -1 && blueSize == -1) {
+        // Set color channels based on depth of window's screen
+        QQnxScreen *screen = static_cast<QQnxScreen*>(context->screen()->handle());
+        int depth = screen->depth();
+        if (depth == 32) {
+            // SCREEN_FORMAT_RGBA8888
+            alphaSize = 8;
+            redSize = 8;
+            greenSize = 8;
+            blueSize = 8;
+        } else {
+            // SCREEN_FORMAT_RGB565
+            alphaSize = 0;
+            redSize = 5;
+            greenSize = 6;
+            blueSize = 5;
+        }
+    } else {
+        // Choose best match based on supported pixel formats
+        if (alphaSize <= 0 && redSize <= 5 && greenSize <= 6 && blueSize <= 5) {
+            // SCREEN_FORMAT_RGB565
+            alphaSize = 0;
+            redSize = 5;
+            greenSize = 6;
+            blueSize = 5;
+        } else {
+            // SCREEN_FORMAT_RGBA8888
+            alphaSize = 8;
+            redSize = 8;
+            greenSize = 8;
+            blueSize = 8;
+        }
+    }
+
+    // Update color channel sizes in window format
+    format.setAlphaBufferSize(alphaSize);
+    format.setRedBufferSize(redSize);
+    format.setGreenBufferSize(greenSize);
+    format.setBlueBufferSize(blueSize);
+    context->setFormat(format);
+
+    QQnxGLContext *ctx = new QQnxGLContext(context->format(), context->shareHandle());
+    return ctx;
 }
 #endif
 

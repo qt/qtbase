@@ -12,7 +12,7 @@ android {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
-android {
+android:!android-embedded {
     RESOURCES += \
         testdata.qrc
 }

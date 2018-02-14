@@ -2071,7 +2071,7 @@ bool QXcbWindow::isEmbedded() const
 QPoint QXcbWindow::mapToGlobal(const QPoint &pos) const
 {
     if (!m_embedded)
-        return pos;
+        return QPlatformWindow::mapToGlobal(pos);
 
     QPoint ret;
     auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),
@@ -2088,7 +2088,7 @@ QPoint QXcbWindow::mapToGlobal(const QPoint &pos) const
 QPoint QXcbWindow::mapFromGlobal(const QPoint &pos) const
 {
     if (!m_embedded)
-        return pos;
+        return QPlatformWindow::mapFromGlobal(pos);
 
     QPoint ret;
     auto reply = Q_XCB_REPLY(xcb_translate_coordinates, xcb_connection(),

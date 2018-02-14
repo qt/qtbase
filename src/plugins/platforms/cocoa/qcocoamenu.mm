@@ -44,9 +44,11 @@
 
 #include <QtCore/QtDebug>
 #include "qcocoaapplication.h"
+#include "qcocoaintegration.h"
 #include "qcocoamenuloader.h"
 #include "qcocoamenubar.h"
 #include "qcocoawindow.h"
+#include "qcocoascreen.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -364,8 +366,9 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
         [popupCell setMenu:m_nativeMenu];
         [popupCell selectItem:nsItem];
 
-        int availableHeight = screen->availableSize().height();
-        const QPoint &globalPos = parentWindow->mapToGlobal(pos);
+        QCocoaScreen *cocoaScreen = static_cast<QCocoaScreen *>(screen->handle());
+        int availableHeight = cocoaScreen->availableGeometry().height();
+        const QPoint &globalPos = cocoaWindow->mapToGlobal(pos);
         int menuHeight = m_nativeMenu.size.height;
         if (globalPos.y() + menuHeight > availableHeight) {
             // Maybe we need to fix the vertical popup position but we don't know the

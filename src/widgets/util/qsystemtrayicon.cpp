@@ -111,9 +111,7 @@ static QIcon messageIcon2qIcon(QSystemTrayIcon::MessageIcon icon)
     \li All X11 desktop environments that implement the D-Bus
        \l{http://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/StatusNotifierItem}
        specification, including recent versions of KDE and Unity.
-    \li All supported versions of \macos. Note that the Growl
-       notification system must be installed for
-       QSystemTrayIcon::showMessage() to display messages on \macos prior to 10.8 (Mountain Lion).
+    \li All supported versions of \macos.
     \endlist
 
     To check whether a system tray is present on the user's desktop,
@@ -419,9 +417,6 @@ bool QSystemTrayIcon::supportsMessages()
 
     On Windows, the \a millisecondsTimeoutHint is usually ignored by the system
     when the application has focus.
-
-    On \macos, the Growl notification system must be installed for this function to
-    display messages.
 
     Has been turned into a slot in Qt 5.2.
 
