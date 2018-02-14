@@ -1,14 +1,10 @@
 # QTBUG-15111
 
 [activeMode:WithoutProxy]
-opensuse-13.1 64bit
 redhatenterpriselinuxworkstation-6.6
-osx-10.10
 
 [activeMode:WithoutProxyWithSession]
-opensuse-13.1 64bit
 redhatenterpriselinuxworkstation-6.6
-osx-10.10
 
 [list:epsvNotSupported]
 *

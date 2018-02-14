@@ -1,7 +1,3 @@
-QTBUG-45531
-[task260974_menuItemRectangleForComboBoxPopup]
-osx-10.10
-
 [task_QTBUG_56693_itemFontFromModel]
 # Counts draw calls, but we could have multiple expose events QTBUG-62080
 osx

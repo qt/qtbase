@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
     in many real-world situations.
 
     The accuracy also depends on the \l{Qt::TimerType}{timer type}. For
-    Qt::PreciseTimer, QTimer will try to keep the accurance at 1 millisecond.
+    Qt::PreciseTimer, QTimer will try to keep the accuracy at 1 millisecond.
     Precise timers will also never time out earlier than expected.
 
     For Qt::CoarseTimer and Qt::VeryCoarseTimer types, QTimer may wake up

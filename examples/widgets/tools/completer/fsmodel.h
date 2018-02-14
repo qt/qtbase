@@ -55,7 +55,7 @@
 
 // With a QFileSystemModel, set on a view, you will see "Program Files" in the view
 // But with this model, you will see "C:\Program Files" in the view.
-// We acheive this, by having the data() return the entire file path for
+// We achieve this, by having the data() return the entire file path for
 // the display role. Note that the Qt::EditRole over which the QCompleter
 // looks for matches is left unchanged
 //! [0]

@@ -243,10 +243,6 @@ public abstract class QtLoader {
 
             QtApplication.setQtContextDelegate(m_delegateClass, qtLoader);
 
-            // now load the application library so it's accessible from this class loader
-            if (libName != null)
-                System.loadLibrary(libName);
-
             Method startAppMethod=qtLoader.getClass().getMethod("startApplication");
             if (!(Boolean)startAppMethod.invoke(qtLoader))
                 throw new Exception("");

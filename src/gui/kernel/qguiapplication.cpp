@@ -3459,7 +3459,7 @@ void QGuiApplication::setFallbackSessionManagementEnabled(bool enabled)
 
     You should never exit the application within this signal. Instead, the
     session manager may or may not do this afterwards, depending on the
-    context. Futhermore, most session managers will very likely request a saved
+    context. Furthermore, most session managers will very likely request a saved
     state immediately after the application has been started. This permits the
     session manager to learn about the application's restart policy.
 

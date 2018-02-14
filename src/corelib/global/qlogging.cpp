@@ -71,6 +71,10 @@
 #include <android/log.h>
 #endif
 
+#ifdef Q_OS_DARWIN
+#include <QtCore/private/qcore_mac_p.h>
+#endif
+
 #if QT_CONFIG(journald)
 # define SD_JOURNAL_SUPPRESS_LOCATION
 # include <systemd/sd-journal.h>
@@ -1676,6 +1680,9 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     handledStderr |= syslog_default_message_handler(type, context, message);
 # elif defined(Q_OS_ANDROID)
     handledStderr |= android_default_message_handler(type, context, message);
+# elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
+    if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *))
+        handledStderr |= AppleUnifiedLogger::messageHandler(type, context, message);
 # endif
 #endif
 

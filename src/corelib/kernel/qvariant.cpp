@@ -256,6 +256,10 @@ static qreal qConvertToRealNumber(const QVariant::Private *d, bool *ok)
     case QMetaType::UShort:
     case QMetaType::ULong:
         return qreal(qMetaTypeUNumber(d));
+#ifndef QT_BOOTSTRAPPED
+    case QMetaType::QJsonValue:
+        return v_cast<QJsonValue>(d)->toDouble();
+#endif
     default:
         // includes enum conversion as well as invalid types
         return qreal(qConvertToNumber(d, ok));
