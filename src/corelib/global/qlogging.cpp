@@ -1597,7 +1597,7 @@ static bool syslog_default_message_handler(QtMsgType type, const QMessageLogCont
 }
 #endif
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 static bool android_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
                                   const QString &message)
@@ -1678,7 +1678,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     handledStderr |= systemd_default_message_handler(type, context, message);
 # elif QT_CONFIG(syslog)
     handledStderr |= syslog_default_message_handler(type, context, message);
-# elif defined(Q_OS_ANDROID)
+# elif defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     handledStderr |= android_default_message_handler(type, context, message);
 # elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
     if (__builtin_available(macOS 10.12, iOS 10, tvOS 10, watchOS 3, *))

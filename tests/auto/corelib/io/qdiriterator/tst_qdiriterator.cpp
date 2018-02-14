@@ -118,7 +118,7 @@ private:
 
 void tst_QDirIterator::initTestCase()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QString testdata_dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QString resourceSourcePath = QStringLiteral(":/");
     QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);

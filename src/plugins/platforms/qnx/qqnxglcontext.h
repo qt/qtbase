@@ -46,49 +46,31 @@
 #include <QtCore/QSize>
 
 #include <EGL/egl.h>
+#include <QtEglSupport/private/qeglplatformcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QQnxWindow;
 
-class QQnxGLContext : public QPlatformOpenGLContext
+class QQnxGLContext : public QEGLPlatformContext
 {
 public:
-    QQnxGLContext(QOpenGLContext *glContext);
+    QQnxGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     virtual ~QQnxGLContext();
-
-    static EGLenum checkEGLError(const char *msg);
 
     static void initializeContext();
     static void shutdownContext();
 
-    void requestSurfaceChange();
-
     bool makeCurrent(QPlatformSurface *surface) override;
-    void doneCurrent() override;
     void swapBuffers(QPlatformSurface *surface) override;
-    QFunctionPointer getProcAddress(const char *procName) override;
+    void doneCurrent() override;
 
-    virtual QSurfaceFormat format() const override { return m_windowFormat; }
-    bool isSharing() const override;
-
-    static EGLDisplay getEglDisplay();
-    EGLConfig getEglConfig() const { return m_eglConfig;}
-    EGLContext getEglContext() const { return m_eglContext; }
+protected:
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override;
 
 private:
     //Can be static because different displays returne the same handle
     static EGLDisplay ms_eglDisplay;
-
-    QSurfaceFormat m_windowFormat;
-    QOpenGLContext *m_glContext;
-
-    EGLConfig m_eglConfig;
-    EGLContext m_eglContext;
-    EGLContext m_eglShareContext;
-    EGLSurface m_currentEglSurface;
-
-    static EGLint *contextAttrs(const QSurfaceFormat &format);
 };
 
 QT_END_NAMESPACE

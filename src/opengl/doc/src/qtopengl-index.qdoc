@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -41,9 +41,6 @@
     platform, Microsoft Foundation Classes (MFC) under Windows, or Qt
     on both platforms.
 
-    \note OpenGL is a trademark of Silicon Graphics, Inc. in
-    the United States and other countries.
-
     The Qt OpenGL module makes it easy to use OpenGL in Qt applications.
     It provides an OpenGL widget class that can be used just like any
     other Qt widget, except that it opens an OpenGL display buffer where
@@ -68,4 +65,16 @@
 
     The \l{Qt OpenGL C++ Classes} page gives an overview over the available classes
     in this module.
+
+    \section1 Licenses and Trademarks
+
+    The Qt OpenGL module is available under commercial licenses from \l{The Qt Company}.
+    In addition, it is available under free software licenses. Since Qt 5.4,
+    these free software licenses are
+    \l{GNU Lesser General Public License, version 3}, or
+    the \l{GNU General Public License, version 2}.
+    See \l{Qt Licensing} for further details.
+
+    OpenGL\reg is a trademark of Silicon Graphics, Inc. in
+    the United States and other countries.
 */

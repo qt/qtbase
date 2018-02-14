@@ -1,2 +1,5 @@
 [check_menuPosition]
 ubuntu-16.04
+#QTBUG-66255
+[activatedCount]
+*

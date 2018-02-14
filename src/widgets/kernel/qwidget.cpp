@@ -1482,7 +1482,8 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     if (q->windowType() != Qt::Desktop || q->testAttribute(Qt::WA_NativeWindow)) {
         win->create();
         // Enable nonclient-area events for QDockWidget and other NonClientArea-mouse event processing.
-        win->handle()->setFrameStrutEventsEnabled(true);
+        if (QPlatformWindow *platformWindow = win->handle())
+            platformWindow->setFrameStrutEventsEnabled(true);
     }
 
     data.window_flags = win->flags();

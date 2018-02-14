@@ -48,7 +48,12 @@ private slots:
     void quoteArgUnix();
     void quoteArgWin_data();
     void quoteArgWin();
+
     void pathUtils();
+    void ioUtilRelativity_data();
+    void ioUtilRelativity();
+    void ioUtilResolve_data();
+    void ioUtilResolve();
 
     void proString();
     void proStringList();

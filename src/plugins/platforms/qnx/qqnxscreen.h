@@ -49,10 +49,14 @@
 
 #include <screen/screen.h>
 
-// For pre-7.0 SDPs, map some screen property names to the old
+#if !defined(_SCREEN_VERSION)
+#define _SCREEN_MAKE_VERSION(major, minor, patch)  (((major) * 10000) + ((minor) * 100) + (patch))
+#define _SCREEN_VERSION _SCREEN_MAKE_VERSION(0, 0, 0)
+#endif
+
+// For pre-1.0.0 screen, map some screen property names to the old
 // names.
-#include <sys/neutrino.h>
-#if _NTO_VERSION < 700
+#if _SCREEN_VERSION < _SCREEN_MAKE_VERSION(1, 0, 0)
 const int SCREEN_PROPERTY_FLAGS = SCREEN_PROPERTY_KEY_FLAGS;
 const int SCREEN_PROPERTY_FOCUS = SCREEN_PROPERTY_KEYBOARD_FOCUS;
 const int SCREEN_PROPERTY_MODIFIERS = SCREEN_PROPERTY_KEY_MODIFIERS;

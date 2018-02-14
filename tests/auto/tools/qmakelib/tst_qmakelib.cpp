@@ -42,6 +42,7 @@ void tst_qmakelib::initTestCase()
 #endif
     m_prop.insert(ProKey("P1"), ProString("prop val"));
     m_prop.insert(ProKey("QT_HOST_DATA/get"), ProString(m_indir));
+    m_prop.insert(ProKey("QT_HOST_DATA/src"), ProString(m_indir));
 
     QVERIFY(!m_indir.isEmpty());
     QVERIFY(QDir(m_outdir).removeRecursively());
@@ -224,21 +225,99 @@ void tst_qmakelib::pathUtils()
     QVERIFY(IoUtils::isRelativePath(fn0));
 
     QString fn1 = "/a/unix/file/path";
-    QVERIFY(IoUtils::isAbsolutePath(fn1));
     QCOMPARE(IoUtils::pathName(fn1).toString(), QStringLiteral("/a/unix/file/"));
     QCOMPARE(IoUtils::fileName(fn1).toString(), QStringLiteral("path"));
+}
 
-#ifdef Q_OS_WIN
-    QString fn0a = "c:file/path";
-    QVERIFY(IoUtils::isRelativePath(fn0a));
+void tst_qmakelib::ioUtilRelativity_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("relative");
 
-    QString fn1a = "c:\\file\\path";
-    QVERIFY(IoUtils::isAbsolutePath(fn1a));
+    static const struct {
+        const char *name;
+        const char *path;
+        bool relative;
+    } rows[] = {
+        { "resource", ":/resource",
+#ifdef QMAKE_BUILTIN_PRFS
+          false
+#else
+          true
 #endif
+        },
+#ifdef Q_OS_WIN // all the complications:
+        // (except UNC: unsupported)
+        { "drive-abs", "c:/path/to/file", false },
+        { "drive-abs-bs", "c:\\path\\to\\file", false },
+        { "drive-path", "c:path/to/file.txt", true },
+        { "drive-path-bs", "c:path\\to\\file.txt", true },
+        { "rooted", "/Users/qt/bin/true", true },
+        { "rooted-bs", "\\Users\\qt\\bin\\true", true },
+        { "drive-rel", "c:file.txt", true },
+        { "subdir-bs", "path\\to\\file", true },
+#else
+        { "rooted", "/usr/bin/false", false },
+#endif // Q_OS_WIN
+        { "subdir", "path/to/file", true },
+        { "simple", "file.name", true },
+        { "empty", "", true }
+    };
 
-    QString fnbase = "/another/dir";
-    QCOMPARE(IoUtils::resolvePath(fnbase, fn0), QStringLiteral("/another/dir/file/path"));
-    QCOMPARE(IoUtils::resolvePath(fnbase, fn1), QStringLiteral("/a/unix/file/path"));
+    for (unsigned int i = sizeof(rows) / sizeof(rows[0]); i-- > 0; )
+        QTest::newRow(rows[i].name) << QString::fromLatin1(rows[i].path)
+                                    << rows[i].relative;
+}
+
+void tst_qmakelib::ioUtilRelativity()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, relative);
+
+    QCOMPARE(IoUtils::isRelativePath(path), relative);
+}
+
+void tst_qmakelib::ioUtilResolve_data()
+{
+    QTest::addColumn<QString>("base");
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QString>("expect");
+
+    static const struct {
+        const char *name;
+        const char *base;
+        const char *path;
+        const char *expect;
+    } data[] = {
+#ifdef Q_OS_WIN // all the complications:
+        { "drive-drive", "a:/ms/dir", "z:/root/file", "z:/root/file" },
+        { "drive-drive-bs", "a:\\ms\\dir", "z:\\root\\file", "z:/root/file" },
+        { "drive-root", "a:/ms/dir", "/root/file", "a:/root/file" },
+        { "drive-root-bs", "a:\\ms\\dir", "\\root\\file", "a:/root/file" },
+        { "drive-sub", "a:/ms/dir", "sub/file", "a:/ms/dir/sub/file" },
+        { "drive-sub-bs", "a:\\ms\\dir", "sub\\file", "a:/ms/dir/sub/file" },
+        { "drive-rel", "a:/ms/dir", "file.txt", "a:/ms/dir/file.txt" },
+        { "drive-rel-bs", "a:\\ms\\dir", "file.txt", "a:/ms/dir/file.txt" },
+#else
+        { "abs-abs", "/a/unix/dir", "/root/file", "/root/file" },
+        { "abs-sub", "/a/unix/dir", "sub/file", "/a/unix/dir/sub/file" },
+        { "abs-rel", "/a/unix/dir", "file.txt", "/a/unix/dir/file.txt" },
+#endif // Q_OS_WIN
+    };
+
+    for (unsigned i = sizeof(data) / sizeof(data[0]); i-- > 0; )
+        QTest::newRow(data[i].name) << QString::fromLatin1(data[i].base)
+                                    << QString::fromLatin1(data[i].path)
+                                    << QString::fromLatin1(data[i].expect);
+}
+
+void tst_qmakelib::ioUtilResolve()
+{
+    QFETCH(QString, base);
+    QFETCH(QString, path);
+    QFETCH(QString, expect);
+
+    QCOMPARE(IoUtils::resolvePath(base, path), expect);
 }
 
 void QMakeTestHandler::print(const QString &fileName, int lineNo, int type, const QString &msg)

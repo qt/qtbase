@@ -98,7 +98,7 @@ void *QQnxNativeInterface::nativeResourceForIntegration(const QByteArray &resour
 void *QQnxNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
     if (resource == "eglcontext" && context)
-        return static_cast<QQnxGLContext*>(context->handle())->getEglContext();
+        return static_cast<QQnxGLContext*>(context->handle())->eglContext();
 
     return 0;
 }

@@ -134,7 +134,11 @@ static void updateFormatFromContext(QSurfaceFormat &format)
     }
 
     format.setProfile(QSurfaceFormat::NoProfile);
+    const bool isStereo = format.testOption(QSurfaceFormat::StereoBuffers);
     format.setOptions(QSurfaceFormat::FormatOptions());
+    // Restore flags that come from the VisualInfo/FBConfig.
+    if (isStereo)
+        format.setOption(QSurfaceFormat::StereoBuffers);
 
     if (format.renderableType() == QSurfaceFormat::OpenGL) {
         if (format.version() < qMakePair(3, 0)) {

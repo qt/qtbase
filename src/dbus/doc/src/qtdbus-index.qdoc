@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -199,6 +199,15 @@
 
     Information about the messages will be written to the console the application
     was launched from.
+
+    \section1 Licenses
+
+    The Qt D-Bus module is available under commercial licenses from \l{The Qt Company}.
+    In addition, it is available under free software licenses. Since Qt 5.4,
+    these free software licenses are
+    \l{GNU Lesser General Public License, version 3}, or
+    the \l{GNU General Public License, version 2}.
+    See \l{Qt Licensing} for further details.
 
     \section1 Further Reading
 

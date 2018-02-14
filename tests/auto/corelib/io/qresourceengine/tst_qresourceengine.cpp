@@ -36,7 +36,7 @@ class tst_QResourceEngine: public QObject
 
 public:
     tst_QResourceEngine()
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
         : m_runtimeResourceRcc(QFileInfo(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QStringLiteral("/runtime_resource.rcc")).absoluteFilePath())
 #else
         : m_runtimeResourceRcc(QFINDTESTDATA("runtime_resource.rcc"))
@@ -64,7 +64,7 @@ private:
 
 void tst_QResourceEngine::initTestCase()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QString sourcePath(QStringLiteral(":/android_testdata/"));
     QString dataPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
 
@@ -121,7 +121,7 @@ void tst_QResourceEngine::checkStructure_data()
                  << QLatin1String("test")
                  << QLatin1String("withoutslashes");
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     rootContents.insert(1, QLatin1String("android_testdata"));
 #endif
 

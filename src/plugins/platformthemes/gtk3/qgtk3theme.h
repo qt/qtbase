@@ -59,6 +59,8 @@ public:
     QPlatformMenuItem* createPlatformMenuItem() const override;
 
     static const char *name;
+private:
+    static bool useNativeFileDialog();
 };
 
 QT_END_NAMESPACE
