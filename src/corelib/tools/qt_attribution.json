@@ -1,3 +1,20 @@
+[
+{
+    "Id": "unicode-character-database",
+    "Name": "Unicode Character Database (UCD)",
+    "QDocModule": "qtcore",
+    "QtUsage": "Qt Core uses data obtained from UCD files for working with characters and strings.",
+    "Files": "qunicodetables_p.h qunicodetables.cpp",
+
+    "Description": "The Unicode Character Database (UCD) is a set of files that
+ define the Unicode character properties and internal mappings.",
+    "Homepage": "https://www.unicode.org/ucd/",
+    "Version": "10.0.0",
+    "License": "Unicode License Agreement - Data Files and Software (2016)",
+    "LicenseId": "Unicode-DFS-2016",
+    "LicenseFile": "UNICODE_LICENSE.txt",
+    "Copyright": "Copyright (C) 1991-2018 Unicode, Inc."
+},
 {
     "Id": "cldr-data",
     "Name": "Unicode CLDR (Unicode Common Locale Data Repository)",
@@ -8,6 +25,7 @@
     "Description": "QTimeZone includes data obtained from the CLDR data files.",
     "License": "Unicode Data Files and Software License",
     "LicenseId": "Unicode-TOU",
-    "LicenseFile": "CLDR_LICENSE.txt",
+    "LicenseFile": "UNICODE_LICENSE.txt",
     "Copyright": "Copyright (C) 1991-2016 Unicode, Inc."
 }
+]
