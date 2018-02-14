@@ -1,4 +1,6 @@
-QMAKE_CFLAGS += -std=gnu99 -w
+# Requires GNU C extensions
+CONFIG -= strict_c
+
 INCLUDEPATH += $$PWD/xkbcommon \
                $$PWD/xkbcommon/xkbcommon \
                $$PWD/xkbcommon/src \

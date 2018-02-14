@@ -898,7 +898,7 @@
        /* C11 features supported in GCC 4.7: */
 #      define Q_COMPILER_STATIC_ASSERT
 #    endif
-#    if Q_CC_GNU >= 409
+#    if Q_CC_GNU >= 409 && defined(__has_include)
        /* C11 features supported in GCC 4.9: */
 #      if __has_include(<threads.h>)
 #        define Q_COMPILER_THREAD_LOCAL
