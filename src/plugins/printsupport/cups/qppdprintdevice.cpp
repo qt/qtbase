@@ -352,14 +352,18 @@ void QPpdPrintDevice::loadDuplexModes() const
         ppd_option_t *duplexModes = ppdFindOption(m_ppd, "Duplex");
         if (duplexModes) {
             m_duplexModes.reserve(duplexModes->num_choices);
-            for (int i = 0; i < duplexModes->num_choices; ++i)
-                m_duplexModes.append(QPrintUtils::ppdChoiceToDuplexMode(duplexModes->choices[i].choice));
+            for (int i = 0; i < duplexModes->num_choices; ++i) {
+                if (ppdInstallableConflict(m_ppd, duplexModes->keyword, duplexModes->choices[i].choice) == 0) {
+                    m_duplexModes.append(QPrintUtils::ppdChoiceToDuplexMode(duplexModes->choices[i].choice));
+                }
+            }
         }
         // If no result, try just the default
         if (m_duplexModes.size() == 0) {
             duplexModes = ppdFindOption(m_ppd, "DefaultDuplex");
-            if (duplexModes)
+            if (duplexModes && (ppdInstallableConflict(m_ppd, duplexModes->keyword, duplexModes->choices[0].choice) == 0)) {
                 m_duplexModes.append(QPrintUtils::ppdChoiceToDuplexMode(duplexModes->choices[0].choice));
+            }
         }
     }
     // If still no result, or not added in PPD, then add None
