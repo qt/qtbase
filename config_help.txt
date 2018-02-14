@@ -274,7 +274,8 @@ Gui, printing, widget options:
                          (Windows only)
   -combined-angle-lib .. Merge LibEGL and LibGLESv2 into LibANGLE (Windows only)
 
-  -qpa <name> .......... Select default QPA backend (e.g., xcb, cocoa, windows)
+  -qpa <name> .......... Select default QPA backend(s) (e.g., xcb, cocoa, windows)
+                         A prioritized list separated by semi-colons.
   -xcb-xlib............. Enable Xcb-Xlib support [auto]
 
   Platform backends:
