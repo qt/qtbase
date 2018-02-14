@@ -31,6 +31,10 @@
 #include <private/qtimezoneprivate_p.h>
 #include <qlocale.h>
 
+#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
+#  define USING_WIN_TZ
+#endif
+
 class tst_QTimeZone : public QObject
 {
     Q_OBJECT
@@ -413,7 +417,7 @@ void tst_QTimeZone::specificTransition_data()
     QTest::addColumn<int>("dstoff");
 
     // Moscow ditched DST on 2010-10-31 but has since changed standard offset twice.
-#ifdef Q_OS_WIN
+#ifdef USING_WIN_TZ
     // Win7 is too old to know about this transition:
     if (QOperatingSystemVersion::current() > QOperatingSystemVersion::Windows7)
 #endif
@@ -500,7 +504,7 @@ void tst_QTimeZone::transitionEachZone()
     QTimeZone named(zone);
 
     for (int i = start; i < stop; i++) {
-#ifdef Q_OS_WIN
+#ifdef USING_WIN_TZ
         // See QTBUG-64985: MS's TZ APIs' misdescription of Europe/Samara leads
         // to mis-disambiguation of its fall-back here.
         if (QOperatingSystemVersion::current() <= QOperatingSystemVersion::Windows7
@@ -829,7 +833,7 @@ void tst_QTimeZone::utcTest()
 
 void tst_QTimeZone::icuTest()
 {
-#if defined(QT_BUILD_INTERNAL) && defined(QT_USE_ICU)
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(icu)
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
@@ -877,7 +881,7 @@ void tst_QTimeZone::icuTest()
 
     testCetPrivate(tzp);
     testEpochTranPrivate(QIcuTimeZonePrivate("America/Toronto"));
-#endif // QT_USE_ICU
+#endif // icu
 }
 
 void tst_QTimeZone::tzTest()
@@ -903,7 +907,7 @@ void tst_QTimeZone::tzTest()
     QLocale enUS("en_US");
     // Only test names in debug mode, names used can vary by ICU version installed
     if (debug) {
-#ifdef QT_USE_ICU
+#ifdef QT_CONFIG(icu)
         QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, enUS),
                 QString("Central European Standard Time"));
         QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::ShortName, enUS),
@@ -942,7 +946,7 @@ void tst_QTimeZone::tzTest()
                 QString("CET"));
         QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::OffsetName, enUS),
                 QString("CET"));
-#endif // QT_USE_ICU
+#endif // icu
 
         // Test Abbreviations
         QCOMPARE(tzp.abbreviation(std), QString("CET"));
@@ -1119,7 +1123,7 @@ void tst_QTimeZone::darwinTypes()
 
 void tst_QTimeZone::winTest()
 {
-#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN)
+#if defined(QT_BUILD_INTERNAL) && defined(USING_WIN_TZ)
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
@@ -1170,7 +1174,7 @@ void tst_QTimeZone::winTest()
 
     testCetPrivate(tzp);
     testEpochTranPrivate(QWinTimeZonePrivate("America/Toronto"));
-#endif // Q_OS_WIN
+#endif // QT_BUILD_INTERNAL && USING_WIN_TZ
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -1282,7 +1286,7 @@ void tst_QTimeZone::testEpochTranPrivate(const QTimeZonePrivate &tzp)
     // 1970-04-26 02:00 EST, -5 -> -4
     const QDateTime after = QDateTime(QDate(1970, 4, 26), QTime(2, 0), Qt::OffsetFromUTC, -5 * 3600);
     const QDateTime found = QDateTime::fromMSecsSinceEpoch(tran.atMSecsSinceEpoch, Qt::UTC);
-#ifdef Q_OS_WIN // MS gets the date wrong: 5th April instead of 26th.
+#ifdef USING_WIN_TZ // MS gets the date wrong: 5th April instead of 26th.
     QCOMPARE(found.toOffsetFromUtc(-5 * 3600).time(), after.time());
 #else
     QCOMPARE(found, after);
