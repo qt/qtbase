@@ -5,5 +5,5 @@ SOURCES = tst_qsettings.cpp
 RESOURCES += qsettings.qrc
 INCLUDEPATH += $$PWD/../../kernel/qmetatype
 
-win32-msvc*:LIBS += advapi32.lib
+msvc: LIBS += advapi32.lib
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
