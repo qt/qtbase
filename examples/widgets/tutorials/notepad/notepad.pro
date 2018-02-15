@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = notepad
 
-QT += printsupport
+qtHaveModule(printsupport): QT += printsupport
 requires(qtConfig(fontdialog))
 
 SOURCES += \
