@@ -150,6 +150,7 @@ public:
         MacModelessLayout,
         AndroidLayout
     };
+    Q_ENUM(ButtonLayout)
 
     QPlatformDialogHelper();
     virtual ~QPlatformDialogHelper();
