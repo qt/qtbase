@@ -2286,7 +2286,9 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
 
     tv.setModel(proxyModel);
     const int section4Size = tv.horizontalHeader()->sectionSize(4) + 1;
+    const int section5Size = section4Size + 1;
     tv.horizontalHeader()->resizeSection(4, section4Size);
+    tv.horizontalHeader()->resizeSection(5, section5Size);
     tv.setColumnHidden(5, true);
     tv.setColumnHidden(6, true);
     tv.horizontalHeader()->swapSections(8, 10);
@@ -2298,6 +2300,9 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
     QCOMPARE(tv.horizontalHeader()->logicalIndex(8), 10);
     QCOMPARE(tv.horizontalHeader()->logicalIndex(10), 8);
     QCOMPARE(tv.horizontalHeader()->sectionSize(4), section4Size);
+    tv.setColumnHidden(5, false);   // unhide, section size must be properly restored
+    QCOMPARE(tv.horizontalHeader()->sectionSize(5), section5Size);
+    tv.setColumnHidden(5, true);
 
     QSignalSpy clickedSpy(tv.horizontalHeader(), SIGNAL(sectionClicked(int)));
     QSignalSpy pressedSpy(tv.horizontalHeader(), SIGNAL(sectionPressed(int)));
