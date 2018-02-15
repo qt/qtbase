@@ -223,10 +223,8 @@ void QPlainTestLogger::outputMessage(const char *str)
     outputString(str);
 }
 
-static QTestCharBuffer testIdentifier()
+static void testIdentifier(QTestCharBuffer *identifier)
 {
-    QTestCharBuffer identifier;
-
     const char *testObject = QTestResult::currentTestObjectName();
     const char *testFunction = QTestResult::currentTestFunction() ? QTestResult::currentTestFunction() : "UnknownTestFunc";
 
@@ -234,8 +232,7 @@ static QTestCharBuffer testIdentifier()
     const char *globalDataTag = QTestResult::currentGlobalDataTag() ? QTestResult::currentGlobalDataTag() : "";
     const char *tagFiller = (dataTag[0] && globalDataTag[0]) ? ":" : "";
 
-    QTest::qt_asprintf(&identifier, "%s::%s(%s%s%s)", testObject, testFunction, globalDataTag, tagFiller, dataTag);
-    return identifier;
+    QTest::qt_asprintf(identifier, "%s::%s(%s%s%s)", testObject, testFunction, globalDataTag, tagFiller, dataTag);
 }
 
 void QPlainTestLogger::printMessage(const char *type, const char *msg, const char *file, int line)
@@ -256,8 +253,10 @@ void QPlainTestLogger::printMessage(const char *type, const char *msg, const cha
     }
 
     const char *msgFiller = msg[0] ? " " : "";
+    QTestCharBuffer testIdent;
+    testIdentifier(&testIdent);
     QTest::qt_asprintf(&messagePrefix, "%s: %s%s%s%s\n",
-            type, testIdentifier().data(), msgFiller, msg, failureLocation.data());
+                       type, testIdent.data(), msgFiller, msg, failureLocation.data());
 
     // In colored mode, printf above stripped our nonprintable control characters.
     // Put them back.
