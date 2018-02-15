@@ -817,19 +817,21 @@ QSqlRecord QPSQLResult::record() const
         else
             f.setName(QString::fromLocal8Bit(PQfname(d->result, i)));
         const int tableOid = PQftable(d->result, i);
-        auto &tableName = d->drv_d_func()->oidToTable[tableOid];
         // WARNING: We cannot execute any other SQL queries on
         // the same db connection while forward-only mode is active
         // (this would discard all results of forward-only query).
         // So we just skip this...
-        if (tableName.isEmpty() && !isForwardOnly()) {
-            QSqlQuery qry(driver()->createResult());
-            if (qry.exec(QStringLiteral("SELECT relname FROM pg_class WHERE pg_class.oid = %1")
-                         .arg(tableOid)) && qry.next()) {
-                tableName = qry.value(0).toString();
+        if (tableOid != InvalidOid && !isForwardOnly()) {
+            auto &tableName = d->drv_d_func()->oidToTable[tableOid];
+            if (tableName.isEmpty()) {
+                QSqlQuery qry(driver()->createResult());
+                if (qry.exec(QStringLiteral("SELECT relname FROM pg_class WHERE pg_class.oid = %1")
+                            .arg(tableOid)) && qry.next()) {
+                    tableName = qry.value(0).toString();
+                }
             }
+            f.setTableName(tableName);
         }
-        f.setTableName(tableName);
         int ptype = PQftype(d->result, i);
         f.setType(qDecodePSQLType(ptype));
         int len = PQfsize(d->result, i);
