@@ -141,10 +141,10 @@
             "use": "network"
         },
         "openssl11": {
-            "label": "OpenSSL v. 1.1 support",
+            "label": "OpenSSL 1.1 support",
             "type": "compile",
             "test": "unix/openssl11",
-            "use": "network"
+            "use": "openssl"
         }
     },
 
@@ -213,9 +213,9 @@
             "output": [ "publicFeature", "feature" ]
         },
         "opensslv11": {
-            "label": "OpenSSL v. 1.1",
-            "condition": "tests.openssl11",
-            "output": ["publicFeature", "feature"]
+            "label": "OpenSSL 1.1",
+            "condition": "features.openssl && tests.openssl11",
+            "output": [ "publicFeature" ]
         },
         "sctp": {
             "label": "SCTP",
@@ -341,6 +341,7 @@ For example:
                 },
                 "openssl",
                 "openssl-linked",
+                "opensslv11",
                 "sctp",
                 "system-proxies"
             ]

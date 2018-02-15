@@ -110,6 +110,10 @@ private:
     friend class QIOSScreen;
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QIOSWindow *window);
+#endif
+
 QT_END_NAMESPACE
 
 #endif // QIOSWINDOW_H
