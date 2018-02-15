@@ -1,9 +1,14 @@
 # Copies the given files to the destination directory
 defineTest(copyToOutDdir) {
     files = $$1
-    for(FILE, files) {
-        DDIR = $$OUT_PWD
 
+    !isEmpty(DESTDIR) {
+        DDIR = $$DESTDIR
+    } else {
+        DDIR = $$OUT_PWD
+    }
+
+    for(FILE, files) {
         # Replace slashes in paths with backslashes for Windows
         win32:FILE ~= s,/,\\,g
         win32:DDIR ~= s,/,\\,g
@@ -42,9 +47,6 @@ contains(TEMPLATE, .*app) {
     }
     QMAKE_LFLAGS += --shell-file $$HTML5_PLUGIN_PATH/html5_shell.html
     copyToOutDdir($$HTML5_PLUGIN_PATH/qtloader.js)
-
-    message($$HTML5_PLUGIN_PATH)
-    message($$OUT_PWD)
 
     # emscripten ports are linked into the main module (this app), not the Qt
     # libs which reference them
