@@ -2857,7 +2857,7 @@ QString QXcbWindow::windowTitle(const QXcbConnection *conn, xcb_window_t window)
                                        utf8Atom, 0, 1024);
     if (reply && reply->format == 8 && reply->type == utf8Atom) {
         const char *name = reinterpret_cast<const char *>(xcb_get_property_value(reply.get()));
-        return QString::fromUtf8(name);
+        return QString::fromUtf8(name, xcb_get_property_value_length(reply.get()));
     }
     return QString();
 }
