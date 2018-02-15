@@ -2080,15 +2080,19 @@ void QHeaderViewPrivate::_q_layoutAboutToBeChanged()
         sectionItems[visual].size = lastSectionSize;
     }
     for (int i = 0; i < sectionItems.size(); ++i) {
-        const auto &s = sectionItems.at(i);
+        auto s = sectionItems.at(i);
         // only add if the section is not default and not visually moved
         if (s.size == defaultSectionSize && !s.isHidden && s.resizeMode == globalResizeMode)
             continue;
 
+        const int logical = logicalIndex(i);
+        if (s.isHidden)
+            s.size = hiddenSectionSize.value(logical);
+
         // ### note that we are using column or row 0
         layoutChangePersistentSections.append({orientation == Qt::Horizontal
-                                                  ? model->index(0, logicalIndex(i), root)
-                                                  : model->index(logicalIndex(i), 0, root),
+                                                  ? model->index(0, logical, root)
+                                                  : model->index(logical, 0, root),
                                               s});
 
         if (layoutChangePersistentSections.size() > 1000)
