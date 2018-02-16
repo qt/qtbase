@@ -241,7 +241,6 @@ public: // for QNSView
     bool m_viewIsEmbedded; // true if the m_view is actually embedded in a "foreign" NSView hiearchy
     bool m_viewIsToBeEmbedded; // true if the m_view is intended to be embedded in a "foreign" NSView hiearchy
 
-    Qt::WindowFlags m_windowFlags;
     Qt::WindowStates m_lastReportedWindowState;
     Qt::WindowModality m_windowModality;
     QPointer<QWindow> m_enterLeaveTargetWindow;

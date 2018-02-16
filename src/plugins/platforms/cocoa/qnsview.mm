@@ -546,7 +546,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
         // Tooltips must be transparent for mouse events
         // The bug reference is QTBUG-46379
-        if (!popup->m_windowFlags.testFlag(Qt::ToolTip)) {
+        if (!popup->window()->flags().testFlag(Qt::ToolTip)) {
             if (QNSView *popupView = qnsview_cast(popup->view()))
                 targetView = popupView;
         }
@@ -1437,7 +1437,7 @@ static QTabletEvent::TabletDevice wacomTabletDevice(NSEvent *theEvent)
     // Popups implicitly grab key events; forward to the active popup if there is one.
     // This allows popups to e.g. intercept shortcuts and close the popup in response.
     if (QCocoaWindow *popup = QCocoaIntegration::instance()->activePopupWindow()) {
-        if (!popup->m_windowFlags.testFlag(Qt::ToolTip))
+        if (!popup->window()->flags().testFlag(Qt::ToolTip))
             window = popup->window();
     }
 

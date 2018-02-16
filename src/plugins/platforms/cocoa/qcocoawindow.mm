@@ -550,46 +550,45 @@ void QCocoaWindow::setWindowZoomButton(Qt::WindowFlags flags)
 
 void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    if (isContentView()) {
-        // While setting style mask we can have handleGeometryChange calls on a content
-        // view with null geometry, reporting an invalid coordinates as a result.
-        m_inSetStyleMask = true;
-        m_view.window.styleMask = windowStyleMask(flags);
-        m_inSetStyleMask = false;
-        m_view.window.level = this->windowLevel(flags);
+    if (!isContentView())
+        return;
 
-        m_view.window.hasShadow = !(flags & Qt::NoDropShadowWindowHint);
+    // While setting style mask we can have handleGeometryChange calls on a content
+    // view with null geometry, reporting an invalid coordinates as a result.
+    m_inSetStyleMask = true;
+    m_view.window.styleMask = windowStyleMask(flags);
+    m_inSetStyleMask = false;
+    m_view.window.level = this->windowLevel(flags);
 
-        if (!(flags & Qt::FramelessWindowHint))
-            setWindowTitle(window()->title());
+    m_view.window.hasShadow = !(flags & Qt::NoDropShadowWindowHint);
 
-        Qt::WindowType type = window()->type();
-        if ((type & Qt::Popup) != Qt::Popup && (type & Qt::Dialog) != Qt::Dialog) {
-            NSWindowCollectionBehavior behavior = m_view.window.collectionBehavior;
-            if (flags & Qt::WindowFullscreenButtonHint) {
-                behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
-                behavior &= ~NSWindowCollectionBehaviorFullScreenAuxiliary;
-            } else {
-                behavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
-                behavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
-            }
-            m_view.window.collectionBehavior = behavior;
+    if (!(flags & Qt::FramelessWindowHint))
+        setWindowTitle(window()->title());
+
+    Qt::WindowType type = window()->type();
+    if ((type & Qt::Popup) != Qt::Popup && (type & Qt::Dialog) != Qt::Dialog) {
+        NSWindowCollectionBehavior behavior = m_view.window.collectionBehavior;
+        if (flags & Qt::WindowFullscreenButtonHint) {
+            behavior |= NSWindowCollectionBehaviorFullScreenPrimary;
+            behavior &= ~NSWindowCollectionBehaviorFullScreenAuxiliary;
+        } else {
+            behavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
+            behavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
         }
-        setWindowZoomButton(flags);
-
-        // Make window ignore mouse events if WindowTransparentForInput is set.
-        // Note that ignoresMouseEvents has a special initial state where events
-        // are ignored (passed through) based on window transparency, and that
-        // setting the property to false does not return us to that state. Instead,
-        // this makes the window capture all mouse events. Take care to only
-        // set the property if needed. FIXME: recreate window if needed or find
-        // some other way to implement WindowTransparentForInput.
-        bool ignoreMouse = flags & Qt::WindowTransparentForInput;
-        if (m_view.window.ignoresMouseEvents != ignoreMouse)
-            m_view.window.ignoresMouseEvents = ignoreMouse;
+        m_view.window.collectionBehavior = behavior;
     }
+    setWindowZoomButton(flags);
 
-    m_windowFlags = flags;
+    // Make window ignore mouse events if WindowTransparentForInput is set.
+    // Note that ignoresMouseEvents has a special initial state where events
+    // are ignored (passed through) based on window transparency, and that
+    // setting the property to false does not return us to that state. Instead,
+    // this makes the window capture all mouse events. Take care to only
+    // set the property if needed. FIXME: recreate window if needed or find
+    // some other way to implement WindowTransparentForInput.
+    bool ignoreMouse = flags & Qt::WindowTransparentForInput;
+    if (m_view.window.ignoresMouseEvents != ignoreMouse)
+        m_view.window.ignoresMouseEvents = ignoreMouse;
 }
 
 void QCocoaWindow::setWindowState(Qt::WindowStates state)
@@ -742,7 +741,7 @@ void QCocoaWindow::propagateSizeHints()
     window.contentMaxSize = NSSizeFromCGSize(windowMaximumSize().toCGSize());
 
     // The window may end up with a fixed size; in this case the zoom button should be disabled.
-    setWindowZoomButton(m_windowFlags);
+    setWindowZoomButton(this->window()->flags());
 
     // sizeIncrement is observed to take values of (-1, -1) and (0, 0) for windows that should be
     // resizable and that have no specific size increment set. Cocoa expects (1.0, 1.0) in this case.
@@ -995,7 +994,7 @@ void QCocoaWindow::windowDidEnterFullScreen()
         "FullScreen category processes window notifications first");
 
     // Reset to original styleMask
-    setWindowFlags(m_windowFlags);
+    setWindowFlags(window()->flags());
 
     handleWindowStateChanged();
 }
@@ -1019,7 +1018,7 @@ void QCocoaWindow::windowDidExitFullScreen()
         "FullScreen category processes window notifications first");
 
     // Reset to original styleMask
-    setWindowFlags(m_windowFlags);
+    setWindowFlags(window()->flags());
 
     Qt::WindowState requestedState = window()->windowState();
 
