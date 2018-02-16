@@ -1,13 +1,35 @@
+[
 {
-    "Id": "cldr-data",
-    "Name": "Unicode CLDR (Unicode Common Locale Data Repository)",
+    "Id": "unicode-character-database",
+    "Name": "Unicode Character Database (UCD)",
     "QDocModule": "qtcore",
-    "QtUsage": "Used in Qt Core (QTimeZone). Disable the timezone feature to avoid.",
-    "Files": "qlocale_data_p.h",
+    "QtUsage": "Qt Core uses data obtained from UCD files for working with characters and strings.",
+    "Files": "qunicodetables_p.h qunicodetables.cpp",
 
-    "Description": "QTimeZone includes data obtained from the CLDR data files.",
-    "License": "Unicode Data Files and Software License",
-    "LicenseId": "Unicode-TOU",
-    "LicenseFile": "CLDR_LICENSE.txt",
-    "Copyright": "Copyright (C) 1991-2016 Unicode, Inc."
+    "Description": "The Unicode Character Database (UCD) is a set of files that
+ define the Unicode character properties and internal mappings.",
+    "Homepage": "https://www.unicode.org/ucd/",
+    "Version": "10.0.0",
+    "License": "Unicode License Agreement - Data Files and Software (2016)",
+    "LicenseId": "Unicode-DFS-2016",
+    "LicenseFile": "UNICODE_LICENSE.txt",
+    "Copyright": "Copyright (C) 1991-2018 Unicode, Inc."
+},
+{
+    "Id": "unicode-cldr",
+    "Name": "Unicode Common Locale Data Repository (CLDR)",
+    "QDocModule": "qtcore",
+    "QtUsage": "Used in Qt Core (QTimeZone, QLocale).",
+    "Files": "qlocale_data_p.h qtimezoneprivate_data_p.h",
+
+    "Description": "The Unicode CLDR provides key building blocks for software to support the
+ world's languages, with the largest and most extensive standard repository of locale data
+ available.",
+    "Homepage": "http://cldr.unicode.org/",
+    "Version": "v31.0.1",
+    "License": "Unicode License Agreement - Data Files and Software (2016)",
+    "LicenseId": "Unicode-DFS-2016",
+    "LicenseFile": "UNICODE_LICENSE.txt",
+    "Copyright": "Copyright (C) 1991-2017 Unicode, Inc."
 }
+]

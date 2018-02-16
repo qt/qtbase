@@ -40,6 +40,8 @@
 #import "qcocoansmenu.h"
 #include "qcocoamenu.h"
 #include "qcocoamenuitem.h"
+#include "qcocoamenubar.h"
+#include "qcocoawindow.h"
 #import "qnsview.h"
 
 #include <QtCore/qmetaobject.h>
@@ -289,6 +291,19 @@ static NSString *qt_mac_removePrivateUnicode(NSString* string)
     }
 
     return nil;
+}
+
+// Cocoa will query the menu item's target for the worksWhenModal selector.
+// So we need to implement this to allow the items to be handled correctly
+// when a modal dialog is visible.
+- (BOOL)worksWhenModal
+{
+    if (!QGuiApplication::modalWindow())
+        return YES;
+    const auto &qpaMenu = static_cast<QCocoaNSMenu *>(self).qpaMenu;
+    if (auto *mb = qobject_cast<QCocoaMenuBar *>(qpaMenu->menuParent()))
+        return QGuiApplication::modalWindow()->handle() == mb->cocoaWindow() ? YES : NO;
+    return YES;
 }
 
 @end

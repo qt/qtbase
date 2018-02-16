@@ -141,10 +141,15 @@ void QEglFSKmsVsp2Screen::initDumbFrameBuffers()
 void QEglFSKmsVsp2Screen::initVsp2()
 {
     qCDebug(qLcEglfsKmsDebug, "Initializing Vsp2 hardware");
-    const QSize screenSize = rawGeometry().size();
-    m_blendDevice.reset(new QVsp2BlendingDevice(screenSize));
+    m_blendDevice.reset(new QVsp2BlendingDevice(rawGeometry().size()));
 
     // Enable input for main buffer drawn by the compositor (always on)
+    initQtLayer();
+}
+
+void QEglFSKmsVsp2Screen::initQtLayer()
+{
+    const QSize screenSize = rawGeometry().size();
     const uint bytesPerLine = uint(screenSize.width()) * 4; //TODO: is this ok?
     bool formatSet = m_blendDevice->enableInput(m_qtLayer, QRect(QPoint(), screenSize), m_output.drm_format, bytesPerLine);
     if (!formatSet) {
@@ -298,8 +303,13 @@ void QEglFSKmsVsp2Screen::blendAndFlipDrm()
     vBlank.request.signal = 0;
     drmWaitVBlank(driFd, &vBlank);
 
-    if (!m_blendDevice->blend(backBuffer.dmabufFd))
-        qWarning() << "Vsp2: blending failed";
+    if (!m_blendDevice->blend(backBuffer.dmabufFd)) {
+        qWarning() << "Vsp2: Blending failed";
+
+        // For some reason, a failed blend may often mess up the qt layer, so reinitialize it here
+        m_blendDevice->disableInput(m_qtLayer);
+        initQtLayer();
+    }
 
     for (auto cb : m_blendFinishedCallbacks)
         cb();

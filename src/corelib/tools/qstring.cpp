@@ -3855,14 +3855,14 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
         while (i < pos) {
             int copyend = replacements[i].pos;
             int size = copyend - copystart;
-            memcpy(uc, d->data() + copystart, size * sizeof(QChar));
+            memcpy(static_cast<void*>(uc), static_cast<const void *>(d->data() + copystart), size * sizeof(QChar));
             uc += size;
-            memcpy(uc, after.d->data(), al * sizeof(QChar));
+            memcpy(static_cast<void *>(uc), static_cast<const void *>(after.d->data()), al * sizeof(QChar));
             uc += al;
             copystart = copyend + replacements[i].length;
             i++;
         }
-        memcpy(uc, d->data() + copystart, (d->size - copystart) * sizeof(QChar));
+        memcpy(static_cast<void *>(uc), static_cast<const void *>(d->data() + copystart), (d->size - copystart) * sizeof(QChar));
         newstring.resize(newlen);
         *this = newstring;
         caretMode = QRegExp::CaretWontMatch;
@@ -6353,7 +6353,7 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
         while (padlen--)
            * uc++ = fill;
         if (len)
-            memcpy(uc, d->data(), sizeof(QChar)*len);
+          memcpy(static_cast<void *>(uc), static_cast<const void *>(d->data()), sizeof(QChar)*len);
     } else {
         if (truncate)
             result = left(width);
@@ -6931,6 +6931,8 @@ QString QString::vasprintf(const char *cformat, va_list ap)
 
     \snippet qstring/main.cpp 74
 
+    This function ignores leading and trailing whitespace.
+
     \sa number(), toULongLong(), toInt(), QLocale::toLongLong()
 */
 
@@ -6970,6 +6972,8 @@ qlonglong QString::toIntegral_helper(const QChar *data, int len, bool *ok, int b
     Example:
 
     \snippet qstring/main.cpp 79
+
+    This function ignores leading and trailing whitespace.
 
     \sa number(), toLongLong(), QLocale::toULongLong()
 */
@@ -7013,6 +7017,8 @@ qulonglong QString::toIntegral_helper(const QChar *data, uint len, bool *ok, int
 
     \snippet qstring/main.cpp 73
 
+    This function ignores leading and trailing whitespace.
+
     \sa number(), toULong(), toInt(), QLocale::toInt()
 */
 
@@ -7042,6 +7048,8 @@ long QString::toLong(bool *ok, int base) const
 
     \snippet qstring/main.cpp 78
 
+    This function ignores leading and trailing whitespace.
+
     \sa number(), QLocale::toUInt()
 */
 
@@ -7070,6 +7078,8 @@ ulong QString::toULong(bool *ok, int base) const
 
     \snippet qstring/main.cpp 72
 
+    This function ignores leading and trailing whitespace.
+
     \sa number(), toUInt(), toDouble(), QLocale::toInt()
 */
 
@@ -7096,6 +7106,8 @@ int QString::toInt(bool *ok, int base) const
     Example:
 
     \snippet qstring/main.cpp 77
+
+    This function ignores leading and trailing whitespace.
 
     \sa number(), toInt(), QLocale::toUInt()
 */
@@ -7124,6 +7136,8 @@ uint QString::toUInt(bool *ok, int base) const
 
     \snippet qstring/main.cpp 76
 
+    This function ignores leading and trailing whitespace.
+
     \sa number(), toUShort(), toInt(), QLocale::toShort()
 */
 
@@ -7151,6 +7165,8 @@ short QString::toShort(bool *ok, int base) const
 
     \snippet qstring/main.cpp 80
 
+    This function ignores leading and trailing whitespace.
+
     \sa number(), toShort(), QLocale::toUShort()
 */
 
@@ -7170,7 +7186,10 @@ ushort QString::toUShort(bool *ok, int base) const
 
     \snippet qstring/main.cpp 66
 
-    \warning The QString content may only contain valid numerical characters which includes the plus/minus sign, the characters g and e used in scientific notation, and the decimal point. Including the unit or additional characters leads to a conversion error.
+    \warning The QString content may only contain valid numerical characters
+    which includes the plus/minus sign, the characters g and e used in scientific
+    notation, and the decimal point. Including the unit or additional characters
+    leads to a conversion error.
 
     \snippet qstring/main.cpp 67
 
@@ -7184,6 +7203,8 @@ ushort QString::toUShort(bool *ok, int base) const
     use QLocale::toDouble().
 
     \snippet qstring/main.cpp 69
+
+    This function ignores leading and trailing whitespace.
 
     \sa number(), QLocale::setDefault(), QLocale::toDouble(), trimmed()
 */
@@ -7199,12 +7220,16 @@ double QString::toDouble(bool *ok) const
     If a conversion error occurs, *\a{ok} is set to \c false; otherwise
     *\a{ok} is set to \c true. Returns 0.0 if the conversion fails.
 
+    This function ignores leading and trailing whitespace.
+
     The string conversion will always happen in the 'C' locale. For locale
     dependent conversion use QLocale::toFloat()
 
     Example:
 
     \snippet qstring/main.cpp 71
+
+    This function ignores leading and trailing whitespace.
 
     \sa number(), toDouble(), toInt(), QLocale::toFloat()
 */
@@ -11878,7 +11903,7 @@ QString QString::toHtmlEscaped() const
   This cost can be avoided by using QStringLiteral instead:
 
   \code
-  if (node.hasAttribute(QStringLiteral("http-contents-length"))) //...
+  if (node.hasAttribute(QStringLiteral(u"http-contents-length"))) //...
   \endcode
 
   In this case, QString's internal data will be generated at compile time; no
@@ -11897,6 +11922,10 @@ QString QString::toHtmlEscaped() const
   \code
   if (attribute.name() == QLatin1String("http-contents-length")) //...
   \endcode
+
+  \note Some compilers have bugs encoding strings containing characters outside
+  the US-ASCII character set. Make sure you prefix your string with \c{u} in
+  those cases. It is optional otherwise.
 
   \sa QByteArrayLiteral
 */

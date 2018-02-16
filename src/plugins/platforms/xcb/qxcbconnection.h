@@ -438,6 +438,7 @@ public:
     void sync();
 
     void handleXcbError(xcb_generic_error_t *error);
+    void printXcbError(const char *message, xcb_generic_error_t *error);
     void handleXcbEvent(xcb_generic_event_t *event);
     void printXcbEvent(const QLoggingCategory &log, const char *message,
                        xcb_generic_event_t *event) const;
@@ -475,6 +476,8 @@ public:
     bool hasXKB() const { return has_xkb; }
     bool hasXRender() const { return has_render_extension; }
     bool hasXInput2() const { return m_xi2Enabled; }
+    bool hasShm() const { return has_shm; }
+    bool hasShmFd() const { return has_shm_fd; }
 
     bool threadedEventHandling() const { return m_reader->isRunning(); }
 
@@ -542,6 +545,7 @@ private slots:
 private:
     void initializeAllAtoms();
     void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
+    void initializeShm();
     void initializeXFixes();
     void initializeXRender();
     void initializeXRandr();
@@ -696,6 +700,8 @@ private:
     bool has_input_shape;
     bool has_xkb = false;
     bool has_render_extension = false;
+    bool has_shm = false;
+    bool has_shm_fd = false;
 
     Qt::MouseButtons m_buttonState = 0;
     Qt::MouseButton m_button = Qt::NoButton;

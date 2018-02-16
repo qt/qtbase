@@ -148,6 +148,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         m_isMenuView = false;
         self.focusRingType = NSFocusRingTypeNone;
         self.cursor = nil;
+        m_updateRequested = false;
     }
     return self;
 }
@@ -300,6 +301,25 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     return m_platformWindow->isOpaque();
 }
 
+- (void)requestUpdate
+{
+    if (self.needsDisplay) {
+        // If the view already has needsDisplay set it means that there may be code waiting for
+        // a real expose event, so we can't issue setNeedsDisplay now as a way to trigger an
+        // update request. We will re-trigger requestUpdate from drawRect.
+        return;
+    }
+
+    [self setNeedsDisplay:YES];
+    m_updateRequested = true;
+}
+
+- (void)setNeedsDisplayInRect:(NSRect)rect
+{
+    [super setNeedsDisplayInRect:rect];
+    m_updateRequested = false;
+}
+
 - (void)drawRect:(NSRect)dirtyRect
 {
     Q_UNUSED(dirtyRect);
@@ -315,7 +335,11 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
         exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
 
     qCDebug(lcQpaCocoaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
+    [self updateRegion:exposedRegion];
+}
 
+- (void)updateRegion:(QRegion)dirtyRegion
+{
 #ifndef QT_NO_OPENGL
     if (m_glContext && m_shouldSetGLContextinDrawRect) {
         [m_glContext->nsOpenGLContext() setView:self];
@@ -323,18 +347,24 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     }
 #endif
 
-    m_platformWindow->handleExposeEvent(exposedRegion);
+    QWindowPrivate *windowPrivate = qt_window_private(m_platformWindow->window());
 
-    if (qt_window_private(m_platformWindow->window())->updateRequestPending) {
-        // A call to QWindow::requestUpdate was issued during the expose event, or we
-        // had to deliver a real expose event and still need to deliver the update.
-        // But AppKit will reset the needsDisplay state of the view after completing
+    if (m_updateRequested) {
+        Q_ASSERT(windowPrivate->updateRequestPending);
+        qCDebug(lcQpaCocoaWindow) << "Delivering update request to" << m_platformWindow->window();
+        windowPrivate->deliverUpdateRequest();
+        m_updateRequested = false;
+    } else {
+        m_platformWindow->handleExposeEvent(dirtyRegion);
+    }
+
+    if (windowPrivate->updateRequestPending) {
+        // A call to QWindow::requestUpdate was issued during event delivery above,
+        // but AppKit will reset the needsDisplay state of the view after completing
         // the current display cycle, so we need to defer the request to redisplay.
         // FIXME: Perhaps this should be a trigger to enable CADisplayLink?
         qCDebug(lcQpaCocoaDrawing) << "[QNSView drawRect:] issuing deferred setNeedsDisplay due to pending update request";
-        dispatch_async(dispatch_get_main_queue (), ^{
-            [self setNeedsDisplay:YES];
-        });
+        dispatch_async(dispatch_get_main_queue (), ^{ [self requestUpdate]; });
     }
 }
 
@@ -351,7 +381,7 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
     qCDebug(lcQpaCocoaDrawing) << "[QNSView updateLayer]" << m_platformWindow->window();
 
     // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
-    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
+    [self updateRegion:QRectF::fromCGRect(self.bounds).toRect()];
 }
 
 - (void)viewDidChangeBackingProperties

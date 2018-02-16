@@ -59,6 +59,8 @@ osx
 osx
 [setToolTip]
 osx
+[moveInResizeEvent]
+ubuntu-16.04
 [moveChild:right]
 osx
 [activateWindow]

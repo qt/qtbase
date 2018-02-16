@@ -55,7 +55,7 @@ class HelloWorldTask : public QRunnable
     {
         qDebug() << "Hello world from thread" << QThread::currentThread();
     }
-}
+};
 
 HelloWorldTask *hello = new HelloWorldTask();
 // QThreadPool takes ownership and deletes 'hello' automatically

@@ -381,6 +381,19 @@ CAEAGLLayer *QIOSWindow::eaglLayer() const
     return static_cast<CAEAGLLayer *>(m_view.layer);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QIOSWindow *window)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QIOSWindow(" << (const void *)window;
+    if (window)
+        debug << ", window=" << window->window();
+    debug << ')';
+    return debug;
+}
+#endif // !QT_NO_DEBUG_STREAM
+
 #include "moc_qioswindow.cpp"
 
 QT_END_NAMESPACE

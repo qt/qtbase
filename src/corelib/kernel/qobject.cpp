@@ -238,7 +238,7 @@ QObjectPrivate::~QObjectPrivate()
     if (extraData && !extraData->runningTimers.isEmpty()) {
         if (Q_LIKELY(threadData->thread == QThread::currentThread())) {
             // unregister pending timers
-            if (threadData->eventDispatcher.load())
+            if (threadData->hasEventDispatcher())
                 threadData->eventDispatcher.load()->unregisterTimers(q_ptr);
 
             // release the timer ids back to the pool
@@ -1538,7 +1538,7 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
             ++eventsMoved;
         }
     }
-    if (eventsMoved > 0 && targetData->eventDispatcher.load()) {
+    if (eventsMoved > 0 && targetData->hasEventDispatcher()) {
         targetData->canWait = false;
         targetData->eventDispatcher.load()->wakeUp();
     }
@@ -1621,7 +1621,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
         qWarning("QObject::startTimer: Timers cannot have negative intervals");
         return 0;
     }
-    if (Q_UNLIKELY(!d->threadData->eventDispatcher.load())) {
+    if (Q_UNLIKELY(!d->threadData->hasEventDispatcher())) {
         qWarning("QObject::startTimer: Timers can only be used with threads started with QThread");
         return 0;
     }
@@ -1703,7 +1703,7 @@ void QObject::killTimer(int id)
             return;
         }
 
-        if (d->threadData->eventDispatcher.load())
+        if (d->threadData->hasEventDispatcher())
             d->threadData->eventDispatcher.load()->unregisterTimer(id);
 
         d->extraData->runningTimers.remove(at);

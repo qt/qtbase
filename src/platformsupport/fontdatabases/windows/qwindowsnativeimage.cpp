@@ -101,8 +101,10 @@ static inline HBITMAP createDIB(HDC hdc, int width, int height,
     uchar *bits = nullptr;
     HBITMAP bitmap = CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO *>(&bmi),
                                       DIB_RGB_COLORS, reinterpret_cast<void **>(&bits), 0, 0);
-    if (Q_UNLIKELY(!bitmap || !bits))
-        qFatal("%s: CreateDIBSection failed.", __FUNCTION__);
+    if (Q_UNLIKELY(!bitmap || !bits)) {
+        qFatal("%s: CreateDIBSection failed (%dx%d, format: %d)", __FUNCTION__,
+               width, height, int(format));
+    }
 
     *bitsIn = bits;
     return bitmap;

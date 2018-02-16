@@ -582,6 +582,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, bool canGra
 
     initializeAllAtoms();
 
+    initializeShm();
     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XRANDR"))
         initializeXRandr();
     if (!has_randr_extension)
@@ -961,14 +962,20 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
     if (dispatcher && dispatcher->filterNativeEvent(m_nativeInterface->genericEventFilterType(), error, &result))
         return;
 
+    printXcbError("QXcbConnection: XCB error", error);
+}
+
+void QXcbConnection::printXcbError(const char *message, xcb_generic_error_t *error)
+{
     uint clamped_error_code = qMin<uint>(error->error_code, (sizeof(xcb_errors) / sizeof(xcb_errors[0])) - 1);
     uint clamped_major_code = qMin<uint>(error->major_code, (sizeof(xcb_protocol_request_codes) / sizeof(xcb_protocol_request_codes[0])) - 1);
 
-    qWarning("QXcbConnection: XCB error: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
-           int(error->error_code), xcb_errors[clamped_error_code],
-           int(error->sequence), int(error->resource_id),
-           int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
-           int(error->minor_code));
+    qWarning("%s: %d (%s), sequence: %d, resource id: %d, major code: %d (%s), minor code: %d",
+             message,
+             int(error->error_code), xcb_errors[clamped_error_code],
+             int(error->sequence), int(error->resource_id),
+             int(error->major_code), xcb_protocol_request_codes[clamped_major_code],
+             int(error->minor_code));
 }
 
 static Qt::MouseButtons translateMouseButtons(int s)
@@ -2082,6 +2089,26 @@ void QXcbConnection::sync()
     // from xcb_aux_sync
     xcb_get_input_focus_cookie_t cookie = xcb_get_input_focus(xcb_connection());
     free(xcb_get_input_focus_reply(xcb_connection(), cookie, 0));
+}
+
+void QXcbConnection::initializeShm()
+{
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_shm_id);
+    if (!reply || !reply->present) {
+        qWarning("QXcbConnection: MIT-SHM extension is not present on the X server.");
+        return;
+    }
+
+    has_shm = true;
+
+    auto shm_query = Q_XCB_REPLY(xcb_shm_query_version, m_connection);
+    if (!shm_query) {
+        qWarning("QXcbConnection: Failed to request MIT-SHM version");
+        return;
+    }
+
+    has_shm_fd = (shm_query->major_version == 1 && shm_query->minor_version >= 2) ||
+                  shm_query->major_version > 1;
 }
 
 void QXcbConnection::initializeXFixes()

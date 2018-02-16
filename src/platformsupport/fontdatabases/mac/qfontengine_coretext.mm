@@ -182,6 +182,14 @@ public:
         : QCoreTextFontEngine(font, def)
         , m_fontData(fontData)
     {}
+    QFontEngine *cloneWithSize(qreal pixelSize) const
+    {
+        QFontDef newFontDef = fontDef;
+        newFontDef.pixelSize = pixelSize;
+        newFontDef.pointSize = pixelSize * 72.0 / qt_defaultDpi();
+
+        return new QCoreTextRawFontEngine(cgFont, newFontDef, m_fontData);
+    }
     QByteArray m_fontData;
 };
 

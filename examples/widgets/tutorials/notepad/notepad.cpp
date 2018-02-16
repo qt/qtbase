@@ -52,8 +52,15 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QMessageBox>
+#if defined(QT_PRINTSUPPORT_LIB)
+#include <QtPrintSupport/qtprintsupportglobal.h>
+#if QT_CONFIG(printer)
+#if QT_CONFIG(printdialog)
 #include <QPrintDialog>
+#endif // QT_CONFIG(printdialog)
 #include <QPrinter>
+#endif // QT_CONFIG(printer)
+#endif // QT_PRINTSUPPORT_LIB
 #include <QFont>
 #include <QFontDialog>
 
@@ -136,11 +143,15 @@ void Notepad::on_actionSave_as_triggered()
 
 void Notepad::on_actionPrint_triggered()
 {
+#if QT_CONFIG(printer)
     QPrinter printDev;
+#if QT_CONFIG(printdialog)
     QPrintDialog dialog(&printDev, this);
     if (dialog.exec() == QDialog::Rejected)
         return;
+#endif // QT_CONFIG(printdialog)
     ui->textEdit->print(&printDev);
+#endif // QT_CONFIG(printer)
 }
 
 void Notepad::on_actionExit_triggered()

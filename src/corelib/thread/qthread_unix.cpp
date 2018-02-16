@@ -285,27 +285,27 @@ typedef void*(*QtThreadCallback)(void*);
 
 #endif // QT_NO_THREAD
 
-void QThreadPrivate::createEventDispatcher(QThreadData *data)
+QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
+    Q_UNUSED(data);
 #if defined(Q_OS_DARWIN)
     bool ok = false;
     int value = qEnvironmentVariableIntValue("QT_EVENT_DISPATCHER_CORE_FOUNDATION", &ok);
     if (ok && value > 0)
-        data->eventDispatcher.storeRelease(new QEventDispatcherCoreFoundation);
+        return new QEventDispatcherCoreFoundation;
     else
-        data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
+        return new QEventDispatcherUNIX;
 #elif !defined(QT_NO_GLIB)
+    const bool isQtMainThread = data->thread == QCoreApplicationPrivate::mainThread();
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
-        && qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")
+        && (isQtMainThread || qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB"))
         && QEventDispatcherGlib::versionSupported())
-        data->eventDispatcher.storeRelease(new QEventDispatcherGlib);
+        return new QEventDispatcherGlib;
     else
-        data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
+        return new QEventDispatcherUNIX;
 #else
-    data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
+    return new QEventDispatcherUNIX;
 #endif
-
-    data->eventDispatcher.load()->startingUp();
 }
 
 #ifndef QT_NO_THREAD
@@ -352,10 +352,13 @@ void *QThreadPrivate::start(void *arg)
             data->quitNow = thr->d_func()->exited;
         }
 
-        if (data->eventDispatcher.load()) // custom event dispatcher set?
-            data->eventDispatcher.load()->startingUp();
-        else
-            createEventDispatcher(data);
+        QAbstractEventDispatcher *eventDispatcher = data->eventDispatcher.load();
+        if (!eventDispatcher) {
+            eventDispatcher = createEventDispatcher(data);
+            data->eventDispatcher.storeRelease(eventDispatcher);
+        }
+
+        eventDispatcher->startingUp();
 
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_QNX))
         {

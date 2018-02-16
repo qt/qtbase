@@ -170,6 +170,16 @@ void tst_QMovie::playMovie()
     QCOMPARE(movie.state(), QMovie::NotRunning);
     QCOMPARE(movie.frameCount(), frameCount);
 #endif
+
+    movie.stop();
+    QSignalSpy finishedSpy(&movie, &QMovie::finished);
+    movie.setSpeed(0);
+    movie.start();
+    QCOMPARE(movie.state(), QMovie::Running);
+    QTestEventLoop::instance().enterLoop(2);
+    QCOMPARE(finishedSpy.count(), 0);
+    QCOMPARE(movie.state(), QMovie::Running);
+    QCOMPARE(movie.currentFrameNumber(), 0);
 }
 
 void tst_QMovie::jumpToFrame_data()

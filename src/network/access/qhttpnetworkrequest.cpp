@@ -279,6 +279,11 @@ void QHttpNetworkRequest::setHeaderField(const QByteArray &name, const QByteArra
     d->setHeaderField(name, data);
 }
 
+void QHttpNetworkRequest::prependHeaderField(const QByteArray &name, const QByteArray &data)
+{
+    d->prependHeaderField(name, data);
+}
+
 QHttpNetworkRequest &QHttpNetworkRequest::operator=(const QHttpNetworkRequest &other)
 {
     d = other.d;

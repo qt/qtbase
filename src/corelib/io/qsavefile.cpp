@@ -264,7 +264,7 @@ bool QSaveFile::open(OpenMode mode)
     }
 #endif
 
-    d->fileEngine = new QTemporaryFileEngine(&d->finalFileName);
+    d->fileEngine = new QTemporaryFileEngine(&d->finalFileName, QTemporaryFileEngine::Win32NonShared);
     // if the target file exists, we'll copy its permissions below,
     // but until then, let's ensure the temporary file is not accessible
     // to a third party
