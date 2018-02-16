@@ -195,7 +195,7 @@ public:
 #endif // Q_OS_WIN
     QThreadData *data;
 
-    static void createEventDispatcher(QThreadData *data);
+    static QAbstractEventDispatcher *createEventDispatcher(QThreadData *data);
 
     void ref()
     {
@@ -222,7 +222,7 @@ public:
 
     static void setCurrentThread(QThread*) {}
     static QThread *threadForId(int) { return QThread::currentThread(); }
-    static void createEventDispatcher(QThreadData *data);
+    static QAbstractEventDispatcher *createEventDispatcher(QThreadData *data);
 
     void ref() {}
     void deref() {}

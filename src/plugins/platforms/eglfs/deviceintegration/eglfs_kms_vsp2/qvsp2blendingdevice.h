@@ -63,6 +63,7 @@ public:
     bool blend(int outputDmabufFd);
     int numInputs() const;
     bool isDirty() const { return m_dirty; }
+    bool hasContinuousLayers() const;
 private:
     bool streamOn();
     bool streamOff();

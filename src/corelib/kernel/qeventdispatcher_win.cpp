@@ -905,6 +905,7 @@ bool QEventDispatcherWin32::registerEventNotifier(QWinEventNotifier *notifier)
         return true;
 
     d->winEventNotifierList.append(notifier);
+    d->winEventNotifierListModified = true;
 
     if (!d->winEventNotifierActivatedEvent)
         d->winEventNotifierActivatedEvent = CreateEvent(0, TRUE, FALSE, nullptr);
@@ -928,6 +929,7 @@ void QEventDispatcherWin32::unregisterEventNotifier(QWinEventNotifier *notifier)
     if (i == -1)
         return;
     d->winEventNotifierList.takeAt(i);
+    d->winEventNotifierListModified = true;
     QWinEventNotifierPrivate *nd = QWinEventNotifierPrivate::get(notifier);
     if (nd->waitHandle)
         nd->unregisterWaitObject();
@@ -938,16 +940,19 @@ void QEventDispatcherWin32::activateEventNotifiers()
     Q_D(QEventDispatcherWin32);
     ResetEvent(d->winEventNotifierActivatedEvent);
 
-    // Iterate backwards, because the notifier might remove itself on activate().
-    for (int i = d->winEventNotifierList.count(); --i >= 0;) {
-        QWinEventNotifier *notifier = d->winEventNotifierList.at(i);
-        QWinEventNotifierPrivate *nd = QWinEventNotifierPrivate::get(notifier);
-        if (nd->signaledCount.load() != 0) {
-            --nd->signaledCount;
-            nd->unregisterWaitObject();
-            d->activateEventNotifier(notifier);
+    // Activate signaled notifiers. Our winEventNotifierList can be modified in activation slots.
+    do {
+        d->winEventNotifierListModified = false;
+        for (int i = 0; i < d->winEventNotifierList.count(); ++i) {
+            QWinEventNotifier *notifier = d->winEventNotifierList.at(i);
+            QWinEventNotifierPrivate *nd = QWinEventNotifierPrivate::get(notifier);
+            if (nd->signaledCount.load() != 0) {
+                --nd->signaledCount;
+                nd->unregisterWaitObject();
+                d->activateEventNotifier(notifier);
+            }
         }
-    }
+    } while (d->winEventNotifierListModified);
 
     // Re-register the remaining activated notifiers.
     for (int i = 0; i < d->winEventNotifierList.count(); ++i) {

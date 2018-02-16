@@ -44,7 +44,7 @@ unix {
         $${type}.commands += $${TEST_TARGET_DIR}/$(QMAKE_TARGET)
 } else {
     # Windows
-    !isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = $${TEST_TARGET_DIR}$${QMAKE_DIR_SEP}
+    !isEmpty(TEST_TARGET_DIR): TEST_TARGET_DIR = $$shell_path($$TEST_TARGET_DIR)$${QMAKE_DIR_SEP}
     $${type}.commands += $${TEST_TARGET_DIR}$(TARGET)
 }
 

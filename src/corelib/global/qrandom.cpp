@@ -74,7 +74,7 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 }
 #endif
 
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
 #  include <private/qjni_p.h>
 #endif
 

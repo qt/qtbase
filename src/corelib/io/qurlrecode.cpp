@@ -511,7 +511,7 @@ static int decode(QString &appendTo, const ushort *begin, const ushort *end)
         if (Q_UNLIKELY(end - input < 3 || !isHex(input[1]) || !isHex(input[2]))) {
             // badly-encoded data
             appendTo.resize(origSize + (end - begin));
-            memcpy(appendTo.begin() + origSize, begin, (end - begin) * sizeof(ushort));
+            memcpy(static_cast<void *>(appendTo.begin() + origSize), static_cast<const void *>(begin), (end - begin) * sizeof(ushort));
             return end - begin;
         }
 
@@ -519,7 +519,7 @@ static int decode(QString &appendTo, const ushort *begin, const ushort *end)
             // detach
             appendTo.resize(origSize + (end - begin));
             output = reinterpret_cast<ushort *>(appendTo.begin()) + origSize;
-            memcpy(output, begin, (input - begin) * sizeof(ushort));
+            memcpy(static_cast<void *>(output), static_cast<const void *>(begin), (input - begin) * sizeof(ushort));
             output += input - begin;
         }
 

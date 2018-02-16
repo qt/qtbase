@@ -1034,8 +1034,10 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
         const QMargins effectiveMargins = margins + customMargins;
         frameWidth = effectiveMargins.left() + geometry.width() + effectiveMargins.right();
         frameHeight = effectiveMargins.top() + geometry.height() + effectiveMargins.bottom();
-        if (QWindowsMenuBar::menuBarOf(w) != nullptr)
-            frameHeight += GetSystemMetrics(SM_CYMENU);
+        if (QWindowsMenuBar::menuBarOf(w) != nullptr) {
+            menuHeight = GetSystemMetrics(SM_CYMENU);
+            frameHeight += menuHeight;
+        }
         const bool isDefaultPosition = !frameX && !frameY && w->isTopLevel();
         if (!QWindowsGeometryHint::positionIncludesFrame(w) && !isDefaultPosition) {
             frameX -= effectiveMargins.left();
@@ -2558,7 +2560,7 @@ void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
         newFrame.moveTo(topLeft);
         qCDebug(lcQpaWindows) << __FUNCTION__ << oldCustomMargins << "->" << newCustomMargins
             << currentFrameGeometry << "->" << newFrame;
-        SetWindowPos(m_data.hwnd, 0, newFrame.x(), newFrame.y(), newFrame.width(), newFrame.height(), SWP_NOZORDER | SWP_FRAMECHANGED);
+        SetWindowPos(m_data.hwnd, 0, newFrame.x(), newFrame.y(), newFrame.width(), newFrame.height(), SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOACTIVATE);
     }
 }
 

@@ -6684,10 +6684,13 @@ void tst_QStateMachine::dontProcessSlotsWhenMachineIsNotRunning()
     machine.addState(&initialState);
     machine.addState(&finalState);
     machine.setInitialState(&initialState);
-    machine.start();
     connect(&machine, &QStateMachine::finished, &emitter.thread, &QThread::quit);
-    QSignalSpy signalSpy(&machine, &QStateMachine::finished);
-    QTRY_COMPARE_WITH_TIMEOUT(signalSpy.count(), 1, 100);
+    machine.start();
+    QSignalSpy emittedSpy(&emitter, &SignalEmitter::signalWithNoArg);
+    QSignalSpy finishedSpy(&machine, &QStateMachine::finished);
+    QTRY_COMPARE_WITH_TIMEOUT(emittedSpy.count(), 2, 100);
+    QTRY_COMPARE(finishedSpy.count(), 1);
+    QTRY_VERIFY(emitter.thread.isFinished());
 }
 
 QTEST_MAIN(tst_QStateMachine)

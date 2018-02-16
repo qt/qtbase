@@ -43,6 +43,7 @@
 #include <QtNetwork/private/qnetworksession_p.h>
 #include <QTcpServer>
 #include <QHostInfo>
+#include <QTcpSocket>
 
 #include "../../../network-settings.h"
 

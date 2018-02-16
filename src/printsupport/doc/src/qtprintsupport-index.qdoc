@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -165,6 +165,19 @@
   QTextEdit requires a QPrinter rather than a QPainter because it uses information
   about the configured page dimensions in order to insert page breaks at the most
   appropriate places in printed documents.
+
+  \section1 Licenses and Trademarks
+
+  The Qt Print Support module is available under commercial licenses from \l{The Qt Company}.
+  In addition, it is available under free software licenses. Since Qt 5.4,
+  these free software licenses are
+  \l{GNU Lesser General Public License, version 3}, or
+  the \l{GNU General Public License, version 2}.
+  See \l{Qt Licensing} for further details.
+
+  Please note that Adobe\reg places restrictions on the use of its trademarks
+  (including logos) in conjunction with PDF; e.g. "Adobe PDF". Please refer
+  to \l{http://www.adobe.com}{www.adobe.com} for guidelines.
 */
 
 /*!

@@ -57,6 +57,7 @@ QT_FUNCTION_TARGET(F16C)
 void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q_DECL_NOTHROW
 {
     qsizetype i = 0;
+    int epilog_i;
     for (; i < len - 7; i += 8)
         _mm_storeu_si128((__m128i *)(out + i), _mm256_cvtps_ph(_mm256_loadu_ps(in + i), 0));
     if (i < len - 3) {
@@ -64,7 +65,7 @@ void qFloatToFloat16_fast(quint16 *out, const float *in, qsizetype len) Q_DECL_N
         i += 4;
     }
     // Inlining "qfloat16::qfloat16(float f)":
-    SIMD_EPILOGUE(i, len, 3)
+    for (epilog_i = 0; i < len && epilog_i < 3; ++i, ++epilog_i)
         out[i] = _mm_extract_epi16(_mm_cvtps_ph(_mm_set_ss(in[i]), 0), 0);
 }
 
@@ -72,6 +73,7 @@ QT_FUNCTION_TARGET(F16C)
 void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) Q_DECL_NOTHROW
 {
     qsizetype i = 0;
+    int epilog_i;
     for (; i < len - 7; i += 8)
         _mm256_storeu_ps(out + i, _mm256_cvtph_ps(_mm_loadu_si128((const __m128i *)(in + i))));
     if (i < len - 3) {
@@ -79,7 +81,7 @@ void qFloatFromFloat16_fast(float *out, const quint16 *in, qsizetype len) Q_DECL
         i += 4;
     }
     // Inlining "qfloat16::operator float()":
-    SIMD_EPILOGUE(i, len, 3)
+    for (epilog_i = 0; i < len && epilog_i < 3; ++i, ++epilog_i)
         out[i] = _mm_cvtss_f32(_mm_cvtph_ps(_mm_cvtsi32_si128(in[i])));
 }
 

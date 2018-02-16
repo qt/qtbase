@@ -254,6 +254,7 @@ private slots:
     void zeroScale();
     void focusItemChangedSignal();
     void minimumRenderSize();
+    void checkTouchPointsEllipseDiameters();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -2657,7 +2658,7 @@ void tst_QGraphicsScene::render()
 
 void tst_QGraphicsScene::renderItemsWithNegativeWidthOrHeight()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QSKIP("Test only works on platforms with resizable windows");
 #endif
 
@@ -2736,7 +2737,7 @@ protected:
 
 void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QSKIP("Test fails on some Android devices (QTBUG-44430)");
 #endif
 
@@ -4009,7 +4010,7 @@ void tst_QGraphicsScene::polishItems2()
 
 void tst_QGraphicsScene::isActive()
 {
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QSKIP("Fails on Android (QTBUG-44430)");
 #endif
 
@@ -4762,6 +4763,81 @@ void tst_QGraphicsScene::minimumRenderSize()
     QCOMPARE(viewRepaints, bigParent->repaints);
     QVERIFY(bigParent->repaints > smallChild->repaints);
     QVERIFY(smallChild->repaints > smallerGrandChild->repaints);
+}
+
+class TouchItem : public QGraphicsRectItem
+{
+public:
+    TouchItem() : QGraphicsRectItem(QRectF(-10, -10, 20, 20)),
+    seenTouch(false)
+    {
+        setAcceptTouchEvents(true);
+        setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    }
+    bool seenTouch;
+    QList<QTouchEvent::TouchPoint> touchPoints;
+protected:
+    bool sceneEvent(QEvent *event) override
+    {
+        switch (event->type()) {
+            case QEvent::TouchBegin:
+            case QEvent::TouchUpdate:
+            case QEvent::TouchEnd:
+                seenTouch = true;
+                touchPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+                event->accept();
+                return true;
+            default:
+                break;
+        }
+        return QGraphicsRectItem::sceneEvent(event);
+    }
+};
+
+void tst_QGraphicsScene::checkTouchPointsEllipseDiameters()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    scene.setSceneRect(1, 1, 198, 198);
+    view.scale(1.5, 1.5);
+    view.setFocus();
+    TouchItem *rect = new TouchItem;
+    scene.addItem(rect);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+
+    const QSizeF ellipseDiameters(10.0, 10.0);
+    QTouchEvent::TouchPoint touchPoint(0);
+    touchPoint.setState(Qt::TouchPointPressed);
+    touchPoint.setPos(view.mapFromScene(rect->mapToScene(rect->boundingRect().center())));
+    touchPoint.setScreenPos(view.mapToGlobal(touchPoint.pos().toPoint()));
+    touchPoint.setEllipseDiameters(ellipseDiameters);
+
+    QList<QTouchEvent::TouchPoint> touchPoints = { touchPoint };
+
+    QTouchDevice *testDevice = QTest::createTouchDevice(QTouchDevice::TouchPad);
+    QTouchEvent touchEvent(QEvent::TouchBegin,
+                           testDevice,
+                           Qt::NoModifier,
+                           Qt::TouchPointPressed,
+                           touchPoints);
+    QApplication::sendEvent(view.viewport(), &touchEvent);
+    QVERIFY(rect->seenTouch);
+    QVERIFY(rect->touchPoints.size() == 1);
+    QCOMPARE(ellipseDiameters, rect->touchPoints.first().ellipseDiameters());
+
+    rect->seenTouch = false;
+    rect->touchPoints.clear();
+    QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
+                                 testDevice,
+                                 Qt::NoModifier,
+                                 Qt::TouchPointMoved,
+                                 touchPoints);
+    QApplication::sendEvent(view.viewport(), &touchEvent);
+    QVERIFY(rect->seenTouch);
+    QVERIFY(rect->touchPoints.size() == 1);
+    QCOMPARE(ellipseDiameters, rect->touchPoints.first().ellipseDiameters());
 }
 
 void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()
