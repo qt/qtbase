@@ -59,7 +59,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     QLabel *label = new QLabel(tr("Parent window"));
     parentWindow->setCentralWidget(label);
 
-    previewWindow = new QWindow;
+    previewWindow = new PreviewWindow;
     previewWindow->installEventFilter(this);
     previewWidget = new PreviewWidget;
     previewWidget->installEventFilter(this);
