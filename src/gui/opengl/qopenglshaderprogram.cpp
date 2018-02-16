@@ -3824,13 +3824,7 @@ bool QOpenGLShaderProgramPrivate::linkBinary()
     bool needsCompile = true;
     if (binCache.load(cacheKey, q->programId())) {
         qCDebug(DBG_SHADER_CACHE, "Program binary received from cache");
-        linkBinaryRecursion = true;
-        bool ok = q->link();
-        linkBinaryRecursion = false;
-        if (ok)
-            needsCompile = false;
-        else
-            qCDebug(DBG_SHADER_CACHE, "Link failed after glProgramBinary");
+        needsCompile = false;
     }
 
     bool needsSave = false;
