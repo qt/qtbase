@@ -37,6 +37,9 @@ pass the path of that sub-directory to this script as its single
 command-line argument.  Save its standard output (but not error) to a
 file for later processing by ``./qlocalexml2cpp.py``
 
+When you update the CLDR data, be sure to also update
+src/corelib/tools/qt_attribution.json's entry for unicode-cldr.
+
 .. _CLDR: ftp://unicode.org/Public/cldr/
 """
 
