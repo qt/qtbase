@@ -558,14 +558,8 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     m_inSetStyleMask = true;
     m_view.window.styleMask = windowStyleMask(flags);
     m_inSetStyleMask = false;
-    m_view.window.level = this->windowLevel(flags);
 
-    m_view.window.hasShadow = !(flags & Qt::NoDropShadowWindowHint);
-
-    if (!(flags & Qt::FramelessWindowHint))
-        setWindowTitle(window()->title());
-
-    Qt::WindowType type = window()->type();
+    Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
     if ((type & Qt::Popup) != Qt::Popup && (type & Qt::Dialog) != Qt::Dialog) {
         NSWindowCollectionBehavior behavior = m_view.window.collectionBehavior;
         if (flags & Qt::WindowFullscreenButtonHint) {
@@ -577,6 +571,16 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         }
         m_view.window.collectionBehavior = behavior;
     }
+
+    // Set styleMask and collectionBehavior before applying window level, as
+    // the window level change will trigger verification of the two properties.
+    m_view.window.level = this->windowLevel(flags);
+
+    m_view.window.hasShadow = !(flags & Qt::NoDropShadowWindowHint);
+
+    if (!(flags & Qt::FramelessWindowHint))
+        setWindowTitle(window()->title());
+
     setWindowZoomButton(flags);
 
     // Make window ignore mouse events if WindowTransparentForInput is set.
