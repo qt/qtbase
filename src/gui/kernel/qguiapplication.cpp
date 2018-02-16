@@ -1125,6 +1125,8 @@ QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
         \li \c openwfd
         \li \c qnx
         \li \c windows
+        \li \c wayland is a platform plugin for modern Linux desktops and some
+            embedded systems.
         \li \c xcb is the X11 plugin used on regular desktop Linux platforms.
     \endlist
 
