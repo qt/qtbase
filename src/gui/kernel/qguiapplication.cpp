@@ -525,21 +525,21 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
         \li \c{-platform} \e {platformName[:options]}, specifies the
             \l{Qt Platform Abstraction} (QPA) plugin.
 
-            Overridden by the \c QT_QPA_PLATFORM environment variable.
+            Overrides the \c QT_QPA_PLATFORM environment variable.
         \li \c{-platformpluginpath} \e path, specifies the path to platform
             plugins.
 
-            Overridden by the \c QT_QPA_PLATFORM_PLUGIN_PATH environment
-            variable.
+            Overrides the \c QT_QPA_PLATFORM_PLUGIN_PATH environment variable.
 
         \li \c{-platformtheme} \e platformTheme, specifies the platform theme.
 
-            Overridden by the \c QT_QPA_PLATFORMTHEME environment variable.
+            Overrides the \c QT_QPA_PLATFORMTHEME environment variable.
 
         \li \c{-plugin} \e plugin, specifies additional plugins to load. The argument
             may appear multiple times.
 
-            Overridden by the \c QT_QPA_GENERIC_PLUGINS environment variable.
+            Concatenated with the plugins in the \c QT_QPA_GENERIC_PLUGINS environment
+            variable.
 
         \li \c{-qmljsdebugger=}, activates the QML/JS debugger with a specified port.
             The value must be of format \c{port:1234}\e{[,block]}, where
