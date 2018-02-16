@@ -1262,6 +1262,11 @@ void QCocoaWindow::recreateWindowIfNeeded()
     if ((isContentView() && !shouldBeContentView) || (recreateReason & PanelChanged)) {
         if (m_nsWindow) {
             qCDebug(lcQpaCocoaWindow) << "Getting rid of existing window" << m_nsWindow;
+            if (m_nsWindow.observationInfo) {
+                qCCritical(lcQpaCocoaWindow) << m_nsWindow << "has active key-value observers (KVO)!"
+                    << "These will stop working now that the window is recreated, and will result in exceptions"
+                    << "when the observers are removed. Break in QCocoaWindow::recreateWindowIfNeeded to debug.";
+            }
             [m_nsWindow closeAndRelease];
             if (isContentView()) {
                 // We explicitly disassociate m_view from the window's contentView,
