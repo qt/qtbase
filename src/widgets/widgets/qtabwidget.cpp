@@ -195,6 +195,11 @@ public:
     void _q_removeTab(int);
     void _q_tabMoved(int from, int to);
     void init();
+    bool isAutoHidden() const
+    {
+        // see QTabBarPrivate::autoHideTabs()
+        return (tabs->autoHide() && tabs->count() <= 1);
+    }
 
     void initBasicStyleOption(QStyleOptionTabWidgetFrame *option) const;
 
@@ -841,11 +846,14 @@ QSize QTabWidget::sizeHint() const
         that->setUpLayout(true);
     }
     QSize s(d->stack->sizeHint());
-    QSize t(d->tabs->sizeHint());
-    if(usesScrollButtons())
-        t = t.boundedTo(QSize(200,200));
-    else
-        t = t.boundedTo(QDesktopWidgetPrivate::size());
+    QSize t;
+    if (!d->isAutoHidden()) {
+        t = d->tabs->sizeHint();
+        if (usesScrollButtons())
+            t = t.boundedTo(QSize(200,200));
+        else
+            t = t.boundedTo(QDesktopWidgetPrivate::size());
+    }
 
     QSize sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
 
@@ -873,7 +881,9 @@ QSize QTabWidget::minimumSizeHint() const
         that->setUpLayout(true);
     }
     QSize s(d->stack->minimumSizeHint());
-    QSize t(d->tabs->minimumSizeHint());
+    QSize t;
+    if (!d->isAutoHidden())
+        t = d->tabs->minimumSizeHint();
 
     QSize sz = basicSize(d->pos == North || d->pos == South, lc, rc, s, t);
 
@@ -908,12 +918,14 @@ int QTabWidget::heightForWidth(int width) const
         QTabWidget *that = const_cast<QTabWidget*>(this);
         that->setUpLayout(true);
     }
-    QSize t(d->tabs->sizeHint());
-
-    if(usesScrollButtons())
-        t = t.boundedTo(QSize(200,200));
-    else
-        t = t.boundedTo(QDesktopWidgetPrivate::size());
+    QSize t;
+    if (!d->isAutoHidden()) {
+        t = d->tabs->sizeHint();
+        if (usesScrollButtons())
+            t = t.boundedTo(QSize(200,200));
+        else
+            t = t.boundedTo(QDesktopWidgetPrivate::size());
+    }
 
     const bool tabIsHorizontal = (d->pos == North || d->pos == South);
     const int contentsWidth = width - padding.width();

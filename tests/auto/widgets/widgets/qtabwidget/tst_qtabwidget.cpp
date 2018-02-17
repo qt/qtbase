@@ -98,6 +98,7 @@ private slots:
     void heightForWidth();
     void tabBarClicked();
     void moveCurrentTab();
+    void autoHide();
 
   private:
     int addPage();
@@ -711,6 +712,34 @@ void tst_QTabWidget::moveCurrentTab()
 
     QCOMPARE(tabWidget.currentIndex(), 0);
     QCOMPARE(tabWidget.currentWidget(), secondTab);
+}
+
+void tst_QTabWidget::autoHide()
+{
+    QTabWidget tabWidget;
+    QWidget* firstTab = new QWidget(&tabWidget);
+    tabWidget.addTab(firstTab, "0");
+    const auto sizeHint1 = tabWidget.sizeHint();
+    const auto minSizeHint1 = tabWidget.minimumSizeHint();
+    const auto heightForWidth1 = tabWidget.heightForWidth(20);
+
+    QWidget* secondTab = new QWidget(&tabWidget);
+    tabWidget.addTab(secondTab, "1");
+    const auto sizeHint2 = tabWidget.sizeHint();
+    const auto minSizeHint2 = tabWidget.minimumSizeHint();
+    const auto heightForWidth2 = tabWidget.heightForWidth(20);
+
+    tabWidget.setTabBarAutoHide(true);
+    // size should not change
+    QCOMPARE(sizeHint2, tabWidget.sizeHint());
+    QCOMPARE(minSizeHint2, tabWidget.minimumSizeHint());
+    QCOMPARE(heightForWidth2, tabWidget.heightForWidth(20));
+
+    tabWidget.removeTab(1);
+    // this size should change now since the tab should be hidden
+    QVERIFY(sizeHint1.height() > tabWidget.sizeHint().height());
+    QVERIFY(minSizeHint1.height() > tabWidget.sizeHint().height());
+    QVERIFY(heightForWidth1 > tabWidget.heightForWidth(20));
 }
 
 QTEST_MAIN(tst_QTabWidget)
