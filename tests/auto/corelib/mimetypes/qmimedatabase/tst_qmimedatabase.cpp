@@ -222,8 +222,10 @@ void tst_QMimeDatabase::mimeTypeForName()
         qWarning() << "ls not found";
     else {
         const QString executableType = QString::fromLatin1("application/x-executable");
+        const QString sharedLibType = QString::fromLatin1("application/x-sharedlib");
         //QTest::newRow("executable") << exePath << executableType;
-        QCOMPARE(db.mimeTypeForFile(exePath).name(), executableType);
+        QVERIFY(db.mimeTypeForFile(exePath).name() == executableType ||
+                db.mimeTypeForFile(exePath).name() == sharedLibType);
     }
 #endif
 
