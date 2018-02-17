@@ -206,6 +206,7 @@ private slots:
     void task248050_hideRow();
     void QTBUG6058_reset();
     void QTBUG7833_sectionClicked();
+    void checkLayoutChangeEmptyModel();
     void QTBUG8650_crashOnInsertSections();
     void QTBUG12268_hiddenMovedSectionSorting();
     void QTBUG14242_hideSectionAutoSize();
@@ -286,6 +287,13 @@ public:
         endInsertColumns();
     }
 
+    void removeFirstRow()
+    {
+        beginRemoveRows(QModelIndex(), 0, 0);
+        --rows;
+        endRemoveRows();
+    }
+
     void removeLastRow()
     {
         beginRemoveRows(QModelIndex(), rows - 1, rows - 1);
@@ -325,6 +333,24 @@ public:
     {
         cols = 3;
         rows = 3;
+        emit layoutChanged();
+    }
+
+    void emitLayoutChanged()
+    {
+        emit layoutAboutToBeChanged();
+        emit layoutChanged();
+    }
+
+    void emitLayoutChangedWithRemoveFirstRow()
+    {
+        emit layoutAboutToBeChanged();
+        QModelIndexList milNew;
+        const auto milOld = persistentIndexList();
+        milNew.reserve(milOld.size());
+        for (int i = 0; i < milOld.size(); ++i)
+            milNew += QModelIndex();
+        changePersistentIndexList(milOld, milNew);
         emit layoutChanged();
     }
 
@@ -2330,6 +2356,51 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
     QCOMPARE(pressedSpy.count(), 3);
     QCOMPARE(clickedSpy.at(2).at(0).toInt(), 0);
     QCOMPARE(pressedSpy.at(2).at(0).toInt(), 0);
+}
+
+void tst_QHeaderView::checkLayoutChangeEmptyModel()
+{
+    QtTestModel tm;
+    tm.cols = 11;
+    QTableView tv;
+    tv.setModel(&tm);
+
+    const int section4Size = tv.horizontalHeader()->sectionSize(4) + 1;
+    const int section5Size = section4Size + 1;
+    tv.horizontalHeader()->resizeSection(4, section4Size);
+    tv.horizontalHeader()->resizeSection(5, section5Size);
+    tv.setColumnHidden(5, true);
+    tv.setColumnHidden(6, true);
+    tv.horizontalHeader()->swapSections(8, 10);
+
+    tv.sortByColumn(1, Qt::AscendingOrder);
+    tm.emitLayoutChanged();
+
+    QCOMPARE(tv.isColumnHidden(5), true);
+    QCOMPARE(tv.isColumnHidden(6), true);
+    QCOMPARE(tv.horizontalHeader()->sectionsMoved(), true);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(8), 10);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(10), 8);
+    QCOMPARE(tv.horizontalHeader()->sectionSize(4), section4Size);
+    tv.setColumnHidden(5, false);   // unhide, section size must be properly restored
+    QCOMPARE(tv.horizontalHeader()->sectionSize(5), section5Size);
+    tv.setColumnHidden(5, true);
+
+    // adjust
+    tm.rows = 3;
+    tm.emitLayoutChanged();
+
+    // remove the row used for QPersistenModelIndexes
+    tm.emitLayoutChangedWithRemoveFirstRow();
+    QCOMPARE(tv.isColumnHidden(5), true);
+    QCOMPARE(tv.isColumnHidden(6), true);
+    QCOMPARE(tv.horizontalHeader()->sectionsMoved(), true);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(8), 10);
+    QCOMPARE(tv.horizontalHeader()->logicalIndex(10), 8);
+    QCOMPARE(tv.horizontalHeader()->sectionSize(4), section4Size);
+    tv.setColumnHidden(5, false);   // unhide, section size must be properly restored
+    QCOMPARE(tv.horizontalHeader()->sectionSize(5), section5Size);
+    tv.setColumnHidden(5, true);
 }
 
 void tst_QHeaderView::QTBUG8650_crashOnInsertSections()
