@@ -1136,8 +1136,6 @@ void QCocoaWindow::handleGeometryChange()
 
 void QCocoaWindow::handleExposeEvent(const QRegion &region)
 {
-    const QRect previouslyExposedRect = m_exposedRect;
-
     // Ideally we'd implement isExposed() in terms of these properties,
     // plus the occlusionState of the NSWindow, and let the expose event
     // pull the exposed state out when needed. However, when the window
