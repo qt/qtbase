@@ -75,6 +75,10 @@
                     "libs": "-lssleay32 -llibeay32",
                     "condition": "config.win32 && features.shared"
                 },
+                {
+                    "libs": "-llibssl -llibcrypto",
+                    "condition": "config.win32"
+                },
                 { "libs": "-lssl -lcrypto", "condition": "!config.win32" }
             ]
         }

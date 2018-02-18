@@ -112,6 +112,7 @@ private:
     friend class QApplicationPrivate;
 };
 
+#if QT_DEPRECATED_SINCE(5, 11)
 inline int QDesktopWidget::screenCount() const
 {
 QT_WARNING_PUSH
@@ -119,6 +120,7 @@ QT_WARNING_DISABLE_DEPRECATED
     return numScreens();
 QT_WARNING_POP
 }
+#endif
 
 QT_END_NAMESPACE
 
