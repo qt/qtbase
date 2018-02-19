@@ -343,6 +343,9 @@ void QXcbShmImage::createShmSegment(size_t segmentSize)
 
 void QXcbShmImage::destroyShmSegment(size_t segmentSize)
 {
+#ifndef XCB_USE_SHM_FD
+    Q_UNUSED(segmentSize)
+#endif
     auto cookie = xcb_shm_detach_checked(xcb_connection(), m_shm_info.shmseg);
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), cookie);
     if (error)
