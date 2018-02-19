@@ -103,6 +103,7 @@ public:
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
     QVariant styleHint(StyleHint hint) const override;
 
+    bool hasDefaultConnection() const { return !m_connections.isEmpty(); }
     QXcbConnection *defaultConnection() const { return m_connections.first(); }
 
     QByteArray wmClass() const;
