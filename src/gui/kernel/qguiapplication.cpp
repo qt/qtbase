@@ -1304,7 +1304,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
             argv[j++] = argv[i];
             continue;
         }
-        const bool isXcb = platformName == "xcb";
+        const bool xcbIsDefault = platformName.startsWith("xcb");
         const char *arg = argv[i];
         if (arg[1] == '-') // startsWith("--")
             ++arg;
@@ -1317,13 +1317,13 @@ void QGuiApplicationPrivate::createPlatformIntegration()
         } else if (strcmp(arg, "-platformtheme") == 0) {
             if (++i < argc)
                 platformThemeName = QString::fromLocal8Bit(argv[i]);
-        } else if (strcmp(arg, "-qwindowgeometry") == 0 || (isXcb && strcmp(arg, "-geometry") == 0)) {
+        } else if (strcmp(arg, "-qwindowgeometry") == 0 || (xcbIsDefault && strcmp(arg, "-geometry") == 0)) {
             if (++i < argc)
                 windowGeometrySpecification = QWindowGeometrySpecification::fromArgument(argv[i]);
-        } else if (strcmp(arg, "-qwindowtitle") == 0 || (isXcb && strcmp(arg, "-title") == 0)) {
+        } else if (strcmp(arg, "-qwindowtitle") == 0 || (xcbIsDefault && strcmp(arg, "-title") == 0)) {
             if (++i < argc)
                 firstWindowTitle = QString::fromLocal8Bit(argv[i]);
-        } else if (strcmp(arg, "-qwindowicon") == 0 || (isXcb && strcmp(arg, "-icon") == 0)) {
+        } else if (strcmp(arg, "-qwindowicon") == 0 || (xcbIsDefault && strcmp(arg, "-icon") == 0)) {
             if (++i < argc) {
                 icon = QString::fromLocal8Bit(argv[i]);
             }
