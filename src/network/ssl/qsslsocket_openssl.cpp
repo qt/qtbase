@@ -99,12 +99,13 @@ int QSslSocketBackendPrivate::s_indexForSSLExtraData = -1;
 QString QSslSocketBackendPrivate::getErrorsFromOpenSsl()
 {
     QString errorString;
+    char buf[256] = {}; // OpenSSL docs claim both 120 and 256; use the larger.
     unsigned long errNum;
     while ((errNum = q_ERR_get_error())) {
-        if (! errorString.isEmpty())
+        if (!errorString.isEmpty())
             errorString.append(QLatin1String(", "));
-        const char *error = q_ERR_error_string(errNum, NULL);
-        errorString.append(QString::fromLatin1(error)); // error is ascii according to man ERR_error_string
+        q_ERR_error_string_n(errNum, buf, sizeof buf);
+        errorString.append(QString::fromLatin1(buf)); // error is ascii according to man ERR_error_string
     }
     return errorString;
 }
