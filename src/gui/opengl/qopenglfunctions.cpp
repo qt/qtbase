@@ -294,9 +294,19 @@ QOpenGLExtensions::QOpenGLExtensions(QOpenGLContext *context)
 static int qt_gl_resolve_features()
 {
     QOpenGLContext *ctx = QOpenGLContext::currentContext();
+    QOpenGLExtensionMatcher extensions;
+    int features = 0;
+    if ((extensions.match("GL_KHR_blend_equation_advanced")
+        || extensions.match("GL_NV_blend_equation_advanced")) &&
+        (extensions.match("GL_KHR_blend_equation_advanced_coherent")
+        || extensions.match("GL_NV_blend_equation_advanced_coherent"))) {
+        // We need both the advanced equations and the coherency for us
+        // to be able to easily use the new blend equations
+        features |= QOpenGLFunctions::BlendEquationAdvanced;
+    }
     if (ctx->isOpenGLES()) {
         // OpenGL ES
-        int features = QOpenGLFunctions::Multitexture |
+        features |= QOpenGLFunctions::Multitexture |
             QOpenGLFunctions::Shaders |
             QOpenGLFunctions::Buffers |
             QOpenGLFunctions::Framebuffers |
@@ -308,7 +318,6 @@ static int qt_gl_resolve_features()
             QOpenGLFunctions::CompressedTextures |
             QOpenGLFunctions::Multisample |
             QOpenGLFunctions::StencilSeparate;
-        QOpenGLExtensionMatcher extensions;
         if (extensions.match("GL_IMG_texture_npot"))
             features |= QOpenGLFunctions::NPOTTextures;
         if (extensions.match("GL_OES_texture_npot"))
@@ -320,14 +329,18 @@ static int qt_gl_resolve_features()
             if (!(renderer && strstr(renderer, "Mesa")))
                 features |= QOpenGLFunctions::TextureRGFormats;
         }
-        if (ctx->format().majorVersion() >= 3)
+        if (ctx->format().majorVersion() >= 3) {
             features |= QOpenGLFunctions::MultipleRenderTargets;
+            if (ctx->format().minorVersion() >= 2 && extensions.match("GL_KHR_blend_equation_advanced_coherent")) {
+                // GL_KHR_blend_equation_advanced is included in OpenGL ES/3.2
+                features |= QOpenGLFunctions::BlendEquationAdvanced;
+            }
+        }
         return features;
     } else {
         // OpenGL
-        int features = QOpenGLFunctions::TextureRGFormats;
+        features |= QOpenGLFunctions::TextureRGFormats;
         QSurfaceFormat format = QOpenGLContext::currentContext()->format();
-        QOpenGLExtensionMatcher extensions;
 
         if (format.majorVersion() >= 3)
             features |= QOpenGLFunctions::Framebuffers | QOpenGLFunctions::MultipleRenderTargets;

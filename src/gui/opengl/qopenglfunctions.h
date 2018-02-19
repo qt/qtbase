@@ -277,7 +277,8 @@ public:
         NPOTTextureRepeat     = 0x2000,
         FixedFunctionPipeline = 0x4000,
         TextureRGFormats      = 0x8000,
-        MultipleRenderTargets = 0x10000
+        MultipleRenderTargets = 0x10000,
+        BlendEquationAdvanced = 0x20000,
     };
     Q_DECLARE_FLAGS(OpenGLFeatures, OpenGLFeature)
 

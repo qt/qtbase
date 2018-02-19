@@ -403,25 +403,6 @@ static const char* const qopenglslMainFragmentShader_ImageArrays = "\n\
         gl_FragColor = srcPixel() * opacity; \n\
     }\n";
 
-static const char* const qopenglslMainFragmentShader_CMO = "\n\
-    uniform   lowp    float     globalOpacity; \n\
-    lowp vec4 srcPixel(); \n\
-    lowp vec4 applyMask(lowp vec4); \n\
-    lowp vec4 compose(lowp vec4); \n\
-    void main() \n\
-    { \n\
-        gl_FragColor = applyMask(compose(srcPixel()*globalOpacity))); \n\
-    }\n";
-
-static const char* const qopenglslMainFragmentShader_CM = "\n\
-    lowp vec4 srcPixel(); \n\
-    lowp vec4 applyMask(lowp vec4); \n\
-    lowp vec4 compose(lowp vec4); \n\
-    void main() \n\
-    { \n\
-        gl_FragColor = applyMask(compose(srcPixel())); \n\
-    }\n";
-
 static const char* const qopenglslMainFragmentShader_MO = "\n\
     uniform   lowp    float     globalOpacity; \n\
     lowp vec4 srcPixel(); \n\
@@ -437,23 +418,6 @@ static const char* const qopenglslMainFragmentShader_M = "\n\
     void main() \n\
     { \n\
         gl_FragColor = applyMask(srcPixel()); \n\
-    }\n";
-
-static const char* const qopenglslMainFragmentShader_CO = "\n\
-    uniform   lowp    float     globalOpacity; \n\
-    lowp vec4 srcPixel(); \n\
-    lowp vec4 compose(lowp vec4); \n\
-    void main() \n\
-    { \n\
-        gl_FragColor = compose(srcPixel()*globalOpacity); \n\
-    }\n";
-
-static const char* const qopenglslMainFragmentShader_C = "\n\
-    lowp vec4 srcPixel(); \n\
-    lowp vec4 compose(lowp vec4); \n\
-    void main() \n\
-    { \n\
-        gl_FragColor = compose(srcPixel()); \n\
     }\n";
 
 static const char* const qopenglslMainFragmentShader_O = "\n\
@@ -513,22 +477,65 @@ static const char* const qopenglslRgbMaskFragmentShaderPass2 = "\n\
         return src * mask; \n\
     }\n";
 
+static const char* const qopenglslMultiplyCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_multiply) out;\n\
+    #endif\n";
+
+static const char* const qopenglslScreenCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_screen) out;\n\
+    #endif\n";
+
+static const char* const qopenglslOverlayCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_overlay) out;\n\
+    #endif\n";
+
+static const char* const qopenglslDarkenCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_darken) out;\n\
+    #endif\n";
+
+static const char* const qopenglslLightenCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_lighten) out;\n\
+    #endif\n";
+
+static const char* const qopenglslColorDodgeCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_colordodge) out;\n\
+    #endif\n";
+
+static const char* const qopenglslColorBurnCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_colorburn) out;\n\
+    #endif\n";
+
+static const char* const qopenglslHardLightCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_hardlight) out;\n\
+    #endif\n";
+
+static const char* const qopenglslSoftLightCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_softlight) out;\n\
+    #endif\n";
+
+static const char* const qopenglslDifferenceCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_difference) out;\n\
+    #endif\n";
+
+static const char* const qopenglslExclusionCompositionModeFragmentShader = "\n\
+    #ifdef GL_KHR_blend_equation_advanced\n\
+    layout(blend_support_exclusion) out;\n\
+    #endif\n";
+
 /*
     Left to implement:
         RgbMaskFragmentShader,
         RgbMaskWithGammaFragmentShader,
-
-        MultiplyCompositionModeFragmentShader,
-        ScreenCompositionModeFragmentShader,
-        OverlayCompositionModeFragmentShader,
-        DarkenCompositionModeFragmentShader,
-        LightenCompositionModeFragmentShader,
-        ColorDodgeCompositionModeFragmentShader,
-        ColorBurnCompositionModeFragmentShader,
-        HardLightCompositionModeFragmentShader,
-        SoftLightCompositionModeFragmentShader,
-        DifferenceCompositionModeFragmentShader,
-        ExclusionCompositionModeFragmentShader,
 */
 
 /*
@@ -880,29 +887,6 @@ static const char* const qopenglslMainFragmentShader_ImageArrays_core =
         fragColor = srcPixel() * opacity; \n\
     }\n";
 
-static const char* const qopenglslMainFragmentShader_CMO_core =
-    "#version 150 core\n\
-    out     vec4      fragColor; \n\
-    uniform float     globalOpacity; \n\
-    vec4 srcPixel(); \n\
-    vec4 applyMask(vec4); \n\
-    vec4 compose(vec4); \n\
-    void main() \n\
-    { \n\
-        fragColor = applyMask(compose(srcPixel()*globalOpacity))); \n\
-    }\n";
-
-static const char* const qopenglslMainFragmentShader_CM_core =
-    "#version 150 core\n\
-    out     vec4      fragColor; \n\
-    vec4 srcPixel(); \n\
-    vec4 applyMask(vec4); \n\
-    vec4 compose(vec4); \n\
-    void main() \n\
-    { \n\
-        fragColor = applyMask(compose(srcPixel())); \n\
-    }\n";
-
 static const char* const qopenglslMainFragmentShader_MO_core =
     "#version 150 core\n\
     out     vec4      fragColor; \n\
@@ -922,27 +906,6 @@ static const char* const qopenglslMainFragmentShader_M_core =
     void main() \n\
     { \n\
         fragColor = applyMask(srcPixel()); \n\
-    }\n";
-
-static const char* const qopenglslMainFragmentShader_CO_core =
-    "#version 150 core\n\
-    out     vec4      fragColor; \n\
-    uniform float     globalOpacity; \n\
-    vec4 srcPixel(); \n\
-    vec4 compose(vec4); \n\
-    void main() \n\
-    { \n\
-        fragColor = compose(srcPixel()*globalOpacity); \n\
-    }\n";
-
-static const char* const qopenglslMainFragmentShader_C_core =
-    "#version 150 core\n\
-    out     vec4      fragColor; \n\
-    vec4 srcPixel(); \n\
-    vec4 compose(vec4); \n\
-    void main() \n\
-    { \n\
-        fragColor = compose(srcPixel()); \n\
     }\n";
 
 static const char* const qopenglslMainFragmentShader_O_core =
@@ -1010,18 +973,6 @@ static const char* const qopenglslRgbMaskFragmentShaderPass2_core = "\n\
     Left to implement:
         RgbMaskFragmentShader_core,
         RgbMaskWithGammaFragmentShader_core,
-
-        MultiplyCompositionModeFragmentShader_core,
-        ScreenCompositionModeFragmentShader_core,
-        OverlayCompositionModeFragmentShader_core,
-        DarkenCompositionModeFragmentShader_core,
-        LightenCompositionModeFragmentShader_core,
-        ColorDodgeCompositionModeFragmentShader_core,
-        ColorBurnCompositionModeFragmentShader_core,
-        HardLightCompositionModeFragmentShader_core,
-        SoftLightCompositionModeFragmentShader_core,
-        DifferenceCompositionModeFragmentShader_core,
-        ExclusionCompositionModeFragmentShader_core,
 */
 
 QT_END_NAMESPACE

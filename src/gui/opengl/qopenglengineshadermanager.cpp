@@ -153,12 +153,8 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         code[AffinePositionWithRadialGradientBrushVertexShader] = qopenglslAffinePositionWithRadialGradientBrushVertexShader_core;
         code[AffinePositionWithTextureBrushVertexShader] = qopenglslAffinePositionWithTextureBrushVertexShader_core;
 
-        code[MainFragmentShader_CMO] = qopenglslMainFragmentShader_CMO_core;
-        code[MainFragmentShader_CM] = qopenglslMainFragmentShader_CM_core;
         code[MainFragmentShader_MO] = qopenglslMainFragmentShader_MO_core;
         code[MainFragmentShader_M] = qopenglslMainFragmentShader_M_core;
-        code[MainFragmentShader_CO] = qopenglslMainFragmentShader_CO_core;
-        code[MainFragmentShader_C] = qopenglslMainFragmentShader_C_core;
         code[MainFragmentShader_O] = qopenglslMainFragmentShader_O_core;
         code[MainFragmentShader] = qopenglslMainFragmentShader_core;
         code[MainFragmentShader_ImageArrays] = qopenglslMainFragmentShader_ImageArrays_core;
@@ -203,12 +199,8 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         code[AffinePositionWithRadialGradientBrushVertexShader] = qopenglslAffinePositionWithRadialGradientBrushVertexShader;
         code[AffinePositionWithTextureBrushVertexShader] = qopenglslAffinePositionWithTextureBrushVertexShader;
 
-        code[MainFragmentShader_CMO] = qopenglslMainFragmentShader_CMO;
-        code[MainFragmentShader_CM] = qopenglslMainFragmentShader_CM;
         code[MainFragmentShader_MO] = qopenglslMainFragmentShader_MO;
         code[MainFragmentShader_M] = qopenglslMainFragmentShader_M;
-        code[MainFragmentShader_CO] = qopenglslMainFragmentShader_CO;
-        code[MainFragmentShader_C] = qopenglslMainFragmentShader_C;
         code[MainFragmentShader_O] = qopenglslMainFragmentShader_O;
         code[MainFragmentShader] = qopenglslMainFragmentShader;
         code[MainFragmentShader_ImageArrays] = qopenglslMainFragmentShader_ImageArrays;
@@ -238,21 +230,20 @@ QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
         code[RgbMaskWithGammaFragmentShader] = ""; //###
     }
 
-    // These shaders are not implemented yet and therefore are the same
-    // for all profiles. Implementations should make a version for both
-    // profiles and put the appropriate lines in the if-statement above.
+    // The composition shaders are just layout qualifiers and the same
+    // for all profiles that support them.
     code[NoCompositionModeFragmentShader] = "";
-    code[MultiplyCompositionModeFragmentShader] = ""; //###
-    code[ScreenCompositionModeFragmentShader] = ""; //###
-    code[OverlayCompositionModeFragmentShader] = ""; //###
-    code[DarkenCompositionModeFragmentShader] = ""; //###
-    code[LightenCompositionModeFragmentShader] = ""; //###
-    code[ColorDodgeCompositionModeFragmentShader] = ""; //###
-    code[ColorBurnCompositionModeFragmentShader] = ""; //###
-    code[HardLightCompositionModeFragmentShader] = ""; //###
-    code[SoftLightCompositionModeFragmentShader] = ""; //###
-    code[DifferenceCompositionModeFragmentShader] = ""; //###
-    code[ExclusionCompositionModeFragmentShader] = ""; //###
+    code[MultiplyCompositionModeFragmentShader] = qopenglslMultiplyCompositionModeFragmentShader;
+    code[ScreenCompositionModeFragmentShader] = qopenglslScreenCompositionModeFragmentShader;
+    code[OverlayCompositionModeFragmentShader] = qopenglslOverlayCompositionModeFragmentShader;
+    code[DarkenCompositionModeFragmentShader] = qopenglslDarkenCompositionModeFragmentShader;
+    code[LightenCompositionModeFragmentShader] = qopenglslLightenCompositionModeFragmentShader;
+    code[ColorDodgeCompositionModeFragmentShader] = qopenglslColorDodgeCompositionModeFragmentShader;
+    code[ColorBurnCompositionModeFragmentShader] = qopenglslColorBurnCompositionModeFragmentShader;
+    code[HardLightCompositionModeFragmentShader] = qopenglslHardLightCompositionModeFragmentShader;
+    code[SoftLightCompositionModeFragmentShader] = qopenglslSoftLightCompositionModeFragmentShader;
+    code[DifferenceCompositionModeFragmentShader] = qopenglslDifferenceCompositionModeFragmentShader;
+    code[ExclusionCompositionModeFragmentShader] = qopenglslExclusionCompositionModeFragmentShader;
 
 #if defined(QT_DEBUG)
     // Check that all the elements have been filled:
@@ -612,8 +603,11 @@ void QOpenGLEngineShaderManager::setCompositionMode(QPainter::CompositionMode mo
     if (compositionMode == mode)
         return;
 
+    bool wasAdvanced = compositionMode > QPainter::CompositionMode_Plus;
+    bool isAdvanced = mode > QPainter::CompositionMode_Plus;
+
     compositionMode = mode;
-    shaderProgNeedsChanging = true; //###
+    shaderProgNeedsChanging = shaderProgNeedsChanging || wasAdvanced || isAdvanced;
 }
 
 void QOpenGLEngineShaderManager::setCustomStage(QOpenGLCustomShaderStage* stage)
@@ -783,21 +777,13 @@ bool QOpenGLEngineShaderManager::useCorrectShaderProg()
         requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_ImageArrays;
     } else {
         bool useGlobalOpacity = (opacityMode == UniformOpacity);
-        if (hasCompose && hasMask && useGlobalOpacity)
-            requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_CMO;
-        if (hasCompose && hasMask && !useGlobalOpacity)
-            requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_CM;
-        if (!hasCompose && hasMask && useGlobalOpacity)
+        if (hasMask && useGlobalOpacity)
             requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_MO;
-        if (!hasCompose && hasMask && !useGlobalOpacity)
+        if (hasMask && !useGlobalOpacity)
             requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_M;
-        if (hasCompose && !hasMask && useGlobalOpacity)
-            requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_CO;
-        if (hasCompose && !hasMask && !useGlobalOpacity)
-            requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_C;
-        if (!hasCompose && !hasMask && useGlobalOpacity)
+        if (!hasMask && useGlobalOpacity)
             requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader_O;
-        if (!hasCompose && !hasMask && !useGlobalOpacity)
+        if (!hasMask && !useGlobalOpacity)
             requiredProgram.mainFragShader = QOpenGLEngineSharedShaders::MainFragmentShader;
     }
 

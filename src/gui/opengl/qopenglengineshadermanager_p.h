@@ -281,12 +281,8 @@ public:
         AffinePositionWithTextureBrushVertexShader,
 
         // MainFragmentShader_CMO must be first in the list:
-        MainFragmentShader_CMO,
-        MainFragmentShader_CM,
         MainFragmentShader_MO,
         MainFragmentShader_M,
-        MainFragmentShader_CO,
-        MainFragmentShader_C,
         MainFragmentShader_O,
         MainFragmentShader,
         MainFragmentShader_ImageArrays,
