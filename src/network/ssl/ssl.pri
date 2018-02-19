@@ -6,7 +6,7 @@ qtConfig(ssl) {
                ssl/qsslcertificate.h \
                ssl/qsslcertificate_p.h \
                ssl/qsslconfiguration.h \
-	       ssl/qsslconfiguration_p.h \
+               ssl/qsslconfiguration_p.h \
                ssl/qsslcipher.h \
                ssl/qsslcipher_p.h \
                ssl/qssldiffiehellmanparameters.h \
@@ -59,14 +59,19 @@ qtConfig(ssl) {
     qtConfig(openssl) {
         HEADERS += ssl/qsslcontext_openssl_p.h \
                    ssl/qsslsocket_openssl_p.h \
-                   ssl/qsslsocket_openssl_symbols_p.h
+                   ssl/qsslsocket_openssl_symbols_p.h \
+                   ssl/qdtls.h \
+                   ssl/qdtls_p.h \
+                   ssl/qdtls_openssl_p.h
         SOURCES += ssl/qsslsocket_openssl_symbols.cpp \
                    ssl/qssldiffiehellmanparameters_openssl.cpp \
                    ssl/qsslcertificate_openssl.cpp \
                    ssl/qsslellipticcurve_openssl.cpp \
                    ssl/qsslkey_openssl.cpp \
                    ssl/qsslsocket_openssl.cpp \
-                   ssl/qsslcontext_openssl.cpp
+                   ssl/qsslcontext_openssl.cpp \
+                   ssl/qdtls.cpp \
+                   ssl/qdtls_openssl.cpp
 
         qtConfig(opensslv11) {
             HEADERS += ssl/qsslsocket_openssl11_symbols_p.h

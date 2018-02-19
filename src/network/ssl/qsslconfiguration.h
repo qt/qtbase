@@ -73,6 +73,11 @@ class QSslKey;
 class QSslEllipticCurve;
 class QSslDiffieHellmanParameters;
 
+namespace dtlsopenssl
+{
+class DtlsState;
+}
+
 class QSslConfigurationPrivate;
 class Q_NETWORK_EXPORT QSslConfiguration
 {
@@ -188,6 +193,8 @@ private:
     friend class QSslConfigurationPrivate;
     friend class QSslSocketBackendPrivate;
     friend class QSslContext;
+    friend class QDtlsBasePrivate;
+    friend class dtlsopenssl::DtlsState;
     QSslConfiguration(QSslConfigurationPrivate *dd);
     QSharedDataPointer<QSslConfigurationPrivate> d;
 };

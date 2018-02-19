@@ -234,4 +234,9 @@ typedef int (*CookieVerifyCallback)(SSL *, unsigned char *, unsigned);
 }
 #define q_DTLSv1_listen(ssl, peer) q_SSL_ctrl(ssl, DTLS_CTRL_LISTEN, 0, (void *)peer)
 
+const SSL_METHOD *q_DTLSv1_server_method();
+const SSL_METHOD *q_DTLSv1_client_method();
+const SSL_METHOD *q_DTLSv1_2_server_method();
+const SSL_METHOD *q_DTLSv1_2_client_method();
+
 #endif // QSSLSOCKET_OPENSSL_PRE11_SYMBOLS_P_H

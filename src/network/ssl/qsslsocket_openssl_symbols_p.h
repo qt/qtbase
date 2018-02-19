@@ -541,7 +541,6 @@ typedef int (*CookieGenerateCallback)(SSL *, unsigned char *, unsigned *);
 
 void q_SSL_CTX_set_cookie_generate_cb(SSL_CTX *ctx, CookieGenerateCallback cb);
 void q_SSL_CTX_set_cookie_verify_cb(SSL_CTX *ctx, CookieVerifyCallback cb);
-BIO *q_BIO_new_dgram(int fd, int close_flag);
 const SSL_METHOD *q_DTLS_server_method();
 const SSL_METHOD *q_DTLS_client_method();
 

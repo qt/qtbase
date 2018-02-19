@@ -842,7 +842,7 @@ void QSslSocketBackendPrivate::transmit()
     } while (ssl && transmitting);
 }
 
-static QSslError _q_OpenSSL_to_QSslError(int errorCode, const QSslCertificate &cert)
+QSslError _q_OpenSSL_to_QSslError(int errorCode, const QSslCertificate &cert)
 {
     QSslError error;
     switch (errorCode) {

@@ -307,6 +307,12 @@ DEFINEFUNC3(DSA *, d2i_DSAPrivateKey, DSA **a, a, unsigned char **b, b, long c, 
 DEFINEFUNC3(EC_KEY *, d2i_ECPrivateKey, EC_KEY **a, a, unsigned char **b, b, long c, c, return 0, return)
 #endif
 #endif
+
+DEFINEFUNC(const SSL_METHOD *, DTLSv1_server_method, void, DUMMYARG, return nullptr, return)
+DEFINEFUNC(const SSL_METHOD *, DTLSv1_client_method, void, DUMMYARG, return nullptr, return)
+DEFINEFUNC(const SSL_METHOD *, DTLSv1_2_server_method, void, DUMMYARG, return nullptr, return)
+DEFINEFUNC(const SSL_METHOD *, DTLSv1_2_client_method, void, DUMMYARG, return nullptr, return)
+
 DEFINEFUNC(char *, CONF_get1_default_config_file, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(void, OPENSSL_add_all_algorithms_noconf, void, DUMMYARG, return, DUMMYARG)
 DEFINEFUNC(void, OPENSSL_add_all_algorithms_conf, void, DUMMYARG, return, DUMMYARG)
@@ -555,7 +561,6 @@ DEFINEFUNC3(void, SSL_get0_alpn_selected, const SSL *s, s, const unsigned char *
 // DTLS:
 DEFINEFUNC2(void, SSL_CTX_set_cookie_generate_cb, SSL_CTX *ctx, ctx, CookieGenerateCallback cb, cb, return, DUMMYARG)
 DEFINEFUNC2(void, SSL_CTX_set_cookie_verify_cb, SSL_CTX *ctx, ctx, CookieVerifyCallback cb, cb, return, DUMMYARG)
-DEFINEFUNC2(BIO *, BIO_new_dgram, int fd, fd, int flag, flag, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, DTLS_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const SSL_METHOD *, DTLS_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC2(void, BIO_set_flags, BIO *b, b, int flags, flags, return, DUMMYARG)
@@ -1046,6 +1051,12 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(d2i_DSAPrivateKey)
     RESOLVEFUNC(d2i_RSAPrivateKey)
 #endif
+
+    RESOLVEFUNC(DTLSv1_server_method)
+    RESOLVEFUNC(DTLSv1_client_method)
+    RESOLVEFUNC(DTLSv1_2_server_method)
+    RESOLVEFUNC(DTLSv1_2_client_method)
+
     RESOLVEFUNC(CONF_get1_default_config_file)
     RESOLVEFUNC(OPENSSL_add_all_algorithms_noconf)
     RESOLVEFUNC(OPENSSL_add_all_algorithms_conf)
@@ -1081,7 +1092,6 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(BIO_free)
     RESOLVEFUNC(BIO_new)
     RESOLVEFUNC(BIO_new_mem_buf)
-    RESOLVEFUNC(BIO_new_dgram)
     RESOLVEFUNC(BIO_read)
     RESOLVEFUNC(BIO_s_mem)
     RESOLVEFUNC(BIO_write)

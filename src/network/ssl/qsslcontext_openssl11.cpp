@@ -59,10 +59,23 @@ QT_BEGIN_NAMESPACE
 extern int q_X509Callback(int ok, X509_STORE_CTX *ctx);
 extern QString getErrorsFromOpenSsl();
 
+// defined in qdtls_openssl.cpp:
+namespace dtlscallbacks
+{
+extern "C" int q_X509DtlsCallback(int ok, X509_STORE_CTX *ctx);
+extern "C" int q_generate_cookie_callback(SSL *ssl, unsigned char *dst,
+                                          unsigned *cookieLength);
+extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
+                                        unsigned cookieLength);
+}
+
 static inline QString msgErrorSettingEllipticCurves(const QString &why)
 {
     return QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(why);
 }
+
+// Defined in qsslsocket.cpp
+QList<QSslCipher> q_getDefaultDtlsCiphers();
 
 // static
 void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
@@ -74,14 +87,25 @@ void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mo
 
     bool reinitialized = false;
     bool unsupportedProtocol = false;
+    bool isDtls = false;
 init_context:
     if (sslContext->sslConfiguration.protocol() == QSsl::SslV2) {
         // SSL 2 is no longer supported, but chosen deliberately -> error
         sslContext->ctx = nullptr;
         unsupportedProtocol = true;
     } else {
-        // The ssl options will actually control the supported methods
-        sslContext->ctx = q_SSL_CTX_new(client ? q_TLS_client_method() : q_TLS_server_method());
+        switch (sslContext->sslConfiguration.protocol()) {
+        case QSsl::DtlsV1_0:
+        case QSsl::DtlsV1_0OrLater:
+        case QSsl::DtlsV1_2:
+        case QSsl::DtlsV1_2OrLater:
+            isDtls = true;
+            sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
+            break;
+        default:
+            // The ssl options will actually control the supported methods
+            sslContext->ctx = q_SSL_CTX_new(client ? q_TLS_client_method() : q_TLS_server_method());
+        }
     }
 
     if (!sslContext->ctx) {
@@ -100,8 +124,10 @@ init_context:
         return;
     }
 
-    long minVersion = TLS_ANY_VERSION;
-    long maxVersion = TLS_ANY_VERSION;
+    const long anyVersion = isDtls ? DTLS_ANY_VERSION : TLS_ANY_VERSION;
+    long minVersion = anyVersion;
+    long maxVersion = anyVersion;
+
     switch (sslContext->sslConfiguration.protocol()) {
     // The single-protocol versions first:
     case QSsl::SslV3:
@@ -140,12 +166,21 @@ init_context:
         maxVersion = TLS_MAX_VERSION;
         break;
     case QSsl::DtlsV1_0:
+        minVersion = DTLS1_VERSION;
+        maxVersion = DTLS1_VERSION;
+        break;
     case QSsl::DtlsV1_0OrLater:
+        minVersion = DTLS1_VERSION;
+        maxVersion = DTLS_MAX_VERSION;
+        break;
     case QSsl::DtlsV1_2:
+        minVersion = DTLS1_2_VERSION;
+        maxVersion = DTLS1_2_VERSION;
+        break;
     case QSsl::DtlsV1_2OrLater:
-        sslContext->errorStr = QSslSocket::tr("unsupported protocol");
-        sslContext->errorCode = QSslError::UnspecifiedError;
-        return;
+        minVersion = DTLS1_2_VERSION;
+        maxVersion = DTLS_MAX_VERSION;
+        break;
     case QSsl::SslV2:
         // This protocol is not supported by OpenSSL 1.1 and we handle
         // it as an error (see the code above).
@@ -155,14 +190,14 @@ init_context:
         break;
     }
 
-    if (minVersion != TLS_ANY_VERSION
+    if (minVersion != anyVersion
         && !q_SSL_CTX_set_min_proto_version(sslContext->ctx, minVersion)) {
         sslContext->errorStr = QSslSocket::tr("Error while setting the minimal protocol version");
         sslContext->errorCode = QSslError::UnspecifiedError;
         return;
     }
 
-    if (maxVersion != TLS_ANY_VERSION
+    if (maxVersion != anyVersion
         && !q_SSL_CTX_set_max_proto_version(sslContext->ctx, maxVersion)) {
         sslContext->errorStr = QSslSocket::tr("Error while setting the maximum protocol version");
         sslContext->errorCode = QSslError::UnspecifiedError;
@@ -182,7 +217,8 @@ init_context:
     bool first = true;
     QList<QSslCipher> ciphers = sslContext->sslConfiguration.ciphers();
     if (ciphers.isEmpty())
-        ciphers = QSslSocketPrivate::defaultCiphers();
+        ciphers = isDtls ? q_getDefaultDtlsCiphers() : QSslSocketPrivate::defaultCiphers();
+
     for (const QSslCipher &cipher : qAsConst(ciphers)) {
         if (first)
             first = false;
@@ -289,7 +325,13 @@ init_context:
     if (sslContext->sslConfiguration.peerVerifyMode() == QSslSocket::VerifyNone) {
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_NONE, nullptr);
     } else {
-        q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_PEER, q_X509Callback);
+        q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_PEER,
+                             isDtls ? dtlscallbacks::q_X509DtlsCallback : q_X509Callback);
+    }
+
+    if (mode == QSslSocket::SslServerMode && isDtls && configuration.dtlsCookieVerificationEnabled()) {
+        q_SSL_CTX_set_cookie_generate_cb(sslContext->ctx, dtlscallbacks::q_generate_cookie_callback);
+        q_SSL_CTX_set_cookie_verify_cb(sslContext->ctx, dtlscallbacks::q_verify_cookie_callback);
     }
 
     // Set verification depth.

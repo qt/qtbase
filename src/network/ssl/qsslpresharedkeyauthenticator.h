@@ -76,6 +76,7 @@ public:
 private:
     friend Q_NETWORK_EXPORT bool operator==(const QSslPreSharedKeyAuthenticator &lhs, const QSslPreSharedKeyAuthenticator &rhs);
     friend class QSslSocketBackendPrivate;
+    friend class QDtlsPrivateOpenSSL;
 
     QSharedDataPointer<QSslPreSharedKeyAuthenticatorPrivate> d;
 };

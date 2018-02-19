@@ -56,10 +56,23 @@ QT_BEGIN_NAMESPACE
 extern int q_X509Callback(int ok, X509_STORE_CTX *ctx);
 extern QString getErrorsFromOpenSsl();
 
+// defined in qdtls_openssl.cpp:
+namespace dtlscallbacks
+{
+extern "C" int q_X509DtlsCallback(int ok, X509_STORE_CTX *ctx);
+extern "C" int q_generate_cookie_callback(SSL *ssl, unsigned char *dst,
+                                          unsigned *cookieLength);
+extern "C" int q_verify_cookie_callback(SSL *ssl, const unsigned char *cookie,
+                                        unsigned cookieLength);
+}
+
 static inline QString msgErrorSettingEllipticCurves(const QString &why)
 {
     return QSslSocket::tr("Error when setting the elliptic curves (%1)").arg(why);
 }
+
+// Defined in qsslsocket.cpp
+QList<QSslCipher> q_getDefaultDtlsCiphers();
 
 // static
 void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mode, const QSslConfiguration &configuration, bool allowRootCertOnDemandLoading)
@@ -68,17 +81,25 @@ void QSslContext::initSslContext(QSslContext *sslContext, QSslSocket::SslMode mo
     sslContext->errorCode = QSslError::NoError;
 
     bool client = (mode == QSslSocket::SslClientMode);
-
     bool reinitialized = false;
     bool unsupportedProtocol = false;
+    bool isDtls = false;
 init_context:
     switch (sslContext->sslConfiguration.protocol()) {
     case QSsl::DtlsV1_0:
-    case QSsl::DtlsV1_0OrLater:
+        isDtls = true;
+        sslContext->ctx = q_SSL_CTX_new(client ? q_DTLSv1_client_method() : q_DTLSv1_server_method());
+        break;
     case QSsl::DtlsV1_2:
     case QSsl::DtlsV1_2OrLater:
-        sslContext->ctx = 0;
-        unsupportedProtocol = true;
+        // OpenSSL 1.0.2 and below will probably never receive TLS 1.3, so
+        // technically 1.2 or later is 1.2 and will stay so.
+        isDtls = true;
+        sslContext->ctx = q_SSL_CTX_new(client ? q_DTLSv1_2_client_method() : q_DTLSv1_2_server_method());
+        break;
+    case QSsl::DtlsV1_0OrLater:
+        isDtls = true;
+        sslContext->ctx = q_SSL_CTX_new(client ? q_DTLS_client_method() : q_DTLS_server_method());
         break;
     case QSsl::SslV2:
 #ifndef OPENSSL_NO_SSL2
@@ -145,6 +166,12 @@ init_context:
         break;
     }
 
+    if (!client && isDtls && configuration.peerVerifyMode() != QSslSocket::VerifyNone) {
+        sslContext->errorStr = QSslSocket::tr("DTLS server requires a 'VerifyNone' mode with your version of OpenSSL");
+        sslContext->errorCode = QSslError::UnspecifiedError;
+        return;
+    }
+
     if (!sslContext->ctx) {
         // After stopping Flash 10 the SSL library loses its ciphers. Try re-adding them
         // by re-initializing the library.
@@ -162,6 +189,7 @@ init_context:
     }
 
     // Enable bug workarounds.
+    // DTLSTODO: check this setupOpenSslOptions ...
     long options = QSslSocketBackendPrivate::setupOpenSslOptions(configuration.protocol(), configuration.d->sslOptions);
     q_SSL_CTX_set_options(sslContext->ctx, options);
 
@@ -177,7 +205,7 @@ init_context:
     bool first = true;
     QList<QSslCipher> ciphers = sslContext->sslConfiguration.ciphers();
     if (ciphers.isEmpty())
-        ciphers = QSslSocketPrivate::defaultCiphers();
+        ciphers = isDtls ? q_getDefaultDtlsCiphers() : QSslSocketPrivate::defaultCiphers();
     for (const QSslCipher &cipher : qAsConst(ciphers)) {
         if (first)
             first = false;
@@ -284,7 +312,13 @@ init_context:
     if (sslContext->sslConfiguration.peerVerifyMode() == QSslSocket::VerifyNone) {
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_NONE, 0);
     } else {
-        q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_PEER, q_X509Callback);
+        q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_PEER,
+                             isDtls ? dtlscallbacks::q_X509DtlsCallback : q_X509Callback);
+    }
+
+    if (mode == QSslSocket::SslServerMode && isDtls && configuration.dtlsCookieVerificationEnabled()) {
+        q_SSL_CTX_set_cookie_generate_cb(sslContext->ctx, dtlscallbacks::q_generate_cookie_callback);
+        q_SSL_CTX_set_cookie_verify_cb(sslContext->ctx, CookieVerifyCallback(dtlscallbacks::q_verify_cookie_callback));
     }
 
     // Set verification depth.
