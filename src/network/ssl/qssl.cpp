@@ -125,6 +125,9 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \value TlsV1_1OrLater TLSv1.1 and later versions. This option is not available when using the WinRT backend due to platform limitations.
     \value TlsV1_2 TLSv1.2. When using the WinRT backend this option will also enable TLSv1.0 and TLSv1.1.
     \value TlsV1_2OrLater TLSv1.2 and later versions. This option is not available when using the WinRT backend due to platform limitations.
+    \value DtlsV1_0 DTLSv1.0
+    \value DtlsV1_2 DTLSv1.2
+    \value DtlsV1_2OrLater DTLSv1.2 and later versions.
     \value UnknownProtocol The cipher's protocol cannot be determined.
     \value AnyProtocol The socket understands SSLv2, SSLv3, and TLSv1.0. This
     value is used by QSslSocket only.

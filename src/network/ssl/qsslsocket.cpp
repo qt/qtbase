@@ -336,12 +336,18 @@ QT_BEGIN_NAMESPACE
 class QSslSocketGlobalData
 {
 public:
-    QSslSocketGlobalData() : config(new QSslConfigurationPrivate) {}
+    QSslSocketGlobalData()
+        : config(new QSslConfigurationPrivate),
+          dtlsConfig(new QSslConfigurationPrivate)
+    {
+        dtlsConfig->protocol = QSsl::DtlsV1_2OrLater;
+    }
 
     QMutex mutex;
     QList<QSslCipher> supportedCiphers;
     QVector<QSslEllipticCurve> supportedEllipticCurves;
     QExplicitlySharedDataPointer<QSslConfigurationPrivate> config;
+    QExplicitlySharedDataPointer<QSslConfigurationPrivate> dtlsConfig;
 };
 Q_GLOBAL_STATIC(QSslSocketGlobalData, globalData)
 
@@ -2128,6 +2134,26 @@ void QSslSocketPrivate::setDefaultSupportedCiphers(const QList<QSslCipher> &ciph
 /*!
     \internal
 */
+void q_setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers)
+{
+    QMutexLocker locker(&globalData()->mutex);
+    globalData()->dtlsConfig.detach();
+    globalData()->dtlsConfig->ciphers = ciphers;
+}
+
+/*!
+    \internal
+*/
+QList<QSslCipher> q_getDefaultDtlsCiphers()
+{
+    QSslSocketPrivate::ensureInitialized();
+    QMutexLocker locker(&globalData()->mutex);
+    return globalData()->dtlsConfig->ciphers;
+}
+
+/*!
+    \internal
+*/
 QVector<QSslEllipticCurve> QSslSocketPrivate::supportedEllipticCurves()
 {
     QSslSocketPrivate::ensureInitialized();
@@ -2142,6 +2168,7 @@ void QSslSocketPrivate::setDefaultSupportedEllipticCurves(const QVector<QSslElli
 {
     const QMutexLocker locker(&globalData()->mutex);
     globalData()->config.detach();
+    globalData()->dtlsConfig.detach();
     globalData()->supportedEllipticCurves = curves;
 }
 
@@ -2164,6 +2191,8 @@ void QSslSocketPrivate::setDefaultCaCertificates(const QList<QSslCertificate> &c
     QMutexLocker locker(&globalData()->mutex);
     globalData()->config.detach();
     globalData()->config->caCertificates = certs;
+    globalData()->dtlsConfig.detach();
+    globalData()->dtlsConfig->caCertificates = certs;
     // when the certificates are set explicitly, we do not want to
     // load the system certificates on demand
     s_loadRootCertsOnDemand = false;
@@ -2183,6 +2212,8 @@ bool QSslSocketPrivate::addDefaultCaCertificates(const QString &path, QSsl::Enco
     QMutexLocker locker(&globalData()->mutex);
     globalData()->config.detach();
     globalData()->config->caCertificates += certs;
+    globalData()->dtlsConfig.detach();
+    globalData()->dtlsConfig->caCertificates += certs;
     return true;
 }
 
@@ -2195,6 +2226,8 @@ void QSslSocketPrivate::addDefaultCaCertificate(const QSslCertificate &cert)
     QMutexLocker locker(&globalData()->mutex);
     globalData()->config.detach();
     globalData()->config->caCertificates += cert;
+    globalData()->dtlsConfig.detach();
+    globalData()->dtlsConfig->caCertificates += cert;
 }
 
 /*!
@@ -2206,6 +2239,8 @@ void QSslSocketPrivate::addDefaultCaCertificates(const QList<QSslCertificate> &c
     QMutexLocker locker(&globalData()->mutex);
     globalData()->config.detach();
     globalData()->config->caCertificates += certs;
+    globalData()->dtlsConfig.detach();
+    globalData()->dtlsConfig->caCertificates += certs;
 }
 
 /*!
@@ -2258,6 +2293,30 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     ptr->sslOptions = global->sslOptions;
     ptr->ellipticCurves = global->ellipticCurves;
     ptr->backendConfig = global->backendConfig;
+}
+
+/*!
+    \internal
+*/
+QSslConfiguration QSslConfigurationPrivate::defaultDtlsConfiguration()
+{
+    QSslSocketPrivate::ensureInitialized();
+    QMutexLocker locker(&globalData()->mutex);
+
+    return QSslConfiguration(globalData()->dtlsConfig.data());
+}
+
+/*!
+    \internal
+*/
+void QSslConfigurationPrivate::setDefaultDtlsConfiguration(const QSslConfiguration &configuration)
+{
+    QSslSocketPrivate::ensureInitialized();
+    QMutexLocker locker(&globalData()->mutex);
+    if (globalData()->dtlsConfig == configuration.d)
+        return;                 // nothing to do
+
+    globalData()->dtlsConfig = const_cast<QSslConfigurationPrivate*>(configuration.d.constData());
 }
 
 /*!

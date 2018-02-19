@@ -137,10 +137,15 @@ public:
     QByteArray nextNegotiatedProtocol;
     QSslConfiguration::NextProtocolNegotiationStatus nextProtocolNegotiationStatus;
 
+    bool dtlsCookieEnabled = true;
+
     // in qsslsocket.cpp:
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);
     static void deepCopyDefaultConfiguration(QSslConfigurationPrivate *config);
+
+    static QSslConfiguration defaultDtlsConfiguration();
+    static void setDefaultDtlsConfiguration(const QSslConfiguration &configuration);
 };
 
 // implemented here for inlining purposes
