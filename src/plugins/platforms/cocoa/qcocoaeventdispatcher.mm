@@ -637,6 +637,8 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
         if (!info.session) {
             QMacAutoReleasePool pool;
             QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(info.window->handle());
+            if (!cocoaWindow)
+                continue;
             NSWindow *nswindow = cocoaWindow->nativeWindow();
             if (!nswindow)
                 continue;
@@ -647,6 +649,15 @@ NSModalSession QCocoaEventDispatcherPrivate::currentModalSession()
             [(NSWindow*) info.nswindow retain];
             QRect rect = cocoaWindow->geometry();
             info.session = [NSApp beginModalSessionForWindow:nswindow];
+
+            // The call to beginModalSessionForWindow above processes events and may
+            // have deleted or destroyed the window. Check if it's still valid.
+            if (!info.window)
+                continue;
+            cocoaWindow = static_cast<QCocoaWindow *>(info.window->handle());
+            if (!cocoaWindow)
+                continue;
+
             if (rect != cocoaWindow->geometry())
                 cocoaWindow->setGeometry(rect);
         }
