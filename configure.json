@@ -213,8 +213,7 @@
         "compile": [ "verifyspec" ],
         "detectPkgConfig": [ "cross_compile", "machineTuple" ],
         "library": [ "pkg-config" ],
-        "getPkgConfigVariable": [ "pkg-config" ],
-        "subarch": [ "architecture" ]
+        "getPkgConfigVariable": [ "pkg-config" ]
     },
 
     "testTypeAliases": {
@@ -449,21 +448,6 @@
             "label": "Intrinsics without -mXXX argument",
             "type": "x86SimdAlways",
             "test": "x86_simd"
-        },
-        "mips_dsp": {
-            "label": "MIPS DSP instructions",
-            "type": "subarch",
-            "subarch": "dsp"
-        },
-        "mips_dspr2": {
-            "label": "MIPS DSPr2 instructions",
-            "type": "subarch",
-            "subarch": "dspr2"
-        },
-        "neon": {
-            "label": "NEON instructions",
-            "type": "subarch",
-            "subarch": "neon"
         },
         "posix_fallocate": {
             "label": "POSIX fallocate()",
@@ -1014,7 +998,7 @@
         },
         "mips_dsp": {
             "label": "DSP",
-            "condition": "arch.mips && tests.mips_dsp",
+            "condition": "arch.mips && subarch.dsp",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_MIPS_DSP", "value": 1 }
@@ -1022,7 +1006,7 @@
         },
         "mips_dspr2": {
             "label": "DSPr2",
-            "condition": "arch.mips && tests.mips_dspr2",
+            "condition": "arch.mips && subarch.dspr2",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_MIPS_DSPR2", "value": 1 }
@@ -1030,7 +1014,7 @@
         },
         "neon": {
             "label": "NEON",
-            "condition": "(arch.arm || arch.arm64) && tests.neon",
+            "condition": "(arch.arm || arch.arm64) && subarch.neon",
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_NEON", "value": 1 }
