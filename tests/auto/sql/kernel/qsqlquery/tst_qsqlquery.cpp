@@ -370,7 +370,8 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("task_234422", __FILE__, db)
                << qTableName("test141895", __FILE__, db)
                << qTableName("qtest_oraOCINumber", __FILE__, db)
-               << qTableName("bug2192", __FILE__, db);
+               << qTableName("bug2192", __FILE__, db)
+               << qTableName("tst_record", __FILE__, db);
 
     if (dbType == QSqlDriver::PostgreSQL)
         tablenames << qTableName("task_233829", __FILE__, db);
@@ -1009,6 +1010,29 @@ void tst_QSqlQuery::value()
     }
 }
 
+#define SETUP_RECORD_TABLE \
+    do { \
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tst_record + " (id integer, extra varchar(50))")); \
+        for (int i = 0; i < 3; ++i) \
+            QVERIFY_SQL(q, exec(QString("INSERT INTO " + tst_record + " VALUES(%1, 'extra%1')").arg(i))); \
+    } while (0)
+
+#define CHECK_RECORD \
+    do { \
+        QVERIFY_SQL(q, exec(QString("select %1.id, %1.t_varchar, %1.t_char, %2.id, %2.extra from %1, %2 where " \
+                                    "%1.id = %2.id order by %1.id").arg(lowerQTest).arg(tst_record))); \
+        QCOMPARE(q.record().fieldName(0).toLower(), QString("id")); \
+        QCOMPARE(q.record().field(0).tableName().toLower(), lowerQTest); \
+        QCOMPARE(q.record().fieldName(1).toLower(), QString("t_varchar")); \
+        QCOMPARE(q.record().field(1).tableName().toLower(), lowerQTest); \
+        QCOMPARE(q.record().fieldName(2).toLower(), QString("t_char")); \
+        QCOMPARE(q.record().field(2).tableName().toLower(), lowerQTest); \
+        QCOMPARE(q.record().fieldName(3).toLower(), QString("id")); \
+        QCOMPARE(q.record().field(3).tableName().toLower(), tst_record); \
+        QCOMPARE(q.record().fieldName(4).toLower(), QString("extra")); \
+        QCOMPARE(q.record().field(4).tableName().toLower(), tst_record); \
+    } while (0)
+
 void tst_QSqlQuery::record()
 {
     QFETCH( QString, dbName );
@@ -1030,6 +1054,26 @@ void tst_QSqlQuery::record()
 
     QCOMPARE( q.record().fieldName( 0 ).toLower(), QString( "id" ) );
     QCOMPARE( q.value( 0 ).toInt(), 2 );
+
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriver::Oracle)
+        QSKIP("Getting the tablename is not supported in Oracle");
+    const auto lowerQTest = qtest.toLower();
+    for (int i = 0; i < 3; ++i)
+        QCOMPARE(q.record().field(i).tableName().toLower(), lowerQTest);
+    q.clear();
+    const auto tst_record = qTableName("tst_record", __FILE__, db).toLower();
+    SETUP_RECORD_TABLE;
+    CHECK_RECORD;
+    q.clear();
+
+    // Recreate the tables, in a different order
+    const QStringList tables = { qtest, tst_record, qTableName("qtest_null", __FILE__, db) };
+    tst_Databases::safeDropTables(db, tables);
+    SETUP_RECORD_TABLE;
+    createTestTables(db);
+    populateTestTables(db);
+    CHECK_RECORD;
 }
 
 void tst_QSqlQuery::isValid()

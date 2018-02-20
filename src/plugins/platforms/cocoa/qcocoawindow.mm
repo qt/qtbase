@@ -1131,7 +1131,7 @@ void QCocoaWindow::handleGeometryChange()
     // Guard against processing window system events during QWindow::setGeometry
     // calls, which Qt and Qt applications do not expect.
     if (!m_inSetGeometry)
-        QWindowSystemInterface::flushWindowSystemEvents();
+        QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
 }
 
 void QCocoaWindow::handleExposeEvent(const QRegion &region)
