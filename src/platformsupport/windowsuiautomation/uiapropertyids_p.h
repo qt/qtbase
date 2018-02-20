@@ -40,6 +40,17 @@
 #ifndef UIAPROPERTYIDS_H
 #define UIAPROPERTYIDS_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #define UIA_RuntimeIdPropertyId                                30000
 #define UIA_BoundingRectanglePropertyId                        30001
 #define UIA_ProcessIdPropertyId                                30002

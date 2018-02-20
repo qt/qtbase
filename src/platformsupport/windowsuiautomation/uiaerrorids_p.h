@@ -40,6 +40,17 @@
 #ifndef UIAERRORIDS_H
 #define UIAERRORIDS_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #define UIA_E_ELEMENTNOTENABLED      0x80040200
 #define UIA_E_ELEMENTNOTAVAILABLE    0x80040201
 #define UIA_E_NOCLICKABLEPOINT       0x80040202

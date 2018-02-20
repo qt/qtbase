@@ -40,6 +40,17 @@
 #ifndef UIAEVENTIDS_H
 #define UIAEVENTIDS_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #define UIA_ToolTipOpenedEventId                                20000
 #define UIA_ToolTipClosedEventId                                20001
 #define UIA_StructureChangedEventId                             20002
