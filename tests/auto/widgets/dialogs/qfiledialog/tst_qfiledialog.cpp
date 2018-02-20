@@ -933,7 +933,6 @@ void tst_QFiledialog::selectFiles()
     QSignalSpy spyDirectoryEntered(&fd, SIGNAL(directoryEntered(QString)));
     QSignalSpy spyFilesSelected(&fd, SIGNAL(filesSelected(QStringList)));
     QSignalSpy spyFilterSelected(&fd, SIGNAL(filterSelected(QString)));
-    fd.show();
     fd.setFileMode(QFileDialog::ExistingFiles);
 
     QString filesPath = fd.directory().absolutePath();
