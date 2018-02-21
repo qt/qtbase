@@ -46,6 +46,7 @@
 #include "private/qnoncontiguousbytedevice_p.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 
 QT_BEGIN_NAMESPACE
 
