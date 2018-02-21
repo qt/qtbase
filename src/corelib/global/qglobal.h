@@ -549,7 +549,7 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 #  define Q_ALWAYS_INLINE inline
 #endif
 
-#ifdef Q_CC_GNU
+#if defined(Q_CC_GNU) && defined(Q_OS_WIN)
 #  define QT_INIT_METAOBJECT __attribute__((init_priority(101)))
 #else
 #  define QT_INIT_METAOBJECT
