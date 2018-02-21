@@ -315,7 +315,7 @@ void QBitArray::fill(bool value, int begin, int end)
     \since 5.11
 
     Creates a QBitArray with the dense bit array located at \a data, with \a
-    len bits. The byte array at \a data must be at least \a size / 8 (rounded up)
+    size bits. The byte array at \a data must be at least \a size / 8 (rounded up)
     bytes long.
 
     If \a size is not a multiple of 8, this function will include the lowest
