@@ -31,6 +31,7 @@
 #include "qwasmeventdispatcher.h"
 #include "qwasmcompositor.h"
 #include "qwasmintegration.h"
+#include "qwasmclipboard.h"
 
 #include <QtGui/qevent.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -175,10 +176,26 @@ int QWasmEventTranslator::keyboard_cb(int eventType, const EmscriptenKeyboardEve
     if (keyType == QEvent::None)
         return 0;
 
-    QString keyText = alphanumeric ? QString(keyEvent->key) : QString();
-    bool accepted = QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
-        0, keyType, qtKey, translateKeyboardEventModifier(keyEvent), keyText);
+    QFlags<Qt::KeyboardModifier> mods = translateKeyboardEventModifier(keyEvent);
+    bool accepted = false;
+
+    if (keyType == QEvent::KeyPress &&
+            mods.testFlag(Qt::ControlModifier)
+            && qtKey == Qt::Key_V) {
+        QWasmIntegration::get()->getWasmClipboard()->readTextFromClipboard();
+    } else {
+        QString keyText = alphanumeric ? QString(keyEvent->key) : QString();
+        accepted = QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
+                    0, keyType, qtKey, translateKeyboardEventModifier(keyEvent), keyText);
+    }
+
+    if (keyType == QEvent::KeyPress &&
+            mods.testFlag(Qt::ControlModifier)
+            && qtKey == Qt::Key_C) {
+        QWasmIntegration::get()->getWasmClipboard()->writeTextToClipboard();
+    }
     QWasmEventDispatcher::maintainTimers();
+
     return accepted ? 1 : 0;
 }
 

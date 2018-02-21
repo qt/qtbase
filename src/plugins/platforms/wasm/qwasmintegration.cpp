@@ -33,6 +33,7 @@
 #include "qwasmcompositor.h"
 #include "qwasmopenglcontext.h"
 #include "qwasmtheme.h"
+#include "qwasmclipboard.h"
 
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
@@ -65,17 +66,16 @@ EMSCRIPTEN_BINDINGS(my_module)
     function("browserBeforeUnload", &browserBeforeUnload);
 }
 
-static QWasmIntegration *globalHtml5Integration;
-QWasmIntegration *QWasmIntegration::get() { return globalHtml5Integration; }
+QWasmIntegration *QWasmIntegration::s_instance;
 
 QWasmIntegration::QWasmIntegration()
     : m_fontDb(nullptr),
       m_compositor(new QWasmCompositor),
       m_screen(new QWasmScreen(m_compositor)),
-      m_eventDispatcher(nullptr)
+      m_eventDispatcher(nullptr),
+      m_clipboard(new QWasmClipboard)
 {
-
-    globalHtml5Integration = this;
+    s_instance = this;
 
     updateQScreenAndCanvasRenderSize();
     screenAdded(m_screen);
@@ -93,6 +93,7 @@ QWasmIntegration::~QWasmIntegration()
     destroyScreen(m_screen);
     delete m_fontDb;
     delete m_eventTranslator;
+    s_instance = nullptr;
 }
 
 void QWasmIntegration::QWasmBrowserExit()
@@ -209,6 +210,13 @@ void QWasmIntegration::updateQScreenAndCanvasRenderSize()
     set_canvas_size(canvasSize.width(), canvasSize.height());
     screen->setGeometry(QRect(QPoint(0, 0), cssSize.toSize()));
     QWasmIntegration::get()->m_compositor->redrawWindowContent();
+}
+
+QPlatformClipboard* QWasmIntegration::clipboard() const
+{
+    if (!m_clipboard)
+        m_clipboard = new QWasmClipboard;
+    return m_clipboard;
 }
 
 QT_END_NAMESPACE

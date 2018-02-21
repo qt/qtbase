@@ -49,6 +49,7 @@ class QWasmEventDispatcher;
 class QWasmScreen;
 class QWasmCompositor;
 class QWasmBackingStore;
+class QWasmClipboard;
 
 class QWasmIntegration : public QObject, public QPlatformIntegration
 {
@@ -68,12 +69,14 @@ public:
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const override;
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
+    QPlatformClipboard *clipboard() const override;
 
-    static QWasmIntegration *get();
     QWasmScreen *screen() { return m_screen; }
     QWasmCompositor *compositor() { return m_compositor; }
     QWasmEventTranslator *eventTranslator() { return m_eventTranslator; }
+    QWasmClipboard *getWasmClipboard() { return m_clipboard; }
 
+    static QWasmIntegration *get() { return s_instance; }
     static void QWasmBrowserExit();
     static void updateQScreenAndCanvasRenderSize();
 
@@ -85,6 +88,9 @@ private:
     mutable QWasmEventDispatcher *m_eventDispatcher;
     static int uiEvent_cb(int eventType, const EmscriptenUiEvent *e, void *userData);
     mutable QHash<QWindow *, QWasmBackingStore *> m_backingStores;
+
+    mutable QWasmClipboard *m_clipboard;
+    static QWasmIntegration *s_instance;
 };
 
 QT_END_NAMESPACE
