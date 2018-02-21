@@ -370,7 +370,8 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("task_234422", __FILE__, db)
                << qTableName("test141895", __FILE__, db)
                << qTableName("qtest_oraOCINumber", __FILE__, db)
-               << qTableName("bug2192", __FILE__, db);
+               << qTableName("bug2192", __FILE__, db)
+               << qTableName("tst_record", __FILE__, db);
 
     if (dbType == QSqlDriver::PostgreSQL)
         tablenames << qTableName("task_233829", __FILE__, db);
@@ -1009,6 +1010,29 @@ void tst_QSqlQuery::value()
     }
 }
 
+#define SETUP_RECORD_TABLE \
+    do { \
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tst_record + " (id integer, extra varchar(50))")); \
+        for (int i = 0; i < 3; ++i) \
+            QVERIFY_SQL(q, exec(QString("INSERT INTO " + tst_record + " VALUES(%1, 'extra%1')").arg(i))); \
+    } while (0)
+
+#define CHECK_RECORD \
+    do { \
+        QVERIFY_SQL(q, exec(QString("select %1.id, %1.t_varchar, %1.t_char, %2.id, %2.extra from %1, %2 where " \
+                                    "%1.id = %2.id order by %1.id").arg(lowerQTest).arg(tst_record))); \
+        QCOMPARE(q.record().fieldName(0).toLower(), QString("id")); \
+        QCOMPARE(q.record().field(0).tableName().toLower(), lowerQTest); \
+        QCOMPARE(q.record().fieldName(1).toLower(), QString("t_varchar")); \
+        QCOMPARE(q.record().field(1).tableName().toLower(), lowerQTest); \
+        QCOMPARE(q.record().fieldName(2).toLower(), QString("t_char")); \
+        QCOMPARE(q.record().field(2).tableName().toLower(), lowerQTest); \
+        QCOMPARE(q.record().fieldName(3).toLower(), QString("id")); \
+        QCOMPARE(q.record().field(3).tableName().toLower(), tst_record); \
+        QCOMPARE(q.record().fieldName(4).toLower(), QString("extra")); \
+        QCOMPARE(q.record().field(4).tableName().toLower(), tst_record); \
+    } while (0)
+
 void tst_QSqlQuery::record()
 {
     QFETCH( QString, dbName );
@@ -1030,6 +1054,26 @@ void tst_QSqlQuery::record()
 
     QCOMPARE( q.record().fieldName( 0 ).toLower(), QString( "id" ) );
     QCOMPARE( q.value( 0 ).toInt(), 2 );
+
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriver::Oracle)
+        QSKIP("Getting the tablename is not supported in Oracle");
+    const auto lowerQTest = qtest.toLower();
+    for (int i = 0; i < 3; ++i)
+        QCOMPARE(q.record().field(i).tableName().toLower(), lowerQTest);
+    q.clear();
+    const auto tst_record = qTableName("tst_record", __FILE__, db).toLower();
+    SETUP_RECORD_TABLE;
+    CHECK_RECORD;
+    q.clear();
+
+    // Recreate the tables, in a different order
+    const QStringList tables = { qtest, tst_record, qTableName("qtest_null", __FILE__, db) };
+    tst_Databases::safeDropTables(db, tables);
+    SETUP_RECORD_TABLE;
+    createTestTables(db);
+    populateTestTables(db);
+    CHECK_RECORD;
 }
 
 void tst_QSqlQuery::isValid()
@@ -2667,8 +2711,22 @@ void tst_QSqlQuery::lastInsertId()
 
     QSqlQuery q( db );
 
-    QVERIFY_SQL( q, exec( "insert into " + qtest + " values (41, 'VarChar41', 'Char41')" ) );
-
+    const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    // PostgreSQL >= 8.1 relies on lastval() which does not work if a value is
+    // manually inserted to the serial field, so we create a table specifically
+    if (dbType == QSqlDriver::PostgreSQL) {
+        const auto tst_lastInsertId = qTableName("tst_lastInsertId", __FILE__, db);
+        tst_Databases::safeDropTable(db, tst_lastInsertId);
+        QVERIFY_SQL(q, exec(QStringLiteral("create table ") + tst_lastInsertId +
+                            QStringLiteral(" (id serial not null, t_varchar "
+                            "varchar(20), t_char char(20), primary key(id))")));
+        QVERIFY_SQL(q, exec(QStringLiteral("insert into ") + tst_lastInsertId +
+                            QStringLiteral(" (t_varchar, t_char) values "
+                            "('VarChar41', 'Char41')")));
+    } else {
+        QVERIFY_SQL(q, exec(QStringLiteral("insert into ") + qtest +
+                            QStringLiteral(" values (41, 'VarChar41', 'Char41')")));
+    }
     QVariant v = q.lastInsertId();
 
     QVERIFY( v.isValid() );
@@ -3225,10 +3283,19 @@ void tst_QSqlQuery::timeStampParsing()
     const QString tableName(qTableName("timeStampParsing", __FILE__, db));
     tst_Databases::safeDropTable(db, tableName);
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName
-                        + QStringLiteral(" (id integer, datefield timestamp)")));
-    QVERIFY_SQL(q, exec(QStringLiteral("INSERT INTO ") + tableName
-                        + QStringLiteral(" (datefield) VALUES (current_timestamp)")));
+    QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
+    if (dbType == QSqlDriver::PostgreSQL) {
+        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
+                            "id serial NOT NULL, "
+                            "datefield timestamp, primary key(id));")));
+    } else {
+        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
+                            "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT,"
+                            "\"datefield\" timestamp);")));
+    }
+    QVERIFY_SQL(q, exec(
+                    QStringLiteral("INSERT INTO ") + tableName + QStringLiteral(" (datefield) VALUES (current_timestamp);"
+                    )));
     QVERIFY_SQL(q, exec(QStringLiteral("SELECT * FROM ") + tableName));
     while (q.next())
         QVERIFY(q.value(1).toDateTime().isValid());
@@ -3599,15 +3666,17 @@ void tst_QSqlQuery::QTBUG_18435()
 
 void tst_QSqlQuery::QTBUG_5251()
 {
+    // Since QSqlTableModel will escape the identifiers, we need to escape
+    // them for databases that are case sensitive
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
     const QString timetest(qTableName("timetest", __FILE__, db));
-
+    tst_Databases::safeDropTable(db, timetest);
     QSqlQuery q(db);
-    q.exec("DROP TABLE " + timetest);
-    QVERIFY_SQL(q, exec("CREATE TABLE  " + timetest + " (t  TIME)"));
-    QVERIFY_SQL(q, exec("INSERT INTO " + timetest +  " VALUES ('1:2:3.666')"));
+    QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE \"") + timetest + QStringLiteral("\" (t TIME)")));
+    QVERIFY_SQL(q, exec(QStringLiteral("INSERT INTO \"") + timetest +
+                        QStringLiteral("\" VALUES ('1:2:3.666')")));
 
     QSqlTableModel timetestModel(0,db);
     timetestModel.setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -3620,7 +3689,8 @@ void tst_QSqlQuery::QTBUG_5251()
     QVERIFY_SQL(timetestModel, submitAll());
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:12:34.500"));
 
-    QVERIFY_SQL(q, exec("UPDATE " + timetest + " SET t = '0:11:22.33'"));
+    QVERIFY_SQL(q, exec(QStringLiteral("UPDATE \"") + timetest +
+                        QStringLiteral("\" SET t = '0:11:22.33'")));
     QVERIFY_SQL(timetestModel, select());
     QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:11:22.330"));
 
@@ -4197,12 +4267,18 @@ void tst_QSqlQuery::aggregateFunctionTypes()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     QVariant::Type intType = QVariant::Int;
+    QVariant::Type sumType = intType;
+    QVariant::Type countType = intType;
     // QPSQL uses LongLong for manipulation of integers
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::PostgreSQL)
-        intType = QVariant::LongLong;
-    else if (dbType == QSqlDriver::Oracle)
-        intType = QVariant::Double;
+    if (dbType == QSqlDriver::PostgreSQL) {
+        sumType = countType = QVariant::LongLong;
+    } else if (dbType == QSqlDriver::Oracle) {
+        intType = sumType = countType = QVariant::Double;
+    } else if (dbType == QSqlDriver::MySqlServer) {
+        sumType = QVariant::Double;
+        countType = QVariant::LongLong;
+    }
     {
         const QString tableName(qTableName("numericFunctionsWithIntValues", __FILE__, db));
         tst_Databases::safeDropTable( db, tableName );
@@ -4215,10 +4291,8 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY(q.next());
         if (dbType == QSqlDriver::SQLite)
             QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
-        else if (dbType == QSqlDriver::MySqlServer)
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
         else
-            QCOMPARE(q.record().field(0).type(), intType);
+            QCOMPARE(q.record().field(0).type(), sumType);
 
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1)"));
         QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2)"));
@@ -4226,10 +4300,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 3);
-        if (dbType == QSqlDriver::MySqlServer)
-            QCOMPARE(q.record().field(0).type(), QVariant::Double);
-        else
-            QCOMPARE(q.record().field(0).type(), intType);
+        QCOMPARE(q.record().field(0).type(), sumType);
 
         QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
         QVERIFY(q.next());
@@ -4245,7 +4316,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), dbType != QSqlDriver::MySqlServer ? intType : QVariant::LongLong);
+        QCOMPARE(q.record().field(0).type(), countType);
 
         QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
         QVERIFY(q.next());
@@ -4288,7 +4359,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 2);
-        QCOMPARE(q.record().field(0).type(), dbType != QSqlDriver::MySqlServer ? intType : QVariant::LongLong);
+        QCOMPARE(q.record().field(0).type(), countType);
 
         QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
         QVERIFY(q.next());

@@ -1126,13 +1126,11 @@ void QCocoaWindow::handleGeometryChange()
     // Guard against processing window system events during QWindow::setGeometry
     // calls, which Qt and Qt applications do not expect.
     if (!m_inSetGeometry)
-        QWindowSystemInterface::flushWindowSystemEvents();
+        QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
 }
 
 void QCocoaWindow::handleExposeEvent(const QRegion &region)
 {
-    const QRect previouslyExposedRect = m_exposedRect;
-
     // Ideally we'd implement isExposed() in terms of these properties,
     // plus the occlusionState of the NSWindow, and let the expose event
     // pull the exposed state out when needed. However, when the window
@@ -1326,7 +1324,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
 void QCocoaWindow::requestUpdate()
 {
     qCDebug(lcQpaCocoaDrawing) << "QCocoaWindow::requestUpdate" << window();
-    [m_view requestUpdate];
+    [qnsview_cast(m_view) requestUpdate];
 }
 
 void QCocoaWindow::requestActivateWindow()

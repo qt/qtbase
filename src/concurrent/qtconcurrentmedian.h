@@ -135,6 +135,7 @@ public:
     MedianDouble()
         : currentMedian(), currentIndex(0), valid(false), dirty(true)
     {
+        std::fill_n(values, static_cast<int>(BufferSize), 0.0);
     }
 
     void reset()
