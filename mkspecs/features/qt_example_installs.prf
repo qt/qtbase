@@ -44,7 +44,7 @@ contains(TEMPLATE, .*app): \
 for(ex, EXAMPLE_FILES): \
     sourcefiles += $$files($$absolute_path($$ex, $$_PRO_FILE_PWD_))
 for(res, RESOURCES) {
-    !contains(res, \\.qrc$): \
+    !contains(res, .*\\.qrc): \
         next()
     rfile = $$absolute_path($$res, $$_PRO_FILE_PWD_)
     rpath = $$dirname(rfile)
