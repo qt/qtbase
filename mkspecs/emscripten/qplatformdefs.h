@@ -137,6 +137,7 @@
 #define QT_OPEN_CREAT           O_CREAT
 #define QT_OPEN_TRUNC           O_TRUNC
 #define QT_OPEN_APPEND          O_APPEND
+#define QT_OPEN_EXCL            O_EXCL
 
 // Directory iteration
 #define QT_DIR                  DIR
