@@ -3035,11 +3035,7 @@ void tst_QSqlQuery::nextResult()
     QCOMPARE( q.record().field( 0 ).type(), QVariant::String );
 
     QCOMPARE( q.record().field( 1 ).name().toUpper(), QString( "NUM" ) );
-
-    if (dbType == QSqlDriver::MySqlServer)
-        QCOMPARE( q.record().field( 1 ).type(), QVariant::String );
-    else
-        QCOMPARE( q.record().field( 1 ).type(), QVariant::Double );
+    QCOMPARE(q.record().field(1).type(), QVariant::Double);
 
     QVERIFY( q.next() );                    // Move to first row of the second result set
 
@@ -3288,6 +3284,10 @@ void tst_QSqlQuery::timeStampParsing()
     if (dbType == QSqlDriver::PostgreSQL) {
         QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
                             "id serial NOT NULL, "
+                            "datefield timestamp, primary key(id));")));
+    } else if (dbType == QSqlDriver::MySqlServer) {
+        QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
+                            "id integer NOT NULL AUTO_INCREMENT,"
                             "datefield timestamp, primary key(id));")));
     } else {
         QVERIFY_SQL(q, exec(QStringLiteral("CREATE TABLE ") + tableName + QStringLiteral("("
