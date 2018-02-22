@@ -45,7 +45,7 @@
     access.
 
     More details about the JSON data format can be found at \l{http://json.org}{json.org}
-    and in \l{https://tools.ietf.org/html/rfc7159}{RFC-7159}.
+    and in \l{http://tools.ietf.org/html/rfc4627}{RFC-4627}.
 
     \tableofcontents
 

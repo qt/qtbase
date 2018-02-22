@@ -398,6 +398,11 @@ void QPlainTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
     printBenchmarkResult(result);
 }
 
+void QPlainTestLogger::addMessage(QtMsgType type, const QMessageLogContext &context, const QString &message)
+{
+    QAbstractTestLogger::addMessage(type, context, message);
+}
+
 void QPlainTestLogger::addMessage(MessageTypes type, const QString &message,
                                   const char *file, int line)
 {

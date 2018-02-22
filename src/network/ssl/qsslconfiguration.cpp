@@ -889,7 +889,7 @@ QMap<QByteArray, QVariant> QSslConfiguration::backendConfig() const
 /*!
     \since 5.11
 
-    Sets an option in the backend-specific configuration.
+    Sets the option \a name in the backend-specific configuration to \a value.
 
     Options supported by the OpenSSL (>= 1.0.2) backend are available in the \l
     {https://www.openssl.org/docs/manmaster/man3/SSL_CONF_cmd.html#SUPPORTED-CONFIGURATION-FILE-COMMANDS}

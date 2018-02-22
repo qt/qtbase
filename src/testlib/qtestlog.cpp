@@ -220,6 +220,12 @@ namespace QTest {
             FOREACH_LOGGER(logger->addBenchmarkResult(result));
         }
 
+        static void addMessage(QtMsgType type, const QMessageLogContext &context,
+                               const QString &message)
+        {
+            FOREACH_LOGGER(logger->addMessage(type, context, message));
+        }
+
         static void addMessage(QAbstractTestLogger::MessageTypes type, const QString &message,
                                const char *file = 0, int line = 0)
         {
@@ -289,11 +295,10 @@ namespace QTest {
             QTEST_ASSERT(QTest::TestLoggers::loggerCount() != 0);
         }
 
-        if (handleIgnoredMessage(type, message))
+        if (handleIgnoredMessage(type, message)) {
             // the message is expected, so just swallow it.
             return;
-
-        QString msg = qFormatLogMessage(type, context, message);
+        }
 
         if (type != QtFatalMsg) {
             if (counter.load() <= 0)
@@ -306,22 +311,10 @@ namespace QTest {
             }
         }
 
-        switch (type) {
-        case QtDebugMsg:
-            QTest::TestLoggers::addMessage(QAbstractTestLogger::QDebug, msg);
-            break;
-        case QtInfoMsg:
-            QTest::TestLoggers::addMessage(QAbstractTestLogger::QInfo, msg);
-            break;
-        case QtCriticalMsg:
-            QTest::TestLoggers::addMessage(QAbstractTestLogger::QSystem, msg);
-            break;
-        case QtWarningMsg:
-            QTest::TestLoggers::addMessage(QAbstractTestLogger::QWarning, msg);
-            break;
-        case QtFatalMsg:
-            QTest::TestLoggers::addMessage(QAbstractTestLogger::QFatal, msg);
-            /* Right now, we're inside the custom message handler and we're
+        QTest::TestLoggers::addMessage(type, context, message);
+
+        if (type == QtFatalMsg) {
+             /* Right now, we're inside the custom message handler and we're
              * being qt_message_output in qglobal.cpp. After we return from
              * this function, it will proceed with calling exit() and abort()
              * and hence crash. Therefore, we call these logging functions such
@@ -329,7 +322,6 @@ namespace QTest {
             QTestResult::addFailure("Received a fatal error.", "Unknown file", 0);
             QTestLog::leaveTestFunction();
             QTestLog::stopLogging();
-            break;
         }
     }
 }

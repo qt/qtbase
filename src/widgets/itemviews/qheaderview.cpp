@@ -2168,15 +2168,19 @@ void QHeaderViewPrivate::_q_sectionsAboutToBeChanged()
         sectionItems[visual].size = lastSectionSize;
     }
     for (int i = 0; i < sectionItems.size(); ++i) {
-        const auto &s = sectionItems.at(i);
+        auto s = sectionItems.at(i);
         // only add if the section is not default and not visually moved
         if (s.size == defaultSectionSize && !s.isHidden && s.resizeMode == globalResizeMode)
             continue;
 
+        const int logical = logicalIndex(i);
+        if (s.isHidden)
+            s.size = hiddenSectionSize.value(logical);
+
         // ### note that we are using column or row 0
         layoutChangePersistentSections.append({orientation == Qt::Horizontal
-                                                  ? model->index(0, logicalIndex(i), root)
-                                                  : model->index(logicalIndex(i), 0, root),
+                                                  ? model->index(0, logical, root)
+                                                  : model->index(logical, 0, root),
                                               s});
 
         if (layoutChangePersistentSections.size() > 1000)
@@ -2198,6 +2202,30 @@ void QHeaderViewPrivate::_q_sectionsChanged()
         clear();
         if (oldCount != 0)
             emit q->sectionCountChanged(oldCount, 0);
+        return;
+    }
+
+    bool hasPersistantIndexes = false;
+    for (const auto &item : oldPersistentSections) {
+        if (item.index.isValid()) {
+            hasPersistantIndexes = true;
+            break;
+        }
+    }
+
+    // Though far from perfect we here try to retain earlier/existing behavior
+    // ### See QHeaderViewPrivate::_q_layoutAboutToBeChanged()
+    // When we don't have valid hasPersistantIndexes it can be due to
+    // - all sections are default sections
+    // - the row/column 0 which is used for persistent indexes is gone
+    // - all non-default sections were removed
+    // case one is trivial, in case two we assume nothing else changed (it's the best
+    // guess we can do - everything else can not be handled correctly for now)
+    // case three can not be handled correctly with layoutChanged - removeSections
+    // should be used instead for this
+    if (!hasPersistantIndexes) {
+        if (oldCount != newCount)
+            q->initializeSections();
         return;
     }
 
