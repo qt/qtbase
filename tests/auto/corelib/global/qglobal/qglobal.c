@@ -110,7 +110,7 @@ Q_STATIC_ASSERT(!!1);
 static thread_local int gt_var;
 void thread_local_test()
 {
-    thread_local int t_var;
+    static thread_local int t_var;
     t_var = gt_var;
 }
 #endif
