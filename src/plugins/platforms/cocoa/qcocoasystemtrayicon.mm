@@ -84,6 +84,8 @@
 
 #include "qt_mac_p.h"
 #include "qcocoahelpers.h"
+#include "qcocoaintegration.h"
+#include "qcocoascreen.h"
 #include <QtGui/private/qcoregraphics_p.h>
 
 #import <AppKit/AppKit.h>
@@ -385,9 +387,8 @@ QT_END_NAMESPACE
 }
 -(QRectF)geometry {
     if (NSWindow *window = [[item view] window]) {
-        NSRect screenRect = [[window screen] frame];
-        NSRect windowRect = [window frame];
-        return QRectF(windowRect.origin.x, screenRect.size.height-windowRect.origin.y-windowRect.size.height, windowRect.size.width, windowRect.size.height);
+        if (QCocoaScreen *screen = QCocoaIntegration::instance()->screenForNSScreen([window screen]))
+            return screen->mapFromNative([window frame]);
     }
     return QRectF();
 }
