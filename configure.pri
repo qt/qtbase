@@ -366,12 +366,6 @@ defineTest(qtConfTest_detectPkgConfig) {
     return(true)
 }
 
-defineTest(qtConfTest_subarch) {
-    subarch = $$eval($${1}.subarch)
-    contains($${currentConfig}.tests.architecture.subarch, $${subarch}): return(true)
-    return(false)
-}
-
 defineTest(qtConfTest_buildParts) {
     parts = $$config.input.make
     isEmpty(parts) {
@@ -914,6 +908,7 @@ defineTest(qtConfOutput_sanitizer) {
 
 defineTest(qtConfOutput_architecture) {
     arch = $$qtConfEvaluate("tests.architecture.arch")
+    subarch = $$qtConfEvaluate('tests.architecture.subarch')
     buildabi = $$qtConfEvaluate("tests.architecture.buildabi")
 
     $$qtConfEvaluate("features.cross_compile") {
@@ -924,7 +919,7 @@ defineTest(qtConfOutput_architecture) {
             "host_build {" \
             "    QT_CPU_FEATURES.$$host_arch = $$qtConfEvaluate('tests.host_architecture.subarch')" \
             "} else {" \
-            "    QT_CPU_FEATURES.$$arch = $$qtConfEvaluate('tests.architecture.subarch')" \
+            "    QT_CPU_FEATURES.$$arch = $$subarch" \
             "}"
         publicPro = \
             "host_build {" \
@@ -939,7 +934,7 @@ defineTest(qtConfOutput_architecture) {
 
     } else {
         privatePro = \
-            "QT_CPU_FEATURES.$$arch = $$qtConfEvaluate('tests.architecture.subarch')"
+            "QT_CPU_FEATURES.$$arch = $$subarch"
         publicPro = \
             "QT_ARCH = $$arch" \
             "QT_BUILDABI = $$buildabi"
@@ -950,9 +945,11 @@ defineTest(qtConfOutput_architecture) {
     $${currentConfig}.output.privatePro += $$privatePro
     export($${currentConfig}.output.privatePro)
 
-    # setup QT_ARCH variable used by qtConfEvaluate
+    # setup QT_ARCH and QT_CPU_FEATURES variables used by qtConfEvaluate
     QT_ARCH = $$arch
     export(QT_ARCH)
+    QT_CPU_FEATURES.$$arch = $$subarch
+    export(QT_CPU_FEATURES.$$arch)
 }
 
 defineTest(qtConfOutput_qreal) {

@@ -94,7 +94,7 @@ static inline std::string permissions(const QFileInfo &fi)
     return result;
 }
 
-static int ls(int argCount, char **args)
+static int ls(int argCount, const char **args, bool recursive = false)
 {
     for (int i = 0 ; i < argCount; ++i) {
         const QFileInfo fi(QString::fromLocal8Bit(args[i]));
@@ -112,6 +112,16 @@ static int ls(int argCount, char **args)
             std::cout << " [dir]";
 
         std::cout << std::endl;
+
+        if (recursive && fi.isDir()) {
+            QDir dir(fi.fileName());
+            const QStringList entries = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
+            for (const QString &s : entries) {
+                QByteArray encoded = QFile::encodeName(s);
+                const char *ptr = encoded.constData();
+                ls(1, &ptr, false);
+            }
+        }
     }
     return 0;
 }
@@ -205,7 +215,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
     Q_UNUSED(a)
     if (argc >= 3 && !qstrcmp(argv[1], "ls"))
-        return ls(argc -2, argv + 2);
+        return ls(argc -2, const_cast<const char **>(argv + 2), true);
 
     if (argc >= 3 && !qstrcmp(argv[1], "stat"))
         return stat(argc -2, argv + 2);

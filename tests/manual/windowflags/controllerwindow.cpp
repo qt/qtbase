@@ -59,7 +59,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     QLabel *label = new QLabel(tr("Parent window"));
     parentWindow->setCentralWidget(label);
 
-    previewWindow = new QWindow;
+    previewWindow = new PreviewWindow;
     previewWindow->installEventFilter(this);
     previewWidget = new PreviewWidget;
     previewWidget->installEventFilter(this);
@@ -123,8 +123,8 @@ void ControllerWidget::updatePreview(QWindow *preview)
     preview->setFlags(flags);
 
     if (fixedSizeWindowCheckBox->isChecked()) {
-        preview->setMinimumSize(QSize(300, 300));
-        preview->setMaximumSize(QSize(300, 300));
+        preview->setMinimumSize(preview->size());
+        preview->setMaximumSize(preview->size());
     } else {
         preview->setMinimumSize(QSize(0, 0));
         preview->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
@@ -153,7 +153,7 @@ void ControllerWidget::updatePreview(QWidget *preview)
     preview->setWindowFlags(flags);
 
     QSize fixedSize = fixedSizeWindowCheckBox->isChecked() ?
-        QSize(300, 300) : QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        preview->size() : QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     preview->setFixedSize(fixedSize);
 
     QPoint pos = preview->pos();

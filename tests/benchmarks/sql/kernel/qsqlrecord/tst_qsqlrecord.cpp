@@ -50,6 +50,10 @@ public slots:
 private slots:
     void benchmarkRecord_data() { generic_data(); }
     void benchmarkRecord();
+    void benchFieldName_data() { generic_data(); }
+    void benchFieldName();
+    void benchFieldIndex_data() { generic_data(); }
+    void benchFieldIndex();
 
 private:
     void generic_data(const QString &engine = QString());
@@ -186,6 +190,35 @@ void tst_QSqlRecord::benchmarkRecord()
         }
     }
     tst_Databases::safeDropTables(db, QStringList() << tableName);
+}
+
+void tst_QSqlRecord::benchFieldName()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL) {
+        QSqlQuery qry(db);
+        QVERIFY_SQL(qry, exec("SELECT GENERATE_SERIES(1,5000) AS r"));
+        QBENCHMARK {
+            while (qry.next())
+                qry.value("r");
+        }
+    }
+}
+
+void tst_QSqlRecord::benchFieldIndex()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::PostgreSQL) {
+        QSqlQuery qry(db);
+        QVERIFY_SQL(qry, exec("SELECT GENERATE_SERIES(1,5000) AS r"));
+        qry = db.exec("SELECT GENERATE_SERIES(1,5000) AS r");
+        QBENCHMARK {
+            while (qry.next())
+                qry.value(0);
+        }
+    }
 }
 
 #include "tst_qsqlrecord.moc"

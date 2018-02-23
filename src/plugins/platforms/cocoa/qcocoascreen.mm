@@ -233,25 +233,28 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
             windowSize.setHeight(windowRect.height());
     }
 
-    QPixmap windowPixmap(windowSize * devicePixelRatio());
+    const qreal dpr = devicePixelRatio();
+    QPixmap windowPixmap(windowSize * dpr);
     windowPixmap.fill(Qt::transparent);
 
     for (uint i = 0; i < displayCount; ++i) {
         const CGRect bounds = CGDisplayBounds(displays[i]);
-        int w = (width < 0 ? bounds.size.width : width) * devicePixelRatio();
-        int h = (height < 0 ? bounds.size.height : height) * devicePixelRatio();
-        QRect displayRect = QRect(x, y, w, h);
-        displayRect = displayRect.translated(qRound(-bounds.origin.x), qRound(-bounds.origin.y));
-        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i],
-            CGRectMake(displayRect.x(), displayRect.y(), displayRect.width(), displayRect.height()));
-        QPixmap pix(w, h);
-        pix.fill(Qt::transparent);
-        CGRect rect = CGRectMake(0, 0, w, h);
-        QMacCGContext ctx(&pix);
-        qt_mac_drawCGImage(ctx, &rect, image);
 
+        // Calculate the position and size of the requested area
+        QPoint pos(qAbs(bounds.origin.x - x), qAbs(bounds.origin.y - y));
+        QSize size(qMin(pos.x() + width, qRound(bounds.size.width)),
+                   qMin(pos.y() + height, qRound(bounds.size.height)));
+        pos *= dpr;
+        size *= dpr;
+
+        // Take the whole screen and crop it afterwards, because CGDisplayCreateImageForRect
+        // has a strange behavior when mixing highDPI and non-highDPI displays
+        QCFType<CGImageRef> cgImage = CGDisplayCreateImage(displays[i]);
+        const QImage image = qt_mac_toQImage(cgImage);
+
+        // Draw into windowPixmap only the requested size
         QPainter painter(&windowPixmap);
-        painter.drawPixmap(0, 0, pix);
+        painter.drawImage(windowPixmap.rect(), image, QRect(pos, size));
     }
     return windowPixmap;
 }

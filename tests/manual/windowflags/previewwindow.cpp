@@ -32,8 +32,19 @@
 #include <QVBoxLayout>
 #include <QTextStream>
 #include <QTimer>
+#include <QPainter>
+#include <QLinearGradient>
 
 #include "previewwindow.h"
+
+void PreviewWindow::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    QLinearGradient gradient(0, 0, width(), height());
+    gradient.setColorAt(0, QColor("#64b3f4"));
+    gradient.setColorAt(1, QColor("#c2e59c"));
+    painter.fillRect(QRect(0, 0, width(), height()), gradient);
+}
 
 static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
 {

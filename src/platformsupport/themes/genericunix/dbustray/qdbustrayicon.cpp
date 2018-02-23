@@ -126,6 +126,7 @@ QDBusTrayIcon::QDBusTrayIcon()
     connect(this, SIGNAL(tooltipChanged()), m_adaptor, SIGNAL(NewToolTip()));
     connect(this, SIGNAL(iconChanged()), m_adaptor, SIGNAL(NewIcon()));
     connect(this, SIGNAL(attention()), m_adaptor, SIGNAL(NewAttentionIcon()));
+    connect(this, SIGNAL(menuChanged()), m_adaptor, SIGNAL(NewMenu()));
     connect(this, SIGNAL(attention()), m_adaptor, SIGNAL(NewTitle()));
     connect(&m_attentionTimer, SIGNAL(timeout()), this, SLOT(attentionTimerExpired()));
     m_attentionTimer.setSingleShot(true);
@@ -268,6 +269,7 @@ void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
         connect(m_menu, SIGNAL(updated(uint,int)),
                 m_menuAdaptor, SIGNAL(LayoutUpdated(uint,int)));
         dBusConnection()->registerTrayIconMenu(this);
+        emit menuChanged();
     }
 }
 

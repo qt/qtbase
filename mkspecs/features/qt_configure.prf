@@ -1270,6 +1270,12 @@ defineReplace(qtConfEvaluateSingleExpression) {
         isEmpty(QT_ARCH): \
             qtConfCheckFeature(architecture)
         contains(QT_ARCH, $$var): result = true
+    } else: contains(e, "^subarch\..*") {
+        var = $$replace(e, "^subarch\.", "")
+        result = false
+        isEmpty(QT_ARCH): \
+            qtConfCheckFeature(architecture)
+        contains(QT_CPU_FEATURES.$$QT_ARCH, $$var): result = true
     } else: contains(e, "^input\..*") {
         result = $$eval(config.$$e)
     } else: contains(e, "^var\..*") {

@@ -411,6 +411,9 @@ static void qt_gtk_menu_position_func(GtkMenu *, gint *x, gint *y, gboolean *pus
 {
     QGtk3Menu *menu = static_cast<QGtk3Menu *>(data);
     QPoint targetPos = menu->targetPos();
+#if GTK_CHECK_VERSION(3, 10, 0)
+    targetPos /= gtk_widget_get_scale_factor(menu->handle());
+#endif
     *x = targetPos.x();
     *y = targetPos.y();
     *push_in = true;
