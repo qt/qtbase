@@ -132,7 +132,7 @@ private slots:
     void taskQTBUG_45114_setItemData();
 
 private:
-    QAbstractItemModel *m_model;
+    QStandardItemModel *m_model;
     QPersistentModelIndex persistent;
     QVector<QModelIndex> rcParent;
     QVector<int> rcFirst;
@@ -292,6 +292,12 @@ void tst_QStandardItemModel::insertRows()
 
     // check header data has moved
     QCOMPARE(m_model->headerData(3, Qt::Vertical).toString(), headerLabel);
+
+    // do not assert on empty list
+    QStandardItem *si = m_model->invisibleRootItem();
+    si->insertRow(0, QList<QStandardItem*>());
+    si->insertRows(0, 0);
+    si->insertRows(0, QList<QStandardItem*>());
 }
 
 void tst_QStandardItemModel::insertRowsItems()
@@ -402,6 +408,11 @@ void tst_QStandardItemModel::insertColumns()
 
     // check header data has moved
     QCOMPARE(m_model->headerData(3, Qt::Horizontal).toString(), headerLabel);
+
+    // do not assert on empty list
+    QStandardItem *si = m_model->invisibleRootItem();
+    si->insertColumn(0, QList<QStandardItem*>());
+    si->insertColumns(0, 0);
 }
 
 void tst_QStandardItemModel::removeRows()

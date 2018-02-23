@@ -455,7 +455,7 @@ void QStandardItemModelPrivate::_q_emitItemChanged(const QModelIndex &topLeft,
 bool QStandardItemPrivate::insertRows(int row, const QList<QStandardItem*> &items)
 {
     Q_Q(QStandardItem);
-    if ((row < 0) || (row > rowCount()))
+    if ((row < 0) || (row > rowCount()) || items.isEmpty())
         return false;
     int count = items.count();
     if (model)
@@ -486,7 +486,7 @@ bool QStandardItemPrivate::insertRows(int row, const QList<QStandardItem*> &item
 bool QStandardItemPrivate::insertRows(int row, int count, const QList<QStandardItem*> &items)
 {
     Q_Q(QStandardItem);
-    if ((count < 1) || (row < 0) || (row > rowCount()))
+    if ((count < 1) || (row < 0) || (row > rowCount()) || count == 0)
         return false;
     if (model)
         model->d_func()->rowsAboutToBeInserted(q, row, row + count - 1);
@@ -528,7 +528,7 @@ bool QStandardItemPrivate::insertRows(int row, int count, const QList<QStandardI
 bool QStandardItemPrivate::insertColumns(int column, int count, const QList<QStandardItem*> &items)
 {
     Q_Q(QStandardItem);
-    if ((count < 1) || (column < 0) || (column > columnCount()))
+    if ((count < 1) || (column < 0) || (column > columnCount()) || count == 0)
         return false;
     if (model)
         model->d_func()->columnsAboutToBeInserted(q, column, column + count - 1);
