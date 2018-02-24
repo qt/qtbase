@@ -47,6 +47,7 @@
 #include <QtCore/QLoggingCategory>
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qtguiglobal_p.h>
 #include <QtFbSupport/private/qfbvthandler_p.h>
 
 #include <errno.h>
@@ -243,6 +244,11 @@ void QEglFSKmsGbmScreen::waitForFlip()
         drmEvent.page_flip_handler = pageFlipHandler;
         drmHandleEvent(device()->fd(), &drmEvent);
     }
+
+#if QT_CONFIG(drm_atomic)
+    if (device()->hasAtomicSupport())
+        device()->atomicReset();
+#endif
 }
 
 void QEglFSKmsGbmScreen::flip()
@@ -274,34 +280,63 @@ void QEglFSKmsGbmScreen::flip()
     QKmsOutput &op(output());
     const int fd = device()->fd();
     m_flipPending = true;
-    int ret = drmModePageFlip(fd,
+
+    if (device()->hasAtomicSupport()) {
+#if QT_CONFIG(drm_atomic)
+        drmModeAtomicReq *request = device()->atomic_request();
+        if (request) {
+            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->framebufferPropertyId, fb->fb);
+            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcPropertyId, op.crtc_id);
+        }
+#endif
+    } else {
+        int ret = drmModePageFlip(fd,
                               op.crtc_id,
                               fb->fb,
                               DRM_MODE_PAGE_FLIP_EVENT,
                               this);
-    if (ret) {
-        qErrnoWarning("Could not queue DRM page flip on screen %s", qPrintable(name()));
-        m_flipPending = false;
-        gbm_surface_release_buffer(m_gbm_surface, m_gbm_bo_next);
-        m_gbm_bo_next = nullptr;
-        return;
+        if (ret) {
+            qErrnoWarning("Could not queue DRM page flip on screen %s", qPrintable(name()));
+            m_flipPending = false;
+            gbm_surface_release_buffer(m_gbm_surface, m_gbm_bo_next);
+            m_gbm_bo_next = nullptr;
+            return;
+        }
     }
 
     for (CloneDestination &d : m_cloneDests) {
         if (d.screen != this) {
             d.screen->ensureModeSet(fb->fb);
             d.cloneFlipPending = true;
-            int ret = drmModePageFlip(fd,
-                                      d.screen->output().crtc_id,
-                                      fb->fb,
-                                      DRM_MODE_PAGE_FLIP_EVENT,
-                                      d.screen);
-            if (ret) {
-                qErrnoWarning("Could not queue DRM page flip for clone screen %s", qPrintable(name()));
-                d.cloneFlipPending = false;
+
+            if (device()->hasAtomicSupport()) {
+#if QT_CONFIG(drm_atomic)
+                drmModeAtomicReq *request = device()->atomic_request();
+                if (request) {
+                    drmModeAtomicAddProperty(request, d.screen->output().eglfs_plane->id,
+                                                      d.screen->output().eglfs_plane->framebufferPropertyId, fb->fb);
+                    drmModeAtomicAddProperty(request, d.screen->output().eglfs_plane->id,
+                                                      d.screen->output().eglfs_plane->crtcPropertyId, op.crtc_id);
+                }
+#endif
+            } else {
+                int ret = drmModePageFlip(fd,
+                                          d.screen->output().crtc_id,
+                                          fb->fb,
+                                          DRM_MODE_PAGE_FLIP_EVENT,
+                                          d.screen);
+                if (ret) {
+                    qErrnoWarning("Could not queue DRM page flip for clone screen %s", qPrintable(name()));
+                    d.cloneFlipPending = false;
+                }
             }
         }
     }
+
+#if QT_CONFIG(drm_atomic)
+    if (device()->hasAtomicSupport())
+         device()->atomicCommit(this);
+#endif
 }
 
 void QEglFSKmsGbmScreen::pageFlipHandler(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data)

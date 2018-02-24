@@ -661,6 +661,26 @@
                 "fxc.exe"
             ]
         },
+        "drm_atomic": {
+            "label": "DRM Atomic API",
+            "type": "compile",
+            "test": {
+                "head": [
+                    "#include <stdlib.h>",
+                    "#include <stdint.h>",
+                    "extern \"C\" {"
+                ],
+                "include": [
+                    "xf86drmMode.h",
+                    "xf86drm.h"
+                ],
+                "tail": [
+                    "}"
+                ],
+                "main": "drmModeAtomicReq *request;"
+            },
+            "use": "drm"
+        },
         "egl-x11": {
             "label": "EGL on X11",
             "type": "compile",
@@ -1009,6 +1029,11 @@
             "label": "KMS",
             "condition": "libs.drm",
             "output": [ "publicQtConfig", "privateFeature" ]
+        },
+        "drm_atomic": {
+            "label": "DRM Atomic API",
+            "condition": "libs.drm && tests.drm_atomic",
+            "output": [ "privateFeature" ]
         },
         "libinput": {
             "label": "libinput",

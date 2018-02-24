@@ -392,10 +392,15 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
             output.available_planes.append(plane);
             planeListStr.append(QString::number(plane.id));
             planeListStr.append(QLatin1Char(' '));
+            if (plane.type == QKmsPlane::PrimaryPlane)
+                output.eglfs_plane = (QKmsPlane*)&plane;
         }
     }
     qCDebug(qLcKmsDebug, "Output %s can use %d planes: %s",
             connectorName.constData(), output.available_planes.count(), qPrintable(planeListStr));
+
+    if (output.eglfs_plane)
+        qCDebug(qLcKmsDebug, "Output eglfs plane is: %d", output.eglfs_plane->id);
 
     // This is for the EGLDevice/EGLStream backend. On some of those devices one
     // may want to target a pre-configured plane. It is probably useless for
@@ -464,6 +469,11 @@ QKmsDevice::QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path)
     : m_screenConfig(screenConfig)
     , m_path(path)
     , m_dri_fd(-1)
+    , m_has_atomic_support(false)
+#if QT_CONFIG(drm_atomic)
+    , m_atomic_request(nullptr)
+    , m_previous_request(nullptr)
+#endif
     , m_crtc_allocator(0)
 {
     if (m_path.isEmpty()) {
@@ -478,6 +488,9 @@ QKmsDevice::QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path)
 
 QKmsDevice::~QKmsDevice()
 {
+#if QT_CONFIG(drm_atomic)
+    atomicReset();
+#endif
 }
 
 struct OrderedScreen
@@ -521,6 +534,14 @@ void QKmsDevice::createScreens()
     }
 
     drmSetClientCap(m_dri_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
+
+#if QT_CONFIG(drm_atomic)
+    // check atomic support
+    m_has_atomic_support = !drmSetClientCap(m_dri_fd, DRM_CLIENT_CAP_ATOMIC, 1)
+                           && qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_ATOMIC");
+    if (m_has_atomic_support)
+        qCDebug(qLcKmsDebug) << "Atomic Support found";
+#endif
 
     drmModeResPtr resources = drmModeGetResources(m_dri_fd);
     if (!resources) {
@@ -747,6 +768,10 @@ void QKmsDevice::discoverPlanes()
                         plane.availableRotations |= QKmsPlane::Rotation(1 << prop->enums[i].value);
                 }
                 plane.rotationPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "crtc_id")) {
+                plane.crtcPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "fb_id")) {
+                plane.framebufferPropertyId = prop->prop_id;
             }
         });
 
@@ -772,6 +797,50 @@ void QKmsDevice::setFd(int fd)
 {
     m_dri_fd = fd;
 }
+
+
+bool QKmsDevice::hasAtomicSupport()
+{
+    return m_has_atomic_support;
+}
+
+#if QT_CONFIG(drm_atomic)
+drmModeAtomicReq * QKmsDevice::atomic_request()
+{
+    if (!m_atomic_request && m_has_atomic_support)
+        m_atomic_request = drmModeAtomicAlloc();
+
+    return m_atomic_request;
+}
+
+bool QKmsDevice::atomicCommit(void *user_data)
+{
+    if (m_atomic_request) {
+        int ret = drmModeAtomicCommit(m_dri_fd, m_atomic_request,
+                          DRM_MODE_ATOMIC_NONBLOCK | DRM_MODE_PAGE_FLIP_EVENT, user_data);
+
+        if (ret) {
+           qWarning("Failed to commit atomic request (code=%d)", ret);
+           return false;
+        }
+
+        m_previous_request = m_atomic_request;
+        m_atomic_request = nullptr;
+
+        return true;
+    }
+
+    return false;
+}
+
+void QKmsDevice::atomicReset()
+{
+    if (m_previous_request) {
+        drmModeAtomicFree(m_previous_request);
+        m_previous_request = nullptr;
+    }
+}
+#endif
 
 QKmsScreenConfig *QKmsDevice::screenConfig() const
 {
