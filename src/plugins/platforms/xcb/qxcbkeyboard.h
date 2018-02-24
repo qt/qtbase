@@ -88,15 +88,12 @@ protected:
 
     void resolveMaskConflicts();
     QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
-    int keysymToQtKey(xcb_keysym_t keysym) const;
-    int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers &modifiers, const QString &text) const;
-    void printKeymapError(const char *error) const;
+    QString lookupStringNoKeysymTransformations(xkb_keysym_t keysym) const;
+    int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers modifiers,
+                      struct xkb_state *state, xcb_keycode_t code) const;
 
-    void readXKBConfig();
-    void clearXKBConfig();
-#if QT_CONFIG(xcb_xlib)
     struct xkb_keymap *keymapFromCore();
-#endif
+
     // when XKEYBOARD not present on the X server
     void updateModifiers();
     typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
@@ -112,13 +109,7 @@ private:
     void updateXKBStateFromState(struct xkb_state *kb_state, quint16 state);
 
     bool m_config = false;
-    bool m_keymap_is_core = false;
     xcb_keycode_t m_autorepeat_code = 0;
-
-    struct xkb_context *xkb_context = nullptr;
-    struct xkb_keymap *xkb_keymap = nullptr;
-    struct xkb_state *xkb_state = nullptr;
-    struct xkb_rule_names xkb_names;
 
     struct _mod_masks {
         uint alt;
@@ -152,7 +143,19 @@ private:
     struct XKBStateDeleter {
         void operator()(struct xkb_state *state) const { return xkb_state_unref(state); }
     };
+    struct XKBKeymapDeleter {
+        void operator()(struct xkb_keymap *keymap) const { return xkb_keymap_unref(keymap); }
+    };
+    struct XKBContextDeleter {
+        void operator()(struct xkb_context *context) const { return xkb_context_unref(context); }
+    };
     using ScopedXKBState = std::unique_ptr<struct xkb_state, XKBStateDeleter>;
+    using ScopedXKBKeymap = std::unique_ptr<struct xkb_keymap, XKBKeymapDeleter>;
+    using ScopedXKBContext = std::unique_ptr<struct xkb_context, XKBContextDeleter>;
+
+    ScopedXKBState m_xkbState;
+    ScopedXKBKeymap m_xkbKeymap;
+    ScopedXKBContext m_xkbContext;
 };
 
 QT_END_NAMESPACE
