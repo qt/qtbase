@@ -44,6 +44,7 @@
 
 #include "private/qcssutil_p.h"
 #include <qdebug.h>
+#include <qdir.h>
 #include <qapplication.h>
 #if QT_CONFIG(menu)
 #include <qmenu.h>
@@ -952,8 +953,12 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
     Attachment attachment = Attachment_Scroll;
     origin = Origin_Padding;
     Origin clip = Origin_Border;
-    if (v.extractBackground(&brush, &uri, &repeat, &alignment, &origin, &attachment, &clip))
-        bg = new QStyleSheetBackgroundData(brush, QPixmap(uri), repeat, alignment, origin, attachment, clip);
+    if (v.extractBackground(&brush, &uri, &repeat, &alignment, &origin, &attachment, &clip)) {
+        QPixmap pixmap(uri);
+        if (!uri.isEmpty() && pixmap.isNull())
+            qWarning("Could not create pixmap from %s", qPrintable(QDir::toNativeSeparators(uri)));
+        bg = new QStyleSheetBackgroundData(brush, pixmap, repeat, alignment, origin, attachment, clip);
+    }
 
     QBrush sfg, fg;
     QBrush sbg, abg;
