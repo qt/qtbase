@@ -1132,7 +1132,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             m_keyboard->updateXKBStateFromCore(((xcb_key_release_event_t *)event)->state);
             HANDLE_KEYBOARD_EVENT(xcb_key_release_event_t, handleKeyReleaseEvent);
         case XCB_MAPPING_NOTIFY:
-            m_keyboard->handleMappingNotifyEvent(reinterpret_cast<xcb_mapping_notify_event_t *>(event));
+            m_keyboard->updateKeymap(reinterpret_cast<xcb_mapping_notify_event_t *>(event));
             break;
         case XCB_SELECTION_REQUEST:
         {
@@ -1220,7 +1220,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
                         handled = true;
                         break;
                     case XCB_XKB_MAP_NOTIFY:
-                        m_keyboard->handleMappingNotifyEvent(&xkb_event->map_notify);
+                        m_keyboard->updateKeymap();
                         handled = true;
                         break;
                     case XCB_XKB_NEW_KEYBOARD_NOTIFY: {

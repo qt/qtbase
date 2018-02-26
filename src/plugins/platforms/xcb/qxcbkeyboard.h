@@ -64,15 +64,15 @@ public:
 
     void handleKeyPressEvent(const xcb_key_press_event_t *event);
     void handleKeyReleaseEvent(const xcb_key_release_event_t *event);
-    void handleMappingNotifyEvent(const void *event);
 
     Qt::KeyboardModifiers translateModifiers(int s) const;
+    void updateKeymap(xcb_mapping_notify_event_t *event);
     void updateKeymap();
     QList<int> possibleKeys(const QKeyEvent *e) const;
 
     // when XKEYBOARD not present on the X server
     void updateXKBMods();
-    quint32 xkbModMask(quint16 state);
+    xkb_mod_mask_t xkbModMask(quint16 state);
     void updateXKBStateFromCore(quint16 state);
 #if QT_CONFIG(xinput2)
     void updateXKBStateFromXI(void *modInfo, void *groupInfo);
@@ -82,9 +82,11 @@ public:
     int coreDeviceId() const { return core_device_id; }
     void updateXKBState(xcb_xkb_state_notify_event_t *state);
 #endif
+    void handleStateChanges(xkb_state_component changedComponents);
 
 protected:
-    void handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code, quint16 state, xcb_timestamp_t time);
+    void handleKeyEvent(xcb_window_t sourceWindow, QEvent::Type type, xcb_keycode_t code,
+                        quint16 state, xcb_timestamp_t time, bool fromSendEvent);
 
     void resolveMaskConflicts();
     QString lookupString(struct xkb_state *state, xcb_keycode_t code) const;
@@ -92,11 +94,11 @@ protected:
     int keysymToQtKey(xcb_keysym_t keysym, Qt::KeyboardModifiers modifiers,
                       struct xkb_state *state, xcb_keycode_t code) const;
 
-    struct xkb_keymap *keymapFromCore();
+    typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
+    struct xkb_keymap *keymapFromCore(const KeysymModifierMap &keysymMods);
 
     // when XKEYBOARD not present on the X server
-    void updateModifiers();
-    typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
+    void updateModifiers(const KeysymModifierMap &keysymMods);
     KeysymModifierMap keysymsToModifiers();
     // when XKEYBOARD is present on the X server
     void updateVModMapping();
@@ -106,8 +108,6 @@ protected:
     void checkForLatinLayout() const;
 
 private:
-    void updateXKBStateFromState(struct xkb_state *kb_state, quint16 state);
-
     bool m_config = false;
     xcb_keycode_t m_autorepeat_code = 0;
 
@@ -122,7 +122,7 @@ private:
     _mod_masks rmod_masks;
 
     // when XKEYBOARD not present on the X server
-    xcb_key_symbols_t *m_key_symbols;
+    xcb_key_symbols_t *m_key_symbols = nullptr;
     struct _xkb_mods {
         xkb_mod_index_t shift;
         xkb_mod_index_t lock;
