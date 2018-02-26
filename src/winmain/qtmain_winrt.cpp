@@ -149,12 +149,8 @@ public:
     {
     }
 
-    int exec(int argc, char **argv)
+    int exec()
     {
-        args.reserve(argc);
-        for (int i = 0; i < argc; ++i)
-            args.append(argv[i]);
-
         mainThread = CreateThread(NULL, 0, [](void *param) -> DWORD {
             AppContainer *app = reinterpret_cast<AppContainer *>(param);
             int argc = app->args.count() - 1;
@@ -381,18 +377,9 @@ private:
 // Main entry point for Appx containers
 int __stdcall WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-    int argc = 0;
-    char **argv = 0, **env = 0;
-    for (int i = 0; env && env[i]; ++i) {
-        QByteArray var(env[i]);
-        int split = var.indexOf('=');
-        if (split > 0)
-            qputenv(var.mid(0, split), var.mid(split + 1));
-    }
-
     if (FAILED(RoInitialize(RO_INIT_MULTITHREADED)))
         return 1;
 
     ComPtr<AppContainer> app = Make<AppContainer>();
-    return app->exec(argc, argv);
+    return app->exec();
 }
