@@ -33,6 +33,7 @@
 #include <QString>
 #include <QStringView>
 #include <QChar>
+#include <QScopedArrayPointer>
 #include <QStringRef>
 #include <QLatin1String>
 #include <QVector>
@@ -69,6 +70,19 @@ MAKE_ALL(const char*, QChar)
 #undef MAKE_ALL
 #undef MAKE_RELOP
 // END FIXME
+
+// Return a plain ASCII row name consisting of maximum 16 chars and the
+// size for data
+static QByteArray rowName(const QByteArray &data)
+{
+    const int size = data.size();
+    QScopedArrayPointer<char> prettyC(QTest::toPrettyCString(data.constData(), qMin(16, size)));
+    QByteArray result = prettyC.data();
+    result += " (";
+    result += QByteArray::number(size);
+    result += ')';
+    return result;
+}
 
 class tst_QStringApiSymmetry : public QObject
 {
@@ -1072,7 +1086,7 @@ void tst_QStringApiSymmetry::toLocal8Bit_data()
         QString s;
         for (char c : ba)
             s += QLatin1Char(c);
-        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+        QTest::newRow(rowName(ba).constData()) << s << ba;
     };
 
     QTest::addRow("null") << QString() << QByteArray();
@@ -1107,7 +1121,7 @@ void tst_QStringApiSymmetry::toLatin1_data()
         QString s;
         for (char c : ba)
             s += QLatin1Char(c);
-        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+        QTest::newRow(rowName(ba).constData()) << s << ba;
     };
 
     QTest::addRow("null") << QString() << QByteArray();
@@ -1140,7 +1154,7 @@ void tst_QStringApiSymmetry::toUtf8_data()
     auto add = [](const char *u8) {
         QByteArray ba(u8);
         QString s = ba;
-        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ba;
+        QTest::newRow(rowName(ba).constData()) << s << ba;
     };
 
     QTest::addRow("null") << QString() << QByteArray();
@@ -1178,7 +1192,7 @@ void tst_QStringApiSymmetry::toUcs4_data()
             s += QLatin1Char(c);
             ucs4.append(uint(uchar(c)));
         }
-        QTest::addRow("\"%s\" (%d)", ba.left(16).constData(), ba.size()) << s << ucs4;
+        QTest::newRow(rowName(ba).constData()) << s << ucs4;
     };
 
     QTest::addRow("null") << QString() << QVector<uint>();
