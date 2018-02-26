@@ -127,6 +127,8 @@ public:
     ~QTipLabel();
     static QTipLabel *instance;
 
+    void updateSize();
+
     bool eventFilter(QObject *, QEvent *) override;
 
     QBasicTimer hideTimer, expireTimer;
@@ -214,13 +216,18 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime)
 
     setWordWrap(Qt::mightBeRichText(text));
     setText(text);
+    updateSize();
+    restartExpireTimer(msecDisplayTime);
+}
+
+void  QTipLabel::updateSize()
+{
     QFontMetrics fm(font());
     QSize extra(1, 0);
     // Make it look good with the default ToolTip font on Mac, which has a small descent.
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
     resize(sizeHint() + extra);
-    restartExpireTimer(msecDisplayTime);
 }
 
 void QTipLabel::paintEvent(QPaintEvent *ev)
@@ -387,6 +394,9 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
         if (w) {
             connect(w, SIGNAL(destroyed()),
                 QTipLabel::instance, SLOT(styleSheetParentDestroyed()));
+            // QTBUG-64550: A font inherited by the style sheet might change the size,
+            // particular on Windows, where the tip is not parented on a window.
+            QTipLabel::instance->updateSize();
         }
     }
 #endif //QT_NO_STYLE_STYLESHEET
