@@ -1857,6 +1857,12 @@ QT_DEPRECATED inline QString escape(const QString &plain) {
 #endif
 }
 
+namespace QtPrivate {
+// used by qPrintable() and qUtf8Printable() macros
+inline const QString &asString(const QString &s)    { return s; }
+inline QString &&asString(QString &&s)              { return std::move(s); }
+}
+
 QT_END_NAMESPACE
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)

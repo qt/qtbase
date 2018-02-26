@@ -747,12 +747,13 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION bool qSharedBuild() Q_DECL_NOTHROW;
 #  define QT_DEBUG
 #endif
 
+// QtPrivate::asString defined in qstring.h
 #ifndef qPrintable
-#  define qPrintable(string) QString(string).toLocal8Bit().constData()
+#  define qPrintable(string) QtPrivate::asString(string).toLocal8Bit().constData()
 #endif
 
 #ifndef qUtf8Printable
-#  define qUtf8Printable(string) QString(string).toUtf8().constData()
+#  define qUtf8Printable(string) QtPrivate::asString(string).toUtf8().constData()
 #endif
 
 /*
