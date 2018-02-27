@@ -592,21 +592,18 @@ sub copyFile
 }
 
 ######################################################################
-# Syntax:  findFiles(dir, match, descend)
+# Syntax:  findFiles(dir, match)
 # Params:  dir, string, directory to search for name
 #          match, string, regular expression to match in dir
-#          descend, integer, 0 = non-recursive search
-#                            1 = recurse search into subdirectories
 #
 # Purpose: Finds files matching a regular expression.
 # Returns: List of matching files.
 #
-# Examples:
-#   findFiles("/usr","\.cpp$",1)  - finds .cpp files in /usr and below
-#   findFiles("/tmp","^#",0)      - finds #* files in /tmp
+# Example:
+#   findFiles("/tmp", "^#")      - finds #* files in /tmp
 ######################################################################
 sub findFiles {
-    my ($dir,$match,$descend) = @_;
+    my ($dir, $match) = @_;
     my ($file,$p,@files);
     local(*D);
     normalizePath(\$dir);
@@ -621,9 +618,6 @@ sub findFiles {
             next if ( $file  =~ /^\.\.?$/ );
             $p = $file;
             ($file =~ /$match/) && (push @files, $p);
-            if ( $descend && -d $p && ! -l $p ) {
-                push @files, &findFiles($p,$match,$descend);
-            }
         }
         closedir(D);
     }
@@ -1018,7 +1012,7 @@ foreach my $lib (@modules_to_sync) {
 
             #calc files and "copy" them
             foreach my $subdir (@subdirs) {
-                my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
+                my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$");
                 @headers = grep(!/^qt[a-z0-9]+-config(_p)?\.h$/, @headers);
                 if (defined $inject_headers{$subdir}) {
                     foreach my $if (@{$inject_headers{$subdir}}) {
