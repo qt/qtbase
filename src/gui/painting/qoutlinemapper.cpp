@@ -179,7 +179,7 @@ QT_FT_Outline *QOutlineMapper::convertPath(const QVectorPath &path)
 
         m_elements.resize(count);
         if (count)
-            memcpy(m_elements.data(), path.points(), count* sizeof(QPointF));
+            memcpy(static_cast<void *>(m_elements.data()), static_cast<const void *>(path.points()), count* sizeof(QPointF));
 
         m_element_types.resize(0);
     }
