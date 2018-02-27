@@ -43,6 +43,8 @@
 #include <QtCore/QThread>
 #include <QtCore/QHash>
 #include <QtCore/QMutex>
+#include <QtCore/QSemaphore>
+#include <QtCore/QSharedPointer>
 #include <QtCore/qfunctions_winrt.h>
 #include <private/qabstracteventdispatcher_p.h>
 #include <private/qcoreapplication_p.h>
@@ -291,6 +293,26 @@ HRESULT QEventDispatcherWinRT::runOnXamlThread(const std::function<HRESULT ()> &
     if (FAILED(hr) || !waitForRun)
         return hr;
     return QWinRTFunctions::await(op);
+}
+
+HRESULT QEventDispatcherWinRT::runOnMainThread(const std::function<HRESULT()> &delegate, int timeout)
+{
+    if (QThread::currentThread() == QCoreApplication::instance()->thread())
+        return delegate();
+
+    auto semaphore = QSharedPointer<QSemaphore>(new QSemaphore);
+    auto ptrSemaphore = new QSharedPointer<QSemaphore>(semaphore);
+    auto result = QSharedPointer<HRESULT>(new HRESULT);
+    auto ptrResult = new QSharedPointer<HRESULT>(result);
+
+    QMetaObject::invokeMethod(QCoreApplication::instance(), [delegate, ptrSemaphore, ptrResult]() {
+        **ptrResult = delegate();
+        delete ptrResult;
+        (*ptrSemaphore)->release();
+        delete ptrSemaphore;
+    }, nullptr);
+
+    return semaphore->tryAcquire(1, timeout) ? *result : E_FAIL;
 }
 
 bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)

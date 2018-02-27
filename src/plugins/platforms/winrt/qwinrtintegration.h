@@ -100,6 +100,9 @@ public:
 #ifndef QT_NO_DRAGANDDROP
     QPlatformDrag *drag() const override;
 #endif
+#if QT_CONFIG(accessibility)
+    QPlatformAccessibility *accessibility() const override;
+#endif
 
     Qt::KeyboardModifiers queryKeyboardModifiers() const override;
 

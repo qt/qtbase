@@ -75,6 +75,7 @@ public:
     ~QEventDispatcherWinRT();
 
     static HRESULT runOnXamlThread(const std::function<HRESULT()> &delegate, bool waitForRun = true);
+    static HRESULT runOnMainThread(const std::function<HRESULT()> &delegate, int timeout = 100);
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();

@@ -13,6 +13,7 @@ LIBS += -lws2_32 -ld3d11
 SOURCES = \
     main.cpp  \
     qwinrtbackingstore.cpp \
+    qwinrtcanvas.cpp \
     qwinrtclipboard.cpp \
     qwinrtcursor.cpp \
     qwinrtdrag.cpp \
@@ -31,6 +32,7 @@ SOURCES = \
 
 HEADERS = \
     qwinrtbackingstore.h \
+    qwinrtcanvas.h \
     qwinrtclipboard.h \
     qwinrtcursor.h \
     qwinrtdrag.h \
@@ -57,6 +59,8 @@ contains(DEFINES, QT_NO_DRAGANDDROP) {
     SOURCES -= qwinrtdrag.cpp
     HEADERS -= qwinrtdrag.h
 }
+
+qtConfig(accessibility): include($$PWD/uiautomation/uiautomation.pri)
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QWinRTIntegrationPlugin

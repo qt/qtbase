@@ -46,6 +46,7 @@
 #include "qwinrtdrag.h"
 #endif
 #include "qwinrtwindow.h"
+#include "qwinrtcanvas.h"
 #include <private/qeventdispatcher_winrt_p.h>
 #include <private/qhighdpiscaling_p.h>
 
@@ -463,7 +464,7 @@ public:
     QTouchDevice *touchDevice;
     ComPtr<ICoreWindow> coreWindow;
     ComPtr<ICorePointerRedirector> redirect;
-    ComPtr<Xaml::IDependencyObject> canvas;
+    ComPtr<QWinRTCanvas> canvas;
     ComPtr<IApplicationView> view;
     ComPtr<IDisplayInformation> displayInformation;
 
@@ -553,26 +554,24 @@ QWinRTScreen::QWinRTScreen()
     hr = applicationViewStatics->GetForCurrentView(&d->view);
     RETURN_VOID_IF_FAILED("Could not access currentView");
 
-    // Create a canvas and set it as the window content. Eventually, this should have its own method so multiple "screens" can be added
-    ComPtr<Xaml::Controls::ICanvas> canvas;
-    hr = RoActivateInstance(HString::MakeReference(RuntimeClass_Windows_UI_Xaml_Controls_Canvas).Get(), &canvas);
-    Q_ASSERT_SUCCEEDED(hr);
+    d->canvas = Make<QWinRTCanvas>([this]() { return topWindow(); });
+
     ComPtr<Xaml::IFrameworkElement> frameworkElement;
-    hr = canvas.As(&frameworkElement);
+    hr = d->canvas.As(&frameworkElement);
     Q_ASSERT_SUCCEEDED(hr);
     hr = frameworkElement->put_Width(d->logicalRect.width());
     Q_ASSERT_SUCCEEDED(hr);
     hr = frameworkElement->put_Height(d->logicalRect.height());
     Q_ASSERT_SUCCEEDED(hr);
+
     ComPtr<Xaml::IUIElement> uiElement;
-    hr = canvas.As(&uiElement);
+    hr = d->canvas.As(&uiElement);
     Q_ASSERT_SUCCEEDED(hr);
+
 #ifndef QT_NO_DRAGANDDROP
     QWinRTDrag::instance()->setUiElement(uiElement);
 #endif
     hr = window->put_Content(uiElement.Get());
-    Q_ASSERT_SUCCEEDED(hr);
-    hr = canvas.As(&d->canvas);
     Q_ASSERT_SUCCEEDED(hr);
 
     d->cursor.reset(new QWinRTCursor);
@@ -723,7 +722,10 @@ ICoreWindow *QWinRTScreen::coreWindow() const
 Xaml::IDependencyObject *QWinRTScreen::canvas() const
 {
     Q_D(const QWinRTScreen);
-    return d->canvas.Get();
+    Xaml::IDependencyObject *depCanvas;
+    if (SUCCEEDED(d->canvas.CopyTo(&depCanvas)))
+        return depCanvas;
+    return nullptr;
 }
 
 void QWinRTScreen::initialize()

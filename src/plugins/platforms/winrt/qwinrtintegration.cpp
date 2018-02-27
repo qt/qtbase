@@ -50,6 +50,9 @@
 #ifndef QT_NO_DRAGANDDROP
 #include "qwinrtdrag.h"
 #endif
+#if QT_CONFIG(accessibility)
+#  include "uiautomation/qwinrtuiaaccessibility.h"
+#endif
 
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QOpenGLContext>
@@ -119,6 +122,9 @@ public:
     QPlatformClipboard *clipboard;
     QWinRTScreen *mainScreen;
     QScopedPointer<QWinRTInputContext> inputContext;
+#if QT_CONFIG(accessibility)
+    QWinRTUiaAccessibility *accessibility;
+#endif
 
     ComPtr<ICoreApplication> application;
     QHash<CoreApplicationCallbackRemover, EventRegistrationToken> applicationTokens;
@@ -198,6 +204,9 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
     screenAdded(d->mainScreen);
     d->platformServices = new QWinRTServices;
     d->clipboard = new QWinRTClipboard;
+#if QT_CONFIG(accessibility)
+    d->accessibility = new QWinRTUiaAccessibility;
+#endif
 }
 
 QWinRTIntegration::~QWinRTIntegration()
@@ -314,6 +323,14 @@ QPlatformDrag *QWinRTIntegration::drag() const
     return QWinRTDrag::instance();
 }
 #endif // QT_NO_DRAGANDDROP
+
+#if QT_CONFIG(accessibility)
+QPlatformAccessibility *QWinRTIntegration::accessibility() const
+{
+    Q_D(const QWinRTIntegration);
+    return d->accessibility;
+}
+#endif // QT_CONFIG(accessibility)
 
 Qt::KeyboardModifiers QWinRTIntegration::queryKeyboardModifiers() const
 {
