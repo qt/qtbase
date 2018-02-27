@@ -583,7 +583,9 @@ QRect QXcbScreen::availableGeometry() const
 QImage::Format QXcbScreen::format() const
 {
     QImage::Format format;
-    qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual), &format);
+    bool needsRgbSwap;
+    qt_xcb_imageFormatForVisual(connection(), screen()->root_depth, visualForId(screen()->root_visual), &format, &needsRgbSwap);
+    // We are ignoring needsRgbSwap here and just assumes the backing-store will handle it.
     return format;
 }
 
