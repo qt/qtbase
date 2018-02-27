@@ -68,8 +68,6 @@ typedef QPointer<QCocoaMenu> QCocoaMenuPointer;
                         forKey:(NSString *)key
                      modifiers:(NSUInteger)modifiers;
 
-- (BOOL)validateMenuItem:(NSMenuItem *)item; // NSMenuValidation
-
 @end
 
 @interface QT_MANGLE_NAMESPACE(QCocoaNSMenu) : NSMenu
@@ -77,6 +75,11 @@ typedef QPointer<QCocoaMenu> QCocoaMenuPointer;
 @property (readonly, nonatomic) QCocoaMenuPointer qpaMenu;
 
 - (instancetype)initWithQPAMenu:(QCocoaMenu *)menu;
+
+- (void)qt_itemFired:(NSMenuItem *)item;
+
+- (BOOL)worksWhenModal;
+- (BOOL)validateMenuItem:(NSMenuItem*)item; // NSMenuValidation
 
 @end
 

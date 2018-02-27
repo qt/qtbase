@@ -96,6 +96,8 @@ public:
 
     void syncMenuItem_helper(QPlatformMenuItem *menuItem, bool menubarUpdate);
 
+    void setItemTargetAction(QCocoaMenuItem *item) const;
+
 private:
     QCocoaMenuItem *itemOrNull(int index) const;
     void insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem);
