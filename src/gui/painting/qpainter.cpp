@@ -5622,8 +5622,8 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
         QVarLengthArray<QGlyphJustification, 128> glyphJustifications(glyphCount);
         QVarLengthArray<QGlyphAttributes, 128> glyphAttributes(glyphCount);
         memset(glyphAttributes.data(), 0, glyphAttributes.size() * sizeof(QGlyphAttributes));
-        memset(advances.data(), 0, advances.size() * sizeof(QFixed));
-        memset(glyphJustifications.data(), 0, glyphJustifications.size() * sizeof(QGlyphJustification));
+        memset(static_cast<void *>(advances.data()), 0, advances.size() * sizeof(QFixed));
+        memset(static_cast<void *>(glyphJustifications.data()), 0, glyphJustifications.size() * sizeof(QGlyphJustification));
 
         textItem.glyphs.numGlyphs = glyphCount;
         textItem.glyphs.glyphs = const_cast<glyph_t *>(glyphArray);
