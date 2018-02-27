@@ -779,7 +779,7 @@ typename QVector<T>::iterator QVector<T>::insert(iterator before, T &&t)
         }
     } else {
         T *b = d->begin() + offset;
-        memmove(b + 1, b, (d->size - offset) * sizeof(T));
+        memmove(static_cast<void *>(b + 1), static_cast<const void *>(b), (d->size - offset) * sizeof(T));
         new (b) T(std::move(t));
     }
     d->size += 1;
