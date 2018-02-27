@@ -82,7 +82,7 @@ QEvdevTabletData::QEvdevTabletData(QEvdevTabletHandler *q_ptr)
 {
     memset(&minValues, 0, sizeof(minValues));
     memset(&maxValues, 0, sizeof(maxValues));
-    memset(&state, 0, sizeof(state));
+    memset(static_cast<void *>(&state), 0, sizeof(state));
 }
 
 void QEvdevTabletData::processInputEvent(input_event *ev)
