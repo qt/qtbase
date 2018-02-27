@@ -401,7 +401,7 @@ QString QMimeBinaryProvider::resolveAlias(const QString &name)
             return QLatin1String(mimeType);
         }
     }
-    return name;
+    return QString();
 }
 
 void QMimeBinaryProvider::addAliases(const QString &name, QStringList &result)
@@ -729,7 +729,7 @@ void QMimeXMLProvider::addAliases(const QString &name, QStringList &result)
 
 QString QMimeXMLProvider::resolveAlias(const QString &name)
 {
-    return m_aliases.value(name, name);
+    return m_aliases.value(name);
 }
 
 void QMimeXMLProvider::addAlias(const QString &alias, const QString &name)
