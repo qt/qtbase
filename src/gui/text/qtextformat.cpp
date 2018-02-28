@@ -3077,7 +3077,8 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
     REPLACEMENT CHARACTER) which has an associated QTextImageFormat. The
     image format specifies a name with setName() that is used to
     locate the image. The size of the rectangle that the image will
-    occupy is specified using setWidth() and setHeight().
+    occupy is specified in pixels using setWidth() and setHeight().
+    The desired image quality may be set with setQuality().
 
     Images can be supplied in any format for which Qt has an image
     reader, so SVG drawings can be included alongside PNG, TIFF and
@@ -3164,6 +3165,28 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
     Returns the height of the rectangle occupied by the image.
 
     \sa width(), setHeight()
+*/
+
+/*!
+    \fn void QTextImageFormat::setQuality(int quality = 100)
+    \since 5.12
+
+    Sets the quality that should be used by exporters when exporting the image. QTextDocumentWriter
+    will export jpg images with the \a quality set here when exporting to ODF files if \a quality is
+    set to a value between 0 and 100. Or it will export png images if \a quality is set to 100
+    (default) or greater.
+
+    \sa quality()
+*/
+
+
+/*!
+    \fn qreal QTextImageFormat::quality() const
+    \since 5.12
+
+    Returns the value set by setQuality().
+
+    \sa setQuality()
 */
 
 /*!

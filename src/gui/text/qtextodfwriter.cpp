@@ -420,7 +420,6 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
         QTextImageFormat imageFormat = fragment.charFormat().toImageFormat();
         writer.writeAttribute(drawNS, QString::fromLatin1("name"), imageFormat.name());
 
-        // vvv  Copy pasted mostly from Qt =================
         QImage image;
         QString name = imageFormat.name();
         if (name.startsWith(QLatin1String(":/"))) // auto-detect resources
@@ -442,11 +441,19 @@ void QTextOdfWriter::writeInlineCharacter(QXmlStreamWriter &writer, const QTextF
 
         if (! image.isNull()) {
             QBuffer imageBytes;
-            QImageWriter imageWriter(&imageBytes, "png");
-            imageWriter.write(image);
             QString filename = m_strategy->createUniqueImageName();
-            m_strategy->addFile(filename, QString::fromLatin1("image/png"), imageBytes.data());
-
+            int imgQuality = imageFormat.quality();
+            if (imgQuality >= 100 || imgQuality < 0 || image.hasAlphaChannel()) {
+                QImageWriter imageWriter(&imageBytes, "png");
+                imageWriter.write(image);
+                m_strategy->addFile(filename, QString::fromLatin1("image/png"), imageBytes.data());
+            } else {
+                // Write images without alpha channel as jpg with quality set by QTextImageFormat
+                QImageWriter imageWriter(&imageBytes, "jpg");
+                imageWriter.setQuality(imgQuality);
+                imageWriter.write(image);
+                m_strategy->addFile(filename, QString::fromLatin1("image/jpg"), imageBytes.data());
+            }
             // get the width/height from the format.
             qreal width = imageFormat.hasProperty(QTextFormat::ImageWidth)
                     ? imageFormat.width() : image.width();

@@ -250,6 +250,7 @@ public:
         ImageName = 0x5000,
         ImageWidth = 0x5010,
         ImageHeight = 0x5011,
+        ImageQuality = 0x5014,
 
         // internal
         /*
@@ -754,6 +755,10 @@ public:
     inline qreal height() const
     { return doubleProperty(ImageHeight); }
 
+    inline void setQuality(int quality = 100);
+    inline int quality() const
+    { return intProperty(ImageQuality); }
+
 protected:
     explicit QTextImageFormat(const QTextFormat &format);
     friend class QTextFormat;
@@ -769,6 +774,9 @@ inline void QTextImageFormat::setWidth(qreal awidth)
 
 inline void QTextImageFormat::setHeight(qreal aheight)
 { setProperty(ImageHeight, aheight); }
+
+inline void QTextImageFormat::setQuality(int aquality)
+{ setProperty(ImageQuality, aquality); }
 
 class Q_GUI_EXPORT QTextFrameFormat : public QTextFormat
 {
