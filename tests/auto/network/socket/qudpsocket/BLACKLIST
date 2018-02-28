@@ -21,6 +21,6 @@ osx
 [zeroLengthDatagram]
 osx
 [linkLocalIPv6]
-redhatenterpriselinuxworkstation-6.6
+linux
 [readyReadForEmptyDatagram]
-ubuntu-16.04
+linux

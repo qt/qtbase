@@ -306,13 +306,13 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfa
         return func;
 
     if (lowerCaseResource == "setstartupid")
-        return NativeResourceForIntegrationFunction(setStartupId);
+        return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(setStartupId));
     if (lowerCaseResource == "generatepeekerid")
-        return NativeResourceForIntegrationFunction(generatePeekerId);
+        return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(generatePeekerId));
     if (lowerCaseResource == "removepeekerid")
-            return NativeResourceForIntegrationFunction(removePeekerId);
+        return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(removePeekerId));
     if (lowerCaseResource == "peekeventqueue")
-            return NativeResourceForIntegrationFunction(peekEventQueue);
+        return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(peekEventQueue));
 
     return 0;
 }
@@ -334,9 +334,9 @@ QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::n
         return func;
 
     if (lowerCaseResource == "setapptime")
-        return NativeResourceForScreenFunction(setAppTime);
+        return NativeResourceForScreenFunction(reinterpret_cast<void *>(setAppTime));
     else if (lowerCaseResource == "setappusertime")
-        return NativeResourceForScreenFunction(setAppUserTime);
+        return NativeResourceForScreenFunction(reinterpret_cast<void *>(setAppUserTime));
     return 0;
 }
 
@@ -388,7 +388,7 @@ QFunctionPointer QXcbNativeInterface::platformFunction(const QByteArray &functio
     }
 
     if (function == QXcbScreenFunctions::virtualDesktopNumberIdentifier())
-        return QFunctionPointer(QXcbScreenFunctions::VirtualDesktopNumber(QXcbScreen::virtualDesktopNumberStatic));
+        return QFunctionPointer(QXcbScreenFunctions::VirtualDesktopNumber(reinterpret_cast<void *>(QXcbScreen::virtualDesktopNumberStatic)));
 
     return nullptr;
 }

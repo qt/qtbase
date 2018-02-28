@@ -137,7 +137,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
     \note For consistency with QDateTime, QTimeZone does not account for leap
     seconds.
 
-    \section1
+    \section1 Remarks
 
     \section2 IANA Time Zone IDs
 

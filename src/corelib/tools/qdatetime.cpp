@@ -357,7 +357,7 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_
     there are in this date's month and year, respectively. The
     isLeapYear() function indicates whether a date is in a leap year.
 
-    \section1
+    \section1 Remarks
 
     \section2 No Year 0
 
@@ -3047,7 +3047,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 
     \note QDateTime does not account for leap seconds.
 
-    \section1
+    \section1 Remarks
 
     \section2 No Year 0
 
@@ -3065,8 +3065,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     extreme values that you do not overflow the storage.  The exact range of
     supported values varies depending on the Qt::TimeSpec and time zone.
 
-    \section2
-    Use of System Timezone
+    \section2 Use of System Timezone
 
     QDateTime uses the system's time zone information to determine the
     offset of local time from UTC. If the system is not configured

@@ -248,6 +248,7 @@ private:
 
     Mode m_mode;
     QWindowsDrag *m_drag;
+    QPointer<QWindow> m_windowUnderMouse;
     Qt::MouseButtons m_currentButtons;
     ActionCursorMap m_cursors;
     QWindowsDragCursorWindow *m_touchDragWindow;
@@ -260,6 +261,7 @@ private:
 QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag)
     : m_mode(QWindowsCursor::cursorState() != QWindowsCursor::CursorSuppressed ? MouseDrag : TouchDrag)
     , m_drag(drag)
+    , m_windowUnderMouse(QWindowsContext::instance()->windowUnderMouse())
     , m_currentButtons(Qt::NoButton)
     , m_touchDragWindow(0)
 {
@@ -400,7 +402,19 @@ QWindowsOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
         case DRAGDROP_S_DROP:
         case DRAGDROP_S_CANCEL:
             QGuiApplicationPrivate::modifier_buttons = toQtKeyboardModifiers(grfKeyState);
-            QGuiApplicationPrivate::mouse_buttons = buttons;
+            if (buttons != QGuiApplicationPrivate::mouse_buttons) {
+                if (m_windowUnderMouse.isNull() || m_mode == TouchDrag || fEscapePressed == TRUE) {
+                    QGuiApplicationPrivate::mouse_buttons = buttons;
+                } else {
+                    // QTBUG 66447: Synthesize a mouse release to the window under mouse at
+                    // start of the DnD operation as Windows does not send any.
+                    const QPoint globalPos = QWindowsCursor::mousePosition();
+                    const QPoint localPos = m_windowUnderMouse->handle()->mapFromGlobal(globalPos);
+                    QWindowSystemInterface::handleMouseEvent(m_windowUnderMouse.data(),
+                                                             QPointF(localPos), QPointF(globalPos),
+                                                             QWindowsMouseHandler::queryMouseButtons());
+                }
+            }
             m_currentButtons = Qt::NoButton;
             break;
 

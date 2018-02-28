@@ -24,9 +24,9 @@ windows
 # QTBUG-66602
 [ioHttpRedirectMultipartPost]
 *
+# QTBUG-66247
 [ioHttpRedirectPolicy]
-b2qt 64bit
-linux
+*
 [ioHttpRedirectPostPut]
 linux
 windows
