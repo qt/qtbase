@@ -94,25 +94,25 @@ TestWidget::TestWidget(QWidget *parent):
 
     //! [2]
     QPushButton *switchButton = new QPushButton(tr("Switch text"));
-    connect(switchButton, SIGNAL(clicked(bool)), this, SLOT(switchText()));
+    connect(switchButton, &QPushButton::clicked, this, &TestWidget::switchText);
 
     QPushButton *exitButton = new QPushButton(tr("Exit"));
-    connect(exitButton, SIGNAL(clicked(bool)), this, SLOT(close()));
+    connect(exitButton, &QPushButton::clicked, this, &TestWidget::close);
 
     QLabel *label = new QLabel(tr("Elided"));
     label->setVisible(elidedText->isElided());
-    connect(elidedText, SIGNAL(elisionChanged(bool)), label, SLOT(setVisible(bool)));
+    connect(elidedText, &ElidedLabel::elisionChanged, label, &QLabel::setVisible);
     //! [2]
 
     //! [3]
     widthSlider = new QSlider(Qt::Horizontal);
     widthSlider->setMinimum(0);
-    connect(widthSlider, SIGNAL(valueChanged(int)), this, SLOT(onWidthChanged(int)));
+    connect(widthSlider, &QSlider::valueChanged, this, &TestWidget::onWidthChanged);
 
     heightSlider = new QSlider(Qt::Vertical);
     heightSlider->setInvertedAppearance(true);
     heightSlider->setMinimum(0);
-    connect(heightSlider, SIGNAL(valueChanged(int)), this, SLOT(onHeightChanged(int)));
+    connect(heightSlider, &QSlider::valueChanged, this, &TestWidget::onHeightChanged);
     //! [3]
 
     //! [4]
@@ -164,5 +164,4 @@ void TestWidget::onHeightChanged(int height)
     elidedText->setFixedHeight(height);
 }
 //! [8]
-
 
