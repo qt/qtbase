@@ -268,6 +268,11 @@ static bool isValidSlot(const QMetaMethod &sl)
         || name == "init" || name == "cleanup");
 }
 
+namespace QTestPrivate
+{
+    Q_TESTLIB_EXPORT Qt::MouseButtons qtestMouseButtons = Qt::NoButton;
+}
+
 namespace QTest
 {
     class WatchDog;
@@ -1074,6 +1079,7 @@ bool TestMethods::invokeTest(int index, const char *data, WatchDog *watchDog) co
                     QTestDataSetter s(curDataIndex >= dataCount ? static_cast<QTestData *>(0)
                                                       : table.testData(curDataIndex));
 
+                    QTestPrivate::qtestMouseButtons = Qt::NoButton;
                     if (watchDog)
                         watchDog->beginTest();
                     invokeTestOnData(index);
