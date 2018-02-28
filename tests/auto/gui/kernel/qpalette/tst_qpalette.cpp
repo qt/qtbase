@@ -67,9 +67,10 @@ void tst_QPalette::roleValues_data()
     QTest::newRow("QPalette::NoRole") << int(QPalette::NoRole) << 17;
     QTest::newRow("QPalette::ToolTipBase") << int(QPalette::ToolTipBase) << 18;
     QTest::newRow("QPalette::ToolTipText") << int(QPalette::ToolTipText) << 19;
+    QTest::newRow("QPalette::PlaceholderText") << int(QPalette::PlaceholderText) << 20;
 
     // Change this value as you add more roles.
-    QTest::newRow("QPalette::NColorRoles") << int(QPalette::NColorRoles) << 20;
+    QTest::newRow("QPalette::NColorRoles") << int(QPalette::NColorRoles) << 21;
 }
 
 void tst_QPalette::roleValues()

@@ -260,16 +260,16 @@ static int NColorRoles[] = {
     QPalette::HighlightedText + 1, // Qt_4_0, Qt_4_1
     QPalette::HighlightedText + 1, // Qt_4_2
     QPalette::AlternateBase + 1,   // Qt_4_3
-    QPalette::ToolTipText + 1,     // Qt_4_4
-    QPalette::ToolTipText + 1,     // Qt_4_5
-    QPalette::ToolTipText + 1,     // Qt_4_6
-    QPalette::ToolTipText + 1,     // Qt_5_0
-    QPalette::ToolTipText + 1,     // Qt_5_1
-    QPalette::ToolTipText + 1,     // Qt_5_2
-    QPalette::ToolTipText + 1,     // Qt_5_3
-    QPalette::ToolTipText + 1,     // Qt_5_4
-    QPalette::ToolTipText + 1,     // Qt_5_5
-    QPalette::ToolTipText + 1,     // Qt_5_6
+    QPalette::PlaceholderText + 1,     // Qt_4_4
+    QPalette::PlaceholderText + 1,     // Qt_4_5
+    QPalette::PlaceholderText + 1,     // Qt_4_6
+    QPalette::PlaceholderText + 1,     // Qt_5_0
+    QPalette::PlaceholderText + 1,     // Qt_5_1
+    QPalette::PlaceholderText + 1,     // Qt_5_2
+    QPalette::PlaceholderText + 1,     // Qt_5_3
+    QPalette::PlaceholderText + 1,     // Qt_5_4
+    QPalette::PlaceholderText + 1,     // Qt_5_5
+    QPalette::PlaceholderText + 1,     // Qt_5_6
     0                              // add the correct value for Qt_5_7 here later
 };
 
@@ -2139,7 +2139,7 @@ void tst_QDataStream::setVersion()
     */
 
     // revise the test if new color roles or color groups are added
-    QVERIFY(QPalette::NColorRoles == QPalette::ToolTipText + 1);
+    QVERIFY(QPalette::NColorRoles == QPalette::PlaceholderText + 1);
     QCOMPARE(int(QPalette::NColorGroups), 3);
 
     QByteArray ba2;

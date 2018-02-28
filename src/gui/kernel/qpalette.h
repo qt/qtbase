@@ -96,7 +96,8 @@ public:
                      AlternateBase,
                      NoRole,
                      ToolTipBase, ToolTipText,
-                     NColorRoles = ToolTipText + 1,
+                     PlaceholderText,
+                     NColorRoles = PlaceholderText + 1,
                      Foreground = WindowText, Background = Window
                    };
     Q_ENUM(ColorRole)
@@ -141,6 +142,7 @@ public:
     inline const QBrush &highlightedText() const { return brush(HighlightedText); }
     inline const QBrush &link() const { return brush(Link); }
     inline const QBrush &linkVisited() const { return brush(LinkVisited); }
+    inline const QBrush &placeholderText() const { return brush(PlaceholderText); }
 
     bool operator==(const QPalette &p) const;
     inline bool operator!=(const QPalette &p) const { return !(operator==(p)); }
