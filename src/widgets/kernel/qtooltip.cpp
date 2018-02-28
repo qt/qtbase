@@ -123,11 +123,11 @@ class QTipLabel : public QLabel
 {
     Q_OBJECT
 public:
-    QTipLabel(const QString &text, QWidget *w, int msecDisplayTime);
+    QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int msecDisplayTime);
     ~QTipLabel();
     static QTipLabel *instance;
 
-    void updateSize();
+    void updateSize(const QPoint &pos);
 
     bool eventFilter(QObject *, QEvent *) override;
 
@@ -135,7 +135,7 @@ public:
 
     bool fadingOut;
 
-    void reuseTip(const QString &text, int msecDisplayTime);
+    void reuseTip(const QString &text, int msecDisplayTime, const QPoint &pos);
     void hideTip();
     void hideTipImmediately();
     void setTipRect(QWidget *w, const QRect &r);
@@ -171,7 +171,7 @@ private:
 
 QTipLabel *QTipLabel::instance = 0;
 
-QTipLabel::QTipLabel(const QString &text, QWidget *w, int msecDisplayTime)
+QTipLabel::QTipLabel(const QString &text, const QPoint &pos, QWidget *w, int msecDisplayTime)
 #ifndef QT_NO_STYLE_STYLESHEET
     : QLabel(w, Qt::ToolTip | Qt::BypassGraphicsProxyWidget), styleSheetParent(0), widget(0)
 #else
@@ -192,7 +192,7 @@ QTipLabel::QTipLabel(const QString &text, QWidget *w, int msecDisplayTime)
     setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, 0, this) / 255.0);
     setMouseTracking(true);
     fadingOut = false;
-    reuseTip(text, msecDisplayTime);
+    reuseTip(text, msecDisplayTime, pos);
 }
 
 void QTipLabel::restartExpireTimer(int msecDisplayTime)
@@ -204,7 +204,7 @@ void QTipLabel::restartExpireTimer(int msecDisplayTime)
     hideTimer.stop();
 }
 
-void QTipLabel::reuseTip(const QString &text, int msecDisplayTime)
+void QTipLabel::reuseTip(const QString &text, int msecDisplayTime, const QPoint &pos)
 {
 #ifndef QT_NO_STYLE_STYLESHEET
     if (styleSheetParent){
@@ -214,20 +214,30 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime)
     }
 #endif
 
-    setWordWrap(Qt::mightBeRichText(text));
+    setWordWrap(true);
     setText(text);
-    updateSize();
+    updateSize(pos);
     restartExpireTimer(msecDisplayTime);
 }
 
-void  QTipLabel::updateSize()
+void  QTipLabel::updateSize(const QPoint &pos)
 {
     QFontMetrics fm(font());
     QSize extra(1, 0);
     // Make it look good with the default ToolTip font on Mac, which has a small descent.
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
-    resize(sizeHint() + extra);
+    QSize sh = sizeHint();
+    if (wordWrap()) {
+        const QRect screenRect = QApplication::desktop()->screenGeometry(pos);
+        if (sh.width() > screenRect.width()) {
+            // Try to use widely accepted 75chars max length or 80% of the screen width else.
+            // See https://en.wikipedia.org/wiki/Line_length
+            sh.setWidth(qMin(fm.averageCharWidth() * 75, static_cast<int>(screenRect.width() * .8)));
+            sh.setHeight(heightForWidth(sh.width()));
+        }
+    }
+    resize(sh + extra);
 }
 
 void QTipLabel::paintEvent(QPaintEvent *ev)
@@ -396,7 +406,7 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
                 QTipLabel::instance, SLOT(styleSheetParentDestroyed()));
             // QTBUG-64550: A font inherited by the style sheet might change the size,
             // particular on Windows, where the tip is not parented on a window.
-            QTipLabel::instance->updateSize();
+            QTipLabel::instance->updateSize(pos);
         }
     }
 #endif //QT_NO_STYLE_STYLESHEET
@@ -499,7 +509,7 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
             if (w)
                 localPos = w->mapFromGlobal(pos);
             if (QTipLabel::instance->tipChanged(localPos, text, w)){
-                QTipLabel::instance->reuseTip(text, msecDisplayTime);
+                QTipLabel::instance->reuseTip(text, msecDisplayTime, pos);
                 QTipLabel::instance->setTipRect(w, rect);
                 QTipLabel::instance->placeTip(pos, w);
             }
@@ -513,10 +523,10 @@ void QToolTip::showText(const QPoint &pos, const QString &text, QWidget *w, cons
         // raised when the tooltip will be shown
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
-        new QTipLabel(text, QApplication::desktop()->screen(QTipLabel::getTipScreen(pos, w)), msecDisplayTime);
+        new QTipLabel(text, pos, QApplication::desktop()->screen(QTipLabel::getTipScreen(pos, w)), msecDisplayTime);
 QT_WARNING_POP
 #else
-        new QTipLabel(text, w, msecDisplayTime); // sets QTipLabel::instance to itself
+        new QTipLabel(text, pos, w, msecDisplayTime); // sets QTipLabel::instance to itself
 #endif
         QTipLabel::instance->setTipRect(w, rect);
         QTipLabel::instance->placeTip(pos, w);
