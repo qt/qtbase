@@ -27,6 +27,7 @@
 ****************************************************************************/
 
 #include <QString>
+#include <QtTest/QtTest>
 #ifdef QT_NETWORK_LIB
 #include <QtNetwork/QHostInfo>
 #include <QtNetwork/QHostAddress>
@@ -50,7 +51,11 @@ public:
     }
     static QString serverDomainName()
     {
+#ifdef QT_TEST_SERVER_DOMAIN
+        return QString(QT_TEST_SERVER_DOMAIN); // Defined in testserver feature
+#else
         return QString("qt-test-net");
+#endif
     }
     static QString serverName()
     {
@@ -135,6 +140,20 @@ public:
             return false;
         }
         return true;
+    }
+
+    static bool verifyConnection(QString serverName, quint16 port, quint32 retry = 10)
+    {
+        QTcpSocket socket;
+        for (quint32 i = 1; i < retry; i++) {
+            socket.connectToHost(serverName, port);
+            if (socket.waitForConnected(1000))
+                return true;
+            // Wait for service to start up
+            QTest::qWait(1000);
+        }
+        socket.connectToHost(serverName, port);
+        return socket.waitForConnected(1000);
     }
 
     // Helper function for usage with QVERIFY2 on sockets.
