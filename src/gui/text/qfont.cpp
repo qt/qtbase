@@ -1328,7 +1328,7 @@ QFont::StyleHint QFont::styleHint() const
            order to display them correctly. In some writing systems, such as Brahmic scripts, this is
            required in order for the text to be legible, but in e.g. Latin script, it is merely
            a cosmetic feature. The PreferNoShaping flag will disable all such features when they
-           are not required, which will improve performance in most cases.
+           are not required, which will improve performance in most cases (since Qt 5.10).
 
     Any of these may be OR-ed with one of these flags:
 
