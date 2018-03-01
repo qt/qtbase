@@ -56,6 +56,7 @@
 #include <qregularexpression.h>
 #endif
 #include <QTimeZone>
+#include <QScopedValueRollback>
 
 #if defined Q_OS_WIN
 # include <qt_windows.h>
@@ -129,6 +130,7 @@ protected:
     bool gotoNext(QSqlCachedResult::ValueCache& row, int idx) override;
     bool reset(const QString &query) override;
     bool prepare(const QString &query) override;
+    bool execBatch(bool arrayBind) override;
     bool exec() override;
     int size() override;
     int numRowsAffected() override;
@@ -441,6 +443,29 @@ static QString timespecToString(const QDateTime &dateTime)
     default:
         return QString();
     }
+}
+
+bool QSQLiteResult::execBatch(bool arrayBind)
+{
+    Q_UNUSED(arrayBind);
+    Q_D(QSqlResult);
+    QScopedValueRollback<QVector<QVariant>> valuesScope(d->values);
+    QVector<QVariant> values = d->values;
+    if (values.count() == 0)
+        return false;
+
+    for (int i = 0; i < values.at(0).toList().count(); ++i) {
+        d->values.clear();
+        QScopedValueRollback<QHash<QString, QVector<int>>> indexesScope(d->indexes);
+        QHash<QString, QVector<int>>::const_iterator it = d->indexes.constBegin();
+        while (it != d->indexes.constEnd()) {
+            bindValue(it.key(), values.at(it.value().first()).toList().at(i), QSql::In);
+            ++it;
+        }
+        if (!exec())
+            return false;
+    }
+    return true;
 }
 
 bool QSQLiteResult::exec()
