@@ -1,0 +1,183 @@
+TAP version 13
+# tst_DataTable
+ok 1 - initTestCase()
+ok 2 - singleTestFunction1()
+ok 3 - singleTestFunction2()
+ok 4 - fiveTablePasses(fiveTablePasses_data 1)
+ok 5 - fiveTablePasses(fiveTablePasses_data 2)
+ok 6 - fiveTablePasses(fiveTablePasses_data 3)
+ok 7 - fiveTablePasses(fiveTablePasses_data 4)
+ok 8 - fiveTablePasses(fiveTablePasses_data 5)
+not ok 9 - fiveTableFailures(fiveTableFailures_data 1)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (test)
+  found: false (test)
+  expected: true (test)
+  actual: false (test)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 78
+  ...
+not ok 10 - fiveTableFailures(fiveTableFailures_data 2)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (test)
+  found: false (test)
+  expected: true (test)
+  actual: false (test)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 78
+  ...
+not ok 11 - fiveTableFailures(fiveTableFailures_data 3)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (test)
+  found: false (test)
+  expected: true (test)
+  actual: false (test)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 78
+  ...
+not ok 12 - fiveTableFailures(fiveTableFailures_data 4)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (test)
+  found: false (test)
+  expected: true (test)
+  actual: false (test)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 78
+  ...
+not ok 13 - fiveTableFailures(fiveTableFailures_data 5)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (test)
+  found: false (test)
+  expected: true (test)
+  actual: false (test)
+  at: tst_DataTable::fiveTableFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 78
+  ...
+not ok 14 - startsWithFailure(startsWithFailure_data 1)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (test)
+  found: false (test)
+  expected: true (test)
+  actual: false (test)
+  at: tst_DataTable::startsWithFailure() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 78
+  ...
+ok 15 - startsWithFailure(startsWithFailure_data 2)
+ok 16 - startsWithFailure(startsWithFailure_data 3)
+ok 17 - startsWithFailure(startsWithFailure_data 4)
+ok 18 - startsWithFailure(startsWithFailure_data 5)
+ok 19 - endsWithFailure(endsWithFailure 1)
+ok 20 - endsWithFailure(endsWithFailure 2)
+ok 21 - endsWithFailure(endsWithFailure 3)
+ok 22 - endsWithFailure(endsWithFailure 4)
+not ok 23 - endsWithFailure(endsWithFailure 5)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (test)
+  found: false (test)
+  expected: true (test)
+  actual: false (test)
+  at: tst_DataTable::endsWithFailure() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 78
+  ...
+ok 24 - failureInMiddle(failureInMiddle_data 1)
+ok 25 - failureInMiddle(failureInMiddle_data 2)
+not ok 26 - failureInMiddle(failureInMiddle_data 3)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (test)
+  found: false (test)
+  expected: true (test)
+  actual: false (test)
+  at: tst_DataTable::failureInMiddle() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:78)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 78
+  ...
+ok 27 - failureInMiddle(failureInMiddle_data 4)
+ok 28 - failureInMiddle(failureInMiddle_data 5)
+not ok 29 - fiveIsolatedFailures(fiveIsolatedFailures_data 1)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (!test)
+  found: false (!test)
+  expected: true (!test)
+  actual: false (!test)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 160
+  ...
+not ok 30 - fiveIsolatedFailures(fiveIsolatedFailures_data 2)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (!test)
+  found: false (!test)
+  expected: true (!test)
+  actual: false (!test)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 160
+  ...
+not ok 31 - fiveIsolatedFailures(fiveIsolatedFailures_data 3)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (!test)
+  found: false (!test)
+  expected: true (!test)
+  actual: false (!test)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 160
+  ...
+not ok 32 - fiveIsolatedFailures(fiveIsolatedFailures_data 4)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (!test)
+  found: false (!test)
+  expected: true (!test)
+  actual: false (!test)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 160
+  ...
+not ok 33 - fiveIsolatedFailures(fiveIsolatedFailures_data 5)
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (!test)
+  found: false (!test)
+  expected: true (!test)
+  actual: false (!test)
+  at: tst_DataTable::fiveIsolatedFailures() (qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp:160)
+  file: qtbase/tests/auto/testlib/selftests/datatable/tst_datatable.cpp
+  line: 160
+  ...
+ok 34 - cleanupTestCase()
+1..34
+# tests 34
+# pass 21
+# fail 13

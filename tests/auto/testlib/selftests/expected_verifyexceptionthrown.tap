@@ -1,0 +1,53 @@
+TAP version 13
+# tst_VerifyExceptionThrown
+ok 1 - initTestCase()
+ok 2 - testCorrectStdTypes()
+ok 3 - testCorrectStdExceptions()
+ok 4 - testCorrectMyExceptions()
+not ok 5 - testFailInt()
+  ---
+  # Expected exception of type double to be thrown but unknown exception caught
+  at: tst_VerifyExceptionThrown::testFailInt() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:115)
+  file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
+  line: 115
+  ...
+not ok 6 - testFailStdString()
+  ---
+  # Expected exception of type char* to be thrown but unknown exception caught
+  at: tst_VerifyExceptionThrown::testFailStdString() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:120)
+  file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
+  line: 120
+  ...
+not ok 7 - testFailStdRuntimeError()
+  ---
+  # Expected exception of type std::runtime_error to be thrown but std::exception caught with message: logic error
+  at: tst_VerifyExceptionThrown::testFailStdRuntimeError() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:125)
+  file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
+  line: 125
+  ...
+not ok 8 - testFailMyException()
+  ---
+  # Expected exception of type MyBaseException to be thrown but std::exception caught with message: logic error
+  at: tst_VerifyExceptionThrown::testFailMyException() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:130)
+  file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
+  line: 130
+  ...
+not ok 9 - testFailMyDerivedException()
+  ---
+  # Expected exception of type std::runtime_error to be thrown but std::exception caught with message: MyDerivedException
+  at: tst_VerifyExceptionThrown::testFailMyDerivedException() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:135)
+  file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
+  line: 135
+  ...
+not ok 10 - testFailNoException()
+  ---
+  # Expected exception of type std::exception to be thrown but no exception caught
+  at: tst_VerifyExceptionThrown::testFailNoException() (qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp:140)
+  file: qtbase/tests/auto/testlib/selftests/verifyexceptionthrown/tst_verifyexceptionthrown.cpp
+  line: 140
+  ...
+ok 11 - cleanupTestCase()
+1..11
+# tests 11
+# pass 5
+# fail 6

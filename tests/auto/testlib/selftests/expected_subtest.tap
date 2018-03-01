@@ -1,0 +1,68 @@
+TAP version 13
+# tst_Subtest
+# initTestCase initTestCase (null)
+ok 1 - initTestCase()
+# init test1 (null)
+# test1 test1 (null)
+# cleanup test1 (null)
+ok 2 - test1()
+# test2_data test2 (null)
+# test2_data end
+# init test2 data0
+# test2 test2 data0
+# test2 end
+# cleanup test2 data0
+ok 3 - test2(data0)
+# init test2 data1
+# test2 test2 data1
+# test2 end
+# cleanup test2 data1
+ok 4 - test2(data1)
+# init test2 data2
+# test2 test2 data2
+# test2 end
+# cleanup test2 data2
+ok 5 - test2(data2)
+# test3_data test3 (null)
+# test3_data end
+# init test3 data0
+# test2 test3 data0
+# test2 end
+# cleanup test3 data0
+ok 6 - test3(data0)
+# init test3 data1
+# test2 test3 data1
+not ok 7 - test3(data1)
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: "hello0" (QString("hello0"))
+  found: "hello1" (str)
+  expected: "hello0" (QString("hello0"))
+  actual: "hello1" (str)
+  at: tst_Subtest::test3() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:141)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 141
+  ...
+# cleanup test3 data1
+# init test3 data2
+# test2 test3 data2
+not ok 8 - test3(data2)
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: "hello0" (QString("hello0"))
+  found: "hello2" (str)
+  expected: "hello0" (QString("hello0"))
+  actual: "hello2" (str)
+  at: tst_Subtest::test3() (qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp:141)
+  file: qtbase/tests/auto/testlib/selftests/subtest/tst_subtest.cpp
+  line: 141
+  ...
+# cleanup test3 data2
+# cleanupTestCase cleanupTestCase (null)
+ok 9 - cleanupTestCase()
+1..9
+# tests 9
+# pass 7
+# fail 2

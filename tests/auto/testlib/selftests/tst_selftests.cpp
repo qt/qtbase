@@ -310,6 +310,14 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "teamcity",
                      QStringList() << "-teamcity" << "-o" << logName("teamcity")
                     )
+        << LoggerSet("old stdout tap",
+                     QStringList() << "stdout tap",
+                     QStringList() << "-tap"
+                    )
+        << LoggerSet("old tap",
+                     QStringList() << "tap",
+                     QStringList() << "-tap" << "-o" << logName("tap")
+                    )
         // Test with new-style options for a single logger
         << LoggerSet("new stdout txt",
                      QStringList() << "stdout txt",
@@ -357,6 +365,14 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                      QStringList() << "teamcity",
                      QStringList() << "-o" << logName("teamcity")+",teamcity"
                     )
+        << LoggerSet("new stdout tap",
+                     QStringList() << "stdout tap",
+                     QStringList() << "-o" << "-,tap"
+                    )
+        << LoggerSet("new tap",
+                     QStringList() << "tap",
+                     QStringList() << "-o" << logName("tap")+",tap"
+                    )
         // Test with two loggers (don't test all 32 combinations, just a sample)
         << LoggerSet("stdout txt + txt",
                      QStringList() << "stdout txt" << "txt",
@@ -380,13 +396,14 @@ QList<LoggerSet> tst_Selftests::allLoggerSets() const
                     )
         // All loggers at the same time (except csv)
         << LoggerSet("all loggers",
-                     QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "xunitxml",
+                     QStringList() << "txt" << "xml" << "lightxml" << "stdout txt" << "xunitxml" << "tap",
                      QStringList() << "-o" << logName("txt")+",txt"
                                    << "-o" << logName("xml")+",xml"
                                    << "-o" << logName("lightxml")+",lightxml"
                                    << "-o" << "-,txt"
                                    << "-o" << logName("xunitxml")+",xunitxml"
                                    << "-o" << logName("teamcity")+",teamcity"
+                                   << "-o" << logName("tap")+",tap"
                     )
     ;
 }
@@ -849,6 +866,11 @@ bool tst_Selftests::compareOutput(const QString &logger, const QString &subdir,
         if (logger.endsWith(QLatin1String("teamcity"))) {
             actualLine.replace(teamcityLocRegExp, teamCityLocation());
             expectedLine.replace(teamcityLocRegExp, teamCityLocation());
+        }
+
+        if (logger.endsWith(QLatin1String("tap"))) {
+            if (expectedLine.contains(QLatin1String("at:")) || expectedLine.contains(QLatin1String("file:")))
+                actualLine = expectedLine;
         }
 
         if (!compareLine(logger, subdir, benchmark, actualLine,

@@ -1,0 +1,44 @@
+TAP version 13
+# tst_Xunit
+ok 1 - initTestCase()
+# just a QWARN() !
+ok 2 - testFunc1()
+# a qDebug() call with comment-ending stuff -->
+not ok 3 - testFunc2()
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: 3 (3)
+  found: 2 (2)
+  expected: 3 (3)
+  actual: 2 (2)
+  at: tst_Xunit::testFunc2() (qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp:61)
+  file: qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp
+  line: 61
+  ...
+ok 4 - testFunc3() # SKIP skipping this function!
+not ok 5 - testFunc4()
+  ---
+  # a forced failure!
+  at: tst_Xunit::testFunc4() (qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp:71)
+  file: qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp
+  line: 71
+  ...
+not ok 6 - testFunc5() # TODO this failure is expected
+  ---
+  at: tst_Xunit::testFunc5() (qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp:85)
+  file: qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp
+  line: 85
+  ...
+not ok 7 - testFunc6() # TODO this failure is also expected
+  ---
+  at: tst_Xunit::testFunc6() (qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp:91)
+  file: qtbase/tests/auto/testlib/selftests/xunit/tst_xunit.cpp
+  line: 91
+  ...
+ok 8 - testFunc7() # TODO 'true' returned TRUE unexpectedly. ()
+ok 9 - cleanupTestCase()
+1..9
+# tests 9
+# pass 5
+# fail 3

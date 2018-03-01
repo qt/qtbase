@@ -40,7 +40,8 @@ HEADERS = \
     qtestsystem.h \
     qtesttouch.h \
     qtestblacklist_p.h \
-    qtesthelpers_p.h
+    qtesthelpers_p.h \
+    qtaptestlogger_p.h
 
 SOURCES = \
     qabstractitemmodeltester.cpp \
@@ -67,7 +68,8 @@ SOURCES = \
     qtestmouse.cpp \
     qtestxunitstreamer.cpp \
     qxunittestlogger.cpp \
-    qtestblacklist.cpp
+    qtestblacklist.cpp \
+    qtaptestlogger.cpp
 
 DEFINES *= QT_NO_CAST_TO_ASCII \
     QT_NO_CAST_FROM_ASCII \

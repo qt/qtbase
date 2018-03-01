@@ -1,0 +1,7 @@
+TAP version 13
+# tst_SkipInitData
+ok 1 - initTestCase() # SKIP Skip inside initTestCase_data. This should skip all tests in the class.
+1..1
+# tests 1
+# pass 0
+# fail 0

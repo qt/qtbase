@@ -1,0 +1,52 @@
+TAP version 13
+# tst_globaldata
+# initTestCase initTestCase (null)
+ok 1 - initTestCase()
+# init testGlobal local 1
+# global: false
+# local: false
+# cleanup testGlobal local 1
+ok 2 - testGlobal(1:local 1)
+# init testGlobal local 2
+# global: false
+# local: true
+# cleanup testGlobal local 2
+ok 3 - testGlobal(1:local 2)
+# init testGlobal local 1
+# global: true
+# local: false
+# cleanup testGlobal local 1
+ok 4 - testGlobal(2:local 1)
+# init testGlobal local 2
+# global: true
+# local: true
+# cleanup testGlobal local 2
+ok 5 - testGlobal(2:local 2)
+ok 6 - skip(1) # SKIP skipping
+# init skipLocal local 1
+ok 7 - skipLocal(1:local 1) # SKIP skipping
+# cleanup skipLocal local 1
+# init skipLocal local 2
+ok 8 - skipLocal(1:local 2) # SKIP skipping
+# cleanup skipLocal local 2
+# init skipSingle local 1
+# global: false local: false
+# cleanup skipSingle local 1
+ok 9 - skipSingle(1:local 1)
+# init skipSingle local 2
+# global: false local: true
+# cleanup skipSingle local 2
+ok 10 - skipSingle(1:local 2)
+# init skipSingle local 1
+ok 11 - skipSingle(2:local 1) # SKIP skipping
+# cleanup skipSingle local 1
+# init skipSingle local 2
+# global: true local: true
+# cleanup skipSingle local 2
+ok 12 - skipSingle(2:local 2)
+# cleanupTestCase cleanupTestCase (null)
+ok 13 - cleanupTestCase()
+1..13
+# tests 13
+# pass 9
+# fail 0

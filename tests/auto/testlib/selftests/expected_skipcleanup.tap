@@ -1,0 +1,9 @@
+TAP version 13
+# tst_SkipCleanup
+ok 1 - initTestCase()
+ok 2 - aTestFunction()
+ok 3 - cleanupTestCase() # SKIP Skip inside cleanupTestCase.
+1..3
+# tests 3
+# pass 2
+# fail 0

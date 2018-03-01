@@ -1,0 +1,11 @@
+TAP version 13
+# tst_BenchlibWalltime
+ok 1 - initTestCase()
+ok 2 - waitForOneThousand()
+ok 3 - waitForFourThousand()
+ok 4 - qbenchmark_once()
+ok 5 - cleanupTestCase()
+1..5
+# tests 5
+# pass 5
+# fail 0

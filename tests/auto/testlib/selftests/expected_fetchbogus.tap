@@ -1,0 +1,15 @@
+TAP version 13
+# tst_FetchBogus
+ok 1 - initTestCase()
+# QFETCH: Requested testdata 'bubu' not available, check your _data function.
+not ok 2 - fetchBogus(foo)
+  ---
+  # Received a fatal error.
+  at: tst_FetchBogus::fetchBogus() (Unknown file:0)
+  file: Unknown file
+  line: 0
+  ...
+1..2
+# tests 2
+# pass 1
+# fail 1

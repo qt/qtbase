@@ -1,0 +1,18 @@
+TAP version 13
+# tst_FailInitData
+not ok 1 - initTestCase()
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (false)
+  found: false (false)
+  expected: true (false)
+  actual: false (false)
+  at: tst_FailInitData::initTestCase() (qtbase/tests/auto/testlib/selftests/failinitdata/tst_failinitdata.cpp:43)
+  file: qtbase/tests/auto/testlib/selftests/failinitdata/tst_failinitdata.cpp
+  line: 43
+  ...
+1..1
+# tests 1
+# pass 0
+# fail 1

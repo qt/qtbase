@@ -110,6 +110,8 @@ void QTestResult::setCurrentTestData(QTestData *data)
 {
     QTest::currentTestData = data;
     QTest::failed = false;
+    if (data)
+        QTestLog::enterTestData(data);
 }
 
 void QTestResult::setCurrentTestFunction(const char *func)

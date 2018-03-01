@@ -47,6 +47,7 @@
 #include <QtTest/private/qxunittestlogger_p.h>
 #include <QtTest/private/qxmltestlogger_p.h>
 #include <QtTest/private/qteamcitylogger_p.h>
+#include <QtTest/private/qtaptestlogger_p.h>
 #if defined(HAVE_XCTEST)
 #include <QtTest/private/qxctestlogger_p.h>
 #endif
@@ -213,6 +214,11 @@ namespace QTest {
             FOREACH_LOGGER(logger->leaveTestFunction());
         }
 
+        static void enterTestData(QTestData *data)
+        {
+            FOREACH_LOGGER(logger->enterTestData(data));
+        }
+
         static void addIncident(QAbstractTestLogger::IncidentTypes type, const char *description,
                                 const char *file = 0, int line = 0)
         {
@@ -339,6 +345,12 @@ void QTestLog::enterTestFunction(const char* function)
     QTEST_ASSERT(function);
 
     QTest::TestLoggers::enterTestFunction(function);
+}
+
+void QTestLog::enterTestData(QTestData *data)
+{
+    QTEST_ASSERT(data);
+    QTest::TestLoggers::enterTestData(data);
 }
 
 int QTestLog::unhandledIgnoreMessages()
@@ -500,6 +512,9 @@ void QTestLog::addLogger(LogMode mode, const char *filename)
     case QTestLog::TeamCity:
         logger = new QTeamCityLogger(filename);
         break;
+    case QTestLog::TAP:
+        logger = new QTapTestLogger(filename);
+        break;
 #if defined(HAVE_XCTEST)
     case QTestLog::XCTest:
         logger = new QXcodeTestLogger;
@@ -600,6 +615,11 @@ int QTestLog::skipCount()
 int QTestLog::blacklistCount()
 {
     return QTest::blacklists;
+}
+
+int QTestLog::totalCount()
+{
+    return passCount() + failCount() + skipCount() + blacklistCount();
 }
 
 void QTestLog::resetCounters()

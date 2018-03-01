@@ -1,0 +1,13 @@
+TAP version 13
+# tst_Skip
+ok 1 - initTestCase()
+ok 2 - test() # SKIP skipping all
+ok 3 - emptytest() # SKIP skipping all
+ok 4 - singleSkip(local 1) # SKIP skipping one
+# this line should only be reached once (true)
+ok 5 - singleSkip(local 2)
+ok 6 - cleanupTestCase()
+1..6
+# tests 6
+# pass 3
+# fail 0

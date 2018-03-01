@@ -1,0 +1,32 @@
+TAP version 13
+# tst_PairDiagnostics
+ok 1 - initTestCase()
+not ok 2 - testQPair()
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: "QPair(1,2)" (pair2)
+  found: "QPair(1,1)" (pair1)
+  expected: "QPair(1,2)" (pair2)
+  actual: "QPair(1,1)" (pair1)
+  at: tst_PairDiagnostics::testQPair() (qtbase/tests/auto/testlib/selftests/pairdiagnostics/tst_pairdiagnostics.cpp:51)
+  file: qtbase/tests/auto/testlib/selftests/pairdiagnostics/tst_pairdiagnostics.cpp
+  line: 51
+  ...
+not ok 3 - testStdPair()
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: "std::pair(1,2)" (pair2)
+  found: "std::pair(1,1)" (pair1)
+  expected: "std::pair(1,2)" (pair2)
+  actual: "std::pair(1,1)" (pair1)
+  at: tst_PairDiagnostics::testStdPair() (qtbase/tests/auto/testlib/selftests/pairdiagnostics/tst_pairdiagnostics.cpp:58)
+  file: qtbase/tests/auto/testlib/selftests/pairdiagnostics/tst_pairdiagnostics.cpp
+  line: 58
+  ...
+ok 4 - cleanupTestCase()
+1..4
+# tests 4
+# pass 2
+# fail 2

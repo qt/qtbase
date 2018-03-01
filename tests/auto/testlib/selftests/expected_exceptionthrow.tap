@@ -1,0 +1,14 @@
+TAP version 13
+# tst_Exception
+ok 1 - initTestCase()
+not ok 2 - throwException()
+  ---
+  # Caught unhandled exception
+  at: tst_Exception::throwException() (qtbase/src/testlib/qtestcase.cpp:1846)
+  file: qtbase/src/testlib/qtestcase.cpp
+  line: 1846
+  ...
+1..2
+# tests 2
+# pass 1
+# fail 1

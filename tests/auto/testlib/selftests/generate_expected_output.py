@@ -212,7 +212,7 @@ class Scanner (object):
 del re
 
 def generateTestData(testname, clean,
-                     formats = ('xml', 'txt', 'xunitxml', 'lightxml', 'teamcity'),
+                     formats = ('xml', 'txt', 'xunitxml', 'lightxml', 'teamcity', 'tap'),
                      extraArgs = {
         "commandlinedata": "fiveTablePasses fiveTablePasses:fiveTablePasses_data1 -v2",
         "benchlibcallgrind": "-callgrind",

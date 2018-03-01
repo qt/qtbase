@@ -57,12 +57,13 @@ QT_BEGIN_NAMESPACE
 
 class QBenchmarkResult;
 class QRegularExpression;
+class QTestData;
 
 class Q_TESTLIB_EXPORT QTestLog
 {
 public:
     enum LogMode {
-        Plain = 0, XML, LightXML, XunitXML, CSV, TeamCity,
+        Plain = 0, XML, LightXML, XunitXML, CSV, TeamCity, TAP,
 #if defined(HAVE_XCTEST)
         XCTest
 #endif
@@ -70,6 +71,8 @@ public:
 
     static void enterTestFunction(const char* function);
     static void leaveTestFunction();
+
+    static void enterTestData(QTestData *data);
 
     static void addPass(const char *msg);
     static void addFail(const char *msg, const char *file, int line);
@@ -110,6 +113,7 @@ public:
     static int failCount();
     static int skipCount();
     static int blacklistCount();
+    static int totalCount();
 
     static void resetCounters();
 

@@ -1,0 +1,46 @@
+TAP version 13
+# tst_DateTime
+ok 1 - initTestCase()
+not ok 2 - dateTime()
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: 2000/05/03 04:03:04.000[UTC] (utc)
+  found: 2000/05/03 04:03:04.000[UTC+00:02] (local)
+  expected: 2000/05/03 04:03:04.000[UTC] (utc)
+  actual: 2000/05/03 04:03:04.000[UTC+00:02] (local)
+  at: tst_DateTime::dateTime() (qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp:52)
+  file: qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp
+  line: 52
+  ...
+ok 3 - qurl(empty urls)
+not ok 4 - qurl(empty rhs)
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: Invalid URL:  (operandB)
+  found: http://example.com (operandA)
+  expected: Invalid URL:  (operandB)
+  actual: http://example.com (operandA)
+  at: tst_DateTime::qurl() (qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp:60)
+  file: qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp
+  line: 60
+  ...
+not ok 5 - qurl(empty lhs)
+  ---
+  type: QCOMPARE
+  message: Compared values are not the same
+  wanted: http://example.com (operandB)
+  found: Invalid URL:  (operandA)
+  expected: http://example.com (operandB)
+  actual: Invalid URL:  (operandA)
+  at: tst_DateTime::qurl() (qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp:60)
+  file: qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp
+  line: 60
+  ...
+ok 6 - qurl(same urls)
+ok 7 - cleanupTestCase()
+1..7
+# tests 7
+# pass 4
+# fail 3

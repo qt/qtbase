@@ -1,0 +1,15 @@
+TAP version 13
+# tst_BenchlibEventCounter
+ok 1 - initTestCase()
+ok 2 - events(0)
+ok 3 - events(1)
+ok 4 - events(10)
+ok 5 - events(100)
+ok 6 - events(500)
+ok 7 - events(5000)
+ok 8 - events(100000)
+ok 9 - cleanupTestCase()
+1..9
+# tests 9
+# pass 9
+# fail 0

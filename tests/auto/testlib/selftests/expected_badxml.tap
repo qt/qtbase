@@ -1,0 +1,61 @@
+TAP version 13
+# tst_BadXml
+ok 1 - initTestCase()
+# a message
+not ok 2 - badDataTag(fail end cdata ]]> text ]]> more text)
+  ---
+  # a failure
+  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:101)
+  file: qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp
+  line: 101
+  ...
+# a message
+ok 3 - badDataTag(pass end cdata ]]> text ]]> more text)
+# a message
+not ok 4 - badDataTag(fail quotes " text" more text)
+  ---
+  # a failure
+  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:101)
+  file: qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp
+  line: 101
+  ...
+# a message
+ok 5 - badDataTag(pass quotes " text" more text)
+# a message
+not ok 6 - badDataTag(fail xml close > open < tags < text)
+  ---
+  # a failure
+  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:101)
+  file: qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp
+  line: 101
+  ...
+# a message
+ok 7 - badDataTag(pass xml close > open < tags < text)
+# a message
+not ok 8 - badDataTag(fail all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs)
+  ---
+  # a failure
+  at: tst_BadXml::badDataTag() (qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp:101)
+  file: qtbase/tests/auto/testlib/selftests/badxml/tst_badxml.cpp
+  line: 101
+  ...
+# a message
+ok 9 - badDataTag(pass all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs)
+# end cdata ]]> text ]]> more text
+ok 10 - badMessage(string 0)
+# quotes " text" more text
+ok 11 - badMessage(string 1)
+# xml close > open < tags < text
+ok 12 - badMessage(string 2)
+# all > " mixed ]]> up > " in < the ]]> hopes < of triggering "< ]]> bugs
+ok 13 - badMessage(string 3)
+not ok 14 - failWithNoFile()
+  ---
+  # failure message
+  ...
+ok 15 - encoding() # SKIP Skipped for text due to unpredictable console encoding.
+ok 16 - cleanupTestCase()
+1..16
+# tests 16
+# pass 10
+# fail 5

@@ -58,6 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QBenchmarkResult;
+class QTestData;
 
 class QAbstractTestLogger
 {
@@ -90,6 +91,8 @@ public:
 
     virtual void enterTestFunction(const char *function) = 0;
     virtual void leaveTestFunction() = 0;
+
+    virtual void enterTestData(QTestData *) {}
 
     virtual void addIncident(IncidentTypes type, const char *description,
                              const char *file = 0, int line = 0) = 0;

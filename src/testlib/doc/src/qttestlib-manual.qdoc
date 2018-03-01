@@ -175,7 +175,7 @@
     \list
     \li \c -o \e{filename,format} \br
     Writes output to the specified file, in the specified format (one of
-    \c txt, \c xml, \c lightxml or \c xunitxml).  The special filename \c -
+    \c txt, \c xml, \c lightxml, \c xunitxml or \c tap).  The special filename \c -
     may be used to log to standard output.
     \li \c -o \e filename \br
     Writes output to the specified file.
@@ -192,6 +192,8 @@
     benchmarks, since it suppresses normal pass/fail messages.
     \li \c -teamcity \br
     Outputs results in TeamCity format.
+    \li \c -tap \br
+    Outputs results in Test Anything Protocol (TAP) format.
     \endlist
 
     The first version of the \c -o option may be repeated in order to log
@@ -199,8 +201,8 @@
     option can log test results to standard output.
 
     If the first version of the \c -o option is used, neither the second version
-    of the \c -o option nor the \c -txt, \c -xml, \c -lightxml, \c -teamcity
-    or \c -xunitxml options should be used.
+    of the \c -o option nor the \c -txt, \c -xml, \c -lightxml, \c -teamcity,
+    \c -xunitxml or \c -tap options should be used.
 
     If neither version of the \c -o option is used, test results will be logged to
     standard output.  If no format option is used, test results will be logged in
