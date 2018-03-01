@@ -1925,8 +1925,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
     painter.setClipRect(er);
 
     if (d->placeholderVisible) {
-        QColor col = d->control->palette().text().color();
-        col.setAlpha(128);
+        const QColor col = d->control->palette().placeholderText().color();
         painter.setPen(col);
         painter.setClipRect(e->rect());
         const int margin = int(document()->documentMargin());

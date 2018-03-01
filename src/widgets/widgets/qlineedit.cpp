@@ -1944,8 +1944,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
         if (!d->placeholderText.isEmpty()) {
             const Qt::LayoutDirection layoutDir = d->placeholderText.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight;
             const Qt::Alignment alignPhText = QStyle::visualAlignment(layoutDir, QFlag(d->alignment));
-            QColor col = pal.text().color();
-            col.setAlpha(128);
+            const QColor col = pal.placeholderText().color();
             QPen oldpen = p.pen();
             p.setPen(col);
             Qt::LayoutDirection oldLayoutDir = p.layoutDirection();

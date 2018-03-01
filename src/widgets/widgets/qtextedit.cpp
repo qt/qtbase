@@ -1516,8 +1516,7 @@ void QTextEditPrivate::paint(QPainter *p, QPaintEvent *e)
         layout->setViewport(QRect());
 
     if (!placeholderText.isEmpty() && doc->isEmpty() && !control->isPreediting()) {
-        QColor col = control->palette().text().color();
-        col.setAlpha(128);
+        const QColor col = control->palette().placeholderText().color();
         p->setPen(col);
         const int margin = int(doc->documentMargin());
         p->drawText(viewport->rect().adjusted(margin, margin, -margin, -margin), Qt::AlignTop | Qt::TextWordWrap, placeholderText);
