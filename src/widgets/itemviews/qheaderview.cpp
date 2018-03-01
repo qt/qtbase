@@ -2191,7 +2191,11 @@ void QHeaderViewPrivate::_q_sectionsAboutToBeChanged(const QList<QPersistentMode
     if (stretchLastSection && lastSectionLogicalIdx >= 0 && lastSectionLogicalIdx < sectionItems.count()) {
         const int visual = visualIndex(lastSectionLogicalIdx);
         if (visual >= 0 && visual < sectionItems.size()) {
-            sectionItems[visual].size = lastSectionSize;
+            auto &itemRef = sectionItems[visual];
+            if (itemRef.size != lastSectionSize) {
+                length += lastSectionSize - itemRef.size;
+                itemRef.size = lastSectionSize;
+            }
         }
     }
     for (int i = 0; i < sectionItems.size(); ++i) {
