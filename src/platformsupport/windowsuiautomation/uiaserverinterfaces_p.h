@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <Unknwn.h>
+#include <unknwn.h>
 
 #ifndef __IRawElementProviderSimple_INTERFACE_DEFINED__
 #define __IRawElementProviderSimple_INTERFACE_DEFINED__

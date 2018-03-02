@@ -2363,6 +2363,7 @@ void tst_QHeaderView::checkLayoutChangeEmptyModel()
     QtTestModel tm;
     tm.cols = 11;
     QTableView tv;
+    tv.verticalHeader()->setStretchLastSection(true);
     tv.setModel(&tm);
 
     const int section4Size = tv.horizontalHeader()->sectionSize(4) + 1;

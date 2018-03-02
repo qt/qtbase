@@ -2502,7 +2502,7 @@ void tst_QAbstractItemView::checkFocusAfterActivationChanges()
     view->setItemDelegate(&delegate);
     w.show();
 
-    QTest::qWaitForWindowActive(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
     QVERIFY(le->hasFocus());
 
     view->setFocus();
@@ -2513,12 +2513,11 @@ void tst_QAbstractItemView::checkFocusAfterActivationChanges()
     QVERIFY(delegate.openedEditor->hasFocus());
 
     QApplication::setActiveWindow(&otherTopLevel);
-    QTest::qWaitForWindowActive(&otherTopLevel);
     otherTopLevel.setFocus();
-    QVERIFY(!delegate.openedEditor);
+    QTRY_VERIFY(!delegate.openedEditor);
 
     QApplication::setActiveWindow(&w);
-    QTest::qWaitForWindowActive(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
     QVERIFY(view->hasFocus());
 }
 

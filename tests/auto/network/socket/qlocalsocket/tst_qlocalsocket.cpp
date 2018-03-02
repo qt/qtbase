@@ -969,12 +969,14 @@ void tst_QLocalSocket::processConnection()
     QProcess producer;
     ProcessOutputDumper producerOutputDumper(&producer);
     QList<QProcess*> consumers;
+    producer.setProcessChannelMode(QProcess::MergedChannels);
     producer.start(socketProcess, serverArguments);
     QVERIFY2(producer.waitForStarted(-1), qPrintable(producer.errorString()));
     for (int i = 0; i < processes; ++i) {
         QStringList arguments = QStringList() << "--client";
         QProcess *p = new QProcess;
         consumers.append(p);
+        p->setProcessChannelMode(QProcess::MergedChannels);
         p->start(socketProcess, arguments);
     }
 

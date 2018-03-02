@@ -2163,9 +2163,11 @@ void QHeaderViewPrivate::_q_sectionsAboutToBeChanged()
     layoutChangePersistentSections.clear();
     layoutChangePersistentSections.reserve(std::min(10, sectionItems.count()));
     // after layoutChanged another section can be last stretched section
-    if (stretchLastSection) {
+    if (stretchLastSection && lastSectionLogicalIdx >= 0 && lastSectionLogicalIdx < sectionItems.count()) {
         const int visual = visualIndex(lastSectionLogicalIdx);
-        sectionItems[visual].size = lastSectionSize;
+        if (visual >= 0 && visual < sectionItems.size()) {
+            sectionItems[visual].size = lastSectionSize;
+        }
     }
     for (int i = 0; i < sectionItems.size(); ++i) {
         auto s = sectionItems.at(i);
@@ -4045,7 +4047,7 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     QVector<SectionItem> newSectionItems;
     for (int u = 0; u < sectionItemsIn.count(); ++u) {
         int count = sectionItemsIn.at(u).tmpDataStreamSectionCount;
-        if (count > 0)
+        if (count > 1)
             sectionItemsIn[u].size /= count;
         for (int n = 0; n < count; ++n)
             newSectionItems.append(sectionItemsIn[u]);
