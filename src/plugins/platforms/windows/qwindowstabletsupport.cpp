@@ -421,7 +421,8 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
     //    in which case we snap the position to the mouse position.
     // It seems there is no way to find out the mode programmatically, the LOGCONTEXT orgX/Y/Ext
     // area is always the virtual desktop.
-    const QRect virtualDesktopArea = QGuiApplication::primaryScreen()->virtualGeometry();
+    const QRect virtualDesktopArea =
+        QWindowsScreen::virtualGeometry(QGuiApplication::primaryScreen()->handle());
 
     qCDebug(lcQpaTablet) << __FUNCTION__ << "processing " << packetCount
         << "target:" << QGuiApplicationPrivate::tabletDevicePoint(uniqueId).target;
@@ -455,7 +456,9 @@ bool QWindowsTabletSupport::translateTabletPacketEvent()
         if (!target)
             continue;
 
-        const QPoint localPos = target->mapFromGlobal(globalPos);
+        const QPlatformWindow *platformWindow = target->handle();
+        Q_ASSERT(platformWindow);
+        const QPoint localPos = platformWindow->mapFromGlobal(globalPos);
 
         const qreal pressureNew = packet.pkButtons && (currentPointer == QTabletEvent::Pen || currentPointer == QTabletEvent::Eraser) ?
             m_devices.at(m_currentDevice).scalePressure(packet.pkNormalPressure) :
