@@ -48,9 +48,7 @@
 
 #include <errno.h>
 
-#if QT_CONFIG(getentropy)
-#  include <sys/random.h>
-#elif !defined(Q_OS_BSD4) && !defined(Q_OS_WIN)
+#if !QT_CONFIG(getentropy) && !defined(Q_OS_BSD4) && !defined(Q_OS_WIN)
 #  include "qdeadlinetimer.h"
 #  include "qhashfunctions.h"
 
