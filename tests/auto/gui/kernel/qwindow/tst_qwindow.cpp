@@ -1726,9 +1726,6 @@ void tst_QWindow::tabletEvents()
 
 void tst_QWindow::windowModality_QTBUG27039()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
-
     QWindow parent;
     parent.setGeometry(QRect(m_availableTopLeft + QPoint(10, 10), m_testWindowSize));
     parent.show();
