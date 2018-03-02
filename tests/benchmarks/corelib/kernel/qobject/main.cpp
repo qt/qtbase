@@ -133,7 +133,8 @@ void QObjectBenchmark::qproperty_benchmark_data()
     const QMetaObject *mo = &QTreeView::staticMetaObject;
     for (int i = 0; i < mo->propertyCount(); ++i) {
         QMetaProperty prop = mo->property(i);
-        QTest::newRow(prop.name()) << QByteArray(prop.name());
+        if (prop.isWritable())
+            QTest::newRow(prop.name()) << QByteArray(prop.name());
     }
 }
 
