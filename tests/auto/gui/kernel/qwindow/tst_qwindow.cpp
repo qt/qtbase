@@ -1337,6 +1337,9 @@ void tst_QWindow::touchCancelWithTouchToMouse()
 
 void tst_QWindow::touchInterruptedByPopup()
 {
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This test crashes with xdg-shell unstable v6");
+
     InputTestWindow window;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
     window.show();
@@ -2029,6 +2032,9 @@ void tst_QWindow::modalWindowPosition()
 #ifndef QT_NO_CURSOR
 void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
 {
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: QWindow::requestActivate() is not supported");
+
     if (isPlatformOffscreenOrMinimal())
         QSKIP("Can't test window focusing on offscreen/minimal");
 
