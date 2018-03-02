@@ -674,6 +674,9 @@ void Moc::parse()
                 if (test(NAMESPACE)) {
                     while (test(SCOPE) || test(IDENTIFIER))
                         ;
+                    // Ignore invalid code such as: 'using namespace __identifier("x")' (QTBUG-63772)
+                    if (test(LPAREN))
+                        until(RPAREN);
                     next(SEMIC);
                 }
                 break;
