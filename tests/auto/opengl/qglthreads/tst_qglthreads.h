@@ -39,7 +39,6 @@ public:
 
 private slots:
     void swapInThread();
-    void textureUploadInThread();
 
     void renderInThread_data();
     void renderInThread();

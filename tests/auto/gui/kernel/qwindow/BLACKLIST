@@ -21,3 +21,5 @@ osx-10.12 ci
 
 [testInputEvents]
 rhel-7.4
+# QTBUG-66798
+windows
