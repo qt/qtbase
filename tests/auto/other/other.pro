@@ -16,7 +16,6 @@ SUBDIRS=\
    qcomplextext \
    qfocusevent \
    qnetworkaccessmanager_and_qprogressdialog \
-   qobjectperformance \
    qobjectrace \
    qsharedpointer_and_qwidget \
    qprocess_and_guieventloop \
@@ -44,7 +43,6 @@ SUBDIRS=\
    lancelot \
    networkselftest \
    qnetworkaccessmanager_and_qprogressdialog \
-   qobjectperformance
 
 cross_compile: SUBDIRS -= \
    atwrapper \
