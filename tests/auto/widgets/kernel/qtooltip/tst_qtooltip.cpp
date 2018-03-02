@@ -28,6 +28,8 @@
 
 
 #include <QtTest/QtTest>
+#include <qfont.h>
+#include <qfontmetrics.h>
 #include <qtooltip.h>
 #include <qwhatsthis.h>
 #include <qscreen.h>
@@ -43,6 +45,7 @@ private slots:
     void task183679();
     void whatsThis();
     void setPalette();
+    void qtbug64550_stylesheet();
 };
 
 void tst_QToolTip::init()
@@ -53,6 +56,7 @@ void tst_QToolTip::init()
 void tst_QToolTip::cleanup()
 {
     QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
+    qApp->setStyleSheet(QString());
 }
 
 class Widget_task183679 : public QWidget
@@ -66,10 +70,12 @@ public:
         QTimer::singleShot(msecs, this, SLOT(showToolTip()));
     }
 
+    static inline QString toolTipText() { return QStringLiteral("tool tip text"); }
+
 private slots:
     void showToolTip()
     {
-        QToolTip::showText(mapToGlobal(QPoint(0, 0)), "tool tip text", this);
+        QToolTip::showText(mapToGlobal(QPoint(0, 0)), Widget_task183679::toolTipText(), this);
     }
 };
 
@@ -146,6 +152,15 @@ void tst_QToolTip::whatsThis()
     QVERIFY2(whatsThisHeight > 100, QByteArray::number(whatsThisHeight)); // Test QTBUG-2416
 }
 
+static QWidget *findToolTip()
+{
+    const QWidgetList &topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets) {
+        if (widget->windowType() == Qt::ToolTip && widget->objectName() == QLatin1String("qtooltip_label"))
+            return widget;
+    }
+    return nullptr;
+}
 
 void tst_QToolTip::setPalette()
 {
@@ -156,16 +171,7 @@ void tst_QToolTip::setPalette()
 
     QTRY_VERIFY(QToolTip::isVisible());
 
-    QWidget *toolTip = 0;
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
-        if (widget->windowType() == Qt::ToolTip
-            && widget->objectName() == QLatin1String("qtooltip_label"))
-        {
-            toolTip = widget;
-            break;
-        }
-    }
-
+    QWidget *toolTip = findToolTip();
     QVERIFY(toolTip);
     QTRY_VERIFY(toolTip->isVisible());
 
@@ -176,6 +182,40 @@ void tst_QToolTip::setPalette()
     QToolTip::setPalette(newPalette);
     QCOMPARE(toolTip->palette(), newPalette);
     QToolTip::hideText();
+}
+
+static QByteArray msgSizeTooSmall(const QSize &actual, const QSize &expected)
+{
+    return QByteArray::number(actual.width()) + 'x'
+        + QByteArray::number(actual.height()) + " < "
+        + QByteArray::number(expected.width())  + 'x'
+        + QByteArray::number(expected.height());
+}
+
+// QTBUG-4550: When setting a style sheet specifying a font size on the tooltip's
+// parent widget (as opposed to setting on QApplication), the tooltip should
+// resize accordingly. This is an issue on Windows since the ToolTip widget is
+// not directly parented on the widget itself.
+// Set a large font size and verify that the tool tip is big enough.
+void tst_QToolTip::qtbug64550_stylesheet()
+{
+    Widget_task183679 widget;
+    widget.setStyleSheet(QStringLiteral("* { font-size: 48pt; }\n"));
+    widget.show();
+    QApplication::setActiveWindow(&widget);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+
+    widget.showDelayedToolTip(100);
+    QTRY_VERIFY(QToolTip::isVisible());
+    QWidget *toolTip = findToolTip();
+    QVERIFY(toolTip);
+    QTRY_VERIFY(toolTip->isVisible());
+
+    const QRect boundingRect = QFontMetrics(widget.font()).boundingRect(Widget_task183679::toolTipText());
+    const QSize toolTipSize = toolTip->size();
+    QVERIFY2(toolTipSize.width() >= boundingRect.width()
+             && toolTipSize.height() >= boundingRect.height(),
+             msgSizeTooSmall(toolTipSize, boundingRect.size()).constData());
 }
 
 QTEST_MAIN(tst_QToolTip)

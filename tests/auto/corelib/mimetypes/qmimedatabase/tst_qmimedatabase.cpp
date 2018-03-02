@@ -1045,6 +1045,31 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QCOMPARE(db.mimeTypeForFile(qmlTestFile).name(),
              QString::fromLatin1("text/x-qml"));
 
+    // Now that we have two directories with mime definitions, check that everything still works
+    inheritance();
+    if (QTest::currentTestFailed())
+        return;
+
+    aliases();
+    if (QTest::currentTestFailed())
+        return;
+
+    icons();
+    if (QTest::currentTestFailed())
+        return;
+
+    comment();
+    if (QTest::currentTestFailed())
+        return;
+
+    mimeTypeForFileWithContent();
+    if (QTest::currentTestFailed())
+        return;
+
+    mimeTypeForName();
+    if (QTest::currentTestFailed())
+        return;
+
     // Now test removing local mimetypes
     for (int i = 1 ; i <= 3 ; ++i)
         QFile::remove(destDir + QStringLiteral("invalid-magic%1.xml").arg(i));

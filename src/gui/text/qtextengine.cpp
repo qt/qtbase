@@ -45,6 +45,7 @@
 #include "qabstracttextdocumentlayout.h"
 #include "qtextlayout.h"
 #include "qtextboundaryfinder.h"
+#include <QtCore/private/qunicodetables_p.h>
 #include "qvarlengtharray.h"
 #include "qfont.h"
 #include "qfont_p.h"
@@ -207,567 +208,938 @@ private:
     QScriptItemArray &m_items;
     QTextBoundaryFinder *m_splitter;
 };
-}
 
-
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------
 //
-// The BiDi algorithm
+// The Unicode Bidi algorithm.
+// See http://www.unicode.org/reports/tr9/tr9-37.html
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------
 
-#define BIDI_DEBUG 0
-#if (BIDI_DEBUG >= 1)
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <iostream>
-QT_END_INCLUDE_NAMESPACE
-using namespace std;
-
+// #define DEBUG_BIDI
+#ifndef DEBUG_BIDI
+enum { BidiDebugEnabled = false };
+#define BIDI_DEBUG if (1) ; else qDebug
+#else
+enum { BidiDebugEnabled = true };
 static const char *directions[] = {
     "DirL", "DirR", "DirEN", "DirES", "DirET", "DirAN", "DirCS", "DirB", "DirS", "DirWS", "DirON",
     "DirLRE", "DirLRO", "DirAL", "DirRLE", "DirRLO", "DirPDF", "DirNSM", "DirBN",
     "DirLRI", "DirRLI", "DirFSI", "DirPDI"
 };
-
-#endif
-
-struct QBidiStatus {
-    QBidiStatus() {
-        eor = QChar::DirON;
-        lastStrong = QChar::DirON;
-        last = QChar:: DirON;
-        dir = QChar::DirON;
-    }
-    QChar::Direction eor;
-    QChar::Direction lastStrong;
-    QChar::Direction last;
-    QChar::Direction dir;
-};
-
-enum { MaxBidiLevel = 61 };
-
-struct QBidiControl {
-    inline QBidiControl(bool rtl)
-        : cCtx(0), base(rtl ? 1 : 0), level(rtl ? 1 : 0), override(false) {}
-
-    inline void embed(bool rtl, bool o = false) {
-        unsigned int toAdd = 1;
-        if((level%2 != 0) == rtl ) {
-            ++toAdd;
-        }
-        if (level + toAdd <= MaxBidiLevel) {
-            ctx[cCtx].level = level;
-            ctx[cCtx].override = override;
-            cCtx++;
-            override = o;
-            level += toAdd;
-        }
-    }
-    inline bool canPop() const { return cCtx != 0; }
-    inline void pdf() {
-        Q_ASSERT(cCtx);
-        --cCtx;
-        level = ctx[cCtx].level;
-        override = ctx[cCtx].override;
-    }
-
-    inline QChar::Direction basicDirection() const {
-        return (base ? QChar::DirR : QChar:: DirL);
-    }
-    inline unsigned int baseLevel() const {
-        return base;
-    }
-    inline QChar::Direction direction() const {
-        return ((level%2) ? QChar::DirR : QChar:: DirL);
-    }
-
-    struct {
-        unsigned int level;
-        bool override;
-    } ctx[MaxBidiLevel];
-    unsigned int cCtx;
-    const unsigned int base;
-    unsigned int level;
-    bool override;
-};
-
-
-static void appendItems(QScriptAnalysis *analysis, int &start, int &stop, const QBidiControl &control, QChar::Direction dir)
-{
-    if (start > stop)
-        return;
-
-    int level = control.level;
-
-    if(dir != QChar::DirON && !control.override) {
-        // add level of run (cases I1 & I2)
-        if(level % 2) {
-            if(dir == QChar::DirL || dir == QChar::DirAN || dir == QChar::DirEN)
-                level++;
-        } else {
-            if(dir == QChar::DirR)
-                level++;
-            else if(dir == QChar::DirAN || dir == QChar::DirEN)
-                level += 2;
-        }
-    }
-
-#if (BIDI_DEBUG >= 1)
-    qDebug("new run: dir=%s from %d, to %d level = %d override=%d", directions[dir], start, stop, level, control.override);
-#endif
-    QScriptAnalysis *s = analysis + start;
-    const QScriptAnalysis *e = analysis + stop;
-    while (s <= e) {
-        s->bidiLevel = level;
-        ++s;
-    }
-    ++stop;
-    start = stop;
+#define BIDI_DEBUG qDebug
+QDebug operator<<(QDebug d, QChar::Direction dir) {
+    return (d << directions[dir]);
 }
+#endif
 
-static QChar::Direction skipBoundryNeutrals(QScriptAnalysis *analysis,
-                                            const ushort *unicode, int length,
-                                            int &sor, int &eor, QBidiControl &control)
-{
-    QChar::Direction dir = control.basicDirection();
-    int level = sor > 0 ? analysis[sor - 1].bidiLevel : control.level;
-    while (sor < length) {
-        dir = QChar::direction(unicode[sor]);
-        // Keep skipping DirBN as if it doesn't exist
-        if (dir != QChar::DirBN)
-            break;
-        analysis[sor++].bidiLevel = level;
+struct QBidiAlgorithm {
+    template<typename T> using Vector = QVarLengthArray<T, 64>;
+
+    QBidiAlgorithm(const QChar *text, QScriptAnalysis *analysis, int length, bool baseDirectionIsRtl)
+        : text(text),
+          analysis(analysis),
+          length(length),
+          baseLevel(baseDirectionIsRtl ? 1 : 0)
+    {
+
     }
 
-    eor = sor;
-    if (eor == length)
-        dir = control.basicDirection();
+    struct IsolatePair {
+        int start;
+        int end;
+    };
 
-    return dir;
-}
+    void initScriptAnalysisAndIsolatePairs(Vector<IsolatePair> &isolatePairs)
+    {
+        isolatePairs.append({ -1, length }); // treat the whole string as one isolate
 
-// creates the next QScript items.
-static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiControl &control)
-{
-    bool rightToLeft = (control.basicDirection() == 1);
-    bool hasBidi = rightToLeft;
-#if BIDI_DEBUG >= 2
-    qDebug() << "bidiItemize: rightToLeft=" << rightToLeft << engine->layoutData->string;
-#endif
-
-    int sor = 0;
-    int eor = -1;
-
-
-    int length = engine->layoutData->string.length();
-
-    const ushort *unicode = (const ushort *)engine->layoutData->string.unicode();
-    int current = 0;
-
-    QChar::Direction dir = rightToLeft ? QChar::DirR : QChar::DirL;
-    QBidiStatus status;
-
-    QChar::Direction sdir = QChar::direction(*unicode);
-    if (sdir != QChar::DirL && sdir != QChar::DirR && sdir != QChar::DirEN && sdir != QChar::DirAN)
-        sdir = QChar::DirON;
-    else
-        dir = QChar::DirON;
-    status.eor = sdir;
-    status.lastStrong = rightToLeft ? QChar::DirR : QChar::DirL;
-    status.last = status.lastStrong;
-    status.dir = sdir;
-
-
-    while (current <= length) {
-
-        QChar::Direction dirCurrent;
-        if (current == (int)length)
-            dirCurrent = control.basicDirection();
-        else
-            dirCurrent = QChar::direction(unicode[current]);
-
-#if (BIDI_DEBUG >= 2)
-//         qDebug() << "pos=" << current << " dir=" << directions[dir]
-//                  << " current=" << directions[dirCurrent] << " last=" << directions[status.last]
-//                  << " eor=" << eor << '/' << directions[status.eor]
-//                  << " sor=" << sor << " lastStrong="
-//                  << directions[status.lastStrong]
-//                  << " level=" << (int)control.level << " override=" << (bool)control.override;
-#endif
-
-        switch(dirCurrent) {
-
-            // embedding and overrides (X1-X9 in the BiDi specs)
-        case QChar::DirRLE:
-        case QChar::DirRLO:
-        case QChar::DirLRE:
-        case QChar::DirLRO:
-            {
-                bool rtl = (dirCurrent == QChar::DirRLE || dirCurrent == QChar::DirRLO);
-                hasBidi |= rtl;
-                bool override = (dirCurrent == QChar::DirLRO || dirCurrent == QChar::DirRLO);
-
-                unsigned int level = control.level+1;
-                if ((level%2 != 0) == rtl) ++level;
-                if(level < MaxBidiLevel) {
-                    eor = current-1;
-                    appendItems(analysis, sor, eor, control, dir);
-                    eor = current;
-                    control.embed(rtl, override);
-                    QChar::Direction edir = (rtl ? QChar::DirR : QChar::DirL);
-                    dir = status.eor = edir;
-                    status.lastStrong = edir;
+        int isolateStack[128];
+        int isolateLevel = 0;
+        // load directions of string, and determine isolate pairs
+        for (int i = 0; i < length; ++i) {
+            int pos = i;
+            uint uc = text[i].unicode();
+            if (QChar::isHighSurrogate(uc) && i < length - 1) {
+                ++i;
+                analysis[i].bidiDirection = QChar::DirNSM;
+                uc = QChar::surrogateToUcs4(ushort(uc), text[i].unicode());
+            }
+            const QUnicodeTables::Properties *p = QUnicodeTables::properties(uc);
+            analysis[pos].bidiDirection = QChar::Direction(p->direction);
+            switch (QChar::Direction(p->direction)) {
+            case QChar::DirON:
+                // all mirrored chars are DirON
+                if (p->mirrorDiff)
+                    analysis[pos].bidiFlags = QScriptAnalysis::BidiMirrored;
+                break;
+            case QChar::DirLRE:
+            case QChar::DirRLE:
+            case QChar::DirLRO:
+            case QChar::DirRLO:
+            case QChar::DirPDF:
+            case QChar::DirBN:
+                analysis[pos].bidiFlags = QScriptAnalysis::BidiMaybeResetToParagraphLevel|QScriptAnalysis::BidiBN;
+                break;
+            case QChar::DirLRI:
+            case QChar::DirRLI:
+            case QChar::DirFSI:
+                if (isolateLevel < 128) {
+                    isolateStack[isolateLevel] = isolatePairs.size();
+                    isolatePairs.append({ pos, length });
                 }
+                ++isolateLevel;
+                analysis[pos].bidiFlags = QScriptAnalysis::BidiMaybeResetToParagraphLevel;
+                break;
+            case QChar::DirPDI:
+                if (isolateLevel > 0) {
+                    --isolateLevel;
+                    if (isolateLevel < 128)
+                        isolatePairs[isolateStack[isolateLevel]].end = pos;
+                }
+                Q_FALLTHROUGH();
+            case QChar::DirWS:
+                analysis[pos].bidiFlags = QScriptAnalysis::BidiMaybeResetToParagraphLevel;
+                break;
+            case QChar::DirS:
+            case QChar::DirB:
+                analysis[pos].bidiFlags = QScriptAnalysis::BidiResetToParagraphLevel;
+                break;
+            default:
                 break;
             }
-        case QChar::DirPDF:
-            {
-                if (control.canPop()) {
-                    if (dir != control.direction()) {
-                        eor = current-1;
-                        appendItems(analysis, sor, eor, control, dir);
-                        dir = control.direction();
-                    }
-                    eor = current;
-                    appendItems(analysis, sor, eor, control, dir);
-                    control.pdf();
-                    dir = QChar::DirON; status.eor = QChar::DirON;
-                    status.last = control.direction();
-                    if (control.override)
-                        dir = control.direction();
-                    else
-                        dir = QChar::DirON;
-                    status.lastStrong = control.direction();
+        }
+    }
+
+    struct DirectionalRun {
+        int start;
+        int end;
+        int continuation;
+        ushort level;
+        bool isContinuation;
+        bool hasContent;
+    };
+
+    void generateDirectionalRuns(const Vector<IsolatePair> &isolatePairs, Vector<DirectionalRun> &runs)
+    {
+        struct DirectionalStack {
+            enum { MaxDepth = 125 };
+            struct Item {
+                ushort level;
+                bool isOverride;
+                bool isIsolate;
+                int runBeforeIsolate;
+            };
+            Item items[128];
+            int counter = 0;
+
+            void push(Item i) {
+                items[counter] = i;
+                ++counter;
+            }
+            void pop() {
+                --counter;
+            }
+            int depth() const {
+                return counter;
+            }
+            const Item &top() const {
+                return items[counter - 1];
+            }
+        } stack;
+        int overflowIsolateCount = 0;
+        int overflowEmbeddingCount = 0;
+        int validIsolateCount = 0;
+
+        ushort level = baseLevel;
+        bool override = false;
+        stack.push({ level, false, false, -1 });
+
+        BIDI_DEBUG() << "resolving explicit levels";
+        int runStart = 0;
+        int continuationFrom = -1;
+        int lastRunWithContent = -1;
+        bool runHasContent = false;
+
+        auto appendRun = [&](int runEnd) {
+            if (runEnd < runStart)
+                return;
+            bool isContinuation = false;
+            if (continuationFrom != -1) {
+                runs[continuationFrom].continuation = runs.size();
+                isContinuation = true;
+            } else if (lastRunWithContent != -1 && level == runs.at(lastRunWithContent).level) {
+                runs[lastRunWithContent].continuation = runs.size();
+                isContinuation = true;
+            }
+            if (runHasContent)
+                lastRunWithContent = runs.size();
+            BIDI_DEBUG() << "   appending run start/end" << runStart << runEnd << "level" << level;
+            runs.append({ runStart, runEnd, -1, level, isContinuation, runHasContent });
+            runHasContent = false;
+            runStart = runEnd + 1;
+            continuationFrom = -1;
+        };
+
+        int isolatePairPosition = 0;
+
+        for (int i = 0; i < length; ++i) {
+            QChar::Direction dir = analysis[i].bidiDirection;
+
+
+            auto doEmbed = [&](bool isRtl, bool isOverride, bool isIsolate) {
+                if (isIsolate) {
+                    if (override)
+                        analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
+                    runHasContent = true;
+                    lastRunWithContent = -1;
                 }
+                int runBeforeIsolate = runs.size();
+                ushort newLevel = isRtl ? ((stack.top().level + 1) | 1) : ((stack.top().level + 2) & ~1);
+                if (newLevel <= DirectionalStack::MaxDepth && !overflowEmbeddingCount && !overflowIsolateCount) {
+                    if (isIsolate)
+                        ++validIsolateCount;
+                    else
+                        runBeforeIsolate = -1;
+                    appendRun(isIsolate ? i : i - 1);
+                    BIDI_DEBUG() << "pushing new item on stack: level" << (int)newLevel << "isOverride" << isOverride << "isIsolate" << isIsolate << runBeforeIsolate;
+                    stack.push({ newLevel, isOverride, isIsolate, runBeforeIsolate });
+                    override = isOverride;
+                    level = newLevel;
+                } else {
+                    if (isIsolate)
+                        ++overflowIsolateCount;
+                    else if (!overflowIsolateCount)
+                        ++overflowEmbeddingCount;
+                }
+                if (!isIsolate) {
+                    if (override)
+                        analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
+                    else
+                        analysis[i].bidiDirection = QChar::DirBN;
+                }
+            };
+
+            switch (dir) {
+            case QChar::DirLRE:
+                doEmbed(false, false, false);
+                break;
+            case QChar::DirRLE:
+                doEmbed(true, false, false);
+                break;
+            case QChar::DirLRO:
+                doEmbed(false, true, false);
+                break;
+            case QChar::DirRLO:
+                doEmbed(true, true, false);
+                break;
+            case QChar::DirLRI:
+                ++isolatePairPosition;
+                Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
+                doEmbed(false, false, true);
+                break;
+            case QChar::DirRLI:
+                ++isolatePairPosition;
+                Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
+                doEmbed(true, false, true);
+                break;
+            case QChar::DirFSI: {
+                ++isolatePairPosition;
+                const auto &pair = isolatePairs.at(isolatePairPosition);
+                Q_ASSERT(pair.start == i);
+                bool isRtl = QStringView(text + pair.start + 1, pair.end - pair.start - 1).isRightToLeft();
+                doEmbed(isRtl, false, true);
                 break;
             }
 
-            // strong types
-        case QChar::DirL:
-            if(dir == QChar::DirON)
-                dir = QChar::DirL;
-            switch(status.last)
-                {
-                case QChar::DirL:
-                    eor = current; status.eor = QChar::DirL; break;
-                case QChar::DirR:
-                case QChar::DirAL:
-                case QChar::DirEN:
-                case QChar::DirAN:
-                    if (eor >= 0) {
-                        appendItems(analysis, sor, eor, control, dir);
-                        status.eor = dir = skipBoundryNeutrals(analysis, unicode, length, sor, eor, control);
-                    } else {
-                        eor = current; status.eor = dir;
-                    }
-                    break;
-                case QChar::DirES:
-                case QChar::DirET:
-                case QChar::DirCS:
-                case QChar::DirBN:
-                case QChar::DirB:
-                case QChar::DirS:
-                case QChar::DirWS:
-                case QChar::DirON:
-                    if(dir != QChar::DirL) {
-                        //last stuff takes embedding dir
-                        if(control.direction() == QChar::DirR) {
-                            if(status.eor != QChar::DirR) {
-                                // AN or EN
-                                appendItems(analysis, sor, eor, control, dir);
-                                status.eor = QChar::DirON;
-                                dir = QChar::DirR;
-                            }
-                            eor = current - 1;
-                            appendItems(analysis, sor, eor, control, dir);
-                            status.eor = dir = skipBoundryNeutrals(analysis, unicode, length, sor, eor, control);
-                        } else {
-                            if(status.eor != QChar::DirL) {
-                                appendItems(analysis, sor, eor, control, dir);
-                                status.eor = QChar::DirON;
-                                dir = QChar::DirL;
-                            } else {
-                                eor = current; status.eor = QChar::DirL; break;
-                            }
-                        }
-                    } else {
-                        eor = current; status.eor = QChar::DirL;
-                    }
-                default:
-                    break;
+            case QChar::DirPDF:
+                if (override)
+                    analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
+                else
+                    analysis[i].bidiDirection = QChar::DirBN;
+                if (overflowIsolateCount) {
+                    ; // do nothing
+                } else if (overflowEmbeddingCount) {
+                    --overflowEmbeddingCount;
+                } else if (!stack.top().isIsolate && stack.depth() >= 2) {
+                    appendRun(i);
+                    stack.pop();
+                    override = stack.top().isOverride;
+                    level = stack.top().level;
+                    BIDI_DEBUG() << "popped PDF from stack, level now" << (int)stack.top().level;
                 }
-            status.lastStrong = QChar::DirL;
-            break;
-        case QChar::DirAL:
-        case QChar::DirR:
-            hasBidi = true;
-            if(dir == QChar::DirON) dir = QChar::DirR;
-            switch(status.last)
-                {
-                case QChar::DirL:
-                case QChar::DirEN:
-                case QChar::DirAN:
-                    if (eor >= 0)
-                        appendItems(analysis, sor, eor, control, dir);
-                    Q_FALLTHROUGH();
-                case QChar::DirR:
-                case QChar::DirAL:
-                    dir = QChar::DirR; eor = current; status.eor = QChar::DirR; break;
-                case QChar::DirES:
-                case QChar::DirET:
-                case QChar::DirCS:
-                case QChar::DirBN:
-                case QChar::DirB:
-                case QChar::DirS:
-                case QChar::DirWS:
-                case QChar::DirON:
-                    if(status.eor != QChar::DirR && status.eor != QChar::DirAL) {
-                        //last stuff takes embedding dir
-                        if(control.direction() == QChar::DirR
-                           || status.lastStrong == QChar::DirR || status.lastStrong == QChar::DirAL) {
-                            appendItems(analysis, sor, eor, control, dir);
-                            dir = QChar::DirR; status.eor = QChar::DirON;
-                            eor = current;
-                        } else {
-                            eor = current - 1;
-                            appendItems(analysis, sor, eor, control, dir);
-                            dir = QChar::DirR; status.eor = QChar::DirON;
-                        }
-                    } else {
-                        eor = current; status.eor = QChar::DirR;
-                    }
-                default:
-                    break;
+                break;
+            case QChar::DirPDI:
+                runHasContent = true;
+                if (overflowIsolateCount) {
+                    --overflowIsolateCount;
+                } else if (validIsolateCount == 0) {
+                    ; // do nothing
+                } else {
+                    appendRun(i - 1);
+                    overflowEmbeddingCount = 0;
+                    while (!stack.top().isIsolate)
+                        stack.pop();
+                    continuationFrom = stack.top().runBeforeIsolate;
+                    BIDI_DEBUG() << "popped PDI from stack, level now" << (int)stack.top().level << "continuation from" << continuationFrom;
+                    stack.pop();
+                    override = stack.top().isOverride;
+                    level = stack.top().level;
+                    lastRunWithContent = -1;
+                    --validIsolateCount;
                 }
-            status.lastStrong = dirCurrent;
-            break;
+                if (override)
+                    analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
+                break;
+            case QChar::DirB:
+                // paragraph separator, go down to base direction
+                appendRun(i - 1);
+                while (stack.counter > 1) {
+                    // there might be remaining isolates on the stack that are missing a PDI. Those need to get
+                    // a continuation indicating to take the eos from the end of the string (ie. the paragraph level)
+                    const auto &t = stack.top();
+                    if (t.isIsolate) {
+                        runs[t.runBeforeIsolate].continuation = -2;
+                    }
+                    --stack.counter;
+                }
+                break;
+            default:
+                runHasContent = true;
+                Q_FALLTHROUGH();
+            case QChar::DirBN:
+                if (override)
+                    analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
+                break;
+            }
+        }
+        appendRun(length - 1);
+        while (stack.counter > 1) {
+            // there might be remaining isolates on the stack that are missing a PDI. Those need to get
+            // a continuation indicating to take the eos from the end of the string (ie. the paragraph level)
+            const auto &t = stack.top();
+            if (t.isIsolate) {
+                runs[t.runBeforeIsolate].continuation = -2;
+            }
+            --stack.counter;
+        }
+    }
 
-            // weak types:
+    void resolveExplicitLevels(Vector<DirectionalRun> &runs)
+    {
+        Vector<IsolatePair> isolatePairs;
 
-        case QChar::DirNSM:
-            if (eor == current-1)
-                eor = current;
-            break;
-        case QChar::DirEN:
-            // if last strong was AL change EN to AN
-            if(status.lastStrong != QChar::DirAL) {
-                if(dir == QChar::DirON) {
-                    if(status.lastStrong == QChar::DirL)
-                        dir = QChar::DirL;
-                    else
-                        dir = QChar::DirEN;
+        initScriptAnalysisAndIsolatePairs(isolatePairs);
+        generateDirectionalRuns(isolatePairs, runs);
+    }
+
+    struct IsolatedRunSequenceIterator {
+        struct Position {
+            int current = -1;
+            int pos = -1;
+
+            Position() = default;
+            Position(int current, int pos) : current(current), pos(pos) {}
+
+            bool isValid() const { return pos != -1; }
+            void clear() { pos = -1; }
+        };
+        IsolatedRunSequenceIterator(const Vector<DirectionalRun> &runs, int i)
+            : runs(runs),
+              current(i)
+        {
+            pos = runs.at(current).start;
+        }
+        int operator *() const { return pos; }
+        bool atEnd() const { return pos < 0; }
+        void operator++() {
+            ++pos;
+            if (pos > runs.at(current).end) {
+                current = runs.at(current).continuation;
+                if (current > -1)
+                    pos = runs.at(current).start;
+                else
+                    pos = -1;
+            }
+        }
+        void setPosition(Position p) {
+            current = p.current;
+            pos = p.pos;
+        }
+        Position position() const {
+            return Position(current, pos);
+        }
+        bool operator !=(int position) const {
+            return pos != position;
+        }
+
+        const Vector<DirectionalRun> &runs;
+        int current;
+        int pos;
+    };
+
+
+    void resolveW1W2W3(const Vector<DirectionalRun> &runs, int i, QChar::Direction sos)
+    {
+        QChar::Direction last = sos;
+        QChar::Direction lastStrong = sos;
+        IsolatedRunSequenceIterator it(runs, i);
+        while (!it.atEnd()) {
+            int pos = *it;
+
+            // Rule W1: Resolve NSM
+            QChar::Direction current = analysis[pos].bidiDirection;
+            if (current == QChar::DirNSM) {
+                current = last;
+                analysis[pos].bidiDirection = current;
+            } else if (current >= QChar::DirLRI) {
+                last = QChar::DirON;
+            } else if (current == QChar::DirBN) {
+                current = last;
+            } else {
+                Q_ASSERT(current != QChar::DirLRE && current != QChar::DirRLE && current != QChar::DirLRO && current != QChar::DirRLO && current != QChar::DirPDF); // there shouldn't be any explicit embedding marks here
+                last = current;
+            }
+
+            // Rule W2
+            if (current == QChar::DirEN && lastStrong == QChar::DirAL) {
+                current = QChar::DirAN;
+                analysis[pos].bidiDirection = current;
+            }
+
+            // remember last strong char for rule W2
+            if (current == QChar::DirL || current == QChar::DirR) {
+                lastStrong = current;
+            } else if (current == QChar::DirAL) {
+                // Rule W3
+                lastStrong = current;
+                analysis[pos].bidiDirection = QChar::DirR;
+            }
+            last = current;
+            ++it;
+        }
+    }
+
+
+    void resolveW4(const Vector<DirectionalRun> &runs, int i, QChar::Direction sos)
+    {
+        // Rule W4
+        QChar::Direction secondLast = sos;
+
+        IsolatedRunSequenceIterator it(runs, i);
+        int lastPos = *it;
+        QChar::Direction last = analysis[lastPos].bidiDirection;
+
+//            BIDI_DEBUG() << "Applying rule W4/W5";
+        ++it;
+        while (!it.atEnd()) {
+            int pos = *it;
+            QChar::Direction current = analysis[pos].bidiDirection;
+            if (current == QChar::DirBN) {
+                ++it;
+                continue;
+            }
+//                BIDI_DEBUG() << pos << secondLast << last << current;
+            if (last == QChar::DirES && current == QChar::DirEN && secondLast == QChar::DirEN) {
+                last = QChar::DirEN;
+                analysis[lastPos].bidiDirection = last;
+            } else if (last == QChar::DirCS) {
+                if (current == QChar::DirEN && secondLast == QChar::DirEN) {
+                    last = QChar::DirEN;
+                    analysis[lastPos].bidiDirection = last;
+                } else if (current == QChar::DirAN && secondLast == QChar::DirAN) {
+                    last = QChar::DirAN;
+                    analysis[lastPos].bidiDirection = last;
                 }
-                switch(status.last)
-                    {
-                    case QChar::DirET:
-                        if (status.lastStrong == QChar::DirR || status.lastStrong == QChar::DirAL) {
-                            appendItems(analysis, sor, eor, control, dir);
-                            status.eor = QChar::DirON;
-                            dir = QChar::DirAN;
-                        }
-                        Q_FALLTHROUGH();
-                    case QChar::DirEN:
-                    case QChar::DirL:
-                        eor = current;
-                        status.eor = dirCurrent;
+            }
+            secondLast = last;
+            last = current;
+            lastPos = pos;
+            ++it;
+        }
+    }
+
+    void resolveW5(const Vector<DirectionalRun> &runs, int i)
+    {
+        // Rule W5
+        IsolatedRunSequenceIterator::Position lastETPosition;
+
+        IsolatedRunSequenceIterator it(runs, i);
+        int lastPos = *it;
+        QChar::Direction last = analysis[lastPos].bidiDirection;
+        if (last == QChar::DirET || last == QChar::DirBN)
+            lastETPosition = it.position();
+
+        ++it;
+        while (!it.atEnd()) {
+            int pos = *it;
+            QChar::Direction current = analysis[pos].bidiDirection;
+            if (current == QChar::DirBN) {
+                ++it;
+                continue;
+            }
+            if (current == QChar::DirET) {
+                if (last == QChar::DirEN) {
+                    current = QChar::DirEN;
+                    analysis[pos].bidiDirection = current;
+                } else if (!lastETPosition.isValid()) {
+                    lastETPosition = it.position();
+                }
+            } else if (lastETPosition.isValid()) {
+                if (current == QChar::DirEN) {
+                    it.setPosition(lastETPosition);
+                    while (it != pos) {
+                        int pos = *it;
+                        analysis[pos].bidiDirection = QChar::DirEN;
+                        ++it;
+                    }
+                } else {
+                    lastETPosition.clear();
+                }
+            }
+            last = current;
+            lastPos = pos;
+            ++it;
+        }
+    }
+
+    void resolveW6W7(const Vector<DirectionalRun> &runs, int i, QChar::Direction sos)
+    {
+        QChar::Direction lastStrong = sos;
+        IsolatedRunSequenceIterator it(runs, i);
+        while (!it.atEnd()) {
+            int pos = *it;
+
+            // Rule W6
+            QChar::Direction current = analysis[pos].bidiDirection;
+            if (current == QChar::DirBN) {
+                ++it;
+                continue;
+            }
+            if (current == QChar::DirET || current == QChar::DirES || current == QChar::DirCS) {
+                analysis[pos].bidiDirection = QChar::DirON;
+            }
+
+            // Rule W7
+            else if (current == QChar::DirL || current == QChar::DirR) {
+                lastStrong = current;
+            } else if (current == QChar::DirEN && lastStrong == QChar::DirL) {
+                analysis[pos].bidiDirection = lastStrong;
+            }
+            ++it;
+        }
+    }
+
+    struct BracketPair {
+        int first;
+        int second;
+
+        bool isValid() const { return second > 0; }
+
+        QChar::Direction containedDirection(const QScriptAnalysis *analysis, QChar::Direction embeddingDir) const {
+            int isolateCounter = 0;
+            QChar::Direction containedDir = QChar::DirON;
+            for (int i = first + 1; i < second; ++i) {
+                QChar::Direction dir = analysis[i].bidiDirection;
+                if (isolateCounter) {
+                    if (dir == QChar::DirPDI)
+                        --isolateCounter;
+                    continue;
+                }
+                if (dir == QChar::DirL) {
+                    containedDir = dir;
+                    if (embeddingDir == dir)
                         break;
+                } else if (dir == QChar::DirR || dir == QChar::DirAN || dir == QChar::DirEN) {
+                    containedDir = QChar::DirR;
+                    if (embeddingDir == QChar::DirR)
+                        break;
+                } else if (dir == QChar::DirLRI || dir == QChar::DirRLI || dir == QChar::DirFSI)
+                    ++isolateCounter;
+            }
+            BIDI_DEBUG() << "    contained dir for backet pair" << first << "/" << second << "is" << containedDir;
+            return containedDir;
+        }
+    };
+
+
+    struct BracketStack {
+        struct Item {
+            Item() = default;
+            Item(uint pairedBracked, int position) : pairedBracked(pairedBracked), position(position) {}
+            uint pairedBracked = 0;
+            int position = 0;
+        };
+
+        void push(uint closingUnicode, int pos) {
+            if (position < MaxDepth)
+                stack[position] = Item(closingUnicode, pos);
+            ++position;
+        }
+        int match(uint unicode) {
+            Q_ASSERT(!overflowed());
+            int p = position;
+            while (--p >= 0) {
+                if (stack[p].pairedBracked == unicode ||
+                    // U+3009 and U+2329 are canonical equivalents of each other. Fortunately it's the only pair in Unicode 10
+                    (stack[p].pairedBracked == 0x3009 && unicode == 0x232a) ||
+                    (stack[p].pairedBracked == 0x232a && unicode == 0x3009)) {
+                    position = p;
+                    return stack[p].position;
+                }
+
+            }
+            return -1;
+        }
+
+        enum { MaxDepth = 63 };
+        Item stack[MaxDepth];
+        int position = 0;
+
+        bool overflowed() const { return position > MaxDepth; }
+    };
+
+    void resolveN0(const Vector<DirectionalRun> &runs, int i, QChar::Direction sos)
+    {
+        ushort level = runs.at(i).level;
+
+        Vector<BracketPair> bracketPairs;
+        {
+            BracketStack bracketStack;
+            IsolatedRunSequenceIterator it(runs, i);
+            while (!it.atEnd()) {
+                int pos = *it;
+                QChar::Direction dir = analysis[pos].bidiDirection;
+                if (dir == QChar::DirON) {
+                    const QUnicodeTables::Properties *p = QUnicodeTables::properties(text[pos].unicode());
+                    if (p->mirrorDiff) {
+                        // either opening or closing bracket
+                        if (p->category == QChar::Punctuation_Open) {
+                            // opening bracked
+                            uint closingBracked = text[pos].unicode() + p->mirrorDiff;
+                            bracketStack.push(closingBracked, bracketPairs.size());
+                            if (bracketStack.overflowed()) {
+                                bracketPairs.clear();
+                                break;
+                            }
+                            bracketPairs.append({ pos, -1 });
+                        } else if (p->category == QChar::Punctuation_Close) {
+                            int pairPos = bracketStack.match(text[pos].unicode());
+                            if (pairPos != -1)
+                                bracketPairs[pairPos].second = pos;
+                        }
+                    }
+                }
+                ++it;
+            }
+        }
+
+        if (BidiDebugEnabled && bracketPairs.size()) {
+            BIDI_DEBUG() << "matched bracket pairs:";
+            for (int i = 0; i < bracketPairs.size(); ++i)
+                BIDI_DEBUG() << "   " << bracketPairs.at(i).first << bracketPairs.at(i).second;
+        }
+
+        QChar::Direction lastStrong = sos;
+        IsolatedRunSequenceIterator it(runs, i);
+        QChar::Direction embeddingDir = (level & 1) ? QChar::DirR : QChar::DirL;
+        for (int i = 0; i < bracketPairs.size(); ++i) {
+            const auto &pair = bracketPairs.at(i);
+            if (!pair.isValid())
+                continue;
+            QChar::Direction containedDir = pair.containedDirection(analysis, embeddingDir);
+            if (containedDir == QChar::DirON) {
+                BIDI_DEBUG() << "    3: resolve bracket pair" << i << "to DirON";
+                continue;
+            } else if (containedDir == embeddingDir) {
+                analysis[pair.first].bidiDirection = embeddingDir;
+                analysis[pair.second].bidiDirection = embeddingDir;
+                BIDI_DEBUG() << "    1: resolve bracket pair" << i << "to" << embeddingDir;
+            } else {
+                // case c.
+                while (it.pos < pair.first) {
+                    int pos = *it;
+                    switch (analysis[pos].bidiDirection) {
                     case QChar::DirR:
-                    case QChar::DirAL:
+                    case QChar::DirEN:
                     case QChar::DirAN:
-                        if (eor >= 0)
-                            appendItems(analysis, sor, eor, control, dir);
-                        else
-                            eor = current;
-                        status.eor = QChar::DirEN;
-                        dir = QChar::DirAN;
+                        lastStrong = QChar::DirR;
                         break;
-                    case QChar::DirES:
-                    case QChar::DirCS:
-                        if(status.eor == QChar::DirEN || dir == QChar::DirAN) {
-                            eor = current; break;
-                        }
-                        Q_FALLTHROUGH();
-                    case QChar::DirBN:
-                    case QChar::DirB:
-                    case QChar::DirS:
-                    case QChar::DirWS:
-                    case QChar::DirON:
-                        if(status.eor == QChar::DirR) {
-                            // neutrals go to R
-                            eor = current - 1;
-                            appendItems(analysis, sor, eor, control, dir);
-                            dir = QChar::DirON; status.eor = QChar::DirEN;
-                            dir = QChar::DirAN;
-                        }
-                        else if(status.eor == QChar::DirL ||
-                                 (status.eor == QChar::DirEN && status.lastStrong == QChar::DirL)) {
-                            eor = current; status.eor = dirCurrent;
-                        } else {
-                            // numbers on both sides, neutrals get right to left direction
-                            if(dir != QChar::DirL) {
-                                appendItems(analysis, sor, eor, control, dir);
-                                dir = QChar::DirON; status.eor = QChar::DirON;
-                                eor = current - 1;
-                                dir = QChar::DirR;
-                                appendItems(analysis, sor, eor, control, dir);
-                                dir = QChar::DirON; status.eor = QChar::DirON;
-                                dir = QChar::DirAN;
-                            } else {
-                                eor = current; status.eor = dirCurrent;
-                            }
-                        }
+                    case QChar::DirL:
+                        lastStrong = QChar::DirL;
                         break;
                     default:
                         break;
                     }
-                break;
-            }
-            Q_FALLTHROUGH();
-        case QChar::DirAN:
-            hasBidi = true;
-            dirCurrent = QChar::DirAN;
-            if(dir == QChar::DirON) dir = QChar::DirAN;
-            switch(status.last)
-                {
-                case QChar::DirL:
-                case QChar::DirAN:
-                    eor = current; status.eor = QChar::DirAN; break;
-                case QChar::DirR:
-                case QChar::DirAL:
-                case QChar::DirEN:
-                    if (eor >= 0){
-                        appendItems(analysis, sor, eor, control, dir);
-                    } else {
-                        eor = current;
-                    }
-                    dir = QChar::DirAN; status.eor = QChar::DirAN;
-                    break;
-                case QChar::DirCS:
-                    if(status.eor == QChar::DirAN) {
-                        eor = current; break;
-                    }
-                    Q_FALLTHROUGH();
-                case QChar::DirES:
-                case QChar::DirET:
-                case QChar::DirBN:
-                case QChar::DirB:
-                case QChar::DirS:
-                case QChar::DirWS:
-                case QChar::DirON:
-                    if(status.eor == QChar::DirR) {
-                        // neutrals go to R
-                        eor = current - 1;
-                        appendItems(analysis, sor, eor, control, dir);
-                        status.eor = QChar::DirAN;
-                        dir = QChar::DirAN;
-                    } else if(status.eor == QChar::DirL ||
-                               (status.eor == QChar::DirEN && status.lastStrong == QChar::DirL)) {
-                        eor = current; status.eor = dirCurrent;
-                    } else {
-                        // numbers on both sides, neutrals get right to left direction
-                        if(dir != QChar::DirL) {
-                            appendItems(analysis, sor, eor, control, dir);
-                            status.eor = QChar::DirON;
-                            eor = current - 1;
-                            dir = QChar::DirR;
-                            appendItems(analysis, sor, eor, control, dir);
-                            status.eor = QChar::DirAN;
-                            dir = QChar::DirAN;
-                        } else {
-                            eor = current; status.eor = dirCurrent;
-                        }
-                    }
-                default:
-                    break;
+                    ++it;
                 }
-            break;
-        case QChar::DirES:
-        case QChar::DirCS:
-            break;
-        case QChar::DirET:
-            if(status.last == QChar::DirEN) {
-                dirCurrent = QChar::DirEN;
-                eor = current; status.eor = dirCurrent;
+                analysis[pair.first].bidiDirection = lastStrong;
+                analysis[pair.second].bidiDirection = lastStrong;
+                BIDI_DEBUG() << "    2: resolve bracket pair" << i << "to" << lastStrong;
             }
-            break;
-
-            // boundary neutrals should be ignored
-        case QChar::DirBN:
-            break;
-            // neutrals
-        case QChar::DirB:
-            // ### what do we do with newline and paragraph separators that come to here?
-            break;
-        case QChar::DirS:
-            // ### implement rule L1
-            break;
-        case QChar::DirWS:
-        case QChar::DirON:
-            break;
-        default:
-            break;
+            for (int i = pair.second + 1; i < length; ++i) {
+                if (text[i].direction() == QChar::DirNSM)
+                    analysis[i].bidiDirection = analysis[pair.second].bidiDirection;
+                else
+                    break;
+            }
         }
-
-        //qDebug() << "     after: dir=" << //        dir << " current=" << dirCurrent << " last=" << status.last << " eor=" << status.eor << " lastStrong=" << status.lastStrong << " embedding=" << control.direction();
-
-        if(current >= (int)length) break;
-
-        // set status.last as needed.
-        switch(dirCurrent) {
-        case QChar::DirET:
-        case QChar::DirES:
-        case QChar::DirCS:
-        case QChar::DirS:
-        case QChar::DirWS:
-        case QChar::DirON:
-            switch(status.last)
-            {
-            case QChar::DirL:
-            case QChar::DirR:
-            case QChar::DirAL:
-            case QChar::DirEN:
-            case QChar::DirAN:
-                status.last = dirCurrent;
-                break;
-            default:
-                status.last = QChar::DirON;
-            }
-            break;
-        case QChar::DirNSM:
-        case QChar::DirBN:
-            // ignore these
-            break;
-        case QChar::DirLRO:
-        case QChar::DirLRE:
-            status.last = QChar::DirL;
-            break;
-        case QChar::DirRLO:
-        case QChar::DirRLE:
-            status.last = QChar::DirR;
-            break;
-        case QChar::DirEN:
-            if (status.last == QChar::DirL) {
-                status.last = QChar::DirL;
-                break;
-            }
-            Q_FALLTHROUGH();
-        default:
-            status.last = dirCurrent;
-        }
-
-        ++current;
     }
 
-#if (BIDI_DEBUG >= 1)
-    qDebug() << "reached end of line current=" << current << ", eor=" << eor;
-#endif
-    eor = current - 1; // remove dummy char
+    void resolveN1N2(const Vector<DirectionalRun> &runs, int i, QChar::Direction sos, QChar::Direction eos)
+    {
+        // Rule N1 & N2
+        QChar::Direction lastStrong = sos;
+        IsolatedRunSequenceIterator::Position niPos;
+        IsolatedRunSequenceIterator it(runs, i);
+//            QChar::Direction last = QChar::DirON;
+        while (1) {
+            int pos = *it;
 
-    if (sor <= eor)
-        appendItems(analysis, sor, eor, control, dir);
+            QChar::Direction current = pos >= 0 ? analysis[pos].bidiDirection : eos;
+            QChar::Direction currentStrong = current;
+            switch (current) {
+            case QChar::DirEN:
+            case QChar::DirAN:
+                currentStrong = QChar::DirR;
+                Q_FALLTHROUGH();
+            case QChar::DirL:
+            case QChar::DirR:
+                if (niPos.isValid()) {
+                    QChar::Direction dir = currentStrong;
+                    if (lastStrong != currentStrong)
+                        dir = (runs.at(i).level) & 1 ? QChar::DirR : QChar::DirL;
+                    it.setPosition(niPos);
+                    while (*it != pos) {
+                        if (analysis[*it].bidiDirection != QChar::DirBN)
+                            analysis[*it].bidiDirection = dir;
+                        ++it;
+                    }
+                    niPos.clear();
+                }
+                lastStrong = currentStrong;
+                break;
 
-    return hasBidi;
-}
+            case QChar::DirBN:
+            case QChar::DirS:
+            case QChar::DirWS:
+            case QChar::DirON:
+            case QChar::DirFSI:
+            case QChar::DirLRI:
+            case QChar::DirRLI:
+            case QChar::DirPDI:
+            case QChar::DirB:
+                if (!niPos.isValid())
+                    niPos = it.position();
+                break;
+
+            default:
+                Q_UNREACHABLE();
+            }
+            if (it.atEnd())
+                break;
+//                last = current;
+            ++it;
+        }
+    }
+
+    void resolveImplicitLevelsForIsolatedRun(const Vector<DirectionalRun> &runs, int i)
+    {
+        // Rule X10
+        int level = runs.at(i).level;
+        int before = i - 1;
+        while (before >= 0 && !runs.at(before).hasContent)
+            --before;
+        int level_before = (before >= 0) ? runs.at(before).level : baseLevel;
+        int after = i;
+        while (runs.at(after).continuation >= 0)
+            after = runs.at(after).continuation;
+        if (runs.at(after).continuation == -2) {
+            after = runs.size();
+        } else {
+            ++after;
+            while (after < runs.size() && !runs.at(after).hasContent)
+                ++after;
+        }
+        int level_after = (after == runs.size()) ? baseLevel : runs.at(after).level;
+        QChar::Direction sos = (qMax(level_before, level) & 1) ? QChar::DirR : QChar::DirL;
+        QChar::Direction eos = (qMax(level_after, level) & 1) ? QChar::DirR : QChar::DirL;
+
+        if (BidiDebugEnabled) {
+            BIDI_DEBUG() << "Isolated run starting at" << i << "sos/eos" << sos << eos;
+            BIDI_DEBUG() << "before implicit level processing:";
+            IsolatedRunSequenceIterator it(runs, i);
+            while (!it.atEnd()) {
+                BIDI_DEBUG() << "    " << *it << hex << text[*it].unicode() << analysis[*it].bidiDirection;
+                ++it;
+            }
+        }
+
+        resolveW1W2W3(runs, i, sos);
+        resolveW4(runs, i, sos);
+        resolveW5(runs, i);
+
+        if (BidiDebugEnabled) {
+            BIDI_DEBUG() << "after W4/W5";
+            IsolatedRunSequenceIterator it(runs, i);
+            while (!it.atEnd()) {
+                BIDI_DEBUG() << "    " << *it << hex << text[*it].unicode() << analysis[*it].bidiDirection;
+                ++it;
+            }
+        }
+
+        resolveW6W7(runs, i, sos);
+
+        // Resolve neutral types
+
+        // Rule N0
+        resolveN0(runs, i, sos);
+        resolveN1N2(runs, i, sos, eos);
+
+        BIDI_DEBUG() << "setting levels (run at" << level << ")";
+        // Rules I1 & I2: set correct levels
+        {
+            ushort level = runs.at(i).level;
+            IsolatedRunSequenceIterator it(runs, i);
+            while (!it.atEnd()) {
+                int pos = *it;
+
+                QChar::Direction current = analysis[pos].bidiDirection;
+                switch (current) {
+                case QChar::DirBN:
+                    break;
+                case QChar::DirL:
+                    analysis[pos].bidiLevel = (level + 1) & ~1;
+                    break;
+                case QChar::DirR:
+                    analysis[pos].bidiLevel = level | 1;
+                    break;
+                case QChar::DirAN:
+                case QChar::DirEN:
+                    analysis[pos].bidiLevel = (level + 2) & ~1;
+                    break;
+                default:
+                    Q_UNREACHABLE();
+                }
+                BIDI_DEBUG() << "    " << pos << current << analysis[pos].bidiLevel;
+                ++it;
+            }
+        }
+    }
+
+    void resolveImplicitLevels(const Vector<DirectionalRun> &runs)
+    {
+        for (int i = 0; i < runs.size(); ++i) {
+            if (runs.at(i).isContinuation)
+                continue;
+
+            resolveImplicitLevelsForIsolatedRun(runs, i);
+        }
+    }
+
+    bool process()
+    {
+        memset(analysis, 0, length * sizeof(QScriptAnalysis));
+
+        bool hasBidi = (baseLevel != 0);
+        if (!hasBidi) {
+            for (int i = 0; i < length; ++i) {
+                if (text[i].unicode() >= 0x590) {
+                    hasBidi = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasBidi)
+            return false;
+
+        if (BidiDebugEnabled) {
+            BIDI_DEBUG() << ">>>> start bidi, text length" << length;
+            for (int i = 0; i < length; ++i)
+                BIDI_DEBUG() << hex << "    (" << i << ")" << text[i].unicode() << text[i].direction();
+        }
+
+        {
+            Vector<DirectionalRun> runs;
+            resolveExplicitLevels(runs);
+
+            if (BidiDebugEnabled) {
+                BIDI_DEBUG() << "resolved explicit levels, nruns" << runs.size();
+                for (int i = 0; i < runs.size(); ++i)
+                    BIDI_DEBUG() << "    " << i << "start/end" << runs.at(i).start << runs.at(i).end << "level" << (int)runs.at(i).level << "continuation" << runs.at(i).continuation;
+            }
+
+            // now we have a list of isolated run sequences inside the vector of runs, that can be fed
+            // through the implicit level resolving
+
+            resolveImplicitLevels(runs);
+        }
+
+        // set directions for BN to the minimum of adjacent chars
+        // This makes is possible to be conformant with the Bidi algorithm even though we don't
+        // remove BN and explicit embedding chars from the stream of characters to reorder
+        int lastLevel = baseLevel;
+        int lastBNPos = -1;
+        for (int i = 0; i < length; ++i) {
+            if (analysis[i].bidiFlags & QScriptAnalysis::BidiBN) {
+                if (lastBNPos < 0)
+                    lastBNPos = i;
+                analysis[i].bidiLevel = lastLevel;
+            } else {
+                int l = analysis[i].bidiLevel;
+                if (lastBNPos >= 0) {
+                    if (l < lastLevel) {
+                        while (lastBNPos < i) {
+                            analysis[lastBNPos].bidiLevel = l;
+                            ++lastBNPos;
+                        }
+                    }
+                    lastBNPos = -1;
+                }
+                lastLevel = l;
+            }
+        }
+        if (lastBNPos >= 0 && baseLevel < lastLevel) {
+            while (lastBNPos < length) {
+                analysis[lastBNPos].bidiLevel = baseLevel;
+                ++lastBNPos;
+            }
+        }
+
+        BIDI_DEBUG() << "Rule L1:";
+        // Rule L1:
+        bool resetLevel = true;
+        for (int i = length - 1; i >= 0; --i) {
+            if (analysis[i].bidiFlags & QScriptAnalysis::BidiResetToParagraphLevel) {
+                BIDI_DEBUG() << "resetting pos" << i << "to baselevel";
+                analysis[i].bidiLevel = baseLevel;
+                resetLevel = true;
+            } else if (resetLevel && analysis[i].bidiFlags & QScriptAnalysis::BidiMaybeResetToParagraphLevel) {
+                BIDI_DEBUG() << "resetting pos" << i << "to baselevel (maybereset flag)";
+                analysis[i].bidiLevel = baseLevel;
+            } else {
+                resetLevel = false;
+            }
+        }
+
+        if (BidiDebugEnabled) {
+            BIDI_DEBUG() << "final resolved levels:";
+            for (int i = 0; i < length; ++i)
+                BIDI_DEBUG() << "    " << i << hex << text[i].unicode() << dec << (int)analysis[i].bidiLevel;
+        }
+
+        return true;
+    }
+
+
+    const QChar *text;
+    QScriptAnalysis *analysis;
+    int length;
+    char baseLevel;
+};
+
+} // namespace
 
 void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrder)
 {
@@ -792,9 +1164,7 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
     // reversing is only done up to the lowest odd level
     if(!(levelLow%2)) levelLow++;
 
-#if (BIDI_DEBUG >= 1)
-//     qDebug() << "reorderLine: lineLow = " << (uint)levelLow << ", lineHigh = " << (uint)levelHigh;
-#endif
+    BIDI_DEBUG() << "reorderLine: lineLow = " << (uint)levelLow << ", lineHigh = " << (uint)levelHigh;
 
     int count = numItems - 1;
     for (i = 0; i < numItems; i++)
@@ -821,11 +1191,9 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
         levelHigh--;
     }
 
-#if (BIDI_DEBUG >= 1)
-//     qDebug("visual order is:");
+//     BIDI_DEBUG("visual order is:");
 //     for (i = 0; i < numItems; i++)
-//         qDebug() << visualOrder[i];
-#endif
+//         BIDI_DEBUG() << visualOrder[i];
 }
 
 
@@ -1654,38 +2022,13 @@ void QTextEngine::itemize() const
 
     const ushort *string = reinterpret_cast<const ushort *>(layoutData->string.unicode());
 
-    bool ignore = ignoreBidi;
-
     bool rtl = isRightToLeft();
-
-    if (!ignore && !rtl) {
-        ignore = true;
-        const QChar *start = layoutData->string.unicode();
-        const QChar * const end = start + length;
-        while (start < end) {
-            if (start->unicode() >= 0x590) {
-                ignore = false;
-                break;
-            }
-            ++start;
-        }
-    }
 
     QVarLengthArray<QScriptAnalysis, 4096> scriptAnalysis(length);
     QScriptAnalysis *analysis = scriptAnalysis.data();
 
-    QBidiControl control(rtl);
-
-    if (ignore) {
-        memset(analysis, 0, length*sizeof(QScriptAnalysis));
-        if (option.textDirection() == Qt::RightToLeft) {
-            for (int i = 0; i < length; ++i)
-                analysis[i].bidiLevel = 1;
-            layoutData->hasBidi = true;
-        }
-    } else {
-        layoutData->hasBidi = bidiItemize(const_cast<QTextEngine *>(this), analysis, control);
-    }
+    QBidiAlgorithm bidi(layoutData->string.constData(), analysis, length, rtl);
+    layoutData->hasBidi = bidi.process();
 
     {
         QVarLengthArray<uchar> scripts(length);
@@ -1716,13 +2059,13 @@ void QTextEngine::itemize() const
             break;
         case QChar::Tabulation:
             analysis->flags = QScriptAnalysis::Tab;
-            analysis->bidiLevel = control.baseLevel();
+            analysis->bidiLevel = bidi.baseLevel;
             break;
         case QChar::Space:
         case QChar::Nbsp:
             if (option.flags() & QTextOption::ShowTabsAndSpaces) {
                 analysis->flags = QScriptAnalysis::Space;
-                analysis->bidiLevel = control.baseLevel();
+                analysis->bidiLevel = bidi.baseLevel;
                 break;
             }
             Q_FALLTHROUGH();
@@ -2748,7 +3091,7 @@ static inline bool isRetainableControlCode(QChar c)
 {
     return (c.unicode() >= 0x202a && c.unicode() <= 0x202e) // LRE, RLE, PDF, LRO, RLO
             || (c.unicode() >= 0x200e && c.unicode() <= 0x200f) // LRM, RLM
-            || (c.unicode() >= 0x2066 && c.unicode() <= 0x2069); // LRM, RLM
+            || (c.unicode() >= 0x2066 && c.unicode() <= 0x2069); // LRI, RLI, FSI, PDI
 }
 
 static QString stringMidRetainingBidiCC(const QString &string,

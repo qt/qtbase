@@ -47,7 +47,8 @@ SUBPROGRAMS = \
      verbose2 \
      verifyexceptionthrown \
      warnings \
-     xunit
+     xunit \
+     mouse
 
 INCLUDEPATH += ../../../../shared/
 HEADERS += ../../../../shared/emulationdetector.h

@@ -350,6 +350,13 @@ void QWindowsMenuItem::setIsSeparator(bool isSeparator)
     if (m_separator == isSeparator)
         return;
     m_separator = isSeparator;
+    if (m_parentMenu == nullptr)
+        return;
+    MENUITEMINFO menuItemInfo;
+    menuItemInfoInit(menuItemInfo);
+    menuItemInfo.fMask = MIIM_FTYPE;
+    menuItemInfo.fType = isSeparator ? MFT_SEPARATOR : MFT_STRING;
+    SetMenuItemInfo(parentMenuHandle(), m_id, FALSE, &menuItemInfo);
 }
 
 void QWindowsMenuItem::setCheckable(bool checkable)

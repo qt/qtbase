@@ -176,6 +176,7 @@
                 ]
             },
             "sources": [
+                { "type": "pkgConfig", "args": "libpcre2-16" },
                 "-lpcre2-16"
             ]
         },
