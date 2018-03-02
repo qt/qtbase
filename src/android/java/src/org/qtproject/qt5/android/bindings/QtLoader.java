@@ -438,7 +438,6 @@ public abstract class QtLoader {
 
         {
             String key = BUNDLED_IN_LIB_RESOURCE_ID_KEY;
-            java.util.Set<String> keys = m_contextInfo.metaData.keySet();
             if (m_contextInfo.metaData.containsKey(key)) {
                 String[] list = m_context.getResources().getStringArray(m_contextInfo.metaData.getInt(key));
 
