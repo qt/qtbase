@@ -466,6 +466,11 @@ static QString msgRectMismatch(const QRect &r1, const QRect &r2)
     return result;
 }
 
+static bool isPlatformWayland()
+{
+    return !QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive);
+}
+
 void tst_QWindow::positioning()
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
@@ -473,7 +478,7 @@ void tst_QWindow::positioning()
         QSKIP("This platform does not support non-fullscreen windows");
     }
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This fails. Figure out why.");
 
     // Some platforms enforce minimum widths for windows, which can cause extra resize
@@ -779,7 +784,7 @@ void tst_QWindow::isExposed()
 
     window.hide();
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This is flaky. Figure out why.");
 
     QCoreApplication::processEvents();
@@ -1337,7 +1342,7 @@ void tst_QWindow::touchCancelWithTouchToMouse()
 
 void tst_QWindow::touchInterruptedByPopup()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This test crashes with xdg-shell unstable v6");
 
     InputTestWindow window;
@@ -1834,7 +1839,7 @@ void tst_QWindow::mask()
 
 void tst_QWindow::initialSize()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This fails. Figure out why.");
 
     QSize defaultSize(0,0);
@@ -1907,7 +1912,7 @@ void tst_QWindow::modalDialog()
 
 void tst_QWindow::modalDialogClosingOneOfTwoModal()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This fails. Figure out why.");
 
     QWindow normalWindow;
