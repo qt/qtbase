@@ -1604,6 +1604,12 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
             << ""
             << true;
 
+    QTest::newRow("$$absolute_path(): relative file & relative path")
+            << "VAR = $$absolute_path(dir/file.ext, some/where)"
+            << "VAR = " + qindir + "/some/where/dir/file.ext"
+            << ""
+            << true;
+
     QTest::newRow("$$absolute_path(): file & path")
             << "VAR = $$absolute_path(dir/file.ext, " EVAL_DRIVE "/root/sub)"
             << "VAR = " EVAL_DRIVE "/root/sub/dir/file.ext"
@@ -1638,6 +1644,12 @@ void tst_qmakelib::addReplaceFunctions(const QString &qindir)
 
     QTest::newRow("$$relative_path(): relative file")
             << "VAR = $$relative_path(dir/file.ext)"
+            << "VAR = dir/file.ext"
+            << ""
+            << true;
+
+    QTest::newRow("$$relative_path(): relative file & relative path")
+            << "VAR = $$relative_path(dir/file.ext, some/where)"
             << "VAR = dir/file.ext"
             << ""
             << true;
@@ -2752,9 +2764,9 @@ void tst_qmakelib::proEval_data()
 
     // Raw data leak with empty file name. Verify with Valgrind or asan.
     QTest::newRow("QTBUG-54550")
-            << "FULL = /there/is\n"
+            << "FULL = " EVAL_DRIVE "/there/is\n"
                "VAR = $$absolute_path(, $$FULL/nothing/here/really)"
-            << "VAR = /there/is/nothing/here/really"
+            << "VAR = " EVAL_DRIVE "/there/is/nothing/here/really"
             << ""
             << true;
 }

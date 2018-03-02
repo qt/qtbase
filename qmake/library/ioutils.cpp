@@ -103,7 +103,7 @@ QString IoUtils::resolvePath(const QString &baseDir, const QString &fileName)
         return QDir::cleanPath(fileName);
 #ifdef Q_OS_WIN // Add drive to otherwise-absolute path:
     if (fileName.at(0).unicode() == '/' || fileName.at(0).unicode() == '\\') {
-        Q_ASSERT(isAbsolutePath(baseDir));
+        Q_ASSERT_X(isAbsolutePath(baseDir), "IoUtils::resolvePath", qUtf8Printable(baseDir));
         return QDir::cleanPath(baseDir.left(2) + fileName);
     }
 #endif // Q_OS_WIN
