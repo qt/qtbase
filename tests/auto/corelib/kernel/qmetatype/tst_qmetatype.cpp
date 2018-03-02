@@ -141,6 +141,14 @@ public:
 class CustomNonQObject {};
 class GadgetDerived : public CustomGadget {};
 
+// cannot use Q_GADGET due to moc limitations but wants to behave like
+// a Q_GADGET in Qml land
+template<typename T>
+class GadgetDerivedAndTyped : public CustomGadget {};
+
+Q_DECLARE_METATYPE(GadgetDerivedAndTyped<int>)
+Q_DECLARE_METATYPE(GadgetDerivedAndTyped<int>*)
+
 void tst_QMetaType::defined()
 {
     QCOMPARE(int(QMetaTypeId2<QString>::Defined), 1);
@@ -157,6 +165,10 @@ void tst_QMetaType::defined()
     QVERIFY(!QMetaTypeId2<CustomNonQObject>::Defined);
     QVERIFY(!QMetaTypeId2<CustomNonQObject*>::Defined);
     QVERIFY(!QMetaTypeId2<CustomGadget_NonDefaultConstructible>::Defined);
+
+    // registered with Q_DECLARE_METATYPE
+    QVERIFY(QMetaTypeId2<GadgetDerivedAndTyped<int>>::Defined);
+    QVERIFY(QMetaTypeId2<GadgetDerivedAndTyped<int>*>::Defined);
 }
 
 struct Bar
@@ -396,6 +408,10 @@ void tst_QMetaType::typeName_data()
     QTest::newRow("CustomGadget*") << ::qMetaTypeId<CustomGadget*>() << QString::fromLatin1("CustomGadget*");
     QTest::newRow("CustomQObject::CustomQEnum") << ::qMetaTypeId<CustomQObject::CustomQEnum>() << QString::fromLatin1("CustomQObject::CustomQEnum");
     QTest::newRow("Qt::ArrowType") << ::qMetaTypeId<Qt::ArrowType>() << QString::fromLatin1("Qt::ArrowType");
+
+    // template instance class derived from Q_GADGET enabled class
+    QTest::newRow("GadgetDerivedAndTyped<int>") << ::qMetaTypeId<GadgetDerivedAndTyped<int>>() << QString::fromLatin1("GadgetDerivedAndTyped<int>");
+    QTest::newRow("GadgetDerivedAndTyped<int>*") << ::qMetaTypeId<GadgetDerivedAndTyped<int>*>() << QString::fromLatin1("GadgetDerivedAndTyped<int>*");
 }
 
 void tst_QMetaType::typeName()
@@ -1703,6 +1719,9 @@ void tst_QMetaType::metaObject_data()
     QTest::newRow("MyGadget*") << ::qMetaTypeId<MyGadget*>() << &MyGadget::staticMetaObject << false << true << false;
     QTest::newRow("MyEnum") << ::qMetaTypeId<MyGadget::MyEnum>() <<  &MyGadget::staticMetaObject << false << false << false;
     QTest::newRow("Qt::ScrollBarPolicy") << ::qMetaTypeId<Qt::ScrollBarPolicy>() <<  &QObject::staticQtMetaObject << false << false << false;
+
+    QTest::newRow("GadgetDerivedAndTyped<int>") << ::qMetaTypeId<GadgetDerivedAndTyped<int>>() <<  &GadgetDerivedAndTyped<int>::staticMetaObject << true << false << false;
+    QTest::newRow("GadgetDerivedAndTyped<int>*") << ::qMetaTypeId<GadgetDerivedAndTyped<int>*>() <<  &GadgetDerivedAndTyped<int>::staticMetaObject << false << true << false;
 }
 
 
