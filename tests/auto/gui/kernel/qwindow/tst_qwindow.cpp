@@ -2319,7 +2319,7 @@ void tst_QWindow::generatedMouseMove()
     w.setGeometry(QRect(m_availableTopLeft + QPoint(100, 100), m_testWindowSize));
     w.setFlags(w.flags() | Qt::FramelessWindowHint); // ### FIXME: QTBUG-63542
     w.show();
-    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     QPoint point(10, 10);
     QPoint step(2, 2);
 
