@@ -247,7 +247,7 @@ public:
     void updateIndentationFromStyle();
 
     // used for spanning rows
-    QVector<QPersistentModelIndex> spanningIndexes;
+    QSet<QPersistentModelIndex> spanningIndexes;
 
     // used for updating resized columns
     int columnResizeTimerID;

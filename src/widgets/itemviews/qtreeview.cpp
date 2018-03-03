@@ -632,11 +632,8 @@ bool QTreeView::isFirstColumnSpanned(int row, const QModelIndex &parent) const
     Q_D(const QTreeView);
     if (d->spanningIndexes.isEmpty() || !d->model)
         return false;
-    QModelIndex index = d->model->index(row, 0, parent);
-    for (int i = 0; i < d->spanningIndexes.count(); ++i)
-        if (d->spanningIndexes.at(i) == index)
-            return true;
-    return false;
+    const QModelIndex index = d->model->index(row, 0, parent);
+    return d->spanningIndexes.contains(index);
 }
 
 /*!
@@ -653,20 +650,14 @@ void QTreeView::setFirstColumnSpanned(int row, const QModelIndex &parent, bool s
     Q_D(QTreeView);
     if (!d->model)
         return;
-    QModelIndex index = d->model->index(row, 0, parent);
+    const QModelIndex index = d->model->index(row, 0, parent);
     if (!index.isValid())
         return;
 
-    if (span) {
-        QPersistentModelIndex persistent(index);
-        if (!d->spanningIndexes.contains(persistent))
-            d->spanningIndexes.append(persistent);
-    } else {
-        QPersistentModelIndex persistent(index);
-        int i = d->spanningIndexes.indexOf(persistent);
-        if (i >= 0)
-            d->spanningIndexes.remove(i);
-    }
+    if (span)
+        d->spanningIndexes.insert(index);
+    else
+        d->spanningIndexes.remove(index);
 
     d->executePostedLayout();
     int i = d->viewIndex(index);
