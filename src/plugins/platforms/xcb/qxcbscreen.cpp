@@ -750,7 +750,12 @@ void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
         m_sizeMillimeters = sizeInMillimeters(geometry.size(), virtualDpi());
 
     qreal dpi = geometry.width() / physicalSize().width() * qreal(25.4);
-    m_pixelDensity = qMax(1, qRound(dpi/96));
+    qreal rawFactor = dpi/96;
+    int roundedFactor = qFloor(rawFactor);
+    // Round up for .8 and higher. This favors "small UI" over "large UI".
+    if (rawFactor - roundedFactor >= 0.8)
+        roundedFactor = qCeil(rawFactor);
+    m_pixelDensity = qMax(1, roundedFactor);
     m_geometry = geometry;
     m_availableGeometry = geometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
