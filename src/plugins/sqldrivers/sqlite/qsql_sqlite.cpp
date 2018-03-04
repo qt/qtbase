@@ -471,7 +471,7 @@ bool QSQLiteResult::exec()
     // can end up in a case where for virtual tables it returns 0 even though it
     // has parameters
     if (paramCount > 1 && paramCount < values.count()) {
-        const auto countIndexes = [](int counter, const QList<int>& indexList) {
+        const auto countIndexes = [](int counter, const QVector<int> &indexList) {
                                       return counter + indexList.length();
                                   };
 
@@ -485,13 +485,14 @@ bool QSQLiteResult::exec()
         // placeholders. So we need to ensure the QVector has only one instance of
         // each value as SQLite will do the rest for us.
         QVector<QVariant> prunedValues;
-        QList<int> handledIndexes;
+        QVector<int> handledIndexes;
         for (int i = 0, currentIndex = 0; i < values.size(); ++i) {
             if (handledIndexes.contains(i))
                 continue;
             const auto placeHolder = QString::fromUtf8(sqlite3_bind_parameter_name(d->stmt, currentIndex + 1));
-            handledIndexes << d->indexes[placeHolder];
-            prunedValues << values.at(d->indexes[placeHolder].first());
+            const auto &indexes = d->indexes.value(placeHolder);
+            handledIndexes << indexes;
+            prunedValues << values.at(indexes.first());
             ++currentIndex;
         }
         values = prunedValues;
