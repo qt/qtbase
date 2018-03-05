@@ -186,8 +186,8 @@ void tst_qinputmethod::cursorRectangle()
 {
     QCOMPARE(qApp->inputMethod()->cursorRectangle(), QRectF());
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     DummyWindow window;
     window.show();
@@ -284,8 +284,8 @@ void tst_qinputmethod::inputDirection()
 
 void tst_qinputmethod::inputMethodAccepted()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive)
         || !QGuiApplication::platformName().compare(QLatin1String("offscreen"), Qt::CaseInsensitive)) {
