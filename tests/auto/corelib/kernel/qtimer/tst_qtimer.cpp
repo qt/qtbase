@@ -75,6 +75,7 @@ private slots:
 
     void dontBlockEvents();
     void postedEventsShouldNotStarveTimers();
+    void connectTo();
 };
 
 class TimerHelper : public QObject
@@ -1018,6 +1019,32 @@ void tst_QTimer::crossThreadSingleShotToFunctor()
     t.quit();
     t.wait();
     delete o;
+}
+
+void tst_QTimer::connectTo()
+{
+    QTimer timer;
+    TimerHelper timerHelper;
+    timer.setInterval(0);
+    timer.start();
+
+    auto context = new QObject();
+
+    int count = 0;
+    timer.connectTo([&count] { count++; });
+    QMetaObject::Connection connection = timer.connectTo(context, [&count] { count++; });
+    timer.connectTo(&timerHelper, &TimerHelper::timeout);
+    timer.connectTo(&timer, &QTimer::stop);
+
+
+    QTest::qWait(100);
+    QCOMPARE(count, 2);
+    QCOMPARE(timerHelper.count, 1);
+
+    // Test that connection is bound to context lifetime
+    QVERIFY(connection);
+    delete context;
+    QVERIFY(!connection);
 }
 
 QTEST_MAIN(tst_QTimer)
