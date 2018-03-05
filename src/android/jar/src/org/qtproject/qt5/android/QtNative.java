@@ -469,10 +469,11 @@ public class QtNative
         case MotionEvent.TOOL_TYPE_ERASER:
             pointerType = 3; // QTabletEvent::Eraser
             break;
-        // TODO TOOL_TYPE_MOUSE
         }
 
-        if (m_tabletEventSupported && pointerType != 0) {
+        if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+            sendMouseEvent(event, id);
+        } else if (m_tabletEventSupported && pointerType != 0) {
             tabletEvent(id, event.getDeviceId(), event.getEventTime(), event.getAction(), pointerType,
                 event.getButtonState(), event.getX(), event.getY(), event.getPressure());
         } else {
@@ -507,7 +508,22 @@ public class QtNative
 
     static public void sendTrackballEvent(MotionEvent event, int id)
     {
-        switch (event.getAction()) {
+        sendMouseEvent(event,id);
+    }
+
+    static public boolean sendGenericMotionEvent(MotionEvent event, int id)
+    {
+        if (((event.getAction() & (MotionEvent.ACTION_SCROLL | MotionEvent.ACTION_HOVER_MOVE)) == 0)
+                || (event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != InputDevice.SOURCE_CLASS_POINTER) {
+            return false;
+        }
+
+        return sendMouseEvent(event, id);
+    }
+
+    static public boolean sendMouseEvent(MotionEvent event, int id)
+    {
+        switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP:
                 mouseUp(id, (int) event.getX(), (int) event.getY());
                 break;
@@ -517,28 +533,27 @@ public class QtNative
                 m_oldx = (int) event.getX();
                 m_oldy = (int) event.getY();
                 break;
-
+            case MotionEvent.ACTION_HOVER_MOVE:
             case MotionEvent.ACTION_MOVE:
-                int dx = (int) (event.getX() - m_oldx);
-                int dy = (int) (event.getY() - m_oldy);
-                if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+                    mouseMove(id, (int) event.getX(), (int) event.getY());
+                } else {
+                    int dx = (int) (event.getX() - m_oldx);
+                    int dy = (int) (event.getY() - m_oldy);
+                    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
                         mouseMove(id, (int) event.getX(), (int) event.getY());
                         m_oldx = (int) event.getX();
                         m_oldy = (int) event.getY();
+                    }
                 }
                 break;
+            case MotionEvent.ACTION_SCROLL:
+                mouseWheel(id, (int) event.getX(), (int) event.getY(),
+                        event.getAxisValue(MotionEvent.AXIS_HSCROLL), event.getAxisValue(MotionEvent.AXIS_VSCROLL));
+                break;
+            default:
+                return false;
         }
-    }
-
-    static public boolean sendGenericMotionEvent(MotionEvent event, int id)
-    {
-        if (event.getActionMasked() != MotionEvent.ACTION_SCROLL
-                || (event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != InputDevice.SOURCE_CLASS_POINTER) {
-            return false;
-        }
-
-        mouseWheel(id, (int) event.getX(), (int) event.getY(),
-                       event.getAxisValue(MotionEvent.AXIS_HSCROLL), event.getAxisValue(MotionEvent.AXIS_VSCROLL));
         return true;
     }
 

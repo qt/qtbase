@@ -58,7 +58,6 @@ using namespace QtAndroid;
 
 namespace QtAndroidInput
 {
-
     static bool m_ignoreMouseEvents = false;
     static bool m_softwareKeyboardVisible = false;
     static QRect m_softwareKeyboardRect;
@@ -174,7 +173,7 @@ namespace QtAndroidInput
         QWindowSystemInterface::handleMouseEvent(tlw,
                                                  localPos,
                                                  globalPos,
-                                                 Qt::MouseButtons(Qt::LeftButton));
+                                                 Qt::MouseButtons(m_mouseGrabber ? Qt::LeftButton : Qt::NoButton));
     }
 
     static void mouseWheel(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y, jfloat hdelta, jfloat vdelta)
