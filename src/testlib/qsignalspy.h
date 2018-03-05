@@ -59,11 +59,7 @@ public:
     explicit QSignalSpy(const QObject *obj, const char *aSignal)
         : m_waiting(false)
     {
-#ifdef Q_CC_BOR
-        const int memberOffset = QObject::staticMetaObject.methodCount();
-#else
         static const int memberOffset = QObject::staticMetaObject.methodCount();
-#endif
         if (!obj) {
             qWarning("QSignalSpy: Cannot spy on a null object");
             return;
@@ -104,11 +100,7 @@ public:
     QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
         : m_waiting(false)
     {
-#ifdef Q_CC_BOR
-        const int memberOffset = QObject::staticMetaObject.methodCount();
-#else
         static const int memberOffset = QObject::staticMetaObject.methodCount();
-#endif
         if (!obj) {
             qWarning("QSignalSpy: Cannot spy on a null object");
             return;
