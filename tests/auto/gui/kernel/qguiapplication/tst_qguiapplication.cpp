@@ -35,8 +35,11 @@
 #include <QtGui/QFont>
 #include <QtGui/QPalette>
 #include <QtGui/QStyleHints>
+#include <qpa/qplatformintegration.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qgenericplugin.h>
+
+#include <private/qguiapplication_p.h>
 
 #if defined(Q_OS_QNX)
 #include <QOpenGLContext>
@@ -203,8 +206,8 @@ void tst_QGuiApplication::focusObject()
     int argc = 0;
     QGuiApplication app(argc, 0);
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     QObject obj1, obj2, obj3;
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
@@ -374,8 +377,8 @@ void tst_QGuiApplication::changeFocusWindow()
     int argc = 0;
     QGuiApplication app(argc, 0);
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
