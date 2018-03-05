@@ -7,6 +7,8 @@ osx-10.12 ci
 ubuntu-16.04
 [modalWithChildWindow]
 ubuntu-16.04
+# QTBUG-66851
+opensuse
 [setVisible]
 [modalWindowEnterEventOnHide_QTBUG35109]
 ubuntu-16.04
