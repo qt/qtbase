@@ -269,6 +269,7 @@ public:
         inline iterator &operator-=(difference_type j) { i-=j; return *this; }
         inline iterator operator+(difference_type j) const { return iterator(i+j); }
         inline iterator operator-(difference_type j) const { return iterator(i-j); }
+        friend inline iterator operator+(difference_type j, iterator k) { return k + j; }
         inline int operator-(iterator j) const { return int(i - j.i); }
     };
     friend class iterator;
@@ -312,6 +313,7 @@ public:
         inline const_iterator &operator-=(difference_type j) { i-=j; return *this; }
         inline const_iterator operator+(difference_type j) const { return const_iterator(i+j); }
         inline const_iterator operator-(difference_type j) const { return const_iterator(i-j); }
+        friend inline const_iterator operator+(difference_type j, const_iterator k) { return k + j; }
         inline int operator-(const_iterator j) const { return int(i - j.i); }
     };
     friend class const_iterator;

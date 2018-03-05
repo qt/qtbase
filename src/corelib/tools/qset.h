@@ -131,6 +131,7 @@ public:
         inline iterator operator--(int) { iterator r = *this; --i; return r; }
         inline iterator operator+(int j) const { return i + j; }
         inline iterator operator-(int j) const { return i - j; }
+        friend inline iterator operator+(int j, iterator k) { return k + j; }
         inline iterator &operator+=(int j) { i += j; return *this; }
         inline iterator &operator-=(int j) { i -= j; return *this; }
     };
@@ -165,6 +166,7 @@ public:
         inline const_iterator operator--(int) { const_iterator r = *this; --i; return r; }
         inline const_iterator operator+(int j) const { return i + j; }
         inline const_iterator operator-(int j) const { return i - j; }
+        friend inline const_iterator operator+(int j, const_iterator k) { return k + j; }
         inline const_iterator &operator+=(int j) { i += j; return *this; }
         inline const_iterator &operator-=(int j) { i -= j; return *this; }
     };

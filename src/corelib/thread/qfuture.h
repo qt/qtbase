@@ -136,6 +136,7 @@ public:
         inline const_iterator operator-(int j) const { return const_iterator(future, index - j); }
         inline const_iterator &operator+=(int j) { index += j; return *this; }
         inline const_iterator &operator-=(int j) { index -= j; return *this; }
+        friend inline const_iterator operator+(int j, const_iterator k) { return k + j; }
     private:
         QFuture const * future;
         int index;

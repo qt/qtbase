@@ -2620,6 +2620,8 @@ void testLinkedListLikeStlIterators()
     QVERIFY(i2 == c2);
     QVERIFY(c2 == i2);
     QVERIFY(c2 == c2);
+    QVERIFY(1 + i1 == i1 + 1);
+    QVERIFY(1 + c1 == c1 + 1);
 
     QVERIFY(i1 != i2);
     QVERIFY(i1 != c2);
@@ -2731,6 +2733,8 @@ void testMapLikeStlIterators()
     QVERIFY(i2 == c2);
     QVERIFY(c2 == i2);
     QVERIFY(c2 == c2);
+    QVERIFY(1 + i1 == i1 + 1);
+    QVERIFY(1 + c1 == c1 + 1);
 
     QVERIFY(i1 != i2);
     QVERIFY(i1 != c2);

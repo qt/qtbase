@@ -1021,6 +1021,8 @@ void tst_QFuture::iterators()
         QCOMPARE(i2, c2);
         QCOMPARE(c2, i2);
         QCOMPARE(c2, c2);
+        QCOMPARE(1 + i1, i1 + 1);
+        QCOMPARE(1 + c1, c1 + 1);
 
         QVERIFY(i1 != i2);
         QVERIFY(i1 != c2);
@@ -1070,6 +1072,8 @@ void tst_QFuture::iterators()
         QCOMPARE(i2, c2);
         QCOMPARE(c2, i2);
         QCOMPARE(c2, c2);
+        QCOMPARE(1 + i1, i1 + 1);
+        QCOMPARE(1 + c1, c1 + 1);
 
         QVERIFY(i1 != i2);
         QVERIFY(i1 != c2);

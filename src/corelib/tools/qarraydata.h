@@ -159,6 +159,7 @@ struct QTypedArrayData
         inline iterator &operator-=(int j) { i-=j; return *this; }
         inline iterator operator+(int j) const { return iterator(i+j); }
         inline iterator operator-(int j) const { return iterator(i-j); }
+        friend inline iterator operator+(int j, iterator k) { return k + j; }
         inline int operator-(iterator j) const { return i - j.i; }
         inline operator T*() const { return i; }
     };
@@ -194,6 +195,7 @@ struct QTypedArrayData
         inline const_iterator &operator-=(int j) { i-=j; return *this; }
         inline const_iterator operator+(int j) const { return const_iterator(i+j); }
         inline const_iterator operator-(int j) const { return const_iterator(i-j); }
+        friend inline const_iterator operator+(int j, const_iterator k) { return k + j; }
         inline int operator-(const_iterator j) const { return i - j.i; }
         inline operator const T*() const { return i; }
     };
