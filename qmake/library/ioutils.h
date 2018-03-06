@@ -29,6 +29,8 @@
 #ifndef IOUTILS_H
 #define IOUTILS_H
 
+#include "qmake_global.h"
+
 #include <qstring.h>
 
 QT_BEGIN_NAMESPACE
@@ -39,7 +41,7 @@ namespace QMakeInternal {
   This class provides replacement functionality for QFileInfo, QFile & QDir,
   as these are abysmally slow.
 */
-class IoUtils {
+class QMAKE_EXPORT IoUtils {
 public:
     enum FileType {
         FileNotFound = 0,
@@ -64,9 +66,9 @@ public:
 #endif
 #if defined(PROEVALUATOR_FULL)
     static bool touchFile(const QString &targetFileName, const QString &referenceFileName, QString *errorString);
-#endif
-#ifdef Q_OS_UNIX
+# if defined(QT_BUILD_QMAKE) && defined(Q_OS_UNIX)
     static bool readLinkTarget(const QString &symlinkPath, QString *target);
+# endif
 #endif
 };
 
