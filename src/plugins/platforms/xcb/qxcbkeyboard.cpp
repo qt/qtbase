@@ -52,10 +52,8 @@
 
 #include <xkbcommon/xkbcommon-keysyms.h>
 
-#if QT_CONFIG(xinput2)
-#include <X11/extensions/XI2proto.h>
-#undef KeyPress
-#undef KeyRelease
+#if QT_CONFIG(xcb_xinput)
+#include <xcb/xinput.h>
 #endif
 QT_BEGIN_NAMESPACE
 
@@ -824,20 +822,20 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
     }
 }
 
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
 void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
 {
     if (m_config && !connection()->hasXKB()) {
-        xXIModifierInfo *mods = static_cast<xXIModifierInfo *>(modInfo);
-        xXIGroupInfo *group = static_cast<xXIGroupInfo *>(groupInfo);
+        auto *mods = static_cast<xcb_input_modifier_info_t *>(modInfo);
+        auto *group = static_cast<xcb_input_group_info_t *>(groupInfo);
         const xkb_state_component changedComponents
                 = xkb_state_update_mask(m_xkbState.get(),
-                                        mods->base_mods,
-                                        mods->latched_mods,
-                                        mods->locked_mods,
-                                        group->base_group,
-                                        group->latched_group,
-                                        group->locked_group);
+                                        mods->base,
+                                        mods->latched,
+                                        mods->locked,
+                                        group->base,
+                                        group->latched,
+                                        group->locked);
 
         handleStateChanges(changedComponents);
     }

@@ -68,6 +68,9 @@
 #undef class
 #include <xcb/xfixes.h>
 #include <xcb/shape.h>
+#if QT_CONFIG(xcb_xinput)
+#include <xcb/xinput.h>
+#endif
 
 // xcb-icccm 3.8 support
 #ifdef XCB_ICCCM_NUM_WM_SIZE_HINTS_ELEMENTS
@@ -103,11 +106,6 @@
 #if QT_CONFIG(xcb_xlib)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#endif
-
-#if QT_CONFIG(xinput2)
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/XI2proto.h>
 #endif
 
 #define XCOORD_MAX 16383
@@ -520,7 +518,7 @@ void QXcbWindow::create()
                         atom(QXcbAtom::_XEMBED_INFO),
                         32, 2, (void *)data);
 
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
     if (connection()->hasXInput2()) {
         if (connection()->xi2MouseEventsDisabled())
             connection()->xi2SelectDeviceEventsCompatibility(m_window);
@@ -2149,7 +2147,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
     QPoint global(root_x, root_y);
 
     if (isWheel) {
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
         if (!connection()->isAtLeastXI21()) {
 #endif
             QPoint angleDelta;
@@ -2164,7 +2162,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
             if (modifiers & Qt::AltModifier)
                 std::swap(angleDelta.rx(), angleDelta.ry());
             QWindowSystemInterface::handleWheelEvent(window(), timestamp, local, global, QPoint(), angleDelta, modifiers);
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
         }
 #endif
         return;
@@ -2204,7 +2202,7 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
     if (conn) {
 
         const bool mouseButtonsPressed = (conn->buttonState() != Qt::NoButton);
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
         return mouseButtonsPressed || (conn->hasXInput2() && !conn->xi2MouseEventsDisabled());
 #else
         return mouseButtonsPressed;
@@ -2253,7 +2251,7 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
                                         quint8 mode, quint8 detail, xcb_timestamp_t timestamp)
 {
     connection()->setTime(timestamp);
-#ifdef XCB_USE_XINPUT21
+#if QT_CONFIG(xcb_xinput)
     // Updates scroll valuators, as user might have done some scrolling outside our X client.
     connection()->xi2UpdateScrollingDevices();
 #endif
@@ -2330,16 +2328,18 @@ void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
                             event->time, QEvent::MouseMove);
 }
 
-#if QT_CONFIG(xinput2)
-static inline int fixed1616ToInt(FP1616 val)
+#if QT_CONFIG(xcb_xinput)
+static inline int fixed1616ToInt(xcb_input_fp1616_t val)
 {
     return int(qreal(val) / 0x10000);
 }
 
+#define qt_xcb_mask_is_set(ptr, event) (((unsigned char*)(ptr))[(event)>>3] & (1 << ((event) & 7)))
+
 void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource source)
 {
     QXcbConnection *conn = connection();
-    xXIDeviceEvent *ev = reinterpret_cast<xXIDeviceEvent *>(event);
+    auto *ev = reinterpret_cast<xcb_input_button_press_event_t *>(event);
 
     if (ev->buttons_len > 0) {
         unsigned char *buttonMask = (unsigned char *) &ev[1];
@@ -2347,16 +2347,16 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
         // XIPointerEmulated being set: https://bugs.freedesktop.org/show_bug.cgi?id=98188
         // Filter them out by other attributes: when their source device is a touch screen
         // and the LMB is pressed.
-        if (XIMaskIsSet(buttonMask, 1) && conn->isTouchScreen(ev->sourceid)) {
+        if (qt_xcb_mask_is_set(buttonMask, 1) && conn->isTouchScreen(ev->sourceid)) {
             if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
                 qCDebug(lcQpaXInput, "XI2 mouse event from touch device %d was ignored", ev->sourceid);
             return;
         }
         for (int i = 1; i <= 15; ++i)
-            conn->setButtonState(conn->translateMouseButton(i), XIMaskIsSet(buttonMask, i));
+            conn->setButtonState(conn->translateMouseButton(i), qt_xcb_mask_is_set(buttonMask, i));
     }
 
-    const Qt::KeyboardModifiers modifiers = conn->keyboard()->translateModifiers(ev->mods.effective_mods);
+    const Qt::KeyboardModifiers modifiers = conn->keyboard()->translateModifiers(ev->mods.effective);
     const int event_x = fixed1616ToInt(ev->event_x);
     const int event_y = fixed1616ToInt(ev->event_y);
     const int root_x = fixed1616ToInt(ev->root_x);
@@ -2373,47 +2373,47 @@ void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource 
         sourceName = me.valueToKey(source);
     }
 
-    switch (ev->evtype) {
-    case XI_ButtonPress:
+    switch (ev->event_type) {
+    case XCB_INPUT_BUTTON_PRESS:
         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
             qCDebug(lcQpaXInputEvents, "XI2 mouse press, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButtonState(button, true);
         handleButtonPressEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, QEvent::MouseButtonPress, source);
         break;
-    case XI_ButtonRelease:
+    case XCB_INPUT_BUTTON_RELEASE:
         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
             qCDebug(lcQpaXInputEvents, "XI2 mouse release, button %d, time %d, source %s", button, ev->time, sourceName);
         conn->setButtonState(button, false);
         handleButtonReleaseEvent(event_x, event_y, root_x, root_y, ev->detail, modifiers, ev->time, QEvent::MouseButtonRelease, source);
         break;
-    case XI_Motion:
+    case XCB_INPUT_MOTION:
         if (Q_UNLIKELY(lcQpaXInputEvents().isDebugEnabled()))
             qCDebug(lcQpaXInputEvents, "XI2 mouse motion %d,%d, time %d, source %s", event_x, event_y, ev->time, sourceName);
         handleMotionNotifyEvent(event_x, event_y, root_x, root_y, modifiers, ev->time, QEvent::MouseMove, source);
         break;
     default:
-        qWarning() << "Unrecognized XI2 mouse event" << ev->evtype;
+        qWarning() << "Unrecognized XI2 mouse event" << ev->event_type;
         break;
     }
 }
 
 void QXcbWindow::handleXIEnterLeave(xcb_ge_event_t *event)
 {
-    xXIEnterEvent *ev = reinterpret_cast<xXIEnterEvent *>(event);
+    auto *ev = reinterpret_cast<xcb_input_enter_event_t *>(event);
 
     // Compare the window with current mouse grabber to prevent deliver events to any other windows.
     // If leave event occurs and the window is under mouse - allow to deliver the leave event.
     QXcbWindow *mouseGrabber = connection()->mouseGrabber();
     if (mouseGrabber && mouseGrabber != this
-            && (ev->evtype != XI_Leave || QGuiApplicationPrivate::currentMouseWindow != window())) {
+            && (ev->event_type != XCB_INPUT_LEAVE || QGuiApplicationPrivate::currentMouseWindow != window())) {
         return;
     }
 
     const int root_x = fixed1616ToInt(ev->root_x);
     const int root_y = fixed1616ToInt(ev->root_y);
 
-    switch (ev->evtype) {
-    case XI_Enter: {
+    switch (ev->event_type) {
+    case XCB_INPUT_ENTER: {
         const int event_x = fixed1616ToInt(ev->event_x);
         const int event_y = fixed1616ToInt(ev->event_y);
         qCDebug(lcQpaXInputEvents, "XI2 mouse enter %d,%d, mode %d, detail %d, time %d",
@@ -2421,7 +2421,7 @@ void QXcbWindow::handleXIEnterLeave(xcb_ge_event_t *event)
         handleEnterNotifyEvent(event_x, event_y, root_x, root_y, ev->mode, ev->detail, ev->time);
         break;
     }
-    case XI_Leave:
+    case XCB_INPUT_LEAVE:
         qCDebug(lcQpaXInputEvents, "XI2 mouse leave, mode %d, detail %d, time %d",
                 ev->mode, ev->detail, ev->time);
         connection()->keyboard()->updateXKBStateFromXI(&ev->mods, &ev->group);
@@ -2563,7 +2563,7 @@ bool QXcbWindow::setMouseGrabEnabled(bool grab)
     if (grab && !connection()->canGrab())
         return false;
 
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
     if (connection()->hasXInput2() && !connection()->xi2MouseEventsDisabled()) {
         bool result = connection()->xi2SetMouseGrabEnabled(m_window, grab);
         if (grab && result)
@@ -2654,7 +2654,7 @@ bool QXcbWindow::startSystemMoveResize(const QPoint &pos, int corner)
     if (!connection()->wmSupport()->isSupportedByWM(moveResize))
         return false;
     const QPoint globalPos = QHighDpi::toNativePixels(window()->mapToGlobal(pos), window()->screen());
-#ifdef XCB_USE_XINPUT22
+#if QT_CONFIG(xcb_xinput)
     if (connection()->startSystemMoveResizeForTouchBegin(m_window, globalPos, corner))
         return true;
 #endif

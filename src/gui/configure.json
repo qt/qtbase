@@ -44,7 +44,7 @@
             "xcb": { "type": "enum", "values": [ "no", "yes", "qt", "system" ] },
             "xcb-native-painting": "boolean",
             "xcb-xlib": "boolean",
-            "xinput2": "boolean",
+            "xcb-xinput": "boolean",
             "xkb": "boolean",
             "xkbcommon": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "xkbcommon-evdev": "boolean",
@@ -566,33 +566,22 @@
                 "-lxcb-glx -lxcb"
             ]
         },
-        "xinput2": {
-            "label": "Xinput2",
+        "xcb_xinput": {
+            "label": "XCB XInput",
             "test": {
-                "include": [ "X11/Xlib.h", "X11/extensions/XInput2.h", "X11/extensions/Xge.h" ],
-                "tail": [
-                    "#ifndef XInput_2_0",
-                    "#  error Missing XInput_2_0 #define",
-                    "#endif"
-                ],
+                "include": [ "xcb/xcb.h", "xcb/xinput.h" ],
                 "main": [
-                    "// need XGenericEventCookie for XInput2 to work",
-                    "Display *dpy = 0;",
-                    "XEvent xevent;",
-                    "XIEvent *xievent = 0;",
-                    "XIDeviceEvent *xideviceevent = 0;",
-                    "XIHierarchyEvent *xihierarchyevent = 0;",
-                    "int deviceid = 0;",
-                    "int len = 0;",
-                    "(void) XGetEventData(dpy, &xevent.xcookie);",
-                    "XFreeEventData(dpy, &xevent.xcookie);",
-                    "(void) XIListProperties(dpy, deviceid, &len);"
-                ],
-                "qmake": "CONFIG += x11"
+                    "int primaryScreen = 0;",
+                    "xcb_connection_t *connection = xcb_connect(\"\", &primaryScreen);",
+                    "xcb_generic_error_t *error = 0;",
+                    "xcb_input_xi_query_version_cookie_t xinput_query_cookie = xcb_input_xi_query_version(",
+                    "        connection, XCB_INPUT_MAJOR_VERSION, XCB_INPUT_MINOR_VERSION);",
+                    "xcb_input_xi_query_version_reply(connection, xinput_query_cookie, &error);"
+                ]
             },
             "sources": [
-                { "type": "pkgConfig", "args": "xi" },
-                "-lXi"
+                { "type": "pkgConfig", "args": "xcb-xinput >= 1.12 xcb" },
+                "-lxcb-xinput -lxcb"
             ]
         },
         "xkbcommon": {
@@ -1352,10 +1341,10 @@
             "condition": "features.sessionmanager && libs.x11sm",
             "output": [ "privateFeature" ]
         },
-        "xinput2": {
-            "label": "Xinput2",
+        "xcb-xinput": {
+            "label": "XCB XInput",
             "emitIf": "features.xcb",
-            "condition": "features.xcb-xlib && libs.xinput2",
+            "condition": "!features.system-xcb || libs.xcb_xinput",
             "output": [ "privateFeature" ]
         },
         "xkbcommon-evdev": {
@@ -1726,7 +1715,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "X11",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "egl_x11", "xinput2", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xlib", "xkbcommon-system", "xcb-native-painting"
+                        "system-xcb", "egl_x11", "xkb", "xlib", "xcb-render", "xcb-glx", "xcb-xinput", "xcb-xlib", "xkbcommon-system", "xcb-native-painting"
                     ]
                 },
                 {

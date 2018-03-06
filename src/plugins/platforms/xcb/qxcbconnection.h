@@ -71,16 +71,6 @@
 #include <QTabletEvent>
 #endif
 
-#if QT_CONFIG(xinput2)
-#include <X11/extensions/XI2.h>
-#ifdef XIScrollClass
-#define XCB_USE_XINPUT21    // XI 2.1 adds smooth scrolling support
-#ifdef XI_TouchBeginMask
-#define XCB_USE_XINPUT22    // XI 2.2 adds multi-point touch support
-#endif
-#endif
-#endif // QT_CONFIG(xinput2)
-
 struct xcb_randr_get_output_info_reply_t;
 
 QT_BEGIN_NAMESPACE
@@ -359,7 +349,7 @@ public:
     virtual void handleFocusInEvent(const xcb_focus_in_event_t *) {}
     virtual void handleFocusOutEvent(const xcb_focus_out_event_t *) {}
     virtual void handlePropertyNotifyEvent(const xcb_property_notify_event_t *) {}
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
     virtual void handleXIMouseEvent(xcb_ge_event_t *, Qt::MouseEventSource = Qt::MouseEventNotSynthesized) {}
     virtual void handleXIEnterLeave(xcb_ge_event_t *) {}
 #endif
@@ -511,7 +501,7 @@ public:
     static bool xEmbedSystemTrayAvailable();
     static bool xEmbedSystemTrayVisualHasAlphaChannel();
 
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
     void xi2SelectStateEvents();
     void xi2SelectDeviceEvents(xcb_window_t window);
     void xi2SelectDeviceEventsCompatibility(xcb_window_t window);
@@ -520,13 +510,9 @@ public:
     bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
     bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
     Qt::MouseButton xiToQtMouseButton(uint32_t b);
-#ifdef XCB_USE_XINPUT21
     void xi2UpdateScrollingDevices();
-#endif
-#ifdef XCB_USE_XINPUT22
     bool startSystemMoveResizeForTouchBegin(xcb_window_t window, const QPoint &point, int corner);
     bool isTouchScreen(int id);
-#endif
 #endif
     QXcbEventReader *eventReader() const { return m_reader; }
 
@@ -568,7 +554,7 @@ private:
     bool compressEvent(xcb_generic_event_t *event, int currentIndex, QXcbEventArray *eventqueue) const;
 
     bool m_xi2Enabled = false;
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
     int m_xi2Minor = -1;
     void initializeXInput2();
     void xi2SetupDevice(void *info, bool removeExisting = true);
@@ -596,10 +582,8 @@ private:
     void xi2HandleEvent(xcb_ge_event_t *event);
     void xi2HandleHierarchyEvent(void *event);
     void xi2HandleDeviceChangedEvent(void *event);
-    int m_xiOpCode, m_xiEventBase, m_xiErrorBase;
-#ifdef XCB_USE_XINPUT22
+    int m_xiOpCode;
     void xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindow);
-#endif // XCB_USE_XINPUT22
 #if QT_CONFIG(tabletevent)
     struct TabletData {
         int deviceId = 0;
@@ -634,14 +618,11 @@ private:
         QPointF lastScrollPosition;
     };
     QHash<int, ScrollingDevice> m_scrollingDevices;
-#ifdef XCB_USE_XINPUT21
     void xi2HandleScrollEvent(void *event, ScrollingDevice &scrollingDevice);
     void xi2UpdateScrollingDevice(ScrollingDevice &scrollingDevice);
     ScrollingDevice *scrollingDeviceForId(int id);
-#endif
 
     static bool xi2GetValuatorValueIfSet(const void *event, int valuatorNum, double *value);
-    static void xi2PrepareXIGenericDeviceEvent(xcb_ge_event_t *event);
 #endif
 
     xcb_connection_t *m_connection = nullptr;
@@ -675,16 +656,14 @@ private:
 #endif
     QXcbEventReader *m_reader = nullptr;
 
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
     QHash<int, TouchDeviceData> m_touchDevices;
-#ifdef XCB_USE_XINPUT22
     struct StartSystemMoveResizeInfo {
         xcb_window_t window = XCB_NONE;
         uint16_t deviceid;
         uint32_t pointid;
         int corner;
     } m_startSystemMoveResizeInfo;
-#endif
 #endif
     WindowMapper m_mapper;
 
@@ -693,6 +672,9 @@ private:
     uint32_t xfixes_first_event = 0;
     uint32_t xrandr_first_event = 0;
     uint32_t xkb_first_event = 0;
+#if QT_CONFIG(xcb_xinput)
+    uint32_t xinput_first_event = 0;
+#endif
 
     bool has_xfixes = false;
     bool has_xinerama_extension = false;
@@ -726,7 +708,7 @@ private:
     QHash<qint32, qint32> m_peekerToCachedIndex;
     friend class QXcbEventReader;
 };
-#if QT_CONFIG(xinput2)
+#if QT_CONFIG(xcb_xinput)
 #if QT_CONFIG(tabletevent)
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData::ValuatorClassInfo, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QXcbConnection::TabletData, Q_MOVABLE_TYPE);

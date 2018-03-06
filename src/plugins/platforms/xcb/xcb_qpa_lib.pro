@@ -55,11 +55,10 @@ DEFINES += QT_BUILD_XCB_PLUGIN
 
 qtConfig(xcb-xlib) {
     QMAKE_USE += xcb_xlib
+}
 
-    qtConfig(xinput2) {
-        SOURCES += qxcbconnection_xi2.cpp
-        QMAKE_USE += xinput2
-    }
+qtConfig(xcb-xinput) {
+    SOURCES += qxcbconnection_xi2.cpp
 }
 
 qtConfig(xcb-sm) {
@@ -86,6 +85,7 @@ qtConfig(vulkan) {
 } else {
     qtConfig(xkb): QMAKE_USE += xcb_xkb
     qtConfig(xcb-render): QMAKE_USE += xcb_render
+    qtConfig(xcb-xinput): QMAKE_USE += xcb_xinput
     QMAKE_USE += xcb_syslibs
 }
 

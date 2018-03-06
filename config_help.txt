@@ -297,7 +297,7 @@ Gui, printing, widget options:
     -libinput .......... Enable libinput support [auto]
     -mtdev ............. Enable mtdev support [auto]
     -tslib ............. Enable tslib support [auto]
-    -xinput2 ........... Enable XInput2 support [auto]
+    -xcb-xinput ........ Enable XInput2 support [auto]
     -xkbcommon-x11 ..... Select xkbcommon used in combination with xcb
                          [system/qt/no]
     -xkbcommon-evdev ... Enable X-less xkbcommon in combination with libinput

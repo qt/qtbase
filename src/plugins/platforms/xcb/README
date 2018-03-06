@@ -3,7 +3,7 @@ Requires libxcb >= 1.5.
 PACKAGE DEPENDENCIES
 
 Required packages:
-libxcb1 libxcb1-dev libx11-xcb1 libx11-xcb-dev libxcb-keysyms1 libxcb-keysyms1-dev libxcb-image0 libxcb-image0-dev libxcb-shm0 libxcb-shm0-dev libxcb-icccm1 libxcb-icccm1-dev libxcb-sync0 libxcb-sync0-dev libxcb-render-util0 libxcb-render-util0-dev libxcb-xfixes0-dev libxrender-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-glx0-dev libxcb-xinerama0-dev
+libxcb1 libxcb1-dev libx11-xcb1 libx11-xcb-dev libxcb-keysyms1 libxcb-keysyms1-dev libxcb-image0 libxcb-image0-dev libxcb-shm0 libxcb-shm0-dev libxcb-icccm1 libxcb-icccm1-dev libxcb-sync0 libxcb-sync0-dev libxcb-render-util0 libxcb-render-util0-dev libxcb-xfixes0-dev libxrender-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-glx0-dev libxcb-xinerama0-dev libxcb-xinput0-dev
 
 On Ubuntu 11.10 icccm1 is replaced by icccm4 and xcb-render-util is not available:
 libxcb1 libxcb1-dev libx11-xcb1 libx11-xcb-dev libxcb-keysyms1 libxcb-keysyms1-dev libxcb-image0 libxcb-image0-dev libxcb-shm0 libxcb-shm0-dev libxcb-icccm4 libxcb-icccm4-dev libxcb-sync0 libxcb-sync0-dev libxcb-xfixes0-dev libxrender-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-glx0-dev libxcb-xinerama0-dev
@@ -21,12 +21,3 @@ REDUCING RUNTIME DEPENDENCIES
 The '-qt-xcb' configure option can be used to get rid of most xcb- dependencies. Only libxcb will
 still be linked dynamically, since it will be most likely be pulled in via other dependencies anyway.
 This should allow for binaries that are portable across most modern Linux distributions.
-
-PACKAGE VERSION REQUIREMENTS
-
-When using touch input via XInput 2.2 or higher, there is a potential issue on systems that ship with
-a libXi older than 1.7.5. This is because XIAllowTouchEvents can deadlock with libXi 1.7.4 and earlier.
-When touch events are never received, this is not an issue, so plain mouse/keyboard systems are not affected.
-Qt versions before 5.8 attempted to recognize this scenario based on the pkg-config package version and skip
-the call. This has been removed starting from 5.8 since relying on pkg-config package versions is unsafe given
-that Qt must also support systems with limited or incomplete pkg-config setups.
