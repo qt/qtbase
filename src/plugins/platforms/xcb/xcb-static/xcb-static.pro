@@ -2,7 +2,7 @@
 # Statically compile in code for
 # libxcb-fixes, libxcb-randr, libxcb-shm, libxcb-sync, libxcb-image,
 # libxcb-keysyms, libxcb-icccm, libxcb-renderutil, libxcb-xkb,
-# libxcb-xinerama
+# libxcb-xinerama, libxcb-xinput
 #
 CONFIG += static
 
@@ -29,7 +29,8 @@ SOURCES += \
     $$LIBXCB_DIR/render.c \
     $$LIBXCB_DIR/shape.c \
     $$LIBXCB_DIR/xkb.c \
-    $$LIBXCB_DIR/xinerama.c
+    $$LIBXCB_DIR/xinerama.c \
+    $$LIBXCB_DIR/xinput.c
 
 #
 # xcb-util

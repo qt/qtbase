@@ -4,6 +4,8 @@ Contains the header and sources files from selected xcb libraries:
        xfixes, xinerama sources)
    # libxkbcommon-x11 requires libxcb-xkb >= 1.10
    libxcb-1.10 together with xcb-proto-1.10 (xkb sources)
+   libxcb-1.13 together with xcb-proto-1.13 (xinput sources with removed
+       Pointer Barriers API and SendExtensionEvent API)
    libxcb-util-image-0.3.9
    libxcb-util-keysyms-0.3.9
    libxcb-util-renderutil-0.3.8
