@@ -2333,7 +2333,7 @@ void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 #if QT_CONFIG(xinput2)
 static inline int fixed1616ToInt(FP1616 val)
 {
-    return int((qreal(val >> 16)) + (val & 0xFFFF) / (qreal)0xFFFF);
+    return int(qreal(val) / 0x10000);
 }
 
 void QXcbWindow::handleXIMouseEvent(xcb_ge_event_t *event, Qt::MouseEventSource source)
