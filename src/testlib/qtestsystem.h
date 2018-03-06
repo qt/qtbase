@@ -114,7 +114,7 @@ namespace QTest
     {
         bool becameActive = qWaitFor([&]() { return window->isActive(); }, timeout);
 
-        // Try ensuring the platform window receives the real position and geometry.
+        // Try ensuring the platform window receives the real position.
         // (i.e. that window->pos() reflects reality)
         // isActive() ( == FocusIn in case of X) does not guarantee this. It seems some WMs randomly
         // send the final ConfigureNotify (the one with the non-bogus 0,0 position) after the FocusIn.
@@ -122,7 +122,7 @@ namespace QTest
         // qWaitForWindowShown() will generate bogus results.
         if (becameActive) {
             int waitNo = 0; // 0, 0 might be a valid position after all, so do not wait for ever
-            while (window->frameGeometry().isNull()) {
+            while (window->position().isNull()) {
                 if (waitNo++ > timeout / 10)
                     break;
                 qWait(10);
