@@ -431,6 +431,7 @@ void tst_QGraphicsView::interactive()
     QCOMPARE(item->events.size(), 0);
     view.show();
     view.activateWindow();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QTRY_COMPARE(item->events.size(), 1); // activate
@@ -1655,6 +1656,7 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
     view.setFrameStyle(0);
     view.resize(300, 300);
     view.showNormal();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(rect->numPaints > 0);
 
@@ -2149,6 +2151,7 @@ void tst_QGraphicsView::sendEvent()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
@@ -2216,6 +2219,7 @@ void tst_QGraphicsView::wheelEvent()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
@@ -2452,6 +2456,7 @@ void tst_QGraphicsView::viewportUpdateMode()
     // Show the view, and initialize our test.
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
     view.lastUpdateRegions.clear();
@@ -2536,6 +2541,7 @@ void tst_QGraphicsView::viewportUpdateMode2()
     view.resize(200 + left + right, 200 + top + bottom);
     toplevel.show();
     qApp->setActiveWindow(&toplevel);
+    QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
     QVERIFY(QTest::qWaitForWindowActive(&toplevel));
     QTRY_VERIFY(view.painted);
     const QRect viewportRect = view.viewport()->rect();
@@ -3192,6 +3198,7 @@ void tst_QGraphicsView::task172231_untransformableItems()
     view.scale(2, 1);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
@@ -3994,6 +4001,7 @@ void tst_QGraphicsView::exposeRegion()
     view.setScene(&scene);
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QTRY_VERIFY(item->paints > 0);
@@ -4148,6 +4156,7 @@ void tst_QGraphicsView::update2()
     view.resize(200, 200);
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(rect->numPaints > 0);
 
@@ -4217,6 +4226,7 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape()
     CustomView view(&scene);
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.painted);
 
@@ -4270,6 +4280,7 @@ void tst_QGraphicsView::update_ancestorClipsChildrenToShape2()
     CustomView view(&scene);
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.painted);
 
@@ -4332,6 +4343,7 @@ void tst_QGraphicsView::inputMethodSensitivity()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
@@ -4426,6 +4438,7 @@ void tst_QGraphicsView::inputContextReset()
 
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
@@ -4573,6 +4586,7 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     view.setWindowFlags(Qt::X11BypassWindowManagerHint);
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     // This is highly unstable (observed to pass on Windows and some Linux configurations).
 #ifndef Q_OS_MAC
@@ -4700,6 +4714,7 @@ void tst_QGraphicsView::QTBUG_4151_clipAndIgnore()
     view.resize(75, 75);
     view.show();
     view.activateWindow();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
@@ -4737,6 +4752,7 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     view.scale(4.15, 4.15);
     view.showNormal();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     view.viewport()->repaint(10,10,20,20);
@@ -4861,6 +4877,7 @@ void tst_QGraphicsView::QTBUG_16063_microFocusRect()
 
     view.setFixedSize(40, 40);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     scene.setFocusItem(item);

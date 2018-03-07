@@ -986,6 +986,7 @@ void tst_QGraphicsItem::inputMethodHints()
     QGraphicsView view(&scene);
     QApplication::setActiveWindow(&view);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     item->setFocus();
     QTRY_VERIFY(item->hasFocus());
@@ -1036,6 +1037,7 @@ void tst_QGraphicsItem::toolTip()
     view.setFixedSize(200, 200);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     {
         QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().topLeft(),
@@ -3251,6 +3253,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     EventTester *tester = new EventTester;
@@ -4975,6 +4978,7 @@ void tst_QGraphicsItem::sceneEventFilter()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QGraphicsTextItem *text1 = scene.addText(QLatin1String("Text1"));
@@ -6850,6 +6854,7 @@ void tst_QGraphicsItem::opacity2()
 
     MyGraphicsView view(&scene);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints >= 1);
 
@@ -6927,6 +6932,7 @@ void tst_QGraphicsItem::opacityZeroUpdates()
 
     MyGraphicsView view(&scene);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints > 0);
 
@@ -7322,6 +7328,7 @@ void tst_QGraphicsItem::cacheMode()
     view.resize(150, 150);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // Increase the probability of window activation
@@ -7516,6 +7523,7 @@ void tst_QGraphicsItem::cacheMode2()
     view.resize(150, 150);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     // Increase the probability of window activation
@@ -8180,6 +8188,7 @@ void tst_QGraphicsItem::moveLineItem()
 
     MyGraphicsView view(&scene);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     view.reset();
 
@@ -8250,6 +8259,7 @@ void tst_QGraphicsItem::sorting()
     view.setFrameStyle(0);
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTest::qWait(100);
 
@@ -8286,6 +8296,7 @@ void tst_QGraphicsItem::itemHasNoContents()
     QGraphicsView view(&scene);
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(!_paintedItems.isEmpty());
 
@@ -9294,6 +9305,7 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
@@ -9680,6 +9692,7 @@ void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
     QGraphicsView view(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
@@ -10810,6 +10823,7 @@ void tst_QGraphicsItem::scroll()
     MyGraphicsView view(&scene);
     view.setFrameStyle(0);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints > 0);
 
@@ -11332,6 +11346,7 @@ void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
     MyGraphicsView view(&scene);
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints > 0);
 
@@ -11380,6 +11395,7 @@ void tst_QGraphicsItem::QT_2653_fullUpdateDiscardingOpacityUpdate()
     parentGreen->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     view.reset();
 
@@ -11426,6 +11442,7 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
 
     view.show();
     qApp->setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     view.reset();
     origView.reset();
@@ -11565,6 +11582,7 @@ void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
     item2->setParentItem(item);
     scene.addItem(item);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(view.windowHandle()));
     QVERIFY(QTest::qWaitForWindowActive(view.windowHandle()));
     view.activateWindow();
     QTRY_VERIFY(view.isActiveWindow());
@@ -11596,6 +11614,7 @@ void tst_QGraphicsItem::itemDiesDuringDraggingOperation()
     scene.addItem(item);
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget *)&view);
     QGraphicsSceneDragDropEvent dragEnter(QEvent::GraphicsSceneDragEnter);
@@ -11623,6 +11642,7 @@ void tst_QGraphicsItem::QTBUG_12112_focusItem()
 
     view.show();
     QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), (QWidget *)&view);
 
