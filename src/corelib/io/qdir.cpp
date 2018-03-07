@@ -2001,7 +2001,7 @@ QString QDir::homePath()
 
     Returns the system's temporary directory.
 
-    The directory is constructed using the absolute path of the temporary directory,
+    The directory is constructed using the absolute canonical path of the temporary directory,
     ensuring that its path() will be the same as its absolutePath().
 
     See tempPath() for details.
@@ -2010,7 +2010,7 @@ QString QDir::homePath()
 */
 
 /*!
-    Returns the absolute path of the system's temporary directory.
+    Returns the absolute canonical path of the system's temporary directory.
 
     On Unix/Linux systems this is the path in the \c TMPDIR environment
     variable or \c{/tmp} if \c TMPDIR is not defined. On Windows this is

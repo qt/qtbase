@@ -1523,7 +1523,7 @@ QString QFileSystemEngine::tempPath()
             temp = QLatin1String(_PATH_TMP);
         }
     }
-    return QDir::cleanPath(temp);
+    return QDir(QDir::cleanPath(temp)).canonicalPath();
 #endif
 }
 
