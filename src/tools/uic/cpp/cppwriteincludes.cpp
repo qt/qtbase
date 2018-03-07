@@ -150,6 +150,8 @@ void WriteIncludes::acceptProperty(DomProperty *node)
         add(QLatin1String("QDate"));
     if (node->kind() == DomProperty::Locale)
         add(QLatin1String("QLocale"));
+    if (node->kind() == DomProperty::IconSet)
+        add(QLatin1String("QIcon"));
     TreeWalker::acceptProperty(node);
 }
 

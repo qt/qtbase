@@ -467,6 +467,11 @@ static QString msgRectMismatch(const QRect &r1, const QRect &r2)
     return result;
 }
 
+static bool isPlatformWayland()
+{
+    return !QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive);
+}
+
 void tst_QWindow::positioning()
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
@@ -474,7 +479,7 @@ void tst_QWindow::positioning()
         QSKIP("This platform does not support non-fullscreen windows");
     }
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This fails. Figure out why.");
 
     // Some platforms enforce minimum widths for windows, which can cause extra resize
@@ -780,7 +785,7 @@ void tst_QWindow::isExposed()
 
     window.hide();
 
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This is flaky. Figure out why.");
 
     QCoreApplication::processEvents();
@@ -791,8 +796,8 @@ void tst_QWindow::isExposed()
 
 void tst_QWindow::isActive()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     Window window;
     // Some platforms enforce minimum widths for windows, which can cause extra resize
@@ -1340,6 +1345,9 @@ void tst_QWindow::touchCancelWithTouchToMouse()
 
 void tst_QWindow::touchInterruptedByPopup()
 {
+    if (isPlatformWayland())
+        QSKIP("Wayland: This test crashes with xdg-shell unstable v6");
+
     InputTestWindow window;
     window.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
     window.show();
@@ -1475,8 +1483,8 @@ void tst_QWindow::close()
 
 void tst_QWindow::activateAndClose()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     for (int i = 0; i < 10; ++i)  {
        QWindow window;
@@ -1834,7 +1842,7 @@ void tst_QWindow::mask()
 
 void tst_QWindow::initialSize()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This fails. Figure out why.");
 
     QSize defaultSize(0,0);
@@ -1871,8 +1879,8 @@ static bool isPlatformOffscreenOrMinimal()
 
 void tst_QWindow::modalDialog()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     if (QGuiApplication::platformName() == QLatin1String("cocoa"))
         QSKIP("Test fails due to QTBUG-61965, and is slow due to QTBUG-61964");
@@ -1907,7 +1915,7 @@ void tst_QWindow::modalDialog()
 
 void tst_QWindow::modalDialogClosingOneOfTwoModal()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (isPlatformWayland())
         QSKIP("Wayland: This fails. Figure out why.");
 
     QWindow normalWindow;
@@ -1952,8 +1960,8 @@ void tst_QWindow::modalDialogClosingOneOfTwoModal()
 
 void tst_QWindow::modalWithChildWindow()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     QWindow normalWindow;
     normalWindow.setFramePosition(m_availableTopLeft + QPoint(80, 80));
@@ -1986,8 +1994,8 @@ void tst_QWindow::modalWithChildWindow()
 
 void tst_QWindow::modalWindowModallity()
 {
-    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("Wayland: This fails. Figure out why.");
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
 
     QWindow normal_window;
     normal_window.setFramePosition(m_availableTopLeft + QPoint(80, 80));
@@ -2032,6 +2040,9 @@ void tst_QWindow::modalWindowPosition()
 #ifndef QT_NO_CURSOR
 void tst_QWindow::modalWindowEnterEventOnHide_QTBUG35109()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
     if (isPlatformOffscreenOrMinimal())
         QSKIP("Can't test window focusing on offscreen/minimal");
 

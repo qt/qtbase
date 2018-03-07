@@ -97,6 +97,7 @@ public:
         NonFullScreenWindows,
         NativeWidgets,
         WindowManagement,
+        WindowActivation, // whether requestActivate is supported
         SyncState,
         RasterGLSurface,
         AllGLFunctionsQueryable,
