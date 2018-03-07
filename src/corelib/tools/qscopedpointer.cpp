@@ -250,9 +250,12 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename T, typename Cleanup> void QScopedPointer<T, Cleanup>::reset(T *other = 0)
 
-    Deletes the existing object it is pointing to if any, and sets its pointer to
+    Deletes the existing object it is pointing to (if any), and sets its pointer to
     \a other. QScopedPointer now owns \a other and will delete it in its
     destructor.
+
+    To clear the pointer held without deleting the object it points to (and hence take ownership
+    of the object), use \l take() instead.
 */
 
 /*!
