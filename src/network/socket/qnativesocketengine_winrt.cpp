@@ -1699,41 +1699,6 @@ HRESULT QNativeSocketEnginePrivate::handleClientConnection(IStreamSocketListener
     return S_OK;
 }
 
-HRESULT QNativeSocketEnginePrivate::handleNewDatagram(IDatagramSocket *socket, IDatagramSocketMessageReceivedEventArgs *args)
-{
-    qCDebug(lcNetworkSocketVerbose) << this << Q_FUNC_INFO;
-    Q_Q(QNativeSocketEngine);
-    Q_UNUSED(socket);
-
-    WinRtDatagram datagram;
-    QHostAddress returnAddress;
-    ComPtr<IHostName> remoteHost;
-    HRESULT hr = args->get_RemoteAddress(&remoteHost);
-    RETURN_OK_IF_FAILED("Could not obtain remote host");
-    HString remoteHostString;
-    remoteHost->get_CanonicalName(remoteHostString.GetAddressOf());
-    RETURN_OK_IF_FAILED("Could not obtain remote host's canonical name");
-    returnAddress.setAddress(qt_QStringFromHString(remoteHostString));
-    datagram.header.senderAddress = returnAddress;
-    HString remotePort;
-    hr = args->get_RemotePort(remotePort.GetAddressOf());
-    RETURN_OK_IF_FAILED("Could not obtain remote port");
-    datagram.header.senderPort = qt_QStringFromHString(remotePort).toInt();
-
-    ComPtr<IDataReader> reader;
-    hr = args->GetDataReader(&reader);
-    RETURN_OK_IF_FAILED("Could not obtain data reader");
-    quint32 length;
-    hr = reader->get_UnconsumedBufferLength(&length);
-    RETURN_OK_IF_FAILED("Could not obtain unconsumed buffer length");
-    datagram.data.resize(length);
-    hr = reader->ReadBytes(length, reinterpret_cast<BYTE *>(datagram.data.data()));
-    RETURN_OK_IF_FAILED("Could not read datagram");
-    emit q->newDatagramReceived(datagram);
-
-    return S_OK;
-}
-
 QT_END_NAMESPACE
 
 #include "qnativesocketengine_winrt.moc"

@@ -229,8 +229,6 @@ private:
 
     bool emitReadReady = true;
 
-    HRESULT handleNewDatagram(ABI::Windows::Networking::Sockets::IDatagramSocket *socket,
-                              ABI::Windows::Networking::Sockets::IDatagramSocketMessageReceivedEventArgs *args);
     HRESULT handleClientConnection(ABI::Windows::Networking::Sockets::IStreamSocketListener *tcpListener,
                                    ABI::Windows::Networking::Sockets::IStreamSocketListenerConnectionReceivedEventArgs *args);
 };
