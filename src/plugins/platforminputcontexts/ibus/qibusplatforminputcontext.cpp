@@ -647,7 +647,7 @@ QString QIBusPlatformInputContextPrivate::getSocketPath()
     if (pos2 > 0)
         displayNumber = display.mid(pos, pos2 - pos);
     else
-        displayNumber = display.right(pos);
+        displayNumber = display.mid(pos);
     if (debug)
         qDebug() << "host=" << host << "displayNumber" << displayNumber;
 
