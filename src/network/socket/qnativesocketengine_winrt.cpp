@@ -485,6 +485,12 @@ static QByteArray socketDescription(const QAbstractSocketEngine *s)
                  " not in "#state1" or "#state2); \
         return (returnValue); \
     } } while (0)
+#define Q_CHECK_STATES3(function, state1, state2, state3, returnValue) do { \
+    if (d->socketState != (state1) && d->socketState != (state2) && d->socketState != (state3)) { \
+        qWarning(""#function" was called" \
+                 " not in "#state1", "#state2" or "#state3); \
+        return (returnValue); \
+    } } while (0)
 #define Q_CHECK_TYPE(function, type, returnValue) do { \
     if (d->socketType != (type)) { \
         qWarning(#function" was called by a" \
@@ -568,6 +574,28 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType type, QAbstract
     if (!d->createNewSocket(type, protocol))
         return false;
 
+    if (type == QAbstractSocket::UdpSocket) {
+        // Set the broadcasting flag if it's a UDP socket.
+        if (!setOption(BroadcastSocketOption, 1)) {
+            d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+                WinRTSocketEngine::BroadcastingInitFailedErrorString);
+            close();
+            return false;
+        }
+
+        // Set some extra flags that are interesting to us, but accept failure
+        setOption(ReceivePacketInformation, 1);
+        setOption(ReceiveHopLimit, 1);
+    }
+
+
+    // Make sure we receive out-of-band data
+    if (type == QAbstractSocket::TcpSocket
+        && !setOption(ReceiveOutOfBandData, 1)) {
+        qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
+    }
+
+
     d->socketType = type;
     d->socketProtocol = protocol;
     return true;
@@ -624,6 +652,10 @@ bool QNativeSocketEngine::isValid() const
 bool QNativeSocketEngine::connectToHost(const QHostAddress &address, quint16 port)
 {
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << address << port;
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::connectToHost(), false);
+    Q_CHECK_STATES3(QNativeSocketEngine::connectToHost(), QAbstractSocket::BoundState,
+        QAbstractSocket::UnconnectedState, QAbstractSocket::ConnectingState, false);
     const QString addressString = address.toString();
     return connectToHostByName(addressString, port);
 }
@@ -632,6 +664,9 @@ bool QNativeSocketEngine::connectToHostByName(const QString &name, quint16 port)
 {
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << name << port;
     Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::connectToHostByName(), false);
+    Q_CHECK_STATES3(QNativeSocketEngine::connectToHostByName(), QAbstractSocket::BoundState,
+        QAbstractSocket::UnconnectedState, QAbstractSocket::ConnectingState, false);
     HRESULT hr;
 
 #if _MSC_VER >= 1900
@@ -698,6 +733,9 @@ bool QNativeSocketEngine::bind(const QHostAddress &address, quint16 port)
 {
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << address << port;
     Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bind(), false);
+    Q_CHECK_STATE(QNativeSocketEngine::bind(), QAbstractSocket::UnconnectedState, false);
+
     HRESULT hr;
     // runOnXamlThread may only return S_OK (will assert otherwise) so no need to check its result.
     // hr is set inside the lambda though. If an error occurred hr will point that out.
@@ -783,7 +821,12 @@ bool QNativeSocketEngine::listen()
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::listen(), false);
     Q_CHECK_STATE(QNativeSocketEngine::listen(), QAbstractSocket::BoundState, false);
+#if QT_CONFIG(sctp)
+    Q_CHECK_TYPES(QNativeSocketEngine::listen(), QAbstractSocket::TcpSocket,
+        QAbstractSocket::SctpSocket, false);
+#else
     Q_CHECK_TYPE(QNativeSocketEngine::listen(), QAbstractSocket::TcpSocket, false);
+#endif
 
     if (d->tcpListener && d->socketDescriptor != -1) {
         d->socketState = QAbstractSocket::ListeningState;
@@ -798,7 +841,12 @@ int QNativeSocketEngine::accept()
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::accept(), -1);
     Q_CHECK_STATE(QNativeSocketEngine::accept(), QAbstractSocket::ListeningState, -1);
+#if QT_CONFIG(sctp)
+    Q_CHECK_TYPES(QNativeSocketEngine::accept(), QAbstractSocket::TcpSocket,
+        QAbstractSocket::SctpSocket, -1);
+#else
     Q_CHECK_TYPE(QNativeSocketEngine::accept(), QAbstractSocket::TcpSocket, -1);
+#endif
 
     if (d->socketDescriptor == -1 || d->pendingConnections.isEmpty()) {
         d->setError(QAbstractSocket::TemporaryError, WinRTSocketEngine::TemporaryErrorString);
@@ -887,6 +935,10 @@ void QNativeSocketEngine::close()
 
 bool QNativeSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress, const QNetworkInterface &iface)
 {
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::joinMulticastGroup(), false);
+    Q_CHECK_STATE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::joinMulticastGroup(), QAbstractSocket::UdpSocket, false);
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << groupAddress << iface;
     Q_UNIMPLEMENTED();
     return false;
@@ -894,6 +946,10 @@ bool QNativeSocketEngine::joinMulticastGroup(const QHostAddress &groupAddress, c
 
 bool QNativeSocketEngine::leaveMulticastGroup(const QHostAddress &groupAddress, const QNetworkInterface &iface)
 {
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::leaveMulticastGroup(), false);
+    Q_CHECK_STATE(QNativeSocketEngine::leaveMulticastGroup(), QAbstractSocket::BoundState, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::leaveMulticastGroup(), QAbstractSocket::UdpSocket, false);
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << groupAddress << iface;
     Q_UNIMPLEMENTED();
     return false;
@@ -901,12 +957,18 @@ bool QNativeSocketEngine::leaveMulticastGroup(const QHostAddress &groupAddress, 
 
 QNetworkInterface QNativeSocketEngine::multicastInterface() const
 {
+    Q_D(const QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::multicastInterface(), QNetworkInterface());
+    Q_CHECK_TYPE(QNativeSocketEngine::multicastInterface(), QAbstractSocket::UdpSocket, QNetworkInterface());
     Q_UNIMPLEMENTED();
     return QNetworkInterface();
 }
 
 bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 {
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::setMulticastInterface(), false);
+    Q_CHECK_TYPE(QNativeSocketEngine::setMulticastInterface(), QAbstractSocket::UdpSocket, false);
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << iface;
     Q_UNIMPLEMENTED();
     return false;
@@ -915,6 +977,8 @@ bool QNativeSocketEngine::setMulticastInterface(const QNetworkInterface &iface)
 qint64 QNativeSocketEngine::bytesAvailable() const
 {
     Q_D(const QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bytesAvailable(), -1);
+    Q_CHECK_NOT_STATE(QNativeSocketEngine::bytesAvailable(), QAbstractSocket::UnconnectedState, -1);
     if (d->socketType != QAbstractSocket::TcpSocket)
         return -1;
 
@@ -929,6 +993,8 @@ qint64 QNativeSocketEngine::read(char *data, qint64 maxlen)
 {
     qCDebug(lcNetworkSocketVerbose) << this << Q_FUNC_INFO << maxlen;
     Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::read(), -1);
+    Q_CHECK_STATES(QNativeSocketEngine::read(), QAbstractSocket::ConnectedState, QAbstractSocket::BoundState, -1);
     if (d->socketType != QAbstractSocket::TcpSocket)
         return -1;
 
@@ -967,8 +1033,8 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 len)
 {
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << data << len;
     Q_D(QNativeSocketEngine);
-    if (!isValid())
-        return -1;
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::write(), -1);
+    Q_CHECK_STATE(QNativeSocketEngine::write(), QAbstractSocket::ConnectedState, -1);
 
     HRESULT hr = E_FAIL;
     ComPtr<IOutputStream> stream;
@@ -993,6 +1059,10 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << maxlen;
 #ifndef QT_NO_UDPSOCKET
     Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::readDatagram(), -1);
+    Q_CHECK_STATES(QNativeSocketEngine::readDatagram(), QAbstractSocket::BoundState,
+        QAbstractSocket::ConnectedState, -1);
+
     QMutexLocker locker(&d->worker->mutex);
     if (d->socketType != QAbstractSocket::UdpSocket || d->worker->pendingDatagrams.isEmpty()) {
         if (header)
@@ -1035,6 +1105,10 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QI
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << data << len;
 #ifndef QT_NO_UDPSOCKET
     Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::writeDatagram(), -1);
+    Q_CHECK_STATES(QNativeSocketEngine::writeDatagram(), QAbstractSocket::BoundState,
+        QAbstractSocket::ConnectedState, -1);
+
     if (d->socketType != QAbstractSocket::UdpSocket)
         return -1;
 
@@ -1071,6 +1145,10 @@ qint64 QNativeSocketEngine::writeDatagram(const char *data, qint64 len, const QI
 bool QNativeSocketEngine::hasPendingDatagrams() const
 {
     Q_D(const QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::hasPendingDatagrams(), false);
+    Q_CHECK_NOT_STATE(QNativeSocketEngine::hasPendingDatagrams(), QAbstractSocket::UnconnectedState, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::hasPendingDatagrams(), QAbstractSocket::UdpSocket, false);
+
     QMutexLocker locker(&d->worker->mutex);
     return d->worker->pendingDatagrams.length() > 0;
 }
@@ -1078,6 +1156,9 @@ bool QNativeSocketEngine::hasPendingDatagrams() const
 qint64 QNativeSocketEngine::pendingDatagramSize() const
 {
     Q_D(const QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::pendingDatagramSize(), -1);
+    Q_CHECK_TYPE(QNativeSocketEngine::pendingDatagramSize(), QAbstractSocket::UdpSocket, -1);
+
     QMutexLocker locker(&d->worker->mutex);
     if (d->worker->pendingDatagrams.isEmpty())
         return -1;
@@ -1169,6 +1250,10 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << msecs;
     Q_UNUSED(timedOut);
     Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForWrite(), false);
+    Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForWrite(),
+        QAbstractSocket::UnconnectedState, false);
+
     if (d->socketState == QAbstractSocket::ConnectingState) {
         HRESULT hr = QWinRTFunctions::await(d->worker->connectOp, QWinRTFunctions::ProcessMainThreadEvents);
         if (SUCCEEDED(hr)) {
@@ -1182,6 +1267,11 @@ bool QNativeSocketEngine::waitForWrite(int msecs, bool *timedOut)
 bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWrite, bool checkRead, bool checkWrite, int msecs, bool *timedOut)
 {
     qCDebug(lcNetworkSocket) << this << Q_FUNC_INFO << checkRead << checkWrite << msecs;
+    Q_D(QNativeSocketEngine);
+    Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForReadOrWrite(), false);
+    Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForReadOrWrite(),
+        QAbstractSocket::UnconnectedState, false);
+
     Q_UNUSED(readyToRead);
     Q_UNUSED(readyToWrite);
     Q_UNUSED(timedOut);
