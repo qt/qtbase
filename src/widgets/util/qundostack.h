@@ -90,6 +90,11 @@ class Q_WIDGETS_EXPORT QUndoStack : public QObject
     Q_DECLARE_PRIVATE(QUndoStack)
     Q_PROPERTY(bool active READ isActive WRITE setActive)
     Q_PROPERTY(int undoLimit READ undoLimit WRITE setUndoLimit)
+    Q_PROPERTY(bool canUndo READ canUndo NOTIFY canUndoChanged)
+    Q_PROPERTY(bool canRedo READ canRedo NOTIFY canRedoChanged)
+    Q_PROPERTY(QString undoText READ undoText NOTIFY undoTextChanged)
+    Q_PROPERTY(QString redoText READ redoText NOTIFY redoTextChanged)
+    Q_PROPERTY(bool clean READ isClean NOTIFY cleanChanged)
 
 public:
     explicit QUndoStack(QObject *parent = nullptr);
