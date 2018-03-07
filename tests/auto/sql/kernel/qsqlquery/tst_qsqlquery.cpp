@@ -176,6 +176,8 @@ private slots:
     void emptyTableNavigate();
     void timeStampParsing_data() { generic_data(); }
     void timeStampParsing();
+    void sqliteVirtualTable_data() { generic_data("QSQLITE"); }
+    void sqliteVirtualTable();
 
 #ifdef NOT_READY_YET
     void task_229811();
@@ -4621,6 +4623,45 @@ void tst_QSqlQuery::dateTime()
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toDateTime(), dt);
     }
+}
+
+void tst_QSqlQuery::sqliteVirtualTable()
+{
+    // Virtual tables can behave differently when it comes to prepared
+    // queries, so we need to check these explicitly
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const auto tableName = qTableName("sqliteVirtual", __FILE__, db);
+    QSqlQuery qry(db);
+    QVERIFY_SQL(qry, exec("create virtual table " + tableName + " using fts3(id, name)"));
+
+    // Delibrately malform the query to try and provoke a potential crash situation
+    QVERIFY_SQL(qry, prepare("select * from " + tableName + " where name match '?'"));
+    qry.addBindValue("Andy");
+    QVERIFY(!qry.exec());
+
+    QVERIFY_SQL(qry, prepare("insert into " + tableName + "(id, name) VALUES (?, ?)"));
+    qry.addBindValue(1);
+    qry.addBindValue("Andy");
+    QVERIFY_SQL(qry, exec());
+
+    QVERIFY_SQL(qry, exec("select * from " + tableName));
+    QVERIFY(qry.next());
+    QCOMPARE(qry.value(0).toInt(), 1);
+    QCOMPARE(qry.value(1).toString(), "Andy");
+
+    QVERIFY_SQL(qry, prepare("insert into " + tableName + "(id, name) values (:id, :name)"));
+    qry.bindValue(":id", 2);
+    qry.bindValue(":name", "Peter");
+    QVERIFY_SQL(qry, exec());
+
+    QVERIFY_SQL(qry, prepare("select * from " + tableName + " where name match ?"));
+    qry.addBindValue("Peter");
+    QVERIFY_SQL(qry, exec());
+    QVERIFY(qry.next());
+    QCOMPARE(qry.value(0).toInt(), 2);
+    QCOMPARE(qry.value(1).toString(), "Peter");
 }
 
 QTEST_MAIN( tst_QSqlQuery )

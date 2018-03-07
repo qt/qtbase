@@ -467,7 +467,10 @@ bool QSQLiteResult::exec()
 
 #if (SQLITE_VERSION_NUMBER >= 3003011)
     // In the case of the reuse of a named placeholder
-    if (paramCount < values.count()) {
+    // We need to check explicitly that paramCount is greater than 1, as sqlite
+    // can end up in a case where for virtual tables it returns 0 even though it
+    // has parameters
+    if (paramCount > 1 && paramCount < values.count()) {
         const auto countIndexes = [](int counter, const QList<int>& indexList) {
                                       return counter + indexList.length();
                                   };
