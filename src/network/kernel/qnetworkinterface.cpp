@@ -706,7 +706,7 @@ int QNetworkInterface::index() const
 
     \sa QUdpSocket
 */
-int QNetworkInterface::maxTransmissionUnit() const
+int QNetworkInterface::maximumTransmissionUnit() const
 {
     return d ? d->mtu : 0;
 }
