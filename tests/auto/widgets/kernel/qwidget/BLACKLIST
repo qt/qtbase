@@ -15,19 +15,9 @@ rhel-7.4
 osx
 [focusProxyAndInputMethods]
 linux
-[showMaximized]
-osx
-[setGeometry]
-osx
-[raise]
-osx
-[resizeEvent]
-osx
 [setWindowGeometry]
 osx
 [windowMoveResize]
-osx
-[childEvents]
 osx
 [renderInvisible]
 osx
@@ -40,27 +30,8 @@ osx
 [showMinimizedKeepsFocus]
 osx-10.11 ci
 osx-10.12 ci
-[moveWindowInShowEvent:1]
-osx
-[moveWindowInShowEvent:2]
-osx
-[taskQTBUG_4055_sendSyntheticEnterLeave]
-osx
-[syntheticEnterLeave]
-osx
 [maskedUpdate]
-osx
 opensuse-42.3
-[hideOpaqueChildWhileHidden]
-osx
-[resizeStaticContentsChildWidget_QTBUG35282]
-osx
-[lower]
-osx
-[setClearAndResizeMask]
-osx
-[setToolTip]
-osx
 [moveInResizeEvent]
 ubuntu-16.04
 [moveChild:right]
