@@ -80,7 +80,7 @@ static int qInfoPrinter(const char *format, ...)
         // flush
         QtMessageHandler qt_message_print = qInstallMessageHandler(0);
         qInstallMessageHandler(qt_message_print);   // restore the handler
-        qt_message_print(QtInfoMsg, QMessageLogContext(), QString::fromLocal8Bit(buf));
+        qt_message_print(QtInfoMsg, QMessageLogContext(), QString::fromLocal8Bit(buf).trimmed());
         bufuse = 0;
     }
 
