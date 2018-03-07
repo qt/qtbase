@@ -66,14 +66,14 @@ EmbeddedDialog::EmbeddedDialog(QWidget *parent)
             ui->style->setCurrentIndex(ui->style->count() - 1);
     }
 
-    connect(ui->layoutDirection, SIGNAL(activated(int)),
-            this, SLOT(layoutDirectionChanged(int)));
-    connect(ui->spacing, SIGNAL(valueChanged(int)),
-            this, SLOT(spacingChanged(int)));
-    connect(ui->fontComboBox, SIGNAL(currentFontChanged(QFont)),
-            this, SLOT(fontChanged(QFont)));
-    connect(ui->style, SIGNAL(activated(QString)),
-            this, SLOT(styleChanged(QString)));
+    connect(ui->layoutDirection, QOverload<int>::of(&QComboBox::activated),
+            this, &EmbeddedDialog::layoutDirectionChanged);
+    connect(ui->spacing, &QSlider::valueChanged,
+            this, &EmbeddedDialog::spacingChanged);
+    connect(ui->fontComboBox, &QFontComboBox::currentFontChanged,
+            this, &EmbeddedDialog::fontChanged);
+    connect(ui->style, QOverload<const QString &>::of(&QComboBox::activated),
+            this, &EmbeddedDialog::styleChanged);
 }
 
 EmbeddedDialog::~EmbeddedDialog()
