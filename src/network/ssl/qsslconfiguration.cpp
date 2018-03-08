@@ -876,12 +876,12 @@ void QSslConfiguration::setDiffieHellmanParameters(const QSslDiffieHellmanParame
 
     Returns the backend-specific configuration.
 
-    Only options set by addBackendConfig() or setBackendConfig() will be
+    Only options set by addBackendConfiguration() or setBackendConfiguration() will be
     returned. The internal standard configuration of the backend is not reported.
 
-    \sa setBackendConfigOption(), setBackendConfig()
+    \sa setBackendConfigurationOption(), setBackendConfiguration()
  */
-QMap<QByteArray, QVariant> QSslConfiguration::backendConfig() const
+QMap<QByteArray, QVariant> QSslConfiguration::backendConfiguration() const
 {
     return d->backendConfig;
 }
@@ -902,9 +902,9 @@ QMap<QByteArray, QVariant> QSslConfiguration::backendConfig() const
     configuration. Using the backend-specific configuration to set a general
     configuration option again will overwrite the general configuration option.
 
-    \sa backendConfig(), setBackendConfig()
+    \sa backendConfiguration(), setBackendConfiguration()
  */
-void QSslConfiguration::setBackendConfigOption(const QByteArray &name, const QVariant &value)
+void QSslConfiguration::setBackendConfigurationOption(const QByteArray &name, const QVariant &value)
 {
     d->backendConfig[name] = value;
 }
@@ -914,13 +914,13 @@ void QSslConfiguration::setBackendConfigOption(const QByteArray &name, const QVa
 
     Sets or clears the backend-specific configuration.
 
-    Without a \a backendConfig parameter this function will clear the
+    Without a \a backendConfiguration parameter this function will clear the
     backend-specific configuration. More information about the supported
-    options is available in the documentation of addBackendConfig().
+    options is available in the documentation of addBackendConfiguration().
 
-    \sa backendConfig(), setBackendConfigOption()
+    \sa backendConfiguration(), setBackendConfigurationOption()
  */
-void QSslConfiguration::setBackendConfig(const QMap<QByteArray, QVariant> &backendConfig)
+void QSslConfiguration::setBackendConfiguration(const QMap<QByteArray, QVariant> &backendConfig)
 {
     d->backendConfig = backendConfig;
 }
