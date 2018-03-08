@@ -386,6 +386,16 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     output.drm_format = drmFormat;
     output.clone_source = cloneSource;
 
+#if QT_CONFIG(drm_atomic)
+    if (drmModeCreatePropertyBlob(m_dri_fd, &modes[selected_mode], sizeof(drmModeModeInfo),
+                                  &output.mode_blob_id) != 0) {
+        qCDebug(qLcKmsDebug) << "Failed to create mode blob for mode" << selected_mode;
+    }
+
+    parseConnectorProperties(output.connector_id, &output);
+    parseCrtcProperties(output.crtc_id, &output);
+#endif
+
     QString planeListStr;
     for (const QKmsPlane &plane : qAsConst(m_planes)) {
         if (plane.possibleCrtcs & (1 << output.crtc_index)) {
@@ -817,7 +827,7 @@ bool QKmsDevice::atomicCommit(void *user_data)
 {
     if (m_atomic_request) {
         int ret = drmModeAtomicCommit(m_dri_fd, m_atomic_request,
-                          DRM_MODE_ATOMIC_NONBLOCK | DRM_MODE_PAGE_FLIP_EVENT, user_data);
+                          DRM_MODE_ATOMIC_NONBLOCK | DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_ALLOW_MODESET, user_data);
 
         if (ret) {
            qWarning("Failed to commit atomic request (code=%d)", ret);
@@ -841,6 +851,42 @@ void QKmsDevice::atomicReset()
     }
 }
 #endif
+
+void QKmsDevice::parseConnectorProperties(uint32_t connectorId, QKmsOutput *output)
+{
+    drmModeObjectPropertiesPtr objProps = drmModeObjectGetProperties(m_dri_fd, connectorId, DRM_MODE_OBJECT_CONNECTOR);
+    if (!objProps) {
+        qCDebug(qLcKmsDebug, "Failed to query connector %d object properties", connectorId);
+        return;
+    }
+
+    enumerateProperties(objProps, [output](drmModePropertyPtr prop, quint64 value) {
+        Q_UNUSED(value);
+        if (!strcasecmp(prop->name, "crtc_id"))
+            output->crtcIdPropertyId = prop->prop_id;
+    });
+
+    drmModeFreeObjectProperties(objProps);
+}
+
+void QKmsDevice::parseCrtcProperties(uint32_t crtcId, QKmsOutput *output)
+{
+    drmModeObjectPropertiesPtr objProps = drmModeObjectGetProperties(m_dri_fd, crtcId, DRM_MODE_OBJECT_CRTC);
+    if (!objProps) {
+        qCDebug(qLcKmsDebug, "Failed to query crtc %d object properties", crtcId);
+        return;
+    }
+
+    enumerateProperties(objProps, [output](drmModePropertyPtr prop, quint64 value) {
+        Q_UNUSED(value)
+        if (!strcasecmp(prop->name, "mode_id"))
+            output->modeIdPropertyId = prop->prop_id;
+        else if (!strcasecmp(prop->name, "active"))
+            output->activePropertyId = prop->prop_id;
+    });
+
+    drmModeFreeObjectProperties(objProps);
+}
 
 QKmsScreenConfig *QKmsDevice::screenConfig() const
 {

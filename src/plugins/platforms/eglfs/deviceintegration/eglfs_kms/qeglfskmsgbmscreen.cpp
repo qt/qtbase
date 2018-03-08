@@ -211,17 +211,29 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
 
         if (doModeSet) {
             qCDebug(qLcEglfsKmsDebug, "Setting mode for screen %s", qPrintable(name()));
-            int ret = drmModeSetCrtc(fd,
-                                     op.crtc_id,
-                                     fb,
-                                     0, 0,
-                                     &op.connector_id, 1,
-                                     &op.modes[op.mode]);
 
-            if (ret == 0)
-                setPowerState(PowerStateOn);
-            else
-                qErrnoWarning(errno, "Could not set DRM mode for screen %s", qPrintable(name()));
+            if (device()->hasAtomicSupport()) {
+#if QT_CONFIG(drm_atomic)
+                drmModeAtomicReq *request = device()->atomic_request();
+                if (request) {
+                    drmModeAtomicAddProperty(request, op.connector_id, op.crtcIdPropertyId, op.crtc_id);
+                    drmModeAtomicAddProperty(request, op.crtc_id, op.modeIdPropertyId, op.mode_blob_id);
+                    drmModeAtomicAddProperty(request, op.crtc_id, op.activePropertyId, 1);
+                }
+#endif
+            } else {
+                int ret = drmModeSetCrtc(fd,
+                                         op.crtc_id,
+                                         fb,
+                                         0, 0,
+                                         &op.connector_id, 1,
+                                         &op.modes[op.mode]);
+
+                if (ret == 0)
+                    setPowerState(PowerStateOn);
+                else
+                    qErrnoWarning(errno, "Could not set DRM mode for screen %s", qPrintable(name()));
+            }
         }
     }
 }

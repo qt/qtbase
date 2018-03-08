@@ -195,6 +195,11 @@ struct QKmsOutput
     QString clone_source;
     QVector<QKmsPlane> available_planes;
     struct QKmsPlane *eglfs_plane = nullptr;
+    uint32_t crtcIdPropertyId = 0;
+    uint32_t modeIdPropertyId = 0;
+    uint32_t activePropertyId = 0;
+
+    uint32_t mode_blob_id = 0;
 
     void restoreMode(QKmsDevice *device);
     void cleanup(QKmsDevice *device);
@@ -255,6 +260,8 @@ protected:
     typedef std::function<void(drmModePropertyPtr, quint64)> PropCallback;
     void enumerateProperties(drmModeObjectPropertiesPtr objProps, PropCallback callback);
     void discoverPlanes();
+    void parseConnectorProperties(uint32_t connectorId, QKmsOutput *output);
+    void parseCrtcProperties(uint32_t crtcId, QKmsOutput *output);
 
     QKmsScreenConfig *m_screenConfig;
     QString m_path;
