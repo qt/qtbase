@@ -112,7 +112,7 @@ void QEglFSKmsEglDeviceScreen::waitForFlip()
             qCDebug(qLcEglfsKmsDebug, "Setting plane %u", op.forced_plane_id);
             int ret = drmModeSetPlane(fd, op.forced_plane_id, op.crtc_id, uint32_t(-1), 0,
                                       0, 0, w, h,
-                                      0 << 16, 0 << 16, w << 16, h << 16);
+                                      0 << 16, 0 << 16, op.size.width() << 16, op.size.height() << 16);
             if (ret == -1)
                 qErrnoWarning(errno, "drmModeSetPlane failed");
         }

@@ -366,6 +366,25 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     if (!cloneSource.isEmpty())
         qCDebug(qLcKmsDebug) << "Output" << connectorName << " clones output " << cloneSource;
 
+    const QByteArray fbsize = userConnectorConfig.value(QStringLiteral("size")).toByteArray().toLower();
+    QSize framebufferSize;
+    framebufferSize.setWidth(modes[selected_mode].hdisplay);
+    framebufferSize.setHeight(modes[selected_mode].vdisplay);
+
+#if QT_CONFIG(drm_atomic)
+    if (hasAtomicSupport()) {
+        if (sscanf(fbsize.constData(), "%dx%d", &framebufferSize.rwidth(), &framebufferSize.rheight()) != 2) {
+            qWarning("Framebuffer size format is invalid.");
+        }
+    } else {
+        qWarning("Setting framebuffer size is only available with DRM atomic API");
+    }
+#else
+    if (fbsize.size())
+        qWarning("Setting framebuffer size is only available with DRM atomic API");
+#endif
+    qCDebug(qLcKmsDebug) << "Output" << connectorName << "framebuffer size is " << framebufferSize;
+
     QKmsOutput output;
     output.name = QString::fromUtf8(connectorName);
     output.connector_id = connector->connector_id;
@@ -385,6 +404,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     output.forced_plane_set = false;
     output.drm_format = drmFormat;
     output.clone_source = cloneSource;
+    output.size = framebufferSize;
 
 #if QT_CONFIG(drm_atomic)
     if (drmModeCreatePropertyBlob(m_dri_fd, &modes[selected_mode], sizeof(drmModeModeInfo),
@@ -788,6 +808,14 @@ void QKmsDevice::discoverPlanes()
                 plane.crtcPropertyId = prop->prop_id;
             } else if (!strcasecmp(prop->name, "fb_id")) {
                 plane.framebufferPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "src_w")) {
+                plane.srcwidthPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "src_h")) {
+                plane.srcheightPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "crtc_w")) {
+                plane.crtcwidthPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "crtc_h")) {
+                plane.crtcheightPropertyId = prop->prop_id;
             }
         });
 

@@ -299,6 +299,14 @@ void QEglFSKmsGbmScreen::flip()
         if (request) {
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->framebufferPropertyId, fb->fb);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcPropertyId, op.crtc_id);
+            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcwidthPropertyId,
+                                     output().size.width() << 16);
+            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcheightPropertyId,
+                                     output().size.height() << 16);
+            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcwidthPropertyId,
+                                     m_output.modes[m_output.mode].hdisplay);
+            drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcheightPropertyId,
+                                     m_output.modes[m_output.mode].vdisplay);
         }
 #endif
     } else {

@@ -169,6 +169,10 @@ struct QKmsPlane
     uint32_t rotationPropertyId = 0;
     uint32_t crtcPropertyId = 0;
     uint32_t framebufferPropertyId = 0;
+    uint32_t srcwidthPropertyId = 0;
+    uint32_t srcheightPropertyId = 0;
+    uint32_t crtcwidthPropertyId = 0;
+    uint32_t crtcheightPropertyId = 0;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QKmsPlane::Rotations)
@@ -195,6 +199,7 @@ struct QKmsOutput
     QString clone_source;
     QVector<QKmsPlane> available_planes;
     struct QKmsPlane *eglfs_plane = nullptr;
+    QSize size;
     uint32_t crtcIdPropertyId = 0;
     uint32_t modeIdPropertyId = 0;
     uint32_t activePropertyId = 0;
